@@ -82,3 +82,5 @@ python3 strategy.py          # demo screen
 2. Implement variant #2 (sector-adjusted F) — highest expected alpha at lowest implementation complexity
 3. Add walk-forward harness (currently only the stats gate is implemented; walk-forward needs historical fundamentals corpus)
 4. Cross-check Beneish M-Score availability in `ejaguiar1_stocks` for the F+M overlay variant
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

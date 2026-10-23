@@ -30,3 +30,5 @@ You are a quant systems engineer. The due-diligence sweep is complete (gating SO
 2. Concrete implementation spec (file, function, logic)
 3. Risk and mitigation
 4. Whether it blocks the money-ready measurement pipeline
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

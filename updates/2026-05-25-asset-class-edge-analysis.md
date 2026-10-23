@@ -198,3 +198,5 @@ From `edge_decay_heatmap.json` (11 strategies tracked):
 ---
 
 *Analysis generated 2026-05-25 from audit dashboard data. Regenerate with updated `pick_summary_stats.json` and `top_edges_per_class.json` for fresh numbers.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

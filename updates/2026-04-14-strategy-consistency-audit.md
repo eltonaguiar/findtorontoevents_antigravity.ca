@@ -253,3 +253,5 @@ Per asset class:
 The claim *"strategies have all been struggling, nothing seems actually consistent"* is **directionally right but specifically wrong**. Most strategies are struggling. A specific named set of four are not. The High Conviction button is the tool that separates the two groups cleanly. If you're looking at the raw Active Picks feed and feeling like nothing is reliable, that's because **the raw feed is ~43.7% WR and contains loser-heavy sources**, but the filtered view removes them. Use the filters.
 
 *Generated from `audit_dashboard/data/dashboard_data.json` (3,500 closed picks, 2026-04-14). All source systems, WR, PF, and sample sizes are pulled directly from the published ledger. Individual trade examples are real closed picks verifiable in the Closed Picks tab.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

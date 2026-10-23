@@ -95,3 +95,5 @@ Computed (raw DB, non-zombie) vs registered (policy_clean_net):
 
 ---
 Methodology: WON = `status IN ('WON','TP_HIT')`. PF = sum(pnl>0)/abs(sum(pnl<0)). MDD = peak-to-trough on unweighted equity curve of closed pnl_pct. T2 thresholds from `reports/hedge_fund_performance_review_*.md`. Registry XREF: 2026-05-25 build of `pf_registry.json`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

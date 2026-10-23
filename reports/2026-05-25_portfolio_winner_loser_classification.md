@@ -65,3 +65,5 @@ Total portfolios: **36**
 ## Insufficient History — n=0
 
 _None._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

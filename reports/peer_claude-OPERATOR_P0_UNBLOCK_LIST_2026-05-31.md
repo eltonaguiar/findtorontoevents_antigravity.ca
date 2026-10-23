@@ -62,3 +62,5 @@ The edge was always there. 6 bugs hid it. Fix these tomorrow before any strategy
 - **18+ fabrications caught**, plus 6 architectural bugs hiding real edge surfaced
 - Edge IS THERE in CRYPTO (4 strategies), ETF (PF 1.44), BOND (yield curve DSR 1.82), EQUITY (PF 1.90 cap-masked) — visible AFTER fixing aggregation/tagging
 - 24-strategy paper-pilot tomorrow at 13:30 UTC + the surfaced buried winners = honest first-trading set
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

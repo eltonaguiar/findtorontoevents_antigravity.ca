@@ -164,3 +164,5 @@ Validation: Compare against IBKR TWS execution reports for first 100 trades. Adj
 ---
 
 *Generated 2026-05-31 by Claude Opus 4.7 peer agent. AI source: DeepSeek `deepseek-chat`. Cost: ~$0.002.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -86,3 +86,5 @@ The strategy is hard-blocked at both the source-system level (all asset classes)
 ---
 
 *Reproducer:* `grep -n "mercury2_fast" audit_trail/quality_gates.py` — shows all block entries. Filter `alpha_engine/data/closed_picks.json` by `strategy == "mercury2_fast"` or `source_system == "mercury2_fast"` returns 0 rows in current snapshot (mtime 2026-05-15).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

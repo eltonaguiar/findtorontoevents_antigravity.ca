@@ -38,3 +38,5 @@ After the re-review, the document was rewritten with:
 
 ## Remaining minor concern
 - **#3 FOREX clamp** still references "2026-05-27 session" without a commit hash — not fully auditable, but the data itself (0 FOREX rows with pnl < -100%) is verified.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

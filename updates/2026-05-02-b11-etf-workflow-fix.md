@@ -50,3 +50,5 @@ If yfinance fails in the workflow, both files get 0 picks — same behavior as t
 ## Wire-Up Rule
 
 `etf_sector_rotation` and `leveraged_etf_decay` are already registered in `JSON_PICK_SOURCES`. This PR fixes the operational gap (wrong script being called) — no new module, no new Wire-Up Rule obligation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

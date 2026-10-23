@@ -88,3 +88,5 @@ No RED transition → Step 6 (PR comment) skipped.
 
 *Data sources: MCP `get_check_runs` (PRs #846, #849, #854, #855, #856, #857),
 `list_commits` (10 most recent main), `list_pull_requests` (open + closed top-5).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

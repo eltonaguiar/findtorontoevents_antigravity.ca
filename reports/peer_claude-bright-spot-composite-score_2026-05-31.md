@@ -117,3 +117,5 @@ The 12-agent + 3-external-AI convergence on NO_EDGE for current strategies has n
 - `updates/index.html` lines 119, 254, 261, 381, 682, 691, 705, 740, 743, 851 (legacy Kilo refs, no NO_EDGE collision)
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

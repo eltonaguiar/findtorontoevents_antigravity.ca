@@ -58,3 +58,5 @@ Three critical fixes to stop the bleeding in the trading system:
 2. Revert score from -30 to +15
 3. Uncomment ingestion lines in `backfill_local_sources.py`
 4. Re-comment in `template.html`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -84,3 +84,5 @@ Build `audit_dashboard/data/swarm_advice_audit.json` schema next cycle so this k
 ```
 
 Then per-agent rolling-hit-rate dashboards. Closes the loop on user's "track who was right vs wrong" directive.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

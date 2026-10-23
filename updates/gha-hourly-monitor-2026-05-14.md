@@ -80,3 +80,5 @@ All three matrix jobs passing. No failing CI Tests runs in the current window. Z
 **Verdict change from 05:00 UTC:** RED → GREEN. Committing this section.
 
 **Methodology note:** `gh` CLI absent. CI data sourced from GitHub MCP `get_check_runs` on PR heads. Doc-only PRs #1013 and #1014 (merged 05:30Z) had no CI Tests triggered — expected for non-code changes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

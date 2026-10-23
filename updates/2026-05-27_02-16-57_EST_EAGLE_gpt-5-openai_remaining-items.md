@@ -137,3 +137,5 @@ Add or update these items in the incidents/enhancements feed:
 - No DB migration was applied.
 - No live paper-trade request was sent.
 - The remaining items above need PR-by-PR implementation and forward validation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

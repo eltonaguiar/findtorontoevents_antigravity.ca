@@ -28,3 +28,5 @@
 - Prevents stale branch accumulation after merges.
 - Adds deterministic branch lifecycle cleanup for old merged branches.
 - Keeps clone/fetch operations lighter over time by limiting active refs.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

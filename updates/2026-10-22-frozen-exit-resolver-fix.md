@@ -66,3 +66,5 @@ Regression cases covered:
 - Historical rows already resolved under the old bug remain in
   `dashboard_data.json` — the harness flags them via the artifact detector rather
   than silently trusting them.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

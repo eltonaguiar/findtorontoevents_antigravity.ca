@@ -173,3 +173,5 @@ These are **already producing signals in the live DB** and on a STABLE_EDGE or M
 ---
 
 *This report is a peer-review artifact. No production code was changed.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

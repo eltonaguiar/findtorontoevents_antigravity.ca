@@ -147,3 +147,5 @@ Per `python tools/mutation_analysis.py --json` (20Z run):
 | COMMODITY | 🔴 7d PF=0.246 — futures_momentum block gap identified |
 
 Refs: issues #685 #686 #693 | PRs #1298 (merged)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

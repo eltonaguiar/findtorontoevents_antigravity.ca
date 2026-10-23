@@ -54,3 +54,5 @@ BUG-1 and BUG-2 from the 72h review (duplicate commits `8b73150f67`, `47b5f56272
 - Force push is dangerous per AGENTS.md ("NEVER run `git push --force` without asking")
 - These are history-cosmetic issues, not runtime bugs
 - Recommend operator handles via squash on next branch opportunity
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

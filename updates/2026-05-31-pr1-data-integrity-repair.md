@@ -67,3 +67,5 @@ Results:
 ## Notes
 
 This fix intentionally does not run broad destructive cleanup. Ghost-row deduplication and historical PnL recomputation remain separate PRs because they require heavier sampling/deletion controls and different rollback planning.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

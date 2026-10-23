@@ -274,3 +274,5 @@ python -c "import json; d=json.loads(open('audit_dashboard/data/dashboard_data.j
 | `feat/anti-overfit-default-on-2026-05-13` | `b9aef5cc10` | Anti-overfit validator default-ON |
 | `feat/system-staleness-detection-2026-05-13` | `869a888f9a` | System staleness detection in tier-2 hero cards |
 | `main` (upstream) | `645527d` | Latest main commit |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

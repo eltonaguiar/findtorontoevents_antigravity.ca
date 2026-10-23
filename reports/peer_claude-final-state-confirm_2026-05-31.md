@@ -42,3 +42,5 @@ FINAL_STATE:entries_stacked=3:order_ok=true:waves_landed_final=1/2:PRs_today_tot
 ```
 
 (operator_summary_PR not opened — OPERATOR TL;DR is live on updates/index.html instead.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

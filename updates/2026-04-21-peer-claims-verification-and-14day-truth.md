@@ -194,3 +194,5 @@ for lo,hi in [(0.0,0.5),(0.5,0.6),(0.6,0.7),(0.7,0.8),(0.8,0.9),(0.9,1.01)]:
         print(f'  conf [{lo:.2f}-{hi:.2f}): n={len(bs)}, WR={sum(1 for x in bp if x>0.01)/len(bs)*100:.1f}%, cum={sum(bp):+.2f}%')
 "
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -54,3 +54,5 @@ Realistic timeline if H-033/H-034/H-035 all clear:
 ## What happens if all 3 sidecars REJECT (like the last 3 did)
 
 Per Claude's flag: "if all 3 classic sleeves fail harness, you're in the same hole — just with cleaner paperwork." Contingency: revisit Gemini's B path (mid-cap earnings vol / CEF discount), which requires the operator to fund a paid options/CEF data feed. That's a strategic-fork escalation, not autonomous.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

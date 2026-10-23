@@ -160,3 +160,5 @@ PR-1 (this PR) ──> PR-3 ──> PR-4 ──> PR-5
 | PR-1 → PR-5 | PR-5's what-if query must show correct historical filtering reasons; PR-1 changes the `filter_reason` for many historical COMMODITY picks from `PASSED` to `COT_LAG_REJECTED`. |
 
 **Merge this PR first.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -102,3 +102,5 @@ classes. The bottleneck is **emission volume** (strategies not wired) and
 - `alpha_engine/strategy_blocklist.py:88-90, 260, 290-298`
 - `baby_strategies/` directory (206 .py files)
 - Investigator output 2026-05-12 (`af8e750330367cd2c`)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

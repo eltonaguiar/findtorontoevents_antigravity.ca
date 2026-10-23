@@ -122,3 +122,5 @@ print(f'Explicit gate bypass: {len(exempt)}')
 ```
 
 Expected output confirms all three problems.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

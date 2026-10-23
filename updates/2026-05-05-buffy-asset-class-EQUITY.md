@@ -51,3 +51,5 @@ EQUITY is carried entirely by **kimi_riseoftheclaw** which generates +254.06% Pn
 ## Risk
 
 EQUITY is a single-point-of-failure asset class: **one strategy** (kimi_riseoftheclaw) generates all the profit. If kimi degrades, EQUITY flips to net negative instantly. Need to develop 2-3 additional equity strategies with verified edge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

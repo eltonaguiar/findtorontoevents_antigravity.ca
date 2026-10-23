@@ -78,3 +78,5 @@ next dashboard rebuild.
 - B10 (UEPS KPI panel): ⏳ blocked on n≥10 UEPS closes — unblocks ~2026-05-22
 - `quality_gates.py:_ueps_long_horizon_bypass_active()` — bypass scope definition
 - `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` — queue row 22 (B10)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

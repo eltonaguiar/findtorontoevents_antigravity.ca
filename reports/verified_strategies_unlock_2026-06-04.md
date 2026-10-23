@@ -31,3 +31,5 @@ After backfill: n_decisive jumps from 5 (across both strategies) to 258 (across 
 - Re-run `bootstrap_forward_stats` workflow to pick up new pnl data
 - Filter inverse_ml ADAUSDT to confirm it's not concentration of a single price spike (n=36 still small)
 - Operator: review the kill-list for RENDERUSDT_4h strategy
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -174,3 +174,5 @@ PRs #669, #676 — **already merged** (confirmed via API: #669 merged 2026-05-02
 **New findings:** 2 new P1/P2 directional kill candidates for issue #686  
 **Held:** #769 (conflict), #764 (CI fail), #772 (explicit hold)  
 **Goal #1 trajectory:** EQUITY Tier-1 holding; FOREX recovering slowly post-kills; CRYPTO 24h noise, 7d/30d stable.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

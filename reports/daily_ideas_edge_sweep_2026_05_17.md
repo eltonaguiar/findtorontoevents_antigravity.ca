@@ -183,3 +183,5 @@ Relative-strength across 11 SPDRs (XLF/XLE/XLK/...) + Black-Litterman risk-parit
 2. **Schema drift watchdog** (S, 3h) — new `schemas/baseline/` + workflow  
 3. **FOREX carry-factor scaffold** (M, 1 day) — `tools/research/forex_carry.py`
 4. **ETF sector rotation** (M, 1 day) — `alpha_engine/etf_rotation_strategy.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

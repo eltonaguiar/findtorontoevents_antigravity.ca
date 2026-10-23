@@ -79,3 +79,5 @@ evidence:
 remediation: docs-only edit to two strings (lines 305, 371) — done in this PR
 followups: render smart_floor column per row; revisit whether FOREX=40 is correct
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

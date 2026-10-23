@@ -221,3 +221,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 
 - **Friction-adjusted DSR fix** (the 0.08 vs 0.0008 bug from May-15) is Workstream A-equivalent here: until friction is honest, calibration cannot be honest.
 - **Speculative split (D1):** COMMODITY stays in the institutional path. Single-name futures with <5k open interest get `speculative_flag=True`.
 - **Verdict (refreshed):** COMMODITY meets Stage-2 PF (1.78) but WR (46.9%) is still below the 50% floor, and concentration risk remains the dominant story. Pilot diversification (4-6 names beyond cotton) + friction-honest calibration + regime gating are the path. The 60-day go/no-go from the May-15 plan stays — if we cannot diversify beyond CT=F with positive expectancy after costs, COMMODITY is a single-strategy sleeve with hard caps, not a full class.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

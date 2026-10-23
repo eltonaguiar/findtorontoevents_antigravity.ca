@@ -142,3 +142,5 @@ After merges:
 
 ---
 *Generated: 2026-05-03 | Repo SHA: 2f93b95e1580cbc3569ace9c560001d10282b59e*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

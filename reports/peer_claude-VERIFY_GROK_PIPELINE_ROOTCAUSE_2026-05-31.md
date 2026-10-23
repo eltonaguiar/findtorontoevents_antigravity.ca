@@ -66,3 +66,5 @@ python3 -c "import json; print(json.load(open('audit_dashboard/data/money_ready_
 # Claim 5 PR
 gh pr view 158 --json state,title,mergedAt,mergeCommit
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -1440,3 +1440,5 @@
 - [OPEN] Produce updates/2026-05-18-stability-harness-verdict.md with pass/fail + exact eff numbers (Phase 0 task surfaced by assistant)
 - [OPEN] Fix forward resolution for non-crypto (Phase 1 task surfaced by assistant)
 - [OPEN] Implement regime filter + risk-adjusted sizing ≤1.5% (Phase 1 task surfaced by assistant)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

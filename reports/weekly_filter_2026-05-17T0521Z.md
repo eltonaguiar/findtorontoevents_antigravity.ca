@@ -170,3 +170,5 @@
 
 *Produced by Claude Code (claude-sonnet-4-6) via `/money-maker-readyv2` protocol*  
 *Source data: `audit_dashboard/data/dashboard_data.json` + `alpha_engine/kelly_position_sizer.py`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

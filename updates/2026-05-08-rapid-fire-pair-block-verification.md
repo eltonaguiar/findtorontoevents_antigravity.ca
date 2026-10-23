@@ -152,3 +152,5 @@ Identify the scanner that populates `rapid_fire_data/active_picks.json` and add 
 - Kill decision: `reports/strategy_kill_rapid_fire_macd_rsi_confluence_2026_04_29.md`
 - Bypass file: `rapid_fire_data/pick_tracker.py` (no `is_blocked_pick` call)
 - Gate file: `alpha_engine/isolated_signal_integrator.py:675`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

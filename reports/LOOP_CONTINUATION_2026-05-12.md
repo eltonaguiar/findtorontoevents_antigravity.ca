@@ -117,3 +117,5 @@ the loop. The queue doc is at:
 
 Suggested command: run this prompt again with the same protocol. The
 loop will pick up B10 as the next 🟢 ready row.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

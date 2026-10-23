@@ -68,3 +68,5 @@ There is **no AGCO-mandated 19+ age gate, no ConnexOntario 1-866-531-2600 helpli
 
 - Kimi cites `Pick History 126 picks @ 29.8% WR` vs `Bankroll 41 tickets @ 37.5% WR` — could not verify counts without live DB access. Reconciliation logic in PHP layer (`sports_metrics_lib.php`) was not deep-read; a short audit there would confirm whether the gap is a definitional cohort split (graded picks vs paper-bet tickets) or a true sync bug.
 - Kimi's `DQ-001..DQ-010` proposal is sound but should be folded into existing `sports-forensics-weekly.yml` rather than a new endpoint — out of scope for the immediate PR queue.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

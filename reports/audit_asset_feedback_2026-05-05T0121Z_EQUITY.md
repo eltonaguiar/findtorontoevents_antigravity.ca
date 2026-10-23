@@ -15,3 +15,5 @@ EQUITY is a candidate, not proven Tier 2. Current payload: `n=428`, `WR=52.8%`, 
 ## Do Not Do
 
 Do not call EQUITY Tier 2 yet. It is close, but PF is below floor and large drawdown systems can contaminate the class.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

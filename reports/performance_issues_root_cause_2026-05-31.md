@@ -169,3 +169,5 @@ All findings backed by `tools/monte_carlo_edge_audit.py`:
 2. After COMMODITY/EQUITY hard-disable, re-run to measure class-level PF improvement
 3. At n≥50 on ml_enhanced_DYDXUSDT/INJUSDT, re-audit for TIER-1 promotion
 4. After 30 days of FOREX SHORT-only, re-audit FOREX class metrics
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

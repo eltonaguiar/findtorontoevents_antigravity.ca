@@ -116,3 +116,5 @@ python alpha_engine/auto_retire.py  # local dry-run to see what would happen
 
 **Generated:** 2026-05-13 UTC by Claude Opus 4.7 peer mb2v7tau (post-swarm review).
 **Inputs:** `reports/SESSION_TRANSCRIPT_2026_05_12.md` + 3-model swarm review JSON.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

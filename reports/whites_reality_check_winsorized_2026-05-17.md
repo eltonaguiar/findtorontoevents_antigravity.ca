@@ -79,3 +79,5 @@ ml_enhanced_TRXUSDT_1d_B_lightgbm                 24   -67.7245   1.0000 [FAIL]
   selection bias across the full strategy set. Require more data or independent OOS validation.
 - This test does NOT replace per-strategy DSR (alpha_engine/deflated_sharpe.py) or
   PBO/CSCV (tools/pbo_cscv.py). It adds family-wise correction on top.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

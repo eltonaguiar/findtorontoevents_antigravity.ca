@@ -114,3 +114,5 @@ These are the actionable, grep-citable, sample-sized findings that emerged from 
 | `reports/comet_claims_verification_2026_05_04.md` | Comet conf-band + trust-band rejected |
 | `reports/comet_strategy_verification_2026_05_04.md` | TRXUSDT + ml_enhanced_FETUSDT discovered |
 | `reports/verified_audit_findings_summary_2026_05_04.md` | **This file** — master summary |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

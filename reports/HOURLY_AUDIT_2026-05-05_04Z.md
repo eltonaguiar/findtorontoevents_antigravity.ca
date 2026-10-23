@@ -171,3 +171,5 @@ Ran `python tools/mutation_analysis.py --json` (2026-05-05 04:05 UTC).
 - **ETF near break-even** 7d (PF 1.01); 30d excellent (3.58). Watch n→100.
 - **0 PRs merged** — no PR met all three criteria.
 - **3 new mutation findings** for issue #686: `myfxbook_retail_contrarian` LONG, `ig_contrarian_sentinel` LONG, `rapid_fire` UUSDT.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

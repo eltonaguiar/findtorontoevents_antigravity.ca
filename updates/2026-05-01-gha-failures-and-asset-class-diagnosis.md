@@ -94,3 +94,5 @@ python tools/hc_parity_test.py
 # Asset class gap monitor
 python tools/asset_class_gap_monitor.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

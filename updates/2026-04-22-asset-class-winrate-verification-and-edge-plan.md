@@ -99,3 +99,5 @@ Edge threshold used in report: `WR >= 45%` and `PF >= 1.10` on `n >= 30`.
 - The original forex `5%` and commodities `15%` claims are not supported by current closed-picks data.
 - The strongest recent numbers (stocks/ETFs at 85% in last 20) **do not fully persist** when extended to 100/200.
 - Best next step is tightening to proven sleeves + hard CI guardrails + library-backed validation tooling.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

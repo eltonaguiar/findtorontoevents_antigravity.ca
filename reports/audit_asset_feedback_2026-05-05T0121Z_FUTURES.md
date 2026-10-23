@@ -15,3 +15,5 @@ FUTURES is not analyzable. Current payload: `n=2`, `WR=100.0%`, `PF=n/a`, `PnL=0
 ## Do Not Do
 
 Do not cite 100% WR. At `n=2`, it is noise.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

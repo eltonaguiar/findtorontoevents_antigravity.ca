@@ -85,3 +85,5 @@ Because the helper is **not yet wired into the scoring pipeline**, the kill-swit
 - `alpha_engine/config.py` lines 552-600 — `FOREX_SYMBOLS` carry-yield table
 - `audit_trail/quality_gates.py` lines 3421-3437 — existing FOREX short-bias penalty (precedent)
 - `audit_trail/quality_gates.py` lines ~5182+ — `evaluate_forex_carry_ema_filter` draft function
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

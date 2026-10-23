@@ -14,3 +14,5 @@
 - The `alpha_engine` now correctly maps `TQQQ` to the wider risk category.
 - The dashboard generator creates the new Asset Class breakdown table with real-time stats.
 - Yahoo API handles 100+ stock tickers without crashing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

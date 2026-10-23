@@ -51,3 +51,5 @@ Added a centralized `_compute_pnl(entry, exit_price, direction)` helper that:
 1. **Run a one-time backfill** on the 1,034 existing `at_pick_outcomes` rows with `pnl_pct = 0` and `status IN ('WON','LOST')` to recompute their true PnL from `(exit_price, entry_price, direction)`.
 2. **Schedule `resolve_stale_open_picks.py --execute --max-batches 50`** against `at_raw_picks` to drain the ~7,400 stale OPEN backlog.
 3. **Monitor `[ZERO-PNL-SAFEGUARD]` warnings** in the universal resolver logs over the next few days to confirm the safeguard is catching edge cases and not firing excessively.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

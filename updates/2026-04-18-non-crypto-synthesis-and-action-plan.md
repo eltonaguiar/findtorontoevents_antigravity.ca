@@ -192,3 +192,5 @@ This refines the P4 priority: per-strategy forex attribution (which strategies /
 - [ ] P0.3 root-cause investigation: locate the writer that produced JPY pnl_pct as pip values
 
 After P0 passes, the remaining policy questions in P3-P4 can be answered against trustworthy numbers — but with the refined understanding that forex still has a real (smaller) edge problem, not just a measurement artifact.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

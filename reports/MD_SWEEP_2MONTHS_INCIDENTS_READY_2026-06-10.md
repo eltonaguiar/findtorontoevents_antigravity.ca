@@ -167,3 +167,5 @@ From the 2026-05-13 brainstorm: only IDEA-A (approved w/ scope cut), IDEA-E (DEF
 - **May incident/session reports:** the high-density ones (`2026-05-25_md_sweep_action_items.md`, `2026-05-24-*` fix docs, `2026-05-31` peer_claude series, EAGLE2 June-2 series) were re-verified rather than re-extracted; remaining deltas are exactly Sections A/B. The ~240 April-10..30 update docs predate the May plan-consolidation and were spot-checked only where a later doc cited them as still-open (none surfaced new items not already in the feed).
 
 *Read-only sweep; no code or data was mutated. This file is the only write.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

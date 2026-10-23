@@ -113,3 +113,5 @@ The single defect worth a follow-up commit (not a blocker) is the **broken footn
 Option 2 is more transparent and reviewer-friendly; ~30 minutes of work.
 
 The PR is *not* a watered-down subset and is *not* a different document. It is genuinely the same audit, faithfully transcribed into markdown with LaTeX math, Mermaid diagrams, and markdown tables — actually a *richer* presentation than what the DOCX extractor was able to dump to .txt.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

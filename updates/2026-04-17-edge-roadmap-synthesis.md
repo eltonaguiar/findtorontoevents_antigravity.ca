@@ -280,3 +280,5 @@ After Phase 2 (full forex stack):
 - Faber (2007/2013/2020) — Quantitative Approach to Tactical Asset Allocation — JoWM
 - Connors & Alvarez (2008) — Short Term Trading Strategies That Work, Ch. 7 (bonds)
 - Bernard & Thomas (1989) — Post-Earnings Announcement Drift (referenced by Kilo)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -72,3 +72,5 @@
 - All 6 modified Python files pass `py_compile` syntax check
 - All 27 tests in `tests/test_crypto_data_failover.py` pass
 - Code reviewer confirmed `_GEO_BLOCKED` sentinel propagation is correct and complete
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

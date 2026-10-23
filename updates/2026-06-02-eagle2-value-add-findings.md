@@ -159,3 +159,5 @@ purged-embargoed WF as Step 3, which is correct.
 | 5 | Wire WFO efficiency as decision gate in strategy_promotion_pipeline | MEDIUM | Medium |
 | 6 | Create FOREX carry trade + mean reversion strategy specs from LiteLLM ideas | MEDIUM | High |
 | 7 | Add per-regime Sharpe breakdown to edge stability reports | LOW | Medium |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

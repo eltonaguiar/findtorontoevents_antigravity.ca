@@ -85,3 +85,5 @@ both confirm 5% CRYPTO cap — SYNCED (no desync).
 - Block `dna_rapid_fire_mutations` CRYPTO (PF=0.78, n=52) after mutation protocol
 - Investigate `mercury2_fast` PF=0.07 (n=32) — likely a price reference bug
 - Exclude `paper_trading` from verdict-grade resolved_n (it's simulation, not live)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

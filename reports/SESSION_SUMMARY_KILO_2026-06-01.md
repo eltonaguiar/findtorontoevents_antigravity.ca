@@ -161,3 +161,5 @@
 4. Monitor paper-pilot harness output at `reports/peer_claude-master_paper_pilot_status_<DATE>.json`
 5. Wire the 30 new strategies into the master paper-pilot harness
 6. Create IPO + cheap_stocks asset classes with dedicated strategies
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

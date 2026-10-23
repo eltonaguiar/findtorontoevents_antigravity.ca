@@ -63,3 +63,5 @@ All other B items (B1–B28 excl. B10/B22) remain ✅.
 **STOPPED** — second escalation (`LOOP_ESCALATION_2026-05-16.md`).
 Stop criterion met: 3+ consecutive no-progress iterations post-resume (now 5 consecutive).
 Resume after operator actions above.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

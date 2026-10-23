@@ -125,3 +125,5 @@ Three peer agent families produced top-picks docs in this repo today. Their meth
 ---
 
 *Session complete. 16 trades live with valid TP/SL across 5 asset classes, 2 pipeline PRs merged, 1 safety tripwire active, methodology documented for peer agents.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

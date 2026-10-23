@@ -75,3 +75,5 @@ Visited `https://findtorontoevents.ca/audit/ai-tournament.html`
 - Commit source-concentration changes and push branch
 - Verify CI passes on the branch
 - Check AI Tournament page for stale data / model coverage gaps
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

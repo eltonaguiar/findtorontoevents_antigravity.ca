@@ -65,3 +65,5 @@ GROUP BY status
 ---
 
 **Next:** Proceed to Step 2 (Data Integrity Audit) — query for synthetic-data signatures (zero-PnL rows, missing exits, weekend timestamps, CFTC release alignment).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

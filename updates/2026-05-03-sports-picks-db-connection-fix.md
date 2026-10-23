@@ -56,3 +56,5 @@ After deploying this fix:
 - `live-monitor/api/db_config.php` - Source of DB credentials (no changes needed)
 - `live-monitor/api/sports_picks.php` - Endpoint that was failing
 - `live-monitor/sports-betting.html` - Frontend with added failover support
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

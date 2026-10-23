@@ -102,3 +102,5 @@
 - `tests/test_outcome_resolver_v21_bugfixes.py`
 - `tests/test_quality_gates.py`
 - `TORONTOEVENTS_ANTIGRAVITY/index.html`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -56,3 +56,5 @@
 ---
 
 > **Tool note:** `gh` CLI is not installed in this environment. Steps 1 and 2 of the checklist (direct `gh run list` queries) were approximated using GitHub MCP `pull_request_read:get_check_runs` against recent PRs. If the hourly monitor is a recurring fixture, install `gh` in the runner for full workflow-run history access.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

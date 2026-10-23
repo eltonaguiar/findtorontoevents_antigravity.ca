@@ -161,3 +161,5 @@ Both meet PF<0.5+n≥20. Blocked pending 3-AI consensus per CLAUDE.md constraint
 | Open findings | FINDING-59 (COMMODITY), FINDING-60 (cta×NG=F), FINDING-61 (rapid_fire×UUSDT), FINDING-63 (EQUITY scout cohort) |
 
 **Priority next cycle (01Z):** Fresh snapshot expected. Re-evaluate EQUITY 7d PF and COMMODITY. Check if #1303 and #1299 transition to MERGEABLE. Collect 2nd AI opinion on FINDING-60/61 per 3-AI consensus protocol.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

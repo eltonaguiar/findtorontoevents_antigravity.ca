@@ -44,3 +44,5 @@ Reason chosen: largest-context + fastest available model on our keys; Mercury/In
 
 3. **SINGLE HIGHEST-LEVERAGE ACTION**  
 **Fix the non-crypto outcome resolver** — because 5 of 6 asset classes are statistically invisible due to `pnl_pct=0.0` placeholders. Without real resolved PnL, no class can be measured, no gate can function, and no edge can be validated. This blocks *all* downstream progress (trials, triage, promotion) and is the root of inflated dashboard claims. Fixing it enables honest per-class performance assessment — the foundation of world-class picks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

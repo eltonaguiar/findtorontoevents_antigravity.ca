@@ -41,3 +41,5 @@ update_from_closed_pick(closed_pick, audit_conn)
 - `py_compile` syntax check passes on all three new files
 - Schema SQL reviewed for idempotency (all `CREATE TABLE IF NOT EXISTS`, migration uses try/except for duplicate column errors)
 - All functions are defensively coded to skip if columns not yet in schema
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

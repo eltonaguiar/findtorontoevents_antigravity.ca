@@ -15,3 +15,5 @@ python3 -m pytest tests/test_eagle2_phase0_gates.py -q
 ## Ops
 
 After merge, next hourly `:03` alpha-engine run should write `alpha_engine/data/pead_shadow_picks.json` when earnings cache has qualifying rows.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

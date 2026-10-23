@@ -79,3 +79,5 @@ Without this, "OddsHarvester skipped" stays green forever.
 - Script: `live-monitor/oddsharvester_clv_backfill.py`
 - Workflow: `.github/workflows/sports-betting-refresh.yml` line 437
 - Schema: `lm_sports_clv` on `ejaguiar1_sportsbet`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

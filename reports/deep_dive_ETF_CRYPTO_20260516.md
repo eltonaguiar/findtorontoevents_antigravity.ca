@@ -320,3 +320,5 @@ python tools/swarm/swarm_run.py \
 ---
 
 *Sources: `audit_trail/data/dashboard_payload.json` (recent_closed, systems, by_asset_class, asset_class_health) | Swarm: `swarm_runs/etf-crypto-deep-/` | Prompt: `tools/swarm_v2/prompts/etf_crypto_deep_dive_20260516.md`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

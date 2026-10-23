@@ -35,3 +35,5 @@ for pr in 562 564 581 595 600; do gh pr close $pr --comment "Superseded — 2+ w
 gh pr merge 666 --squash ; gh pr merge 665 --squash ; gh pr merge 657 --squash
 # #667: fix tests + filter "?" cells, then rebase, then merge
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -121,3 +121,5 @@ No dedicated FOREX backtest JSONs found in `audit_dashboard/data/`. FOREX strate
 3. **Add JPY-cross filter** — systematically avoid EURJPY, AUDJPY, CADJPY
 4. **Implement economic calendar awareness** — go flat before NFP/FOMC
 5. **Wire COT v2 divergence signals** — already integrated (May 2026), need forward test
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

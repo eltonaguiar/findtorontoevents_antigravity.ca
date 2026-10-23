@@ -48,3 +48,5 @@ Intrabar dry-run after pass 1: **15,021 replayed**, 1,177 no_data, true WR **39.
 ## Next step (operator greenlight)
 
 After backfill completes: `python3 tools/reresolve_intrabar.py` (dry-run) → review → `--apply` with backup.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

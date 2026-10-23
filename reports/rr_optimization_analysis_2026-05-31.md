@@ -181,3 +181,5 @@ Per-row TP/SL R:R analysis returned empty: `at_signal_outcomes.take_profit` and 
 - **1 of 3 is unevaluable until the resolver runs** (`copy_trader_intel` source) — file as a resolver task, not an R:R task.
 
 **Next action:** spawn a worktree to backtest `atr_percentile_gate` Variant C (ATR-trailed exit) on `at_signal_outcomes` history (n=1863) and validate that PF crosses 1.5 with WR ≥ 45%.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

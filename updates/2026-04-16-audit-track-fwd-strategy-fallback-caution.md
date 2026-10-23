@@ -23,3 +23,5 @@
 ## Deploy note
 
 After merge to `main`, the audit-dashboard workflow should regenerate `audit_dashboard/index.html` from `template.html`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

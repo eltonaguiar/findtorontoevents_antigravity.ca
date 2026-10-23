@@ -157,3 +157,5 @@ Date: 2026-04-22
 - **quant-backtest-framework** adds Monte Carlo simulation: robustness testing beyond single historical run
 
 All integrate with existing data sources (yfinance, your existing MySQL data).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

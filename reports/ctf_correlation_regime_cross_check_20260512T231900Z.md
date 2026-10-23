@@ -84,3 +84,5 @@ At least two distinct factor structures inside it:
 Research surface only. Does not modify sizing logic. The classification
 mismatch (cotton vs gold rolled into one "COMMODITY" class) is a
 dashboard taxonomy choice; trade execution doesn't currently consume it.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -67,3 +67,5 @@ paths, none of which is "run the harness on another derived signal":
 - Do not re-test any of the 7 killed families on the same sample (M-107).
 - A gaudy PF / DSR / SPA / White's pass is necessary and nowhere near
   sufficient — every killed candidate had at least one of those.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

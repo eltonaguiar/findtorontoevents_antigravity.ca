@@ -92,3 +92,5 @@ macd_crossover only:   WR=69%  PF=?     [WR passes, PF unknown, n=16 too small]
 - `alpha_engine/data/closed_picks.json` — source of all metrics
 - `audit_trail/quality_gates.py` — rapid_fire block status
 - `reports/MASTER_ACTION_PLAN_2026-05-18.md` — C-006/C-007 gate specification
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -263,3 +263,5 @@ for float<10M).
 _Generated 2026-05-15 from the Graphify whole-repo knowledge graph + 4-agent
 plan cross-reference. Source plans: SUPREME_PLAN_90days.md, FOOLPROOF_ACTION_PLAN.md,
 asset_class_90day_plan_*_2026-05-15.md._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

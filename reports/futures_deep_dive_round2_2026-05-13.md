@@ -66,3 +66,5 @@ Class graduates to T2 when **all** of:
 - `audit_trail/dashboard_generator.py:3167-3349` (classification)
 - `audit_dashboard/data/edge_stability/edge_stability_FUTURES.json` (n=0 source)
 - `non_crypto_agent/data/futures_picks.json` (quality=0 evidence)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

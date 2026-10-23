@@ -99,3 +99,5 @@ PR) without blocking the hot path.
   — not relevant to this lag).
 - Reconcile `78.9% CRYPTO Smart-Picks` vs raw-DB `39% WR / PF 0.37`
   (separate leakage investigation per `c1b977997`).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

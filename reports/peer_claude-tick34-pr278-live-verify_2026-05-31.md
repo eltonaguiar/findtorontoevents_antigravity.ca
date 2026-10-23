@@ -121,3 +121,5 @@ Post-tick-34 status: **IN_PROGRESS → RESOLVED-pending-replication** (code ship
 - First post-merge scan emission check (tick 35).
 - `gold_safe_haven` first-emission monitoring + admit/reject log (tick 35).
 - Mutation of `gold_safe_haven` parameters — requires price-path replay per `reference-sl-optimization-needs-pricepath` memory.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

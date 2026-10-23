@@ -9,3 +9,5 @@
 ## Solution
 
 `sync_pick_summary_14d.py` copies `pick_summary_stats_2w.json` with `alias_of` metadata; hourly `build_recency_summary.py` invokes it after each run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

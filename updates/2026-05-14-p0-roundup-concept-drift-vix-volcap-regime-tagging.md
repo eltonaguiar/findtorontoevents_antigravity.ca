@@ -42,3 +42,5 @@
 | `test_vix_yc_combined_gate.py` | 11/11 | ✅ PASS |
 | `test_quan_engine_volume_cap.py` | 6/6 | ✅ PASS |
 | **Total** | **26/26** | **✅ ALL PASS** |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

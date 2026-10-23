@@ -41,3 +41,5 @@ curl -sL "https://findtorontoevents.ca/TORONTOEVENTS_ANTIGRAVITY/metadata.json" 
 ```
 
 All four paths should show `lastUpdated` ≥ May 2026 and `totalEvents` ~13298. Console should log `✅ [metadata-cache] Loaded metadata from /metadata.json`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

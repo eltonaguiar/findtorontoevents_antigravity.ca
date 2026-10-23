@@ -29,3 +29,5 @@ Live connectivity + numeracy probe of every callable endpoint in `tools/swarm_mo
 - `no_edge_cloud_consult.py` / `strategic_fork_consult.py` / `consult_ling_crypto.py` — verdict-grade reasoning -> use the SMART set only. A FAST model in a no-edge brainstorm produces confident noise.
 - `pick_improvement_harvest.py` — idea breadth -> SMART + FAST both fine (more diverse inputs help; harness gates the result anyway).
 - The asset-class diagnostic prompt (`reports/ASSET_CLASS_DIAGNOSTIC_PROMPT.md`) -> SMART set only; it demands numeric reasoning about PF/WR/walk-forward stability.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

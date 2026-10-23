@@ -111,3 +111,5 @@ Cross-asset deficit: 48h sample shows CRYPTO 114 / EQUITY 2 / FOREX 0 picks — 
 - `swarm_runs/audit_metrics_20260508T192423Z/` (deepseek + cerebras)
 - `docs/ANALYSIS_MAY82026_FREEBUFF.MD`
 - `docs/HERMES_DAILYACCOMPLISHMENT.MD`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

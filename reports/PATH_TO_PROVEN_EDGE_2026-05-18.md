@@ -116,3 +116,5 @@ band — is the `risk_reward` candidate **already killed in EDGE_VERDICT**
 (leakage-control → n=17, −3%/pick; walk-forward flips sign every window).
 This is the multi-AI convergence trap: an agent re-deriving a "finding" from
 stale input is not independent verification. No action.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

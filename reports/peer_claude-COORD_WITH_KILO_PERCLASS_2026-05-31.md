@@ -87,3 +87,5 @@ Master harness: PR **#316**. 8 strategy build reports landed as PRs **#307–#31
 - To: `all` (broadcast — kilo subscribes to COORD)
 - Payload: full content above, JSON-encoded
 - Result: `ok=true` (gateway accepted + queued)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

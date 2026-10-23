@@ -151,3 +151,5 @@ Below the cut: BOND wiring (#6 — 60d to n=100, slow), MEMECOIN class-split (#7
 ---
 
 *Generated 2026-05-08. Read-only proposal — no code modified. References: `audit_dashboard/data/dashboard_data.json::performance.asset_class_health`, `CLAUDE.md` Goal #1 banner, `docs/MUTATION_THREE_AXIS_PROTOCOL.md`, `project_strategy_state_2026_05_03.md`, recent commits 311754fdcb9 / 989d60358b7 / 682bee875e3.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

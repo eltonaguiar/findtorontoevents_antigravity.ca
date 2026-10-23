@@ -416,3 +416,5 @@ Risk: **Medium** (touches ~280 workflows); effort ~1–2 weeks.
 ---
 
 *Review completed 2026-05-02. All findings verified against working tree and git history. Subagent outputs cross-checked before inclusion.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

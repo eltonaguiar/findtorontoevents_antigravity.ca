@@ -160,3 +160,5 @@ CLAUDE.md "Wire-Up Rule" applies to Python integration modules; this is a fronte
 - `c:\findtorontoevents_antigravity.ca\reports\kimi_swarm_archive_2026_05_04\findtorontoevents_swarm\static\gear-settings-integration.js`
 - `c:\findtorontoevents_antigravity.ca\reports\kimi_swarm_archive_2026_05_04\findtorontoevents_swarm\api\user-settings.php`
 - `c:\findtorontoevents_antigravity.ca\reports\kimi_swarm_archive_2026_05_04\findtorontoevents_swarm\api\check-session.php`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

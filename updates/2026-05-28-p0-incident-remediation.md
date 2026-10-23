@@ -74,3 +74,5 @@
 - **Monitoring**: `db_health_check.py` now queries trading_picks independently and cross-validates COUNT(*) against info_schema
 - **CI guardian**: `db-freshness-guardian.yml` runs hourly with duplicate detection, PnL integrity checks, and status validation
 - **Status standardization script**: `tools/standardize_statuses.py` — idempotent, dry-run-first, with verify() using NOT IN canonical list
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

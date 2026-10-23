@@ -254,3 +254,5 @@ or push a trivial commit to re-trigger.
 **Action required:** none on main. Watch PR #733 CI Tests (in_progress); if they fail, reclassify next hour. Author of PR #723 should push a trivial commit to re-trigger absent CI. PRs #661/#608/#597 authors should fix tests; #615 remains HELD.
 
 ---
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

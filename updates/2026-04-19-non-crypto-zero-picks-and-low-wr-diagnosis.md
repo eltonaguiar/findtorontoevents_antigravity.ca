@@ -246,3 +246,5 @@ The zero-pick problem is **not a data bug** — it is the **intended outcome of 
 Forex and Equities suffer from **structural edge problems**: forex has impossibly tight TP/SL caps that guarantee low WR, while equities are dominated by toxic strategies and aggressive macro gates that filter out all but the worst survivors.
 
 **Recommended immediate action:** Remove the hard blocks, add a dedicated non-crypto scan step, and create a **probation display mode** so the system can build forward history without misleading users about quality.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

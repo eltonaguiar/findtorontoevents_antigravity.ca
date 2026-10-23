@@ -304,3 +304,5 @@ Volume drops by ~90%, but the portfolio flips from **-0.15% avg loss** to **+0.0
 2. Implement P0 changes in a feature branch.
 3. Run a 7-day forward test on the gated rules before merging to `main`.
 4. Do **not** push directly to `main` — these are structural changes that will slash pick volume and must be monitored.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

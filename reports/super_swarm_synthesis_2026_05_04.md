@@ -210,3 +210,5 @@ Each reviewed one Kimi MD against live state and produced a focused review .md i
 3. Wire up the 5 new Kimi-derived personas (`playwright_architect`, `audit_gap_analyst`, `ux_enhancer`, `sports_betting_analyst`, `code_implementer`) into the persona router.
 4. Schedule the 4 review subagents' outputs to be merged into a single follow-up PR backlog .md.
 5. Commit this synthesis + Kimi archive once git lock clears.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

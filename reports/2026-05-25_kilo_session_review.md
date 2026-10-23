@@ -241,3 +241,5 @@ Both formalize the pattern that caught the COMMODITY debunk.
 ---
 
 *(End of review — 53 commits audited, 30+ reports indexed, 3 fixes live.)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

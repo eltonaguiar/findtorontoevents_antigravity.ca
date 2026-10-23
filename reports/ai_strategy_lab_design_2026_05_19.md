@@ -213,3 +213,5 @@ Ranked by likelihood to produce testable, academically-grounded alpha:
 | 1 | E-ANON-001 | pollinations+perplexity | EQUITY | proposed |
 | 2 | F-ANON-001 | pollinations+perplexity+eye2 | FOREX | proposed |
 | 3 | H-OPT-001 | deepseek | EQUITY | deferred (options data needed) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

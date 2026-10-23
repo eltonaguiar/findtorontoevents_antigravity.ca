@@ -173,3 +173,5 @@ Resolver rescope: DONE per issue #685. No resolver code changes needed.
 ---
 
 Refs: issues #685 #686 #693 | Previous: `reports/HOURLY_AUDIT_2026-05-21_20Z.md` (PR #1300)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

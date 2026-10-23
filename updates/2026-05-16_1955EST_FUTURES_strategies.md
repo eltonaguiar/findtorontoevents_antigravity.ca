@@ -111,3 +111,5 @@ Only one backtest file found. It likely shows the same terrible performance.
 4. **Consider merging with COMMODITY** — the same symbols work under COT positioning
 5. **Add cross-asset spread strategies** — crack spreads, gold-silver ratio
 6. **Do NOT trade futures with real money** until completely rebuilt
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

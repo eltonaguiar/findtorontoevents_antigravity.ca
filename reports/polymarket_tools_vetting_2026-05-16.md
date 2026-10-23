@@ -79,3 +79,5 @@ Items are ranked by immediate usefulness to the copy-trader intel pipeline.
 | leolopez007/polymarket-trade-tracker | No | No | No (optional Alchemy/Infura) | Safe — integrate |
 | MrFadiAi/Polymarket-bot | Yes (MetaMask export) | Yes (DRY_RUN=false) | No | RISKY — strategy reference only |
 | Drakkar-Software/OctoBot-Prediction-Market | Credentials required | Yes (copy-trade/arbitrage) | No | RISKY — paper/test only |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

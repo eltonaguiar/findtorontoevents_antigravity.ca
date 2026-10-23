@@ -200,3 +200,5 @@ grep -n "MeanReversionBB" audit_trail/quality_gates.py
 ---
 
 *Generated 2026-06-06. DB query timestamp: live `ejaguiar1_stocks`. No fabricated stats.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

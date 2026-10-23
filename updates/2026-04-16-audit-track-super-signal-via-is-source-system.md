@@ -32,3 +32,5 @@ Excluded or stale closes are a separate, smaller issue: `_filter_valid_resolved_
 ## Deploy
 
 Dashboard JSON/HTML flow as usual; no separate FTP step for Python-only change until the next generator run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

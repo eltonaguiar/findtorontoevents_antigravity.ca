@@ -64,3 +64,5 @@ Removed duplicate `\"openrouter\"` key in `COST_PER_1K_TOKENS` (Python dicts sil
 - api_consult.py: deadline enforcement verified by review
 
 **Commit:** `8b5d8542e97` on `fix/swarm-cerebras-sdk-fallback-2026-05-05`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

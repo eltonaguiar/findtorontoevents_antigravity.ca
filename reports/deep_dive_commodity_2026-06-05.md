@@ -177,3 +177,5 @@ for COMMODITY candidates.** The 4 candidates listed there (`non_crypto_consensus
 `combined_confidence_strategy` + walk-forward `futures_bb_mean_reversion`) all share the 2026-06-04
 batch contamination. The inventory's CRYPTO + FOREX + INDEX verdicts stand; only the COMMODITY verdicts
 are invalidated by this finding.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

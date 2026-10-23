@@ -114,3 +114,5 @@ Two disambiguation paths the operator can choose:
    `PRICE_RESOLVED [RECO [FIX] (RE` artifact).
 
 Both should be evaluated against the backup snapshot before any DB mutation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

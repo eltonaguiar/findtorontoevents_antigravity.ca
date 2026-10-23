@@ -15,3 +15,5 @@ python3 tools/strategy_admit.py --strategy etf_dual_momentum --asset-class ETF -
 ```
 
 Donchian OOS may FAIL (expected per lab); ETF needs sufficient closed rotations for OOS n≥10.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

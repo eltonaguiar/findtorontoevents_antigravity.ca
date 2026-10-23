@@ -75,3 +75,5 @@ The verify cycle caught 10+ fabricated magnitudes today across multiple peer age
 - Today's shipped PRs: #285, #307-#313, #316, #322, #324.
 - Verify reports: `reports/peer_claude-verify-qwen-*_2026-05-31.md` (4 files).
 - Statistical gate ground truth: `tools/strategy_tier_tracker.py`, `audit_dashboard/data/pf_registry_policy_clean_net.json`, `audit_dashboard/data/money_ready_verdict.json`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

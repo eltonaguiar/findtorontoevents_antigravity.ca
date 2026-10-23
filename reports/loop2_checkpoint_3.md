@@ -100,3 +100,5 @@ Will verify next checkpoint.
 - Hyrotrader Tables 4-5 freshness check
 - Investigate cross-asset transfer candidates (Hurst pairs, BB momentum + VIX, etc.) — quick feasibility scan
 - Schedule next wakeup at T+30m
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

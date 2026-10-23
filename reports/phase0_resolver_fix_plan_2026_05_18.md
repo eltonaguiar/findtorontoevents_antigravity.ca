@@ -167,3 +167,5 @@ All verification is `py_compile` + targeted unit tests + dry-run. **Never** run 
 - `outcome_resolver.py:1024-1031` — successful-resolution stamp block (PR-A edit site; writes `resolved_at`, **never `closed_at`** = RC-1)
 - `outcome_resolver.py:1906-1959` — `_write_outcomes_to_mysql` UPSERT (RC-5: no `closed_at` column)
 - `forward_validator.py:1335-1376` — crypto close block; `:1363` writes `closed_at` (the working contract)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

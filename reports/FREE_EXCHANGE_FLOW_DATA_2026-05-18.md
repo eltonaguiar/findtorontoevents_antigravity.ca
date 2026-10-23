@@ -192,3 +192,5 @@ trade-off.
 **Caveat on swarm reliability:** several engine answers were LLM-knowledge-based
 and partly inconsistent (e.g., Glassnode/CryptoQuant free-tier specifics). The
 web-verified facts in §1 and the appendix override any conflicting engine claim.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -33,3 +33,5 @@
 - 2024-06-24 -> 2024-07-05 SHORT pnl=-3.46% (SL)
 - 2021-06-25 -> 2021-06-30 SHORT pnl=-3.35% (SL)
 - 2023-06-20 -> 2023-06-21 SHORT pnl=-3.26% (SL)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -32,3 +32,5 @@
 1. Check `/audit/` BOND tab — antigravity_bond picks should stop appearing
 2. New bond strategies should appear as probation-tier picks
 3. Monitor BOND WR — target ≥55% on new strategies after 20+ trades
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

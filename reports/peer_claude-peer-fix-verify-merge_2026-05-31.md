@@ -125,3 +125,5 @@ SELECT COUNT(*) AS won_remaining FROM ejaguiar1_stocks.trading_picks WHERE outco
 | One-time WON cleanup | already executed by peer; SQL drafted above for audit |
 | PR #208 status | functionally superseded by #210 |
 | Duplicate PR #213 (opened by me) | closed + branch deleted |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -80,3 +80,5 @@ opens a PR rather than admin-merging.
    `exit 1 if banner_should_show` so CI catches errored harness runs.
 2. Add a unit test that injects a forced-error check and asserts
    `harness_healthy == False` while `any_red == False`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

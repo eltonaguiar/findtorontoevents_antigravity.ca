@@ -200,3 +200,5 @@ cur.execute(\"\"\"SELECT source_system,strategy,COUNT(*) n,
 for r in cur.fetchall(): print(r)
 "
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

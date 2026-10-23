@@ -147,3 +147,5 @@ No new strategies meeting all three kill criteria (n≥20 + WR<35% sustained + 3
 - [x] Issue #685 resolver-rescope DONE respected
 
 Refs: issues #685 #686 #693 | previous: `reports/HOURLY_AUDIT_2026-05-21_15Z.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

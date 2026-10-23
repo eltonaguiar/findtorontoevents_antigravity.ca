@@ -120,3 +120,5 @@ python3 -c "import json;from pathlib import Path;d=json.load(open('audit_dashboa
 ```
 
 Subagent detail: `reports/edge_hunt_FOREX_2026-06-05.md` (FOREX agent), tier tracker, `plans/money_ready_enhancements_spec.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

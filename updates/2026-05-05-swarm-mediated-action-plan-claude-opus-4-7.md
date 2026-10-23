@@ -115,3 +115,5 @@ The active→closed migration happens in `alpha_engine/outcome_resolver.py::reso
 - Update repo secret `GH_PAT` to new `GH_AMPERE` token value (CIM workflow validation showed PR #803 fix works; only the auth-on-push step fails).
 - Rotate `THE_ODDS_API_KEY` to unblock sports endpoint smoke.
 - Provision `MEMECOIN_DB_PASS` in 50webs cPanel for PR #798 merge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

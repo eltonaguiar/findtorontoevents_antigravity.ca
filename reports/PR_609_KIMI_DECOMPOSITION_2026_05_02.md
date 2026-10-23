@@ -55,3 +55,5 @@ Kimi's `AUDIT_IMPROVEMENTS_2026_05_02.md` Phase 1 lumps resolver fixes + gate lo
 ## Bottom line
 
 Resolver bugs are real, but the bundle is dangerous. This PR-A ships only the bug fixes — narrowly scoped, Windows-safe, with retry-counter on every early-return path. Filter recalibration and symbol unbans wait for clean post-fix data per CLAUDE.md.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

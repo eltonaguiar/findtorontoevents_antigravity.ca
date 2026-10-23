@@ -49,3 +49,5 @@ Is 6 subagents the right scope, or should the thin-class A5 + surface S1 be defe
 4. **Anti-overfit beyond SQL-verify** — every hypothesis pre-registered with falsification BEFORE the pull; report IS/OOS time-split + net CI-LB on the HONEST ledger (not a separate backtest); flag if the query was shaped to confirm.
 5. **Scope merged to 5** — A1 CRYPTO, A2 EQUITY, A3 FOREX, A4 COMMODITY, A5 = cross-cutting data-source plumbing (FRED/CFTC/EDGAR availability) + audit-surface-honesty. Thin-classes folded into A5.
 6. **Expectation set:** new data is NOT immune to honest first-touch; most candidates will still fail. Success = 1-2 replicated, net-of-cost, forward-shadow candidates registered — or an honest "still 0, here's the nearest miss + why."
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

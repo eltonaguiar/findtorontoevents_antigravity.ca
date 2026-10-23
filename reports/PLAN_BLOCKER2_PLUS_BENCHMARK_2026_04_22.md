@@ -106,3 +106,5 @@ No existing file is modified. No trading code is touched. No picks are placed.
 - Did **not** accept the `clone_hl_copy_*` picks under override (option c).
 - Did **not** relabel the `HIGHFWWRABV55_SCOREABOVE50_V4` account (option b).
 - Did **not** recreate the integration wrapper modules in this pass — defer to Priority 4.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

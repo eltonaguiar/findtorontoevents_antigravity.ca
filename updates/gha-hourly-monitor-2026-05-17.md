@@ -258,3 +258,5 @@ PRs #1153–#1160 (merged 09:00–10:09Z) all touched docs/data/audit/workflow p
 **Action required:** ⚠️ Advisory — fast-merge pattern (PRs merged < 2 min after creation) is systematically bypassing CI Tests as a gate for code changes. PR #1154 merged `tests/**` changes without CI Tests completing. Operator should consider enabling branch protection requiring CI Tests to pass before merge. No immediate RED condition; all self-attested test runs are green.
 
 **Run context:** Verdict unchanged (GREEN → GREEN). No chronic-workflow list change. Committed and pushed via MCP push_files (git push returned 403). [skip ci]
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

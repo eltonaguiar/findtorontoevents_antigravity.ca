@@ -143,3 +143,5 @@ grep -rL "TOKEN_FOR_PUSH" .github/workflows/ | xargs grep -l "safe_push\|git pus
 *Swarm review: Mercury (Architecture) · Grok (Security/Risk) · Integration (Data Flow)*  
 *Synthesized by Claude Code (claude-sonnet-4-6) | 2026-05-15T23:55:00Z*  
 *Source data: `gh pr diff 1083/1085/1086`, `gh pr view`, live file reads on main*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

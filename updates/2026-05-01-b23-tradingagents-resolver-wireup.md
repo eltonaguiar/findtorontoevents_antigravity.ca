@@ -70,3 +70,5 @@ revision; the consensus blocker analysis confirmed B23 as a critical
 
 Next item in v2: **Item 3** B2-redux Asset-Class × Timeframe grid panel
 (diagnostic tool for the EQUITY regression below).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

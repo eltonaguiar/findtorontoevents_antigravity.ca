@@ -44,3 +44,5 @@
 This plan merges swarm output (general/explore agents), prioritizes P0 per reviewer Q1, ensures reproducible queries + existing test coverage. Ready for swarm review.
 
 **Next**: Swarm review of this plan → implement P0 on clean branch → PR.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

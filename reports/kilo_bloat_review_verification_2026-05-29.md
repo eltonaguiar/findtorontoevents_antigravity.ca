@@ -42,3 +42,5 @@ Re-run every "Verify cmd" above at ~T+90min, diff against baseline, mark each �
 **Adjacent Kilo wins that DID land (merged):** PR #50 masked-failure guardian, #51 masking-policy linter, #52 target_release migration. PR #45 (bloat docs) still OPEN.
 
 **Verdict:** Kilo completed the high-value integrity items (production_models bloat removal + the 3 merged GHA-integrity PRs + CI green) but **left the low-priority hygiene cleanups undone** (#5 discord dedup, #3 DISABLED deletion, #9 doc, #8 forward-test paths). Its "31 DISABLED files" claim was inaccurate (≤2 actual). These remain **open handoffs for the operator / a follow-up agent** — none are blocking.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

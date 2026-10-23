@@ -124,3 +124,5 @@ These exist in the audit dashboard UI but their data comes from the OLD `picks` 
 4. What's the right confidence encoding format — float 0-1 or string HIGH/MEDIUM/LOW?
 5. How should we integrate the audit dashboard's "Verified Alpha" and "Smart Picks" components into tournament_picks?
 6. Should PENNY and FUTURES have default resolution windows or be manually configured?
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

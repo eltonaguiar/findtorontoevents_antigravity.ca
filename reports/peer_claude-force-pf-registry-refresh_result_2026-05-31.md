@@ -64,3 +64,5 @@ No new dispatch has been fired by this agent since 06:06:07Z to avoid adding to 
 ## Files
 - `reports/peer_claude-force-pf-registry-refresh_plan_2026-05-31.md` (BEFORE)
 - `reports/peer_claude-force-pf-registry-refresh_result_2026-05-31.md` (this file)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

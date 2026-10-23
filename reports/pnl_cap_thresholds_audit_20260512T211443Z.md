@@ -128,3 +128,5 @@ grep -nE "MAX_PNL|_PNL_CLAMP_|max_pnl_cap|capped_pnl|clamp_pnl_pct_for_pick" \
 ## NFA
 
 Research surface only. No code changes in this audit.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

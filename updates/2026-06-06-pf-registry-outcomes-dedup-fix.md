@@ -23,3 +23,5 @@ PF_REGISTRY_INCLUDE_OUTCOMES=1 python3 tools/build_pf_registry.py
 PYTHONPATH=. python3 tools/money_ready_snapshot.py
 python3 tools/deploy_audit_files.py --only audit_data
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

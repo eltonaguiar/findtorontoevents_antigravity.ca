@@ -85,3 +85,5 @@ Filed as ENH-REJECTED-PICK-COUNTERFACTUAL-LEDGER-2026-05-27 (P1).
 - **Next scheduled tick:** propose the 1-line CI env-var addition + extend `tournament_quality_gates.py` with the CRYPTO liquid-core filter (still in fail-open shadow mode).
 
 References: phase-1 EAGLE `reports/EAGLE_2026-05-27_0212_EST_Grok43_xAI_full_audit_90day_plans_gates_strategies_review.md`, phase-2 `reports/EAGLE_phase2_tournament_gates_2026-05-27.md`, partner #19 commit `07858d209`, partner #17 cursor-composer audit, canonical decisions table in `reports/EAGLE_2026-05-27_0218_EDT_Claude-Opus-47_Anthropic_meta_synthesis_5partner_review.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

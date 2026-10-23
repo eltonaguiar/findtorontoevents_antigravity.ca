@@ -35,3 +35,5 @@ Net_recommendation: <one paragraph; flag if NEW high-priority items emerge>
 ```
 
 Keep response under 500 words. Cite by NS-id / Q-id / commit SHA when relevant.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

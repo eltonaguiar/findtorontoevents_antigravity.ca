@@ -58,3 +58,5 @@ DB_PASS_STOCKS=stocks1234560 python3 tools/build_cpcv_pbo_results.py
 - [ ] Update `ENHANCEMENT_OVERALL #85` with PBO result: PBO=1.0 FAIL → v2 PBO gate correctly rejects. Set `linked_pr` to #471.
 - [ ] Forward-test top 3 in-sample performers: `crypto_liquidity_wick_reversal_v1`, `etf_dual_momentum`, `fabervectors` for 2 weeks.
 - [ ] PBO v2 backlog: add stricter loss-fraction filter and forward-only weighting.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

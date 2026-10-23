@@ -67,3 +67,5 @@ _No cells passed all gates._
 
 ### UNKNOWN
 _No cells passed all gates._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

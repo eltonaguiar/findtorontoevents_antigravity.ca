@@ -156,3 +156,5 @@ After web-research critique, the right pipeline is:
 - `docs/EQUITY_STOOQ_COVERAGE_2026_04_20.md`
 - Tools: `tools/deflated_sharpe_per_feed.py`, `tools/walk_forward_validation.py`, `tools/block_bootstrap_ci.py`
 - Data helpers: `alpha_engine/bond_data_fred.py`, `alpha_engine/equity_data_stooq.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

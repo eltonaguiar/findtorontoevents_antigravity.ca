@@ -79,3 +79,5 @@ Post-merge:
 - Local patcher: `tools/patch_local_hermes.py` (covers the Hermes-core version of Bug 4)
 - Orchestrator architecture: `.ruflo/orchestrator.py`
 - Codebuff↔WSL bridge: `BUFFTOHERMES.MD`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

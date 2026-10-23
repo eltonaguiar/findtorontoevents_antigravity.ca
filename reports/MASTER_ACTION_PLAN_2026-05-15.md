@@ -954,3 +954,5 @@ Full report: `NO_EDGE_BRAINSTORM_CLOUD.MD` + `reports/no_edge_brainstorm/`.
   `reports/hypothesis_registry.json` that records family, test statistic, and
   in-sample/out-of-sample commit hash before any backtest runs.
   Status: [x] DONE 2026-05-17 — reports/hypothesis_registry.json (5 hypotheses pre-filed); H-005 futures_momentum inversion archived as first REFUTED entry
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

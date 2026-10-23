@@ -111,3 +111,5 @@ no-edge verdict (`project_edge_verdict_2026_05_18`).
 - **Created:** `reports/regime_backfill_2026-05-18.md` — this report.
 
 `tools/edge_stability_harness.py` was **not** modified.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

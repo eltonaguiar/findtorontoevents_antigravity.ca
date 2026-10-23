@@ -98,3 +98,5 @@ Concentration is acceptable — multiple strategies contribute.
 
 *Produced by Claude Code (claude-sonnet-4-6) via autonomous session loop*  
 *Data: `audit_dashboard/data/dashboard_data.json` + `tools/edge_filter_engine_v3.py`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

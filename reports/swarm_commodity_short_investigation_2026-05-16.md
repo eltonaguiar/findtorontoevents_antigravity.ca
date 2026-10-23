@@ -36,3 +36,5 @@ Then verify: if WR≥55% and PF≥1.5 and n≥30, promote to real-money filter a
 - n may be too low after CT=F exclusion (estimated n=30-50 net)
 - COT signal freshness: government COT reports are delayed 3 business days
 - Seasonal patterns in grains (ZC, ZS, ZW) may distort directional stats
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

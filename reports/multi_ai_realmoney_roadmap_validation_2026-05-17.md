@@ -56,3 +56,5 @@ o3 likely saw config that *references* env keys). o3 adds nothing new.
 *Validated by direct repo grep, 2026-05-17 — more rigorous than a swarm vote
 (3 AIs agreeing on "no walk-forward" does not make it true; `walkforward_validator.py`
 exists). Convergence-trap avoided.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

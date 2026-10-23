@@ -12,3 +12,5 @@ The `tools/backfill_resolved_pnl.py` script failed with `pymysql.err.Operational
 - Ran `tools/backfill_resolved_pnl.py --apply --skip-backup`.
 - 790 rows were successfully updated without constraint violations.
 - Verified `n_resolved` for CRYPTO increased from 176 to 262 in `audit_dashboard/data/money_ready_verdict.json`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

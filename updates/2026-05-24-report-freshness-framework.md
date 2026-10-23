@@ -118,3 +118,5 @@ Running `report_freshness_tracker.py` against the actual repo reveals:
 ```
 
 All tests pass — timestamp extraction, age calculations, freshness classification, registry integrity, staleness detection, freshness tracker scanning, and edge cases.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

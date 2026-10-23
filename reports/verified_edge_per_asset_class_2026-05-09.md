@@ -169,3 +169,5 @@ Detail at: `reports/edge_stability_2026-05-09/{class}_filter_stability.csv`
 - Raw data: `reports/edge_stability_2026-05-09/{class}_filter_stability.csv`
 - Scanner: `tools/edge_stability_scan_2026-05-09.py`
 - Refs: PR #876, #877, #878, #883, #884, #885, #886, #887, DAILY_IDEAS.MD 2026-05-09 entry
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

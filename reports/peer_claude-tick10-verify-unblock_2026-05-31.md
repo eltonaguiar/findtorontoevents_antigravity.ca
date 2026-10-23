@@ -51,3 +51,4 @@ Keep:
 
 Mixed: only MySQL Sync of the 3 actually completed within the tick window. The other two are still queue-starved. **Resolver caught up via the dedicated MySQL Stale OPEN Picks Resolver path**, not via the Outcome Resolver workflow which is still queued.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -160,3 +160,5 @@ Single PR titled `ci: flip ML staleness watchdog to hard-fail [conditions met]`:
 | New untracked system goes stale silently | MEDIUM | Pre-req B adds 4 systems |
 | feedback_training_report ghost floods MISS count | LOW | Remove from list |
 | Threshold too tight for slow-retraining systems | LOW | 7d matches charter P3 SLA; all current artifacts refresh within 3d |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

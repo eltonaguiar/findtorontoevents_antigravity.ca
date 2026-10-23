@@ -169,3 +169,5 @@ Run: `python3 tools/mutation_analysis.py --json` (2026-05-09T03:07Z)
 **Merged this run:** #867, #866  
 **New findings posted:** issue #686 comment #4411248532 (4 strategies, requesting re-block consensus)  
 **Action required (human/AI):** 3-AI sign-off on myfxbook LONG, ig_contrarian LONG, forex_carry_momentum re-block
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -41,3 +41,5 @@ What was added:
 
 ## Why this helps
 This prevents repeatedly promoting historically toxic non-crypto strategy/symbol clusters into consensus output, while preserving adaptive behavior (blocklists are derived from latest closed-pick history, not hardcoded static bans).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

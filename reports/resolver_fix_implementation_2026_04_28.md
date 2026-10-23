@@ -228,3 +228,5 @@ ML retrain shock: ~12% target-flip rate on the 3,500-trade corpus. Per design do
 ---
 
 *End of report.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

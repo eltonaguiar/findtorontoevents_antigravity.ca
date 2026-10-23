@@ -65,3 +65,5 @@ with horizon** (daily: losers trend down; weekly: winners revert down). That pat
 cross-sectional autocorrelation structure in crypto at these horizons net-of-cost** — just noise plus the
 rebalance-cost drag. This matches the project's settled "no robust edge" reality. No further cross-sectional
 variants will be run (anti-circling: reversal×momentum × daily×weekly is the full 2×2; all refuted).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

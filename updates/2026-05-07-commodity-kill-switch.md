@@ -55,3 +55,5 @@ export COMMODITY_INVERSE_KILL_DISABLED=1
 python -m pytest tests/test_commodity_kill_switch.py -v
 # 31 tests, all passing in ~0.37s
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

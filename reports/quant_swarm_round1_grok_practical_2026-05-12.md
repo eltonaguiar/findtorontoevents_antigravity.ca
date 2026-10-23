@@ -103,3 +103,5 @@ heavy filtering. FOREX/BOND/FUTURES are rehab targets. Institutional
 process (pre-registration + graduated deployment + auto-retirement) is
 what separates hedge-fund-level from one-off lucky-streak trading. No
 guarantees — only highest-probability paths.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

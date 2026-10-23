@@ -59,3 +59,5 @@ No broken/404 data fetches found anywhere; no "S-tier 100% WR"-style artifacts s
 - **Bug 1A** entry-anchored intrabar fetch in `universal_pick_resolver.py` (spec above). Highest-value
   remaining accuracy fix; recommend adopting `reresolve_intrabar.py`'s entry-anchored pattern with a
   test harness before it lands in the live hourly resolver.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

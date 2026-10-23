@@ -55,3 +55,5 @@ expect 63% WR in a sustained calm bull. Still the best honest lead; the characte
 - The always-on `robust-edge-miner` cron (#649) will keep re-confirming it as n grows; if it stays
   robust through n>=80 with CI-LB holding, it's a genuine paper-pilot candidate.
 - This is the best honest lead found — **more robust than rsi5070-LONG** (which fails the bootstrap).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

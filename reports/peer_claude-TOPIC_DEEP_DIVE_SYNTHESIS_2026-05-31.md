@@ -203,3 +203,5 @@ The shipped harness uses `0.05 / 7 = 0.007142857`. **24-strategy expansion chang
 ---
 
 *Generated 2026-05-31 by Claude Opus 4.7 via local peer-claude session. Source AIs: DeepSeek-Chat, Grok-4-latest, Qwen-Max, Mimo v2.5-pro, Gemini (FAIL), Kimi-K2.6. Total cost across 5 successful consults: ~$0.05.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -123,3 +123,5 @@ The MAJOR GOAL banner on `/audit` is the canonical 1-screen summary.
 - Anything pre-Apr 27 — see Claude Opus 4.6 Thinking's 7-day review at `updates/2026-04-27-7day-code-review-analysis.md`
 
 If you're a future agent reading this and you can't tell whether your work is on Goal #1, #2, or #3 — pause, name the goal, then proceed. Per CLAUDE.md daily-focus rule: a goal-mismatched PR is rejected unless it's a P0 fix that protects production.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -80,3 +80,5 @@ money_ready_verdict(EQUITY)
 - `alpha_engine/data/closed_picks.json` — local picks (n=44 EQUITY)
 - `audit_dashboard/data/dashboard_data.json::performance.asset_class_health.EQUITY` — n=240 WR=53.3%
 - `alpha_engine/money_ready_verdict.py` — dashboard fallback logic, DSR/SPA computation
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

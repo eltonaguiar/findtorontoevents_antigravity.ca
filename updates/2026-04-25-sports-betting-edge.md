@@ -24,3 +24,5 @@ We have implemented a new sports betting intelligence module within the `alpha_e
 - The Playwright scraping scripts were built with appropriate `asyncio` handling.
 - The `calculate_ev()` mathematical functions have been implemented to properly convert American/Decimal odds to implied probability and calculate true expected value based on prediction market "wisdom of the crowd."
 - The changes are housed securely within `alpha_engine/` and can be seamlessly consumed by the `dashboard_generator.py` for UI presentation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -105,3 +105,5 @@ Rationale:
 - Once Option A unblocks the queue, file a follow-up to fix whatever made `Branch Large File Duplicate Guard` hang (likely a `git fetch` or large-file walk timing out without `timeout-minutes`).
 
 Operator override: if you suspect those 24 runs are legitimately mid-scan, Option C on the gating fan-outs (`No stale DB passwords` + `Secret Scan` set to every 2 hr) is the next safest.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

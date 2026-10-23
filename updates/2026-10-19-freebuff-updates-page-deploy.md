@@ -61,3 +61,5 @@ page with "freebuff" in the name, under findtorontoevents.ca/updates/.
   8.85% / −20.45%; QualVal 0.859 with data ending 2026-08).
 - Page + index entry wording corrected and redeployed (env-var FTP path);
   nothing in `grokbot` needs to change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -91,3 +91,5 @@
 | SPORTS † | 2 | 0 | 2 | 0/0/2 | 0 |  | +0.00 | +0.00 | +0.00 | n/a | 0.00 | +0.00 |
 
 `W/L/F` = wins / losses / flat (pnl_pct exactly 0). `Decided` = W+L; **WR% is wins ÷ decided**, so flat rows are excluded from the denominator (N is not the denominator). `†` = thin sample (fewer than 30 decided picks).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

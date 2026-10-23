@@ -54,3 +54,5 @@ python3 tools/check_resolver_health.py --json
 - Cron: daily `resolve_stale_open_picks.py --execute` after universal resolver  
 - Consider normalizing writer default `ACTIVE` → `OPEN` in `mysql_trading_sync.py` (separate PR)  
 - ETF shadow pilot unchanged — `PROMOTED_STRATEGIES` still empty  
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

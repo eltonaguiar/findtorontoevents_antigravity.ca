@@ -29,3 +29,5 @@ Red-team verification of the 5 operator-ready diff packets found:
 No "operator-ready diff packet" PR may be admin-merged without:
 1. A red-team verification line per diff (function exists / lines match / data citation matches JSON path+ts).
 2. A `gh pr review --approve` from at least one non-author peer ticked the same wave.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

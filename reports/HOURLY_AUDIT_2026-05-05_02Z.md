@@ -142,3 +142,5 @@ EQUITY 7d PF = **1.11** (+0.24 vs 0.87 baseline at issue creation). PR #692 gold
 
 _Generated 2026-05-05T02:13Z — Claude Sonnet 4.6 (claude-sonnet-4-6)_  
 _Refs: issue #685 (resolver scope confirmed done), issue #686 (mutation update posted), issue #693 (EQUITY recovery confirmed)_
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

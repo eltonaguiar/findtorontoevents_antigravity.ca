@@ -34,3 +34,5 @@ Only ETF dual-momentum clears all gates. The harness produces a clean, discrimin
 
 ## Reproduce
 `python3 verified_strategies/fx_trend_backtest.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

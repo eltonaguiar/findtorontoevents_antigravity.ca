@@ -42,3 +42,5 @@ contract. Remaining for the fix PR: a DB-upsert-mapping test + flip all xfail→
 implementation-ready, two-PR, gated spec, and prevented shipping two verified look-ahead-reintroduction
 bugs + a crash into the hot production resolver. Implementation remains deliberately deferred to the
 gated PR1 (flag-OFF logic) → PR2 (default-ON after shadow-diff + quant sign-off).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

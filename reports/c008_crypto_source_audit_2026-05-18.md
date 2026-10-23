@@ -71,3 +71,5 @@ All 5 source systems are NOT in BLOCKED_SOURCE_SYSTEMS. The blocked source syste
 - `alpha_engine/data/active_picks.json` — source of active pick counts
 - `alpha_engine/api_failover.py` — Binance failover chain implementation
 - `audit_trail/quality_gates.py::BLOCKED_SOURCE_SYSTEMS` — blocked systems registry
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

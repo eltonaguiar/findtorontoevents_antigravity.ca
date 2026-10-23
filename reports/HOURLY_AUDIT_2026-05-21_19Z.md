@@ -122,3 +122,5 @@ Diff review confirms `kpi.tickers`, `kpi.strategies`, and `kpi.message` are inte
 ---
 
 Refs: issues #685 #686 #693 | PRs merged: #1297
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

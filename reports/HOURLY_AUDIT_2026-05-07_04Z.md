@@ -163,3 +163,5 @@ Source: `python3 tools/mutation_analysis.py --json` (04Z run)
 3. **[Next AI session]** Obtain 3-AI consensus on `rapid_fire` × UUSDT block. Evidence: n=34, WR=0%, pattern matches HYPEUSDT block (#694).
 4. **[Next AI session]** Monitor `quan_engine_swing` direction split — act when SHORT n≥20.
 5. **[Next AI session]** Merge #854 only after CI checks complete; #846 awaiting human review gate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

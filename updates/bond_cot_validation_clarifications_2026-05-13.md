@@ -19,3 +19,5 @@
 4. Ruflo's view on risk-parity allocation (40% COMMODITY proposal from swarm).
 
 Created this MD per instruction. Now spawning swarm + Ruflo review via bus.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

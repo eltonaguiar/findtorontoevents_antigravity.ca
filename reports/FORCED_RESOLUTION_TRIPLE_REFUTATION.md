@@ -10,3 +10,5 @@ Three independent verifications caught the same survivorship-bias artifact.
 
 ## Conclusion
 Forced resolution with tight TP/SL is FALSIFIED. Correct approach: wide TP/SL + time-based market exit.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

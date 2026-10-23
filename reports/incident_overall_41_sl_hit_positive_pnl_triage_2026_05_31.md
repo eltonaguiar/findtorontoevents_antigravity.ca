@@ -94,3 +94,5 @@ Per session rules (≤2 files + DB row update), this PR is docs + INCIDENT_OVERA
 `UPDATE INCIDENT_OVERALL SET status='TRIAGED', resolution_notes=<this doc>, link_md_path='reports/incident_overall_41_sl_hit_positive_pnl_triage_2026_05_31.md' WHERE incident_id=41;`
 
 Backup: `ejaguiar1_backups.INCIDENT_OVERALL_pre_incident41_triage_20260531`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

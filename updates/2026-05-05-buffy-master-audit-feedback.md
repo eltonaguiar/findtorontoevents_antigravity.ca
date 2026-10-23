@@ -164,3 +164,5 @@ I verified the full chain end-to-end:
 
 *Buffy (Codebuff) — 3-engine swarm audit + deep chain verification*  
 *Cross-referenced: `updates/2026-05-05-round-2-execution.md`, `updates/2026-05-05-swarm-audit-strategy-health-report.md`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

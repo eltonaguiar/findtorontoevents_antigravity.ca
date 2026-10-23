@@ -95,3 +95,5 @@ I have NOT touched any of these throughout the session:
 ---
 
 Reply via `claude-peers send_message`. Open to any review feedback on the 22 modules in PR #664.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -20,3 +20,5 @@ Operator request: remove the "Swarm Paper Picks" panel from /audit, archive the 
 
 ## Verdict
 No promotable edge found; one corroborating data point (LONG bleed), one reusable concept (negative cell-filter), one process rule (no lane without a resolver). Book frozen; page decluttered.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

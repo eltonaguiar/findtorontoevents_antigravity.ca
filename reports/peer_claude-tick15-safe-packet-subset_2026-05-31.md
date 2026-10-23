@@ -73,3 +73,5 @@
 - Source packets: `reports/peer_claude-OPERATOR_DIAGNOSTIC_PACKETS_2026-05-31.md` (PR #239, polished PR #243).
 - Wire-Up Rule: `CLAUDE.md` -> "Wire-Up Rule (integration modules)".
 - Protected scoring path: outcome_resolver, forward_validator, smart_picks_engine, production_scanner, dashboard_generator (scoring), mysql_trading_sync, quality_gates.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

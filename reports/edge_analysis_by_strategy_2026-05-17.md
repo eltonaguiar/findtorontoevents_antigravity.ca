@@ -84,3 +84,5 @@ Candidate features to test in the harness (from PR #1178 qlib factors):
 | FUTURES | **NOT_READY** | futures_momentum WR=2.0% (n=202) |
 | ETF | **ACCUMULATING** | n=87 (need n≥150) |
 | BOND | **ACCUMULATING** | n=18 (need n≥30) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

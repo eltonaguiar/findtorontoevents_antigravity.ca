@@ -247,3 +247,5 @@ Key outputs from `python tools/mutation_analysis.py`:
 | FOREX 7d PF | 0.14 (pre-#687) | CLAUDE.md |
 | FOREX 30d PF | 0.97 (pre-#687) | CLAUDE.md |
 | COMMODITY PF | 1.78 (long-run) | CLAUDE.md |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

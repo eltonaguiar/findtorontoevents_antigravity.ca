@@ -136,3 +136,5 @@ Only 1 trap meets the threshold simply because most strategies don't accumulate 
 ---
 
 *Sources: `audit_dashboard/data/dashboard_data.json` (picks.recent_closed, n=3,500), `alpha_engine/data/regime_performance_history.json` (sparse, not used for join), BTC-USD daily via yfinance for regime classification. Analysis script: `tools/_regime_analysis_tmp.py`. Intermediate join: `alpha_engine/data/_regime_picks_join.csv`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

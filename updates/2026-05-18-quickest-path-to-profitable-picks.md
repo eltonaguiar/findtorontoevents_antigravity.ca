@@ -28,3 +28,5 @@
 **Status**: All core tasks fulfilled. Standing goal complete.
 
 Generated autonomously 2026-05-18 by Claude (this session) + harness analysis.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

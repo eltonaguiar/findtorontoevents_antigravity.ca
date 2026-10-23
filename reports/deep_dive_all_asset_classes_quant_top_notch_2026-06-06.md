@@ -152,3 +152,5 @@ Safest bets table: FUTURES (STABLE_EDGE highest sharpe n407 cite edge_stability_
 
 (End report. Full per-class expanded in /tmp/quant_top_notch_data.json template; copy/edit for updates/ if needed.)  
 **Next:** Spawn sub deep-dives per bad class per CLAUDE if PF<1/sub30%WR/MDD>2x (e.g. reports/deep_dive_EQUITY_*.md). Use for /audit updates.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

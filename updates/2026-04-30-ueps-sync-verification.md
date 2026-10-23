@@ -115,3 +115,5 @@ a separate signal-recorder process that does **not** invoke
    in `main()` would never be called from that path.
 4. Confirm `ueps-pick-runner.yml` schedule is not suspended or skipped via
    `gh run list --workflow=ueps-pick-runner.yml --limit=5`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

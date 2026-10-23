@@ -140,3 +140,5 @@ Short_term_setup: "Enter short on ETHUSDT on breakout below resistance with MACD
 ## ETF
 
 ## BOND
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

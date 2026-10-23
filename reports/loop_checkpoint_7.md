@@ -104,3 +104,5 @@ Live `db_health.json` is the 18:55 UTC version (8.4KB, 4/10 passing). The two fa
 
 - T+180m: write 3-hour summary report
 - Plan: full inventory of what shipped, what's pending, top-5 highest-leverage user actions
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -74,3 +74,5 @@ A secondary trend: where style IS visible, it skews **discretionary visual TA** 
 ---
 
 *Sample size caveat: 28/150 = 18.7% sample. Empty-rate 95% CI ≈ 67-92%, comfortably above the typical 1-100 rate. Style claims are necessarily weak for the 82% empty cohort and rely on inference from contest return distribution rather than profile evidence.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

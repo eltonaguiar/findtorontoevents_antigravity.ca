@@ -79,3 +79,5 @@ Verification doc only. No sizing changes. Peer claims directionally
 correct but specific numbers drifted between session windows — both
 sources read the same JSON, the difference is timing of
 `resolved_picks` re-aggregation across hourly cron cycles.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

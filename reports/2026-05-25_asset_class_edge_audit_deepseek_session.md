@@ -191,3 +191,5 @@ The `regime_adaptive x ETF` pair was flagged by Roo's session as the only person
 4. **kimi_signal_tracking AUDIT:** This source appears in both top-gated AND top-ungated lists — investigate its bimodal output pattern.
 5. **aggregated_picks DEEP DIVE:** 74.1% gated-ratio on 58 picks suggests signal aggregation may be a real edge multiplier — validate on 30d/90d windows.
 6. **ETF MONITOR:** Track regime_adaptive ETF picks; reassess at n≥20 closed trades.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

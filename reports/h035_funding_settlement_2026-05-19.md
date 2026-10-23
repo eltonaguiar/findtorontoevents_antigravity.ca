@@ -37,3 +37,5 @@
 | 2026-03-27 | 33 | 24.2% | -0.19% | 0.138 | ❌ |
 | 2026-04-10 | 41 | 39.0% | -0.42% | -0.231 | ❌ |
 | 2026-04-24 | 28 | 32.1% | -0.29% | 0.321 | ✅ |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

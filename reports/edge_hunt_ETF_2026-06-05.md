@@ -82,3 +82,5 @@ Forward pilot **exists** (`etf_dual_momentum_state.json`, daily in `eagle_suite`
 | Optional | Stand up `faber_taa` paper pilot mirroring dual-momentum harness |
 
 **Reproduce:** `python3 verified_strategies/paper_pilot/etf_dual_momentum_pilot.py` · `python3 tools/etf_forward_stats.py --write` · `python3 tools/strategy_admit.py --strategy etf_dual_momentum --asset-class ETF`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

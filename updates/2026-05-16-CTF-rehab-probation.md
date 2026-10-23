@@ -56,3 +56,5 @@ CT=F meets all full-unblock criteria **except** max_strat_share (56% from a sing
 - `tools/data/symbol_rehab_candidates.json`: CT=F appears as PROBATION candidate (pre-existing).
 
 *Generated 2026-05-16 by Claude Sonnet 4.6 acting on Kimi/Copilot P1 recommendation.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

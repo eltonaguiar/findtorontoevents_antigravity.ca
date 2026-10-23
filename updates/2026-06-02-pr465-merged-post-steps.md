@@ -66,3 +66,5 @@ Live doc: https://findtorontoevents.ca/updates/2026-06-02-pr465-merged-post-step
 | `resolve_stale_open_picks` | 0 time-stale in 10×500 batches (hold-window rules) |
 
 **Note:** `check_resolver_health` YELLOW `stale_by_category` counts *all* OPEN rows as `estimated_stale` — not time-expired picks. Real backlog is OPEN volume + ACTIVE status hygiene, not the health label alone.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

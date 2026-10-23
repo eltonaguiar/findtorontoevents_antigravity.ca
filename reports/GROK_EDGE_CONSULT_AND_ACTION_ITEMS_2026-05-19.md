@@ -92,3 +92,5 @@ Cross-checked: the only OPEN items that aren't false-OPEN this scan match the ac
 - New infrastructure for mid-cap earnings vol / CEF discount = a multi-week build (options data, CEF universe). Operator decision.
 
 We will likely end up with **EQUITY sector-momentum (decayed but documented)** as the strongest candidate. Expected Sharpe 0.35-0.60 — institutionally OK, not "10x in a year." That's what real-money quant looks like. Mark expectations accordingly.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

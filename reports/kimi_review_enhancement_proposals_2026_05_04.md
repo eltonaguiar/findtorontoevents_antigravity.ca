@@ -155,3 +155,5 @@ Every section below in the original proposal needs an "**adapt to vanilla JS**" 
 ---
 
 *End of review.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

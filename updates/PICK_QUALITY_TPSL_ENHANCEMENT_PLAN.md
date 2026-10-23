@@ -351,3 +351,5 @@ After implementation, verify:
 **Analysis by:** XIAOMI MIMO  
 **Document created:** 2026-04-07  
 **Response required by:** Immediate (P0 items)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

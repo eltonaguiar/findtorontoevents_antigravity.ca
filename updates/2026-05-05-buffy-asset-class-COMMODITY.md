@@ -38,3 +38,5 @@ Per Phase 2-D panel (2026-04-29): COMMODITY universe restricted to **HG=F (coppe
 ## Risk
 
 COMMODITY has thin strategy diversity — multi_asset_copytrader is 78.7% of all trades. If copytrader degrades, the entire class collapses. Need additional commodity-specific strategies (seasonal, COT positioning, GSCI momentum).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

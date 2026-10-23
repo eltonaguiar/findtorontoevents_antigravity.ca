@@ -168,3 +168,5 @@ Use this snapshot for before/after comparison on any integration.
 ---
 
 _Generated 2026-05-03 by Antigravity session, post user trending-repo paste. Companion to #737 (MIT Quant Bible harvest), #742 (asset class eval). Successor: extend with EVAL findings on scientific-agent-skills + OpenBB integration outcome._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

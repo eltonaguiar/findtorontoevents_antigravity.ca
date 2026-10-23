@@ -242,3 +242,5 @@ Total estimated: ~26-31 hours of focused work to **roughly double active-pick vo
 - Does NOT replace anything; these are 6 NEW strategies added to the existing ~367
 
 Per `CLAUDE.md` mutation-before-kill rule: this proposal also does NOT recommend killing any existing strategies. The cycle 1-4 perf-review PRs (#257/258/261/272) already cover that side of the equation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -121,3 +121,4 @@
 5. **Soften Bonferroni → BH-FDR** (Benjamini-Hochberg false-discovery-rate) — Bonferroni is over-conservative when strategies are correlated; will kill real edge.
 6. **Soften concentration hard-drop → down-weight at HHI > 0.30** rather than reject; preserves optionality.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

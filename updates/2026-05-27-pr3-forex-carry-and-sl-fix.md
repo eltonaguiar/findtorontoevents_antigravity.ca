@@ -59,3 +59,5 @@ After merge:
 - `alpha_engine/forex_carry_ppp.py` — already exists, no code changes needed
 - Compatible with existing `clamp_non_crypto_tp_sl()` function
 - Compatible with score_booster FOREX confidence recalibration
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

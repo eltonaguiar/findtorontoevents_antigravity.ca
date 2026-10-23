@@ -38,3 +38,5 @@ apparent edge is concentrated in US session and negative in EU — another fragi
 This is the TICK-15 discipline working: swarm + pre-registered falsification caught a mirage that
 looked stellar on headline numbers (recent PF 2.44) *before* any sizing. The miner (#641) is still
 valuable — it surfaces candidates fast; the falsification gate is what separates edge from artifact.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

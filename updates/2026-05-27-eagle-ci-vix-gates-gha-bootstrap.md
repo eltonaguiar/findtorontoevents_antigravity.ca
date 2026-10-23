@@ -23,3 +23,5 @@
 python3 -m pytest tests/test_m098_etf_vix_gate.py tests/test_vix_yc_combined_gate.py::test_combined_precedes_vix_only_in_call_order tests/test_pr_triage_2026_04_25_merge_success.py::Test391_CIStashFix::test_strategy_performance_json_is_tracked -q
 python3 tools/bootstrap_claudes_test_state.py  # no-op when state exists
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -20,3 +20,5 @@ Class: FOREX (categories union: `'forex'`)
 ## Output written
 - `reports/peer_claude-phase10b-money-maker-FOREX_plan_2026-05-31.md` (this file)
 - `reports/peer_claude-phase10b-money-maker-FOREX_result_2026-05-31.md` (the action plan)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

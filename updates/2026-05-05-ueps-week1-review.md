@@ -182,3 +182,5 @@ statistically meaningless. The plumbing works; the quality gaps (Beneish M place
 empty earnings/dividend enrichment, GOOG+GOOGL mirror pair) are P1.5 fixes that should
 land before Week 4, but they do not justify a weight roll-back. **Extend v1.1 for at
 minimum 4 more weeks; reassess at the first measurable thesis-break close event.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

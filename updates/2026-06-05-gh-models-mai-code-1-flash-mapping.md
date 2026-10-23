@@ -21,3 +21,5 @@
 
 ## Notes
 - This change updates repository-side model mapping. If VS Code Copilot's UI model picker still does not show this model, that UI availability is controlled by GitHub/Microsoft service rollout and account entitlements outside this repo.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -128,3 +128,5 @@ ingesting any verdict.
 *Generated 2026-05-19T0050Z. Input: 3-engine swarm (xAI / Cerebras / Ring 2.6
 1T). No fabrication. All canonical-PF numbers verified against
 `pf_registry.json::by_asset_class_policy_clean_net` 2026-05-19T19:46Z.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

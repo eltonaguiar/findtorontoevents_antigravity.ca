@@ -190,3 +190,5 @@ Finding STRONG TAKEs (EV ≥ 10%) requires either:
 The DEN @ MIN Under 228.5 and the PIT @ PHI Over are marginal edges (EV ~1–3%) that the system should be detecting but didn't due to data timing. The Betway global URL fallback and the workflow scheduling fixes are the primary improvement here.
 
 *Paper trading only. Not gambling advice.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

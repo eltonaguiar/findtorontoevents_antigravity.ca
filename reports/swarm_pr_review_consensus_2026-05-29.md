@@ -45,3 +45,5 @@
 - **Block until cited+wired:** #11; split #13 (keep the kill, drop the unsourced bond strats).
 
 *Read-only review; no PRs merged/commented. Generated 2026-05-29.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

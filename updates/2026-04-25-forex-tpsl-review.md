@@ -171,3 +171,5 @@ After merge:
 
 Co-Authored-By: gpt-oss:120b-cloud (Ollama, advisory)
 Co-Authored-By: qwen3-coder:480b-cloud (Ollama, advisory)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -58,3 +58,5 @@ gh pr close 16 -c "Superseded; merging would revert FOREX freeze + blacklist har
 gh pr close 25 -c "Superseded + conflicting; consolidating model-coverage on #19."
 # (#24 keep build_model_diagnostics.py only via fresh PR; #15 re-file targeting TP_HIT)
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

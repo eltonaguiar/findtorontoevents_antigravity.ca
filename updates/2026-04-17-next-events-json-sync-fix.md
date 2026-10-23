@@ -50,3 +50,5 @@ index.html fetch interceptor → tries in order:
   3. /data/events.json   ← fallback
   4. GitHub raw URL       ← last resort
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

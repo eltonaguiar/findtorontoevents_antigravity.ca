@@ -321,3 +321,5 @@ Once this PR is merged:
 2. **PR 3:** Ranker & Calibration Fix — Correct smart_picks_engine inversion, ML calibration
 3. **PR 4:** Strategy Activation — Wire dormant scanners, promote verified strategies
 4. **PR 5:** Validation Guardrails — Implement look-ahead guards, stress tests, Bonferroni correction
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

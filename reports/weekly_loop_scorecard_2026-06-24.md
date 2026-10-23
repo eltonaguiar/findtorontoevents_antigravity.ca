@@ -40,3 +40,5 @@
 ## Verdict
 
 Steady-state, data-constrained, honest. **0/9 T2; no promotable candidate at a gate.** No new ACT warranted — the edge-hunt is exhausted and peer-validated; the bottleneck is clean-trade supply + resolution quality, not strategy supply. Highest-leverage next action is an operator/data decision (lever 1 or 2), not more analysis. Summary remains live on `findtorontoevents.ca/updates/index.html`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

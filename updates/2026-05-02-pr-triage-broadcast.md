@@ -276,3 +276,5 @@ Both fixes together unblock CI on **at least 4 stuck PRs** (#597, #601, #608, #6
 | #615 | (1) Fix `__builtins__.print` → `import builtins; builtins.print`, (2) rebase on main, (3) revert `circuit_breaker.json` change |
 | #634 | Drop the 3 stale CB-fix files (already in main) |
 | #639 | Split into focused network-fix PR |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

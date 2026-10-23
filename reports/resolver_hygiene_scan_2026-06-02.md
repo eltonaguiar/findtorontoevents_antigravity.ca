@@ -25,3 +25,5 @@ all of a symbol's signals into one group. Fixed: dedup now requires a non-empty 
    single-source gate from judging those rows; provenance tagging (BONDS-style) needed.
 3. mislabels / never-closed are clean in THIS file → confirms the tail pollution is in the wider
    canonical pipeline; re-run the checker there before any purge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -137,3 +137,5 @@ These missed items do not invalidate the 8 PRs; they strengthen the implementati
 Generated 2026-05-15 by Grok. Swarm + manual review complete. Ready for PR implementation (top priority: PR-0/1 exec safety bundle + PR-2 EQUITY VIX).
 
 **Next:** Create per-PR updates/*.md docs (mandatory), implement on clean branches (only my changes), swarmv2-pr-review each diff, safe push + grok_com_github MCP create_pull_request, close old open PRs (#1024 etc.) with links.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

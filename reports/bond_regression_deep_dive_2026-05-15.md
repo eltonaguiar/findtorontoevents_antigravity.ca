@@ -80,3 +80,5 @@ TLT pick where entry=exit=86.26. Zero move. `status=UNRESOLVED`. Either a duplic
 **BOND regression is real but uninterpretable at this sample size.** The headline "PF 1.72 → 0.66" should not drive policy. The actionable signal is: TLT-LONG is a concentrated, money-losing position right now. The asset-class metric is noise around that single concentrated trade.
 
 External eval's Phase 2 recommendation to "scale BOND" off the stale PF 1.72 was wrong on both axes — stale numbers AND charter-floor violation. Recommendation 4 (expand universe) is the prerequisite for any BOND verdict, full stop.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

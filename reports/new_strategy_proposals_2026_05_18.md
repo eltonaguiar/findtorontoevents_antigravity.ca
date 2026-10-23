@@ -523,3 +523,5 @@ with banned/arbitrage flags as hard penalties.
 (strategies 1-130+), `coinglass_strategies/strategies/`, `tools/edge_stability_harness.py`,
 `reports/edge_analysis_by_strategy_2026-05-17.md`, `reports/kilo_fork2_vetting_2026_05_18.md`,
 `reports/hypothesis_registry.json` (M-107 ban registry).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

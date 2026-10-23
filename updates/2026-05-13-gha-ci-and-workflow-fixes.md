@@ -23,3 +23,5 @@
 
 - `python -m pytest tests/test_backtest_etf_economic.py::test_graceful_no_yfinance alpha_engine/tests/test_confluence.py::TestStrategyFamiliesValidity::test_all_values_in_indicator_families -q` — **pass** (Windows).
 - `rg '^(<<<<<<<|=======|>>>>>>>)' tools/local_swarm_review.py` — **no hits**.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

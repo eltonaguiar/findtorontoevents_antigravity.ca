@@ -50,3 +50,5 @@
 
 ---
 Created 2026-05-15 as part of the reviewed asset-class enhancements set. Swarm + manual review confirmed this is the highest-leverage remaining wiring task.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -186,3 +186,5 @@ Will become FINDING-49 if n reaches 20 with WR<35% sustained. Currently pre-thre
 - Today's merged PRs: #684 #674 #673 #664 #683 #687 #692 #694 (session-start) + #1288 (this hour)
 - Predecessor: reports/HOURLY_AUDIT_2026-05-21_12Z.md
 - audit_dashboard/data/dashboard_data.json (snapshot 2026-05-21T12:18:29Z)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

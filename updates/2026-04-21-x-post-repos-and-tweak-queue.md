@@ -159,3 +159,5 @@ curl -s "https://api.fxtwitter.com/status/2046294992713646576"
 - **Adding `non_crypto_consensus` to `_RETIRED_STRATEGIES` only stops NEW emissions.** The 88 legacy closed picks remain in the rolling `recent_closed` window and will keep appearing in perf-reviews until they age out. This is expected.
 - **If the resolver bug explains `non_crypto_consensus`'s 0% WR, the strategy itself might not be bad** — just the pnl-resolution path. Retiring it is still correct (operators can't trust the output), but the root-cause investigation in P4 could resurrect a fixed version.
 - **WR-based retirement on n=85 has a Bonferroni caveat** (PR #300): at α/N=185, individual-strategy p-value bar is 0.00027. A strategy with 0 wins on n=85 has binomial p-value extremely low (close to 2^-85), so this retirement is statistically sound even under strict correction.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

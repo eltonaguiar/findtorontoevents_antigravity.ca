@@ -162,3 +162,5 @@ Count: **3**
 2. Apply filters per asset class above
 3. Size per Kelly recommendation
 4. Exit: follow TP/SL as set on pick
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

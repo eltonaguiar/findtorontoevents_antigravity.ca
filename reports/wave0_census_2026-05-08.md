@@ -95,3 +95,5 @@
 | `PRIMARY` | `id` | 1 |
 
 *P0-5:freeze failed: (2013, 'Lost connection to MySQL server during query (timed out)')*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

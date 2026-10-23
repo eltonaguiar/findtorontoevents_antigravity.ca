@@ -80,3 +80,5 @@ on 2026-05-31 — none have an existing merged PR.
 ~70+ PRs merged + 11 closed. 12 phases shipped. Banner went from RED -> GREEN.
 Tournament leaderboard fixed (blank -> ranked). 5 portfolio variants + 6
 per-class personas published. /audit no longer claims DATA INTEGRITY FAILURE.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

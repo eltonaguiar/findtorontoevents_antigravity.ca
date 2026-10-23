@@ -117,3 +117,5 @@
 12. 🎯 **Run full DSR/PBO/WFE on commodity COT strategy** — real-money greenlight
 13. 🎯 **200+ trade validation on equity momentum** — backtests are strong, need forward data
 14. 🎯 **On-chain data pipeline for crypto** — Glassnode free tier
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -164,3 +164,4 @@ Watch dispatch runs 26202177578 / 26202182804 through **Commit updated data** + 
 2. Implement **concurrency group** `audit-dashboard` (single-flight) before next manual double-click dispatch.
 3. Optional: curl `generated_at` in step 45 Verify URLs and fail if older than 6h.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

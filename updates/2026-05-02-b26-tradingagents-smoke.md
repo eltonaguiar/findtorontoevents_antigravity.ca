@@ -53,3 +53,5 @@ Normal CI skips all five tests (no live API keys).
 - `tests/test_tradingagents_smoke.py` (new)
 - `updates/2026-05-02-b26-tradingagents-smoke.md` (this doc)
 - `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` (B25 → ✅, B26 → 🔵)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

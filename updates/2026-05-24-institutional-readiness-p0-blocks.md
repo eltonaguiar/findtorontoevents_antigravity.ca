@@ -73,3 +73,5 @@ This implements **Workstream A5** (honest stat surface — kill losers so metric
 
 ## Files Changed
 - `audit_trail/quality_gates.py` — +12 lines (3 blocks added)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

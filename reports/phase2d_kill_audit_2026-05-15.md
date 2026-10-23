@@ -82,3 +82,5 @@ for s in ['GC=F','SI=F','CL=F','CT=F','KC=F','ZS=F','ZW=F']:
 - Data: `audit_dashboard/data/dashboard_data.json::picks.recent_closed` (resolver-v2)
 - Parent autopsy: `reports/deep_dive_cotton_2026-05-15.md` (PR #1061)
 - Related: M-055 kill-threshold recalibration (proposed, unassigned)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

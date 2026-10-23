@@ -141,3 +141,5 @@ Blocking `super_signals` + `aggregated_picks` estimated: 1.26 → ~1.38.
 
 *Report generated: 2026-05-18T04:33:46Z by Claude Code (Session CK)*
 *Protocol: money-maker-readyv2 (CLAUDE.md)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

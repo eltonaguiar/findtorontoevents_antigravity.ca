@@ -22,3 +22,5 @@
 
 ## Kill List
 mercury2, ml_crypto_predictor losers, cta_replicator forex, crypto_momentum_high_confidence, forex_carry_trend
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

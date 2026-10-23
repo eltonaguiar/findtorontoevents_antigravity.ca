@@ -61,3 +61,5 @@
 ## Return signal
 
 `EQUITY:rt=P:PR=<pending>:merged=<pending>:routing_gap=false`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

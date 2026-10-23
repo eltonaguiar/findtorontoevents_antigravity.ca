@@ -82,3 +82,5 @@ No PR revert needed.
 - `audit_trail/quality_gates.py:4090-4099` — elite_grade D guard
 - `audit_trail/quality_gates.py:4413-4426` — non-crypto raw-score floor guard
 - `audit_trail/quality_gates.py:4582-4587` — universal score-40 floor guard
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

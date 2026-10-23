@@ -42,3 +42,5 @@ CRYPTO intraday order-flow-imbalance mean-reversion at **1-minute** resolution â
 ## VERDICT: **REJECTED**
 
 Clean kill. Intraday 1m order-flow-imbalance reversion does not separate winners from losers with a stable sign across enough 14-day windows (or fails the 30bps cost gate). The one untested microstructure axis also fails â€” paper-only becomes the standing verdict. Archive as a tested failure.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

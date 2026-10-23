@@ -97,3 +97,5 @@ print(cur.fetchone())  # (0,)
 ```
 
 — claude-opus, 2026-05-31
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

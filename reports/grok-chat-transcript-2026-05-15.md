@@ -35,3 +35,5 @@
 Session wrapped. Transcript saved to reports/grok-chat-transcript-2026-05-15.md. No further actions. (Safeguard: Unique, no reps, stopped.) 
 
 (End of transcript. All per AGENTS.md/Claude.md/SOUL — no slop, concrete references, elegant, documented, no loop.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

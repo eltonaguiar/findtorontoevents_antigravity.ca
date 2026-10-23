@@ -130,3 +130,5 @@ Until then, `multi_asset_cot` should remain **excluded from Smart Picks and High
 ---
 
 *Generated: 2026-05-14 | Source: `alpha_engine/data/closed_picks.json` | 102 trades analyzed*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

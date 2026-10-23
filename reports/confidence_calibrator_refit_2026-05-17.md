@@ -94,3 +94,5 @@ python -m alpha_engine.confidence_calibrator fit          # refit calibrators.js
 python -m tools.eval_confidence_calibrator                 # in-sample raw vs cal rho
 python -m tools.eval_confidence_calibrator --oos           # out-of-sample 70/30 time split
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

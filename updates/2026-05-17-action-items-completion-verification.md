@@ -49,3 +49,5 @@ not safe as a blind goal-turn edit.
 5 of 7 items closed (a, b, d, e, g). (f) is time-blocked until Monday. (c) is
 root-caused with a concrete recommendation but its fix is a validated scoring change
 deliberately not rushed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

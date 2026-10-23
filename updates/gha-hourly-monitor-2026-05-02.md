@@ -353,3 +353,5 @@
   - Action: author should isolate and fix failing tests before merging.
 
 **Action required:** authors of #661 and #608 should investigate and fix test failures. #615 and #597 are pre-existing held PRs. PRs #674, #673, #669, #665, and #664 are CI-green and merge-ready. No action required on main branch.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

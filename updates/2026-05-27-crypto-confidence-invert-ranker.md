@@ -39,3 +39,5 @@ print('ok')
 
 - `reports/EAGLE-2026-05-27T02-25-00_EST-cursor-composer-quick-wins.md` (QW-01)
 - Long-term: retrain ML classifier + enable `CONFIDENCE_CALIBRATION_ENABLED=1`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

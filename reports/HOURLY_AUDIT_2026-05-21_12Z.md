@@ -164,3 +164,5 @@ Expected self-correction if blocked: futures_momentum tail picks age out ~May 28
 - Today's merged PRs: #684, #674, #673, #664, #683, #687, #692, #694, #1286
 - reports/HOURLY_AUDIT_2026-05-21_11Z.md (predecessor)
 - audit_dashboard/data/dashboard_data.json (snapshot 2026-05-21T10:19:20Z)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

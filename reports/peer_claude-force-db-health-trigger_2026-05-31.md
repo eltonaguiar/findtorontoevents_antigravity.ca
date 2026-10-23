@@ -60,3 +60,5 @@ The "Unified Audit Dashboard" workflow includes the dashboard build + 3-site FTP
 
 ## Result
 BANNER_CLEARED: any_red=false, pnl_tier=green, bloat_tier=green.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

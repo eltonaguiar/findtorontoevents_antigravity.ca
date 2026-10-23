@@ -19,3 +19,5 @@ pytest tests/test_pro_level_intrabar_gate.py tests/test_pro_level_batch2.py -q  
 node tools/check_syntax.js audit_dashboard/template.html
 python3 tools/replay_commodity_gap_fade_intrabar.py --stdout  # needs DB
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

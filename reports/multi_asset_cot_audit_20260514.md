@@ -96,3 +96,5 @@ The system should be marked with `requires_walkforward_audit` in the quality gat
 - [ ] **P2:** Run walk-forward split (pre-2025 train / 2025+ test)
 - [ ] **P2:** Flag as `toxic_concentration` in dashboard UI until diversified
 - [ ] **P3:** Lower `cap_value_pct` from 500 → 100 for realism
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

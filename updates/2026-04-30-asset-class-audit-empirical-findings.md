@@ -185,3 +185,5 @@ operators can see the contamination level.
 Out of scope: `kill_list` auto-expiry sweep filter, ETF blacklist (currently
 only equities-style), JPY-cross blocks. Add as needed when the next sub-class
 kill lands.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

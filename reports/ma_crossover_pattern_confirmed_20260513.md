@@ -76,3 +76,5 @@ This is essentially Faber 2007's tactical asset allocation rule. Confirmed in ou
 - `audit_dashboard/data/ma_crossover_vix_regime_backtest.json`
 
 NFA. No production change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

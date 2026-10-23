@@ -73,3 +73,5 @@ No DB migrations. No new deps. PHP syntax balance verified by external regex (4 
 1. **NHL goalie overlay** — full v1 scope written by parallel Plan subagent. Adds a goalie GSAx/SV% multiplier between Shin devig and EV calc on NHL ML, with confirmed-starter gate and A/B logging column. ~250 LoC across one new Python scraper + one new PHP lib + 1-line analyzer hook. Lower priority than this change because it touches NHL only and validation requires 200+ picks; this Pinnacle change touches every NBA/NHL/MLB/NFL pick immediately.
 2. **DB column** `devig_method` on `lm_sports_bets` to enable the Shin-vs-multiplicative cohort comparison in step 2 above.
 3. **Cron documentation** — include the `*/5 * * * *` entry in `SYNC_USER_GUIDE.md` or wherever the deploy runbook lives.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -173,3 +173,5 @@ Enable live trading permissions[?25l[?25h only after this aggregate[?25l[?25
 passes.[?25l[?25h[?25l[?25h
 
 [?25l[?25h
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

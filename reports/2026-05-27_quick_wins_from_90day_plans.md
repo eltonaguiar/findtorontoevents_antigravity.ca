@@ -78,3 +78,5 @@ These are quick to implement once approved per CLAUDE.md:
 - The 9 unique `.md` files were extracted from a 126-path list (84 worktree copies + 42 IPO-backtest-worktree copies + 9 canonical) via the new `/dedup-md-files` skill (`tools/dedup_md_files.py`). Worktree copies are identical-content to the canonical `reports/` files (would have shown 0 unique if their paths existed on this WSL host; they're Windows-only).
 - 7 open PRs (#9, #10, #11, #13, #14, #15) already address the foundation layer (calibration inversion, leakage, trust_score, WON labels). Quick-wins QW-1 through QW-5 sit ON TOP of those — they're strategy-level improvements that only become trustworthy once the foundation closes.
 - **Recommended order:** finish foundation PRs first (#9, #15, #14), then QW-1 (EQUITY VIX) + QW-2 (ETF VIX) + QW-3 (BTC hour) as the 3-PR strategy sprint. QW-4 is a workflow secret + env var.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

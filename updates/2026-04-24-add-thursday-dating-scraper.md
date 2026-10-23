@@ -138,3 +138,5 @@ To verify this fix works:
 3. Run: `python tools/scrape_and_sync_events.py --output events.json`
 4. Check `events.json` contains Thursday-sourced events with `source: "Thursday"`
 5. Deploy and verify events appear on findtorontoevents.ca under Dating category
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -55,3 +55,5 @@ No edits to existing files. No DB writes. No FTP touches.
 - Branched off `origin/main` (commit `fedf7d656`), NOT off `fix/incidents-batch-resolve-2026-05-31`. This avoids colliding with cursor's in-flight edits to `tools/db_env.py`, `tools/backfill_trust_score.py`, `tools/safe_db_archive.py`, and the dashboard template.
 - PR opened for human review only — no auto-merge.
 - No DB writes performed; the ejaguiar1_backups hard rule did not need to fire.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

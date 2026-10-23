@@ -82,3 +82,5 @@ python3 tools/deploy_audit_files.py --only audit_data
 ```
 
 **Live:** https://findtorontoevents.ca/audit/data/money_ready_verdict.json
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

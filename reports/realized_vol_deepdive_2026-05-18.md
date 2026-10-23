@@ -56,3 +56,5 @@ Signal: hold the ETF next week when realized_vol30 is in the top 33% of its trai
 
 **Verdict: NOT a tradeable edge — strategy beats buy-hold Sharpe on 1/10 ETFs and wins 12/32 pooled years (cost 5bps).**
 realized_vol30 timing does not beat passive holding once costs are paid — it is the 7th candidate to fail. The in-house edge search is exhausted; next move is new signal sources.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

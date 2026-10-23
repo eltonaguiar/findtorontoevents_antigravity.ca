@@ -56,3 +56,5 @@ M-105: no class above PF 1.5 in the canonical deduped ledger; 9+ harness kills;
 0 admissible. A real buried winner would have to survive dedup + the
 walk-forward harness — **none does.** No orphaned edge exists. The dashboards
 display brand pages and cumulative-PnL tiles, not harness-grade verdicts.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

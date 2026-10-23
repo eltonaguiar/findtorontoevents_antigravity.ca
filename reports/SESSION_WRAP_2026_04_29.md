@@ -201,3 +201,5 @@ Note: earlier panel review reports (`PANEL_REVIEW_2026_04_29_OPERATION_PHENOMENA
 ---
 
 *Session orchestrator: Claude Opus 4.7 (1M context). Wrap synthesizes 6 AI reviewer streams + 2 4-AI panels + 3 dispatched subagents + data-driven validation against `audit_dashboard/data/dashboard_data.json`. Next operator pickup: this file + `reports/NEXT_SESSION_P0_DESIGN_SPECS_2026_04_29.md`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

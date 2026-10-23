@@ -71,3 +71,5 @@ banned-strategy contamination. But the page cannot be shown to users until the
 **div-yield double-multiply (issues #1/#2)** and the **duplicate-AMZN + negative-upside
 STRONG_BUYs (issues #3/#4)** are fixed — those are exactly the kind of obviously-wrong,
 embarrassing artifacts the directive is trying to prevent.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

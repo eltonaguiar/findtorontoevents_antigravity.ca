@@ -44,3 +44,4 @@ compatible with GitHub Secrets / FTP-side `.env` conventions:
   - `(9).sql` => `ejaguiar1_backtests` (empty skeleton)
   - `(8).sql` => `ejaguiar1_stocks` (contains `bt_backtest_trades`, `bt_backtest_runs`, and other backtest tables)
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

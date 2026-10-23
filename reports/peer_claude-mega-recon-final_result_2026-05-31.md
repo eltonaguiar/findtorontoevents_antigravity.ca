@@ -40,3 +40,5 @@ Additionally linked PR#170 to CRYPTO#1 (TRIAGED, status unchanged — walk-forwa
 ## Verification
 
 Post-mutation `vw_all_incidents WHERE status IN ('OPEN','TRIAGED','IN_PROGRESS')` returns exactly 6 rows — matches plan. No mutation hit excluded patterns (`profitable-but-filtered` flipped per instructions; `WON-status legacy`, `EQUITY emission unlocked`, `pytest 17 failures` left untouched).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

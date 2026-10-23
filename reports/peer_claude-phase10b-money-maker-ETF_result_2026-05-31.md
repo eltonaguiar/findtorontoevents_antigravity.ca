@@ -147,3 +147,5 @@ This is Phase 9 candidate #6 directly. SPY/QQQ/IWM/TLT/GLD trend persistence is 
 
 ---
 **One-line:** ETF FAIL+INSUFF-N (PF 0.48 / WR 50% / n=4 policy-clean; 134 TIME_EXIT rows stuck at pnl=0 — resolver backfill PR is the unlock).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

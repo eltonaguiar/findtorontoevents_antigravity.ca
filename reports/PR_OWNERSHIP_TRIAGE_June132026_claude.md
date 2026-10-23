@@ -41,3 +41,5 @@
 
 ## CONTESTED-FILE MAP (do not edit without coordinating)
 quality_gates.py → MiMo (significance gate) · picks_now_professional.py + audit-dashboard.yml + picks-now.html → pro-level-batch agent · dashboard_generator.py + template.html → cursor + MiMo · money_ready_verdict.json → MiMo (parking 9 classes monitor_only) · KIMI JSON silos → opencode (INCIDENT#138).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

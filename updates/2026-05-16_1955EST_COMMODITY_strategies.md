@@ -117,3 +117,5 @@ Limited backtest coverage relative to equity/ETF. Most commodity backtests run t
 4. **Add EIA inventory-based strategies** — predictable, high-impact weekly events
 5. **Add seasonality filters** — avoid natural gas in shoulder season, grains post-harvest
 6. **Run full DSR/PBO/WFE computation** on Cotton COT strategy for real-money greenlight
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -30,3 +30,5 @@ python3 tools/serve_local.py
 
 - https://findtorontoevents.ca/updates/eagle2-swarm-session-summary-2026-06-02.html
 - https://findtorontoevents.ca/updates/index.html
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

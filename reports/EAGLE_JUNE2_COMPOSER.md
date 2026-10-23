@@ -233,3 +233,5 @@ Ignore fireworks_qwen (pf_ci_lo 5.59, **n=9**). Tournament PF portfolios: 66/81 
 - Updates card: `updates/2026-06-02-quant-admissibility-pipeline.md`
 
 **Final verdict:** Waiting alone is insufficient. Edge is **split across three universes** (tournament paper, pick_funnel filter cells, lab sleeves). None clears policy-clean money-ready on `/audit/` today. Capital flows only through the M-108 admissibility pipeline.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

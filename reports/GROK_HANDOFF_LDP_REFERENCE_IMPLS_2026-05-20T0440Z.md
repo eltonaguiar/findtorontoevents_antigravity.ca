@@ -198,3 +198,5 @@ pytest tests/test_bailey_lopez_gates.py -v
 the full Grok handoff. Three independent engine drafts available on disk for
 cross-validation; none ship-ready as-is. Canonical implementation delegated
 to Grok with the post-ship multi-engine review + cavecrew verification gate.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

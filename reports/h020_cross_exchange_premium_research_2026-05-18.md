@@ -64,3 +64,5 @@ Cross-exchange price premium — the **Coinbase Premium Index**:
 ## next_step
 
 Kill #11. Cross-exchange daily-close premium does not yield an admissible CRYPTO edge on this sample. Do NOT re-test the daily-close Coinbase-premium z-score on this data. A future retry would need intraday (hourly/minute) premium resolution — the swarm flagged the daily residual is post-arbitrage noise — and a materially different construction (e.g. premium *velocity* around known US-session opens, or a premium-vs-funding interaction), AND must clear `edge_stability_harness` + the post-cost gate before any claim.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

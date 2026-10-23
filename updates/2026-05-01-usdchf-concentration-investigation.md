@@ -58,3 +58,5 @@ The bug per `feedback_noncrypto_resolver_live_close_bug.md` is mitigated as of 2
 - `e:\findtorontoevents_antigravity.ca\KIMI_RISEOFTHECLAW\data\closed_picks.json` (38 USDCHF, side-finding)
 - `e:\findtorontoevents_antigravity.ca\audit_trail\dashboard_generator.py:8715-8736` (toxic-concentration flag logic)
 - `e:\findtorontoevents_antigravity.ca\alpha_engine\outcome_resolver.py:97-109,372-398` (asset-class-gated thresholds + replay logic)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

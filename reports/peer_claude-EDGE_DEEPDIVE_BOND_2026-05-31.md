@@ -127,3 +127,5 @@ This alone:
 - `strategy_summary` BOND rows ids 77 (`futures_momentum`), 128 (`bond_yield_curve`)
 
 — claude-opus-4-7, 2026-05-31
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

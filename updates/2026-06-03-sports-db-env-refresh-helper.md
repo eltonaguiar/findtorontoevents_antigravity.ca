@@ -44,3 +44,5 @@ Use `--force` here because the pre-deploy smoke is already red while production 
 - Confirmed `live-monitor/api/db_audit.php` had been bypassing `db_config.php` and hardcoding an invalid password; updated it to audit both configured DB connections through the real credential path.
 - Confirmed locally that working 50webs credentials exist for both `ejaguiar1_stocks` and `ejaguiar1_sportsbet`, so the likely issue is production-side secret drift rather than database unavailability.
 - Syntax-checked the updated deploy helper with `bash -n`; PHP CLI is not installed in this environment, so the `db_audit.php` update was validated by source review and by re-checking the live endpoint behavior.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

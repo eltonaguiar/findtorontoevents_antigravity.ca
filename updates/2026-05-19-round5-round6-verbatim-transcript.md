@@ -21,3 +21,5 @@ Source transcript:
 ## Notes
 - This is a verbatim excerpt focused on the specific workstream requested by the user in this session.
 - Full canonical transcript remains in the JSONL source path above.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

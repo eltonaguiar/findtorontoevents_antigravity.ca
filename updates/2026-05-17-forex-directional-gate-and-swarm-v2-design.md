@@ -64,3 +64,5 @@ This directly addresses the user's observation that "we are struggling to find a
 All per AGENTS.md (reviewed recent MDs, documented, no push, used existing swarm_v2 framework for the design).
 
 The statistical edge work for the other classes (EQUITY VIX, BOND n, etc.) is now queued in the same swarm_v2 task format.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

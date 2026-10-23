@@ -212,3 +212,5 @@ This answers the user's question with data, not opinion.
 - `audit_trail/quality_gates.py:1690` (orphaned WIN_RATE_TRAP)
 - `reports/ipo_lockup_backtest_2026-05-17.md`
 - `tools/dedup_md_files.py` + `.claude/skills/dedup-md-files/SKILL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

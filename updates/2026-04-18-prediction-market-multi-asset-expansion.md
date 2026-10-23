@@ -84,3 +84,5 @@ PM Non-Crypto Picks ────────────────┘         
 - `detect_asset_class()` fallback is embedded in each module for standalone execution
 - All changes are backward-compatible — crypto scanning continues to work exactly as before
 - New Kalshi macro series and Polymarket non-crypto ASSET_RULES will only produce signals if Kalshi/Polymarket actually list matching markets (graceful empty results otherwise)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

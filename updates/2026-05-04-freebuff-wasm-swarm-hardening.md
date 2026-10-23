@@ -21,3 +21,5 @@
 
 ## Notes
 - End-to-end PTY smoke requires `pywinpty` to be installed in the active Python environment.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

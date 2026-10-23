@@ -84,3 +84,5 @@ The prompt is production-ready. Inject it into any cloud coding agent (Claude AP
 ---
 
 *Summarized: 2026-05-18 | claude-sonnet-4-6-desktop*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

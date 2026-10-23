@@ -61,3 +61,5 @@
 
 ## Honest bottom line
 Still **0/10 promotable**. This turn closed two more candidates honestly (funding mean-rev + carry refuted) and uncovered a 7-week silent data freeze (now failing loud). The path to a trustworthy winner is **measurement uptime + data breadth + forward-n accrual**, not more re-fishing of exhausted signals. No edge was manufactured; the verdict protects capital.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

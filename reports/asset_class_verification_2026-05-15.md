@@ -155,3 +155,5 @@ and stop reports citing raw `closed` as if it were the verdict `n`."**
 _Verification method: 3 independent subagents on primary code/JSON + main-thread
 analysis of `dashboard_generator.py`. Counters the convergence trap in the
 original 4-analyst pass. 2026-05-15._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -86,3 +86,5 @@ password = os.environ.get("DB_PASS_STOCKS", "stocks1234560")
 **Files Changed:**
 - `audit_trail/universal_pick_resolver.py` — MySQL UPSERT fix + credentials + intrabar OHLC
 - `tools/resolver_deepdive.py` — diagnostic script (new)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

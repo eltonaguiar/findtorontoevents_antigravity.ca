@@ -168,3 +168,5 @@ to produce all picks regardless of which filter you select.
 If you're paper trading or following picks manually, use these filters to
 decide WHICH picks to follow — ignore the C-Tier / D-grade / UNTRUSTED
 picks and focus on the filtered results.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

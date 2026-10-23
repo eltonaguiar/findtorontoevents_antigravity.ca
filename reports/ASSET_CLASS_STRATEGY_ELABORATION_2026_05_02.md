@@ -184,3 +184,5 @@ Source: `reports/strategy_research_data_2026_05_02.json` (in main as of 2026-05-
 - `reports/strategy_research_data_2026_05_02.json` — machine-readable backtest data
 - `reports/PR_621_REVIEW_2026_05_02.md` — 4-reviewer DECOMPOSE consensus on Kimi alternative
 - `reports/KIMI_VS_MAIN_COMPARISON_2026_05_02.md` — head-to-head verdict (KEEP-MAIN)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

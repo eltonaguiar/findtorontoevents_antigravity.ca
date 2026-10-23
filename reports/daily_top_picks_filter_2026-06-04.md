@@ -20,3 +20,5 @@ WR/PF parity verified.
 | 8 | SEIUSDT | CRYPTO | LONG | 9.9307 | 10.6447 | 9.6269 | MEDIUM | claude_haiku_4_5 | 2.00% | AI infrastructure spending cycle beneficiary with catalyst upcoming — narrative  |
 | 9 | BCHUSDT | CRYPTO | LONG | 429.5763 | 453.366 | 407.6175 | MEDIUM | cursor_agent | 2.00% | IV rank above 80th percentile with directional catalyst — vol expansion play |
 | 10 | NEARUSDT | CRYPTO | SHORT | 3.8 | 3.6 | 3.9 | MEDIUM | deepseek_v4 | 2.00% | NEAR breaking below support with bearish momentum, scalping downside |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

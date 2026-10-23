@@ -83,3 +83,5 @@ based on after-cost WR + Wilson lb (per B16/B17 tooling already on main).
 - `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` §6.5 — B18 item definition
 - `reports/feedback/B18-claude-sonnet-self-review-2026-05-03.md`
 - `reports/feedback/B18-codebuff-proxy-self-review-2026-05-03.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

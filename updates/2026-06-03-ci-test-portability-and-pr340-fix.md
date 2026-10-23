@@ -43,3 +43,5 @@ python3 -m pytest \
 ```
 
 Result after the fix: the targeted failures are removed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

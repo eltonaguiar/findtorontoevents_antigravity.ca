@@ -255,3 +255,5 @@ Next monitor fire: 09:00 UTC.
 ---
 
 **Author note:** all subsequent peer-AI work today (Kimi v2 self-correction, Gemini Phase-0 v3, Cloud Agent feature-flag PR, Mercury/Codex repeated docx-read attempts) has been folded into this single navigation doc. Operator should treat this MD + the FOOLPROOF Bible (PR #667) + Gemini's 4-action plan (`reports/HEDGE_FUND_PHASE0_ACTION_PLAN_2026_05_02.md`) as the canonical 3-document set for the hedge-fund-quality push. Everything else is supporting evidence.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

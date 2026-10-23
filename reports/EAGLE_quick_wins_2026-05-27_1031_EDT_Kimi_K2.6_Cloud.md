@@ -283,3 +283,5 @@ Block: `luxalgo_filters`, `alpha_engine`, `quan_engine`, `copy_trader_highscore`
 - `audit_dashboard/data/pick_summary_stats_48h.json`
 - `audit_dashboard/data/money_ready_verdict.json`
 - `audit_trail/quality_gates.py:1690`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

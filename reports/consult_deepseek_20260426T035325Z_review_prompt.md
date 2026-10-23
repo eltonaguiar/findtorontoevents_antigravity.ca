@@ -136,3 +136,4 @@ Be specific. Cite line numbers, URLs, exact field names. Under 1000 words.
 
 **Priority: Ship 2.6 (per-bookmaker breakdown) and 2.2 (CI auto-comment) immediately.** Both are zero-cost, zero-operator, and deliver immediate value.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

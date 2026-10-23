@@ -101,3 +101,5 @@ Design principles for the recalibrated kill gate:
 - Audit performed by `caveman:cavecrew-investigator` subagent, 2026-05-15.
 - Root-cause framing: `/swarm-second-opinion` run `swarm_runs/second-opinion-20260515T080442Z` (DeepSeek + Kilo).
 - Companion findings: `reports/deep_dive_cotton_2026-05-15.md`, `daily_ideas.md` 2026-05-15 entries, PR #1061 / #1064 / #1065.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

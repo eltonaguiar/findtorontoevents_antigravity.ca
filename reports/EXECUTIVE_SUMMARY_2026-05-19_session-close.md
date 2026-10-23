@@ -54,3 +54,5 @@ The `mcp__tradingview-desktop__*` tool family is NOT loaded in this Claude Code 
 ## Posture (unchanged)
 
 Research sandbox, paper-only. **No asset class has cleared the edge-stability harness.** Shadow-gate enforcement just shipped — the next regen cycle of `money_ready_verdict.json` will reflect the conservative downgrades. Steps 8-9 (re-derive verdicts + strategic-fork memo) unlock as steps 5-7 finish landing on the ledger.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

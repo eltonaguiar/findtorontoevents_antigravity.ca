@@ -84,3 +84,5 @@ python3 tools/strategy_admit.py --strategy etf_dual_momentum --asset-class ETF -
 - `EAGLE2_EAGLE_2026-06-02_blackboxai.md` — pipeline thresholds (HHI 0.20, dispute 2%)
 - `alpha_engine/admissibility_pipeline.py` — production 10-step gate (parallel implementation)
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — mutate-before-kill policy
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

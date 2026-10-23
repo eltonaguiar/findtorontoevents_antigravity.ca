@@ -86,3 +86,5 @@ While editing `run_swarm_audit()`, added `threading.Lock()` around the shared `r
 ## Regression Risk
 
 - **Low.** The default tier is `free`, which preserves 100% of existing behavior. `--check-keys` and `--swarm all` are purely additive. The `paid`/`hybrid` paths only activate when explicitly requested.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

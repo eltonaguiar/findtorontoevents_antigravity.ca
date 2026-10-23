@@ -69,3 +69,5 @@ Wired into `money_ready_verdict.py` (shadow mode). Stamps `recency_ok`, `recency
 | Mega-mutation unblock | **HOLD** | 4/4 swarm models: wait 7-10 days |
 | bt_backtest sync | **RUNNING** | 4M-row gap, enable weekly cron after dry-run verified |
 | Recency gate enforce | **SHADOW** | Wait 48h of clean output before flipping |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

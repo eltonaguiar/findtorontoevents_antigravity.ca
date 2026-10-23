@@ -251,3 +251,5 @@ Before deploying any real money on this book, the operator must verify:
 ---
 
 ## AGGREGATION STATUS: 19-PICK BOOK READY FOR PEER REVIEW + OPERATOR APPROVAL
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

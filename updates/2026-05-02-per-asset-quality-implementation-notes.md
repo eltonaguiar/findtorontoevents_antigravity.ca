@@ -37,3 +37,5 @@
 - `Commit updated data`
 - `Deploy to all 3 FTP sites in parallel`
 - `Verify URLs`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

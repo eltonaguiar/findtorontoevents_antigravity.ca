@@ -170,3 +170,5 @@ s(ct,'ALL'); s(pre,'PRE-kill 12')
 - Triggered by: PR #1060 (`ideas/cotton-kill-reversal-2026-05-15`, MERGED)
 - Memory: `project_cotton_blacklisted_2026_05_15`
 - Methodology swarm review: `swarm_runs/cotton-vet-*/` (DeepSeek + Cerebras + xAI), 2026-05-15
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

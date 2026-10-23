@@ -43,3 +43,5 @@
 3. Accept risk if fold_1 represents stale/learning period
 
 **Proceed to Step 4 (live account seed)** with caution: gate all CT=F picks via regime filter (HMM state ≥2) until fold_1 diagnosis complete.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -79,3 +79,5 @@ Additionally, the initially-attempted pre-aggregation approach would have double
 
 - [ ] Verify cta_replicator tile shows `cta_fx_multifactor 69%/PF 11` after fresh dashboard generation
 - [ ] Check if any live SLV/USO picks from cta_commodity_momentum_term need manual closure
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

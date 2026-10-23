@@ -185,3 +185,5 @@ I'll provide a concise and decisive review of the plan.
 4.  Implement the updated model and validate its performance.
 
 By addressing the top concerns and implementing a more robust model, we can provide a more accurate and reliable solution for the NBA series simulator.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

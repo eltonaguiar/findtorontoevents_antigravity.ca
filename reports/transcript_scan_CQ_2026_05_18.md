@@ -263,3 +263,5 @@
 - [OPEN] Commit the transcript scan
 - [OPEN] Investigate VIX gate direction
 - [OPEN] Pre-register H-018
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

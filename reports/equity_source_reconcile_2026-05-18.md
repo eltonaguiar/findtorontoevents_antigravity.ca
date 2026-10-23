@@ -22,3 +22,5 @@ WR ranges **1.2% – 53.3%** (spread 52 points) across 4 EQUITY records in ONE r
 3. Re-run `tools/equity_mysql_edge_test.py` against the canonical set — only then is an EQUITY edge verdict trustworthy.
 
 Until then: **no EQUITY edge claim, bullish or bearish, is valid.** The data must agree with itself first.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

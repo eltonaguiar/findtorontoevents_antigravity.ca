@@ -34,3 +34,4 @@ That made it easy to miss under-fed classes and stale pipelines.
 - `python tools/generate_asset_class_freshness_report.py --warn-only --json-out reports/asset_class_freshness_latest.json --md-out reports/asset_class_freshness_latest.md`
   - artifacts generated successfully.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

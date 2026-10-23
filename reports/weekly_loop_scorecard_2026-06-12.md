@@ -39,3 +39,5 @@ Filed this cycle: INCIDENT_CRYPTO#21/#22/#23, INCIDENT_OVERALL#134/#135, ENH#164
 ## Rubric hash-lock
 scores = CRYPTO:[3,1,2,1,1] COMMODITY:[3,1,1,1,2] (H1..H5, 2026-06-12)
 sha256(rubric+body) = b514ee12da163888
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

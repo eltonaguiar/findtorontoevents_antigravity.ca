@@ -94,3 +94,5 @@ Paste the benchmark report above. Ask: "Which 3 actions will move the needle mos
 - 7-day window: 2026-05-17 to 2026-05-24
 - Active picks unrealized PnL is near-zero across all classes (<0.05% total)
 - UNKNOWN category (54 picks, 35.2% WR) represents uncategorized picks — should be audited and reclassified
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

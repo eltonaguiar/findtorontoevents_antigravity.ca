@@ -78,3 +78,5 @@ The "0/9 money-ready" headline is correct (the verdict pipeline applies its own 
 ---
 
 Filed by `/loop` blitz at 2026-06-05 ~06:25Z. Evidence: direct live-DB queries against `ejaguiar1_stocks.trading_picks`. Cross-references: [[project-true-winners-investigation-2026-06-05]], [[project-multi-agent-storm-2026-06-05]] (INCIDENT #91 dedup pattern), commit `9c5bc6ec4e` (mega_mutation unblock).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

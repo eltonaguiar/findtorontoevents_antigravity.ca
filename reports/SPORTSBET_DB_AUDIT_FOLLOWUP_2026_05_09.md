@@ -141,3 +141,5 @@ curl -X POST \
 ```
 
 *(Fill in actual scores and event_id before running.)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -150,3 +150,5 @@ Only 1 strategy worth a slot — doc is too thin on real signal logic for more.
 ---
 
 _Generated 2026-05-03 by Antigravity session via general-purpose subagent harvest. Successor sessions: read `updates/2026-05-03-per-asset-class-enhancement-playbook.md` (PR #735) + `reports/PR_INTEGRATION_PLAN_2026_05_03_0540Z.md` (PR #736) + this file in that order._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

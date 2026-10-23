@@ -53,3 +53,5 @@ Hypothesis: Ring's n=104 was either (a) a hallucinated/fabricated figure (Cloudf
 ## Closure action
 
 Set `INCIDENT_COMMODITIES.incident_id=3.status='RESOLVED'`. `resolved_at` is already set (2026-05-31 02:06:58); only the status field needs flipping. Resolution_notes already contain the substantive reconciliation; this report adds the peer-verified truth-table and Grok-4 sanity check.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

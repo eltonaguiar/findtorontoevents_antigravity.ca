@@ -57,3 +57,5 @@
 - Model agrees with 70% of the brief; strongest pushback is on Bonferroni (correlated gates) and n>=500 (too strict for HF).
 - Adds VaR/ES, trade-duration analysis, cross-strategy correlation — all genuinely missing from the brief.
 - Predicted bug "walk-forward leakage" is directly testable in 30-day paper pilot.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -120,3 +120,5 @@ remains the sole owner of `index.html` regeneration.
 4. **Universe expansion** — currently uses the 50-ticker S&P 100 baseline
    from `alpha_engine.value_screener_runner.DEFAULT_UNIVERSE`. PHASE 13
    replaces with the EDGAR companyfacts.zip universe.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

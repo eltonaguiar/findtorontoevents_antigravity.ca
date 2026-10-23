@@ -61,3 +61,5 @@ Two safety fixes to reduce risk and fix the scoring inversion:
 
 1. Revert position sizes to original values in config.py and per_class_position_caps.py
 2. Change confidence_calibrator.py default back to `"0"`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

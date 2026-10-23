@@ -51,3 +51,5 @@ python3 tools/backtest_cheap_stock_momentum.py
 python3 tools/backtest_ipo_post_listing_long.py
 PYTHONPATH=. python3 alpha_engine/eight_class_flagship_strategies.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

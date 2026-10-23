@@ -117,3 +117,5 @@ that would diverge from the production writer and break every other reader.
 - Decide whether to also rename `dashboard_payload.json` callers to consume
   `dashboard_data.json` (a separate, larger refactor — out of scope for this
   diagnosis).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -109,3 +109,5 @@ python tools/analyze_crypto_signal_window.py --hours 24 --json
   }
 }
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -42,3 +42,5 @@ All ten merge commits are ancestors of `origin/main` (verified via `git merge-ba
 6. Provision sports DB credentials on 50webs production host.
 7. Add `FRED_API_KEY` secret for Bond Emitter.
 8. Add SMTP credentials for DB Backups workflow.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

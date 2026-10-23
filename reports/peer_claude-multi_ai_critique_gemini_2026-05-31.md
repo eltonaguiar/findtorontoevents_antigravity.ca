@@ -103,3 +103,5 @@ Full unprocessed payload preserved at `/tmp/gemini_raw.json` during run.
 - Raw response: `/tmp/gemini_raw.json` (8591 bytes)
 - Parsed JSON: `/tmp/gemini_parsed.json`
 - Retry handling: 429 quota wait-loop, completed on free tier `gemini-2.5-flash` after `gemini-2.5-pro` returned `Quota exceeded ... limit: 0`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

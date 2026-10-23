@@ -88,3 +88,5 @@ These are NOT this loop's responsibility. File a new investigation queue under G
 **LOOP COMPLETE.** No further autonomous fires needed for this queue.
 
 The `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` queue is effectively done. The two operator-facing items above can be handled in under 5 minutes. The out-of-queue strategy kill candidates need a separate investigation session.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

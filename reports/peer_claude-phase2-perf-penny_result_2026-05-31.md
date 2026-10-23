@@ -58,3 +58,5 @@ Raw DB shows n=8 across 5 strategies. Divergence is explained by aggressive poli
 2. **Next graduation candidate (medium-term):** `penny_deep_oversold` — only strategy with any wins; needs n>=30 + a **hard stop redesign** (current -14.6% tail kills the PF despite 50% WR). Pair with mandatory ATR-based SL.
 3. **Kill (soft):** `multi_sigma_reversal` and `ema_stack_momentum` for PENNY — block emission for this class while leaving the strategies active for EQUITY where they have richer samples. Do not retire registry-wide on n=1.
 4. **Fix surfacing:** audit the registry's policy-clean filter — surfacing the worst single-pick strategy while hiding `penny_deep_oversold` distorts the public dashboard.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

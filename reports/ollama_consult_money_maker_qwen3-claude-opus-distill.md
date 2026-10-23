@@ -73,3 +73,5 @@ for real[?25l[?25h-money[?25l[?25h activation[?25l[?25h.
 with[?25l[?25h [?25l[?25h3[?25l[?25h requiring[?25l[?25h code[?25l[?25h activation[?25l[?25h and[?25l[?25h [?25l[?25h2[?25l[?25h needing[?25l[?25h quantitative[?25l[?25h definition[?25l[?25h.[?25l[?25h
 
 [?25l[?25h
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -42,3 +42,5 @@ Canonical path: /mnt/e/findtorontoevents_antigravity.ca/updates/2026-05-18-real-
 - All other asset classes blocked until new data.
 
 Generated with autonomous execution.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

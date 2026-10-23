@@ -144,3 +144,5 @@ python3 tools/validate_intrabar_fills.py --sleeves S1,S2,S3,S4
 ---
 
 ## v3 STATUS: RESOLVER-FAIL FINDING — ALL 4 SLEEVES BLOCKED
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

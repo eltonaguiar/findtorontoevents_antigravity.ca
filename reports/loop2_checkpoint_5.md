@@ -88,3 +88,5 @@ OR remove this metric entirely from summary and replace with annualized return +
 - `reports/long_term_picks_integration_audit_2026-05-08.md`
 - `swarm_runs/audit_metrics_20260508T192423Z/` (3-engine audit metrics swarm)
 - `docs/ANALYSIS_MAY82026_FREEBUFF.MD` + `docs/HERMES_DAILYACCOMPLISHMENT.MD` (peer reports)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

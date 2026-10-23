@@ -40,3 +40,5 @@ is made on COMMODITY headline metrics.
 3. Walk-forward audit of `multi_asset_cot` (train pre-2025, test 2025+) per
    `REQUIRES_WALKAHEAD_AUDIT` gate — OOS PF must exceed 1.5 for Tier-2, 2.0 for Tier-1.
 4. Address CT=F single-symbol concentration (94.3%) before sizing up.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

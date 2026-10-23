@@ -59,3 +59,5 @@ PRs with only `scan` (no CI Tests): #888, #890 — these are audit/report PRs th
 
 ---
 *Monitor run: 2026-05-10T06:00Z | gh CLI unavailable — using GitHub MCP tools (pr check_runs) as proxy*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

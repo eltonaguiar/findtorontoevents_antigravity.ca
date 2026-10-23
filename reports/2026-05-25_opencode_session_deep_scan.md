@@ -127,3 +127,5 @@
 - All 6 items cite `reports/2026-05-25_opencode_session_deep_scan.md` so the audit trail from seed-script row -> evidence -> session source is one click.
 
 End — 6 ADD / 18+ REJECT / report under 250 lines as requested.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

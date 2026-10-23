@@ -11,3 +11,5 @@
 - Check exit_reason distribution, symbol concentration (HHI), SL/TP sanity, direction-PnL coherence.
 - Diagnose: RETIRE / MUTATE / VERIFY.
 - Ship docs-only PR with findings.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

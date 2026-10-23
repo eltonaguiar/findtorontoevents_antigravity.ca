@@ -103,3 +103,5 @@ Given the parent strategy's baseline (WR=25%, PF=0.34), the mutations would need
 - [ ] n ≥ 30 closed picks per mutation with resolved outcomes
 - [ ] At least ONE mutation shows WR ≥ 45% on first n=30 (minimum viable, not promotion threshold)
 - [ ] No single-symbol concentration >50% in any mutation's pick history
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

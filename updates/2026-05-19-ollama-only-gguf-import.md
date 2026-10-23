@@ -35,3 +35,5 @@ Created tags include: `library-deepseek-r1-14b:latest`, `library-llama3.1-latest
 
 - `ollama pull` for models with broken symlinks (gemma3, mixtral, 32b variants), then re-run `--import-all`.
 - `python tools/local_gguf_ollama_consult.py --all-installed` for benchmark sweep.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

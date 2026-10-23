@@ -109,3 +109,5 @@ Once both are green, the resolver pipeline is fully live and steps 8-9 (final si
 ---
 
 *Transcript rendered from session `019e4221-87a5-79d1-87aa-0c536589936f` on 2026-05-19. Raw sources: `summary.json`, `chat_history.jsonl`, `updates.jsonl`, `events.jsonl`, and the conversation that occurred in this session.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

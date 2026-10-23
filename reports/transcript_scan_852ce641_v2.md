@@ -511,3 +511,5 @@
 - [OPEN] consult agent swarm tools/swarm_v2 or other AIs as needed to design PR — user authorized; assistant started swarm review of open PRs #1160 and #1155, but outcome not shown
 - [OPEN] Resume M-067 build
 - [OPEN] Verify `pnl_pct` units conflict between `deduct_slippage` (expects percentage-points) and `build_pf_registry.py` docstring (says fraction)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

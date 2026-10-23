@@ -154,3 +154,5 @@ All strategies are now synced to:
 **Deployed By:** Kimi (Antigravity AI)  
 **Commit:** `0035f99482` — "feat: Deploy 4 new proven strategies + coordination docs for agent teams"  
 **Status:** ✅ LIVE & GENERATING PICKS
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

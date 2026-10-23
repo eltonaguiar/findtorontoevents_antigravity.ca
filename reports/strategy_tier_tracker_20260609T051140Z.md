@@ -135,3 +135,5 @@ Tier thresholds (CLAUDE.md MAJOR GOALS): T1 PF>2.0/WR>55; T2 PF>1.5/WR>50; T3 PF
 
 ---
 Read-only report. Source of truth is pf_registry.json; do not recompute PF from raw picks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

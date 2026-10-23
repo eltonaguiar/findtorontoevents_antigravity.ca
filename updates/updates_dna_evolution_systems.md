@@ -305,3 +305,5 @@ def load_dna_picks():
 
 *Last Updated: March 9, 2026 by DNA Evolution Engine*  
 *Next Update: Continuous (every 30 min for GP)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

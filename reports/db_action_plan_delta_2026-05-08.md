@@ -260,3 +260,5 @@ These are not in the 24-todo plan. Either flag as out-of-scope (sportsbet & fund
 1. Run `/swarmwithprework` (the new 4-phase skill) on this delta + the 30-todo combined list. It does pre-work → multi-family brainstorm → action plan → QA critic in one orchestrated chain.
 2. Add monitoring alerts (NEW table: `db_health_heartbeat`) — automate the NULL-ratio + freshness checks.
 3. Wire `audit_synthetic_patterns.py` extension (`tools/audit_bt_synthetic.py`) to scan `bt_backtest_trades` 30M rows weekly for new ghost cohorts.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

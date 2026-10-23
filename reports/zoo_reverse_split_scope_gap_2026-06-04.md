@@ -39,3 +39,5 @@ The drift-based detection already shipped (`tools/ai_tournament/price_tracker.py
 
 - The full gated sequence (backup → flag → MD doc) was overkill for 2 WKHS rows. Auto-approve threshold for surgical fixes should be n<10 with a 1-line audit log entry.
 - The bash heredoc issue (`{tbl}` interpolated by outer shell) is a real footgun — always use `python3 <<'PYEOF' ... PYEOF` for multi-line python with f-strings inside backticks. Worth a shared coding-style note.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

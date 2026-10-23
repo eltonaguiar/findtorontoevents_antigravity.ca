@@ -262,3 +262,5 @@ AND NOT pair IN (autopsy-flagged drag pairs)
 ---
 
 *Generated per /money-maker-readyv2 skill. All data from dashboard_data.json (generated 2026-05-16T06:07:50Z).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

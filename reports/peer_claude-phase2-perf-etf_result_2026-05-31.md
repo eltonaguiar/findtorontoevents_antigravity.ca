@@ -57,3 +57,5 @@ Symbol concentration (closed only): SPY=3, VNQ/XLF/GLD/QQQ=2 each, then long tai
 1. **Next graduation candidate:** none — no ETF strategy has the sample depth. Closest "watch" is `regime_mild_bull` (2/2 wins, macro-regime gating); flag for re-audit when n>=30.
 2. **Kill candidate:** restrict `extreme_oversold_bounce` from emitting ETF picks (0/5, avg -3.1%, worst -5.1%) — the signal is anti-correlated on ETF underliers. File ENH ticket: gate this strategy's source pool to `category IN ('equity','penny','crypto')` only.
 3. **Open incident:** investigate `fractal_decay_penny` tagging an ETF row — likely classifier leak; reuse the PR #166 EQUITY-mistag tooling to sweep penny→etf mistags.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

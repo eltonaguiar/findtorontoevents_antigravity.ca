@@ -127,3 +127,5 @@ Do **NOT** reject/rewrite. Roocode's findings F1 (B28 thrash), F2 (B2 thrash), F
 4. **Close or reduce PR #658** per three-AI KEEP-MAIN consensus.
 5. **Re-run subagent review** with window 13:35Z → now to fill Roocode's gap, OR land Roocode + Review B together as complementary documents.
 6. **Schedule shadow-flip cycle** for #626/#627/#642/#633 default-OFF flags this week (Goal #1 wire-up debt).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

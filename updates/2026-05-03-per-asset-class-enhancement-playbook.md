@@ -562,3 +562,5 @@ python -c "from audit_trail.quality_gates import BLOCKED_SOURCE_SYSTEMS; print(s
 # Check current git branch and status
 git log --oneline -5 && git status
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

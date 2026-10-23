@@ -197,3 +197,5 @@ Full analysis: `reports/pr_merge_dependency_map_2026-05-14.md`
 ---
 
 *Transcript last updated: 2026-05-14. Amend as session progresses.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

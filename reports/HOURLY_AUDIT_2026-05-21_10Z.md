@@ -187,3 +187,5 @@ Per 09Z audit: all already merged or closed ✅ — no action required.
 ---
 
 *Refs: issues #685, #686, #693 | `audit_trail/quality_gates.py` | `tools/mutation_analysis.py`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

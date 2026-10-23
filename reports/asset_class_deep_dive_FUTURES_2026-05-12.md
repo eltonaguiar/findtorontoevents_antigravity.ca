@@ -74,3 +74,5 @@ n=100, WR 90%, Sharpe +1.377 via `alpha_engine/strategies/cot_paper_pilot.py`.
 Research surface only. CT=F already cleared 4/5 active-work testing-plan
 steps (CONDITIONAL PASS on Step 3 fold_1 regime outlier). FUTURES
 resurrection conditional on regime-gate add + 4-week paper-pilot clear.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

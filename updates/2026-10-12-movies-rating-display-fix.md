@@ -90,3 +90,5 @@ TMDB 8.2, TMDB 8.2, TMDB 7.0, TMDB 10.0, TMDB 7.0, TMDB 7.9, TMDB 7.7,
 TMDB 7.2**. This is actual production verification, not a mocked preview.
 
 Open data-quality questions: the API exposes no TMDB vote count, so the statistical strength of the ten 10.0 records cannot be assessed here; zero values may represent unrated titles. These are not grounds to fabricate replacement ratings. V1's independently unverified static dataset remains a separate freshness/attribution issue, and the pre-existing PHP 5.2 OPTIONS incompatibilities remain outside this rating patch.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

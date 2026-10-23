@@ -46,3 +46,5 @@ Extended the original deep-dive execution with supplemental items identified fro
 2. Add strategy-level stale metadata contract in scanner outputs.
 3. Align ETF universe authoritative contract (scanner overrides + universe source) for XLF/XLE/XLK readiness checks.
 4. Re-run live COT DB verifier with valid DB credentials and attach output artifact.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

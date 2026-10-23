@@ -91,3 +91,5 @@ These labels come from the benchmark CSV files and the report table.
 
 ## Notes
 No existing production index/template files were overwritten for this publish. Only the new standalone page was added and uploaded.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

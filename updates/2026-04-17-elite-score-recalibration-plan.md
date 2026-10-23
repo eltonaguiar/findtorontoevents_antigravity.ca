@@ -171,3 +171,5 @@ ELITE_SCORE_CLASS_FLOORS_ENABLED=1   # 0 = old behavior (50 floor everywhere)
 ## Summary (for caller relay)
 
 Root cause confirmed: 13 of ~20 scoring components are crypto-biased (structurally via lookup tables, or data-gated via crypto-only sidecar files). Non-crypto ceiling is ~40/100 post-normalize. Fix via **Option A (per-class floors 40-45)** plus two cap exemptions in `elite_scorer.py:2548-2681`. Reversible via env var. Validation at 72h/7d against 5 criteria. Option B (full scorer rewrite) deferred behind a 30-day data gate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

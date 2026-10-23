@@ -64,3 +64,5 @@ The EQUITY autopsy is monitoring-only (all non-NVDA samples n<20).
 ## Generated
 
 2026-05-17T19:15Z — Session BC
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

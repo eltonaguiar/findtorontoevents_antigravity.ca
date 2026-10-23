@@ -56,3 +56,5 @@ Everything else — BOND FRED unblock, FOREX carry-axis pivot, FUTURES CT=F grad
 ---
 
 **Refs:** Asness-Moskowitz-Pedersen 2013 JF; Miffre 2010 SSRN 1127213; Lustig-Verdelhan 2007 AER; Frazzini-Pedersen 2014 JFE; Koijen-Moskowitz-Pedersen-Vrugt 2018 JFE; de Prado AFML 2018 ch 7+14.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

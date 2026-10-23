@@ -184,3 +184,5 @@ Before activating P0 gates in production:
 - `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md` — required before any source kill
 - `audit_dashboard/data/dashboard_data.json::performance.asset_class_health` — live performance numbers
 - `reports/hedge_fund_performance_review_*.md` — tier definitions (T1: PF>2/WR>55/MDD<10; T2: PF>1.5/WR>50/MDD<20)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -36,3 +36,5 @@ The following table summarizes the research-tier edge (recent data, not yet prod
 2. **Focus on plumbing**: Prioritize resolver hygiene, data integrity, and walk-forward validation over adding new strategies.
 3. **Shadow Pilot**: Treat `etf_verified_dual_momentum` as the best candidate for the first money-ready promotion, pending successful forward-pilot results.
 4. **Enforce Gates**: Maintain the current threshold freeze and do not promote any class until it passes the canonical Tier-2 gates.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

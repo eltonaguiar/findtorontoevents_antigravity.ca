@@ -168,3 +168,5 @@ Distribution of cron minutes across 295 workflows:
 - Failure-log extraction via `gh run view <id> --log-failed | grep -E 'error|Traceback|##\[error\]'`.
 - Cron analysis via `grep -rn "cron:" .github/workflows/*.yml`.
 - Concurrency / safe_push usage via `grep -L`/`grep -lE` over the workflow directory.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

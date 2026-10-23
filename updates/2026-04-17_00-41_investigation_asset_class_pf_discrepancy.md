@@ -69,3 +69,5 @@ The data does NOT support WR < 50% for all non-crypto asset classes, particularl
 
 ---
 *Investigation complete - data sourced from audit_dashboard/data/dashboard_data.json*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

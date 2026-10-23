@@ -36,3 +36,5 @@ The gap-fade is the only real gross effect found (equity intraday reversal, Shar
 
 ## Bottom line
 The honest, deployable answer is a diversified beta portfolio (built, `beta_portfolio_tracker.py`). It wins by *capturing the risk premium cheaply and with discipline*, not by beating the market — because we proved, rigorously, that beating it is not possible under these constraints.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

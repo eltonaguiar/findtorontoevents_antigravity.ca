@@ -29,3 +29,5 @@ python3 tools/deploy_audit_files.py --only pick_funnel,ai_portfolios
 ```
 
 Refs: `reports/EAGLE2_2026-06-02_GROK.md`, `reports/EAGLE_2026-06-02_GROK.md`, `reports/EAGLE_REVIEW_2026-06-02_GROK.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

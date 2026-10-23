@@ -57,3 +57,5 @@ Then applied client-side filters (`top_edges.expand_pick_tags`):
 ## Conclusion
 
 The COMMODITY `cftc` cell in `top_edges_per_class.json` is faithful to the DB. The edge is real (n=136 is above the n>=20 PROVEN floor) and is driven by a single strategy (`cftc_cot_commercial_signal`) reading Commitments of Traders commercial-hedger positioning. Single-strategy concentration is a risk to flag for the ops review even though the per-trade math is sound.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -96,3 +96,5 @@ Peer Opus: **REJECT** under canonical harness (not live-shadow). Do not promote 
 | `EMITTER_WHITELIST_ENFORCE=1` | **After** 200-close forward clean window | ☐ Approve timeline |
 | Tick data budget | Tardis vs free Binance aggTrade (peer Opus) | ☐ Authorize |
 | Commit strategy harvest batch | 8 files + reports | ☐ Commit to main |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

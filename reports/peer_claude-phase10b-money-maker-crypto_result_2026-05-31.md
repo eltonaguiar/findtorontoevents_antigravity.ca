@@ -120,3 +120,5 @@ Same shape applies to `ml_strategy_reviver` (12 TP_HIT, 5 SL_HIT, only 2 WON / 2
 
 ## One-line summary
 CRYPTO PF=0.18 / WR=15.1% (n=892, 90d closed). **Two blocked strategies are still emitting (370 picks/week) AND the resolver is mislabeling 162 TP_HITs as non-wins — fix those two plumbing bugs first; do not retire more strategies until the backlog drains.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -116,3 +116,5 @@ The same 7-gate floor applies to the other 9 ETF strategies (`etf_dual_momentum`
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — mutate-before-kill axis
 - `reports/peer_blackbox_incidents-enhancements-pr_2026-05-31.md` — INCIDENT_ETFS #1 source
 - Faber, M. (2007). "A Quantitative Approach to Tactical Asset Allocation." Journal of Wealth Management.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

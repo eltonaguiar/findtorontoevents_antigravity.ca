@@ -42,3 +42,5 @@ Nemotron's branch `audit/truth-review-2026-06-04` contains:
 - `reports/audit_truth_review_2026-06-04.md`
 
 Branch is unmerged — operator can review at `.qwen/worktrees/audit-truth-review-2026-06-04` and decide if to merge or close.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -36,3 +36,5 @@ python3 sync_all_picks_to_mysql.py
 ## 3. Strategy Stats Refresh
 
 `audit_trail.mysql_client.refresh_strategy_stats_mysql()` was added to rebuild `at_strategy_stats` from `at_consensus_picks`. This runs automatically at the end of each sync cycle.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

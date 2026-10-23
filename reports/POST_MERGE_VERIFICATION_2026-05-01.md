@@ -82,3 +82,5 @@ emitter path. Not blocking other queue items.
 - V1 still FAIL (will re-check after B28 merges + next dashboard rebuild)
 - V2 partial fail, needs re-check
 - V7 diagnostic (acceptable per criterion)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -200,3 +200,5 @@ For future swarm panels: **drop ernie from JSON-strict roles**, **promote deepse
 - ERNIE coder model live: `ollama run ernie-coder`
 - Local swarm script reusable: `tools/local_swarm_review.py`
 - Peer mb2v7tau (this instance) standing down
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

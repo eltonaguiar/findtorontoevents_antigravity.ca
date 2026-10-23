@@ -327,3 +327,5 @@ gold, not an asset-class edge.
 (2026-05-30T23:05:42Z), pf_registry.json, pick_summary_stats_{2w,48h}.json.
 No web-fetched or model-inferred numbers — see CLAUDE.md
 "DO NOT trust unsourced model claims about /audit numbers" rule.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

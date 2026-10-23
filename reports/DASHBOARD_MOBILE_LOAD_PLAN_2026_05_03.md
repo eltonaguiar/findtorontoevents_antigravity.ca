@@ -93,3 +93,5 @@ curl -sI -H "Accept-Encoding: gzip" https://findtorontoevents.ca/audit/data/dash
 - JS read sites: `audit_dashboard/template.html:7453, 15058, 16759, 17038`
 - JS write/cache site (unchanged): `audit_dashboard/template.html:9447`
 - Reviewer second-opinion: cavecrew-reviewer agent 2026-05-03
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

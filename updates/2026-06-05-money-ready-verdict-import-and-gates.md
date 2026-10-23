@@ -39,3 +39,5 @@ Expected: import succeeds; `MONEY_READY: none`; CRYPTO shows `top_sleeves` with 
 ## Deploy
 
 After merge: `python3 tools/deploy_audit_files.py --only updates` and `--only ai_tournament` if HTML touched; verify with curl cache-buster.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

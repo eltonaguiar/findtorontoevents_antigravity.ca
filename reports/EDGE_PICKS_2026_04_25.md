@@ -73,3 +73,5 @@ Per-book consensus from BestFightOdds. Best price = the side of the line giving 
 - **OLG ProLine+ caveat**: not directly queried (login wall). Typical OLG juice is 8–12% on moneylines vs ~4–6% at sharp books like Pinnacle. Whatever edge you find at FanDuel/Betway will likely be smaller (or negative) at ProLine+. Use the values above as the "best available" upper bound.
 - **Variance**: every pick above has a one-game outcome. Quarter-Kelly is the standard ceiling; for UFC parlays don't exceed 1% bankroll.
 - **The scanner**: `tools/polymarket_edge_scan.py` writes a fresh `reports/POLYMARKET_EDGE_SCAN_<ts>.md` on each run. Re-run before each NBA/NHL slate (typically 4–6h pre-tip) to catch fresh divergences before public money trims them.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

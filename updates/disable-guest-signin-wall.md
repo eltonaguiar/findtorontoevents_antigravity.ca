@@ -30,3 +30,5 @@ All original code preserved below the return statements with `/* DISABLED */` co
 ## Files Changed
 - `TORONTOEVENTS_ANTIGRAVITY/index.html` — main live file
 - `tdotevent_ca_backup.html` — backup copy (same changes applied)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

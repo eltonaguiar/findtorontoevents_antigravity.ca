@@ -90,3 +90,5 @@ OPPOSITE-SIGN to killed H-010 (PEAD drift). For each earnings announcement on da
 ## VERDICT: **UNTESTED**
 
 Honest non-verdict — the harness did not get >= 3 scored 14-day windows. Earnings events are quarterly per name, so even a 50-name basket gives sparse 14-day windows; the blocker is event density, not design.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

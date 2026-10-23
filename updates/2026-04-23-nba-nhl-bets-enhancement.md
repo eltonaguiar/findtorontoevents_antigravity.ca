@@ -62,3 +62,5 @@ The Odds API successfully fetching those sports. Three root causes were identifi
 - HTML/JS: manual review for `escHtml()` usage on all dynamic strings (XSS-safe).
 - Logic: `inject_fallback` checks for existing row before INSERT (dedup).
 - Workflow: `continue-on-error: true` on all new steps so a failure doesn't block settle/grade.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -455,3 +455,5 @@ This review extends the EDGE_CRITERIA_ACTION_PLAN_2026-05-24.md. Items map as fo
 | EQUITY confidence reject band PF | cum -28.1% (n=52, [0.60,0.65)) | hedge_fund_quality_gate.py |
 | CRYPTO C-TIER PF | 0.36, -46.59% PnL | hf_quality_gates.json |
 | EQUITY SHORT edge | n=4, 0/3 went 0% WR | hedge_fund_quality_gate.py |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

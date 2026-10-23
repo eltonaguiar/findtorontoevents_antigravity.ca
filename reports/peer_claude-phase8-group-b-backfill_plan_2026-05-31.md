@@ -17,3 +17,5 @@ Agent: peer_claude (Opus 4.7)
 - Server-side gh api only. No shared-tree writes.
 - Backup table snapshot before any UPDATE.
 - All changes logged to result MD.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

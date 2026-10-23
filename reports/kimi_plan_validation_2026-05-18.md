@@ -116,3 +116,5 @@ Based on validation:
 ---
 
 *Generated: 2026-05-18 | Validated by claude-sonnet-4-6-desktop swarm critique*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -509,3 +509,5 @@ The answer is:
 - **`alpha_engine/ml_ranker`: stale artifact, production retrain path unclear**
 - **`ml_crypto_predictor`: stale and likely broken**
 - **`alpha_engine/meta_labeler`: code exists, persisted artifact missing**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

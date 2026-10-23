@@ -71,3 +71,5 @@ Of those 17 signals, 15 returned `NO_DATA` because Binance klines couldn't be fe
 
 - `audit_dashboard/hyrotrader/index.html` — front-end fixes (signal count, NO_DATA notice, ML sparse notice, dimmed NO_DATA rows, helpful "no prices" message)
 - `tools/hyro_pick_performance_validator.py` — backend enrichment (closed_picks source, retry logic, pre-validated outcomes, signal cap, dedup improvement)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

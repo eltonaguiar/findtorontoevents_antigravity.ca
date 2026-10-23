@@ -95,3 +95,5 @@
 ## Synthesis Verdict
 
 All three engines converge on the same root causes: severe concept drift (KS_D 6.6× critical) combined with stale sub-source models (quan_engine, unknown) is the primary obstacle to reaching PF 2.0+, and no amount of new GitHub repo integration will overcome it until retraining on recent data with walk-forward validation is in place. The highest-ROI next steps — in order — are: (1) retrain or disable quan_engine immediately, (2) implement rolling walk-forward validation with a drift-triggered retraining pipeline using ruptures + alibi-detect, (3) add funding rate and open interest as features via the Binance Futures API and CoinGlass, and (4) adopt triple-barrier labeling from mlfinlab to fix confidence miscalibration at the source. The free data and repos listed above provide a clear, low-cost path from PF 1.26 toward PF 2.0+ — but the critical path is drift remediation first, then feature expansion.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

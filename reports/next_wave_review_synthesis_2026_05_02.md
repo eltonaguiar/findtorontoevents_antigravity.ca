@@ -54,3 +54,5 @@ The reviewers converge on three independent conclusions:
 - Cand C (symbol-wise CV): valuable for crypto-only strategies; defer until non-crypto cap at `smart_picks_engine.py:182` is lifted or analysis is restricted to n>=20 single-symbol strategies.
 - Almgren-Chriss capacity column: multi-day, blocked on ADV/σ helpers.
 - Payload anomaly canary: medium effort, touches CI cron — defer until the cloud agent stabilises.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -110,3 +110,5 @@ Action: Add BOND asset_class exemption to M-098 gate logic in `audit_trail/quali
 ## Next Review
 
 This document is superseded by the post-MySQL-sync version, estimated 2026-05-25.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

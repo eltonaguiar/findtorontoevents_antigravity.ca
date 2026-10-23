@@ -48,3 +48,5 @@
 - `reports/DB_OPERATIONS_2026-05-31.md`
 - `audit_dashboard/data/mc_edge_audit_fresh.json`
 - `audit_dashboard/data/shadow_pilot_verdicts.json`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

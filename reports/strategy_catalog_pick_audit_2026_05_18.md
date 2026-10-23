@@ -157,3 +157,5 @@ Only CRYPTO has a statistically meaningful resolved sample (n=10,054), and at **
 ---
 
 *Report path: `reports/strategy_catalog_pick_audit_2026_05_18.md`. Read-only audit — no DB writes, no other files modified.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

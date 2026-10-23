@@ -13,3 +13,5 @@ The ETF forward-pilot fix in `tools/strategy_admit.py` made the per-strategy adm
 ## Verification
 
 Regenerated `audit_dashboard/data/strategy_admissibility.json` and `audit_dashboard/data/verified_edge_status.json` from the updated scripts in the clean ETF branch. The refreshed payload now shows ETF dual momentum as the best forward-pilot candidate with a real walk-forward PASS and forward blockers, instead of a missing/blank pilot state.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

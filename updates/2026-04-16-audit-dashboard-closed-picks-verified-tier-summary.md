@@ -115,3 +115,5 @@ $env:VERIFY_REMOTE='1'; npx playwright test tests/audit_remote_tabs_no_errors.sp
 | **`updates/2026-04-16-audit-buildVerifiedEdgeIndex-verifiedStrats-order.md`** | `buildVerifiedEdgeIndex` **trackStrats** vs **verifiedStrats** order; `claude_gainer_1h` / `trackCombos` console errors. |
 | **`updates/2026-04-16-audit-non-crypto-wr-pnl-measurement-fix.md`** | Non-crypto **aggregate** vs **cards** alignment; `FLAT_PNL_THRESHOLD` + symbol heuristics for empty `asset_class`. |
 | **`updates/2026-04-16-audit-backend-at-issue-snapshot-wired.md`** | **`at_issue_*`** fields now set in **`dashboard_generator.py`** (were allowlist-only). |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

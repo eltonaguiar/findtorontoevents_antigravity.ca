@@ -137,3 +137,5 @@ Snapshot age ~110 min at audit time. The hourly cron (GitHub Actions) is either:
 - Issues #685 (resolver-rescope done), #686 (live quality regression), #693 (EQUITY monitor — closed 2026-05-13)
 - PRs merged today (session context): #684, #674, #673, #664, #683, #687, #692, #694, #1308
 - Dashboard: `audit_dashboard/data/dashboard_data.json` (generated 2026-05-22T02:19:15Z)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

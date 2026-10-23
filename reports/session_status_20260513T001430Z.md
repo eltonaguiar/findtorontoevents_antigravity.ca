@@ -139,3 +139,5 @@ Per supreme plan / master plan state machine:
    stale data.
 4. `multi_asset_cot` PF=19.93 / WR=87.4% is still UNVERIFIED. Treat as
    highest-conviction candidate only if A1 returns MATCH.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

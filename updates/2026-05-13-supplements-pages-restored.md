@@ -17,3 +17,5 @@ The generated supplements pages were missing from the workspace:
 ## Verification
 - Confirmed both files exist in the expected paths.
 - Confirmed no editor-reported errors in either HTML file.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

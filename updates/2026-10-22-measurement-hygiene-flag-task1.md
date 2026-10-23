@@ -41,3 +41,5 @@ dashboard output.
 - Byte-identical output when OFF (the whole point of the default-OFF flag).
 - The flag only *defines* the gate; later plan tasks (2–12) wire behavior
   into it.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -33,3 +33,5 @@ discriminates cleanly: it admits genuine low-beta alpha and rejects beta/survivo
 
 ## Reproduce
 `python3 verified_strategies/bond_duration_timing_backtest.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

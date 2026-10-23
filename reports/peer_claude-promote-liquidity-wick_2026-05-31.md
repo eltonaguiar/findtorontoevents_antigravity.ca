@@ -201,3 +201,5 @@ reference these acceptance criteria once FINDING #12 lands.
   mutate-before-promote.
 - CLAUDE.md goal #1 — n >= 100 "proven" bar (current n=30 does NOT meet this
   for full real-money sizing; T2 sleeve at the AC bar is the compromise).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

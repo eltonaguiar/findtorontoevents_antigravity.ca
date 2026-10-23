@@ -31,3 +31,5 @@
 **Next:** Re-verify with 14d/48h panels + concentration. Paper only (TV skill). Implement further (regime filter, conc cap, DSR proxy). Re-swarm after gates. Document this in updates/ (before AUTO marker). NFA.
 
 Refs: CLAUDE.md Goal #1 + recency + 0/9 + deep-dive + Wire-Up; AGENTS.md (subagents + doc every + own changes); current picks_now.json + MD + prior updates 2026-06-06 card.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -323,3 +323,5 @@
 - [OPEN] Wire recency gate (eagle_gates.py) into money_ready_verdict.py
 - [OPEN] Operator decision on mega_mutation unblock (remove 2 lines in strategy_blocklist.py)
 - [OPEN] Run swarm-transcript-scan skill on a transcript JSONL
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

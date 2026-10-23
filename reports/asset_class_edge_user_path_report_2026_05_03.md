@@ -135,3 +135,5 @@ These are not currently investable from the dashboard:
 ## Bottom Line
 
 If investing real money today, the only defensible path is **selective crypto and selective equity**, sized conservatively, using `Performance`/`? Guide` evidence first and `Active Picks` only as a live shortlist. Avoid FOREX; do not treat ETF, Commodity, BOND, UEPS, Verified Alpha, or High Conviction as fully allocation-ready until the contracts and validation gaps are fixed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

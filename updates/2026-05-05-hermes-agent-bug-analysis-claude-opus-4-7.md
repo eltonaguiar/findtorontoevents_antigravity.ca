@@ -464,3 +464,5 @@ Add these to a Hermes upstream CI workflow:
 - Session-wide observations: PAT rotation done by user (`GH_AMPERE` new, `GH_AMPHERE_ORIG` burned).
 - Hermes self-verified Bug 4 in this session via `multi-agent-swarm` skill inspection + grep of repo files.
 - Working alternatives observed on same machine: freebuff, GitHub Copilot, Cursor, opencode all functional. The bugs above are Hermes-specific config/architecture issues, not Windows-specific.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

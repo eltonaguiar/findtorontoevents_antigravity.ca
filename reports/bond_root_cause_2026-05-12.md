@@ -141,3 +141,5 @@ bond_strategies.py.run()
 ```
 
 The lesson: **swarm-derived "root cause" claims need an end-to-end path trace before adoption.** Otherwise the swarm produces three confident, mutually exclusive, mostly wrong answers — which is exactly what happened here.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

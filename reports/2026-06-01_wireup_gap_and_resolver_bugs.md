@@ -106,3 +106,5 @@ Confirms: any source_system with >99% EXPIRED + a tiny decisive tail will report
 4. After all 3 land + 24-48h of fresh picks flowing: rerun per-class edge analysis to see if the new strategies show edge
 
 The 2 fixes in this PR are safe to ship without the bridge — they're pure tagging/dedup hygiene with no behavior change on the (currently dead) DB-write path.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

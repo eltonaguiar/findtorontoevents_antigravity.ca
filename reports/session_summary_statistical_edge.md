@@ -42,3 +42,5 @@ The `symbol_reconciler` identified several assets that have recovered edge while
 1.  **Manual Unblock**: Remove `CT=F` and `IMXUSDT` from `BLOCKED_SYMBOLS` in `quality_gates.py`.
 2.  **Shadow Activation**: Add `CVX`, `XOM`, and `DYDXUSDT` to a shadow-trading lane to confirm recovery.
 3.  **Strategy Inversion**: Implement a wrapper to invert `multi_asset_scanner` (FOREX) given its consistent negative edge (0% WR).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

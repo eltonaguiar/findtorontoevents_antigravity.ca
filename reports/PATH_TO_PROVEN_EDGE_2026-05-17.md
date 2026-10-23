@@ -102,3 +102,5 @@ verification harness (step 1) surfaces.
 **Next concrete action:** build the walk-forward eff-stability harness (step 1).
 Until it exists, every "we found an edge" claim — including this session's
 earlier `cot_positioning` and `method_a_score` findings — is in-sample noise.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

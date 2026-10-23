@@ -53,3 +53,5 @@ Procedure:
 
 *Consultation via OpenRouter: `inclusionai/ring-2.6-1t`, max_tokens=4000, temperature=0.3*
 *Time: ~30s response time*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

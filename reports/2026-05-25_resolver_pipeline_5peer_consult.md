@@ -114,3 +114,5 @@ Should `at_signal_outcomes` be:
 - (B) wired as an idempotent live mirror inside `alpha_engine/outcome_resolver.py` (Grok/Gemini/Kimi/Llama's recommendation)?
 
 A search for downstream `SELECT ... FROM at_signal_outcomes` consumers is needed before deciding. Not blocking; AI tournament leaderboard is already healthy at the data layer, and the live HTML will refresh once the next `ai-tournament-pipeline.yml` cron run picks up the new FTP step (or on `workflow_dispatch`).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

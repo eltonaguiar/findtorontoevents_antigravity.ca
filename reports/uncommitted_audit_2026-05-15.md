@@ -245,3 +245,5 @@ Commands run (all read-only):
 - `wc -l` for line counts on each candidate
 
 Constraints honored: nothing committed, nothing deleted, nothing pushed, no `git reset`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

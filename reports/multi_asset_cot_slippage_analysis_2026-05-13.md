@@ -67,3 +67,5 @@ MIN_NET_PNL_BPS_BY_CLASS = {
 Gate: reject if `(avg_win * win_rate - avg_loss * (1-win_rate)) * 100 < MIN_NET_PNL_BPS_BY_CLASS[asset_class]`.
 
 CT=F current: `(6.4 * 0.94 - 3 * 0.06) * 100 = 583 bp expectancy` but on a 4.7bp average win that's already net of nothing — the gate needs to operate on **net** pnl (after slippage), not gross. After 12bp r/t: `(−5.62 * 0.94 - 15 * 0.06) * 100 = −618 bp expectancy`. Fails.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

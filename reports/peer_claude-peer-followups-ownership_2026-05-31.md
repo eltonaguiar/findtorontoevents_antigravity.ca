@@ -95,3 +95,5 @@ PEER_FOLLOWUPS:banner_durability=verified:gen_at_age_min=38:phantom_expired_docu
 ```
 
 Operator: please choose Path A / B / C for phantom_expired before next resolver edit lands.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -80,3 +80,5 @@ after floor:  38  Counter({'EQUITY': 18, 'ETF': 7, 'BOND': 5,
   the gates still say **no**, and the floored picks are marked accordingly.
 - If a class genuinely has no candidates at all, nothing is invented (no fake picks).
 - The `_below_gate` tag is available for the UI to badge these rows.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

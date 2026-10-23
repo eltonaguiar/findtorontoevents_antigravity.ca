@@ -54,3 +54,5 @@ cta_replicator contributes 85/440 rows. PR #182 era retired losing cta strategie
 1. Reject any genome promotion based on this MC.
 2. Require OHLC intrabar replay (see `tools/sl_optimization_pricepath.py` pattern) before any commodity SL/TP tuning.
 3. Open INCIDENT on monte-carlo harness if it computes WR as "fraction reaching TP cap" — that is a labeling bug.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

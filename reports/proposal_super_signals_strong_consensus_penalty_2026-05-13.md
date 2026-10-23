@@ -66,3 +66,5 @@ Tied to:
 1. **Approve** the override pattern AS-IS (1-pair example) → I write the code + test in a follow-up PR, peer reviews
 2. **Approve with tweak** — different score delta, different label match → tell me the values
 3. **Reject** — keep base SOURCE_SYSTEM_SCORES flat; address via a different mechanism
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

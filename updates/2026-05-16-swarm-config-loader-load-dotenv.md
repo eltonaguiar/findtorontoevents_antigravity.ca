@@ -22,3 +22,5 @@ Behavior:
 python -m pytest tests/test_swarm_tooling.py::SwarmToolingTests::test_load_dotenv_overrides_empty_env -v
 ```
 Result: **1 passed**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -106,3 +106,5 @@ TRXUSDT is already in `BLOCKED_SYMBOLS` set (along with KATUSDT, KITEUSDT, RESOL
 Generated: 2026-05-04
 Model: tencent/hy3-preview:free via OpenRouter
 Verification: Perplexity Comet analysis (4/4 claims rejected or verified)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -37,3 +37,5 @@
 
 - Revert: `git revert <merge-commit>`, push `main`, let deploy workflow run.
 - **Secrets:** `THE_ODDS_API_KEY`, `ODDS_API_IO_KEY` must be set in repo Settings → Actions secrets for the workflow to emit non-empty keys.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

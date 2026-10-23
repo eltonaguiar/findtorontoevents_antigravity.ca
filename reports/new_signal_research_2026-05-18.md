@@ -355,3 +355,5 @@ _Supplementary check — 90-day windows (secondary view for a sparse signal; the
 Either way the outcome is the same operationally: **no signal here is admissible, none is wired, none is sized.** The economic priors (funding crowding tax, term-structure carry, slope momentum) are sound and 4 cloud models converged on them — but a sound prior is not an edge until the harness says so, and today it does not.
 
 This is consistent with the EDGE_VERDICT base rate: rigorous leakage-controlled testing keeps returning 'no admissible edge'. Per the EDGE_VERDICT standing rule, the honest default (Fork 3 — paper-only) remains in force. The genuine next step for Fork 2 is not more free-data backtests — it is acquiring the denser data these three signals need to be tested at all.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

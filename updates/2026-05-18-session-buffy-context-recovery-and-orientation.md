@@ -141,3 +141,5 @@ Context recovery is the **necessary prerequisite** to effective action. But it m
 ---
 
 *This document describes the current session's work. Next session should begin with live data verification and then execute against the MASTER_ACTION_PLAN PR targets.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

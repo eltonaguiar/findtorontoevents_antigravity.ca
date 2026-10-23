@@ -59,3 +59,5 @@ Operators should treat any current clone-row HC pass as **quarantined** (option 
 
 ---
 *Per project memory rules: "Confidence ≠ Edge" and "Gate At Execution Not Generation" — this blocker is the textbook example of both.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -78,3 +78,5 @@ over breadth-only PRs (`reports/HEDGE_LIBS_LEVERAGE_AUDIT_2026_04_22.md`,
 20/21 orphan rate). PEAD is wired; this PR just removes the silent-empty
 failure mode by ensuring the directory exists, plus hands a CLI to the
 follow-up wiring PR.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -65,3 +65,5 @@ The SPIRIT of the condition is "no new SUBSTANTIVE partner contributions". That 
 3. Wait for PR #8's first nightly fire at 19:12Z → unblocks PR #10
 4. Deep-review the DAILY_IDEAS.MD (3,647 lines) brainstorm — subagent flagged it as "NEEDS DEEPER REVIEW"
 5. Schema migration: build the MiniMax 5-table roadmap_items / incidents / enhancements / audit_log tables in ejaguiar1_stocks
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

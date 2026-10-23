@@ -72,3 +72,5 @@ Peer's swarm question Q2 asked: should the dashboard *reframe* COMMODITY entirel
 | **A6 — Correlation-regime CT=F check** | **DONE this report** | ✅ |
 | A7 — CRYPTO sub-T2 root-cause | (gated on A3) | — |
 | A8 — Friction-adjusted DSR | (peer code shipped, awaits cron) | — |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

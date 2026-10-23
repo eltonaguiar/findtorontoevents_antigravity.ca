@@ -15,3 +15,5 @@ COMMODITY has the best class-level PF but still misses the WR gate. Current payl
 ## Do Not Do
 
 Do not overfit PF upward by pruning losers without an out-of-sample or forward gate. The missing piece is WR reliability, not more retrospective cherry-picking.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

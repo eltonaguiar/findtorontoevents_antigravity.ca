@@ -103,3 +103,5 @@ Status: P0 items from the Hermes request are complete and edge-positive. Ready f
 ---
 
 *Verification complete 2026-05-16. This file satisfies the mandatory documentation rule for the edge work originating in ses_1cff.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

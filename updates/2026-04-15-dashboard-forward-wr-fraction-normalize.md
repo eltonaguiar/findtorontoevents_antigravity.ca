@@ -16,3 +16,5 @@ Before the universal forward-stats fill, if `forward_wr` is a **float** strictly
 
 - **Strategy FWD WR** (`strat_fwd_wr`) comes from `collect_strategy_leaderboard`: wins / (wins + losses) ×100 on `_filter_valid_resolved_picks`, with wins/losses from **sign of `pnl_pct`** only. **`fwd_trades`** counts every valid resolved pick, including **flat** PnL (0), so **N can exceed wins + losses**; WR denominator excludes flats.
 - **High percentages** (100%, 77%, 67%) on small **n** are arithmetically correct but **high variance**; cross-check **n** and whether the cell is **symbol track** vs **strategy-wide**.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

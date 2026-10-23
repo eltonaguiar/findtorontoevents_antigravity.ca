@@ -366,3 +366,5 @@ Items appearing in ≥3 prior plans (Kimi, FOOLPROOF, GOLDEN_STANDARD, SUPREME, 
 ---
 
 *Living document — successor: `reports/MASTER_ACTION_PLAN_2026-05-24.md` after MySQL sync*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

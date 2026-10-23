@@ -760,3 +760,5 @@ Data_points_to_fetch: 3-5 data feeds. For bonds, maybe yield curves (e.g., 10-ye
 - Advance GDP Release (Bureau of Economic Analysis)
 **Swing Trade Setup:** Enter long positions when the 10-year Treasury yield demonstrates a sustained upward trend, confirmed by positive GDP growth and decreasing credit spreads. Exit long positions when the yield declines significantly or when credit spreads widen, signaling increased risk aversion.
 **Short Term Setup:** Utilize a 1-3 day trading strategy, entering long positions on pullbacks within established uptrends, validated by a decrease in MOVE index volatility and positive GDP data. Exit short-term trades based on a break of key support levels or a reversal in the MOVE index.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -132,3 +132,5 @@
 ---
 
 *Read-only. No code changed. No commits.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -51,3 +51,5 @@ Caveats keeping this short of a clean "sizing-ready" call:
 ## 5. Sizing recommendation
 
 **Block COMMODITY sizing on `multi_asset_cot`/CT=F.** True deduped PF (4.69) is healthy in isolation but rests on n=40 single-symbol blacklisted-instrument signals — fix the COT emission de-dup in the aggregator, then re-evaluate COMMODITY on non-CT=F breadth before sizing up.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

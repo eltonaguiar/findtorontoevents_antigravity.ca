@@ -105,3 +105,5 @@
 ---
 
 **Immediate operator action:** Run `git diff HEAD~5 -- audit_trail/quality_gates.py ml_gatekeeper/gatekeeper.py` to identify the rogue gate causing Cluster A. That single investigation likely resolves the majority of failures.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

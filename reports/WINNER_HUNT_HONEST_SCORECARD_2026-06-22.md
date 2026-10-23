@@ -43,3 +43,5 @@ not a hidden strategy).
    ex-top-3 removal is worth far more than a 40%-WR fat-tail setup at the same headline PF.
 4. **Do not size on headline PF.** Both candidates had attractive headline PF; both were fragile
    underneath. The ex-top-3 / regime tests are now part of the standard gate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

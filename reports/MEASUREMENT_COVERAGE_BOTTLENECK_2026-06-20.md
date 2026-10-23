@@ -44,3 +44,5 @@ The FRM/CFA audit concluded we already have the rigor (CI-LB, DSR, PBO, White's,
 
 ## Honest bottom line
 The session's recurring theme — "edge scarcity + measurement-integrity uptime + forward-n accrual" — has a single dominant sub-cause: **we can only honestly resolve ~4% of our picks because we lack the price-path data for the rest.** Expanding price-path coverage (crypto history first, then equity/FX/commodity/bond feeds) is the highest-leverage move in the entire program — above any new strategy, gate, or FRM/CFA technique. Everything else is downstream.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

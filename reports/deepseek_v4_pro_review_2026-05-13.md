@@ -48,3 +48,5 @@
 ## 6. Procedural takeaway
 
 External model second-opinion belongs in the toolkit going forward, particularly when internal agents have reached consensus (consensus risk). Cost was trivial. The COT timing-leakage hypothesis alone justified the call.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

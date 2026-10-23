@@ -94,3 +94,5 @@ GitHub Actions scheduled workflows on non-default branches or with recent CI vol
 ---
 
 *Diagnosis agent: Claude Sonnet 4.6 | Session 2026-04-29T05:00Z*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

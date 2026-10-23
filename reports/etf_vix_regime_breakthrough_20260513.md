@@ -77,3 +77,5 @@ Methodology: trust regime-gate proposals from swarm. Skepticism + cross-correlat
 - This report
 
 NFA. No production change made.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

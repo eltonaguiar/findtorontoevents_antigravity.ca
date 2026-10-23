@@ -59,3 +59,5 @@ After merge:
 - Requires `yfinance` (already installed in CI)
 - Compatible with existing `non_crypto_policy` gates
 - Does NOT require changes to `production_scanner.py` — PEAD emits to `active_picks.json` via the standard merge path
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -100,3 +100,5 @@ exhausted — measured, not guessed. Any future edge claim must clear
 `edge_stability_harness.py` walk-forward **before** it is wired or sized. A
 gaudy PF / DSR-pass / SPA-pass is necessary and nowhere near sufficient — all
 three passed `cot_positioning`, which is a leakage artifact.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

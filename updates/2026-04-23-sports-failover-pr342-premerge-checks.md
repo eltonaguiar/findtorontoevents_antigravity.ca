@@ -226,3 +226,5 @@ From the original revised-execution-order list:
 3. **Write the rollback snippet** (15 min) and paste it into #342's description before merge.
 
 After those three, #342 is ready to merge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -281,3 +281,5 @@ print(f'n={len(pnls)} WR={wins/len(pnls)*100:.1f}% sum={sum(pnls):.1f}%')
 ```
 
 You'll get the same numbers shown here (±sampling on exact n, the file updates hourly).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -61,3 +61,5 @@ python3 -c "import py_compile; py_compile.compile('audit_trail/profitable_filter
 This starter + the .MD satisfies the "start to handle" request for this high-impact P0 while obeying every project rule (observational first, Wire-Up documented, no production behavior change, clean single-purpose PR).
 
 **Related incidents still open (per 2026-05-31 summary):** HC parity drift, signal_outcomes writer, COT dedup, trust_score backfill, COMMODITY class reconstruction, etc. Those remain higher-effort and correctly scoped out of this minimal starter PR.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -104,3 +104,5 @@ These mutations aim to address the issues with the entry and exit rules and focu
   },
   "id": "chatcmpl-44aec6d3-767f-92c7-af00-0a0d279ba55d"
 }
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

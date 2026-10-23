@@ -36,3 +36,5 @@ ollama_cloud, due to its ability to handle complex, multi-part prompts and provi
 ... (rest of the prompt remains the same)
 
 Note: The suggested rewrites aim to improve the clarity and precision of the prompt, while the overlooked topics and ambiguities flagged sections highlight areas that require additional attention to ensure the prompt is well-defined and unambiguous. The estimated variance reduction is medium, as the suggested changes are expected to reduce the variability in responses, but may not completely eliminate it. The recommended engine, ollama_cloud, is chosen for its ability to handle complex prompts and provide detailed responses.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

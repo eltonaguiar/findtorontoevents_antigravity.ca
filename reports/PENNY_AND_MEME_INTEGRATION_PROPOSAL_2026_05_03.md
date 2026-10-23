@@ -198,3 +198,5 @@ Before any code lands, please confirm:
 - [audit_dashboard/hc_filter.js:337-362](audit_dashboard/hc_filter.js#L337-L362) — passesHcFilter switch
 - [alpha_engine/outcome_resolver.py:115-126](alpha_engine/outcome_resolver.py#L115-L126) — `PNL_WIN_THRESHOLD_BY_CLASS`
 - [config/feature_flags.json](config/feature_flags.json) — feature flag registry
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

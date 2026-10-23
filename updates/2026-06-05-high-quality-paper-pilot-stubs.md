@@ -17,3 +17,5 @@ python3 tools/promote_high_quality_to_paper_pilot.py --top 12
 ```
 
 Resolve **INCIDENT #97** (SHY LONG vs SHORT) before any sizing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

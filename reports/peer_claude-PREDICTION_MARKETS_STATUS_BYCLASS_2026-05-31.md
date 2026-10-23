@@ -143,3 +143,5 @@ PR #182 (merged 2026-05-31 05:47 UTC) added `cta_golden_cross_200` and `predicti
 - PR #182 merged `2026-05-31T05:47Z` — Phase-5 retire
 - GH workflow API: `polymarket-signals.yml`, `prediction-market-agents.yml`, `sports-prediction-market-sync.yml`, `prediction-quality-tracker.yml`, `alpha-verify-predictions.yml`
 - Live DB: `ejaguiar1_stocks.trading_picks` (READ-ONLY, queried 2026-05-31 ~22:15 UTC)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

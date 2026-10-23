@@ -343,3 +343,5 @@ for key in ['by_asset_class_raw','by_asset_class','by_asset_class_policy_clean',
 ---
 
 *Report generated: 2026-05-18. Operator approval required before any changes to `BLOCKED_ASSET_STRATEGY_PAIRS` or `PERMANENTLY_KILLED_STRATEGIES`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -134,3 +134,5 @@ Phased plan is sound. Current progress: ~Week 1-2 (foundation phase).
 | `reports/weekly_filter_2026-05-16T0747Z.md` | Per-class edge verdicts |
 | `updates/2026-05-16-opencode-72h-review-feedback.md` | 72h commit/PR review |
 | `reports/prompt_library_analysis_2026-05-16.md` | This file |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

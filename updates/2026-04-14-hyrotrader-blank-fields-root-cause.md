@@ -125,3 +125,5 @@ The **blank QuanEngine detail columns** with **fresh JSON** are still explained 
 - `quan_engine/ensemble_layer.py` — `QuanEnsemble.vote`
 - `quan_engine/config.py` — `CONSENSUS_THRESHOLD`, `MIN_AVG_CONFIDENCE`
 - `audit_dashboard/data/hyro_quan_bridge.json` — example live payload with `ensemble: null`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

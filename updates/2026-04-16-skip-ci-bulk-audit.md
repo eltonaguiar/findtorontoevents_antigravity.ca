@@ -73,3 +73,5 @@ Before this change, ~120+ data-only commits per day each triggered push-based wo
 ## Cleanup
 
 - One-time helper script `tools/_add_skip_ci.py` deleted after use
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

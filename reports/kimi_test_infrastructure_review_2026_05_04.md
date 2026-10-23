@@ -107,3 +107,5 @@ Kimi's chip-filter selectors are **right by accident** — they target visible t
 3. **PR C (medium):** Adopt `sports-betting-advanced.spec.ts` with §2b `.bet-card → .pick-card-enhanced` rename. Pull in `wilsonScoreInterval` as `tests/utils/stats.ts`. Skip `audit.spec.ts` and basic `sports-betting.spec.ts` entirely.
 
 End of review.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

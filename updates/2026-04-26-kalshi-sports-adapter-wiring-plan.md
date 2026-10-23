@@ -102,3 +102,5 @@ PR title says "opt-in sidecar". This document names the target caller
 (`live-monitor/api/sports_picks.php`), the new functions
 (`sports_kalshi_load_signals`, `sports_kalshi_best_match`), and the
 deadline (2026-06-15).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

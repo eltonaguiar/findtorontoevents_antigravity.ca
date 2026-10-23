@@ -6,3 +6,5 @@ Details:
 - Recovery branch `restore/canonical-recompute-corrections-sidecar` does not exist on origin
 
 No recovery action taken. Aborting per protocol.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

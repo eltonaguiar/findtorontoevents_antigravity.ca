@@ -92,3 +92,5 @@ The autopsy should focus on:
 - `quan_engine_position` block: `audit_trail/quality_gates.py` L1407
 - Scheduled autopsy: 2026-05-24 (MASTER_ACTION_PLAN comment)
 - rapid_fire investigation: `reports/rapid_fire_strategy_investigation_2026-05-18.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

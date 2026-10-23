@@ -115,3 +115,5 @@ FOREX PF=0.81 is driven by:
 
 **Survivors with edge**: AUDUSD=X (PF=3.55), signal_validation/MeanReversionBB (PF=2.09),
 alpha_engine_fast (WR=53.8%).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

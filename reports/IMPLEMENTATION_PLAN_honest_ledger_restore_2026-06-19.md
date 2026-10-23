@@ -74,3 +74,5 @@ Run the signal_outcomes bridge from a **non-blocked host** (local — equity pri
    → **REVISED P0-4:** add a validity filter — only resolve backlog signals whose TP/SL/time-exit is still computable from available bars; flag/skip stale ones.
 
 **Net:** the plan is directionally right (un-freeze + durable price-source + un-mask) but the peer review hardened it on idempotency/rollback (P0-4), failover-granularity (P0-3), and a smarter un-mask predicate (P0-5). Proceed in this order: **P0-4 (idempotency-checked, snapshot-protected) → P0-3 durable → P0-5 un-mask**; P0-2 folded into P0-4.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

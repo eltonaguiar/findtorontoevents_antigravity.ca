@@ -235,3 +235,5 @@ Use these instead of writing from scratch:
 - claude/deepseek/kilo all hit JSON output truncation (~14-37KB raw); structural data extracted via regex, not full JSON parse.
 - ruflo (free tier) failed: `deepseek/deepseek-chat:free` and `google/gemini-2.0-flash-exp:free` return 404 from OpenRouter. Need paid keys.
 - New `/swarmwithprework` skill (4-phase: prework → brainstorm → action plan → QA critic) is the right tool for next iteration; this run pre-dated its discovery.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -317,3 +317,5 @@ Use the `prune_stale()` helper shipped in commit `1002af0cfa` to prevent unbound
 - Plan 3 (ALPHA ENGINE Live): confirm pick-freshness drop from 1h to 2h is acceptable
 
 All other plans can proceed without user input.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

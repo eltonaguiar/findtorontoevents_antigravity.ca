@@ -171,3 +171,5 @@ No oscillation is a "sure thing." All three patterns above BREAK during regime s
 - Never trade against DXY trend (for AUDUSD and BTCUSDT)
 - Never exceed 0.5% risk per oscillation trade
 - Always paper-validate 30d+ before any sizing
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

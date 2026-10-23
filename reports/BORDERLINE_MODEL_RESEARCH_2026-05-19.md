@@ -182,3 +182,5 @@ python tools/ollama_import_gguf.py --scan
 
 **Repro:** `python tools/borderline_model_lab.py --quick`  
 **Artifacts:** `reports/borderline_model_lab_latest.json`, `swarm_runs/borderline-lab/<timestamp>/`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

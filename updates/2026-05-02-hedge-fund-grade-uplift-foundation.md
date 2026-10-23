@@ -118,3 +118,5 @@ This PR is the **Week-1 foundation** in the plan's 4-week sequence:
 * `reports/HEDGE_LIBS_LEVERAGE_AUDIT_2026_04_22.md` — 20/21 orphan rate (motivates Wire-Up Rule compliance)
 * `reports/RESEARCH_KELLY_AND_SLIPPAGE.md` — drafted, not yet wired (transaction-cost persona owns landing)
 * `AGENTS.md` — Goal #1, Wire-Up Rule, "fix bugs tightly coupled to your changes"
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

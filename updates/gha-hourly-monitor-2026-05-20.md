@@ -610,3 +610,5 @@ Most recently merged PR: **#1269** (audit: 18Z hourly 2026-05-20) — merged 18:
 **Status change vs 21:00Z:** DEGRADED → DEGRADED (verdict unchanged — no new CI-triggering code; all main commits in 21:00Z–22:10Z are [skip ci] bot data pushes; no PRs merged since #1269 at 18:17:40Z; PR #1272 (21Z audit) newly opened with 3/3 security checks ✅; PRs #1270 and #1271 remain open with operator-hold; operational failures from 01–03Z now ~19–21h old with near-certain self-healing; chronic workflow list unchanged at none; open PR count increased from 2 to 3 — #1272 added this hour).
 
 ---
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

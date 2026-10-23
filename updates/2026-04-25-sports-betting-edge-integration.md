@@ -76,3 +76,5 @@
 - Implement scraper prototype.
 - Add sports edge scanning to production runs.
 - Document in AGENTS.md for future reference.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

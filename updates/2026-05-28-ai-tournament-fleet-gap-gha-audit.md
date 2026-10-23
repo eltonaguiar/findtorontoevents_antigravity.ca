@@ -87,3 +87,5 @@ This change does **not** invent secrets or provider access that do not exist, bu
 2. the page hid the true configured-vs-active state behind static rows
 
 After this PR, the page can truthfully show the full fleet picture, and the pipeline has a much better chance of actually generating picks for the larger registered model set instead of timing out before publish.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

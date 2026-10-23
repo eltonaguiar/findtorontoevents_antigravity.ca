@@ -76,3 +76,5 @@ would have put wrong numbers in front of the operator.
    Verified: py_compile OK; `--stdout` and write modes exit 0; missing-input path exits 1 with
    a clear ERROR (asserted); summary assertions 6/5/0/5 = templates/ledger-gated/live-pass/
    paper-only match the report. Last run: 0/5 ledger-gated pass, ETF TAA = backtest-track.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

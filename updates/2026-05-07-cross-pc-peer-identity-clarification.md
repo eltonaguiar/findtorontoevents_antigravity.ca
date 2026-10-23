@@ -28,3 +28,5 @@ Updated adapter behavior and docs to reduce identity mistakes:
 ## Outcome
 
 Message ownership in logs now maps correctly to runtime intent by default, while still allowing explicit peer IDs when needed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -39,3 +39,5 @@ Option A (big-batch cancel) is a no-op this tick. Queue depth is already at its 
 
 ## Recommendation for next tick
 If queue stays at 4 indefinitely, surface the 4 stale runs (4 days old) to operator for manual decision — they are likely stuck/abandoned but cancelling Deploy or Market Beating without sign-off violates the protected list.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

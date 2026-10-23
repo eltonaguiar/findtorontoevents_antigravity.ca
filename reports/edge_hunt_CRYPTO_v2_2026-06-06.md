@@ -111,3 +111,5 @@ GROUP BY resolver_version;
 ---
 
 *Generated 2026-06-06. No dashboard generators run. All figures traced to files/queries above.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

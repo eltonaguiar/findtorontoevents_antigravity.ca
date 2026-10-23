@@ -561,3 +561,5 @@
 - [OPEN] Flip on MDD enforce mode (operator decision)
 - [OPEN] Wire up ET-1/CO-1/E-1 sidecars (harness-gated)
 - [OPEN] Tune FUTURES curation gate vs new scanner (operator decision)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

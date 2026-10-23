@@ -61,3 +61,5 @@ Common recommendations:
 2. Re-run with CPU fallback for failed local models to improve jury breadth.
 3. Standardize output format to JSON (Q1-Q5 + probability + failure modes) and auto-score model agreement.
 4. Feed resulting candidate into the existing admissibility harness before any deployment decision.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

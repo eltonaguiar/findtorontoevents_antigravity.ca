@@ -68,3 +68,5 @@ per M-107. Anything else is re-running a settled experiment.
 
 *Reproducers: tools/h017_*, h018_*, h019_*, h020_* research scripts. Harness:
 tools/edge_stability_harness.py (imported unmodified in every test).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

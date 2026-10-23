@@ -75,3 +75,5 @@
   "cost_in_usd_ticks": 82506000
 }
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

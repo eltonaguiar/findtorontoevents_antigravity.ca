@@ -101,3 +101,5 @@ FOREX has **0 open incidents** — all 7 historical FOREX incidents are RESOLVED
 | Operator queue impact | 5 open (none FOREX) |
 
 **Final: NOT_WORKING_YET (deployment good, emission cycle pending).** Re-check in 2-3 hours; if dxy_trend_filter still 0, escalate to upstream signal diagnosis.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

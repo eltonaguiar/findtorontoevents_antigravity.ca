@@ -219,3 +219,5 @@ Target: QQQ, SPY, IWM, GLD, EEM minimum. HHI must drop below 0.30 before sizing 
 - Investigation context: CRYPTO findings (battleground_ml, mega_mutation, RENDERUSDT)
 - Investigation context: ETF/FUTURES findings (regime_mild_bull HHI, connors_rsi2 artifact, cta_cross_asset_tsmom NG=F duplicate)
 - All PF/WR figures derived from live DB with GROUP BY (symbol, DATE(signal_timestamp)) dedup applied
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

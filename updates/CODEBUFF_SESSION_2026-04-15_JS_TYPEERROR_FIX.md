@@ -48,3 +48,5 @@ Additionally, several places in the score tracker function accessed `.picks` on 
 
 - The CI auto-commit race on `main` caused multiple failed push attempts (CI keeps committing data files back to main, creating conflicts). The fix was eventually committed via a feature branch that merged back.
 - The `tradingview-mcp` submodule shows as modified but is untracked — no action taken.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

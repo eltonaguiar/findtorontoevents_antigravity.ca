@@ -76,3 +76,5 @@
 }
 ```
 (Full response saved at `/tmp/grok_response.json` during run; HTTP 200, 2641 bytes content.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -56,3 +56,5 @@ Standing recommendations:
 - Don't add more picks to theswarm until ≥60% of the 38 tracked swarm_picks resolve
 - Force ≥4 non-Opus personas in next fanout (Kimi-k2.5, DeepSeek R1, Qwen3-coder-480b, GPT-OSS-120b all available locally)
 - CT=F sizing capacity model (peer's A4) needs correlation gate, not just ADV — GOLD↔EQUITY just crossed +0.76 = diversifier moving with equities
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

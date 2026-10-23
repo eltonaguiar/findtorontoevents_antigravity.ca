@@ -94,3 +94,5 @@ All persona-paper-only; no production gate exposure; operator-promotion required
 - `reports/deep_dive_ETF_2026-05-31.md`
 - PR #219 (per-class persona schema)
 - PR #228 (skyrocket shadow-pilot recommendation)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -67,3 +67,5 @@ The script was designed for closed_picks.json. Extension to MySQL is possible bu
 ## H-021 Pre-registration Note
 
 Separately completed: pre-registered H-021 window 3 criteria in hypothesis_registry.json to prevent goal-post moving before 2026-05-26 re-run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

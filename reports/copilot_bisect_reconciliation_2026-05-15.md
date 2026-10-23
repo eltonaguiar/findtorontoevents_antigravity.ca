@@ -76,3 +76,5 @@ Copilot's doc would land at `updates/2026-05-15-test-quality-gates-bisect-analys
 - Local triage agent: `a482f15bd758714e1` (correct buckets, validated empirically)
 - Local fix PR: #1050 (32 of 36 unblocked)
 - Local doc PR: #1049 (test-debt analysis)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -31,3 +31,5 @@ Modified `load_json_picks()`:
 
 ## Also Dispatched
 - Outcome Resolver workflow via `gh workflow run` — completed successfully (run #26517953586)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

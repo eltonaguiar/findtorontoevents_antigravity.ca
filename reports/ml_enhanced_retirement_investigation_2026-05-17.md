@@ -65,3 +65,5 @@ Investigation doc written (this file). No quality_gates.py changes made.
 | Step 4 — Asset class split | N/A | All CRYPTO |
 | Step 5 — Winning subset n≥100 | N/A | Cannot compute without resolved picks |
 | **Kill verdict** | **NOT JUSTIFIED** | Cannot block without resolved-pick evidence |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

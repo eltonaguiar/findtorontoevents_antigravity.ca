@@ -256,3 +256,5 @@ console.log('strategy unknown/empty:', strategy_unk);
 ```
 
 **End of report.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

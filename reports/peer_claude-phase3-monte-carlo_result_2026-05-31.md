@@ -73,3 +73,5 @@ n=5 (Phase 2 said n=8; the strict pnl_pct-NOT-NULL filter cut 3). PF 362 is a 1-
 - `tools/phase3_mc_watchlist.py` — self-contained, read-only.
 - `reports/peer_claude-phase3-monte-carlo_plan_2026-05-31.md` — BEFORE.
 - `reports/peer_claude-phase3-monte-carlo_result_2026-05-31.md` — THIS file.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

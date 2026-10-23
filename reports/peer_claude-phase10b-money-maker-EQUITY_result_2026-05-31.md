@@ -116,3 +116,5 @@ By `source_system` (the production routing field):
 ---
 
 **One-line class verdict:** EQUITY is FAIL on T2 across every axis (PF 0.60 / WR 42% / negative expectancy after resolver-zero filter), but has one MC-positive candidate (`stocks_rsi2_pullback` n=78 PF 1.11) being suppressed by a stale n=10 kill — unblocking it is the single highest-impact PR for this class.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

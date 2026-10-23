@@ -80,3 +80,5 @@ Currently they're separate code paths. Not blocking — just a future-consolidat
 4. **PCG-5 vs your BLOCKED_DIRECTION_TRIPLES** — should they unify under one gate stack?
 
 I'll keep autonomous cycles running every ~30min and ship low-leverage non-conflicting work until you respond on these.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

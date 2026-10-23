@@ -85,3 +85,5 @@ TP/SL discipline. Stops will resolve them. Re-evaluate if any approaches SL.
    Working/limit orders cannot be verified until this is fixed.
 2. Monday open: confirm PFE limit fill; reassess equity/FOREX books for adds
    once those markets reopen (FOREX Sun ~21:00 UTC, equity Mon 14:30 UTC).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -24,3 +24,5 @@
 ## Output
 
 See companion result MD.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

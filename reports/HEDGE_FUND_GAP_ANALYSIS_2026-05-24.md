@@ -121,3 +121,5 @@ A new persona category for conservative, capital-preservation-focused picks:
 5. FRED macro data is now live (7 series). How should regime context influence pick direction and confidence?
 6. What's the minimal viable path to get hedge fund grade picks in EQUITY specifically? (considering UEPS has n=0)
 7. Should we use the 28 legacy models' historical WR data (from the old pipeline's 16k picks) as seed confidence for our new tournament pipeline?
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

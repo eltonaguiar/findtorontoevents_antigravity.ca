@@ -191,3 +191,5 @@ Right now the platform is a **manual toolchain with automated components** (GitH
 4. send_message makes it VISIBLE — problems surface where humans look
 
 These four tools, deployed together, transform "Hermes helps when you ask" into "Hermes IS the hedge fund's operations layer."
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

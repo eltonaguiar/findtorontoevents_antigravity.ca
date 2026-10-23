@@ -84,3 +84,5 @@ Per `CLAUDE_DEBUGGING_GUIDE.MD` (already on main):
 1. Define failure thresholds → 2. Verify data integrity → 3. Segment failure → 4. Leakage audit → 5. Model vs execution → 6. Ablation/mutation → 7. Kill vs mutate governance → 8. Guardrails → 9. Forward proof → 10. Document.
 
 Repo's existing playbook is the canonical version — agents writing duplicate playbooks add noise, not leverage. This doc reports STATE, not protocol.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

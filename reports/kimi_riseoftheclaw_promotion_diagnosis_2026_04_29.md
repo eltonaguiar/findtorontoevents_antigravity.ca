@@ -161,3 +161,5 @@ print('kimi trust_tier distribution:', dict(tt))
 - `KIMI_RISEOFTHECLAW/data/closed_picks.json` — emitter native ledger (994 trades, CRYPTO+FOREX only)
 - `reports/HFPA_PHASE-2-findings-EQUITY-2026-04-29.md` — Phase 2-B panel finding
 - `reports/EDGE_DELIVERY_INVESTIGATION_2026_04_29.md` — prior investigation (kimi NOT covered)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

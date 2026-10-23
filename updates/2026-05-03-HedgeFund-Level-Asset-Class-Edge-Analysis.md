@@ -245,3 +245,5 @@ commodity_session_ok = nytime.hour >= 6 and nytime.hour <= 17
 ---
 
 *Document Version: 1.0 | Status: Ready for Implementation*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

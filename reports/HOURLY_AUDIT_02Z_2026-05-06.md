@@ -147,3 +147,5 @@ Symbol blocklist candidates for next session:
 3. **COMMODITY 30d watch:** at 24h post-#836 merge (~2026-05-07 02Z), compare COMMODITY 30d PF. If still <1.0, open COMMODITY deep-dive issue.
 4. **Conflict resolution:** #838 and #841 need author rebase after today's main merges.
 5. **Post #686 update:** comment on issue #686 with FOREX/EQUITY deltas from this report.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

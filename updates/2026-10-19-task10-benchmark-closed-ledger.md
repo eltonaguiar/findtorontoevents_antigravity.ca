@@ -115,3 +115,5 @@ benchmark fallback. The paired gate — the honest headline — is unchanged:
 "same-asset nulls (fixed 2026-10-19)" and kept supporting; n<20 MC percentiles
 muted with `*` (mirrors the WR-hide convention); headless-Chromium smoke:
 headline renders, 0 page errors, zero READY/ENTER tokens in panel + sidecar.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

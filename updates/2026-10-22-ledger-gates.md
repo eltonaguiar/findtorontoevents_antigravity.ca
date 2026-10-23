@@ -86,3 +86,24 @@ first and evaluates the four gates against the whole ledger.
   `test_dashboard_generator_measurement_hygiene.py`.
 - `dashboard_generator.py` compiles and imports; `has_builder=True`,
   `has_legacy=True`, no module-level name collision.
+
+## Code-quality follow-up (2026-10-22): dead-code removal
+
+A code-quality review flagged dead code at `dashboard_generator.py` line 18695:
+`_oa_total = compute_ledger_gates.__doc__`.
+
+- The assignment never executed (it sat inside the `if MEASUREMENT_HYGIENE_V1
+  and _measurement_block is not None:` block), and even if it had,
+  `compute_ledger_gates` is imported only inside that same gated block, so it
+  would raise `NameError` when the flag is OFF (the default).
+- The variable `_oa_total` was never read; the real overlap-aware return is
+  computed by `compound_overlap_aware(resolved_closed)` and assigned to
+  `_oa_return` (line 18698).
+- **Fix:** removed the dead line only. `payload["summary"]["measurement_hygiene"]`
+  wiring is untouched — Task 6 reconciles the top-level
+  `payload["measurement_hygiene"]` block.
+- **Regression:** re-ran
+  `pytest tests/test_ledger_gates.py tests/test_dashboard_generator_net_pf_wireup.py tests/test_compound_overlap_aware.py tests/test_dashboard_generator_measurement_hygiene.py -q`
+  → `29 passed in 0.87s`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

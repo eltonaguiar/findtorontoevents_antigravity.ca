@@ -67,3 +67,5 @@ The right next step is the agent's **"Gate Attribution Pass"** proposal (a per-s
 - `0c650f9cb` — Reverted Gemini's rr>=1.00 ETF/Bond loosening
 - `77910d1dc` — 14 strategies paper-flagged + PROVEN demote-on-decay
 - `45d567454` — luxalgo + 5 golden_combos paper-flagged
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

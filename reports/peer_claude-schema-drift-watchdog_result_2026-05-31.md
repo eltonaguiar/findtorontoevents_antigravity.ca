@@ -47,3 +47,5 @@ downstream code. Removals and type changes are the silent-breaker class.
 
 2-file infra change (+ this writeup). No production-code path touched. No picks
 affected. Pure observability.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -81,3 +81,5 @@ These fixes unblock strategies that were killed on bad data. To close the loop:
 - `docs/PERFORMANCE_DEEP_DIVE_MAY82026.md` — Full analysis
 - `updates/2026-05-06-forex-mutation-decisions.md` — Mutation decisions that led to some of these kills
 - `updates/2026-05-06-day2-audit-kills.md` — Day-2 audit that killed several forex strategies
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

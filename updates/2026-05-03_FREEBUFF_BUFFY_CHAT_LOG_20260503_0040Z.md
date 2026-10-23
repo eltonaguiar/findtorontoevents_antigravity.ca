@@ -135,3 +135,5 @@ Commit made to `docs/buffy-pr-review-2026-05-03` branch, pushed to origin.
 
 *Session duration: ~20 minutes | 16 GitHub comments posted | 2 documents committed*
 *Brought to you by FREEBUFF 🐇*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

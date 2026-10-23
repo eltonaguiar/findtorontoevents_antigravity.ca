@@ -44,3 +44,5 @@ Slots were freed but **immediately absorbed by other queued runs** ahead of our 
 - Did NOT exceed 8 cancellations.
 - Did NOT cancel queued items.
 - No rate-limit hits.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

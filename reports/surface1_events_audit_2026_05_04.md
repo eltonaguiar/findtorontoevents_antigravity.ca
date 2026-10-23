@@ -54,3 +54,5 @@ See `reports/surface1_max3_per_source_design.md` for the gear-icon "Max 3 events
 **Ship-today:** investigate + fix BUG-1 (Today/Tomorrow/This Week date comparator). This is the highest-leverage user-visible defect.
 **This-week:** BUG-2 oscillation root cause (MutationObserver re-arm), tabular-view test-selector update + CSV/sort validation, ship the Max-3-per-source feature behind the gear toggle (default OFF; opt-in).
 **Next-sprint:** TIFF + Bandsintown + Toronto Open Data integrations; user-prefs API endpoint for cross-device persistence.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

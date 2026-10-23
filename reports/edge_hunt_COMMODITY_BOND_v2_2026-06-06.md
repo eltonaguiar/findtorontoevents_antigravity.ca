@@ -204,3 +204,5 @@ cat audit_dashboard/data/pick_summary_stats_14d.json | python3 -c "import json,s
 - **BOND:** n=50 already in `at_raw_picks` (excl backfill) but verdict shows n=0. Fastest n=30 **policy-visible** = pipeline unfreeze + promote `bond_yield_curve_slope` + wire `bond_tlt_ief_v3`. No real-money sizing on either class until policy-clean n≥30 **and** WR/PF hold post-wire-up.
 
 *Prior reports: `reports/edge_hunt_COMMODITY_2026-06-05.md`, `reports/edge_hunt_BOND_2026-06-05.md`, `reports/bond_n_ramp_analysis_2026-06-05.md`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

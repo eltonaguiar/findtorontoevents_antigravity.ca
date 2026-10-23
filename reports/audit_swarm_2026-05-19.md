@@ -191,3 +191,5 @@ Full YAML workflow skeleton included in raw output at `swarm_runs/audit_20260519
 | Grok regime signal global std() | FLAWED (LOOKAHEAD) | .std() on full column includes future bars; use rolling |
 | Confidence inversion root cause | Label leakage #1 | Overfit #2, regime change #3, wrong loss #4 |
 | Best action for 0/14 gate passes | Ensemble + intraday | Reduce signal noise (ensemble), then test power (intraday) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

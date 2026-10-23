@@ -35,3 +35,5 @@ This is the same pathology proven on `ml_enhanced_INJUSDT_1d_B_lightgbm` the sam
 
 ## Reproduce
 `fxp_price_history` daily OHLC → first-touch (LONG: low≤SL→SL_HIT else high≥TP→TP_HIT; SHORT mirror; same-bar tie→SL; else TIME_EXIT at last close) → dedup symbol-day → `tools/pf_ci_lower.py` net of per-pair cost (majors 2bp / JPY 6bp). DB via `tools/db_env.get_stocks_creds()` + `get_backtests_creds()`. Cohort: `trading_picks` `strategy='non_crypto_consensus'`, `category='forex'`, entry/TP/SL>0, 2026+.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

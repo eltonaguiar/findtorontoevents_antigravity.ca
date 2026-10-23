@@ -91,3 +91,5 @@
 | Date | Change | Author |
 |------|--------|--------|
 | 2026-05-19 | Initial scorecard created | Claude Code |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -161,3 +161,5 @@ print(score_pick({
   provider becomes a default pick.
 - Wire to `long_term_pick_contract.py` — separate PR after shadow-run
   validation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

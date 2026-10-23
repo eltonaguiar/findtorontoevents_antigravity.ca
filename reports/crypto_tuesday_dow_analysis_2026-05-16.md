@@ -88,3 +88,5 @@ Wednesday (13.9% WR, −6.4pp) and Thursday (14.5% WR, −5.7pp) are the real ou
 ---
 
 *Analysis run: 2026-05-16. Source: `alpha_engine/data/closed_picks.json`, n=6,677 CRYPTO picks with parseable timestamps.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

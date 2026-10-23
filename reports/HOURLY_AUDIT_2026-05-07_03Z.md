@@ -169,3 +169,5 @@ SI=F (0% WR), AMD (0%), ZW=F (0%) — candidates for symbol-allowlist mutation i
 **Hold set:** intact, not touched
 
 *n<20 in 7d for ETF — interpret with caution.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

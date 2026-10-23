@@ -247,3 +247,5 @@ If issues occur:
 **Testing completed:** All 4 new APIs tested locally, client integration verified  
 **Ready for deployment:** Yes  
 **Breaking changes:** None (additive only)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

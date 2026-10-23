@@ -21,3 +21,5 @@ This keeps configured environments overrideable while preventing production from
 
 - PHP 5.2 compatibility validator passed for `favcreators/docs/api/config.php`.
 - Live OAuth config endpoints were checked before deployment and showed the main domain had an empty client ID.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

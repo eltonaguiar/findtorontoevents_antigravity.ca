@@ -65,3 +65,5 @@ benchmark" question. Because the benchmark is built in memory directly from the
 closed ledger, we get the comparison even when the on-disk sidecar file doesn't
 exist yet, and if the benchmark computation ever fails it degrades gracefully
 instead of breaking the whole dashboard.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

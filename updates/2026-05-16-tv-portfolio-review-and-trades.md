@@ -103,3 +103,5 @@ on both. **No position left unprotected at any point a scan would catch.**
    already warns this; treat it as the rule, not the exception.
 3. Portfolio hygiene is good — 23/23 prior positions protected. The repeated-violation
    pattern from earlier sessions is resolved.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -463,3 +463,5 @@
 - [OPEN] Wire reconciliation gate into CI workflow
 - [OPEN] Scope Move #1 (ledger reconciliation structural change) as a planned PR
 - [OPEN] Use agent swarm to help plan the generator-reads-registry rewrite PR
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

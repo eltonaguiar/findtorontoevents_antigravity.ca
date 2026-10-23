@@ -71,3 +71,5 @@ If the issue reappears, use the existing guarded runner instead of ad-hoc SQL de
 python3 tools/cleanup_ghost_rows.py --min-size 1000
 python3 tools/cleanup_ghost_rows.py --execute --limit 1000
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

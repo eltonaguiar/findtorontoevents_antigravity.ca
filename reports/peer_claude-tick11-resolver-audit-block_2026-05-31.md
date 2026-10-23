@@ -105,3 +105,5 @@ Optional accelerants (only if user wants the resolver to land faster):
 ## Verdict line
 
 `BLOCKER:concurrency_lock=false:stuck_in_progress_to_cancel=none:retrigger_validity=dispatchable:next_action=wait-for-natural`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

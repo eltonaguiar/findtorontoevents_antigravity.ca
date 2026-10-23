@@ -136,3 +136,5 @@ The Kimi bundle is a **simulator-aligned research prototype** — not production
 - Existing scoring: `alpha_engine/score_booster.py`, `alpha_engine/hyrotrader_enhanced_scoring.py`
 - Existing gate: `alpha_engine/forward_validator.py`
 - Hypothesis registry: `reports/hypothesis_registry.json`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

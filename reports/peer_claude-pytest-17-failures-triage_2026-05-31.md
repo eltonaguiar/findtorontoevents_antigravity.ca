@@ -103,3 +103,5 @@ git diff a043dc575~1..a043dc575 -- audit_trail/quality_gates.py
 - Plan: `reports/peer_claude-pytest-17-failures-triage_plan_2026-05-31.md`
 - AI consult (verbatim): `reports/peer_claude-pytest-17-failures-triage_mimo_consult_2026-05-31.md`
 - Result: `reports/peer_claude-pytest-17-failures-triage_result_2026-05-31.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

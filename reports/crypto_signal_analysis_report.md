@@ -167,3 +167,5 @@
 | SHORT confidence threshold | 90% | 75% | Short signals can flow through |
 | Dormant strategies unblocked | Kill list | Protected list | Keltner, ATR breakout restored |
 | Fetch timeout on page load | None | 15s | Prevents infinite loading from 20MB fetch |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

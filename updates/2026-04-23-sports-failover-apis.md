@@ -98,3 +98,5 @@ Navigate to **System Analysis** tab → scroll to "🔄 Failover API Health" pan
 3. **Injury failover** currently ESPN-only — no free alternatives discovered for structured injury data
 4. **Client-side direct API calls** may be blocked by CORS on some APIs (ESPN CORS headers are permissive; MLB/NHL less so)
 5. Health check uses HEAD requests which some APIs don't support — may show false negatives
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

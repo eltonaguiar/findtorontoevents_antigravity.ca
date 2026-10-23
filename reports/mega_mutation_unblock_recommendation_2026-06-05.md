@@ -59,3 +59,5 @@ Low. Unblocking only affects FUTURE picks from the genome tracker. Historical tr
 
 ## Note on kimi_signal_tracking
 kimi_signal_tracking also had sign flips (142 on June 2 → 0 on June 4). However, it has severe batch artifact (80.4% of trades on 2026-04-10) which makes the WR/PF numbers unreliable. Recommend keeping kimi_signal_tracking blocked until >3 months of forward data without batch artifact.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

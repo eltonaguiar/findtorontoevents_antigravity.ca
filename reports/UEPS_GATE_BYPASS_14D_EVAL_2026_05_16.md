@@ -128,3 +128,5 @@ However, the 0-active condition means UEPS picks are not visibly reaching `picks
 | Bypass code correctness | ✅ | Local test: ADBE/PYPL/QCOM pass with flag |
 
 **Overall verdict: HOLD — bypass is correctly implemented and flag is ON, but the zero-active system condition must be resolved before the bypass can be declared production-effective.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

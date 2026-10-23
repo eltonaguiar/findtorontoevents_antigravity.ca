@@ -54,3 +54,5 @@ Session is done. Banner cleared. ~85% incident reduction (41 -> 6). **6 items le
 
 ## Loop recommendation
 **Disable or extend the 10-min autonomous loop to 30+ min.** Work-density has hit floor — remaining items require operator judgment (kill lists, trust-score promotions, leakage demotions), not more autonomous mutation cycles. Continuing the 10-min cadence will just churn meta-docs.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

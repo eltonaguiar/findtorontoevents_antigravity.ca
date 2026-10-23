@@ -76,3 +76,5 @@ eye2.ai returned a production-grade Python pipeline with:
 - `updates/2026-05-19-anonymous-ai-council-transcript.md` — verbatim AI responses
 - `updates/2026-05-19-anonymous-ai-council-benchmark.md` — source benchmark / anonymity report
 - `updates/2026-05-19-anonymous-ai-council-summary.md` — this file
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

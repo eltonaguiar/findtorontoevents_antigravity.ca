@@ -54,3 +54,5 @@ Compare to EQUITY VIX-regime overlay shipped same day:
 - `reports/equity_vix_regime_breakthrough_20260513.md` — successful overlay (VIX worked)
 
 NFA. No production change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

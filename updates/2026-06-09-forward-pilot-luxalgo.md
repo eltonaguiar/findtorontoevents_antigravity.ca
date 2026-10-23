@@ -132,3 +132,5 @@ Reproducer:
 ```bash
 python3 tools/_batch_pilot_wider.py   # 6-7 candidates x 60d/90d lookback
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

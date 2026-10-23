@@ -193,3 +193,5 @@ The blank-strategy CRYPTO cohort (n=202, PF=3.19) is a labeling bug — these pi
 - `https://findtorontoevents.ca/audit/data/pf_registry.json` (current)
 - CLAUDE.md tier thresholds + `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - Memory: `project-money-ready-2026-05-31.md`, `project-confidence-trust-edges-2026-05-31.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

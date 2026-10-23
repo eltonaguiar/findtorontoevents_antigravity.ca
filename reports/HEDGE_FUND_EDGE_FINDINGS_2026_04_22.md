@@ -231,3 +231,5 @@ From the earlier session's 11-module integration work on `feat/ship-week-integra
 - **`pyod` (ECOD)** — regime filter. Benchmark showed pyod-flagged picks had *higher* WR (33%) than normal (29%) — suggesting pyod should be used as an **admission filter** (only trade bars flagged as "typical"), not a **rejection filter**. Reverse the sign at integration time.
 
 These live on the ship-week branch and depend on PR #301 (resolver fix) merging first per `agent notes.txt` blocker list.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

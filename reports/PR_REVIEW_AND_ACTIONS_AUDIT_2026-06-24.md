@@ -44,3 +44,5 @@ The failing PR checks are the `test (3.11)` / `test (3.12)` matrix job. Pulled t
 - **5 stale doc/session PRs (06-12/13: #562, #564, #581, #595, #600)** → recommend **close as superseded** (content months old; edge-hunt concluded + documented in later reports).
 - **4 recent PRs (#657, #665, #666, #667)** → **rebase onto main + re-run CI**; for #667 also fix the 2 new tests that depend on `pick_funnel_90d.json` (make them skip when the gitignored file is absent — the same pattern other data-dependent tests already use).
 - Merges/closes are outward-facing + irreversible → left for operator decision, not auto-executed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

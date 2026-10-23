@@ -112,3 +112,5 @@ stop the real-money hunt.** Honest given 8 priors.
 *Swarm run: `swarm_runs/roadmap-edge-2026-05-18/` (Grok grok-4.3 + DeepSeek).
 Canonical data: `audit_dashboard/data/pf_registry.json`. Prior: 8 harness kills,
 `reports/EDGE_VERDICT_2026-05-18.md`, `reports/EQUITY_VERDICT_FINAL_2026-05-18.md`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

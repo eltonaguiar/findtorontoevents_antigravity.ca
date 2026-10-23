@@ -39,3 +39,5 @@ to:
 
 ## Notes
 - An unrelated modified file exists in the working tree: `alpha_engine/non_crypto_policy.py` (not changed by this fix).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

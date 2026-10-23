@@ -57,3 +57,5 @@ return bars
 New helper `_fetch_ohlc_equity_alphavantage` parallels `_fetch_ohlc_crypto_binance` (L289-336 template), parses `Time Series (Daily)` JSON into the same `{date,open,high,low,close}` dict shape `_scan_ohlc_for_touch` already expects. No changes needed in `outcome_resolver.py` or `resolve_db_picks.py` — they just consume the bars list.
 
 **Mirror in main resolver (optional, same shape):** `alpha_engine/outcome_resolver.py:440-511` `_fetch_yfinance_ohlc_window` — wrap its `hist = future.result(...)` (L494) failure path with the same AV fallback before returning empty.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -68,3 +68,5 @@ roadmap. No tactical edge missed by the in-repo plan.
 - `reports/grok_audit_red_team_synthesis_2026-05-12.md`
 - `audit_dashboard/data/quarantine_manifest.json::session_commits`
 - Investigator `a74ed45b676e789ce` (2026-05-12)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

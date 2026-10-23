@@ -29,3 +29,5 @@ Every goal is blocked by missing resolution data, not missing ideas or rigor:
 
 ## Honest bottom line
 The program is data-constrained, not analysis-constrained. To produce trustworthy winners it needs better RESOLUTION data (point-in-time equity / multi-year crypto path / sports closing lines) — a data-acquisition problem. Autonomous edge-hunting across both goals is exhausted; no edge can be honestly recommended today.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

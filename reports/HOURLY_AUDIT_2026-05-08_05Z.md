@@ -137,3 +137,5 @@ Not in open PR list — presumed closed. No action required.
 - PR #687 (merged today): JPY-cross BUY rule fix — FOREX recovery confirmed
 - `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

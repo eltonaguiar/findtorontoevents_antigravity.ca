@@ -517,3 +517,5 @@ are merged.
 - `alpha_engine/strategy_blocklist.py` — `_PAPER_ONLY_STRATEGIES` / `_RETIRED_STRATEGIES`
 - `alpha_engine/data/core_whitelist.json` — 541-entry kill_list (this report's hygiene flag)
 - `alpha_engine/outcome_resolver.py:97` — universal `PNL_WIN_THRESHOLD` bug source
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

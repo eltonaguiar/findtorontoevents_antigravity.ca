@@ -108,3 +108,5 @@ This is a **standalone fix** outside the action plan v2 sequence — it unblocks
 - `audit_trail/quality_gates.py:4406-4417` — non-crypto raw score floor (target #1)
 - `audit_trail/quality_gates.py:3903-3905` — BLOCKED_SYMBOLS (target #2)
 - `audit_trail/quality_gates.py:4087-4093` — elite_grade D block (target #3)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

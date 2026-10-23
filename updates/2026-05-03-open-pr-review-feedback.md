@@ -95,3 +95,5 @@ The current queue has a few clean wins, but most risk is in broad PRs that combi
 1. Small, reversible, well-tested changes.
 2. Rebased branches with green tests.
 3. Explicit rollout toggles and rollback criteria for any gate/risk-control behavior change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

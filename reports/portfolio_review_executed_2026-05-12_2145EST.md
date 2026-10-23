@@ -75,3 +75,5 @@ The TV after-hours close-button silently cancels TP/SL without closing positions
 > "Of 22 positions, 7 are pure noise (<±1%), 5 are working (TSLA, RUNE, BNB, LLY, ADA-shorts), 4 should never have been opened against a confirmed BULLISH regime (MES short, NVDA short, GLD as 'hedge' with corr +0.77 to SPY, duplicate DOGE long+short across accounts). Total unrealized +$200 across $300k of paper capital is a 0.07% session result. The swarm picks individually pass gates but the portfolio-level construction is incoherent: no position-correlation check, no regime-direction gate, no cross-account netting. The methodology generates candidates, not portfolios. Until a portfolio-construction layer enforces 'no shorting the regime' and 'no offsetting trades across accounts,' realized edge will keep getting eaten by self-cancellation and regime-fight. The Tier-1 target (PF>2) is unreachable from this construction style regardless of pick quality. **Fix the portfolio layer, not the picker.**"
 
 This is the highest-leverage finding of the session.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

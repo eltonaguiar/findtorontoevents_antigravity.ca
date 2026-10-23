@@ -162,3 +162,5 @@ EQUITY 14d check: insufficient data in recent_closed for meaningful 14d window (
 ---
 
 _Refs: issue #685 (resolver done), issue #686 (kill tracking), issue #693 (EQUITY monitor — closed 2026-05-13)_
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

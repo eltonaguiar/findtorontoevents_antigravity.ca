@@ -96,3 +96,5 @@ Per-class deep dives: `reports/edge_hunt_{CRYPTO,EQUITY,ETF,FOREX,COMMODITY,BOND
 ---
 
 *Generated 2026-06-05 after 6 parallel edge-hunt subagents + live DB cross-check (mega_mutation n=296; MeanReversionBB n=214).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

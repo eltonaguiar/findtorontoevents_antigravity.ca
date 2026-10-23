@@ -115,3 +115,5 @@ Notes:
 ---
 
 _Heuristic-based bucketing audit — `OTHER` bucket size (80.5%) is the upper bound on misclassification noise. Source data: `alpha_engine/data/closed_picks.json` (7,445 rows) and `alpha_engine/data/active_picks.json` (143 rows)._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

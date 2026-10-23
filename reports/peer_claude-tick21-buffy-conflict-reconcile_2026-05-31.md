@@ -114,3 +114,5 @@ But that's a forward-edit decision, **not a conflict to reconcile**.
 ## Return signal
 
 `BUFFY_RECONCILE:forex_conflict=resolved:pr162_verdict=already_merged:peer_msgs_sent=0:PR=docs_only`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

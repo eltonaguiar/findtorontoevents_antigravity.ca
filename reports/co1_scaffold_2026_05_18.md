@@ -185,3 +185,5 @@ alone.
 Sources: `reports/new_strategy_proposals_2026_05_18.md` (CO-1 section),
 `tools/edge_stability_harness.py`, `reports/hypothesis_registry.json` (M-107),
 `tools/et1_etf_creation_redemption_research.py` (sidecar pattern, H-026).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

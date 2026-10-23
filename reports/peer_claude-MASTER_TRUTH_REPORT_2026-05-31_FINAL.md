@@ -220,3 +220,5 @@ Pending — not yet returned at consolidation time. Will be picked up next sessi
 ## Return token
 
 `TRUTH_REPORT:sections=5:PR=#<filled-at-merge>:operator_actions=6`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

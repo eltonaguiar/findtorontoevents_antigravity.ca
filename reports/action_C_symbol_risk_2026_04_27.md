@@ -144,3 +144,5 @@ node tools/_workstream_c_audit2.js    # noise audit + blast radius + bottom SHOR
 ```
 
 Both scripts read only `audit_trail/data/dashboard_payload.json` and write nothing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

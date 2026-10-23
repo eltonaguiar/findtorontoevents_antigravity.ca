@@ -82,3 +82,5 @@
 - COMMODITY WTI calendar spread (P3, after COT bug is fixed in PR #994)
 
 **90-day Tier-2 projection:** 4-6 strategies pass Tier-2 (from EQUITY RSI-2, EQUITY Earnings, CRYPTO proven_research, CRYPTO new_crypto_20, FUTURES ES/NQ, plus put-writing if added). ETF stays at n=87 but walkforward is already Tier-2 quality — scale-up is separate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

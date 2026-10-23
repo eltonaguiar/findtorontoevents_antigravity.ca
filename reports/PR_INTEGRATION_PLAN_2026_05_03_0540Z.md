@@ -140,3 +140,5 @@ The new playbook lives in `updates/2026-05-03-per-asset-class-enhancement-playbo
 ---
 
 _Generated 2026-05-03 by Antigravity session. Successor sessions: read this doc + `updates/2026-05-03-per-asset-class-enhancement-playbook.md` (PR #735) + `reports/ASSET_CLASS_RESCUE_STATE_2026_05_03_0510Z.md` first._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

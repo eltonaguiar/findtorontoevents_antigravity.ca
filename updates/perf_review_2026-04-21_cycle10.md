@@ -134,3 +134,5 @@ Already retired in PR #302 but the underlying bug (TP-at-entry / pnl=0) is unfix
 ## Acceptance
 
 **Nothing in this PR modifies production files.** The 60-active-pick state of cycle 10 is concerning enough to warrant an immediate engineer look at the active-book doubling AND the conf=0.99 HC bypass, BEFORE merging any other peer PRs.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

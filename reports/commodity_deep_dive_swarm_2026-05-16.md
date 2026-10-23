@@ -309,3 +309,5 @@ HG=F + PL=F (officially allowed): 0 resolved picks. Production strategies not ge
 - `alpha_engine/calendar_anomalies.py` — no commodity seasonals implemented
 
 _NFA. All numbers from 2026-05-16 workspace files. This report advances Goal #1 by exposing the data artifacts that would otherwise lead to false confidence in COMMODITY sizing._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

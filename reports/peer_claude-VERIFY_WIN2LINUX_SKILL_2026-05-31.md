@@ -46,3 +46,5 @@ If peer has additional features (JSON output, basename fuzzy-match improvements,
 - tools_script_exists: **false**
 - test_passed: **true** (3/3 resolved including worktree fallback)
 - recommendation: **use_existing**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

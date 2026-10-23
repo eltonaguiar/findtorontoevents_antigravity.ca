@@ -168,3 +168,5 @@ This aligns with the overall result: in choppy markets, picks are slightly more 
 3. **Asset-class concentration:** 100% of regime-tagged picks are crypto. Non-crypto regime performance is unknown.
 4. **Strategy diversity:** Only three strategies (`quan_engine_scalp`, `quan_engine_swing`, `quan_engine_position`) appear in the tagged set.
 5. **`warning` sample:** Only 7 trades—treated as illustrative only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

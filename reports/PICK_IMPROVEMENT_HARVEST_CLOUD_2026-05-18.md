@@ -260,3 +260,5 @@ No retail edge. G10 and EM pairs show zero statistical edge once bid-ask and rol
 
 ### Honest Answer  
 **FOREX**: No retail edge — stop. The market is dominated by institutional players with superior execution and information. Focus on other asset classes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

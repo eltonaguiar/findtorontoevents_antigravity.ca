@@ -70,3 +70,5 @@ Single operator action: trigger one fresh `Run Backtests & Deploy Dashboards` ru
 - `money_ready_verdict.classes.COMMODITY.pf` is lower than the current 1.7241 (expected drop reflects removal of the PF=44 artifact's contribution).
 
 No code change owed by Phase-7 itself. This is a verification-only doc.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

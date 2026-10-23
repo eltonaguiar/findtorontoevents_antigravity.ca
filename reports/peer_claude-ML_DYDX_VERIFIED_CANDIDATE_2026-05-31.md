@@ -91,3 +91,5 @@ Verifier swarm id: `wiha77fnj`
 ---
 
 *Generated 2026-05-31 by Claude Opus 4.7 subagent following verifier-swarm fan-out.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

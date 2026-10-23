@@ -64,3 +64,5 @@ Either path defers the live admission decision past a single cycle.
 - #369 (`/updates` entry): published ETF 57.7% WR on N=26 with provisional gate
 - `audit_trail/hc_edge_revalidation.py`: now has provisional ETF branch
 - 2026-05-15 check: passing-gate cohort N=51, WR=66.7%, still below the 100 threshold. Re-scheduled for 2026-05-29.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -146,3 +146,5 @@ No class gets sizing increase until ALL of:
 ---
 
 *Cursor Composer — EAGLE remaining items 2026-05-27 EST*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

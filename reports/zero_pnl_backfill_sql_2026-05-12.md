@@ -142,3 +142,5 @@ is a single-commit change I can ship now if user approves.
 - `reports/won_vs_pnl_backfill_sql_2026-05-12.md` (sibling draft)
 - `audit_trail/dashboard_generator.py::_is_historical_blocked_pick`
 - `tools/db_health_check.py::check_pnl_integrity` (current detector)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -49,3 +49,5 @@ OOS-persistent (recent-window PF≥1.5), parameter-robust, and net-of-50bp profi
 harness → keep only survivors → forward-test the survivors live before any sizing.
 
 *Generated 2026-05-29. Every figure computed from fetched OHLCV via the reproducers above.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

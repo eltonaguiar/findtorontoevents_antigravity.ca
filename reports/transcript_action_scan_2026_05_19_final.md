@@ -115,3 +115,5 @@
 - [OPEN] Use agent swarm to figure out more details on action items
 - [OPEN] Proceed till all action items are done
 - [OPEN] implement the expectancy gate + MDD persistence per swarm-settled targets (next concrete PR)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

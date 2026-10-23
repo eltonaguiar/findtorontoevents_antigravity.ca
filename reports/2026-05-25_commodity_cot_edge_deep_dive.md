@@ -140,3 +140,5 @@ The exact same source/conf/RR cell on FOREX **loses catastrophically**. This pro
 ## Appendix — query artifact
 
 Source script: `/tmp/commodity_deep_dive.py` (not committed). Raw output: `/tmp/commodity_deep_dive.out.json` (365 lines). Total query time: 0.77s, one MySQL connection, read-only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

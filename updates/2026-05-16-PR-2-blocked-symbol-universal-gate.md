@@ -105,3 +105,5 @@ if _ueps_sym not in _data_quality_only_blocks:
 - [x] UEPS bypass restricted to data-quality blocks
 - [x] Kill-switches included
 - [x] Documented in `updates/2026-05-16-PR-2-blocked-symbol-universal-gate.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

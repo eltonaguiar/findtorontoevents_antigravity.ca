@@ -45,3 +45,5 @@
 
 ---
 Created 2026-05-15 as part of asset-class enhancements PR set (review of daily_ideas.MD + MASTER + recent .MDs + swarm). Swarm review of this change to follow before push.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

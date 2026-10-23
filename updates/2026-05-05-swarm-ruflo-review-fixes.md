@@ -88,3 +88,5 @@ This would catch the exact class of drift fixed here before merge.
 ## PR Intent
 
 This PR is intentionally narrow: only concrete runtime bugs with direct execution impact were changed. No behavior-only refactors or formatting-only edits were included.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

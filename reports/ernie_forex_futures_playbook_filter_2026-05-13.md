@@ -72,3 +72,5 @@ Mercury also recommends Backtrader skeleton; our existing test infrastructure is
 The "edge = confluence of 3+ signals" framing in Ernie's playbook reinforces our `passes_smart_gate` design where multiple independent signals must align before a pick is sized. The COT timing-leakage finding fits the same frame: a single high-DSR signal isn't enough — needs to survive lag-correction + slippage + concentration checks.
 
 The Donchian-channel grandfather-status of trend-following systems gives historical cover for the suggestion that the FUTURES class can be revived without inventing anything new. Donchian is the strategy least likely to overfit (it has essentially 1 parameter: the lookback window).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

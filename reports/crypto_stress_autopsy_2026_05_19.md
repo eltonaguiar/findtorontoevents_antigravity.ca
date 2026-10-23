@@ -220,3 +220,5 @@ ac = _asset_class(row)  # infer from symbol if asset_class field missing
 ---
 
 *Reproducer: `python tools/build_pf_registry.py` — check `by_asset_class_strategy_policy_clean_net[CRYPTO]` before/after fixing `_is_policy_excluded` to use `_asset_class(row)`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -55,3 +55,5 @@ condition unchanged); prove maker (~5bp) vs taker (16bp) fills to clear the bar 
 faster-to-prove structural archetypes (VIX carry)**, and **detecting staleness in 1h not 6 days** — *never* by silencing
 failures, sequential peeking, padding n, promoting on replay-n, or re-tuning a pre-registered candidate. The trust anchors
 do not move. The adversarial safety-critic just prevented us from "accelerating" by quietly lowering the bar twice.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

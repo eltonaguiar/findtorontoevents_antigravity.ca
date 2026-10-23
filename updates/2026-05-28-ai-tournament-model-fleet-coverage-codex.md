@@ -34,3 +34,5 @@ Live Actions metadata checked at 2026-05-28 02:22 UTC:
 - `python3 -m py_compile tools/populate_picks.py tools/ai_tournament/update_leaderboard.py tools/ai_tournament/build_model_summary.py`
 - Local config inspection confirmed 23 configured models and 146 assignments.
 - Local artifact inspection before the fix confirmed `ai_tournament_picks_latest.json`, `ai_tournament_model_summary.json`, and `ai_tournament_leaderboard.json` contained only 3 models.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

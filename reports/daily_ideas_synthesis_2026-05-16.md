@@ -170,3 +170,5 @@
 6. **Bond scanner timeline:** `bond_scanner.py` wired; n=18→200 needs ~60 days at current 3/day rate.
 7. **PEAD earnings feed:** `pead_equity.py` shipped; using `incubator_picks.json` + yfinance `ticker.earnings_dates` fallback.
 8. **Cross-PC gateway:** Gateway down intermittently. Auto-restart on boot not yet configured.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

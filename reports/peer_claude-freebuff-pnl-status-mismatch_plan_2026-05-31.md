@@ -29,3 +29,5 @@ OR (status IN ('LOST','SL_HIT','closed_loss') AND pnl_pct > 0)
 ## Abort conditions
 - If pre-apply count > 44 (drift since dry-run), abort and re-investigate.
 - If backup table INSERT row count != 44, abort.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

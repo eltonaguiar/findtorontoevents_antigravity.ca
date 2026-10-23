@@ -132,3 +132,5 @@ Walked `created_at|generated_at|signal_ts|updated_at|entry_time|date|release_dat
 - top_blocker = **baby-strat-forward-paper workflow emits for only 6/215 strategies → hatch gate unreachable at current velocity**
 
 — peer_claude, 2026-05-31
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

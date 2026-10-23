@@ -148,3 +148,5 @@ The re-resolve has NOT been run. The resolver v2 fix applies to new resolutions 
 ---
 
 *Resolver fix confirmed in place (P0 SLA met). COMMODITY verdict unlocked (PF 2.08, genuine). FOREX remains sub-floor and is confirmed not a resolver artifact — genuine losing trades require mutation protocol. Next gate: historical re-resolve + FOREX deep-dive.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

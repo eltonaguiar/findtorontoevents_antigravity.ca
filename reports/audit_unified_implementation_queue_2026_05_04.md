@@ -78,3 +78,5 @@ Tier C:   #10 Trust badges ──→ #11 C-tier guard ──→ #12 Hyrotrader p
 Branch: `feat/audit-score-tooltips-2026-05-04` from `chore/super-swarm-synthesis-2026-05-04` (or main).
 Files: `audit_dashboard/template.html` only (UI-side first; backend `metric_definitions` block deferred to v2).
 Risk: low — pure frontend additive change, no logic changes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

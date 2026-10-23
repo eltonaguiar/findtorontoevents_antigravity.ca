@@ -77,3 +77,5 @@
 Copilot's first probe (40 sources): 6/40 success = 15%  
 Full probe (102 sources): 6/102 success = 5.9%  
 → The 6 working sources are stable; additional sources mostly fail due to login walls.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -142,3 +142,5 @@ The drift is 6.6× critical, concentrated in crypto, and the ML model's calibrat
 - ❌ Don't retrain EQUITY/BOND models — they're performing well, retraining on drifted crypto data would poison them
 - ❌ Don't disable the drift_aware_scoring penalty — it's the last line of defense right now
 - ❌ Don't increase position sizes on crypto to "recover" the drawdown
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

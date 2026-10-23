@@ -45,3 +45,5 @@ Validation: `py_compile` clean, `yaml.safe_load` clean.
 - Artifacts validated: **3**
 - Cherry-picked: **`tools/edge/edge_stability.py` (+117 MySQL-direct), `.github/workflows/edge-stability-daily.yml`**
 - Docs-only / skip: **`audit_dashboard/dashboard_freshness.js` (identical to main), 18 session-MD artifacts, `template.html.diff`**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -123,3 +123,5 @@ AFTER:
 1. Block `("commodity","cta_cross_asset_tsmom")`.
 2. Block `("commodity","futures_momentum")` + `("commodity","ema_stack_momentum")`.
 3. Policy entry `gold_safe_haven` (probation).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

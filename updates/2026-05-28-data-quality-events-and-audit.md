@@ -69,3 +69,5 @@ main `/audit` page needs a separate generate+deploy to go live (peer's lane).
 The "EQUITY 14d improving to 67% WR" claim is a **measurement artifact** —
 raw-DB read bypassing flicker-dedup, with `smart_money` source concentration at
 61.6%. Canonical view is n=9 / 22% WR / PF 0.021. **EQUITY is FAIL, not Tier 2.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

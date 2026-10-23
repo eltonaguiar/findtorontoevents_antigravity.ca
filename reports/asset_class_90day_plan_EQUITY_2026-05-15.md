@@ -241,3 +241,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 
 - **VIX-regime 12-1 momentum** (backtest PF 5.37, unshipped per May-15 plan) gets the Stage-1 calibration treatment before shipping: prove monotonicity on hold-out, then wire into `passes_smart_gate`.
 - **Speculative split (D1):** sub-$5 equities, IPOs in their first 90 days, and microcaps (<$300M market cap) get `speculative_flag=True`. Blue-chip + mid-cap stays institutional.
 - **Verdict (refreshed):** EQUITY is the **canary**. If Workstream A+B can lift it from PF 1.41 → PF 1.5+ at Sharpe>1.0 within 90 days with no regression on n, the whole plan is validated. If it cannot, the plan needs a real edge upgrade before any other class is attempted.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

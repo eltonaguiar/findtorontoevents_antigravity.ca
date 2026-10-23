@@ -43,3 +43,5 @@ Expected current verdict:
 
 - `EQUITY`: `FILTER_READY_SMALL_SIZE`
 - All other classes: `RESEARCH_ONLY` until their blockers clear
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

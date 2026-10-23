@@ -112,3 +112,5 @@ Last 85.50; 60d range 83.02-87.49 (2.3% off high). Above SMA20=84.94, below SMA5
 **Execution:** Size MUB+EMB at 1.0% each, TLT at 1.0% (mental stop 83.00 close; exit immediately if breached — mean-reversion thesis is dead). Hold 60-90d unless circuit breaker activates. Review weekly against VIX + DXY + 10Y.
 
 **Honest disclaimer:** Macro-view report, not a backtested edge. Bond edges are usually macro calls. None validated against contaminated `trading_picks` (per task spec). FRED CPI/HY-OAS not queryable, so inflation/credit views are inferred from TIP/HYG/JNK price action. If `macro_factors_snapshot.json` flips to hawkish, cut all three.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

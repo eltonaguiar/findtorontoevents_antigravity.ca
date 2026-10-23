@@ -77,3 +77,5 @@ Does a better grade mean a better outcome? (if WR is flat across grades, the gra
   - reason: IG/DailyFX contrarian: RSI(14)=35<40 + price below 50 SMA; Retail likely SHORT => contrarian LONG (60-70% edge). EUR/GBP.
 - **[LOST]** `EURJPY=X` LONG · myfxbook_retail_contrarian · conf=0.693 elite=32.0 grade=D · pnl=-0.006
   - reason: Myfxbook contrarian (proxy): RSI(14)=21<35 + price below 50 SMA; Retail likely SHORT => contrarian LONG (proxy). EUR/JPY.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

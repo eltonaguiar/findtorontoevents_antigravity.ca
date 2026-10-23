@@ -149,3 +149,5 @@ EQUITY is considered **rescued / Tier-2-eligible** when, on a single regeneratio
 - `multi_asset_copytrader` blocked on INTC; whitelisted symbols only
 - Any peer agent claim of "EQUITY tier-2 ready" must cite `pf_registry.json` + `money_ready_verdict.json` regenerated **after** the date of this report, OR the claim is rejected per CLAUDE.md "DO NOT trust unsourced model claims about /audit numbers"
 - No promotion card on `updates/index.html` for EQUITY until acceptance #10 is satisfied (with FTP-deploy proof)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

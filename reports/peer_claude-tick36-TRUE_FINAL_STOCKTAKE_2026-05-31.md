@@ -80,3 +80,5 @@ PRs touching the 5 live-open incidents (by title scan):
 
 ## Return value
 `STOCKTAKE:live_open=5:autonomous_doable=0:observation_waiting=3:operator_only=2:stale_records_cleaned=0:PR=<pending>`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

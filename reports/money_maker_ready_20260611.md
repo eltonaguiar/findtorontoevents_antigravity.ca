@@ -33,3 +33,5 @@ Live `dashboard_data.json` 1.8h old — PASS. Intrabar ledger + entry-conditions
 
 ## 4. Verifiable claims log
 Quarantine: `ejaguiar1_backups.tp_xsym_contam_q2_20260611T214419Z` (87 rows). Guard: tools/backfill_resolved_pnl.py @ 0b0106c34c. Incidents #130/#131/#132 live on /audit/incidents.html. Probes reproducible via the SQL in this session's MASTER_PROGRESS log. Intrabar: `python3 tools/build_intrabar_truth_by_class.py --stdout`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -230,3 +230,5 @@ Total: ~6-9 hours over 5 PRs.
 Research surface only. No real-money sizing changes proposed in this
 plan. The 3 P0s are diagnostic + UI disclosure improvements. None
 modify trade execution gates.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

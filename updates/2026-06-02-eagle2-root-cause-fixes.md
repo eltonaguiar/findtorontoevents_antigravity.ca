@@ -207,3 +207,5 @@ These are documented in the full EAGLE2 plan at
 
 *Prepared by: EAGLE2 Quant Review — deepseek_v4 + Mercury 2*
 *Date: 2026-06-02*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

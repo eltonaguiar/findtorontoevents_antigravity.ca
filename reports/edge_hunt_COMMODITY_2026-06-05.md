@@ -64,3 +64,5 @@ No other commodity backtests in `verified_strategies/` (no `bt_backtest_trades` 
 5. **External benchmark** (post n≥100): DBC, KMLM, DBMF — not meaningful today.
 
 **Reproduce:** `python3 tools/strategy_tier_tracker.py` · `python3 verified_strategies/commodity_tsmom_backtest.py` · `python3 -m tools.feature_signals.commodity_term_cot`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -147,3 +147,5 @@ KNOWN LIMITATIONS OF THIS ANALYSIS:
 
 *Report: 2026-05-18 | All numbers DB-backed from ejaguiar1_stocks.at_raw_picks + pf_registry.json*
 *No "Money Ready" claims. Honest assessment only.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

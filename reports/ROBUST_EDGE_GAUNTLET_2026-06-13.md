@@ -33,3 +33,5 @@ We have now exhaustively hunted the existing non-crypto book with cost + dedup +
 - Re-run this gauntlet in ~4–6 weeks once forward, non-batch, higher-amplitude picks have accrued.
 
 Reproduce: refined hunt in this session; cost model = `tools/forex_long_pilot_tracker.py`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -91,3 +91,5 @@
 3. **Add ETF flow data** — creation/redemption activity is a free, high-signal data source
 4. **Add VIX regime filter to sector rotation** — already backtested, improves timing
 5. **De-prioritize long/short variant** — 0.94 PF is below breakeven
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

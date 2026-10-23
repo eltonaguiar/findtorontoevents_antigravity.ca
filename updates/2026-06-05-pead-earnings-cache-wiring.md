@@ -24,3 +24,5 @@ Shadow collection (does not add to `active` unless probation PR merged):
 ```bash
 PEAD_EQUITY_ENABLED=1 PEAD_REQUIRE_GUIDANCE_RAISE=0
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

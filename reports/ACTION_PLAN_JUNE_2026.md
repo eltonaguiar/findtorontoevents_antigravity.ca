@@ -191,3 +191,5 @@ This plan has been submitted for peer review to multiple AI models:
 ---
 
 *Last updated: 2026-06-13 by Buffy (Codebuff)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

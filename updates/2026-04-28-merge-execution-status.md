@@ -45,3 +45,5 @@ This note documents the merge execution requested in chat: merge ready PRs, iden
 
 - Merges were executed remotely to avoid disturbing a dirty local working tree.
 - Parallel API merges were intentionally avoided after first race (`Base branch was modified`) and retried sequentially.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

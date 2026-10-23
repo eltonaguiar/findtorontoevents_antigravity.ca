@@ -86,3 +86,5 @@ Tables for Phase 2 ship as schema only so subsequent PRs can add producers witho
 
 - All changes are additive. To roll back: drop the 10 new tables, revert the four touched files (`sports_odds.php`, `sports-betting.html`, `db_config.php`, no schema removal needed for the `_v2.sql` file). The existing paper-bet tracker is unaffected because the new history mirror uses `@$sports_mysqli->query(...)` so any failure on the new table is silent.
 - No new external API dependency in PR 1 (Odds API paid-tier is **not** activated; the existing 2-3h refresh continues to feed history at the same cadence).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

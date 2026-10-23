@@ -44,3 +44,5 @@ PYTHONPATH=. python3 tools/money_ready_snapshot.py
 - [ ] 30 forward monthly closes on `forex_carry_g10` before `FOREX_HARD_DISABLE=0`
 - [ ] Daily pilot logs accumulate 10+ EQUITY BB closes
 - [ ] mega_mutation recheck ~2026-06-12
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

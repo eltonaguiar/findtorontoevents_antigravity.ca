@@ -47,3 +47,5 @@ python tools/backtest_shin_devig.py
 
 Source: `tools/backtest_shin_devig.py`. Read-only on the SQL dump.
 Stdlib Python only; no network calls.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

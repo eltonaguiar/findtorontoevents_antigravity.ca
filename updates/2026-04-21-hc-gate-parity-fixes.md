@@ -42,3 +42,5 @@ Validating against 3,500 closed picks confirms HC filter is institutionally effe
 | **ALL**  | **40.1%**  | **61.1%** | **+0.97%** | **2.37** |
 
 Note: A misleading "last 200 crypto" baseline (80.5% WR) was caused by `claude_gainer_st`'s one-day hot streak (86 picks at 98.8% WR). HC correctly excludes this system (23.8% long-term WR, -463% cum PnL). The full dataset is the authoritative benchmark.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

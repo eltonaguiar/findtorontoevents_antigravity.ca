@@ -406,3 +406,5 @@ EQUITY `smart_money_consensus` (PF 16.5) + `EmaRibbon` (PF 367), FOREX
 Cross-ref: `PER_CLASS_CANDIDATE_TRADES_2026-05-18.md`, `MAGIC_FILTER_HUNT_2026-05-18.md`,
 `audit_trail/quality_gates.py::BLOCKED_SOURCE_SYSTEMS`. Read-only inventory — no
 production files modified.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

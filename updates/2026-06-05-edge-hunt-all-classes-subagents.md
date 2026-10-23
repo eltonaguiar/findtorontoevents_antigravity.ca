@@ -46,3 +46,5 @@ Each agent grounded stats in:
 python3 tools/strategy_tier_tracker.py --min-n 15
 PYTHONPATH=. python3 alpha_engine/money_ready_verdict.py --json
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

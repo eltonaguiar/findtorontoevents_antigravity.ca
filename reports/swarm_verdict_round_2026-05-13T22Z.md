@@ -70,3 +70,5 @@ Next PR is a clean Option-A first half: slippage wire-up to `outcome_resolver.py
 ## Procedural finding
 
 **Parallel-agent coordination is now critical.** While I was investigating the COT graduation, another agent shipped the dedup ledger in the same file. This is the third time this session that parallel agents have either force-pushed branches, shipped identical PRs (PR #968), or modified files I was reading. Recommend a lightweight `.work-in-progress/{filename}.claim` JSON convention before the next session to prevent collisions. The current chaos is productive but fragile.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

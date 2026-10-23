@@ -41,3 +41,5 @@ Without the upgrade, every other infrastructure improvement is bottlenecked.
 2. After #401 merges, monitor `lm_sports_clv` weekly avg_clv_pct trend (see scheduled remote agent `weekly-sports-pick-verifier-clv-trend`).
 3. NHL goalie overlay implementation — gated on operator approval, not autonomous.
 4. NBA series sim wiring — gated on (a) PR #401 merge, (b) Pinnacle cron live on host, (c) 4 weeks of post-Shin CLV data.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

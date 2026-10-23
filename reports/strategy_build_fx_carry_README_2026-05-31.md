@@ -63,3 +63,5 @@ Per Grok consult (`ai_consult_grok.txt`):
 - [ ] PF > 1.15 with bootstrap LB > 1.0 at alpha=0.05/7
 - [ ] Crisis-filter v2 (RR + vol composite) validated on 2008 + 2020 hold-outs
 - [ ] MDD <= 20% on walk-forward
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

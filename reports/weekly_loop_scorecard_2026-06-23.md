@@ -36,3 +36,5 @@ No new robust T2 edge on current data (FDR screen empty; 6 angles NO-EDGE/insuff
 - Confirmed picks-now/TTWO feature live + durable (#660-#663; the 11-day stale-page masked-failure fixed at root via reliable plumbing-commit).
 - /audit data-feed freshness audit: all live feeds fresh (no other silently-stale surfaces).
 - Verdict: size up NOTHING. The bottleneck is TIME + BREADTH, not strategy search.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

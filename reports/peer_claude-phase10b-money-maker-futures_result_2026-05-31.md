@@ -120,3 +120,5 @@ There is **no FUTURES candidate on the Phase 3 MC watchlist** — the live `futu
 ---
 
 **Bottom line.** FUTURES isn't strategy-blocked; it's plumbing-blocked. Fix the resolver, get 372 real outcomes overnight, and only THEN make a real T2 call. The single most leveraged action in this entire class is **PR A**. Everything else (kill futures_connors_rsi2, add VIX term-structure, add 200dma trend) is downstream of getting honest numbers on the board.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

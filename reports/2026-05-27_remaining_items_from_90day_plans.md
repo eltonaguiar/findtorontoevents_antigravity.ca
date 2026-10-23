@@ -112,3 +112,5 @@ Pulled from the gap analysis appendix — Workstream IDs reference `INSTITUTIONA
 5. **Then per-class rebuilds:** each class's M-xxx queue runs in parallel after foundation+infra is solid.
 
 The full master plan with all M-xxx IDs lives at `reports/MASTER_ACTION_PLAN_2026-05-15.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

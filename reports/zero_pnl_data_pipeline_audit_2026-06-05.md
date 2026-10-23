@@ -53,3 +53,5 @@ Also: `stocks_rsi2_pullback_aggressive` (51), `leveraged_etf_decay` (43).
 1. Re-resolve the 32,817 `backfill_widened/updated` rows via `backfill_2026-06-01` resolver.
 2. Quarantine the 15 Polymarket `pm_*` / `copy_pm_*` strategies (no price feed → unresolvable) in `BLOCKED_SOURCE_SYSTEMS`.
 3. Patch trading_picks: reclassify the 375 TP_HIT+pnl=0 rows as EXPIRED or recompute pnl from `closed_at` × symbol price.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

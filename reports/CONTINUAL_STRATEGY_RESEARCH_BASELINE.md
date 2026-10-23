@@ -145,3 +145,5 @@ All research-only, fully cited, production-grade. Firing 17 H-017 closed cleanly
 **Citations:** CYCLE_2026-05-21_FIRING19_SUMMARY.md (full close), three FIRING19_* sub-reports, harness.py:561+, collector:273+, baby files, registry H-BABY/H-040, F18 artifacts, GHA swarm review (no pipeline impact), 6GATES, prior F13-F18.
 
 All research-only, fully cited, production-grade. F19 complete. Loop ready for F20 or engineering.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

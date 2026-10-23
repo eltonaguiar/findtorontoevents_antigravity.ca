@@ -170,3 +170,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 
 - **No institutional path for PENNY/MEME in 90 days, period.** The work here is to make the dashboard *clearly* speculative — separate visual treatment on `/audit`, distinct color, "speculative — DO NOT use for allocation decisions" banner.
 - **Gemini's "Speculative Microcap Engine"** recommendation is fulfilled by D1 Step 2 conditional on Step 1 surfacing institutional-bucket contamination. If contamination shows up, D1 Step 2 builds the dedicated engine here first.
 - **Verdict (refreshed):** PENNY/MEME stays quarantined but **made honest** — the dashboard stops pretending these are tradeable picks. They're research / pattern-mining inputs only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

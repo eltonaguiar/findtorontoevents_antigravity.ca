@@ -82,3 +82,5 @@ Agent A DB probe confirmed `cftc_cot_commercial_signal` + CT=F at **WR 93.7% n=9
 1. Build `tools/cot_paper_pilot.py` — emits paper-trade signals from the cot_positioning + CT=F edge with $3.40-$13.40 expected P&L per trade
 2. Build `audit_dashboard/money_ready.html` viewer page (parallel to anti_overfit.html + research_sidecars.html)
 3. Wire `MONEY READY` HC-filter button (shipped this turn) into the same paper-pilot signal stream
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

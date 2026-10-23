@@ -54,3 +54,5 @@ gh workflow run "Unified Audit Dashboard" --ref main
 ```
 
 Expected: **Resolve active picks** completes; dashboard generator runs; `/audit` refreshes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

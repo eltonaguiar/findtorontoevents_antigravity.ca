@@ -89,3 +89,5 @@ This is one of the structural reasons win rates per asset class appear lower tha
 ---
 
 **This report should be read alongside the 8 asset-class 90-day plans and the 4 strategy-type assessments.** It explains *why* some of the recommended fixes (especially for BOND, FUTURES, PENNY_MEME, and the prediction-market layers) are necessary before those classes can contribute real, measurable edge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

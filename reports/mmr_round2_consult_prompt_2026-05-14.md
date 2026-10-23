@@ -61,3 +61,5 @@ Output:
 3. Any candidates I'm missing (broad market mechanics, current macro 2026, etc.).
 
 Keep responses concrete. No hedging. Single second-opinion, not consensus narrative.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

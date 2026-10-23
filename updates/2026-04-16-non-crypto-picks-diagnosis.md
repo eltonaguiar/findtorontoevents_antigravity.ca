@@ -246,3 +246,5 @@ Consensus requires ≥2 independent strategies to agree on direction for a symbo
 | `copy_trader_intel/non_crypto_consensus.py` | ≥2 agreement requirement |
 | `copy_trader_intel/non_crypto_quality_enhancer.py` | Confidence clamped [0.5, 0.9] |
 | `noncrypto_performance_history.md` | Virtually zero closed trades |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

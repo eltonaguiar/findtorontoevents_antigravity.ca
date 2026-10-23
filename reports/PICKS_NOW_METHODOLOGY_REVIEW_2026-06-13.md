@@ -170,3 +170,5 @@ Fixes that do **NOT** touch freebuff's lane (safe to own): the publish-gate (§3
 
 **Report path:** `reports/PICKS_NOW_METHODOLOGY_REVIEW_2026-06-13.md`
 **No commits, no DB mutations, no generator runs, no push made.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

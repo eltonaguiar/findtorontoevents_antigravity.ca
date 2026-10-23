@@ -89,3 +89,5 @@ The PR's "FUTURES catastrophic" finding is historically accurate but the source 
 - `alpha_engine/data/closed_picks.json` — 203 FUTURES closed picks (all multi_asset_copytrader)
 - `audit_trail/quality_gates.py:2032` — multi_asset_copytrader global block
 - PR #1234 — hourly audit surfacing this finding
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

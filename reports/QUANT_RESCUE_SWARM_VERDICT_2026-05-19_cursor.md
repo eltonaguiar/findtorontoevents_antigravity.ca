@@ -187,3 +187,5 @@ Per asset class (money-ready **today**, harness-grade):
 4. **Week-1:** Dedup + pf_registry dashboard contract + freeze non-crypto hypotheses + mega_mutation forward paper + start websocket probe.
 
 **Artifacts:** `swarm_runs/quant-rescue-r{1,2,3,4}/`, Grok session IDs in tool output, this file.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

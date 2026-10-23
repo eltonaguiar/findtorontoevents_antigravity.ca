@@ -175,3 +175,5 @@ Scored on direct-SQL evidence this cycle. Rubric: 0 = no problem … 3 = dominan
 - H1 spot-replay: random-sample 10 recent `at_signal_outcomes` (intrabar TP/SL) rows per class, re-walk `crypto_ohlcv`/`stock_ohlcv` 1h bars from `opened_at` for `intrabar_horizon_bars`, conservative SL-wins-ties first-touch, compare to stored `intrabar_status`.
 - Generalization (H-120): `trading_picks` (closed, 2026+, geometry>0) for `forex_rsi2_mean_reversion` (fxp_price_history daily, 8 majors, strip `=X`, reject TP/SL > ±30% off entry) and `non_crypto_consensus/commodity` (stock_ohlcv 1h, =F); dedup symbol-day; first-touch; `tools/pf_ci_lower.py` net of cost (FX 2bp / JPY 6bp; commodity 3bp) vs stored daily `pnl_pct`.
 - DB via `tools/db_env.get_stocks_creds()`. No mutations, no commits, no dashboard generators run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

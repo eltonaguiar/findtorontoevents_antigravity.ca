@@ -292,3 +292,5 @@ curl -s 'https://findtorontoevents.ca/audit/data/pf_portfolio_deepseek_v4__aggre
 ---
 
 **Sign-off:** The institution does not have a “wait 90 days on production picks” problem. It has a **research–production gap** and **measurement honesty** problem. Capital should flow only through the admissibility pipeline in §3, starting with ETF dual momentum and crypto VWAP/Bollinger once forward virtual books hit n≥100 — not from tournament leaderboard PF, Smart Picks tiles, or raw registry rollups.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

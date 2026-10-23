@@ -278,3 +278,5 @@ regardless of which translator parses the spec.
 - `alpha_engine/regime_flip_detector.py` (regime_gate handler)
 - `alpha_engine/indicators.py` (indicator handler library)
 - `prediction_market_consensus.py` (cot_extreme handler proxy)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

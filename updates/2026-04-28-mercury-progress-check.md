@@ -30,3 +30,5 @@ Primary report: 115 total lines, ~69 non-blank/non-table lines (short vs 600-wor
 ## Recommended Next Action
 
 **done** — all 6 parts landed; no blocking artifacts left behind.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

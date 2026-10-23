@@ -1571,3 +1571,4 @@ The four modified files should deploy in a single coordinated release to prevent
 
 ---
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -351,3 +351,5 @@ Effort to ship: **~5h** (function + 2 caller patches + unit test + payload reade
 - This plan is **additive** to existing supreme_plan_review_2026-05-13.md, not replacement. The supreme plan's Wave 1 items remain valid.
 - Charter v1.1 update should fold Section 1 (Gate Ladder) in as the canonical stage model.
 - Daily tracker (Section 6) is the standing instrument to detect drift away from this plan, including drift caused by adding more plans on top of plans.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -146,3 +146,5 @@ unchanged (200 OK still prints the cached stats; non-200 still emits a
   showing `cancelled` are likely concurrency-group cancellations
   (newer-run-supersedes-older), not failures, and don't have a defect
   signature in the logs.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

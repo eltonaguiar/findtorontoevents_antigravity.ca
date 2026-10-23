@@ -194,3 +194,5 @@ Branch: `main` · Working dir: `e:\findtorontoevents_antigravity.ca`
 - The COT paper-pilot pre-existing entries are real (per Antigravity audit)
   but Step 6 of the testing plan requires 4 weeks of passive observation
   before any real-money sizing — that runs in the background.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -111,3 +111,5 @@ explains the collapse on its own — the remaining suspects are the
 reproduced from the committed snapshot. Fixing the crash above is what lets the
 dashboard regenerate **at all**; the published count should be re-checked on the
 first fresh build after this lands.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

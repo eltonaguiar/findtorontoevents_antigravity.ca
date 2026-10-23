@@ -51,3 +51,5 @@ Prior B13 PRs (#868, #872, #889) placed `regime_filter.py` in `alpha_engine/risk
 - Soak gate: B12 merged 2026-05-01 21:20 UTC; 7d soak expired 2026-05-08 21:20 UTC ✅
 - One-in-flight (§2.3): B5 merged #843 2026-05-06 ✅
 - Two AI reviews: `reports/feedback/B13-*-2026-05-*.md` ✅
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

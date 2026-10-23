@@ -211,3 +211,5 @@ Add to `config/hf_quality_gates.json`:
 2. **`enhanced_ml_A_xgboost`:** Kill outright or keep as mutation candidate? (30.8% WR LONG, but symbol-locked SEI/ALGO/JTO show 67%+ WR)
 3. **Execution order:** Should I implement all 4 changes in a single branch/PR, or one per branch?
 4. **Open PRs (#610, #626, #654):** Build independently or wait for merge to avoid conflicts?
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

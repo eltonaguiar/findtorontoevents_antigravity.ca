@@ -151,3 +151,5 @@ FROM enhancement_stocks UNION ALL ...;
 | **BOND** | Deferred (n=11, PF 0.66) | 0.66 / 11 | N/A | Activate scanner → gather n>30 → re-evaluate |
 | **FUTURES** | Dead (n=0) | 0.00 / 0 | N/A | Separate from COMMODITY misclassification → rebuild universe |
 | **PENNY_MEME** | Quarantined (PF 0.499 / WR 15.7%) | 0.50 / 2,017 | N/A | Research-only pipeline → kill if n>500 confirms WR<20% |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

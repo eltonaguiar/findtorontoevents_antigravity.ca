@@ -33,3 +33,5 @@
 - `reports/daily_ideas_synthesis_2026-05-16.md` §2.6 (VIX+YC +15 bonus)
 - `alpha_engine/hedge_fund_quality_gate.py` lines 59-61 (AAPL un-ban rationale)
 - `alpha_engine/config.py` lines 249-250 (ETF floor 35)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

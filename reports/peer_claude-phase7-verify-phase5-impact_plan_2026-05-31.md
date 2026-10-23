@@ -15,3 +15,5 @@ Date: 2026-05-31. Goal: confirm PR #182 (RETIRE cta_golden_cross_200 + predictio
 - `gh pr view 182,183` for merge timestamps + file lists.
 - `gh run list --workflow=…` for refresh status.
 - `grep` quality_gates.py / build_pf_registry.py / money_ready_verdict.py to confirm wiring.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

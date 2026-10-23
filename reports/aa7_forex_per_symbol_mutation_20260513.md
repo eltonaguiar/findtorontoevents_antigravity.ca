@@ -107,3 +107,5 @@ for sym, s in sorted(by_sym.items(), key=lambda x: -x[1]['n']):
 - Peer claim `multi_asset_copytrader is best 5-class go-live` — partially falsified: COMMODITY n=96 WR 93.8% (real) vs FOREX 24.3% vs FUTURES 2.5%. Per-class decomposition is the only honest read.
 
 NFA. Surgical, reversible (BLOCKED_* removal restores prior behavior).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

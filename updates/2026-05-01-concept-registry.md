@@ -53,3 +53,5 @@ inline fallback so the dashboard cannot break if the module path is unavailable.
 After this PR merges and has been on main ≥48h, B5 (concept-aware scoring) may
 import from `alpha_engine.concept_registry` to gate scoring modifiers by concept
 family without touching `dashboard_generator.py`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

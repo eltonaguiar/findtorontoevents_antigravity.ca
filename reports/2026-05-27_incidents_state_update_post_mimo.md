@@ -165,3 +165,5 @@ Either:
 ## Cross-reference: MiMo's analysis file mentioned but not found
 
 User referenced `updates/2026-05-27-openrmimo-analysis.md` from MiMo. As of this turn, that file is NOT in `origin/main` (the file MiMo claimed to create wasn't actually committed). The substance of MiMo's analysis IS captured in `KILOCODE_OPENRMIMO_MAY262026.MD` which I committed at `b849126e9`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

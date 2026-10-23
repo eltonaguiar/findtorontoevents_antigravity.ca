@@ -35,3 +35,5 @@ After midnight, picks for the current EST date (example: May 4) could appear as 
 - `live-monitor/sports-betting.html`
 - `live-monitor/api/sports_picks.php`
 - `updates/2026-05-04-sports-betting-date-bucketing-fix.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

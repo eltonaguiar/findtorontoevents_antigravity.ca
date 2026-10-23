@@ -172,3 +172,5 @@ The user wants to use the "high-conviction button" and review edge per asset cla
 ---
 
 *Analysis conducted 2026-04-23. See PR #368 for filter improvements.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

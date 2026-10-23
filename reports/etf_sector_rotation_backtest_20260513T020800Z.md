@@ -98,3 +98,5 @@ Backtest is hindsight; no real-money sizing without:
    multiple regimes)
 
 Real-money decision: pause until ETF-A + ETF-D complete.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

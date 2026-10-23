@@ -18,3 +18,5 @@ Every persona reasons over `n=750`, `n=421`, `n=8067` as if those were i.i.d. sa
 
 ---
 NFA. Research surface.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

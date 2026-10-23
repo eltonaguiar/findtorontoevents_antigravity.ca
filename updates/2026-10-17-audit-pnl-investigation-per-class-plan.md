@@ -161,3 +161,5 @@ Fresh blocks confirmed OK: `data_freshness` (0.6h), `smart_picks_feed` (1.6h),
   `dashboard_data.json` snapshot cited above; GH numbers from
   `gh run list` (500-run window) + job-level `gh run view` over all latest
   completed runs.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

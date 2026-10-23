@@ -28,3 +28,5 @@ python -c "import py_compile; py_compile.compile('alpha_engine/emitter_whitelist
 
 - Set `EMITTER_WHITELIST_ENFORCE=1` in production only after 7d shadow review of `_emitter_registry_would_block` counts.
 - Intraday crypto probe (H-035) still paper-only per MERGED_ACTION_PLAN.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

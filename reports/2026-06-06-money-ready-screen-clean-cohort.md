@@ -33,3 +33,5 @@ The system has **no confirmed mutual-fund-worthy edge in any asset class today.*
 3. **Re-screen** on the now-large clean+intrabar cohort; only strategies clearing n≥100, ≥3 months, PF>1.5, WR>52% with intrabar validation advance to a **paper-pilot** (not real money).
 4. **Wire the dormant academic sleeves** (TSMOM / residual-momentum / carry) which use trailing-stop/signal-flip exits and structurally avoid the expiry trap.
 5. Real money only after a sleeve holds the bar on FORWARD (post-fix) data for ≥4 weeks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -125,3 +125,5 @@ Analysis of `battleground/data/closed_picks.json` identified the following strat
 1.  **Data Source Alignment:** Investigate why `alpha_engine/data/closed_picks.json` contains minimal data compared to `battleground` and `mercury2`. The report likely aggregates from multiple sources.
 2.  **Strategy Promotion:** Investigate `drawdown_recovery_rsi_sol` and `drawdown_recovery_rsi_eth` (high-edge, low-sample) for potential promotion or further validation.
 3.  **DSR Integration:** Ensure DSR calculations from `deflated_sharpe.py` are integrated into the main validation pipeline if not already present.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

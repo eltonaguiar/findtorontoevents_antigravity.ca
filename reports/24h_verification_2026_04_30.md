@@ -127,3 +127,5 @@ The f-string nesting error in `tests/test_quan_engine_concurrency_cap.py:41` has
 | Kill held (no new active picks) | ✅ 0 active rapid_fire×macd_rsi_confluence |
 | Kill breach (historical file gap) | ⚠️ 2 post-kill picks leaked via `isolated_signal_integrator.py` bypass |
 | Net breach damage | −4% combined PnL, both BANNED-tier, both SL_HIT |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

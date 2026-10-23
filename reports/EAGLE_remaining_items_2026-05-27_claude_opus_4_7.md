@@ -197,3 +197,5 @@ The `ejaguiar1_stocks.roadmap_items` table (schema in `reports/2026-05-27_enhanc
 | MD dedup skill | ls .claude/skills/md-dedup/SKILL.md | File exists, executable |
 | FRED key set | curl GHA secrets API | FRED_API_KEY present |
 | Stale incidents fixed | SELECT status FROM INCIDENT_* WHERE incident_id IN (3,11,13,18) | RESOLVED |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

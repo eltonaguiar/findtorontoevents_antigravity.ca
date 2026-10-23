@@ -548,3 +548,5 @@ ORDER BY asset_class, category;
 **Document Generated:** 2026-05-31T00:46:00Z
 **Audit Inventory:** 49 incidents + 75 enhancements extracted from MySQL
 **Status:** Ready for PR implementation
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

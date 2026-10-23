@@ -38,3 +38,5 @@
 
 ## Status
 STAND DOWN. In-flight `wmlcubjjy` (bt sync) + `wq10grbv3` (priority table) still landing. dropchat-multipc SESSION_SUMMARY broadcast to all 3 peers.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -215,3 +215,5 @@ events.json
 next/events.json
 updates/2026-04-25-sports-betting-signal-sources-research.md
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

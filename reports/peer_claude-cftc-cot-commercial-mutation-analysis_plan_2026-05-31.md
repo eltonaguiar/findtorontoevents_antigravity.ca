@@ -46,3 +46,5 @@ The "19% / n=16" figure from the incident is a 7d window snapshot from `HOURLY_A
 
 ## Decision
 PROCEED with docs-only PR. Defer code change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

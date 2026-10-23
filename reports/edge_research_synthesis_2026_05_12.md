@@ -77,3 +77,5 @@ Cerebras 403 issue: curl works, Python urllib doesn't. Likely:
 - Try: add `User-Agent: Mozilla/5.0` header to Python request
 
 Not blocking — Grok alone produced verdict-grade output. Cerebras would have been corroboration.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

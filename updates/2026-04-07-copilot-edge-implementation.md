@@ -82,3 +82,5 @@ GitHub Copilot (assisted by Kilo) implemented 5 high-ROI enhancements:
 ---
 
 **Status:** Ready for hedge-fund-grade picks
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

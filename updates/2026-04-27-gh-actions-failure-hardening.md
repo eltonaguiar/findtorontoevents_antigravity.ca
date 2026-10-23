@@ -50,3 +50,5 @@ Also reviewed the additional recent failure in **Unified Audit Dashboard** logs;
 - No application PHP/Python runtime logic was changed.
 - No dashboard generation logic was modified in this patch.
 - This patch is limited to workflow resiliency and failure classification.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

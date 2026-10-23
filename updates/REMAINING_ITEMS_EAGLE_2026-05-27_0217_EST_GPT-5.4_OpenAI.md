@@ -143,3 +143,5 @@ but those still need paper validation and should never be promoted as guaranteed
 - only existing repo tests / checks
 - no local dashboard generation
 - only stage/commit files created or edited for the PR at hand
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

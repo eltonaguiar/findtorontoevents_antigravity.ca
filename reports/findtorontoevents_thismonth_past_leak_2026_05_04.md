@@ -63,3 +63,5 @@ Mirrors the window already used by the `index.html` override, and mirrors RR1's 
 - React source (NOT in this repo): `eltonaguiar/TORONTOEVENTS_ANTIGRAVITY` :: `src/components/EventFeed.tsx`
 - This repo's live HTML (untouched by this fix): `TORONTOEVENTS_ANTIGRAVITY/index.html` lines 3666-3708 already correct
 - Worktree used for fix: `e:/findtorontoevents_antigravity.ca/.claude/worktrees/tev_react_src/` on branch `fix/this-month-filter-past-leak`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

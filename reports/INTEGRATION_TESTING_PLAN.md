@@ -190,3 +190,5 @@ If any Phase 2 enforcement causes unexpected degradation:
 ---
 
 *Plan generated 2026-05-03 00:25Z. Based on live-data audit + cross-AI verification + 11-PR merge wave.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

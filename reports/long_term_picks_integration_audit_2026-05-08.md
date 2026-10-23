@@ -181,3 +181,5 @@ Ranked by ROI (closes the largest gap in long-term EQUITY pick visibility per LO
 - `gh run view 25563493178 --log-failed` (penny-skyrocket failure root cause)
 - `alpha_engine/strategies/skyrocket_detector.py:343–402` (`scan` + `_save_picks` empty-pick gate)
 - `updates/long_term_value_project_2026-04-27/PROJECT.md` + `findings/SYNTHESIS.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

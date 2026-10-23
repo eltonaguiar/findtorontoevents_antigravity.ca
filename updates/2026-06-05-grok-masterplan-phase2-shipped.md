@@ -34,3 +34,5 @@ python3 tools/phase3_promotion_readiness.py
 
 - Enable tournament only with `gh variable set AI_TOURNAMENT_PIPELINE_ENABLED true` after forward proof
 - Turn on DB clean ingest: `CLEAN_INGEST_V2_ENFORCE=1` on mysql sync job after backup + parity
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

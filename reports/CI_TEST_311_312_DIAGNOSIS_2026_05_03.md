@@ -128,3 +128,5 @@ After main goes green again:
 3. None of the 4 PRs will go green from a main-only fix — each needs its own remediation commit.
 
 **Estimated PR unblock count from a single main fix: 0/4.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

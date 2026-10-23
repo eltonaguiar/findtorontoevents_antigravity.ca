@@ -135,3 +135,5 @@ Headline: **Claude ML picks should be allowed only in the mid-probability band. 
 1. Run the Phase 3 gate in shadow mode on the live ledger for 7 days.
 2. After 7 days: compute actual-vs-gated WR/PF delta. Require `gated_PF >= 1.10 × baseline_PF` and `gated_WR >= 0.9 × baseline_WR` to promote from shadow to enforce.
 3. Unit tests cover: sweet-spot pass, all out-of-band rejects, missing-field pass, env-var override, asset-class scope.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

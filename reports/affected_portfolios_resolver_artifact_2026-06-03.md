@@ -53,3 +53,5 @@ This artifact affects any portfolio/leaderboard that consumes `tournament_picks`
 **Live banner**: `audit_dashboard/ai-tournament.html:182-189`
 
 No further action required on this note unless the resolver is fixed or a new portfolio family is added that consumes `tournament_picks`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

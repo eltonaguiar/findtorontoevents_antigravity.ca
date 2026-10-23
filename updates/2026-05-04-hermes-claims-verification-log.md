@@ -102,3 +102,5 @@ When a Hermes note arrives with specific numbers:
 4. **Dollar-PnL projections** with no derivation are LLM narrative. Strip from PR bodies unless cited to a specific simulation script.
 
 Past the 5-PROOF / mc_winners / Battleground-app.js episodes this session, the empirical hit rate on Hermes's specific numeric claims sits near 1/5. Verify before merging.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

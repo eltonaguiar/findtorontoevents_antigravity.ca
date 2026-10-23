@@ -115,3 +115,5 @@ No code/check fix is shippable from this seat. Escalating via docs PR.
 
 - This report: `reports/peer_claude-banner-true-state_2026-05-31.md`
 - Server-side docs PR (no code): characterization + operator action list.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -80,3 +80,5 @@ the worktree was opened, per repo backup rule.
 - The remaining 3 bugs in
   `reports/peer_claude-exit-logic-divergence_2026-05-31.md` still need
   separate PRs.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

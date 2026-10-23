@@ -58,3 +58,5 @@ Adding any of these only makes the haircut larger and deflates more. Treat curre
 ## Wiring plan
 
 Sidecar artifact only. A follow-up PR will render a `DSR-real-N` badge in `audit_dashboard/template.html` strategy table, sourcing the JSON at `tools/data/dsr_audit_results.json`. Caller will be `audit_dashboard/dashboard_generator.py` (or whichever generator is canonical at the time).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

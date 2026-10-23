@@ -26,3 +26,5 @@ Separate EQUITY into `LARGE_CAP_EQUITY_SYMBOLS` vs `PENNY_MEME_SYMBOLS` to reduc
 - [x] FUTURES/COMMODITY overlap documented
 - [ ] EQUITY/PENNY_MEME split to be done (per EQUITY 90-day plan)
 - [ ] ETF/commodity proxy conflict to be resolved
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

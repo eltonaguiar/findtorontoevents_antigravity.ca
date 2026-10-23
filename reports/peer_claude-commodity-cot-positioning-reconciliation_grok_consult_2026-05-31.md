@@ -40,3 +40,5 @@ No other material reconciliation breaks.
   "num_sources_used": 0,
   "cost_in_usd_ticks": 21081000
 }
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

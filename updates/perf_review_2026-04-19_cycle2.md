@@ -127,3 +127,5 @@ Same kill candidates as cycle 1. No engineer action yet.
 - Mutation thresholds: per `docs/MUTATION_THREE_AXIS_PROTOCOL.md` (n≥20, WR<35%)
 - Snapshot saved to `tools/out/perf_review_cycle2_*.json` for audit trail
 - **No production strategy files modified.** All changes require human review per `CLAUDE.md` mutation-before-kill rule.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

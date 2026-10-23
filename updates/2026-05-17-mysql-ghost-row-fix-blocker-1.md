@@ -54,3 +54,5 @@ Three MySQL tables were empty/stale (ghost rows):
 - YAML validity: `audit-dashboard.yml` passes `yaml.safe_load`
 - UNIQUE key: Verified `idx_dedup (symbol, direction, source_system, opened_at)` exists in production `at_signal_outcomes` schema (schema-baseline.sql)
 - Env var resolution: Matches existing patterns (multiple DB credential fallbacks)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

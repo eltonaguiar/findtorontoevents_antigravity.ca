@@ -142,3 +142,5 @@ This .MD itself serves as the durable chat summary for cross-session memory and 
 
 ---
 **Generated 2026-05-15 by Grok 4.3** (full chat transcript preserved in TUI session; this is the distilled, actionable summary). Ready for the next batch. Just say the word.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

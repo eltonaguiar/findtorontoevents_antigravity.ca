@@ -109,3 +109,5 @@ Sources with stale calibration identified and flagged for next audit:
 
 *Generated: 2026-05-16 by world-class-perf-2026-05-15 goal session, turn 17/20*
 *Reproducer: `git log --oneline 414b28fbea..1df661143c`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -77,3 +77,5 @@ python tools/forward_edge_audit.py --data-file /path/to/dashboard_data.json
 Output files:
 - `reports/forward_edge_audit_<date>.md` — human-readable
 - `reports/forward_edge_audit_<date>.json` — machine-readable (for B17 wiring)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

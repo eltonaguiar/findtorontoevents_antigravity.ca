@@ -206,3 +206,5 @@ All numbers above derive from:
 5. Add the cot_paper_pilot.py script to hourly cron in audit-dashboard.yml
 6. After swarm-review, execute Steps 1-5 (active work) before next-Friday CFTC release
 7. Step 6 paper-pilot starts naturally on next-Friday signal emission
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

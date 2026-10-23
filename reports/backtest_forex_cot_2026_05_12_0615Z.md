@@ -25,3 +25,5 @@
 - **Verdict:** WARN  (PASS = PF>=1.5, WARN = 1.0-1.5, FAIL = <1.0)
 
 **Reminder:** Even on PASS, FOREX live size = 0 until the system-wide FOREX PF >= 0.8 (CLAUDE.md / PR #909).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

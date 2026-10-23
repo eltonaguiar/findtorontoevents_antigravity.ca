@@ -32,3 +32,5 @@ python3 tools/strategy_admit.py --strategy etf_dual_momentum --asset-class ETF -
 ```
 
 Expected result: the generated `reports/strategy_admit/etf_dual_momentum.json` includes `forward_pilot` and keeps the sleeve at `FORWARD_PILOT_ONLY` while the ETF class remains `INSUFFICIENT_DATA` and the paper pilot has `n_closed=0`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

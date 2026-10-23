@@ -195,3 +195,5 @@ Recommend a `DROP TABLE` migration PR with a rollback list, not a one-shot scrip
 | 5 | CONFIRMED | Drop ~73 abandoned tables in 4 buckets (KIMI_GOLDMINE, lm_bridge, goldmine_cursor, cp/cr/fxp/mf scaffolds); keep rotation-targets documented | P2 |
 
 The P0 escalation is Finding 4: `lm_signals` is structurally unresolved for 32K rows because the time-expire cron and the resolver are separate crons that never talk to each other. Any analytics on `lm_signals` PnL aggregates is currently meaningless.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

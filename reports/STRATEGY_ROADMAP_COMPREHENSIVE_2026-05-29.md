@@ -225,3 +225,5 @@ python3 alpha_engine/rigorous_backtest_harness.py --batch --class FOREX --n-tria
 
 *Report generated from ejaguiar1_stocks. All metrics from resolved picks with pnl_pct IS NOT NULL.
 Backtest harness implements purged walk-forward, DSR (Bailey & Lopez de Prado 2014), PBO (2015), and cost modeling.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

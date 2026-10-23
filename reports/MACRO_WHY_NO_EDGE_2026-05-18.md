@@ -309,3 +309,5 @@ data layer is certified (fix #1), this contradiction will keep regenerating.
 
 *Synthesis only — no production files edited. Sources: all reports/ and updates/
 docs 2026-05-04→18, principally the 2026-05-18 edge-hunt corpus listed in scope.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

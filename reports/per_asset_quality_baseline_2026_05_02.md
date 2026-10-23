@@ -33,3 +33,5 @@
 - Four classes currently have no active rows; they should remain in payload summaries with `warn` CI mode to avoid starvation.
 - Corrupted-row count is currently zero in active cohort using known USDCAD/Kimi signature.
 - Smart cohort is currently empty in this snapshot; implementation phases should target recoverable smart coverage without relaxing hard safety blocks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

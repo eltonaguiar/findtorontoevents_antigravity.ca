@@ -280,3 +280,5 @@ the Street, knitting circles). Exempting them would return ≈ 1 672 events
 while EarlyON and all kid programs would still drop via their own audience
 tags — tracked as a one-flag change in `age_gate.py` if the operator wants it
 later.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

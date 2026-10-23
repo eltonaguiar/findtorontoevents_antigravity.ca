@@ -92,3 +92,5 @@
 5. **Penny stocks are lower priority** — OTC data quality issues, liquidity concerns. Start with meme coins first
 6. **Add rug-pull detection** — holder concentration >50% top 10 wallets = auto-reject
 7. **Create `MEMECOIN_TOXIC_STRATEGIES`** — default-deny until proven strategies emerge
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

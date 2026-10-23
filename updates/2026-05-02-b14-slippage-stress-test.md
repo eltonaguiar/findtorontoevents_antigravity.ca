@@ -84,3 +84,5 @@ Reads:
 - `tools/data/transaction_costs.json` (already present, from B16)
 
 No new dependencies.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

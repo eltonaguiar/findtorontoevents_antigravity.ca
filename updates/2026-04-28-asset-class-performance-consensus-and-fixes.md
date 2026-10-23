@@ -74,3 +74,5 @@ After the next workflow cycle:
 - ML model freshness column should flip from STALE → fresh as the gatekeeper persists.
 - FOREX/COMMODITY metrics still flagged UNRELIABLE pending resolver fix — **do not size up these classes based on current dashboard numbers**.
 - EQUITY remains the only class with hedge-fund-grade real edge today; CRYPTO has edge but unsurvivable drawdown without vol-targeting.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

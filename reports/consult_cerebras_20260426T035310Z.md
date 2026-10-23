@@ -185,3 +185,5 @@ Claude can ship NOW without paying for an API and without operator action:
 1. **2.2 CI-failure auto-comment with last-known-good revert command**: This can be shipped immediately.
 2. **2.4 Re-run Shin backtest after 2 wks cron**: This can be shipped immediately.
 3. **2.6 Per-bookmaker tier breakdown**: This can be shipped immediately.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

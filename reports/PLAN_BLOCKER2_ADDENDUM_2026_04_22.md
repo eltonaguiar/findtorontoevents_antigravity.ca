@@ -72,3 +72,5 @@ Priorities 2-4 from the earlier plan still apply:
 - Did **not** place any paper trades. The peer in `findings.txt` identified 2 real-edge candidates (HYPEUSDT LONG from `quan_engine`, n=647, fwd_wr=99.8%, score=82; DOTUSDT SHORT from `mega_mutation`, n=34, fwd_wr=67.6%, score=57) but got blocked on TradingView Desktop CDP — the UWP/WindowsApps TV build doesn't expose `--remote-debugging-port=9222`. This environment has the same constraint; trading remains gated on the user resolving the launch method.
 - Did **not** modify `audit_dashboard/hc_filter.js`. The gate works correctly.
 - Did **not** fix `health.js WindowsApps path` (also noted as outstanding in `findings.txt`) — out of scope for the placeholder-stats fix, and requires TV version detection that the peer already explored without success.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -129,3 +129,5 @@ This is the minimal correct fix:
 |-----|------|--------|-------|
 | pf.html cursor_agent__aggressive TP missing | Upstream/by-design label gap | Docs only — escalated to operator | `tools/portfolios/engine.py:127`, `config/portfolio_risk_profiles.json` aggressive.take_profit |
 | ai-tournament.html performance data missing | JS ReferenceError in renderer | **PR shipped** | `audit_dashboard/ai-tournament.html:685` |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -51,3 +51,5 @@ edge, ensuring[?25l[?25h it[?25l[?25h meets[?25l[?25h the[?25l[?25h stri
 transactions[?25l[?25h.[?25l[?25h
 
 [?25l[?25h
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

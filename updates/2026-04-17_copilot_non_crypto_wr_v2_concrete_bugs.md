@@ -322,3 +322,5 @@ standardize metrics) remain valid.  Adding concrete bugs:
 | `alpha_engine/non_crypto_policy.py` | 142–156 | NON_CRYPTO_TP_SL_CAPS forex: TP 0.5%, SL 0.4% |
 | `alpha_engine/adaptive_tp_sl.py` | 75+ | ASSET_CLASS_CONFIG commission/slippage per class |
 | `audit_dashboard/data/dashboard_data.json` | — | Generated 2026-04-17T04:24:31 UTC |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

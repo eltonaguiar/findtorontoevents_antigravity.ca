@@ -217,3 +217,5 @@ If the EQUITY asset class health drops below T2 targets (PF 1.55, WR 51.4% as of
 - `audit_trail/quality_gates.py` lines 1678–1692, 1793, 1983–2033, 4633
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — protocol reference
 - `audit_dashboard/data/dashboard_data.json::systems[goldmine_stocks]`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

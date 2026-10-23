@@ -15,3 +15,5 @@ backfilled 347. Categorize by recoverability and recommend backfill vs. exclude.
 ## Deliverable
 `reports/peer_claude-phase7-orphan-pnl-forensics_result_2026-05-31.md`
 plus a docs-only PR with the recommendation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

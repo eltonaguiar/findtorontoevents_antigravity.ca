@@ -47,3 +47,5 @@ Added two new interactive features to the Crypto and Non-Crypto performance pane
 - Default panel behavior when the page loads is unchanged **except** for the Last-N default (now 20 instead of All). 
 - Existing split modes (`score`, `source`, `strategy`) and category views remain untouched.
 - No existing function signatures were changed; only new branches and UI controls were added.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

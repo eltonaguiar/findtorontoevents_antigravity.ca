@@ -27,3 +27,5 @@ The option is additive — existing SCALP/INTRADAY/SWING/POSITION options are un
 `pick_type = long_term_value`, not a separate `trade_timeframe` value.  Aliasing to
 `pick_type` avoids polluting the `trade_timeframe` enum while making UEPS picks
 discoverable via the standard filter UI.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

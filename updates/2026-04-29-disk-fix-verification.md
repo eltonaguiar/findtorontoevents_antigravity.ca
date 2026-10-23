@@ -86,3 +86,5 @@ This is bounded (150 commits ≈ ~few MB) versus the removed full-unshallow (37G
 **fix held** — `No space left on device` did not recur. Quick Guess ML Agent completed 2 confirmed post-fix runs (03:09→commit 03:23, 05:09→commit 05:22). `audit-dashboard`, `copy-trader-forward-test`, and `meta-strategy` each produced multiple successful commits post-merge. `dynamic-alpha-engine` fix is confirmed in the workflow file; no commit evidence but the workflow's push-fail-is-warning design means absence of commits is not a red flag.
 
 The pre-fix OOM pattern (failures at the 8–9 min mark of the Commit step) has not recurred in any observed post-fix run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

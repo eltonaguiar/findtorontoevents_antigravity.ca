@@ -55,3 +55,5 @@ This is **not a workflow failure** — it is a **runner starvation / queue-depth
 ## Result Line
 
 `POLL:state=queued:fresh_db_health=false:any_red=false`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -101,3 +101,5 @@ Account $100,000, 1.5% notional risk = **$1,500 max loss per trade**. Live refs 
 ```
 python tools/mutation_analysis.py --tag forex_salvage_2026_05_13 --class FOREX --min-n 20
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

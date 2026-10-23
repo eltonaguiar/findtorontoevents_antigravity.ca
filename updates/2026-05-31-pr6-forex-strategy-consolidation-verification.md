@@ -26,3 +26,5 @@ This PR addresses the critical issue of underperforming FOREX strategies, which 
 
 - Update TODO list to mark PR #6 as completed.
 - Proceed with PR #7: BOND & COMMODITY Class Cleanup.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

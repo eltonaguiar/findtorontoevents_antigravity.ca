@@ -31,3 +31,4 @@ That allowed promotion even when risk-adjusted robustness (DSR) was known to be 
   - Result: `9 passed`
 - `py_compile` checks passed on modified modules.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -14,3 +14,5 @@ First-cut Fama-MacBeth-style decomposition. For each strategy with n >= 20 tradi
 ## Wiring plan
 
 Sidecar artifact only. Follow-up PR adds `alpha_share %` column to `audit_dashboard/template.html` strategy table.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

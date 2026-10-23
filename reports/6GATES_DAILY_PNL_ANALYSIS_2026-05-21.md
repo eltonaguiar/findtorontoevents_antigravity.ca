@@ -157,3 +157,5 @@ and also add `--by-asset-class` to break down per-class.
 3. **Fix asset_class tagging** → `signal_tracker.py` hardcodes EQUITY for all signals
 4. **Run daily PnL by asset class** → understand per-class daily Sharpe
 5. **Accumulate more trades** for EQUITY, FOREX, COMMODITY, MEME
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

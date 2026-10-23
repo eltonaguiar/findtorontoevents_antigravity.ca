@@ -142,3 +142,4 @@ Fast rollback knobs:
 - [ ] CI catches class-level regressions at configured floor
 - [ ] Existing dashboard filters continue to work
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

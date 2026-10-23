@@ -47,3 +47,5 @@
 - Cleaner `active_picks` hygiene across all writers that use shared sanitizer.
 - Safer handling of Polygon token rename without strategy-specific patchwork.
 - Cleaner CI/runtime logs with fewer redundant geo-block warnings.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

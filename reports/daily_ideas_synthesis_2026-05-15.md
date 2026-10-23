@@ -230,3 +230,4 @@ The 2026-05-15 synthesis identified 10 ranked ideas. Here is the 24-hour impleme
 
 The 2026-05-15 synthesis is essentially complete — 8/10 items shipped. Remaining 2 items (#3 PCG-5 and #10 swarm backfill) should be promoted to the 2026-05-16 synthesis as the next sprint's P1 items.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

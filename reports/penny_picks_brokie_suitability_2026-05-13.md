@@ -135,3 +135,5 @@ or rotated.
 - Generator workflow (disabled): `.github/workflows/penny-stock-picks.yml`
 - Cron investigation: `reports/penny_picks_cron_investigation_2026-05-08.md`
 - BROKIE charter: `.claude/skills/tv-paper-trade/SKILL.md` (Portfolio Definitions table)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

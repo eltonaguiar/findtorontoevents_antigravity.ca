@@ -147,3 +147,5 @@ No new strategies meet PF<0.5 + n≥20 kill threshold beyond existing documented
 | PRs blocked | #1292 needs author rebase; #1287 superseded; #1279 DRAFT |
 
 Refs: issues [#685](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/issues/685) [#686](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/issues/686) [#693](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/issues/693)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

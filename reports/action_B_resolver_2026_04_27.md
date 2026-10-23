@@ -500,3 +500,5 @@ Skipping the B → A order — i.e., letting A retrain on corrupt labels first �
 ---
 
 *End of report. ~1,750 words ex-tables/code. No code modified during this investigation.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

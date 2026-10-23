@@ -146,3 +146,5 @@ reports/
 **Bottom line:** The book is **conservative** and **honest about its limitations**. Deployment is operator's call.
 
 ## SESSION STATUS: REAL-MONEY PICKS INVESTIGATION COMPLETE — OPERATOR DECISION PENDING
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

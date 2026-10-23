@@ -67,3 +67,5 @@ PRs with scan-only (no test suite triggered — docs/archive/config branches):
 **Action required:** operator/author should investigate the CI test suite break — same action as 05Z. No new regressions or improvements detected this hour. The three code-touching PRs (#1026, #1027, #1037) remain blocked on the shared `test (3.11)` failure. Fix main first, then rebasing any of these PRs will re-run CI against a clean baseline.
 
 **Note on PR #1030:** Non-draft, open, code-touching PR with 0 CI check runs since creation (03:19Z). Worth investigating whether the branch is missing a CI trigger event or if the workflow path filter is silently bypassing it.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

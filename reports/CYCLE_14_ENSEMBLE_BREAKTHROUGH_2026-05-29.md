@@ -116,3 +116,5 @@ This is the **mirror image** of Vol MR — instead of buying vol spikes, we shor
 | Best universal strategy | Volatility Mean Reversion (30/30) |
 | Best ensemble | Ensemble_Standard on XLE PF=7.80 |
 | New paradigms discovered | Vol MR, Contrarian Vol Collapse, Ensemble 2-of-3 |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

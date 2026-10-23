@@ -40,3 +40,5 @@ Grok-4 via api.x.ai.
 
 ## Verdict
 PROCEED.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

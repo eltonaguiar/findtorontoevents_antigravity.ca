@@ -25,3 +25,5 @@ Live check: `as_of` 2026-06-06T03:37Z, `totals.picks` 189, `engines` 43.
 ## Money-ready caveat (unchanged)
 
 Leaderboard still has only **29 resolved** picks — not Tier-2 money-ready (n≥100). New tournament picks need nightly `outcome_resolver_swarm.py` resolution before WR/PF moves. Goal #1 sizing remains on `audit_surface_truth.json` / policy-clean ledger only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

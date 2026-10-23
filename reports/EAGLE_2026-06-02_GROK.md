@@ -487,3 +487,5 @@ curl -s 'https://findtorontoevents.ca/audit/data/pf_portfolio_deepseek_v4__aggre
 ---
 
 **Final answer:** Lack of profitable per-class strategies on `/audit` is a **deployment and measurement problem**, not a missing alpha problem. `ai_leaderboard.html` adds **stale swarm data + non-alpha MA backtests** on top — fix refresh cadence and unify evidence layers before expecting the UI to show capital-ready winners.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -29,3 +29,5 @@ The peer agent completed its authoring work (PR created, CI green) but the PR ha
 ## Recommendation
 
 Merge PR #461 (`extract/asset-class-cleanup-clean`) — CI is fully green. This resolves the ACTION_REQUIRED.md handoff and lands the CRYPTO strategy retirement on main.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

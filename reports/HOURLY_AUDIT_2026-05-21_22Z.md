@@ -155,3 +155,5 @@ Note: #1299 and #1301 are CI-green with no REQUEST_CHANGES from any human/AI rev
 3. **Monitor EQUITY 7d** — expected to recover toward PF>1.0 as goldmine_6x trades roll off window
 4. **Monitor cftc_cot_commercial_signal n** — trigger mutation analysis at n=20
 5. **3-AI consensus gate** for FINDING-60 (cta_replicator×NG=F) and FINDING-61 (rapid_fire×UUSDT)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

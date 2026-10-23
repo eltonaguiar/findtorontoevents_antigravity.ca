@@ -279,3 +279,5 @@ If anything falls off this path, the partner files are still on disk for future 
 - Plus `7e8ad9f21` WON PnL TP_HIT tolerance
 
 **Partner total: 14.** Consensus has fully converged on foundation order. EAGLE v2 banner LIVE on findtorontoevents.ca/audit/incidents.html.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

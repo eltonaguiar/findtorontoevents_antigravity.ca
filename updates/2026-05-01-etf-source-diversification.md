@@ -53,3 +53,5 @@ the emitter + registration; the workflow update is a ≤5-line change.
 - [x] 7 pytest tests passing
 - [x] Syntax checks pass
 - [x] Wire-Up Rule: opt-in sidecar with explicit wiring plan
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

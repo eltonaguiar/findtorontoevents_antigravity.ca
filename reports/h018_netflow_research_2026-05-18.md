@@ -102,3 +102,5 @@ To make H-018 testable WITHOUT lowering any harness threshold: (a) extend histor
 
 ---
 *Research sidecar. No production wiring. Pre-registered per M-107 before backtest logic was written. Harness imported unmodified; EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS untouched.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

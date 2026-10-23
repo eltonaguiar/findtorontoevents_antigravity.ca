@@ -64,3 +64,5 @@ No `test_confluence.py` failures despite incident note — likely fixed by PR #1
 ## Decision
 
 PROCEED — docs-only PR. Single file: `reports/peer_claude-pytest-17-failures-triage_2026-05-31.md`. Server-side `gh api` PUT off origin/main.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -156,3 +156,5 @@ If WR drops below 60% after deployment:
 ---
 
 *Generated 2026-04-23 based on what-if analysis and asset-class edge investigation.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -204,3 +204,5 @@ strategy_health:
 ---
 
 *Report generated 2026-05-03 00:15Z. All metrics derived from live dashboard data. Threshold=0.01% (1bp) for win/loss classification. Cross-verified with Claude Opus 4.7 methodology document.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

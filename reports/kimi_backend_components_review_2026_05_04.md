@@ -90,3 +90,5 @@ Estimated effort: 2–3 hours including FTP + smoke test.
 - `c:\findtorontoevents_antigravity.ca\reports\kimi_swarm_archive_2026_05_04\findtorontoevents_swarm\static\gear-settings-integration.js`
 - `c:\findtorontoevents_antigravity.ca\reports\kimi_swarm_archive_2026_05_04\findtorontoevents_swarm\static\gear-settings-integration.css`
 - `c:\findtorontoevents_antigravity.ca\TORONTOEVENTS_ANTIGRAVITY\index.html` (lines 994, 1021, 1029 — gear buttons; line 125 — `__RAW_EVENTS__` assignment; lines 3540/3562/4154 — `applyThumbnails` reads `__RAW_EVENTS__` directly)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

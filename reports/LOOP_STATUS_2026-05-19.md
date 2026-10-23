@@ -120,3 +120,5 @@ should be re-triggered on or after that date without requiring additional operat
 sections 1-3 (61 lines). Sections 4-6 (backlog detail, multi-AI prompt, ranked table) are
 absent from git history — the file appears to have been truncated at creation. The authoritative
 queue state is reconstructed from the loop status/escalation chain above.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

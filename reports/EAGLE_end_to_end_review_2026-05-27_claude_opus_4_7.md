@@ -116,3 +116,5 @@ PF<1 = gross losses > gross wins. 80% LONG volume at 29.4% WR (anti-edge). SHORT
 - `reports/INSTITUTIONAL_READINESS_PLAN_2026-05-24.md`
 - `audit_trail/quality_gates.py` (~10,500 lines)
 - `DAILY_IDEAS.MD`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

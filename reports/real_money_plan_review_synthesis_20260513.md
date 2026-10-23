@@ -115,3 +115,5 @@ Plan's structure (Phase 1-4) is sound. Add 3 new items + revise 3 existing TODOs
 - `tools/verify_multi_asset_cot_db.py` — DB verifier (operator runs)
 
 NFA. No production change made in this review.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

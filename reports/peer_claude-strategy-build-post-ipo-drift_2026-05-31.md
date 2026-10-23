@@ -49,3 +49,5 @@ Sidecar / paper-only. Target caller `alpha_engine/production_scanner.py::scan_eq
 ```
 Ran 10 tests in 0.286s — OK
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

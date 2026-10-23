@@ -107,3 +107,5 @@ Three issues caught by code-reviewer-lite and fixed:
 2. **Toxic strategies** remain blocked via surgical (category, strategy) pairs instead of blanket class blocks
 3. **New strategies** (TSMOM 12m, Faber TAA, etc.) can accumulate forward history for data-driven evaluation
 4. **Win-rate should improve** over 2-4 weeks as promising strategies build track records
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

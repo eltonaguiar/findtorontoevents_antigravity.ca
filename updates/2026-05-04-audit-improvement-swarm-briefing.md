@@ -69,3 +69,5 @@ The next swarm pass should be able to verify:
 - FUTURES cannot emit execution-ready picks while under quarantine.
 - COMMODITY and EQUITY have verified max drawdown values attached to their tier status.
 - FOREX has a completed deep dive before any kill-list or mutation decision.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

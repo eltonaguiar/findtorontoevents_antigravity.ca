@@ -26,3 +26,5 @@ Exit code 0 (12 passed including parametrized NC cases).
 ## Regression origin (git)
 
 The bare identifier bug in `ml_ranker.py` was introduced in **`8b2cb61c37`** (2026-04-15, “Smart Picks pipeline fixes…”). That commit added `direction_market_alignment` and rewrote the `btc_24h_change_norm` line, replacing the correct `signal.get("btc_24h_change")` / `mf.get("btc_24h_change")` string keys with `btc_24h_change` as an undefined name. **Impact window:** from that commit until this fix, `_signal_to_features` hit `NameError`, was swallowed, and returned `None` for all signals on that code path (ML ranking fell back to heuristics where applicable).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

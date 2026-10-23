@@ -187,3 +187,5 @@ This is the path. The data has spoken; now the execution loop must be closed.
 ---
 
 *Document created at user request after completion of the 14-day picks autopsy and blueprint. Update this file after each verified improvement cycle so it remains the living master plan.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

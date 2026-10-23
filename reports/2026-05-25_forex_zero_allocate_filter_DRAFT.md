@@ -250,3 +250,5 @@ If steps 2-5 pass: filter holds. Then schedule a cleanup PR to also wire 4b/4c s
 **ONE binary decision:** block FOREX emission outright (§4 preferred) vs route to paper-only sink (§5 alt).
 
 Plan language ("zero-allocate", "kill", `COUNT → 0`) strongly supports §4. §5 is documented only as a fallback if operator wants a shadow validation period before fully killing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

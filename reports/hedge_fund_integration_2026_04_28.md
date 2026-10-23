@@ -149,3 +149,5 @@ The actual HTML render produces a 336 KB file with the standard QuantStats panel
 - `reports/HEDGE_LIBS_LEVERAGE_AUDIT_2026_04_22.md` — 20/21 orphan rate, source of the Wire-Up Rule.
 - `reports/deep_dive_crypto_mdd_reduction_2026_04_28.md` — CRYPTO MDD-178% rescue plan (the diagnosis QuantStats automates).
 - `tools/risk_parity_allocator.py`, `tools/hrp_allocator.py` — existing hand-rolled allocators that PyPortfolioOpt complements (does NOT replace).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

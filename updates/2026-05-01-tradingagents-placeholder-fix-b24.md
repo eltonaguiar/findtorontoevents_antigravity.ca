@@ -77,3 +77,5 @@ pick-generation path. No opt-in needed.
 
 - B25 (identical-metrics bug) is the companion fix; tracks whether the LLM is
   actually differentiating tickers in its metric outputs (conf/TP/SL all identical).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

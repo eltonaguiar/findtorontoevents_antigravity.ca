@@ -475,3 +475,5 @@ The strongest signal from this analysis is that the **data quality problem** (no
 6. Add centralized retrain visibility (P2) — so we can see at a glance all model health
 
 If we can get CRYPTO WR to 45% and maintain FOREX/ETF performance, the combined portfolio would be competitive with mid-tier hedge funds (~12-15% annualized). Getting to Renaissance levels (~66%) requires solving the CRYPTO problem first — that's where 80% of our picks live.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

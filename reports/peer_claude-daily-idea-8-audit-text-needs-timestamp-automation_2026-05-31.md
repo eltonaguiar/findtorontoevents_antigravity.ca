@@ -158,3 +158,5 @@ diverge from live data.
 ```
 IDEA8:slug=audit-text-needs-timestamp-automation:verdict=MAINTENANCE_ACTION_REQUIRED:n=80_hardcoded_claims:wr=N/A:pf=N/A:wilson_lb=N/A:recommend=shadow_pilot_phase_1_narrative_stamp
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

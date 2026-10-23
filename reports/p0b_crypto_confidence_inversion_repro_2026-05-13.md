@@ -30,3 +30,5 @@
 - Sub-agent reproduction completed 2026-05-13 ~22:30Z
 - Underlying data: closed CRYPTO picks in `audit_dashboard/data/dashboard_data.json::picks.recent_closed` + historical archive
 - Cross-referenced against `reports/CONFIDENCE_SLICE_DIAGNOSIS_2026_04_22.md` (prior diagnosis, pre-resolver-v2)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

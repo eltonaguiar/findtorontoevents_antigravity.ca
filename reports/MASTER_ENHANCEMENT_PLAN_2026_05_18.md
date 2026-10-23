@@ -200,3 +200,5 @@ git rm alpha_engine/<stub_strategy>.py           # delete
 
 No stub emitters are to be "gathered" — they consume CI time and create confusion
 about what is production-live.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

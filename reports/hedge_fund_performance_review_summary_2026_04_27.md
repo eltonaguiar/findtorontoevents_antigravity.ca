@@ -56,3 +56,5 @@ Only suggested for classes with insufficient internal edge. Due-diligence requir
 5. **Then:** External alpha evaluation for FOREX/COMMODITY/BOND (only after resolver fix proves internal sources have/don't have edge).
 
 See `reports/hedge_fund_performance_review_detailed_2026_04_27.md` for per-class strategy inventory, gap analysis, and industry-playbook detail.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

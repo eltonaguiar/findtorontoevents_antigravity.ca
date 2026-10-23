@@ -29,3 +29,5 @@ That produced duplicate deploy runs for the same scrape payload.
 ## Result
 
 Routine scrape cycles now trigger one run per deploy workflow via `workflow_run`, reducing duplicate deploy executions while preserving resiliency and manual fallback.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -174,3 +174,5 @@ Only 7d strategy with n≥3: `macd-hidden-div-scout` (n=3, WR=0%, sumPnL=-14.82%
 
 *Audit branch:* `audit/hourly-05z-claude`  
 *References:* issue #685 (resolver done), issue #686 (live quality), issue #693 (EQUITY monitor — closed)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

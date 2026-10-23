@@ -80,3 +80,5 @@ This sub-strategy is the same one driving the 75% concentration warning on COMMO
 2. **Approve bypass without concentration cap** (risk acceptable since CT=F uncorrelated to SPY per A6)
 3. **Reject** — keep score floor flat; address by training the score model with COT features instead
 4. **Different approach** — propose alternative
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

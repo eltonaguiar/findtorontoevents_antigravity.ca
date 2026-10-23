@@ -214,3 +214,5 @@ VERIFY_REMOTE=1 npx playwright test tests/events_month_filters.spec.ts
 Local results on this PR: **10 logic tests pass, 6 DOM tests auto-skip**
 (per the local-React-not-hydrated note in `AGENTS.md`). Same on
 Samsung Galaxy S25 Ultra project.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -178,3 +178,5 @@ Today's `money_ready_verdict.json` (2026-05-24) says 0/6 classes pass T2. Idea #
 ## One-line return
 
 `IDEA5:slug=200d-ma-strategy-tracking:verdict=NO_EDGE:n=283:wr=49.1:pf=0.81:wilson_lb=43.3:recommend=surface-leaderboard-and-fix-resolver-do-not-promote`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -112,3 +112,5 @@ for c in (0.70, 0.75, 0.80, 0.84, 0.85, 0.90):
 print('EQUITY 0.80', _compute_ml_composite({'asset_class':'EQUITY','confidence':0.80,'ml_score':0.5,'strat_fwd_wr':0.5}))
 "
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -59,3 +59,5 @@ docstring updated.
 - [x] 5 tests pass, 0 regressions in existing test suite (30/30 existing tests pass)
 - [ ] After 14-day shadow run: produce B9-follow-up PR assessing Sharpe improvement
       using Wilson 95% lower bound on `adversarial_keep=true` vs `false` cohorts
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

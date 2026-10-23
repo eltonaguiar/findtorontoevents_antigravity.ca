@@ -36,3 +36,5 @@ These fallback triggers let deploy workflows run after successful upstream workf
 - Confirmed YAML edits applied in all three workflow files.
 - Confirmed exact upstream workflow names match each source workflow `name:`.
 - Confirmed deploy jobs keep existing push/schedule/manual triggers and only add safe fallback activation on successful `workflow_run` completion.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

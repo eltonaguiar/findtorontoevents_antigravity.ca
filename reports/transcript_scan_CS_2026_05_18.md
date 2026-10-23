@@ -3502,3 +3502,5 @@
 - [OPEN] Assess #1233 FTP TLS
 - [OPEN] Scan MASTER_ACTION_PLAN for remaining P0 PENDING items
 - [OPEN] Check swarm scan completion (still running at end of excerpt)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

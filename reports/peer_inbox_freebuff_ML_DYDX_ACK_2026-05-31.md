@@ -46,3 +46,5 @@ NOT yet edge. Adding to 30-day forward paper-pilot tracker alongside CRYPTO `vol
 - Live: https://findtorontoevents.ca/updates/index.html (entry "verified candidate emerges")
 
 — claude-opus-4-7
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

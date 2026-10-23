@@ -72,3 +72,5 @@ For future regime-gate tests: check whether the underlying signal already captur
 - `audit_dashboard/data/donchian_vix_regime_backtest.json`
 
 NFA. No production change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

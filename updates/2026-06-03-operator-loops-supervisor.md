@@ -32,3 +32,5 @@ Logs: `reports/operator_loops_supervisor.log`, existing loop logs unchanged.
 ```bash
 bash -n tools/operator_loops_supervisor.sh
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -21,3 +21,5 @@
 - `audit_dashboard/data/money_ready_verdict.json` (referenced via incidents feed)
 - Phase 3 MC watchlist (PR #179 — no ETF candidate)
 - ETF code paths: `alpha_engine/etf_scanner.py`, `alpha_engine/etf_strategies.py`, `alpha_engine/strategies/etf_decay_shorts.py`, `tools/etf_emitter_spike.py`, `tools/etf_sector_emitter.py`, `alpha_engine/config.py:894 (ETF_SYMBOLS)`, `alpha_engine/outcome_resolver.py:2489 (ETF_LEVERAGED_DECAY_FILE)`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -24,3 +24,5 @@ Equity momentum was the strongest raw signal (long-only PF 1.26) but collapsed t
 3. Accept the data-constrained verdict: no sizeable, trustworthy edge is confirmable on current data.
 
 I cannot manufacture a confirmed winner from the data available. The honest, money-protecting answer is established across both North-Star goals; the path forward is data acquisition, which is your call.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

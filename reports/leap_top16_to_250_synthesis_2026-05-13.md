@@ -121,3 +121,5 @@ source.
 - Scraper: `tools/scrape_leap_top250_profiles.py`
 - Earlier session notes: `agent_shared_memory.json` (Leap account
   re-entry decision, scraper start, etc.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

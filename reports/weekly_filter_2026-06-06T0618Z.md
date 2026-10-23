@@ -181,3 +181,5 @@
 3. Watch for `stocks_rsi2_pullback` emission restart — check `/audit` Smart Picks EQUITY tab
 4. AI Tournament T1 consensus: **SOLUSDT + AMZN LONG** (both deepseek + grok3 agree)
 5. Size all new positions at Quarter-Kelly; halt if rolling drawdown exceeds 30%
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

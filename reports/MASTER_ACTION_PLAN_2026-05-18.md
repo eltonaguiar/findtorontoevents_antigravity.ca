@@ -708,3 +708,5 @@ Day 3-4 (2026-05-20..21): PR-2026-0518-5 (EQUITY universe) — needs PR-2026-051
 *End of MASTER ACTION PLAN — 2026-05-18*
 
 *Next plan: MASTER_ACTION_PLAN_2026-05-19.md (to be generated 2026-05-19 06:00 UTC)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

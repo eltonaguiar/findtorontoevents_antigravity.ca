@@ -93,3 +93,5 @@ Post-deploy validation steps:
   alarm uses selector `[class*="event-card"]` but cards render with class
   `glass-panel` — false positive. Removed in this same patch (the diagnostic
   block was rewritten as part of the coalesce refactor).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

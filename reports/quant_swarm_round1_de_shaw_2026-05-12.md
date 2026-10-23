@@ -114,3 +114,5 @@ is Day 2-7. PEAD on Day 1.
 
 Research surface only. No real-money sizing without 10-step López de
 Prado AFML pipeline clear + 30d shadow. Per CLAUDE.md Goal #1.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

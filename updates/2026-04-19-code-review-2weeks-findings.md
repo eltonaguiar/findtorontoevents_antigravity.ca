@@ -208,3 +208,5 @@ Multiple penalty strings in `_apply_score_penalties` bake the score delta into t
 2. Introduce a `_penalize(score, label, delta)` helper that owns the breadcrumb formatting.
 3. Extend `strategy_performance.json` (or add a sibling file) with per-direction stats, then upgrade the direction gate to be honest about LONG vs system WR.
 4. Decide on `closed_picks.json` retention policy and document it at the top of the file.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

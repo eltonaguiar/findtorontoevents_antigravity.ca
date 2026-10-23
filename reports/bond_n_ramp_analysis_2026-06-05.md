@@ -102,3 +102,5 @@ As of 2026-06-05, BOND fails criterion 1 by 92 trades (8 actual, 100 needed).
 **Author:** claude (this session, 2026-06-05)
 **Verifications:** Counts pulled live from `ejaguiar1_stocks.trading_picks` via
 `tools.db_env.get_stocks_creds()`. SQL queries reproducible.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

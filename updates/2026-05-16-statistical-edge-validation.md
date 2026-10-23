@@ -25,3 +25,5 @@ Items 3, 4, 7, 8, and 10 are deferred due to likely overfitting, lack of theoret
 ## Final Recommendation
 
 Allocate 80% of validation resources to Tier 0 and Tier 1 items, which have the highest probability of delivering robust statistical edges. The remaining 20% can be allocated to Tier 2 items, but only after the foundational infrastructure is proven.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -31,3 +31,5 @@ python3 tools/replay_commodity_gap_fade_intrabar.py --stdout
 ## Related PRs
 - Builds on main (includes P0 merge wave)
 - Complements #572 (sym×dir intrabar Track column)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

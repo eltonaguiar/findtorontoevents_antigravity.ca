@@ -202,3 +202,5 @@ Per the CRITICAL CORRECTION in the watchout brief:
 | #609 (OPEN) | Fixes documented bugs #1–4 (empty-ohlc, retry loop, timeout, lookahead) | **VALID follow-up, not duplicate** — needs CI fix + gate changes behind shadow flag before merge |
 
 No PR attempts to re-apply v2 (the "DUPLICATE, close" case). Both resolver PRs address distinct bugs on top of an already-deployed v2 resolver.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -237,3 +237,5 @@ Implemented todo coverage:
 - Higher resilience under external API availability failures.
 - Improved observability and weekly remediation discipline.
 - Safer path to non-crypto breadth recovery with explicit rollback signals.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

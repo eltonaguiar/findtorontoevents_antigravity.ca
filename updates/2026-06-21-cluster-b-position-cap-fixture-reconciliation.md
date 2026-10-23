@@ -111,3 +111,5 @@ the swarm-ci-failure-analysis):
 
 These will be tackled as separate PRs (each ~80-150 LOC, single-cluster
 scope, no regression risk).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

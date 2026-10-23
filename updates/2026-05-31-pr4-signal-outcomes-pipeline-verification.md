@@ -116,3 +116,5 @@ Recommended extra dashboard hardening for a later PR:
 - Alert if `MAX(created_at)` is older than 24 hours.
 - Alert if outcome coverage drops below an agreed threshold.
 - Break out `UNKNOWN` asset-class outcomes so they can be normalized or assigned upstream.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

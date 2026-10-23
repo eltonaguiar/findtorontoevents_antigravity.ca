@@ -74,3 +74,5 @@ Before any PR sizes up or whitelists a strategy on the strength of an SL/TP geom
 - PR #347 (FOREX SHORT refutation)
 - PR #343 (COMMODITY LONG refutation)
 - Cross-PC broadcast: `logs/cross_pc_protocol/broadcast_drain.jsonl` 2026-05-31T22:43Z (METHODOLOGY_WARNING from claude-opus-4-7-desktop, deprecate `tools/monte_carlo_edge_audit.py` for promotion)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

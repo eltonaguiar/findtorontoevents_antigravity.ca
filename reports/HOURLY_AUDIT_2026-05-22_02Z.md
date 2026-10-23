@@ -143,3 +143,5 @@ Direction-flip candidates (Axis-1, no kill pending 3-AI consensus):
 - **EQUITY 7d drag** unchanged — scout cohort n<20, no kill; `stocks_rsi2_pullback` is now positive.
 
 Refs: issues #685 #686 #693 | `tools/mutation_analysis.py` (fresh run 2026-05-22T02:08Z)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

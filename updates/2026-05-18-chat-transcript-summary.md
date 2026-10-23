@@ -42,3 +42,5 @@
 Session delivered honest "not real-money ready" verdict with concrete filter improvements, root causes, and phased roadmap. All numbers DB-backed. Explicit stop per user preference.
 
 **End of Transcript Summary** — 2026-05-18 03:05 UTC
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

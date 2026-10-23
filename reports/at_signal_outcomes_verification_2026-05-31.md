@@ -15,3 +15,5 @@
 - EQUITY pipeline severely under-emitting (169 outcomes vs CRYPTO 53k) — separate Goal #1 blocker.
 - 14,596 UNKNOWN asset_class outcomes require backfill via symbol pattern matching.
 - 63.7% single-source concentration (kimi_riseoftheclaw) at the MySQL level confirms the class-level pattern.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

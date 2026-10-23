@@ -57,3 +57,5 @@ Equal-weight daily book annualised Sharpe: **0.04**. This is reported for honest
 ## Honest conclusion
 
 **H-008 was TESTED and REJECTED.** The continuous-position redesign succeeded at its job — it gave the harness the window density Fork 2 could not, so the harness rendered a *real* eff-stability verdict. The verdict is a fail: the slope-momentum signal does not separate winners from losers with a stable sign across enough 14-day windows. This is a clean kill, not a data-coverage gap — the fifth in the EDGE_VERDICT kill-loop. The economic prior (slope momentum proxies the rate regime) is reasonable, but a sound prior is not an edge. BOND 2s10s does **not** clear the harness; nothing is wired or sized.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

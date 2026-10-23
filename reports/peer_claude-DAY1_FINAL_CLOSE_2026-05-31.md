@@ -60,3 +60,5 @@ The verbatim+RT discipline pattern — require independent agents to quote pre-c
 - updates card: `updates/index.html` (2026-06-01 EST entry)
 - ledger: `reports/peer_claude-DAY1_FINAL_LEDGER_2026-05-31.md`
 - master harness: `.github/workflows/paper-pilot-daily.yml`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

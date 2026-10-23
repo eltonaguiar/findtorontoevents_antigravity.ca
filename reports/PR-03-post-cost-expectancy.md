@@ -179,3 +179,5 @@ PR-1 ──> PR-2 ──> PR-3 (this PR) ──> PR-4 ──> PR-5
 | **PR-3 → PR-5** | PR-5's what-if query must show correct `POST_COST_EXPECTANCY_REJECT` as a filter reason in historical data. |
 
 **Merge this PR third, after PR-1 and PR-2 have stabilized.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

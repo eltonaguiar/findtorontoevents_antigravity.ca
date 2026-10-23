@@ -79,3 +79,5 @@ appears in active_picks, investigate immediately (should not pass any gate).
 
 **Next review:** 2026-11-01 (6 months). Re-evaluate only if new backtesting infrastructure
 (walk-forward harness v2) can demonstrate n≥200 OOS WR ≥ 55%.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

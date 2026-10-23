@@ -134,3 +134,5 @@ Until ALL acceptance criteria above are met, FOREX is RESEARCH-ONLY. Specificall
 - Any agent or model that quotes the 14d panel WR (83%) for FOREX without quoting the PF (0.103) AND the leakage caveat is in violation of CLAUDE.md "DO NOT trust unsourced model claims about /audit numbers."
 
 Owner: alpha_engine maintainers. Review cadence: weekly until first acceptance gate (n>=50) is cleared; then per /money-maker-readyv2 rules.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

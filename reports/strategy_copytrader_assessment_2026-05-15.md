@@ -23,3 +23,5 @@
 - Target: Make CopyTrader intel contribute ≥15-20% of high-trust non-crypto emissions by end of 90 days.
 
 **Verdict**: Good data exists. Execution is incomplete. Fixing the wiring and volume would meaningfully lift win rates in EQUITY and COMMODITY.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -51,3 +51,5 @@ PR #681 bundled this finding with a "decay guard" module and 11-strategy KILL/RE
 - no production caller in `smart_picks_engine.py` (Wire-Up Rule violation)
 
 This single finding, separated from the broken guard, is real and worth documenting. PR #681 closed; investigation tracked here.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

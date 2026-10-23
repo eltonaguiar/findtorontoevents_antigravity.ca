@@ -81,3 +81,5 @@ The core bug is a capture-phase `stopImmediatePropagation()` call in `_wireThisM
 - Does `e.isTrusted` work correctly in all target browsers (Safari 15+, Chrome 90+, Firefox 90+)? Need cross-browser E2E tests.
 - Does the `__parseCardDisplayedDate__` delta-based heuristic correctly handle all month-boundary cases? Need to test with real event data spanning Dec→Jan and Jan→Feb transitions.
 - Is there a race between the 800ms capture listener and the 200ms override that still causes issues after the `e.isTrusted` fix? Need to test with rapid user clicks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

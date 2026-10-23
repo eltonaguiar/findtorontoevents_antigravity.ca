@@ -17,3 +17,5 @@ Sports is also outcome-limited: the dump's schedule tables are empty and the LIV
 
 ## Honest bottom line across BOTH goals
 Goal #1 (trading): no promotable alpha (every signal dissolves under power/clustering). Goal #2 (sports): no confirmable +EV edge (dissolves under clustering + stale-line). The constraint is consistent: **the available data lacks the resolution quality (closing lines / settled outcomes / point-in-time / price-path) needed to confirm an edge** — not a shortage of analysis. Remaining sports angles (totals/spreads, true CLV) need closing-line capture, which the snapshot lacks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -97,3 +97,5 @@ The swarm's statistical-validity reviewer proved that the 27,291 rows with NULL 
 3. Per-class fixed-window WR/PF / DSR / PBO using ONLY the 4,386 temporal-safe rows for time-window stats.
 4. Wire `audit_trail/universal_pick_resolver.py` to also read from `trading_picks` so the next live resolver tick doesn't introduce another universe.
 5. Audit the 27 len=100 pick_ids for collision risk.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

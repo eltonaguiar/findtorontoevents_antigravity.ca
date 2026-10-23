@@ -62,3 +62,5 @@ A full merge of the kilo branch into main is **not** recommended without first c
 ## Return summary
 
 `RECONCILE:kilo_branch_exists=true:net_new_agents=[2,3,5,6,8]:duplicates=[3,4]:tracking_PR=<pending>:operator_decision=docs-only`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

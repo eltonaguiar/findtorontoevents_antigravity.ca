@@ -226,3 +226,5 @@ Dispatch each persona to review THIS merged doc. Each flags:
 
 Save to `reports/quant_swarm_round3_<persona>_review_2026-05-12.md`.
 Final merge: `reports/quant_rescue_master_plan_2026-05-12.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

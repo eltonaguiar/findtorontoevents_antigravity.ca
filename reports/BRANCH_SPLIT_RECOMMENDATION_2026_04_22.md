@@ -80,3 +80,5 @@ Each group above maps to a fresh branch via `git cherry-pick` — zero conflicts
 - Inherited from Agent 1's TODO list ([HIGH] Split feat/ship-week-integrations)
 - User decision needed on PR #301 merge (separate branch, flat-close detector)
 - PR #320 (fix/reject-exempt-safety-gate) is the priority merge target
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

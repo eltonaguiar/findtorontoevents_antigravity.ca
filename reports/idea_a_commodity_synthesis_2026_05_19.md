@@ -376,3 +376,5 @@ cap — the 87% concentration may require structural diversification rather than
 - Engines: deepseek (59.8s, 14966B), inception (5.6s, 12886B), openrouter (16.7s, 8344B),
   ollama_local (25.1s, 7561B)
 - Total cost: ~$0.013
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

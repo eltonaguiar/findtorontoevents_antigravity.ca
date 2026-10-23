@@ -79,3 +79,5 @@ AI tournament EQUITY picks (MSFT, AMZN, JPM…) — all OPEN, zero resolved.
 4. **Do not:** unban `stocks_rsi2_pullback`, re-enable `yahoo_analyst_consensus`, or size on pf_registry n=5 no-loss sleeves.
 
 **Reproduce:** `python3 tools/strategy_tier_tracker.py`; DB query on `at_pick_outcomes WHERE asset_class='EQUITY'`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

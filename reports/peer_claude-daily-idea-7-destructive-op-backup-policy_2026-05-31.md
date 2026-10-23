@@ -182,3 +182,5 @@ No live SQL was executed for this investigation (policy idea, not edge query). N
 - `tools/orphan_resolver_dryrun.py` — only existing caller (model the retrofit on this)
 - CLAUDE.md memory: `project-money-ready-2026-05-31` (plumbing bottleneck)
 - CLAUDE.md memory: `feedback-incident-page-stale-vs-live-db` (mutation-traceability incidents)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

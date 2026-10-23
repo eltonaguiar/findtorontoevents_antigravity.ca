@@ -139,3 +139,5 @@ Plus 3 more EDGE_LIKELY_REAL. **33 of 42 audited strategies REJECTED as OVERFIT_
 3. **Bucket A #4** — Ghost Rows investigation (smaller-scoped probe)
 4. **Bucket C #1** — `DECAY_ALERT_REDUCE` framework (soft-demote 9 unblocked alerts)
 5. **Bucket D #4** — `last_signal_date` in `systems` payload (closes earlier P1)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

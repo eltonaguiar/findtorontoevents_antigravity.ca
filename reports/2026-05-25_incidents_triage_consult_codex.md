@@ -117,3 +117,5 @@ tokens used
 
 Also add a “suppressed/resolved regression” rule: if a resolved P0 reappears with the same `finding_key`, mark it `REGRESSED` instead of creating a fresh OPEN row. That will make the nightly page much more actionable.
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

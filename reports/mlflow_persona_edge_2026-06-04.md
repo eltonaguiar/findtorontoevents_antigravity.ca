@@ -49,3 +49,5 @@ Operator asked how to apply mlflow + statsmodels more deeply, including to perso
 - **verified_strategies_post_incident_94**: 6 runs
 - **Default**: 0 runs
 - **Total**: 70 runs, mlflow.db = ~1069056B local SQLite
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

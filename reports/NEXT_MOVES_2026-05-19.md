@@ -46,3 +46,5 @@ regardless — they make the system an honest measurement instrument.
 Each Tier-2/3 hypothesis runs through the `hypothesis-registry` skill →
 pre-register → harness. Verdicts: `reports/EDGE_HUNT_EXHAUSTED_2026-05-18.md`,
 `reports/MACRO_WHY_NO_EDGE_2026-05-18.md`, `reports/QUANT_RESCUE_SWARM_VERDICT_2026-05-19.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

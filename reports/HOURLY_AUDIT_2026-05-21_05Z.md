@@ -130,3 +130,5 @@ Note: `asset_class_health` PF values are computed on the sliding recent window u
 ---
 
 Refs: issues #685, #686, #693 | PRs merged: #1277, #1278
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

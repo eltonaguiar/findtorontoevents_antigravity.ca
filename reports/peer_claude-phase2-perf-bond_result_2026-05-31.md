@@ -82,3 +82,5 @@ Filter: `LOWER(category)='bond'`. Read-only.
 3. **Next kill candidates (pending units-verification):** `bond_mean_reversion`, `bond_yield_curve_slope`, `bond_yield_momentum` — three losing-only strategies whose realized PnL magnitudes (-40 to -84%) are either catastrophic or a units bug. Audit first, kill or rescale TP/SL second.
 4. **Plumbing fix #1 (BLOCKER for any future BOND audit):** stamp `closed_at` whenever a resolved-status outcome lands. 125 BOND rows are currently invisible to the dashboard/registry.
 5. **Plumbing fix #2:** investigate why `pf_registry` only sees `bond_scanner::IEF (n=2)` when the DB has 10 distinct strategies and 130 resolved picks under `category='bond'`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

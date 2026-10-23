@@ -35,3 +35,5 @@ To bridge the gap between research and real-money deployment, we define the foll
 - **EQUITY:** Currently failing (PF 0.25, negative expectancy). Requires fundamental research (value/momentum).
 - **FOREX:** High WR, but PF dragged by poor strategy selection. Requires isolation of high-conviction sleeves.
 - **ETF:** Best lab candidate (PF 1.60), but insufficient forward data.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

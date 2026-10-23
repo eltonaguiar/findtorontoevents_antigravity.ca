@@ -75,3 +75,5 @@ All tests pass. No real database connection required — all DB queries are mock
 - **Transaction-wrapped.** Any error during deletion causes full rollback.
 - **Confirmation prompt** before `--execute` (skip with `--yes`).
 - Uses repo's standard `tools/db_env.py` credential resolution — no hardcoded credentials.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

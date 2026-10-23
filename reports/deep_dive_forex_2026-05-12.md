@@ -204,3 +204,5 @@ Per quality_gates.py (2026-05-12):
 
 **Prepared by:** Claude Code  
 **Next review:** 2026-05-26 (14 days post-PR #909 gate activation)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

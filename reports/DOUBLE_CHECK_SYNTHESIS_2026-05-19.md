@@ -57,3 +57,5 @@ Cross-review of prior harvests + R1/R2/R3 grill runs.
 | P1 | Re-probe Cerebras/Groq (403 from roster HTTP; api_consult may still work) | Ops |
 | P2 | Ring on MASTER prompt + score vs DeepSeek | Research |
 | P2 | HF/Chutes credits or drop from roster | Ops |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

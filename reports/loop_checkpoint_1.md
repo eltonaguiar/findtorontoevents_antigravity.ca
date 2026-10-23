@@ -36,3 +36,5 @@ This commit is the convergence point of 3 independent audits:
 3. Investigate `penny_picks` cron stoppage (1k+ EQUITY rows = highest-leverage Goal #1 win per uncharted recon)
 
 Wakeup scheduled for T+20m (15:16 UTC).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

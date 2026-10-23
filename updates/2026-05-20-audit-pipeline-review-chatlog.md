@@ -88,3 +88,5 @@ alpha_engine, battleground, mercury2, paper_trading, ml_bg_system_[a-f], ml_bg_e
 ### 6. Deliverables Produced
 - `updates/2026-05-20-audit-pipeline-review-chatlog.md` — this file
 - `updates/2026-05-20-audit-pipeline-review-report.md` — summary + per-asset-class improvement plan
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

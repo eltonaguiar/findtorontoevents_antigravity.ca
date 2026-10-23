@@ -95,3 +95,5 @@ Both real, both in `alpha_engine/money_ready_verdict.py`, both default-shadow:
 - `MDD_GATE_ENFORCE` wiring bug — 1-line fix, gated on the step-3 decision.
 - Duplicate bond workflows (`etf-bond-scanner.yml` vs `alpha-engine-bond.yml`) +
   missing `fredapi`/`pandas_datareader` deps — operator-gated.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

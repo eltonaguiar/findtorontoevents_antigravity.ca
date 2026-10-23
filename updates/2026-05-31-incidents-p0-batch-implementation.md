@@ -148,3 +148,5 @@ PY
 **Next for me in session:** /dropchat-multipc (per skill: SESSION_SUMMARY broadcast + inbox drain) + GitHub MCP PR for this review doc on clean branch (only file touched in my commit).
 
 *Grok 4.3 — 2026-05-31 02:2x UTC — gx10-c9b9*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -61,3 +61,5 @@ Addresses the four workflows flagged on [gha-summary.html](https://findtorontoev
 **Needs attention (latest run):** DB Freshness Check (Legacy Manual) — separate legacy workflow; review or disable if redundant with `db-freshness-guardian.yml`.
 
 **Disabled:** Send Morning Goal Follow-Ups (disabled).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

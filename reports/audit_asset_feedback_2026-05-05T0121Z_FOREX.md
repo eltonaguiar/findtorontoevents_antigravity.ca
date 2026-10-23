@@ -15,3 +15,5 @@ FOREX is the highest-priority rehab target. Current payload: `n=1249`, `WR=45.6%
 ## Do Not Do
 
 Do not hard-kill FOREX as an asset class. The protocol requires symbol, direction, and timeframe autopsy first.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -45,3 +45,5 @@ Logic-only YAML edits — **no CI command required.** After merge, skim Actions 
 
 - Workflows with `concurrency.cancel-in-progress: true` plus frequent cron **may still** show cancellations when overlapping; that is by design unless changed.
 - If `deploy-vetted-picks` / `ueps-pick-runner` still hit ceilings, consider whether `fetch-depth: 0` is strictly necessary or can be reduced with documented push/rebase behavior.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

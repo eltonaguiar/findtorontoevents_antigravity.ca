@@ -102,3 +102,5 @@ Tests cover:
 - Track whether newly-appearing strategies get killed promptly (the 45-strategy "insufficient" pool)
 - Consider adding asset-class-specific WR thresholds (FOREX may need different gates than CRYPTO)
 - Wire blacklist impact metrics into the audit dashboard for live visibility
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

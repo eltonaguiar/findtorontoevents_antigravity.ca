@@ -470,3 +470,5 @@ const direction_filter = {
 **Data Source:** findtorontoevents.ca/audit (55,510 picks, 4,618 edge-verified)
 **Validation:** PBO, DSR, WFE, 95% CI, p-value testing
 **Status:** Ready for institutional investment
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

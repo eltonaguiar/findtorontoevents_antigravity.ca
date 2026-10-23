@@ -114,3 +114,5 @@ was effectively a re-confirmation / dedup. End-state is identical: gate is in
 ## Operator queue state
 
 11 items pinned (was 12; PR #229 retired).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -180,3 +180,5 @@ print('MATIC in universal_resolved_picks:', sum(1 for p in rows if (p.get('symbo
 ```
 
 No production files modified in this note. All three agents' reports remain on disk for reference.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

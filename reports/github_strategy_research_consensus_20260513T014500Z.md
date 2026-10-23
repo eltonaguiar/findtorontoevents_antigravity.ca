@@ -114,3 +114,5 @@ backtest window. Reject any candidate whose claim period stops at
 Research recommendations. No code installed yet. Pilot install requires
 explicit user approval (any pip install of a 25k-star repo with C++
 deps can crash the dev shell).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

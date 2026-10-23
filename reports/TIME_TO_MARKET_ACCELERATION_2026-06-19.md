@@ -38,3 +38,5 @@ Both attack the dominant cost (calendar time) directly. #2 (universe breadth) an
 
 ## Honest caveat
 None of this manufactures edge that isn't there. If the retroactive replay (#3) shows the lead's CI-LB won't reach 1.15 even at large n, the fastest path to a *trustworthy* winner is TIER 3 (new-data candidates) — and the honest answer may remain "no sizeable edge yet," which is itself a valuable, money-protecting verdict.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

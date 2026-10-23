@@ -135,3 +135,5 @@ Dashboard has not refreshed since 02:19:15Z (~3h stale at audit time). The hourl
 - Issues: #685 (resolver done — do not reopen), #686 (per-asset attribution live), #693 (EQUITY monitor — closed 2026-05-13)
 - Reports: `reports/HOURLY_AUDIT_2026-05-22_04Z.md`, `reports/HOURLY_AUDIT_2026-05-22_03Z.md`
 - Dashboard: `audit_dashboard/data/dashboard_data.json` (snapshot 2026-05-22T02:19:15Z)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

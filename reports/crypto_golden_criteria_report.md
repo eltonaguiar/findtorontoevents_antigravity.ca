@@ -170,3 +170,5 @@
 | ONDOUSDT | LONG | 73 | 4.0% | 1 | PROVEN | super_signals |
 | WLDUSDT | LONG | 69 | 4.0% | 1 | PROVEN | super_signals |
 | DOTUSDT | LONG | 26 | 4.0% | 2 | PROVEN | super_signals |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

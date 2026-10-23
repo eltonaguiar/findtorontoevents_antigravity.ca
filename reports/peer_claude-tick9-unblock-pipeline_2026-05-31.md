@@ -101,3 +101,5 @@ None. All `gh run cancel` and `gh workflow run` invocations returned success.
 ## Return value
 
 `UNBLOCK:cancelled=20:re_triggered=3:queue_before=156:queue_after=133`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

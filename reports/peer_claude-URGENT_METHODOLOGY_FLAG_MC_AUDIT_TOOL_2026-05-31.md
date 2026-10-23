@@ -62,3 +62,5 @@ Until this rewrite ships, the tool's tier labels are not trustworthy and must no
 - Counter-evidence: PR #347 (FOREX), PR #343 (COMMODITY)
 - Forward-truth harness: `.github/workflows/paper-pilot-daily.yml` (PR #316)
 - Memory: `reference-sl-optimization-needs-pricepath`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

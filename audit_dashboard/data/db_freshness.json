@@ -1,42 +1,57 @@
-{
+{"disclaimer": "*Not financial advice. Research/educational only. Past performance does not guarantee future results.*", 
   "overall": "RED",
   "checks": [
     {
       "check": "live_picks",
       "table": "trading_picks",
       "status": "GREEN",
-      "minutes_stale": 42.3,
-      "last_pick_at": "2026-05-23 17:47:39",
-      "n_active": 37732
+      "minutes_stale": 17.6,
+      "last_pick_at": "2026-10-22 20:39:34",
+      "n_active": 77941
     },
     {
       "check": "resolver_outputs",
       "table": "trading_picks",
-      "status": "GREEN",
-      "minutes_stale": 36.8,
-      "last_resolved_at": "2026-05-23 17:53:12",
+      "status": "YELLOW",
+      "minutes_stale": 555.4,
+      "last_resolved_at": "2026-10-22 11:41:45",
       "n_resolved_today": 8
     },
     {
       "check": "signal_outcomes",
       "table": "at_signal_outcomes",
-      "status": "RED",
-      "minutes_stale": 115782.0,
-      "last_resolved_at": "2026-03-04 08:47:58",
-      "n_resolved_today": 0,
-      "n_total": 121
+      "status": "GREEN",
+      "minutes_stale": 326.5,
+      "last_resolved_at": "2026-10-22 15:30:41",
+      "n_resolved_today": 41,
+      "n_total": 50305
+    },
+    {
+      "check": "intrabar_resolution",
+      "table": "at_signal_outcomes.intrabar_resolved_at",
+      "status": "GREEN",
+      "minutes_stale": 108.5,
+      "last_intrabar_resolved_at": "2026-10-22 19:08:41",
+      "n_decisive_total": 4922
+    },
+    {
+      "check": "status_standardization",
+      "table": "trading_picks",
+      "status": "GREEN",
+      "non_canonical": {},
+      "n_non_canonical": 0
     },
     {
       "check": "backtests",
-      "table": "backtest_trades",
-      "status": "YELLOW",
+      "table": "bt_backtest_trades",
+      "status": "RED",
       "minutes_stale": null,
       "last_trade_at": null,
       "n_total": 0,
-      "error": "no timestamp column in backtest_trades \u2014 schema check needed"
+      "error": "(2013, 'Lost connection to MySQL server during query (timed out)')"
     }
   ],
-  "generated_at": "2026-05-23T18:29:59.406068+00:00",
+  "generated_at": "2026-10-22T20:57:42.101798+00:00",
   "thresholds": {
     "live_picks": {
       "green_max_minutes": 120,
@@ -47,6 +62,10 @@
       "yellow_max_minutes": 720
     },
     "signal_outcomes": {
+      "green_max_minutes": 360,
+      "yellow_max_minutes": 1440
+    },
+    "intrabar_resolution": {
       "green_max_minutes": 360,
       "yellow_max_minutes": 1440
     },

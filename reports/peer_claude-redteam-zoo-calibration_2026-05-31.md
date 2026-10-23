@@ -128,3 +128,5 @@ FOREX 0.65-0.70 sweet-spot reward is built on n=7. Flipping `0.70-0.75` from +3 
 ## Return string
 
 `RT_ZOO_CALIB:approve=with_damping:thin_samples=4:pr227_conflict=False:live_data_agrees=True`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

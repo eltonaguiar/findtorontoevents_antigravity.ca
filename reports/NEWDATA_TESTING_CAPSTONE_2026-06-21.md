@@ -32,3 +32,5 @@ Across **every data-feasible avenue** — crypto (at scale), equity (reversal + 
 
 ## Decision: taper
 Autonomous backtesting is genuinely exhausted (every avenue tested). Remaining value is forward accrual (calendar-time, not analysis) + operator levers (restore daily_prices, fix keyspace gap). Tapering from 5-min to monitoring; re-engage on operator action or a fresh feed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

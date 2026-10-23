@@ -171,3 +171,5 @@ That changes the urgency calculus. The "shut COMMODITY off entirely" alternative
 7. **Tool fix: `tools/mutation_analysis.py` add `--strategy` and `--source-system` filters** so the documented per-strategy autopsy in `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md` Step 2 actually matches the script. Small, ~30-line change.
 
 The investigation doc explicitly forbids step-skipping: "Entries auto-flagged by this workflow must still traverse Stages 2-4 of the escalation ladder (rehabilitation → DNA mutation → backtest/WF) before any Stage-5 hard block, UNLESS the loss pattern is deterministic (WR = 0% on n >= 20)." None of the 5 strategies investigated here clears that fast-path. **No `BLOCKED_SOURCE_SYSTEMS` expansion is data-supported.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

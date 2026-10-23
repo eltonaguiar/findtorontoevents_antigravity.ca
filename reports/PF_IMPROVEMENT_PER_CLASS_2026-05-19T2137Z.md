@@ -343,3 +343,5 @@ Key revisions folded in (above):
 - Promoting any cohort on canonical re-aggregation alone.
 - Acceptance gate that uses the same ledger already exhausted by
   EDGE_HUNT_EXHAUSTED_2026-05-18.md.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

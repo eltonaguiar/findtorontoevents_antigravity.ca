@@ -151,3 +151,5 @@ Until all 9 acceptance criteria are met on a **continuous** 30-day window:
 - **Every CRYPTO-touching PR must cite this report and state which acceptance criterion it advances.**
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

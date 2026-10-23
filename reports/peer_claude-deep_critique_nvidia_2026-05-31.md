@@ -64,3 +64,5 @@
 ## Return Tag
 
 `NVIDIA_DEEP:status=ok:next_move=fix_pipeline_first:top_failure=overfitting_selection_bias:most_urgent_missing=execution_costs_slippage`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

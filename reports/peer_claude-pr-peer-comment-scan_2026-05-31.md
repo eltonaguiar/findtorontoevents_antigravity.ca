@@ -42,3 +42,5 @@ Proceed with planned merge/close actions. No peer concerns to address before clo
 
 ---
 Generated: 2026-05-31 by peer-comment-scan task
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

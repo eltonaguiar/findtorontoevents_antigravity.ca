@@ -113,3 +113,5 @@
 | #434 | Tennis ELO | ✅ Wired |
 
 **Overall verdict: GAPS FOUND (1) — PR #393 `tools/feed_risk_metrics.py` has no production caller. All other PRs pass Wire-Up Rule.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

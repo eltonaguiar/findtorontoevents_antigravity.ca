@@ -24,3 +24,5 @@ The first new-data avenue this session with BOTH signal + price at 5yr depth →
 
 ## Net
 The collector-revival direction delivered 2 maintained feeds + a new price feed + the first properly-powered new-data verdict. COT itself is sub-bar, but the infrastructure now enables the commodity TSMOM test (next), which has the strongest academic prior of any remaining data-feasible avenue.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

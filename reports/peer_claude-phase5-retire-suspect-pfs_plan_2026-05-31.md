@@ -15,3 +15,5 @@
 
 ## Verification post-merge
 - money_ready_verdict regenerator (`alpha_engine/money_ready_verdict.py`) runs on the resolved-picks cron; next run will recompute per-class stats with these excluded.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

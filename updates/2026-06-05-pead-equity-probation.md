@@ -18,3 +18,5 @@ Dry-run scanner with flags in a dev environment; confirm at most 2 `pead_equity_
 ## Depends on
 
 PR merging earnings cache loader (`equity_earnings_loader.py`) first.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

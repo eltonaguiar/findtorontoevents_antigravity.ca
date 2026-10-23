@@ -36,3 +36,5 @@
 
 - The legacy duplicate workflow will no longer auto-fail on a schedule.
 - Future Actions health checks now include stronger anti-false-negative techniques and explicit swarm-based root-cause escalation for stuck/repeating failures.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

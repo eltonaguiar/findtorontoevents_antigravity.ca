@@ -64,3 +64,5 @@ Inversion mutations require:
 |------|--------|
 | `tools/strategy_kill_switch.py` | Dual-source query: trading_picks primary + at_pick_outcomes supplement |
 | `tools/run_mutation_scan_honest.py` | Fixed UnboundLocalError on `os` |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -35,3 +35,5 @@ Impact:
 ## Notes
 
 - `pytest` is not available in the current environment (`No module named pytest`), so executable validation was done via direct runtime snippet and `py_compile`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

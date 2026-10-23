@@ -200,3 +200,5 @@ Issue #693 closed 2026-05-13. Monitoring per the 7-day check criteria:
 4. Watch COMMODITY 7d for improvement as legacy `cftc_cot` picks age out
 
 Refs: issues #685, #686, #693 | `reports/HOURLY_AUDIT_2026-05-21_04Z.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -202,3 +202,5 @@ python3 alpha_engine/money_ready_verdict.py --json
 - **Real money before 2027:** Only via **probation sizing (≤0.25%)** on FOREX allowlist after backtest+30d paper; ETF remains pilot-only until forward n≥30 (~2028 at monthly cadence) unless rebalance acceleration is approved.
 
 *Sources: `audit_dashboard/data/pf_registry.json`, `money_ready_verdict.json`, `etf_forward_stats_latest.json`, `faber_forward_stats_latest.json`, `forex_carry_backtest_20260605.json`, `strategy_admit/etf_dual_momentum.json`, `pilot_forward_dashboard.json`, paper_pilot state/log files, `non_crypto_policy.py`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

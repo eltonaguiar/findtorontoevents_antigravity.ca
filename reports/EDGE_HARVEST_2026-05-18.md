@@ -77,3 +77,5 @@ capacity-aware, or it evaporates the moment real size is applied.
 
 *Swarm run: `swarm_runs/edge-harvest-2026-05-18/`. Prompt:
 `swarm_runs/_prompts/edge_harvest_2026-05-18.md`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

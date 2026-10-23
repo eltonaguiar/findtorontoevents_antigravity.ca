@@ -130,3 +130,5 @@
 4. **Archive files #14-18** (5 dated `money_maker_ready_*Z.md` snapshots from 0512-0514) to `reports/archive/money_maker_ready/` per the dupe-scan recommendation.
 5. **De-dupe files #5 and #12** (HTML twin of same hyrotrader content) — keep the `.md`, drop the `.html` once `90day_pages_*` page is retired.
 6. **Tag file #6** (ai_tournament_methodology_swarm_review) explicitly as "ranking comparability, n=30 OK; graduation still needs PAPER_PILOT_HARNESS gates".
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

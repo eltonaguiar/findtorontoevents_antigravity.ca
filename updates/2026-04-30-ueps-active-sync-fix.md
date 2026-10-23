@@ -122,3 +122,5 @@ active picks have no LONG_TERM TF").
   their own `source_system="value_screener"` tag for attribution.
 - Adding a new TF dropdown alias "LONG-TERM" — separate UI PR.
 - Concept taxonomy for `pick_type=long_term_value` — Cursor Phase 1.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -331,3 +331,5 @@ genuine signal, not a directional bet.
   - `ollama_deepseek-v3.2-cloud.md` (reasoning-only)
 - Prompt: `reports/near_miss_deep_dive_2026_04_29/_PROMPT.md`
 - This synthesis: `reports/NEAR_MISS_DEEP_DIVE_2026_04_29.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

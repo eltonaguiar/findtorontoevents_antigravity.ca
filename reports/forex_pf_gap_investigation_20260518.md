@@ -221,3 +221,5 @@ The non-JPY pairs (EURGBP=X, GBPUSD=X) have strong edge data (EURGBP ig_contrari
 - `tools/build_pf_registry.py` — registry builder (fix target: `_is_policy_excluded()`)
 - `reports/HFPA_PHASE-2-findings-FOREX-2026-04-29.md` — historical FOREX panel findings
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — direction-mutation analysis protocol
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

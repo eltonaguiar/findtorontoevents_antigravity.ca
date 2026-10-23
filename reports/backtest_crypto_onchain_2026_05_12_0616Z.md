@@ -33,3 +33,5 @@
 - 2022-02-20 -> 2022-02-24 LONG pnl=-6.76% (SL)
 - 2022-02-25 -> 2022-03-06 LONG pnl=-6.69% (SL)
 - 2022-08-19 -> 2022-08-26 LONG pnl=-6.46% (SL)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

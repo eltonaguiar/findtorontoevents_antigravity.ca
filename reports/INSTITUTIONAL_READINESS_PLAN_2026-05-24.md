@@ -224,3 +224,5 @@ Raw swarm outputs preserved at `swarm_runs/iret-review-20260524T054451Z/` and `s
 - 90-day gap analysis: [90day_gap_analysis_2026-05-15.md](./90day_gap_analysis_2026-05-15.md)
 - Baby-strategy 90-day expansion: [continual_research/6gate_validation/FIRING11_BABY_STRATEGIES_90DAY_EXPANSION_2026-05-21.md](./continual_research/6gate_validation/FIRING11_BABY_STRATEGIES_90DAY_EXPANSION_2026-05-21.md)
 - HTML companion: [audit_dashboard/institutional_readiness_plan.html](../audit_dashboard/institutional_readiness_plan.html)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

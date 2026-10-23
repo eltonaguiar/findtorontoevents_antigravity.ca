@@ -117,3 +117,5 @@ python -m pytest tests/test_backfill_pick_features.py -q
 ```
 
 No production file was edited. `closed_picks.json` was read, never written.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

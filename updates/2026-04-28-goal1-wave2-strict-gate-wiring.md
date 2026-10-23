@@ -130,3 +130,5 @@ The strict helper's six rejection codes (`audit_strict_elite`, `audit_strict_rr`
 Branch: `feat/goal1-wave2-strict-gate-2026-04-28`
 Worktree: `.worktrees/goal1-wave2-strict-gate`
 Base: `origin/main@dc6f953b35`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

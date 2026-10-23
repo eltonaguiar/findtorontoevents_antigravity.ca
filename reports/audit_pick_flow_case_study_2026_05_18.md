@@ -108,3 +108,5 @@ Use this for any "why is X (not) on the page" question.
 4. There is **no asset class currently clearing the Tier-2 money-ready bar** on
    clean, resolved, non-artifact data. This is consistent with the standing
    no-edge verdict (`project_edge_verdict_2026_05_18`).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -56,3 +56,5 @@ candidate (n→100 via the monthly cron), not money-ready.
 coin-flips; no filter set is profitable out-of-sample or vs buy-and-hold. Do not deploy capital on any
 pick-ledger strategy. The only forward path is the clean-bar archetype track + fixing the data
 (sign-mismatch, batch-stamp, templated-PnL, live-vs-backfill) so a real edge could even be detected.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

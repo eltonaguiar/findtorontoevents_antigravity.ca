@@ -77,3 +77,5 @@
 4. **30-day paper-pilot to n>=500 floor is fantasy** per DeepSeek — implies the floor is unachievable in the window or that the floor itself is wrong-target. Combined with the over-engineered ranking on n>=500, suggests revisiting the floor.
 5. **Top predicted failure tomorrow: resolver TIME_EXIT → TP_HIT mislabel.** This aligns with the known resolver-intrabar T2 blocker tracked in MEMORY (session-close 2026-05-31).
 6. **Methodology ranking confirms verbatim red-team / cursor framework discipline** as most robust; MC capping and forced_resolution rank lowest (likely because they paper over data-quality issues rather than fix them).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

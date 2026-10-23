@@ -49,3 +49,5 @@
 `_build_ueps_kpi_sidecar` is called from `generate_payload()` in the main
 dashboard generation path — it is wired. Production caller:
 `audit_trail/dashboard_generator.py::generate_payload()` line ~16978.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

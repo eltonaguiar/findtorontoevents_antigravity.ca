@@ -334,3 +334,5 @@ This MD does **not** add any new module that imports a hedge-fund library withou
 Open a follow-up PR per Tier A proposal **in order**: A1 (PEAD-Drift) → A2 (COT-Extreme) → A3 (Funding-Skew). Each ships sidecar/default-OFF with a 4-week shadow log under `incubator/baby_strategies/`. No size-up until each clears its kill criterion.
 
 — Claude (Opus 4.7), 2026-04-30
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

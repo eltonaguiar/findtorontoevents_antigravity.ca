@@ -114,3 +114,5 @@ label change is an additive UI tweak that can ship anytime.
 - KPI panel for concept WR/PF aggregation (Phase 6).
 - Asset-Class × Timeframe grid panel (Codebuff Commit 4).
 - Freshness watchdog `empty_timeframe_lanes` extension (Codebuff Commit 5).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

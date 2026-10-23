@@ -110,3 +110,5 @@ Avoid the following approaches:
 * **Tight coupling**: Avoid tightly coupling the kill-switch env var and the BLOCKED_SYMBOLS filter with the existing BLOCKED_SYMBOLS check.
 * **Scattered logic**: Avoid scattering the BLOCKED_SYMBOLS filter across multiple files and functions.
 * **Performance issues**: Avoid applying the BLOCKED_SYMBOLS filter multiple times, as it may lead to performance issues.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

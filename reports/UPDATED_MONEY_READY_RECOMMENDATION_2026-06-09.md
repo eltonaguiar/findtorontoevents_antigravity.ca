@@ -101,3 +101,5 @@ Low-effective-n: ETF, COMMODITY, FUTURES, FOREX, CHEAP_STOCKS, BOND, PENNY_STOCK
 **No asset class is money-ready today.** EQUITY is closest but has ≥5 independent gate failures (not just n). The fastest path to a *trustworthy* money-ready class is: **fix the resolver → quarantine dead weight → grow LIVE n on 1-2 vetted sleeves per class → wire the dormant academic strategies that exit on signal rather than waiting for oversized TP/SL.** The strategy supply already exists and is coded; the measurement layer is the bottleneck.
 
 *Sources: money_ready_verdict.json (2026-06-08), audit_surface_truth.json (2026-06-06), reports/equity_money_ready_path_2026-06-09.md, reports/picks_now_quality_audit_2026-06-09.md, reports/research_index_and_forex_diagnosis_2026-06-09.md, reports/2026-06-05-LIVE-FORWARD-TRIAGE.md, reports/2026-06-06-per-asset-class-edge-reality-and-academic-roadmap.md, HANDOFF_CLAUDE_CLI_2026-06-03.md.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

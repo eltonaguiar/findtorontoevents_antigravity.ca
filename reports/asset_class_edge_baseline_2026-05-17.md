@@ -54,3 +54,5 @@ Thresholds: best-edge n>=20, consistent n>=30, low-sample n<20.
 
 
 ## UNKNOWN — strategy breakdown
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

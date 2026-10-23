@@ -26,3 +26,5 @@ CI-LB 2.05 looked promotable but is a **4-day concentration artifact**: 129/220 
 
 ## Caveat
 This tests the production strategies' stored TP/SL. It does NOT test the rsi5070_us entry-condition overlay (a filter on a pick subset) — that remains the sole honest lead (CI-LB 0.95, n-gated). Tail symbols (363, 16% of book) untested but unlikely to hold a generalizable class edge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

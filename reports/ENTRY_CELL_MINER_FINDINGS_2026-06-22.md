@@ -40,3 +40,5 @@ predicate at a time — the systematic path to a second/third honest edge.
 - A surfaced cell must pass a **fresh single-hypothesis forward gate** before promotion.
 - Direction asymmetry (SHORT>LONG) may be **regime-specific** (choppy/down window) — verify it
   persists across a time-split before believing it.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

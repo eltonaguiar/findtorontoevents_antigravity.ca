@@ -34,3 +34,5 @@ The COT item (#4) is a "Statistical Lie," but the **ML Calibration Inversion (#5
 
 **The Verdict:** Focus on **Integrity before Features**. A dashboard with "Supreme Edge" banners and -100,000% PnL rows is a liability, not an asset. Fix the ML Inversion and the PnL Math immediately.
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

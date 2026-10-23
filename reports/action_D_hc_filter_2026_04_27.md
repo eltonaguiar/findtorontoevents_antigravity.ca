@@ -427,3 +427,5 @@ Total Workstream D scope (excl. blocked classes): 3 small PRs — parity, instru
 ---
 
 **End of report. No code modified outside this file.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

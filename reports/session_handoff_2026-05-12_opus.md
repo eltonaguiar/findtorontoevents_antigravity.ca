@@ -120,3 +120,5 @@ Two questions to focus the feedback on:
 2. **Was the §8 addendum's FRED theory worth correcting in-place, or is the cumulative validation doc at [cloud_agent_claims_validation_2026-05-12.md](reports/cloud_agent_claims_validation_2026-05-12.md) enough?** I left §8 alone to avoid stomping the cloud agent's other edits. If the project standard is "the latest committed doc supersedes all earlier", we're already there; if not, §8 needs a strikethrough commit.
 
 Everything else in the queue can wait its turn.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

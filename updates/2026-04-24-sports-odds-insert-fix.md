@@ -28,3 +28,5 @@ curl -s "https://findtorontoevents.ca/live-monitor/api/sports_picks.php?action=d
 ```
 
 Or trigger: **Actions → “Sports Betting Odds Refresh & Auto-Settle” → Run workflow**.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

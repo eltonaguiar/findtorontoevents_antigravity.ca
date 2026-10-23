@@ -174,3 +174,5 @@ risks are downstream-numeric, not structural:
 - `.github/workflows/audit-dashboard.yml:485-513` — production CI build
 - `audit_dashboard/data/pf_registry.json` — published output (the
   artifact every downstream consumer reads)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

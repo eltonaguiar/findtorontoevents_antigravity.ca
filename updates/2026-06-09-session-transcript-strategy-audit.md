@@ -139,3 +139,5 @@ Concrete code changes from Phase 2 recommendations
 - Current state: 0/6 classes pass Tier-2 minimums
 - Clean N definition is critical for understanding the discrepancy between `money_ready_verdict.json` (gates-based) and `low_hanging_fruit_report.md` (DB per-symbol counts)
 - The merged super plan is ready for Phase 1 dispatch when approved
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -41,3 +41,5 @@ Both changes align with `dashboard_generator.py` line 14505 which already uses `
 | Compound Return (EW) — filtered | +1,122,354.53% | Realistic value (capped at 9999%) |
 | Purged EW Compound | +3,909,501,741.94% | Realistic value (±2% per trade) |
 | Per-asset-class compound | Same absurd pattern | Same fix applied |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

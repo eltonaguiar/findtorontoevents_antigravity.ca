@@ -234,3 +234,5 @@ From `picks.recent_closed`: which strategies HAVE produced closed picks in each 
 - `non_crypto_agent/main.py` — entrypoint that lacks bond import
 - `.github/workflows/{commodities,etf,futures,forex,equities}-agent.yml` — workflow runners (no bond-agent.yml)
 - `baby_strategies/*.meta.json` — promotion candidates, status field
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

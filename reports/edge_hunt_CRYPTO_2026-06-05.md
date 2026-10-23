@@ -44,3 +44,5 @@ CRYPTO is **NOT_READY** at class level (`money_ready_verdict.json`: n=220, WR=47
 
 ---
 *Generated 2026-06-05. Queries: `trading_picks` dedup CTE + `tournament_picks` status counts. No dashboard generators run.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

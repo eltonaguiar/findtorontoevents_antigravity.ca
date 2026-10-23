@@ -36,3 +36,5 @@
 
 ### 6. `is_blocked_pick` ingress migration
 Only `alpha_engine/feed_hygiene.py:132` calls `is_blocked_pick()`. Any emitter/scanner/validator that bypasses `feed_hygiene.is_valid_active_pick` will miss the composite `(source_system, strategy)` block. Candidates to migrate: `forward_validator.py` ingestion, `stamp_pick_quality.py`, per-scanner writers. Medium-effort refactor; not bundled here.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -348,3 +348,5 @@ All assertions in this review are backed by:
 ---
 
 *Review compiled by 4 parallel subagents across events, audit, alpha-engine, and CI domains on 2026-05-02. Methodology described in Section Methodology.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -181,3 +181,5 @@ python tools/model_grill_sequential.py --wave local_variety --prompt narrow
 - `reports/HARVEST_CONSTRUCTIVE_MONEY_READY_2026-05-19.md`
 - `reports/MERGED_ACTION_PLAN_2026-05-19.md`
 - `reports/usb_ollama_inventory.json`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

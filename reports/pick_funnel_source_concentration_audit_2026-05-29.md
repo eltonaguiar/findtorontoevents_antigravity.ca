@@ -66,3 +66,5 @@ diversified equity strategies (value/quality/PEAD/low-vol/cross-sectional moment
 
 **Funnel fix (revised):** flag a class concentrated on **strategy-level** top-share > 50% OR strategy-HHI > 0.30
 (NOT engine/source share). Under this correct rule: 1/7 classes (EQUITY) flagged, not 6/7.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -485,3 +485,5 @@ Phase A (merge + staging) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 ---
 
 *Consolidated by swarm review. Original plan: `updates/2026-05-14-audit-dashboard-kimi-protocol-operationalization.md`. Foundation plan: `updates/2026-05-14-audit-enhancement-plan-mercury2.md`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

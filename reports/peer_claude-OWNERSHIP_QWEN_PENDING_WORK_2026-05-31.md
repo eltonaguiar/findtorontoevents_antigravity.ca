@@ -67,3 +67,5 @@ items wait until then.
 
 Read this file + `project-qwen-ownership-2026-05-31.md` (memory index).
 Start with the 6 open items above, in priority order (DB creds first — security).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

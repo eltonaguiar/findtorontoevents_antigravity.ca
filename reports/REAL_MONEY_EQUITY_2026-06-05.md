@@ -135,3 +135,5 @@ Computed from `stock_ohlcv` 1h bars (only 1 historical beat testable per ticker 
 **Better than nothing:** Yes — these have more independent support (real earnings, real OHLCV, real AI consensus) than the contaminated `trading_picks` underlying `/audit` EQUITY FAIL status.
 
 **Worse than T2 edge:** Yes — missing ingredient is *quantified* PEAD (paper-trade 20 picks, measure 30d drift, build CI). Picks are a *starting point*, not the conclusion.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

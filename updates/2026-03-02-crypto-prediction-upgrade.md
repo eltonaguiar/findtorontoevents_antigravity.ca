@@ -75,3 +75,5 @@ Current Grade A picks are displayed with:
 - [ ] Add LSTM-based regime detection
 - [ ] Implement portfolio optimization
 - [ ] Expand to altcoin universe (top 50)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

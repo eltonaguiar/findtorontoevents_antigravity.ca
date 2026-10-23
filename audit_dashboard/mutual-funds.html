@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mutual Fund Quality Ratings · findtorontoevents.ca/audit</title>
+<style>
+:root {
+  --bg: #0a0a12;
+  --card: #1a1a2e;
+  --card-hover: #1f1f3a;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --green: #4caf50;
+  --red: #f44336;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --yellow: #f59e0b;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 20px;
+  line-height: 1.5;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+a { color: var(--purple); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Header */
+.header { text-align: center; padding: 16px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.header h1 { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+.header .subtitle { color: var(--text-dim); font-size: 13px; margin-top: 6px; }
+
+/* Summary cards */
+.summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center; }
+.stat-card .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card .value { font-size: 30px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.stat-card .value.green { color: var(--green); }
+.stat-card .value.yellow { color: var(--yellow); }
+.stat-card .value.red { color: var(--red); }
+.stat-card .sub-detail { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+/* Back link / meta */
+.meta-line { color: var(--text-dim); font-size: 12px; margin-bottom: 16px; }
+.meta-line b { color: var(--text); font-weight: 600; }
+
+/* Filter bar */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; padding: 12px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+.filter-bar label { font-size: 12px; color: var(--text-dim); }
+.filter-bar select {
+  background: var(--bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 10px; font-size: 13px;
+}
+.filter-bar .clear-filter { margin-left: auto; font-size: 12px; cursor: pointer; color: var(--blue); background: none; border: none; }
+.filter-bar .clear-filter:hover { text-decoration: underline; }
+
+/* Table */
+.table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  position: sticky; top: 0; z-index: 5;
+  background: #14141f; color: var(--text-dim);
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border);
+  white-space: nowrap; cursor: pointer; user-select: none;
+}
+thead th:hover { color: var(--text); }
+thead th[data-asc="1"]::after { content: " ▲"; color: var(--cyan); }
+thead th[data-asc="0"]::after { content: " ▼"; color: var(--cyan); }
+tbody td { padding: 10px 12px; border-bottom: 1px solid rgba(42,42,74,0.5); vertical-align: top; white-space: nowrap; }
+tbody tr:hover { background: var(--card-hover); }
+tbody tr.tier-T1 { border-left: 3px solid var(--green); }
+tbody tr.tier-T2 { border-left: 3px solid var(--yellow); }
+tbody tr.tier-T3 { border-left: 3px solid var(--red); }
+
+/* Tier badge */
+.tier-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.4px; }
+.tier-T1 { background: rgba(76,175,80,0.15); color: var(--green); border: 1px solid rgba(76,175,80,0.4); }
+.tier-T2 { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.4); }
+.tier-T3 { background: rgba(244,67,54,0.12); color: var(--red); border: 1px solid rgba(244,67,54,0.4); }
+
+/* Index badge */
+.index-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 4px; margin-left: 6px; background: rgba(34,211,238,0.12); color: var(--cyan); border: 1px solid rgba(34,211,238,0.35); }
+
+/* Sizing grade badge */
+.size-badge { display: inline-block; font-size: 11px; font-weight: 700; min-width: 26px; text-align: center; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--text); background: rgba(255,255,255,0.04); }
+.size-A { color: var(--green); border-color: rgba(76,175,80,0.4); background: rgba(76,175,80,0.12); }
+.size-B { color: var(--cyan); border-color: rgba(34,211,238,0.35); background: rgba(34,211,238,0.10); }
+.size-C { color: var(--yellow); border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.10); }
+.size-D { color: var(--red); border-color: rgba(244,67,54,0.4); background: rgba(244,67,54,0.10); }
+
+/* Score bar */
+.score-cell { display: flex; align-items: center; gap: 8px; min-width: 140px; }
+.score-fill { height: 8px; border-radius: 4px; background: var(--border); flex: 1; overflow: hidden; }
+.score-inner { height: 100%; border-radius: 4px; }
+.score-num { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 38px; text-align: right; }
+
+/* Factor breakdown under score */
+.factor-cell { white-space: normal; min-width: 200px; }
+.factor-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); padding: 1px 0; }
+.factor-row b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* Reject reason */
+.reject-cell { white-space: normal; color: var(--red); font-size: 12px; max-width: 320px; }
+.clone-chip { display: inline-block; background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-bottom: 4px; }
+
+/* Summary count pill */
+.count-pill { display: inline-block; min-width: 22px; height: 22px; line-height: 20px; text-align: center; border-radius: 11px; font-size: 12px; font-weight: 700; margin-left: 6px; border: 1px solid var(--border); }
+.stat-card .count-pill { display: block; margin: 6px auto 0; }
+
+/* Empty state */
+.empty-state { color: var(--text-dim); text-align: center; padding: 40px; font-size: 14px; }
+
+/* Methodology footnote */
+.methodology { margin-top: 24px; padding: 16px 18px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+.methodology h3 { color: var(--text); font-size: 13px; margin-bottom: 6px; }
+.methodology .pill { display: inline-block; background: rgba(96,165,250,0.12); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); border-radius: 4px; padding: 0 6px; margin-right: 6px; font-size: 11px; }
+
+/* Feedback / error */
+.error-banner { background: rgba(244,67,54,0.12); border: 1px solid rgba(244,67,54,0.4); color: #fca5a5; padding: 14px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>MUTUAL FUND QUALITY RATINGS</h1>
+    <div class="subtitle">Category-relative composite rating · Antigravity §5.2 · /audit/mutual-funds.html</div>
+    <div class="subtitle" style="color:var(--yellow);margin-top:8px;font-weight:600;">
+      ⚠ NOT FINANCIAL ADVICE — research and education only. Past performance does not predict future results.
+    </div>
+  </div>
+
+  <div class="meta-line" id="meta-line">Loading data…</div>
+
+  <!-- Dynamic summary cards -->
+  <div class="summary-row" id="summary-cards"></div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <label for="f-hier">Tier</label>
+    <select id="f-tier">
+      <option value="ALL">All tiers</option>
+      <option value="T1 Proven">T1 Proven</option>
+      <option value="T2 Watch">T2 Watch</option>
+      <option value="T3 Reject">T3 Reject</option>
+    </select>
+    <label for="f-cat">Category</label>
+    <select id="f-cat">
+      <option value="ALL">All categories</option>
+    </select>
+    <label for="f-idx">Type</label>
+    <select id="f-idx">
+      <option value="ALL">All</option>
+      <option value="1">Index funds</option>
+      <option value="0">Actively managed</option>
+    </select>
+    <button class="clear-filter" id="btn-clear" type="button">Clear filters</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="fund-table">
+      <thead>
+        <tr>
+          <th data-key="tier">Tier</th>
+          <th data-key="fund_ticker">Ticker</th>
+          <th data-key="fund_name">Fund</th>
+          <th data-key="category">Category</th>
+          <th data-key="sizing_grade">Sizing</th>
+          <th data-key="score">Score</th>
+          <th data-key="factor_scores">Factor breakdown</th>
+          <th data-key="expense_ratio">Expense</th>
+          <th data-key="aum_billions">AUM</th>
+          <th data-key="n_months">Months</th>
+          <th data-key="nav_through">NAV thru</th>
+          <th data-key="sharpe_5y">Sharpe&nbsp;5y</th>
+          <th data-key="sortino_5y">Sortino&nbsp;5y</th>
+          <th data-key="max_drawdown_5y">Max&nbsp;DD</th>
+          <th data-key="reject_reason">Status</th>
+        </tr>
+      </thead>
+      <tbody id="fund-body">
+        <tr><td colspan="15" class="empty-state">Loading mutual fund rankings…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Walk-forward backtest: does the winner theory hold? -->
+  <div class="methodology" style="margin-top:24px;">
+    <h3>🏆 What makes a mutual fund a WINNER? — walk-forward backtest (run 2026-10-22)</h3>
+
+    <p style="color:var(--text);margin-top:8px;">
+      <b>ELI5 — how we tested it:</b> Imagine every December you hide all information from the
+      future. You line the funds up using only what you could have known that day — how cheap
+      they are, how smooth they rode the last 3 years, how they did last year — pick the top 3
+      by each rule, then look at what <i>actually</i> happened over the next 1, 3 and 5 years,
+      compared to just buying a plain index fund (SPY in the US, XEQT.TO in Canada). You never
+      get to peek: the score for December 2020 only uses data that existed on 2020-12-31.
+      Every year's fee is subtracted before comparing. The years don't overlap, so one lucky
+      decade can't be counted twice.
+    </p>
+    <p style="margin-top:6px;">
+      <b>Technical:</b> 71 funds (37 rated + 4 zero-fee ETFs + near-zero broad ETFs + 6
+      long-history active funds + 12 Canadian ETFs), rebalance at each year-end, 36-month
+      trailing features computed strictly on rows ≤ t (unit-tested against future-data
+      leakage), forward CAGR net of expense ratio, non-overlapping windows per horizon,
+      paired t-stat + seeded 10,000-sample bootstrap CI on window excess returns.
+      Reproduce: <code>python3 tools/mf_walkforward_backtest.py --fetch &amp;&amp;
+      python3 tools/mf_walkforward_backtest.py --universe all</code> — output
+      <code>data/mf_walkforward_results.json</code>. 5/5 unit tests pass.
+    </p>
+
+    <p style="margin-top:10px;"><b>US results — mean forward return, net of fees, vs SPY</b>
+      (n = 31×1y, 10×3y, 6×5y non-overlapping windows, 1994–2024):</p>
+    <table style="width:100%;font-size:12px;margin-top:4px;">
+      <thead><tr style="color:var(--text-dim);">
+        <th style="text-align:left;padding:4px;">Selection rule</th>
+        <th style="text-align:right;padding:4px;">1y excess</th>
+        <th style="text-align:right;padding:4px;">3y excess</th>
+        <th style="text-align:right;padding:4px;">5y excess</th>
+        <th style="text-align:left;padding:4px;">Verdict</th>
+      </tr></thead>
+      <tbody style="color:var(--text);">
+        <tr><td style="padding:4px;">Cheapest 3 funds</td><td style="text-align:right;padding:4px;">−0.9%</td><td style="text-align:right;padding:4px;">−1.0%</td><td style="text-align:right;padding:4px;">−1.0%</td><td style="padding:4px;color:var(--green);">≈ ties the index (CI includes 0) — cheap is at least not worse</td></tr>
+        <tr><td style="padding:4px;">Composite (cost+sharpe+momentum+lowdd)</td><td style="text-align:right;padding:4px;">−0.5%</td><td style="text-align:right;padding:4px;">−2.5%</td><td style="text-align:right;padding:4px;">−2.8%</td><td style="padding:4px;color:var(--yellow);">ties at 1y, drifts behind at 3–5y</td></tr>
+        <tr><td style="padding:4px;">Best 12-month momentum</td><td style="text-align:right;padding:4px;">−1.1%</td><td style="text-align:right;padding:4px;">−4.6%</td><td style="text-align:right;padding:4px;">−4.7%</td><td style="padding:4px;color:var(--red);">chasing last year's winners fails</td></tr>
+        <tr><td style="padding:4px;">Best 3-year Sharpe</td><td style="text-align:right;padding:4px;">−5.3%</td><td style="text-align:right;padding:4px;">−5.2%</td><td style="text-align:right;padding:4px;">−6.9%</td><td style="padding:4px;color:var(--red);">significantly worse (t = −2.1, CI excludes 0)</td></tr>
+        <tr><td style="padding:4px;">Smallest 3-year drawdown</td><td style="text-align:right;padding:4px;">−6.5%</td><td style="text-align:right;padding:4px;">−6.4%</td><td style="text-align:right;padding:4px;">−5.9%</td><td style="padding:4px;color:var(--red);">worst rule — past smoothness is poison</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:6px;">Benchmarks for reference: SPY mean forward ≈ 12.5%/10.7%/11.2% (1/3/5y) over these windows. <b>No rule beat the plain index fund on average.</b> The least-bad, most repeatable rule was simply buying the cheapest funds — which is exactly the split-half finding below.</p>
+
+    <p style="margin-top:10px;"><b>Why cheap wins (the proof of the winner theory):</b> split every
+      fund's history in half, rank on the first half only, check the second half:</p>
+    <ul style="margin-top:4px;color:var(--text);">
+      <li>Expense ratio vs <i>future</i> returns: rank correlation <b>−0.38</b> (cheaper → better next half).</li>
+      <li>Cheapest third of funds: <b>+9.2%/yr</b> in the second half vs <b>+5.0%/yr</b> for the dearest third — a 4-point gap, for free, on fees that differ by only ~0.05%.</li>
+      <li>Past smoothness (max drawdown) predicts almost nothing about future returns (ρ = −0.05) but does predict future pain (ρ = +0.58 for future drawdown).</li>
+      <li>Top second-half performers: SWLGX, SWLVX, SWMCX, FXAIX, SWPPX — all index funds at 0.01–0.04% fees.</li>
+    </ul>
+
+    <p style="margin-top:10px;"><b>The “secret lesser-known winner” hunt (style-adjusted, so we don't fool ourselves):</b></p>
+    <ul style="margin-top:4px;color:var(--text);">
+      <li>Raw top beaters of SPY: FSPGX <b>+5.6%/yr</b>, SWLGX +5.1%/yr — but both are large-cap growth index funds. Against a style-matched benchmark (Vanguard Growth, VIGAX) the edge vanishes: <b>+0.2% and −0.1%/yr → growth beta, not skill.</b></li>
+      <li><b>FOCPX (Fidelity OTC, active, 0.78% fee) is the only fund whose edge SURVIVES style adjustment: +2.2%/yr vs VIGAX over 25 non-overlapping years (win 56%), and +4.0%/yr raw vs SPY stable in both 1994–2009 and 2010–2024.</b> Caveats: worst years vs benchmark −23.5% (1999) and −22.2% (1996); concentrated-growth risk; one manager-era result. It is a CANDIDATE, not a proven winner.</li>
+      <li>Cheapest zero-fee ETFs (FZROX, FNILX): beat SPY 71–100% of 1-year windows — but they are index clones, so the “win” is just the fee difference.</li>
+      <li>Canada (vs XEQT.TO, 7×1y windows): no rule beats the all-in-one ETF; the cheap rule's −3.0% loss is mostly “the boring all-in-one beat the corner pieces”.</li>
+    </ul>
+
+    <p style="margin-top:10px;color:var(--yellow);">
+      <b>Bottom line:</b> after fees and risk, our backtest agrees with the cross-agent
+      consensus — <b>no selection rule reliably beats a cheap index fund.</b> The only
+      repeatable edges are (1) paying less in fees, and (2) one style-adjusted active
+      candidate (FOCPX) that still needs out-of-sample confirmation before anyone calls it
+      a winner. <b>NOT FINANCIAL ADVICE</b> — this is research; check the fund's own factsheet before any decision.
+    </p>
+  </div>
+
+  <!-- Methodology -->
+  <div class="methodology">
+    <h3>Methodology — Antigravity §5.2 composite rating</h3>
+    <p>
+      <span class="pill">cost 22%</span><span class="pill">risk-adjusted 26%</span><span class="pill">consistency 18%</span>
+      <span class="pill">downside 16%</span><span class="pill">capacity 10%</span><span class="pill">manager 8%</span>
+    </p>
+    <p style="margin-top:6px;">
+      All factor scores are <b>category-relative percentiles</b> (0–100) within the fund's style category, so a rating is "best-in-class" among peers, not absolute. Hard gates precede scoring: expense-ratio cap, AUM floor, NAV-history minimum, and 12b-1 load screening — failures are emitted as <b>T3 Reject</b> with a reason. Nearly-identical index clones are de-duplicated per category, keeping the highest-scoring representative.
+    </p>
+    <p style="margin-top:6px;">
+      Tiers: <b style="color:var(--green)">T1 Proven</b> ≥ 80 &nbsp;·&nbsp; <b style="color:var(--yellow)">T2 Watch</b> 65–80 &nbsp;·&nbsp; <b style="color:var(--red)">T3 Reject</b> below 65 or failed gate. Metrics are computed from daily NAV (yfinance) over a 10-year lookback where available.
+    </p>
+    <p style="margin-top:6px;">
+      <b>Sizing grade</b> (A–D) is an illustrative capacity badge from AUM — how much capital the fund can plausibly absorb. Composite scores carry a <b>freshness multiplier</b>: no penalty within 7 days of last NAV, linear decay to 0.5× after 90 days stale. Tier-1/Tier-2 additionally require ≥ 100 months of NAV history.
+    </p>
+    <p style="margin-top:6px;">
+      <b>Provenance</b>: NAV series from <b>yfinance</b>; expense/load/AUM metadata manually curated. Resolution method: category-relative percentiles.
+    </p>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DATA = null;
+  var state = { tier: 'ALL', cat: 'ALL', idx: 'ALL', sortKey: 'score', asc: 0 };
+  var FACTOR_ORDER = ['cost', 'risk_adjusted', 'consistency', 'downside', 'capacity', 'manager'];
+  var FACTOR_LABEL = {
+    cost: 'Cost', risk_adjusted: 'Risk-adj.', consistency: 'Consistency',
+    downside: 'Downside', capacity: 'Capacity', manager: 'Manager'
+  };
+  var TIER_ORDER = { 'T1 Proven': 0, 'T2 Watch': 1, 'T3 Reject': 2 };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&' + 'amp;', '<': '&' + 'lt;', '>': '&' + 'gt;', '"': '&' + 'quot;', "'": '&#' + '39;' }[c];
+    });
+  }
+  function fmtPct(v, d) {
+    if (v == null || isNaN(v)) return '—';
+    return (v * 100).toFixed(d == null ? 2 : d) + '%';
+  }
+  function fmtAUM(b) {
+    if (b == null || isNaN(b)) return '—';
+    return b.toFixed(1) + 'B';
+  }
+  function fmtER(er) {
+    if (er == null || isNaN(er)) return '—';
+    return (er * 100).toFixed(2) + '%';
+  }
+  function tierClass(t) { return t === 'T1 Proven' ? 'tier-T1' : t === 'T2 Watch' ? 'tier-T2' : 'tier-T3'; }
+  function tierAbbr(t) { return t === 'T1 Proven' ? 'T1' : t === 'T2 Watch' ? 'T2' : 'T3'; }
+
+  function scoreColor(score) {
+    if (score >= 80) return 'var(--green)';
+    if (score >= 65) return 'var(--yellow)';
+    return 'var(--red)';
+  }
+
+  // ---- Summary cards ----
+  function renderSummary() {
+    var counts = DATA.tier_counts || {};
+    var total = (DATA.funds || []).length;
+    var cards = [
+      { label: 'Total funds rated', value: total, cls: '', sub: 'in universe' },
+      { label: 'T1 Proven', value: counts['T1 Proven'] || 0, cls: 'green', sub: '≥ 80' },
+      { label: 'T2 Watch', value: counts['T2 Watch'] || 0, cls: 'yellow', sub: '65–80' },
+      { label: 'T3 Reject', value: counts['T3 Reject'] || 0, cls: 'red', sub: '< 65 / gate fail' }
+    ];
+    document.getElementById('summary-cards').innerHTML = cards.map(function (c) {
+      return '<div class="stat-card"><div class="label">' + c.label + '</div>' +
+        '<div class="value ' + c.cls + '">' + c.value + '</div>' +
+        '<div class="sub-detail">' + c.sub + '</div></div>';
+    }).join('');
+  }
+
+  // ---- Populate category dropdown ----
+  function renderCatOptions() {
+    var cats = {};
+    (DATA.funds || []).forEach(function (f) { cats[f.category] = true; });
+    var opts = Object.keys(cats).sort();
+    var html = '<option value="ALL">All categories</option>' + opts.map(function (c) {
+      return '<option value="' + esc(c) + '">' + esc(c.replace(/_/g, ' ')) + '</option>';
+    }).join('');
+    document.getElementById('f-cat').innerHTML = html;
+  }
+
+  // ---- Factor breakdown cell ----
+  function factorCell(fs) {
+    if (!fs || typeof fs !== 'object') return '<span class="factor-row">—</span>';
+    var html = '';
+    FACTOR_ORDER.forEach(function (k) {
+      var v = fs[k];
+      var num = (v == null || isNaN(v)) ? '—' : v.toFixed(0);
+      html += '<div class="factor-row"><span>' + esc(FACTOR_LABEL[k] || k) + '</span><b>' + num + '</b></div>';
+    });
+    return html;
+  }
+
+  // ---- Row ----
+  function rowHtml(f) {
+    var tc = tierClass(f.tier);
+    var cl = '';
+    if (f.clone_of) {
+      cl = '<div class="clone-chip">clone of ' + esc(f.clone_of) + '</div>';
+    }
+    var idxBadge = f.is_index ? '<span class="index-badge">index</span>' : '';
+    var scorePct = f.score != null ? Math.max(0, Math.min(100, f.score)) : 0;
+    return '<tr class="' + tc + '">' +
+      '<td><span class="tier-badge ' + tc + '">' + esc(tierAbbr(f.tier)) + '</span></td>' +
+      '<td><b>' + esc(f.fund_ticker) + '</b></td>' +
+      '<td style="white-space:normal;">' + esc(f.fund_name) + idxBadge + '</td>' +
+      '<td style="color:var(--text-dim);">' + esc((f.category || '').replace(/_/g, ' ')) + '</td>' +
+      '<td><span class="size-badge size-' + esc(f.sizing_grade || '') + '">' + esc(f.sizing_grade || '—') + '</span></td>' +
+      '<td><div class="score-cell"><div class="score-fill"><div class="score-inner" style="width:' + scorePct + '%;background:' + scoreColor(f.score) + '"></div></div>' +
+        '<span class="score-num" style="color:' + scoreColor(f.score) + '">' + (f.score != null ? f.score.toFixed(1) : '—') + '</span></div></td>' +
+      '<td class="factor-cell">' + factorCell(f.factor_scores) + '</td>' +
+      '<td>' + fmtER(f.expense_ratio) + '</td>' +
+      '<td>' + fmtAUM(f.aum_billions) + '</td>' +
+      '<td>' + (f.n_months != null ? f.n_months : '—') + '</td>' +
+      '<td style="color:var(--text-dim);">' + esc(f.nav_through || '—') + '</td>' +
+      '<td>' + (f.sharpe_5y != null ? f.sharpe_5y.toFixed(2) : '—') + '</td>' +
+      '<td>' + (f.sortino_5y != null ? f.sortino_5y.toFixed(2) : '—') + '</td>' +
+      '<td>' + fmtPct(f.max_drawdown_5y, 1) + '</td>' +
+      '<td class="reject-cell">' + cl + esc(f.reject_reason || '—') + '</td>' +
+      '</tr>';
+  }
+
+  // ---- Sorting ----
+  function sortKeyComparer(a, b) {
+    var key = state.sortKey;
+    var va = a[key], vb = b[key];
+    if (key === 'tier') {
+      va = TIER_ORDER[a.tier] != null ? TIER_ORDER[a.tier] : 9;
+      vb = TIER_ORDER[b.tier] != null ? TIER_ORDER[b.tier] : 9;
+    } else if (key === 'fund_name' || key === 'category' || key === 'fund_ticker' || key === 'sizing_grade') {
+      va = String(va || '').toLowerCase();
+      vb = String(vb || '').toLowerCase();
+      return state.asc ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
+    }
+    if (va == null) va = -Infinity;
+    if (vb == null) vb = -Infinity;
+    var diff = (va > vb) ? 1 : (va < vb) ? -1 : 0;
+    return state.asc ? diff : -diff;
+  }
+
+  // ---- Render ----
+  function render() {
+    if (!DATA) return;
+    var funds = DATA.funds || [];
+    var filtered = funds.filter(function (f) {
+      if (state.tier !== 'ALL' && f.tier !== state.tier) return false;
+      if (state.cat !== 'ALL' && f.category !== state.cat) return false;
+      if (state.idx !== 'ALL' && String(f.is_index) !== state.idx) return false;
+      return true;
+    });
+    filtered.sort(sortKeyComparer);
+
+    document.getElementById('fund-body').innerHTML = filtered.length
+      ? filtered.map(rowHtml).join('')
+      : '<tr><td colspan="15" class="empty-state">No funds match the current filters.</td></tr>';
+
+    // highlight active sort header
+    var ths = document.querySelectorAll('thead th');
+    ths.forEach(function (th) {
+      th.removeAttribute('data-asc');
+      if (th.getAttribute('data-key') === state.sortKey) {
+        th.setAttribute('data-asc', state.asc ? '1' : '0');
+      }
+    });
+  }
+
+  // ---- Header sort click ----
+  document.querySelectorAll('thead th').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var key = th.getAttribute('data-key');
+      if (!key) return;
+      if (state.sortKey === key) {
+        state.asc = state.asc ? 0 : 1;
+      } else {
+        state.sortKey = key;
+        state.asc = 0;
+      }
+      render();
+    });
+  });
+
+  // ---- Filters ----
+  document.getElementById('f-tier').addEventListener('change', function (e) { state.tier = e.target.value; render(); });
+  document.getElementById('f-cat').addEventListener('change', function (e) { state.cat = e.target.value; render(); });
+  document.getElementById('f-idx').addEventListener('change', function (e) { state.idx = e.target.value; render(); });
+  document.getElementById('btn-clear').addEventListener('click', function () {
+    state.tier = 'ALL'; state.cat = 'ALL'; state.idx = 'ALL'; state.sortKey = 'score'; state.asc = 0;
+    document.getElementById('f-tier').value = 'ALL';
+    document.getElementById('f-cat').value = 'ALL';
+    document.getElementById('f-idx').value = 'ALL';
+    render();
+  });
+
+  // ---- Load ----
+  fetch('data/mutut_fund_rankings.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (d) {
+      if (!d || !Array.isArray(d.funds)) throw new Error('Bad shape');
+      DATA = d;
+      document.getElementById('meta-line').innerHTML =
+        'Generated <b>' + esc(d.generated_at || '—') + '</b> &nbsp;|&nbsp; metadata as of <b>' + esc(d.metadata_as_of || '—') +
+        '</b> &nbsp;|&nbsp; ' + esc(d.methodology || '');
+      renderSummary();
+      renderCatOptions();
+      render();
+    })
+    .catch(function (err) {
+      document.getElementById('fund-body').innerHTML =
+        '<tr><td colspan="15" class="empty-state">Failed to load ratings data.</td></tr>';
+      var banner = document.createElement('div');
+      banner.className = 'error-banner';
+      banner.textContent = 'Could not load data/mutut_fund_rankings.json — ' + err.message;
+      document.querySelector('.header').after(banner);
+    });
+})();
+</script>
+</body>
+</html>

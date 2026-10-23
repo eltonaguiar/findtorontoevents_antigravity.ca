@@ -214,3 +214,5 @@ As of 2026, the Python quantitative trading ecosystem has matured significantly,
 - PyBroker releases (v1.2.12, Dec 2025)
 - EODHD / API.market comparison articles (2026)
 - Various on-chain tool guides (Glassnode, Dune, DeFiLlama)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

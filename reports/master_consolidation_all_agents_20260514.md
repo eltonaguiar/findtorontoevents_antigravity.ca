@@ -218,3 +218,5 @@ Create `alpha_engine/macro_energy_rotation.py` pulling EIA API (free) for WTI sp
 3. `alpha_engine/bond_scanner.py` — understand current strategy list
 4. `audit_trail/quality_gates.py` line ~179-200 — dead import section
 5. `swarm_runs/run_asset_audit_20260514/` — KiloCode swarm results (deepseek/xai/cerebras)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

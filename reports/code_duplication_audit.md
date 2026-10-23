@@ -181,3 +181,5 @@ These are semantically different defaults. An unknown pick is classified as equi
 | `htf_confirmation.py` | Crypto-only guard | Migrate to `is_crypto()` |
 | `gainer_interceptor.py` | May filter by asset class | Check and migrate |
 | Dashboard / audit_trail | Consumes `asset_class` field | Verify output format |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

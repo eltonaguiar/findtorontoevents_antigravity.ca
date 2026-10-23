@@ -92,3 +92,5 @@ Subjective assessment based on observed session evidence. Other domains
 (creative writing, code generation from scratch, multilingual) may
 reorder these. This ranking is calibrated to: quant trading review,
 multi-step reasoning over structured payloads, fabrication audit.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

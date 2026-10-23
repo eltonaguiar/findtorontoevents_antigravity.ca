@@ -76,3 +76,5 @@ WR now 50.0% (was 55.1%) — essentially coin-flip on direction. cumPnL stays hi
 - All others: 0% (insufficient n or sub-50% WR)
 
 **Still pre-institutional** — all models have n<100. Need 2-3 more weeks of forward picks before allocating real capital.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

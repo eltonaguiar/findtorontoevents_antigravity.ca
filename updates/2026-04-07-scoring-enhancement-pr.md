@@ -124,3 +124,5 @@ CRYPTO_PENALTY = -5 if crypto_picks > total_picks * 0.5 else 0
 2. `audit_trail/quality_gates.py` - confidence floor
 3. `alpha_engine/smart_picks_engine.py` - sweet spot targeting
 4. `alpha_engine/forward_validator.py` - forward validation gate
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

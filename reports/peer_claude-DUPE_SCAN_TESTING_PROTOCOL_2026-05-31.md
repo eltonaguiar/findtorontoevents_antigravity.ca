@@ -147,3 +147,5 @@ Stored at `/tmp/batch_00` through `/tmp/batch_04` (18, 18, 18, 18, 16 lines).
 2. **No byte-dedup needed** in the canonical set (88 unique hashes).
 3. **Manual review priority** is the methodology-doc sprawl (Batches 01–03) — likely 3-5 of those should be marked archive/superseded with a stub pointer to the canonical doc.
 4. **`reports/money_maker_ready_*.md` dated series** (12 files): propose moving everything older than `2026-05-25_money_maker_readyv2_vs_actual.md` to `reports/archive/money_maker_ready/`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

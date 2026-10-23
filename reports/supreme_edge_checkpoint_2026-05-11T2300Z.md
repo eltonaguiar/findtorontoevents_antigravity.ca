@@ -96,3 +96,5 @@ python -c "import pymysql; c=pymysql.connect(host='mysql.50webs.com',user='ejagu
 - Master plan: https://findtorontoevents.ca/updates/2026-05-11-money-maker-master-plan.html (200 OK)
 - Kimi audit: https://findtorontoevents.ca/reports/kimi_edge_audit_2026-05-11/edge_audit_report.html (200 OK)
 - This checkpoint: https://findtorontoevents.ca/reports/supreme_edge_checkpoint_2026-05-11T2300Z.md (deploying)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

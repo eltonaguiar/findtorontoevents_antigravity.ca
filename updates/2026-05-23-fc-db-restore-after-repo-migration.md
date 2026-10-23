@@ -46,3 +46,5 @@ Homepage, `/audit/`, and `/fc/` all return HTTP 200.
 - **Deploy Rise of the Claw Dashboard:** GitHub Pages not enabled on repo (404).
 - **Claude's Test - Portfolio Manager:** intermittent git push conflict during auto-commit.
 - Re-run **MySQL Trading Picks Sync** after secret update to confirm stocks DB access from CI.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

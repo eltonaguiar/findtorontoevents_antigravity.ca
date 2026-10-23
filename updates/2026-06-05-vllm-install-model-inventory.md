@@ -100,3 +100,5 @@ Command used: `ollama list`
 
 - Entries with size `-` are not local full-weight footprints in the same way as standard local GGUF-backed models.
 - `minimax-m3:cloud` is present in Ollama inventory, but the `:cloud` tag indicates non-standard local-only behavior.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

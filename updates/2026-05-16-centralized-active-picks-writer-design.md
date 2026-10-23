@@ -52,3 +52,5 @@ Add a CI lint rule that bans `json.dump` or `open(.*active_picks` outside of `ac
 ## Immediate Next Step
 
 Create `audit_trail/active_picks_writer.py` and migrate `forward_validator.py` first. Then migrate emitters one-by-one in follow-up PRs.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

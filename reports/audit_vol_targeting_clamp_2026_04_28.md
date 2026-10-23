@@ -138,3 +138,5 @@ The deep-dive's projected `MDD 140% → 9.21%` is achievable, but only after eit
 - `alpha_engine/production_scanner.py:5012-5015` — production wire-up
 - `alpha_engine/production_scanner.py:5019-5023` — adjacent risk_policy_check (where Option B's halt would slot in)
 - `updates/2026-04-28-goal-1-next-ships-synthesis.md` §2 P0 #3 — sequence this fix sits in
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

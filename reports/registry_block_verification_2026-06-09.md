@@ -54,3 +54,5 @@ WR = wins/n ; PF = sum(+pnl)/abs(sum(-pnl)) ; class-scoped on category
 Intrabar-true COMMODITY `futures_momentum` = n=57, WR 50.9%, PF 2.68 — contradicts the 2026-05-06
 FUTURES kill (0% WR on 56 closed). Different asset_class scoping. **Do NOT un-ban unilaterally**
 (H-005 re-block history exists). Forward-track only; queue for the strategy-decision swarm.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

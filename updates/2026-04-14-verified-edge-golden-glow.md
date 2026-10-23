@@ -160,3 +160,5 @@ If the book ever has meaningful edge again, it'll be because GOLDEN rows start a
 - **Deploy**: follows the standard hourly `audit-dashboard.yml` workflow. Live on `findtorontoevents.ca/audit` approximately 1 hour after merge.
 - **Browser compatibility**: uses only standard HTML/CSS/JS features present in every modern browser; no new dependencies.
 - **Cost**: the index build is O(n) over closed picks (~3500) at load time. Sub-50ms on typical browsers.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

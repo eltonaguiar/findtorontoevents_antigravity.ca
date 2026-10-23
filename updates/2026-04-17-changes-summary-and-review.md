@@ -103,3 +103,5 @@ Items deferred:
 - **#6 Audit Dashboard pathspec error** — both `git add` calls in workflow already wrapped with `|| true`; transient self-heal. Low priority.
 
 Cumulative impact today: 15+ commits, 2 critical PROD fixes, ~300 PnL-pts strategy adjustments, 252 workflow Node-version bumps, complete strategy lifecycle policy, 3 deferred-fix proposals in queue with AI review.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

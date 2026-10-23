@@ -162,3 +162,5 @@ Sources (all read 2026-05-31):
 - `CLAUDE.md` (Goal #1, mutation-protocol, concentration rules)
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

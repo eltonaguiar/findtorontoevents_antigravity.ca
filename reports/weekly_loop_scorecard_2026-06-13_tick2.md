@@ -42,3 +42,5 @@ The 33 large-n one-sided (WON/LOST-only) sources flagged by `check_one_sided_res
 
 ## NEXT TICK
 Re-resolve `forex_rsi2_mean_reversion` + the daily COMMODITY "survivor" with honest first-touch (expect ~2–3× deflation); CI-LB `crypto_rsi5070_us` honest cohort net of 16bp; apply pead_equity gate tomorrow.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

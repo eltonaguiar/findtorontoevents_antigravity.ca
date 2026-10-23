@@ -107,3 +107,5 @@ Future picks resolved by `_resolve_claude_gainer_ml_pick` and backfilled by `bac
 - `tools/test_won_pnl_contradiction.py` — unit tests
 - `tools/audit_won_picks.py` — DB audit tool
 - `updates/2026-05-24-won-pnl-fix.md` — this file
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -124,3 +124,5 @@ Plus: the FOREX deep-dive partially fulfills CLAUDE.md mutate-before-kill protoc
 - User sets `vars.BOND_ELITE_FLOOR=32` → monitor /audit BOND n for 14 days
 - Start P1-A / P1-B / P1-C in order (FOREX composite ranking, EQUITY expansion, ETF push) **after** cloud agent's `quality_gates.py` work is in
 - Ship P1-E (COT bootstrap) and P1-F (dormant-strategies query) as research docs before any gate change
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

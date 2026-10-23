@@ -44,3 +44,5 @@ to pick generation, scoring, or HC gating.
 Satisfied. Production caller is `dashboard_generator.py:14229`
 (`_apply_shadow_promotion` invocation). Template panel is a read-only
 renderer of the already-wired payload key. No new integration module.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

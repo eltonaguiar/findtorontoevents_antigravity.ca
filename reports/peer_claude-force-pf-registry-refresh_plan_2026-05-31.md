@@ -26,3 +26,5 @@ Author: peer Claude (force-refresh agent)
 
 ## Risk
 - If another agent fires another workflow_dispatch before 26704966861 starts, it will be cancelled too. No more dispatches will be issued by this agent until verification.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

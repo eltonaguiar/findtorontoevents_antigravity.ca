@@ -137,3 +137,5 @@ Per task brief, did NOT re-run pick-funnel / CFTC-cell verification queries (`re
 ## Section E — Sources
 
 Focus list: `/tmp/md_focus.txt` (193 files). Raw command captures: `/tmp/mdsweep/runs/*.txt`. Generated 2026-05-25 05:48 UTC.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

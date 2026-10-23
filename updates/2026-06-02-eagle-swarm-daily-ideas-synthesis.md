@@ -18,3 +18,5 @@ All three ollama-cloud aliases returned OK on smoke test.
 ## Git
 
 Pushed to `origin/main` at commit `1b12cfd8b`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

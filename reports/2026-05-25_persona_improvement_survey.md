@@ -309,3 +309,5 @@ Honourable mention (close to deprecation but not yet): **`supply_demand`** (curs
 - "Distinct-signal n" called out wherever a single persona is dominated by repeated submissions of the same symbol across multiple daily tournament ticks. Many large-n personas collapse to single-digit distinct n once de-duplicated; the resolved-trade count is the more honest measure of strategy convergence.
 - WR percentages on n<10 resolved are flagged as unverifiable. WR=100% on n<=20 is almost always an artefact of repeated-symbol resolution and should not be treated as a strategy property.
 - No backtests run; this is a pure forward-looking data-gap audit. The Tier promotion plans are educated-guess targets, not modelled forecasts.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

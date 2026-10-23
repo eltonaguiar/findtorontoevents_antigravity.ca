@@ -163,3 +163,5 @@ python tools/risk_metrics.py --group-by strategy --min-n 20
 - **Risk-parity ignores regime:** inverse-vol is unconditional — no regime-aware up-weighting during bull crypto markets. A follow-up can add regime-conditional weights.
 - **Meta-labeler is a scaffold.** Without a fitted model, the `predict_proba` returns a fixed prior. Scaffold is production-usable today only as a feature extractor.
 - **`cum_return_pct` sums additive returns.** For accuracy over long series, compounded returns are better — but our `pnl_pct` is already per-trade-normalized, so additive is the common convention in the codebase.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

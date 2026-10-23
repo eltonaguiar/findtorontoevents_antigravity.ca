@@ -60,3 +60,5 @@ print('OK — no blocked symbols in active_picks.json')
 ```
 
 Repeat for any other `active_picks.json` variants (e.g. `audit_dashboard/data/active_picks.json`).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

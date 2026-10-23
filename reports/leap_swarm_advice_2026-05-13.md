@@ -51,3 +51,5 @@ Better use of the next hour: execute Section A, then re-evaluate after SOL parti
 **Well-constructed but under-protected.** Four positions, four winners, balanced direction (3S/1L), 1.1% margin used, well-diversified across the 5-symbol universe — this is a tidy book, not a cluttered one. The problem is **risk hygiene, not composition**: SOL-S is +4.74% with zero lock (Gate 4 violation right now), ETH-S is one tick from Gate 4 with no lock, and BTC-S has a SL but it's locking *risk* rather than *profit*. Fix that in the next 10 minutes (Section A) and the book goes from "three unforced give-back exposures" to "all profit locked, all theses still running." No need to add picks — execute the hygiene pass and let the existing book work.
 
 **Word count: ~575**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

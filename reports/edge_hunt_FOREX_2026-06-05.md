@@ -64,3 +64,5 @@ External checks: AQR carry factsheet, QuantConnect carry template, MyFXBook SHOR
 T2 gate: n≥100, WR&gt;50%, PF&gt;1.5. FOREX at n=22 / WR 23% — not close.
 
 *Reproduce: `python3 tools/build_pf_registry.py`; `python3 alpha_engine/money_ready_verdict.py --json`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

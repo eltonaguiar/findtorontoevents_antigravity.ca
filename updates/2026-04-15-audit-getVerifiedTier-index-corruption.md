@@ -29,3 +29,5 @@ Remote tab smoke (load, click Active / Closed / Overview / Smart Picks, no criti
 ```powershell
 $env:VERIFY_REMOTE='1'; npx playwright test tests/audit_remote_tabs_no_errors.spec.ts --project="Desktop Chrome"
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -118,3 +118,5 @@ columns to the per-pick table: research_basis badge + a "View prompt" expander t
 - `ingest_to_db.py` runs unchanged post-migration (regression test: `--dry-run` against the
   current picks file should still produce 27-column tuples that match the existing INSERT).
 - New tables visible in `information_schema.tables` with expected indexes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -54,3 +54,5 @@ live inside large JSON/markdown payloads; they should be repointed when their
 feed generator is next touched. The systemic root cause — `/docs/` never being
 deployed — is documented above so a future deploy change can fix all of them at
 once.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

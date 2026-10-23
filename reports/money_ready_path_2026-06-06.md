@@ -108,3 +108,5 @@
 - `reports/money_ready_verdict.json` 2026-06-06T03:45Z
 - `alpha_engine/active_picks_sync.py` NULL-status fix commit `c34ddc2667`
 - `copy_trader_intel/multi_asset_copytrader_scraper.py` breadth-throttle addition
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

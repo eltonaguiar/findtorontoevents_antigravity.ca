@@ -144,3 +144,5 @@ PF not directly in mutation_analysis output. All LONG arms: WR ≤ 17%, avg_pnl 
 ```bash
 python3 -c "import json; d=json.load(open('audit_dashboard/data/dashboard_data.json')); [print(k,v.get('profit_factor'),v.get('win_rate'),v.get('n')) for k,v in d['performance']['asset_class_health'].items()]"
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

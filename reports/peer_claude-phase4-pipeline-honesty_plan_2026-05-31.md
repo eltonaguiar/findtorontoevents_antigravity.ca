@@ -10,3 +10,5 @@ Validate 5 layers of: trading_picks -> resolver -> at_strategy_stats -> pf_regis
 5. strategy_tier_tracker.py: read-only run; ImportError / sanity.
 
 Read-only DB access via /home/eaguiar2015/dbpasses.txt. Server-side docs PR if findings ship.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

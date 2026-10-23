@@ -53,3 +53,5 @@ snapshots whose action checklists were never reconciled against later commits.
 Future agents (and external tools like arena.ai) should treat their open-item
 lists as **unverified** — confirm against the codebase + `git log` before acting.
 R006 status in both synthesis reports has been corrected in this commit.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

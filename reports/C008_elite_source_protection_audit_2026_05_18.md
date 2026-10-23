@@ -84,3 +84,5 @@ that does not require sub-second data.
    (`audit-drift-telemetry.yml`) to detect outages proactively.
 3. **When trading goes live** (paper→real): create and store Binance API keys in
    GitHub Secrets as `BINANCE_API_KEY` / `BINANCE_API_SECRET`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

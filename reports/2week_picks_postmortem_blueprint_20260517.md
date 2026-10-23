@@ -172,3 +172,5 @@ This is the repeatable, evidence-driven path from "no proven edge" → "per-clas
 **Status**: Analysis complete. Ready for swarm consult round #1 using cloud keys first (Grok + any paid OpenAI/Anthropic/Gemini configured in the user's CLI envs), then free fallbacks. The data is unambiguous on where the real edge is hiding and what must be cut.
 
 Next human step: approve running the missed-gainers script + kicking off the multi-engine synthesis with the prompt in this doc.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -73,3 +73,5 @@ Six labels answer "how much do I trust this number?": ðŸŸ¢ Institutional-grade Â
 ---
 
 *Generated 2026-05-29. All edits local/uncommitted (remote-ops freeze respected). Reproducers for every figure are embedded in the per-area subagent outputs and the JSON `current_live_examples`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

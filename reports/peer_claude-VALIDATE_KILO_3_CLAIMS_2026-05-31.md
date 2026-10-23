@@ -153,3 +153,5 @@ For `commodity_term_structure` specifically: the strategy has no production emit
 - Mutation protocol: `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - Pre-registration rule: M-107 / `.claude/skills/hypothesis-registry/SKILL.md`
 - Branch HEAD at validation time: `e2f33ac0f` on `peer-claude/updates-entry-testing-protocol-dedupe-2026-05-31`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

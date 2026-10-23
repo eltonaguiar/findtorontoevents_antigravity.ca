@@ -66,3 +66,5 @@ Fade a liquidity-shock day in liquid small-cap Russell-2000 names (price > $5). 
 ## VERDICT: **REJECTED**
 
 Clean kill. The small-cap liquidity-shock reversion signal does not separate winners from losers with a stable sign across enough 14-day windows (or fails the 30bps cost gate). Do not wire or size. Archive as a tested failure.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

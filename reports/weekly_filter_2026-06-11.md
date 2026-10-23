@@ -61,3 +61,5 @@ The RSI50-70×US filter is measured at resolution time by the stamper (entry fea
 - Freshness gate: PASS (verdict age 1.5h).
 - Sources: live `money_ready_verdict.json` (2026-06-11T01:55Z) · `pf_registry.json` @ origin/main · `entry_conditions_forward.json` @ origin/main · `reports/entry_conditioning_experiment_2026-06-10.json` · `reports/sigma_geometry_experiment_2026-06-10.json` (geometry NULL → entry-selection pivot) · session log `reports/MASTER_PROGRESS_2026-06-10.md`.
 - Known limitations: clean cohort still time-concentrated (most resolutions 2026-05-27→06-10); COMMODITY intrabar baseline is the small recent cohort, horizon-censored; do not extrapolate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -80,3 +80,5 @@
 
 ---
 DOCS_PR target: docs-only changes (the two reports above). Implementation PRs A/B are separate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

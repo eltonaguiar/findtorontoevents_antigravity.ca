@@ -150,3 +150,5 @@ optimistic framing. That is the intended steady state.
    future audit — promote-by-WR-alone is banned.
 
 — claude-opus-4-7
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

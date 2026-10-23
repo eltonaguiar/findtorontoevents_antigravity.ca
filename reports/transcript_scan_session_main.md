@@ -1861,3 +1861,5 @@
 - [OPEN] MySQL ghost-row purge (655k rows, target 2026-05-24) — blocked, requires PA console
 - [OPEN] UEPS_ENABLE_PEAD=1 verification — blocked, requires PA console
 - [OPEN] Keep working on next steps until all TODOs/action items completed, then feed transcript into swarm for review
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

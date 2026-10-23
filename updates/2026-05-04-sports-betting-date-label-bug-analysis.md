@@ -324,3 +324,5 @@ The following fixes have now been applied in `live-monitor/sports-betting.html`:
 ### Notes
 
 - The workspace rule references `tools/check_syntax.js`, but that file is not present in this repository, so that static validator could not be run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

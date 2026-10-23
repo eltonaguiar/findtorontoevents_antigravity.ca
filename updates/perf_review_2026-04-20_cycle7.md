@@ -135,3 +135,5 @@ Three trends:
 - [ ] **P2 — mutate kimi_signal_tracking** (inverse test first; cycle-1 WR 74% → cycle-7 WR 32% is clean alpha decay)
 
 **Nothing in this PR modifies production strategy files.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

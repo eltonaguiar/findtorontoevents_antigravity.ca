@@ -76,3 +76,5 @@ for page in ["funds.html", "claudes_test.html", "trading_blueprint.html"]:
 ## Resolution
 
 Update `.github/workflows/audit-dashboard.yml` lines 846-847, 923, 957 to include all 6 missing pages in the whitelist. After next GHA run, all pages will deploy to FTP.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

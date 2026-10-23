@@ -41,3 +41,5 @@ reference to the matching JS change.
 python tools/hc_parity_test.py   # divergent=0 (was 4)
 python -m pytest tests/test_dashboard_hc_rules.py  # 24 passed
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

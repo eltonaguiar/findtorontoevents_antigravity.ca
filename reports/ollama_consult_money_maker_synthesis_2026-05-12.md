@@ -77,3 +77,5 @@ gate-status table refresh once 1-4 clear.
 Research surface. The 5 recs align with the in-flight roadmap; consult
 adds external corroboration but no new direction. Real-money sizing still
 gated on the 10-step Lopez de Prado AFML readiness pipeline.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

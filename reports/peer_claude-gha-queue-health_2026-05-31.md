@@ -76,3 +76,5 @@ Possible knobs:
 - `gh api meta`, `gh api rate_limit`
 
 All counts as of probe ~2026-05-31T08:11Z. No mutations performed; read-only diagnostic.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

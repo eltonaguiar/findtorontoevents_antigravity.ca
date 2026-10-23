@@ -86,3 +86,5 @@ data exists, the gate scaffolding exists. The missing ~30 lines are
 `if strat in _pbo_noise: kill` call in `apply_eagle6_admissibility`,
 and (c) deleting the stale "not yet generated" comment. The DSR side
 is already wired and live.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

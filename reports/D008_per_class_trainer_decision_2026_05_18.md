@@ -94,3 +94,5 @@ ML_GATE_DROP_LEAKAGE=1 python ml_gatekeeper/per_class_trainer.py  # no leakage
 
 - `ml_gatekeeper/data/per_class_gates.json` — gates manifest (committed)
 - `ml_gatekeeper/models/per_class/*.joblib` — model bundles (gitignored — regenerate with above command)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

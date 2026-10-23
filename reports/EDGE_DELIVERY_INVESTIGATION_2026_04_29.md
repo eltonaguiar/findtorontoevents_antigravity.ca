@@ -143,3 +143,5 @@ grep -n 'rsi2' audit_trail/dashboard_generator.py
 - READ-ONLY: no code modifications, no PRs.
 - Wall-clock: ~30 min.
 - All file paths are absolute or repo-relative; tests not run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

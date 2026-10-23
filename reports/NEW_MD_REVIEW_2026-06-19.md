@@ -36,3 +36,5 @@
 - Regenerate lifecycle_state + effective-n-shadow on the un-frozen cohort.
 - Normalize 0/10 + net-PF-with-CI-LB across docs; fix the "zero probation" line + dangling edition_review refs.
 - Ship P0-5 (un-mask) — the one live item from the superseded plan.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

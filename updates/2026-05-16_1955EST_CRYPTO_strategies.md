@@ -146,3 +146,5 @@ Only 11 of 160 crypto strategies have positive AvgPnL:
 3. **Add on-chain flow data** (Glassnode free tier) for whale accumulation detection
 4. **Increase minimum trade count** for PROVEN status — 15 picks is too few for statistical significance
 5. **Enable PER_CLASS_ML_ENFORCE** for crypto to hard-filter low-quality ML picks
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

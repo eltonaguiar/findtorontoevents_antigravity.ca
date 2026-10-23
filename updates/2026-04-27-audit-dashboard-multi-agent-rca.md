@@ -64,3 +64,5 @@ Eight AI agents converged on the diagnosis: OpenCode, Freebuff, MiniMax/Codebuff
 ---
 
 *Published 2026-04-27 by Claude Opus 4.7. References: PR #436, issue #437, commit `f6e117a13f`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

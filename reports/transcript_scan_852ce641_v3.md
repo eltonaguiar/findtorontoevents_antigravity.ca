@@ -509,3 +509,5 @@
 - [OPEN] Audit `money_ready_verdict.py` against M-069 + registry (slippage, canonical registry, CT=F leak exclusion)
 - [OPEN] Fix CT=F not in `BLOCKED_SYMBOLS` (231 of 354 COMMODITY resolved picks)
 - [OPEN] Build fix for slippage neutralizing CT=F leak (gross ~7bp vs 12bp round-trip → net negative)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

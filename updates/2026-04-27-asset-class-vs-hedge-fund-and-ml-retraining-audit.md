@@ -253,3 +253,5 @@ From `ml_battleground/retrain_summary.json` (`timestamp` 2026-04-24T05:11:03Z):
 - `ml_crypto_predictor/enhanced_models/feedback_data/feedback_training_report.json`
 - Workflow files listed in the ML section
 - Prior reports: `updates/2026-04-22-deep-asset-class-edge-analysis.md`, `updates/2026-04-23-whatif-asset-class-hc-filter-synthesis.md`, `updates/2026-04-27-whatif-last-4-days-hc-filter-lessons.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

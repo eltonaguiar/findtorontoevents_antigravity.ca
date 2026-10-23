@@ -128,3 +128,5 @@ T2-status: FAIL on (PF<1.5, WR<50, n<<100)  →  INSUFFICIENT_N + CONTAMINATED
 - `reports/peer_blackbox_incidents-enhancements-pr_2026-05-31.md` (Phase 4/8 resolver-bug context)
 - `audit_dashboard/data/money_ready_verdict.json` (2026-05-24 BOND verdict snapshot)
 - `alpha_engine/bond_data_fred.py`, `alpha_engine/bond_yield_curve_inversion.py`, `alpha_engine/bond_strategy_harness.py` (dormant code waiting for PR B wire-up)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

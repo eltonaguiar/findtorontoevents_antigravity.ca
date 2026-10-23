@@ -91,3 +91,5 @@ which case `money_ready=[]` is confirmed at the strategy granularity too.
 5. **Parallel track:** build NEW per-class archetypes from the EAGLE2 synthesis (dual-momentum ETF, TSMOM commodity, carry FX) with clean daily-bar backtests — likely higher ROI than re-auditing the contaminated tournament ledger.
 
 **Status: PROPOSAL REJECTED by review → revised to the prerequisite-first plan above. No flawed probe shipped.** This is the cross-review working as intended.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

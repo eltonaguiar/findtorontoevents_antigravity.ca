@@ -149,3 +149,5 @@ both Wilson 95% lb AND realistic costs.
 **This is the DRAFT v1.** Sending to 5 AIs for review. Will produce a
 revised v2 incorporating consensus feedback, then 1 final review pass,
 then implement.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

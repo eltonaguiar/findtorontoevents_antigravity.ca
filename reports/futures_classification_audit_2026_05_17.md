@@ -120,3 +120,5 @@ Add to `BLOCKED_DIRECTION_TRIPLES` in `audit_trail/quality_gates.py`:
 - `alpha_engine/asset_class.py` — classification logic (lines 66, 142–143)
 - `audit_trail/quality_gates.py` — `BLOCKED_DIRECTION_TRIPLES`, `BLOCKED_SOURCE_SYMBOL_PAIRS`
 - `reports/` — existing mutation docs for `multi_asset_copytrader` M-063
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

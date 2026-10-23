@@ -99,3 +99,5 @@ This should bring the branch count way down (target <<10 active + the 3-4 keeps 
 Refs: /tmp/analyze_branches.py run output (full report), previous cleanup md, peer-claude reconcile reports on the truth-layer, M-106 context in reports/.
 
 (2026-06-05, post first cleanup round.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

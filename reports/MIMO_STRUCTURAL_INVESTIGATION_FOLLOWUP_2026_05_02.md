@@ -138,3 +138,5 @@ The gates and thresholds are the **last 10%** of quality. The first 90% is: do t
 
 **Saved by:** Opus orchestrator, 2026-05-02
 **Source:** MIMO peer agent (Xiao Mi) via operator chat relay
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

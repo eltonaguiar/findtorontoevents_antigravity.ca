@@ -43,3 +43,5 @@ Set `SHADOW_MODE_AUTO_PROMOTE_ENABLED=1` in the environment where the dashboard 
 - Dashboard injection: `audit_trail/dashboard_generator.py:12035` (`_apply_shadow_promotion`)
 - Tests: `tests/test_shadow_promote.py` (15 tests, all pass)
 - Feedback: `reports/feedback/B18-panel-self-review-2026-05-06.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

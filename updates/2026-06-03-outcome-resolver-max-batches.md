@@ -13,3 +13,5 @@ gh workflow run outcome-resolver.yml
 gh run list --workflow=outcome-resolver.yml --limit 1
 python3 tools/check_resolver_health.py   # from host with valid DB_PASS_STOCKS
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

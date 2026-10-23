@@ -218,3 +218,5 @@ in scanner code upstream.
 
 *Generated read-only. No production files modified. Reproduce with the queries
 in this report against `ejaguiar1_stocks.at_raw_picks` / `at_filter_log`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

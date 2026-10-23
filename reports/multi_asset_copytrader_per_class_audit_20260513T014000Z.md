@@ -118,3 +118,5 @@ Downgrade:
 Audit only. No DB writes. AA-6 block can ship per protocol — FUTURES
 class is already known dead; this surgical add does not require
 mutate-before-kill (FOREX/COMMODITY-only carve-out per memory).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

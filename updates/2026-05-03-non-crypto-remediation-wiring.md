@@ -128,3 +128,5 @@ Confirmed via:
 grep -rln "compute_non_crypto_boost" alpha_engine/
 grep -rln "get_effective_min_score" audit_trail/
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

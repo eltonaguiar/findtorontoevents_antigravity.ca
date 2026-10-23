@@ -58,3 +58,5 @@ when freshness matters.
 
 `project-bt-sync-staleness-2026-05-31` — see also `project-day1-close-2026-05-31`,
 `project-money-ready-2026-05-31` (the resolver+plumbing thesis).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

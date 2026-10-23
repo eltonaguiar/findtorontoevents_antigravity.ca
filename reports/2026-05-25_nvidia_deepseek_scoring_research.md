@@ -512,3 +512,4 @@ This system allows for a quick and efficient decision-making process, enabling u
 
 ---
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -123,3 +123,5 @@ guard so the resolver cannot create duplicate closed rows. **First step:** trace
 where closed picks are written, identify the missing idempotency key. **Accept:**
 post-fix, a fresh `build_pf_registry.py` run shows raw-vs-deduped row delta < 2%
 (currently 41%). **Effort:** M-L. **Do A9 before A2/A3/A7.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

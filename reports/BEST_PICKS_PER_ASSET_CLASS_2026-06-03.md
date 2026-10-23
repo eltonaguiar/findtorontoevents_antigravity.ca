@@ -99,3 +99,5 @@ If actions #1-#7 above land and the two pilots clear their day-30 checkpoints:
 
 **Filed**: `reports/BEST_PICKS_PER_ASSET_CLASS_2026-06-03.md`
 **Companion infrastructure**: PR #462 (macd_rsi_m048 tracker), PR #463 (daily cron wire-up), PR #474 (source_system forward-guard), PR #439 (Pillar 1 freeze + Pillar 3 gate)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

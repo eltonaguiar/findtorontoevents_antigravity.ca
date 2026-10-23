@@ -174,3 +174,5 @@ Due to repo size (119,598+ commits), git operations timeout after 30s. Changes w
 **Generated**: 2026-05-04  
 **Model**: tencent/hy3-preview:free via OpenRouter  
 **Status**: All critical fixes applied locally, ready for user to commit when git accessible
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

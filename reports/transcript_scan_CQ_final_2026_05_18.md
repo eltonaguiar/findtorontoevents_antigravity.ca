@@ -307,3 +307,5 @@
 - [OPEN] Write inbox report
 - [OPEN] Send correction about opencode's "1 pick canonical" being incorrect
 - [OPEN] Run transcript review (user provided skill instructions; not shown executed)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

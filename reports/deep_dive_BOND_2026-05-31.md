@@ -174,3 +174,5 @@ If we cannot pass 60-day acceptance by 2026-07-31, **demote BOND to "blocked fro
 5. **If 60-day gate fails on 2026-07-31, `bond_scanner` is added to `BLOCKED_SOURCE_SYSTEMS` per `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md` and BOND is removed from the active asset-class roster on `/audit` until the 90-day rescue plan is rebuilt from scratch.**
 
 — end —
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -34,3 +34,5 @@
 - MHG: **limit 4.6850** — wait for Asian pullback from 4.69 print; copper thin liquidity overnight.
 - XRP: **limit 2.42** on USDC.P perp; do NOT chase if it pumps to 2.50 first (R:R collapses to 1.0).
 - All three: hard SL on exchange/broker side, not mental.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

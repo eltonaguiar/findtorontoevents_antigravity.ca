@@ -186,3 +186,5 @@ The 7 world-class strategy designs are ready to implement:
 ---
 
 *All metrics computed from resolved picks with pnl_pct IS NOT NULL. Backtest harness implements purged walk-forward (Bailey & Lopez de Prado 2014, 2015). Data from ejaguiar1_stocks.trading_picks and ejaguiar1_stocks.strategy_summary.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

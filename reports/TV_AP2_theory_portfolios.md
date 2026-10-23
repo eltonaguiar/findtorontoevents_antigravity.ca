@@ -69,3 +69,5 @@ Based on 66-script backtest sweep superstars + FGI=9 extreme fear contrarian sig
 - Monitor via TradingView Paper Trading panel
 - Compare against findtorontoevents.ca/audit closed picks WR
 - Update CHATWITHIT.MD with results weekly
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

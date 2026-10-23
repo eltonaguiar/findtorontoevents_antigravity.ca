@@ -36,3 +36,5 @@
 - SQL: `mysql.50webs.com` `ejaguiar1_stocks` direct probe 2026-05-31
 - Diff: `git diff 6fca7d786 e6398e352 -- audit_dashboard/template.html`
 - Canonical defn: `tools/db_health_check.py:check_ghost_rows()` lines 173-240
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

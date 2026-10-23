@@ -156,3 +156,5 @@ except ImportError:
 - **DEFINITIVE_FIX_PLAN 2026-05-12, lines 168-186**
 - **Project Memory:** `project_confidence_rho_matic_artifact.md` (660 MATIC 0%-WR ghost rows)
 - **Historical Context:** `docs/ANALYSIS_TRADING_FORENSIC_2026_04_18.md` (889 MATICUSDT deterministic losses)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

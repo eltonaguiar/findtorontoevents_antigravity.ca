@@ -27,3 +27,5 @@ The mirror workflow already has a deliberate 15-minute timeout on each FTP leg t
 - Inspected the failing run `26889022117` and confirmed the timeout occurred in `Download from findtorontoevents.ca (50webs FTP)`.
 - Verified from the run log that the step was transferring `backups/...` and `.../node_modules/...` paths immediately before timing out.
 - Reviewed the updated workflow to ensure the new excludes apply consistently to the download and both reverse-upload mirror commands.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

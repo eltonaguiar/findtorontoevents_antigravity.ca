@@ -81,3 +81,5 @@ exhausted. Further fires produce only overhead with no productive output.
 
 If a new queue is created for Goal #1 (asset-class health investigation),
 start a fresh loop with a new queue file.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

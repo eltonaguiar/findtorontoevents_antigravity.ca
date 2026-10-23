@@ -38,3 +38,5 @@ curl -sI 'https://findtorontoevents.ca/updates/eagle-best-picks-guide-2026-06-02
 | BAC, JPM, MSFT, NVDA | PAPER WATCH | EAGLE3 LONG bias; prod EQUITY fails |
 | etf_verified_dual_momentum | SHADOW PILOT | lab + WF; live ETF n=3 |
 | /audit production | DO NOT SIZE | `money_ready: []` |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

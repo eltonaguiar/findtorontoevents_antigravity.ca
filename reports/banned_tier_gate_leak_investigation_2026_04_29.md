@@ -157,3 +157,5 @@ Alternatively (stronger): apply `get_tier(source_system) != "BANNED"` to also ca
 | `BLOCKED_SOURCE_SYSTEMS` and trust-registry BANNED sets may diverge (rapid_fire is trust-BANNED but not in BLOCKED_SOURCE_SYSTEMS) | Medium | Filter on both: `get_tier(source) == "BANNED"` covers both paths |
 | Filtering closed picks may hide performance context needed for the mutation/investigation pipeline | Low | The `all_closed_including_expired` list (separate variable) is unaffected and available for research |
 | Stocks_competition emitter still running — fix to closed ingest doesn't stop future generation | High | Also gate the emitter or remove the competition runner cron; closing ingest fix alone is insufficient long-term |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

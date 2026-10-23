@@ -88,3 +88,5 @@ All score fields populated. 181 unique strategies.
 | P1 | Populate elite/ml_composite/method_a across ALL trades | Currently 1 trade only |
 | P1 | Add TAOUSDT/BTCUSDT to loss watchlist | High-confidence repeated losers |
 | P2 | Unify scoring pipeline | Two disjoint populations prevent comparison |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

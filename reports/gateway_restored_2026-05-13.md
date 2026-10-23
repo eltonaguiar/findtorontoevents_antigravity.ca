@@ -72,3 +72,5 @@ Result will land in subagent return.
 ## Next-cycle suggestion
 
 Add a daily-cron health-check workflow that pings `/health` and posts an alert if the response is missing or pending_acks > 100. Would catch the next silent-death within 24h instead of 20h+.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

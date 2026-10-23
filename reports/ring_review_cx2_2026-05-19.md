@@ -157,3 +157,5 @@ Reasoning:
 | EQUITY n≥100 | Accumulate organic picks | Extend time window to 3Y first | NEW — actionable concrete path |
 
 **Key new insight from Ring:** The ensemble √14 assumption of uncorrelated signals is likely violated — equity/regime signals correlate during stress. Intraday is the correct first fix. And for EQUITY: extend time window to 3Y as the fastest path to n≥100.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

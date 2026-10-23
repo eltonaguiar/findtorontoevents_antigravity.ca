@@ -202,3 +202,5 @@ These are recommendations only — this PR is documentation. Each item below sho
 - `alpha_engine/config.py` — `BLOCKED_SOURCE_SYSTEMS`, category caps, R:R defaults
 - `audit_dashboard/template.html` — `/audit` surface
 - `AGENTS.md` Goal #1 — "phenomenal performance across ALL asset classes on `/audit`"
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

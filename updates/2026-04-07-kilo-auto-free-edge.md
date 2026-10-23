@@ -82,3 +82,5 @@ Based on reviewing the downloaded strategy files and our audit data, I found a c
 - forward_test_gates.py
 
 **GitHub commit:** 6d6a41d200 - fix: remove HYPEUSDT from quan_engine
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

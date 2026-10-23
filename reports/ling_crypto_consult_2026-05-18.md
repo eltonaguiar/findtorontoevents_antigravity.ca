@@ -42,3 +42,5 @@ SELF-AUDIT
 Weakest claim 1: “Crypto directional edges decay in hours.” This assumes a homogeneous edge class; it could be overturned by evidence of at least one stable, latency-insensitive directional signal persisting >30 days with PF>=1.5 in a live, slippage-controlled book.  
 
 Weakest claim 2: “Tight stops are likely to be tagged by noise before trend, consistent with WR ~44.6%.” This could be overturned by a controlled experiment showing that the same signal set with wider stops (e.g., ATR-based) fails to improve net-EAPT or PF, indicating that stop placement is not the primary driver of the sub-50% WR.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

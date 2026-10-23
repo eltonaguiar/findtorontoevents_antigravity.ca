@@ -75,3 +75,5 @@ neutral funding-capture backtest, 2-year history, through the harness + the
 
 **This is a user decision** — it commits a 90-day sprint and (at day 61) a
 ~$1000 live microlot. Awaiting go/no-go.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

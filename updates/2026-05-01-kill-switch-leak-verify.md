@@ -45,3 +45,5 @@ N/A — one-line bug fix in an existing production call site. Not a new module.
 - [x] `pytest tests/test_kill_switch_leak.py -v` → 13/13 pass
 - [x] `python3 -m py_compile alpha_engine/isolated_signal_integrator.py` → OK
 - [x] Real-data CI gate: no integrator-sourced picks appear in kill-list leaks
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

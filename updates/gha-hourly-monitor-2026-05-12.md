@@ -33,3 +33,5 @@
 1. Operator should investigate why `gate` fails on every PR — 5+ consecutive failures with 0 successes is a broken workflow, not a flake.
 2. Operator should verify that PR #916 (merged with test.3.11 FAILURE) did not introduce a regression on main. PR #921 ran green post-merge but was tested against a different subset of the codebase.
 3. Direct-to-main code pushes (anti-overfit, quant-rescue) bypassed CI gates entirely — recommend enforcing branch protection that requires CI Tests to pass before main accepts pushes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

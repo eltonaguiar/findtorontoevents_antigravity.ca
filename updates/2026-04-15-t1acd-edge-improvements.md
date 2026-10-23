@@ -476,3 +476,5 @@ Cursor cross-checked Codebuff's findings against the repo's gates, blocks, and s
 | SHORT penalties / LONG-only smart picks | ✅ Consistent | Already enforced in code |
 | Trust scoring alignment | ✅ Consistent | Smart-picks floor (3) vs HC gate (6) are intentionally different |
 | TRX / Value+Quality / volume_spike | ✅ Consistent | All hard-blocked as expected |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

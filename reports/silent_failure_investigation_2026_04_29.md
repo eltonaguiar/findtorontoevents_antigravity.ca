@@ -111,3 +111,5 @@ The KIMI fix has lower impact — only ~15 additional picks would have been reta
 ## Methodology Note for Future Audits
 
 Counting `source_system` cardinality in `dashboard_data.json` `picks.recent_closed` is **not** a measure of source emission rate. The 3,500-pick cap with reservation logic is a stratified, lossy projection. Always cross-check against the underlying source data file before claiming a silent failure. A 5-min check on the raw `short_term_closed.json` would have caught this before the panel fired SEV-1.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

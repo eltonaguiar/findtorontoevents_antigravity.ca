@@ -68,3 +68,5 @@ dsr_audit ─→ extends tools/deflated_sharpe.py + reads dna_mutations.json
 
 PR title: **"Audit credibility supplements: 7 sidecar modules + 1 wired calibrator (68 tests)"**
 Body uses sections 1, 2, 3, 6 above. Follow-up rendering PR is a separate change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

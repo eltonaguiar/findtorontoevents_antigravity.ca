@@ -366,3 +366,5 @@ Impact         │ P0: Decay   P0: Lifecycle gates
 ---
 
 *End of Report*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

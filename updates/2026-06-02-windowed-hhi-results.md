@@ -72,3 +72,5 @@ DB_PASS_STOCKS=$DB_PASS_STOCKS python3 tools/build_windowed_hhi_results.py
 - [ ] **Highest priority**: integrate a 2nd independent source_system (different codebase, different data feed). Until then, NO live trading on these strategies.
 - [ ] Update `ENHANCEMENT_OVERALL #85` with 4-gate cascade result: only strategies that pass ALL 4 (PBO<0.5, WF OOS, bootstrap CI, windowed HHI) should be promoted. Currently 0/56.
 - [ ] Update `ENHANCEMENT_OVERALL #108` status: IMPLEMENTED, with `linked_pr=#485`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

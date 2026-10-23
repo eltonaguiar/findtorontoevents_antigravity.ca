@@ -139,3 +139,5 @@ No merge actions taken this hour (no open PRs).
 *Generated: 2026-05-12T06:xx:xxZ by Claude Sonnet 4.6 hourly audit agent.*
 *Source: `audit_dashboard/data/dashboard_data.json` (most recent pick: 2026-05-12T03:45:35Z)*
 *Refs: Issues #685, #686, #693; PRs #684 #674 #673 #664 #683 #687 #692 #694*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

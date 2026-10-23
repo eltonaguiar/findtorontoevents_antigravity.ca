@@ -90,3 +90,5 @@ flowchart LR
 ## Commit note
 
 This file was added as **documentation only**. No application code was modified in the same commit as this diagnosis.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

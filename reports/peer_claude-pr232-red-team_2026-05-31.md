@@ -86,3 +86,5 @@
 4. Add CRYPTO-only scope gate to Item 1 per PR #227's stated cohort.
 
 Follow-up correction PR will be opened separately with the docs-only red-team report itself.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

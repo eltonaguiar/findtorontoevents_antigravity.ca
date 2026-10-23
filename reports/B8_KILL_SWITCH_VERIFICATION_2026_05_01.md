@@ -94,3 +94,5 @@ is a future hardening item.
 - Kill list structure and protected-strategy exclusion
 - The B8 fix: `strategy=None` now caught
 - Real-data CI gate: no integrator sources appear in leaked picks
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

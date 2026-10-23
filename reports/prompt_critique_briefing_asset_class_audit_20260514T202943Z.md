@@ -39,3 +39,5 @@ Without file access and with ambiguous schema, engines will produce wildly diffe
 
 ## Best engine for THIS prompt
 **deepseek** — Best at following structured JSON schemas and admitting uncertainty rather than fabricating data. Also handles multi-condition logic well for the prioritization task.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

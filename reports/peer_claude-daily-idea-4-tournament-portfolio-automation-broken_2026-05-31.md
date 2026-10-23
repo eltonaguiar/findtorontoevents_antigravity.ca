@@ -195,3 +195,5 @@ Confidence: HIGH on root-cause identification (verbatim log evidence).
 - `docs/DESIGN_AI_MODEL_HEDGE_FUND_PORTFOLIOS_2026-05-29.md`
 - `audit_dashboard/data/pf_portfolios.json` (exists on live FTP, NOT in git)
 - GH Actions run 26665496460 / job 78597847285
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

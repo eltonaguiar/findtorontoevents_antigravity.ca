@@ -60,3 +60,5 @@ All agents agree: no statistically valid edge exists today. Path forward:
 2. Paper-pilot 30+ days
 3. Apply statistical framework from day 1
 4. Gate: DSR>0.95, PBO<0.05, WF 4/5+, perm p<0.05
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

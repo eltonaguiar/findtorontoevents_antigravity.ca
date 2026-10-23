@@ -120,3 +120,5 @@ Awaiting decision on A/B/C. Once chosen, I can:
 - (A) open a focused PR with the 2 production-code fixes and matching test additions
 - (B) re-submit the test updates the linter reverted (but that contradicts user's "intentional" signal)
 - (C) revert PRs #253 and #285 on a new branch
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -178,3 +178,5 @@ Cross-references:
 - [`docs/AUDIT_EFFECTIVENESS_AUDIT_2026_04_20.md`](../docs/AUDIT_EFFECTIVENESS_AUDIT_2026_04_20.md) — effectiveness audit that surfaced the gaps
 - [`docs/AUDIT_ADDITIONAL_FIXES_2026_04_20.md`](../docs/AUDIT_ADDITIONAL_FIXES_2026_04_20.md) — blocklist-leakage finding
 - [`docs/STRATEGY_FACTORY_V1_1_AMENDMENTS.md`](../docs/STRATEGY_FACTORY_V1_1_AMENDMENTS.md) — S-ladder cited by Mercury reviewer
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

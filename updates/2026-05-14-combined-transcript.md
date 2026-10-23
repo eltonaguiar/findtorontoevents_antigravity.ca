@@ -203,3 +203,5 @@ feat(scoring): per-asset-class prediction optimizations — swarm-verified
 **Verification agent:** Still running (spawned to check syntax, diffs, and FOREX consensus=1 risk).
 
 **Uncommitted files remaining:** `.claude/settings.local.json`, `.openclaude-profile.json`, `agent_swarm_state.json` (config/env noise, not optimization-related).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

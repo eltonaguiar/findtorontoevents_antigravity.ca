@@ -1112,3 +1112,5 @@ if score < MIN_SCORE_FLOOR:
 - Diversify portfolio away from crypto concentration
 
 ---
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

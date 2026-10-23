@@ -78,3 +78,5 @@ Default-on, env-reversible. 7 new tests + 51 existing green.
 - #3 P1 meta_strategy explosion (needs STRATEGY_INVESTIGATION_BEFORE_KILL protocol)
 - Resolver durable yfinance-CI fix + the pnl_pct fraction/percent unit bug (Finding B)
 - #34 remainder (m098/m096/quality_gates) + #1 broader feature-pipeline leakage audit
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

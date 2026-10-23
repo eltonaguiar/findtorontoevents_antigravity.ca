@@ -143,3 +143,5 @@ for pers,p in sorted(g.items()):
     if n>=30: print(f'{pers}: n={n} WR={w/n*100:.1f}% PF={pf:.2f}')
 "
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

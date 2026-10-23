@@ -215,3 +215,5 @@
 | FUTURES | Overnight drift MES + Asia MR MGC | Asness 2011, Lustig 2007 | Unknown | M | P2 (merge first) |
 | BOND | Curve-carry TLT/IEF/SHY + 2 pilots | Cochrane-Piazzesi 2005 | Unknown | M | P3 (research) |
 | PENNY/MEME | QUARANTINED | None | — | — | — |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

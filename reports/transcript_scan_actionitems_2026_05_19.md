@@ -754,3 +754,5 @@
 - [OPEN] Run each candidate through `edge_stability_harness.is_admissible()`
 - [OPEN] Forward-test admissible candidates for 90 days paper
 - [OPEN] Deploy real money only after forward-test confirmation
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

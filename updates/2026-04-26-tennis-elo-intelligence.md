@@ -110,3 +110,5 @@ cat /tmp/tennis_elo_test.json | python3 -c "import json,sys; d=json.load(sys.std
    `JeffSackmann/tennis_wta` and produce combined ratings JSON.
 4. **CV integration** (`yastrebksv/TennisProject`, `zostaff/tennis`): bounce
    prediction from broadcast feeds → live unforced-error rate signal.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

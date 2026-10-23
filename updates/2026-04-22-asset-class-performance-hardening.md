@@ -29,3 +29,5 @@
 
 - Revert `config/hc_gate_params.json` to prior partial file (restores old behavior; not recommended).
 - Remove `quan_engine_scalp` row from `BLOCKED_ASSET_STRATEGY_PAIRS` if a rehabilitated variant is promoted with investigation docs per `TESTING_PROTOCOL.MD`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

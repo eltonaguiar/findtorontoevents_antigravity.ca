@@ -87,3 +87,5 @@ still require `STRATEGY_INVESTIGATION_BEFORE_KILL.md` gate before action.
 | B22 | 🟡 Resolved (status-quo) | Meme picks confirmed flowing; zero code needed |
 | B10 | ⏳ Gate 2 blocked | Architecturally impossible without design change |
 | V2 | ✅ | 2 EQUITY×POSITION closes confirmed |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

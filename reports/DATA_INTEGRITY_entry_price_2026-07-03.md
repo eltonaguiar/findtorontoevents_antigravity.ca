@@ -59,3 +59,5 @@ The clean-entry replays above enter at the **signal-bar close**. Re-running with
 
 ## Bottom line
 The program's "no durable edge / everything dissolves" pattern now has a concrete mechanical cause on top of small-sample + regime: **the entry price the PnL is measured from is wrong ~71% of the time and biased +1.3% in the short-favoring direction.** Fixing `entry_price`/re-resolving the ledger is the single highest-leverage action — above any strategy, gate, or new-data work. Until then, treat all ledger directional PnL (especially SHORT-crypto) as unverified. See `FALSIFICATION_luxalgo_short_2026-07-03.md` and the two-control checklist in memory `feedback-entry-price-contamination-regime-2026-07-03`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

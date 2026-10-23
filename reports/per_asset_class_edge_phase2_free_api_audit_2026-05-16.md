@@ -149,3 +149,5 @@ This document + any small accompanying stubs (e.g. empty research/ scaffolds wit
 ---
 
 *Generated 2026-05-16 from live repo state + full daily_ideas corpus review. Supersedes prior narrow FUTURES plan.md in Grok session.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

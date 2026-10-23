@@ -106,3 +106,5 @@ Reasoning:
 - Kill protocol: `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`
 - SL-tuning caveat: MEMORY `reference-sl-optimization-needs-pricepath.md`
 - Historical context: `reports/HOURLY_AUDIT_2026-05-20_07Z.md` (FINDING-22), `reports/weekly_filter_2026-05-17.md` (51.6% concentration), `reports/cotton_cot_real_money_sizing_2026-05-12.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

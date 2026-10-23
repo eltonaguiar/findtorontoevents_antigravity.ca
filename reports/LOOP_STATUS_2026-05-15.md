@@ -70,3 +70,5 @@ Three new kill candidates from `HOURLY_AUDIT_2026-05-15_05Z.md` (NOT queue items
 | `cta_cross_asset_tsmom` | LONG | 29.8% | 84 |
 
 PRs #1026/#1027/#1029/#1030/#1032/#1037/#1045 are open but not in this queue — separate triage.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

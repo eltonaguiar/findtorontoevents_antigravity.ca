@@ -160,3 +160,5 @@ All require 3-AI consensus + mutation/inverse/symbol-rotation tests per `docs/MU
 4. **`myfxbook_retail_contrarian` LONG:** Post to issue #686 for 3-AI consensus tracking (n=123, WR 13.8%).
 5. **EQUITY 7d WR=26.5%:** Watch — PF=1.19 is acceptable but WR is low. If 7d WR stays <35% next check with n>50, flag.
 6. **ETF borderline:** PF 1.48 vs Tier-2 floor of 1.5. One more clean week gets it over.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

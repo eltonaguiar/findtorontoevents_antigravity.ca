@@ -70,3 +70,5 @@ DB_PASS_STOCKS=stocks1234560 python3 tools/audit_pick_funnel/cli_track.py list -
 # Re-render the page (also rewrites the feed JSON + updates/index.html injection)
 DB_PASS_STOCKS=stocks1234560 python3 tools/audit_pick_funnel/render_incidents_page.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -117,3 +117,5 @@ The full assistant message was a fenced ```json``` block. Parsed file saved to `
 - Endpoint advertised model id `mimo-token-plan` was REJECTED with HTTP 400 ("Not supported model"). Pulled `/v1/models` listing; chose `mimo-v2.5-pro` (Xiaomi's flagship general model). HTTP 200, 16,232 bytes, single completion, finish_reason=stop, no retries needed, no rate-limit.
 - Auth header: `Authorization: Bearer tp-s72xhkxoi7dupmjsfvf344ihmjshtbca0gxibsg5v87zbp97` (key sourced from `/home/eaguiar2015/dbpasses.txt` under `XIAOMI_MIMO_TOKEN_PLAN`).
 - Temperature 0.3, system prompt = "quant methodology red-teamer", user prompt = the Day-1 brief verbatim.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

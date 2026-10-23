@@ -118,3 +118,5 @@ python3 tools/deploy_audit_files.py --only pick_funnel,ai_portfolios
 | PR order | `EAGLE2_2026-06-02_GROK.md` §3, §8 |
 
 **NFA.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

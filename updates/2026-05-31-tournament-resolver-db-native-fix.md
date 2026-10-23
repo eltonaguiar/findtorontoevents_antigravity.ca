@@ -40,3 +40,5 @@ $ python tools/ai_tournament/resolve_db_picks.py --limit 15
 **Acceptance:** short-TF OPEN picks aged >5d drop below 50; the 3 T1 models reach n_resolved ≥100; daily DB resolutions resume.
 
 *Read-only investigation + dry-run only; no production rows mutated and no production strategy code changed in this PR.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -175,3 +175,5 @@ No new PF<0.5 + n≥20 strategies beyond known findings.
 ---
 
 _Refs: issues #685 #686 #693 | PRs #683 #684 #687 #692 #694 | `docs/MUTATION_THREE_AXIS_PROTOCOL.md` | `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`_
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

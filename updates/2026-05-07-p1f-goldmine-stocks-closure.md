@@ -49,3 +49,5 @@ These JSON files are generated externally (not in this repo) and committed to th
 **No source code removal needed.** `goldmine_stocks` is a data source label, not executable code. The three independent kill layers ensure no new picks from this source can enter the pipeline. The existing tests guard against regression.
 
 **Closure:** P1-F is closed. The strategy is comprehensively dead across all asset classes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

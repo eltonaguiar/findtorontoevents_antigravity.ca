@@ -111,3 +111,5 @@ JS syntax: all 22 `<script>` blocks in `template.html` compile clean.
 - Deploy: `audit_dashboard/template.html` is applied to `index.html` by
   `audit_trail/dashboard_generator.py::build_html` on the next `audit-dashboard` run
   (hourly cron at `:10`, or `workflow_dispatch`). No generator changes are needed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

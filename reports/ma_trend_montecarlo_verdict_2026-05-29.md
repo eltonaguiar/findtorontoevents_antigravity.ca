@@ -29,3 +29,5 @@ So MA-200 belongs as a **regime/defensive overlay** (size down / de-risk when pr
 Track MA-200 picks under the audit data source **labeled honestly**: source `ma200_trend`, with the metric-honesty tier
 🟡/🟠 and a note "trend-shape PF; no timing alpha (MC p>0.5); defensive overlay only — do not size as edge." Visible in the
 funnel, gated out of active alpha picks. This prevents the leaderboard's PF from being misread as edge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

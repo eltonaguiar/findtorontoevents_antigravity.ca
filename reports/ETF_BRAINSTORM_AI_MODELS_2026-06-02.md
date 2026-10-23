@@ -40,3 +40,5 @@
 - `SRO` (Sector Rotation Optimizer) can be prototyped by extending `alpha_engine/backtest_etf_dual_momentum.py` with sector-ETF universe (XLF, XLE, XLK, XLI, XLP, XLU, XLB).
 - `FAEW` multi-factor rotation could be implemented by extending the existing dual-momentum signal with value + size factor scores from `alpha_engine/equity_factor_model.py`.
 - `ETTI` trend+vol filter is a natural mutation axis on the dual-momentum base — add ATR-based volatility ceiling to the signal generator.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

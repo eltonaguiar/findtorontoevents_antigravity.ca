@@ -157,3 +157,5 @@ python3 .claude/skills/goal/goal_state.py status --session real-money-edge-jun5
 ---
 
 _Session: Grok / Cursor — 2026-06-05. Prior same-day context: `memory/2026-06-05.md`, `plans/money_ready_enhancements_spec.md`._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

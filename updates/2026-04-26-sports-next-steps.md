@@ -158,3 +158,5 @@ If the operator wants to ship one round per evening:
 - Test gate: `.github/workflows/sports-smoke-and-e2e.yml` (every PR + hourly drift check)
 - Deploy helper: `tools/deploy_sports_files.sh` (validates pre+post deploy)
 - Sport-specific gate config: `config/auto_place_policy.json` (currently `enabled: false`)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

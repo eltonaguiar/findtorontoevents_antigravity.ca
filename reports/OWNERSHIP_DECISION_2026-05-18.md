@@ -79,3 +79,5 @@ resolve-date — using the existing `regime_terminal` HMM 7-state detector.
 One owner per workstream. on-chain = STRAND B. harness upgrade = me.
 options-flow parked until the harness can fairly judge it. No agent builds a
 new-data module into a harness that will structurally reject it.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

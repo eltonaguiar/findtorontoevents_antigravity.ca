@@ -192,3 +192,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 
 - **If kept:** curve shape, basis, roll-yield, margin requirements become first-class columns (F3); regime classifier (B2) gates entry; macro-blackout (B2) applies for financials.
 - **Speculative split (D1):** illiquid single contracts (low OI / wide spreads) get `speculative_flag=True`. Liquid majors (ES, NQ, ZN, ZB, GC, CL, 6E, 6J) stay institutional.
 - **Workstream G2 circuit-breaker** applies normally — if FUTURES tile is merged into CTA, the CTA bucket gets its own breaker.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

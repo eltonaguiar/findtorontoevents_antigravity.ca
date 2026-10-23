@@ -142,3 +142,5 @@ The pattern works. Safe to apply to the 30-item list.
 ## Return value
 
 `GHA_TRIAGE:starved=outcome_resolver,audit_hourly_update,mysql_trading_sync:cancel_candidates=30:poc_cancelled=26706303806`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

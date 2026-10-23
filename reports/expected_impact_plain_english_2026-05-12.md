@@ -91,3 +91,5 @@ bar regardless of any single fix landing.
 - `reports/grok_audit_red_team_synthesis_2026-05-12.md` — verified numbers
 - `audit_dashboard/real_money.html` — readiness hub
 - `audit_dashboard/paper_pilot.html` — SHADOW tracker
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

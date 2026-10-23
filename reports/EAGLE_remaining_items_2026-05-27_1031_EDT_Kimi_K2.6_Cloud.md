@@ -304,3 +304,5 @@ These issues were **unchanged after 8+ hours of multi-engine analysis** and bloc
 - `audit_dashboard/data/money_ready_verdict.json`
 - `audit_trail/quality_gates.py:1690`
 - `reports/ipo_lockup_backtest_2026-05-17.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

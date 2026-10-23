@@ -141,3 +141,5 @@ Clean harness KILL (#10) — the FULL-BOOK construction scored 37 windows but th
 
 ---
 *Research sidecar. No production wiring. Pre-registered per M-107 before backtest logic was written. Harness imported unmodified; EFF_MIN / MIN_WINDOW_N / MIN_STABLE_WINDOWS untouched. FULL-BOOK construction is legitimate density (H-008/H-014 precedent), not p-hacking.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

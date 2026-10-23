@@ -32,3 +32,5 @@
 **ROBUST.** 100% WR on recent 15/30/60 trades with zero decay. Edge is NOT a vintage artifact—last-trade performance exceeds full-sample baseline by 10pp. PF compression (13.4 → 1.4 over lookback) indicates smaller recent wins but acceptable for $1.4k cumulative gain on 30 trades.
 
 **Recommendation:** Advance to Step 6 (cross-symbol stress test).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

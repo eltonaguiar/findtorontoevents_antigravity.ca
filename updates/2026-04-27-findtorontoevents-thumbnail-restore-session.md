@@ -168,3 +168,5 @@ Both technically merged but currently inactive on prod (live site loads legacy H
 
 - `l50kpi1t` — full session summary (don't edit Next.js src expecting it to ship; canonical file is `TORONTOEVENTS_ANTIGRAVITY/index.html`)
 - `fsem3qwe` — heads-up only (FindStocks links unaffected; no action needed)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

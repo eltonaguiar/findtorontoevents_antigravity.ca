@@ -107,3 +107,5 @@ Generate a **v2 plan dated 2026-05-13** that:
 5. Sets the explicit go-live order: infra (P0.5) → COT-corrected COMMODITY paper-pilot → EQUITY second-class to T2 lineup → ETF as third slot if PF clears 1.5
 
 The 5-plan synthesis methodology is sound but missed infrastructure gating. Next refresh should consult external models in the same way this session did.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

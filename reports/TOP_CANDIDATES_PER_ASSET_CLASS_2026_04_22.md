@@ -82,3 +82,5 @@
 | FOREX         |   9 |        50.89 |       7.41 |
 | FUTURES       |   2 |        53    |       0    |
 | STOCKS        |   3 |        56.33 |      50    |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

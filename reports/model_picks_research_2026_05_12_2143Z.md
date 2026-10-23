@@ -520,3 +520,5 @@ factors used, data points to fetch, swing-trade setup, short-term setup.
 - Treasury auction demand metrics
 **Swing Trade Setup:** Enter on yield curve steepening/flattening extremes, exit when spread reverts to 30-day mean or Fed policy pivot confirmed
 **Short Term Setup:** Trade around major economic releases using pre-positioning based on consensus vs actual data, with tight stops on unexpected outcomes
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

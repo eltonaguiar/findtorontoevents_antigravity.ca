@@ -61,3 +61,5 @@ References:
 - `~/.grok/logs/mcp/tradingview-desktop.stderr.log` (mangled path).
 - AGENTS.md / Claude.md Goal #1 (phenomenal /audit performance requires stable long-running Grok sessions on this exact repo).
 - Grok user-guide/05-configuration.md and 07-mcp-servers.md (canonical MCP + memory sections).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

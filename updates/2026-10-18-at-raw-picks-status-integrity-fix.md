@@ -121,3 +121,5 @@ Related open items from the same audit, not addressed here: the 38 historical
 fabricated rows still sit in `recent_closed`, only AlphaEngine writes to
 `at_raw_picks` (GC=F / XLB / USO / TQQQ / PA=F actives have no row at all), and
 the `rapid_fire_data/active_picks.json` feed 404s.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

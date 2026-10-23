@@ -57,3 +57,5 @@ For each Phase-3 MC top candidate, re-run live stats and confirm n hasn't droppe
 - `audit_dashboard/data/pf_registry.json` (canonical pre-publish)
 - `audit_dashboard/data/money_ready_verdict.json` (canonical pre-publish)
 - Live published copies under `https://findtorontoevents.ca/audit/data/`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

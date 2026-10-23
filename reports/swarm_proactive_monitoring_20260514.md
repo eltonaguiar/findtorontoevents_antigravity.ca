@@ -125,3 +125,5 @@ Current state is fully reactive and manual — the 7 documented failure modes we
 
 *Generated 2026-05-14 — sources: cerebras (gpt-oss-120b), deepseek (deepseek-v4-flash), xai (grok-3)*
 *Run dir: `swarm_runs/proactive_monitoring_20260514/` | All 3/3 engines OK*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

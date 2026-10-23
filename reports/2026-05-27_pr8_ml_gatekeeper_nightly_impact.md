@@ -83,3 +83,5 @@ A one-shot dispatch would train the bundles once, but they'd age. Models trained
 ## Peer review status
 
 To be reviewed via `/swarm-second-opinion` (deepseek + xai) before merge. See PR comments for swarm output.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

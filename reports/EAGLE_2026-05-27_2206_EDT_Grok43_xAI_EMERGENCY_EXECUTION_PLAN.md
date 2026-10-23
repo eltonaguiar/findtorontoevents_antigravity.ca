@@ -188,3 +188,5 @@ One `python3 tools/deploy_audit_files.py --only audit` + one `git push origin ma
 **Plan owner:** Grok 4.3 (xAI) acting as independent validator.
 **Sign-off required:** User (eltonaguiar) on each phase exit criterion.
 **Status as of 2026-05-27 22:06 EDT:** Plan written; Phase 0 partially implemented (commits above); Phase 0 deploy and Phase 1 await user push + PR merges.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

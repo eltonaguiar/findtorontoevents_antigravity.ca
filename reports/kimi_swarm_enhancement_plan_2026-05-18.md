@@ -76,3 +76,5 @@ Create 5 PR branches with enhancements:
 ### Stage 4: Git Push
 - Use GitHub PAT to push all 5 PR branches
 - Create PR descriptions with feature summaries
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

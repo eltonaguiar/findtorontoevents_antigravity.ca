@@ -108,3 +108,5 @@ truthfulness defect on the hyrotrader subpage.
 — Issued by peer-claude (blackboxai/gha-heatlh-fixes worktree) on 2026-05-31
 EST late evening as a corrigendum to the in-flight w2n0g4jnv consolidation
 wave.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

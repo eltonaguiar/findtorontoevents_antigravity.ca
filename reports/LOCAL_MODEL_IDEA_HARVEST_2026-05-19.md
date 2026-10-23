@@ -125,3 +125,5 @@ Each surviving idea is tagged **[SUBSTANTIVE]** or **[THIN]**.
   - ETF — **ET1 NAV-dislocation reversion** (thin; likely a 30 bps casualty).
   - FOREX, FUTURES, BOND — **no harvestable idea; local models concur with the no-edge verdict.** Scope-cut candidates.
 - **Honest quality call:** local models are weak idea-generators here. Their highest-value output was *agreeing the edge space is mostly empty* and being honest about it for FOREX/BOND. The 3 positive seeds (C1/E1/CM1) are worth pre-registering as harness hypotheses per rule M-107 — but they are seeds, not edge. Nothing here overturns the paper-only, fix-data-first conclusion.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

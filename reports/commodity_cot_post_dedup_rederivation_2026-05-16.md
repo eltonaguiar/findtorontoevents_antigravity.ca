@@ -61,3 +61,5 @@ Tradeable COMMODITY = post-dedup, ex-cotton ≈ **PF 0.12-0.33** — sub-floor.
   numbers; until then, no COMMODITY sizing-up, no Tier-1 claim.
 
 _Generated 2026-05-16. Source: dashboard_data.json::picks.recent_closed._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

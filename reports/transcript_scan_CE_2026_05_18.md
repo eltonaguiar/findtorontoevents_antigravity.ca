@@ -2847,3 +2847,5 @@
 - [OPEN] Scan prior CE session transcript (71MB) through the agent swarm
 - [OPEN] Chunk the 71MB transcript for parallel processing
 - [OPEN] Have swarm review transcript for any further action items
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

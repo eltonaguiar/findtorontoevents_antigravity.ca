@@ -207,3 +207,5 @@ file (this one) is untracked. There are 3 other untracked files in
 `git status` (1 in `updates/`, 2 in `verified_strategies/paper_pilot/`)
 that were NOT created in this session and should NOT be staged for
 push per the "Only Push Your Own Changes" rule.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

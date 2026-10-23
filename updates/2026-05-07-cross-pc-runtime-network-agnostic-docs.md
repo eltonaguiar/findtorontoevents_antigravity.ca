@@ -34,3 +34,5 @@ Updated protocol prompt/documentation so operators can run the same workflow reg
 - Documentation-only update; no code behavior changed.
 - Existing protocol test suite remains green from prior run:
   - `python -m pytest tests/test_cross_pc_protocol.py -q` (4 passed)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

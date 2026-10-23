@@ -37,3 +37,5 @@
 ## Verify / next
 - Watch `at_signal_outcomes` rows/day return to ~5k + `crypto_rsi5070_us` n accrue toward the Jun-25 gate.
 - Implement the un-mask hardening (fail-hard on frozen ledger).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

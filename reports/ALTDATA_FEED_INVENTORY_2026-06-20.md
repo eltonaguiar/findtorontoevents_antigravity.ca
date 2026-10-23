@@ -31,3 +31,5 @@ The alt-data collectors ran once ~Feb 2026 and were never scheduled — they are
 2. **Accrue the one live lead** — crypto rsi5070_us overlay (CI-LB 0.95) toward n-gate; it is the only surviving honest candidate.
 3. **Make the canonical ledger honest at scale** — re-resolve the ~14k resolvable crypto placeholders (backup-first) so verdicts reflect the full sample (won't change the no-edge result, but makes the measurement foundation correct).
 4. Do NOT keep backtesting current data for new edge — it is exhausted; that would be re-fishing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

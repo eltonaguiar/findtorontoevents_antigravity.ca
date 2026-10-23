@@ -198,3 +198,5 @@ The PR description was generated from a **local session that was planned but nev
 2. **P1-F**: goldmine_stocks source code kill — verify module is fully removed
 3. **System**: Extend regime_flip_detector.py to store per-day history for accurate backfill
 4. **P0-C**: Apply BLOCKED_DIRECTION_TRIPLES for 3 FOREX strategies (ig_contrarian_sentiment, myfxbook_retail_contrarian, quan_engine_swing FOREX LONG blocks)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

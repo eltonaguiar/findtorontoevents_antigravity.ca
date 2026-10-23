@@ -64,3 +64,5 @@ and closed_picks.json per-strategy directional analysis.
 ## References
 - Mutation three-axis protocol: docs/MUTATION_THREE_AXIS_PROTOCOL.md
 - FOREX edge data: alpha_engine/data/closed_picks.json (asset_class=FOREX)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

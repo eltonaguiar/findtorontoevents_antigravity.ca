@@ -17,3 +17,5 @@ duplicated between `ai_menu.sh` and an unused include file.
 bash tools/ai_menu.sh --yolo-info | grep copilot   # --allow-all
 bash -n tools/ai_menu.sh tools/agent_run.sh tools/ai_menu_yolo.inc.sh
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

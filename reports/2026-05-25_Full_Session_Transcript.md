@@ -110,3 +110,5 @@ This investigation directly fed the later rating system designs and Smart Picks 
 **Session Status:** All planned technical work completed. Goal achieved.
 
 *End of Full Session Transcript Export*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

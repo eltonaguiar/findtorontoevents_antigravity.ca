@@ -195,3 +195,5 @@ Events in next/events.json:
 | "This Month" shows 2025-05-23 zombie events | Same-month display text is year-ambiguous; event absent from `__RAW_EVENTS__` | Fix 2: hide cards without `eventData` when feed is loaded |
 | "This Month" hides long-running shows (& Juliet, museums, etc.) | `end_date` not considered in `__RAW_EVENTS__` pre-filter | Fix 1: retain events where `end_date >= today` |
 | "Next Month" shows "MAY xx" labels instead of "JUN xx" | `_t.length <= 12` check skipped hiding for React date elements > 12 chars | Fix 3: raise limit to 30 |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

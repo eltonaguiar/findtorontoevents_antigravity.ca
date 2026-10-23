@@ -379,3 +379,5 @@ Secret Scan M-043 carried forward as resolved (superseded by clean Gitleaks on P
 **Most recently merged PR:** #1254 ("audit: 14Z hourly — FINDING-17 HOLD (cftc_cot n=18), FINDING-15 to 3-AI queue", merged 2026-05-19T15:11:44Z).
 
 ---
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

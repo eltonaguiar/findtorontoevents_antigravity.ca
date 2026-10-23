@@ -223,3 +223,5 @@ python tools/hurst_regime.py --type trending --n 1000       # synthetic trending
 - RL-based position sizing (FinRL)
 - vectorbt / pyfolio / alphalens integration
 - Any changes to existing pick emission code paths
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

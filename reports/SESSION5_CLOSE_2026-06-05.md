@@ -123,3 +123,5 @@ The hubris-prevention lesson: **always validate before deploying**. The v2 spec 
 ---
 
 ## Session 5 STATUS: CRYPTO COHORT BLOCKED AT RESOLVER GATE — PROCESS WORKED AS DESIGNED
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

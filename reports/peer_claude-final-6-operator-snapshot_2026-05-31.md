@@ -48,3 +48,5 @@ If operator wants to advance, work top-down by leverage-per-decision:
 - `SELECT COUNT(*) FROM vw_all_incidents WHERE status IN ('OPEN','TRIAGED','IN_PROGRESS')` = 6.
 - Backup row count `ejaguiar1_backups.incident_final_6_pre_20260531` = 1 (incident #2 pre-flip).
 - No agent should pick up any of the 6 above without explicit operator direction on the listed action.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

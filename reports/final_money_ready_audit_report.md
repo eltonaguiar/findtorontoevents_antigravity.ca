@@ -153,3 +153,5 @@
 **Recommendation:** Focus on fixing the data integrity pipeline (resolver, gating, concentration monitoring) before attempting to deploy new strategies. The existing research edge (ETF dual momentum, CRYPTO ML sleeves, COMMODITY COT) is promising but requires 4-8 weeks of paper-pilot validation before any live capital deployment.
 
 **Timeline to Tier 1:** 8-12 weeks minimum for any asset class to reach institutional-grade readiness.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

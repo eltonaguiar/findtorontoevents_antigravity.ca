@@ -194,3 +194,5 @@ python3 tools/strategy_kill_switch.py
 ---
 
 *Generated 2026-06-05 by KIMI execution session. All DB changes verified with live SELECTs.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

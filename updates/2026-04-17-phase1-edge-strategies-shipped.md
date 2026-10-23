@@ -132,3 +132,5 @@ Mimo's commit message claims "6 unit tests, all passing" and CI checks DO pass (
 **5 files shipped, +540 lines, 3 academically-validated edge strategies + 1 UI feature.** No regressions (all py_compile OK; UI JS validated). Strategies will auto-execute on next CI run via existing scanner registry.
 
 The bond/ETF/commodity classes should see meaningful PF lift over the next 14-30 days as the strategies build forward records. Forex remains the biggest open gap — Phase 2 build (Carry+VIX + Currency Momentum) targeted next.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -67,3 +67,5 @@ If that distinction is the actual intent, it must be stated explicitly in both d
 7. **docs/STRATEGY_PIPELINE_END_TO_END_2026-05-31.md** missing from disk — remove from scan list OR locate the worktree it lives in.
 8. **Archive money_ready_archive/*.json** already in correct location; no action.
 9. **Swarm prompts (METHODOLOGY_R2, MONEY_READY_HARVEST_v1, MONEY_READY_MASTER_v1)** are templates — fine to keep, but HARVEST_v1's "n≥100 clean post-dedup" floor should be footnoted with the paper-pilot n≥500 graduation floor.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

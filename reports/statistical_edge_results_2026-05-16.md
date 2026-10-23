@@ -58,3 +58,5 @@ These asset classes show no activity in both backtest trades and signal outcomes
 
 ## Conclusion
 The FOREX strategy demonstrates a statistically significant edge with strong performance characteristics. In contrast, MEMECOIN and CRYPTO strategies show negative expectancy, indicating they are not profitable in their current form. PENNY_STOCK shows negative performance but with insufficient data for reliable analysis. The absence of data for EQUITY, ETF, FUTURES, BOND, and COMMODITY suggests these strategies are not active or not being tracked in the current system. The FOREX strategy appears to be the only one ready for real-money deployment based on these results.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

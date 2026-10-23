@@ -133,3 +133,5 @@ python tools/borderline_model_lab.py   # VRAM matrix
 ```
 
 **Outputs:** `swarm_runs/model-grill/20260519T204627Z/manifest.json`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

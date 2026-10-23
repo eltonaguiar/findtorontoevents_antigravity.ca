@@ -137,3 +137,5 @@
 - [OPEN] Handle local stash conflicts with CI results (colliding `*.meta.json` files)
 - [OPEN] Ensure three DNA mutation strategy files are not deleted and check if on remote
 - [OPEN] Run swarm-transcript-scan on the current session transcript (aee6a3a1) — user requested via /swarm-transcript-review
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

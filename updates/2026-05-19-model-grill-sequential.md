@@ -21,3 +21,5 @@ python tools/model_grill_sequential.py --wave paid --prompt harvest
 python tools/model_grill_sequential.py --wave ring --prompt harvest
 python -m py_compile tools/model_grill_sequential.py tools/api_model_roster.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -299,3 +299,5 @@ updates/2026-04-22-integration-roadmap-and-qa-plan.md   (NEW — this file)
 ---
 
 *End of plan. Next action: commit to main and begin Phase 2 QA execution.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

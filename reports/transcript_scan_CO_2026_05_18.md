@@ -224,3 +224,5 @@
 - [OPEN] Pre-register C-2 in `hypothesis_registry.json`
 - [OPEN] Feed chat transcript into agent swarm for review of further action items
 - [OPEN] Break transcript into chunks for review if needed
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

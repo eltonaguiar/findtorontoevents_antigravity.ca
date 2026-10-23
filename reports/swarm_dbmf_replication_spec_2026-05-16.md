@@ -42,3 +42,5 @@ Module written to `tools/research/dbmf_replication.py`. Class `DBMFReplicator` w
 1. Run `python tools/research/dbmf_replication.py --json` to see current signals
 2. Run 1-year backtest (add `--backtest` flag — implement in next sprint)
 3. If Sharpe > 0.5, proceed with wiring into quality_gates.py
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

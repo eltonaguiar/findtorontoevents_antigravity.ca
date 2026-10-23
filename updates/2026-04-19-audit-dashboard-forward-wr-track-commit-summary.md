@@ -28,3 +28,5 @@
 ## Scope of this commit
 
 This commit is intentionally limited to **generator normalization** and **dashboard template** UX for forward/track clarity. Other modified files in the working tree (caches, unrelated engines, auto-generated `index.html`) were **not** included.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

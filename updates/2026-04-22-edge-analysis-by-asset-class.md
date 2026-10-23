@@ -194,3 +194,5 @@ Based on edge analysis and current active picks:
 ---
 
 *Generated from audit dashboard analysis — 2026-04-22*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

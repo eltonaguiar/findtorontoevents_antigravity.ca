@@ -106,3 +106,5 @@ No new merges to main since 02:15 UTC (#839/#840/#836 were last batch).
 **Open PRs RED:** none
 
 **Action required:** none. Carry-forward: rerun `scan` on PR #835 before merge is optional hygiene. No new failures since 03:00 UTC. Verdict unchanged GREEN.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

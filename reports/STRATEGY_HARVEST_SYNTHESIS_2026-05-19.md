@@ -459,3 +459,5 @@ elapsed=21.88s ok=True
 2. Flip `EMITTER_WHITELIST_ENFORCE=1` only for classes where Judge verdict=RESCUE on rank1-3
 3. Pre-register tick/intraday hypotheses (CRYPTO) — not daily-bar killed families
 4. Re-run: `python tools/strategy_harvest_round.py --phase all`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

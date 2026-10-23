@@ -172,3 +172,5 @@ All fixes syntax-checked with `python -m py_compile`. Code review by code-review
 - ✅ call_kimi() stdin switching + retry logic correct
 - ✅ kimi `-p \"\"` empty trigger validated
 - ✅ YAML agent override per-field merge approach correct
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

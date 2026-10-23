@@ -104,3 +104,5 @@ fastest credible path is pre-registered hypotheses (EQUITY post-earnings drift,
 ETF momentum, COMMODITY term-structure roll-yield) validated under CPCV +
 White's Reality Check + deflated Sharpe + an n>=100 floor — NOT more mining.
 See `NO_EDGE_BRAINSTORM_CLOUD.MD` for the multi-cloud-model expansion of this.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

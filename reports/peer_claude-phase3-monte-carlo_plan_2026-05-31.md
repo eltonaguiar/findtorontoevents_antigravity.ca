@@ -46,3 +46,5 @@ Live n will be re-read from `ejaguiar1_stocks.trading_picks` (closed only, pnl_p
 
 - READ-ONLY SELECT on `ejaguiar1_stocks.trading_picks`.
 - No DB mutations; no production code touched.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

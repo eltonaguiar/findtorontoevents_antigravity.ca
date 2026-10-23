@@ -117,3 +117,5 @@ When MiniMax-m2.7 + CF qwen3-30b + CF qwq-32b + CF top-6 land:
 1. Wire the v1 formula into the live `/audit` promotion gate as a sidecar advisory score (NOT a blocker yet — needs the remaining 9 models' input first).
 2. Add `quality_score` field to `audit_dashboard/data/nav_surface_edge_matrix.json` (built by agent E commit `ee182355a`) so the nav-surface matrix reports the consensus score per surface.
 3. Track as new ENHANCEMENT_OVERALL row with proposed-by=multi-model-consensus.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

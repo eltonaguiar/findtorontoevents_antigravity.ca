@@ -250,3 +250,5 @@ Elite grade:      C 1536 / B 980 / D 890 / F 78 / A 16
 ```
 
 End of report.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

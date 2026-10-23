@@ -84,3 +84,5 @@ Verdicts unread (operator triage).
 ## Honest 1-paragraph verdict
 
 Today shipped 198 merges (most ever in one day on this repo) and produced the most rigorous truth layer to date: 6 converging measurement sources independently confirmed **no asset class clears Tier-2 hedge-fund readiness**, four discrete fabrications were caught and named, the one bright-spot candidate (composite-score gate) was refuted twice by held-out replay, and the banner is durably clear (`any_red=false`, fresh 21:24Z). The remaining gap is operational, not analytical: edge-stability JSON on live is still stamped 2026-05-12 despite the CORRIGENDUM card claiming it advanced, which means either FTP-deploy of the refreshed JSON didn't fire or the CORRIGENDUM itself joins the fabrication list — that delta is the first thing to resolve next session. Bottom line: the picks are not yet edge, but the **measurement layer** finally is — and that is the precondition for everything else.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

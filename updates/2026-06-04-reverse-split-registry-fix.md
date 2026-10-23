@@ -58,3 +58,5 @@ Timezone formatting was verified: the frontend JS (`dashboard_freshness.js`, `da
 - Split dates and ratios: [splithistory.com](https://splithistory.com)
 - Cross-verified with Yahoo Finance split history where available
 - 14 non-penny-stock symbols in the penny/cheap-stocks universe (ASTS, RKLB, WULF, QBTS, IONQ, RGTI, CTM, MVST, CLSK, MARA) confirmed to have zero reverse splits in 2023-2026
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

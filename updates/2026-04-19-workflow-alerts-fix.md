@@ -33,3 +33,5 @@ Investigation of GitHub Actions alerts revealed 3 issues:
 - `safe_push.sh` exists in repo at `.github/scripts/safe_push.sh`
 - All 4 consensus-outcome-tracker fixes verified (cancel-in-progress=false, safe_push.sh, no TOKEN_FOR_PUSH, timeout=15)
 - All 3 hindsight-learner fixes verified (retry guard, exit 1 on final failure, SSL comment)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

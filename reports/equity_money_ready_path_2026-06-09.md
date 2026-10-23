@@ -211,3 +211,5 @@ I evaluated making a safe local edit (e.g. re-running `tools/deflated_sharpe.py`
 - `audit_dashboard/data/top_notch_money_ready.json` (2026-06-06) — EQUITY top_notch, "Watch promotion_gate + DSR/PBO".
 - `audit_dashboard/data/pick_summary_stats_{14d,48h}.json` (trend direction only, NOT sizing-grade).
 - `alpha_engine/eagle_gates.py`, `alpha_engine/money_ready_verdict.py`, `copy_trader_intel/multi_asset_copytrader_scraper.py`, `.github/workflows/*.yml`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -268,3 +268,5 @@ See `reports/audit_gap_swarm_2026_05_03.md` for the shorter synthesis.
 - Copilot is still not fully trusted for larger JSON prompts as a schema-valid engine. The Windows npm shim issue was fixed by direct `copilot.exe` invocation, but Copilot still returned malformed JSON on the large gap prompt.
 - Cerebras requires `cerebras-cloud-sdk` before that engine can participate.
 - The swarm gap analysis did not browse the live site; it compared attachment excerpts against current repo/data evidence.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

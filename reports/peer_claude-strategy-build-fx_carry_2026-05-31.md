@@ -66,3 +66,5 @@ Asked Grok about crisis-period handling (JPY/USD vol proxy, threshold tuning, ha
 - Tests pass: 10/10
 - AI consulted: grok-4-latest
 - Production wiring: paper-pilot only (per cursor framework + Wire-Up Rule opt-in sidecar)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

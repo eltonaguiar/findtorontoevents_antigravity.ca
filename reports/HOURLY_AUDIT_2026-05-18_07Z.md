@@ -191,3 +191,5 @@ PRs merged this audit cycle:
 2. Watch FUTURES 30d — if PF still <0.15 and no 3-AI consensus on `futures_momentum` kill, draft `reports/deep_dive_futures_*.md`.
 3. Monitor CRYPTO 24h PF trend — baseline normalisation from HYPEUSDT block should stabilise within next 24–48h.
 4. 3-AI consensus needed on: `ig_contrarian_sentiment` LONG block, `myfxbook_retail_contrarian` LONG block, `cta_replicator/NG=F` symbol block, `rapid_fire/UUSDT` symbol block, **`futures_momentum` [FUTURES] strategy kill**.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -102,3 +102,5 @@ _(Inferred from merged-PR and open-PR check_runs — gh CLI unavailable, no work
 1. **P0 — Fix `commodity_seasonal_planting_harvest` invalid family value** in `alpha_engine/config.py` on main. Three hours and 8 merged PRs have not addressed this. All 5 code PRs unblock once fixed.
 2. **P1 — Investigate `gate` workflow**: 0 successes on any code PR for ≥3 days. Non-blocking at present but silently failing its gating purpose.
 3. **P2 — Consider branch protection**: 8+ code PRs merged today with failing `test (3.11)`. No merge gate is enforcing CI health.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

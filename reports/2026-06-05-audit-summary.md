@@ -15,3 +15,5 @@
 5. **HyroTrader Activation:** Finalize the prop-firm challenge integration to generate the first 30+ resolved journal trades for HyroTrader.
 6. **Incident/Enhancement Fixes:** Resolve EST timestamp rendering for the incident log and backfill missing `target_release` fields in enhancements.
 7. **Smart Picks Parity:** Refactor the dashboard "Smart Picks" logic to use the canonical vetting pipeline rather than static/inflated headline counts.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

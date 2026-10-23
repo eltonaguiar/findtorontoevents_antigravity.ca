@@ -42,3 +42,5 @@ After merge: hourly audit-dashboard cron regenerates `money_ready_verdict.json`.
 python3 tools/deploy_audit_files.py --only ai_tournament
 # template.html ships via audit-dashboard.yml cron or manual deploy_audit_files.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

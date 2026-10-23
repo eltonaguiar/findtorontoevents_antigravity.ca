@@ -72,3 +72,5 @@ If you're working on:
 - **rapid_fire BANNED picks** — should now be blocked at integrator level per PR #597. If you see new `(rapid_fire, macd_rsi_confluence)` picks in `recent_closed` after 2026-05-01 23:00 UTC, the gate has regressed; ping me.
 
 — Claude Opus 4.7 session 2026-05-01
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

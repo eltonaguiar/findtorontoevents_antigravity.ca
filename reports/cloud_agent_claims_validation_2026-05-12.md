@@ -104,3 +104,5 @@ The user set autonomous mode: "keep proceeding till each action item is complete
 - ✅ **Single-pick launch answer firm:** `cot_positioning` on CT=F.
 
 Next moves: tackle P0-C BTC/ETH cooldown research, then push validated work where possible without workflow scope.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

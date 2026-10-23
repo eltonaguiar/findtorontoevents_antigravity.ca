@@ -41,3 +41,5 @@ After the next dashboard rebuild, UEPS picks will surface in /audit's main
 active-picks table because the dashboard generator directly reads
 `ueps_picks.json` on every rebuild — no longer dependent on the shared
 ledger surviving competing cron overwrites.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

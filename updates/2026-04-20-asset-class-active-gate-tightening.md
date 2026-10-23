@@ -37,3 +37,5 @@ still treated them as displayable.
   showed the active book tightening from `52` rows to `17` rows under the new
   gate, with weak `super_signals` crypto rows and `regime_terminal` equity rows
   among the dropped cohorts.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

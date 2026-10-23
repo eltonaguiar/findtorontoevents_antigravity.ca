@@ -79,3 +79,5 @@ All three files passed Python syntax check:
 | GOOGLE_API_KEY | MISSING |
 
 The swarm will now correctly pick up any of these if they are set in Windows User environment variables.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

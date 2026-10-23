@@ -141,3 +141,5 @@ for p in d['picks'][:3]:
 - The "legacy" `db_n` / `db_wr` fields are kept in the output for one
   release cycle to give the page renderers time to migrate; a follow-up
   patch will likely deprecate them.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

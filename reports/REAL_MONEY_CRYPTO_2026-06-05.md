@@ -151,3 +151,5 @@
 - `reports/crypto_intrabar_validation_2026-06-05.json` — full numeric validation
 - `reports/REAL_MONEY_NO_SURVIVORS_2026-06-05.md` — prior 0-survivor finding (overridden by intrabar pattern + RSI threshold)
 - `reports/PAPER_PILOT_RESOLVER_FAIL_2026-06-05.md` — explains why 4 prior sleeves excluded
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -20,3 +20,5 @@ python3 -c "import py_compile; py_compile.compile('alpha_engine/eagle2_class_sou
 ## Not in scope (Phase 1+)
 
 Resolver EXPIRED→WON fix, academic_backtest_bridge, ETF forward promotion.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

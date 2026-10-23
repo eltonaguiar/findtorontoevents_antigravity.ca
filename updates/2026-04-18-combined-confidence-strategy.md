@@ -44,3 +44,5 @@ Implements the Combined Confidence Score (CS) framework:
 - Strategy registered in `STRATEGY_FAMILIES` dict
 - Workflow step correctly placed after PM pipeline, before pick resolution
 - Push trigger path added (narrow, source-only — no data file globs)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

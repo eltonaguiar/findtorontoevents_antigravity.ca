@@ -308,3 +308,5 @@ The MEME class shows the highest misclassification rate within TP_HIT (36.7% neg
 | universal_v2 | 2026-05-31 | 2026-06-05 | 825 | 703 | ❌ No |
 
 `universal_v2` (current live resolver, May 31 – present) is clean. `signflip_purge_20260` covers April 6 – May 30.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

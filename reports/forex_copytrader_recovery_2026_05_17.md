@@ -78,3 +78,5 @@ Then grant a formal unlock.
 ---
 
 *Produced by Claude Code (claude-sonnet-4-6) autonomous session 2026-05-17*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

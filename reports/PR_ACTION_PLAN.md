@@ -43,3 +43,5 @@ docs(plan): PR action plan + integration & testing plan with timeline
 
 ---
 *Cross-AI verified: Kimi K2 + Claude Opus 4.7 + Grok-4*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -28,3 +28,5 @@ attribution** once regressed on the right benchmark — exactly the KTD-Fin warn
 Stop hunting more momentum variants on this data — they all collapse to market beta. The honest path
 forward is the H-103 forward-paper clock (monthly cron, n→100) + genuinely orthogonal signal sources,
 not more re-skins of trend/momentum. money_ready stays [].
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

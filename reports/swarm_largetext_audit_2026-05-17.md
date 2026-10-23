@@ -183,3 +183,5 @@ half of an answer it failed to parse as JSON — kilo/groq almost always emit
 *valid* JSON that is merely fenced or preambled, so recovery fixes the
 common case, and the uncapped fallback fixes the rest. ~5 lines plus one
 helper, no schema or engine changes needed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

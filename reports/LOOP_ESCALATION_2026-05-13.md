@@ -110,3 +110,5 @@ complete.
 | 3 consecutive no-progress iterations | **YES** — triggering stop |
 
 Loop stops here. Resume on 2026-05-15+ per above.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

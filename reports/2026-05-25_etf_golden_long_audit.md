@@ -143,3 +143,5 @@ grep -n "display_tier..*ELITE\|verified-edge-golden-row" audit_dashboard/templat
 - `audit_dashboard/money_ready_filter.js:29-49` (MONEY READY whitelist)
 - `ejaguiar1_stocks.trading_picks` (live DB, queried 2026-05-25)
 - `audit/data/dashboard_data.json` (dashboard build 2026-05-23 09:23Z)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

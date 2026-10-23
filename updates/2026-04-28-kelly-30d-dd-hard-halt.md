@@ -34,3 +34,4 @@ Updated `alpha_engine/kelly_position_sizer.py` with an opt-in hard-halt:
   - Result: `14 passed`
 - `py_compile` check passed for `alpha_engine/kelly_position_sizer.py`.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

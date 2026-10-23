@@ -105,3 +105,5 @@ Both modified files pass Python syntax checks:
 |------|--------|
 | `alpha_engine/non_crypto_policy.py` | Removed `"etf": "equity"` and `"index": "equity"` mappings |
 | `alpha_engine/forward_validator.py` | Added archive dedup guard in `save_closed_picks` |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

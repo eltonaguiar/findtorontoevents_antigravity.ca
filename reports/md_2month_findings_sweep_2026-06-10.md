@@ -81,3 +81,5 @@ PR2 entry-anchored resolver LIVE; signal-week dedup LIVE; scale-corrupt + sign-f
 - All WR/PF/n figures in source files are AS-CITED and UNVERIFIED here (no DB query run; READ-ONLY sweep). Several are explicitly flagged stale/artifact in the sources themselves (e.g. COMMODITY PF 2.36 = pre-dedup over-emission artifact per `cot_paper_pilot_overemission_falsified_20260513.md`).
 - O10 (FRED secret) and the Stage-1-floor breaker nuance under the circuit-breaker row cannot be confirmed from the repo alone (GH secrets / runtime).
 - DAILY_IDEAS.MD (303KB) was skimmed at the tail only; its actionable items are the same per-class plan items already enumerated above plus brainstorm/no-do rules (not incident-grade).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

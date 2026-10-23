@@ -94,3 +94,5 @@ Registry cross-check (canonical `by_asset_class_policy_clean_net`):
 **Graduate-candidate (post-validation)**: `stocks_rsi2_pullback` — keep enabled, push n from 34 → 100, then re-audit; if PF holds ≥1.5 it is EQUITY's first T2 strategy. **Kill-candidate**: `regime_mild_bear` (0/22 wins is structural, not noise) — open a mutation review per `MUTATION_THREE_AXIS_PROTOCOL.md` and if no axis recovers edge, add to `BLOCKED_SOURCE_SYSTEMS`.
 
 **Blocking P0**: the 55 closed-LOST rows with NULL pnl_pct must be backfilled before any EQUITY tier verdict can be trusted. The registry's 2bp spot-flicker filter must be re-validated against `stocks_rsi2_pullback`'s actual TP target.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

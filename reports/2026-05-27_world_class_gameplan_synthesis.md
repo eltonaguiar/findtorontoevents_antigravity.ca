@@ -135,3 +135,5 @@ The verdict's robustness comes from cross-source agreement, not any single numbe
 - reports/2026-05-27_strategy_reverse_engineering.md (subagent B — 800 words)
 - reports/2026-05-27_world_class_gameplan_synthesis.md (this file — consolidated synthesis)
 - .claude/skills/consult-swarm/SKILL.md (new skill — how to ask other AIs in the future)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

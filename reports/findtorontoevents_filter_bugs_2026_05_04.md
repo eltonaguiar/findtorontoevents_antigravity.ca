@@ -71,3 +71,5 @@ Likely root cause: the filter logic at `index.html:3647-3652` calls `window.__ev
 - Test: `tests/playwright/test_event_date_filters.spec.ts` (~700 LOC)
 - Config: `playwright.filters.config.ts`
 - Updated main config: `playwright.config.ts` (added scoped testIgnore, added testMatch entry)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

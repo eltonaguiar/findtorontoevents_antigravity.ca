@@ -70,3 +70,5 @@ real-money grade.
 ## Risk controls (standing)
 - Max per-pick: 0% this week (no class passed the gate).
 - DD halt active by default given the frozen-validator P0.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

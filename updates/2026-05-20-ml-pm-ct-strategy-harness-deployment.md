@@ -434,3 +434,5 @@ Only ~5% of strategies survive all 6 gates (proper multiple-testing correction).
 - **Risk Level:** LOW (modules are improvements, not replacements of core logic until explicitly wired)
 
 **Ready to deploy. Awaiting confirmation to proceed with Phase 1 (resolver integration).**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

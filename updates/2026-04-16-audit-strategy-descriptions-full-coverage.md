@@ -31,3 +31,5 @@ When a leaderboard row exists, the tooltip previously showed only BT/FWD metrics
 ## Deploy
 
 `python tools/deploy_to_ftp.py --audit-only` after `acorn` parse check on edited HTML.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

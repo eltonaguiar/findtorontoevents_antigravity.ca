@@ -78,3 +78,5 @@ The common thread: in a declining/choppy market, SHORT signals have edge and LON
 1. **Filter by direction** — suppress LONG signals in bearish regimes
 2. **Filter by symbol** — each strategy has "good" and "bad" symbols
 3. **Monitor regime** — when market turns bullish, re-enable LONG signals
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

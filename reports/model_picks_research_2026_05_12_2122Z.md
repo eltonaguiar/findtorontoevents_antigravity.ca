@@ -85,3 +85,5 @@ factors used, data points to fetch, swing-trade setup, short-term setup.
 ## ETF
 
 ## BOND
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

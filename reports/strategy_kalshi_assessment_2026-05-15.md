@@ -18,3 +18,5 @@
 - **P2**: Use Kalshi as a strong orthogonal signal to traditional price-based strategies (especially for EQUITY and COMMODITY macro bets).
 
 **Verdict**: One of the most under-used high-quality data sources in the entire stack. Fixing this is high-leverage for improving win rates with relatively clean, resolvable outcomes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

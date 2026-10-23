@@ -123,3 +123,5 @@ All 8 per-class JSONs + `edge_stability_index.json` regenerated successfully.
 **Completed:** 2026-05-31 22:23 UTC  
 **Agent:** AGENT 4 (Edge Stability Automator)  
 **ETA Met:** 45 min target (started 22:20 UTC)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

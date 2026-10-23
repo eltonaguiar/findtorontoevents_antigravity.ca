@@ -248,3 +248,5 @@ wsl bash -c "cd /mnt/c/findtorontoevents_antigravity.ca && python3 .ruflo/orches
 ---
 
 *End of verbatim chatlog. Generated 2026-05-05 by Buffy (Codebuff).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

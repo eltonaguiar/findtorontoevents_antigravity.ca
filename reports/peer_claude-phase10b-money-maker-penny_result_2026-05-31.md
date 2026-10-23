@@ -84,3 +84,5 @@ PR-B unblocks operator visibility — right now PENNY is invisible on /audit bec
 ---
 
 **Verdict 1-liner:** PENNY is DORMANT (n=8 lifetime, 0/75d, PF 0.17, WR 29%, 7/8 mistagged mid-caps); kill `penny_deep_oversold` under all category labels + add entry-price<$5 mistag guard, and either wire or retire `skyrocket_detector` + `penny_stock_strategy_harness`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

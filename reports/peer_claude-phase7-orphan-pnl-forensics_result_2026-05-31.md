@@ -246,3 +246,5 @@ cur.execute("""SELECT COUNT(*) FROM trading_picks
 cur.execute("""SELECT COUNT(*) FROM trading_picks
   WHERE closed_at IS NOT NULL AND pnl_pct IS NULL AND exit_price IS NOT NULL""")
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

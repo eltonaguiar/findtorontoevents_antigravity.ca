@@ -118,3 +118,5 @@ The post-dedup metrics (81.4% WR, PF 6.33) are actually **stronger** than pre-bl
 - [x] Reblock triggers defined
 - [x] Full unblock criteria defined
 - [x] Documented in `updates/2026-05-16-PR-3-CT=F-probation-promotion.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

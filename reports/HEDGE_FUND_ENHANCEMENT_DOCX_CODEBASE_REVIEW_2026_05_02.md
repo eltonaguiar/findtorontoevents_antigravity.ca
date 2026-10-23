@@ -72,3 +72,5 @@ The DOCX is directionally strong on identifying gate misalignment risk, but the 
 - stabilize resolver + metric integrity,
 - unify active gate definitions,
 - then apply the DOCX threshold ideas with measurement and rollback criteria.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

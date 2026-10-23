@@ -74,3 +74,5 @@ qwen's recommendation appears to derive from the cached `/audit/incidents.html` 
 ## Assigned to
 
 Operator review — this is a production-scoring-path change. Do not admin-merge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -41,3 +41,5 @@ ETF is small (86 recent trades) but net profitable (+19.05%) with acceptable WR 
 ## Risk
 
 Thin book (86 trades) means all metrics have wide confidence intervals. Single strategy dependency. ETF should remain CANDIDATE tier until n >= 200.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

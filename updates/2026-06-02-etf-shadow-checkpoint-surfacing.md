@@ -38,3 +38,5 @@ node -c audit_dashboard/dashboard_enhancements.js
 python3 -c "from alpha_engine.verified_promotion_gate import build_edge_status; edge=build_edge_status(); assert edge['best_forward_candidate']['shadow_checkpoint_ready'] is False"
 git diff --check
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

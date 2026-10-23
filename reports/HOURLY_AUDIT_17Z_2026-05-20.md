@@ -190,3 +190,5 @@ Author-rebase watch PRs (#669, #676, #608, #665, #644, #597, #615, #655) — con
 - `reports/HOURLY_AUDIT_16Z_2026-05-20.md` (previous hour)
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

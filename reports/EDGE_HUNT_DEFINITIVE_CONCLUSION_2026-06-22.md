@@ -33,3 +33,5 @@ The money-ready program is **not edge-constrained by lack of analysis or rigor**
 4. Accept the money-protecting verdict: 0/10, no sizeable trustworthy edge — and do not size on any of the dissolved leads.
 
 Autonomous edge-hunting is definitively complete. Remaining work is operator action or a new domain (e.g., Goal #2 sports).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

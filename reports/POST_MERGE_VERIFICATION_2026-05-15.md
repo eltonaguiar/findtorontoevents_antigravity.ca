@@ -51,3 +51,5 @@ Requires `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md` gate before any kill PR. N
 | `cta_cross_asset_tsmom` | LONG | 29.8% | 84 |
 | `rapid_fire` | UUSDT symbol | 0% | 34 |
 | `cta_replicator` | NG=F symbol | 0% | 24 |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

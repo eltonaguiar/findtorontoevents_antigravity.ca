@@ -178,3 +178,5 @@ buried inside this bucket — confirms the prior `rr_band_per_asset` finding.
 - `battleground/data/closed_picks.json` (n=109)
 - `ml_battleground/system_f_clawsofdoom/data/closed_picks.json` (n=160)
 - `ml_battleground/system_{a..e}/data/closed_picks.json` (mostly empty/<20)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

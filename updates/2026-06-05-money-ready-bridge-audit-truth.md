@@ -25,3 +25,5 @@ Multiple `/audit` surfaces showed inflated WR/PF (Smart Picks, tournament models
 python3 tools/build_audit_surface_truth.py
 # After deploy: open /audit/, /audit/ai-tournament.html, /audit/ai_leaderboard.html
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

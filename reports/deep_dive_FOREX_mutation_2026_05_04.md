@@ -57,3 +57,5 @@
 ======================================================================
 NEXT: See docs/MUTATION_THREE_AXIS_PROTOCOL.md (mutation quality, allowlist rules)
 ======================================================================
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

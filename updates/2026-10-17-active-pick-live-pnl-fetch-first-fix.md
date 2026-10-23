@@ -129,3 +129,5 @@ Fixes live on branch `fix/js-reference-accuracy-audit` (commits
 has diverged heavily from `origin/main` (thousands of CI commits on each
 side), so merging is an operator decision — the hourly audit-dashboard cron
 runs from `main` and will not pick these up until they land there.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -72,3 +72,5 @@ DB_PASS_STOCKS=$DB_PASS_STOCKS python3 tools/build_bootstrap_ci_results.py     #
 - [ ] Forward-test top 3 candidates (`crypto_liquidity_wick_reversal_v1`, `prediction_market_consensus`, `drawdown_recovery_rsi_xrp`) for 2 weeks.
 - [ ] Investigate the 3 suspicious PASSes (IS_PF > 30): look-ahead bias or PnL accounting bug?
 - [ ] Re-examine ensemble (CRYPTO + MEMECOIN) — same strategy, two asset classes with same numbers means the rows are duplicated.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

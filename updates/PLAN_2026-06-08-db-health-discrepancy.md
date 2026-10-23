@@ -91,3 +91,5 @@ Working branch: `fix/db-ghost-rows-and-freshness` (off main, per AGENTS.md "Only
 2. Is the 26h watchdog threshold right? It must be larger than the worst legitimate forward-validator run gap, smaller than 84h.
 3. Should the "no WON-vs-PnL contradiction" check be expanded to "no OPEN-vs-zero-PnL" — i.e. flag OPEN picks whose pnl_pct is exactly 0 because they haven't been resolved?
 4. Is there a known data-quality incident (similar to H-101 / M-095 for the COT leakage) that explains why ghost rows keep re-appearing? If so, that incident needs a registered fix in `tools/hypothesis_registry.json` per M-107.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

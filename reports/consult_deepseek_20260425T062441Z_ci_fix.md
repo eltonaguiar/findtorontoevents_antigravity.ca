@@ -51,3 +51,5 @@ Reply in <= 250 words. Number your answers.
 4. `git add -A` stages everything, so the merge won't see local changes as "would be overwritten." It's already protected. No stash needed.
 
 5. The retry loop still has a race: if the sibling workflow pushes between your stash and pull, the merge may still fail (non-fast-forward). The `-X ours` helps but doesn't guarantee success. Consider `git fetch && git reset --hard origin/main` instead of pull for a fully clean slate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

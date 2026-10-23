@@ -120,3 +120,5 @@ if cat == "forex" or sym.endswith("=X"):
 - cta_leakage_30d = **248** (active emission, 0% WR on closed cohort)
 - diff_parts_verified = **3/3**
 - PR opened against main as DRAFT; see `PR_NUM_PLACEHOLDER` below
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

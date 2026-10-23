@@ -185,3 +185,5 @@ This file.
 ---
 
 **Generated:** 2026-05-13 (UTC) by Claude Opus 4.7 peer mb2v7tau.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

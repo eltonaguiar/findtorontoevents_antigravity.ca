@@ -1,4 +1,4 @@
-# Kimi SWARM + RUFLO Code Review — Bug Fixes (2026-05-05)
+# Kimi SWARM + RUFLO Code Review ï¿½ Bug Fixes (2026-05-05)
 
 **Review scope:** tools/swarm/, .ruflo/, audit_trail/mysql_client.py
 **Root cause analysis:** Multi-engine audit (Copilot, OpenCode, Kilo, Kimi) + Claude-opus-4-7 review
@@ -7,26 +7,26 @@
 
 ---
 
-## Bug 1 — mysql_fetch_closed_non_crypto: Double-return race condition (HIGH)
+## Bug 1 ï¿½ mysql_fetch_closed_non_crypto: Double-return race condition (HIGH)
 
 **File:** audit_trail/mysql_client.py
 **Reviewed by:** Claude-opus-4-7 (Ship #1)
 **What was broken:**
 cur.fetchall() materialises rows into a Python list, but _return_conn(conn) was
-called immediately after — returning the connection to the pool while the function
+called immediately after ï¿½ returning the connection to the pool while the function
 still held it. If any exception occurred in the row-processing for-loop, the except
 block's conn.close() could close a connection now owned by another concurrent
-caller (race condition). No blast radius without special trigger — regraded HIGH.
+caller (race condition). No blast radius without special trigger ï¿½ regraded HIGH.
 
 **Fix applied:**
-- Removed premature _return_conn(conn) after fetchall() — conn now returned only
+- Removed premature _return_conn(conn) after fetchall() ï¿½ conn now returned only
   at the very end after all row processing completes.
 - Added conn = None before try: block to prevent UnboundLocalError if
   _get_conn() itself raises (bonus bug from Claude's review).
 
 ---
 
-## Bug 2 — _consensus_pick_exists: except block style (SKIP — not a bug)
+## Bug 2 ï¿½ _consensus_pick_exists: except block style (SKIP ï¿½ not a bug)
 
 **File:** audit_trail/mysql_client.py
 **Reviewed by:** Claude-opus-4-7 (Skip #2)
@@ -36,7 +36,7 @@ exception paths (is_healthy, _execute_with_retry). Reverted to conn.close().
 
 ---
 
-## Bug 3 — _consensus_pick_exists: conn=None after success (Ship #3)
+## Bug 3 ï¿½ _consensus_pick_exists: conn=None after success (Ship #3)
 
 **File:** audit_trail/mysql_client.py
 **Reviewed by:** Claude-opus-4-7 (Ship #3)
@@ -44,7 +44,7 @@ exception paths (is_healthy, _execute_with_retry). Reverted to conn.close().
 
 ---
 
-## Bug 4 — orchestrator load_yaml_agents: validate YAML schema (MEDIUM)
+## Bug 4 ï¿½ orchestrator load_yaml_agents: validate YAML schema (MEDIUM)
 
 **File:** .ruflo/orchestrator.py
 **Reviewed by:** Claude-opus-4-7 (Ship #4, confirmed correct)
@@ -53,7 +53,7 @@ when key already in AGENTS (preserve original behavior).
 
 ---
 
-## Bug 5 — orchestrator: copy.deepcopy vs dict(AGENTS) (SKIP — misunderstanding)
+## Bug 5 ï¿½ orchestrator: copy.deepcopy vs dict(AGENTS) (SKIP ï¿½ misunderstanding)
 
 **File:** .ruflo/orchestrator.py
 **Reviewed by:** Claude-opus-4-7 (Skip #5)
@@ -74,3 +74,5 @@ Replaced with dict(AGENTS) shallow copy.
 | 5 | LOW | orchestrator.py | copy.deepcopy vs dict(AGENTS) | FIXED (shallow copy) |
 
 PR #828: fix/kimi-swarm-ruflo-bugfixes-2026-05-05
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

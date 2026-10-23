@@ -88,3 +88,5 @@ subject to these hard constraints (from `MASTER_ENHANCEMENT_PLAN` §6 / `ROADMAP
 7. Free APIs + shared hosting only. No paid feed assumed (Phase 0b is a separate track).
 
 Swarm output goes to `reports/strategy_review_swarm_2026_05_18.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

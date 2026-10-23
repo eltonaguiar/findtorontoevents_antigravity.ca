@@ -146,3 +146,5 @@ The PR bundles:
 - `reports/commodity_cot_post_dedup_rederivation_2026-05-16.md`
 
 This session was long, educational, and occasionally frustrating — but produced real, shippable improvements in both the quant edge and the agent tooling layer.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

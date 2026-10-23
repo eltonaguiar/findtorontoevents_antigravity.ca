@@ -177,3 +177,5 @@
 - [OPEN] Reference live audit surfaces (dashboard JSON, live pages) as read-only ground truth
 - [OPEN] Investigate stocks_rsi2_pullback scanner cron to restart emissions (P1 action flagged)
 - [OPEN] Run swarm-transcript-review skill on a transcript (user requested proceed on next steps)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -81,3 +81,5 @@
 python tools/idea_harvest_mega.py --tier api --no-pull --skip-import
 python tools/idea_harvest_mega.py --tier local --no-pull --skip-import
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -81,3 +81,5 @@ These don't need correction commits — this forensic doc is the canonical answe
 This is the third time this session that a "regression" or "anomaly" turned out to be a **classification or resolver change**, not genuine strategy degradation. The pattern: when n changes materially between snapshots without a corresponding cron-volume change, the first hypothesis should be "resolver re-ran on a different rule" — not "strategies got worse."
 
 Adding a `closed_picks_diff` event log to the dashboard generator (per session_handoff §7.1) would make this visible without needing a forensic swarm each time.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

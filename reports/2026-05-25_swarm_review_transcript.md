@@ -273,3 +273,5 @@ All core work (3-round swarm reviews + cross-asset rating system designs + high-
 **Goal Achieved.**
 
 **End of Session**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -506,3 +506,5 @@ is_trades = dated[:cut]; oos_trades = dated[cut:]
 *Consolidated from 5 EAGLE reviews: Claude Opus 4.7, DeepSeek v4, Mimo v2.5 Pro, GPT-5.4, minimax-m3-free*
 *Date: 2026-06-02*
 *EAGLE2 Initiative — Swarm Analysis*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

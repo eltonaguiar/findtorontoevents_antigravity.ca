@@ -86,3 +86,5 @@ This resolves the remaining production wiring gap. The scanner now has:
 7. Daily runner auto-insert on monthly roll
 
 Commit: `3b8bec0447`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -142,3 +142,5 @@ Expected output (dir-blind bug signature):
 - Memory `SL optimization needs price-path` — do not winsorize-then-tune-TP/SL on FUTURES until intrabar OHLC replay is wired.
 - PR #208 (db_health bugs) — overlaps Bug B.
 - Incident `incident_overall_pre_futures_research_only_20260531` (backup table referenced in skill memory) — verify before assuming emission is on.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

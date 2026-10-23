@@ -129,3 +129,5 @@ Companion docs:
 - [`reports/action_B_resolver_2026_04_27.md`](../reports/action_B_resolver_2026_04_27.md) — resolver bug fix design
 - [`reports/action_C_symbol_risk_2026_04_27.md`](../reports/action_C_symbol_risk_2026_04_27.md) — CRYPTO symbol/SHORT gating
 - [`updates/2026-04-28-claude-cursor-alignment-addendum.md`](2026-04-28-claude-cursor-alignment-addendum.md) — coordination + Top-5 ROI
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -55,3 +55,5 @@ All immediate action items from previous error audit and swarm fixes have been a
 
 Generated: 2026-05-18 by Grok agent fix
 Path: /mnt/e/findtorontoevents_antigravity.ca/updates/2026-05-18-accomplishments-future-roadmap.md
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

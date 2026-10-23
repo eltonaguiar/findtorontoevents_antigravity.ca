@@ -85,3 +85,5 @@ if spy_df is None:
 ### Verification
 - `python -c "import py_compile; py_compile.compile('alpha_engine/etf_strategies.py', doraise=True)"`
 - ETF Agent workflow should produce picks on next run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

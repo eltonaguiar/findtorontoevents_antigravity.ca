@@ -105,3 +105,5 @@ Action: verify whether these fields use different windows or if the sparkline/ca
 - `trust_score >= 5` as `68-71%` WR unless current data still proves it.
 - Meme coin `99.7%` risk-of-ruin claim unless current source data and formula are present.
 - "Equity only safe edge" as a blanket statement, because current asset health also shows commodity PF `1.78` and bond PF `1.72` with important caveats.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

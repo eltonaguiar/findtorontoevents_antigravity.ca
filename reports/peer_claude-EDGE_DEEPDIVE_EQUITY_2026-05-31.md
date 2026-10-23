@@ -210,3 +210,5 @@ Concrete operator step:
 - `reports/peer_claude-EQUITY_CANDIDATE_REFUTED_2026-05-31.md` — Wilson LB math; refutes `stocks_rsi2_pullback`.
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — mutate-before-kill.
 - M-067 nested-cohort policy doc (referenced in CLAUDE.md major-goal).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

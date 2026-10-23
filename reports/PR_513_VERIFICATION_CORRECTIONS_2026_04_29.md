@@ -128,3 +128,5 @@ A summary of these corrections has been posted as a PR comment on #513:
 https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/513#issuecomment-4347327852
 
 The PR branch itself was not modified (read-only constraint per orchestrator brief).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

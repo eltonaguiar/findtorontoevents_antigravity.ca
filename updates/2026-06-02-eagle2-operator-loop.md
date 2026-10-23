@@ -38,3 +38,5 @@ tools/eagle2_operator_loop.sh
 # full EAGLE2 cadence (tmux; heavy)
 INTERVAL_SEC=1200 EAGLE_LOOP_FULL=1 EAGLE_LOOP_GIT_PULL=1 tools/eagle2_operator_loop.sh
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

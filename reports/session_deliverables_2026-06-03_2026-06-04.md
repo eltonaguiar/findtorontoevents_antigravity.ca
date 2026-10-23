@@ -151,3 +151,4 @@ Most defensible by sample size: **grok3** (n=378). Most attractive WR: **claude_
 - 3 paper-pilots accumulating
 - Live `/audit/` surfaces honest end-to-end
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

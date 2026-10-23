@@ -177,3 +177,5 @@ No other aggregate-level PF<0.5 + n≥20 strategies identified.
 3. **COMMODITY 7d**: expect gradual improvement as cftc_cot_commercial_signal 7d legacy trades age out (~6 days remaining).
 4. **EQUITY 7d**: n=15 still below 20 threshold. 30d PF=1.939 healthy. Per #693: next checkpoint 2026-05-20 to assess if goldmine_6x kill cleared the 7d window.
 5. **Symbol blocks** (FINDING-7 UUSDT, FINDING-8 NG=F): still awaiting 3-AI consensus — no unilateral action.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

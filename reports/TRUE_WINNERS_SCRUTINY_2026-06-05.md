@@ -176,3 +176,5 @@ WHERE source_system='kimi_signal_tracking';
 
 *Generated: 2026-06-05 | Queries: live ejaguiar1_stocks DB | Analyst data: yfinance 2026-06-05*  
 *All five scrutiny axes are machine-verifiable. This report will survive a swarm review.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

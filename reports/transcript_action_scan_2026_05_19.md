@@ -20,3 +20,5 @@
 - [OPEN] User invoked `/consult-ofox` with request: "give me strategies for all our asset classes that institutional grade top-notch strategies" — no response shown.
 - [OPEN] Commit results to GitHub
 - [OPEN] Run `/dropchat-multipc`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

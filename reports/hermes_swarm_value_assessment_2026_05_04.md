@@ -52,3 +52,5 @@ Per `FINAL-MASTER-SUMMARY-60-MODELS.md`: all 60 calls used `tencent/hy3-preview:
 This downgrades Hermes's swarm from "MIXED 6/10" to **"OVERKILL with low-cost ideation value, 4/10"**. Use as a brainstorm bank only; do not weight any consensus claim as cross-model agreement.
 
 ## Score (revised): 4/10 — OVERKILL on compute, useful only as single-model ideation breadth.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

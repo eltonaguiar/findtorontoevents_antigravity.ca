@@ -110,3 +110,5 @@ The most critical path to Tier 1 is a two-track sprint: **live-risk controls fir
 ---
 
 *Synthesis source: swarm_runs/gap_analysis_20260514/ — cerebras (12271B), deepseek (10715B), xai (6075B). All 3/3 engines returned valid JSON.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

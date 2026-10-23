@@ -60,3 +60,5 @@ Quick Guess ML had been getting cancelled hourly. Surface symptom: 22-minute tim
 - If failures recurred: write the doc but escalate via final report instead of committing
 
 Routine: https://claude.ai/code/routines/trig_01XfQyPWhnHTCFChYiMtLDTQ
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

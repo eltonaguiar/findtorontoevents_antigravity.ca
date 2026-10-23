@@ -161,3 +161,5 @@ with a documented null result per `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`.
 - [x] `python -m alpha_engine.tradingagents_emitter --dry-run` → loads watchlist, prints flag status
 - [x] `python -m py_compile audit_trail/dashboard_generator.py` clean
 - [ ] Reviewer enables flag with a small watchlist (e.g. NVDA only) + DeepSeek key, runs emit, inspects the output JSON, confirms picks render on /audit after dashboard regen
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

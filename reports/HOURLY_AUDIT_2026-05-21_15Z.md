@@ -164,3 +164,5 @@ Per protocol (post to issue with evidence when new strategies emerge with PF<0.5
 | FOREX | 15th consecutive hr ≥1.0 post-#687 ✅ |
 | CRYPTO | Stable; 24h PF 3.039, 7d PF 1.406 |
 | Plan v2.1 guardrails | Clean ✅ |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

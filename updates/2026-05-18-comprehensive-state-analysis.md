@@ -202,3 +202,5 @@ The fastest route is **not** more strategies or more symbols. It is:
 ---
 
 *This analysis supersedes all prior cohort claims. The canonical harness verdict (0/8 admissible) is the single source of truth. Any future analysis that contradicts it must first demonstrate it used canonical data.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

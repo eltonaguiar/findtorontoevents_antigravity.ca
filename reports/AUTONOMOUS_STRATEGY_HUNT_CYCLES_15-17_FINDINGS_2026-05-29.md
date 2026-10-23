@@ -238,3 +238,5 @@ The findings summary previously stated CYCLE16_STRATEGIES uses `{'fn': callable,
 - Peer review: `reports/TRANSCRIPT_PEER_REVIEW_2026-05-29_CYCLES_15-17.md`
 - Session transcript: `reports/SESSION_TRANSCRIPT_2026-05-29_CYCLES_15-17.md`
 - Session memory: `memory/2026-05-29.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

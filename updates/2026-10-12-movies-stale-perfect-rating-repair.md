@@ -76,3 +76,5 @@ static catalogue is unchanged.
   `TMDB 8.6 (14 votes; provisional)` for Love You Teacher.
 
 No credential values are included in this documentation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

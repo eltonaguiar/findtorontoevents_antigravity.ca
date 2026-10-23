@@ -150,3 +150,5 @@ gates on real data, never by a sound prior alone.
 Sources: `reports/new_strategy_proposals_2026_05_18.md` (ET-1 section),
 `tools/edge_stability_harness.py`, `reports/hypothesis_registry.json` (M-107),
 `tools/h020_cross_exchange_premium_research.py` (sidecar pattern).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

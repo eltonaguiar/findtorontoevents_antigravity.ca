@@ -134,3 +134,5 @@ EQUITY 14d/7d recovery confirmed post-PR-#692 (goldmine_6x_consensus kill). Issu
 3. **EQUITY**: Verify 7d holds ≥1.0 through next cycle — if yes, update monitoring status
 4. **COMMODITY 30d**: Remains PF=0.943 (sub-Tier-2). No action until `futures_momentum` is addressed
 5. **#1299**: Author must resolve conflict before merge eligibility
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -87,3 +87,5 @@
 - Should `Tier 3` (PF≥1.2, WR≥45%) be eliminated repo-wide? Currently only #11 uses it.
 - Is canonical `n≥500` blanket, or per-class (CRYPTO≥500, EQUITY/FOREX/ETF/COMMODITY/BOND≥250)? #9 implies per-class is more honest.
 - Does the existing `alpha_engine/money_ready_verdict.py` actually enforce the n-floor from #9, or just compute the gates? (Batch 0 owns this file.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

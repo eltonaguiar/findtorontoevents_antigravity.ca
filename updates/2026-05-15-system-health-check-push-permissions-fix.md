@@ -84,3 +84,5 @@ This fix + doc pair was produced under the large-repo-grok safety layer and AGEN
 ---
 
 *Fix applied 2026-05-15 by Grok 4.3 (xAI). Subagent plan + verification cross-checked. Ready for human review / merge.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

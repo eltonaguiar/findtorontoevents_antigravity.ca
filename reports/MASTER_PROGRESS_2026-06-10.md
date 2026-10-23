@@ -470,3 +470,5 @@ Effective-n lesson applied live: the class-level n=110 was 2.6× the real eviden
 ## 2026-06-13 ~02:30Z — 8h LOOP END. #134 root cause PINNED (dead-code entry point)
 - **#134 terminal cause found:** `score_active_picks_ab()` (gatekeeper.py:854 — the dual-write) is DEFINED BUT NEVER CALLED; main()@1306 only runs single-write run(). All 3 upstream fixes were real (prefetch→2,131 picks load; env flag; import-print confirms import OK) but the entry point never reaches the A/B branch. Next-session code task: wire main() to invoke it (hot file — careful). Logged on INCIDENT#134.
 - Loop ran ~19:15Z→02:30Z. Full ledger: reports/SESSION_WRAP_CLAUDE_June122026_8hloop.MD + reports/PATH_TO_PRO_PICKS_CLAUDE_June132026.MD. Loop ENDED — no further scheduled wakeups.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -81,3 +81,5 @@ This is the one real bridge candidate. Everything else flagged on `/audit` as "T
 ---
 
 Filed by `/loop` blitz at 2026-06-05 ~06:20Z. Evidence is direct live-DB query (no JSON-cache reliance). Cross-references: [[project-true-winners-investigation-2026-06-05]], [[project-ai-tournament-wr-artifact-2026-06-03]], [[feedback-incident-page-stale-vs-live-db]].
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

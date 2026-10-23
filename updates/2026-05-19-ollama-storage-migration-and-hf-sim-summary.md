@@ -132,3 +132,5 @@ Decoded/cleaned helper outputs created during analysis:
 - Use a fixed JSON schema output for model-jury comparisons.
 - Run 3-5 repeated calls per model and score agreement + constraint compliance.
 - Gate any strategy ideas through existing admissibility harness before deployment decisions.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

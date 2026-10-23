@@ -156,3 +156,5 @@ Adding the resolver-side persistence (Patch 1) completes the pattern: every pick
 - Cross-references: `audit_trail/dashboard_generator.py::_derive_asset_class()` (lines 3265-3464); `_coerce_asset_class()` (line 3467).
 - Cross-references: `reports/unknown_asset_class_deep_investigation_2026_05_04.md` (the 99.9% CRYPTO heuristic confirms the patch is safe).
 - No code changes — read-only investigation per CLAUDE.md.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

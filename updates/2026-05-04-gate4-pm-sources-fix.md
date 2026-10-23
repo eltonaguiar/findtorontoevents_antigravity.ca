@@ -87,3 +87,5 @@ p["strat_fwd_avg_pnl"] = round(avg, 4)
 
 - `audit_trail/quality_gates.py` (Gate 4 logic)
 - `alpha_engine/polymarket_signals.py` (563 lines, active PM infrastructure)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

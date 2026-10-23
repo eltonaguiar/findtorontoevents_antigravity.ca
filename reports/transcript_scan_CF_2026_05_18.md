@@ -75,3 +75,5 @@
 - [OPEN] Rotate ejaguiar1_stocks MySQL password (PR #1086)
 - [OPEN] Do not use elite_score for gating (walk-forward eff=0.005)
 - [OPEN] Try free alternatives (Sourcegraph Community, GitHub semantic code search)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

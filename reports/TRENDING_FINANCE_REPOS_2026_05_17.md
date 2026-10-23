@@ -66,3 +66,5 @@ production caller per the `CLAUDE.md` Wire-Up Rule:
 
 Until one is committed-and-wired, no further trending-repo harvests — they
 converge on the same list and none survive contact with the Wire-Up Rule.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

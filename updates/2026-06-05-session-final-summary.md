@@ -173,3 +173,5 @@
 ---
 
 *Generated at 2026-06-05T14:50 UTC by Claude Code on gx10-c9b9*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

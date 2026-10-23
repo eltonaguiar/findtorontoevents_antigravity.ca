@@ -216,3 +216,5 @@ print(f'EQUITY blocked: {len(blocked)}/{len(eq)}')
 *Sources: alpha_engine/data/closed_picks.json, audit_trail/quality_gates.py,*
 *alpha_engine/smart_picks_engine.py, MySQL (trading_picks, at_raw_picks, at_consensus_picks,*
 *at_pick_flow_daily, at_filter_log)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

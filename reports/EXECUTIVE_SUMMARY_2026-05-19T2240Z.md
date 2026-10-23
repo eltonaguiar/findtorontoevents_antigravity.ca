@@ -111,3 +111,5 @@ Both unanimous. Implementation is ~30 lines + tests.
 *Generated 2026-05-19T22:40Z. Companion: `reports/MERGED_ACTION_PLAN_2026-05-19.md`,
 `reports/PF_IMPROVEMENT_PER_CLASS_2026-05-19T2137Z.md`,
 `reports/H037_CANONICAL_HARNESS_AUDIT_2026-05-19T2200Z.md`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

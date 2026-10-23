@@ -29,3 +29,5 @@ python3 tools/ai_attribution/build_ai_leaderboard.py
 ```
 
 **Refs:** `reports/EAGLE2_2026-06-02_GROK.md` (A1), `reports/EAGLE_2026-06-02_GROK.md` (leaderboard root cause).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

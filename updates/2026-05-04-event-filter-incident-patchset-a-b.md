@@ -67,3 +67,4 @@
   - `https://tdotevent.ca/` -> sha `b5de38a807a8`, bytes `340938`
   - `https://torontoevent.net/` -> sha `3de024444ee7`, bytes `341392` (content markers confirmed)
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -1246,3 +1246,5 @@
   - Recent CI payloads (e.g. b8fb3e81573) carried bad top_n (null generated_at) because Python resilience change was uncommitted — CI used old fragile version.
   - last_update.json stable at 13:18 UTC; /audit staleness remains due to audit-dashboard.yml long jobs + FTP lag.
 - Status: Local Top-N generator fix (always real-timestamped graceful JSON) solid and freshly re-tested at 18:02. No regressions. Homepage events dynamic side live; last_update stable. To clear /audit May-16 banner: commit M files then successful audit-dashboard.yml run + FTP. Report appended. No new code edits this tick.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

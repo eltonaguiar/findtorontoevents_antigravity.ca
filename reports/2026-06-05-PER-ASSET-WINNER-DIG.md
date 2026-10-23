@@ -214,3 +214,5 @@ The user said: *"NVDA which has a lot of potential I would say"*. The honest ans
 ## 8. Bottom line for the operator
 
 > **There are no money-ready winners in the current 9-asset-class book. The closest are `fx_smart_carry_trade_momentum` (FOREX, n=25, OOS-robust) and `ml_enhanced_RENDERUSDT_*h_D_ensemble_stack` (CRYPTO, n=30, single-symbol). The 6-week n→100 plan is concrete for both. The "true winners" you can hold for the long-term — NVDA, META, MSFT — have 0 live forward in our DB; add paper emissions to start the clock. The previous "T2 pass" candidates (BTCUSDT SELL n=100, myfxbook n=349) are all batch-stamp / fat-tail artifacts, killed in this dig. The 6-month path to first real-money sleeve is: get `fx_smart_carry` to n=100, get `ml_high_vol_ensemble` family to n=100, get NVDA/META/MSFT to n=30, and add the concentration gate to the audit panel to prevent the false positives from re-occurring.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

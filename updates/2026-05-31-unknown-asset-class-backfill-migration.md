@@ -77,3 +77,5 @@ mysql ejaguiar1_stocks < tools/migrations/20260531_backfill_unknown_asset_class.
 - **EQUITY fallback over-broad.** Restricted to `^[A-Z]{1,5}$` and
   excludes crypto/metals allowlists; residual UNKNOWN sample at end of
   migration surfaces anything that still needs human review.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

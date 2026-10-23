@@ -121,3 +121,5 @@ A pick that consistently wins should earn progressively looser gate treatment:
 | FOREX LONG (any) | NEVER | — | — |
 | conf >0.90 (CRYPTO) | NEVER | — | — |
 | 15m timeframe strats | NEVER | — | — |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

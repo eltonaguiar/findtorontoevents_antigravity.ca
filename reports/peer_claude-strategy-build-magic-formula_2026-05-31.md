@@ -71,3 +71,5 @@ backtest to advance to `WALK_FORWARD_READY`.
 ## Server-side PR
 Docs-only PR opened against `main` via `gh api` so the shared working tree is
 not disturbed (multi-agent freeze convention).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

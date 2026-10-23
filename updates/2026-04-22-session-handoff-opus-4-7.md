@@ -114,3 +114,5 @@ Direction mix: 14 LONG / 2 SHORT across **5 asset classes** (crypto / equity / f
 ---
 
 *Handoff complete. Pickup: check the 4 follow-up items above in order. No immediate actions required.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

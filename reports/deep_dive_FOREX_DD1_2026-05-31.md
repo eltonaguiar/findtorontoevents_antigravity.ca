@@ -225,3 +225,5 @@ KMLM/DBMF).
 - INCIDENT_FOREX #6/#7 (per task brief)
 - Sibling file: `reports/deep_dive_FOREX_2026-05-31.md`
 - Memory: `project-money-ready-2026-05-31.md`, `project-confidence-trust-edges-2026-05-31.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

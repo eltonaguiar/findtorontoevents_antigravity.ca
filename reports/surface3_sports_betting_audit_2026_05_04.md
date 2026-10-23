@@ -107,3 +107,5 @@ Sanity: Lifetime ROI 25% with WR 37.5% implies large average win odds — consis
 node tmp/surface3_sports_probe.js   # writes tmp/surface3_artifacts/*
 ```
 Read-only. Hits production. ~5s.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

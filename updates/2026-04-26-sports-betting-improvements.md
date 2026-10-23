@@ -88,3 +88,5 @@ These are queued and ready, gated on review/merge/deploy. Non-trivial value, but
 ## Summary in one sentence
 
 Foundations are real and growing fast — Pinnacle Shin, scraper snapshot, FINISHED filter, grade_manual, DB audit, NHL goalie data feed, whale validator stub, backtest harness, and a working Polymarket Gamma API client are all shipped or in PR — but **the only Polymarket-derived signal currently *visible to a sports bettor on the page* is via the standalone CLI tools**; the in-page integration (PR #399's PM pill + score nudge) is one merge + FTP-deploy away.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

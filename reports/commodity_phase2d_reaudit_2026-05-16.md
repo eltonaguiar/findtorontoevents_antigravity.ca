@@ -94,3 +94,5 @@ without checking if a recent identical pick is already active.
 | P1 | Set up 7-day rolling clean-n metric that excludes same-system same-symbol within 72h | True edge visibility |
 | P2 | Investigate COMMODITY strategies that might have real edge on commodities (not COT) | New strategy development |
 | P3 | Multi-axis mutation (symbol/direction/timeframe) for CL=F, GC=F before kill | Per MUTATION_PROTOCOL |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

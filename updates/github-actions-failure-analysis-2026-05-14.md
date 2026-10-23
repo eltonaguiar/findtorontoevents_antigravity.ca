@@ -141,3 +141,5 @@ Allow 3.12 to continue even if 3.11 fails:
 ---
 
 *Analysis based on authenticated GitHub API access - 2026-05-14*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

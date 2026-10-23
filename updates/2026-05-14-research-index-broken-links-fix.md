@@ -36,3 +36,5 @@ Live checks showed the run links were failing (`404`) and research run artifacts
 
 - `/audit/research_index.html` links resolve to `/audit/research/asset_class/...`.
 - FTP deploy now publishes the full research run artifact tree, so run pages should be reachable on the live sites.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

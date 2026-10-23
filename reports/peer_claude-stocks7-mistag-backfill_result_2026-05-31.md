@@ -57,3 +57,5 @@ on /audit are now marginally more honest (the 9 misattributed rows — 2 EXPIRED
   Filed as a separate incident; not addressed by this backfill.
 - The 240 rows with `category=''` (empty string) — likely a feed parser missing-default
   bug; not in scope of STOCKS #7 cross-class mistag.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

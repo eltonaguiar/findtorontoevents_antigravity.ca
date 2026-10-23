@@ -279,3 +279,5 @@ All diagnostics remain paper-only and must pass `tools/edge_stability_harness.py
 
 ### META
 - RESCUE_META_01: Does universal dedup + resolver v2.1 explain >50% of cross-class PF inflation vs raw?
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

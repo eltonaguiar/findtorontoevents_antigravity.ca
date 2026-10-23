@@ -175,3 +175,5 @@ The number of hypotheses tested is not specified. Adjusted alpha suggestion is n
 - `EAGLE_JUNE2_CLAUDE_OPUS_4_7.MD`
 - `reports/EAGLE_JUNE2_GROK.md`
 - `reports/EAGLE_session_2026-05-27_1047_EST_signal_outcomes_refresh.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

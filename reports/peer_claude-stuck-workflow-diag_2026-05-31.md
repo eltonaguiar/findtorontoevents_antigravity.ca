@@ -48,3 +48,5 @@ This is NOT a workflow failure. No `--log-failed` output is retrievable (steps h
 ## Decision
 
 `STUCK_DIAG:state=queued:action=wait:eta_min=20`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

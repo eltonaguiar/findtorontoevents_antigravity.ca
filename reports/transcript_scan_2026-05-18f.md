@@ -1439,3 +1439,5 @@
 - [OPEN] Use subagents to crawl links under findtorontoevents.ca/updates/index.html and findtorontoevents.ca/ (Investment Hub section)
 - [OPEN] Verify or strip `_100WR_COMBOS` score boosts in `quality_gates.py:4862-4869`
 - [OPEN] Run `swarm-transcript-scan` on the most recent session JSONL
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -19,3 +19,5 @@ Without snapshots, Closed Picks **Trust / FWD WR / FWD N** delta columns mostly 
 
 - `python -c "import py_compile; py_compile.compile('audit_trail/dashboard_generator.py', doraise=True)"`
 - Next **`dashboard_data.json`** build (CI or local **`generate()`**) will emit closed rows with **`at_issue_*`** where source data allows.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

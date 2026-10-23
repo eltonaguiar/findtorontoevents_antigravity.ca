@@ -78,3 +78,5 @@ Sprint 2 (sequential on P1):
 1. **P0 is the only item that could kill a strategy.** If regime labels leak forward data, `regime_adaptive` must be frozen immediately.
 2. **P1 is a band-aid.** Using persona_WR as confidence is temporary. Long-term: proper calibration layer.
 3. **P3 depends on both P1 and P0 being correct.** Don't implement Kelly sizing on broken confidence or leaked labels.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

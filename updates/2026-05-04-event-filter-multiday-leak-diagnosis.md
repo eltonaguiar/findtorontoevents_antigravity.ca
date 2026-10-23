@@ -353,3 +353,5 @@ After applying P0+P1 fixes, verify:
 - PR #753: `_wireThisMonthOverride` isTrusted guard
 - PR #751: cache bootstrap end_date filter
 - PR #770: multi-day Today/Tomorrow fix
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -15,3 +15,5 @@ BOND is promising but too thin. Current payload: `n=18`, `WR=55.6%`, `PF=1.72`, 
 ## Do Not Do
 
 Do not use BOND as proof of hedge-fund-grade class performance. The sample is below the charter floor by 82 trades.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

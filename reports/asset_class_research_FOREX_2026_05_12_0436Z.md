@@ -28,3 +28,5 @@
 
 ## Consensus
 - avg Tier-2 attainability: **65.0%** across 1 models
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

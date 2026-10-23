@@ -85,3 +85,5 @@ identical behavior with `ATR_GATE_VARIANT_C` unset.
 - No change to confidence calculation.
 - No retroactive backfill on closed picks.
 - No auto-merge — human review required.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

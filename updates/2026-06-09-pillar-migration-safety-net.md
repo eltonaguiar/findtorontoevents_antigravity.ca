@@ -66,3 +66,5 @@ mysql ejaguiar1_stocks -e "
 - Created: `tools/reverse_pillar_migration.py` (113 lines, idempotent, dry-run-by-default, warning banner in --apply mode)
 - Created (in DB): `at_pick_outcomes_pre_pillar_migration_2026_06_09`, `trading_picks_pre_pillar_migration_2026_06_09`
 - Created: `updates/2026-06-09-pillar-migration-safety-net.md` (this file)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

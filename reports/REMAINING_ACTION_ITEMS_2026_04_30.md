@@ -58,3 +58,5 @@ follows; the loop just records findings under
 | **V5** | PEAD cache persists across runs | After 2 alpha-engine-live cron cycles: `git log --oneline -- data/earnings/ \| head -5` | At least one auto-commit landed touching `data/earnings/` |
 | **V6** | Concept taxonomy stamps on every pick | `python -c "import json; d=json.load(open('audit_dashboard/data/dashboard_data.json')); active=d['picks']['active']; print(f'tagged: {sum(1 for p in active if \"concept_family\" in p)}/{len(active)}')"` | 100% coverage on `picks.active` |
 | **V7** | BOND credit-spread emits | After next bond-agent cron: `python -c "import json; d=json.load(open('non_crypto_agent/data/bond_picks.json')); print(sum(1 for p in d.get('picks',[]) if p.get('strategy')=='bond_credit_spread_mean_reversion'))"` | ≥1 pick (modulo signal-availability — if 0, log diagnostic, don't fail) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

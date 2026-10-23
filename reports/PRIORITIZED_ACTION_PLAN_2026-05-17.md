@@ -270,3 +270,5 @@ System-wide:
 **Next immediate action:** Fix Blockers 1-3 (ghost cleanup, paper trading, DB freshness) → then C1-C2 (COMMODITY diversification + COT pilot).
 
 **File lineage:** Synthesizes DAILY_IDEAS.MD corpus (135K+ chars across 14+ AI models including Grok, Kimi, Cerebras, Gemini, Mercury, ChatGPT, Claude), MASTER_ACTION_PLAN_2026-05-15.md, SUPREME_PLAN_90days.md, expanded_enhancement_plan_2026-05-14.md, COT_PAPER_PILOT_TESTING_PLAN_2026-05-12.md, supreme_plan_review_2026-05-13.md, supreme_edge_plan_next_2026-05-12.md, daily_ideas_edge_per_class_20260513T010800Z.md, daily_ideas_synthesis_2026-05-15.md, daily_ideas_synthesis_2026-05-16.md, grok_2026-05-17_daily_ideas_corpus_review_phase2_plan.md, DAILY_IDEAS_PROMPTS.MD, AGENT_PROMPT_LIBRARY.md — cross-referenced against live dashboard_data.json (2026-05-17T00:12Z) and full codebase audit (PBO/CPCV, PCG-5, COT dedup, blacklist, outcome resolver, kill gate, walkforward, concentration cap, drift pause all verified as implemented).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

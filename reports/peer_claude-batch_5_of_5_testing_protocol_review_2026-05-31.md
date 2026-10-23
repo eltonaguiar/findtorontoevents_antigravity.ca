@@ -61,3 +61,5 @@ Other findings:
 - No byte-identical duplicates in batch (matches scan report).
 - `tests/test_money_ready_verdict.py` was modified TODAY (2026-05-31 22:05 UTC) — verify any open PRs touching `money_ready_verdict.py` before relying on the assertions in this report.
 - `tests/test_cross_pc_protocol.py` is unrelated to testing-protocol family; it tests the cross-PC gateway envelope schema. Scan may have matched on filename "protocol".
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -70,3 +70,5 @@ M-003/M-004 items in MASTER_ACTION_PLAN should be re-evaluated as follows:
 5. Review GC=F at n≥50 post-fix resolved picks for potential re-inclusion
 
 **C-006 rapid_fire deferred** (no closed picks). **COMMODITY MONEY_READY ETA:** 2026-06-17 (30-day roadmap) — now at risk if HG=F/PL=F accumulation is slow.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

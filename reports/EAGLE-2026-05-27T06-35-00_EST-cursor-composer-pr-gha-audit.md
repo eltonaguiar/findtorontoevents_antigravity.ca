@@ -63,3 +63,5 @@ Add committed seed file or make generator fail-open when absent.
 1. Fix CI on main (`strategy_performance.json` tracking)
 2. PR #15 → #14 (with hc-parity fix) → #10 → #11 → #13
 3. PR #9: close or cherry-pick `signal_time` only
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

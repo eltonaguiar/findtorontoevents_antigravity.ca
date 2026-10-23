@@ -83,3 +83,5 @@ paper-trade, and the standing money-posture gate — never an auto-promote.
 Both build agents dispatched in-house 2026-05-18. Verdicts pending.
 Kimi runs the same scope in parallel; its files will be cross-checked on
 delivery for anything this build overlooked.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

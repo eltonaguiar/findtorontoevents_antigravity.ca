@@ -63,3 +63,5 @@ Every cancelled run followed this exact sequence:
 5. 💀 Post-job hook cleaned up orphaned git processes
 
 The bots did their jobs correctly. The infrastructure (git push on GHA runner) was the failure point.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

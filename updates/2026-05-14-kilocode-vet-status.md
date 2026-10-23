@@ -53,3 +53,5 @@ FOREX       70         60         18           38-42         Conservative 10pt d
 COMMODITY   55         45         0 (none!)    25-35         Conservative 10pt drop (PF 4.03 justifies more)
 BOND        40         40         0 (none!)    26-47         Unchanged (smallest sample)
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -51,3 +51,5 @@ Bayesian decay tracker. For every strategy with n >= 20, computes the Beta-Berno
 ## Wiring plan
 
 Sidecar artifact only. Follow-up PR renders a decay badge next to existing strategy rows on `audit_dashboard/template.html`, sourcing `tools/data/wr_posterior_timeseries.json`. Combined with the existing wr_posterior.py + notarizer + anomaly canary + preregistration verifier, this gives the audit five cooperating Bayesian credibility supplements.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

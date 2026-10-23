@@ -58,3 +58,5 @@ Candidate set (lowest risk first): worktrees whose branch is already merged to `
 - This report: `reports/peer_claude-WORKTREE_CLEANUP_EXECUTED_2026-05-31.md`
 - Predecessor audit: PR #386, `reports/peer_claude-WORKTREE_90DAY_EXPLOSION_DEDUPE_2026-05-31.md`
 - Updates entry: appended to `updates/index.html` (above `:INCIDENTS-ENHANCEMENTS:START` marker)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

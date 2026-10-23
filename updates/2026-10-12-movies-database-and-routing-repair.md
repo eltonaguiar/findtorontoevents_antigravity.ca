@@ -111,3 +111,5 @@ Merge only the listed repair files and tests, together with this document.
 The shared worktree contains unrelated edits and commits; no broad staging,
 reset, or push is appropriate. Deployments from older repository revisions
 can restore stale config files until the repair is merged.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

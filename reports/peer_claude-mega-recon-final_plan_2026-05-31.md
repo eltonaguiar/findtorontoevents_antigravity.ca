@@ -52,3 +52,5 @@ For each FLIP row:
 - Skips all 4 explicitly-named exclusion patterns from the instructions.
 - Does not touch `id`, `created_at`, `evidence`, `title`, `description`.
 - Backup committed before any UPDATE.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

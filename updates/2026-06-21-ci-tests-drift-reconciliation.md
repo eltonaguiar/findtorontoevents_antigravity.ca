@@ -29,3 +29,5 @@ FRED_MACRO_DISABLED=1 python3 -m pytest tests/ paper_trading/tests/ alpha_engine
 ## Follow-up
 
 Reconcile quarantined tests incrementally — list should shrink, not grow. Priority clusters: `test_money_ready_verdict.py`, `test_portfolio_engine.py`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -126,3 +126,5 @@ Citations:
 
 - Qwen's $M thresholds are order-of-magnitude consensus values, not derived from our book's actual market-impact model. Treat as defaults; calibrate per-strategy once we have >= 4 weeks of live fill data and can fit a square-root impact model (Almgren-Chriss style).
 - The marginal-Sharpe test is computed on backtest returns and is biased upward in-sample; combine with the existing Bonferroni + bootstrap-PF gates already shipped by Cursor.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

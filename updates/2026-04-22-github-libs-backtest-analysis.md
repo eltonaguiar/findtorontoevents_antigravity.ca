@@ -90,3 +90,5 @@ Environment variable `AUDIT_PICK_SANITY_GATE` handling may not be applying corre
 - `tests/test_dashboard_generator.py` - Failing test
 - `alpha_engine/vectorbt_explorer.py` - Backtesting explorer
 - `alpha_engine/walk_forward_backtester.py` - Walk-forward backtester
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

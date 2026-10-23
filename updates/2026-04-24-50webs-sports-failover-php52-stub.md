@@ -34,3 +34,5 @@ The **first** deploy step (torontoevent.net) is unchanged: full repo PHP files, 
 
 - [2026-04-23-sports-failover-deploy.md](2026-04-23-sports-failover-deploy.md) — corrected: there is no valid GitHub “issue/PR #350” for the ESPN follow-up; open a new issue when scoped.
 - [2026-04-23-sports-secret-audit.md](2026-04-23-sports-secret-audit.md) — 50webs runtime note updated to “fixed by stub + skip”.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

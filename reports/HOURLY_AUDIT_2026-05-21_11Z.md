@@ -166,3 +166,5 @@ No new candidates beyond FINDING-48. Axis-4 (vol-normalization) candidates flagg
 ---
 
 Refs: issues #685, #686, #693 | PRs #687, #692, #694, #1285 (merged) | `audit_dashboard/data/dashboard_data.json` (2026-05-21T10:19Z)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

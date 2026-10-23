@@ -74,3 +74,5 @@ naturally — Option A's per-class cap already lets the *unblocked* classes (EQU
 the looser-bar + DSR/PBO/HHI sweep in 3–6 weeks. The "investigate-before-resurrect" discipline
 (swarm → guardrail #5 → subset analysis) correctly prevented two false resurrections.
 Swarm output: `swarm_runs/wsg_unban_2026-06-09/`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

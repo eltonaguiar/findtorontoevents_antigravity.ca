@@ -3143,3 +3143,5 @@
 - [OPEN] If goal not done and budget remains, schedule continuation via `ScheduleWakeup`
 - [OPEN] Continue loop until goal achieved, paused, or budget exhausted
 - [OPEN] Have swarm identify any further action items needed
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

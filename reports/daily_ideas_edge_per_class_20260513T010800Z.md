@@ -285,3 +285,5 @@ Research surface only. No real-money sizing until:
 3. **EQUITY PEAD earnings feed:** `incubator_picks.json` partial. For full PEAD, need real earnings calendar API (Polygon.io free tier or yfinance earnings dates). **Effort: S — check yfinance `ticker.earnings_dates`.**
 
 4. **DBMF/KMLM commodity-momentum replication (Edge #3):** `tools/research/dbmf_replication.py` not yet scaffolded. Pro: institutional-grade CTA replication with $1B+ AUM track record. Con: requires monthly NAV data. **Effort: M.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

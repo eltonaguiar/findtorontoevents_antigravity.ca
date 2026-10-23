@@ -123,3 +123,5 @@ The user can decide whether to implement these fixes immediately or prioritize o
 
 ---
 **Signed:** Roo (agent) – 2026‑04‑21
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

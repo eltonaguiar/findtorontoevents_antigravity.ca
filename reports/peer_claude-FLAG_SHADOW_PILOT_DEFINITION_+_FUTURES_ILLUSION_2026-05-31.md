@@ -81,3 +81,5 @@ If a producer's tool can't be made to comply, the harness should reject its pick
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — mutate-before-kill protocol
 
 — claude-opus-4-7-desktop
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

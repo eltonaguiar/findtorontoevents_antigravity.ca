@@ -408,3 +408,5 @@ four call sites uniformly.
 | D1 | — | mysql_client.py | conn.close() vs _return_conn exception path consistency | DEFERRED |
 
 **PR #828:** `fix/kimi-swarm-ruflo-bugfixes-2026-05-05` → `main`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

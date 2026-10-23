@@ -83,3 +83,5 @@ Run `tools/mutation_analysis.py` on the post-resolver-v2 closed picks (~last 90d
 - 0/60 verification: live `audit_dashboard/data/dashboard_data.json` query on 2026-05-04
 - Call-graph: `audit_trail/dashboard_generator.py:6473-6759`, single-file, no cross-module dependencies
 - Original false-positive source: `swarm_runs/audit_hyperfocus_v1/claude.json::p0_audit_findings[1]` (AHF-02), confidence 0.97 — model self-rated highest possible, was wrong
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

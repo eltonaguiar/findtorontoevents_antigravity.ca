@@ -98,3 +98,5 @@ underlying pick-generation pipeline.
 3. **Wire `nfl_odds_scraper.py --inject-api`** after verifying EV output quality for 1–2 weeks of NFL data.
 4. **Enhance `nba_odds_scraper.py` to use `nba_api`** for injuries and player-level EDGE data.
 5. **Backtest the existing value-bet algorithm against the sportsdataverse backfill** — this is the biggest win. 10,000+ synthetic historical "bets" would unblock the ML ensemble activation gate today, instead of waiting for 20+ real bets.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -279,3 +279,5 @@ Hindsight Learner workflow stops silently failing. Recovers `winner_history.json
 4. **#4 strategy_performance.json:** What's the right pruning policy? 30 days no-activity? Last 200 strategies by trade count? No pruning?
 5. **#5 Node:** Option A (opt-in env var) per-workflow OR Option B (bulk version bump)? The opt-in approach is faster but creates 534 cleanup tasks for later.
 6. **#6 fallback chain:** Should we add a circuit-breaker around the new APIs (don't retry KuCoin if it failed in last 5 min)? Adds complexity but prevents cascade timeouts.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

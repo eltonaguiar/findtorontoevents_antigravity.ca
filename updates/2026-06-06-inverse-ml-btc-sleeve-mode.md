@@ -74,3 +74,5 @@ pytest tests/test_asset_class.py tests/test_emitter_whitelist.py -q
 - `production_enable: false` on paper pilots
 - `money_ready_verdict.json` `freeze_promotions` still governs capital
 - Sleeve flag is **admission + sync filter only** — not a sizing override
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

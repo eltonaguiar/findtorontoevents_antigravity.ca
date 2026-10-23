@@ -186,3 +186,5 @@ book-wide, resolver dispute < 1%.
 - Verified all 3 new LiteLLM proxy modes live: `ollama-cloud-large`→Claude, `ollama-cloud`→Qwen, `ollama-cloud-local`→Gemma (`reports/eagle2_brainstorm_*.md`).
 - Reconciled 30+ peer EAGLE docs against canonical JSON; corrected the record where a model fabricated a pick stat.
 - Produced this grounded synthesis + per-class backtest archetypes + real-money-ready framework.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

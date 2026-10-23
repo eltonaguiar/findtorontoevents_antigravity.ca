@@ -124,3 +124,5 @@ python3 tools/reresolve_intrabar.py --apply --i-understand-this-mutates-producti
 ---
 
 *Generated 2026-06-09 — session edge-rescue continuation. Reproduce: `python3 tools/reresolve_intrabar.py`, read `audit_dashboard/data/money_ready_verdict.json`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

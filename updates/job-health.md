@@ -3730,3 +3730,5 @@ Newest first. This section is updated by Branch Large File Duplicate Guard.
 
 
 <!-- ALERTS_END -->
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

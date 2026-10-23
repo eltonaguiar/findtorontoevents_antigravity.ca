@@ -33,3 +33,5 @@
 
 - Manual read-through for PHP 5.2–safe syntax.
 - Local `php -l` if PHP CLI is available in CI or dev.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

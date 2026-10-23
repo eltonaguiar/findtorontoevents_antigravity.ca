@@ -103,3 +103,5 @@ follow-up PRs:
 - `tests/test_kill_list_audit.py`
 - `tests/test_auto_rollback_triggers.py`
 - `updates/2026-04-29-defense-modules.md` (this file)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

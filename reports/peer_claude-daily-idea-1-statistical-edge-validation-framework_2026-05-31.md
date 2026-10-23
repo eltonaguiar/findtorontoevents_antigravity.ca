@@ -96,3 +96,5 @@ The framework **confirms** the NO_EDGE verdict. Specifically:
 - `reports/peer_claude-daily-idea-1-statistical-edge-validation-framework_2026-05-31.md` (this file).
 
 No code touched. No quality_gates / money_ready_verdict changes. Scope ≤ 2 files — eligible for server-side docs PR.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

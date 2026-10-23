@@ -169,3 +169,5 @@ curl -s https://raw.githubusercontent.com/eltonaguiar/findtorontoevents_antigrav
 ```
 
 All commands are read-only. No state changes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

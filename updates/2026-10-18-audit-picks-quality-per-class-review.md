@@ -161,3 +161,5 @@ were artifacts of my URL normalization (absolute hrefs got re-prefixed) —
 
 🤖 Generated with Codebuff
 Co-Authored-By: Codebuff <noreply@codebuff.com>
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

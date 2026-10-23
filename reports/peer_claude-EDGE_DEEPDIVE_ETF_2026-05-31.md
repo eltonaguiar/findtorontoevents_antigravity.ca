@@ -167,3 +167,5 @@ ETF is **mislabeled INSUFF/FAIL** by the verdict generator. Reality:
 **Operator: stop spending cycles trying to find new ETF edge. The edge is already there and already in the codebase. The bug is in the verdict pipeline. Fix that, wire the two orphan backtests, audit `intermarket-flow-scout` MDD, and ETF promotes to T2-watch within 30 days without writing a single new strategy.**
 
 New strategies (`etf_cross_asset_regime_shift`, `etf_vix_term_structure_tilt`) are still worth building for diversification, but **they are not on the critical path to T2 — the critical path is plumbing.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -102,3 +102,5 @@ behavior first; A1 verdict is downstream consumer.
 
 Most preventive finding: **REV-1 pymysql in canonical reqs** — closes
 the dependency gap that allowed 5 sidecars to silently no-op for 24h+.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

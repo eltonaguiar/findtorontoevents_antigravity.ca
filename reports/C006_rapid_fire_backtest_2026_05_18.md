@@ -116,3 +116,5 @@ for capital allocation. Revisit when `macd_crossover` reaches n≥30.
 
 Post-MySQL-sync (2026-05-24): re-run with full historical data. `macd_crossover` may reach n≥30
 if historical picks import as expected.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

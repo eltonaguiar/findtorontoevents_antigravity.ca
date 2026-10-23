@@ -121,3 +121,5 @@ Huge dispersion — incompatible with a single exit mechanism. TPs typically cap
 - `alpha_engine/outcome_resolver.py:115-126` (`PNL_WIN_THRESHOLD_BY_CLASS`)
 - `reports/action_B_resolver_2026_04_27.md` (resolver fix history)
 - `reports/feedback_noncrypto_resolver_live_close_bug.md` (sub-threshold forex bug bundle)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

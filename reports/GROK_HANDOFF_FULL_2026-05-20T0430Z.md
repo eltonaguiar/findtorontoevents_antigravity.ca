@@ -552,3 +552,5 @@ python tools/swarm/swarm_run.py \
 all referenced commits on `origin/main`. M-107 binding enforced. No
 fabrication. Hand off to Grok (SuperGrok Heavy preferred) per operator
 directive 2026-05-20T04:25Z.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

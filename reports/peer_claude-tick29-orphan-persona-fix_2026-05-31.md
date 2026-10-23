@@ -108,3 +108,5 @@ $ python3 -c "import json; json.load(open(...))" → VALID, 28 keys
 
 - Verify consumer code (persona registry loader) honors `emission_blocked_pending_dependency` for both PENNY and MEMECOIN — should be uniform.
 - If/when MEMECOIN quarantine policy is relaxed, the 30-day shadow-pilot clock should be reset from the unblock date, NOT from 2026-05-31. The persona's `blocking_dependency` text says this explicitly.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

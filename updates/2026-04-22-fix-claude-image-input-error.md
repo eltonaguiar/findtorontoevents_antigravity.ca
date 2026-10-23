@@ -66,3 +66,5 @@ Valid vision-capable models include:
 3. **Image handling unchanged:** Vision-capable model accepts base64 PNG screenshots
 
 The script should now successfully run computer use loops with image input.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

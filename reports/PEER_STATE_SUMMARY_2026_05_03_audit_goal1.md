@@ -104,3 +104,5 @@ Per Playwright agent + code reviewer: canonical "top picks" entry is `🔥 HIGH 
 - **T2 (Institutional):** PF>1.5 / WR>50 / MDD<20 — sizing floor per CLAUDE.md
 - **T3 (Retail-OK):** PF>1.2 / WR>48 / MDD<30
 - Source: `asset_class_health` post-resolver-v2 noise filter
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -177,3 +177,5 @@ E-ANON-001 lands close to the live system PF. At lower PF (1.23 vs 1.41), it add
 ---
 
 *Original backtest: 2026-05-20 | VIX gate added: 2026-05-20 | Script: `tools/e_anon_001_momentum_backtest.py` | Raw: `reports/e_anon_001_backtest_raw.json`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -294,3 +294,5 @@ For each top-5 strategy by edge_score:
 ---
 
 *Document generated from analysis of multi-source prompt libraries. See individual source files for complete context.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

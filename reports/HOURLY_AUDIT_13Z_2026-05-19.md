@@ -159,3 +159,5 @@ Status: HOLD pending n>=20. Check at 14Z hourly.
 ---
 
 *Audit: 2026-05-19T13:00Z | Dashboard: 12:14:53Z | Claude Sonnet 4.6*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

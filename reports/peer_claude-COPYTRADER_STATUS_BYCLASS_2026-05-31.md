@@ -85,3 +85,5 @@ Real PM whales that went silent (the high-conviction copy-trade names):
 - Stale JSON: `copy_trader_intel/data/scored_picks.json` mtime 2026-05-25, `data/fc_crypto_pro_picks.json` mtime 2026-05-29.
 - `alpha_engine/quarantine_manifest.json` line 103: `copy_trader_highscore` entry exists but is empty `{}`.
 - `alpha_engine/audit_sync.py` lines 47/143/443/537: source defined, no DB-write path for highscore — it stays in JSON.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

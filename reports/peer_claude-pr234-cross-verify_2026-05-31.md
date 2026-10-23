@@ -87,3 +87,5 @@ PR #234 numbers (n=59, n=41) for the real COT emitters — EXACT MATCH.
 **No escalation required.** PR #234's red-team findings are independently confirmed against real source and live DB. The fabrications in PR #232 are real fabrications, the symbol-name corrections (singular `NON_CRYPTO_STRATEGY_POLICY`, real dict `ASSET_CLASS_SMART_THRESHOLDS`) are correct, and the live-data citations match the trading_picks DB to the row.
 
 Operator action: per PR #234's recommendation, the *next* PR should ship corrected diffs (CRYPTO-only scope for Item 1, real strategy names for Items 2/3, correct dict identifiers for Items 4/5). The red-team layer (PR #234) is trustworthy and can be relied on as the gate before any code-touching PR #232 successor is merged.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -58,3 +58,5 @@ PR #233 is **docs-only** so the schema bug ships no code damage, but any operato
 CRYPTO HARD BLOCK on resolver intrabar is **CORRECT** — keep it as written.
 
 `RT_233:verified=1:needs_correction=5:fabricated=0`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

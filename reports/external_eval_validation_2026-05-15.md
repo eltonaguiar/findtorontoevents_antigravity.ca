@@ -115,3 +115,5 @@ PR #1026 is the carrier for the safety files. **If #1026 doesn't merge, the enti
 ## Provenance
 
 Investigation conducted via subagent `caveman:cavecrew-investigator` + direct git verification. Evidence cited inline. No fixes applied — this is a verification doc only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

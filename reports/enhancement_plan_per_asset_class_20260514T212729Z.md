@@ -330,3 +330,5 @@ Free API. When perp funding rate >0.01% (8h), apply confidence penalty on CRYPTO
 | P3-B | AuditEnsemble_LONG emission boost (WR 94.1%, PF 36.66) | CRYPTO | 3h | Direct WR lift |
 | P4-A | Wire charter_risk_budget.py to production (PR #982) | ALL | 4h | Class caps live |
 | P4-B | COMMODITY walk-forward suite (currently missing) | COMMODITY | 5h | OOS validation |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

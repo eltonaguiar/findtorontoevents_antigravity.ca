@@ -172,3 +172,5 @@ Rebase set (#669 #676 #608 #665 #644 #597 #615 #655): confirmed all closed per 0
 | ETF status | T1 (30d PF 3.58) | Strong |
 
 Next priority: forex_rsi2_mean_reversion LONG-direction block — gather 3-AI consensus, then add ("FOREX", "forex_rsi2_mean_reversion") to BLOCKED_ASSET_STRATEGY_PAIRS or a LONG-gate in quality_gates.py. This single strategy is responsible for ~100% of FOREX 7d losses.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

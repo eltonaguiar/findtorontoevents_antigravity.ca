@@ -32,3 +32,5 @@ There were no page errors apart from the pre-existing React #418.
 ## Backups and rollback
 - git tag `backup/homepage-pre-collapse-20261013-212754`
 - On FTP, one timestamped `index.html.bak-<UTC timestamp>` per site in `/findtorontoevents.ca/_backups/` and `/tdotevent.ca/_backups/`, taken just before deploy.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

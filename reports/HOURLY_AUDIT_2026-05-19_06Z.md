@@ -168,3 +168,5 @@ None cross the PF<0.5 floor for outright kill.
 | EQUITY 7d | Weak (0.238) but n=15 — monitor protocol active |
 
 **Next hourly:** dashboard refreshes ~06:45Z. Check CRYPTO 24h trend (currently 1.201, baseline 3.54 gap remains). Confirm FINDING-3 `combined_confidence` n growth before block PR.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

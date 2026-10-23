@@ -153,3 +153,5 @@ Before wiring code, the operator should confirm:
 3. The schema change (`series_id` column) is approved.
 
 If any of these are blocked, hold the series-sim wire-up. The plan is reversible — `nba_series_state` empty disables all emissions.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

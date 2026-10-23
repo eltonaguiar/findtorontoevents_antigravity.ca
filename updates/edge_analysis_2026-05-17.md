@@ -44,3 +44,5 @@
   - Rationale: PF=1.32 > 1.3, WR=57.1% > 0.5, n=105 ≥ 30.
   - Walk-forward: IS PF=1.29, OOS PF=1.40.
   - ✅ Max DD 1.6% within 20.0% threshold.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

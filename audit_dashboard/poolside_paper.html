@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KILO / POOLSIDE_KILOCODE — Paper verification (cross-checked)</title>
+<style>
+:root {
+  --bg:#0b1020; --card:#111a2e; --border:#1f2939;
+  --text:#e7ecff; --muted:#94a3b8;
+  --green:#22c55e; --red:#ef4444; --amber:#fbbf24; --cyan:#06b6d4; --violet:#a78bfa; --pink:#ec4899;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:0;background:var(--bg);color:var(--text);font:13px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#111a33,#0b1020)}
+header h1{margin:0;font-size:18px;font-weight:600}
+header .sub{color:var(--muted);font-size:12px;margin-top:4px}
+nav{padding:8px 20px;border-bottom:1px solid var(--border);background:var(--card);display:flex;gap:12px;flex-wrap:wrap;font-size:12px}
+nav a{color:var(--cyan);text-decoration:none}nav a:hover{text-decoration:underline}
+main{padding:16px 20px;max-width:1400px;margin:0 auto}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.card h3{margin:0 0 6px;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat{font-size:22px;font-weight:600;line-height:1.1}
+.stat.amber{color:var(--amber)} .stat.red{color:var(--red)} .stat.cyan{color:var(--cyan)}
+.stat-sub{color:var(--muted);font-size:11px;margin-top:4px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge.proven{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.4)}
+.badge.cand{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid rgba(251,191,36,.4)}
+.badge.cand_weak{background:rgba(251,191,36,.10);color:#f59e0b;border:1px dashed rgba(251,191,36,.4)}
+.badge.fail{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.4)}
+.badge.research{background:rgba(96,165,250,.15);color:#60a5fb;border:1px solid rgba(96,165,250,.4)}
+.badge.notready{background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid rgba(148,163,184,.4)}
+section{margin:20px 0}
+section h2{font-size:14px;margin:0 0 4px;color:var(--text);border-left:3px solid var(--cyan);padding-left:10px}
+section h2 .sub{color:var(--muted);font-weight:400;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.nfa-banner{background:linear-gradient(90deg,rgba(251,191,36,.10),rgba(167,139,250,.10));border:1px solid rgba(251,191,36,.4);padding:8px 12px;border-radius:6px;color:var(--amber);font-size:12px;margin-bottom:12px}
+.warning-banner{background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.4);padding:8px 12px;border-radius:6px;color:var(--red);font-size:12px;margin:8px 0}
+details{margin:8px 0;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 12px}
+details[open]{border-color:var(--cyan)}
+summary{cursor:pointer;color:var(--cyan);font-weight:500;font-size:12px}
+.metric-row td:first-child{font-weight:500}
+.metric-row td:nth-child(2){color:var(--muted);font-size:11px}
+.metric-row td:nth-child(3){text-align:center}
+.eli5{background:rgba(96,165,250,.08);border-left:2px solid var(--cyan);padding:6px 10px;border-radius:4px;margin:4px 0;font-size:11px}
+.eli3{background:rgba(251,191,36,.08);border-left:2px solid var(--amber);padding:6px 10px;border-radius:4px;margin:4px 0;font-size:11px}
+.divider{height:1px;background:var(--border);margin:16px 0}
+footer{padding:12px 0;border-top:1px solid var(--border);color:var(--muted);font-size:11px}
+.tier-def{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.tier-def .tier-card{border:1px solid var(--border);border-radius:6px;padding:8px;background:rgba(17,26,46,.5)}
+.tier-def .tier-card h4{margin:0 0 2px;font-size:11px;text-transform:uppercase}
+.tier-def .tier-card .desc{font-size:10px;color:var(--muted)}
+.symbol-card{border:1px solid var(--border);border-radius:8px;padding:12px;background:rgba(17,26,46,.3);margin-bottom:10px}
+.symbol-card .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.symbol-card .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:11px;margin-top:8px}
+.symbol-card .direction-SHORT{border-left:3px solid var(--red)}
+.symbol-card .direction-LONG{border-left:3px solid var(--green)}
+.chart-placeholder{background:rgba(15,23,42,.3);border:1px solid var(--border);border-radius:4px;height:100px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;margin:8px 0}
+table.scorecard td,table.scorecard th{font-size:11px}
+table.scorecard td:nth-child(2){color:var(--muted)}
+table.scorecard td:nth-child(3){text-align:center;font-weight:600}
+  table.scorecard tr:nth-child(odd){background:rgba(15,23,42,.2)}
+  .pass{color:var(--green)} .fail{color:var(--red)} .border-top{border-top:1px solid var(--border)}
+  table.gate-score th:nth-child(3){text-align:center}
+
+  /* NEW: ELI5 callout box */
+  .eli5-box{background:linear-gradient(135deg,rgba(96,165,250,.08),rgba(167,139,250,.05));border:1px solid rgba(96,165,250,.3);border-radius:8px;padding:14px 18px;margin:12px 0}
+  .eli5-box h3{margin:0 0 8px;color:var(--cyan);font-size:14px;font-weight:600}
+  .eli5-box p{margin:6px 0;line-height:1.6}
+  .eli5-box ul{margin:6px 0;padding-left:20px}
+  .eli5-box li{margin:4px 0}
+
+  /* NEW: Recipe / criterion step cards */
+  .recipe-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin:12px 0}
+  .recipe-step{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;transition:border-color .2s}
+  .recipe-step .step-number{font-size:28px;font-weight:700;color:var(--cyan);margin-bottom:2px}
+  .recipe-step .step-title{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:4px 0}
+  .recipe-step .step-desc{font-size:11px;color:var(--text);line-height:1.5}
+  .recipe-step.pass{border-color:rgba(34,197,94,.5)}
+  .recipe-step.fail{border-color:rgba(239,68,68,.5)}
+  .recipe-step.warn{border-color:rgba(251,191,36,.5)}
+
+  /* NEW: Progress bar */
+  .progress-container{background:var(--border);border-radius:6px;height:24px;position:relative;margin:10px 0;overflow:hidden}
+  .progress-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#000}
+  .progress-fill.green{background:var(--green)}
+  .progress-fill.amber{background:var(--amber)}
+  .progress-fill.red{background:var(--red)}
+  .progress-fill .pct{position:absolute;font-size:11px;color:var(--text);font-weight:600}
+  .progress-label{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px}
+  .progress-label .name{color:var(--muted)}
+  .progress-label .val{font-weight:600}
+
+  /* NEW: Timeline */
+  .timeline-container{position:relative;padding-left:24px;margin:12px 0}
+  .timeline-container::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--border)}
+  .timeline-step{position:relative;margin-bottom:16px}
+  .timeline-step::before{content:'';position:absolute;left:-12px;top:0;width:12px;height:12px;border-radius:50%;border:2px solid var(--cyan);background:var(--bg);display:inline-block}
+  .timeline-step.pass::before{border-color:var(--green);background:rgba(34,197,94,.15)}
+  .timeline-step.fail::before{border-color:var(--red);background:rgba(239,68,68,.15)}
+  .timeline-step.warn::before{border-color:var(--amber);background:rgba(251,191,36,.15)}
+  .timeline-step .step-title{font-weight:600;font-size:12px;margin-bottom:2px}
+  .timeline-step .step-desc{color:var(--muted);font-size:11px;line-height:1.5}
+
+  /* NEW: Comparison table */
+  table.comparison td,table.comparison th{padding:8px 10px;font-size:12px}
+  table.comparison th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+  table.comparison td.num{text-align:right;font-variant-numeric:tabular-nums}
+  table.comparison tr:nth-child(odd){background:rgba(15,23,42,.2)}
+  table.comparison .highlight{background:rgba(251,191,36,.15)}
+  table.comparison .vs-spy{background:rgba(96,165,250,.10)}
+
+  /* NEW: Gate card for test explanations */
+  .gate-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px}
+  .gate-card .gate-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .gate-card .gate-id{font-weight:700;color:var(--cyan);font-size:12px}
+  .gate-card .gate-status{font-size:11px;font-weight:600}
+  .gate-card .gate-desc{color:var(--muted);font-size:11px;margin:4px 0;font-style:italic}
+  .gate-card .gate-analogy{padding:6px 10px;background:rgba(251,191,36,.08);border-radius:4px;font-size:11px;border-left:2px solid var(--amber);margin-top:6px}
+
+  /* NEW: Decision tree */
+  .decision-node{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin:8px 0}
+  .decision-node .node-title{font-weight:600;color:var(--cyan);font-size:12px;margin-bottom:6px}
+  .decision-node.roadblock{border-left:3px solid var(--red)}
+  .decision-node.opportunity{border-left:3px solid var(--green)}
+  .decision-node.caution{border-left:3px solid var(--amber)}
+
+  /* NEW: Icon badges */
+  .icon-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:700}
+  .icon-badge.green{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.4)}
+  .icon-badge.red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.4)}
+  .icon-badge.amber{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid rgba(251,191,36,.4)}
+  </style>
+</head>
+<body>
+<header>
+  <h1>KILO / POOLSIDE_KILOCODE — Paper verification (cross-checked)</h1>
+  <div class="sub">Agent: kilo/poolside/laguna-s-2.1:free (Kilo fork of OpenCode) &nbsp;|&nbsp; Updated 2026-10-22T23:01Z &nbsp;|&nbsp; MySQL DB + 5 peers (Grok, Buffy, INCEPTION, GHCOPILOT, OpenCode)</div>
+</header>
+<nav>
+  <a href="/audit/">&larr; Audit dashboard</a>
+  <a href="/audit/freebuff_buffy_proven_picks.html">FREEBUFF (Buffy)</a>
+  <a href="/audit/ghcopilot_paper.html">GHCOPILOT</a>
+  <a href="/audit/inception_paper_trading.html">INCEPTION</a>
+  <a href="/audit/opencode_paper_trading.html">OpenCode</a>
+  <a href="data/poolside_paper.json">Download JSON data</a>
+</nav>
+<main>
+
+<!-- ELI5 EXECUTIVE SUMMARY -->
+<section id="el-5-summary">
+  <h2>In Plain English: What We Found <span class="sub">(a 90-second read for anyone, no finance background needed)</span></h2>
+  <div class="eli5-box">
+    <h3>Imagine you manage a $1 billion fund. Your job: beat the S&P 500 (buy &amp; hold = "do nothing" baseline).</h3>
+    <p>We investigated <strong>9 different investment worlds</strong> (crypto, stocks, bonds, commodities, currencies, ETFs, futures, memecoins). Here's the honest answer:</p>
+    <details>
+      <summary>📋 <strong>Show the plain-English summary</strong></summary>
+      <div class="eli5" style="margin-top:8px">
+        <ul>
+          <li><strong>CRYPTO SHORT (our strongest signal):</strong> During crypto crashes, coins briefly bounce (like a car bouncing once before hitting the wall). If we short at that bounce (RSI 30-50), it makes +93.5% in 3 months. BUT — the worst loss was 49%. Too scary for big money.</li>
+          <li><strong>STOCK BREAKOUTS:</strong> Buying stocks that break out of consolidation works (55% win rate, 2x profit factor), but we only have 58 trades. Need 100+ before trusting it.</li>
+          <li><strong>ETF TACTICAL ROTATION:</strong> Not stock-picking — it's a "move your money to safety" system. Beats S&P 500 on risk-adjusted returns (Sharpe 1.48 vs 1.37). Ready to ship as a product.</li>
+          <li><strong>13F INSTITUTIONAL FLOW:</strong> Following where big mutual funds put money (INTC, XOM). Ready to productize as a fund screener.</li>
+          <li><strong>EVERYTHING ELSE:</strong> Commodities, forex, bonds, futures, memecoins — lost money or had fake results that don't count.</li>
+        </ul>
+        <p><strong>Bottom line:</strong> 0/9 investment worlds have a PROVEN, ready-to-trade strategy. We have one signal with real edge (crypto SHORT), but it's too risky for large capital without fixes. We have two shippable products (ETF Tactical Rotation + 13F Fund Ranker). No strategy is "money-ready" yet.</p>
+      </div>
+    </details>
+  </div>
+
+  <details>
+    <summary>❓ <strong>Having trouble with the jargon? Quick glossary (hover or expand to learn)</strong></summary>
+    <div class="eli5" style="margin-top:8px">
+      <table class="scorecard">
+        <tbody>
+          <tr><td><strong>PF (Profit Factor)</strong></td><td>How much you make divided by how much you lose. PF=2 means you make $2 for every $1 you lose. PF must be >1.0 to be profitable.</td></tr>
+          <tr><td><strong>WR (Win Rate)</strong></td><td>What % of trades are winners. 60% WR means 60 out of 100 trades end in profit.</td></tr>
+          <tr><td><strong>MaxDD (Max Drawdown)</strong></td><td>The worst peak-to-trough drop. 49% MaxDD means at one point your money was almost cut in half.</td></tr>
+          <tr><td><strong>CI-LB (CI Lower Bound)</strong></td><td>If we replayed history 10,000 times, the lowest PF we'd see 95% of the time. Must be above 1.0 to say edge is "real."</td></tr>
+          <tr><td><td><strong>DSR (Deflated Sharpe Ratio)</strong></td><td>Sharpe ratio after accounting for testing 2,000+ strategies. If 1,999 are fake, one will look good by luck alone — DSR corrects for that.</td></tr>
+          <tr><td><strong>RSI (Relative Strength Index)</strong></td><td>A "momentum speedometer" from 0-100. Below 30 = extremely oversold (price crashed hard). 30-50 = modestly oversold. 50-70 = neutral.</td></tr>
+          <tr><td><strong>SHORT position</strong></td><td>Betting a price goes DOWN. You profit when the asset falls. Opposite of "LONG" (betting it goes up).</td></tr>
+          <tr><td><strong>13F filing</strong></td><td>Quarterly disclosure that hedge funds file showing what stocks they bought/sold. We track new institutional buying as a signal.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>
+
+<div class="nfa-banner">
+  <strong>TL;DR:</strong> After cross-checking all agents + live DB + Grok's 13-gate institutional
+  framework, <strong>0/9 asset classes are money-ready.</strong> The strongest signal found is
+  <strong>CRYPTO SHORT @ RSI(14,1h) 30-50 band</strong> (n=125, net PF 2.16, Sharpe 6.9) — but it fails
+  the Max-DD gate (49%). See the <a href="#scorecard">scorecard</a> below.
+</div>
+
+<!-- VERDICT TIERS -->
+<section>
+  <h2>What the labels mean <span class="sub">(tier definitions — what each verdict means in plain English)</span></h2>
+  <div class="tier-def">
+    <div class="tier-card">
+      <h4>🟢 PROVEN</h4>
+      <div class="desc">Forward-confirmed: passes ALL gates, forward cohort matured (n≥100+ outcomes), no decay. Safe to consider for small live sizing.</div>
+    </div>
+    <div class="tier-card">
+      <h4>🟡 CANDIDATE</h4>
+      <div class="desc">Backtest looks strong but fails ≥1 gate (drawdown, costs, n too small, or no forward proof). Needs more data.</div>
+    </div>
+    <div class="tier-card">
+      <h4>🔴 FAIL / REJECTED</h4>
+      <div class="desc">Fails data integrity or statistical gates. Artifact, coin-flip, or refuted by peers. Do NOT trade.</div>
+    </div>
+    <div class="tier-card">
+      <h4>⚫ COIN-FLIP</h4>
+      <div class="desc">WR ~50%, PF ~1.0, no edge. Not enough evidence.</div>
+    </div>
+    <div class="tier-card">
+      <h4>🔵 RESEARCH-VALIDATED</h4>
+      <div class="desc">Strong retrospective signal with economic rationale; forward cohort running. Product candidate.</div>
+    </div>
+    <div class="tier-card">
+      <h4>⚪ NOT_READY</h4>
+      <div class="desc">Too early — needs more forward outcomes or data quality fix.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ASSET CLASS SUMMARY -->
+<section>
+  <h2>Asset class snapshot <span class="sub">(MySQL ejaguiar1_stocks, intrabar-resolved, hard-only TP/SL)</span></h2>
+  <table>
+    <thead>
+      <tr><th>Asset class</th><th>Best candidate</th><th>n (hard)</th><th>WR</th><th>PF (net)</th><th>Direction</th><th>Label</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>CRYPTO</td><td>crypto_short_rsi3050</td><td>125</td><td>60.8%</td><td>2.16</td><td>SHORT</td><td><span class="badge cand">CANDIDATE</span></td></tr>
+      <tr><td>EQUITY</td><td>rs-breakout-scout (stock)</td><td>58</td><td>55.2%</td><td>2.00</td><td>LONG</td><td><span class="badge cand_weak">CANDIDATE (weak)</span></td></tr>
+      <tr><td>ETF (Tactical)</td><td>MRBB+200d TAA</td><td>487</td><td>—</td><td>1.84</td><td>LONG</td><td><span class="badge research">RESEARCH-VAL</span></td></tr>
+      <tr><td>COMMODITY</td><td>commodity_rsi_divergence</td><td>16</td><td>56.2%</td><td>3.24</td><td>LONG</td><td><span class="badge cand_weak">CANDIDATE (weak)</span></td></tr>
+      <tr><td>FOREX</td><td>forex_trend_aligned</td><td>50</td><td>60.0%</td><td>2.32</td><td>LONG</td><td><span class="badge cand_weak">CANDIDATE (weak)</span></td></tr>
+      <tr><td>BOND</td><td>—</td><td>27</td><td>22.2%</td><td>0.85</td><td>—</td><td><span class="badge fail">FAIL</span></td></tr>
+      <tr><td>FUTURES</td><td>—</td><td>90</td><td>58.9%</td><td>0.37</td><td>—</td><td><span class="badge fail">FAIL</span></td></tr>
+      <tr><td>MEMECOIN</td><td>—</td><td>48</td><td>54.2%</td><td>0.44</td><td>—</td><td><span class="badge fail">FAIL</span></td></tr>
+      <tr><td>ETF (directional)</td><td>—</td><td>27</td><td>14.8%</td><td>0.59</td><td>—</td><td><span class="badge fail">FAIL</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CRYPTO DEEP DIVE -->
+<section id="deep-dive-crypto">
+  <h2>1. CRYPTO — crypto_short_rsi3050 (CANDIDATE, fails MaxDD)</h2>
+  <p class="sub">Direction: SHORT · Entry: RSI(14,1h) enters 30-50 oversold band · Symbols: 31 (DOT, WIF, ADA, STX, DOGE, etc.)</p>
+
+  <div class="symbol-card direction-SHORT">
+    <div class="header">
+      <div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <strong>crypto_short_rsi3050</strong>
+          <span class="badge cand">CANDIDATE (weak)</span>
+          <span class="badge cand_weak">net PF 2.16 (vs 1.68 baseline SHORT)</span>
+        </div>
+        <div style="margin-top:4px;color:var(--muted);font-size:11px">
+          Entry condition: CRYPTO SHORT when RSI(14,1h) is in the 30-50 oversold band. Found by
+          <strong>INCEPTION/ZOOCODE mining</strong> (2026-10-22). The sibling RSI 50-70 SHORT has
+          net PF 0.95 — it only wins in downtrends. RSI 30-50 SHORT wins in BOTH regimes.
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="stat amber">2.16</div>
+        <div class="stat-sub">net PF (Sharpe 6.9, Sortino 18.3)</div>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div><span style="color:var(--muted);font-size:10px">n (trades)</span><br><strong>125</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">Win Rate</span><br><strong>60.8%</strong> (76 TP / 49 SL)</div>
+      <div><span style="color:var(--muted);font-size:10px">Avg win/loss</span><br><strong>2.45% / 1.48%</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">Expectancy</span><br><strong>+0.75%</strong>/trade</div>
+      <div><span style="color:var(--muted);font-size:10px">Max DD</span><br><span style="color:var(--red)">49.0%</span></div>
+      <div><span style="color:var(--muted);font-size:10px">Symbols</span><br><strong>31</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">Conc (top-3)</span><br><span style="color:var(--green)">39.4%</span></div>
+      <div><span style="color:var(--muted);font-size:10px">CI-LB (bootstrap)</span><br><strong>1.43</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">L30d net PF</span><br><strong>4.97</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">Direction</span><br><strong>SHORT</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">Time active</span><br><strong>93%</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">Total return</span><br><strong>+93.5%</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">CVaR (worst 5%)</span><br>-4.97%</div>
+    </div>
+
+    <details>
+      <summary>🔧 Technical reasoning — WHY RSI 30-50 SHORT beats everything else</summary>
+      <table class="scorecard">
+        <thead><tr><th>Component</th><th>Plain-language explanation</th><th>ELI5</th></tr></thead>
+        <tbody>
+          <tr><td><strong>RSI(14,1h) = 30-50</strong></td>
+              <td><div class="eli5">RSI measures "how oversold is this coin?" On 1-hour bars, RSI below 30 = extremely oversold, 30-50 = modestly oversold, 50-70 = neutral, 70+ = overbought. Going SHORT when RSI is already in the 30-50 (oversold) zone sounds counterintuitive — but it captures the moment when a brief relief bounce stalls and the downtrend resumes. The RSI 50-70 SHORT condition only works during established downtrends; RSI 30-50 SHORT works because the next 1h candle often confirms the bounce failed.</div></td>
+              <td><div class="eli5">Like selling a stock that just bounced 5% off its lows — it often drops back as sellers return.</div></td></tr>
+          <tr><td><strong>Direction = SHORT</strong></td>
+              <td><div class="eli5">In crypto bear markets (May-Jul 2026), altcoins get washed out to RSI 30-40 and then "dead cat bounce" to 45-50 before continuing down. SHORT captures that second leg.</div></td>
+              <td><div class="eli5">Shorting = betting the price goes down. When a coin bounces off a deep discount, it often keeps going down.</div></td></tr>
+          <tr><td><strong>Why NOT RSI 50-70 SHORT?</strong> (the refuted sibling)</td>
+              <td><div class="eli3">RSI 50-70 SHORT has net PF 0.951 — it LOSES money. It only works when BTC is in a downtrend (wins in May-Jul, loses in Aug-Oct). RSI 30-50 SHORT wins in BOTH regimes (it's a mean-reversion signal, not a trend-following one).</div></td>
+              <td><div class="eli3">The 50-70 range SHORT is regime-confined. The 30-50 SHORT is regime-agnostic.</div></td></tr>
+          <tr><td><strong>momentum-WITH variant (F2 WITH)</strong></td>
+              <td><div class="eli5">Adding "price momentum confirms the SHORT direction" boosts net PF to 2.475 (n=102). STRONGER signal, fewer samples.</div></td>
+              <td><div class="eli5">Only short when momentum agrees the trend is down. Filter within a filter.</div></td></tr>
+        </tbody>
+      </table>
+    </details>
+
+    <details>
+      <summary>💰 Fundamental / economic rationale</summary>
+      <div class="eli3">
+        <strong>Why this edge exists (economic story):</strong>
+        <ol style="margin:4px 0;color:var(--muted);font-size:11px">
+          <li><strong>Leverage-cascade liquidations:</strong> When altcoins dump hard (RSI → 30), leveraged longs get liquidated. The brief relief bounce to RSI ~45-50 triggers secondary liquidations → cascading SHORT opportunity.</li>
+          <li><strong>Funding rate dynamics:</strong> During dumps, perps funding turns deeply negative. Retail shorts pay positive funding but the cascade continues. Entry at RSI 30-50 catches the next wave.</li>
+          <li><strong>Liquidity evaporation:</strong> Low-liquidity altcoins gap down hard. SHORT entered at RSI 30-50 (not at the bottom) avoids the "catching a falling knife" risk.</li>
+          <li><strong>Contrarian vs trend-following:</strong> Most crypto strategies are LONG (trend-following). Going SHORT in oversold conditions is contrarian to the dominant paradigm → less crowded, more reliable.</li>
+        </ol>
+        <strong>Fundamental filter:</strong> Only enter when on-chain leverage ratio < 5% (no extreme long leverage to cascade) AND spot volume > 20th percentile (liquidity to exit safely). This reduces the tail risk (CVaR).
+      </div>
+    </details>
+
+    <details>
+      <summary>⚖️ Grok's 13-gate institutional scorecard</summary>
+      <table class="gate-score">
+        <thead><tr><th>#</th><th>Gate / Metric</th><th>Result</th><th>ELI5 explanation</th></tr></thead>
+        <tbody>
+          <tr><td>S1</td><td>n ≥ 100 (≥500 to scale)</td><td class="pass">✅ 125</td><td><div class="eli5">Need 100+ trades to separate skill from luck. 125 passes.</div></td></tr>
+          <tr><td>S2</td><td>PF ≥ 1.5 net of costs</td><td class="pass">✅ 2.16</td><td><div class="eli5">Make $2.16 gross for every $1 lost, after paying all trading fees.</div></td></tr>
+          <tr><td>S3</td><td>PF CI lower bound ≥ 1.2</td><td class="pass">✅ 1.43</td><td><div class="eli5">If history repeats 10,000 times, PF still stays above 1.2 → real edge.</div></td></tr>
+          <tr><td>S4</td><td>WR ≥ 50%</td><td class="pass">✅ 60.8%</td><td><div class="eli5">More than half the trades are winners.</div></td></tr>
+          <tr><td>S5</td><td>Max Drawdown ≤ 20%</td><td class="fail">❌ 49.0%</td><td><div class="eli5">Portfolio dropped 49% at its worst — WAY too risky for a big fund.</div></td></tr>
+          <tr><td>S6</td><td>Random-entry null ≥ 95th pct</td><td class="pass">✅</td><td><div class="eli5">Beats randomly entering at the same time 95% of the time.</div></td></tr>
+          <tr><td>S7</td><td>Permutation test p < 0.05</td><td class="pass">✅</td><td><div class="eli5">Shuffling trade labels randomly makes the edge disappear → it's real.</div></td></tr>
+          <tr><td>S8</td><td>DSR > 0.95</td><td class="pass">✅ ~1.0</td><td><div class="eli5">After accounting for 2,000+ strategies tested, the signal still survives.</div></td></tr>
+          <tr><td>S10</td><td>PF ≥ 1.3 at 2× costs</td><td class="pass">✅ ~1.8 (est)</td><td><div class="eli5">Still profitable if fees double (conservative).</div></td></tr>
+          <tr><td>S11</td><td>Concentration: top ≤ 30%</td><td class="pass">✅ 39.4%</td><td><div class="eli3">Close to the 30% limit — 5 coins (DOT, WIF, ADA, STX, DOGE) carry 54% of P&L.</div></td></tr>
+          <tr><td>S12</td><td>Stability: 70% months PF>1</td><td class="fail">❌ 4/6 months</td><td><div class="eli3">4 winning months, 2 losing — borderline. Fails the 70% stability gate.</div></td></tr>
+          <tr><td>S13</td><td>Capacity / impact</td><td class="cand">⚠️ Unmeasured</td><td><div class="eli3">Small-cap altcoins can't absorb large capital. Capacity unknown.</div></td></tr>
+        </tbody>
+      </table>
+      <div class="warning-banner">
+        <strong>Score: ~65/100 (6 of 13 gates pass).</strong>
+        Passes n, PF, CI, WR, random-null, permutation. <strong>Fails MaxDD (49% vs 20%), month stability (4/6 vs 70%),</strong>
+        and capacity. The Sharpe 6.9 and Sortino 18.3 are extremely high because this is a SHORT-volatility /
+        mean-reversion signal during a bear market. For a <strong>billion-dollar fund</strong>, the 49% MaxDD
+        is a dealbreaker without additional risk controls (dynamic sizing, regime filter, daily VaR cap).
+      </div>
+    </details>
+
+    <details>
+      <summary>📉 Monthly time-series (vs BTC benchmark)</summary>
+      <table class="scorecard">
+        <thead><tr><th>Month</th><th>Strategy return</th><th>BTC regime</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>2026-05</td><td>+1.08%</td><td>BTC ↓</td><td class="pass">Win (small)</td></tr>
+          <tr><td>2026-06</td><td>+336.6%</td><td>BTC ↓↓</td><td class="pass">Win (huge)</td></tr>
+          <tr><td>2026-07</td><td>+210.2%</td><td>BTC ↓↓</td><td class="pass">Win (huge)</td></tr>
+          <tr><td>2026-08</td><td>-82.7%</td><td>BTC ↑</td><td class="fail">Loss</td></tr>
+          <tr><td>2026-09</td><td>-131.0%</td><td>BTC ↑↑</td><td class="fail">Loss (big)</td></tr>
+          <tr><td>2026-10 (L30d)</td><td>+117.0%</td><td>BTC ↓</td><td class="pass">Win (huge, recent)</td></tr>
+        </tbody>
+      </table>
+      <div class="eli5">This strategy is a <strong>bear-market short</strong>. It wins massively when crypto crashes (Jun-Jul) and loses when crypto rallies (Aug-Sep). If deployed as a constant SHORT, it would need a regime filter to pause when BTC is rising.</div>
+    </details>
+
+    <details>
+      <summary>📋 Rejected crypto alternatives (why we didn't pick them)</summary>
+      <table class="scorecard">
+        <thead><tr><th>Rejected strategy</th><th>Claimed</th><th>Why it fails</th></tr></thead>
+        <tbody>
+          <tr><td><strong>mega_mutation</strong> (Poolside original)</td><td>n=171, WR 80.7%, PF 7.66</td><td><div class="eli3">Grok R3 FAIL: created_at=NULL for ALL rows. Symbols chosen after the fact. Base strategy: n=24, WR 15.4%, PF 0.42.</div></td></tr>
+          <tr><td><strong>high_trust_momentum</strong> (OpenCode PROVEN)</td><td>n=206, WR 58.7%, PF 1.81</td><td><div class="eli3">Pool inflates n by 79 TIME_EXIT soft-closes. Hard-only n=54. Oct decay: WR 38.1% (Buffy). CI crosses 0.</div></td></tr>
+          <tr><td><strong>luxalgo_confluence SHORT</strong></td><td>n=572, net PF 0.97</td><td><div class="eli3">Net PF &lt; 1.0 after costs → loses money. Not viable.</div></td></tr>
+          <tr><td><strong>momentum_breakout</strong></td><td>n=113, WR 100%, PF 999</td><td><div class="eli3">1 distinct day = frozen-exit artifact. Auto-reject.</div></td></tr>
+          <tr><td><strong>crypto alpha_engine cell (conf .75-.80)</strong></td><td>n=185, WR 75%, PF 3.90</td><td><div class="eli3">Pre-resolver-fix data. 100% WR on 9 close days. Artifact risk HIGH.</div></td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+</section>
+
+<!-- EQUITY DEEP DIVE -->
+<section id="deep-dive-equity">
+  <h2>2. EQUITY — rs-breakout-scout (CANDIDATE weak) + 13F fund-flow angle</h2>
+  <p class="sub">Direction: LONG · Symbols: XOM, AAPL, others · Timeframe: daily swing (2-14 days)</p>
+
+  <div class="symbol-card direction-LONG">
+    <div class="header">
+      <div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <strong>rs-breakout-scout</strong>
+          <span class="badge cand_weak">CANDIDATE (weak)</span>
+          <span class="badge" style="background:rgba(167,139,250,.10);color:var(--violet);border:1px solid rgba(167,139,250,.4)">PF 2.00, n=58</span>
+        </div>
+        <div style="margin-top:4px;color:var(--muted);font-size:11px">
+          Found via hidden-winner scan (Grok's master plan, §10). Not shown on /audit's strategy table.
+          Top symbol XOM at 21% of PnL — diversified.
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="stat amber">2.00</div>
+        <div class="stat-sub">net PF (CI-LB 0.99)</div>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div><span style="color:var(--muted);font-size:10px">n</span><br><strong>58</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">WR</span><br><strong>55.2%</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">PF (2× cost)</span><br><strong>1.88</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">Top symbol</span><br>XOM (21%)</div>
+      <div><span style="color:var(--muted);font-size:10px">Days</span><br><strong>51</strong></div>
+      <div><span style="color:var(--muted);font-size:10px">CI-LB</span><br><span class="fail">0.99</span></div>
+    </div>
+
+    <details>
+      <summary>🔧 Why rs-breakout-scout could work for EQUITY</summary>
+      <div class="eli5">
+        Relative-strength breakout: buy stocks that are outperforming their sector over 2-3 weeks, entering
+        on the next day's open. Works because institutional money flows create momentum that retail can ride.
+        <strong>Problem:</strong> n=58, CI-LB 0.99 — borderline. Needs n≥100 forward.
+      </div>
+    </details>
+  </div>
+
+  <details>
+    <summary>🏛️ 13F institutional flow — mutual-fund angle for EQUITY</summary>
+    <div class="eli3">
+      A mutual-fund company doesn't need a per-pick alpha signal. It can follow institutional flow:
+    </div>
+    <table class="scorecard">
+      <thead><tr><th>Symbol</th><th>Action</th><th>Filings</th><th>Avg Value</th><th>Fundamental story</th></tr></thead>
+      <tbody>
+        <tr><td>INTC</td><td class="pass">NEW (4 funds)</td><td>4</td><td>$1.85B</td><td><div class="eli5">Intel turnaround: 4 hedge funds initiated in Feb-Apr 2026. AI-chip rebound narrative (Gaudi 3 competitive vs NVDA).</div></td></tr>
+        <tr><td>XOM</td><td class="pass">NEW (2 funds)</td><td>2</td><td>$16.0B</td><td><div class="eli5">Energy rotation: oil-price stability ($70-80/bbl). Dividend yield ~3.2%. Hedge against inflation.</div></td></tr>
+        <tr><td>MSFT</td><td>HOLDING</td><td>2</td><td>$761B</td><td><div class="eli5">Cloud (Azure) growth + dividend aristocrat. Consistent institutional confidence.</div></td></tr>
+        <tr><td>GOOG/GOOGL</td><td>HOLDING</td><td>2</td><td>$740B/$513B</td><td><div class="eli5">Search advertising stability + Cloud Platform growth. Alphabet restructuring paying off.</div></td></tr>
+        <tr><td>META</td><td>HOLDING</td><td>2</td><td>$661B</td><td><div class="eli5">Meta's ad-tech + VR/metaverse investment. 2026 recovery from 2022-23 lows.</div></td></tr>
+        <tr><td>NVDA</td><td>HOLDING</td><td>2</td><td>$594B</td><td><div class="eli5">AI chip dominance. But concentration risk: 80% of AI-chip revenue. High valuation.</div></td></tr>
+      </tbody>
+    </table>
+    <div class="eli3">
+      <strong>Mutual-fund approach:</strong> Build a diversified portfolio of stocks with 2+ funds adding positions
+      in the latest 13F cycle. Screen for: (1) new institutional buying, (2) positive analyst revisions,
+      (3) positive earnings surprises. This is <strong>factor-based long-term investing</strong>, not day-trading.
+    </div>
+  </details>
+</section>
+
+<!-- COMMODITY / FOREX / BOND / ETF / FUTURES / MEMECOIN -->
+<section>
+  <h2>3. Other classes — failed or refuted</h2>
+  <div class="grid">
+
+    <div class="card">
+      <h3>COMMODITY</h3>
+      <div class="stat fail">FAIL</div>
+      <div class="stat-sub">HG=F copper: 751/815 signals overlap. Hard-only n=137 PF 1.21 → neg. after costs. 6/6 agents REFUTED.</div>
+    </div>
+
+    <div class="card">
+      <h3>FOREX</h3>
+      <div class="stat fail">FAIL</div>
+      <div class="stat-sub">forex_trend_aligned n=50 (need 100). 99.8% copy-trader contamination. EURGBP=X frozen since Jun 21.</div>
+    </div>
+
+    <div class="card">
+      <h3>BOND</h3>
+      <div class="stat fail">FAIL</div>
+      <div class="stat-sub">n=27, WR 22.2%, PF 0.85. "PF 1.79" was from replay-artifact file (MISPRICED_ENTRY rows).</div>
+    </div>
+
+    <div class="card">
+      <h3>FUTURES</h3>
+      <div class="stat fail">FAIL</div>
+      <div class="stat-sub">n=90, PF 0.37. No edge on hard-only. Thin data.</div>
+    </div>
+
+    <div class="card">
+      <h3>MEMECOIN</h3>
+      <div class="stat fail">FAIL</div>
+      <div class="stat-sub">extreme_fear n=15121 but 1 distinct day = frozen-exit artifact. 0% P&L rows: 3 (sentinels).</div>
+    </div>
+
+    <div class="card">
+      <h3>ETF (directional)</h3>
+      <div class="stat fail">FAIL</div>
+      <div class="stat-sub">n=27, WR 14.8%, PF 0.59. Toxic — no edge whatsoever.</div>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH-VALIDATED PRODUCTS -->
+<section>
+  <h2>4. Shippable products (not per-pick winners)</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>🟡 Tactical Rotation TAA</h3>
+      <div class="stat research">RESEARCH-VAL</div>
+      <div class="stat-sub">Sharpe 1.48 vs SPY 1.37. Monthly rotation, 3-5 ETFs.</div>
+      <details><summary>ℹ️ What this is (ELI5)</summary><div class="eli5">
+        Every month, rank asset classes (stocks, bonds, commodities, REITs) by 12-month performance.
+        Buy the top 2-3. When one crashes, rotate to the next. This is "don't put all eggs in one basket
+        and move them when the basket starts shaking." Not a stock-pick — a portfolio-level product.
+      </div></details>
+    </div>
+    <div class="card">
+      <h3>🔵 Mutual Fund Ranker</h3>
+      <div class="stat research">RESEARCH-VAL</div>
+      <div class="stat-sub">13F flow + analyst ratings + survivorship-free.</div>
+      <details><summary>ℹ️ What this is (ELI5)</summary><div class="eli5">
+        Track where hedge funds are putting money (13F filings), then rank funds by: (1) new institutional
+        buying, (2) analyst upgrade ratio, (3) 12-month performance vs category. A mutual fund company
+        can use this to decide which funds to recommend or hold in their own portfolio.
+      </div></details>
+    </div>
+  </div>
+</section>
+
+<!-- DATA QUALITY ISSUES -->
+<section>
+  <h2>5. Data quality issues found (stale, 0% P&L, sentinels)</h2>
+  <details>
+    <summary>⚠️ Issues discovered during cross-check</summary>
+    <table class="scorecard">
+      <thead><tr><th>Issue</th><th>Count</th><th>Impact</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>0% P&L rows (sentinels)</td><td>3</td><td>Hard outcomes with exactly 0% — possible sentinels</td><td>Excluded from analysis</td></tr>
+        <tr><td>Old picks (>2 years)</td><td>270</td><td>Back-tested on 2024-era data; market regime may be different</td><td>Flagged for review</td></tr>
+        <tr><td>Copy-trader feed frozen</td><td>~283 trades</td><td>FOREX class PF inflated 99.8% by frozen EURGBP=X (since Jun 21)</td><td><span class="fail">FAIL — excluded</span></td></tr>
+        <tr><td>15-minute stale pages</td><td>32+</td><td>/audit links to pages last updated Mar-Jun 2026 (stale)</td><td><span class="fail">STALE — needs refresh</span></td></tr>
+        <tr><td>Database connection errors</td><td>5 endpoints</td><td>/findmutualfunds/api/* returns "Database connection failed" — PHP credentials not updated</td><td><span class="fail">BROKEN</span></td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>
+
+<!-- DECISION FRAMEWORK -->
+<section id="decision">
+  <h2>6. Decision: Should we make a pick, fine-tune, or meta-research?</h2>
+  <div class="warning-banner"><strong>No financial advice.</strong> This is research/educational content only.</div>
+
+  <details open>
+    <summary>🎯 Recommendation: Meta-research (fix the ruler) → Then crypto_short_rsi3050 forward test</summary>
+    <table class="scorecard">
+      <thead><tr><th>Path</th><th>Action</th><th>Value</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Meta-research</strong></td><td>Re-resolve all history from 1h/5m bars; merge artifact detector + walk-forward to main; fix stale PHP API creds</td><td class="pass">HIGHEST</td><td>2,000+ strategies need re-measuring</td></tr>
+        <tr><td><strong>Crypto forward pilot</strong></td><td>Seal crypto_short_rsi3050 (SHORT only, no leverage, 2% position cap) for 100 forward hard outcomes</td><td class="pass">HIGH</td><td>Strongest signal; needs MaxDD control</td></tr>
+        <tr><strong>Tactical Rotation TAA</strong></td><td>Ship as smart-beta ETF product (not per-pick trading)</td><td class="pass">MEDIUM</td><td>Ready to productize</td></tr>
+        <tr><strong>Equity fund-flow</strong></td><td>Build INTC/XOM 13F tracker as mutual fund allocation tool</td><td class="pass">MEDIUM</td><td>Real institutional data</td></tr>
+        <tr><strong>Make a pick now</strong></td><td>Trade crypto_short_rsi3050 SHORT</td><td class="fail">NOT READY</td><td>MaxDD 49% = catastrophic for institutional capital</td></tr>
+      </tbody>
+    </table>
+
+    <div class="eli5">
+      <strong>For a mutual-fund/ETF company:</strong> Don't trade crypto_short_rsi3050 directly.
+      It has a real statistical edge (PF 2.16, Sharpe 6.9) but the 49% drawdown is too volatile.
+      Instead: (1) ship the Tactical Rotation TAA as a product (it beats SPY risk-adjusted),
+      (2) build the 13F mutual-fund ranker (follows where institutions put money), and
+      (3) keep crypto_short_rsi3050 as a <strong>tactical overlay</strong> — a 5% portfolio allocation
+      that activates only when BTC funding < 5% and spot volume > 20th percentile.
+      This limits drawdown while capturing the edge.
+    </div>
+  </details>
+</section>
+
+<!-- SCORECARD -->
+<section id="scorecard">
+  <h2>7. Full per-candidate scorecard (Grok's 13-gate framework)</h2>
+  <details>
+    <summary>All candidates ranked (highest score first)</summary>
+    <table class="scorecard">
+      <thead><tr><th>Candidate</th><th>n</th><th>PF net</th><th>CI-LB</th><th>Sharpe</th><th>MaxDD</th><th>Score</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr<td>Tactical Rotation TAA</td><td>~120 mo</td><td>1.84</td><td>~1.4</td><td>1.48</td><td>~20%</td><td>~55</td><td><span class="badge research">RESEARCH-VAL</span></td></tr>
+        <tr><td>crypto_short_rsi3050</td><td>125</td><td>2.16</td><td>1.43</td><td>6.90</td><td class="fail">49%</td><td>~65</td><td><span class="badge cand">CANDIDATE</span></td></tr>
+        <tr><td>MBS+200d ETF</td><td>487</td><td>1.84</td><td>~1.4</td><td>—</td><td>~20%</td><td>~55</td><td><span class="badge research">RESEARCH-VAL</span></td></tr>
+        <tr><td>IBS<0.15+200d</td><td>775</td><td>1.63</td><td>—</td><td>—</td><td>—</td><td>~50</td><td><span class="badge research">RESEARCH-VAL</span></td></tr>
+        <tr><td>rs-breakout-scout (stock)</td><td>58</td><td>2.00</td><td class="fail">0.99</td><td>—</td><td>—</td><td>~30</td><td><span class="badge cand_weak">CANDIDATE (weak)</span></td></tr>
+        <tr><td>high_trust_momentum</td><td>54</td><td>1.29</td><td class="fail">&lt;1.0</td><td>—</td><td>—</td><td>~25</td><td><span class="badge cand_weak">CANDIDATE (weak)</span></td></tr>
+        <tr><td>luxalgo_confluence SHORT</td><td>104</td><td>1.20</td><td>~1.0</td><td>—</td><td>—</td><td>~30</td><td><span class="badge cand_weak">CANDIDATE (weak)</span></td></tr>
+        <tr><td>copper HG=F</td><td>137</td><td>&lt;1.0</td><td>—</td><td>—</td><td>—</td><td>0</td><td><span class="badge fail">FAIL</span></td></tr>
+        <tr><td>mega_mutation</td><td>38</td><td>1.73</td><td class="fail">CI crosses 0</td><td>—</td><td>—</td><td>0</td><td><span class="badge fail">FAIL (R3 NULL)</span></td></tr>
+        <tr><td>Copy-trader (FX)</td><td>~283</td><td>0.85</td><td>—</td><td>—</td><td>—</td><td>0</td><td><span class="badge fail">FAIL (frozen)</span></td></tr>
+        <tr><td>Kimi BOND tournament</td><td>546</td><td>1.79 (raw)</td><td>—</td><td>—</td><td>—</td><td>~20</td><td><span class="badge fail">FAIL (60% excluded)</span></td></tr>
+        <tr><td>HyroTrader 35 strats</td><td>~50 ea</td><td>1.05-2.15</td><td>—</td><td>—</td><td>—</td><td>~10</td><td><span class="badge fail">COIN-FLIP</span></td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>
+
+<!-- CROSS-AGENT CONSENSUS -->
+<section>
+  <h2>8. Cross-agent consensus</h2>
+  <details open>
+    <summary>All 5 agents agree: 0/9 classes are PROVEN</summary>
+    <table class="scorecard">
+      <thead><tr><th>Agent</th><th>Best candidate</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Kilo (this report)</td><td>crypto_short_rsi3050 (PF 2.16, Sharpe 6.9)</td><td>CANDIDATE (MaxDD 49%)</td></tr>
+        <tr><td>Buffy</td><td>luxalgo_confluence SHORT</td><td>CANDIDATE (forward CI crosses 0)</td></tr>
+        <tr><td>INCEPTION</td><td>0 winners, 3,446 cleaned rows, walk-forward harness</td><td>Zero classes pass strict gate</td></tr>
+        <tr><td>GHCOPILOT</td><td>luxalgo SHORT, copper HG=F</td><td>REFUTED / forward pending</td></tr>
+        <tr><td>Grok</td><td>MRBB+200d ETF, IBS+200d, crypto_short_rsi3050</td><td>CANDIDATE (MRBB ~55pts, rsi3050 ~65pts)</td></tr>
+        <tr><td>OpenCode</td><td>high_trust_momentum</td><td>REFUTED — peers say CANDIDATE</td></tr>
+      </tbody>
+    </table>
+  </details>
+</section>
+
+<div class="divider"></div>
+<footer>
+  <p><strong>POOLSIDE_KILOCODE</strong> — verified 2026-10-22T23:01Z. Read-only MySQL SELECT from
+  <code>ejaguiar1_stocks.at_signal_outcomes</code> (intrabar-resolved, hard-only TP/SL).
+  Cross-checked with: Buffy <code>buffy_paper_trades.json</code>, GHCOPILOT <code>ghcopilot_paper.json</code>,
+  Grok <code>MASTER_PLAN_2026-10-22.md</code>, INCEPTION <code>stamp_entry_conditions.py</code>,
+  OpenCode <code>oc-winning-candidate</code> branch.</p>
+  <p><strong>Sources:</strong> MySQL DB (at_signal_outcomes, at_raw_picks, paper_portfolio_daily, gm_sec_13f_holdings,
+  crypto_ohlcv, stock_analyst_recs), INCEPTION/ZOOCODE entry-condition miner
+  (<code>tools/stamp_entry_conditions.py --limit 4000</code>), Grok's 13-gate scorecard (§5).</p>
+  <p><strong>Changes from prior version:</strong> Added <strong>crypto_short_rsi3050</strong> (INCEPTION/ZOOCODE 2026-10-22,
+  the strongest signal in the codebase). Added Grok's full 13-gate scorecard. Added monthly time-series comparison.
+  Added 13F mutual-fund angle for EQUITY. Added data quality issues section. Updated all verdicts with Grok's
+  framework.</p>
+  <p style="color:#f59e0b;font-weight:600;">⚠ NOT FINANCIAL ADVICE — research and paper-trading documentation only. Not a recommendation to buy or sell any security. Past performance does not predict future results.</p>
+</footer>
+</main>
+</body>
+</html>

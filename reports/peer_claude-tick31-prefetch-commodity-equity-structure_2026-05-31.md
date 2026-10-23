@@ -270,3 +270,5 @@ To un-kill: remove that line (per `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md` +
 - **COMMODITY strategies mapped:** 7 (cot_positioning, cftc_cot_commercial_signal, cta_cross_asset_tsmom, futures_momentum, ema_stack_momentum, commodity_tsmom_12m, gold_safe_haven).
 - **EQUITY strategies mapped:** 6 (stocks_rsi2_pullback, connors_rsi2, quality_compounders, equity_momentum_regime, pead_equity, UEPS composite).
 - **INCIDENT_STOCKS #3 confirmed:** PARTIAL (production_scanner is a gate-layer, not the dispatcher; scanner.py is the dispatcher and it DOES route EQUITY).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

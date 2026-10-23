@@ -76,3 +76,5 @@ Ensure ALL asset classes meet hedge fund quality standards: **WR >= 55%, positiv
 - [x] `score_booster.py` syntax OK
 - [x] All fixes are additive — no existing logic removed
 - [x] Full audit trail fields for each new gate
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

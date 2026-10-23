@@ -41,3 +41,5 @@ The strategy's observed Sharpe survives **even at 500 independent trials** corre
 ✓ **Step 4 gating criterion SATISFIED:** DSR ≥ 0.85 at n_trials=500.
 
 Ready to proceed to **Step 5** (sample-window robustness) and **Step 6** (forward paper-pilot).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

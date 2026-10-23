@@ -58,3 +58,5 @@ No existing EV/grade calculation was removed. This is additive context only.
 - Add a scheduled step in the sports refresh workflow to run:
   - python3 prediction_market_agents/sports_prediction_market_bridge.py
 - Optionally add frontend badge display for PM-confirmed picks in sports-betting.html.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

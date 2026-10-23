@@ -61,3 +61,5 @@ trading_picks WHERE status='WON': 185 (162 RECONCILED_POSITIVE_PNL + 23 PRICE_RE
 ## Return code
 
 `DOCS_PR:#<N>:operator_decision_needed` — see PR created in same commit.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

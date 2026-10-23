@@ -106,3 +106,5 @@
 ---
 
 Filed by Claude proposal-only pass at 2026-06-05. No code changed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -49,3 +49,5 @@ The forced 10x doubled spec notional ($10k vs $6.5k), but:
 - BTC squeeze through $79,950 SL on macro pop (CPI / FOMC speak) is the single largest tail.
 - Coinbase perp funding rate not checked — if funding flipped deeply negative, a short-squeeze is structurally more likely.
 - Time-stop 2026-05-15 12:00 UTC is the right hard line; don't get cute and extend it.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

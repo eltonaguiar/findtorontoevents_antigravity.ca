@@ -45,3 +45,5 @@
 - Risk Manager: "XOM SHORT is the most honest pick" (30% confidence = realistic)
 - Portfolio Manager: Macro thesis identification (stagflation-light with bear steepener)
 - Portfolio Manager: Top 5 trim list (TLT, SPY, GLD, CL, AVAXUSDT)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -96,3 +96,5 @@ when a qualifying cohort is available. The harness is now in place and re-runnab
 ```
 python tools/vol_scalar_backtest.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

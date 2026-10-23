@@ -63,3 +63,5 @@
 - Syntax-check all 4 modified Python files
 - Monitor next scan cycle for `[ELITE_SCORE_GATE]` and `[STRATEGY_CONF_GATE]` log lines
 - Track `elite_below_gate` and `strategy_conf_gate` in smart_picks exclusion stats
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

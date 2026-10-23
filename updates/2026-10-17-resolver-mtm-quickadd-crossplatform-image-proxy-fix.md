@@ -100,3 +100,5 @@ patched in parity):**
 
 Nothing was bypassed: all authenticated endpoints still require a signed-in
 session, and no production user records were mutated during testing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

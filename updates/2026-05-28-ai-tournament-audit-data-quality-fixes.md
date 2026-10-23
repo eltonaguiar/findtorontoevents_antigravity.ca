@@ -38,3 +38,5 @@ Playwright: zero `pageerror` on `/audit/ai-tournament.html`; main `/audit/` shou
 - OPEN picks with `pnl_pct: 0.0` placeholder (resolver/ingest)
 - Standalone `money_ready_verdict.json` 13h staleness vs dashboard embed
 - `EXPIRED` status emission vs methodology copy
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

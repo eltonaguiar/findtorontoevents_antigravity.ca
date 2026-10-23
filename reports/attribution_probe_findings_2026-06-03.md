@@ -40,3 +40,5 @@ edge" should NOT be cited as proven edge.
 
 ## Reproduce
 `python3 tools/attribution_probe.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

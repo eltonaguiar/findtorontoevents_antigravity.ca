@@ -99,3 +99,5 @@ NOW" — promotion is always gate-earned.
 *Synthesized 2026-05-17 from verified findings. Sauna's `class_improvement_algorithms.md`
 playbook is process-sound but repeats the inverse-PF fantasy (FUTURES "WR 3.5%
 → 96.5% inverse") — corrected here.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

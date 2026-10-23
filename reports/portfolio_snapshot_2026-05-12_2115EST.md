@@ -95,3 +95,5 @@ Will fill at Wed Apr 13 9:30 EST open IF limit prices hit.
 ## Pending swarm second opinion
 
 Dispatched general-purpose agent with full state + market context + memory rules. Awaiting close/hold/add per-position verdict + top-3 ADD candidates + portfolio-direction assessment + honest swarm-methodology verdict.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

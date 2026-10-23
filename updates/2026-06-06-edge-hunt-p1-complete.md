@@ -123,3 +123,5 @@ python3 tools/strategy_tier_tracker.py --min-n 15
 - `updates/2026-06-06-next-steps-execution-wrap.md` — prior session wrap
 - `reports/edge_hunt_ALL_CLASSES_v2_2026-06-06.md` — master synthesis
 - `reports/forex_carry_backtest_extended_20260606.json` — FOREX backtest n=197
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

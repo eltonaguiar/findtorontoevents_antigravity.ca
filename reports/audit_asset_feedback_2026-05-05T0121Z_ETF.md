@@ -15,3 +15,5 @@ ETF remains unproven. Current payload: `n=88`, `WR=53.4%`, `PF=1.20`, `PnL=19.79
 ## Do Not Do
 
 Do not promote ETF based on WR alone. It fails both sample floor and PF floor.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

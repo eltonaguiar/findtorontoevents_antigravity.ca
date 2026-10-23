@@ -72,3 +72,5 @@ python3 tools/generate_gha_summary_html.py --merge-shards reports/shard0.json re
 - Reuses fresh `reports/actions_failure_guardian.json` (&lt;90 min) for unresolved/chronic/stale hints when available.
 - Full fleet log scans are rate-limit sensitive; the generator retries on 403/429 with backoff.
 - Read-only dashboard; reruns remain the job of `scripts/actions_failure_guardian.py`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -20,3 +20,5 @@ The three files must stay in sync: bets and picks call `sports_scores_find_match
 
 - Grep: no `??` / `?:` (PHP 5.2) in the three files after port
 - PR merged after #342 (failover) was already on `main`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

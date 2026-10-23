@@ -56,3 +56,5 @@ FOREX direction split:
 - Let ml_enhanced INJ/DYDX/RENDER accumulate to n>=100 with LB>0.6 gate; do NOT scale.
 
 Source verifications: PR #318 (verifier swarm), PR #330 (evening DYDX), money_ready_verdict.json 2026-05-24, live SQL 2026-05-31 EST.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

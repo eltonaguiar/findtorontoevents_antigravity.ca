@@ -50,3 +50,5 @@ If the CRYPTO LONG book had been **direction-filtered (SHORT-bias) or regime-gat
 6. **/audit freshness:** local data copies are stale (dashboard_data 06-02, pick_funnel_90d 05-29) — verify the LIVE deployed copies are current; the luxalgo status won't appear on /audit until wired (#5).
 
 **Bottom line:** the book didn't lose because our strategies are all bad — it lost because it ran a big LONG crypto book into a down-market. The durable fixes are **direction/regime gates** on existing emitters + promoting the one real edge (luxalgo SHORT) once it clears its forward gate. No new-strategy sizing is warranted today.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -72,3 +72,5 @@ relative ROM-site paths (`/sites/default/files/...webp`). Those 404s now fire ea
 - Decouple the nav tiles from event data so they render on React commit rather than on the first event card. Reserve tile-grid height to avoid CLS.
 - Fix relative ROM thumbnail URLs in the scraper output.
 - Bring `ai-assistant.js`, `add-promos.js` and `theme-*.js` under git so FAB positions are coordinated in one place.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

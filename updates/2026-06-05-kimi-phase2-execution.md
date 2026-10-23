@@ -150,3 +150,5 @@ python3 -m tools.feature_signals.orchestrator
 ---
 
 *Generated 2026-06-05 by KIMI Phase 2 execution session.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

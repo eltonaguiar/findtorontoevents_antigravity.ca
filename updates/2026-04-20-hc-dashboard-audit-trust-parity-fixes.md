@@ -50,3 +50,5 @@ Recent crypto picks have **90% WR (last 10)** but **0 pass HC gates**. This is l
 - `scoreFloorCrypto: 55` may be overfit to older regimes (train/test gap 71% → 32% WR)
 
 Recommendation: backfill `strat_fwd_wr` from strategy history and consider lowering crypto score floor temporarily.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

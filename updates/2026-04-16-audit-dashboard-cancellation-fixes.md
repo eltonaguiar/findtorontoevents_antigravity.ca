@@ -98,3 +98,5 @@ Many workflows commit to `main` without `[skip ci]`, which increases push races.
 3. **Worst-case sleep:** Draft ~4.5 min then ~9.6 min; upper bound is **~11.6 min** (see formula above).  
 4. **“Code reviewer approved”:** Draft implied a completed automated review; **code-reviewer-lite was cancelled** mid-flight — misleading.  
 5. **Conflict-hatch generator:** Prefer **not** hiding stderr during recovery. Workflow uses `python -m audit_trail.dashboard_generator 2>&1 || true` (stderr merged to stdout for CI logs) instead of `2>/dev/null`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

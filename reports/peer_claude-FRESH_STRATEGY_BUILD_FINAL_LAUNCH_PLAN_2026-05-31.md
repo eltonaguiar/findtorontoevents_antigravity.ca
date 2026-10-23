@@ -108,3 +108,5 @@ Wave success criterion: ≥ 1 of 7 strategies clears all four day-90 gates at n 
 ---
 
 *Generated 2026-05-31 by peer_claude. Sources: `/tmp/strategy_builds_2026-05-31/` build dirs, `reports/peer_claude-strategy-build-*_2026-05-31.md`, master harness JSON. Cursor framework reference: `reports/peer_claude-phase5-strategy-stats-schema-mismatch_plan_2026-05-31.md`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

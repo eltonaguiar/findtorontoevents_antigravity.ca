@@ -107,3 +107,5 @@ Both checks gate the dashboard's DO-NOT-TRADE banner. While they were RED on
 benign causes, real anomalies (e.g. the 29.2 M overcount incident) were lost
 in the noise. After this fix the banner reflects actual integrity problems
 only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

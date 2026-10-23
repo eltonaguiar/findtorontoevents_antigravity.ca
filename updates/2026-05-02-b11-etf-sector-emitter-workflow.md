@@ -46,3 +46,5 @@ The concentration is real (86%) and the goal of B11 is to add an independent sou
 
 - `reports/feedback/B11-self-review-1-2026-05-02.md` — confirmed ready-to-ship
 - `reports/feedback/B11-self-review-2-2026-05-02.md` — confirmed ready-to-ship; noted potential `etf_strategies` import path risk (handled by PYTHONPATH in workflow)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

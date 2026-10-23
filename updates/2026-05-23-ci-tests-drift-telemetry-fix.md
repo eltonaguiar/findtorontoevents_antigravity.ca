@@ -42,3 +42,5 @@ This makes the drift telemetry workflow idempotent — it will succeed (with a s
 ## Impact
 - CI Tests: Should now pass collection phase (either run tests normally or skip gracefully)
 - Audit Drift Telemetry: Should no longer fail when `dashboard_data.json` is absent; will produce output once the audit-dashboard pipeline generates the input file
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

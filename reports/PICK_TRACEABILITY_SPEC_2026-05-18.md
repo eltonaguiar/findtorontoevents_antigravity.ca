@@ -3879,3 +3879,5 @@ def test_no_pipeline_regression():
 ---
 
 *End of Specification*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

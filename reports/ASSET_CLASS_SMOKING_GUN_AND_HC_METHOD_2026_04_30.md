@@ -236,3 +236,5 @@ Implication:
 3. Run post-resolver class recompute and update /audit scorecards.
 4. Launch class-specific HC calibration for EQUITY and ETF first.
 5. Start controlled CRYPTO risk-first mutation sweep.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

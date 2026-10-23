@@ -171,3 +171,5 @@ Change scope:
 - `audit_dashboard/data/pf_registry.json` (raw/dedup/policy-clean/policy-clean-net views; canonical_view = `by_asset_class_policy_clean_net`)
 - `audit_dashboard/data/money_ready_verdict.json` (today: COMMODITY n_resolved=28, WR 10.71%, PF 0.31, verdict INSUFFICIENT_DATA, data_source closed_picks)
 - `audit_dashboard/data/top_edges_per_class.json` (today: COMMODITY n_closed=1219, n_bonferroni_pass=71, top cell PF 3.27 n=137)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

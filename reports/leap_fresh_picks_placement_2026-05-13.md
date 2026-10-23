@@ -46,3 +46,5 @@ Auto-write to `audit_dashboard/data/swarm_advice_audit.json` next cycle (schema 
 - **Order ticket TP/SL didn't carry through on market submit** for either pick. Both required follow-up Protect Position dialog to attach brackets. Repeat of TV-paper bug observed previously — order-panel TP/SL on a market order is unreliable; manual protect-attach is mandatory after fill.
 - Both Protect dialogs needed TP and SL toggle switches enabled (default off) before price values would persist. See `feedback_tv_protect_position_tp_toggle.md`.
 - Leverage forced to 10x by paper-account default (swarm spec was 5x). Doubles notional vs spec — actual exposure $13k vs spec $6.5k. Acceptable given Leap closes in 48h: max combined loss still capped at $451 (0.45%).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

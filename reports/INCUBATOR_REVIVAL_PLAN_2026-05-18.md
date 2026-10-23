@@ -64,3 +64,5 @@ The incubator has the candidates and the gate code; it lacks a flowing
 pipeline and, until this PR, a stability gate. Step 1 (schema wiring) is the
 real unlock — once strategies flow through, the hardened gate ensures only
 walk-forward-stable ones graduate to live.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

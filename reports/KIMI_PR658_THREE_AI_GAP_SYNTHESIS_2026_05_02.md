@@ -94,3 +94,5 @@ Top 5 dangers:
 ---
 
 **Cross-AI consensus:** all three reviewers agree the PR can land as a docs-only artifact, but ZERO of them recommend auto-actioning the Phase 0 emergency triage as written. Two of three explicitly say HOLD on implementation; the third (Review 1) was scoped to fidelity only and did not assess operational risk.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

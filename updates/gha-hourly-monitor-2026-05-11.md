@@ -68,3 +68,5 @@
 
 ---
 *Monitor run: 2026-05-11T05:09 UTC | Tooling: GitHub MCP API (gh CLI unavailable in this environment) | Verdict unchanged: DEGRADED → DEGRADED, no commit escalation triggered*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

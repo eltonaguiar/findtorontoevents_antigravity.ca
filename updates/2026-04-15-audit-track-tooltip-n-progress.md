@@ -14,3 +14,5 @@ Introduced `_SYM_TRACK_MIN_N = 3` once and reused it in `_symTrackUseable` so th
 ## Verification
 
 - Manual: open Active picks, hover Track — tooltip should include `Progress for symbol …: k/3 closes … need … more` until k≥3.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

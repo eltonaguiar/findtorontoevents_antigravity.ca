@@ -46,3 +46,5 @@ The fix is NOT tighter TP/SL. It's:
 - Methodology: CONFIRMED SOUND by 3 external AIs
 - Edge: EXISTS but fragile (CI crosses zero)
 - Next: Wire forced resolution with WIDE TP/SL (not tight) + time-based market exit
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

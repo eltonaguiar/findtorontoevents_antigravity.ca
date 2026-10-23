@@ -106,3 +106,5 @@ so cross-validation can happen on every pick that /audit is currently long/short
 - /audit picks file: `audit_dashboard/data/dashboard_data.json::picks.active`
 - Swarm metric audit (resolver bias caveat): `reports/swarm_pick_metric_audit_2026-05-13.md`
 - LONG-source-bias warning that explains why /audit may not show DOTUSDT/TIAUSDT SHORTs: `memory/feedback_long_source_bias.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

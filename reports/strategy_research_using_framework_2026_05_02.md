@@ -171,3 +171,5 @@ Deterministic — fixed seed=42 in `bootstrap_ci`; no network calls; no clock-de
 - **Did not edit `audit_dashboard/template.html` or `dashboard_generator.py`.** Per plan: "no big-bang dashboard rewrite; ship behind feature flags."
 - **Did not expand `BLOCKED_SOURCE_SYSTEMS`.** `rapid_fire` is *flagged for investigation*, not killed.
 - **Did not run any external API calls.** Reproducible from the static `closed_picks.json` snapshot.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

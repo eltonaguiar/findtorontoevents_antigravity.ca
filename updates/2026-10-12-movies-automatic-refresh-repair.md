@@ -63,3 +63,5 @@ does **not** recalculate every existing rating or rebuild the static V1 catalogu
   protected credential locations returned HTTP 403; V1 stayed on its own route.
 
 No database passwords, TMDB credentials, or sync token values are included here.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

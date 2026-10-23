@@ -172,3 +172,5 @@ Feature formula:
 3. Sector rotation signal at entry_time: `sector_rotation_signal = sector_rotation_indicator(entry_time)`
 
 Note: These formulas assume that the HMM-state probabilities and sector rotation indicator are available. You may need to modify the formulas to match your specific implementation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

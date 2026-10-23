@@ -120,3 +120,5 @@ python -c "from tools.regime_strategy_matcher import RegimeDetector; import json
 - Production wiring (env flag proposed only)
 - Per-asset-class regimes (BTC-wide regime only; could extend with ETH-only, forex-specific later)
 - Integration with PR #307's `MacroRegimeAlignment` output (can compose via orthogonal gate calls)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

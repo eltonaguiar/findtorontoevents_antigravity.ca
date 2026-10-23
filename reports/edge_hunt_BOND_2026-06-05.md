@@ -64,3 +64,5 @@ Existing pilots: `risk_parity_bond_tlt_short` / `shy_short` — hist n=5, forwar
 **Do not size up.** Forward n<10; backtest edge is orphan; live WR 25–47% on tiny n. Paper-only until n≥100 post-wire-up.
 
 *Reproducers:* `python3 tools/backtest_bond_tlt_ief_momentum.py`; `audit_dashboard/data/bond_tlt_ief_v3_24m.json`; `python3 -m alpha_engine.priority_picks_emitter --dry-run`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

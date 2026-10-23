@@ -420,3 +420,5 @@ Based on the full analysis, here are the **proven edge pockets** ranked by confi
 ---
 
 *Report generated from 4,639 resolved picks + 21,408 dashboard closed picks across 136 systems. Data as of 2026-04-17T05:07:52Z.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

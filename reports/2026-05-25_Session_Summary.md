@@ -56,3 +56,5 @@ All planned technical work is complete. The system is now documented, reviewed, 
 Next actions are production-oriented (implementation of MVP slice, data quality fixes for Smart Picks, wiring per CLAUDE rules).
 
 **Session closed successfully.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -146,3 +146,5 @@ Each skeleton must comply with the Wire-Up Rule (CLAUDE.md):
 - [Sistem_Akinci_1453 profile](https://www.tradingview.com/u/Sistem_Akinci_1453/)
 - [The Leap Crypto Edition Mar-2026 results blog](https://www.tradingview.com/blog/en/the-leap-crypto-edition-results-57323/)
 - [Taking on The Leap — Coinmonks/Medium (DailyPanda)](https://medium.com/coinmonks/taking-on-the-leap-my-strategy-for-tradingviews-paper-trading-contest-intro-4e66ddbf1f4d)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

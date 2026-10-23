@@ -91,3 +91,5 @@ Better to ship as a focused PR after the queue clears.
 
 **Add to roadmap:** "ALPHA ENGINE: persist historical strategy_performance entries
 across scan runs (merge instead of overwrite)."
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

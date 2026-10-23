@@ -69,3 +69,5 @@ passes_active_gate) handle legitimacy assessment separately.
 - Queue: `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` §4 B20
 - Feedback docs: `reports/feedback/B20-*.md`
 - Related: PR #544 (tradingagents), PR #546 (skyrocket_detector), PR #582 (ueps)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

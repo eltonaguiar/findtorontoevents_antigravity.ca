@@ -24,3 +24,5 @@ It is NOT that no edge exists. The **real, documented equity anomalies (momentum
 
 ## Infrastructure built (reusable)
 equity_daily_ohlcv (229 tickers x 5yr daily) + futures_daily_ohlcv (11 commodities x 5yr) — survivorship-biased (current constituents) but a real price feed for ongoing forward testing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

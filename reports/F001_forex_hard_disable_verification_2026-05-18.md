@@ -84,3 +84,5 @@ is the first gate in the FOREX check chain — no FOREX pick can reach scoring.
 | Zero FOREX signals generated | ✅ Confirmed |
 
 **F-001: COMPLETE**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

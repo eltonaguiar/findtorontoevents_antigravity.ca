@@ -124,3 +124,5 @@ A3, A4, A5 are still worth shipping but are second-wave: they are slow-drift det
 - All proposals are read-only against prod data files; only writes are alert posts and `reports/*.csv` history files.
 - None require WSL or Windows paths; pure Linux runners.
 - The `actions-failure-guardian.yml` improvement (3+ consecutive gate) is a one-line PR and not listed here as a separate proposal — file as a follow-up issue against that workflow.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

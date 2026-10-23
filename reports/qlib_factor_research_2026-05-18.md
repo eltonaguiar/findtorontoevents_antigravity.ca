@@ -124,3 +124,5 @@ Universe: SPY, QQQ, IWM, GLD, SLV, XLK, XLE, EEM, TLT, HYG. Weekly bars. Forward
 
 ---
 **Overall: at least one qlib factor shows a year-stable forward-return spread — promote to the harness.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

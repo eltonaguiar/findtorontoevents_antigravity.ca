@@ -162,3 +162,5 @@ n=18, WR=16.7%. Still 2 trades from n=20 gate. **Monitor only.**
 | Dashboard refresh | ❌ Stale (same 12:18Z snapshot, 5th hr) |
 | FOREX post-#687 streak | ✅ 17 consecutive hours PF≥1.0 |
 | EQUITY circuit_breaker | ✅ Not breached (30d WR=48.6%) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

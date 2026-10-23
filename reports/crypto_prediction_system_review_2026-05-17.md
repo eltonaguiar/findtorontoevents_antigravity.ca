@@ -140,3 +140,5 @@ The `effort` field is a human-readable string (e.g., "~2 hours") and `risk` is a
 4. Gap 4 regime filter uses the approved `env-var-gated, fail-open try/except` pattern
 5. All new SQLite tables use `(symbol, ts) PRIMARY KEY` matching the existing schema convention
 6. `fillna(0)` handles cold-start and missing data gracefully — model learns to downweight absent features
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

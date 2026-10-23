@@ -499,3 +499,5 @@ python3 -m pytest tests/test_eagle2_phase0_gates.py -q
 
 **Prepared by:** Composer (Cursor Agent) — EAGLE2 Initiative  
 **Date:** 2026-06-02
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

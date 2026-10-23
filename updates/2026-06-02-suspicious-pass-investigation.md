@@ -76,3 +76,5 @@ for r in c.fetchall(): print(r)
 "
 # -> (214622, 'JUPUSDT', 'LONG', 76573.31, 0.0002, 0.1892, 'TP_HIT')
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

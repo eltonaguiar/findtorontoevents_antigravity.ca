@@ -260,3 +260,5 @@ The multi_asset system generates picks but `pnl_pct` is often missing. The outco
 - **Sample sizes:** FOREX (n=34), EQUITY (n=14), ETF (n=12) — none reach the minimum ~30 samples for statistical significance.
 - **PnL tracking gaps:** `multi_asset_closed.json` has 105 picks but only 51 have `pnl_pct`. The rest have status CLOSED but no PnL — the outcome resolver isn't closing them properly.
 - **Date range:** Most data spans 2026-02-22 to 2026-04-22 (2 months). This is too short for reliable regime analysis.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

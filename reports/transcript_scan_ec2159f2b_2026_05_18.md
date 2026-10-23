@@ -493,3 +493,5 @@
 - [OPEN] Reconcile the two Phase-0 resolver fix plans before executing resolver PR-A
 - [OPEN] Execute resolver PR-A (populate closed_at + nullable column migration)
 - [OPEN] Execute resolver PR-B (class-conditional symbol normalizer)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -165,3 +165,5 @@ All new modules must carry a **Wire-Up Plan** (production caller or explicit opt
 ---
 
 *End of report. Documented per AGENTS.md "Every code fix / review MUST be documented in a .MD". All changes only on clean branches containing only Grok-authored files.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

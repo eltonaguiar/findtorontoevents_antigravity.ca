@@ -745,3 +745,5 @@
 - [OPEN] Run `/dropchat-multipc` to broadcast session summary and drain peer inbox
 - [OPEN] Run 4 rounds of multi-model agent swarms to decide on blocking `quan_engine_scalp` CRYPTO strategy
 - [OPEN] Cross-check OPEN items against git log and current code state (mentioned as "now cross-checking" but no completion shown)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

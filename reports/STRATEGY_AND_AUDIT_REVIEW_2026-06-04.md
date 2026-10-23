@@ -63,3 +63,5 @@ strategy in every class = UNPROVEN.
 **Bottom line:** numbers are honest (0/9 money-ready, 1 lab candidate). The real operational gap is
 **strategy-level tracking**: 5 asset classes emit picks with no perf table, and the crypto/FX/equity
 trackers are stale. Fixing tracking is prerequisite to ever evaluating per-class edge properly.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

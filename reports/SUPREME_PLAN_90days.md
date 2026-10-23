@@ -153,3 +153,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini) reviewed the live 
 **Authority:** [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md) supersedes the *strategy* sections of this doc going forward; the *execution backlog* below (M-IDs, per-class pilots, ghost-row cleanup, etc.) continues unchanged.
 
 Source: [updates/2026-05-24-multi-ai-consult-prediction-system-review.md](../updates/2026-05-24-multi-ai-consult-prediction-system-review.md) + `swarm_runs/iret-review-{20260524T054451Z,fan-20260524T054507Z}/`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

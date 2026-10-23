@@ -115,3 +115,5 @@
 - **Strategies with 0% WR (kill candidates):** 1
 - **Artifact version:** 1.0 (B16)
 - **Wiring status:** OPT-IN SIDECAR — no production caller yet. Wiring plan: B17 will add `picks.forward_edge_audit` payload section to `dashboard_generator.py`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -62,3 +62,5 @@ C008_elite_source_audit, CLAUDE_DESKTOP1/2/3, DAILY_IDEAS).
 ---
 
 _Generated via the `consult-gemini` skill — `gemini -p ... --output-format json` over the 274KB bundle in one shot._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -19,3 +19,5 @@ python tools/scan_event_gaps.py --baseline-file events.json
 python tools/scan_event_gaps.py --include-experimental
 python tools/scan_event_gaps.py --skip-scrape --scraped-json path/to/scraped.json
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

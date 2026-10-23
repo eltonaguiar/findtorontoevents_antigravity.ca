@@ -99,3 +99,5 @@ None of these reference `.md` files at runtime — they're all static HTML or ge
 ## Related
 - `database/` reorg (this session) — same additive pattern, succeeded
 - `reports/` flat dir — should consider moving recent ones to `docs/audit/2026-05-*/`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

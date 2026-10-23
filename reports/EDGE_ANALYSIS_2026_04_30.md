@@ -248,3 +248,5 @@ Pinned in falsification list. The right scoring direction is to **lean harder in
 - `tests/test_asset_class_edge_invariants.py` — 4 invariant tests, all pass.
 - `config/hc_gate_params.json` — 2-line tune (PR diff).
 - `.tmp_research/edge_analysis_2026_04_30.py`, `phase{2,3,4,5}_*.py` — research scripts (not for production).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

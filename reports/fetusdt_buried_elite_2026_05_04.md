@@ -70,3 +70,5 @@ This strategy is finding #3 in `reports/verified_audit_findings_summary_2026_05_
 - Source: `alpha_engine/data/closed_picks.json` (n=7,472)
 - Computed: 2026-05-04 from a single grep+pandas-style aggregation
 - Comet round-2 subagent (`reports/comet_strategy_verification_2026_05_04.md`) flagged this; this file confirms with raw numbers.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

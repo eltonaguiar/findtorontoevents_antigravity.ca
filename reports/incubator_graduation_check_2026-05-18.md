@@ -20,3 +20,5 @@ Bridged 189 forward-tested strategies from `incubator/forward_test.db::forward_s
 ## Verdict
 
 No forward-tested strategy clears the graduation quality bar. The incubator currently holds no graduate-ready signal source — consistent with reports/EDGE_VERDICT_2026-05-18.md.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

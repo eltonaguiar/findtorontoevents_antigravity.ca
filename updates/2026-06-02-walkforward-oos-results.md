@@ -58,3 +58,5 @@ DB_PASS_STOCKS=stocks1234560 python3 tools/build_walkforward_oos_results.py
 - [ ] Update `ENHANCEMENT_OVERALL #85` with WF OOS result: 18 PASS. Set `linked_pr` to include #473.
 - [ ] Build `tools/build_bootstrap_ci_results.py` for the third EAGLE-6 v2 gate (bootstrap CI for PF — must not cross 1.0).
 - [ ] Forward-test top 5 strategies: `crypto_liquidity_wick_reversal_v1`, `prediction_market_consensus`, `ensemble`, `drawdown_recovery_rsi_xrp`, `luxalgo_confluence` for 2 weeks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

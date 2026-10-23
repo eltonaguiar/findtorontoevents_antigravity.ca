@@ -41,3 +41,5 @@ System has STAYED recovered between tick 16 and tick 18 (delta ~45 min):
 - No new starvation pattern in in-progress (only known long-runner DNA Pipeline)
 
 **Action:** None. End of 18-tick re-engaged loop. Operator can hand off to standard hourly monitoring.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -128,3 +128,5 @@ class ConcentrationAnalyzer:
 ## 5. Deployment
 
 Generated files are placed in `/mnt/agents/output/prs/PR-{N}/` with directory structure mirroring the repo. A `push_prs.sh` script is provided for manual branch creation and push.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

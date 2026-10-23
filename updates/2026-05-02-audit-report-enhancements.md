@@ -269,3 +269,5 @@ Located in `tests/` or appropriate package-local `tests/` dirs:
   - `reports/SYNTHESIS_6_ANALYSES_AUDIT_WHATIF_2026_04_23.md` (cited in code comments; basis for several pre-v2 filter decisions now flagged for re-audit)
 - Original audit: `audit_report.md` (2026-05-01)
 - Goal alignment: `AGENTS.md` → "MAJOR GOALS — Goal #1"
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

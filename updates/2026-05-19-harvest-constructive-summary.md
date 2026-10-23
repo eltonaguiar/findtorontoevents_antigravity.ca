@@ -11,3 +11,5 @@ Prior session produced many raw grill runs; operators needed one doc answering â
 ## Verification
 
 Read-only doc; links to existing `reports/*_2026-05-19.md` sources.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

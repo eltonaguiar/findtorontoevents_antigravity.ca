@@ -157,3 +157,5 @@ git push origin main
 ```
 
 Or one-at-a-time as needed (lower batch risk).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

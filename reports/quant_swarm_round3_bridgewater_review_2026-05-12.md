@@ -37,3 +37,5 @@ Until that is built, every CPCV/PBO/DSR gate is just better-disciplined
 curve-fitting on the same regime sample.
 
 — Bridgewater
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -137,3 +137,5 @@ The **Stage 2 rotation cannot be fully automated** because it touches production
 - Deploy contract: `CLAUDE.md` → "After merging any sports-PR to main, run `tools/deploy_sports_files.sh`"
 - Last sports-deploy outage from skipping the FTP step: PR #399 (squash → conflict markers), PR #415 (missing require_once)
 - Related: `live-monitor/api/db_config.php:8-9,25-26` (committed DB credentials — same exposure class)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

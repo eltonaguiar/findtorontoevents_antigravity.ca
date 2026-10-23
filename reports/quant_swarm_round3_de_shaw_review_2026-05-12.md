@@ -15,3 +15,5 @@ Cross-sectional **EQUITY earnings PEAD** appears only as a Day-1 sleeve in the p
 ---
 
 **Summary (30w):** Merge over-weights COT-as-alt-data (it's public + crowded) and under-weights equity PEAD + options-skew. Universal blind spot: nobody budgeted storage, compute, or data-vendor concentration risk.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -50,3 +50,5 @@ Recent FOREX (883 trades) is net positive at +14.07% with 47.9% WR. Top strategi
 - `forex_copy_trader`: 57.9% WR, n=38 — profitable
 
 **Conclusion:** FOREX is not currently dying — it's recovering from a catastrophic historical period. Focus on preventing old-trade contamination in aggregates.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

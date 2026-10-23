@@ -104,3 +104,5 @@ This PR is the second in a series the user requested. Order:
 5. PR #549 — Concept taxonomy Phase 1 (Cursor's `assign_concept_fields`)
 
 Each PR is independent + verifiable; no cross-dependencies.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

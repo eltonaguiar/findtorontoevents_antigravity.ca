@@ -48,3 +48,5 @@ python3 tools/sync_summary_picks_json.py
 
 - `reports/EAGLE-2026-05-27T02-25-00_EST-cursor-composer-strategy-audit.md`
 - `reports/EAGLE-2026-05-27T02-25-00_EST-cursor-composer-quick-wins.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

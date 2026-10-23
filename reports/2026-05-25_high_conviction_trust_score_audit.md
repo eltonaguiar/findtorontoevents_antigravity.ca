@@ -178,3 +178,5 @@ Run `alpha_engine/trust_score.compute_trust_score` against each historical close
 - `audit_dashboard/hc_filter.js:28, 336` (gate threshold + read)
 - `alpha_engine/data/active_picks.json` (0% trust_score populated)
 - `alpha_engine/data/closed_picks.json` (0% trust_score populated)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

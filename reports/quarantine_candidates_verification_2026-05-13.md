@@ -55,3 +55,5 @@ The cross-AI audit's "0% WR n ≥ 4" methodology was **subtly broken**: it count
 The session-handoff §4 listed 4 confidently-wrong claims. This is the 5th. The procedural rule from §4 holds: **every "X is broken" / "Y is high-WR" claim must ship with a one-liner grep / SQL command anyone can re-run.** The audit's claim shipped without that one-liner; verification revealed the framing issue in under 60 seconds.
 
 Approval gate: per CLAUDE.md, BLOCKED_ASSET_STRATEGY_PAIRS edits need explicit user approval. Flagging here for decision rather than auto-blocking.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

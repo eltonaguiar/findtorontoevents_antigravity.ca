@@ -39,3 +39,5 @@ Still only ETF dual-momentum clears all gates with genuine low-beta alpha.
 
 ## Reproduce
 `python3 verified_strategies/equity_momentum_backtest.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

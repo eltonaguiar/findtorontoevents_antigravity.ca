@@ -61,3 +61,5 @@ Formula: `pnl_pct = (exit_price - entry_price) / entry_price * 100 * sign(direct
 - Group A (131 rows) still untouched (needs Binance/yfinance exit_price refetch — not in scope).
 - Resolver bug producing LOST-with-positive-pnl is upstream of `trading_picks` writer; should be tracked as P0 (see Phase 7 forensic). Recommend adding `chk_pnl_sign_coherence` enforcement at the resolver layer to prevent recurrence.
 - Verify pf_registry.json + money_ready_verdict.json regenerate cleanly after run 26704818902 completes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

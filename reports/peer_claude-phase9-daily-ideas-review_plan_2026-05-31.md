@@ -63,3 +63,5 @@ Canonical repo root (`.qwen/tmp/review-pr-*` mirrors excluded as duplicates of c
 - Executing any idea (user wants Phase 1–8 to settle first; /money-maker-readyv2 is the next sequenced phase).
 - Re-running multi-agent swarms (the May-15/16/17/19 syntheses are the canonical aggregations).
 - The 15 `.qwen/tmp/review-pr-*` duplicate trees (content-identical to canonical files).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

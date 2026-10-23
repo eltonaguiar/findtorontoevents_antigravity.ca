@@ -35,3 +35,5 @@ If any engine produces "the synthetic click is swallowed because the capture han
 ## Durable rule (memory-worthy)
 
 **When swarm review is asked to validate a patch, also run a parallel red-team prompt with no patch context that asks the engine to independently diagnose the bug. Disagreement between the two = block merge until reconciled.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

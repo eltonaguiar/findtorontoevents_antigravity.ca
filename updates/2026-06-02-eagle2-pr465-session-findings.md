@@ -195,3 +195,5 @@ python3 tools/check_resolver_health.py
 - Operator steps: https://findtorontoevents.ca/updates/2026-06-02-pr465-merged-post-steps.md  
 - Audit dashboard: https://findtorontoevents.ca/audit/  
 - Git PR: https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/465  
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

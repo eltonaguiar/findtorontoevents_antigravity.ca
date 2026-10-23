@@ -29,3 +29,5 @@
 ## Not in this commit
 
 Local noise (OKX caches, `monitor_log`, generated `audit_dashboard/index.html`) was left unstaged.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

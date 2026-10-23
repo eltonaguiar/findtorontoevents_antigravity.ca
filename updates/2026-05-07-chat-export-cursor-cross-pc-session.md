@@ -79,3 +79,5 @@
 ---
 
 This export is a concise operational timeline, not a token-for-token transcript.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

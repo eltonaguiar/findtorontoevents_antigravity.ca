@@ -155,3 +155,4 @@ PF values not computable from `recent_closed` (these strategies route through a 
 4. Monitor CRYPTO 24h PF — if 7d dips below 1.10 on n>=200, investigate strategy attribution
 5. rapid_fire × UUSDT consensus check (need Kimi + Copilot agreement before adding to BLOCKED_STRATEGY_SYMBOL_PAIRS)
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

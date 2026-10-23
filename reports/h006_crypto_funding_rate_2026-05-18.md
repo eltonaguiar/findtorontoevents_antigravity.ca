@@ -218,3 +218,5 @@ _Supplementary check — 30-day windows (secondary view; the 14-day verdict abov
 Honest caveat on the 14-day verdict: strictly by the letter of the EDGE_VERDICT rule (>=3 *14-day* windows), H-006 is UNTESTED — only 2 14-day window(s) scored. A purist would say 'still untested at the canonical resolution.' But the deeper archive removed the *data* excuse: the signal genuinely fires too sparsely and clusters, and where it CAN be scored (30-day windows) it is sign-unstable. Re-running with a lower |z| threshold to force 14-day density would be p-hacking the window count, not finding edge. The defensible read is: H-006 is a fail.
 
 Either way: **H-006 is NOT admissible, NOT wired, NOT sized.** Per the EDGE_VERDICT standing rule the honest default (Fork 3 — paper-only) remains in force for CRYPTO.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

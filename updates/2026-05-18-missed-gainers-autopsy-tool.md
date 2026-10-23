@@ -35,3 +35,5 @@ python tools/missed_gainers_autopsy.py [--days 7] [--top 50] [--out reports/miss
 - Removed dead `_ensure_symbol_format()` function after review flagged it
 - Added `MIN_VOLUME_USDT` floor to filter out illiquid coins
 - Added explicit `None` check on `fetch_ticker_24h` return value
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

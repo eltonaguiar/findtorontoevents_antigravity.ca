@@ -22,3 +22,5 @@ python3 tools/backfill_resolved_pnl.py --dry-run
 python3 tools/backfill_resolved_pnl.py --apply --limit 100   # pilot batch
 python3 tools/backfill_resolved_pnl.py --apply --strategy inverse_ml_enhanced_ADAUSDT_15m_D
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -161,3 +161,5 @@ Any PR must contain a clear **Wiring Plan** section.
 ---
 
 *End of Final Consolidated Report*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

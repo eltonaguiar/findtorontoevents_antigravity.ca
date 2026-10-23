@@ -27,3 +27,5 @@ Total picks analyzed: 98
 | 2026-04-11 02:00 | EQUITY | 4 | 2 | 2 | 0 | 50 | -4.3178 | -17.271 | 0.3629 |
 | 2026-04-11 02:00 | FOREX | 25 | 11 | 14 | 0 | 44 | 8.1266 | 203.1656 | 2.9234 |
 | 2026-04-11 03:00 | CRYPTO | 2 | 1 | 1 | 0 | 50 | -0.04 | -0.08 | 0.1111 |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

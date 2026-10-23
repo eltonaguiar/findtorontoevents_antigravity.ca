@@ -49,3 +49,5 @@ The `COT_DEDUP_GATE` (72h) remains active to prevent re-emission artifacts.
 ## Files Changed
 
 - `audit_trail/quality_gates.py`: Added `PROBATION_STATUS`, removed CT=F from `PENDING_UNBLOCK_REVIEW`, added `_is_probation_symbol()` helper.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

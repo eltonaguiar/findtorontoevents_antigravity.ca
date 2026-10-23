@@ -114,3 +114,5 @@ construction; it fills as picks resolve and M-051 lands multi-model swarm. The
 - `audit_dashboard/ai_leaderboard.html` — dashboard page.
 - `audit_dashboard/data/ai_leaderboard/ai_leaderboard_index.json` — generated payload.
 - `tests/test_ai_leaderboard.py` — 7 unit tests.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

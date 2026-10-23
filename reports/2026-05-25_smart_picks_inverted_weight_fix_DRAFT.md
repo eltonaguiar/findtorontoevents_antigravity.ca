@@ -274,3 +274,5 @@ Given:
 ---
 
 **Next step:** operator review → answer §7 Q1 (conf weight 0.05 vs 0.10) → green-light or revise → apply Edits 4a-4e in a single PR with the A/B JSON attached. Do not merge without the A/B numbers.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

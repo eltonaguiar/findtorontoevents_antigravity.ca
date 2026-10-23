@@ -75,3 +75,5 @@ git grep -nE "password\\s*=\\s*['\"][^'\"$]+['\"]" -- '*.py' '*.php'
 ## Hermes-side note (mc_winners scripts)
 
 Hermes #3's `scripts/mc_resolution_tracker.py` / `mc_inverted_strategy.py` / `meme_coin_backtest.py` are currently **stashed only**. Their factor analysis was on a biased sample (257 of 476 rows; ~86% had broken resolution tracking; only 10 wins). **Don't promote any "inverted strategy" or factor weights derived from that sample** — sample size and resolution bias make the numbers unreliable. Resolution-tracker logic itself is sound and worth rebuilding cleanly with env-var creds + an OHLCV backfill that resolves all 476 rows before any strategy claim.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

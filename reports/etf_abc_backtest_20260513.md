@@ -63,3 +63,5 @@ python tools/backtest_etf_sector_rotation_bl.py   # currently fails - see workar
 ```
 
 NFA. Reversible.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

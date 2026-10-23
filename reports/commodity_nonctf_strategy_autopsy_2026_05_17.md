@@ -101,3 +101,5 @@ fully for COMMODITY is safe and removes 83 losing picks without affecting CT=F.
 ## Generated
 
 2026-05-17T19:05Z — Session BB
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -133,3 +133,5 @@ All other PRs (#735, #736, #737, #742, plus others) are docs-only.
 ---
 
 _Generated 2026-05-03 by Antigravity session for handoff. Companion to #742._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

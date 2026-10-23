@@ -145,3 +145,5 @@ This session (AI) surfaced significant 30d divergence from all-time numbers:
 4. **FOREX 30d n=888 vs all-time n=98** — dashboard n reflects only post-gate picks; raw closed_picks includes pre-gate history
 
 **Tool:** `python tools/verify_realized_30d.py` — surfaces these divergences on demand.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

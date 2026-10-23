@@ -192,3 +192,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 
 - **Tracking error + NAV-vs-price spread + expense-ratio + factor-overlap** become first-class columns (Workstream F3 ETF additions). Tracking error >0.5% suppresses the pick.
 - **Pairs sleeve (C2)** lands naturally here: TLT/IEF, XLE/XOP, SPY/RSP duration & equal-weight spread trades are textbook market-neutral. Opt-in sidecar per Wire-Up Rule until shadow forward-test n>50.
 - **Verdict (refreshed):** ETF is the **second canary**. Once EQUITY hits Stage-1, ETF follows the same A→B→C path within 4 weeks because the data is cleaner. By Day 90 the plan expects ETF at Stage-1 minimum.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

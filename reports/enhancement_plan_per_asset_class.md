@@ -167,3 +167,5 @@
   - Add payload key; consumer on /audit.  
 
 - **M-049 Kill‑switch RED → physical halt verification** – cross‑asset (shared).  
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

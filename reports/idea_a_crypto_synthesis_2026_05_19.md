@@ -309,3 +309,5 @@ which has highest theoretical lift but most implementation complexity.
 - Engines: deepseek (66.9s, 16689B), inception (5.9s, 11641B), openrouter (18.2s, 7009B),
   ollama_local (22.6s, 8706B)
 - Total cost: ~$0.013
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

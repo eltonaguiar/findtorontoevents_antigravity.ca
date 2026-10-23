@@ -258,3 +258,5 @@ Future swarm dispatcher subagents should:
 The dispatcher subagent in this session also stopped before the synthesis step — the JSON output schema in `events-swarm-incident-plan_91d51306.plan.md` lines 133-163 would have prevented this by making synthesis a deterministic merge instead of an LLM judgment call.
 
 🤖 Synthesized 2026-05-04 by deepseek over 4-specialist × 5-engine outputs (20 healthy responses). Replaces v1 which had cerebras-only coverage due to dispatcher bug documented above.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

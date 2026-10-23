@@ -80,3 +80,5 @@ if _HAS_PM_VOL_FILTER:
 ```
 
 **Source file:** `alpha_engine/data/polymarket_signals.json` — keyed by `symbol`, `direction`, `volume`, `probability`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

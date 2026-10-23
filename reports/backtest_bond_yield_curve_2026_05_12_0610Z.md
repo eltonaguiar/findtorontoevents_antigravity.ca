@@ -32,3 +32,5 @@
 - 2022-12-16 -> 2022-12-19 LONG pnl=-1.83% (SL)
 - 2022-04-21 -> 2022-04-26 SHORT pnl=-1.82% (SL)
 - 2023-01-18 -> 2023-01-20 LONG pnl=-1.79% (SL)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

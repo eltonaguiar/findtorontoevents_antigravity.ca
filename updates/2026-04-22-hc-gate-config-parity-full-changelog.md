@@ -169,3 +169,5 @@ The following temporary scratch files were deleted during this work:
 1. `b2dfe89964` — diag: deep strategy investigation by asset class (n=3500)
 2. `7e205b2ee3` — fix(hc-gate): calibrate HC filter params + add pick schema audit + clean gitignore
 3. `7a054b672c` — fix(hc-gate): parity sync JSON→JS/PY for scoreFloorEquity, trustScoreMinCrypto, independentGroupsMin
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

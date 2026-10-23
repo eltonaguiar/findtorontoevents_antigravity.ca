@@ -202,3 +202,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 
 - **BTC UTC death-zone filter (M-001)** is now Stage-1-blocking — until it's wired into `passes_active_gate`, CRYPTO cannot pass Stage 1 because the calibration cannot be monotonic without it.
 - **Speculative split (D1):** meme coins (DOGE, SHIB, PEPE, FARTCOIN, BONK, FLOKI, WIF, TRUMP, BRETT) get `speculative_flag=True` automatically. Liquid majors + established L1/DeFi stay in the institutional path.
 - **Verdict (refreshed):** CRYPTO remains sub-T2 (PF 1.25-1.36 / WR 44.6-46.7%). Volume king but quality problem. The May-15 plan was right that universe shrink + drag-quarantine is the path; this refresh adds the calibration + lineage layer that prevents the next "high score = low realized WR" inversion from being invisible.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

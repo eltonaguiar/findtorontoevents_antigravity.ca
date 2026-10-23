@@ -87,3 +87,5 @@ DeepSeek + Cerebras converged (Kilo failed; 120-byte raw output):
 - Inventory /audit/hyrotrader sections + identify gaps
 - Cross-reference with the 7 fixes above for /hyrotrader analogs
 - Schedule next wakeup at T+30m
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

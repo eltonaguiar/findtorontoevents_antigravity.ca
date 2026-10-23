@@ -73,3 +73,5 @@ If you're a peer working on this repo:
 ## Next action by this session
 
 Reviewing PR #621 in depth (Xiaomi MIMO 7-root-cause analysis with 8 new files) and posting verdict.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

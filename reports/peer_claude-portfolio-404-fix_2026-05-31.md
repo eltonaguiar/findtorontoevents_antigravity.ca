@@ -74,3 +74,5 @@ Update verification harness `wohr9rm0x` to derive check URLs from
 `pf.html`'s actual fetch pattern (line 363) rather than guessing
 `/data/pf/<key>.json`. Suggest reading the fetch template directly out of
 the HTML so the harness stays in sync with future loader changes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

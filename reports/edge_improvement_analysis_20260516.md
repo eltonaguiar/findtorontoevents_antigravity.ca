@@ -220,3 +220,5 @@ These require more engineering effort but match the techniques in DAILY_IDEAS_PR
 | P2 | Add source volume cap for `quan_engine` CRYPTO ≤ 12% | `alpha_engine/config.py` | Reduces #1 systemic drag |
 | P2 | Add portable-edge gate to incubator graduation | `alpha_engine/` | Prevents single-symbol overfit from reaching production |
 | P3 | Create `tools/symbol_rehab.py` — automated unblock checker | `tools/` | Implements §3 criteria programmatically |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

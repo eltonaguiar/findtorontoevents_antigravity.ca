@@ -162,3 +162,5 @@ Metrics checked per case:
 The live `/audit` page currently has real count/metric reconciliation bugs.
 
 The local patch fixes the main client-side accuracy issues and the new Playwright regression now proves the rendered summary/drill-down/filter matrix is internally consistent on the patched dashboard.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

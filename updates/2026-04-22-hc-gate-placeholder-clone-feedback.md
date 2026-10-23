@@ -80,3 +80,5 @@ Verified by direct inspection plus local read-only queries over current repo dat
 - read prior filter-catalog findings in `updates/2026-04-17-edge-deepscan-5-filter-catalog.md`
 - queried `alpha_engine/data/active_picks.json` to enumerate clone row patterns and current HC pass count
 - inspected clone safety-mode generation in `copy_trader_intel/strategy_reverse_engineer.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

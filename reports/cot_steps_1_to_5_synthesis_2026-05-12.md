@@ -65,3 +65,5 @@ Research surface only. No real-money sizing without (1) regime-gate addition,
 (2) Step 6 4-week paper-pilot clear, (3) Step 7 risk-of-ruin Monte Carlo
 clear, (4) explicit user greenlight. The /audit Real Money hub
 (`audit_dashboard/real_money.html`) aggregates the full gate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

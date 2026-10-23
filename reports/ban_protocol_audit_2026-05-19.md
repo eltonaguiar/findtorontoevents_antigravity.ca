@@ -141,3 +141,5 @@ TRXUSDT, CVX, XOM are 11 days past review date. Action:
 - If n≥20 AND WR≥52% AND PF≥1.3: promote to PROBATION_STATUS immediately
 - If below thresholds: extend review_date by 14 days + document reason
 - CVX already in PROBATION_STATUS — remove duplicate from EQUITY_BLOCKED_SYMBOLS
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -433,3 +433,5 @@ This plan **builds on top of** Mercury2 P0/P0.5:
 ---
 
 *Next action:* User approval ÔåÆ begin Phase A (merge PR #1017) and Phase J (ML calibration banner quick win) in parallel.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

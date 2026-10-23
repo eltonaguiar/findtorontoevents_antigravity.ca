@@ -56,3 +56,5 @@ UEPS is fully landed. No action needed.
 2. **Merge PR #461** — CI green, resolves the merge conflict first (rebase onto main).
 3. **Create** `updates/2026-04-28-claude-cursor-alignment-addendum.md` before Copilot PR lands.
 4. When Copilot PR appears: post cross-reference comment pointing to PR #461 + recommend defense-in-depth merge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

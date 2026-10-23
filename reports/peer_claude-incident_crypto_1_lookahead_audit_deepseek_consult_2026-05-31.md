@@ -1443,3 +1443,5 @@ Extract suspect cells:
   {
     "cell": "FOREX: conf=C0.60-0.70 & rr=RR1.5-2.0 & score_dec=S20",
     "badge": "small-sample, A
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

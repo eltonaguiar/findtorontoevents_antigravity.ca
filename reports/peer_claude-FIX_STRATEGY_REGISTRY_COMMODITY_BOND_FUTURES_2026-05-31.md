@@ -119,3 +119,5 @@ Recommend follow-up PR:
 - `/tmp/registry_diagnose2.py` — gap classification
 - `/tmp/registry_diagnose3.py` — dominant-category recommendation
 - `/tmp/registry_fix.py` — backup + UPDATE + verify
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

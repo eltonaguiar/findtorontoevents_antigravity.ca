@@ -694,3 +694,5 @@ Last CI Tests run: PR #1292 (merged 19:15Z) — `test (3.11)` ✅ `test (3.12)` 
 **Status change vs 22:00 UTC:** GREEN → GREEN (verdict unchanged). New data: PR #1301 merged (23:12Z, 21Z audit), PR #1302 merged (23:12Z, 22Z audit); two `feat(scrape-events)` direct pushes do not match CI path filter; no CI Tests triggered; main stays GREEN. **No commit — verdict unchanged.**
 
 ---
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

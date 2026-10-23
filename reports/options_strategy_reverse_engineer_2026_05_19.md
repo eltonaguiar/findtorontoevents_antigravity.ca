@@ -184,3 +184,5 @@ April 2026 saw significant TSLA volatility (earnings + macro/tariff shock cycle)
 **Status:** PRE_REGISTERED (per M-107 gate)
 **Wiring:** OPT-IN RESEARCH SIDECAR ONLY. No production callers.
 **Script:** `tools/options_strategy_research/momentum_options_overlay.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

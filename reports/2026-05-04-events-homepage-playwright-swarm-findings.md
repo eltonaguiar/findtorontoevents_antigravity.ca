@@ -109,3 +109,4 @@ The homepage testing plan is implementation-ready and can be executed incrementa
 - deep filter matrix second,
 - persistence/a11y hardening third.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

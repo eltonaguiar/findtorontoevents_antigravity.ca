@@ -134,3 +134,5 @@ The following strategies warrant `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md` an
 - `audit_dashboard/data/pf_registry.json` — canonical PF breakdown
 - `audit_dashboard/data/dashboard_data.json` — asset_class_health n=148 reference
 - Computation script: inline Python (tools/build_pf_registry.py load_rows + classify_rows)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

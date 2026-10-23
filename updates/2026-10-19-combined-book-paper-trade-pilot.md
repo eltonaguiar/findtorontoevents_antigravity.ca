@@ -144,3 +144,5 @@ confirmed, no hidden divergence to hide.
   COST=0.001 on the trend sleeve; those are mirrored.
 - **Open miss:** `git worktree prune` ran cleanly, but branch `wt-rollback-pr622`
   was **not found** on origin (139 remote heads inspected) — pending confirmation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -70,3 +70,5 @@ print('blend 60/40:', metrics(blend))
 ```
 
 NFA. Reversible (no production change).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

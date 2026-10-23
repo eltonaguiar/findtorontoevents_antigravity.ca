@@ -81,3 +81,5 @@ estimated_time_to_first_backtest_result: <hours>
 
 Keep total response under 1200 words. Be specific — repo URLs, star counts,
 strategy types. Generic "use ML to predict prices" answers are useless.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

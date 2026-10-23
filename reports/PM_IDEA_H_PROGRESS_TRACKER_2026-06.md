@@ -47,3 +47,5 @@ python3 prediction_market_agents/pm_macro_overlay.py
 - [ ] After ~2026-06-15: confirm `pm_odds_history.jsonl` is accruing rows from CI (3+ distinct dates).
 - [ ] After ~2026-07-03: check `pm_leadlag_report.json` flips to `status: OK`; if any market is LEADING, open the wire-up PR (#6 above).
 - [ ] 2026-08-11: run the Phase-1 acceptance checkpoint (#7) on the restarted clock.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

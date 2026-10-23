@@ -181,3 +181,5 @@ python3 -c "import json; d=json.load(open('audit_dashboard/data/money_ready_verd
 # Regenerate verdict (matches registry within seconds):
 python alpha_engine/money_ready_verdict.py --json
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -5,7 +5,7 @@
 - recent_closed rows after blacklist filter: 3150 (dropped 350)
 - active_raw rows: 171
 - blacklist filter: drops COMMODITY rows whose symbol is in COMMODITY_BLACKLIST
-  (PR #535 sub-class kill — those rows can no longer be replicated by the live gate)
+  (PR #535 sub-class kill ï¿½ those rows can no longer be replicated by the live gate)
 
 ## Closed Performance By Asset Class
 | Asset Class | n | WR | PF | Sum PnL% |
@@ -154,3 +154,5 @@
 - PEAD-like closed strategies: ['post-earnings-rev-scout']
 
 Done.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

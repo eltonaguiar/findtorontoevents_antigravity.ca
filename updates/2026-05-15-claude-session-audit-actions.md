@@ -87,3 +87,5 @@ Send to desktop (192.168.2.32:8788) with:
   "payload": {"action": "commodity_db_purge_ready", "details": "SQL verified, awaiting human approval"}
 }
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

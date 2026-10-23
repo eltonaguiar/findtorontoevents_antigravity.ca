@@ -108,3 +108,5 @@ What we're STILL missing after this gap analysis closes:
 4. **Intrabar replay** — Session 2 Action #3 of `MASTERPLAN_JUNE52026_CLAUDE.MD` (THE upstream blocker; biggest single-PR impact)
 
 Filed by `/loop` blitz at 2026-06-05 ~07:00Z. Source: Mercury 2 (Inception Labs) shared via operator.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -273,3 +273,5 @@ Only two picks have verified track records. PG and SOLUSDT are the **anchor posi
 ---
 
 *Generated: 2026-05-24 | Methodology: EV/RR framework, simple risk parity, estimated WR where n<20*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

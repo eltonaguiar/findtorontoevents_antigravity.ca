@@ -34,3 +34,5 @@ DeepSeek estimate: lag-corrected backtest typically halves the WR. CT=F's report
 The combined sequence — external first-principles hypothesis → internal code audit → surgical PR with tests — caught this before any live capital was sized against the headline number.
 
 This procedure goes into the standard toolkit. Internal swarms have a confirmed failure mode of asserting false root causes (4 caught this session). External models have the inverse failure mode of hypothesizing without code access. Together they cover both.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

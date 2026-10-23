@@ -118,3 +118,5 @@ Feed this file to:
 - `docs/swarm_prompts/STRATEGY_HARVEST_EXECUTE_v1.md` (local: P0 wire plan)
 
 Regenerate: `python tools/build_top10_strategies_per_class.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

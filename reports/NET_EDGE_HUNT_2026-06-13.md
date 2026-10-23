@@ -45,3 +45,5 @@ A deeper robustness pass (delegated to a subagent, reviewed) **kills the candida
 **Revised verdict: NO-GO.** `leveraged_etf_decay` is a one-symbol / one-trade / one-batch mirage, not a net-positive edge. **Both candidates this session are now non-viable** (FOREX = gross-only; ETF-decay = artifact). The honest state: **0 robust net-positive candidates.** The correct next step for the decay thesis is to forward-generate SHORT picks across the real leveraged/inverse universe and resolve them intrabar (use `verified_strategies/intrabar_replay_noncrypto.py`), then re-measure in ~5–6 weeks.
 
 This correction reinforces improvement-area #1 (low amplitude) and adds a new one: **batch/single-snapshot resolution manufactures false edges** — require multiple distinct `closed_at` dates + TP/SL diversity before trusting any cohort.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

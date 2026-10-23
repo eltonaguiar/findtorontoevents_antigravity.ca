@@ -58,3 +58,5 @@ gh run list --branch main --limit 100 --json workflowName,status,conclusion,crea
 - **Deepseek fabricates data** — Even with anti-fabrication prompts, deepseek produced fake workflow names and IDs. Always verify against actual `gh` CLI output.
 - **Kimi is reliable** — Consistently returned correct JSON across multiple test runs.
 - **Ruflo orchestrator blocked** — `.ruflo/orchestrator.py --swarm github` failed because Hermes binary path `/home/zerou/.local/bin/hermes` is a Linux path on a Windows machine. Needs `HERMES_BIN` env var set to Windows path.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

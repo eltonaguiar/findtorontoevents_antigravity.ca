@@ -74,3 +74,5 @@ Verified: shallow fetch + `git diff` + grep logic run clean; the check passes.
 **111 workflows** use `cancel-in-progress: false`, so any of them can be starved
 by a zombie queued run the same way `deploy-riseoftheclaw` was. Not changed here
 (too broad to flip blindly); flagged for follow-up.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

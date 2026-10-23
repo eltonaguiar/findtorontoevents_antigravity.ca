@@ -342,3 +342,5 @@ Key workflows:
 - Which tier to prototype first? (Swarm-brain, live dashboard, or backtesting pipeline)
 - Preferred data sources for external alpha integration?
 - Automation schedule for cronjob-based refresh cycles?
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -65,3 +65,5 @@ Methodology informed by the 6-AI consultation panel (reports/ai_challenge_synthe
 ---
 
 _Source: AI panel synthesis 2026-04-29 (P0 item) — run `python tools/compute_per_class_clean_metrics.py` to reproduce._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

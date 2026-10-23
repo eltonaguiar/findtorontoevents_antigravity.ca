@@ -24,3 +24,5 @@ Git index had orphan **gitlinks** (`160000`) for `openclaude` and `openclaude-vs
 4. **Repo:** `git rm --cached openclaude openclaude-vscode`; add to `.gitignore` (empty placeholder dirs).
 
 Deploy success was never blocked; this removes red noise and prevents future confusion.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

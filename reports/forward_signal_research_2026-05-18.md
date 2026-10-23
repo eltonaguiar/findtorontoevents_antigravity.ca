@@ -234,3 +234,5 @@ _Supplementary check — 90-day windows (secondary view for a sparse signal; the
 - **UNTESTED — data too thin to render a verdict (2):** H-002 EQUITY, H-004 COMMODITY
 
 **0 of 3 candidate signals cleared `edge_stability_harness`.** None may rank or gate picks. None is wired. None is sized. The economic priors (post-earnings drift, cross-sectional momentum, storage-model inventory carry) are academically sound — but a sound prior is not an edge until the harness says so, and today it does not. This is consistent with the EDGE_VERDICT base rate. The paper-only posture (Fork 3) stands.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

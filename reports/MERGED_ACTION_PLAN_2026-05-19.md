@@ -161,3 +161,5 @@
 ---
 
 *Generated 2026-05-19. Supersedes conflicting "money-ready today" claims until harness clears a new family.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

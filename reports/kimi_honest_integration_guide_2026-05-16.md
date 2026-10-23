@@ -517,3 +517,5 @@ Week 9+: Full deployment if all gates pass
 ---
 
 *This document is honest. No synthetic claims. No fake edges. Integration plan based on your actual system state as of 2026-05-16.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

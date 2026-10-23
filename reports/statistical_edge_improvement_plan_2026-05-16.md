@@ -301,3 +301,5 @@ ORDER BY symbol, month DESC;
 ---
 
 *Generated per DAILY_IDEAS_PROMPTS.MD techniques. All data from closed_picks.json (8,421 trades, Feb-Apr 2026) and dashboard_data.json (generated 2026-05-16T06:07:50Z).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

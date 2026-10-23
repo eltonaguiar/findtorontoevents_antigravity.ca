@@ -135,3 +135,5 @@ The recency gate (e), single-source flag (b), and sign coherence (g) are wired. 
 - (weeks 5-6) First MONEY_READY class emerges with 100+ n from ≥2 sources
 
 Cannot shortcut this without compromising charter. The 2026-06-02 mega_mutation incident (141 sign-flipped rows) is exactly the failure mode that skipping the multi-source replication would repeat.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

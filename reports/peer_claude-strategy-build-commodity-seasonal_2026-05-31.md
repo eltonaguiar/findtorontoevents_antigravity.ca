@@ -148,3 +148,5 @@ COMMODITY_SEASONAL:lines=763:universe_size=7:harness=True:ai_consult=qwen:total_
 
 PR will be filed against `main` as a docs-only addition (report + build dir
 lives under `/tmp/` so only the report is committed to the repo).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -102,3 +102,5 @@ AFML readiness pipeline remains the canonical bar.
 - `reports/ml_staleness_audit_2026-05-12.md` (gatekeeper feature importance)
 - Investigator `ad0d03c475517f6ff` (leakage locations)
 - Investigator `aaf75c71ecfcbca85` (A/B design)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

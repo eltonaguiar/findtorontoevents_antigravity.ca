@@ -36,3 +36,5 @@ All §6 rows are ✅ or 🛑 except:
 - B22 (escalated; awaiting operator decision)
 
 No actionable 🟢 code rows available this iteration.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

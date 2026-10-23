@@ -204,3 +204,5 @@ Last confirmed CI Tests run: **PR #1292** (merged 2026-05-21T19:15Z) — `test (
 **Status change vs 05:00 UTC:** GREEN → GREEN (verdict unchanged). Changes since 05:00Z: PR #1309 merged; PR #1310 (audit 05Z) opened and merged at 06:12Z; ~12 additional `[skip ci]` bot commits to main (05:13Z–06:15Z). No new CI Tests triggered; chronic workflow list unchanged at none. **Verdict stable — file written, no commit.**
 
 ---
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

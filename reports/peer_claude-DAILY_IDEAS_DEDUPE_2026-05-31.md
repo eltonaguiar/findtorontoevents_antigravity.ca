@@ -125,3 +125,5 @@ Consolidate phase should:
 ---
 
 **Summary:** `DAILY_IDEAS:total_candidates=706:byte_dupes=~690:canonical_path=./DAILY_IDEAS.MD:open_ideas=62:status_changes_proposed=8:new_ideas_proposed=6`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

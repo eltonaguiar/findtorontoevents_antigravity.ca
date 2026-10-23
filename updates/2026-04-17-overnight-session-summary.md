@@ -151,3 +151,5 @@ Each new push to a trigger path bumps the queued run, causing repeated cancellat
 ```
 
 Sleep well. Will keep monitoring per the hourly wake schedule.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

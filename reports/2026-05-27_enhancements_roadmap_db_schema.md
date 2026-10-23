@@ -214,3 +214,5 @@ CI hook: any PR touching `quality_gates.BLOCKED_*` rejects unless its body cites
 | `H-NNN` | Hypothesis registry | `H-010` (EQUITY PEAD — REJECTED) |
 
 This makes the cross-references already used in the 90-day plans actually link-traversable in the table.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

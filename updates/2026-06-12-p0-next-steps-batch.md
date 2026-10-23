@@ -16,3 +16,5 @@
 pytest tests/test_crypto_gates_p0.py::TestM036bCryptoSizedLongBlock tests/test_emitter_discipline_p0b.py -q
 node tools/check_syntax.js audit_dashboard/ai-tournament.html  # if available
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -34,3 +34,5 @@ The extra free models **confirmed the existing institutional-strategy consensus 
 - **Kill:** FOREX (PF 0.27 is structural, post-cost negative — no systematic edge).
 
 Recommended archetypes were also consistent: trend-following + carry for COMMODITY, momentum/value factor tilts + stat-arb for EQUITY, yield-curve/duration + credit-spread for BOND, cross-exchange arbitrage + vol-targeted mean-reversion for CRYPTO, smart-beta/sector-rotation for ETF, carry + pair mean-reversion for FOREX (with the caveat to kill it). `gpt-oss-120b` gave the most quant-credible depth (failure modes, post-cost Sharpe per archetype); the smaller models were thinner but did not dissent. Net: the consensus is robust and provider-agnostic — additional free models add confidence, not new information.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

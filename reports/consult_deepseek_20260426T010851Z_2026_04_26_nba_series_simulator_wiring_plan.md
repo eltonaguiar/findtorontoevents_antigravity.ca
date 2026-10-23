@@ -226,3 +226,4 @@ You note that the series sim should land after the Shin commit. **Strongly agree
 | 7 | Timing | Add post-game cron run for zig-zag window. |
 | 8 | Edge cases | Unit test for 3-0, 3-3,
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -22,3 +22,5 @@
 - Then re-curl live `db_health.json` and confirm `generated_at` > 2026-05-31T07:37:51Z and `any_red=false`.
 
 TRIGGER:workflow=Run Backtests & Deploy Dashboards:new_gen=2026-05-31T06:41:42Z(STALE-pre-trigger):any_red=false
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

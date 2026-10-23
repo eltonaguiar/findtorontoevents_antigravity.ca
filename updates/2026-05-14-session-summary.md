@@ -92,3 +92,5 @@ swarm_runs/run_asset_audit_20260514/                                   (swarm ou
 - **P7:** Per-class consensus thresholds ✅
 - **Q5:** JPY-cross BUY blocklist ✅ (pre-existing)
 - **P3-lite:** TODO framework ✅
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

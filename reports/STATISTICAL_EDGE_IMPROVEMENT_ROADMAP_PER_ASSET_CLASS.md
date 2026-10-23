@@ -365,3 +365,5 @@ if score == n and abs(n - fwd_wr) < 1:
 - [ ] Add `CRYPTO_HOUR_FILTER=1` environment flag
 - [ ] Patch `HIGH_CONVICTION` gate to use `trust_score`
 - [ ] Enable `FOREX_HARD_DISABLE` by default
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

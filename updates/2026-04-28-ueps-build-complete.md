@@ -121,3 +121,5 @@ updates/long_term_value_project_2026-04-27/findings/SYNTHESIS.md
 - 1 critical persistence bug caught and worked around
 - Charter doc + 4 GHA workflows on disk
 - Zero modifications to pre-existing files (Copilot's parallel `quality_gates.py` work uncontested)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

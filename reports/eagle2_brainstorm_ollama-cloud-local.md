@@ -18,3 +18,5 @@
 ### 3. Most Important Statistical Gate
 
 The single most important statistical gate before any go-live is **multiple-testing correction**. This ensures that the observed performance of strategies is not due to random chance but genuinely reflects robust trading signals. Implementing methods like Bonferroni correction or False Discovery Rate (FDR) control will help in identifying truly significant and reliable strategies across multiple tests and asset classes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

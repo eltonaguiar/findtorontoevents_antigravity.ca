@@ -109,3 +109,5 @@ The user's question is a *meta-policy* question, not a strategy backtest. There 
 | Version | Date | Author | Notes |
 |---|---|---|---|
 | 1.0 | 2026-05-31 | Claude Opus 4.7 | Initial framework — codifies the seven gates already implemented in `money_ready_verdict.py` into a single human-readable checklist. Closes user idea #1 of 2026-05-31. |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

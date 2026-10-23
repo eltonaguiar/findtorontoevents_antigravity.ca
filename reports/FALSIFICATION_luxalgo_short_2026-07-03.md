@@ -38,3 +38,5 @@ Replaying luxalgo SHORT from the **correct bar-close entry** (eliminating the en
 
 ## The bigger, durable lesson (root cause for the whole book)
 The `entry_price` column is unreliable (2.9–9.9% mismatch vs bars) across strategies, and the measurement window is a **bearish-regime** in which shorts win regardless of signal. **Any SHORT-crypto "edge" measured off `intrabar_pnl_pct` is suspect** until the ledger is re-resolved from correct, bar-aligned entries. This is the highest-priority data-integrity fix — above any strategy work: **fix/verify `entry_price` alignment, then re-run every candidate.** Until then, treat the honest ledger's SHORT-crypto numbers as an upper bound, not a verdict.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

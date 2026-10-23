@@ -346,3 +346,5 @@ This validation will be most useful when integrated with:
 **This report is the deliverable.** No code edits required by this report alone — all referenced code-edit findings are already implemented or filed as open PRs/incidents in earlier session work.
 
 References: every numeric claim in this report is sourced from canonical files listed in the scope block + this session's verification subagents (`ad9f8961ef916e54b` — Blackbox claim verification; commit history `git log origin/main..HEAD` and `git log --oneline -30`). Per CLAUDE.md, the deprecated `by_asset_class_raw` view was NOT used anywhere in this report.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

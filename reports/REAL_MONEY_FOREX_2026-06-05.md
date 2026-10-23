@@ -145,3 +145,5 @@ USDJPY (1.74) and AUDUSD (1.16) clear the bar; EURUSD (1.40) included on walk-fo
 ---
 
 *Source files: alpha_engine/data/macro_factors_snapshot.json, audit_dashboard/data/ai_tournament_picks_latest.json, ejaguiar1_stocks.fxp_price_history, reports/REAL_MONEY_NO_SURVIVORS_2026-06-05.md, reports/MULTI_CLASS_REAL_MONEY_DIG_2026-06-05.md.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

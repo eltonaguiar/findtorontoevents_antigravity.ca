@@ -130,3 +130,5 @@ HYPEUSDT `copy_hl_lb_none` appears **6 times** at exactly 100% PnL in `top_winne
 2. **FUTURES asset class** — 0 trades, needs pipeline investigation
 3. **Regime gate enforcement** — should block picks entirely when regime WR <15%
 4. **30-day PnL concentration guard** — flag when single symbol >50% of PnL
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

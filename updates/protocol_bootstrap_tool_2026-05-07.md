@@ -56,3 +56,5 @@ python tools/protocol_bootstrap.py --fix --dry-run
 
 - Desktop version: ✅ Built, committed (this entry)
 - Laptop version: `c88cea3ebf` (Hermes's independent build — push timed out, not on GitHub)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

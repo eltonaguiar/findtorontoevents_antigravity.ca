@@ -44,3 +44,5 @@ The live page served at **findtorontoevents.ca**.
 
 - **PR #247** — Added `tools/scrapers/dating_events_scraper.py` which scrapes Eventbrite dating-category pages + 25dates.com for real-dated events. The daily scraper ran before PR #247 merged; manual trigger above will pick it up.
 - The "today shows April 18" display issue is a timezone rendering artefact in the Next.js layer (UTC midnight → local evening). The custom filter correctly keeps those events visible (they are today's evening events in EDT); the date label mismatch is in the compiled Next.js bundle and cannot be patched without the source.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

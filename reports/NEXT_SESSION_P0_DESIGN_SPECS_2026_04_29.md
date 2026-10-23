@@ -521,3 +521,5 @@ Item 2 FUTURES per-class flag flip needs **calendar window ≥14d** to satisfy P
 ---
 
 *Spec authored 2026-04-29. No code changes were made. This is design-only per Phase 5 staggering rule.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -27,3 +27,5 @@
 - Keep clone_hl / luxalgo_confluence / prediction_market_consensus / hoffman OUT of money-ready.
 
 **Bottom line:** consistent with the whole-session finding — 0/9 money-ready, no forward-validated edge. The 100%/72.6% tiles are backward-looking mislabeled-winner groupings; the honest forward number is ~38-48% WR / PF <1 = coin-flip-to-losing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

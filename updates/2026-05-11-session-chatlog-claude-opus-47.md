@@ -186,3 +186,5 @@ Caveman-mode persistence reminders fired every turn (hook context, not user prom
 - `.claude/skills/graphify-intel/SKILL.md` — graphify slash skill
 
 PR #904: https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/904
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

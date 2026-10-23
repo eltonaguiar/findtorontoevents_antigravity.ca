@@ -76,3 +76,5 @@ copy-paste bug, not addressed here (separate incident). Class is set from symbol
 
 ## Decision: PROCEED — DB_FIX
 Backup → UPDATE 19 rows → writeup PR with before/after counts.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

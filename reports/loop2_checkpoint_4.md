@@ -98,3 +98,5 @@ Each would take ~1-2 days to port + backtest on EQUITY/FOREX universe via STOCKS
 - Check `dashboard_data.json` size + freshness (claimed 17.5MB in freebuff)
 - Verify the `_compute_hf_decay_watchlist` is firing (HF P0 Item #2 from CLAUDE.md memory)
 - Schedule next wakeup at T+30m
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

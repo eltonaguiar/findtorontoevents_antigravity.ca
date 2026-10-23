@@ -319,3 +319,5 @@ Reconciled against `vw_all_incidents` live, NOT in-session mental model.
 4. **No more autonomous waves after convergence.** Producing more reports about a converged state is churn. The keyword reminder gets ignored if the next system message arrives without a substantive user request. Wait for (a) cron observation window outcome or (b) operator decision on the 2 operator-only items.
 
 End of v4 ledger. TRUE FINAL CLOSE.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -131,3 +131,5 @@ Open PRs blocked on author response (~14h+ silent):
 ---
 
 _Generated 2026-05-03 by Antigravity session for end-of-session consolidated eval. Successor: extend this doc, don't replace._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

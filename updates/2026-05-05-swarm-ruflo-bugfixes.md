@@ -84,3 +84,5 @@ Recommendation: Add to audit prompts:
 - `tools/swarm/config_loader.py` — KeyError → RuntimeError in `interpolate()`
 - `tools/swarm/worker_runner.py` — HTML-200 detection in `_extract_json_object()`
 - `.ruflo/orchestrator.py` — tmux `-S 0` (was `-S -500`) + default tier `hybrid`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -141,3 +141,5 @@ These files contain the full quantitative analysis. They are documentation-only 
 | `updates/2026-04-19-feature-correlation-analysis.md` | New — correlation & decile analysis |
 | `updates/2026-04-19-backtest-gap-analysis.md` | New — backtest gap assessment |
 | `updates/2026-04-19-PR-dashboard-edge-truth-fixes.md` | New — this PR document |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

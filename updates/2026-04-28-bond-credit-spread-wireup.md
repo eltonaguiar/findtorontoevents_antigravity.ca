@@ -32,3 +32,4 @@ Added `tests/test_bond_credit_spread_strategy.py`:
   - `30 passed`
 - `py_compile` checks passed for touched modules.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

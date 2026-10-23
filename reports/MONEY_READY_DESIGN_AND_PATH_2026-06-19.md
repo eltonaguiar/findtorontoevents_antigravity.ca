@@ -75,3 +75,5 @@ view (id=1 appears 9×); `asset_class` case-mess (STOCKS/EQUITY, ETFS/ETF). File
 **Bottom line:** the audit/measurement engine is now honest and alive (today's fixes). It has correctly proven
 the *absence* of easy directional edge. The next real move is a structurally different return source (funding
 carry), surfaced through a lifecycle/net/CI-LB-first design — not more directional entry-timing replays.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

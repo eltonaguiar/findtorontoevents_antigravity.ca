@@ -89,3 +89,5 @@ DeepSeek (swarm) consensus on path forward across 2 sessions:
 - Cherry-pick d3995f5ac4d cleanly per PR #1026 close rationale → new PR with just `_calibrate_confidence` + banner
 - Re-do PR #1029 against `alpha_engine/data/strategy_kill_list.json`
 - Re-do PR #1045 with `FRICTION_RATE = 0.0008` + remove orphan `COT_MATCH_REQUIRED` config
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

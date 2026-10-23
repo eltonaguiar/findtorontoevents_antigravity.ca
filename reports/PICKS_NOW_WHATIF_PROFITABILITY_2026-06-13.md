@@ -205,3 +205,5 @@ DATE(generated_at)) constraint to kill the over-emission, and stop surfacing raw
 **Caveats:** decisive n is small (mostly within-horizon); 130 picks are still open (interim MTM
 shown, also negative). The window is one week of a strong-megacap-pullback regime. FOREX could
 not be tested (no overlapping bars). Re-run after 2026-06-22 when the 10d horizons elapse.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

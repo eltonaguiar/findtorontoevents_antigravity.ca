@@ -74,3 +74,5 @@ Re-evaluate at n=150 (expected ~2026-06-16) or if PF drops below 1.0.
 
 Direction block committed to `audit_trail/quality_gates.py`. Syntax validated (py_compile OK).  
 Tests: 463 passed, 6 skipped.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -762,3 +762,5 @@ Each model: top picks + factors used + data points + swing/short setups.
 **Data points:** 10Y-2Y yield spread; CPI YoY data; FED Funds rate projections; Corporate bond default rates; M2 money supply growth
 **Swing:** Enter long ZN=F when 10Y yield breaks above 50-day EMA with RSI <30; exit on 200-day EMA crossover. Short HYG if credit spread >200 bps and CPI >3% YoY
 **Short-term:** Buy TIP on 2-day close above 5-day EMA with MACD histogram rising; exit on 3% profit target or 2-day close below 5-day EMA
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

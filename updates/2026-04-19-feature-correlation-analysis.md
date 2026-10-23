@@ -250,3 +250,5 @@ Strategies with at least 10 closed picks, sorted by Profit Factor (PF).
 3. **Cap R:R for scalps**: Do not target R:R ≥ 2.0 on scalp timeframes. The data shows this destroys expectancy.
 4. **Avoid `elite_score < 30`**: This slice is the worst performer (–18.2%). Consider raising the minimum elite_score threshold, though `elite_score >= 70` has no samples in this dataset to validate.
 5. **Collect forward-test data**: `forward_wr` is promising but under-sampled. Require 15+ forward trades before trusting the metric.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -103,3 +103,5 @@ After 6 rounds + 7 outlier flags + dup-ratio check, the strategies that hold up:
 - Earlier inflated by 1 ARBUSDT $0.000757 entry outlier — cleaned to current honest figures
 
 Promote-candidate for live-capital paper-pilot tracking (still needs 4-week paper period + Sharpe verification).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

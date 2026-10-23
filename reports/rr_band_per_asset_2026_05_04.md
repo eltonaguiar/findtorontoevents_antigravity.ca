@@ -142,3 +142,5 @@ for s,b in sorted(by_sym.items(), key=lambda x: -(x[1]['win']+x[1]['loss']))[:10
 ```
 
 This 1-liner determines whether the COMMODITY edge is real or a KC=F artifact. If concentrated → fall back to Option D (diagnostic-only logger). If diversified → ship Option C.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

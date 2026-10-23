@@ -62,3 +62,5 @@ Until forward n≥100 AND mitigations 1, 2, 4 below are addressed:
 ---
 
 Filed by `/loop` blitz at 2026-06-05 ~06:55Z. Skill source: `affaan-m/ecc` → `.claude/skills/prediction-market-risk-review/`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

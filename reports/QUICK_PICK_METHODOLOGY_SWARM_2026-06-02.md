@@ -102,3 +102,5 @@ Introduced concrete signal sources for Futures and Commodities in Quick-Pick, an
 - R13 [nvidia-deepseek-v4-pro]: FAIL HTTP Error 429: Too Many Requests
 - R14 [deepseek-chat-direct]: Added concrete signal sources and numeric thresholds for Futures and Commodities in both modes; tightened Quick-Pick bond yield spread and duration bands; fixed missing Long-Term rules for Bonds, Futu
 - R15 [paid-mode-large]: (no changelog parsed)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

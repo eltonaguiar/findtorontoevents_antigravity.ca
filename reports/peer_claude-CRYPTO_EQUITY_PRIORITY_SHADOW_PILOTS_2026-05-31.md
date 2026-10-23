@@ -149,3 +149,5 @@ What it IS: a documented decision to **track these two specifically** for 30 day
 ---
 
 **Return string:** `PRIORITY_SHADOWS:crypto=volatility_breakout:equity=stocks_rsi2_pullback:crypto_wilson_lb=0.5057:equity_wilson_lb=0.4344:status=PAPER_ONLY_30D`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

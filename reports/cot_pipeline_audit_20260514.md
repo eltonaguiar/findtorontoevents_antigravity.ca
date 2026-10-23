@@ -116,3 +116,5 @@ The look-ahead timing leak was fixed (PR #941), but the over-emission issue — 
 ### P2 — Next Sprint
 5. **Add a cron-triggered `verify_cot_post_patch.py` run** that alerts if any new over-emission is detected
 6. **Add per-cycle WR tracking** to the COT paper pilot so each CFTC release week is evaluated independently
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

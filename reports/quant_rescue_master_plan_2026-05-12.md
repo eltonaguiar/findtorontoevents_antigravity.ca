@@ -157,3 +157,5 @@ consecutive days of friction-adjusted T2 on the candidate sleeve.**
   - `reports/grok_audit_red_team_synthesis_2026-05-12.md`
   - `reports/expected_impact_plain_english_2026-05-12.md`
 - /audit hub: `audit_dashboard/real_money.html`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

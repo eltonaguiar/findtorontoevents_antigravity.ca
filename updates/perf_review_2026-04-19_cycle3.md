@@ -132,3 +132,5 @@ Both new strategies (small n=21). Track writer just started capturing — these 
 - **NOTE:** the recent_closed sample is a ROLLING WINDOW, not the full closed-pick ledger. Cycle-over-cycle comparisons of strategies near sample-window boundaries (e.g. st_fear_greed_contrarian) can show large WR swings that aren't real strategy degradation.
 - Snapshot saved to `tools/out/perf_review_cycle3_*.json`
 - **No production strategy files modified.** Engineer review required per `CLAUDE.md` mutation-before-kill rule.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

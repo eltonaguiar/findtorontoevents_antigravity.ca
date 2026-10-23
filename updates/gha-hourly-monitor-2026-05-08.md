@@ -166,3 +166,5 @@ systemic issue with 3.11 compatibility in new test files.
 *Data sources: MCP `get_check_runs` (PRs #858, #859, #861, #862, #863, #864, #846, #849),
 `list_commits` (10 most recent main), `list_pull_requests` (open perPage=30; closed perPage=5
 sort=updated desc), `get_commit` (main tip 51a8380f). `gh` CLI absent — Steps 1–2 UNKNOWN.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

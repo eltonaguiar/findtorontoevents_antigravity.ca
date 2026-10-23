@@ -82,3 +82,5 @@ REVIEW_DATE: 2026-06-09 (3 weeks)
 - DeepSeek: `swarm_runs/run_20260519T204229Z/`
 - Kilo: `swarm_runs/run_20260519T204255Z/`
 - Claude: `swarm_runs/run_20260519T204334Z/`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

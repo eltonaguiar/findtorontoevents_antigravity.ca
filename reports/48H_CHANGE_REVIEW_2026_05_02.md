@@ -251,3 +251,4 @@ Multiple regressions on `findtorontoevents.ca` homepage filters fixed in tight s
 - Each remaining commit was cross-checked against `gh pr list` for merge status and against `reports/` for evidence.
 - Branch hygiene: this review was created from a clean checkout of `origin/main` with only the new MD added; no other files touched (CLAUDE.md branch-hygiene mandate).
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

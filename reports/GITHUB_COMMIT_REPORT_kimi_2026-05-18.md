@@ -99,3 +99,5 @@ Given valid credentials, the commit would have:
 
 *Report generated: 2026-05-18*
 *All 4 files remain available at /mnt/agents/output/ and are ready for commit once authentication is resolved.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

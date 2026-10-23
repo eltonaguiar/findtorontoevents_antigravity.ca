@@ -382,3 +382,5 @@ That implementation plan is written up in:
   - PEAD integration
   - catalyst wiring
   - recent ETF / commodity kill-switch work
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

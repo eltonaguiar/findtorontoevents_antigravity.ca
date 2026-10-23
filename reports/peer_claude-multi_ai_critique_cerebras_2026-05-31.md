@@ -71,3 +71,5 @@
 ## Notes
 - Free-key model swap: llama-3.3-70b not available; fell back to gpt-oss-120b.
 - Strong takes: Bonferroni-with-correlated-gates is over-punitive; n>=500 wrong axis for HFT; live-vs-paper PnL drift >5% as de-qualification trigger; predicted bootstrap-temporal-order bug is consistent with our intrabar/winsorize fixes today.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

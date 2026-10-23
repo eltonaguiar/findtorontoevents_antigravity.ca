@@ -115,3 +115,5 @@ strat_fwd_wr >= 70 AND trust_score >= 3
 
 ---
 *OWL — 2026-05-05 — Round 2 execution results*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -14,3 +14,5 @@ The "1 active pick" question chain resolved. Of 1,950 `active_raw` picks: **348 
 
 ## Conclusion on the original "1 active pick — broken or too strict?"
 **NOT broken.** The single active pick is the intended result of (a) the scoring funnel (only production-scored picks carry `score`; external/experimental/banned feeds excluded) + (b) deliberately strict gates: THRESHOLD FREEZE non-crypto score≥55 (locked to 2026-08-18), banned-source rejection, and the bearish-regime filter favoring the lone regime-aligned SHORT. The strictness is a deliberate post-pick-inflation safety choice — working as designed, not a malfunction. All picks remain visible via "Show All Picks (1948)".
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

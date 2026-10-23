@@ -171,3 +171,5 @@ From `python tools/mutation_analysis.py --json`:
 | Monitor | FOREX 30d n: currently 88, need 100 for T2 gate | Hourly agent |
 | Research | `ig_contrarian_sentiment` SHORT-only mutation — sandbox test | Future PR |
 | Research | COMMODITY 30d n=47: need 100 for T2 gate (`multi_asset_copytrader` CT=F dominant at 62.6% WR n=147) | Future PR |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

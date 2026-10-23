@@ -217,3 +217,5 @@ Consider consolidating redundant workflows and implementing a CI health dashboar
 
 *Analysis date: 2026-05-28*
 *Analyst: Qwen Code (session)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

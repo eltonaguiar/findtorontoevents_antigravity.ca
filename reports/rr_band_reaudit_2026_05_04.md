@@ -95,3 +95,5 @@ These slices would inform Option B vs Option C choice.
 - Run date: 2026-05-04
 - Tool: ad-hoc Python on `closed_picks.json`; equivalent to `tools/mutation_analysis.py --json` but R:R-aware
 - Branch: `feat/audit-score-tooltips-2026-05-04`, planned commit follows this report.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

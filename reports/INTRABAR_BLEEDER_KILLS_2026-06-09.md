@@ -81,3 +81,5 @@ FROM (SELECT strategy, symbol, direction, DATE(opened_at) d, AVG(intrabar_pnl_pc
       WHERE intrabar_status IS NOT NULL AND intrabar_ambiguous=0
       GROUP BY 1,2,3,4) t GROUP BY 1;
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

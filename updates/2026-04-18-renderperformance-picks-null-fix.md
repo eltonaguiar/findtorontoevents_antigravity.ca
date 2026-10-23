@@ -65,3 +65,5 @@ The browser console also showed a 404 for `config/hc_gate_params.json`. This was
 ## Deployment note
 
 Per project convention, only `template.html` was edited (not `index.html`). The CI `audit-dashboard` workflow regenerates `index.html` from `template.html` on the next scheduled or push-triggered run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

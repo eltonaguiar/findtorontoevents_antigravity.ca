@@ -114,3 +114,5 @@ Wait, recounting: #942, #946, #948, #949, #954, #962, #963, #970, #971, #973, #9
 ## NFA
 
 5 default-ON env flags now active; all individually safe (verified empirical no-op or conservative regime-gated). The combined effect requires post-soak analysis after 14d. Operator should re-run `tools/predictor_ic_reproducer.py` against post-soak shadow-stamp data before flipping `PER_ASSET_CLASS_SCORING_SHADOW=0` (live blend).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

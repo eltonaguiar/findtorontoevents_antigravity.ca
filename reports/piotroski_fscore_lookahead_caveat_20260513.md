@@ -52,3 +52,5 @@ Same lesson as BOND overlays failing because yfinance doesn't have FRED OAS spre
 - `audit_dashboard/data/piotroski_fscore_backtest.json` (output preserved as artifact, not edge claim)
 
 NFA. No production change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

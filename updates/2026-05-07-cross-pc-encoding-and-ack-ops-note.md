@@ -25,3 +25,5 @@ Updated documentation to make operations safer:
 
 - Event-tail command:
   - ASCII-safe one-liner prints recent events without console encoding failure.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

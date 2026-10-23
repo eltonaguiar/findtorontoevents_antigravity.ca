@@ -46,3 +46,5 @@ Additive + harmless: the ml_ranker vectorizer only reads keys present in
 ## Decision
 Do not touch `ml_ranker.FEATURE_LIST` now. Persist the data (done), revisit in
 ~30-60 days with real history. Low-risk, evidence-first.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -147,3 +147,5 @@ These three are HIGH-edge but should not be built into a pipeline with known dat
 - GitHub issues #316 (paper-pilot harness), #327 (dormant babies), #339 (bt_backtest_trades stale), PR #208 (db_health bugs)
 
 **Verdict:** 12 candidate strategies, TOP-6 ready to build next session, 5 pipeline gaps gating sustainable edge discovery. Resolver fix is the force-multiplier — it unblocks 5 of 8 classes simultaneously.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

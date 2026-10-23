@@ -259,3 +259,5 @@ The May-15 gap analysis catalogued WHAT was missing per class. The 2026-05-24 re
 | **No stress / scenario replays** (swarm gap) | P2 | G6 |
 
 **Updated priority order:** A1+A3 (truly blocking) → A2+A4+A5+A6+G1+G2 (parallel honesty/governance) → B → C → D1 Step 1 → E → F → D1 Step 2 (conditional). Detailed in [INSTITUTIONAL_READINESS_PLAN_2026-05-24.md §4](./INSTITUTIONAL_READINESS_PLAN_2026-05-24.md#4-sequencing--timeline-revised-per-swarm-critique).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

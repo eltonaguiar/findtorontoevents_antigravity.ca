@@ -83,3 +83,5 @@ Users couldn't easily discover which engines work without paid keys. The existin
 
 - **Low.** Pollinations, GitHub Models, and Gemini API are purely additive — they don't change existing provider behavior. The auth-optional patch in `_post()` only triggers when `key` is `None`, which only happens for `pollinations` (and any future keyless providers).
 - The `safety.py` additions only expand the env vars passed to subprocesses; they don't remove any.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

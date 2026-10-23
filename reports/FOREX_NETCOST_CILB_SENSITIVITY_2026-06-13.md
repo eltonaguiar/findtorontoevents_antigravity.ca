@@ -30,3 +30,5 @@ The forex-consensus memory flagged "net-positive only at ≤2bp" using **point**
 
 ## Reproduce
 `tools/pf_ci_lower.py` over deduped `trading_picks` (non_crypto_consensus, FOREX, symbol-day clusters), `net = pnl_pct − cost`, cost ∈ {0,1,2,3,5}bp + blended. DB via `tools/db_env.get_stocks_creds()`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

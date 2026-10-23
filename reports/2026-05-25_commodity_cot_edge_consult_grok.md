@@ -41,3 +41,5 @@ This is recycled leakage from a hypothesis rejected three days after registratio
 **6. Sharpest disambiguating experiment (fast/cheap):**
 
 One SQL: for every trade in the exact cell, pull `signal_gen_ts`, `cot_asof`, `underlying`, `entry_ts`. Histogram lag_days and pre/post 2026-05-20 flag. Compute PF/winrate in the four buckets. If pre-fix or lag<3 buckets contain >65% of the 96 wins and post-fix/lagged PF <1.3, reject immediately. 45 minutes of analyst + DBA time.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

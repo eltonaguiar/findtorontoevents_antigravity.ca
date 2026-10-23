@@ -316,3 +316,5 @@ Filter picks where `resolved_at` starts with `"2026-04-2"` (catches Apr 24-27)
 ✅ Root cause identified (UNKNOWN bug hiding true CRYPTO performance)  
 ✅ ML training status audited (fragmented, needs consolidation)  
 ❌ CRYPTO still bleeding (-32.10%, 37% WR) — needs immediate fix
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

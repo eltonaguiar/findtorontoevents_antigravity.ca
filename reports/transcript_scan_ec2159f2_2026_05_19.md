@@ -546,3 +546,5 @@
 - [OPEN] Resolver step 8 (re-derive verdicts, re-litigate 9 kills)
 - [OPEN] Resolver step 9 (strategic-fork memo)
 - [OPEN] Wire up ET-1/CO-1/E-1
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

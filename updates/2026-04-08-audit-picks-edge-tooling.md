@@ -27,3 +27,5 @@
 **Full write-up:** [docs/AUDIT_PICKS_EDGE_ANALYSIS_2026-04-06.md](../docs/AUDIT_PICKS_EDGE_ANALYSIS_2026-04-06.md)
 
 **Public HTML:** [/updates/2026-04-08-audit-picks-edge-tooling.html](https://findtorontoevents.ca/updates/2026-04-08-audit-picks-edge-tooling.html)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

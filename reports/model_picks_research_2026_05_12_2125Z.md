@@ -373,3 +373,5 @@ factors used, data points to fetch, swing-trade setup, short-term setup.
 - Fed Funds Rate
 **Swing Trade Setup:** Enter long positions in bond ETFs like TLT when yields are expected to decrease, and exit when yields rise. Enter short positions in bond ETFs like IEF when yields are expected to increase, and exit when yields fall.
 **Short Term Setup:** For short-term trades, look for intraday price movements in bond ETFs in response to economic data releases or central bank announcements, and close positions within 1-3 days based on profit targets or stop-loss levels.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

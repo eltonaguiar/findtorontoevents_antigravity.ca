@@ -32,3 +32,5 @@ python3 tools/run_verified_pilots_daily.py
 ## Refs
 - PR #482 suspicious PASS investigation
 - `reports/bootstrap_forward_stats_latest.json`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

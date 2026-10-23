@@ -194,3 +194,5 @@ Still failing after Rehab? N/A — not in rehab yet
 ---
 
 *Medical-grade rule: Document every fix. No undocumented changes. Test before any live exposure.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

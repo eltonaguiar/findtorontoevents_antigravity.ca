@@ -77,3 +77,5 @@ Default-OFF. Operator flips on after reviewing the initial candidate list.
 - Queue doc: `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` row 32 (B19)
 - Multi-AI feedback: `reports/feedback/B19-*.md`
 - Verification: `atr_percentile_gate BTCUSDT LONG` in `audit_dashboard/data/dashboard_data.json` recent_closed pool
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

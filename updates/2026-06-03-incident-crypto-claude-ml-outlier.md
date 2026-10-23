@@ -14,3 +14,5 @@ Seeded idempotent row in `INCIDENT_CRYPTO` via `tools/audit_pick_funnel/seed_inc
 python3 tools/audit_pick_funnel/seed_incidents_enhancements.py
 python3 tools/audit_pick_funnel/render_incidents_page.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

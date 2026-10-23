@@ -165,3 +165,5 @@ Ring ran the same audit independently and corroborated every P0/P1 finding above
 6. Add `signal_time` to smart_picks_feed payload (UI shows misleading file-age)
 7. Decide on Swarm Picks tab (13 days stale; revive or deprecate)
 8. Mark the DSR=0.9999 CRYPTO ML claims on the page as "small-sample, awaiting n≥100 confirmation"
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

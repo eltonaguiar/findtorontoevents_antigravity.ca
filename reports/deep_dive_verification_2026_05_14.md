@@ -30,3 +30,5 @@ Items implemented in this run:
 Verification run output:
 - `python -m pytest tests/test_deep_dive_verification_2026_05_14.py -q` → `4 passed`
 - `python -m pytest tests/test_cot_timing_lag.py -q` → `8 passed`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

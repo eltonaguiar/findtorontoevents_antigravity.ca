@@ -65,3 +65,5 @@ All 4 AT_RISK items marked as **FIXED**:
 - `mtf_gate.py` — full fallback chain: Bybit → KuCoin → CryptoCompare
 - `mega_mutation_live_tracker.py` — `shared.binance_api` + Bybit/KuCoin inline fallback
 - `forward_validator.py` — `shared.binance_api` + inline 5-mirror loop in GARCH kline fetch
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

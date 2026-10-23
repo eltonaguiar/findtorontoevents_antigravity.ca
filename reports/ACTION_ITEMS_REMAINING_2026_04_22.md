@@ -124,3 +124,5 @@ From `reports/INTEGRATIONS_BENCHMARK_2026_04_22.md`:
 - `aehct8hx` — earnings catalyst filter prototype (`alpha_engine/catalyst_filter.py`)
 - `nuedxoi6` — Docker Compose + CI/CD + feature-drift retraining
 - `vzu7oh3k` — me (this session's earlier state, now idle post-benchmark)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

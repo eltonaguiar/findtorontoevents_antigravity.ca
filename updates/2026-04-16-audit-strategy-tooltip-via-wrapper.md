@@ -30,3 +30,5 @@ even when leaderboard or closed-trade history existed under the **base** name af
 ## Deploy
 
 Regenerate or sync dashboard assets as usual (CI / `deploy_to_ftp` for `/audit/` if that path is served from this repo).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

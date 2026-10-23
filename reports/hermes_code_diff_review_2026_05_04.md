@@ -80,3 +80,5 @@ File paths referenced:
 - C:\findtorontoevents_antigravity.ca\tests\events-page.spec.ts
 - C:\findtorontoevents_antigravity.ca\tests\audit-pages.spec.ts
 - C:\findtorontoevents_antigravity.ca\tests\test_event_filters_chips.spec.ts
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -137,3 +137,5 @@ COT = no data. Carry = no data. Z-score momentum = primary edge. Backtest = OHLC
 **Honest caveat:** OHLCV-only validation. Real fills differ (slippage, gaps). **Do not execute without verifying current prices and recent z-scores from a live source** — data is 4 months stale on the broad-ETF proxies.
 
 **Verdict for Goal #1:** COMMODITY class is **tradeable at micro size with operator approval** (3 picks, max 2.5% bankroll). Not Tier-2 institutional, but a clean OHLCV-validated path forward that doesn't depend on the contaminated `trading_picks` table.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

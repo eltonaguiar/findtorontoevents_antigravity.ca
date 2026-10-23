@@ -158,3 +158,5 @@ All simulations re-run on **actual yfinance 2y daily bars** (auto-adjust). For e
 **Forward target:** n≥10 closed picks in 30-60d for shadow checkpoint; n≥30 + PF>1.5 to promote to 2% per sleeve.
 
 **Status:** DRAFT (probation sizing)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

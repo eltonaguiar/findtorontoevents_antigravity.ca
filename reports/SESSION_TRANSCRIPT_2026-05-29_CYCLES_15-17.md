@@ -151,3 +151,5 @@
 - **Peer broadcasts received:** 0
 - **Active peers:** 1 (claude-gx10-c9b9, last seen 02:23Z)
 - **Gateway status:** UP at 192.168.2.32:8788
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

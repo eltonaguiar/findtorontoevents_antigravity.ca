@@ -215,3 +215,5 @@ This MD is a **planning/analysis document**, not an action artifact. No code cha
 - PR #777, #772: rebased + swarm-reviewed; awaiting CI.
 - PR #764: REQUEST_CHANGES (missing commits).
 - PR #798: HOLD on env-provision (memecoin DB password migration).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

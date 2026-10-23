@@ -168,3 +168,5 @@ All resolved per prior audit. Not in open PR list.
 - **CI blocker:** systemic `test(3.11)` failure blocks all code PRs
 
 https://claude.ai/code/session_01XDkqiizFomCjugJfw79xEQ
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

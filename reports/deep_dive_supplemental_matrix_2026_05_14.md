@@ -18,3 +18,4 @@ Supplement to the original deep-dive plan, based on `session-ses_1db6.md` extra 
 - `reports/supplemental_prework_audit_2026_05_14.json` (machine-readable check report)
 - `tools/supplemental_prework_audit.py` (repeatable prework checker)
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

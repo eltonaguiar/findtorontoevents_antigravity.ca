@@ -314,3 +314,5 @@ CREATE TABLE gate_exemption_trials (
 - Dedupe command used:
   - `python3 tools/dedup_md_files.py --glob 'reports/asset_class_90day_plan_*_2026-05-15.md' --glob 'reports/90day_gap_analysis_2026-05-15.md' --json`
 - Result: 9 input files, 9 unique canonical files, 0 missing in the root checkout.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

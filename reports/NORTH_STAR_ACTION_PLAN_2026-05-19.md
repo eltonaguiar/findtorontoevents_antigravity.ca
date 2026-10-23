@@ -376,3 +376,5 @@ Do not give general advice. No filler. Production-ready code + numbers ONLY.
 *This document is the single source of truth for the north star objective. All commits should advance one or more items in this plan. If a PR does not map to a P0/P1/P2 item here, it is a goal mismatch unless P0 prod-protect.*
 
 *Peer reviewed by: Grok WSL (2 rounds), DeepSeek API, xAI Grok-3-mini API, Cerebras gpt-oss-120b API. Consensus: H-037 is first admissible, H-001 gets priority, H-035 should be killed, plan premise was structurally invalid.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

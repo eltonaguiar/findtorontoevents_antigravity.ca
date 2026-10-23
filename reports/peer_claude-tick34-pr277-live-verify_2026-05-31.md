@@ -38,3 +38,5 @@ Top EQUITY strategies (category IN equity/stocks/stock):
 `PR277_LIVE:killed_list_clean=true:new_picks=0:incident_stocks_3=resolved`
 
 (new_picks=0 in the narrow post-merge sample window; the strategy is healthy at 262/7d.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

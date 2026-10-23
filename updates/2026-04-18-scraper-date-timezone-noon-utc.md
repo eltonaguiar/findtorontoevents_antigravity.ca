@@ -87,3 +87,5 @@ Any scraper producing date-only timestamps with `T00:00:00Z` (or `T23:59:00Z`) c
 - Patches existing events in `events.json` and `next/events.json`
 - Converts `T00:00:00Z` → `T12:00:00Z` on `date`, `end_date`, and `endDate` fields
 - This fixes the immediate live-site issue without waiting for the next scraper run
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

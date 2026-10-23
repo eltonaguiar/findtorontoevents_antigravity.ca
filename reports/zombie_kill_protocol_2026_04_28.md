@@ -228,3 +228,5 @@ python tools/mutation_analysis.py --csv audit_exports/closed_goldmine_stocks.csv
 # Verify the kill:
 python -m pytest tests/test_zombie_kill_2026_04_28.py -q
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -64,3 +64,5 @@ Either way, **there is nothing to delete.** The self-cleanup commitment has been
 ## Self-Deletion Clause Status
 
 **CLOSED — not applicable.** The integration files were never present on `main`, so the deletion target does not exist. The Wire-Up Rule enforcement worked as intended: no orphan module was left in the production codebase.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

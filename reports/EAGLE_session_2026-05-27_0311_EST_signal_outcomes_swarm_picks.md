@@ -41,3 +41,5 @@ Fix:
 ### Not completed (needs CI run)
 - `backfill_local_sources.py` could not be run locally (DB credentials from `~/dbpasses.txt` exist but the `db_env.py` resolver has a different path). Will work in CI where `DB_STOCKS_PASSWORD` is set directly via secrets.
 - `promote_tournament_picks.py` not tested live — needs tournament submissions to exist
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

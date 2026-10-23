@@ -99,3 +99,5 @@ All 3 changes shipped in this PR. Each is reversible (single-file revert).
 - Investigated 2026-04-27 ~01:30 UTC.
 - 3 parallel subagent dispatches (Audit cancels + CI Tests + daily crons) + 1 inline ETF Emitter check.
 - Raw subagent reports preserved in conversation log.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -74,3 +74,5 @@ inflated number.
 - `alpha_engine/smart_picks_engine.py:122-167` — canonical source
 - `audit_dashboard/data/pick_summary_stats_14d.json` — recency panels
 - `money_ready_verdict.json` 2026-05-24 — tier verdicts
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

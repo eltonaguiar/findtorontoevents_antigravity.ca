@@ -142,3 +142,5 @@ You may obtain a copy of the License at https://www.apache.org/licenses/LICENSE-
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 > **Note:** The specific copyright holder and year should be verified against the LICENSE file in the tradingagents repository. The attribution above covers the Apache-2.0 requirements as accurately as we can confirm without direct access to the upstream LICENSE file.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

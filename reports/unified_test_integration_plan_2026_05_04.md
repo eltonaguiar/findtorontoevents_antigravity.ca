@@ -121,3 +121,5 @@ Each PR has a single-commit revert path. Specific concerns:
 - Adopting React `GearSettingsModal.tsx` (vanilla shim only).
 - Blanket-halting CRYPTO (per CLAUDE.md mutate-before-kill).
 - Running another giant `tencent/hy3-preview:free` × 60 swarm (4/10 value per `reports/hermes_swarm_value_assessment_2026_05_04.md`).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -120,3 +120,5 @@ This is the **ML-strategy-symbol-fit** pattern — a single model architecture t
 - Source: `alpha_engine/data/closed_picks.json` (mtime 2026-05-04, 19 MB, 7,472 picks)
 - Computed: 2026-05-04 via single Python aggregation (no external services)
 - Heuristic was kept conservative: only suffix-based symbol classification, no NLP guesses
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

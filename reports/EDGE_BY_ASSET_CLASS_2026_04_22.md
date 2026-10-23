@@ -499,3 +499,5 @@ _none found_
 ## FUTURES — Drag candidates (WR≤0.25 AND PF≤0.60, n≥30)
 
 _none found_
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

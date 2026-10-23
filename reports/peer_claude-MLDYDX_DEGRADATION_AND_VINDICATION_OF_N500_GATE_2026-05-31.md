@@ -99,3 +99,5 @@ candidate has any chance to be acted on**.
 - Evening re-verify: PR #328 (dedup re-verify)
 - Wilson LB script: `python3 -c "..."` one-liner reproduced in this session.
 - Paper-pilot harness: PRs #307-#313, #316, #322.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

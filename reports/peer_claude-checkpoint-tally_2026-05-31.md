@@ -58,3 +58,5 @@ Only **2** survivors:
 ## What's left — verdict
 
 Session executed a deep burn-down: 44 merges including 8 per-asset-class audits, 2 Phase-4 RETIREs, a Phase-6 PnL repair, Phase-7 forensics, and Phase-8 Group B backfill (162 LOST→WON reconciled). Incident table flipped to 64 RESOLVED / 13 still-live (8 OPEN + 5 TRIAGED). `trading_picks` honesty is now provably at the 131-row residual cohort that requires intrabar OHLCV refetch — no backfill bug remains. **The only outstanding plumbing gap is that the Unified Audit Dashboard workflow (run 26704818902) is still queued, so the published `pf_registry.json` and `money_ready_verdict.json` are stamped 03:54Z and do NOT yet reflect PR #182's RETIRE.** Once that run completes, live `/audit` data should match DB truth. Open-PR triage: close/rebase #134 against Phase-6, decide #78's fate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

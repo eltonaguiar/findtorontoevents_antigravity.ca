@@ -56,3 +56,5 @@ Each test mocks `_http_get_json` to return `_GEO_BLOCKED` and asserts the fetche
 - Syntax check: ✅ Pass
 - All 47 tests: ✅ Pass (10.79s)
 - Code review: ✅ Approved (no issues)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

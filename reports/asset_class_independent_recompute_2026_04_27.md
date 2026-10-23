@@ -131,3 +131,5 @@ recent_closed rows: 3500 (capped)
 - **General** – increase sample size for under‑represented classes (BOND, ETF, FUTURES) before drawing firm conclusions.
 
 *All commands used and their stdout are included above for reproducibility.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

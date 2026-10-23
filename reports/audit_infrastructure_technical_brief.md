@@ -738,3 +738,5 @@ CREATE TABLE gate_impact_attribution (
 ---
 
 *End of Technical Brief*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

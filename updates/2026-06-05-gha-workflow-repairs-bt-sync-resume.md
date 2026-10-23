@@ -31,3 +31,5 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/auto-shutdown-mo
 python3 tools/money_ready_snapshot.py
 python3 tools/deploy_audit_files.py --only audit_data
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

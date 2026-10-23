@@ -147,3 +147,5 @@ The dispatcher subagent also stopped before running the coordinator-synthesizer 
 3. **`fix(homepage): applyFilters mutex retry queue`** — replaces silent drop with one-shot retry. Surfaces edge-case timing bugs that the current early-return masks.
 
 🤖 Synthesized from 4 cerebras specialist outputs (race-condition, datetime-timezone, react-dom, event-surface-engineer) + cross-reference to existing session work (PRs #746–#770 + Kimi audit + cursor reports). Single-engine coverage; cross-validate with deepseek/xai before committing P0 fixes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -46,3 +46,5 @@ freebuff claimed PR #563 would wrongly retire 4 strategies that are "profitable 
 
 ## Reproduce
 `tools/pf_ci_lower.py` over `trading_picks` (deduped symbol-day) + `at_signal_outcomes` pollution counts. DB via `tools/db_env.get_stocks_creds()` (no hardcoded creds).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

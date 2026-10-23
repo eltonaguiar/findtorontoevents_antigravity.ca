@@ -73,3 +73,5 @@ to the payload — that's a generator change outside this PR's scope.
 
 B6 from `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` (Order 25,
 Cursor Phase 5). Prereq: B4 ✅ (merged 2026-05-01 21:23 UTC).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -182,3 +182,5 @@ Expected hourly cron refresh at 12Z May 20 did **not** arrive (same snapshot now
 - **Highest priority**: FINDING-31 (futures_momentum COMMODITY n=18, pre-approved kill when n>=20 per issue #685). FINDING-32 (verify cftc_cot_commercial_signal scope of PR #683).
 - **Positive signals**: FOREX 7d PF=1.272 (recovery holding, +1.132 vs pre-#687 baseline). EQUITY stocks_rsi2_pullback now net-positive (PF=1.131, +5.87% sum).
 - **Next action**: Post FINDING-33 to issue #686 for 3-AI consensus. Monitor FINDING-31 for n>=20 trigger.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

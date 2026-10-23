@@ -60,3 +60,5 @@ follow-up above.
 
 Research surface only. Verdict steers next implementation PRs but
 does not modify trade execution.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

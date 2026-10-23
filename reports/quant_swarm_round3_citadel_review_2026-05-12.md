@@ -34,3 +34,5 @@ halt, stablecoin de-peg) freezes the EQUITY and COMMODITY emission paths
 simultaneously — that is operational correlation the swarm never named.
 Add a portfolio-level correlation-regime monitor (rolling 60d cross-class
 ρ matrix + breakpoint alarm) before any second sleeve goes live.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

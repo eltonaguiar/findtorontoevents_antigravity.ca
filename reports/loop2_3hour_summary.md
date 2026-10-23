@@ -158,3 +158,5 @@ If user has limited time, ship in this order:
 10. **#8** (non-crypto resolver fix) — medium effort, unblocks 5 classes
 
 Plus the 5 already-drafted patches from loop 1 (`reports/loop_checkpoint_7.md` + `reports/loop_3hour_summary.md`).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

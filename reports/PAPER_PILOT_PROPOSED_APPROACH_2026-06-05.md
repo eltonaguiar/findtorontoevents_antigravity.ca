@@ -249,3 +249,5 @@ FOREX, EQUITY (PEAD), ETF, COMMODITY, BOND — see v1.
 ---
 
 ## v2 STATUS: PEER-REVIEWED, READY FOR OPERATOR APPROVAL
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

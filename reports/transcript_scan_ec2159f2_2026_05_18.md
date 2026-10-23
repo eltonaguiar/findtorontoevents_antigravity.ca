@@ -404,3 +404,5 @@
 - [OPEN] Fix Phase 0 non-crypto resolver (pnl_pct=0.0 placeholders)
 - [OPEN] Correct cot_* NULL closed_at (live MySQL data write)
 - [OPEN] Build ET-1 / CO-1 / E-1 new-strategy proposals
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

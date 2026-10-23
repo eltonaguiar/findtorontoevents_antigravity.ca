@@ -202,3 +202,5 @@ The remaining 10 features address provenance, regime-conditional filtering, kill
 - `feedback_quan_engine_matic_positive_artifact.md`, `feedback_clone_hl_placeholder_stats.md` (F3/F5 motivation)
 
 — end —
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

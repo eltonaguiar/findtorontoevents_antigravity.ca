@@ -87,3 +87,5 @@ Added 35+ new ignore patterns to `.gitignore` (section "2026-05-25 bloat fix v7"
 **Author:** Roo (agent)  
 **Date:** 2026-05-25  
 **Commit:** Will be included in the PR that adds this `.md` and the `.gitignore` update.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

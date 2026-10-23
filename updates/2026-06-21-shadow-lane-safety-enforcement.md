@@ -40,3 +40,5 @@ python3 -m pytest tests/test_shadow_monitor_safety.py -q
 ## CFA/FRM value note
 
 The FRM/CFA cheat-sheet review (prior session) found ~70% already implemented. The one actionable gap it surfaced — **TP/SL reachability / honest sizing** — aligns with this fix: shadow lanes must not receive capital or surface as recommendations while accruing measurement-n.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

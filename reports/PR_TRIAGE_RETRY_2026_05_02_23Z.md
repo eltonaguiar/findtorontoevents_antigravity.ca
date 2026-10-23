@@ -115,3 +115,5 @@
 ---
 
 *Generated 2026-05-02 23:00Z by Claude Sonnet 4.6 — session_014NeFBLdff82agGN5SttESB*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

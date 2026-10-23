@@ -48,3 +48,5 @@ Sample PnL range: +3.95% to +6.16% — consistent with systematic edge, not rand
 **Overall Outcome: PASS — 100 closed picks are NOT synthetic.**
 
 No evidence of batch-fill artifacts, zero-PnL rows, or missing price data. Timestamp and price distribution align with real COT-driven Cotton Futures trading. Data ready for Step 3 (strategy-signal correlation audit).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -42,3 +42,5 @@ You cannot find a consistent winner with a scoreboard that (a) leaves 90% of gam
 - Register memecoin `bt100_*` / `mc_winners` as survivorship/regime traps.
 
 **Bottom line for the operator:** No, there is no confirmable edge in any asset class or source today — but we now know it's because the measurement layer is broken across the board (90% unresolved + corrupt entries + duplication + single-regime), not because we lack strategies or markets. Fixing resolution is the path to a real winner; it is the same root cause everywhere.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

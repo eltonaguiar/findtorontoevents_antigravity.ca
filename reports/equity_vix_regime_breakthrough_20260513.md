@@ -70,3 +70,5 @@ Next steps:
 - `reports/proven_strategies_backtestable_20260513.md` — 5-category academic survey
 
 NFA. Hindsight backtest. No real-money sizing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

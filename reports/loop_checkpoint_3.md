@@ -55,3 +55,5 @@ gh workflow run penny-skyrocket-runner.yml -R eltonaguiar/findtorontoevents.ca
 ## Scheduled wakeup
 
 T+100m at 15:54 UTC (1200s interval).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

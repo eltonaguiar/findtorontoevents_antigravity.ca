@@ -149,3 +149,5 @@
 - [OPEN] Produce per-asset-class action items for world-class performance
 - [OPEN] Run `/swarm-transcript-review` (queued, not shown completed)
 - [OPEN] Run `/dropchat-multipc` (queued, not shown completed)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

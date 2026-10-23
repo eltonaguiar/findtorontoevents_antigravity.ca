@@ -62,3 +62,5 @@ PEAD equity strategy (`alpha_engine/strategies/pead_equity.py`) may proceed to s
 2. Wire `pead_equity.py` into `calculate_smart_score` / `passes_smart_gate` per the Wire-Up Rule in `CLAUDE.md`.
 3. After ≥100 shadow picks, re-run WF with updated `n_trades` window; target worst-fold OOS WR ≥ 50% to harden the T2 WF-VERIFIED badge.
 4. Track folds 6–8 decay trend — if mean OOS WR drops below 50% in the next refresh, revert to MONITORING until regime stabilises.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

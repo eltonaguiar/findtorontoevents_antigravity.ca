@@ -18,3 +18,5 @@
 
 - `python -m pytest tests/test_jpy_cross_buy_block.py -q` — 15 passed (local workspace state).
 - Re-run failing workflows after push: CI Tests on `push`, Continuous Improvement Monitor on `workflow_dispatch`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

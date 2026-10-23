@@ -64,3 +64,5 @@ if a new COT parameterisation (positioning *changes* vs levels, different
 horizon) is ever proposed, but the burden of proof is now high.
 
 Remaining candidate queue: regime-conditioned scores, qlib factors (#1178).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

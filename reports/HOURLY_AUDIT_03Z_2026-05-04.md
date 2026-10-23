@@ -152,3 +152,5 @@ Per issue #693 action items:
 - **FOREX:** 7d improved 0.14→0.45. forex_rsi2_mean_reversion remains sole killer (n=49 WR 14%). Mutation protocol required.
 - **CRYPTO:** 24h dip (PF 0.90) is noise; 7d/30d stable. No action.
 - **COMMODITY:** 30d PF 0.81 despite long-run PF 1.78 — potential edge decay; monitor next cycle.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

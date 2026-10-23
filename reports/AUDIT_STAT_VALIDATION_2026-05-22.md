@@ -227,3 +227,5 @@ Also recommended: a CI data-quality gate that fails if `closed != wins+losses+fl
 **Refs:** `audit_dashboard/data/dashboard_data.json`, `audit_dashboard/template.html`,
 `audit_trail/dashboard_generator.py`, `audit_trail/stamp_pick_quality.py`,
 `audit_trail/quality_gates.py`, `tools/top_n_rank_backtest.py`, `tools/db_health_check.py`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

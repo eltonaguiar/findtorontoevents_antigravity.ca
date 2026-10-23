@@ -38,3 +38,5 @@ Scope: READ-ONLY. Per-asset-class performance audit for `category='bond'` in `ej
 
 ## PR plan
 - Server-side `gh api` PR off `origin/main`, title `docs(phase2): per-asset-class performance audit — BOND`, single-file scope (result MD + this plan MD), admin-merge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

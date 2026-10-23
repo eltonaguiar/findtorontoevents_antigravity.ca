@@ -95,3 +95,5 @@ if anything goes wrong.
 - `reports/peer_claude-freebuff-status-std_plan_2026-05-31.md`
 - Out-of-scope but observed: `LOST` is also non-canonical in `trading_picks.status`
   and not in the freebuff "185" cohort. Worth a separate follow-up audit.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

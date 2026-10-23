@@ -110,3 +110,4 @@ Each negative case should define strict expected UI behavior and failure policy.
 
 The sports-betting plan is ready for implementation with clear pass/fail criteria and production-grade reliability controls.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -152,3 +152,5 @@ Result is 403 (not 200), which is the expected safe result. However, this 403 ma
    If `Content-Encoding: gzip` is absent, 50webs may have `mod_deflate` disabled at the vhost level (see PR #718 body for this known risk). If so, open an issue noting the curl evidence.
 
 3. **[After step 1 + 2]** Verify the combined fix: post-strip + post-gzip payload should be ~1–2 MB on the wire (4.65 MB `_scoreBreakdown` gone → ~16.3 MB raw → ~1.6–2.5 MB gzipped).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

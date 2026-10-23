@@ -63,3 +63,5 @@ After merge:
 - Requires `scikit-learn>=1.3.2`, `scipy`, `joblib`, `numpy` (already in CI)
 - Compatible with existing `score_active_picks_ab()` and dashboard A/B panel
 - Does NOT require retraining the OLD bundle — it remains as-is for comparison
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

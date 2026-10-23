@@ -265,3 +265,5 @@ SOURCE_VOLUME_CAP = {
 ---
 
 *Medical-grade rule: Document every fix. No undocumented changes. Test before any live exposure.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

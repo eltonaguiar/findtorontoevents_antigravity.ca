@@ -214,3 +214,5 @@
 ---
 
 *Generated: May 25, 2026 · Sources: 36 incidents, 193 .MD files, tournament_picks (3,161 picks), AI Hedge Fund Simulation*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

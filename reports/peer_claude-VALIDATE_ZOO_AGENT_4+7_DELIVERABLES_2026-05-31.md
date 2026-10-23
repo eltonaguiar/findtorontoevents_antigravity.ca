@@ -87,3 +87,5 @@ Open a follow-up PR to land AGENT 7's research JSON + update note onto main. Bot
 
 **Workflows on main pre-dedupe:** 2 (`edge-stability-refresh.yml` + `edge-stability-update.yml`).
 **Workflows on main post-dedupe:** 1 (`edge-stability-refresh.yml`, PR #285 canonical).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

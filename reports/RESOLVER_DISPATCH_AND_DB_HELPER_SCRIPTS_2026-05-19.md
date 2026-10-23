@@ -117,3 +117,5 @@ gh run list --workflow=resolver-step7-apply.yml --limit 3
 Run the two `gh workflow run` (or UI) commands above, watch the green checks, and the resolver pipeline is fully live. Then we're at "steps 8-9 only."
 
 (End of findings — no open autonomous action items remain on the agent side.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

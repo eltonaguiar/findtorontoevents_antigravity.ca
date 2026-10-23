@@ -33,3 +33,5 @@ The 75.4% WR on macd_rsi is a **lab-backtest snapshot** that the daily workflow 
 2. **Expand universe**: b_flip on ETHUSDT only is too narrow; add 5-10 majors.
 3. **Add timeframe variants**: 15m + 1h side-by-side to multiply signal opportunities.
 4. **Don't conflate macd_rsi_m048 paper log with live paper trading** — it's snapshotting strategy_performance.json, not generating new signals.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

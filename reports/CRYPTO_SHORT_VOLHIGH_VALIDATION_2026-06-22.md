@@ -39,3 +39,5 @@ Best honest lead of the hunt; the most thoroughly falsified candidate we have. S
 n=56 < 80 forward gate; downside-skewed crash-fade; recency-weighted; a SHORT (needs perps/borrow).
 Next: forward-accrue to n>=80 holding bootstrap CI-LB>1.0, then a tiny paper-pilot as a downside-hedge
 sleeve. The robust-edge-miner cron keeps re-confirming it; a fresh n>=80 falsification re-run before any pilot.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

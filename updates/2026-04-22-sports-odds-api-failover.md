@@ -19,3 +19,5 @@
 ## Related page
 
 - https://findtorontoevents.ca/live-monitor/sports-betting.html — reads odds/DB via `sports_odds.php?action=get` and related endpoints; fetches that populate the cache use `action=fetch` (e.g. `sports-betting-refresh.yml`).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

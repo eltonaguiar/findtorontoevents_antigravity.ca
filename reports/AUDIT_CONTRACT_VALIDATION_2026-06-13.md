@@ -37,3 +37,5 @@ Snapshot stores it as a ratio while `strat_fwd_wr` is percent; rescued by `templ
 - All findings carry file:line evidence; the threshold values in Issue 1 and the #136 keys in Issue 5 were independently re-verified.
 - Generator-side fixes (Issues 2–5) require running/regenerating the dashboard, which per CLAUDE.md must not be done locally — they're flagged for the generator owner.
 - Issue 1 (hc_filter.js) is live-product config that was deliberately tuned — reconciliation is an operator/owner call, not a unilateral edit.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

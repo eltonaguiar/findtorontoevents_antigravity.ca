@@ -69,3 +69,5 @@ Second priority: enforce the 10-step real_money.html gate as a CI block, not a c
 ---
 
 NFA. Research surface. Real capital gated on ≥2 classes sustaining T2 for 30 consecutive days.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

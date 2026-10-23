@@ -48,3 +48,5 @@ One required pre-trade test: **post-2026-05-20 only, strict publication-lag guar
 
 6. **Sharpest disambiguating experiment:**  
 Freeze the exact rule now and run a timestamp-pure replay using only signals created after 2026-05-20, with COT data unavailable until `as_of_date + 3 calendar days` or the true CFTC release timestamp if available. Recompute WR/PF by pre-fix vs post-fix, and separately by underlying. If the edge disappears post-fix or is mostly CT=F, reject permanently. If it persists post-fix across multiple commodities with net PF > 1.3, keep it on paper only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

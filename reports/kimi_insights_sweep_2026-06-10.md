@@ -68,3 +68,5 @@ These are the items NOT already covered by the known refuted-sleeve inventory an
 ---
 
 *Generated 2026-06-10. Read-only sweep. Wiring-status claims verified by grep against `alpha_engine/production_scanner.py`, `audit_trail/quality_gates.py`, and `tools/feature_signals/` as of this date; numeric per-class claims were NOT re-verified via SQL (out of scope) and are marked UNVERIFIED where they originate pre-honest-resolver.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

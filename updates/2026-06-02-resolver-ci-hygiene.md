@@ -28,3 +28,5 @@ That bundle also runs `universal_pick_resolver` + verified pilots (not in the ho
 ## Capital policy
 
 Unchanged: empty `PROMOTED_STRATEGIES`, 0/9 money-ready, no `PROMOTION_GATE_ENFORCE=1`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

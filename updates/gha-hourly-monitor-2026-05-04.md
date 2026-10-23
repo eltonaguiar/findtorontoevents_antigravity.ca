@@ -113,3 +113,5 @@ health.
 - **#772 author:** inspect `test (3.11)` failure log and push a fix. Also requires explicit human review sign-off before merge.
 - **#764 author:** inspect `test (3.12)` failure log and push a fix before merge.
 - Monitor PR #777 CI completion (smoke/scan in_progress as of this report run).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

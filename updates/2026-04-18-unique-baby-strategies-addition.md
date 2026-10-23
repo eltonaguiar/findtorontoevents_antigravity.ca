@@ -147,3 +147,5 @@ These strategies should be:
 4. Monitored for live performance
 
 The strategies are designed to be uncorrelated with existing baby strategies, providing diversification across asset classes and trading styles.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

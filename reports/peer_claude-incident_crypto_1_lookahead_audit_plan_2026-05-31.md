@@ -60,3 +60,5 @@ So the right deliverables are:
 Low. Docs-only. The aggregator's `best_pf_overall` panel is already documented as "unfiltered" within the file's criteria string; we just propose making the small-sample caveat explicit on the dashboard.
 
 ## PROCEED.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

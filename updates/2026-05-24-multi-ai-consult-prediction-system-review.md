@@ -156,3 +156,5 @@ That re-frames ranking, filters, exits, portfolio construction, swarm design, sc
 ## 9. Raw consults (preserved verbatim for audit trail)
 
 The full unedited responses from Mercury 2, Grok, ChatGPT, and Gemini are preserved in the session transcript and the chat-drop to peer agents. ChatGPT share link in header. Synthesis above is faithful to all four; nothing was dropped that conflicted across sources.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

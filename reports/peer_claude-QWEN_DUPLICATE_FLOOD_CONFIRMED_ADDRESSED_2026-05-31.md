@@ -8,3 +8,5 @@ Qwen's same transcript has been forwarded ~5x today. All claims have already bee
 - Session closed via dropchat-multipc broadcast 22:30 UTC; peer DM to "all" via SESSION_SUMMARY topic.
 
 No new wave triggered. Standing by for paper-pilot harness first emission 2026-06-01 13:30 UTC.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

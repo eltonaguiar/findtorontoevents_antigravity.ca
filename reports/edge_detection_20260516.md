@@ -59,3 +59,4 @@ Edge Score Formula: `(Sharpe * WinRate) / MaxDD` (higher is better)
 |:--------------|:-------------------|----:|-----------:|-----------:|---------:|---------:|-------------:|---------:|----------:|
 | BOND          | kimi_riseoftheclaw |   9 |       44.4 |    -0.2332 |    -4.42 |   3.0629 |       -64.07 |  -0.7809 |    0.3145 |
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

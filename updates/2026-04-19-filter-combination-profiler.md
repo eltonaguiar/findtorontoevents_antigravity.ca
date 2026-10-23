@@ -103,3 +103,5 @@ The standout empirical result is:
 All score-based filters relying on `elite_score > 80/90/100` are **not reproducible** on closed picks because the `elite_score` distribution tops out at 63. If these filters are meant to represent real operational logic, the scoring system used in production today differs materially from the scale captured in historical closed data.
 
 *Report generated from alpha_engine/data/closed_picks.json (n = 4,503).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

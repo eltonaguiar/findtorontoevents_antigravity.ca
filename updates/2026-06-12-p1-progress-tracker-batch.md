@@ -31,3 +31,5 @@ python3 tools/build_intrabar_sym_dir_stats.py --stdout | head
 ## Related PRs
 - Builds on #570 (`feat/p0-next-steps-batch`)
 - New branch: `feat/p1-progress-tracker`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

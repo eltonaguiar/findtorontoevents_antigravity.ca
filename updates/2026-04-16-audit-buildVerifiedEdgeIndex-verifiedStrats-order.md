@@ -27,3 +27,5 @@ Reordered **`index.html`** to match **`template.html`**: compute **`goldenCombos
 External JSON load and initial index build complete without throwing; `_verifiedEdgeIndex` is always populated with **`trackCombos` / `trackStrats`**; **`init()`** and **`renderPicks()`** run cleanly on `https://findtorontoevents.ca/audit/`.
 
 **Rolling summary:** **`updates/2026-04-16-audit-dashboard-closed-picks-verified-tier-summary.md`** — keep that file updated when adding new audit-dashboard fixes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

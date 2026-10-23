@@ -132,3 +132,5 @@ After the human merges the priority PRs above:
 | PRs merged | 0 |
 | Queue doc rows updated on main | 0 |
 | Stop trigger | §2 "3 consecutive iterations with no progress on main" |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

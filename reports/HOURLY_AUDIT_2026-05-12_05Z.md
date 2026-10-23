@@ -142,3 +142,5 @@ Issue #693 tracked EQUITY monotonic deterioration (30d PF 2.18 → 14d 1.05 → 
 ---
 
 *Refs: issue #685 (resolver-rescope DONE), #686 (per-asset quality), #693 (EQUITY divergence monitor), PR #916 (commodity seasonal HOLD)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

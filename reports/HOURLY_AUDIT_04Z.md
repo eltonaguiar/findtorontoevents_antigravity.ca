@@ -166,3 +166,5 @@ None present in current open PR list. Confirmed closed before this session.
 - `tools/mutation_analysis.py` — run 2026-05-12T04:15Z
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`, `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`
 - `alpha_engine/outcome_resolver.py:115-126` (PNL_WIN_THRESHOLD_BY_CLASS — confirmed done per #685)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -116,3 +116,5 @@ python tools/swarm/swarm_inspect.py swarm_runs/run_audit_improvement_free_202605
 ```
 
 Also cross-checked the surviving swarm claims against `audit_dashboard/data/dashboard_data.json`, `docs/MUTATION_THREE_AXIS_PROTOCOL.md`, and `TESTING_PROTOCOL.MD`. Schema-invalid swarm outputs were not treated as authoritative.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

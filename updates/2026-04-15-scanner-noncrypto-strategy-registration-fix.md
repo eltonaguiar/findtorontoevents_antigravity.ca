@@ -91,3 +91,5 @@ Paste the output here, or compare timestamps manually.
 | unknown | - | - | - | - | - | - |
 
 **How to read `-`:** no qualifying pick in the merged active+closed JSON for that column (e.g. no closed equity rows in `closed_picks.json`, or no pick normalizes to **bond** because bond-tagged symbols map to **etf** first).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

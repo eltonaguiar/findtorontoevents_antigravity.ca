@@ -101,3 +101,5 @@
 - Investigations: `updates/2026-05-11-ten-investigations-edge-durability.html`
 - Live plan render: `updates/2026-05-11-real-money-edge-combined-plan.html`
 - Handoff for next session: `CLAUDE2.MD` (Windows-side state)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

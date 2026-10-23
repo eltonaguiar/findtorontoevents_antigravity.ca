@@ -130,3 +130,5 @@ Additionally, the DB has 301 closed CRYPTO picks with `strategy=''` (empty strin
 2. **Top kill**: `ml_enhanced_TRXUSDT_1d_B_lightgbm` — avg_pnl -63%, PF 0.004, MDD 1577% on n=25. Then in order: `ml_enhanced_APEUSDT_1d_D_ensemble_stack`, `ml_enhanced_DYDXUSDT` (no-suffix), `kalman_filter_trend`, `ml_enhanced_INJUSDT_15m_D_ensemble_stack`. For `luxalgo_confluence` (n=1968, PF 1.10) — mutate-before-kill via three-axis protocol; killing it removes the largest n base without a replacement.
 
 3. **Data-integrity follow-ups before the next audit**: (a) backfill `category=''` crypto-suffix picks (28 rows) to `'crypto'`; (b) source-trace the 301 closed picks with `strategy=''`; (c) build pf_registry ↔ DB strategy cross-walk so per-strategy divergence audit can run; (d) re-resolve `binance_smart_money` and `funding_rate_carry` (n=10/11, pnl NULL — resolver gap).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

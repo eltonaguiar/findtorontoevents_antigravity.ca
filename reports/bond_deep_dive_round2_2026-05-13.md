@@ -104,3 +104,5 @@ A pilot promotes from shadow to live (`sizing_allowed=true` in `edge_stability_B
 - **Live n actually regressed:** /audit banner shows `n=18` but `edge_stability_BOND.json` shows `n=12, PF 0.66` — the `1.72 PF` was rolled-off legacy futures; current state is sub-floor on both PF and n.
 - **Three pilot strategies specced:** TIPS MR (Fleckenstein), curve carry momentum (Cochrane-Piazzesi) with MOVE regime gate, HYG-LQD credit-spread MR (Frazzini-Pedersen inverse) — combined ~114 events/yr, free-data, time/level exits to dodge resolver bug.
 - **No paper trade tonight:** post-close, no curated signal, and pilots need ≥1 backtest before shadow placement — tomorrow 09:35 ET re-run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

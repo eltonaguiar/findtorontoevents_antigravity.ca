@@ -290,3 +290,5 @@ The entire analysis is based on shadow-blocked picks and resolved trades. There 
 | New strategies deployed untested | Medium | Negative EV trades | Platform-specific backtest mandatory |
 | Signal Quality ML not integrated | High | Missed +5-15pp WR lift | Week 1 priority |
 | $25M deployed without validation | Low | **Catastrophic** | Cap at $1M until PSR>0.95 |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

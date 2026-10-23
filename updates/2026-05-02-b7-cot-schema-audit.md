@@ -106,3 +106,5 @@ Once the cron runs and produces fresh data (within the 14-day window):
 now registered in `JSON_PICK_SOURCES` (the production pick-loading path). The
 strategy has documented historical WR 55-62% (see `alpha_engine/cot_positioning.py`
 module docstring). Wire-Up Rule is satisfied.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

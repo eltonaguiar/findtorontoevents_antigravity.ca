@@ -159,3 +159,5 @@ None — no code changes per task constraints. Comments only:
 2. If the panel's #447/#448/#449 fork claim was based on a different signal than file-overlap (e.g., similar PR titles, similar timestamps), document the criterion in the panel report so future processors can verify.
 3. #476 / #477 just need a rebase on current `main` to clear CI.
 4. #513 needs an author amendment of the 2 wrong fact claims before merge, or a follow-up PR after merge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

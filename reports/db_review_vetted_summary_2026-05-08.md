@@ -294,3 +294,5 @@ All listed in `reports/db_action_plan_delta_2026-05-08.md` plus this file + `rep
 - The smoking-gun unfreeze is a 1-line `rm` + 1-file edit + 1 cycle wait — fits inside a Wave 0.5 step before the rest of Wave 1.
 
 Proceed: 1.1 → 1.2 → 0-F (OPEN census) → **1.5 unfreeze (delete circuit_breaker_state.json)** → 0-A through 0-G → Wave 1 quarantines.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

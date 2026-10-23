@@ -55,3 +55,5 @@ Investigated all GitHub Actions workflows with failures, cancellations, or start
 ## Verification
 
 All 1260+ tests pass locally (0 failures, 0 skips on Phase1 tests).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -297,3 +297,5 @@
 - [OPEN] ccxt copytrader pipeline (medium effort)
 - [OPEN] Verify send with `python tools/protocol_inspect.py --http-base http://192.168.2.32:8788 tail --limit 5` (Step 2)
 - [OPEN] Run transcript scan (second request after re-applying rename)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

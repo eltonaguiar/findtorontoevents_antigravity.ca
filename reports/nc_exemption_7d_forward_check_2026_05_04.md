@@ -163,3 +163,5 @@ PR #802 opened for the PRUNE: https://github.com/eltonaguiar/findtorontoevents_a
 
 - **`non_crypto_consensus`:** Recheck 2026-05-11 (7 more days). Resolve noise issue before adding to exemption. Minimum n=20 clean (post-noise-filter) trades required.
 - **`kimi_riseoftheclaw`:** PRUNED. Restore requires: 7d forward WR ≥ 55% + n ≥ 20 in a fresh window. See `reports/kimi_riseoftheclaw_promotion_diagnosis_2026_04_29.md` for original justification.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -111,3 +111,5 @@ than improve.
 - Within-bar a tighter SL and the TP could both lie inside one 1m bar; we tested both
   SL-first and TP-first ordering and got identical numbers, so this assumption is moot
   at this granularity.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

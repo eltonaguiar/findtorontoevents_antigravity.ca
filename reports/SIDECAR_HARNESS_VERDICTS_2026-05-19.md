@@ -19,3 +19,5 @@ item is **closed — do NOT wire**. All three fail the admissibility harness.
 E-1 specifically could not be genuinely tested (no free dense Form-4 code-P
 cluster feed); it would need a paid insider-data source to evaluate, which is
 out of scope for the harness-gated free-data sidecar model.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

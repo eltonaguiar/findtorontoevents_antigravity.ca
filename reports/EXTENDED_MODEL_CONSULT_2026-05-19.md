@@ -203,3 +203,5 @@ mining-difficulty-lag CRYPTO, muni rating-lag BOND) are low-N or cost-doomed.
 Independent corroboration of the existing H-029/030/031 seeds is real but weak
 (convergence-trap caveat applies). Nothing here is discovered edge; the harness
 remains the only arbiter.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

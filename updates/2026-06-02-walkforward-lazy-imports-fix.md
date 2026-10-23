@@ -15,3 +15,5 @@ python3 tools/run_verified_pilots_daily.py
 
 ## Follow-up
 Restore missing strategy modules from lab branch or re-implement `etf_dual_momentum.py` so `--only pilot` can refresh OOS without relying on cached `WALKFORWARD_REPORT.json`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -109,3 +109,5 @@ Prior synthesis had 2 wrong claims that I corrected this loop:
 3. Investigate `signal_tier_writer` + `lm_signals_resolver` writers (medium effort, in checkpoint 4 queue)
 4. Restart `dispatched-but-stale` workflows on antigravity repo (cross-pipeline view)
 5. Build `audit_dashboard/db_health.html` standalone page (Tier 5 freebuff stretch)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

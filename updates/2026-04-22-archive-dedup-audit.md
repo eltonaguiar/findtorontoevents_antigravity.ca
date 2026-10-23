@@ -90,3 +90,5 @@ that previously consumed the archive should now reflect true pick counts.
 
 `tools/dedup_archive.py` — one-time cleanup script (also useful if
 dedup guard is ever bypassed). Supports `--dry-run` for safe preview.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -103,3 +103,5 @@ Wire-Up audit also flagged that PR #1026 ships 3 orphan safety modules. Author m
 ## Status
 
 **No code changes shipped.** This is a verification + planning doc. Operator decision required before remediation begins.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

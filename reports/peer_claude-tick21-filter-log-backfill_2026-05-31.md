@@ -74,3 +74,5 @@ Option 2 is a schema change and out of scope for this tick. Leaving as-is.
 ## Return
 
 `FILTER_LOG:pre=26909:post_unknown=26909:resolved=0:backup=none:status=success_noop`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -86,3 +86,5 @@ OPTIMIZE TABLE ejaguiar1_stocks.<other_tables>;
 
 ## Charter / governance
 - Per `CLAUDE.md`: no destructive DB ops without confirmation. Step 4 (DROP TABLE) is destructive and is sequenced **after** code lands and verifies. Documented here so reviewers can see the full chain before authorizing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

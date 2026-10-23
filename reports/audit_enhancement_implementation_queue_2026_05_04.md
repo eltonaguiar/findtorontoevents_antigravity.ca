@@ -97,3 +97,5 @@ Total est. effort: 2 S + 3 M ≈ 1.5–2 weeks single-dev. None require changes 
 - **ml_score gate raise to 0.90 (C2):** Blocked on ml_score fill-rate (currently low → would zero-out picks). Add fill-rate widget first (separate P1).
 - **Tab consolidation (C17):** High effort, low confidence (UX-subjective); defer until after #1-#5 land and we have telemetry.
 - **MEME asset class split (C7):** Touches scrapers + scoring + UI; punt until #4 proves the C-Tier guard pattern.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

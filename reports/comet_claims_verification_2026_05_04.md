@@ -104,3 +104,5 @@ SHORT is genuinely better (+16.4pp WR, +0.28 PF, half the avg loss), but **both 
 ## Summary
 
 Of 4 testable Comet claims: **0 VERIFIED, 1 CLOSE (SHORT>LONG direction edge, but both unprofitable), 3 REJECTED**. The audit-dashboard team should treat Comet's percentages as untrusted and use the tables above instead. The single robust signal worth wiring in is the **[0.80, 0.85) confidence band** (especially LONG), which is the only PF>1 zone with n>=100.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

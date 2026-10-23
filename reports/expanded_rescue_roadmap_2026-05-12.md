@@ -61,3 +61,5 @@ Prado AFML readiness pipeline.
 - `reports/rescue_plan_per_asset_class_2026-05-12.md`
 - `reports/grok_audit_red_team_synthesis_2026-05-12.md`
 - This session: ~25 commits today on origin/main
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

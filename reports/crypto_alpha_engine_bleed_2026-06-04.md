@@ -83,3 +83,5 @@ CREATE UNIQUE INDEX idx_dedup_close
 This is additive (no writer changes), catches the actual duplicate pattern (same close-time = same fill), and won't break existing flows because the current 8-43x duplicates would all collapse to 1 row apiece via the writer's `INSERT IGNORE`.
 
 **DO NOT RUN this DDL without operator approval** — it will fail mid-creation if duplicates already exist (which they do). Sequence: dedup existing dups → add index → done. That's a maintenance window operation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

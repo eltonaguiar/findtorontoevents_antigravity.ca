@@ -88,3 +88,5 @@ _empty_
 | None | CRYPTO             | 949 |    367 |      580 | 0.3867 | 0.9022 |        -0.1198 |       -113.707  |
 | strong_60_70 | CRYPTO     | 421 |    145 |      276 | 0.3444 | 0.7    |        -0.2084 |        -87.7296 |
 | neutral_40_60 | CRYPTO    | 159 |     52 |      107 | 0.327  | 0.5972 |        -0.3579 |        -56.8993 |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -105,3 +105,5 @@ python3 -c "import json; s=json.load(open('verified_strategies/paper_pilot/etf_d
 | `reports/edge_hunt_REAL_MONEY_2026-06-05.md` | Master per-class table |
 | `updates/2026-06-05-real-money-edge-hunt-session.md` | Session index + PR list |
 | `reports/forex_carry_backtest_extended_20260606.json` | 10y carry unlock proof |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

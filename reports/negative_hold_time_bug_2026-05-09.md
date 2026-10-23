@@ -135,3 +135,5 @@ Fix at the source: ensure `closed_at` reflects the actual report-publication tim
 - swarm_runs/next_steps_perf_2026-05-09/ — confirmation that this corruption pollutes 30d perf data
 - docs/MUTATION_THREE_AXIS_PROTOCOL.md — affected by negative hold (TIMESTAMPDIFF)
 - alpha_engine/mysql_trading_sync.py:198-203 — current closed_at parsing path
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

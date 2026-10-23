@@ -105,3 +105,5 @@ Command: `node tools/audit_what_if_entry_day.js --dates 2026-04-25,2026-04-26,20
 - HC strict gate-level fail reasons — requires re-running `evaluateHcGates1to9()` on the full set.
 - `model_health_agent.py` drift integration status — needs deeper trace.
 - `outcome_feedback_model.joblib` internal `trained_at` — requires loading binary; skipped.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

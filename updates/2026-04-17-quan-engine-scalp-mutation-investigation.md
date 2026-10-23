@@ -248,3 +248,5 @@ Add a new entry under `INVERSE_SYMBOL_VARIANTS`:
 - Investigation protocols: `docs\STRATEGY_INVESTIGATION_BEFORE_KILL.md`, `docs\MUTATION_THREE_AXIS_PROTOCOL.md`
 
 **Cleanup note:** the temporary investigation script and its JSON output (`tools/_quan_scalp_investigation_tmp.py`, `tools/_quan_scalp_investigation_results.json`) can be deleted once the recommendation has been actioned, or kept as a regression-test harness for future re-validation of the hybrid mutation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

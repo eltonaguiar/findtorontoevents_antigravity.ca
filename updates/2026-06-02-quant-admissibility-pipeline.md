@@ -31,3 +31,5 @@ curl -sA 'Mozilla/5.0' 'https://findtorontoevents.ca/audit/data/pf_portfolio_dee
 - **Size capital only on** `money_ready_verdict` policy-clean — 0/9 classes ready.
 
 Full write-up: `reports/quant_strategy_root_cause_review_2026-06-02.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

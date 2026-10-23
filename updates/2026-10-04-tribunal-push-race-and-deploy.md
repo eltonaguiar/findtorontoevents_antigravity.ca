@@ -56,3 +56,5 @@ The template already degrades gracefully on a missing file, so the 404 was
 non-fatal — but the tribunal panel has effectively never worked on the live site
 because of (1). After this change the next Friday run will land the report on
 `main` and the following audit-dashboard deploy will publish it.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

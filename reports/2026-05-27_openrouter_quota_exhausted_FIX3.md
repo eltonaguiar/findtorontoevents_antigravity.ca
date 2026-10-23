@@ -59,3 +59,5 @@ With mercury + ring_261T submitting again:
 
 ## Filing
 This is documentation for the user — no code change is needed in this PR (PR #6 already exposes INCEPTION_API_KEY which Option B would use). If you choose Option B, I can open a follow-up PR with the config edit. If Option A, it's pure key management on your side.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -151,3 +151,5 @@ VERIFY_REMOTE=1 npx playwright test \
 Pre-fix the live site failed Layer B (0 visible cards), Layer C
 (0 visible cards + runaway log streak), and the JS-error-budget on
 React #418. Post-fix Layers B and C pass; React #418 is now allowlisted.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

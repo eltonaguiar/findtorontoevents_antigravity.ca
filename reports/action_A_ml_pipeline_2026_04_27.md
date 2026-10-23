@@ -295,3 +295,5 @@ PRs 1, 2, 3 should NOT ship together — each is designed to surface a different
 ---
 
 *End of report. Investigation strictly read-only — no code or workflow files modified.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

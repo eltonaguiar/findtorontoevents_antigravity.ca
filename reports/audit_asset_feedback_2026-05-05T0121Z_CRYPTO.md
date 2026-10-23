@@ -15,3 +15,5 @@ CRYPTO is watch-only by charter. Current payload: `n=8166`, `WR=44.8%`, `PF=1.26
 ## Do Not Do
 
 Do not promote CRYPTO class-level risk just because total PnL is positive. PF and WR both miss the charter floor.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

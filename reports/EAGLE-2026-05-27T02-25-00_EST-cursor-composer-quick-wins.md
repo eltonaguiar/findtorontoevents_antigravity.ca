@@ -106,3 +106,5 @@ Each quick win closes or advances these incidents:
 ---
 
 *Cursor Composer — EAGLE quick wins 2026-05-27 EST*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -103,3 +103,5 @@ User-decisions needed before any of the 7 ship:
 4. Approve COMMODITY 2.0x sizing increase (live trading impact)
 
 If user gives green, ready to start at #1. Otherwise queue.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -32,3 +32,4 @@ PEAD had research/docs and strategy modules in-repo, but no production caller in
 - Add optional telemetry card in `/audit` for `vt_earnings_pead` activation and pick counts.
 - Continue with BOND `LQD-HYG` credit-spread strategy wire-up in the next batch.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

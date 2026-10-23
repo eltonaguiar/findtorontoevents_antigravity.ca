@@ -401,3 +401,5 @@ The 48h window captured a favorable regime (the 2026-04-20 crypto bounce). The a
 **Biggest operational issue:** `_RETIRED_STRATEGIES` isn't actually retiring strategies. `st_fear_greed_contrarian` produced 211 closed picks over 48h. That's a leak, not a feature.
 
 **Biggest tooling gap:** FOREX + COMMODITY classes are un-evaluable due to resolver bug. Fix that before drawing ANY conclusions about those classes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

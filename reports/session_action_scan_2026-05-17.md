@@ -1473,3 +1473,5 @@
 - [OPEN] Implement `generate_hourly_update.py` workflow from issue #167
 - [OPEN] Create the workflow file for hourly update
 - [OPEN] Break down further action items into chunks for review (if needed)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

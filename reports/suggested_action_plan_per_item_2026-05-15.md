@@ -243,3 +243,5 @@ Use this as an execution checklist. Each item should ship in a small PR with a p
 - PR-F FOREX/BOND Rehab: M-007, M-020, M-024, M-032.
 
 Keep each implementation PR to five files or fewer where practical. If a bundle becomes too broad, split by production caller rather than by documentation category.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -108,3 +108,5 @@ The fix pattern already exists on the page (adjacent cells are caveated) — the
 
 ## 6. What changed vs. circling
 This was **100% new-data** (per the peer-reviewed plan) with an academic-replication prior filter — it did NOT re-run the exhausted current-signal sweep. Output = exactly what the plan set as success: **1 new adversarially-tested candidate (H-126) + a ranked set of replicated, data-feasible forward-shadow lanes (H-127..H-131) + an honest "still 0 promotable, here's every nearest miss and why."** No promotion, no sizing. The honest answer remains: **no sizeable, trustworthy edge yet — and that verdict protects money.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

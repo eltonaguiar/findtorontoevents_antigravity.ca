@@ -49,3 +49,5 @@ Read: when there IS a real (correction-surviving) relationship, the underlying m
 - `prediction_market_agents/data/pm_odds_history.jsonl` — 20,958 backfilled daily odds rows (rows tagged `"backfilled": true`).
 - `prediction_market_agents/data/pm_leadlag_report.json` — full per-market correlation report incl. `best_p_uncorrected` + `bonferroni_significant`.
 - Reproduce: `python3 prediction_market_agents/pm_odds_history.py --backfill && python3 prediction_market_agents/pm_lead_lag_analyzer.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -31,3 +31,5 @@ From the plan-MD review (`reports/` + CLAUDE.md), the P0s that gate everything:
 
 ## Bottom line
 No new infrastructure needed. The roadmap = (a) a policy-driven `target_release` backfill [DB write, operator-owned] + (b) a ~40-line grouped render view + (c) a loud "UNSCHEDULED P0/P1" chip. Steps (b)/(c) are safe code-only changes; step (a) is the one that needs a human/owning-agent because it writes the DB.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

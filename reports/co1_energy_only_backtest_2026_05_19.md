@@ -63,3 +63,5 @@ Physical commodity inventory surprise — the published EIA/USDA/LME inventory n
 ## next_step
 
 Provision a free EIA_API_KEY and wire the USDA WASDE + LME warehouse free parsers so DBA/DBB are real, not synthetic. Re-run only with the live inventory tape.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

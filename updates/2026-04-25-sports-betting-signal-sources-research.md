@@ -942,3 +942,5 @@ echo "__init__.py" > __init__.py
 ---
 
 **End of Research Report**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

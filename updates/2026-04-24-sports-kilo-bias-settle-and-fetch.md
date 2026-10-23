@@ -27,3 +27,5 @@ Analysis noted (1) **ESPN API fallback** rows (`bookmaker_key=espn_api`) can rea
 
 - After deploy, run a fetch + `action=analyze` and confirm `lm_sports_value_bets` does not use `espn_api` as best book when The Odds API has real books.
 - Re-run `settle_by_scores` / `settle_picks` for a case that previously 14d-voided on name mismatch (optional).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

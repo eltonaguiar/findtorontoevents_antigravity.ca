@@ -52,3 +52,5 @@ python3 tools/deploy_audit_files.py --only pick_funnel
 ```
 
 Refs: `reports/best_picks_swarm_review_2026-06-02.json`, `reports/eagle_suite_latest.json`, `reports/etf_forward_stats_latest.json`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

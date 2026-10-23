@@ -58,3 +58,5 @@ This is consistent with the earlier-session pattern (8 confidently-wrong claims 
 2. **Verify BOND merge.** Read `alpha_engine/data/active_picks.json` after the next bond-agent run (hourly). Check for `asset_class=bond` entries that weren't there pre-#981.
 3. **Surface `n` per class on `asset_class_health`.** The current payload omits `n`/`total_trades` for every class, which forced this round to use `closed_n` proxies. One-line fix in `dashboard_generator.py`.
 4. **Recent-window PF.** Add `pf_60d` to `asset_class_health` for COMMODITY-style baseline-shift detection.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

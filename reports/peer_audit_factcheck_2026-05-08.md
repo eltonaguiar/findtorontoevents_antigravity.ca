@@ -316,3 +316,5 @@ PYTHONPATH=. python tools/peer_audit_factcheck_supplement.py
 ```
 
 Both scripts are READ-ONLY (`SELECT`-only, `SET SESSION MAX_EXECUTION_TIME=120000`, no DDL/DML).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

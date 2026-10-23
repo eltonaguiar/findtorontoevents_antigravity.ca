@@ -261,3 +261,5 @@ All headline numbers in this report are reproducible from:
 - `reports/deep_audit_metrics_2026_04_28_main.json`
 
 If desired, next step is to convert this into a CI guard script that fails when tile and active metrics diverge beyond tolerance.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

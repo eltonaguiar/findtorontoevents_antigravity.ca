@@ -58,3 +58,5 @@ Responses must respect: **11/11 hypotheses killed**, `pf_registry` canonical, no
 1. Read `HARVEST_AGGREGATE.md` in latest `swarm_runs/idea-harvest/` folder.
 2. Cross-check with `reports/QUANT_RESCUE_SWARM_VERDICT_2026-05-19_cursor.md`.
 3. Promote top 3 wire_targets per class to `reports/hypothesis_registry.json` pre-registration.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

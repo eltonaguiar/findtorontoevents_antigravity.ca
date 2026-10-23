@@ -62,3 +62,5 @@ Bayesian Beta-Bernoulli posterior on per-strategy win-rate. Replaces the audit p
 ## Wiring plan
 
 Sidecar artifact only. A follow-up PR will render a `P(>50%)` and `95% CI` column on `audit_dashboard/template.html` strategy table sourcing `tools/data/wr_posterior_results.json`. Combined with the existing notarizer + DSR-with-real-N + calibrator suite, this gives the audit page three honest-statistics columns the GH Actions cloud agent's plan doesn't have.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

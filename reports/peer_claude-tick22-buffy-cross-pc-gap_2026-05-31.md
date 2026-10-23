@@ -60,3 +60,4 @@ Buffy session ended **2026-05-31T05:23Z** per their last payload. They may have 
 - Tick 21: code-level conflict resolution in flight
 - Operator TL;DR: `updates/2026-05-31-OPERATOR_TLDR.md` (PR #259, merged) — adding a one-line note under a new "Cross-PC peer coordination" section
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

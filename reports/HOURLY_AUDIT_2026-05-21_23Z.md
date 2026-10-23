@@ -116,3 +116,5 @@ Symbol-level Axis 3 findings (unchanged from 22Z):
 - Issue #693: EQUITY divergence monitor (closed 2026-05-13)
 - `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -535,3 +535,5 @@
 - [OPEN] Verify pre-existing test_vix_yc_combined_gate and test_crypto_high_conf_guard failures are fixed
 - [OPEN] Feed chat transcript into agent swarm for review of further action items
 - [OPEN] Run swarm transcript review on the current session (fa4a912b, 11.7 MB) using tools/swarm/transcript_action_scan.py
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

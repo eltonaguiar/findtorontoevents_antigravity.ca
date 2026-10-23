@@ -103,3 +103,5 @@ Per CLAUDE.md "Wire-Up Rule" — none of the above will be wired into production
 Run `pip install pandas-ta` (lightest dep, zero C compilation, single-import API) and write Phase 1 adapter as opt-in sidecar with explicit Wiring Plan. Defer freqtrade/jesse/vectorbt until pandas-ta integration ships first as proof of pattern.
 
 NFA. Reversible (no production change).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

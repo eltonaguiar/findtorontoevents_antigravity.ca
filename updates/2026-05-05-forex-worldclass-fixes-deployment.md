@@ -91,3 +91,5 @@
 - ✅ Code review passed (2 rounds) — SMA50 guard bug fixed
 - ✅ auto_tuner.py breakage risk assessed: none (dict key iteration, not hardcoded lookups)
 - ✅ No breaking changes to existing strategy signatures
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

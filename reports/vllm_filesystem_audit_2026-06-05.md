@@ -74,3 +74,5 @@ Same skill files are mirrored in worktrees:
   ```
   .venv/bin/vllm serve <model-id> --port 8000
   ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

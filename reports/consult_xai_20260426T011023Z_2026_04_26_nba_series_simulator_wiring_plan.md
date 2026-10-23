@@ -183,3 +183,4 @@ sports_picks.php?action=today
 | `live-monitor/api/sports_value_analyze_lib.php` | +30 LoC. After `$truepPin` / Jensen consensus produces `$p`, lookup series price using **post-Shin Pinnacle `$p` as primary, fallback to Jensen**. Emit `series_winner` bets only in v1; `series_length` gated to v2. **Set EV threshold to 3.5% for series bets, cap volume at 2% bankroll.** |
 | `live-monitor/api/sports_picks
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

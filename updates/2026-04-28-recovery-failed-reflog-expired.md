@@ -95,3 +95,5 @@ cannot be completed without the original commit object.
 - `57efa2ec` — check-1 status (2026-04-28 ~01:15 UTC)
 - `08982bab` — check-2 status (2026-04-28 ~01:29 UTC)
 - This file — check-3 final escalation
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

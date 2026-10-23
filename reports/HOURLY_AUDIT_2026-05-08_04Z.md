@@ -196,3 +196,5 @@ No new candidates meet all 3 criteria (PF<0.5, n≥20, WR<35% sustained).
 - `reports/HOURLY_AUDIT_2026-05-08_03Z.md` (prior hour baseline)
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

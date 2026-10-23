@@ -31,3 +31,5 @@
 - `reports/peer_claude-external-ai-edge-review_2026-05-31.md` — 3-model external review
 - `reports/peer_claude-redteam-zoo-calibration_2026-05-31.md` — Zoo calibration red-team (APPROVE WITH DAMPING)
 - `reports/peer_claude-CORRIGENDUM_TRUTH_REPORT_2026-05-31.md` — 3 late-landing corrections
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

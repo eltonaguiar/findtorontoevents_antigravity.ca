@@ -144,3 +144,5 @@ Prado AFML readiness pipeline regardless.
 
 **Status:** DRAFT — awaiting user sign-off. See
 `audit_dashboard/real_money.html#queued` for the queued item.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

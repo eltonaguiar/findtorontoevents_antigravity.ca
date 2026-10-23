@@ -169,3 +169,5 @@ The gate was designed for picks with **real forward validation data**. The clone
 ---
 
 *This document supersedes `updates/2026-04-22-feedback-blocker2.md` (earlier draft from an interrupted session). Both are preserved for audit trail.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

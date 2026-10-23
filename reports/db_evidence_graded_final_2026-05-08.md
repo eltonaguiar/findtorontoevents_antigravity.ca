@@ -219,3 +219,5 @@ Per `db_action_plan_delta_2026-05-08.md`. Re-run with strong-evidence findings o
 - F12 (asset_class='' empty enum) confirmed counts but kilo says "impact-claim weak" — restate as data-quality gap, not sub-floor cause.
 - claude swarm engine hit max_turns at 13 iterations; spent $0.64; no JSON. Either prompt was too dense or schema asked too much. Future: split into smaller prompts.
 - gemini ignored JSON schema again (prose-only). Don't include in vote unless explicitly extracted.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

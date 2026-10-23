@@ -89,3 +89,5 @@ incubator/backtest_team/forward_signal_scanner.py  (modified)
 - [x] Commodity strategy file is importable and has `generate_signals` method
 - [x] Commodity strategy produces signals on test data
 - [x] Registry entry added with correct metadata
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

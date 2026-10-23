@@ -80,3 +80,5 @@ We are **0/8 classes money-ready live**, but the blocker is **not** a shortage o
 
 ---
 *All findings tracked in `ejaguiar1_stocks` INCIDENT_*/ENHANCEMENT_* → `findtorontoevents.ca/audit/incidents.html`. Investigation was read-only; no production strategy code modified.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

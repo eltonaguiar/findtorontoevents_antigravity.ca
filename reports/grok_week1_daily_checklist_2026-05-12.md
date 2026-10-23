@@ -59,3 +59,5 @@ wire-up + Day 5-7 end-to-end are queued for next session.
 
 - Master plan: `reports/quant_rescue_master_plan_2026-05-12.md`
 - All 30+ session commits today on origin/main
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

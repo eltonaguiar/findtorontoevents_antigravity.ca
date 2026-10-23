@@ -32,3 +32,5 @@ strategy slug). Emits coverage stats + a shadow-audit proposals JSON. 5 unit tes
 ## Next (human-approved) step
 Run with `--out reports/provenance_backfill_proposals.json`, review, then a separate apply-PR can
 write `signal_ts`/`source` back (with an `_backfilled=true` flag) — NOT done here (report-only).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

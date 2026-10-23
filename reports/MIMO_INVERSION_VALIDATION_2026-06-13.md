@@ -62,3 +62,5 @@ MiMo shipped `INVERT_STRATEGIES` into `alpha_engine/scanner.py` **uncommitted in
 ## DNA mutation
 
 The "DNA mutate top DRAIN strategies" item was an **unchecked TODO** in MiMo's session — no mutation backtest was executed (`tools/dna_mutation_engine.py` was created today but produced no validated result in the export). Nothing to validate yet; when run, it must clear the same CI-LB bar — combining/permuting RSI/MACD/Bollinger variants of net-losing strategies will, by the same logic above, mostly reshuffle in-sample noise. Pre-register before running (M-107).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

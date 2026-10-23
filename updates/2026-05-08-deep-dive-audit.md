@@ -46,3 +46,5 @@
 ---
 
 *The standing goal is now complete. I am stopping here.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

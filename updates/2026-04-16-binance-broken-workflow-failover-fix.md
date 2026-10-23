@@ -54,3 +54,5 @@ Per BINANCE.MD, these files still need failover:
 - `mtf_gate.py` — partial (has CryptoCompare, needs Bybit/KuCoin)
 - `mega_mutation_live_tracker.py` line 268
 - `forward_validator.py` line 3044 (low priority)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

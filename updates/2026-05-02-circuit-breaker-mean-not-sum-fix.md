@@ -85,3 +85,5 @@ If the on-disk -25,465.5% needs to be cleared before the next scanner run, do it
 1. **Find and fix the upstream pnl_pct unit corruption** — 58/966 picks have `pnl_pct` in percentage units. Trace via `_resolved_asset_class` or `source_system` to identify the writer and add a normalization at the source.
 2. **One-shot recompute of `circuit_breaker.json`** — once this PR lands, run `python -c "from alpha_engine.risk_controls import check_circuit_breaker; from alpha_engine.outcome_resolver import _load_closed_picks; check_circuit_breaker([], _load_closed_picks())"` (or similar) to write the corrected number on demand.
 3. **Consider allocation-weighted drawdown** — mean per-pick PnL is a rough approximation. A truly accurate portfolio drawdown would weight by `allocation` per pick, or compute from a portfolio equity curve. Out of scope for this safety fix.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -168,3 +168,5 @@ Once those land, P2/P3 items can graduate to P1.
 Per the repo's **Wire-Up Rule** (AGENTS.md), any new gate code added in response to this review must include at least one production caller (e.g. in `audit_trail/dashboard_generator.py` or `alpha_engine/smart_picks_engine.py`). Sidecar-only additions will be closed.
 
 Per the **Document Every Fix** rule, any P0/P1 change shipped from this review will get its own `updates/2026-05-XX-*.md` describing what was broken, what changed, and how it was verified.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

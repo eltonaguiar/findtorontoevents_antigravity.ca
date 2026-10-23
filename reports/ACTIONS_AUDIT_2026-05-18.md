@@ -97,3 +97,5 @@ token via `sed`; `gitleaks` (M-043) runs on every PR + daily.
 3. Add `cancel-in-progress` concurrency to the 4 push gates (biggest cost win).
 4. Security P0-1/P0-2/P0-3 — owner-coordinated; verify host certs first.
 5. Add `.github/dependabot.yml` + `codeql.yml`; SHA-pin third-party actions.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

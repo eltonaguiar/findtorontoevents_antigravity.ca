@@ -25,3 +25,5 @@ job — it admits real alpha and rejects beta-in-disguise. Logged as an honest n
 
 ## Reproduce
 `python3 verified_strategies/commodity_tsmom_backtest.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

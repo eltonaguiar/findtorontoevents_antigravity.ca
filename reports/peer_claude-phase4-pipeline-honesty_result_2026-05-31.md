@@ -129,3 +129,5 @@ Output is well-formed, tier thresholds match CLAUDE.md MAJOR GOALS (T1 PF>2.0/WR
 ## Honest one-liner
 
 The pipeline RUNS. Layers 1, 2, 5 are technically green. Layer 3 has a **9% NULL-pnl resolver hole** that quietly drops trades from every downstream stat. Layer 4 has been stale for 20 days. The biggest hidden risk is layer 2's **JSON-vs-DB drift**, which causes `strategy_tier_tracker.py` to report institutional-grade verdicts off a stale snapshot — not off today's live signal book.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

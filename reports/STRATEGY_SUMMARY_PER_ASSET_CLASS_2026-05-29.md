@@ -239,3 +239,5 @@ ORDER BY view_key, asset_class;
 
 *Report generated from ejaguiar1_stocks database. All metrics computed from resolved picks with pnl_pct IS NOT NULL.
 Data populated from 3,000 resolved trading_picks + 93 active picks from alpha_engine/data/active_picks.json.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

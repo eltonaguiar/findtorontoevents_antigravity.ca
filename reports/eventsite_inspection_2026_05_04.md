@@ -156,3 +156,5 @@ Continuously verify findtorontoevents.ca behaves correctly across all UX surface
 4. **Run Phase 1 specialist fan-out** — use the 4 personas above against the baseline JSON we just captured. 4 specialists × 5 engines = 20 outputs, then synthesis.
 
 🤖 Plan authored 2026-05-04 by the swarm-orchestrating Claude. Inspired by `events-swarm-incident-plan_91d51306.plan.md` (specialist JSON contract + coordinator merge rules + decision rules for patch admission).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

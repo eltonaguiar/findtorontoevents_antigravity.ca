@@ -122,3 +122,5 @@ Each strategy tested with 4 TP/SL geometries:
 - **Key breakthrough (C12)**: Momentum paradigm shift for non-crypto classes
 - **Best discoveries**: MTF_RSI PF 5.05 (CRYPTO), Dual Momentum inf (EQUITY/ETF), 12-1mo Momentum PF 12.89 (EQUITY)
 - **Optimal geometry**: TP=1.5%, SL=0.5%, hold=10 bars
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

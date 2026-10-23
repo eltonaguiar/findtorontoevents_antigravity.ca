@@ -41,3 +41,5 @@ Cross-checks the curated UFC/Tennis/Golf picks in `live-monitor/sports-betting.h
 | 2026-05-14 | Scottie Scheffler vs Field | Scottie Scheffler | +400 | 20.0 | 20.0 | — | — | no_polymarket_match |  |
 | 2026-05-14 | Rory McIlroy vs Field | Rory McIlroy | +650 | 13.33 | 13.3 | — | — | no_polymarket_match |  |
 | 2026-05-14 | Tommy Fleetwood vs Field | Tommy Fleetwood | +3300 | 2.94 | 3.0 | — | — | no_polymarket_match |  |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

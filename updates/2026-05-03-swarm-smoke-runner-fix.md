@@ -23,3 +23,5 @@ python tools/swarm/swarm_run.py --prompt-file "swarm_runs/audit_attachment_smoke
 python tools/swarm/swarm_inspect.py "swarm_runs/audit_attachment_smoke_2026_05_03_rerun"
 python tests/test_swarm_tooling.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

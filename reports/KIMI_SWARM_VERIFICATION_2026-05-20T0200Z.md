@@ -134,3 +134,5 @@ SHORT, mutation-3-axis no rescue.)
 No fabrication. 4 verified P0 gaps added to todo list (53 items, now
 including Kimi findings). Next concrete action: K-P0-1 resolver coverage
 fix is the single highest-impact item until completed.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

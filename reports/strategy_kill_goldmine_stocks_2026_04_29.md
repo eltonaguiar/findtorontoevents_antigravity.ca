@@ -171,3 +171,5 @@ module. Wire-up rule satisfied (existing production caller).
 - Pattern precedent: `d9a9a3a6e2` (rapid_fire × macd_rsi_confluence kill, PR #509)
 - Blocklist file: `alpha_engine/strategy_blocklist.py`
 - Tests: `tests/test_strategy_blocklist_goldmine_stocks.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

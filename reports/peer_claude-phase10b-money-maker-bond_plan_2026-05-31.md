@@ -27,3 +27,5 @@
 ## Deliverable
 
 `reports/peer_claude-phase10b-money-maker-bond_result_2026-05-31.md` (action plan).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

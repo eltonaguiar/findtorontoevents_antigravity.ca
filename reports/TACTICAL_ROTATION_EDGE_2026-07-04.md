@@ -82,3 +82,5 @@ Keller's PAA1 (12 offensive ETFs vs 12m SMA; protective bond-fraction BF=min(1,2
 | VAA-G4 | +8.1% | 0.77 | -20% | 0.40 | 1.03/0.66/0.56 |
 
 PAA1 has the HIGHEST single-strategy Sharpe (0.93) — its gradual bond-protection smooths returns (lower ann, higher risk-adjusted). **The validated TAA family is now 3-strong** (rotation, VAA, PAA), ALL independently beating SPY risk-adjusted + cutting drawdown ~2.5x across 2007-2026 incl the 2008 GFC. That 3 independent TAA constructions all work is decisive evidence the family is real, not overfit. PAA is front/mid-loaded (strong GFC), complementary to the recent-strong rotation — a rotation+PAA blend is a candidate v3.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

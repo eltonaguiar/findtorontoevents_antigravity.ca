@@ -139,3 +139,5 @@ Repo's existing `scripts/penny_stock_picks.py` already filters at **$1.00-$5.00*
 - `tools/backtest_equity_top_momentum.py` — existing 12-1m momentum baseline
 
 NFA. No production change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

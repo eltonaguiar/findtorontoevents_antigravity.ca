@@ -127,3 +127,5 @@ where disagreement actually matters.
 Observational notes only. Reasoning-effort feature is opt-in env-gated;
 defaults preserved. Engine routing patterns are recommendations not
 enforcement.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

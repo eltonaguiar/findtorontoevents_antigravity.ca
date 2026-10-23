@@ -60,3 +60,5 @@ Equities -3-6%, Crypto -16-23%, Gold -5%, USD bid. Bonds the only safe haven.
 2. Wire picks_now.json into a visible surface on `/audit/`
 3. Add insider transaction data feed (SEC EDGAR scrape)
 4. Add earnings surprise calendar overlay
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

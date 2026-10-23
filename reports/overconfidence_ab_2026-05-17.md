@@ -107,3 +107,5 @@ booster runs live and tags new picks, which then close over the next ~30 days.
 - Closed picks on disk: 8,421
 - Tagged with `_overconfidence_arm`: 0 (arm A: 0, arm B: 0)
 - Verdict: `INSUFFICIENT-N` (n = 0, harness just built — correct)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

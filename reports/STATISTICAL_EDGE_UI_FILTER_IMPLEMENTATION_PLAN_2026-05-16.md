@@ -146,3 +146,5 @@ This plan has been created after:
 ---
 
 *End of Draft Plan — Ready for Swarm Review*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

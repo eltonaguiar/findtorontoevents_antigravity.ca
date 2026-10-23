@@ -43,3 +43,5 @@ r(confidence, win) = **-0.0866** across 5,135 closed picks.
 | 0.60-0.70 | 3212 |   0.2559 |   0.352575 |        -0.1629 |
 | 0.70-0.80 |  348 |   0.4195 |   0.571177 |        -0.1251 |
 | 0.80-0.90 |    1 | nan      | nan        |       nan      |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

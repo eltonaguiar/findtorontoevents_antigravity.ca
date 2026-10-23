@@ -64,3 +64,5 @@ Top symbols: GBPJPY=X (193), AUDJPY=X (192), USDCAD=X (179), EURGBP=X (173), EUR
 1. **Next graduation candidate: `fx_smart_carry_trade_momentum`** — only strategy with clean WR≥50 + PF≥1.5 distribution (no outlier dependency). Grow sample to n≥100 before sizing; expected 4–6 weeks at current pick rate.
 2. **Immediate kill candidate: `forex_carry_momentum`** (n=43, WR=7%, PF=0.058). Run `tools/mutation_analysis.py` then add to `BLOCKED_SOURCE_SYSTEMS` per TESTING_PROTOCOL §7. **Also investigate `forex_rsi2_mean_reversion`'s -100% outlier as a P1 data-integrity bug** (FX vanilla MR cannot lose 100% without a calc/leverage error) before retiring the strategy — kill the bug first, then re-evaluate PF.
 3. **P0 follow-up**: reconcile `pf_registry` FOREX cohort (n=28, alpha_engine/cta_replicator namespace) vs live DB (n=1666, ig_contrarian/myfxbook/rsi2 namespace). Two disjoint universes today; one of them is wrong.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

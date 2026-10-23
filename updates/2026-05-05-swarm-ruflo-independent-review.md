@@ -89,3 +89,5 @@ The function has 4 fallback strategies for extracting JSON from engine output. I
 
 - `tests/test_swarm_tooling.py` — 2/2 tests pass ✅
 - Python syntax check (`py_compile`) — all 5 files pass ✅
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

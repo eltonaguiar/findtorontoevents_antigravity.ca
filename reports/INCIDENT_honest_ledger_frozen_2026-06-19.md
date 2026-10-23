@@ -67,3 +67,5 @@ My local edit to `alpha_engine/active_picks_sync.py` (keyed-fetch-first) was **r
 
 ### Verify
 Next `outcome-resolver.yml` run should go green WITH equity prices fetched; `at_signal_outcomes max(created_at)` advances past 06-12; rows/day returns to ~5k; the `crypto_rsi5070_us` lead resumes accruing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

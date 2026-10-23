@@ -65,3 +65,5 @@ unverified IMDb values. MovieShows2's refreshed database feed is separate.
 The user later supplied a valid GoDaddy-specific credential; the same rebuilt
 movie assets and rating fixes were deployed there after localhost validation.
 Its separate refresh completed with zero errors and 7,901 total titles.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

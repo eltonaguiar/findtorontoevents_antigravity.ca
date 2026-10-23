@@ -126,3 +126,5 @@ This replaces the 18-table sprawl with a single unified table. The JSON export f
 | P1 | FOREX TP/SL rebalance | 25 lines | Medium | `audit_trail/trade_geometry.py` |
 | P2 | Deploy dedup skill | 0 lines (done) | Low | `tools/dedup_md_review.py` |
 | P2 | Create roadmap_items DB table | 1 migration | Medium | MySQL schema |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

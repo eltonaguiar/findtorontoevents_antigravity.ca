@@ -114,3 +114,5 @@ The original hunt used n≥100 / Wilson-lo>0.55 / PF CI-lo>1.2 / Sharpe CI-lo>0.
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - Memory: `project-money-ready-2026-05-31`, `reference-sl-optimization-needs-pricepath`, `feedback-concentration-strategy-not-engine`, `feedback-incident-page-stale-vs-live-db`
 - CLAUDE.md MAJOR GOAL #1 (current per-class state)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -31,3 +31,5 @@ A follow-up review found additional deploy workflows where upstream automation f
 - Confirmed YAML syntax remains valid by preserving existing structure and trigger keys.
 - Confirmed exact workflow names used match `name:` fields in their source workflow files.
 - Confirmed these changes are additive (no existing trigger paths removed).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -59,3 +59,5 @@ DO NOT ship as standalone strategy. Instead:
 - 22-year horizon validates with 21 observations (small-sample caveat for TIER-2 cert)
 
 NFA. No production change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

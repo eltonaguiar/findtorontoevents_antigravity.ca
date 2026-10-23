@@ -119,3 +119,5 @@ No section headings deleted; only additions and the §2.5 table replacement.
 - `classes_refreshed` = 10 (CRYPTO, EQUITY, FOREX, FUTURES, UNKNOWN, COMMODITY, ETF, PENNY_STOCK, BOND, PREDICTION_MARKETS noted absent)
 - `stale_figures_replaced` = 9 (the §2.5 empirical claims) + 1 header date stamp + 1 BOND n-cite + 4 CLAUDE.md cross-ref deltas (CRYPTO/EQUITY/COMMODITY/FOREX) = 15 figure-level updates
 - `section7_discrepancies` = 6 (rules 1-6 above; rule 7 deferred)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -9,3 +9,5 @@ We are implementing a blocked-symbol universal gate in audit_trail/quality_gates
 Context: 23 symbols are blocked (9 CRYPTO data-quality/delisted, 4 CRYPTO structural anti-edge, 10 EQUITY drain symbols). 13 instances are currently leaking into active_picks.json because at least 11 emitter files write directly without calling passes_active_gate().
 
 Does this three-part design have any flaws? Is there a better architectural approach? Consider: race conditions, performance, maintainability, and whether we should instead centralize all active_picks.json writes through a single gate-checked function.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

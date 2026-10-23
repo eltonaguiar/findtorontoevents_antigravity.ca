@@ -46,3 +46,5 @@ Core hourly artifacts all fresh (`dashboard_data.json`, `pf_registry.json`, `for
 1. **Wire the failover modules** into `scanner.py` + `forex_smart_picks.py` (then the rest). Converts ~147 silent yfinance failures into graceful provider failover.
 2. **Fix the fail-open masking** — asset agents must fail/alert on 0 raw picks or high yfinance error-rate, not exit green.
 3. **Fix `penny-stock-picks.yml` checkout token** + **`dxy-state-update.yml` cron** (never run) + the `YM=F` 19M% resolver unit bug.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

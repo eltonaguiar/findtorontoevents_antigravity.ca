@@ -120,3 +120,5 @@
 
 *Source: `alpha_engine/money_ready_verdict.py` + `audit_dashboard/data/pf_registry.json` + `tools/edge_stability_harness.py`*  
 *Kelly formula: full_kelly = WR − (1−WR)/PF; position size = account × min(quarter_kelly, 0.25)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -132,3 +132,5 @@ This review confirms the 72h work was **high-quality and bug-free in execution**
 ---
 
 *End of Feedback. All fixes from the 72h period (including the 2 local commits) are sound. No additional PRs required from this review.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

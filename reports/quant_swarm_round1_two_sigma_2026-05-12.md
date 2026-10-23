@@ -41,3 +41,5 @@ Priority order. NO deep models yet — n=3500 labeled rows after noise filter is
 42% backtest vs 11% live = ~31pp leakage. Until that gap closes, every model claim, every "Tier 2 candidate," every per-class lift number is in-sample optimism. CPCV is 4 hours of work. Nothing else matters until the OOS gap is < 5pp. No real-money sizing, no v3b rollout, no ensemble work — CPCV first.
 
 ## NFA — research surface only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

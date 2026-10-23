@@ -207,3 +207,5 @@ For the current `best_pf_overall` panel, all five top cells qualify:
 - Live data: `audit_dashboard/data/top_edges_per_class.json` (2026-05-31 snapshot)
 - AI consult full transcript: `reports/peer_claude-incident_crypto_1_lookahead_audit_deepseek_consult_2026-05-31.md`
 - Related incident: `reports/peer_blackbox_incidents-enhancements-pr_2026-05-31.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

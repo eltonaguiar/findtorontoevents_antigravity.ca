@@ -140,3 +140,5 @@ Kimi (Renaissance/Two Sigma background) conducted a comprehensive audit of the a
 | `audit_trail/quality_gates.py` | Threshold freeze + env var gate |
 | `.github/workflows/ab_analysis.yml` | DB credential redaction |
 | `reports/NORTH_STAR_ACTION_PLAN_2026-05-19.md` | Kimi review integration + tier gaps |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -129,3 +129,5 @@ Phase 1 patches (PnL recompute, trust_score backfill, ghost-row archive) must be
 - [ ] `reports/2026-05-26_pnl_status_disagreement.csv` < 5% of closed-pick rows
 - [ ] `reports/weekly_filter_2026-05-26.md` exists and every class section has a status verdict line
 - [ ] All Phase 1 commits land on `main` via PR (no direct pushes)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

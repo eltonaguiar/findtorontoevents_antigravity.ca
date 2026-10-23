@@ -10,3 +10,5 @@ live `ejaguiar1_stocks.trading_picks` table.
 2. Pull JSON-mirror `n` vs live DB `n` for 5 strategies.
 3. Design diff (file:line), risk + downstream impact.
 4. Ship docs-only PR. **No code change.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

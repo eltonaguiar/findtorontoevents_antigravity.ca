@@ -42,3 +42,5 @@ we cannot distinguish intervention lift from regime tailwind — and every
 **Word count:** 248
 
 ## NFA. Research surface.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

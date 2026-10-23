@@ -57,3 +57,5 @@ Time-splitting `non_crypto_consensus` COMMODITY (net 3bp):
 The full-sample net CI-LB 1.75 is **entirely carried by the strong early-2026 run**. The forward-relevant (recent) window is **sub-bar (CI-LB 0.52–0.81)** and WR has decayed **71% → 42%**. Per the promotion discipline (forward CI-LB must hold, not just full-sample), **this is NOT money-ready — the edge decayed**.
 
 **CORRECTED north-star: 0 forward-robust money-ready edges net of realistic cost.** The "1 survivor" was a full-sample artifact of in-sample inflation; the OOS check (which exists exactly for this) caught it. The lessons compound: gross→net killed FOREX consensus; full-sample→forward kills commodity consensus. **Always test the RECENT window, net of cost, before any pilot.** The peer should NOT forward-pilot this as a live edge — at most monitor whether it re-strengthens; it is currently a decayed edge, not a candidate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

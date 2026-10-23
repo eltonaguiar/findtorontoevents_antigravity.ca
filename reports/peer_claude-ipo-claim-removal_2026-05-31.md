@@ -108,3 +108,5 @@ $ grep -c "asset_class_health" audit_dashboard/template.html
 If/when an IPO scanner is built (see ENHANCEMENT N5 in
 `reports/2026-05-25_opencode_session_deep_scan.md`), open a fresh
 ENHANCEMENT row for the build-out; do not reopen #19.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

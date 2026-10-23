@@ -176,3 +176,5 @@ Output: `.planning/cycle8/results.json` (machine-readable findings) and this rep
 **Net assessment:** Cycle 8 confirms cycles 3-7 leaks are still live. The recently-merged calibration PRs (#284, #285, #287, #294, Kimi #292) tightened the active gate but did not address the closed-trade emission leak from retired strategies, which is the single largest remaining drag.
 
 **Nothing in this PR modifies production files.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

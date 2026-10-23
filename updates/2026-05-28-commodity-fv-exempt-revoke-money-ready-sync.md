@@ -34,3 +34,5 @@ curl -sS 'https://findtorontoevents.ca/audit/data/money_ready_verdict.json' | py
 ## Exemption policy (unchanged)
 
 No asset class received a **real-money sizing** exemption. See report §3.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

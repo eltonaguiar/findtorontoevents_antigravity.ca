@@ -146,3 +146,5 @@ Sub-floor strategies (PF < 0.6, n≥20):
 ---
 
 Refs: issues #685 #686 #693 | PRs merged this hour: #1290
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

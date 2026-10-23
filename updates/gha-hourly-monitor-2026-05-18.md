@@ -114,3 +114,5 @@ No CI Tests `failure` or `cancelled` conclusion observed in any run.
 **Run context:** Verdict unchanged GREEN→GREEN. No commit (no status change, no chronic-workflow list change).
 
 ---
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

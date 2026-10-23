@@ -128,3 +128,5 @@ After stripping PRs that targeted non-existent files, used incorrect line number
 ---
 
 *End of Round 2 transcript. Ready for Round 3: line-level edit mode on the 5 confirmed PRs.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

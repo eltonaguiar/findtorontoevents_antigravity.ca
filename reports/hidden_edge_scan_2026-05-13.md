@@ -88,3 +88,5 @@ System has been silent 79.7 days. Action: locate the cron entry, confirm the gen
 - `score` is the primary field used; for picks missing it, the fallback chain (elite_score → trust_score → confidence×100) was applied — does not change cohort sizes materially because `score` is populated on 100% of `recent_closed`.
 - Hidden-alpha WR = 100% and hidden-noise WR = 0% are **definitional artifacts** of the percentile bins (p80 pnl threshold = +2.51%, p20 = -1.81%, both away from zero) — the actionable number is the **cohort concentration**, not its WR.
 - All ratings here are READ-ONLY observations; no code or trades modified.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

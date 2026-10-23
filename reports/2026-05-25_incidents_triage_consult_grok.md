@@ -28,3 +28,5 @@ COT over-emission is flashy and embarrassing (fake DSR=1.0/WR=86.5% SUPREME EDGE
 
 The triage process plus these four changes turns a noisy curated backlog into a credible, low-churn incident system without over-engineering the current 38-row state.
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

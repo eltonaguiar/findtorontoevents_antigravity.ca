@@ -25,3 +25,5 @@
 ## Note on differing percentages (e.g. 41% vs 43.6%)
 
 Track (italic) uses **strategy-wide forward WR**; other badges/columns may use **symbol-specific** or **different** fields. The tooltip now states what the **cell** is showing vs the **pair ledger** line.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

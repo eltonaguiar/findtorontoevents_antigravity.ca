@@ -82,3 +82,5 @@ phantom-data gate)
 
 Research surface only. The direction-axis SHORT edge is the most evidence-rich
 path; do NOT generalize to LONG-side until Step C clears.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -76,3 +76,5 @@ function getVerifiedTier(p) {
 ## Lesson
 
 Two separate blocks where somebody reordered code and the `var` hoist masked the bug at load time — the error only fired once iteration reached a key that tripped the property access. When a crash names a random-looking property (here, a strategy name from an unrelated kill list), look for *where the containing object became `undefined`*, not where the property name is defined.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

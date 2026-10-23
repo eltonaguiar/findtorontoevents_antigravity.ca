@@ -85,3 +85,5 @@ With C‑Tier suspended, gates optimized, ATR‑based SL/TP deployed, and hedges
 ---
 
 *Committed by opencode — 2026‑05‑02*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

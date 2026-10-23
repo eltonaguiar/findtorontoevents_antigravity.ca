@@ -241,3 +241,5 @@ After PR merges and next dashboard regen:
 | `__ALL__` tile inflates UI height and pushes data below fold | LOW | Tile is single row in CSS grid (`.nc-grid`); auto-flows |
 | `_coerce_asset_class` recursion loop if `_derive_asset_class` returns `"UNKNOWN"` | LOW | `_derive_asset_class` defaults to `"EQUITY"` (line 3462), never returns `"UNKNOWN"` |
 | PENNY/MEME implementation lands without operator decisions | HIGH | Hard-blocked above — proposal not implemented in this PR |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

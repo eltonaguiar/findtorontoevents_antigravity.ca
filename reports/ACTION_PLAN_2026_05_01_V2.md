@@ -121,3 +121,5 @@ issues. v2 below addresses every consensus blocker.
 
 **This is v2.** Sending to 1 final reviewer (DeepSeek — most thorough
 on round 1) before implementation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

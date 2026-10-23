@@ -65,3 +65,5 @@ All 15 pass:
 - `python -m tools.source_liveness_watchdog --no-snapshot` exits 0 on a clean run
 - `reports/health/source_liveness_latest.json` created with correct schema
 - No existing tests broken
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -140,3 +140,5 @@ HOLD set (#660 #658 #681 #661 — Plan v2.1 fabrication family) absent from open
 - PR #694: quan_engine HYPEUSDT symbol-block (bypass via unknown still active)
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

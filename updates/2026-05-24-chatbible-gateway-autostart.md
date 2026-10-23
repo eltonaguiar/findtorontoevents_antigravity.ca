@@ -65,3 +65,5 @@ bash tools/chatbible-gateway-start.sh
 The gateway on this machine (gx10-c9b9 / 192.168.2.52) connects to the **desktop's** gateway at 192.168.2.32. The systemd service starts a **local** gateway on this machine. This is correct per CHATBIBLE.MD — each peer runs its own gateway, and they discover each other via LAN broadcast. The key fix is that the local gateway no longer dies silently.
 
 However, if the **desktop PC** (192.168.2.32) reboots, its gateway still has no auto-start. That needs to be set up on the Windows side as a Scheduled Task or Windows Service. This fix only covers the Linux/gx10 side.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

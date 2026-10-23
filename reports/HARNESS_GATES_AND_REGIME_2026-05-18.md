@@ -156,3 +156,5 @@ The ml_enhanced family has 8 whitelisted variants + all others quarantined. The 
 ## 7. Bottom Line
 
 The harness is working — it correctly identifies that only `risk_reward` has stable walk-forward signal. The regime backfill unblocks `evaluate_by_regime()` but the data is still too thin (only 2/6 regimes scored). The fastest path to a defensible edge is: fix the P0 dashboard gating to only trust `risk_reward`, unblock COT COMMODITY strategies (PF>4, real edge), and extend the regime backfill to per-date snapshots so the regime-conditional harness can fairly evaluate regime-dependent signals.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -87,3 +87,5 @@ filter were about to route capital toward. Catching the mining artifact
 before it is "money-readied" is the highest-value outcome of a deep-dive: the
 DSR/SPA gates exist precisely for this, and this finding shows they are
 currently bypassed by the source-system trial-count under-estimate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

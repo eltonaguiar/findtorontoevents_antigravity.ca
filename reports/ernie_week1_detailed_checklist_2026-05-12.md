@@ -71,3 +71,5 @@ session-applicable status tagged inline.
 - Companion: `reports/grok_solo_week1_checklist_2026-05-12.md`
 - Master plan: `reports/quant_rescue_master_plan_2026-05-12.md`
 - Solo-quant retrospective: `reports/week1_retrospective_2026-05-12.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

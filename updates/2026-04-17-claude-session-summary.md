@@ -211,3 +211,5 @@ Expected (on next CI cycle that includes commit `201db2bd00` ml_crypto SHORT blo
 4. **Add "Top Conviction" filter chip** with `strong + wf_STRONG + trust_PROVEN` (n=52, 86% WR PF 26)
 5. **Investigate the BUY/LONG metadata bug** Kimi flagged (3909 BUY at 29% WR vs 441 LONG at 55% WR — likely same picks, inconsistent labels)
 6. **Refresh ml_crypto_predictor symbol bonuses** at `quality_gates.py:2748-2751` — FETUSDT bonus claims "100% WR" but current data shows 53.4% WR
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

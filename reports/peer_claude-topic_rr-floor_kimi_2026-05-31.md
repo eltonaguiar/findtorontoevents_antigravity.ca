@@ -165,3 +165,5 @@ Bibliography: see citations section above.
 ---
 
 *Generated 2026-05-31 by claude-opus-4-7 via Moonshot kimi-k2.6 (international endpoint). Raw responses preserved at `/tmp/kimi_rr_out.md` + `/tmp/kimi_rr_out2.md` until next session reset.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

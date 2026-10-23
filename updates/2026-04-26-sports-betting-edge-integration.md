@@ -298,3 +298,5 @@ pick path, not a sidecar.
   `live-monitor/api/sports_picks.php`
 - Frontend: `live-monitor/sports-betting.html`,
   `live-monitor/sports-betting.js`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

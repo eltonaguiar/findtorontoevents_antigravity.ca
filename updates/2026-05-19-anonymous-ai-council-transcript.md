@@ -121,3 +121,5 @@ class StockPredictionPipeline:
 | ai_council_v2_20260519T200730Z | 2026-05-19T20:07Z | strategy harvest | none | 2/10 |
 | deep_probe_full_non_tor | 2026-05-19 | code harvest | none | 6/40 |
 | deep_probe_full102_non_tor | 2026-05-19 | code harvest | none | 6/102 |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

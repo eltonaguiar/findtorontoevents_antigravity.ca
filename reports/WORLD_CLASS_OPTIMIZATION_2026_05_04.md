@@ -295,3 +295,5 @@ Add to trust registry (location TBD, search for `TRUST_REGISTRY`):
 ---
 
 **CLAUDE IM DONE, COULDNT COMMIT TO GITHUB** (git operations timeout on 119,598+ commit repo)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

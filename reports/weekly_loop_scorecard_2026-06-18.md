@@ -88,3 +88,5 @@ durable. Fixing the lane stall + de-concentrating the cohort across days is prer
 ## Hard-rule compliance
 Every figure direct-SQL re-verified · no backtest run (no pre-registration needed this cycle) · do-not-relitigate
 respected (FOREX rsi2 small-n was on the list; it is HELD, not promoted) · read-only DB · isolated worktree.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

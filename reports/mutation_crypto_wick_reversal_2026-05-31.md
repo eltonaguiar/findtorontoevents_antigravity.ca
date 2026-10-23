@@ -141,3 +141,5 @@ for row in d['by_asset_class_strategy_symbol']:
         print(row)
 "
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

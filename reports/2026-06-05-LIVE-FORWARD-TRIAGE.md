@@ -219,3 +219,5 @@ Live forward ticker (last 7 days):
 ## 10. The 1-paragraph verdict for the operator
 
 > **You're right to be skeptical. The "0/9 money-ready" panel is honest but the bootstrap forward dashboard underneath it is computing PF/WR on a 97% backfill sample. The actual live forward sample is 6,358 trades. Filtered through concentration + fat-tail + OOS checks, exactly 2 strategies survive as T2-shaped: `fx_smart_carry_trade_momentum` (n=25, OOS-robust, +0.15% avg, needs 75 more closes) and `ml_enhanced_RENDERUSDT_*h_D_ensemble_stack` (n=30, single-symbol, +5.94% avg, needs 70 more closes). The 6-week path to n=100 is concrete: add daily-emit forward pilots for both, track `n_to_t2` on /audit, gate the panel on a concentration check. The Cloud-Minimix VRP / FX-carry / sector-dispersion 3-strategy plan is refuted and will not be re-enabled.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

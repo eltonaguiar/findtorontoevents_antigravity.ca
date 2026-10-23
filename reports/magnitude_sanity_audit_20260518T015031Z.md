@@ -52,3 +52,5 @@
 - JTOUSDT `ml_enhanced_JTOUSDT_1d_B_lightgbm` — implied TP 50.7% — TP_MAGNITUDE_IMPLAUSIBLE: implied TP 50.7% > CRYPTO cap 25%
 - JTOUSDT `ml_enhanced_JTOUSDT_1d_B_lightgbm` — implied TP 50.6% — TP_MAGNITUDE_IMPLAUSIBLE: implied TP 50.6% > CRYPTO cap 25%
 - JTOUSDT `ml_enhanced_JTOUSDT_1d_B_lightgbm` — implied TP 50.6% — TP_MAGNITUDE_IMPLAUSIBLE: implied TP 50.6% > CRYPTO cap 25%
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

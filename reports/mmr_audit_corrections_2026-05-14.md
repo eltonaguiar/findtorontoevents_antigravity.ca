@@ -133,3 +133,5 @@ Tied to Charter Tier-2 floor.
 - Original synthesis: `reports/mmr_round2_synthesis_2026-05-14.md` (PR #996)
 - 5 pr-reviewer transcripts in `C:\Users\zerou\AppData\Local\Temp\claude\…\tasks\*.output`
 - Skill spec: `.claude/skills/money-maker-ready/SKILL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

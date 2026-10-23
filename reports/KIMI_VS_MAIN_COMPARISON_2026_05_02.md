@@ -156,3 +156,5 @@ Kimi does not ship `atr_adaptive_stops.py`. Not relevant.
 - GitHub PR #621 (CLOSED) — Codex bot's Holm/NameError findings, both moot for Kimi PR
 
 *Document version: 1.0 — Read-only audit, no code modified.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

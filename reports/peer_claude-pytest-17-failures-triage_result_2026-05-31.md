@@ -34,3 +34,5 @@
 Server-side branch `docs/pytest-17-failures-triage-mimo-2026-05-31` off origin/main, 3 files added under `reports/`. PR URL in shell output.
 
 ## DONE
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -170,3 +170,5 @@ All Vol MR entries with PF>2 plus the remaining Trend Triple and Breakout+Volume
 | Best single strategy | MTF_RSI on ETH (PF 5.05, C10) |
 | Best universal strategy | Volatility Mean Reversion (30/30, PF 2-5) |
 | Best asset class breakthrough | COMMODITY finally solved (SI=F PF 4.08, GC=F PF 3.95) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

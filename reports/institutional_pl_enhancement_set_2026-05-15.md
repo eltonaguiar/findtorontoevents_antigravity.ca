@@ -617,3 +617,5 @@ The fastest path to institutional P/L is not adding more models. It is:
 3. Scale the best edges carefully: COMMODITY after dedup/concentration; EQUITY after VIX/large-cap/PEAD.
 4. Rebuild thin classes in shadow: BOND and FUTURES.
 5. Add alt-data only as validated sleeves with real callers and no placeholder data.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

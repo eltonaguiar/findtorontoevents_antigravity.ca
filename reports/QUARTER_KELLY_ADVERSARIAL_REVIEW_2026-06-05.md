@@ -37,3 +37,5 @@ Per MEMORY ohlcv-replay-dedup-2026-06-05, mega_mutation n=204 dedup is the ONLY 
 - `alpha_engine/eagle_gates.py` `_EAGLE6_MAX_SOURCE_HHI=0.20`, `_EAGLE6_MAX_PBO_GLOBAL=0.5`.
 - `audit_trail/quality_gates.py` `SMART_PICKS_MAX_CONFIDENCE=0.95`, `CRYPTO_HARD_MAX_AGE_HOURS=72`.
 - `tests/test_kelly_dd_halt.py` enforces drawdown halt — extend to 5% pilot threshold.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -73,3 +73,5 @@ hourly_by_status: {TP_HIT: 11, OPEN: 167, LOST: 5, SL_HIT: 5, ACTIVE: 15}
 - No operator escalation needed
 
 The 100→4 queue drop was a real GHA scheduler drain, not a phantom.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

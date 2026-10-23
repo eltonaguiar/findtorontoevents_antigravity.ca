@@ -71,3 +71,5 @@ This corroborates today's bulletproof NO_EDGE finding on the current production 
 ---
 
 **Return string:** `SYNTHESIS:classes_tested=7:winners=0:no_winner=7:next_step=PLUMBING_NOT_NEW_STRATEGIES`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

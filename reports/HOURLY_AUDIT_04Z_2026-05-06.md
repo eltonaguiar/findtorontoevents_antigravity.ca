@@ -156,3 +156,5 @@ The following candidates were already posted to issue #686 in prior sessions. No
 ---
 
 *Generated 2026-05-06T04:13Z — Claude Sonnet 4.6*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

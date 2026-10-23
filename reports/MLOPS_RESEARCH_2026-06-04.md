@@ -42,3 +42,5 @@ cloudflare-llama argued against being "too dismissive of neural nets" + wanted m
 metrics + interpretability discussion. Noted but outweighed: the other 3 reviewers + the n=48/no-edge
 reality make DL a clear overfit risk here. paid-mode flagged H-103's capacity may be too small for
 ML-as-filter to move PnL enough to justify infra — a real caveat to weigh before building.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

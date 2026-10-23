@@ -119,3 +119,5 @@ for m in lb[:12]: print(m['model_id'], m['n_resolved'], m['wr'], m['pf'], m['tie
 3. **Backfill ETF/BOND/COMMODITY** closed-pick volume so those classes can produce verdicts at all.
 
 Until those 3 land, treat ALL live picks as forward-test only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -182,3 +182,5 @@ Per user notification, the following agents are active simultaneously:
 - Xiao Mi MiMo (cloud Claude)
 
 Likely deliverables overlap with Phase 2/3 items above. Will integrate via merge as their PRs land.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

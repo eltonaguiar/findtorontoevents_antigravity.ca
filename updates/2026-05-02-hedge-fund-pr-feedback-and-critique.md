@@ -300,3 +300,5 @@ Lower score bins (0–9) outperform mid-range (20–29). This indicates either:
 7. **Week 1:** Then execute the original PR's Phase 0 triage (C-Tier suspension, elite_score → ml_score, etc.)
 
 These six Day-1 actions are estimated to lift aggregate WR from 34.5% → 40–42% before any of the original PR's gate changes even take effect.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

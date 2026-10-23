@@ -39,3 +39,5 @@ Calendar-anchored corn (ZC=F) + wheat (ZW=F) harvest-cycle directional windows. 
 ## VERDICT: **UNTESTED**
 
 Honest data-gap non-verdict. COMMODITY harvest-seasonal windows are sparse — the out-of-sample period did not give the harness >= 3 scored 14-day windows. Not a pass and not a clean fail; the blocker is sample coverage. A longer out-of-sample period or more grain contracts would help.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -711,3 +711,5 @@ All 9/9 packets now have quoted code matching live source bytes AND SQL block ma
 - `picks` (post-resolver canonical; columns include `asset_class`, `outcome`, `pnl_pct`)
 - `audit_dashboard/data/pf_registry.json` (`by_asset_class_strategy_policy_clean_net` = list of 72 dicts)
 - `audit_dashboard/data/db_health.json` (current banner state)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -34,3 +34,5 @@ python3 -m alpha_engine.priority_picks_emitter --dry-run | head -20
 - Stops sized CRYPTO LONG bleed (intrabar WR ~30% on LONG n=1050).
 - Keeps forward measurement lane open for luxalgo SHORT probation (n→100 target).
 - Removes fear-greed contrarian from emitter discipline pass-through.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

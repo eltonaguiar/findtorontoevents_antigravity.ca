@@ -19,3 +19,5 @@ python3 -c "import py_compile; py_compile.compile('alpha_engine/fundamental_macr
 ## Note
 
 `fundamental_macro_gates.py` is required by `money_ready_verdict.py` on main but was missing from the tree; this PR includes the module plus the network-metrics extension.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

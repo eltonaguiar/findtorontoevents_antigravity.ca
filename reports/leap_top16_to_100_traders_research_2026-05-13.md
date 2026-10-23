@@ -89,3 +89,5 @@ Both strategies share a **BTC.D regime gate** — the one structural pattern wit
 - All counts from `tradingview.com/u/<username>/` HTML headers fetched 2026-05-13.
 - Per-Idea / per-Script bodies not extractable via unauthenticated WebFetch (server-rendered).
 - Empty-rate excludes WAF-403 unreadable accounts; including them would worsen the publish-rate, not improve it.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -111,3 +111,5 @@ research driver, the pre-registration, and the reports.
    verified result. The path forward is the genuine-new-input route in
    `reports/roadmap_no_edge_to_money_ready_2026_05_18.md` Phase 3 — done with the
    discipline this vetting found missing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

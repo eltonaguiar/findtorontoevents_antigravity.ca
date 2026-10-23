@@ -105,3 +105,5 @@ export PHASE1_CONF_DEADZONE_ENABLED=shadow  # Disable confidence dead-zone
 - Verify payload ["picks"]["active"] contains 7 picks (instead of 5)
 - Check dashboard renders without errors
 - Confirm shadow-reject fields populate in _quality_stats
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -65,3 +65,5 @@ Tie-in: this is the THIRD pattern this session of "disclosure ≠ enforcement" /
 3. (new) `feedback_metric_definition_change_invalidates_thresholds.md`
 
 Three closely-related root causes, worth a shared umbrella memory entry.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

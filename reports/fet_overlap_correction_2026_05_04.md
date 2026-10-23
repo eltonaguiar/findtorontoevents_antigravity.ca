@@ -96,3 +96,5 @@ Net: of 11 prior numeric claims, **0 fully verified** at face value, **1 partial
   - `reports/verified_audit_findings_summary_2026_05_04.md` finding #1
   - `reports/strategy_inversion_findings_2026_05_04.md` D4
   - `reports/unknown_asset_class_deep_investigation_2026_05_04.md` (the "buried elites" table needs annotation)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

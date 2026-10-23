@@ -18,3 +18,5 @@ Per-class action plan for CRYPTO toward Tier-2 hedge-fund-grade performance (PF>
 
 ## Output
 `reports/peer_claude-phase10b-money-maker-crypto_result_2026-05-31.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

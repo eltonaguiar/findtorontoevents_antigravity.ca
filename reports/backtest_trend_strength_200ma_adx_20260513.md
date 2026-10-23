@@ -93,3 +93,5 @@ The combined system would inherit top-5 momentum's PF 2.82 / Sharpe 1.34 BUT tra
 - Moskowitz-Ooi-Pedersen (2012) "Time Series Momentum"
 
 NFA. No production change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

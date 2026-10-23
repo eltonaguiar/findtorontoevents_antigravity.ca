@@ -173,3 +173,5 @@ as PASS because it does not require macro-joinable data. With a macro-join
 requirement, all 3 are removed (the candidate with the highest macro-joinable
 PF is `non_crypto_consensus` at PF=1.22, which is below the 1.5 promotion
 threshold).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

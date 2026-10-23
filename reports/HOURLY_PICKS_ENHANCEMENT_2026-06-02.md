@@ -116,3 +116,5 @@
 - C3: devil flagged weakest; refiners reconciled -> VOO:91, BRKB:89, MSFT:87, JNJ:85, COST:82, PEP:82
 - C4: devil flagged weakest; refiners reconciled -> BRKB:86, JNJ:83, VOO:82, MSFT:79, PEP:78, SGOV:68, COST:68
 - C5: devil flagged weakest; refiners reconciled -> BRKB:86, GLD:80, MSFT:79, PEP:74, VOO:70, COST:66, JNJ:42
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

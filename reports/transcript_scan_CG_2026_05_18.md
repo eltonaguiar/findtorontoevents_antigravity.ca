@@ -111,3 +111,5 @@
 - [OPEN] Investigate pre-existing test failure `test_asset_class_health_class_present[ETF]`
 - [OPEN] Fix dashboard generator to include ETF in `asset_class_health`
 - [OPEN] Add stubs for canonical asset classes (like ETF) not present in `ac_breakdown`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -75,3 +75,5 @@ ground claims; (4) one class-specific fact line. Everything else (roles,
 formatting boilerplate, persona padding) is cut — a SMART-tier model does not
 need it, and extra context dilutes the numeric discipline. Fan it to the
 SMART set; the harness gates whatever it proposes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

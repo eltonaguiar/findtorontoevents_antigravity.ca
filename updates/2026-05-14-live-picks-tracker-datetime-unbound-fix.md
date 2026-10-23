@@ -46,3 +46,5 @@ python -c "import py_compile; py_compile.compile('ml_crypto_predictor/enhanced_m
 ```
 
 The workflow `ANTIGRAVITY-CLAUDEOPUS Live Picks & Discord` should resume normal hourly operation after this is merged.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

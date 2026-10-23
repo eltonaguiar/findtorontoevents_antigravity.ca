@@ -158,3 +158,5 @@ Net_recommendation: <one paragraph; flag if new P0 emerges>
 ```
 
 Keep total response under 600 words. Cite plan section by A-id / Q-id.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

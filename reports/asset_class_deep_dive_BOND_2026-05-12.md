@@ -73,3 +73,5 @@ All 3 are conventional Treasury/duration-aware logic — solid foundation.
 
 Research surface only. BOND ramp gated on FRED fix. Until FRED works, the
 registry add from commit `5c7a8c43a27` is dormant.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

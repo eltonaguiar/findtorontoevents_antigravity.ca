@@ -4316,3 +4316,5 @@ Week 3+: Independent Deployments
 ---
 
 *End of PR Plan 2026-05-18*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

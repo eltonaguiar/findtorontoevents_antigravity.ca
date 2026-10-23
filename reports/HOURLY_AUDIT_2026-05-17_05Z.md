@@ -175,3 +175,5 @@ Top 3 meet all kill criteria. Per CLAUDE.md: require 3+ AI consensus before addi
 - Issues: #685 (resolver-rescope done), #686 (kill candidates), #693 (EQUITY monitor -- closed 2026-05-13)
 - PRs today merged (prior sessions): #684, #674, #673, #664, #683, #687, #692, #694
 - Kill protocol: `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`, `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

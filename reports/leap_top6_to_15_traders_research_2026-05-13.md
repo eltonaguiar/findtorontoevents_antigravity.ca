@@ -105,3 +105,5 @@ Hypothesis: rotation captures the concentrated-book leverage edge
 - The `markets/cryptocurrencies/ideas/?authors=<x>` URL returned the generic crypto firehose (identical results for SinerjiPortfoy, tradingwala, bossout10) — TV is silently ignoring the `authors` param for non-authenticated requests. Those titles are **discarded** as non-attributable.
 - 7 of 10 traders have **zero public content** — verdict for those is "no inference possible beyond bio."
 - Backtests must use **yfinance daily/hourly OHLCV** only per constraint. Volume-profile, order-flow, and footprint indicators (tradingwala's stated edge) cannot be exactly replicated — use volume-weighted price-quantile approximations.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

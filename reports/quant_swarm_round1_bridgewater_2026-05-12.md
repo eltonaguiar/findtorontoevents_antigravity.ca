@@ -86,3 +86,5 @@ no real money.
 
 Principle-driven research. Real-money sizing remains gated on the
 10-step Lopez de Prado AFML pipeline regardless. Cite-evidence only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

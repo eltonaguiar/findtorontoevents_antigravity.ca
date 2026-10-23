@@ -77,3 +77,5 @@ subtraction, not more strategies.**
 6. Biggest risk in the plan as written.
 
 Answer concisely. Disagree where warranted. Flag anything factually wrong above.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

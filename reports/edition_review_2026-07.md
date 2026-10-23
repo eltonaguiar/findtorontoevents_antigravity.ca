@@ -27,3 +27,5 @@ This edition made a structural change (TAA pivot), so the operator should commis
 
 ## Open items carried into July
 Finish ML remediation (gate ml_crypto_predictor emission, wire/retire ml_gatekeeper, restart ml_health); cap blend concentration (~35%/ETF); validate more documented TAA variants (DAA/PAA/GTAA); measure poc_picks 2026-07-18.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

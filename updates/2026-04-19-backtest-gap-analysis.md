@@ -164,3 +164,5 @@ The fix is **curatorial**, not statistical: kill the toxic scrapers, unblock the
 ## Bottom Line
 
 > **The non-crypto book is not suffering from a backtest shortage. It is suffering from a strategy-quality crisis:** broken scrapers and consensus bots were allowed to trade, while academically sound strategies were locked out by asset-class blocks. More backtests on the current roster would be wasted compute. The path forward is **surgical curation**—kill proven losers, sandbox proven academic rules, and collect forward data.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

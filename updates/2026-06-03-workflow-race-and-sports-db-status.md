@@ -40,3 +40,5 @@ Separately, `Sports endpoint smoke + Playwright` is currently failing for a real
 1. Merge this workflow retry fix so the next scheduled refresh jobs stop failing on normal `main` contention.
 2. Triage the live sports DB outage separately from CI/workflow health; the smoke test is correctly detecting a production problem.
 3. Watch the mirror rerun to see whether the prior FTP timeout was transient or needs timeout/retry hardening too.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

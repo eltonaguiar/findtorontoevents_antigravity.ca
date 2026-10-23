@@ -92,3 +92,5 @@ These three findings deserve verification with the same rigor that killed the CO
 - Filter-pipeline tracing: `reports/2026-05-25_policy_clean_vs_top_edges_funnel.md`
 - Pre-registered hypothesis H-101 with kill criteria: `reports/hypothesis_registry.json`
 - MySQL registry extension: `tools/build_pf_registry.py` (gated by `PF_REGISTRY_INCLUDE_DB=1`)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

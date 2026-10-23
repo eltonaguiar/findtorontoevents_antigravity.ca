@@ -55,3 +55,5 @@ Recommended follow-up after merge:
 - let the updated deploy workflow run once against `main`
 - confirm the remote `/next/events.json` hash matches the repo `events.json`
 - re-check the Today filter in Toronto timezone on the live site
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

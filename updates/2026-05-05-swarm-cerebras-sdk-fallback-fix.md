@@ -75,3 +75,5 @@ The user runs swarms from multiple shells / WSL / cron contexts. Requiring an ex
 - Full Hermes/swarm bug catalog: `updates/2026-05-05-hermes-agent-bug-analysis-claude-opus-4-7.md`
 - Companion fix (ruflo orchestrator `--model` pass-through): PR #815
 - The brainstorm-review swarm tool that already uses HTTP path successfully: `tools/brainstorm_review_swarm.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -88,3 +88,5 @@ The "29.2M open positions" that triggered this whole investigation was a **count
 The multi-AI panel's "not approved" verdict is harsh but directionally correct. The data is cleaner, the bugs are fixed, and the system is flowing again — but the documentation doesn't match the code, no backup exists for deleted rows, and the root cause (idempotent sync gaps) is still live.
 
 **The .MD should be updated to reflect what actually ran, a backup habit should be established, and the status standardization should be finished. Then this is a solid production-grade remediation.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

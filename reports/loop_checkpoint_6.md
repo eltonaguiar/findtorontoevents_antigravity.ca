@@ -78,3 +78,5 @@ Replace whatever `git push` is currently in the Commit results step with the `sa
 - This: `reports/loop_checkpoint_6.md`
 - Previous wrong-repo finding now documented as misattribution: `reports/penny_picks_cron_investigation_2026-05-08.md` (header note added next)
 - Fix target: `.github/workflows/penny-skyrocket-runner.yml` Commit-results step
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

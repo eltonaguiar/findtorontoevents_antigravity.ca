@@ -71,3 +71,5 @@ compound_overlap_aware([], 10.0))"` → PASS.
 Regression: `tests/test_dashboard_generator_net_pf_wireup.py` → 10 passed.
 The `test_dashboard_generator_measurement_hygiene.py` suite referenced in the
 plan belongs to Task 6 and is not yet present in the tree.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

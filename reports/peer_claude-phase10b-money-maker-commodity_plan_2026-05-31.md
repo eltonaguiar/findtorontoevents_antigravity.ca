@@ -19,3 +19,5 @@ Goal #1 (audit). COMMODITY class. Categories unioned: `commodity` (lowercase onl
 
 ## Acceptance for "/money-maker-readyv2 PASS"
 T2: PF≥1.5, WR≥50%, MDD<20%, n≥100 on clean basis with ≥3 symbols and HHI<0.30.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

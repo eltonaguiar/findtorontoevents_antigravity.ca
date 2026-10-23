@@ -198,3 +198,5 @@ patching. Treat LLM line numbers as suspect until verified.
 *Generated 2026-05-20T0215Z. cavecrew is the trusted truth-source for
 on-disk code claims. No fabrication. 2 real fix targets (BUG-1, BUG-2), 2
 hallucinations rejected.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

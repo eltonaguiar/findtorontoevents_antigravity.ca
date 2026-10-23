@@ -144,3 +144,5 @@ Items 1–3 are unconditional wins. Item 4 is the feature-flag scaffolding for W
 - `AGENTS.md`, `CLAUDE.md`, `TESTING_PROTOCOL.MD`, `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`, `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 
 No production code was modified by this review.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

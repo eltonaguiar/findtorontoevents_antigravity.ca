@@ -39,3 +39,5 @@ without `asset_class`, so they get the legacy global cap until wired. To activat
 
 DSR/PBO protection: **yes** — the sized lane stays deduped/independent; shadow picks are
 `forward_test_only` and excluded from the money-ready verdict cohort, so they cannot inflate n.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

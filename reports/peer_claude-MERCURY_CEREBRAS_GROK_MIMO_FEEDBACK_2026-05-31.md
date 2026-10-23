@@ -80,3 +80,5 @@ Explicit pre-emission checklist (synthesized from all 4 responses):
 - `/tmp/feedback_mimo.json`
 
 (Available locally on operator machine; not committed to repo to keep peer-feedback noise out of git history.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

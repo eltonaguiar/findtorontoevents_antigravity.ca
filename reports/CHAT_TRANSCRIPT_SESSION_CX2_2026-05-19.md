@@ -124,3 +124,5 @@ Key elements:
 4. **BTC Miner Capitulation hypothesis:** Swarm recommends this as the most causally-grounded surviving CRYPTO strategy. Would need M-107 pre-registration as a new hypothesis if pursued.
 5. **B10 UEPS gate:** Auto-resolves ~2026-05-22 when ≥10 UEPS closed picks accumulate.
 6. **MySQL dedup fix:** Requires MySQL access (not locally fixable).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

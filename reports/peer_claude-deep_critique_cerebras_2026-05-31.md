@@ -178,3 +178,5 @@
   "paper_pilot_horizon": "with_caveats"
 }
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

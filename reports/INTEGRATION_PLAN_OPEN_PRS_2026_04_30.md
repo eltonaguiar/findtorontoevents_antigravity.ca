@@ -551,3 +551,4 @@ Each of these strategies is currently wholesale-killed. The what_if recommendati
 
 Recommend Path A unless the residual edge is quantified against current cohorts (the what_if data is stale).
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

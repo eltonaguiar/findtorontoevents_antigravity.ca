@@ -153,3 +153,5 @@ https://findtorontoevents.ca/audit/pf.html?key=portfolio_mix__balanced_top3
 3. **Regime gate.** Add a feature flag in the scoring layer that pauses sleeves whose 30d momentum is negative (per CLAUDE.md "mutate-before-kill" §`docs/MUTATION_THREE_AXIS_PROTOCOL.md`).
 4. **Cost model.** Subtract per-class bps from the paper NAV walk before promotion.
 5. **PR #182 sanity.** No fleet here trips PR #182 retire list, but if `BLOCKED_SOURCE_SYSTEMS` expands, re-run the build to drop newly-blocked source_systems from each fleet's pick stream.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

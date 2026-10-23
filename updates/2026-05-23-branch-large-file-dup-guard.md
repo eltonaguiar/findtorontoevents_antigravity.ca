@@ -31,3 +31,5 @@ Flag and block risk patterns where large files are duplicated across multiple no
   repeated large artifacts spreading across branch history.
 - Gives early branch-level feedback before those artifacts proliferate.
 - Keeps branch hygiene enforceable with configurable thresholds.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

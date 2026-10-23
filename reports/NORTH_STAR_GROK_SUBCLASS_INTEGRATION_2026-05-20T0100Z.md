@@ -170,3 +170,5 @@ Per `memory/security_db_creds_exposure_2026_05_12.md` standing rule.
 403-gated, partial extraction). Integration with prior MONEY_MAKER_READYV2
 docs. No fabrication. All Tier-2 / Tier-1 gates verified against
 unmodified `tools/edge_stability_harness.py` thresholds.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

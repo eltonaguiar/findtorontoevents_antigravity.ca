@@ -25,3 +25,5 @@
 - audit_trail/quality_gates.py (quan_engine_scalp penalty)
 - tools/save_conviction_tiers.py (NEW)
 - tools/pipeline_monitor.py (NEW)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

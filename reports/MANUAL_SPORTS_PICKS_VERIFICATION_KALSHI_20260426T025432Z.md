@@ -25,3 +25,5 @@
 - `edge_pp` = book_prob − kalshi_mid, in percentage points. Positive = sportsbook is more bullish than Kalshi crowd.
 - Match score is fraction of pick-signature tokens overlapping Kalshi market title; >= 0.5 is high confidence.
 - This is an opt-in sidecar verifier. It does NOT alter live-monitor pick generation. See `updates/2026-04-26-kalshi-sports-adapter-wiring-plan.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

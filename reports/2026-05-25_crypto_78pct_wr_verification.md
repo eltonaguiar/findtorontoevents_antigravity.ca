@@ -132,3 +132,5 @@ Per-source breakdown of the raw DB CRYPTO 90d closed pool:
 - `audit_dashboard/data/pick_summary_stats.json` (new)
 - `audit_dashboard/pick_funnel.html` (added DISPUTED banner + Active+Closed Summary section)
 - `reports/2026-05-25_crypto_78pct_wr_verification.md` (this file)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

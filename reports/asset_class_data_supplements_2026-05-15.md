@@ -319,3 +319,5 @@ contracts. Data-wise the first add is repointing `cftc_cot_fetcher.py` at the TF
 5. **Verified free-tier caveats:** Alpha Vantage collapsed to 25 req/day (failover only); StockTwits API
    registrations paused; `exchangerate.host` now key-gated (use Frankfurter); etfdb has no free API;
    CoinGlass institutional L2/L3 books are paid (basic funding/OI/liquidation free).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

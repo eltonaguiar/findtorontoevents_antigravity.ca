@@ -428,3 +428,5 @@ window.fetch = function(input, opts) { ... }  // Replaces native fetch globally
 ---
 
 *Generated: 2026-04-27 | Reviewer: Copilot Code Review Agent*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

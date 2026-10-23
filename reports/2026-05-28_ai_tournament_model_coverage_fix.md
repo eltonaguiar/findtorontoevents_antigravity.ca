@@ -89,3 +89,5 @@ show the wider model fleet on `/audit/ai-tournament.html`.
 - `python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ai-tournament-pipeline.yml'))"` → OK
 - No literal secret values added to code.
 - Diff is +12 / -4 lines in one file.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

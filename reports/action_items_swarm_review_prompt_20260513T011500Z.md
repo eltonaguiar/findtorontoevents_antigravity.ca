@@ -127,3 +127,5 @@ dependencies: ...
 ```
 
 Keep total response under 1200 words. Cite NS-id when cross-referencing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

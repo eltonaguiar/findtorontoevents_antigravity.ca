@@ -169,3 +169,5 @@ ORDER BY n DESC LIMIT 25;
 3. **Real seed material lives in `at_pick_outcomes` `universal_v2` cohort:** `hs_lb_None / crypto` (261), `MeanReversionBB / equity` (214), `luxalgo_confluence / crypto` (67), `battleground_ml_relaxed_mut`, `claude_ml_moderate_mut`. These have trustable resolver versioning.
 4. **Reject as resolver-artifact-suspect for now:** anything under `backfill_2026-06-01` or `backfill_widened_202*` resolver_version (notably the 89.9% / PF 24.51 prediction_market_consensus cell) until backfill methodology is audited. Aligns with MEMORY entry `AI-tournament WR artifact 2026-06-03`.
 5. **Grok3 + kimi_direct dominate model leaderboard,** but per `AI-tournament WR artifact 2026-06-03`, the WR is partly a single-snapshot resolver artifact — do not derive new strategies from these models in isolation; require intrabar-OHLC re-resolution.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

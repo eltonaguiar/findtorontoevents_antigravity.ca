@@ -109,3 +109,5 @@ No API key concerns — rapid_fire uses internal scanner signals.
 
 **Overall: C-008 COMPLETE** — operator must verify `CRYPTOCOMPARE_API_KEY` to close
 the PARTIAL finding on Source D.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

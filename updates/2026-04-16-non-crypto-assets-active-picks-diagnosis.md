@@ -51,3 +51,5 @@ Equities suffer from unrealistic targets and fighting primary market trends:
    - Cap equity TP targets to realistic swing percentages: 15% for large-cap, 20% for mid-cap, and 25% for small-cap, overriding the 12-month analyst consensus.
    - Implement a primary trend filter: Only allow LONG entries if the current price is strictly above the 200-day SMA.
    - Implement a Relative Strength filter: Only generate LONG signals for stocks that are outperforming SPY over the past quarter (63 days).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -130,3 +130,5 @@ So the verdict cannot be a pass-by-construction artifact, the exact harness wiri
 - **Real-data cache:** `tools/cache/options_flow_cboe_cache.json` is committed — the verdict re-runs offline, no network needed.
 - **Machine-readable output:** `reports/options_flow_harness_output_2026-05-18.json` carries the per-window eff arrays + cost-gate numbers for independent re-check.
 - **Network-free unit tests:** `python tools/test_options_flow_research.py` exercises the signal math, the cost gate, the continuous-book construction and the unmodified-harness wiring.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

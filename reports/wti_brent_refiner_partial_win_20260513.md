@@ -70,3 +70,5 @@ This is the same lesson as VIX gate: **threshold events > continuous lag**. Skip
 - This report
 
 NFA. Reversible (no production change made).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

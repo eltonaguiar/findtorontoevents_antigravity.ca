@@ -195,3 +195,5 @@ Based on current data, ranked by risk-adjusted return potential:
 ---
 
 *Generated 2026-06-06 by automated exploration agent*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -261,3 +261,5 @@ deny:
 - `e:/findtorontoevents_antigravity.ca/tmp_filter_combo_scan.py` (the brute-force scanner used)
 - `e:/findtorontoevents_antigravity.ca/tmp_scan_output.txt` (raw scanner output)
 - Compare to: `e:/findtorontoevents_antigravity.ca/MERCURYPROMPT.md` (claims `score>50 & trust>=3` is the high-conviction gate — refuted)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

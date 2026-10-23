@@ -49,3 +49,5 @@
 ## One-line takeaway
 
 Kimi largely agrees (85%); key gaps it flags = no transaction-cost/slippage model, no stress-test/regime detection, no live-vs-paper divergence audit, no Kelly sizing; warns Bonferroni may be over-punitive on correlated gates and n>=500 too strict for HFT strategies.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

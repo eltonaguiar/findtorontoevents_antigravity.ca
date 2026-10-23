@@ -89,3 +89,5 @@ All other providers (cerebras, deepseek, groq, inception, openrouter, xai, polli
 - `WHOHKIMI.MD` — Kimi's summary of all 4 PRs (#817-#820)
 - `EXECUTIVE_SUMMARY.md` — Detailed breakdown of the PR #818 gap closure
 - `tools/swarm/prompts/self_review_swarm_fixes.md` — Self-review prompt template for swarm systems
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

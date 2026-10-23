@@ -33,3 +33,5 @@ npx playwright test tests/audit_verified_edge_active_picks.spec.ts tests/audit_a
 ```
 
 Regenerate `dashboard_data.json` / deploy audit HTML per usual CI so closed rows pick up `at_issue_*` from the next generator run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

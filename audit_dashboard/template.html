@@ -18992,5 +18992,81 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- SWARM PICK TRACKING PANEL decommissioned 2026-06-12 (operator request).
      Data archived as audit_dashboard/data/swarm_*_OLD.json; insights in
      reports/swarm_paper_picks_decommission_2026-06-12.md -->
+<nav id="ghcopilot-paper-footer" aria-label="Independent paper experiments"
+ style="padding:20px;text-align:center;border-top:1px solid #334155;background:#101827;color:#e2e8f0">
+  <strong>Independent paper experiments (not money-ready)</strong><br>
+  <strong>Agent Paper Trading Monitors</strong><br>
+  <a href="/audit/opencode_paper_trading.html" style="color:#67e8f9">OPENCODE Paper (Beam)</a>
+  &nbsp;|&nbsp; <a href="/audit/inception_paper_trading.html" style="color:#67e8f9">INCEPTION Paper</a>
+  &nbsp;|&nbsp; <a href="/audit/ghcopilot_paper.html" style="color:#67e8f9">GHCOPILOT Paper</a>
+  &nbsp;|&nbsp; <a href="/audit/poolside_paper.html" style="color:#06b6d4">POOLSIDE Paper</a>
+  &nbsp;|&nbsp; <a href="/audit/claudes_test.html" style="color:#67e8f9">Claude Test</a>
+  &nbsp;|&nbsp; <a href="/audit/freebuff_buffy_proven_picks.html" style="color:#a78bfa;font-weight:700">FREEBUFF (Buffy) Proven-Picks Audit</a>
+  <hr style="border-color:#334155;margin:8px 0">
+  <span style="font-size:12px;color:#94a3b8">Independent paper experiments (not money-ready):</span>
+  <a href="/audit/paper_pilot.html" style="color:#c4b5fd;font-size:12px">Existing COT pilot</a>
+  &nbsp;|&nbsp; <a href="/audit/crypto_paper_pilot.html" style="color:#c4b5fd;font-size:12px">Existing crypto pilot</a>
+</nav>
+<script>
+// === MEASUREMENT HYGIENE BANNER (Task 7) ===
+// Pure client-side injection — no Jinja. Reads the top-level measurement_hygiene
+// key from the dashboard payload (`window.__DASHBOARD_DATA__` / `window.DASHBOARD_DATA`),
+// which init() populates from data/dashboard_data.json. Mounts a dismissible alert.
+(function () {
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&').replace(/</g, '<')
+      .replace(/>/g, '>').replace(/"/g, '"');
+  }
+
+  function mountMeasurementBanner(data) {
+    var h = data && data.measurement_hygiene;
+    if (!h || h.enabled !== true) return;
+    if (document.getElementById('measurement-hygiene-banner')) return;
+
+    var banner = document.createElement('div');
+    banner.id = 'measurement-hygiene-banner';
+    banner.className = 'alert alert-warning';
+    banner.setAttribute('role', 'alert');
+    banner.setAttribute('style', 'margin:12px auto;max-width:1180px;padding:12px 16px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);border-radius:8px;color:#78350f;font-size:13px;line-height:1.6;');
+
+    var text = h.banner_text || 'Metrics have been adjusted for measurement hygiene (honest reporting).';
+    banner.innerHTML =
+      '<strong style="color:#f59e0b;">Measurement Hygiene:</strong> ' + escapeHtml(text) +
+      ' <span style="font-size:11px;color:#94a3b8;">(Not financial advice)</span> ' +
+      ' <a href="#gate-definitions" style="color:#d97706;text-decoration:underline;">See gate definitions</a>' +
+      ' <button type="button" aria-label="Close" class="close" style="float:right;background:none;border:none;cursor:pointer;font-size:18px;line-height:1;color:#6b7280;">&times;</button>';
+
+    var closeBtn = banner.querySelector('button.close') || banner.querySelector('button');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function () { banner.remove(); });
+    }
+
+    var host = document.getElementById('main') || document.body;
+    host.insertBefore(banner, host.firstChild);
+  }
+
+  window.mountMeasurementBanner = mountMeasurementBanner;
+
+  // 1) Immediate mount if the payload is already on the page.
+  if (window.__DASHBOARD_DATA__ || window.DASHBOARD_DATA) {
+    mountMeasurementBanner(window.__DASHBOARD_DATA__ || window.DASHBOARD_DATA);
+  }
+
+  // 2) Hook the existing async load — init() sets window.DASHBOARD_DATA and fires 'dashboard-data-loaded'.
+  document.addEventListener('dashboard-data-loaded', function () {
+    mountMeasurementBanner(window.DASHBOARD_DATA || window.__DASHBOARD_DATA__);
+  });
+
+  // 3) Fallback poll in case the event fired before our listener attached.
+  var tries = 0;
+  var timer = setInterval(function () {
+    tries += 1;
+    var d = window.DASHBOARD_DATA || window.__DASHBOARD_DATA__;
+    if (d && !document.getElementById('measurement-hygiene-banner')) { mountMeasurementBanner(d); }
+    if (tries >= 30 || document.getElementById('measurement-hygiene-banner')) { clearInterval(timer); }
+  }, 400);
+})();
+</script>
 </body>
 </html>

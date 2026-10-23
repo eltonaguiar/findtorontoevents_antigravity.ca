@@ -38,3 +38,5 @@ python3 -m tools.ai_attribution.build_ai_leaderboard
 - `CRYPTO_PRODUCTION_BLOCK_LONG=0` — re-enable LONG (not recommended until 14d LONG WR ≥45%)
 - `CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE=1` — emergency bypass
 - `CLEAN_INGEST_REJECT_TP_HIT_REPLAY=0` — disable replay reject in validator
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

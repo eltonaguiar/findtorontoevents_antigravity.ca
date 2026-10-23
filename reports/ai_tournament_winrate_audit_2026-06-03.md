@@ -149,3 +149,5 @@ PY
 Source files: `tools/ai_tournament/price_tracker.py:217` (resolve_pick),
 `tools/ai_tournament/resolve_db_picks.py:41` (same logic, DB path),
 `tools/ai_tournament/update_leaderboard.py:48,114` (PF + bootstrap floor).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

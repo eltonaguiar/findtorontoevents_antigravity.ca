@@ -22,3 +22,5 @@ The deployed homepage no longer contains the `fte-guest-login-wall` lockdown scr
 - `node tools/check_syntax.js TORONTOEVENTS_ANTIGRAVITY/index.html` passed.
 - `python -m py_compile tools/deploy_to_ftp.py tools/validate_php52.py` passed.
 - Live HTML was checked for removal of `fte-guest-login-wall`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

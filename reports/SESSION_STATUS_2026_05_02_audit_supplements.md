@@ -93,3 +93,5 @@ tools/data/dsr_audit_results.json           (DSR sidecar artifact)
 tools/dsr_audit.py                          (DSR with N=1213)
 tools/pick_notarizer.py                     (notarize / verify / log CLI)
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -75,3 +75,5 @@ The three are nested cohorts (A ⊇ B ⊇ C). The PF drops monotonically as coho
 The PF cliff from 1.72 (dashboard cohort, n=273) → 0.16 (money-ready cohort, n=43) is the real story. The money-ready verdict EQUITY=INSUFFICIENT_DATA + PF 0.16 is driven by source_concentration_cap on `regime_terminal` (41.86% top-source share, capped). Before sizing EQUITY up, audit `regime_terminal` separately and decide whether the cap is killing edge or correctly nerfing concentration risk.
 
 Do NOT cite Qwen's 0.70 / 5.56 figures in any downstream report — they don't reconcile.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

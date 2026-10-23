@@ -153,3 +153,5 @@ python tools/swarm_v2/swarm_run.py --task "Validate BTC Miner Capitulation hypot
 (5) Is PF>1.5 achievable at 14-day resolution, or does the signal require 30-90 day hold to clear costs?"
 --agents 3 --strict
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

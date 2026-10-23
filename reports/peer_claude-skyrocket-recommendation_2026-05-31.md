@@ -114,3 +114,5 @@ Already partially neutralized: `alpha_engine/elite_scorer.py:2655` — "Disabled
 - PR #182 (cta_golden_cross_200 + prediction_market_consensus retire context)
 - `docs/STRATEGY_INVESTIGATION_BEFORE_KILL.md`, `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - CLAUDE.md Wire-Up Rule
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

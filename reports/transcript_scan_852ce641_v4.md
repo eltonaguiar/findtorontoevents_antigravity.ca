@@ -682,3 +682,5 @@
 - [OPEN] Execute EQUITY-PEAD validation under CPCV
 - [OPEN] Check multipc chat for peer summaries and conflicts
 - [OPEN] Run /swarm-transcript-scan on session transcript to find missed action items
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

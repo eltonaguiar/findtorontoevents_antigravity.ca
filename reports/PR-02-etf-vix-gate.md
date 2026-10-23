@@ -163,3 +163,5 @@ PR-2 (this PR) ──────┘      ^
 | Soft: PR-2 before PR-5 | PR-5's what-if query should reflect the new `VIX_REGIME_REJECT` filter reason in `pick_lifecycle_log`. |
 
 **Merge this PR second (or in parallel with PR-1).**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

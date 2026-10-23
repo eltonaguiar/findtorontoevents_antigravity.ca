@@ -23,3 +23,5 @@
 ### Schema
 - Status values: TIME_EXIT (26,026), OPEN (4,444), TP_HIT (3,613), ACTIVE (3,599), LOST (2,854), SL_HIT (1,508), EXPIRED (621)
 - Cross-DB access restricted between ejaguiar1_stocks and ejaguiar1_backups
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -967,3 +967,4 @@ I also ran a lightweight closed-picks band audit from current `dashboard_data.js
 
 One caveat: several API engines returned empty bodies on the large schema/persona prompt, so I treated them as non-votes. The usable consensus came from Mercury, Kilo, OpenCode, Ollama/Agent commentary, plus local data checks.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

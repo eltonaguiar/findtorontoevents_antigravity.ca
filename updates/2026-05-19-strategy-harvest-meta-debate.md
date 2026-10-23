@@ -27,3 +27,5 @@ Per-asset-class **top-10 strategy tables** from `pf_registry` + codebase config 
 python tools/build_top10_strategies_per_class.py
 python tools/strategy_harvest_round.py --phase all
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

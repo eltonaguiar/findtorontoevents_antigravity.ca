@@ -161,3 +161,5 @@ The math is insulting: n≥500 in 30 days requires ~17 trades/day. For Piotroski
   "paper_pilot_horizon": "fantasy"
 }
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -135,3 +135,5 @@ Future subagent work will treat "Low-Quality Equities (Penny/Meme)" as a distinc
 All decisions above were made in coordination with the `money-maker-continual-improve` skill and the live subagent fleet.
 
 *End of transcript.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

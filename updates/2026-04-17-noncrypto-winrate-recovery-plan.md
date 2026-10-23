@@ -231,3 +231,5 @@ Non-crypto is losing because **the wrong code is running in production**. The qu
 4. **Forward-test** before scaling.
 
 Until these steps are complete, the only defensible non-crypto exposure should come from the three proven sources: `signal_validation`, `aggregated_picks`, and `super_signals`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -30,3 +30,5 @@ Implemented a recency gate as the primary hard gate in the money-readiness pipel
 ## Verification
 - All modified files (`alpha_engine/eagle_gates.py`, `alpha_engine/money_ready_verdict.py`, `tools/mysql_resolve_at_pick_outcomes.py`) were verified to compile cleanly using `py_compile`.
 - Stale resolver run verified via `--dry-run` and then applied to the database.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

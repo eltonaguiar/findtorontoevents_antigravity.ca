@@ -134,3 +134,5 @@ Side-sanity verified pre-execute, post-fill TP/SL audit passed.
 - PR #904 swarm review (paused before this session — still pending)
 - Monitor 7 paper positions for fill quality + TP/SL hit rate
 - Consider populating V4 with cheap-symbol picks once a non-stale, non-clone, gate-passing crypto/equity pick exists
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

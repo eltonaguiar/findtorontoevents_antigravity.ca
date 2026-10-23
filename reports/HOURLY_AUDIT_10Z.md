@@ -180,3 +180,5 @@ Output from `python tools/mutation_analysis.py --json` (2026-05-17T10:11Z):
 - **Key concern:** CRYPTO 24h PF 1.39 (vs 3.54 baseline) — monitor; may be structural post-HYPEUSDT block
 
 _Generated: 2026-05-17T10:12Z_
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

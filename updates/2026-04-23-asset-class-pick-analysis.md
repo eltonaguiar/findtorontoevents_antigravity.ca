@@ -442,3 +442,5 @@ Based on the data, if someone is picking trades **today (2026-04-23)**:
 ---
 
 *Analysis by Copilot | Data as of 2026-04-23 19:00 UTC | Next revalidation: 2026-04-29*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

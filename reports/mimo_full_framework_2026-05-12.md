@@ -95,3 +95,5 @@ Research surface only. Mimo's framework is the institutional north-star;
 our current state is the foundation. The 10-step Lopez de Prado AFML
 readiness gate remains the canonical real-money bar regardless of which
 dashboard or framework gets built next.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

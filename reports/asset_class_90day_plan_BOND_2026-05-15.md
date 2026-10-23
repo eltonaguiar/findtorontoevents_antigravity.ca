@@ -221,3 +221,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 
 - **Pairs sleeve (C2):** TLT/IEF (long-short duration), HYG/LQD (credit-quality spread), TIP/IEF (breakeven inflation) are natural. Opt-in sidecar.
 - **Speculative split (D1):** BOND stays in the institutional path. High-yield single-name corporate bonds get `speculative_flag=True` (when/if we ever emit them).
 - **Verdict (refreshed):** BOND remains de-prioritized for size-up but **upgraded for honesty** — the dashboard must stop showing BOND as "T2 candidate" when n=18 is the truth. Workstream A5 (honest stat surface) enforces this. F1 emitter wire-up is the only path to Stage-1 by Day 90.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

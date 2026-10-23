@@ -123,3 +123,5 @@ python3 -c "import json,glob; [json.load(open(f)) for f in glob.glob('config/per
 ## 9. Return value
 
 `STRATEGY_PERSONAS:n=6:PR=#<N>:operator_activation_steps=33`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

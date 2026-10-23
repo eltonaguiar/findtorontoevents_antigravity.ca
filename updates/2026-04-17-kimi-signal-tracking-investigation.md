@@ -73,3 +73,5 @@ blocking — would orphan them. Quick check:
 ```bash
 python -c "import json; d=json.load(open('alpha_engine/data/active_picks.json')); print([p for p in d.get('picks',d) if 'kimi_signal_tracking' in str(p.get('source_system',''))])"
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

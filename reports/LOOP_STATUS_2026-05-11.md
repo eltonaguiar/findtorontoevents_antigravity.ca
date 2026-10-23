@@ -45,3 +45,5 @@ This inserts a 13-line try/except into `passes_active_gate` in `quality_gates.py
 ## Consecutive No-Progress Count
 
 RESET TO 0 — B13 v5 implementation + PR #900 is concrete code progress.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

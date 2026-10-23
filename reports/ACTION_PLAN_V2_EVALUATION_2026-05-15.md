@@ -176,3 +176,5 @@ Note: B25 identical-metrics prompt-hardening fix (2026-05-01) was shipped and is
 ---
 
 *This report was produced by automated evaluation on 2026-05-15. No PRs were opened. All findings are based on the current state of the main branch and `audit_dashboard/data/dashboard_data.json` as of 2026-05-15T21:00:17Z.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

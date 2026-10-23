@@ -71,3 +71,5 @@
 - For COMMODITY, recompute post-COT-dedup results excluding CT=F before any sizing change.
 - For ETF, continue accumulating until PF>=1.5 or derive a stronger sub-filter with n>=100.
 - For CRYPTO, derive system-level filters only; class-wide CRYPTO fails WR/PF and has bad worst-fold behavior.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

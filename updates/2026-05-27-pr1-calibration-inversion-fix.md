@@ -71,3 +71,5 @@ After merge, verify via:
 - None — pure scoring logic change, no new imports or data dependencies
 - Compatible with existing score_booster `_calibrate_confidence` (stacks multiplicatively)
 - Compatible with confidence_calibrator (isotonic regression at line 84 runs first, then these adjustments apply)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

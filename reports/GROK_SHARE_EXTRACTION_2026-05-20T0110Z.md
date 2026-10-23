@@ -179,3 +179,5 @@ Major status changes:
 camoufox-based rendering — first-time success against Grok's 403 anon-gate.
 Helper for repeat use: `tools/grok_share_fetcher.py login` (Playwright). No
 fabrication.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

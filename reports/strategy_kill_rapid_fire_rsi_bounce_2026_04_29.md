@@ -213,3 +213,5 @@ Re-enable only after **all** of:
 - Mutation protocol: `docs/MUTATION_THREE_AXIS_PROTOCOL.md`
 - Blocklist module: `alpha_engine/strategy_blocklist.py`
 - Test pin: `tests/test_strategy_blocklist_rapid_fire_rsi_bounce.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

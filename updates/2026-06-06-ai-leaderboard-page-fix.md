@@ -32,3 +32,5 @@ pytest tests/test_ai_leaderboard.py tests/test_promote_tournament_timeframes.py
 ```
 
 Live: `audit_surface_truth.json` generated 2026-06-06, banner "Research only — ingest active (189 picks, 29 resolved)".
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

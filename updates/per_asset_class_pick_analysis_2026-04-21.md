@@ -280,3 +280,5 @@ Full reproducible scripts: `tmp_analysis/analyze_picks.py` and `tmp_analysis/ext
 ---
 
 *Analysis run: 2026-04-21. Read-only. No production files modified.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

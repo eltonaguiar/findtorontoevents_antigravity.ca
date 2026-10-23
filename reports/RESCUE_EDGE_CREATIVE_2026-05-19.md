@@ -557,3 +557,5 @@ elapsed=22.17s ok=True
 ### **2) Per-Class Pre-Registerable Hypotheses**
 
 | **Class** | **hypothesis_id** | **bar_freq** | **mechanism** | **wire_target** | **harness acceptance_test
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

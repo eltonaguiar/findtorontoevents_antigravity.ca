@@ -30,3 +30,5 @@ Aggregate **WR / PnL / closed count** align with the union of non-crypto categor
 ## Note
 
 This fixes **measurement and consistency**, not underlying strategy edge. If true realized WR is still below 50% after the fix, that is a **pipeline / gate** issue, not a display bug.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

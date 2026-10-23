@@ -157,3 +157,5 @@ python3 alpha_engine/rigorous_backtest_harness.py --batch --class FOREX --n-tria
 
 *Report generated from ejaguiar1_stocks database. All metrics computed from resolved picks with pnl_pct IS NOT NULL.
 Data populated from 3,000 pick dimension snapshots + rigorous backtest harness with purged walk-forward, DSR, PBO, and cost modeling.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

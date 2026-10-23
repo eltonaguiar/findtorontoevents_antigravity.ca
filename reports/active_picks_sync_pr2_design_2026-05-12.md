@@ -116,3 +116,5 @@ fix ranks ahead.
 
 Research surface only. PR #2 is a code-only DB-write change; no real-money
 sizing impact until paper-pilot + regime-gate + ROR MC verdicts clear.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

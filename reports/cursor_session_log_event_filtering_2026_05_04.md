@@ -1903,3 +1903,4 @@ I’ll create three dedicated findings docs (one per task), then commit and push
 
 can you push your code changes as a PR for other agents to review, 
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -232,3 +232,5 @@ No new strategies emerge with PF<0.5 + n>=20 that are not already in BLOCKED lis
 3. Ask #1026 + #1027 authors to fix CI failures before merge consideration.
 4. Post ig_contrarian_sentiment LONG-block proposal to issue #686 for 3-AI consensus.
 5. Open investigation for NG=F (cta_replicator, n=24, WR 0%) + UUSDT (rapid_fire, n=34, WR 0%) per kill protocol.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

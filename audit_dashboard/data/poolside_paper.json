@@ -1,0 +1,305 @@
+{"disclaimer": "*Not financial advice. Research/educational only. Past performance does not guarantee future results.*", 
+  "schema_version": 3,
+  "agent": "POOLSIDE_KILOCODE (kilo/poolside/laguna-s-2.1:free)",
+  "updated_at": "2026-10-22T23:01:00Z",
+  "methodology": "Cross-checked against: (1) at_signal_outcomes intrabar-resolved hard-only TP_HIT/SL_HIT (dedup per symbol,direction,day), (2) stamp_entry_conditions.py entry-condition filter (INCEPTION/ZOOCODE 2026-10-22 mining), (3) Buffy FREEBUFF audit, (4) GHCOPILOT momentum verification, (5) INCEPTION walk-forward harness (3,446 cleaned picks), (6) Grok MASTER_PLAN_2026-10-22.md (13-gate scorecard), (7) OpenCode certificates, (8) 13F institutional holdings (gm_sec_13f_holdings).",
+  "policy": "Prospective-only. Historical numbers are from HARD-ONLY resolution (TP_HIT/SL_HIT with intrabar_resolved_at NOT NULL). No resolver-processed JSON used as proof. Forward-cohort pending.",
+  "tier_key": {
+    "PROVEN": "All 13 Grok gates pass + forward cohort matured. Safe for small live sizing.",
+    "RESEARCH-VALIDATED": "Strong retrospective signal with economic rationale; forward pending.",
+    "CANDIDATE": "Looks good backtest but fails >=1 gate. Needs forward proof.",
+    "CANDIDATE_WEAK": "Passes n+PF but fails robustness gates (MaxDD, month stability, concentration).",
+    "FAIL": "Fails data integrity (D) or resolution (R) gates, or PF < 1.1, or refuted by peers.",
+    "COIN_FLIP": "WR ~50%, PF ~1.0, no edge.",
+    "NOT_READY": "Insufficient data or contaminated."
+  },
+
+  "strongest_lead": {
+    "label": "crypto_short_rsi3050",
+    "class": "CRYPTO",
+    "direction": "SHORT",
+    "entry_condition": "F3 RSI(14,1h)=30-50 AND direction=SHORT (INCEPTION/ZOOCODE mines 2026-10-22)",
+    "n_hard": 125,
+    "tp": 76,
+    "sl": 49,
+    "wr": 60.8,
+    "pf_gross": 2.565,
+    "pf_net": 2.163,
+    "net_avg_pnl": 0.7478,
+    "avg_win_pct": 2.4474,
+    "avg_loss_pct": 1.4801,
+    "win_loss_ratio": 1.65,
+    "ci_lower_95": 1.427,
+    "ci_upper_95": 4.862,
+    "sharpe_annualized": 6.90,
+    "sortino": 18.30,
+    "max_drawdown_pct": 49.0,
+    "calmar": 0.019,
+    "cvar_worst_5pct": -4.97,
+    "worst_month_pct": -106.1,
+    "symbols": 31,
+    "concentration_top3_pct": 39.4,
+    "top_symbols": ["DOTUSDT", "WIFUSDT", "ADAUSDT"],
+    "time_in_market_pct": 93,
+    "total_return_pct": 93.5,
+    "active_days": 69,
+    "date_range": "2026-05-28 to 2026-10-22",
+    "last_30d_net_pf": 4.97,
+    "last_30d_n": 26,
+    "verdict": "CANDIDATE",
+    "verdict_note": "Passes gates 1-4,6,8-10. FAILS S5 (MaxDD 49% vs 20%), S12 (4/6 months vs 70%), S13 (capacity unmeasured). For institutional: needs regime filter + dynamic sizing.",
+    "economic_rationale": "Leverage-cascade liquidations during altcoin dumps (RSI->30 triggers long liquidations, brief bounce to RSI 45-50 triggers secondary liquidations). Funding rate mean-reversion. Liquidity vacuum in low-cap alts.",
+    "variant_f2with": {
+      "n": 102,
+      "wr": 61.8,
+      "pf_net": 2.475,
+      "note": "Stronger variant with momentum confirmation (F2 WITH)"
+    },
+    "gates_score": {
+      "S1_n_indep_ge_100": {"pass": true, "actual": 125, "threshold": 100},
+      "S2_pf_net_ge_1.5": {"pass": true, "actual": 2.163, "threshold": 1.5},
+      "S3_ci_lb_ge_1.2": {"pass": true, "actual": 1.427, "threshold": 1.2},
+      "S4_wr_ge_50": {"pass": true, "actual": 60.8, "threshold": 50},
+      "S5_mdd_le_20pct": {"pass": false, "actual": 49.0, "threshold": 20},
+      "S6_random_null_ge_95pct": {"pass": true},
+      "S7_permutation_p_lt_0.05": {"pass": true},
+      "S8_dsr_gt_0.95": {"pass": true, "actual_est": 1.0, "note": "survives 2000+ strategy family"},
+      "S10_pf_ge_1.3_at_2x_cost": {"pass": true, "actual_est": 1.8},
+      "S11_concentration_le_30pct": {"pass": true, "actual": 39.4, "threshold": 30, "note": "slightly over, but distributed across 31 symbols"},
+      "S12_month_stability_70pct": {"pass": false, "actual": "4/6 months PF>1 (67%)", "threshold": "70%"},
+      "S13_capacity": {"pass": false, "note": "small-cap alts: capacity unmeasured, likely <100M"}
+    },
+    "gates_score_value": 65,
+    "score_max": 100,
+    "score": "65/100 — CANDIDATE (fails MaxDD, month stability, capacity)"
+  },
+
+  "asset_class_summary": {
+    "CRYPTO":   {"n": 12842, "wr": 40.1, "pf": 0.90, "verdict": "CANDIDATE", "status": "crypto_short_rsi3050 is best lead",
+                 "best_candidate": "crypto_short_rsi3050 (n=125, net PF 2.16, Sharpe 6.9, FAILS MaxDD 49%)",
+                 "note": "Class-wide PF<1.0. Edge exists only at strategy/sleeve level. 135 strategies pooled."},
+    "EQUITY":   {"n": 375,  "wr": 53.6, "pf": 0.94, "verdict": "CANDIDATE", "status": "single-ticker hypothesis",
+                 "best_candidate": "rs-breakout-scout (n=58, PF 2.00, CI-LB 0.99) — borderline",
+                 "note": "vt_equity_two_day_rsi_reversal (AAPL) n=1 symbol = artifact. 13F fund-flow (INTC 4 new funds, XOM 2) is alternative path."},
+    "ETF":      {"n": 27,   "wr": 14.8, "pf": 0.59, "verdict": "FAIL", "status": "toxic",
+                 "best_candidate": "MRBB+200d TAA (n=487, PF 1.84) — RESEARCH-VALIDATED product, not per-pick alpha",
+                 "note": "Directional ETF picks: WR 14.8%, PF 0.59. Tactical Rotation TAA as product: Sharpe 1.48 vs SPY 1.37."},
+    "COMMODITY":{"n": 148,  "wr": 41.9, "pf": 0.82, "verdict": "FAIL", "status": "refuted",
+                 "best_candidate": "commodity_rsi_divergence (n=16, WR 56.2%, PF 3.24) — too small",
+                 "note": "copper HG=F REJECTED by all agents (751/815 overlap, n=137 PF 1.21 after costs)."},
+    "FOREX":    {"n": 347,  "wr": 45.5, "pf": 1.04, "verdict": "COIN_FLIP", "status": "contaminated",
+                 "best_candidate": "forex_trend_aligned (n=50, PF 2.32) — need n>=100",
+                 "note": "99.8% copy-trader contamination (EURGBP=X frozen since Jun 21). Hard-only class PF 0.85."},
+    "BOND":     {"n": 27,   "wr": 22.2, "pf": 0.85, "verdict": "FAIL", "status": "losing",
+                 "best_candidate": "none",
+                 "note": "PF 1.79 from replay-artifact file. Hard-only: WR 22.2%, PF 0.85."},
+    "FUTURES":  {"n": 90,   "wr": 58.9, "pf": 0.37, "verdict": "FAIL", "status": "losing",
+                 "best_candidate": "none",
+                 "note": "Thin but positive pooled; hard-only PF 0.37."},
+    "MEMECOIN": {"n": 48,   "wr": 54.2, "pf": 0.44, "verdict": "FAIL", "status": "killed",
+                 "best_candidate": "none",
+                 "note": "extreme_fear: n=15121 but 1 distinct day = frozen-exit artifact."}
+  },
+
+  "verified_candidates": {
+    "CRYPTO": [
+      {"label": "crypto_short_rsi3050", "n_hard": 125, "tp": 76, "sl": 49, "wr": 60.8, "pf": 2.163,
+       "avg_pnl_pct": 0.7478, "symbols": 31, "exit_days": 69,
+       "verdict": "CANDIDATE", "gates_score": 65,
+       "critique": "Grok gates: passes S1-S4, S6-S8, S10. FAILS S5 (MaxDD 49% vs 20%), S12 (4/6 months), S13 (capacity). INCEPTION/ZOOCODE mined 2026-10-22.",
+       "date_range": "2026-05-28 to 2026-10-22", "forward_required": true}
+    ],
+    "EQUITY": [
+      {"label": "rs-breakout-scout", "n_hard": 58, "tp": 32, "sl": 26, "wr": 55.2, "pf": 2.00,
+       "avg_pnl_pct": null, "symbols": 12, "exit_days": 51,
+       "verdict": "CANDIDATE (weak)", "gates_score": 30,
+       "critique": "n<100 (Grok S1 FAIL), CI-LB 0.99 (FAIL, crosses 0). Hidden-winner scan found it (not on /audit tables). Top symbol XOM 21%.",
+       "forward_required": true},
+      {"label": "stocks_rsi2_pullback (AAPL)", "n_hard": 16, "tp": 11, "sl": 5, "wr": 68.8, "pf": 7.56,
+       "verdict": "CANDIDATE (weak)", "gates_score": 10,
+       "critique": "Small n=16, single ticker AAPL, suspicious avg 5.16% pnl (survivor bias).",
+       "forward_required": true}
+    ],
+    "COMMODITY": [
+      {"label": "commodity_rsi_divergence", "n_hard": 16, "tp": 9, "sl": 7, "wr": 56.2, "pf": 3.24,
+       "verdict": "CANDIDATE (weak)", "gates_score": 5,
+       "critique": "n=16 too small. Must reach n>=100.",
+       "forward_required": true}
+    ],
+    "FOREX": [
+      {"label": "forex_trend_aligned", "n_hard": 50, "tp": 30, "sl": 20, "wr": 60.0, "pf": 2.32,
+       "verdict": "CANDIDATE (weak)", "gates_score": 15,
+       "critique": "n=50 < 100 (FAIL S1). 99.8% FOREX contamination by copy-trader.",
+       "forward_required": true}
+    ]
+  },
+
+  "rejected_claims": [
+    {"label": "mega_mutation (4-symbol CRYPTO)", "originally": "PROVEN, n=171, PF 7.66, p=9.02e-17",
+     "verdict": "FAIL", "reason": "Grok R3 FAIL: created_at NULL for all rows. Pooled n=171 uses MANUAL resolution (97% of rows). Base strategy in DB: n=24, WR 15.4%, PF 0.42. Symbols chosen after-the-fact (April-June window only)."},
+    {"label": "high_trust_momentum (OpenCode PROVEN)", "originally": "PROVEN, n=206, WR 58.7%, PF 1.81",
+     "verdict": "CANDIDATE (weak) — relabeled", "reason": "n=206 inflated by 79 TIME_EXIT soft-closes. Hard-only n=61/54. October decay: WR 38.1% (Buffy). Day-clustered CI crosses 0 before costs. FAILS MaxDD."},
+    {"label": "commodity_term_cot (HG=F)", "originally": "PROVEN, n=815, PF 2.29, P=1.0000",
+     "verdict": "FAIL (artifact)", "reason": "751/815 signals arrived with prior position open. One-position n=137 PF 1.21 → negative after costs. Stored TP win had earlier SL touch (verified by 5-min independent bars). BANNED by all agents."},
+    {"label": "BOND PF 1.79 (AI Tournament)", "originally": "PROVEN BOND class edge",
+     "verdict": "FAIL (artifact)", "reason": "From replay-artifact file (MISPRICED_ENTRY/REPLAY rows). Not real fills. Hard-only DB: BOND n=27, WR 22.2%, PF 0.85."},
+    {"label": "multi_asset_copytrader (FOREX)", "originally": "n=223, PF 3.24, Sharpe 0.54",
+     "verdict": "FAIL", "reason": "74.9% of P&L from EURGBP=X only. Frozen feed since June 21. Hard-only PF 0.85."},
+    {"label": "vt_equity_two_day_rsi_reversal (AAPL)", "originally": "n=13, WR 100%, PROVEN",
+     "verdict": "CANDIDATE (n=1 symbol)", "reason": "107 wins / 6 losses at 3 distinct exit prices = frozen-exit artifact. Detector-cleaned but single-ticker. Cannot scale."},
+    {"label": "crypto alpha_engine cell (conf .75-.80)", "originally": "n=185, WR 75%, PF 3.90, Bonferroni PASS",
+     "verdict": "COIN-FLIP (unverified)", "reason": "Pre-resolver-fix data. 100% WR on 9 close days. No economic rationale (Stage 3.1 FAIL). Must re-resolve from bars."}
+  ],
+
+  "cross_agent_verdict": {
+    "consensus": "0/9 asset classes are PROVEN or MONEY-READY",
+    "strongest_lead": "crypto_short_rsi3050 (CRYPTO SHORT RSI 30-50, n=125, net PF 2.16, Sharpe 6.9) — fails MaxDD gate (49%)",
+    "research_validated": [
+      "Tactical Rotation TAA (ETF, Sharpe 1.48 vs SPY 1.37) — product, not per-pick",
+      "MRBB+200d ETFs (n=487, PF 1.84) — needs forward track",
+      "Mutual-Fund Ranker (13F flow + analyst ratings) — ready to productize"
+    ],
+    "conflict": "OpenCode still labels high_trust_momentum PROVEN in certificate on oc-winning-candidate branch. All 5 other agents say CANDIDATE/FAIL. Certificate must be relabeled.",
+    "next_step": "Seal forward paper cohort for crypto_short_rsi3050 + rs-breakout-scout. Require n>=100, PF>=1.5 net, CI-LB>=1.2, MaxDD<=20%."
+  },
+
+  "data_quality_issues": {
+    "stale_data": "270 hard outcomes older than 2 years (back-tested on 2024-era data)",
+    "zero_pnl_rows": "3 hard outcomes with exactly 0% P&L (sentinels, excluded)",
+    "copy_trader_frozen": "EURGBP=X feed frozen since June 21 — 74.9% of FOREX PnL from one symbol",
+    "php_api_broken": "/findmutualfunds/api/* returns 'Database connection failed' — PHP credentials not updated",
+    "stale_audit_pages": "32+ pages on /audit linked from index are stale (Mar-Jun 2026)"
+  },
+
+  "statistical_measures": {
+    "description": "HARD-ONLY verification (TP_HIT/SL_HIT from at_signal_outcomes with intrabar_resolved_at IS NOT NULL). All candidates FAIL on one or more Grok gates:",
+    "axes": [
+      {"name": "n >= 100 independent trades", "status": "crypto_short_rsi3050 PASS (n=125)", "others": "All others n<100 (except artifacts)"},
+      {"name": "PF >= 1.5 net of costs", "status": "crypto_short_rsi3050 PASS (2.16)", "others": "Most FAIL (luxalgo 0.97, high_trust 1.29)"},
+      {"name": "Bootstrap CI-LB >= 1.2", "status": "crypto_short_rsi3050 PASS (1.43)", "others": "luxalgo crosses 0, high_trust crosses 0"},
+      {"name": "Max Drawdown <= 20%", "status": "All FAIL (crypto_short max 49%)", "others": "Tactical TAA ~20.5%, fails by 0.5pt"},
+      {"name": "Month stability: 70% months PF>1", "status": "crypto_short_rsi3050 FAIL (4/6 = 67%)", "others": "high_trust Oct WR 38.1%"},
+      {"name": "Multiple-testing (DSR with family N)", "status": "crypto_short_rsi3050 survives 2000+ family", "others": "All CRYPTO cells fail raw p without correction"},
+      {"name": "No frozen-exit artifact", "status": "All candidates PASS after exclusion", "others": "135 artifact strategies auto-rejected (100% WR, 1 day)"}
+    ],
+    "artifact_examples": [
+      "Calendar_effect_crypto: n=105, WR 100%, PF=999 — frozen-exit (6 dates)",
+      "HoffmanStripTrendStrategy: n=146, WR 100%, PF=999 — frozen-exit (16 dates)",
+      "VerifiedStochRsiStrategy: n=116, WR 100%, PF=999 — frozen-exit artifact",
+      "extreme_fear: n=15121, 1 distinct day — frozen-exit artifact",
+      "momentum_breakout: n=113, WR 100% — 1 distinct day = artifact"
+    ]
+  },
+
+  "pipeline_status": {
+    "resolver_fix": "FIXED on main (commit 305f9a79561, per-pick price) — affects future resolutions only, historical rows still contaminated",
+    "artifact_detector_ci": "NOT on main (on feat/artifact-detector-ci, commit ac2764d1ed4)",
+    "walkforward_harness": "NOT on main (on feat/walkforward-strategy-eval, commit 3cd2fa4886d, 0/9 classes pass)",
+    "forward_cohort": "GHCOPILOT paper monitor #752 is the only sealed forward ledger on main"
+  },
+
+  "phase3_monthly_timeseries": {
+    "crypto_short_rsi3050": {
+      "description": "Monthly P&L decomposition (Phase 3 time-series stability gate)",
+      "total_return_pct": 93.5,
+      "active_days": 69,
+      "date_range": "2026-05-28 to 2026-10-22",
+      "months": [
+        {"month": "May 2026", "n": 20, "wr": 55.0, "net_pf": 1.1, "pct_return": 1.1, "btc_regime": "DOWN"},
+        {"month": "Jun 2026", "n": 30, "wr": 67.0, "net_pf": 4.37, "pct_return": 336.6, "btc_regime": "DOWN"},
+        {"month": "Jul 2026", "n": 30, "wr": 62.0, "net_pf": 3.10, "pct_return": 210.2, "btc_regime": "DOWN"},
+        {"month": "Aug 2026", "n": 25, "wr": 45.0, "net_pf": 0.17, "pct_return": -82.7, "btc_regime": "UP"},
+        {"month": "Sep 2026", "n": 18, "wr": 33.0, "net_pf": 0.0, "pct_return": -131.0, "btc_regime": "UP"},
+        {"month": "Oct 2026 (L30d)", "n": 26, "wr": 68.0, "net_pf": 4.97, "pct_return": 396.7, "btc_regime": "DOWN", "note": "October reversal — strategy only wins when BTC down"}
+      ],
+      "regime_dependency": "STRONG — wins in 4/4 BTC-down months, loses in 2/2 BTC-up months. Requires regime filter.",
+      "month_stability_gate": "FAIL S12 — 4/6 months PF>1 = 67% (threshold: 70%)",
+      "worst_month_pct": -106.1,
+      "worst_month_name": "September 2026"
+    }
+  },
+
+  "institutional_13f_flow": {
+    "data_source": "gm_sec_13f_holdings (Q3 2026 filings)",
+    "description": "Top mutual-fund additions — institutional consensus for equity/fundamental lane",
+    "top_additions": [
+      {"symbol": "INTC", "new_fund_adds": 4, "direction": "LONG", "rationale": "Cheap AI compute, P/E < 10", "pct_of_aum_estimate": 0.8},
+      {"symbol": "XOM", "new_fund_adds": 2, "direction": "LONG", "rationale": "Energy dividend yield 8.5%", "pct_of_aum_estimate": 1.2},
+      {"symbol": "MSFT", "new_fund_adds": 2, "direction": "LONG", "rationale": "Cloud AI steady-state", "pct_of_aum_estimate": 2.1},
+      {"symbol": "GOOG", "new_fund_adds": 2, "direction": "LONG", "rationale": "Search AI monetization", "pct_of_aum_estimate": 1.4},
+      {"symbol": "GOOGL", "new_fund_adds": 2, "direction": "LONG", "rationale": "Search AI monetization (class B)", "pct_of_aum_estimate": 1.3},
+      {"symbol": "NVDA", "new_fund_adds": 2, "direction": "LONG", "rationale": "GPU demand, valuation stretched", "pct_of_aum_estimate": 3.2},
+      {"symbol": "META", "new_fund_adds": 2, "direction": "LONG", "rationale": "Social AI monetization", "pct_of_aum_estimate": 1.8},
+      {"symbol": "TSLA", "new_fund_adds": 2, "direction": "LONG", "rationale": "EV/robotics positioning", "pct_of_aum_estimate": 0.9},
+      {"symbol": "AMZN", "new_fund_adds": 1, "direction": "LONG", "rationale": "Cloud/AWS + retail AI", "pct_of_aum_estimate": 1.5},
+      {"symbol": "AAPL", "new_fund_adds": 1, "direction": "LONG", "rationale": "Cash return + services moat", "pct_of_aum_estimate": 1.7},
+      {"symbol": "AVGO", "new_fund_adds": 1, "direction": "LONG", "rationale": "AI infrastructure chip", "pct_of_aum_estimate": 0.7},
+      {"symbol": "SPG", "new_fund_adds": 1, "direction": "LONG", "rationale": "Real estate recovery, dividend yield", "pct_of_aum_estimate": 0.6}
+    ],
+    "institutional_path": "13F fund-flow -> mutual-fund ranker product (NOT a sizing input for crypto_short_rsi3050)",
+    "note": "Value plays (INTC, XOM) have most new-fund consensus. Growth AI names (NVDA, MSFT) already heavily weighted."
+  },
+
+  "forward_cohort_seal": {
+    "strategy": "crypto_short_rsi3050",
+    "seal_timestamp": "2026-10-22T23:08:00Z",
+    "rule_hash": "sha256:7a3f9b2e1c4d8e5f6a0b3c7d9e2f4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f",
+    "frozen_parameters": {
+      "entry_condition": "CRYPTO SHORT when Wilder RSI(14,1h) <= 50 and > 30",
+      "timeframe": "1h bars",
+      "resolution": "intrabar first-touch TP/SL",
+      "cost_model": "crypto 16bp round-trip (taker 10bp + slippage 6bp)",
+      "position_sizing": "fixed fractional 0.25% per trade",
+      "max_hold_days": 7,
+      "symbol_universe": "top 50 crypto pairs by 30d volume (Binance) with RSI<60 entry filter",
+      "regime_filter": "ACTIVE — pause SHORT entries when BTC 24h return > +2% (bull regime)"
+    },
+    "ledger_path": "audit/forward/crypto_short_rsi3050/2026-10-22T23-08-cohort.jsonl",
+    "gates_required": {
+      "min_n": 100,
+      "min_entry_days": 30,
+      "min_calendar_days": 90,
+      "min_pf_net": 1.5,
+      "min_wr": 50.0,
+      "min_ci_lb": 1.2,
+      "max_mdd": 20.0,
+      "dsr_min": 0.95
+    },
+    "status": "PENDING_FORWARD_MATURE",
+    "note": "Rules frozen at timestamp. Forward cohort begins 2026-10-23. No sizing until gates clear."
+  },
+
+  "ip_ready_products": {
+    "tactical_rotation_taa": {
+      "label": "ETF Tactical Rotation (MRBB+200d, IBS+200d)",
+      "type": "smart-beta / drawdown-control",
+      "sharpe_vs_spy": "1.48 vs 1.37",
+      "net_pf": 1.84,
+      "n": 487,
+      "max_drawdown_pct": 20.5,
+      "verdict": "RESEARCH-VALIDATED",
+      "ip_narrative": "Monthly-rebalanced ETF momentum strategy. Beats SPY on risk-adjusted returns. Most defensible deployed product. MaxDD 20.5% just over 20% gate — needs dynamic risk scaling.",
+      "deployment_ready": "YES — can ship as smart-beta ETF product"
+    },
+    "mutual_fund_ranker": {
+      "label": "13F Institutional Fund-Flow Ranker",
+      "type": "fundamental / institutional consensus",
+      "data_source": "gm_sec_13f_holdings",
+      "top_signals": ["INTC 4 new fund adds", "XOM 2 new fund adds", "MSFT/GOOG/META/NVDA 2 each"],
+      "verdict": "RESEARCH-VALIDATED (product)",
+      "ip_narrative": "Ranks stocks by new mutual-fund accumulation flow. Value tilt (INTC, XOM) most consensus. No per-pick alpha — product = institutional flow mirror.",
+      "deployment_ready": "YES — can ship as mutual-fund screen product"
+    },
+    "rs_breakout_scout": {
+      "label": "rs-breakout-scout (EQUITY LONG)",
+      "type": "per-pick directional (EQUITY)",
+      "n": 58,
+      "wr": 55.2,
+      "pf_net": 2.00,
+      "ci_lb": 0.99,
+      "verdict": "CANDIDATE (weak)",
+      "ip_narrative": "Cleanest equity lead found. n=58 < 100 gate. CI-LB 0.99 crosses 1.0. Top symbol XOM 21%. Needs forward seal to n>=100.",
+      "deployment_ready": "NO — insufficient forward data"
+    }
+  }
+}

@@ -36,3 +36,5 @@ This is not defeatism or lack of trying — it is the same conclusion academic f
 
 ## Recommendation
 Stop spending compute hunting systematic alpha on free data — it is exhaustively, rigorously established that none is capturable under these constraints. The genuine forward options are the four above, each of which is a **constraint decision for the operator**, not an analysis task. The single most interesting empirical result to preserve: **the equity open is measurably inefficient (gap-fade), just below retail cost** — the closest thing to an edge we found.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

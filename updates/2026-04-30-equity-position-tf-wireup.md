@@ -175,3 +175,5 @@ flag → PEAD persistence. The classifier is the highest-leverage change
 because it retroactively reclassifies *existing* closed equity picks the
 moment the next dashboard rebuild runs — even if PEAD/bond never emit, the
 EQUITY × POSITION lane becomes non-empty for closed-pick aggregation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

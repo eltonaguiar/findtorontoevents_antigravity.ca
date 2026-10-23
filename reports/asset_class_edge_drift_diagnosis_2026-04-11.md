@@ -114,3 +114,5 @@ Conclusion:
 - Missing edge is concentrated in CRYPTO (recent hours) and EQUITY (payoff asymmetry).
 - FOREX currently shows strongest live edge.
 - Backtest-vs-forward drift machinery needs a data integrity fix before strategy-level decay claims are considered authoritative.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

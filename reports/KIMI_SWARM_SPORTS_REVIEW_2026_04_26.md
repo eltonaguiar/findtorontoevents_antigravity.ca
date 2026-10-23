@@ -74,3 +74,5 @@ The Kimi review missed all of the above — it was working off a stale snapshot.
 3. Defer Prediction Hunt and prediction-market subscription items until Tier 1 validates.
 4. Add WNBA + CS2 to the candidate niche-markets list once data feed is fast enough to surface real edges.
 5. Update the auto-place gate doc to remove any reliance on the tax-free framing as a sizing input.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

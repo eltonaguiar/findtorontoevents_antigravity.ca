@@ -51,3 +51,5 @@ as a pre-step in `.github/workflows/audit-dashboard.yml` so the artifact is gene
 before each dashboard rebuild. The `empty_timeframe_lanes` output can then be consumed
 by the dashboard generator's `_build_asset_class_timeframe_grid()` (from B2 PRs #568/#574)
 to add an "alert" overlay on empty cells.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

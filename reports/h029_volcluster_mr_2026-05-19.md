@@ -53,3 +53,5 @@ Fade the next-session open after an extreme-range day. Day D qualifies when its 
 ## VERDICT: **REJECTED**
 
 Clean kill. The volatility-cluster mean-reversion signal does not separate winners from losers with a stable sign across enough 14-day windows (or fails the 30bps cost gate). Do not wire or size. Archive as a tested failure.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

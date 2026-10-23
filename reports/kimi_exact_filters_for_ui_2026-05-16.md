@@ -622,3 +622,5 @@ hour_of_day=now.hour
 - `/workspace/findtorontoevents_antigravity.ca/KIMI_FEB172026/crypto_acceleration_engine.py`
 - `/workspace/findtorontoevents_antigravity.ca/KIMI_FEB172026/elimination_engine.py`
 - `/workspace/findtorontoevents_antigravity.ca/KIMI_RISEOFTHECLAW/alpha_engine_v2.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

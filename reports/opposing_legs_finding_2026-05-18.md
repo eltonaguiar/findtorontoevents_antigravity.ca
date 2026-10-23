@@ -54,3 +54,5 @@ A book-level conflict reconciler, applied after pick generation:
 This is hygiene, not edge — it removes self-defeating book construction. It
 does not change the EDGE_HUNT_CONCLUSION verdict (no admissible edge); it
 stops the book from paying costs to take both sides of a non-edge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

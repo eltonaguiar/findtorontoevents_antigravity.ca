@@ -118,3 +118,5 @@ All per the rules. The last 48 hours have been highly productive for asset-class
 
 ---
 **Generated 2026-05-15 by Grok** (full context from the chat + gh/MCP + git + .MD reads + swarm review). The kill wiring + this review + commentary on #1083 + the swarm_v2 tasks for the rest close the loop on the original request. Ready for the swarm outputs or next batch.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

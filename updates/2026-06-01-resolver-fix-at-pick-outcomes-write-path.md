@@ -28,3 +28,5 @@
 - ✅ Health check runs without crashing (GREEN on 3/4 checks, YELLOW on stale picks — expected)
 - ✅ Test INSERT into `at_pick_outcomes` with corrected schema round-trips successfully (0→1 record, verified via SELECT)
 - ✅ All 3 live URLs return HTTP 200: audit dashboard, ai-tournament, dashboard_data.json
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

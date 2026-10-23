@@ -31,3 +31,5 @@ Multi-phase AI run (cloud question-factory → curated questions → local Ollam
 - Qwen3.6-max retry with `--api-timeout 300`
 - USB `gemma3:12b` local pass (optional)
 - Harness pre-registration for H-035 tick (operator)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

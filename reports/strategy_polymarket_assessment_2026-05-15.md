@@ -19,3 +19,5 @@
 - Target: Polymarket-driven picks should represent a visible % of high-trust EQUITY and COMMODITY emissions.
 
 **Verdict**: Strong data source that is currently under-leveraged. Properly wired, this should improve win rates, especially in event-driven and macro regimes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -246,3 +246,5 @@ My practical trust ranking right now:
 ## Change scope
 
 Documentation only. No code changes were made in this investigation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

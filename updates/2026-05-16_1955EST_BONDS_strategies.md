@@ -89,3 +89,5 @@
 3. **Integrate CME FedWatch** — free, high-predictive-value data
 4. **Improve credit spread overlay** — mean reversion in spreads is reliable
 5. **Do NOT trade bonds with real money** — insufficient data, marginal backtests
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

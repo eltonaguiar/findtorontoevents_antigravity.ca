@@ -170,3 +170,5 @@ flip remains gated on:
 - 1+ clean DRY-RUN cycle of active_picks_sync (A2)
 - friction-adjusted DSR ≥ 0.85 at n_trials=500 (A8 + master-plan #3)
 - mutate-before-kill protocol completion for any FOREX-touching strategy
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

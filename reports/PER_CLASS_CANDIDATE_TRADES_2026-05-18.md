@@ -68,3 +68,5 @@ filter a profitable set out of a near-empty bucket. The fix is upstream:
 
 *Source: `audit_dashboard/data/pf_registry.json` policy-clean-net view.
 Cross-ref: `EDGE_HUNT_EXHAUSTED_2026-05-18.md`, `DEEP_DIVE_MONEYREADY_2026-05-18.md`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

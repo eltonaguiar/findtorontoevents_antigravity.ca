@@ -266,3 +266,5 @@ Last WON/LOST write was >26 hours before the prior audit, indicating the forward
 | OPEN age buckets | Range scan on entry_time without index | Add `(status, entry_time)` index |
 | Freeze check (MAX imported_at) | Full scan of 1.6M WON/LOST rows | Add `(status, imported_at)` index |
 | Full-table NULL ratios | Full scan of 29.8M rows | Sample-based approach sufficient |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -113,3 +113,5 @@ prerequisite for trusting the current clean numbers.
 - `eff_pnl = COALESCE(CASE WHEN tp.intrabar_ambiguous=0 THEN tp.intrabar_pnl_pct END, apo.pnl_pct)`
   via `at_pick_outcomes apo LEFT JOIN trading_picks tp ON tp.id = apo.pick_id`.
 - HAVING `n≥100`; lead gate `WR>52% AND PF>1.5`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

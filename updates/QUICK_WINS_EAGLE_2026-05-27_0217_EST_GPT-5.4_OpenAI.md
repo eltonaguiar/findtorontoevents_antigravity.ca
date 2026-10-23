@@ -186,3 +186,5 @@ Cross-links between findings, PRs, reports, incidents, enhancements, and roadmap
 - `DAILY_IDEAS.MD`
 - `audit_dashboard/incidents.html`
 - `updates/index.html`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

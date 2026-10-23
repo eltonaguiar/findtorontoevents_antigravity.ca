@@ -243,3 +243,5 @@ before keeping them in the blocklist.
 - `.github/workflows/alpha-engine-bond.yml` 3-for-3 failures last 3 days.
 - `tools/equity_mysql_edge_test.py:1-19` (prior context: "JSON ledger holding only ~44 EQUITY closed picks").
 - `money_ready_verdict.json` 2026-05-24 (EQUITY FAIL+INSUFF-N PF 0.90 / WR 33% / n=33).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

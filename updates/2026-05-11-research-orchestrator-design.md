@@ -109,3 +109,5 @@ A NO_EDGE run is shipped as a first-class deliverable. `index.html` template bra
 - `CLAUDE.md` Wire-Up Rule — production-caller requirement
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md` — for FOREX stress test in PR 3
 - `project_cpcv_gap_2026_04_28.md` — known gap for PR 5
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

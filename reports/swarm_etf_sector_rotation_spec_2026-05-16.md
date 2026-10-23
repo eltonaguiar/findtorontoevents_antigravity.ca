@@ -64,3 +64,5 @@ def passes_smart_gate(pick, regime_state, rs_rank):
 3. Sector blocklist needs quarterly revalidation against regime performance
 4. 20d momentum vs SPY may cause whipsaws in choppy markets
 5. Combined filters could reduce n below 50, hurting statistical significance
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

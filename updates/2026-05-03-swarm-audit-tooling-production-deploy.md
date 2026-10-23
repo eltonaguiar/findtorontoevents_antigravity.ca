@@ -47,3 +47,5 @@ Deployment target:
 - Deploy mode: `python tools/deploy_to_ftp.py --updates-only`
 
 No full-site deploy was required for the swarm tooling changes because they do not affect public runtime assets. The production deploy publishes this update note under `/updates/`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

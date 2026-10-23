@@ -58,3 +58,5 @@ Changed `cancel-in-progress: true` → `cancel-in-progress: false` in `.github/w
 |------|--------|
 | `audit_dashboard/template.html` | O'Neal unicode escape, countdownEl/alertsEl rename, init typeof guard |
 | `.github/workflows/copy-trader-forward-test.yml` | cancel-in-progress: true → false |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

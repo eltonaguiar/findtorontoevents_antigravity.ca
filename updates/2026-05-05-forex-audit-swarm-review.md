@@ -233,3 +233,4 @@ Additional gains from real COT data, dynamic carry, and intraday breakout data c
 
 **Next steps:** Prioritize critical fixes (#1-3) for immediate deployment. Create tracking issues for medium-priority items.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

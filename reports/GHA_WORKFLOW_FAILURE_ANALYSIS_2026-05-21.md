@@ -42,3 +42,5 @@ Scanned all ~350 recent GitHub Actions workflow runs on `main`. Found **2 stale 
 - **1 code fix applied** to prevent future false alarms
 - **1 workflow rerun triggered** to clear stale failure
 - All other workflows in healthy state
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

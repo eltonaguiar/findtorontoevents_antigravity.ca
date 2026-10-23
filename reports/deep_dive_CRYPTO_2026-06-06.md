@@ -232,3 +232,5 @@ ls alpha_engine/data/closed_picks.json battleground/data/closed_picks.json 2>/de
 **Bottom line (grounded):** CRYPTO policy-clean is FAIL (PF<1 WR~35% n=302) due to source conc (battleground for 1 sleeve), zero-edge volume (copy/ml), data artifacts (sign/batch/backfill per WR_SCRUTINY/triage), and no durable multi-src OOS edge (all high-WR artifacts). 1 near-T2 sleeve (wick n=30 pf1.55) but single-src + resolver risk. Rescue via clean + non-LLM + forward n on RENDER/funding family + promotion gates. 0/9 money-ready is correct per all sources. Do not size up until acceptance met + 14d/48h verified.
 
 (End of report. All citations local + exact.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

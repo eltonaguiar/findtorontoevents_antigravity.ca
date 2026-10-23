@@ -74,3 +74,5 @@ Report will be updated post-extract with exact tables and "is the system working
 
 ---
 *Draft created by Grok 4.3 to unblock the TV review task while desktop TV is unavailable in this WSL environment. Full data-driven version awaits the extract JSON.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -28,3 +28,5 @@ edge does not decay. Next: pre-register (M-107) + forward shadow-size ≤0.5% vi
 
 ## Reproduce
 `python3 verified_strategies/etf_dual_momentum_cv.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

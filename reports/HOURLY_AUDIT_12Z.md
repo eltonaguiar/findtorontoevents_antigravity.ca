@@ -153,3 +153,5 @@ No PRs opened this hour claiming "widen re-resolve scope." Issue #685 constraint
 
 _Refs: issue #685 (resolver done), issue #686 (live quality regression), issue #693 (EQUITY monitor, closed)_  
 _Baseline: CRYPTO 24h PF 3.54 / 7d 1.33 / 30d 1.33 (issue #686); EQUITY 7d 0.87 / 30d 2.18 (issue #693 pre-#692); FOREX 7d 0.14 (pre-#687)_
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -205,3 +205,5 @@ Crosses n≥20 + WR<35% threshold on LONG direction. Pattern matches Axis-1 (dir
 5. **`#846` (B18 shadow probation)** — awaiting human review; CI green, sound code
 
 https://claude.ai/code/session_016rE6MGRSq5vB4kN9i7CtLz
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

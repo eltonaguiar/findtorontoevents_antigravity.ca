@@ -74,3 +74,5 @@ existing `ohlcv_failover.py`. Same theme — fix fail-open masking alongside.
 
 *Investigation: 3 parallel subagents + a 3-engine swarm-plan
 (`swarm_runs/resolution-fix-plan/`). No production code edited in this pass.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

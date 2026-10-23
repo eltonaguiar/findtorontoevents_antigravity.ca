@@ -14,3 +14,5 @@ Swarm review of PR #547 found `max_age_days` was never applied (stale earnings c
 ```bash
 python3 -m pytest tests/test_equity_earnings_loader.py -q
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

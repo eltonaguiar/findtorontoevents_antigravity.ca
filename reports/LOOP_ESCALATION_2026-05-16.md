@@ -127,3 +127,5 @@ per CLAUDE.md Goal #1 mutation protocol.
 | 3 consecutive no-progress iterations (post-resume) | **YES** — triggering stop |
 
 Loop stops here. Resume after operator actions above.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

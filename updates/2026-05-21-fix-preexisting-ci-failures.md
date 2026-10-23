@@ -77,3 +77,5 @@ python -m pytest tests/test_money_ready_verdict.py -v
 
 Once this PR merges, PR #1292 (B10) should have its branch updated to include
 this fix — then CI should pass and B10 is ready for human review and merge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

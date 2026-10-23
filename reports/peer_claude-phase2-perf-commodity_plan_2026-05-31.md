@@ -36,3 +36,5 @@
 
 ## Read-only guarantee
 No DB writes. No code edits. Only `SELECT` against `trading_picks` + JSON read of `pf_registry.json`. Single docs PR off `origin/main`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

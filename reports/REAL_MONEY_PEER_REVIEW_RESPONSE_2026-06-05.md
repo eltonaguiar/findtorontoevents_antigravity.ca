@@ -199,3 +199,5 @@ Source verification: `data/earnings/GOOGL/latest.json` shows history [2026-07-23
 This file documents the peer review feedback and our response. It does NOT replace the master aggregation. Both files are committed together.
 
 ## PEER REVIEW STATUS: 2/2 REVIEWS COMPLETE — APPROVE-WITH-CHANGES
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

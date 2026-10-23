@@ -211,3 +211,5 @@ python3 alpha_engine/sports_betting_edge.py --sport basketball_nba --min-ev 0.02
 - `live-monitor/betway_ca_scraper.py` — working Betway scraper
 - `live-monitor/api/sports_picks.php` — PM signal consumer
 - `live-monitor/api/sports_value_analyze_lib.php` — devig + EV math
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

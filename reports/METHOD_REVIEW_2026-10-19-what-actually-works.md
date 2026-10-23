@@ -150,3 +150,5 @@ ust_tsmom,sector_dual_momentum}.json`, `dashboard_data.json::picks.recent_closed
 (strategy-grouped aggregates), `alpha_engine/data/{funding_rate_picks,pead_shadow_picks,
 pead_shadow_history.jsonl}` (file mtimes = local, content dates cited), and
 `audit_trail/dashboard_generator.py:12007,12018` (crypto_pairs_arb gates).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

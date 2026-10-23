@@ -126,3 +126,5 @@ Total effort to actually leverage what's been built: ~8-12 hours of careful inte
 Peer agents prioritized breadth ("11 modules + 57 tests!") over wiring depth. The default completion bar was "module importable + tests pass" — which triggers "mission accomplished" claims — without the follow-through step that would actually touch the live scoring pipeline. This audit is the first time anyone has measured callers.
 
 Recommendation in one line: **no new integration modules until the existing 20 orphans are either wired or deleted**.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

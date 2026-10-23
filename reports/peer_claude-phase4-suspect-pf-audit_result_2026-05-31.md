@@ -116,3 +116,5 @@ This is a **money-ready blocker** consistent with the 2026-05-31 memory note: "m
 - Plan: `reports/peer_claude-phase4-suspect-pf-audit_plan_2026-05-31.md`
 - Result (this file): `reports/peer_claude-phase4-suspect-pf-audit_result_2026-05-31.md`
 - Source DB: `ejaguiar1_stocks.trading_picks` (live, read-only).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

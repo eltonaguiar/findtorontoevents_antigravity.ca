@@ -33,3 +33,5 @@
 ## What was shipped today (1-line)
 
 ~188 merged PRs across hypothesis registry, mutation analysis, resolver intrabar groundwork, FOREX consolidation, incident truth-layer audits, peer-review swarms, and dashboard banner integrity — banner closed green (0 red, 5/5 passed), with 7 items left for operator triage.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

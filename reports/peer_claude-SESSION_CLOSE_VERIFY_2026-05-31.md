@@ -28,3 +28,5 @@ Fast end-of-day verification of claimed session-close end-state. No spawning, no
 `CLOSE_VERIFY:banner=false:prs_today=124:open_prs=2:open_incidents=5:all_match=false`
 
 (banner field reports `any_red` value, which is `false` = healthy.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

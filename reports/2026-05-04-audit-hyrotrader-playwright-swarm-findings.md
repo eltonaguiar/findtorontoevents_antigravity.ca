@@ -77,3 +77,4 @@ Where Kimi imposes stricter thresholds, those should override defaults in this p
 
 The audit/hyrotrader testing strategy is ready for implementation with quant-specific pass/fail gates, not just UI snapshots.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

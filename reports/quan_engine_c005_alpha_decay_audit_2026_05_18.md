@@ -73,3 +73,5 @@ All `quan_engine` sub-strategies are negative expectancy. The source-level block
 
 **C-005 STATUS: COMPLETE — blocks confirmed, no alpha found.**  
 **D-002 (unblock gate): NOT WARRANTED** — zero qualifying walk-forward fold exists.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

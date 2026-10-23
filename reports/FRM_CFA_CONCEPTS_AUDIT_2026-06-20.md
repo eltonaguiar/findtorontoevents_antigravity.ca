@@ -55,3 +55,5 @@ compare net@cost PF / CI-LB / (TP_HIT vs SL_HIT) head-to-head vs the fixed-band 
 
 ## Bottom line
 FRM/CFA give us **rigor, not alpha** — and we already have most of the rigor (often more advanced than the curricula). The single highest-value FRM/CFA-inspired move is the one already running: **cointegration pairs**, because it can *open* edge rather than just better-reject false positives. Everything else is either already wired (fix its honesty), a cheap false-positive gate, or premature sizing to revisit after a class passes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

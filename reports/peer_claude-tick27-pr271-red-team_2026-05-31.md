@@ -125,3 +125,5 @@ All field semantics match real Larry Connors RSI(2) mean-reversion strategy lite
 PR #232 / #235 invented strategy names with no code AND no greenfield disclosure — the personas implied live-ready coverage. PR #271 is qualitatively different: the one greenfield strategy is **explicitly flagged** as greenfield in its own kill-registry check, and the penny case **explicitly flags** Gate-0 blocking. The pattern is operator-honest pre-registration, not fabrication.
 
 No revoke or correction PR required.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

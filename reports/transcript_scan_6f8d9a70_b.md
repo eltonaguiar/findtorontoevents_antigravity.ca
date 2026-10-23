@@ -795,3 +795,5 @@
 - [OPEN] Run `/swarm-transcript-review` and wrap up
 - [OPEN] Run transcript review (swarm-transcript-action-scan) — started in background, not shown complete
 - [OPEN] Run transcript review queued by user
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -76,3 +76,5 @@ New open PR **#810** (docs/loop-v1-verified-2026-05-05, opened 03:24Z): scan=suc
 **Status vs previous hour (03:00 UTC):** No verdict change (GREEN→GREEN). PR #764 CI still has 0 runs on new head `96b34418c` after 2 monitor cycles — escalating from PENDING to STALE-CI. PR #810 is new (docs, green). PRs #777, #772, #798 unchanged.
 
 **Action required:** Operator should investigate why CI has not triggered on PR #764 head `96b34418c` (pushed ~02:47Z, no check runs after 1h+) — manual re-trigger or force-push an empty commit may be needed. Author of #777 should fix real `test(3.12)` failure. Author of #772 should await human review (DO NOT ADMIN-MERGE). No operator action required on main.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -46,3 +46,5 @@ python3 -m py_compile alpha_engine/production_scanner.py verified_strategies/mut
 - PR #464 (merged): initial `compute_pf` dollar-PF fix
 - PR #457 (merged): resolver `forward_test` health before `conn.close()`
 - `INCIDENT_OVERALL#78`: mutation PF P0 → RESOLVED in DB
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

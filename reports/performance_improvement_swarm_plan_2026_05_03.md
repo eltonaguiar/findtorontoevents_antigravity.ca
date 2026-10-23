@@ -170,3 +170,5 @@ Minimum before any asset class gets promoted to real-money/high-conviction:
 - Do not claim broad crypto edge; only subsets may work.
 - Do not kill FOREX without resolving the window/resolver contradiction.
 - Do not promote commodity until the PF vs WF conflict is explained.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

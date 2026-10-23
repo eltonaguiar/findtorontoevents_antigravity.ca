@@ -84,3 +84,5 @@ Please respond in this format:
 ---
 
 *Submitted for review: 2026-06-13*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

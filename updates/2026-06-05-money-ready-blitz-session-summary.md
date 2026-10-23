@@ -144,3 +144,5 @@ audit_dashboard/ai-tournament.html                (MOD + FTP)
 
 *Session wrapped: 2026-06-05T15:00Z*
 *Next recommended action: Operator decision on FOREX_HARD_DISABLE + wick-reversal promotion*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

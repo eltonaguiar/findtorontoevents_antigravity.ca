@@ -179,3 +179,5 @@ test — it's a beta proxy.
 *Generated 2026-05-19T22:00Z. Reproducer: `python tools/h037_vix_carry.py
 --json > swarm_runs/h037_records.json` then the snippet above. Verified at
 session `b5bf981b-...` (peer claim) vs canonical at this commit.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -62,3 +62,5 @@ Observed issues:
 ### Notes
 - Local tier requires `ollama` installed/running and at least one local model available (defaults to `llama3.2:3b`).
 - The new local path intentionally avoids any API key dependency.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

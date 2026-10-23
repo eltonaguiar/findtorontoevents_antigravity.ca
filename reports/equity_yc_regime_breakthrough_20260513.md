@@ -104,3 +104,5 @@ Hit rate on regime-gates: **83% (5 of 6 work)**.
 - `audit_dashboard/data/equity_momentum_yc_regime_backtest.json`
 
 NFA. No production change yet.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -34,3 +34,5 @@ FUTURES is functionally dead. Only 2 recent trades (both multi_asset_copytrader,
 ## Risk
 
 Negligible — n=2 recent trades. FUTURES can't hurt the portfolio. The real risk is the single catastrophic -88.8% trade pattern recurring if futures_mean_reversion leaks through the kill list.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

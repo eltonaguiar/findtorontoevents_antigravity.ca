@@ -16,3 +16,5 @@ Produce a concrete per-class action plan for FUTURES toward T2 graduation (PF>1.
 - `alpha_engine/outcome_resolver.py` (FUTURES policy at lines 127, 144, 251; TIME_EXIT path at 1507-1512).
 - `reports/peer_blackbox_incidents-enhancements-pr_2026-05-31.md` (Phase 4 resolver findings).
 - `docs/MUTATION_THREE_AXIS_PROTOCOL.md`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

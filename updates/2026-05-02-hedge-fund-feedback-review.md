@@ -169,3 +169,5 @@ def classify_symbol(symbol):
 
 ---
 *Prepared by opencode – 2026-05-02*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

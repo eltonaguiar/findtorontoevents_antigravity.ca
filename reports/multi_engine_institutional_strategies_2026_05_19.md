@@ -242,3 +242,5 @@ adding `max_drawdown_pct` to the canonical class rows, plus the
 `by_asset_class_policy_clean_net` row carries `max_drawdown_pct`. Once persisted, the
 charter §2 tier table can finally be evaluated on PF + WR + MDD together — and
 no class should be promoted past Tier 3 with a `null` MDD.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

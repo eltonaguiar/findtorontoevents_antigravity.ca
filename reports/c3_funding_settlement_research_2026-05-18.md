@@ -64,3 +64,5 @@ eff SIGN SPLITS (1+/2-) across strong windows -- sign-unstable, fails the same-s
 _Per-window eff: `[-0.251, -0.033, 0.117, 0.078, -0.613, -0.134, -0.468, 0.486]`_
 
 Reproducer: `python tools/c3_funding_settlement_research.py` (uses the committed cache; `--refresh-cache` to re-fetch).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

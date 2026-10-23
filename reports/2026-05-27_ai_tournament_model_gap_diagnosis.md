@@ -116,3 +116,5 @@ Could easily reach **15-20 active models** within a week.
 2. **I open PR for FIX 2** — workflow YAML fallback to GEMINI_FREE_KEY. ~5 min CI.
 3. **Tomorrow's ai-tournament cron** runs with 7+ models. Leaderboard populates with broader sample.
 4. **In parallel: I investigate mercury/ring_261T** (FIX 3) via local pipeline run.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -97,3 +97,5 @@ which view one cites.
 Research surface only. All shipped fixes are forward-only guards or
 truth-layer repair. No real-money sizing without explicit greenlight +
 10-step readiness gate clear.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

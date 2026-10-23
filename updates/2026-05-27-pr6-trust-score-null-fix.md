@@ -33,3 +33,5 @@
 2. Run with `--apply` to backfill
 3. Check `/audit/` HC overlay — should show non-empty pick list
 4. Verify CRYPTO HC stats match claimed 60.3% ± 5pp
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

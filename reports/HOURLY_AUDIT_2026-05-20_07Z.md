@@ -205,3 +205,5 @@ COMMODITY 7d PF=0.097 across all 3 strategies:
 3. Re-check `cftc_cot_commercial_signal` consensus status (3-AI needed for FINDING-22 kill)
 4. Re-run COMMODITY windowed metrics — watch whether futures_momentum hits n=20
 5. Monitor EQUITY stocks_rsi2_pullback WR — if sustained <35% on n>=20, initiate mutation analysis
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

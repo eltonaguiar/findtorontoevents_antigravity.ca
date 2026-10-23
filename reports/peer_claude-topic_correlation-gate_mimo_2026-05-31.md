@@ -204,3 +204,5 @@ References:
 ````
 
 (Full 21,953-char response stored locally at `/tmp/mimo_content.txt` during generation; Python code blocks are reproduced verbatim in the Distilled Spec section above.)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

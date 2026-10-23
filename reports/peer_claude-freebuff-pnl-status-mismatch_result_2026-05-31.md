@@ -92,3 +92,5 @@ mysql -e "SELECT COUNT(*) FROM trading_picks WHERE
 
 ## Follow-up
 The CI outcome-resolver run between freebuff's two health snapshots re-mislabelled 44 closed picks. The resolver's class-aware threshold (`PNL_WIN_THRESHOLD_BY_CLASS`) prevents this on fresh closes; this batch suggests a re-resolution path is bypassing it. Trace upstream in `alpha_engine/outcome_resolver.py` re-evaluation entry points and add a regression test that calls the resolver on closed rows with |pnl_pct| < 5bp and asserts status is preserved.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

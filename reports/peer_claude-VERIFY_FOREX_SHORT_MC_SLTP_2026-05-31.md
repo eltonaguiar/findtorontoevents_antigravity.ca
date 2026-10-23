@@ -87,3 +87,5 @@ non-EXPIRED non-zero n=926
 cap -0.5/+0.7 (excl EXPIRED, excl pnl=0): n=926 WR=48.06% PF=0.958
 raw uncapped: WR=48.06% PF=1.750
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

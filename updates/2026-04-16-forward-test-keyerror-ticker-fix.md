@@ -46,3 +46,5 @@ Two changes in `STOCKS/competition/forward_test.py`:
 ## Cascading impact
 
 - **Feed Health Check** was failing because the audit-dashboard pipeline wasn't completing (stale payload 21h > 12h threshold). The threshold was already relaxed to 30h in commit `3ce49b01`. Once the audit-dashboard pipeline succeeds, the Feed Health Check should recover.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

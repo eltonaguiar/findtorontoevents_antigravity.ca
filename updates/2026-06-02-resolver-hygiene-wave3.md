@@ -48,3 +48,5 @@ python3 tools/check_resolver_health.py
 
 - [ACTIVE stale resolver P0](https://findtorontoevents.ca/updates/2026-06-02-active-stale-resolver-p0.md)
 - [EAGLE2 PR #465 session findings](https://findtorontoevents.ca/updates/2026-06-02-eagle2-pr465-session-findings.md)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

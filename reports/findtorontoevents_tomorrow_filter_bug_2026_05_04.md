@@ -161,3 +161,5 @@ describe('EventFeed validEvents — Tomorrow filter', () => {
 - `updates/2026-05-01-events-filter-remaining-action-items.md` — pre-existing tracker
   for residual filter issues.
 - `updates/2026-05-02-comprehensive-48h-review-and-fixes.md` — current 48h review.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

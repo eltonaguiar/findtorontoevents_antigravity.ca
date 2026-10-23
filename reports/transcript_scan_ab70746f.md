@@ -50,3 +50,5 @@
 - [OPEN] Cross-check OPEN items against `git log`, merged PRs, and live TodoWrite before treating any as real
 - [OPEN] Produce ONE markdown file at `reports/money_maker_ready_<UTC>.md` with sections: `## 0. Freshness preflight` (and subsequent sections per skill spec)
 - [OPEN] Produce ONE markdown file at `reports/money_maker_ready_<UTC>.md` with sections 0+ (per money-maker-ready skill output structure)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

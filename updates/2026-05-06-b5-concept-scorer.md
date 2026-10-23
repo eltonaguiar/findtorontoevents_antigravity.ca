@@ -58,3 +58,5 @@ No opt-in flag needed — the wiring is in the diff.
 
 - Action item: `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` §4 B5
 - Prior attempt: PR #764 (closed without merge 2026-05-05)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

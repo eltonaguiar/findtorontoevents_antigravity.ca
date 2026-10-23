@@ -183,3 +183,5 @@ Per-strategy verdicts:
 - INDEX_STOCK class scaffolding-or-remove decision
 - MEMECOIN re-training not in master plan (gap; should be added as P1)
 - Confidence inversion fix coverage — is _normalize_confidence sufficient OR is scorer-level fix needed?
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

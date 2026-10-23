@@ -152,3 +152,5 @@ Criteria: (a) matches HYPEUSDT symbol-block pattern (PR #694) ✅, (b) n=34 ≥ 
 ---
 
 *Audit branch: `audit/hourly-04z-2026-05-13`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

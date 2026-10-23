@@ -43,3 +43,4 @@
 | LONG | 380 | 115 | 30.26% |
 | SHORT | 122 | 0 | 0.00% |
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -28,3 +28,5 @@ The forced_resolution.py methodology with tight TP/SL is FALSIFIED. The edge was
 3. Thin-sample noise on specific strategies
 
 Correct approach: wide TP/SL + time-based market exit, with n>=500 gate before any sizing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

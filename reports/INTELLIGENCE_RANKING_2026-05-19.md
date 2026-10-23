@@ -42,3 +42,5 @@
 3. Intraday crypto probe only new harness family
 
 **Repro:** `swarm_runs/model-grill/20260519T081344Z/` (paid), `081835Z` (ring), `081935Z` (free)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -122,3 +122,5 @@ on their own. The 3 ops switches (CP-1/CP-2/CP-3 above) are what flip
 the pipeline from "we built it" to "it's running."
 
 I cannot flip them autonomously. User decision.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

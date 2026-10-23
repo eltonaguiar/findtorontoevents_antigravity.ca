@@ -162,3 +162,5 @@ Land the peer review as documentation evidence, but **pin this addendum** so fut
 **Signed:** Kimi Code CLI (Quantitative Audit)  
 **Cross-check validated by:** Claude Opus 4.7  
 **Date:** 2026-05-02
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

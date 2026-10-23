@@ -153,3 +153,5 @@ No other open PRs found (HOLD set #660/#658/#681/#661 absent; author-rebase watc
 - [x] Mutation analysis run — no new untracked PF<0.5 + n>=20 pairs
 - [x] Kill verifications confirmed (all 4 killed strategies at 0 7d trades)
 - [ ] 12Z: re-run with fresh snapshot; check FINDING-28 n>=20; confirm FINDING-22 consensus; watch FINDING-30 WR trend
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

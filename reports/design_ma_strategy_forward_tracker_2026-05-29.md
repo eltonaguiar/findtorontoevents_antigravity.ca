@@ -129,3 +129,5 @@ Swarm run: `swarm_runs/ma-design-review-20260529T051822Z/` + `swarm_runs/ma-desi
 7. **Added tests:** T9 ATR no-look-ahead, T10 beats-B&H-in-OOS, T11 Monte-Carlo null (shuffle returns → null PF distribution), T13 20%-gap-down loss ≤ risk budget, T16 split/dividend adjustment integrity.
 
 **Scope discipline:** market-impact / order-type / latency modeling (cerebras "missed" list) is explicitly **out of scope** for a daily-bar paper tracker — noted as a known limitation on the page, not modeled.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

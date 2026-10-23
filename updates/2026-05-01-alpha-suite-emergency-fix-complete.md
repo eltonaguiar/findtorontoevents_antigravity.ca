@@ -57,3 +57,5 @@ Fixed all blockers preventing the Alpha Suite daily refresh workflow from genera
 - Scanner no longer crashes on import: ✅
 - Scanner generates signals (signal throttle messages): ✅
 - Scanner completes within GHA 45min: ⏳ (needs actual GHA run)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -65,3 +65,5 @@ Ban enforcement at one boundary is brittle — a future refactor or new code pat
 ## Note on current data
 
 At the time of this fix, `audit_dashboard/data/dashboard_data.json` shows 0 DOGEUSDT picks in active. The bug isn't actively biting in production right now (the upstream source-system that was emitting DOGEUSDT picks may have been throttled), but the gate gap remains. This PR closes the gap so future regressions can't reintroduce the contract violation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -25,3 +25,5 @@ Asymmetric vol bands lifted net PF +0.24 (1.18→1.42) and CI-LB +0.14 (0.83→0
 
 ## Bottom line
 A genuine, modest lever (not the zero the audit expected) — but **not a fix**: it leaves the cohort sub-bar and carries mechanical + parameterization caveats. Worth a rigorous OOS band-param study on the rsi5070 lead specifically, ranked BELOW the coverage backfill (which addresses the binding n constraint).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

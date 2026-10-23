@@ -159,3 +159,5 @@ FOREX is the worst offender on every axis: 96.5% smart-pass rate (gate is open),
 **SYSTEM-WIDE CONCLUSION**  
 Scale up TODAY: none (zero classes have trustworthy edges after scrutiny).  
 Demote per MUTATION_THREE_AXIS_PROTOCOL.md: EQUITY and CRYPTO (highest leakage risk and inflated metrics); tighten all SMART_PICKS_MIN_SCORE_* first.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

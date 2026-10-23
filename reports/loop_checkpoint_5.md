@@ -85,3 +85,5 @@ This prevents resolution when price feed is contaminated, preventing the bug at 
 - This: `reports/loop_checkpoint_5.md`
 - Bug: `multi_asset/scanner.py:2231-2245`
 - Detection query already shipped: `tools/db_health_check.py::check_won_pnl_contradiction`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

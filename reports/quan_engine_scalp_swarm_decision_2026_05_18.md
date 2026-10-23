@@ -45,3 +45,5 @@ No mutation rescue attempt justified (C). No unblock gate (D).
 The strategy is structurally broken: negative expectancy, no temporal robustness (0/5 walk-forward folds above 50% WR), and no salvageable sub-segment across a 240-cell autopsy with n=5,293.
 
 Additional evidence that could change this verdict: a walk-forward fold showing WR>40% with PF>1.0, OR a clearly defined non-correlated sub-segment backtesting positive expectancy on out-of-sample 2026 data. Neither exists. Block stands.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -62,3 +62,5 @@ After deploy, reload `/audit/` with cache disabled:
 **Major Goal banner fix:** JS now caches static forensic HTML in `data-mg-static` and wraps it in a collapsible `<details>` instead of discarding INCIDENT refs / per-symbol breakdowns.
 
 **Playwright:** `tests/audit_wording_audit.spec.ts` — run with `npx playwright test tests/audit_wording_audit.spec.ts --project="Desktop Chrome"`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

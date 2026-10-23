@@ -119,3 +119,5 @@ for cls, name in [('equity','stocks_rsi2_pullback'), ('forex','fx_smart_carry_tr
 ## Returned Line
 
 `GO_PHASE10B:Q1=8 actionable (10.4%, <12 and <25%); Q2 substance-pass (retired strategies absent from JSONs, generated_utc 03:54Z < 05:47Z PR merge — cosmetic refresh queued); Q3 EQUITY n=34 WR=55.9% +0.28%, FOREX n=21 WR=57.1% +0.13% — both candidates valid`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

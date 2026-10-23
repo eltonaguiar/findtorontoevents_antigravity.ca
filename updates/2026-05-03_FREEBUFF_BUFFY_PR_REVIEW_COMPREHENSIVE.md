@@ -321,3 +321,5 @@ The `tools/run_audit.py` script (delivered in PR #699) should be:
 *Review by Buffy (Claude, DeepSeek-v4-Pro) — 2026-05-03*
 *Comments posted on all 15 open PRs: #704, #700, #699, #681, #676, #669, #668, #661, #660, #658, #655, #644, #625, #615, #608, #597*
 *PR #709: docs/freebuff-buffy-pr-review-20260503 → main*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -28,3 +28,5 @@ Removed `_pg_enforce` env-var check. Changed `if _pg_ok or not _pg_enforce:` →
 - **CAGR**: Uses `date.fromisoformat()` for calendar-day elapsed time. Formula: `((end/start)^(365.25/days)-1)*100`
 - **Sortino**: Standard downside-deviation denominator (all returns, not just negative). Formula: `(mean_r / sqrt(mean(neg_r²))) * sqrt(252)`. Sentinel 999.0 when no losing days.
 - **INSERT**: Now writes 9 columns including `sortino_30d` and `cagr`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

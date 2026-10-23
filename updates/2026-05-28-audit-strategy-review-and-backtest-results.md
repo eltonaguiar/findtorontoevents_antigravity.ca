@@ -473,3 +473,5 @@ Sub-strategies:
 
 *Report updated 2026-05-28T23:45Z by Grok 4.3*
 *Backtest data: baby_strategies/forward_proven_backtest_results.json, baby_strategies/results/*.json*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -50,3 +50,5 @@ Concrete fix sequence (this is the real path, replaces the vague "raise amplitud
 This reframes improvement-area #1: the lever is **reachability + volatility-data hygiene at the emission source**, not raising targets.
 
 Reproduce: amplitude/reachability analysis in this session; cost model = `tools/forex_long_pilot_tracker.py`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

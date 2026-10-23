@@ -121,3 +121,5 @@ For every new feed, the loader must:
 | D+11–14 | **Polygon options** flow (free tier, 50-symbol universe) | Highest raw edge, but rate-limited; ship last. |
 
 Defer mikestocks/SCREENER_PENNYSTOCK/eltonsstocks unless the first six all land and we still need EQUITY breadth.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

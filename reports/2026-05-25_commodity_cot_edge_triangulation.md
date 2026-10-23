@@ -66,3 +66,5 @@ Two parallel agents are checking adjacent dimensions of this same edge:
 - **a4fa75…** — filter pipeline
 
 When their results land, they should be cross-referenced inside the H-101 entry's `consult_panel_inputs` / new `internal_audit_inputs` section before any backtest is executed against the registered filter. This document deliberately does **not** duplicate their DB-level work; it is the external-triangulation leg only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

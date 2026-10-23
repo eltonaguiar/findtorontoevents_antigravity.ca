@@ -42,3 +42,5 @@ SELECT status, COUNT(*) FROM trading_picks WHERE category='futures' GROUP BY sta
 - Follow-up PR (deferred): add the `research-only` badge to the FUTURES tile and remove FUTURES from any "tracked classes" prose lists.
 
 🤖 Drop authored after verifying live trading_picks counts; no agent-fabricated numbers.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

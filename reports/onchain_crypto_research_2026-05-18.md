@@ -160,3 +160,5 @@ The harness runs on the FULL continuous-position record list — one record for 
 - **UNTESTED — data-insufficient (0):** none. The harness needs >= 80 records with >= 15 winners and >= 15 losers per 14-day window across >= 3 windows. Where free on-chain history (e.g. CoinGecko's 365-day market_chart cap for stablecoin supply) cannot supply that, the honest verdict is **UNTESTED — explicitly NOT a pass**. The harness thresholds were NOT lowered and the windows were NOT shrunk to manufacture a verdict.
 
 On-chain network activity is a genuinely new input class — but a new input class is not an edge until the harness says so, and today it does not. This is consistent with the EDGE_VERDICT base rate. No signal is wired, none is sized; paper-only posture stands.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

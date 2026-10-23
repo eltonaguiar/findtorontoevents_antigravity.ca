@@ -137,3 +137,5 @@ tools/agent_run.sh eagle       # EAGLE daily suite
 ---
 
 *This document summarizes all work done in the 2026-06-02 session. All code is committed to main via PR #464.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -188,3 +188,5 @@ The findings don't verify whether the production scanner actually picks up the n
 | Peer coordination | 4/5 | Gateway sync completed, SESSION_SUMMARY + CLOSED sent |
 
 **Overall: 3.6/5** — Solid documentation session but critical P0 (commit) and P1 (Cycle 17) items remain.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

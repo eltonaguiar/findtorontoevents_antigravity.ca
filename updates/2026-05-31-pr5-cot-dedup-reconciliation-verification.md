@@ -42,3 +42,5 @@ This document records the verification and closes PR #5 as **resolved / stale in
 Update the incident tracker row from `OPEN` to `RESOLVED` or `STALE_VERIFIED_CLEAN`.
 
 If performance metrics appear inflated in the future, ensure the `audit_trail/dashboard_generator.py` fallback path is still using the `_dedup_cot_over_emission` function.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

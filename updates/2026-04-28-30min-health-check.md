@@ -73,3 +73,5 @@ No production Python/JS/YAML code modified in window. All other commits are auto
 ## Recommended Next Action
 
 **nudge agent** — PR #461 is CI-green and ready; merge is the only remaining step. All PRs #444–458 need rebase against current main before merging.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

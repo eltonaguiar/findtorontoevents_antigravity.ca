@@ -47,3 +47,5 @@ Window: 200 runs returned via `gh run list --limit 200 --created '>2026-05-25T03
 - Read-only — no `gh run rerun`, no `gh workflow run`, no commits, no DB writes.
 - Did not fetch 18 MB `dashboard_data.json`; only the two small sidecars (5 KB + 70 KB).
 - All HTTP requests capped at 30s via `curl --max-time 30`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

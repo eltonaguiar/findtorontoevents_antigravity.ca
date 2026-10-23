@@ -123,3 +123,5 @@ COMMODITY's entire apparent edge is the CT cohort — which is the COT-leakage a
 ### Bottom line
 
 Out of 8 asset classes, **one marginal filter exists** (CRYPTO / `mega_mutation`, PF 2.19, n=72, time- and symbol-distributed). Every other apparently-profitable slice is either (a) an `ml_enhanced_*` / placeholder artifact, (b) the COT-leakage CT cohort, or (c) a single-symbol concentration (FOREX→USDJPY). **No corrupt-cohort-removal flip turns a losing class into a winner** — the losing classes lose from sample-starvation, not from one removable bad cohort. The one removal that *does* matter works in reverse: stripping the CT artifact exposes COMMODITY as PF 0.23.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

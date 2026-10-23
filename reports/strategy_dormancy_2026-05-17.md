@@ -373,3 +373,5 @@ stocks_rsi2_pullback                     2026-05-17   0      8       [OK] ACTIVE
 - `quan_engine` — last emit 2026-04-26 (21d ago)
 - `rsi_bounce` — last emit 2026-04-26 (21d ago)
 - `volume_spike_breakout` — last emit 2026-04-26 (21d ago)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

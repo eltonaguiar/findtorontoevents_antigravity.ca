@@ -42,3 +42,5 @@ CRYPTO is the largest asset class by volume (1,512 recent trades) and generates 
 | winner_pattern_precursor | winner_pattern_precursor_inverse | 81.2% | 2.35 | 48 |
 
 **Stop building new strategies. Start inverting existing losers.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

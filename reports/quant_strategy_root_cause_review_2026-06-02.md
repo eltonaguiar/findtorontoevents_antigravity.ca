@@ -386,3 +386,5 @@ for p in items:
 ---
 
 ## 11. Reproducer commands
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

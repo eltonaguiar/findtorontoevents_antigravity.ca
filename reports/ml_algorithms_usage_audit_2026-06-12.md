@@ -91,3 +91,5 @@ Workflows green-but-pointless as of 2026-06-12 (`gh run list` all success):
 - Sub-100-n slices (regime_terminal n=23, genome_mutation_lab n=57) are flagged per the dashboard's own INSUFFICIENT_N rule; no sizing decisions should be made on them.
 
 *Generated read-only on 2026-06-12 by ML usage audit session. DB: ejaguiar1_stocks @ mysql.50webs.com (SELECT only).*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

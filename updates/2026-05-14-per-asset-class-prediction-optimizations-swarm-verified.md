@@ -85,3 +85,5 @@ All 3 engines agreed P6 (liquidity penalty fix) must precede all other non-crypt
 2. **Simple ATR-based volatility filter** for non-crypto — simpler than macro regime, suggested by all 3 engines
 3. **Wire BOND scanner to production cron** — `alpha_engine/bond_scanner.py` exists, FRED API timeout needs fix
 4. **Baby strategies batch backtest pipeline** — 206 .py files with zero production connection
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

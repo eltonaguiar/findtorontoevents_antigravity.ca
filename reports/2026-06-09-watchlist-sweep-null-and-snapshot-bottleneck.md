@@ -128,3 +128,5 @@ non-backfill, 20 banned sources + `prediction_market_consensus`/`hs_lb_None`/`un
 per-class sane-pnl caps), bar loosened to n≥50/PF>1.3/WR>50%. DSR/PBO via
 `alpha_engine.anti_overfit_validator.evaluate_strategy` over the closed_picks.json
 returns cache; HHI from the symbol distribution.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

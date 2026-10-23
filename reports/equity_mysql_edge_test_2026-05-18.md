@@ -31,3 +31,5 @@ insufficient WON/LOST split for a discrimination test
 Status mix here: 9 WON (+5.7% avg), 394 LOST (-1.4% avg), 335 EXPIRED (0.0%). The 335 EXPIRED-at-flat + 394 LOST pattern is consistent with the documented non-crypto resolver bug (feedback_noncrypto_resolver_live_close_bug — closes at stale spot, mislabels).
 
 **Option-A result: the EQUITY edge hypothesis is UNRESOLVABLE today — not because there is no edge, but because EQUITY's resolved data is internally contradictory across tables.** The 'EQUITY best candidate' framing rests on `asset_class_health` numbers that `at_consensus_picks` contradicts. Prerequisite before any EQUITY edge claim: reconcile the two tables + fix the non-crypto resolver, then re-run this test.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

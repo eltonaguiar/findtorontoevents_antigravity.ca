@@ -72,3 +72,5 @@ losers still counted, (3) wins credited at nominal TP instead of real fills,
 and (4) inflated sample sizes in the source-of-truth autopsy.** P0 fixes
 C2/C3/C4 are small, mechanical, and should precede any decision to size up
 CRYPTO. Do not act on the `m004` "scale the elites" recommendation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

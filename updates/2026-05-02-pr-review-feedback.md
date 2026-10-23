@@ -126,3 +126,5 @@ All 17 attachment files were reviewed:
 - Requirement complete: all open PRs reviewed and commented.
 - Requirement complete: all listed attachments reviewed.
 - Requirement complete: consolidated .md feedback committed via branch + PR flow.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

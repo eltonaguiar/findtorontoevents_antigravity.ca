@@ -111,3 +111,5 @@ Each top candidate tagged with `"NEXT_STEP": "wire to production_scanner OR run 
 
 **SCOPE COMPLETE.** Implementation queued — 2026-05-12 session ran out of
 bandwidth on this. Next session can pick up Step 1 directly.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

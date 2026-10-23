@@ -64,3 +64,5 @@ produces the dry-run verdict files needed to vet Stage B. **Fix the concurrency
 cascade first**, then 3-5 clean cycles, then flip `--apply`.
 
 *Source: live `gh run list` / `gh run view --log-failed`, 2026-05-18T22:00Z.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -70,3 +70,5 @@ Plus: identify what exact workflow ran between those dates that touched the penn
 ## Files
 - `.github/workflows/penny-stock-picks.yml` (disabled, schedule still in file)
 - `reports/uncharted_tables_recon_2026-05-08.md` (flagged 2026-04-27 last write)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

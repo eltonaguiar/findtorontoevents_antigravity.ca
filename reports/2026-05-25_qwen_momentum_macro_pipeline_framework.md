@@ -112,3 +112,5 @@ If any gate fails: fix underlying issue OR accept reduced sizing/position cap be
 4. **Add turnover penalty to the optimiser** to operationalise pitfall #2.
 
 These all land as separate ENHANCEMENT_OVERALL rows linking back to this doc.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

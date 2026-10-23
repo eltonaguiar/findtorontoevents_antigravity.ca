@@ -63,3 +63,5 @@ cd /tmp/strategy_builds_2026-05-31/tsmom
 python3 tests.py                                              # 9/9 PASS
 TSMOM_PILOT_DIR=/tmp/tsmom_test python3 paper_pilot_harness.py # 7 rebalances
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

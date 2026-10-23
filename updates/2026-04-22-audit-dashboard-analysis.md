@@ -15,3 +15,5 @@
 **User:** save our chat log as a .MD and create a PR with your suggested fixes.
 
 **Assistant:** (this file).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -388,3 +388,5 @@ Per Workstream A: `alpha-engine-live.yml:592` swallows `auto_tuner` failures wit
 **The system has one real franchise (EQUITY via `kimi_riseoftheclaw`), one promising-but-dangerous class (CRYPTO with edge but lethal MDD), three classes with broken data integrity that masks whether edge exists (FOREX, COMMODITY, BOND), and a missing institutional risk-management layer everywhere.**
 
 The hedge-fund-grade roadmap is clear: (1) fix the data layer (resolver), (2) consolidate around the proven franchise (EQUITY), (3) add the structural risk-management features pro shops have (vol-targeting, risk parity), (4) only then evaluate whether to add internal vs external alpha for the weak classes. Buying copy-trader signals before fixing the resolver and adding vol-targeting would be premature optimization — the existing `multi_asset_copytrader` is already the largest noise generator, demonstrating that "more sources" isn't the answer until the underlying data plumbing is sound.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

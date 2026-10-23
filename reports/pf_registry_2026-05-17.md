@@ -158,3 +158,5 @@ python tools/build_pf_registry.py
 Writes `audit_dashboard/data/pf_registry.json`. Idempotent, read-only w.r.t.
 all `closed_picks*.json` ledgers. `python -m py_compile tools/build_pf_registry.py`
 passes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

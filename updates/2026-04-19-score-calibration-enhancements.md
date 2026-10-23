@@ -507,3 +507,5 @@ def stratify_by_exit_reason(picks: List[dict]) -> dict:
 - **Analysis by:** GitHub Copilot + Claude Haiku 4.5
 - **Review status:** Ready for peer review
 - **PR Target:** main branch (after 1 approval from code-review agent)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

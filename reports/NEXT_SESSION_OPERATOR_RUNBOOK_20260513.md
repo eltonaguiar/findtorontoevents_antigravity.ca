@@ -105,3 +105,5 @@ export YC_REGIME_GATE_ENABLED=1
 - `audit_trail/vix_regime_gate.py` — combined gate sidecar (Action 3)
 
 NFA. No active trades placed this session.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

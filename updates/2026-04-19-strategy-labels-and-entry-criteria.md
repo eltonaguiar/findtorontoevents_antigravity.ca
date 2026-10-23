@@ -130,3 +130,5 @@ These were already present before this update:
    - Per-pick drill-down modal
 
 The fix ensures all 32 currently active strategies now have rich descriptions instead of raw internal names.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

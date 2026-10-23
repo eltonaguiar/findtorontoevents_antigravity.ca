@@ -124,3 +124,5 @@ PRs #547, #548, #549 CLOSED as superseded by `be7721dc34` (money-ready blitz). #
 2. Unblock `mega_mutation` from `strategy_blocklist.py:211,216` (sign-coherence 0 flips per evidence doc) — or keep blocked pending paper pilot accumulates 30+ closes?
 3. Merge PR #551 once CI green?
 4. Block `regime_terminal` for EQUITY in `quality_gates.py::BLOCKED_ASSET_STRATEGY_PAIRS`?
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

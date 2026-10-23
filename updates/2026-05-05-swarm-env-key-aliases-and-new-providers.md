@@ -73,3 +73,5 @@ Swarm runs were degrading silently: when `OPENROUTER` env wasn't set the
 provider was just skipped, leaving the swarm with fewer voices than configured.
 Same for Cerebras (the speed leader). Adding Groq + HuggingFace gives us two
 more sub-second/free fallback lanes for round-robin and failover.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

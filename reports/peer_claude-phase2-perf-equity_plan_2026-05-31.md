@@ -41,3 +41,5 @@ Note: schema uses `TP_HIT` not `WON`. The template's `status='WON' OR status='TP
 
 ## Output
 `reports/peer_claude-phase2-perf-equity_result_2026-05-31.md` → server-side PR off origin/main.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

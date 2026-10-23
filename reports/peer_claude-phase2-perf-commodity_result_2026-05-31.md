@@ -77,3 +77,5 @@ No crypto-suffix symbols (USDT/BTC/ETH) found tagged as commodity — PR #166 ba
 
 ---
 _Method: SELECT-only against `trading_picks`. WIN = status IN ('WON','TP_HIT'). PF = Σ(pnl>0)/|Σ(pnl<0)|. MDD = peak-to-trough on time-ordered cum-pnl. No DB writes, no code edits._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

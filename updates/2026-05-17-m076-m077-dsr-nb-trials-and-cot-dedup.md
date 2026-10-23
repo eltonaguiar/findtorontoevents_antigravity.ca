@@ -56,3 +56,5 @@ PR #961 added 1-per-(symbol, release_week, direction) dedup for go-forward COT e
 1. **`datetime.max` fallback**: COT picks without `created_at` get `datetime.max`, which produces a real ISO week from year 9999 — the `"UNKNOWN"` fallback is never hit. All untimestamped picks for same (symbol, direction) collapse to one. Acceptable in practice.
 2. **Redundant datetime imports**: Both helper functions re-import `datetime`/`timedelta` inline. Only `date` is genuinely missing from module-level import. Minor style issue.
 3. **Nested functions**: `_cot_release_week_key` and `_dedup_cot_over_emission` live inside `generate()`, making them untestable in isolation. Future refactoring candidate.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

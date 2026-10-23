@@ -76,3 +76,5 @@ python -m pytest tests/test_hf_quality_gate_wire.py tests/test_quality_gates.py 
 node --check tests/sports_betting_js_errors.spec.js
 # clean
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

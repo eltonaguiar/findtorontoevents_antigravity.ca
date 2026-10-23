@@ -66,3 +66,5 @@ Overall: KILL
 Funding-rate arbitrage **does not clear the acceptance gates** — this is a clean kill (#8). Cost model eats too much of the gross funding. A positive gross funding number that does not survive costs+harness is not an edge.
 
 Pre-registered H-012, `reports/hypothesis_registry.json` (M-107). Research/sidecar only — no production wiring.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

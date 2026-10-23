@@ -160,3 +160,5 @@ Both are independent of this root cause and stay in their own PRs.
 
 - `.ruflo/orchestrator.py` — flip YAML merge from "skip if key exists" to
   "YAML overrides inline" (per-field merge with inline as fallback).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

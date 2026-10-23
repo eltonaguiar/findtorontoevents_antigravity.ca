@@ -66,3 +66,5 @@ in production.
 B25 from `reports/REMAINING_ACTION_ITEMS_2026_04_30.md` (Order 30).
 Prereq: B24 ✅ (merged 2026-05-01 21:20 UTC).
 Unlocks: B26 (TradingAgents end-to-end smoke test).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

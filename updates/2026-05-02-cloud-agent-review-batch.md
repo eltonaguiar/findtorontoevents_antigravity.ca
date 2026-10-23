@@ -303,3 +303,5 @@ Affected file: alpha_engine/outcome_resolver.py
 | PR #610 (resolver v2.1) | https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/610 |
 | PR #611 (Copilot sub-PR, draft) | https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/611 |
 | This review PR | (to be opened) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

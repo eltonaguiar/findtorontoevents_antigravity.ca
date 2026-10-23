@@ -267,3 +267,5 @@ closed = [p for p in d["picks"]["recent_closed"] if p.get("pnl_pct") is not None
 ```
 
 **Nothing in this PR modifies production strategy files.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

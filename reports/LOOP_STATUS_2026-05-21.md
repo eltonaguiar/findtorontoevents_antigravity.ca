@@ -76,3 +76,5 @@ Stop criterion met: 3+ consecutive no-progress iterations post-resume (now **25 
 
 **B10 will self-unblock ~2026-05-22 (tomorrow).** Loop should be re-triggered on that date.
 Only B22 requires explicit operator input. Both gates will be clear once Gate 2 accrues ≥10 UEPS closes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -152,3 +152,5 @@ Still the biggest structural fix needed.
 **The persistent:** closed picks still drain at pre-gate rates because the retirement logic only blocks NEW emissions, not the backfill/forward-validator paths. The next perf-review cycle should show whether the zombie drag slows as the rolling-window ages out old picks.
 
 **Nothing in this PR modifies production files.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

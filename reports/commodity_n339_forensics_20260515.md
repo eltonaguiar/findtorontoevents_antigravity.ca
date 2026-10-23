@@ -88,3 +88,5 @@ after DB purge removes the COT artifacts that mask the real signal.
 - `reports/cot_pipeline_audit_20260514.md` — full over-emission timeline
 - `audit_trail/quality_gates.py` — COT not in BLOCKED pairs yet (only timing fix)
 - PR #941, PR #961 (COT timing + dedup)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

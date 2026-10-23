@@ -25,3 +25,5 @@ BOND has only 18 closed trades — not statistically meaningful. WR 55.6% and PF
 ## Risk
 
 Minimal — n=18 means BOND can't hurt the portfolio even if WR is actually worse than it looks. The real risk is allocating capital before the sample is meaningful.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

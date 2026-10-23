@@ -278,3 +278,5 @@ Two implementations exist:
 ---
 
 *Generated: 2026-05-16 | Source: `audit_trail/data/universal_resolved_picks.json` (5,000 picks) | Analysis: `tools/hc_filter_backtest.py` + ad-hoc Python*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

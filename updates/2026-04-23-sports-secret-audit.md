@@ -20,3 +20,5 @@
 - **No additional secret strings** to strip from the workflow YAML on current `main`.  
 - **Rotate** legacy committed key in `db_config.php` on next credential rotation.  
 - **Done:** 50webs no longer runs the unparseable proxy file; use torontoevent.net for the full API surface.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

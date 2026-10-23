@@ -281,3 +281,5 @@ After each phase:
 | `alpha_engine/score_booster.py` | Crypto-only boosters, needs expansion |
 | `alpha_engine/config.py` | Elite score floors, per-class risk params |
 | `audit_trail/quality_gates.py` | Blocked strategies, score floors, per-class gates |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

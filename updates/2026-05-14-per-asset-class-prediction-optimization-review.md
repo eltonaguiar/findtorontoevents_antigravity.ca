@@ -275,3 +275,5 @@ After each phase:
 | `tools/analyze_audit_scores_vs_pnl.py` | IC feedback loop (P1) |
 | `alpha_engine/scanner.py` | Non-crypto quality gate (P9), per-class confidence floors |
 | `alpha_engine/antigravity_strategies.py` | Duplicated crypto symbol checks |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

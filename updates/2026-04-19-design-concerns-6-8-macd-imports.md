@@ -104,3 +104,5 @@ No new state fields needed — uses the existing `open_until_ts` entry. Backward
 
 - Propagate actual `fundingTime` from Binance's `/fapi/v1/fundingRate` response instead of approximating with 8h boundary
 - Add integration test for `funding_rate_scanner.py` confirming 8h-aligned times through the scanner's synthesize path
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

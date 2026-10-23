@@ -104,3 +104,5 @@ Acceptance: data fetcher in `alpha_engine/data/futures_curve_fetcher.py` (or whe
 - Prior peer reports consulted (not re-litigated): `2026-05-25_commodity_cot_edge_triangulation.md` (3/3 LEAKAGE verdict), `commodity_diversification_gap_2026_05_18.md`, `commodity_nonctf_strategy_autopsy_2026_05_17.md`, `asset_class_90day_plan_COMMODITY_2026-05-15.md`.
 - External consult: **NONE** — prior 2026-05-25 triangulation (Codex+Gemini+Grok) covers the COT angle; this report covers angles those consults did not (curve / regime / event). Skipped to stay within budget.
 - No `git add -A`. No production data writes. Read-only DB queries.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

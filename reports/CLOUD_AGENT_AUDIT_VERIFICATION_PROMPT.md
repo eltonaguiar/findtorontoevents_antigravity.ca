@@ -194,3 +194,5 @@ reported "CRYPTO last-50 = 68% WR / PF 5.1 → elite, go make money" — pre-ded
 pre-resolver-fix, recency-cherry-picked. Use only **rolling 30-day,
 post-resolver-v2.1, deduped** windows with n ≥ 100. Cumulative-since-inception
 and short trailing windows are both inadmissible.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

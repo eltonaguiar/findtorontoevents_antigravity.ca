@@ -175,3 +175,5 @@ Once Round-2 PRs merge + one walkforward cycle runs:
 - ⏳ §7 UI High-Conviction filter audit P3
 
 **Real-money green-light gate:** Tier-2-pass on EQUITY + ETF + CRYPTO post-resolver-v2-with-multi-asset-cot-dedup AND walkforward COMMODITY (post-COT-dedup) shows neither stable nor decay. Currently: 2/3 (EQUITY + ETF), CRYPTO marginal, COMMODITY pending dedup.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

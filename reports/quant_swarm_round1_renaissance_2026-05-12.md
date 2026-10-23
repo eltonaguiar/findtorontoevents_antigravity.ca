@@ -51,3 +51,5 @@ Gatekeeper 32.6% accuracy is a labeling artifact (precision 11.5 / recall 84 = a
 ## NFA
 
 Research surface. No real money until two classes hold T2 for 30 days post-quarantine.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

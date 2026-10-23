@@ -195,3 +195,5 @@ A class moves from FAIL → INSUFF-N → T3 → T2 only when **ALL** of these ho
 - `reports/cot_paper_pilot_overemission_falsified_20260513.md`
 - `reports/HEDGE_LIBS_LEVERAGE_AUDIT_2026_04_22.md` (Wire-Up Rule precedent)
 - `reports/asset_class_90day_plan_{BOND,COMMODITY,CRYPTO,EQUITY,ETF,FOREX,FUTURES}_2026-05-15.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

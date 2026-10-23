@@ -5,3 +5,5 @@
 3. **Under-claim:** The anti-fabrication/measurement architecture is genuinely strong and undersold. Quarantines, direct-SQL re-derivation, entry-anchored replay, fail-closed preflight, do-not-relitigate lists, and daily P&L reconciliation are rare discipline. This is a defensible audit/control engine, not merely a signal-hunting loop.
 
 4. **Concrete improvement no prior reviewer suggested:** Add a hard **capacity/cost regime gate**: for every promoted candidate, replay under asset-specific cost multipliers (0.5×, 1×, 2×, 4×), latency slips (1/5/15 minutes), and volume caps such as 1%/5% of 1h volume using spread/volume proxies. Require PF CI-LB >1.15 and no material rank collapse in at least 3 adverse cases. Fixed 16/4/2bp costs are too clean for a money-ready claim.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

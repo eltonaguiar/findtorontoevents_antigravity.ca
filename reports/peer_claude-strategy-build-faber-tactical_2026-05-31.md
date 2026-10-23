@@ -47,3 +47,5 @@ Grok's #1 risk (trend decay post-2020) aligns with CLAUDE.md "0/6 classes T2-pas
 
 ## No production writes
 Confirmed: no DB inserts, no `updates/index.html` edits, no FTP deploys, no edits to shared working tree's pick paths. All build artifacts in `/tmp/strategy_builds_2026-05-31/faber_tactical/`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

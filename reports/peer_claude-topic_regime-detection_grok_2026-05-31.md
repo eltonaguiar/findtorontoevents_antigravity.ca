@@ -116,3 +116,5 @@ Re-entry requires 5d confirmation that all triggers cleared.
 - Diebold & Yilmaz (2012) "Better to Give than to Receive" - spillover/corr breakdown timing.
 - Hamilton (1989) Markov-switching autoregressive model - baseline for RV regime detection.
 - Cont (2001) "Empirical properties of asset returns" - liquidity and vol clustering thresholds.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

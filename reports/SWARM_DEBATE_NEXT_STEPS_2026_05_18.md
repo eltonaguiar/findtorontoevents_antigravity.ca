@@ -85,3 +85,5 @@ product change). Step 1 is void as framed — see correction above.
 *Method: 3 parallel general-purpose subagents × 3 rounds. No production code
 edited by the debate itself. Sidecar E-1 (H-028) built same session, commit
 685a4a1063d.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

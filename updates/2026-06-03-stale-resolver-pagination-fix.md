@@ -34,3 +34,5 @@ python3 tools/check_resolver_health.py
 ## Capital policy
 
 Unchanged — no production sizing; empty `PROMOTED_STRATEGIES`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -101,3 +101,5 @@ This is **good news** in a way: the validation tools work. They caught the fabri
 ---
 
 ## v3 STATUS: NO REAL-MONEY CANDIDATES — DATA QUALITY BLOCKER
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

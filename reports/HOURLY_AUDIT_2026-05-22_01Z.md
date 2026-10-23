@@ -129,3 +129,5 @@ Closest approaching gate:
 - **COMMODITY:** FINDING-59 persists. `futures_momentum` at n=17 is 3 trades from kill gate.
 - **NEW FINDING-64:** `luxalgo_confluence` n=131 / PF=0.725 — largest-volume drag above kill threshold; flag for symbol-rotation sandbox.
 - **No merges; no new kills. Next cycle: re-check mergeable_state for #1303/#1304/#1299.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

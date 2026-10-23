@@ -161,3 +161,5 @@ path.
 
 *Generated 2026-05-19. Engines: Grok (xAI) + swarm deepseek/xai/kilo.
 Swarm runs: `swarm_runs/stageb_consult_c3`, `swarm_runs/stageb_consult_fc`.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

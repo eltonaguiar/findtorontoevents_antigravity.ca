@@ -105,3 +105,5 @@ This is a one-line YAML edit to a production workflow file. CLAUDE.md says "neve
 
 1. **Apply now** — I make the edit, commit on a branch, open a PR with this diagnosis as the PR body, do NOT auto-merge. Wait for user to merge.
 2. **Hold** — User reviews this report first, then decides whether to proceed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

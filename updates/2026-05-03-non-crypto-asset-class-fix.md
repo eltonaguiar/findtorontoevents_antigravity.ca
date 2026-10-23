@@ -166,3 +166,5 @@ with open('audit_trail/data/dashboard_payload.json') as f:
 python tools/non_crypto_mutations.py --experiment 1
 python tools/non_crypto_mutations.py --experiment 2
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

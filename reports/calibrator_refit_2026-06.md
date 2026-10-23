@@ -16,3 +16,5 @@ Traceback (most recent call last):
     return io.open(self, mode, buffering, encoding, errors, newline)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json'
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

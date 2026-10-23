@@ -153,3 +153,5 @@ This excludes:
 ---
 
 *Generated: 2026-06-05 | Source: live `ejaguiar1_stocks.trading_picks` DB queries*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -140,3 +140,5 @@ Run: `python tools/mutation_analysis.py --json` against 04:06Z dashboard.
 ---
 
 _Generated 2026-05-17T~06:15Z by hourly audit agent._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

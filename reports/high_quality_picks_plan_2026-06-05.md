@@ -69,3 +69,5 @@ Visible on `https://findtorontoevents.ca/audit/incidents.html` after next nightl
 - `tools/mlflow_verified_strategies_log.py` (2026-06-04) — verified-strategy WR/PF logging
 
 mlflow.db: now 80+ runs across 5 experiments. View: `mlflow ui --backend-store-uri sqlite:///mlflow.db`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

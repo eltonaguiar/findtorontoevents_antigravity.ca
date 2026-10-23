@@ -131,3 +131,5 @@ A single tool that runs the full pipeline: ingest → resolve → gate → attri
 - Prediction-market / verified-pro hybrid rows (Grok)
 - SHAP explainability for top-ranked picks (Mercury 2)
 - Compliance guards (position size > 5% ADV → market-impact flag) (Mercury 2)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

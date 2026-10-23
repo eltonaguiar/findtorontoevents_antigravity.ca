@@ -166,3 +166,5 @@ The `/audit` MAJOR GOAL banner cannot show a PREDICTION_MARKETS tile until:
 
 ---
 **Verdict:** PREDICTION_MARKETS is a real opportunity (5 untried angles, 2 concrete strategies, infrastructure 80% built) but **gated entirely on the P0 resolver fix and Kalshi feed resurrection**. No statistical edge can be claimed or refuted on current data.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -155,3 +155,5 @@ existing strategy_handlers registry.
 - `reports/rescue_plan_per_asset_class_2026-05-12.md`
 - `reports/grok_audit_red_team_synthesis_2026-05-12.md`
 - Grok 2026-05-12 user submission (this document captures the variant)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

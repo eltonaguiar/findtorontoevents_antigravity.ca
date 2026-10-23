@@ -231,3 +231,5 @@ via `tools.db_env.get_stocks_creds()`. SQL queries reproducible from
 - [[project-data-quality-session3-2026-06-05]] — backfill root cause
 - [[confidence-trust-edges-2026-05-31]] — 78.9% dispute
 - [[money-ready-2026-05-31]] — money-ready bottleneck context
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

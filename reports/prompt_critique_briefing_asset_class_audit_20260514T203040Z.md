@@ -46,3 +46,5 @@ The current prompt will produce wildly different JSON structures, risk assessmen
 
 ## Best engine for THIS prompt
 **xai** — Most likely to follow the JSON schema strictly without adding extraneous commentary or markdown formatting. Deepseek and Groq tend to be more verbose.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

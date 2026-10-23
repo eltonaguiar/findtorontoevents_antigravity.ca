@@ -45,3 +45,5 @@
 - New daily-bar COT / funding / PEAD / on-chain count families (killed)
 - Generic “use ML/meta-labeling” without table + test
 - Invented GitHub workflow filenames
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

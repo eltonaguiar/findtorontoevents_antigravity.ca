@@ -47,3 +47,5 @@ This made multi-agent communication hard to standardize across Cursor, Claude pe
   - schema rejection on invalid payload,
   - store-and-forward queue + ACK completion,
   - duplicate suppression by `message_id`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

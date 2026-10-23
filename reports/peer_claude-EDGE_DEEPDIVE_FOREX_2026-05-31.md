@@ -139,3 +139,5 @@ Do NOT size up any existing FOREX strategy until step 3 lands. Every current "ed
 - Grok (xAI) consult 2026-05-31 — academic anchors for sections 2A–2G
 - `MEMORY.md` — TIME_EXIT mislabel pattern (CRYPTO 2026-05-31), money-ready bottleneck = plumbing
 - Prior peer reports: `peer_claude-tick30-forex-real-wire-up_2026-05-31.md`, `peer_claude-verify-qwen-forex-pf-reversal_2026-05-31.md`, `peer_claude-phase10b-money-maker-FOREX_result_2026-05-31.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -30,3 +30,5 @@ The loop investigated FRM/CFA concepts + hunted new edge, and converged on a sin
 
 ## Honest bottom line
 Still **0/10 promotable** — and now we know precisely why: it's not idea scarcity or insufficient rigor (both are well-covered), it's that **we can only honestly resolve ~4% of our trades for lack of price data.** Every high-value next step is operator-gated. Coverage first; everything else is downstream.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

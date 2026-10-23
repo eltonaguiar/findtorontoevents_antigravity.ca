@@ -142,3 +142,5 @@ These revisions SUPERSEDE the conflicting parts above. Full debate: `reports/bug
 un-timestamped defensive-keep) + 7 xfail (offset-entry, partial-API, entry==bar, stale-window, pre-entry,
 ambiguous-via-dict-flag, bad-geometry). Remaining harness TODO for the fix PR: a DB-upsert-mapping test
 (BAD_GEOMETRY not silently written as EXPIRED — needs the caller/DB path), and flip all xfail→strict.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

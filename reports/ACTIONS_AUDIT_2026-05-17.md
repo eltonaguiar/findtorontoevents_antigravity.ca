@@ -53,3 +53,5 @@ Corrected against the committed schema doc
 - `actions/checkout@v4` + `setup-python@v5` on several workflows emit the Node 20
   deprecation warning (forced to Node 24 on 2026-06-02). Bulk bump to `@v6`
   recommended before that date.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

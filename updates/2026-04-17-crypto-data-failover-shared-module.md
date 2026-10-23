@@ -191,3 +191,5 @@ Reviewed by an independent AI subagent:
 - [x] 27 unit tests passing
 - [x] Peer AI review completed
 - [x] Minor padding fix applied post-review
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

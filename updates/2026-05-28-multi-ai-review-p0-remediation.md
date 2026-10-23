@@ -92,3 +92,5 @@ The data issues were real and the intent was correct, but:
 - No prevention measures were added
 
 **The data is likely cleaner than before**, but the process gap needs closing before this is considered a production-quality remediation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

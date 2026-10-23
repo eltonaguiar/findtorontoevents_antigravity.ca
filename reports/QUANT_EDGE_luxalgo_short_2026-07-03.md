@@ -28,3 +28,5 @@
 
 ## Next gate
 At the current emission rate, forward n should reach 80 in ~2–3 weeks (~mid/late-July). When the tracker flips to `PROMOTABLE_PROBATION`, re-falsify (fresh symbol-bootstrap + a swarm adversarial pass), then a small **paper** pilot — never size on this in-sample/forward-partial state. Suggested wiring: add the tracker to the hourly audit-dashboard workflow next to `crypto_rsi5070_forward_tracker.py`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

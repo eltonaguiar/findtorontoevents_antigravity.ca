@@ -39,3 +39,5 @@ Runtime checks performed:
 ## Notes
 - On this machine during verification, Ollama was live on :11434 and vLLM ports :8000/:8001 were not listening.
 - If your vLLM model IDs differ, adjust the local-vllm model strings to match each vLLM server's /v1/models output.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -17,3 +17,5 @@ The synthesis leans too hard on idiosyncratic ad-hoc constructs — "dragger zer
 ---
 
 Word count: ~250.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

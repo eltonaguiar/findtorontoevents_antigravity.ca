@@ -140,3 +140,5 @@ Log: `reports/_cloud5_rounds_log.txt`
 5. Operator: resolver GHA backfill (desktop MySQL blocked)
 
 **Do not:** promote registry PF to live; re-run killed families; trust Mercury “money-ready Y” without harness.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

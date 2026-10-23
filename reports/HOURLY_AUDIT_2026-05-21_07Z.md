@@ -116,3 +116,5 @@ Borderline (WR=29.4%, just above 30% watch threshold). Qualifies as Axis-1 candi
 ---
 
 Refs: issues #685, #686, #693 | PRs merged: #1281
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

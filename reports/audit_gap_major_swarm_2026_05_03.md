@@ -117,3 +117,5 @@ Action: add a small reproduction script or report section that ties those values
 - `swarm_runs/audit_gap_round2_forex_2026_05_03/`
 - `swarm_runs/audit_gap_round2_resolver_2026_05_03/`
 - `swarm_runs/audit_gap_round2_cross_asset_2026_05_03/`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

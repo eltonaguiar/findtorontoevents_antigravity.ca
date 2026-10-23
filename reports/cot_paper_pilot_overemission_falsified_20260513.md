@@ -85,3 +85,5 @@ Real-money-ready gate analysis must now update:
 - `alpha_engine/cot_positioning.py` — strategy code (lag patch applied; dedup patch needed)
 
 NFA. No production change. Strategy reclassification + dedup patch are follow-up work.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

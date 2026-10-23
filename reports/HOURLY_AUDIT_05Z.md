@@ -181,3 +181,5 @@ Ran: `python tools/mutation_analysis.py --json` (05:30Z, same data as 04Z run)
 ---
 
 *Reproducer: `python3 -c "import json; d=json.load(open('audit_dashboard/data/dashboard_data.json')); [print(k, d['performance']['asset_class_health'][k]) for k in sorted(d['performance']['asset_class_health'])]"`*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

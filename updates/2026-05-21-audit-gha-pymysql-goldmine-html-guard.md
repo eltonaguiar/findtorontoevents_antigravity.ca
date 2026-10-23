@@ -21,3 +21,5 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/audit-dashboard.
 ```
 
 Prior `UnboundLocalError` fix remains on main: `bd2014c20be`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

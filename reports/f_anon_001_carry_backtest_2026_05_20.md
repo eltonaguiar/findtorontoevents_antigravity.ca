@@ -167,3 +167,5 @@ The 3/3 AI consensus (Pollinations + Perplexity + eye2.ai, 2026-05-19) predicted
 
 *Backtest executed: 2026-05-20 | Script: `tools/f_anon_001_carry_backtest.py` | Raw output: `reports/f_anon_001_carry_backtest_raw.json`*  
 *Pre-registered: M-107 gate — F-ANON-001 registered before any data fetch*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

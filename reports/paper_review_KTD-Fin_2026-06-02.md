@@ -46,3 +46,5 @@ Strong, directly-applicable paper. Single most useful import: **attribution (alp
 leakage-control as a promotion prerequisite for any LLM-generated sleeve.** It says, rigorously, what
 our money_ready=[] data already hints: the tournament edge is probably not transferable skill yet.
 Adds nothing that contradicts the shipped gate-stack; it adds a missing dimension (attribution) on top.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

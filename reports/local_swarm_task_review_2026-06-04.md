@@ -42,3 +42,5 @@ Tie between **ENHANCEMENT #118** (central CRYPTO LONG flip — risky) and **INCI
 ## Next-best autonomous follow-up
 
 Reconcile `nav_surface_edge_matrix.json` vs `smart_picks_db_stats` programmatically — flag mismatches in the builder rather than relying on the static DISPUTED banner. vllm-large flagged this as its top priority.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

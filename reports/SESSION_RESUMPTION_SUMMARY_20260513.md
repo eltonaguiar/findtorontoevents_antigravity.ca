@@ -112,3 +112,5 @@ Shipped 4 production exec-gate filters + 6 academic backtests + 1 TIER-1 breakth
 - `DAILY_IDEAS.MD` (14 user brainstorm threads A-L)
 
 NFA. No real-money trades placed. Live `/audit` impact pending next dashboard refresh + cron cycle.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

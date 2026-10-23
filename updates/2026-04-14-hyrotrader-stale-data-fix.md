@@ -125,3 +125,5 @@ All 6 refreshed hyro JSON files were successfully deployed to the live site via 
 ## Previously Completed (Same Session)
 
 - **Image enrichment overhaul** — 97.4% → 99.8% coverage via domain-specific extractors for toronto.ca (Open Data API), meetup.com (`__NEXT_DATA__` Apollo cache), notion.so (S3/CDN scanning). Fixed `enrich_images.py` (session bug, `--all-dates`, urljoin import) and `run_scrapers.py` (refactored to import from enrich_images.py, fixed merge bug).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

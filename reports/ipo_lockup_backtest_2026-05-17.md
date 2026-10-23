@@ -112,3 +112,5 @@ git checkout feat/ipo-lockup-pipeline-sidecar
 # ipo_calendar.json + price_cache/ are committed alongside this report
 python -m alpha_engine.ipo_lockup_strategy --backtest
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

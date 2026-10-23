@@ -74,3 +74,4 @@ Computed from `audit_dashboard/data/dashboard_data.json` (`picks.recent_closed`)
 6. Orphan wiring PRs: `hurst_regime`, `hyrotrader_risk_sizer`.
 7. N/PF/WR freshness automation in updates pipeline.
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

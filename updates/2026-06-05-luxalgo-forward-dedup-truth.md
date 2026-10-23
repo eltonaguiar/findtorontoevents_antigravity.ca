@@ -27,3 +27,5 @@ Tier-2 on last 100 closes: WR 25%, PF 0.57 — **hard fail**.
 python3 verified_strategies/paper_pilot/luxalgo_confluence_forward_pilot.py --one-shot
 python3 tools/phase3_promotion_readiness.py
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

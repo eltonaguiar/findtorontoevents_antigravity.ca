@@ -100,3 +100,5 @@ branch.
 
 Branch: `fix/resolver-pnl-zero-on-stale-2026-05-31` (off `origin/main`).
 No auto-merge.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

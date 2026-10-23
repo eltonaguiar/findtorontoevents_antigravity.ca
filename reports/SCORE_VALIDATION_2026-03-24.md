@@ -837,3 +837,5 @@ From an audited quant crypto/forex perspective:
 So the right institutional conclusion is:
 
 The current report is a strong internal diagnostic, but not yet an audit-grade proof. It correctly identifies where the system is likely failing, but the next step must be frozen-snapshot replay, provenance tagging, consistent execution-cost treatment, and separate crypto/forex validation before policy changes are treated as validated.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -214,3 +214,5 @@ audit_dashboard/dashboard_enhancements.js
 
 **Estimated effort:** 3-4 hours (router + dashboard + tests).
 **Owner:** Next builder (handoff from caveman investigation).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

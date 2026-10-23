@@ -76,3 +76,5 @@ This is NOT a pass setup but it is NOT a portfolio either. Prior bearish thesis 
 - Both stop: –$229 (account –0.23%, well inside risk budget)
 
 Beats prior +0.28% in base case; floor is survivable. Concentrated but not reckless on decaying-edge regime.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

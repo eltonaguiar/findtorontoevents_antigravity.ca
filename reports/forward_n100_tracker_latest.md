@@ -23,3 +23,5 @@
 **Closest:** `luxalgo_confluence_pilot` at n=827 (0 to go)
 
 luxalgo n=827 is deduped DB history, not isolated forward pilot clock — use promotion_status SHADOW until day_count>=30 and rolling metrics pass. ADA DB n may lag bootstrap (36) if strategy rows pre-filter; trust bootstrap + virtual log.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

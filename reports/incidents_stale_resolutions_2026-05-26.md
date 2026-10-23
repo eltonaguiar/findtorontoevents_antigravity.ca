@@ -75,3 +75,5 @@ This is the same fabrication pattern flagged in `CLAUDE.md`:
 ## Root-cause for the stale-incidents pattern
 
 The seeder `tools/audit_pick_funnel/cli_track.py` runs nightly and re-emits incidents from peer-AI audit transcripts. It has no de-duplication against historical resolution evidence. Recommended enhancement (not in this PR): add a `--check-resolution` flag that scans `reports/incidents_*resolved*.md` for explicit resolution receipts and suppresses re-emission for matching titles.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

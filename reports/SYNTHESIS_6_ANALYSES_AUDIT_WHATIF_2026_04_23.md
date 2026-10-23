@@ -251,3 +251,5 @@ Copilot's analysis crystallizes the pre-conditions for anything shipping to `hc_
 5. **Layer 3 portfolio rules** (Grok + Big Pickle TOD + regime blocklist).
 
 (1) is now the single highest-leverage change across all 8 analyses.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

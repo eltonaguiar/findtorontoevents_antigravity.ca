@@ -328,3 +328,5 @@ It should be judged by whether `/audit` finally becomes capable of answering:
 
 If that contract is fixed, the next wave of baby-strategy and DNA-mutation work
 will be grounded in evidence instead of guesswork.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

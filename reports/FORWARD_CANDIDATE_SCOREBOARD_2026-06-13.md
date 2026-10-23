@@ -17,3 +17,5 @@ Method: per-strategy honest intrabar ledger (at_signal_outcomes TP/SL) → clust
 
 ## Implication for "getting to winners"
 We do not have a sizable winner today, and the honest pipeline is THIN: one real sub-bar edge (luxalgo SHORT), one tiny one (forex_rsi2, DNR), and the rest are point-estimate mirages the CI-LB rejects. The path is unchanged and now precise: **grow luxalgo SHORT's forward n to the bar** (weeks, fed by the LONG-block) and let the pre-registered gates (pead, H-114, rsi5070) add candidates. Promotion is CI-LB-gated, never headline-PF.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

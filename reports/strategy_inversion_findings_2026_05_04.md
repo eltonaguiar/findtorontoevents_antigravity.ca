@@ -124,3 +124,5 @@ Wire-up site: pick-generator path (probably `alpha_engine/scanner.py` or per-str
   - `reports/unknown_asset_class_deep_investigation_2026_05_04.md` — original discovery
   - `reports/asset_class_tagger_investigation_2026_05_04.md` — root-cause for visibility
   - This file — mutation paths for the disasters + jackknife for the elite
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

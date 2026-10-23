@@ -95,3 +95,5 @@ confirms the real hot/cold map.
 Backtest output cached at `audit_dashboard/data/btc_utc_hour_backtest.json`.
 Hindsight only — no real-money sizing. Replace with DB-sourced data when
 A1 cron unblocks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

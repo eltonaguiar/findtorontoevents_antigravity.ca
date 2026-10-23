@@ -173,3 +173,5 @@ Per the attachment files:
 ---
 
 *This feedback is based on attachment files from `C:\Users\zerou\Downloads\Kimi_Agent_Asset Performance PR Review (2)\` including config, evidence reports, goal assessment, audit report, integration plan, PR action plan, and individual PR reviews.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

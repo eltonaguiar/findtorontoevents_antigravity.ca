@@ -50,3 +50,5 @@ All other pairs fail n<20 or WR<55% thresholds.
 |-------|-----------------|
 | PENNY (7d) | May 31 - Jun 1 |
 | FUTURES (14d) | Jun 7 - Jun 8 |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

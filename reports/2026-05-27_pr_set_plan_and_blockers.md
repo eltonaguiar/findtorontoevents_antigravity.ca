@@ -109,3 +109,5 @@ These I COULD code-fix but the investigation work isn't done:
 3. **If MiMo did NOT build them**: build them per the scope above
 4. **Then tackle "investigation needed" items 16-19** — those are CI loader path bugs that need a one-shot diagnostic workflow_dispatch + log read
 5. **User actions** (1-15) are user-supervised; not code work
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

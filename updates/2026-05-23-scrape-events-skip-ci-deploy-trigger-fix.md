@@ -24,3 +24,5 @@ Updated scraper commit message to remove the CI-suppression token:
 - Confirmed stale symptom before fix: live `/metadata.json` lagged while `/last_update.json` was current.
 - Confirmed scraper writes events/metadata and pushes to `main`.
 - This fix restores downstream workflow eligibility on those push commits.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

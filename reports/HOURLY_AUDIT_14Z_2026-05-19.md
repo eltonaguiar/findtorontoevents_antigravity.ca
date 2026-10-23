@@ -135,3 +135,5 @@ Key: FOREX 7d turnaround (+1.149 PF) and 30d recovery (+1.555) since PR #687 (JP
 | Next action | 15Z: re-check FINDING-17 n count; re-check FINDING-18 trend; validate rapid_fire/UUSDT + cta_replicator/NG=F against raw data |
 
 **FOREX recovery post-PR-#687 is the headline positive:** 7d PF 0.14→1.289 (+1.149). System is net-improving. CRYPTO 24h PF 2.382 strong. Main drag: EQUITY 7d (0.238 on n=15 — post-goldmine_6x kill, small sample normalizing). COMMODITY 7d under pressure from cftc_cot 7d deterioration (FINDING-17).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -83,3 +83,5 @@ SHOW INDEX FROM lm_sports_daily_picks WHERE Key_name = 'uniq_pick';
 SELECT COUNT(*) FROM lm_sports_value_bets WHERE generated_at < NOW() - INTERVAL 30 DAY;
 -- expect: 0
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

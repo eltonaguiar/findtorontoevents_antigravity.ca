@@ -124,3 +124,5 @@ PRs D-G are batched as a follow-up sprint (governance hygiene; not credibility-c
 - Did not run any generator or git mutating command per constraints.
 - Gaps 5 and 8 marked NEEDS-MORE-INFO require a re-cut over post-resolver-v2 closed picks — recommend a separate read-only analysis spike before opening PRs.
 - Gap 12 is DISAGREE — `audit_dashboard/data/hyrotrader_journal.json` is present in the tree.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

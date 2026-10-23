@@ -34,3 +34,5 @@ All crypto rows that pass are clones with identical `score`, `n`, and `fwd_wr` v
 - [ ] Commit the feedback markdown and any related documentation changes to the `main` branch.
 
 *Prepared by Roo, senior software engineer.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

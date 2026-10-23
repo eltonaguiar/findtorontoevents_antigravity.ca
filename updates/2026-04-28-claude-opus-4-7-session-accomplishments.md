@@ -125,3 +125,5 @@ User explicitly asked: *"Document to your agent files. so our main goals #1 ... 
 ## TL;DR
 
 This session consolidated 5 independent peer recomputes into a single canonical view, shipped 4 immediate fixes, surfaced two correctly-scoped deep-dive recovery plans (COMMODITY rescue + CRYPTO MDD reduction), put the per-class performance summary live on the production updates page, added a MAJOR GOAL banner to the audit dashboard, and documented all three goals in CLAUDE.md. The two largest unfinished items — the resolver fix and the vol-targeting layer — are the highest-ROI work for the next session, with concrete designs already in `reports/action_B_*` and `reports/deep_dive_crypto_*`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

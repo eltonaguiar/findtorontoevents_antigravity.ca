@@ -85,3 +85,5 @@ Five strategies pass after-cost + Wilson lb ≥ 50% on current closed picks:
 | `reports/forward_edge_audit_2026-05-02.md` | B16 human-readable artifact |
 | `reports/feedback/B17-claude-sonnet-self-review-2026-05-02.md` | §5 AI review |
 | `reports/feedback/B17-codebuff-proxy-self-review-2026-05-02.md` | §5 AI review |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

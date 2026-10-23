@@ -53,3 +53,5 @@ All misclassified entries in `active_picks.json`, tournament submissions, and pi
 - All 7 classification tests pass (`python3 -m pytest tools/test_xli_classification.py -v`)
 - XLI now correctly shows `"asset_class": "ETF"` in all data files
 - The dedup script reduces the tournament picks file from 26K+ lines (with 3x duplicates) to a deduplicated version
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -80,3 +80,5 @@ For each phase 1/2/3 above, return:
 **Bonus self-assessment:** what kind of reasoning style is YOUR model best at? (1-2 sentences, candid; we are comparing across families.)
 
 Keep total response under 900 words. Cite by commit SHA or item ID when relevant.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

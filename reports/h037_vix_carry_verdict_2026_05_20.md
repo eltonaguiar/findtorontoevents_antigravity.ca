@@ -97,3 +97,5 @@ The hypothesis shows a real statistical signal but with fragile edge characteris
 - `reports/hypothesis_registry.json` (H-037 entry, result populated 2026-05-19)
 - Acceptance criteria: H-037 `acceptance_criteria` block in registry
 - This assessment: 2026-05-20
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

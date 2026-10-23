@@ -190,3 +190,5 @@ python tools/cot_crypto_overlay.py --allow-live --z-lookback 26
 ```
 
 **NFA** — research harness; public CFTC positioning data; no real-money sizing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

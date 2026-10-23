@@ -24,3 +24,5 @@ Forensic evidence is about data quality (resolver artifacts), not signal proven-
 4. Stamp the updated counts on `audit_dashboard/data/money_ready_verdict.json`.
 
 Expected impact: COMMODITY n drops by ~25 (cta_golden_cross_200 rows); CRYPTO n drops by ~89 (prediction_market_consensus rows). Per-class PFs will move toward the policy-clean baseline reported in CLAUDE.md goal #1 (CRYPTO PF 1.14 / COMMODITY PF 0.31 sub-T2/INSUFF-N).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

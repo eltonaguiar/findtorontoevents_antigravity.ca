@@ -78,3 +78,5 @@ Passed. In this environment, no FTP `.env` source was loaded (no usable FTP cred
 
 - The existing `tools/swarm_v2` GitHub Actions orchestrator currently uses mocked run data. This script uses real `gh` data for runs/jobs/logs and only uses `swarm_v2` for optional AI curation.
 - Signal extraction rules were iterated to suppress common false positives (command echo noise, ANSI command traces, and benign test pass lines).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

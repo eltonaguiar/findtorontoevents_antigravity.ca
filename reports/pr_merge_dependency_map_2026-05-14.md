@@ -113,3 +113,5 @@ From `session-ses_1db6.md`: `tools/verify_multi_asset_cot_db.py` **FAILED** due 
 | 📋 Baseline needed first | 1 | #996 |
 | 🚫 P0 Blocker (credentials) | 1 | COT DB verification |
 | 📝 Local branches (Grok session) | 4 | drift-dsr, cot-lag, bond-fred, etf-expand |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

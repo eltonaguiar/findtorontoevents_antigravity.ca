@@ -22,3 +22,5 @@ Cross-PC collaboration needs both:
 - durable ownership/state memory.
 
 This update makes the main quick-start explicit for both.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

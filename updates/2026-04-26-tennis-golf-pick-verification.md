@@ -98,3 +98,5 @@ python tools/verify_manual_sports_picks.py
 ```
 
 Read-only. Hits the public Polymarket Gamma API only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

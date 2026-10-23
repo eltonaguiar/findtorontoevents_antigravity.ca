@@ -65,3 +65,5 @@ Toronto Public Library 6,396 · NOW Toronto 2,239 · Eventbrite 679 · Meetup 52
 8. **TodoCanada** already integrated (438). **Harbourfront** already integrated (16) but under-scraped — re-run.
 
 Skip: Facebook Events (TOS), private Discord/IG event pages (ethical/legal).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

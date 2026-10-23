@@ -228,3 +228,5 @@ All COMMODITY strategies sub-floor in 7d window:
 5. Monitor COMMODITY futures_momentum for n≥20 threshold
 6. Monitor EQUITY stocks_rsi2_pullback WR — if sustained <35% on n≥20, initiate mutation analysis
 7. Post FINDING-22 evidence to issue #686 if no prior session has done so at 08Z
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

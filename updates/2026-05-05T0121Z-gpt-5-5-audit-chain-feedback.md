@@ -83,3 +83,5 @@ Acceptance:
 - CRYPTO no longer appears as class-level Tier-2 sizeable while `PF=1.26` and `WR=44.8%`.
 - `kimi_signal_tracking` has a documented symbol/direction rehab path.
 - No strategy is hard-killed without a three-axis mutation result.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

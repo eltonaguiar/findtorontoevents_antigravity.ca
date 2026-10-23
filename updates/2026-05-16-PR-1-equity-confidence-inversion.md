@@ -83,3 +83,5 @@ if _asset_class == "EQUITY" and os.environ.get("EQUITY_CONFIDENCE_INVERSION_PENA
 - [x] Follows existing penalty pattern (FOREX confidence guard)
 - [x] Shadow test plan defined
 - [x] Documented in `updates/2026-05-16-PR-1-equity-confidence-inversion.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

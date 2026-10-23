@@ -182,3 +182,5 @@ Mapping:
 - Prior EAGLE work this session: `reports/EAGLE_2026-05-27_0212_EST_Grok43_xAI_full_audit_90day_plans_gates_strategies_review.md`, `reports/EAGLE_2026-05-27_1715_EST_Grok43_xAI_strategy_edge_per_class.md`.
 
 This document is the deliverable. No code edits this turn.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

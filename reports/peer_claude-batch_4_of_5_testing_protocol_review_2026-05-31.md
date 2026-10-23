@@ -60,3 +60,5 @@ Anchor for conflict-check: `docs/PAPER_PILOT_HARNESS.md` (cursor statistical fra
 - conflicts: 2 hard (#1 n-floor 50 vs 500; #2 rehab n=10 vs graduation n=500), 0 silent disagreements on bootstrap/Bonferroni (under-specified, not contradicting)
 - archive candidates: 1 (`updates/2026-04-23-audit-whatif-hc-scoping-methodology.md`)
 - new docs proposed: 1 (`docs/TESTING_N_FLOORS_INDEX.md`)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

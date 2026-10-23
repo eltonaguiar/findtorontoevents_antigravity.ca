@@ -56,3 +56,5 @@ concentration cap + long-only illiquid names = -$11k on 116 trades.
   keep them in, do not water them down.
 - Standing rule confirmed: never size a class on per-pick AI conviction without
   the DSR/PBO/SPA verdict + expectancy + tail-risk gates clearing first.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

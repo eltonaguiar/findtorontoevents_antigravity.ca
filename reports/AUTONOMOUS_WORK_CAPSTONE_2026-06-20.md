@@ -22,3 +22,5 @@ After exhaustive autonomous investigation (FRM/CFA audit, cointegration/funding 
 
 ## Bottom line
 The program is **data-constrained, not analysis-constrained.** The honest, money-protecting state — 0/10, no promotable edge — is now established at depth and scale. No amount of further autonomous analysis changes it; the path forward is data infrastructure, which requires operator action. Tapering the loop to monitoring.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

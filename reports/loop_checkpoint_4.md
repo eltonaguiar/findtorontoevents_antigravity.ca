@@ -69,3 +69,5 @@ Top 3 actionable fixes (rank order):
 - Find the actual multi_asset_copytrader closer (probably a resolver or live-monitor module)
 - Validate penny-skyrocket-runner.yml YAML
 - Schedule next wakeup at T+20m
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

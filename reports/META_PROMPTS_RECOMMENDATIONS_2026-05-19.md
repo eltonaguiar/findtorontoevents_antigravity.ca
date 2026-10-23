@@ -53,3 +53,5 @@ python tools/build_top10_strategies_per_class.py
 python tools/strategy_harvest_round.py --phase cloud   # meta_debate
 python tools/strategy_harvest_round.py --phase local   # strategy_harvest
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

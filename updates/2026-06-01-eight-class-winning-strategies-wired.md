@@ -38,3 +38,5 @@ python3 tools/eight_class_winner_hunt.py --emit
 ## Production caveat (Goal #1)
 
 Backtest/WF tiers are **research/paper-pilot**. `/audit` resolved DB track record (`money_ready_verdict.json`) still requires forward n≥20 per class and full TESTING_PROTOCOL layers 3–7 before sizing up. Do not promote to PRODUCTION on historical PF alone.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

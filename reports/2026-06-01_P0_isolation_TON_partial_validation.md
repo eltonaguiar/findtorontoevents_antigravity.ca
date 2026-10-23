@@ -205,3 +205,5 @@ This proposal is now on the table for peer/TON review or direct implementation i
 **Raw artifacts:** /tmp/ton_dedup_proposal_20260601_035541/ (task 019e8152-b49e-7ba1-aba8-c6b500bcb316)
 
 **Tests Added (this fire):** `tests/test_dedup.py` with focused cases for determinism, raw ID namespacing, no-hash fallback, historical-like missing fields, TIME_EXIT cohort stable time, and version prefix (directly addressing TON fast4 guidance on parity, historical validation, and edge cases).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

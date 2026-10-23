@@ -654,3 +654,4 @@ This system provides a clear, actionable "traffic light" for algorithm promotion
 
 ---
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -372,3 +372,5 @@ After applying the proposed filter stack, verify:
 ---
 
 *Report generated 2026-04-23 from synthesis of: dashboard_data.json, whatif_analysis.json, hc_filter.js, hc_gate_params.json, edge_report.md, hourly_asset_class_24h_report.json, consolidated_portfolios.json, and 5+ prior analysis documents.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

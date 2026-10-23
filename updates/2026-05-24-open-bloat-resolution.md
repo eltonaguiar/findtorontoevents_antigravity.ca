@@ -136,3 +136,5 @@ Given 29M OPEN picks, the resolver should be run in stages:
 - The existing `mysql_stale_picks_resolver.py` is NOT replaced — it serves a different purpose (WIN/LOSS resolution based on historical prices). This new script is specifically for the TIME_EXIT bloat cleanup.
 - After the initial purge, the `mysql-stale-picks-resolver.yml` workflow should be updated to use `--execute` mode (instead of default `--dry-run`) to prevent future accumulation.
 - The `open_bloat` check in `db_health.json` should go from RED to GREEN after resolution completes.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

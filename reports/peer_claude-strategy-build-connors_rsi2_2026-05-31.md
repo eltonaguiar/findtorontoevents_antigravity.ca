@@ -78,3 +78,5 @@ WR 65–75 %, PF 1.5–2.0, n ≥ 500 over 1–2 years on a 500-name universe.
 
 ## One-line summary
 `CONNORS_RSI2:lines=299:tests=12:harness=true:ai_consult=grok`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

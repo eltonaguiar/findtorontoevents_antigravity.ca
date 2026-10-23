@@ -70,3 +70,5 @@ Inputs: `reports/hermes_code_diff_review_2026_05_04.md`, `reports/hermes_vs_mine
 - `fix/sports-stale-data-hardening-2026-05-04` → P0
 
 Hermes's 3 `pr1/pr2/pr3` branches: 1 dropped (duplicate), 1 dropped (CRLF), 1 misnamed (no Hermes content).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

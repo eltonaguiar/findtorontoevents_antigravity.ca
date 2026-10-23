@@ -51,3 +51,5 @@ python tools/idea_harvest_mega.py --tier local --no-pull
 | Balanced local consult | `qwen2.5-coder:7b` |
 | Deep structured harvest | `qwen2.5-coder:14b-instruct-q4_K_M` |
 | Verdict-grade | Grok API / `deepseek-chat` (not local 14B reasoning without tuning) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

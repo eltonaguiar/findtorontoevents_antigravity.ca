@@ -166,3 +166,5 @@ Of everything Mercury2 + Grok proposed, after subtracting what's already done:
 audit suite — the verdict is in (`EDGE_HUNT_EXHAUSTED_2026-05-18.md`). Items
 1–2 are worth doing this week (cheap, harden what exists); 3–4 are nice-to-have;
 5 waits on the operator's strategic fork.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

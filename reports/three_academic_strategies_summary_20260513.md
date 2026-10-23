@@ -80,3 +80,5 @@ Expected blend: PF ~2.1, Sharpe ~1.0-1.1, MDD ~12-15%. **TIER-2 confirmed; near-
 3 real backtests shipped from swarm output: Diwali GLD (TIER-3), 200MA+ADX (TIER-2), LowVol (TIER-2), Donchian (TIER-2). Total: 4 new backtests + 7 swarm rounds + 5 synthesis docs for $0.49 + ~3 hours work.
 
 NFA. No production change made this session.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

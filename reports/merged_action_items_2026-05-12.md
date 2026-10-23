@@ -123,3 +123,5 @@ Must ship as **one PR cluster** — fixing only one layer does nothing:
 - **Net-new ordered queue ready to claim:** P0-B (highest leverage — unblocks an entire class), P0-E (free edge — 41 dormant strategies), P0-F (highest-PnL-lift per hedge-fund swarm, but bootstrap-validate Grok's numbers first), P1-A through P2-E.
 
 The §8 addendum's "BOND FRED API timeout" claim is **wrong** and needs a follow-up correction commit after the cloud agent's working tree is clean. See [reports/bond_root_cause_2026-05-12.md](reports/bond_root_cause_2026-05-12.md) §3 for the falsification.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

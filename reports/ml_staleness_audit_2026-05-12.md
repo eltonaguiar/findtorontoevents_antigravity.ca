@@ -95,3 +95,5 @@ CRYPTO pick is sized real-money. The full ml_enhanced_* family quarantine
 under `audit_dashboard/money_ready_filter.js::SUPREME_EDGE_REAL` (4 strategies,
 3 with Agent E "placeholder-stat suspect" flag) remains the canonical
 real-money gate for ML picks.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -125,3 +125,5 @@ Cross-cut from Roocode §3.2: 15+ retrain mechanisms with no aggregation point. 
 - `updates/2026-04-21-hedge-fund-gap-fillers.md`
 - `updates/2026-04-22-deep-asset-class-edge-analysis.md` (cited by Copilot, Codex)
 - Memory: `feedback_noncrypto_resolver_live_close_bug.md`, `feedback_clone_hl_placeholder_stats.md`, `project_confidence_rho_matic_artifact.md`, `project_perf_audit_2026_04_21.md`, `feedback_phantom_halt_alert_bug.md`, `feedback_circuit_breaker_stale_state_leak.md`, `feedback_label_asset_class.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -135,3 +135,5 @@ The following `.md` files contain deep-dive findings and **proposed** (not yet i
 | `tools/hyro_pick_performance_validator.py` | Modified | Closed-picks fallback source, retry logic, normalization |
 | `alpha_engine/data/macro_factors_snapshot.json` | Updated | Populated with live v2 snapshot |
 | `alpha_engine/data/macro_circuit_breaker.json` | Created | Current breaker state (`active: false`) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

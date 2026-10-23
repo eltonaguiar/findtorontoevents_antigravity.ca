@@ -131,3 +131,5 @@ This diagnosis doc on main so all agents have shared ground truth. No code chang
 ## Recommended next commit
 
 Author the Priority 1 or Priority 4 fix as a separate small PR. Both are low-risk and address the placeholder-stat bypass directly. Priority 4 (hard-reject EXEMPT flag in the active gate) is probably the cleanest — 3 lines, purely restrictive, fully reversible.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

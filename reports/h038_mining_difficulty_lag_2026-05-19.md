@@ -38,3 +38,5 @@ BTC hash-rate vs the ~2-week difficulty-retarget lag. Difficulty re-targets ever
 ## VERDICT: **REJECTED**
 
 Clean kill. The mining-difficulty-lag signal does not separate winners from losers with a stable sign across enough 14-day windows (or fails the 30bps cost gate). Do NOT wire or size — wiring a non-admissible emitter pollutes /audit. Archive as a tested failure.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

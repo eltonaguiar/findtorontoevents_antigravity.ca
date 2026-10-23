@@ -173,3 +173,5 @@ python tools/verify_realized_30d.py
 ```
 
 Prints all three tables (all-time / raw 30d / CB-30d) with warnings and discrepancy explanation.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

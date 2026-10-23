@@ -314,3 +314,5 @@ says run a hard-gated 4-week probe expecting failure.** All three agree a full
 3-month build is negative-EV. The decision between "one cheap probe" and "stop
 now" is a risk-appetite call for the human — the swarm cannot make it, and
 should not pretend the numbers do.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

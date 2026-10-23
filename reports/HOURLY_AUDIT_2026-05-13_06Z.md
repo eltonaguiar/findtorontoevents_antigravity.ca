@@ -147,3 +147,5 @@ Below threshold (no action):
 4. **PR #954 (B9 shadow)**: No CI yet. Check next session.
 5. **COMMODITY**: 7d PF 44.07 on n=18 is spectacular but sample is thin. Do not size up until n≥50.
 6. **Issue #693**: Closed. EQUITY recovered fully per prediction in #693 — goldmine_6x kill was sufficient.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

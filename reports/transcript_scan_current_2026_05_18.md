@@ -3998,3 +3998,5 @@
 - [OPEN] Deploy per-asset research swarms
 - [OPEN] Build a profitability prompt
 - [OPEN] Run `/swarm-transcript-review` (alias of `/swarm-transcript-scan`) — user provided base directory, but execution not shown
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

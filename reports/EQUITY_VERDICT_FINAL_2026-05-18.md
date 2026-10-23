@@ -61,3 +61,5 @@ stops showing the inflated 53% and shows the verdict-grade 33%. That is a
 
 Until then: cite `pf_registry.json::by_asset_class` for any EQUITY claim, never
 the dashboard tiles.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -36,3 +36,5 @@ node tools/check_syntax.js audit_dashboard/picks-now.html
 
 - Tribunal apply: revert `audit_trail/data/emitter_audit.json` force_kill entries
 - Picks gate: unset scorer intrabar maps (empty JSON) — screener falls back to quant-only
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -126,3 +126,5 @@
 4. **Add `stocks_rsi2_pullback` to PROVEN_WINNERS** — already there with boost 10, WR 88.9%
 5. **Treat `ma_crossover_vix_regime_backtest.json` PF 15.55 as suspicious** — likely overfit or survivorship bias
 6. **Run forward-test validation on equity momentum + yield curve** — backtest PF 2.82 needs live confirmation
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

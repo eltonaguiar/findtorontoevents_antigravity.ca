@@ -14,3 +14,5 @@ Per-class action plan for PENNY (categories: `penny`, `pennystock`) on findtoron
 - `reports/peer_claude-phase10b-money-maker-penny_plan_2026-05-31.md` (this file)
 - `reports/peer_claude-phase10b-money-maker-penny_result_2026-05-31.md` (verdict + ranked actions)
 - Server-side docs PR if scope is docs-only.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

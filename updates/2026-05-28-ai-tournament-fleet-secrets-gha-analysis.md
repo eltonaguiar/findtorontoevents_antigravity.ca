@@ -188,3 +188,5 @@ curl -s 'https://findtorontoevents.ca/audit/data/ai_tournament_model_diagnostics
 ```
 
 Expect 15-18 models with picks, up from the current 3.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

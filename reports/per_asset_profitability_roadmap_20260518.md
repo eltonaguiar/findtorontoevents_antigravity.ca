@@ -216,3 +216,5 @@ Alternatively: investigate whether commodity futures with COT signals (CT=F, GC=
 | FUTURES | n=12 | No statistical basis |
 
 NFA — all numbers are research-only. Real-money sizing requires DSR>=0.95, PBO<0.10, n>=100 clean trades, and drift_alert=FALSE on the class.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -45,3 +45,5 @@ Similarly C2 (ml_score>=0.90) conflicts with `SMART_PICKS_MIN_ML_SCORE=0.0` ("ml
 - C6 (cta_commodity_momentum_term ban), C8 (mutual fund exclusion), C9 (penny spread), C14 (short ban), C15 (AAPL exception) are strategy/policy not /audit UI — out of this report's scope.
 
 Word count: ~1,180.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

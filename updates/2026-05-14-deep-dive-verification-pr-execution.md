@@ -66,3 +66,5 @@ Execute the deep-dive plan end-to-end:
 - `PER_ASSET_CLASS_SCORING_SHADOW=0` (live blend switch): defer until shadow IC target is satisfied.
 - `CONCENTRATION_CAP_ENABLED=1`: defer until post-dedup COMMODITY sample-size gate is met.
 - Any promotion while `drift_alert` remains true: defer until drift gate policy is explicitly enforced and observed stable.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

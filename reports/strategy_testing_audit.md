@@ -19,3 +19,5 @@ crypto_liquidation_flow_exhaustion_v1: BTC Sh=2.52, ETH Sh=3.70, SOL Sh=6.51
 6. vwap_deviation_reversion_sol_v1: 80% WR, p=0.0083
 7. copy_hl_whale_24.5M: 68.8% WR, p=0.016
 8. crypto_keltner_compression_v1: 75% WR, p=0.025
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

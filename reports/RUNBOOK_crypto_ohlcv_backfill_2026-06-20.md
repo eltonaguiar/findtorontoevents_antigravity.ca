@@ -33,3 +33,5 @@ Final table size: ~3M (top-80) to ~11M rows (all). Manageable for InnoDB; `uk_oh
 
 ## Recommendation
 **GREENLIGHT the bounded top-80 run (step 1-3) first.** It's idempotent + backed-up, ~30 min, and will immediately show whether the unlock materializes (CRYPTO clean n jumps after the resolver re-run). If it does, expand to all 447. This is the single highest-leverage action in the program — above any new strategy, gate, or FRM/CFA technique.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

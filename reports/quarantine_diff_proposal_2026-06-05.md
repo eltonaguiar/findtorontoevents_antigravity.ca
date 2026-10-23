@@ -118,3 +118,5 @@ No additions needed. The remaining `crypto_soc_*` baby_strat variants (a05/a06/a
 - **Grok's named targets are ALL already blocked or dormant.** The audit-pipeline alert `[SOURCE_SCORE_AUDIT] stale scores: ['forex_copy_trader', 'ml_crypto_predictor']` is the operational signal worth acting on.
 - **Real action items:** 4 source-level additions to `BLOCKED_SOURCE_SYSTEMS` + 1 score demotion. All four have 90d live-DB evidence of n≥30, 0% WR, negative avg PnL.
 - **Not recommended:** blanket adding the dormant Grok names — would add maintenance noise without changing emitted volume.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

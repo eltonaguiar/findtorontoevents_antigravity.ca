@@ -205,3 +205,5 @@ Cycle 17 tested **370 strategy-symbol combinations** across 37 symbols, 11 strat
 - Cycle 17 backtest output: `/tmp/cycle17_full_output.txt`
 - Cycle 17 results JSON: `/tmp/cycle17_results.json`
 - Previous cycles: `reports/CYCLE_15_MONTE_CARLO_VALIDATION_2026-05-29.md`, `reports/CYCLE_16_DEEP_MC_VALIDATION_2026-05-29.md`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

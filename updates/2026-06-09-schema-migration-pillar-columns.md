@@ -69,3 +69,5 @@ After this migration: **5 of 5 pillars addressable** in SQL — but only P4 will
 
 - Added: `tools/migrate_add_pillar_columns.py` (157 lines, idempotent, dry-run-by-default)
 - Added: `updates/2026-06-09-schema-migration-pillar-columns.md` (this file)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -48,3 +48,5 @@ No new Gate-4 +3% triggers. All existing winners already locked via prior SL tig
 2. Wed open: V4 LIMITs should fill (F/VZ/PFE/USB/UNM/KMI/CORN/DBA/SOFI/SLV-pending). Audit fills + re-check Gate 4 once positions are live.
 3. Continue +3% Gate-4 monitoring on theswarm ADA-S, BNB-L; zerounderscore ADA-S, AUDUSD (if it accelerates)
 4. ADA-S theswarm hitting +1.87% (close to 3%) — pre-emptively tighten SL to ADA breakeven (0.2782) once it crosses 2.5%
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

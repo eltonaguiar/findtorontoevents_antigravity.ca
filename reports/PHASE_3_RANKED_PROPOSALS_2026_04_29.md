@@ -197,3 +197,4 @@ The "C" verdict reflects: surgical kills did all eventually ship (positive), but
 - Dispatch summary: `reports/HFPA_phase3_ranked_proposals_panel_2026_04_29/_dispatch_summary.json` (7/7 valid JSON)
 - Inputs: `reports/DEFERRED_PHASE_3_RANKED_PROPOSAL_NOTE.md`, all merged + open PRs cataloged via `gh pr list`
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

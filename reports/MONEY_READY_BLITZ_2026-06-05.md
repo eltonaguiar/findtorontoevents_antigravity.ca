@@ -165,3 +165,4 @@ All generated 2026-06-05 13:26-13:27 UTC. **ALL LONG.**
 | 4 | **etf_dual_momentum** | ETF | 48 months | 70.8% | 3.42 | Live ledger contaminated | Paper now |
 | 5 | **stocks_ema_golden_cross** | EQUITY | 324 | 42% | 2.08 | 100% time-exits | Paper + filter |
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

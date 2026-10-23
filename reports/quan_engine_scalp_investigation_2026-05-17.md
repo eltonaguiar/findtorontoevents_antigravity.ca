@@ -168,3 +168,5 @@ This is **not required** — `quan_engine` the base strategy is already in `BLOC
 ---
 
 *Reproducer:* filter `alpha_engine/data/closed_picks.json` to `strategy == "quan_engine_scalp"`; group by `symbol`, `direction`; WR = pnl_pct>0 share, PF = gross-profit / gross-loss. `python tools/mutation_analysis.py --json` for the system-wide direction/symbol-variance cross-check.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

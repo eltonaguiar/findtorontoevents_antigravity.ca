@@ -45,3 +45,5 @@ python3 tools/audit_truth_scan.py --live
 # or local:
 python3 tools/audit_truth_scan.py --json audit_dashboard/data/dashboard_data.json
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

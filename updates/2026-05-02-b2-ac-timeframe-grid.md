@@ -45,3 +45,5 @@ Previous attempt: PR #584 was closed without merge on 2026-05-01 (loop escalatio
 ## Prerequisites for B3
 
 B3 (Freshness `empty_timeframe_lanes` extension) already shipped via PR #579. The B2 grid now provides the human-facing rendering that B3's alerts reference.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

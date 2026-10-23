@@ -271,3 +271,5 @@ Next steps:
 - Review by human operator
 - Commit to GitHub main
 - Begin Week 1 implementations
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -249,3 +249,5 @@ if asset_class == "ETF" and pick.get("vix_level", 999) >= 25:
 *Document: CORRECTED_GAMEPLAN_2026-05-18.md*
 *Generated: 2026-05-18T01:00:00Z*
 *Status: Peer-critiqued, second pass*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

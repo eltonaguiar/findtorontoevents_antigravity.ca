@@ -52,3 +52,5 @@ rubric+body sha256 = 6c02f1aed250bbda
 **RATCHET (standing disciplines reinforced):** (1) promotion gate = **net** (cost-adjusted) PF CI-LB > 1.15 @ n_eff≥80 on the **forward** window — gross/point-PF/WR-CI/sign-flip all overstated this cycle (refuted MiMo 0/7, split freebuff 1/4). (2) #134 A/B gating resolved (dual-write now runs on low-data hours); accrual input-starved by ~7 active picks. (3) 2 WON-only artifacts flagged for ban.
 
 **Honest verdict:** no hidden edge exists. The bottleneck is real and now precisely characterized — execution **cost** (low-amplitude edges), **decay** (commodity), and active-pick **volume** (A/B). Progress now = data hygiene + forward-checkpoint accrual, not new winners.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

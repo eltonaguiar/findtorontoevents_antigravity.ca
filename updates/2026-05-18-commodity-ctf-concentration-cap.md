@@ -83,3 +83,5 @@ Without diversification, the PBO (Portfolio Backtest Optimization) for COMMODITY
 2. Verify with `pick_traceback.py` that COMMODITY CT=F share drops to ≤40%
 3. Run PBO on diversified COMMODITY signals
 4. If PBO shows edge → advance COMMODITY to PAPER PILOT
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

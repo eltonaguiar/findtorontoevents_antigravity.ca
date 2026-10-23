@@ -33,3 +33,5 @@ None are production-ready.
 - The 32 strategy files are legitimate scaffolding for future testing
 - §15 dedup (565 simultaneous BTCUSDT LONG picks) must be fixed before honest paper-pilot
 - n≥500 gate is non-negotiable before any promotion
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -68,3 +68,5 @@ If `ml_crypto_pred` closes live somewhere other than `closed_picks.json`, find t
 - Doesn't propose system-wide kill — sub-strategies vary too much.
 
 NFA. Reversible (no production change made).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

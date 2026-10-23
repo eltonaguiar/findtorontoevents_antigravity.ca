@@ -105,3 +105,5 @@ Each of the 14 `*Proven` classes in `proven_winners.py`:
 
 ---
 Generated: 2026-06-01T00:12Z by Qwen Code on findtorontoevents desktop
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

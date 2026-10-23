@@ -108,3 +108,5 @@ When a breaker exits cooldown and the next attempt fails (half-open), `record_fa
 | 🟡 Test gaps | 5 | Should add, especially MACD strategy |
 | 🟢 Minor | 2 | Nice to have |
 | ✅ Correct | 4 commits | No action needed |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -159,3 +159,5 @@ The new aggregator works **complementarily**:
 ## 5. No Push to Main
 
 Per instructions, these changes have **not** been pushed to `main`. They are ready for review and local testing before merging.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

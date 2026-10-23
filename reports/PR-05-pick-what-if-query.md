@@ -249,3 +249,5 @@ PR-1 ──> PR-2 ──> PR-3 ──> PR-4 ──> PR-5 (this PR)
 | **Soft: All → PR-5** | PR-5 is a **read-only analytics feature** but depends on the filter reason taxonomy being stable. It should merge last to avoid needing updates when earlier PRs change filter reasons. |
 
 **Merge this PR fifth and last.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

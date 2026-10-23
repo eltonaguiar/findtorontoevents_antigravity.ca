@@ -85,3 +85,5 @@ Next productive action requires:
 - Fixing the forward-resolution pipeline (8,421 closed picks, but most have no resolved outcome)
 
 *No code changes to production. No "Money Ready" claims.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

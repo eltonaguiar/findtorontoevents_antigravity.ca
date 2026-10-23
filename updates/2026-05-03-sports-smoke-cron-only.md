@@ -58,3 +58,5 @@ live prod state.
   separately. The hourly cron will continue surfacing it.
 - If a future workflow needs to run these tests, set
   `LIVE_SMOKE: '1'` in its env block.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

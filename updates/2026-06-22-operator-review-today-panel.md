@@ -75,3 +75,5 @@ ENAUSDT SHORT sits on the `luxalgo_short` cell of `entry_conditions_forward.json
 - **Manual override:** Operator can edit `audit_dashboard/data/operator_review_today.json` directly for same-day edits; next daily cron overwrites.
 - **Audit trail:** Operator accept/reject decisions go to `audit_dashboard/data/operator_review_dismissed.json` (TODO: `tools/build_dismissed_audit.py` to write to that file on operator click events).
 - **Spec lineage:** Mirrors the `crypto_rsi5070_us_forward_status.json` shadow-sidecar pattern (audit_dashboard/data/crypto_rsi5070_us_forward_status.json) — that one tracks a single forward-tracking lead; this one tracks the operator's daily manual candidates.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

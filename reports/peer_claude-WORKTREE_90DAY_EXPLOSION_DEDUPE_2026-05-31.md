@@ -91,3 +91,5 @@ du -sh .claude/worktrees
 ## Append to wkab9g07u consolidation
 
 Mirror dropped to `/tmp/worktree_dedupe_for_consolidation.md` for the consolidate agent.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

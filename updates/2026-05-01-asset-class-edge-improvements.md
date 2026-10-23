@@ -147,3 +147,5 @@ Updated `_COPY_SOURCE_QUALITY` in `production_scanner.py` to match:
 | PROVEN tier WR | 26.7% | 55%+ (claude_gainer_st removed) |
 | Copy traders allowed | 1 (NMTD_25M) | ~5-8 (lowered thresholds) |
 | Near-miss pipeline | Tracked, not used | Auto-promoted with +15 score boost |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

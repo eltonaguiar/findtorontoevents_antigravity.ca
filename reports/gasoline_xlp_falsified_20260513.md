@@ -38,3 +38,5 @@ Hypothesis: markets pre-discount cross-asset economic mechanisms within hours. D
 Any "X leads Y by N days" swarm claim REQUIRES cross-correlation matrix backtest BEFORE accepting as actionable.
 
 NFA.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -84,3 +84,5 @@ So even if `circuit_breaker_state.json` IS stale (file content checked earlier â
 - `reports/loop_checkpoint_2.md` (this)
 - `tools/db_health_check.py` (Decimal*float fix)
 - `audit_dashboard/data/db_health.json` (will refresh on bg completion)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

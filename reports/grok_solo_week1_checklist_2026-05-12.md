@@ -35,3 +35,5 @@ Adapted for 1-person execution. Owner consolidation: you = all roles.
 - Master plan: `reports/quant_rescue_master_plan_2026-05-12.md`
 - Team-name variant (ignore names): the team-owner version Grok provided
   was consolidated to this solo version per user directive
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

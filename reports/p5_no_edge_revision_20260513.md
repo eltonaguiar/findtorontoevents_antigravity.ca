@@ -71,3 +71,5 @@ Decision deferred — this revision document captures the actionable finding (4 
 - `docs/SWARM_REVISED_METHODOLOGY_2026-05-13.md` — full design doc
 
 NFA. No production change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

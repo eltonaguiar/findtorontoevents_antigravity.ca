@@ -54,3 +54,5 @@ Peer `jdyl7t5f` (per peer summary 2026-05-12T03:31Z) is "Fixing /audit DB Health
 - Codex payload contract: `readiness.by_class.<CLASS>.capped_vs_raw_pnl_gap` (master plan P1 cluster #1)
 - Memory: `feedback_noncrypto_resolver_live_close_bug` — ~1700 pre-fix outliers
 - Swarm consensus (5-model local panel): APPROVE 3/1/0, risk avg 4.5/10
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -224,3 +224,5 @@ If approved, the natural next step is the Phase-1 PR described in §4.
 - [SaadAbdElGhaffar/tennis-analysis-system](https://github.com/SaadAbdElGhaffar/tennis-analysis-system) (alt CV reference)
 - [Polymarket CLOB Endpoints](https://docs.polymarket.com/quickstart/reference/endpoints)
 - [Polymarket py-clob-client](https://github.com/Polymarket/py-clob-client)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

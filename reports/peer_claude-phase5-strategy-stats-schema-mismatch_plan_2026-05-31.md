@@ -141,3 +141,5 @@ Until a true strategy identifier exists on `at_consensus_picks` (e.g. a `strateg
 - `reports/peer_claude-phase5-strategy-stats-schema-mismatch_plan_2026-05-31.md` (this file — new)
 
 No code change. No DB change. No workflow change.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

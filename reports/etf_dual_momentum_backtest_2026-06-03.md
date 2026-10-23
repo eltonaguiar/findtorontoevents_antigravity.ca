@@ -40,3 +40,5 @@ bars (no batch-stamp), real-market benchmark (not crowd-proxy), walk-forward (no
 
 ## Reproduce
 `python3 verified_strategies/etf_dual_momentum_backtest.py`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

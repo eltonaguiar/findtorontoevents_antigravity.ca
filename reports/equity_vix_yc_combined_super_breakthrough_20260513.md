@@ -101,3 +101,5 @@ Cumulative: 7 regime-overlay variants tested, 6 deliver edge (86%). Lead-lag-cor
 - `audit_dashboard/data/equity_momentum_vix_yc_combined_backtest.json`
 
 NFA. No production change yet. Wire-up plan deferred to next session.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

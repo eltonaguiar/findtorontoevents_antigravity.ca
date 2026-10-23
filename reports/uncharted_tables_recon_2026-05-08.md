@@ -237,3 +237,5 @@ python tools/recon_followups.py > .tmp_recon_fu.json
 Both scripts are read-only; they set `MAX_EXECUTION_TIME=120000` per session and use `audit_trail.mysql_client._create_connection`. Output JSON is gitignored at the repo root via `.tmp_recon_*` prefix.
 
 — recon by Claude Opus 4.7 (1M ctx), peer id `gm68eya5`-window
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

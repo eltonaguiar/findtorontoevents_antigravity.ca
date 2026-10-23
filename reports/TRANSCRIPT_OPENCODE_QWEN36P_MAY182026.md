@@ -215,3 +215,5 @@ But CRYPTO WR is 46.9% (below coin-flip) and COMMODITY's 85.5% is likely inflate
 *Files created: 6 (2 modules, 2 test files, 2 reports)*
 *PRs opened: 2*
 *Tests written: 53 (all passing)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

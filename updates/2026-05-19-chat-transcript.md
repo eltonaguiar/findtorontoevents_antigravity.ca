@@ -122,3 +122,5 @@ Created this transcript file in updates:
 - swarm_runs/_outputs/hf_sim_2026-05-19/llama3.2_3b.txt
 - swarm_runs/_outputs/hf_sim_2026-05-19/gpt-oss_120b-cloud.txt
 - swarm_runs/_outputs/hf_sim_2026-05-19/hf_phi3.5_mini_q4km_e_drive.txt
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

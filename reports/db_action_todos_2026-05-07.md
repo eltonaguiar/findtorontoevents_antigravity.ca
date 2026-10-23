@@ -76,3 +76,5 @@ Curated from `reports/db_master_synthesis_2026-05-07.md` after live forensic run
 - Weekly: NULL-ratio drift check for `confidence`, `raw_data`, `exit_reason` per asset_class.
 - Monthly: re-run Q14 cohort drift across all strategies (currently uncomputable).
 - After importer freeze investigation: confirm WON/LOST writes resume; alert if last_write age > 24h on any non-OPEN status.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -23,3 +23,5 @@
    **Pre-trade Test**: **Clean OOS Verification**. Performance must remain significant ($PF > 1.5, n > 50$) on data strictly generated after 2026-05-20 using the 3-day publication-lag guard.
 
 6. **Sharpest Experiment**: **Time-Partitioned Attribution**. Filter the 137 candidate trades to include only those with `entry_time` at least 4 days after the COT `as_of_date`. If $n$ drops by >70% or the $PF$ drops below 1.1, the edge is a ghost of the look-ahead bug. This is a zero-cost SQL/Python check that will likely invalidate the edge in seconds.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

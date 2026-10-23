@@ -36,3 +36,5 @@ Analyzed `universal_resolved_picks.json` (95k+ resolved trades), `strategy_perfo
 **PR Branch**: `asset-edge-mutations-2026-04-30` (9 new .py, backtests WR 62%).
 
 Ready for deploy/test.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

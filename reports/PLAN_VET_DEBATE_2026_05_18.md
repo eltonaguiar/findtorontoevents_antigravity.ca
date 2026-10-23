@@ -68,3 +68,5 @@ endorsed by all 3 reviewers. But it ships with **3 real gaps**: no cost model
 bet (A5). Amendments A1-A3 are P0 and should fold into
 `MASTER_ENHANCEMENT_PLAN_2026_05_18.md` before execution. Funding-arb is demoted
 from "the Phase-3 bet" to "one gated probe among several, behind a data check."
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

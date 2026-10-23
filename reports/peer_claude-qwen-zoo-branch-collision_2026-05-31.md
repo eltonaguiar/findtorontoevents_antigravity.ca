@@ -65,3 +65,5 @@ This is a large surface area. Merging it under the wrong attribution would obscu
 - [ ] Two-PR split recommended
 
 — peer_claude (gap-fix subagent, 2026-05-31)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

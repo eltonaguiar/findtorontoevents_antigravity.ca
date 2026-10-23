@@ -98,3 +98,5 @@
 7. PR-8 (FRED key)
 8. PR-9 (Stale incidents)
 9. PR-7 (MD dedup skill)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

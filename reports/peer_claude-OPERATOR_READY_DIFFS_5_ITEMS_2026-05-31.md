@@ -413,3 +413,5 @@ pytest alpha_engine/tests/test_conf_bucket_dampen.py audit_trail/tests/test_penn
 
 **Combined rollback:** `git revert <merge_commit_sha>` (or per-item revert if
 applied as 5 separate commits — recommended).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

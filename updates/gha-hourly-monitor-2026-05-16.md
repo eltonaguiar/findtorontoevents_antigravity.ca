@@ -97,3 +97,5 @@ _Verdict unchanged DEGRADED. No commit (Step 5: only commit on verdict change)._
 
 ---
 _Status changed from DEGRADED (06:00Z) → RED (07:00Z). Commit triggered._
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

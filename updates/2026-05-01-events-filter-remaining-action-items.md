@@ -224,3 +224,5 @@ and can be deleted.
 | "This Week" override breaks an existing user flow we don't know about | Keep React's native filter as the primary; only add overlap as a defensive narrowing. |
 | Chip CSS injection bumps hit area onto un-touch-target React buttons we don't own | Scoped to specific IDs first; `button.px-4.py-2.rounded-full` is broad — limit to `#events-grid` ancestor selector if regressions appear. |
 | 3 fixes in one PR makes review harder | Each is independent and small (~30 lines). Easier than 3 separate PRs given the page-boot interdependence. |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -204,3 +204,5 @@ A 4-AI external consult (Mercury 2 + Grok + ChatGPT + Gemini, 2026-05-24) and a 
 - **No real-money path in 90 days.** Plan stays maintenance-mode + research per May-15. The institutional-readiness work here is to make the dashboard *honest* about FX (Stage-1 not achievable in this window) rather than try to force it.
 - **Speculative split (D1):** exotic pairs (any non-major) get `speculative_flag=True`. Majors only for institutional consideration once Stage-1 is conceivable.
 - **Verdict (refreshed):** FOREX gets the honesty layer (A) + the macro-blackout filter (B2) + the data-feature expansion (F3), but Workstreams C/D/E are out-of-scope for FOREX in this 90-day window. Goal is "stop pretending FOREX is close to ready," not "get FOREX to Stage-1."
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

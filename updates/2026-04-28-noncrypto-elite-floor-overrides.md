@@ -35,3 +35,4 @@ Each workflow now:
   - `python -m pytest tests/test_noncrypto_floor_override_workflows.py tests/test_stamp_pick_quality_dsr_gate.py tests/test_asset_class_freshness_report.py tests/test_bond_credit_spread_strategy.py tests/test_vt_baby_strategies_pead.py -q`
   - Result: `11 passed`
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

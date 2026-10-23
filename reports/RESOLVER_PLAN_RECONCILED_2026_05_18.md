@@ -35,3 +35,5 @@ acting (if EQUITY resolves at 45%, `closed_at` is being written somewhere).
 5. FUTURES orphan-source backlog sweep once the writer is live.
 
 Steps 3-5 are gated on operator sign-off / live cycles. Steps 1-2 are autonomous.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

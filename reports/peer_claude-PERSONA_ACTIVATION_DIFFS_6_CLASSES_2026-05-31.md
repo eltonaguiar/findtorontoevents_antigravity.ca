@@ -428,3 +428,5 @@ n ≥ 100 forward-only closed shadow picks AND PF ≥ 1.5 AND `CT=F` concentrati
 
 ## Return
 `PERSONA_ACTIVATION_DIFFS: classes=6 steps_covered=33`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -919,3 +919,4 @@ This approach ensures a rigorous and quick evaluation process, providing a clear
 
 ---
 
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

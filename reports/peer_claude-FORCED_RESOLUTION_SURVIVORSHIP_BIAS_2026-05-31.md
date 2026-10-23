@@ -60,3 +60,5 @@ WHERE category='crypto'
 GROUP BY status;
 -- Returns: ACTIVE=4, LOST=2. Zero TP_HIT.
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

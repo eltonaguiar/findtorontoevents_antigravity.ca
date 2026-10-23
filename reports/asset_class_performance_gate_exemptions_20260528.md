@@ -243,3 +243,5 @@ for c,v in d.get('money_ready_verdicts',{}).items():
 **Recommended follow-up P0s (not yet coded):**
 - Automated test: frozenset must not contain sources named in falsification comments
 - Sync `money_ready_verdict.json` generation with dashboard hourly build
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

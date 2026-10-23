@@ -258,3 +258,5 @@
 - [OPEN] Continue working on next steps until all todos/action items are completed
 - [OPEN] Feed the chat transcript into the agent swarm for review of any further action items needed
 - [OPEN] Run `swarm-transcript-scan` skill steps (pick transcript, run scanner, report results)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

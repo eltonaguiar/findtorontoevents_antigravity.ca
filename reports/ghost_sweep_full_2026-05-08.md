@@ -149,3 +149,5 @@ Tables not eligible (row count < 100 AND not on explicit probe list): not enumer
 - "Constant pnl cohort" detection requires `pnl_pct` numeric column AND `entry_price` to be present; tables with text-only outcome columns are surfaced as `fixed_bracket` false-positives in raw output but are filtered out in the analysis above.
 - Sweep used `> 100` as the cohort size threshold per the user spec. Tightening to 50 would surface ~3 extra small cohorts in `at_consensus_picks` (already partially captured) and a few cohorts in `at_local_picks`. Not chased here.
 - Time budget per table held below 60 s; no timeouts triggered.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

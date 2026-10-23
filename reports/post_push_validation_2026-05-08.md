@@ -130,3 +130,5 @@ gh run list -R eltonaguiar/findtorontoevents_antigravity.ca --workflow audit-das
 git show origin/main:audit_dashboard/data/dashboard_data.json | python -c "import json,sys; d=json.load(sys.stdin); print(d['summary']['total_pnl_pct_compounded_ew'])"
 git show origin/main:audit_dashboard/data/db_health.json | python -m json.tool | head -10
 ```
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

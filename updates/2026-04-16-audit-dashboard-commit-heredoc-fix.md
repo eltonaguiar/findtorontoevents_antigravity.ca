@@ -37,3 +37,5 @@ Several audit pipeline steps use **`continue-on-error: true`**, including **non-
 
 1. Open the workflow run → **Build pipeline health report** log → `degraded_steps`.
 2. On the built site, inspect embedded payload or download `dashboard_data.json` and read `metadata` / freshness if exposed.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

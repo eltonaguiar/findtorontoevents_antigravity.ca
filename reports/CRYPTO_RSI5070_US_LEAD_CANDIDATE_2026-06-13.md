@@ -26,3 +26,5 @@
 
 ## Reproduce
 Import `tools/stamp_entry_conditions.py` (`fetch_cohort`/`fetch_bars`/`features`), filter `_cls=='CRYPTO' ∧ F3=='50-70' ∧ F5=='US'`, take `intrabar_pnl_pct`, cluster by (symbol, day), `tools/pf_ci_lower.py` with `net = pnl_pct − 0.16`. DB via `tools/db_env.get_stocks_creds()`.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

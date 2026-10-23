@@ -123,3 +123,5 @@ Grok's `updates/PHASE1_GROK_2026-06-09.MD` is a methodology document for a separ
 - Render the panel HTML and confirm the per-class drilldown appears.
 - Open PR (do NOT push per AGENTS.md) bundling: (1) patched `tools/db_health_check.py`, (2) `updates/PHASE1_GROK_2026-06-09.MD` (Grok's methodology, unchanged), (3) this synthesis `updates/2026-06-08-db-ghost-rows-and-freshness.md`, (4) the cross-review `.MD`s.
 - The user merges the PR; the fix ships.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

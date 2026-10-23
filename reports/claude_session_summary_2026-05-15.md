@@ -74,3 +74,5 @@ Root cause (swarm + peer consensus): **kill-threshold mis-calibration** — kill
 ## Scheduled
 
 - One-shot remote routine `trig_013X8NGfxRfY84WCjoqQbB4v` — UEPS emit verification, fires 2026-05-16 18:00 UTC.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

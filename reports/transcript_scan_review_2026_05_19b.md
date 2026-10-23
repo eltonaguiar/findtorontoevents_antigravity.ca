@@ -683,3 +683,5 @@
 - [OPEN] Dispatch resolver-step7-apply.yml workflow from Actions tab
 - [OPEN] Run steps 8-9 (re-derive verdicts, fork memo) after steps 5-7 complete
 - [OPEN] For remaining tasks: ask the swarm and proceed (user instructed to ask swarm for rest of tasks)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

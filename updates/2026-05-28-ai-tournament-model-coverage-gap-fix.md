@@ -197,3 +197,5 @@ This gives operators immediate visibility into coverage without digging through 
 | `tools/populate_picks.py` | Enhanced `write_submissions()` to always emit per-model envelopes; added `emit_model_attempt_log()` |
 | `.github/workflows/ai-tournament-pipeline.yml` | Added `submissions/` and `model_attempt_log.json` to git add; increased pipeline timeout to 30 min |
 | `updates/2026-05-28-ai-tournament-model-coverage-gap-fix.md` | This diagnostic document |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

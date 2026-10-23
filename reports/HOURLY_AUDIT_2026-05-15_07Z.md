@@ -154,3 +154,5 @@ Baseline per task brief (2026-05-02 snapshot + post-PR#687):
 - EQUITY recovery from goldmine_6x kill confirmed (+0.32 PF in 7d)
 - FOREX recovery from JPY-cross fix confirmed (+1.24 PF in 7d)
 - Primary blocker: 36 pre-existing test failures on main block all feature PRs; PR #1050 is the fix
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

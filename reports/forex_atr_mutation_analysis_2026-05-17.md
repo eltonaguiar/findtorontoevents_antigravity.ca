@@ -202,3 +202,5 @@ python tools/forex_atr_mutation_helper.py
 ```
 
 Helper script: `tools/forex_atr_mutation_helper.py` (this PR). `py_compile`-clean. Read-only — no production wiring, consistent with the Wire-Up Rule exemption for research/sidecar tooling.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

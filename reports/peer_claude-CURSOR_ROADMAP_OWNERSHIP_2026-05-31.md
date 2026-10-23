@@ -102,3 +102,5 @@ The framework adoption is multi-week work:
 - gap_items = 30+ concrete items across the 10 sections
 - per_class_actions = 8 (CRYPTO, FOREX, EQUITY, COMMODITY, BOND, ETF, FUTURES, PENNY/IPO/CHEAP)
 - top5_actions = shadow-pilot tracker, filter-click logger, backtest archive, EST timestamps everywhere, regime conditioning
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

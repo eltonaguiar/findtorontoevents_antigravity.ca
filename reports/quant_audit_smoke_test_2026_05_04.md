@@ -82,3 +82,5 @@ Recommended swarm composition for the deeper pass:
 - `coordinator-synthesizer` — merge with explicit confidence intervals on every reported metric
 
 🤖 Smoke test conducted by Claude Opus 4.7 (1M context); 2 of 3 engines independently flagged the same hallucination risk (Sharpe +3.527 unverified); live data verification confirmed the figure exists with wide fold-level dispersion warranting CI-based reporting.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

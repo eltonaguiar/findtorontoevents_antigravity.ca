@@ -51,3 +51,5 @@ were already fixed + verified green (`d6a2f31e7c`, `94726fbba4`); masking-lint g
   so the clamp + quarantine become belt-and-suspenders, not the only defense.
 - Remove the orphan `outcome_resolver.get_split_adjustment` dead code.
 - Recover the 709 NULL-pnl rows (PR #557 / backfill_resolved_pnl with the chk_pnl_sign_coherence guard).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

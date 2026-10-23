@@ -162,3 +162,5 @@ updates/2026-04-17-crypto-data-failover-shared-module.md       (module doc)
 ---
 
 **Overall verdict:** All reviewed changes are **approved for merge** after the minor padding fix (already applied). The failover module is the highest-leverage change — it directly restores crypto pick generation when Binance geo-blocks fire again.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

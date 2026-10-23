@@ -122,3 +122,5 @@ All seven recur on schedule — these aren't one-off flakes, they fail on every 
 | Swarm Promote ModuleNotFoundError | `gh run view 26554767449 --log-failed \| grep ModuleNotFoundError` |
 | Strategy Health Monitor Decimal bug | `gh run view 26556507316 --log-failed \| grep Decimal` |
 | Large-blob guard correctly firing | `gh run view 26556187372 --log-failed \| tail -20` |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

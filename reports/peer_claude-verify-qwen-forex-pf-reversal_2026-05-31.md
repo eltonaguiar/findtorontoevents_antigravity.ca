@@ -52,3 +52,5 @@ Qwen's specific numbers (2.02 / 0.108) appear fabricated or pulled from a stale/
 
 ## Return
 `FOREX_PF:dashboard=0.76(ach)/0.984(hf)/0.0349(money_ready):raw=3.62(all)/3.87(90d):n_raw=5976/5916:verdict=DOESNT_REPRODUCE`
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

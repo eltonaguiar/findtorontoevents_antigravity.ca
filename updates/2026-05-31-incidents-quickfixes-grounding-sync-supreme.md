@@ -59,3 +59,5 @@ Four fixes addressing open incidents from `findtorontoevents.ca/audit/incidents.
 | Enhancement | HIGH | MySQL sync workflow silent-fail removal | FIXED (critical path) |
 | P1 OVERALL | P1 | Cloudflare SKILL.md missing grounding | FIXED |
 | P0 OVERALL | P0 | Cherry-picked SUPREME EDGE stats | IMPROVED (prominent banner added) |
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

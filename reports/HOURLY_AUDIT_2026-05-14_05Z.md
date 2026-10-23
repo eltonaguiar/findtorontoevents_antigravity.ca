@@ -155,3 +155,5 @@ The mutation tool does not output aggregate PF per strategy; direction/symbol br
 3. **ig_contrarian_sentiment + myfxbook_retail_contrarian LONG blocks** — post evidence comment to issue #686, await 3+ AI consensus.
 4. **quan_engine_swing LONG direction** — mutation analysis in sandbox (n=104, WR=26%); if SHORT-only confirms edge, block LONG.
 5. **COMMODITY/ETF n→100** — both strong (PF 6+) but below charter floor; no kills needed, just volume growth.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

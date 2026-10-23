@@ -43,3 +43,5 @@ Banner now only fires for Tier 1 REDs → currently does NOT show.
 ## Verification
 - `python3 tools/db_health_check.py --check status_standardization --check pnl_integrity --check open_bloat --check won_pnl_contradiction` → all GREEN
 - `any_red_t1: false` in db_health.json output
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

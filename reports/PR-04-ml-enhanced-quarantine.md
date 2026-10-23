@@ -211,3 +211,5 @@ PR-1 ──> PR-2 ──> PR-3 ──> PR-4 (this PR) ──> PR-5
 | PR-1 (soft) | PR-1's COT fix calibrates the global risk model that sets `max_drawdown_pct` caps for CRYPTO whitelist variants. |
 
 **Merge this PR fourth, after PR-3 is live and post-cost baselines are stable.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

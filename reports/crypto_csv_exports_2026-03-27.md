@@ -86,3 +86,5 @@
   - explicit `htf_bias` and `htf_matches_direction`
   - deduped `agreement_count_unique_groups`
   - raw score plus final score plus multiplier/cap fields
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

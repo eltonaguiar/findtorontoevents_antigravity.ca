@@ -143,3 +143,5 @@ Selection rationale: All three are **5/5 universal AI consensus**, all three hav
 ---
 
 Generated 2026-05-31 by Claude Code (peer_claude subagent) — final synthesis of the expanded hunt.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

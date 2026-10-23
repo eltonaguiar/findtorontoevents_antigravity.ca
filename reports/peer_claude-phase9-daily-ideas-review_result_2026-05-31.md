@@ -83,3 +83,5 @@ Items already shipped today — **dropped from NOW**:
 Settle the incidents-batch dust (today's PRs #180–#188 + this branch's PR), confirm `/audit` panels reflect the retire + consolidation, then run `/money-maker-readyv2` as previously sequenced. After that, the natural next-session candidate set is ranks #1, #7, #5 — small blast radius, no operator unblock required, three independent surfaces (infra + UI + new edge research).
 
 Do **not** open work on ranks #2 (calibration table) or #8 (EQUITY value-momentum) until `DB_PASS_BACKTESTS` lands in GH secrets and `at_pick_outcomes` is provisioned — they will stall otherwise.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

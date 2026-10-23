@@ -58,3 +58,5 @@ This session: `project-zoo-tasklist-ack-2026-05-31.md` (new — created tonight)
 ## Session close note
 
 Paper-pilot harness emits 13:30 UTC tomorrow. **No further churn this session.**
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -52,3 +52,5 @@ Pattern to log per swarm in future: `agent_id, recommendation, action_taken, +7d
 | V4 | 1 + 9 LIMITs | +$22 | +$3.82 | $160 + $811 reserved |
 
 Leap is the cleanest book — 4 positions, all locked, well-diversified across the 5-symbol restricted universe (1L + 3S, XRP unused).
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -101,3 +101,5 @@ Investigate clone_hl_copy_* generators for inflated stats origin
 
 *Verified: 2026-04-22*  
 *Source: `alpha_engine/data/active_picks.json` (130 rows)*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

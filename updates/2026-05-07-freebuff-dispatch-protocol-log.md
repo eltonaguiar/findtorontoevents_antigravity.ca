@@ -128,3 +128,5 @@ python tools/adapters/freebuff_adapter.py --peer-id freebuff-b dispatch \\
 3. **claude-main is active** on the freebuff network, broadcasting `agent.broadcast` messages. This peer should be added to the cross-PC peer awareness.
 4. **cursor-a's task requests** from 11:46 were already acked previously — the duplicate log entries (8× each) reflect gateway processing stages, not actual re-deliveries.
 5. **Event log schema** — each entry is `{gateway_ts_utc, direction, transport, status?, envelope: {...}}`. The gateway status records at 11:52 are separate from the envelope records.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -88,3 +88,5 @@ This PR satisfies the **opt-in sidecar branch** of the Wire-Up Rule:
 - Other sports (NHL only)
 
 The full Phase 2/3 spec is preserved in [updates/2026-04-26-pinnacle-shin-devig-anchor.md](updates/2026-04-26-pinnacle-shin-devig-anchor.md) "Follow-up #1" — landing here as a sidecar lets us validate the data feed independently before wiring into the analyzer.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

@@ -321,3 +321,5 @@ This is the **recommended long-term architecture**.
 ---
 
 *End of audit.*
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

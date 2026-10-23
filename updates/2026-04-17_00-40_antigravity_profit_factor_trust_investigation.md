@@ -47,3 +47,5 @@ We cannot trust the 1.11 - 1.60 Profit Factors for non-crypto assets. They are m
 1.  **Enforce N ≥ 50:** Do not display or calculate Profit Factor on the dashboard unless the asset class has at least 50 *decided* (non-flat) trades.
 2.  **Migrate Data Feeds:** Transition Forex/Commodities from daily settlement data to high-resolution (5m/1H) data providers (e.g., TwelveData, OANDA) to expose hidden intraday stop-loss triggers.
 3.  **Standardize Metrics:** Unify how "flat" trades are handled between WR and PF calculations so the dashboard doesn't display conflicting realities.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

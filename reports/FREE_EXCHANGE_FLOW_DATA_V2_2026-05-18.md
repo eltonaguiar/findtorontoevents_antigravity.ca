@@ -191,3 +191,5 @@ here per the operator's no-pay directive.
 web-verified fact wins. Two engines (kilo, deepseek) asserted fabricated
 endpoints as real — the operator should treat unverified engine endpoint claims
 as untrusted by default.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

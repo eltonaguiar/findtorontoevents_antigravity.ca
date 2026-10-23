@@ -187,3 +187,5 @@ Event log written as UTF-8 (correct). Python `open()` on Windows uses `charmap` 
   - Windows UNC: `\\wsl.localhost\UbuntuRecovered\root\.hermes\skills\cross-pc-protocol-debug-first\docs\cross-pc-chat-history.md`
 - Windows charmap parse error on emoji in event log (non-blocking)
 - `tools/swarm_sync.py` exists but not wired into workflow (potential refactor)
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

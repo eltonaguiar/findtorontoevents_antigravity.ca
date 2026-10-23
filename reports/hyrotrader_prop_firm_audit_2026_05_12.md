@@ -79,3 +79,5 @@ Next session: feed this report + the 5 fixes to Grok-4 + Cerebras qwen-3-235b + 
 - Trailing-DD lock-in: does it leak too much profit by exiting too early?
 
 Backtest each proposed change against the 6-month historical dataset before going live with the prop-firm account.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

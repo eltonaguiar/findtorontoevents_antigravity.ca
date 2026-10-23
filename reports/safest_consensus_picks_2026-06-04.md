@@ -52,3 +52,5 @@
 3. **Do not follow MSFT LONG consensus** — empirical record shows 42.9% WR. Avoid.
 4. **NVDA/INTC**: wait for next price-tracker rebuild + 5+ model agreement before any directional bet.
 5. **Open the mlflow UI** to inspect all logged runs visually: `mlflow ui --backend-store-uri sqlite:///mlflow.db` then http://localhost:5000
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*

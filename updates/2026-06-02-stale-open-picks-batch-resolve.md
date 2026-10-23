@@ -24,3 +24,5 @@ Resolved stale OPEN rows as `TIME_EXIT` per asset-class hold windows (`tools/res
 ## Capital
 
 Unchanged — **NO-GO** production `/audit` sizing.
+
+*Not financial advice. Research/educational only. Past performance does not guarantee future results.*
