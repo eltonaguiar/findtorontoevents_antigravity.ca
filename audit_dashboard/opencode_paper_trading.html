@@ -23,7 +23,7 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 <body>
 <h1>OpenCode/Beam Paper Trading Monitor</h1>
 <p>Agent: <strong>OPENCODE_BEAM</strong> (opencode/beam-free) · Updated: 2026-10-22</p>
-<p><em>NFA — research only. Not financial advice.</em></p>
+<p><strong style="color:#fca5a5">⚠️ NOT FINANCIAL ADVICE (NFA).</strong> <em>Research and education only. Not a recommendation to buy or sell any security, fund, or account. Past performance does not guarantee future results. Do your own research (DYOR).</em></p>
 
 <div class="card">
   <h2>What does "CANDIDATE" mean?</h2>
@@ -319,8 +319,33 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
   <p>Update job: <code>python3 tools/opencode_paper_trading_update.py</code> (run hourly via cron/GHA)</p>
   <p>Validation harness: <code>python3 tools/validate_winner.py --strategy &lt;name&gt; --source AlphaEngine [--symbol SYM]</code></p>
   <p>Institutional validation: <code>python3 tools/institutional_validation.py --strategy &lt;name&gt; --source AlphaEngine [--direction DIR] [--symbols SYM1,SYM2]</code></p>
-  <p><em>NFA — research only. Not financial advice.</em></p>
+  <p><strong style="color:#fca5a5">⚠️ NOT FINANCIAL ADVICE (NFA).</strong> <em>Research and education only. Not a recommendation to buy or sell any security, fund, or account. Past performance does not guarantee future results. Do your own research (DYOR).</em></p>
 </div>
 <p><a href="/audit/index.html">Back to Audit Dashboard</a></p>
+<h2 id="fund-backtest">Fund selection walk-forward — can any rule beat a cheap index?</h2>
+<p><strong>Question:</strong> Is there a mutual-fund/ETF picking rule (low fees, past returns, high Sharpe, small drops, sector rotation, obscure winners) that actually beats "just buy the index" when you only use data available <em>at the time</em>?</p>
+<p><strong>Method (ELI5):</strong> Every year from 2005–2024, rank 118 funds using only the past 2–3 years of prices. Buy the #1 pick under each rule for 1 year. Subtract the fund's real annual fee + 0.20% to switch. Compare to always holding SPY. 4,000-run bootstrap for a 95% confidence interval on the difference. Universe is survivorship-biased (only funds that still exist) — which <em>favors</em> fund-picking.</p>
+<table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:13px">
+<tr style="border-bottom:1px solid #333;text-align:left"><th style="padding:6px">Rule</th><th>Avg 1y</th><th>vs SPY</th><th>Beat%</th><th>CAGR</th><th>95% CI vs SPY</th><th>Sig?</th></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">12m momentum</td><td>2.4%</td><td>−9.8%</td><td>32%</td><td>−2.1%</td><td>[−20.2,−2.9]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">3y CAGR</td><td>6.6%</td><td>−5.6%</td><td>32%</td><td>1.7%</td><td>[−20.6,+2.3]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">3y Sharpe</td><td>4.0%</td><td>−8.1%</td><td>37%</td><td>3.8%</td><td>[−17.9,−1.0]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">Least drawdown</td><td>1.5%</td><td>−10.6%</td><td>21%</td><td>1.5%</td><td>[−18.7,−4.4]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">Blend z-score</td><td>2.7%</td><td>−9.4%</td><td>21%</td><td>−0.9%</td><td>[−17.2,−3.9]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222;background:rgba(250,204,36,0.05)"><td style="padding:6px">Sector rotation</td><td>13.6%</td><td>+1.5%</td><td>53%</td><td>11.0%</td><td>[−5.4,+7.0]</td><td><strong>no</strong></td></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">Lowest fee</td><td>9.1%</td><td>−3.0%</td><td>53%</td><td>7.8%</td><td>[−8.7,+1.0]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">Free 0% funds</td><td>10.5%</td><td>−1.6%</td><td>53%</td><td>9.0%</td><td>[−5.7,+0.3]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">Obscure momentum</td><td>4.0%</td><td>−8.2%</td><td>16%</td><td>0.3%</td><td>[−16.2,−2.2]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222"><td style="padding:6px">Equal-weight all</td><td>9.1%</td><td>−3.1%</td><td>31%</td><td>8.2%</td><td>[−5.9,−0.5]</td><td>no</td></tr>
+<tr style="border-bottom:1px solid #222;font-weight:600"><td style="padding:6px">Always SPY (baseline)</td><td>12.1%</td><td>—</td><td>—</td><td>10.6%</td><td>—</td><td>—</td></tr>
+<tr style="border-bottom:1px solid #222;background:rgba(34,197,94,0.08)"><td style="padding:6px">Always VOO (cheap S&amp;P)</td><td>15.1%</td><td>+0.1%</td><td>93%</td><td>14.1%</td><td>[+0.02,+0.19]</td><td><strong style="color:#22c55e">YES</strong></td></tr>
+<tr style="background:rgba(34,197,94,0.08)"><td style="padding:6px">Always cheapest index (FXAIX)</td><td>12.6%</td><td>+0.5%</td><td>84%</td><td>11.0%</td><td>[+0.10,+0.83]</td><td><strong style="color:#22c55e">YES</strong></td></tr>
+</table>
+<p><strong>Verdict:</strong> No picking rule beat the index with statistical significance. The only significant wins are just holding a <em>cheaper</em> S&amp;P 500 fund (VOO/FXAIX vs SPY) — that is a fee saving, not skill. Sector rotation looked directional (+1.5%/yr) but its 95% CI includes zero. The obscure-winner hunt found <strong>MIDSX</strong> (1% fee, CAGR 0.05%, −89.7% drawdown) — a disaster, not a secret. Free 0% Fidelity ZERO funds match the index; they save ~0.08%/yr vs SPY, nothing more.</p>
+<p><strong>Canada starters (not advice):</strong> From $1: XEQT (0.20% MER, all equity) or VBAL (0.24%, gentler drops) on Wealthsimple TFSA. Cheapest S&amp;P 500 in CAD: XUS.TO (0.07%) or VFV.TO (0.09%). Full history where available: VFV.TO 17.2% CAGR / 14y; XEQT.TO 14.4% / 7y. These are index products — high CAGR is the market, not a manager.</p>
+<p><em>Full methodology + reproduce: <code>updates/2026-10-23-fund-selection-walkforward.md</code> · data <code>audit_dashboard/data/fund_wf_deep.json</code></em></p>
+<p><strong style="color:#fca5a5">⚠️ NOT FINANCIAL ADVICE.</strong> See top of page.</p>
+
+
 </body>
 </html>

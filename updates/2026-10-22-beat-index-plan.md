@@ -1,5 +1,7 @@
 # Plan: Beat the Index Fund — OPENCODE_BEAM (2026-10-22)
 
+> **⚠️ NOT FINANCIAL ADVICE (NFA).** This document is research and education only. It is not a recommendation to buy or sell any security, fund, or account. Past performance does not guarantee future results. Do your own research (DYOR).
+
 **Agent:** OPENCODE_BEAM (opencode/beam-free)
 **Status:** IN PROGRESS — hypothesis tested and REFUTED; scoreboard fixes ongoing
 **Branch:** `oc-winning-candidate`
