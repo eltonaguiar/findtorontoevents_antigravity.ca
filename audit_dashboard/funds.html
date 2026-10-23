@@ -132,6 +132,13 @@ a:hover { text-decoration:underline; }
 .fact-sheet h3 { font-size:14px; font-weight:700; margin-bottom:12px; color:var(--cyan); }
 .fact-row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(30,30,48,0.3); font-size:12px; }
 .fact-row .label { color:var(--text-dim); }
+.strategy-profile .fact-row { gap:16px; align-items:flex-start; }
+.strategy-profile .fact-row .label { flex:0 0 120px; }
+.strategy-profile .fact-row span:last-child { min-width:0; overflow-wrap:anywhere; }
+.strategy-profile details { margin-top:12px; font-size:12px; }
+.strategy-profile summary { cursor:pointer; color:var(--cyan); }
+.strategy-profile p, .strategy-profile li { font-size:12px; line-height:1.6; margin:8px 0; }
+.strategy-profile ul { padding-left:20px; }
 
 /* Filters */
 .filter-bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:16px 0; }
@@ -974,6 +981,64 @@ function renderFundList() {
   });
 }
 
+// ===== FUND STRATEGY PROFILE =====
+function profileText(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function profileEscape(value) {
+  return profileText(value).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[ch]);
+}
+
+function renderStrategyProfile(sys) {
+  const supplied = sys.strategy_profile;
+  const profile = supplied && typeof supplied === 'object' && !Array.isArray(supplied) ? supplied : {};
+  const row = (label, value) => `<div class="fact-row"><span class="label">${label}</span><span>${profileEscape(value) || 'Not supplied'}</span></div>`;
+  const strategies = Array.isArray(sys.strategies) ? sys.strategies : [];
+  const names = [...new Set(strategies.map(s => profileText(s && s.name)).filter(Boolean))];
+  const descriptions = names.slice(0, 10).map(name => {
+    // Only exact entries have editorial descriptions; fuzzy name matches are not specifications.
+    const info = Object.prototype.hasOwnProperty.call(STRAT_INFO, name) ? STRAT_INFO[name] : null;
+    return `<li><strong>${profileEscape(name)}</strong>: ${info ? profileEscape(info.desc) : 'Not supplied: no exact strategy description.'}${
+      info && profileText(info.eli5) ? `<details><summary>ELI5: explain this method</summary><p>${profileEscape(info.eli5)}</p></details>` : ''
+    }</li>`;
+  }).join('');
+  let source = 'Source URL unavailable or invalid';
+  const sourceUrl = profileText(profile.source_url);
+  if (/^https?:\/\//i.test(sourceUrl)) {
+    try {
+      const parsed = new URL(sourceUrl);
+      if (parsed.hostname && !parsed.username && !parsed.password) {
+        source = `<a href="${profileEscape(parsed.href)}" target="_blank" rel="noopener noreferrer">Strategy specification / issuer document</a>`;
+      }
+    } catch (error) {
+      source = 'Source URL unavailable or invalid';
+    }
+  }
+  return `<section class="fact-sheet strategy-profile" aria-label="Strategy and evidence">
+    <h3>Strategy: purpose, rules and evidence</h3>
+    <p>These are simulated trading-system portfolios, not regulated mutual funds. Not financial advice.</p>
+    <p>Any supplied profile is publisher-reported metadata, not an independent verification. Missing specification fields remain visible below.</p>
+    ${row('Objective', profile.objective)}
+    ${row('Strategy', profile.strategy)}
+    ${row('Allocation / sizing', profile.allocation)}
+    ${row('Holding / exit rules', profile.exits)}
+    ${row('Benchmark', profile.benchmark)}
+    ${row('Risks', profile.risks)}
+    ${row('Does it deliver?', profile.verification || 'Unverified: headline returns and trust tiers do not establish mandate delivery or market-beating skill.')}
+    <div class="fact-row"><span class="label">Specification source</span><span>${source}</span></div>
+    ${row('Source checked', profile.checked_at)}
+    <details><summary>ELI5: what are we checking?</summary><p>${profileEscape(profile.eli5) || 'An index fund should follow its route cheaply; an active strategy must justify its detours after costs. A return scoreboard alone does not certify either job.'}</p></details>
+    <details><summary>Methods observed in this system (${names.length})</summary>
+      <p>Names come from the payload strategy breakdown. Exact-match descriptions below are editorial explanations, not an executable specification or proof of profitability. Missing rules are not inferred from names or current holdings.</p>
+      ${descriptions ? `<ul>${descriptions}</ul>` : '<p>Not supplied: no strategy breakdown.</p>'}
+      ${names.length > 10 ? `<p>${names.length - 10} additional strategies are listed in the dashboard payload.</p>` : ''}
+    </details>
+  </section>`;
+}
+
 // ===== RENDER: FUND DETAIL MODAL =====
 function showFundDetail(name) {
   const sys = D.systems.find(s => s.name === name);
@@ -986,6 +1051,8 @@ function showFundDetail(name) {
 
   let h = `<h2>${name.replace(/_/g,' ')}</h2>
     <div class="sub"><span class="badge badge-${t.toLowerCase()}">${t}</span> &bull; Risk: ${rl} (${risk}/5) &bull; ${sys.closed_picks||0} closed trades &bull; ${sys.active_picks||0} active holdings</div>`;
+
+  h += renderStrategyProfile(sys);
 
   // Key stats with tooltips
   h += `<div class="stat-grid">
@@ -1299,6 +1366,7 @@ function renderFactSheets() {
     const rl = RISK_LABELS[risk];
     return `<div class="fact-sheet" style="margin-bottom:16px;">
       <h3>${sys.name.replace(/_/g,' ')} <span class="badge badge-${t.toLowerCase()}" style="margin-left:8px">${t}</span></h3>
+      ${renderStrategyProfile(sys)}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
         <div class="fact-row"><span class="label">Win Rate</span><span class="${pnlClass((sys.win_rate||0)-50)}">${fmt(sys.win_rate)}%</span></div>
         <div class="fact-row"><span class="label">Profit Factor</span><span>${fmt(sys.profit_factor,2)}</span></div>
