@@ -1482,9 +1482,6 @@ a:hover { text-decoration: underline; }
     <span id="perf-conviction-bar" style="display:flex;gap:4px;margin-left:auto;align-items:center"></span>
     <button id="perf-help-btn" onclick="document.getElementById('perf-help-overlay').style.display='flex'" title="How to find edge: the exact filters, definitions, and what to avoid (based on 4,618 closed-pick analysis)" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;cursor:pointer;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;margin-left:6px;white-space:nowrap">? Guide</button>
   </h3>
-  <div style="font-size:10.5px;color:var(--text-dim);margin:-4px 0 8px;line-height:1.4">
-    &#x2139;&#xFE0F; Recent-closed cohort is capped at 3,500 rows (newest first). Metrics below reflect only this cap; the full historical ledger may be larger. &mdash; 2026-10-22.
-  </div>
 
   <!-- Help popup overlay -->
   <div id="perf-help-overlay" style="display:none;position:fixed;inset:0;z-index:9990;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px)" onclick="if(event.target===this)this.style.display='none'">
@@ -1629,11 +1626,6 @@ a:hover { text-decoration: underline; }
     <div id="crypto-panel" style="flex:1;min-width:0"></div>
     <div id="non-crypto-panel" style="flex:1;min-width:0"></div>
   </div>
-  <!-- 2026-10-22: Integrated proven-pick status (per class) — renders the
-       money-ready verdict + top proven candidate sleeves from DASHBOARD_DATA
-       money_ready_verdicts. Honest frame: research-grade proof, NOT money-ready
-       trade signals (all classes currently fail the money-ready bar). -->
-  <div id="proven-edge-strip" style="margin-top:14px"></div>
 </section>
 <div id="filter-active-indicator"></div>
 
@@ -2815,15 +2807,6 @@ a:hover { text-decoration: underline; }
         </a>
       </div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px">
-      <h3 style="font-size:15px;margin-bottom:12px;color:var(--pink,#ec4899)">OPENCODE — BEAM</h3>
-      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
-        <a href="https://findtorontoevents.ca/audit/opencode_beam.html" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:6px;border:1px solid var(--border)">
-          <span style="font-size:18px">⚡</span>
-          <div><strong>Asset-Class Scorecard & Proof</strong><br><span style="color:var(--text-dim)">Each asset's real performance over time + "not a coin-flip" math, in beginner terms</span></div>
-        </a>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -2892,7 +2875,7 @@ function showStrategyPopup(iconElem, strategyName) {
   popup.style.top = (rect.bottom + window.scrollY) + 'px';
   popup.style.left = (rect.left + window.scrollX) + 'px';
 }
-// Data too large to embed (24MB). Loading from data/dashboard_data.json instead.
+// Data too large to embed (23MB). Loading from data/dashboard_data.json instead.
 // External data/dashboard_data.json is loaded in init() via async fetch only.
 // Sync XHR was removed: it blocked the main thread for seconds on large JSON (mobile "page unresponsive").
 let D = window.DASHBOARD_DATA || {};
@@ -6368,13 +6351,7 @@ function renderNonCryptoPanel() {
   // failures as flat closes) tracked as a separate INCIDENT.
   closedPicks = closedPicks.filter(function(p) {
     var _er = String(p.exit_reason || '').toUpperCase();
-    var _xp = parseFloat(p.exit_price);
-    if (_er === 'FORCE_CLOSED_TOXIC' || _er === 'RESOLVE_FAILED_MAX_RETRIES') return false;
-    // Placeholder/sentinel exit (exit_price <= 0, pnl typically 0) — price-fetch
-    // failure stamped as a flat close, not a real trade outcome. Concentrated in
-    // stocksunify2 (EQUITY) + signal_validation (FOREX) TIME_EXIT rows.
-    if (isFinite(_xp) && _xp <= 0) return false;
-    return true;
+    return _er !== 'FORCE_CLOSED_TOXIC' && _er !== 'RESOLVE_FAILED_MAX_RETRIES';
   });
 
   // 2026-04-11 kill-list filter — exclude picks from now-killed strategies
@@ -6779,74 +6756,6 @@ function _cryptoScoreBucket(p) {
   return 'C-Tier (<40)';
 }
 
-function renderProvenEdgeStrip() {
-  var host = document.getElementById('proven-edge-strip');
-  if (!host) return;
-  var D = window.DASHBOARD_DATA || {};
-  var mr = D.money_ready_verdicts;
-  if (!mr || typeof mr !== 'object') { host.style.display = 'none'; return; }
-  var order = ['CRYPTO', 'EQUITY', 'FOREX', 'ETF', 'COMMODITY', 'BOND', 'FUTURES', 'MEME'];
-  var rows = '';
-  order.forEach(function(cls) {
-    var c = mr[cls];
-    if (!c || typeof c !== 'object') return;
-    var verdict = String(c.verdict || '').toUpperCase();
-    var vBadge;
-    if (verdict === 'MONEY_READY') {
-      vBadge = '<span style="background:rgba(34,197,94,0.18);color:#86efac;border:1px solid rgba(34,197,94,0.5);border-radius:4px;padding:0 6px;font-size:10px;font-weight:700;white-space:nowrap">MONEY-READY</span>';
-    } else if (verdict === 'WATCH') {
-      vBadge = '<span style="background:rgba(251,191,36,0.18);color:#fbbf24;border:1px solid rgba(251,191,36,0.5);border-radius:4px;padding:0 6px;font-size:10px;font-weight:700;white-space:nowrap">WATCH</span>';
-    } else if (verdict === 'INSUFFICIENT_DATA') {
-      vBadge = '<span style="background:rgba(148,163,184,0.16);color:#94a3b8;border:1px solid rgba(148,163,184,0.4);border-radius:4px;padding:0 6px;font-size:10px;font-weight:700;white-space:nowrap">INSUFFICIENT DATA</span>';
-    } else {
-      vBadge = '<span style="background:rgba(239,68,68,0.16);color:#fca5a5;border:1px solid rgba(239,68,68,0.45);border-radius:4px;padding:0 6px;font-size:10px;font-weight:700;white-space:nowrap">NOT READY</span>';
-    }
-    var nRes = c.n_resolved != null ? c.n_resolved : '—';
-    var wrPct = c.wr_pct != null ? fmt(c.wr_pct, 1) + '%'
-      : (c.wr != null ? (c.wr * 100).toFixed(1) + '%' : '—');
-    var pfV = (c.pf != null && isFinite(c.pf)) ? fmt(c.pf, 2) : '—';
-    var exp = c.expectancy != null ? fmt(c.expectancy, 4) : '—';
-    var ciLb = c.bootstrap_ci_lower != null ? fmt(c.bootstrap_ci_lower * 100, 2) + '%' : '—';
-    var sleeves = c.top_sleeves || [];
-    var sleeveHtml = sleeves.slice(0, 2).map(function(s) {
-      var srcNote = s.is_single_source ? ' <span style="color:#f59e0b" title="Single-source-only proof — higher survivorship risk">•1-source</span>' : '';
-      var pfStr = (s.pf != null && isFinite(s.pf)) ? (s.pf === Infinity ? '∞' : fmt(s.pf, 1)) : '?';
-      return '<div style="font-size:10px;color:#cbd5e1;line-height:1.5">' + _tier2EscapeHtml(s.strategy || '?') +
-             ' <span style="color:#64748b">n=' + (s.n != null ? s.n : '?') +
-             ' · WR=' + (s.wr != null ? s.wr.toFixed(1) : '?') + '%' +
-             ' · PF=' + pfStr + '</span>' + srcNote + '</div>';
-    }).join('');
-    if (!sleeveHtml) sleeveHtml = '<div style="font-size:10px;color:#64748b">no candidate sleeve cleared gates</div>';
-    rows += '<tr style="border-bottom:1px solid rgba(71,85,105,0.3)">' +
-      '<td style="padding:6px 8px;font-weight:700;color:#e0e7ff;font-size:11px">' + cls + '</td>' +
-      '<td style="padding:6px 8px;text-align:center;font-size:11px;color:#cbd5e1">' + nRes + '</td>' +
-      '<td style="padding:6px 8px;text-align:center;font-size:11px;color:#cbd5e1">' + wrPct + '</td>' +
-      '<td style="padding:6px 8px;text-align:center;font-size:11px;color:#cbd5e1">' + pfV + '</td>' +
-      '<td style="padding:6px 8px;text-align:center;font-size:11px;color:#cbd5e1">' + exp + '</td>' +
-      '<td style="padding:6px 8px;text-align:center;font-size:11px;color:#cbd5e1">' + ciLb + '</td>' +
-      '<td style="padding:6px 8px;text-align:center">' + vBadge + '</td>' +
-      '<td style="padding:6px 8px">' + sleeveHtml + '</td></tr>';
-  });
-  host.innerHTML =
-    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">' +
-    '<span style="font-size:13px;font-weight:700;color:#e0e7ff">&#x1F6E1;&#xFE0F; Research Proof Status (per class) — integrated proven candidates</span>' +
-    '<span style="font-size:10px;color:#94a3b8">source: money_ready_verdicts · DASHBOARD_DATA · updated ' +
-    (D.generated_at ? String(D.generated_at).slice(0, 16).replace('T', ' ') + 'Z' : '?') + '</span></div>' +
-    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px;background:rgba(15,23,42,0.5);border:1px solid rgba(71,85,105,0.4);border-radius:10px">' +
-    '<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.12);color:#94a3b8;text-align:left">' +
-    '<th style="padding:6px 8px">Class</th>' +
-    '<th style="padding:6px 8px;text-align:center" title="Closed trades resolved on the ledger">n resolved</th>' +
-    '<th style="padding:6px 8px;text-align:center">WR</th>' +
-    '<th style="padding:6px 8px;text-align:center">PF</th>' +
-    '<th style="padding:6px 8px;text-align:center">Expectancy</th>' +
-    '<th style="padding:6px 8px;text-align:center" title="Bootstrap 95% CI lower bound of per-trade return">CI-LB</th>' +
-    '<th style="padding:6px 8px;text-align:center">Verdict</th>' +
-    '<th style="padding:6px 8px">Top proven candidate(s)</th></tr></thead>' +
-    '<tbody>' + rows + '</tbody></table></div>' +
-    '<div style="margin-top:8px;font-size:10px;color:#64748b;line-height:1.5">' +
-    '“Proven” here = the candidate cleared the statistical gates (holdout / bootstrap / Bonferroni / FDR, as applicable) on the closed ledger — research-grade proof of edge in a narrow cell. It is NOT a money-ready trade signal. All classes currently fail the money-ready bar (see Verdict). No financial advice.</div>';
-}
-
 function renderCryptoPanel() {
   var container = el('crypto-panel');
   if (!container) return;
@@ -6864,12 +6773,7 @@ function renderCryptoPanel() {
   // pnl=0). Not resolved trades; counting them dilutes crypto WR.
   closedPicks = closedPicks.filter(function(p) {
     var _er = String(p.exit_reason || '').toUpperCase();
-    var _xp = parseFloat(p.exit_price);
-    if (_er === 'FORCE_CLOSED_TOXIC' || _er === 'RESOLVE_FAILED_MAX_RETRIES') return false;
-    // Placeholder/sentinel exit (exit_price <= 0, pnl typically 0) — price-fetch
-    // failure stamped as a flat close, not a real trade outcome. Parity with NC panel.
-    if (isFinite(_xp) && _xp <= 0) return false;
-    return true;
+    return _er !== 'FORCE_CLOSED_TOXIC' && _er !== 'RESOLVE_FAILED_MAX_RETRIES';
   });
 
   // 2026-04-12 conviction filter (shared with NC panel via _PERF_CONVICTION_FILTER)
@@ -17925,7 +17829,6 @@ async function init() {
   renderConvictionBar();
   renderCryptoPanel();
   renderNonCryptoPanel();
-  renderProvenEdgeStrip();
   populateFilters();
 
   renderAgreementMatrix();
@@ -19089,14 +18992,19 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- SWARM PICK TRACKING PANEL decommissioned 2026-06-12 (operator request).
      Data archived as audit_dashboard/data/swarm_*_OLD.json; insights in
      reports/swarm_paper_picks_decommission_2026-06-12.md -->
-<!-- OPENCODE — BEAM · asset-class scorecard (added 2026-10-22) -->
-<div style="max-width:1180px;margin:18px auto 24px;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(168,85,247,.14),rgba(34,211,238,.08));border:1px solid rgba(168,85,247,.45);border-radius:12px">
-  <span style="font-size:26px">⚡</span>
-  <div style="flex:1;min-width:240px">
-    <div style="font-weight:800;color:#e0e7ff;font-size:15px">OPENCODE — BEAM · Asset-Class Scorecard</div>
-    <div style="font-size:12.5px;color:#cbd5e1">Every asset class we trade, its real performance over time, and the statistical proof that any win isn't just a coin-flip — explained in beginner terms.</div>
-  </div>
-  <a href="/audit/opencode_beam.html" style="background:rgba(168,85,247,.25);border:1px solid #a78bfa;color:#fff;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px">Open the scorecard →</a>
-</div>
+<nav id="ghcopilot-paper-footer" aria-label="Independent paper experiments"
+ style="padding:20px;text-align:center;border-top:1px solid #334155;background:#101827;color:#e2e8f0">
+  <strong>Agent Paper Trading Monitors</strong><br>
+  <a href="/audit/opencode_paper_trading.html" style="color:#67e8f9">OPENCODE Paper (Beam)</a>
+  &nbsp;|&nbsp; <a href="/audit/inception_paper_trading.html" style="color:#67e8f9">INCEPTION Paper</a>
+  &nbsp;|&nbsp; <a href="/audit/ghcopilot_paper.html" style="color:#67e8f9">GHCOPILOT Paper</a>
+  &nbsp;|&nbsp; <a href="/audit/poolside_paper.html" style="color:#06b6d4">POOLSIDE Paper</a>
+  &nbsp;|&nbsp; <a href="/audit/claudes_test.html" style="color:#67e8f9">Claude Test</a>
+  &nbsp;|&nbsp; <a href="/audit/freebuff_buffy_proven_picks.html" style="color:#a78bfa;font-weight:700">FREEBUFF (Buffy) Proven-Picks Audit</a>
+  <hr style="border-color:#334155;margin:8px 0">
+  <span style="font-size:12px;color:#94a3b8">Independent paper experiments (not money-ready):</span>
+  <a href="/audit/paper_pilot.html" style="color:#c4b5fd;font-size:12px">Existing COT pilot</a>
+  &nbsp;|&nbsp; <a href="/audit/crypto_paper_pilot.html" style="color:#c4b5fd;font-size:12px">Existing crypto pilot</a>
+</nav>
 </body>
 </html>
