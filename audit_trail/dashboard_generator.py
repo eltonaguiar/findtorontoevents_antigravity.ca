@@ -11057,8 +11057,9 @@ def collect_audit_events(limit=50):
 
     # Source 3: crypto_signal_engine audit
     cse = _safe_json(ROOT / "crypto_signal_engine/data/audit.json")
-    if cse and cse.get("new_picks"):
-        for pick in cse["new_picks"][-20:]:
+    _cse_new_picks = cse.get("new_picks") if cse else None
+    if isinstance(_cse_new_picks, list) and _cse_new_picks:
+        for pick in _cse_new_picks[-20:]:
             events.append(
                 {
                     "event_type": "CSE_NEW_PICK",
@@ -18739,6 +18740,29 @@ def generate():
             _measurement_block.get("n_verified", 0) + _measurement_block.get("n_unverified", 0),
             (_oa_return or 0) * 100,
         )
+
+    # ── Measurement Hygiene V1 payload block (top-level, Task 6) ──
+    # Emitted alongside the legacy per-ledger summary block; this is a
+    # top-level key (NOT nested under payload["summary"]). The banner
+    # carries the measurement caveat; the "not financial advice" label is
+    # provided separately by the page footer so this banner is never the
+    # only disclaimer on the page.
+    if MEASUREMENT_HYGIENE_V1 and ledger_gate_results:
+        payload["measurement_hygiene"] = {
+            "enabled": True,
+            "banner_text": "Measurement ≠ permission — only ledgers passing n≥100, PF≥1.5, CI-LB≥1.2, MDD≤20% are shown.",
+            "excluded_ledgers": [
+                f"{k[0]}|{k[1]}" for k, v in ledger_gate_results.items() if v["verdict"] != "OK"
+            ],
+            "gate_definitions": {
+                "n": "≥100 resolved closed trades",
+                "pf_net": "≥1.5 (net of cost)",
+                "pf_net_ci_lb": "≥1.2 (95% CI lower bound, cluster bootstrap)",
+                "mdd": "≤20% (peak-to-trough)",
+            },
+        }
+    else:
+        payload["measurement_hygiene"] = {"enabled": False}
 
     # Sanitize inf/-inf/nan to None — JSON spec forbids these literals, and
     # browser JSON.parse() rejects the whole file on the first occurrence
