@@ -38,6 +38,13 @@ UPLOADS = [
     ("audit_dashboard/data/strategy_ic_analysis.json",        "/findtorontoevents.ca/audit/data/strategy_ic_analysis.json",         "pick_funnel"),
     # 2026-10-23: mutual-fund ratings page (was missing from every deploy list -> live 404)
     ("audit_dashboard/mutual-funds.html",                    "/findtorontoevents.ca/audit/mutual-funds.html",                    "mutual_funds"),
+    ("audit_dashboard/agent_consensus_2026-10-23.html",        "/findtorontoevents.ca/audit/agent_consensus_2026-10-23.html",        "mutual_funds"),
+    # 2026-10-23: agent paper pages in workflow lists but 404 on live (cron never pushed them)
+    ("audit_dashboard/poolside_paper.html",                   "/findtorontoevents.ca/audit/poolside_paper.html",                   "mutual_funds"),
+    ("audit_dashboard/ghcopilot_paper.html",                  "/findtorontoevents.ca/audit/ghcopilot_paper.html",                  "mutual_funds"),
+    ("audit_dashboard/inception_paper_trading.html",          "/findtorontoevents.ca/audit/inception_paper_trading.html",          "mutual_funds"),
+    ("audit_dashboard/opencode_paper_trading.html",           "/findtorontoevents.ca/audit/opencode_paper_trading.html",           "mutual_funds"),
+    ("audit_dashboard/freebuff_buffy_proven_picks.html",      "/findtorontoevents.ca/audit/freebuff_buffy_proven_picks.html",      "mutual_funds"),
     ("audit_dashboard/data/mutut_fund_rankings.json",        "/findtorontoevents.ca/audit/data/mutut_fund_rankings.json",         "mutual_funds"),
     ("audit_dashboard/data/mf_walkforward_results.json",     "/findtorontoevents.ca/audit/data/mf_walkforward_results.json",      "mutual_funds"),
     ("audit_dashboard/model.html",                           "/findtorontoevents.ca/audit/model.html",                            "model"),
