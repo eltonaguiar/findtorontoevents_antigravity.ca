@@ -14582,6 +14582,160 @@ def stamp_net_of_cost(rows: list[dict]) -> list[dict]:
     return out
 
 
+# ── Measurement Hygiene Regression Guard (Task 10) ──
+# Fail-soft guard that guarantees byte-identical OFF-generation payload output
+# when MEASUREMENT_HYGIENE_V1 is disabled. Active only while the flag is OFF;
+# bypassed when the flag is ON. See docs/superpowers/specs/2026-10-22-
+# measurement-fix-design.md §7 (rollout) for the intended lifecycle.
+_REGRESSION_PREV_GEN_FILENAME = ".dashboard_payload_prev_gen.json"
+
+
+def _regression_prev_gen_path(out_path: Path) -> Path:
+    """Location of the stored previous-generation payload used by the guard."""
+    return Path(out_path).parent / _REGRESSION_PREV_GEN_FILENAME
+
+
+def _strip_measurement_hygiene_keys(obj):
+    """Deep-copy `obj`, removing every `measurement_hygiene` key.
+
+    Used to normalize the ON-generation payload (or a legacy OFF-generation
+    payload that emitted ``{"enabled": false}``) down to the canonical
+    OFF-generation schema for byte-for-byte comparison.
+    """
+    if isinstance(obj, dict):
+        return {
+            k: _strip_measurement_hygiene_keys(v)
+            for k, v in obj.items()
+            if k != "measurement_hygiene"
+        }
+    if isinstance(obj, list):
+        return [_strip_measurement_hygiene_keys(v) for v in obj]
+    if isinstance(obj, tuple):
+        return [_strip_measurement_hygiene_keys(v) for v in obj]
+    return obj
+
+
+def _measurement_deep_diff_paths(a, b, prefix=""):
+    """Return human-readable paths where two structures differ (best-effort)."""
+    diffs = []
+    if type(a) is not type(b):
+        diffs.append(prefix or "<root>")
+        return diffs
+    if isinstance(a, dict):
+        for k in sorted(set(a) | set(b)):
+            child = f"{prefix}.{k}" if prefix else str(k)
+            if k not in a or k not in b:
+                diffs.append(child)
+            elif a[k] != b[k]:
+                diffs.extend(_measurement_deep_diff_paths(a[k], b[k], child))
+    elif isinstance(a, list):
+        if len(a) != len(b):
+            diffs.append(f"{prefix}[len]" if prefix else "[len]")
+        else:
+            for i, (x, y) in enumerate(zip(a, b)):
+                if x != y:
+                    diffs.extend(
+                        _measurement_deep_diff_paths(
+                            x, y, f"{prefix}[{i}]" if prefix else f"[{i}]"
+                        )
+                    )
+    elif a != b:
+        diffs.append(prefix or "<root>")
+    return diffs
+
+
+def _atomic_write_prev_gen(prev_path: Path, text: str) -> None:
+    """Atomically persist the previous-generation baseline (fail-soft)."""
+    try:
+        _write_text_file(prev_path, text)
+    except Exception as e:  # noqa: BLE001
+        log.warning("Regression guard: could not persist previous generation: %s", e)
+
+
+def _attach_measurement_payload_keys(
+    payload, *, measurement_block, ledger_gate_results, overlap_aware_return=None
+):
+    """Emit the measurement_hygiene payload keys (Stage A + Task 6 banner).
+
+    Mirrors the historical inline emission in ``generate()``. Called ONLY when
+    MEASUREMENT_HYGIENE_V1 is ON. Pure w.r.t. the payload (mutates and returns
+    it). When OFF, ``generate()`` never calls this, so the payload carries no
+    measurement keys at all.
+    """
+    if measurement_block is not None:
+        payload.setdefault("summary", {})
+        payload["summary"]["measurement_hygiene"] = dict(measurement_block)
+        if overlap_aware_return is not None:
+            payload["summary"]["measurement_hygiene"][
+                "total_pnl_overlap_aware"
+            ] = overlap_aware_return
+    if ledger_gate_results:
+        payload["measurement_hygiene"] = {
+            "enabled": True,
+            "banner_text": "Measurement ≠ permission — only ledgers passing n≥100, PF≥1.5, CI-LB≥1.2, MDD≤20% are shown.",
+            "excluded_ledgers": [
+                f"{k[0]}|{k[1]}" for k, v in ledger_gate_results.items() if v["verdict"] != "OK"
+            ],
+            "gate_definitions": {
+                "n": "≥100 resolved closed trades",
+                "pf_net": "≥1.5 (net of cost)",
+                "pf_net_ci_lb": "≥1.2 (95% CI lower bound, cluster bootstrap)",
+                "mdd": "≤20% (peak-to-trough)",
+            },
+        }
+    return payload
+
+
+def run_measurement_regression_guard(off_payload, off_json, out_path):
+    """Fail-soft regression guard enforcing byte-identical OFF-generation output.
+
+    Active only when MEASUREMENT_HYGIENE_V1 is OFF (the caller gates this).
+    Compares the freshly generated OFF payload against the stored
+    previous-generation baseline (normalized by stripping measurement_hygiene
+    keys). On a detected difference it logs a warning and falls back to the
+    previous-generation JSON, guaranteeing the emitted file stays byte-identical.
+    Never raises.
+
+    Returns ``(json_to_write, used_fallback)``.
+    """
+    try:
+        prev_path = _regression_prev_gen_path(out_path)
+        prev_obj = None
+        if prev_path.exists():
+            try:
+                prev_obj = json.loads(
+                    prev_path.read_text(encoding="utf-8", errors="replace")
+                )
+            except Exception:
+                prev_obj = None  # corrupt/partial prior file -> ignore
+
+        if prev_obj is not None:
+            stripped_prev_obj = _strip_measurement_hygiene_keys(prev_obj)
+            stripped_prev_json = json.dumps(
+                stripped_prev_obj, indent=2, default=str, allow_nan=False
+            )
+            if stripped_prev_json != off_json:
+                mismatches = _measurement_deep_diff_paths(
+                    stripped_prev_obj, off_payload
+                )
+                log.warning(
+                    "Regression guard: OFF-generation payload diverged from the "
+                    "stored previous generation (%d path(s): %s). Falling back to "
+                    "the previous generation to keep output byte-identical.",
+                    len(mismatches),
+                    ", ".join(mismatches[:8]),
+                )
+                return stripped_prev_json, True
+
+        # No drift (or no baseline yet): emit current output and refresh the
+        # baseline so future runs compare against this healthy generation.
+        _atomic_write_prev_gen(prev_path, off_json)
+        return off_json, False
+    except Exception as e:  # noqa: BLE001 — fail-soft, never block the payload
+        log.warning("Regression guard skipped (fail-soft): %s", e)
+        return off_json, False
+
+
 def _profit_factor(net_pnls: list[float]) -> float | None:
     """Net profit factor: gross wins / gross losses. None if undefined."""
     wins = sum(p for p in net_pnls if p > 0)
@@ -18726,49 +18880,43 @@ def generate():
     except Exception as _e:  # noqa: BLE001
         log.warning("ML feature persistence/edge analytics skipped: %s", _e)
 
-    # ── Measurement Hygiene V1 block (Stage A: overlap-aware compounding) ──
-    if MEASUREMENT_HYGIENE_V1 and _measurement_block is not None:
-        payload.setdefault("summary", {})
-        # Overlap-aware compound total return (net of cost, if stamped)
-        payload["summary"]["measurement_hygiene"] = _measurement_block
-        # Headline overlap-aware compound return over the full closed ledger
-        _oa_return = compound_overlap_aware(resolved_closed)
-        payload["summary"]["measurement_hygiene"]["total_pnl_overlap_aware"] = _oa_return
-        log.info(
-            "  Measurement Hygiene V1 payload: %d/%d rows verified, OA return=%.4f%%",
-            _measurement_block.get("n_verified", 0),
-            _measurement_block.get("n_verified", 0) + _measurement_block.get("n_unverified", 0),
-            (_oa_return or 0) * 100,
+    # ── Measurement Hygiene V1 payload keys (Task 6) ──
+    # Emitted ONLY when the flag is ON. When OFF (the default), NO
+    # measurement_hygiene keys are added — the payload schema is byte-identical
+    # to the pre-measurement build (the regression guard below enforces this).
+    if MEASUREMENT_HYGIENE_V1:
+        _oa_return = None
+        if _measurement_block is not None:
+            _oa_return = compound_overlap_aware(resolved_closed)
+            log.info(
+                "  Measurement Hygiene V1 payload: %d/%d rows verified, OA return=%.4f%%",
+                _measurement_block.get("n_verified", 0),
+                _measurement_block.get("n_verified", 0) + _measurement_block.get("n_unverified", 0),
+                (_oa_return or 0) * 100,
+            )
+        payload = _attach_measurement_payload_keys(
+            payload,
+            measurement_block=_measurement_block,
+            ledger_gate_results=ledger_gate_results,
+            overlap_aware_return=_oa_return,
         )
-
-    # ── Measurement Hygiene V1 payload block (top-level, Task 6) ──
-    # Emitted alongside the legacy per-ledger summary block; this is a
-    # top-level key (NOT nested under payload["summary"]). The banner
-    # carries the measurement caveat; the "not financial advice" label is
-    # provided separately by the page footer so this banner is never the
-    # only disclaimer on the page.
-    if MEASUREMENT_HYGIENE_V1 and ledger_gate_results:
-        payload["measurement_hygiene"] = {
-            "enabled": True,
-            "banner_text": "Measurement ≠ permission — only ledgers passing n≥100, PF≥1.5, CI-LB≥1.2, MDD≤20% are shown.",
-            "excluded_ledgers": [
-                f"{k[0]}|{k[1]}" for k, v in ledger_gate_results.items() if v["verdict"] != "OK"
-            ],
-            "gate_definitions": {
-                "n": "≥100 resolved closed trades",
-                "pf_net": "≥1.5 (net of cost)",
-                "pf_net_ci_lb": "≥1.2 (95% CI lower bound, cluster bootstrap)",
-                "mdd": "≤20% (peak-to-trough)",
-            },
-        }
-    else:
-        payload["measurement_hygiene"] = {"enabled": False}
 
     # Sanitize inf/-inf/nan to None — JSON spec forbids these literals, and
     # browser JSON.parse() rejects the whole file on the first occurrence
     # (which is what broke /audit on 2026-04-27 with "profit_factor": Infinity).
     payload = _sanitize_for_json(payload)
     payload_json = json.dumps(payload, indent=2, default=str, allow_nan=False)
+
+    # ── Regression guard (Task 10): byte-identical OFF output ──
+    # Active only when MEASUREMENT_HYGIENE_V1 is OFF. Verifies the freshly
+    # generated OFF payload matches the stored previous generation; if it has
+    # drifted (e.g. measurement processing leaking into guarded keys), log a
+    # warning and fall back to the previous generation to keep the emitted
+    # file byte-identical. Bypassed entirely when the flag is ON.
+    if not MEASUREMENT_HYGIENE_V1:
+        payload_json, _wrote_fallback = run_measurement_regression_guard(
+            payload, payload_json, out_path
+        )
     _write_text_file(out_path, payload_json)
 
     # ── Post-write integrity check: read back and validate JSON ──
