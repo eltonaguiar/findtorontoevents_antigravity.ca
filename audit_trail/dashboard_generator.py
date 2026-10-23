@@ -14652,8 +14652,152 @@ def _atomic_write_prev_gen(prev_path: Path, text: str) -> None:
         log.warning("Regression guard: could not persist previous generation: %s", e)
 
 
+# ── DB Freshness Gate (Task 11) ──
+# Fail-soft gate that validates the recency of the underlying data sources
+# before the measurement_hygiene block is emitted. When any canonical source is
+# older than `max_age_hours`, the gate returns (False, warning); the caller
+# then forces `measurement_hygiene.enabled = False` and surfaces the warning,
+# while the dashboard still renders.
+_FRESHNESS_MAX_AGE_HOURS = 24.0
+_FRESHNESS_TS_KEYS = (
+    "generated_utc",
+    "generated_at",
+    "generated",
+    "as_of",
+    "timestamp",
+    "scan_timestamp",
+    "last_updated",
+    "updated_at",
+)
+
+
+def _default_freshness_sources() -> list[Path]:
+    """Canonical data sources for the freshness gate.
+
+    Returns ``[pf_registry.json]`` plus every ``*.json`` under the
+    ``money_ready_archive`` directory (when present). Callers may override the
+    source list for testability.
+    """
+    out: list[Path] = []
+    pf_registry = ROOT / "audit_dashboard" / "data" / "pf_registry.json"
+    out.append(pf_registry)
+    archive = ROOT / "audit_dashboard" / "data" / "money_ready_archive"
+    if archive.is_dir():
+        out.extend(sorted(archive.glob("*.json")))
+    return out
+
+
+def _parse_freshness_datetime(value) -> datetime | None:
+    """Best-effort datetime parsing for JSON timestamp values. Naive -> UTC."""
+    if isinstance(value, (int, float)) and value > 1e9:
+        try:
+            return datetime.fromtimestamp(value, tz=timezone.utc)
+        except (ValueError, OverflowError, OSError):
+            return None
+    if isinstance(value, str):
+        try:
+            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    return None
+
+
+def _latest_source_timestamp(path: Path) -> datetime | None:
+    """Most recent timestamp found in ``path`` (content first, then mtime)."""
+    raw = None
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except Exception:  # noqa: BLE001 — fail-soft
+        raw = None
+
+    candidates: list = []
+    if isinstance(raw, dict):
+        candidates = [raw.get(k) for k in _FRESHNESS_TS_KEYS]
+    elif isinstance(raw, list):
+        for item in raw[:200]:
+            if isinstance(item, dict):
+                candidates.extend(item.get(k) for k in _FRESHNESS_TS_KEYS)
+
+    parsed: list[datetime] = [
+        dt for dt in (_parse_freshness_datetime(c) for c in candidates) if dt is not None
+    ]
+    if parsed:
+        return max(parsed)
+
+    # Fall back to the file modification time.
+    try:
+        return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+    except OSError:
+        return None
+
+
+def _check_data_freshness(
+    sources: list[Path] | None = None,
+    *,
+    now: datetime | None = None,
+    max_age_hours: float = _FRESHNESS_MAX_AGE_HOURS,
+) -> tuple[bool, str]:
+    """Fail-soft DB freshness gate.
+
+    Returns ``(freshness_ok, warning)``. ``freshness_ok`` is True when every
+    available source's latest timestamp is within ``max_age_hours`` of ``now``.
+    Missing/unreadable sources are ignored (fail-open); if no source is
+    readable, the gate passes with no warning. This function never raises.
+    """
+    now = now or datetime.now(timezone.utc)
+    if sources is None:
+        sources = _default_freshness_sources()
+
+    stale_age: timedelta | None = None
+    stale_path: Path | None = None
+    present = 0
+
+    for src in sources:
+        if isinstance(src, Path) and src.is_dir():
+            try:
+                files = sorted(src.glob("*.json"))
+            except OSError:
+                files = []
+        else:
+            try:
+                files = [src] if src.exists() else []
+            except OSError:
+                files = []
+        for f in files:
+            present += 1
+            ts = _latest_source_timestamp(f)
+            if ts is None:
+                continue
+            age = now - ts
+            if age.total_seconds() < 0:
+                age = timedelta(0)
+            if stale_age is None or age > stale_age:
+                stale_age = age
+                stale_path = f
+
+    if present == 0:
+        return True, ""  # no readable source -> fail-open
+
+    if stale_age is not None and stale_age.total_seconds() > max_age_hours * 3600:
+        hours = round(stale_age.total_seconds() / 3600, 1)
+        name = stale_path.name if stale_path is not None else "unknown"
+        return False, (
+            f"Data source {name} is stale ({hours}h old; "
+            f"limit {max_age_hours:g}h)."
+        )
+    return True, ""
+
+
 def _attach_measurement_payload_keys(
-    payload, *, measurement_block, ledger_gate_results, overlap_aware_return=None
+    payload,
+    *,
+    measurement_block,
+    ledger_gate_results,
+    overlap_aware_return=None,
+    freshness_check=None,
 ):
     """Emit the measurement_hygiene payload keys (Stage A + Task 6 banner).
 
@@ -14661,6 +14805,11 @@ def _attach_measurement_payload_keys(
     MEASUREMENT_HYGIENE_V1 is ON. Pure w.r.t. the payload (mutates and returns
     it). When OFF, ``generate()`` never calls this, so the payload carries no
     measurement keys at all.
+
+    ``freshness_check`` is the ``(freshness_ok, warning)`` tuple from
+    ``_check_data_freshness()`` (Task 11). When stale, ``enabled`` is forced to
+    False, ``freshness_ok`` is False, and a ``freshness_warning`` field is
+    added. When fresh, ``freshness_ok`` is True and no warning is emitted.
     """
     if measurement_block is not None:
         payload.setdefault("summary", {})
@@ -14683,6 +14832,25 @@ def _attach_measurement_payload_keys(
                 "mdd": "≤20% (peak-to-trough)",
             },
         }
+    if freshness_check is not None:
+        _fresh_ok, _fresh_warn = freshness_check
+        _targets = []
+        if isinstance(payload.get("measurement_hygiene"), dict):
+            _targets.append(payload["measurement_hygiene"])
+        if isinstance(payload.get("summary", {}).get("measurement_hygiene"), dict):
+            _targets.append(payload["summary"]["measurement_hygiene"])
+        for _block in _targets:
+            _block["freshness_ok"] = bool(_fresh_ok)
+            if not _fresh_ok:
+                _block["enabled"] = False
+                _block["freshness_warning"] = _fresh_warn
+        # Guarantee the warning surfaces even if no hygiene block was built.
+        if not _fresh_ok and not _targets:
+            payload["measurement_hygiene"] = {
+                "enabled": False,
+                "freshness_ok": False,
+                "freshness_warning": _fresh_warn,
+            }
     return payload
 
 
@@ -18894,11 +19062,16 @@ def generate():
                 _measurement_block.get("n_verified", 0) + _measurement_block.get("n_unverified", 0),
                 (_oa_return or 0) * 100,
             )
+        # Task 11: DB freshness gate. Fail-soft — when any source is stale the
+        # dashboard still renders, but enabled is forced False and a warning is
+        # surfaced in the measurement_hygiene block.
+        _freshness_check = _check_data_freshness()
         payload = _attach_measurement_payload_keys(
             payload,
             measurement_block=_measurement_block,
             ledger_gate_results=ledger_gate_results,
             overlap_aware_return=_oa_return,
+            freshness_check=_freshness_check,
         )
 
     # Sanitize inf/-inf/nan to None — JSON spec forbids these literals, and
