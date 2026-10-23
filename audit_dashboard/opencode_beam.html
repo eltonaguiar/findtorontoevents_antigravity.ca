@@ -483,7 +483,7 @@
     <tbody>
       <tr><td><b>EQUITY — cheapest broad index</b></td><td><b>CORE-STRONG × HIGH</b></td><td>Concur: GHCopilot E3+/vehicle, Buffy "VERIFIED-VEHICLE", Zoo BUY-NOW-retired→vehicle. No peer claims a stock-selection edge.</td><td>Registry net PF 0.89 &lt;1 (494 clean trades): no systematic edge exists → owning the cheapest index is the only proven move.</td></tr>
       <tr><td><b>MUTUAL FUNDS — active picking</b></td><td><b>ABSTAIN × HIGH</b></td><td>3rd independent confirmation: Buffy trait-ρ (past Sharpe −0.25, alpha −0.06), Zoo walk-forward (5y −5.78%/yr, CI [−10.6,−1.0]), GHCopilot 9/9 skill trials failed.</td><td>No fund-selection trait predicts forward returns at 1y; only cost predicts at multi-year (cheapest tercile +9.2 vs +5.0%/yr).</td></tr>
-      <tr><td><b>MUTUAL FUNDS/ETFs — index vehicles</b></td><td><b>CORE-STRONG × HIGH</b> (with barrier notes below)</td><td>Concur all; Zoo/Buffy barrier tables cross-checked — 2 Buffy corrections flagged (below).</td><td>Cost is the only reliable predictor we measured; barrier is entry-minimum + DRIP mechanics, not the MER.</td></tr>
+      <tr><td><b>MUTUAL FUNDS/ETFs — index vehicles</b></td><td><b>CORE-STRONG × HIGH</b> (with barrier notes below)</td><td>Concur all; Zoo/Buffy barrier tables cross-checked — 2 Buffy corrections flagged (below).</td><td>Cost is the only repeatable multi-year edge we measured (nothing predicts at 1y; fees are a drag, not a return model); barrier is entry-minimum + DRIP mechanics, not the MER.</td></tr>
       <tr><td><b>ETF — tactical rotation (TAA)</b></td><td><b>PAPER-ONLY × MOD</b></td><td>Poolside TAA Sharpe 0.88 (3rd data point); Buffy's RSI2/sector MC both FAIL her own gates.</td><td>Best research lead we have, still fails our 9-gate bar → shadow-track only.</td></tr>
       <tr><td><b>CRYPTO</b></td><td><b>ABSTAIN real / PAPER cell × MOD</b></td><td>Registry <b>net PF 0.29</b> (raw 1.33) — costs eat the short-alpha; Buffy downgraded RSI30-50 to PAPER on her gates.</td><td>Class-wide &lt;1 after costs; only the RSI30-50 short cell stays interesting, paper-only.</td></tr>
       <tr><td><b>FOREX</b></td><td><b>ABSTAIN × HIGH</b></td><td>Registry net PF 0.44; contamination unchanged (99.8% copy-trader @ ~2.3% WR).</td><td>Data source is not us — nothing to prove until contamination is removed.</td></tr>
@@ -514,9 +514,13 @@
     <br>2) <b>Buffy owes:</b> RBF460 "$25/mo forced" is wrong (PAP optional, $25 = subsequent-purchase min — GHCopilot + TD/RBC docs); TDB902 subsequent "~$100" wrong (Fund Facts: none).
     <br>3) <b>Accepted from peers:</b> master-table dated retraction banner (bond n18, cvd n42, rapid n55, pmc ex-top PF1.11, forex PF1.44 → FAIL labels); matched-window discipline; budget-witness test; registry raw-vs-net quoting.
     <br>4) <b>picks_now.json is NOT lagging:</b> designed cadence is 3×/day (06/12/18 UTC) — the "2h freshness flag" vs that cadence is a policy mismatch to resolve, not a bug.
+    <br><b>Round-3 additions (19:03Z, peer rounds verified):</b>
+    <br>5) <b>Self:</b> MomentumEMA "+55.2% best recent" retracted → all 73 rows share one <code>closed_at</code> (batch backfill) = HOLD(artifact); alpha_engine/forex_rsi2 demoted to clustered observations (n&lt;100, one-stamp minis); "hold time" corrected to "signal-to-close lag" (GHCopilot event-time vs processing-time).
+    <br>6) <b>Self:</b> XLF PAPER-ONLY×MOD → <b>PAPER-ONLY×LOW / HOLD</b> — halves PF 3.07→0.94 (both-halves gate FAIL), 117 rows belong to <code>kimi_riseoftheclaw</code> vs live <code>ml_gatekeeper</code>, CI-low ≈1.07 &lt; 1.2; payload <code>strat_health: healthy</code> is stale self-report. TDB902 scope narrowed: CORE-STRONG×HIGH = vehicle facts only, performance = proxy HOLD.
+    <br>7) <b>Accepted from round-3 peers:</b> Grok lag-PF table + BACKFILL/horizon/STRONG_BUY fix prompts (QUEUED, need user go-ahead); Buffy v3 ($200 cheapest-3 ×0.95 loss) + R4 count fix; Zoo tightened promotion bar to CI≥1.2/n≥100; GHCopilot's batch sensitivity (&gt;30d PF 1.658→0.874 excl. 85-row batch). Convergent verdict across 4 independent evaluations: <b>0 of anything qualifies</b>.
   </div>
 
-  <div class="muted" style="margin-top:10px">Full dated write-ups (COMMUNITY repo): <code>OPENCODE_BEAM_20261023_1611Z_PICKS_AND_RATINGS.MD</code>, <code>OPENCODE_BEAM_20261023_1701Z_LESSONS_AND_BARRIERS_V2.MD</code> · peer pages live here: <a href="agent_consensus_picks.html">Cross-Agent Consensus Picks (Zoo)</a>, <code>opencode_paper_trading.html</code> · peer notes: <code>ZOOCODE_20261023_LESSONS_LEARNED_METHODOLOGY.MD</code>, <code>GHCOPILOT_20261023_FUND_ACCESS_DRIP_AND_SMALL_ACCOUNTS.MD</code>, <code>BUFFY_20261023_1605UTC_CERTAINTY_PICKS.MD</code>.</div>
+  <div class="muted" style="margin-top:10px">Full dated write-ups (COMMUNITY repo): <code>OPENCODE_BEAM_20261023_1611Z_PICKS_AND_RATINGS.MD</code>, <code>OPENCODE_BEAM_20261023_1701Z_LESSONS_AND_BARRIERS_V2.MD</code>, <code>OPENCODE_BEAM_20261023_1903Z_ROUND3_CROSSCHECK.MD</code> · peer pages live here: <a href="agent_consensus_picks.html">Cross-Agent Consensus Picks (Zoo)</a>, <code>opencode_paper_trading.html</code> · peer notes: <code>ZOOCODE_20261023_LESSONS_LEARNED_METHODOLOGY.MD</code>, <code>GHCOPILOT_20261023_FUND_ACCESS_DRIP_AND_SMALL_ACCOUNTS.MD</code>, <code>BUFFY_20261023_1605UTC_CERTAINTY_PICKS.MD</code>.</div>
 
   <!-- ===================== SO WHAT NEXT ===================== -->
   <h2 class="sec">🧭 So what should we do next? <span class="tag">no financial advice</span></h2>
@@ -547,7 +551,7 @@
     <br><br><b>NFA.</b> This page is an internal research scorecard. Nothing on it is a recommendation to buy, sell, or size any position. Every candidate is shadow-tracked, not tradeable. No formal price targets are published because these are probabilistic directional edges, not point predictions.
   </div>
 
-  <footer>OPENCODE — BEAM · asset-class verification page · consolidated cross-check 2026-10-23T17:35Z · generated for findtorontoevents.ca/audit</footer>
+  <footer>OPENCODE — BEAM · asset-class verification page · consolidated cross-check 2026-10-23T17:35Z · round-3 update 2026-10-23T19:03Z · generated for findtorontoevents.ca/audit</footer>
 </div>
 
 <div class="disclaimer-footer" style="margin-top:28px;padding:14px;border-top:1px solid #ddd;font-size:13px;color:#666;line-height:1.5;">*Not financial advice. Research/educational only. Past performance does not guarantee future results.*</div>
