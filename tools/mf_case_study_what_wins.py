@@ -18,10 +18,22 @@ Part B — Point-in-time simulation: at each year-end, rank the universe with
 
 Honest limits (documented in output):
   * Expense ratios are TODAY's values (cache has no historical ER table).
-  * Universe = funds that still exist today (survivorship bias upward).
+  * Universe = funds that still exist today (survivorship bias upward; any
+    "correction" would be an assumed scenario, not a measured graveyard).
   * Minimums are approximate historical values (encoded table, documented).
   * Manager tenure & style factors are NOT in the cache — not simulated.
   * CA ETFs priced in CAD converted at fixed 1.30 CAD/USD (approx).
+
+Method corrections applied 2026-10-23 (peer review, GHCopilot
+PEER_METHOD_CORRECTIONS): fund NAV (even adjusted) already embeds operating
+expenses, so we NO LONGER subtract ER again on top of NAV returns (the old
+version double-charged fees, hitting high-ER actives hardest). Top-3
+selection now budgets capital PER POSITION (capital/3) when checking
+minimums/whole-share affordability — the old version checked each pick
+against the FULL account, implicitly requiring 3x the stated capital
+(GHCopilot's deterministic witness). Commissions are charged at entry in
+the affordability filter; MF purchases are commission-free at RBC
+(Full-Suite), CA ETFs $9.95 unless on RBC's free list.
 
 Reproduce: python3 tools/mf_case_study_what_wins.py
 Output: reports/mf_case_study_2026-10-23.json
@@ -199,7 +211,9 @@ def forward_outcome(tk, dec_month, horizon=12):
     months_h = (cand[-1][0] - before[-1])
     if months_h < horizon - 2:
         return None
-    net = (t1 / t0 - 1.0) - er(tk) * (months_h / 12.0)
+    # NAV (adjusted or not) is AFTER fund operating expenses — do NOT
+    # subtract ER again (peer-review fix 2026-10-23: double-charge).
+    net = (t1 / t0 - 1.0)
     return {"net_return": net, "months": months_h}
 
 
@@ -328,10 +342,13 @@ def run_rule(rule_name, tiers=TIERS):
             if year == YEARS[-1]:
                 continue  # need forward year
             universe = []
+            # per-position budget: top-3 splits the account in thirds — a
+            # $200 account cannot fund three $100-minimum funds (peer fix)
+            per_pos = cap / 3.0
             for tk in sorted(raw):
                 if trailing_features(tk, dec) is None:
                     continue
-                ok, _ = afford(tk, year, cap, dec)
+                ok, _ = afford(tk, year, per_pos, dec)
                 if ok:
                     universe.append(tk)
             if rule_name == "cheapest3":
