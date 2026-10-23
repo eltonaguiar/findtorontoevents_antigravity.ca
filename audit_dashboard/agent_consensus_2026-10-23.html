@@ -121,13 +121,14 @@ the only trait that helps is <i>being cheap</i>.</div>
 
 <h3>Part B — "$200 vs $500 vs $1,000 vs $2,000 vs $10,000" simulation (funds that PASSED the screen at time T)</h3>
 <div class="small"><b>CORRECTED 17:05 UTC after peer review</b> (GHCopilot method-corrections): (1) NAV already embeds fund expenses — removed the old double ER subtraction; (2) top-3 picks now budget <b>capital/3 per position</b> (old version implicitly required 3× the stated account). Conclusions sharpened.</div>
+<div class="small"><b>CORRECTED 17:55 UTC (round 3)</b> — two more GHCopilot witnesses confirmed against my tool and fixed: (1) month-target off-by-one (12-month windows were 11), (2) commissions were affordability-checked but never charged to the account; budget now follows the running balance. SPY benchmark corrected to ×5.397. Conclusions unchanged across three specification rounds; the small-account penalty is now cleanly monotone.</div>
 <table>
 <tr><th>Starting capital (Dec 2004, re-picked each year)</th><th>cheapest-3 rule</th><th>composite (cost+risk+consistency+downside)</th><th>"steady" rule (most consistent years)</th><th>SPY buy &amp; hold</th></tr>
-<tr><td>$200</td><td>$507 (<b>×2.53</b>) — mostly 1 fund/yr (XIC.TO alone)</td><td>$453 (<b>×2.27</b>) — <b>only 10 of 18 years playable</b></td><td>$505 (×2.53)</td><td rowspan="5" style="vertical-align:middle"><b>$1,000 → $4,618 (×4.62)</b><br><span class="small">simple, boring, unbeaten</span></td></tr>
-<tr><td>$500</td><td>$2,040 (×4.08)</td><td>$1,483 (×2.97)</td><td>$1,300 (×2.60)</td></tr>
-<tr><td>$1,000</td><td>$3,924 (×3.92)</td><td>$2,507 (×2.51)</td><td>$2,334 (×2.33)</td></tr>
-<tr><td>$2,000</td><td>$6,260 (×3.13)</td><td>$4,865 (×2.43)</td><td>$5,070 (×2.54)</td></tr>
-<tr><td>$10,000</td><td>$39,573 (×3.96)</td><td>$21,502 (×2.15)</td><td>$19,893 (×1.99)</td></tr>
+<tr><td>$200</td><td><b>×0.95 — lost money over 18 years after commissions</b></td><td>×1.22 (only 10 of 18 years playable)</td><td>×1.18</td><td rowspan="5" style="vertical-align:middle"><b>×5.397</b><br><span class="small">simple, boring, unbeaten</span></td></tr>
+<tr><td>$500</td><td>×2.85</td><td>×1.77</td><td>×1.33</td></tr>
+<tr><td>$1,000</td><td>×3.59</td><td>×2.43</td><td>×1.96</td></tr>
+<tr><td>$2,000</td><td>×3.63</td><td>×2.23</td><td>×2.15</td></tr>
+<tr><td>$10,000</td><td>×4.46</td><td>×2.10</td><td>×2.28</td></tr>
 </table>
 <ul style="font-size:.78rem;padding-left:1.4rem">
 <li><b>Every rule lost to plain SPY over 18 years</b> (beat SPY only 1–7 of 18 single years). The gap = diversification drag (small/mid/intl sleeves lagging US large) + annual switching noise.</li>
@@ -135,8 +136,19 @@ the only trait that helps is <i>being cheap</i>.</div>
 <li><b>The "steady/predictable" picker was the worst</b> at every tier (×1.99–2.60 vs ×4.62). ELI5: the smoothest road took the longest route.</li>
 <li><b>Capital walls were real:</b> until 2021–22 a $200–$2,000 account could not buy most US funds (Fidelity $2,500 / Vanguard $3,000 minimums). The 2022 zero-minimum revolution was the biggest small-account "edge" — access, not selection.</li>
 <li><b>Corroboration &amp; dissent:</b> Zoo's independent traits walk-forward (alpha/tenure/consistency composite) <b>underperforms</b> the index at every horizon (5y US −5.78%/yr, CI [−10.6,−1.0]) — same verdict as my Part A. GHCopilot's frozen-rule replay finds past-return selection <b>ties</b> SPY post-2016 (15.24% vs 15.10%) — but with worse drawdown (39.7% vs 33.7%), no affordability walls, and still <b>no rule that BEAT SPY with significance in any of the three studies</b>.</li>
-<li><b>Would you have made money?</b> Yes on every playable tier (2005–2023 was a strong bull era) — but you'd have left 14–100% on the table vs "do nothing but SPY," and at $200 in many years there was nothing diversified left to buy.</li>
+<li><b>Would you have made money?</b> Yes on every playable tier above $200 (2005–2023 was a strong bull era) — but you'd have left up to ~100% on the table vs "do nothing but SPY," and <b>at $200 the commissions alone turned an 18-year holding period into a net loss</b> (×0.95).</li>
 </ul>
+
+<h2>2b · Live /audit picks — evaluated against this methodology (2026-10-23 17:45 UTC)</h2>
+<table>
+<tr><th>What the live board shows</th><th>What the evidence fields say</th><th>My verdict</th></tr>
+<tr><td>21 of 25 active picks labeled <b>STRONG_BUY</b> (scores 80–90: PFF/PFXF/QYLD/ARKW/VWO/EEM/EURCHF/USDNOK/EURGBP/EWJ/SCHF/JEPQ/XLE/PFFD/PFFA/VGT/VHT/SCHD/HDV)</td><td><code>intrabar_gate: NO_DATA</code>, <code>intrabar_fwd_n: null</code>, <code>db_n: 0</code> on every one</td><td><b>Not prospects.</b> These are discovery quant screens (RSI/Bollinger/vol/dividend). The payload's own <code>pro_level_gate</code> says "discovery quant scores alone do not qualify for STRONG_BUY" — the displayed label outruns the system's own rule.</td></tr>
+<tr><td>4 EQUITY rows (GOOGL/MU/NFLX/TTWO/PLTR) as WATCH</td><td>CLASS_DEMOTE (EQUITY class PF 0.86); GOOGL db_n=7 WR 14.3%, EURGBP db_n=23 WR 21.7%</td><td>Honest demotion. The only two picks with any DB history <b>lose</b> — tiny negative samples.</td></tr>
+<tr><td>Preferred-share cluster (PFF/PFXF/PFFD/PFFA) + QYLD — same theme 5×</td><td>Dividend-screen scores 82–90</td><td>Concentration in one income theme; covered-call ETFs (QYLD-style) have known NAV-decay mechanics. High yield ≠ edge. ABSTAIN.</td></tr>
+<tr><td>Recently closed book (3,500 picks)</td><td>WR 45.5%, avg +0.21%/trade <b>gross</b>; <code>after_cost_net_per_trade</code> 0% populated; 19% FORCE_CLOSED legacy</td><td>Cannot certify net profitability — the cost column the name promises is empty.</td></tr>
+<tr><td>Smart Picks: 0 · money_ready: [] (live 15:42 UTC)</td><td>—</td><td>The system's own honest gates are empty — consistent with my independent verdict: <b>0 of 25 active picks pass.</b></td></tr>
+</table>
+<div class="eli5"><b>ELI5:</b> the board shows 21 bright green "strong buy" stickers — but when you open each sticker's back, there's no homework attached: no tested trades, no win record, nothing. Two of them that <i>do</i> have homework came back failing. A label without evidence is a wish, not a winner.</div>
 
 <h3>Barrier of entry &amp; features — $1,000 vs $2,000 reality check (RBC, verified 2026-10-23)</h3>
 <table>

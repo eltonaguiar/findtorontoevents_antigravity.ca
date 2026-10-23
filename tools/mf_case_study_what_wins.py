@@ -202,7 +202,9 @@ def forward_outcome(tk, dec_month, horizon=12):
     # target month = dec_month + horizon
     y, mo = int(dec_month[:4]), int(dec_month[5:7])
     total = y * 12 + (mo - 1) + horizon
-    ty, tm = divmod(total - 1, 12)
+    # month index total maps to (total//12, total%12+1); NO -1 (peer witness:
+    # Dec-2020 + 12 must land on Dec-2021, not Nov-2021)
+    ty, tm = divmod(total, 12)
     tgt = f"{ty:04d}-{tm + 1:02d}"
     cand = [(i, m) for i, (m, c) in enumerate(s) if m <= tgt]
     if not cand:
@@ -220,7 +222,9 @@ def forward_outcome(tk, dec_month, horizon=12):
 def spy_forward(dec_month, horizon=12):
     y, mo = int(dec_month[:4]), int(dec_month[5:7])
     total = y * 12 + (mo - 1) + horizon
-    ty, tm = divmod(total - 1, 12)
+    # month index total maps to (total//12, total%12+1); NO -1 (peer witness:
+    # Dec-2020 + 12 must land on Dec-2021, not Nov-2021)
+    ty, tm = divmod(total, 12)
     tgt = f"{ty:04d}-{tm + 1:02d}"
     c0 = [c for m, c in spy_me if m == dec_month]
     c1 = [c for m, c in spy_me if m == tgt]
@@ -337,20 +341,24 @@ def run_rule(rule_name, tiers=TIERS):
     results = {}
     for cap in tiers:
         path = []  # (year, [tickers], portfolio net 12m return, spy return)
+        v = cap
         for year in YEARS:
             dec = f"{year}-12"
             if year == YEARS[-1]:
                 continue  # need forward year
             universe = []
-            # per-position budget: top-3 splits the account in thirds — a
-            # $200 account cannot fund three $100-minimum funds (peer fix)
-            per_pos = cap / 3.0
+            fee_by_tk = {}
+            # per-position budget: top-3 splits the CURRENT account in thirds
+            # (follows account growth/loss — peer witness fix) and commissions
+            # are charged to the account below, not just checked
+            per_pos = v / 3.0
             for tk in sorted(raw):
                 if trailing_features(tk, dec) is None:
                     continue
-                ok, _ = afford(tk, year, per_pos, dec)
+                ok, fee = afford(tk, year, per_pos, dec)
                 if ok:
                     universe.append(tk)
+                    fee_by_tk[tk] = fee
             if rule_name == "cheapest3":
                 picks = sorted(universe, key=lambda t: (er(t) if er(t) > 0 else 1e-6, t))[:3]
             elif rule_name == "composite":
@@ -362,16 +370,18 @@ def run_rule(rule_name, tiers=TIERS):
                 picks = []
             if not picks:
                 path.append((year, [], None, spy_forward(dec)))
+                # idle year: cash
+                v *= (1 + CASH_RATE)
                 continue
             outs = [forward_outcome(t, dec, 12) for t in picks]
             outs = [o["net_return"] for o in outs if o]
             ret = sum(outs) / len(outs) if outs else None
             path.append((year, picks, ret, spy_forward(dec)))
-        # portfolio growth of cap over all years (skip missing years at cash)
-        v = cap
-        for year, picks, ret, spy_r in path:
             r = ret if ret is not None else CASH_RATE
-            v *= (1 + r)
+            # commission witness: entry fees are subtracted from the ACCOUNT
+            # (three $9.95 fees cannot be free), not merely affordability-checked
+            fees = sum(fee_by_tk.get(t, 0.0) for t in picks)
+            v = v * (1 + r) - fees
         wins = [1 for y, p, r, s in path if r is not None and s is not None and r > s]
         playable = [1 for y, p, r, s in path if r is not None]
         results[cap] = {
