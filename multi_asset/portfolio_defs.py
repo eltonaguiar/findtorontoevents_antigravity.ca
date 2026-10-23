@@ -420,18 +420,26 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
         "universe": [
             # Technology
             "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "AMD", "CRM", "ORCL",
+            "AVGO", "NFLX", "ADBE", "INTC", "QCOM", "CSCO", "IBM", "PYPL", "NOW", "CRWD",
             # Financials
-            "JPM", "V", "MA", "GS", "BAC",
+            "JPM", "V", "MA", "GS", "BAC", "WFC", "C", "MS", "SCHW", "AXP",
             # Healthcare
-            "UNH", "JNJ", "LLY", "PFE",
+            "UNH", "JNJ", "LLY", "PFE", "MRK", "ABBV", "AMGN", "GILD", "CVS", "TMO",
             # Consumer / Industrial
-            "WMT", "COST", "HD", "CAT",
+            "WMT", "COST", "HD", "CAT", "MCD", "SBUX", "NKE", "DIS", "PEP", "KO",
+            "DE", "BA", "GE", "HON", "LIN", "ORLY", "TJX", "LOW",
         ],
         "sector_groupings": {
-            "technology": ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "AMD", "CRM", "ORCL"],
-            "financials": ["JPM", "V", "MA", "GS", "BAC"],
-            "healthcare": ["UNH", "JNJ", "LLY", "PFE"],
-            "consumer_industrial": ["WMT", "COST", "HD", "CAT"],
+            "technology": [
+                "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "AMD", "CRM", "ORCL",
+                "AVGO", "NFLX", "ADBE", "INTC", "QCOM", "CSCO", "IBM", "PYPL", "NOW", "CRWD",
+            ],
+            "financials": ["JPM", "V", "MA", "GS", "BAC", "WFC", "C", "MS", "SCHW", "AXP"],
+            "healthcare": ["UNH", "JNJ", "LLY", "PFE", "MRK", "ABBV", "AMGN", "GILD", "CVS", "TMO"],
+            "consumer_industrial": [
+                "WMT", "COST", "HD", "CAT", "MCD", "SBUX", "NKE", "DIS", "PEP", "KO",
+                "DE", "BA", "GE", "HON", "LIN", "ORLY", "TJX", "LOW",
+            ],
         },
         "risk_params": {
             "default_stop_atr_mult": 1.5,
@@ -486,8 +494,8 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
     "etf": {
         "description": "Sector SPDRs, commodity, bond, and broad market ETFs",
         "universe": [
-            # Broad market
-            "SPY", "QQQ", "IWM", "DIA",
+            # Broad market (expanded)
+            "SPY", "QQQ", "IWM", "DIA", "VTI", "VOO", "VT",
             # 11 SPDR sector ETFs
             "XLB",   # Materials
             "XLC",   # Communication Services
@@ -500,11 +508,15 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
             "XLU",   # Utilities
             "XLV",   # Health Care
             "XLY",   # Consumer Discretionary
-            # Commodities
+            # Commodities (expanded)
             "GLD",   # Gold
             "SLV",   # Silver
             "USO",   # Oil
             "DBA",   # Agriculture
+            "GDX",   # Gold Miners
+            "XME",   # Metals & Mining
+            "COPX",  # Copper Miners
+            "REMX",  # Rare Earth / Strategic Metals
             # Bonds
             "TLT",   # 20+ Year Treasury
             "IEF",   # 7-10 Year Treasury
@@ -512,25 +524,55 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
             "LQD",   # Investment Grade Corporate
             "BIL",   # 1-3 Month T-Bill (cash proxy)
             "TIP",   # TIPS (inflation-protected)
-            # International
+            "VCIT",  # Intermediate Corporate
+            "VCSH",  # Short-Term Corporate
+            # International (expanded)
             "EFA",   # Developed ex-US
             "EEM",   # Emerging Markets
             "FXI",   # China
+            "MCHI",  # China (Large Cap)
+            "EWZ",   # Brazil
+            "EWG",   # Germany
+            "EWJ",   # Japan
+            "INDA",  # India
+            "KWEB",  # China Internet
+            # Thematic / Innovation
+            "ARKK",  # Innovation ETF
+            "IGV",   # Software
+            "SMH",   # Semiconductors
+            "SOXX",  # Semiconductors (iShares)
+            "XBI",   # Biotech
+            "IBB",   # Biotech (iShares)
+            "TAN",   # Solar
+            "ICLN",  # Global Clean Energy
+            # Dividend / Factor
+            "SCHD",  # US Dividend
+            "DVY",   # Dividend Select
+            "VYM",   # High Dividend Yield
+            "MTUM",  # Momentum Factor
+            "USMV",  # Minimum Volatility
             # Volatility
             "VIXY",  # VIX Short-Term Futures
-            # Dollar
+            # Dollar (expanded)
             "UUP",   # US Dollar Bullish
+            "UDN",   # US Dollar Bearish
+            "FXE",   # Euro Currency
+            "FXY",   # Japanese Yen Currency
         ],
         "sector_groupings": {
-            "broad_market": ["SPY", "QQQ", "IWM", "DIA"],
+            "broad_market": ["SPY", "QQQ", "IWM", "DIA", "VTI", "VOO", "VT"],
             "spdr_sectors": [
                 "XLB", "XLC", "XLE", "XLF", "XLI", "XLK",
                 "XLP", "XLRE", "XLU", "XLV", "XLY",
             ],
-            "commodities": ["GLD", "SLV", "USO", "DBA"],
-            "fixed_income": ["TLT", "IEF", "HYG", "LQD", "BIL", "TIP"],
-            "international": ["EFA", "EEM", "FXI"],
-            "alternatives": ["VIXY", "UUP"],
+            "commodities": ["GLD", "SLV", "USO", "DBA", "GDX", "XME", "COPX", "REMX"],
+            "fixed_income": [
+                "TLT", "IEF", "HYG", "LQD", "BIL", "TIP", "VCIT", "VCSH",
+            ],
+            "international": ["EFA", "EEM", "FXI", "MCHI", "EWZ", "EWG", "EWJ", "INDA", "KWEB"],
+            "thematic_innovation": ["ARKK", "IGV", "SMH", "SOXX", "XBI", "IBB", "TAN", "ICLN"],
+            "dividend_factor": ["SCHD", "DVY", "VYM", "MTUM", "USMV"],
+            "alternatives": ["VIXY", "UUP", "UDN", "FXE", "FXY"],
         },
         "risk_params": {
             "default_stop_atr_mult": 2.0,
@@ -602,9 +644,13 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
     "forex": {
         "description": "G10 FX major and cross pairs",
         "universe": [
+            # Majors
             "EURUSD=X", "USDJPY=X", "GBPUSD=X", "AUDUSD=X", "NZDUSD=X",
-            "USDCAD=X", "USDCHF=X", "EURGBP=X", "EURJPY=X", "GBPJPY=X",
-            "AUDJPY=X",
+            "USDCAD=X", "USDCHF=X",
+            # Crosses (expanded)
+            "EURGBP=X", "EURJPY=X", "GBPJPY=X", "AUDJPY=X",
+            "EURCHF=X", "CADJPY=X", "CHFJPY=X", "EURAUD=X",
+            "EURCAD=X", "GBPAUD=X", "AUDCAD=X", "NZDJPY=X",
         ],
         "carry_data": {
             # Approximate overnight swap rates (annualized) — updated periodically
@@ -619,11 +665,23 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
             "EURJPY=X": {"long_swap_pct": 3.5,  "short_swap_pct": -5.0},
             "GBPJPY=X": {"long_swap_pct": 5.0,  "short_swap_pct": -7.0},
             "AUDJPY=X": {"long_swap_pct": 4.0,  "short_swap_pct": -6.5},
+            "EURCHF=X": {"long_swap_pct": 0.5,  "short_swap_pct": -2.0},
+            "CADJPY=X": {"long_swap_pct": 4.8,  "short_swap_pct": -6.8},
+            "CHFJPY=X": {"long_swap_pct": 5.2,  "short_swap_pct": -7.2},
+            "EURAUD=X": {"long_swap_pct": -2.5, "short_swap_pct": 0.5},
+            "EURCAD=X": {"long_swap_pct": -1.8, "short_swap_pct": 0.2},
+            "GBPAUD=X": {"long_swap_pct": -2.2, "short_swap_pct": 0.1},
+            "AUDCAD=X": {"long_swap_pct": 0.8,  "short_swap_pct": -2.6},
+            "NZDJPY=X": {"long_swap_pct": 4.2,  "short_swap_pct": -6.8},
         },
         "sector_groupings": {
             "dollar_majors": ["EURUSD=X", "USDJPY=X", "GBPUSD=X", "USDCAD=X", "USDCHF=X"],
-            "commodity_fx": ["AUDUSD=X", "NZDUSD=X"],
-            "crosses": ["EURGBP=X", "EURJPY=X", "GBPJPY=X", "AUDJPY=X"],
+            "commodity_fx": ["AUDUSD=X", "NZDUSD=X", "AUDCAD=X"],
+            "crosses": [
+                "EURGBP=X", "EURJPY=X", "GBPJPY=X", "AUDJPY=X",
+                "EURCHF=X", "CADJPY=X", "CHFJPY=X", "EURAUD=X",
+                "EURCAD=X", "GBPAUD=X", "NZDJPY=X",
+            ],
         },
         "risk_params": {
             "default_stop_atr_mult": 1.5,
@@ -637,6 +695,9 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
             "AUDUSD=X": 0.0001, "NZDUSD=X": 0.0001, "USDCAD=X": 0.0001,
             "USDCHF=X": 0.0001, "EURGBP=X": 0.0001, "EURJPY=X": 0.01,
             "GBPJPY=X": 0.01,   "AUDJPY=X": 0.01,
+            "EURCHF=X": 0.0001, "CADJPY=X": 0.01, "CHFJPY=X": 0.01,
+            "EURAUD=X": 0.0001, "EURCAD=X": 0.0001, "GBPAUD=X": 0.0001,
+            "AUDCAD=X": 0.0001, "NZDJPY=X": 0.01,
         },
         "trading_hours": "24h Sun 17:00 - Fri 17:00 ET",
         "data_source": "yfinance",
@@ -647,11 +708,27 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
     # ------------------------------------------------------------------
     "crypto": {
         "description": "Cryptocurrency — see alpha_engine/ for full strategy configs",
-        "universe": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "ADAUSDT"],
+        "universe": [
+            # Layer-1 / majors
+            "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "ADAUSDT",
+            "AVAXUSDT", "DOTUSDT", "LTCUSDT", "TRXUSDT", "ETCUSDT", "ATOMUSDT",
+            # Large-cap altcoins
+            "DOGEUSDT", "LINKUSDT", "MATICUSDT", "UNIUSDT", "XLMUSDT",
+            "FILUSDT", "HBARUSDT", "ALGOUSDT", "APTUSDT", "NEARUSDT",
+            # Layer-2 / appchains
+            "ARBUSDT", "OPUSDT", "SUIUSDT", "SEIUSDT", "TIAUSDT", "INJUSDT",
+            # Meme / community
+            "PEPEUSDT", "SHIBUSDT", "BONKUSDT", "WIFUSDT",
+        ],
         "sector_groupings": {
-            "layer1": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "ADAUSDT"],
-            "defi": [],
-            "meme": [],
+            "layer1": [
+                "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "ADAUSDT",
+                "AVAXUSDT", "DOTUSDT", "ATOMUSDT",
+            ],
+            "payment_transfer": ["XRPUSDT", "LTCUSDT", "TRXUSDT", "XLMUSDT", "ETCUSDT"],
+            "defi": ["LINKUSDT", "UNIUSDT", "MATICUSDT", "INJUSDT", "HBARUSDT", "ALGOUSDT"],
+            "layer2": ["ARBUSDT", "OPUSDT", "SUIUSDT", "SEIUSDT", "TIAUSDT", "NEARUSDT", "APTUSDT", "FILUSDT"],
+            "meme": ["DOGEUSDT", "PEPEUSDT", "SHIBUSDT", "BONKUSDT", "WIFUSDT"],
         },
         "risk_params": {
             "default_stop_atr_mult": 2.0,
@@ -659,12 +736,38 @@ ASSET_CLASS_CONFIGS: dict[str, dict[str, Any]] = {
             "max_correlation_within_portfolio": 0.75,
         },
         "symbol_normalization": {
-            "BTC-USD": "BTCUSDT",
-            "BTCUSD": "BTCUSDT",
-            "ETH-USD": "ETHUSDT",
-            "ETHUSD": "ETHUSDT",
-            "SOL-USD": "SOLUSDT",
-            "SOLUSD": "SOLUSDT",
+            "BTC-USD": "BTCUSDT", "BTCUSD": "BTCUSDT",
+            "ETH-USD": "ETHUSDT", "ETHUSD": "ETHUSDT",
+            "SOL-USD": "SOLUSDT", "SOLUSD": "SOLUSDT",
+            "BNB-USD": "BNBUSDT", "BNBUSD": "BNBUSDT",
+            "XRP-USD": "XRPUSDT", "XRPUSD": "XRPUSDT",
+            "ADA-USD": "ADAUSDT", "ADAUSD": "ADAUSDT",
+            "AVAX-USD": "AVAXUSDT", "AVAXUSD": "AVAXUSDT",
+            "DOT-USD": "DOTUSDT", "DOTUSD": "DOTUSDT",
+            "LTC-USD": "LTCUSDT", "LTCUSD": "LTCUSDT",
+            "TRX-USD": "TRXUSDT", "TRXUSD": "TRXUSDT",
+            "ETC-USD": "ETCUSDT", "ETCUSD": "ETCUSDT",
+            "ATOM-USD": "ATOMUSDT", "ATOMUSD": "ATOMUSDT",
+            "DOGE-USD": "DOGEUSDT", "DOGEUSD": "DOGEUSDT",
+            "LINK-USD": "LINKUSDT", "LINKUSD": "LINKUSDT",
+            "MATIC-USD": "MATICUSDT", "MATICUSD": "MATICUSDT",
+            "UNI-USD": "UNIUSDT", "UNIUSD": "UNIUSDT",
+            "XLM-USD": "XLMUSDT", "XLMUSD": "XLMUSDT",
+            "FIL-USD": "FILUSDT", "FILUSD": "FILUSDT",
+            "HBAR-USD": "HBARUSDT", "HBARUSD": "HBARUSDT",
+            "ALGO-USD": "ALGOUSDT", "ALGOUSD": "ALGOUSDT",
+            "APT-USD": "APTUSDT", "APTUSD": "APTUSDT",
+            "NEAR-USD": "NEARUSDT", "NEARUSD": "NEARUSDT",
+            "ARB-USD": "ARBUSDT", "ARBUSD": "ARBUSDT",
+            "OP-USD": "OPUSDT", "OPUSD": "OPUSDT",
+            "SUI-USD": "SUIUSDT", "SUIUSD": "SUIUSDT",
+            "SEI-USD": "SEIUSDT", "SEIUSD": "SEIUSDT",
+            "TIA-USD": "TIAUSDT", "TIAUSD": "TIAUSDT",
+            "INJ-USD": "INJUSDT", "INJUSD": "INJUSDT",
+            "PEPE-USD": "PEPEUSDT", "PEPEUSD": "PEPEUSDT",
+            "SHIB-USD": "SHIBUSDT", "SHIBUSD": "SHIBUSDT",
+            "BONK-USD": "BONKUSDT", "BONKUSD": "BONKUSDT",
+            "WIF-USD": "WIFUSDT", "WIFUSD": "WIFUSDT",
         },
         "trading_hours": "24/7",
         "data_source": "alpha_engine",
@@ -862,10 +965,52 @@ QA_CHECKS: dict[str, dict[str, Any]] = {
             "BNB-USD": "BNBUSDT", "BNBUSD": "BNBUSDT",
             "XRP-USD": "XRPUSDT", "XRPUSD": "XRPUSDT",
             "ADA-USD": "ADAUSDT", "ADAUSD": "ADAUSDT",
+            "AVAX-USD": "AVAXUSDT", "AVAXUSD": "AVAXUSDT",
+            "DOT-USD": "DOTUSDT", "DOTUSD": "DOTUSDT",
+            "LTC-USD": "LTCUSDT", "LTCUSD": "LTCUSDT",
+            "TRX-USD": "TRXUSDT", "TRXUSD": "TRXUSDT",
+            "ETC-USD": "ETCUSDT", "ETCUSD": "ETCUSDT",
+            "ATOM-USD": "ATOMUSDT", "ATOMUSD": "ATOMUSDT",
+            "DOGE-USD": "DOGEUSDT", "DOGEUSD": "DOGEUSDT",
+            "LINK-USD": "LINKUSDT", "LINKUSD": "LINKUSDT",
+            "MATIC-USD": "MATICUSDT", "MATICUSD": "MATICUSDT",
+            "UNI-USD": "UNIUSDT", "UNIUSD": "UNIUSDT",
+            "XLM-USD": "XLMUSDT", "XLMUSD": "XLMUSDT",
+            "FIL-USD": "FILUSDT", "FILUSD": "FILUSDT",
+            "HBAR-USD": "HBARUSDT", "HBARUSD": "HBARUSDT",
+            "ALGO-USD": "ALGOUSDT", "ALGOUSD": "ALGOUSDT",
+            "APT-USD": "APTUSDT", "APTUSD": "APTUSDT",
+            "NEAR-USD": "NEARUSDT", "NEARUSD": "NEARUSDT",
+            "ARB-USD": "ARBUSDT", "ARBUSD": "ARBUSDT",
+            "OP-USD": "OPUSDT", "OPUSD": "OPUSDT",
+            "SUI-USD": "SUIUSDT", "SUIUSD": "SUIUSDT",
+            "SEI-USD": "SEIUSDT", "SEIUSD": "SEIUSDT",
+            "TIA-USD": "TIAUSDT", "TIAUSD": "TIAUSDT",
+            "INJ-USD": "INJUSDT", "INJUSD": "INJUSDT",
+            "PEPE-USD": "PEPEUSDT", "PEPEUSD": "PEPEUSDT",
+            "SHIB-USD": "SHIBUSDT", "SHIBUSD": "SHIBUSDT",
+            "BONK-USD": "BONKUSDT", "BONKUSD": "BONKUSDT",
+            "WIF-USD": "WIFUSDT", "WIFUSD": "WIFUSDT",
             # Forex variants
             "EUR/USD": "EURUSD=X", "EURUSD": "EURUSD=X",
             "USD/JPY": "USDJPY=X", "USDJPY": "USDJPY=X",
             "GBP/USD": "GBPUSD=X", "GBPUSD": "GBPUSD=X",
+            "AUD/USD": "AUDUSD=X", "AUDUSD": "AUDUSD=X",
+            "NZD/USD": "NZDUSD=X", "NZDUSD": "NZDUSD=X",
+            "USD/CAD": "USDCAD=X", "USDCAD": "USDCAD=X",
+            "USD/CHF": "USDCHF=X", "USDCHF": "USDCHF=X",
+            "EUR/GBP": "EURGBP=X", "EURGBP": "EURGBP=X",
+            "EUR/JPY": "EURJPY=X", "EURJPY": "EURJPY=X",
+            "GBP/JPY": "GBPJPY=X", "GBPJPY": "GBPJPY=X",
+            "AUD/JPY": "AUDJPY=X", "AUDJPY": "AUDJPY=X",
+            "EUR/CHF": "EURCHF=X", "EURCHF": "EURCHF=X",
+            "CAD/JPY": "CADJPY=X", "CADJPY": "CADJPY=X",
+            "CHF/JPY": "CHFJPY=X", "CHFJPY": "CHFJPY=X",
+            "EUR/AUD": "EURAUD=X", "EURAUD": "EURAUD=X",
+            "EUR/CAD": "EURCAD=X", "EURCAD": "EURCAD=X",
+            "GBP/AUD": "GBPAUD=X", "GBPAUD": "GBPAUD=X",
+            "AUD/CAD": "AUDCAD=X", "AUDCAD": "AUDCAD=X",
+            "NZD/JPY": "NZDJPY=X", "NZDJPY": "NZDJPY=X",
         },
     },
     "correlated_positions_unhedged": {
