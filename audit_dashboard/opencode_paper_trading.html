@@ -128,6 +128,7 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 
 <div class="card">
   <h2>Data quality &amp; stale data audit</h2>
+  <p style="color:#94a3b8;font-size:13px;">Page-history note (2026-10-23): the earlier 81-line variant of this page misclassified <code>AAPL</code> and <code>USDCAD=X</code> under CRYPTO in a per-class table. Those rows are not carried forward; AAPL = EQUITY, USDCAD = FOREX.</p>
   <table>
     <tr><th>Asset class</th><th>Total rows</th><th>Last activity</th><th>Stale (&gt;30d)</th><th>Zero pnl</th><th>Null pnl</th><th>Status</th></tr>
     <tr><td>CRYPTO</td><td>66,770</td><td>2026-10-22</td><td>62,610 (93.8%)</td><td>17,865</td><td>6,274</td><td>Active (AlphaEngine live)</td></tr>
@@ -262,23 +263,22 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 </div>
 
 <div class="card">
-  <h2>TRUE October 2026 winners (after dedup + exclusion)</h2>
-  <p style="color:#94a3b8;">All 3 bugs applied: deduplicated by (symbol, entry, exit), batch-closes excluded, lookahead excluded, frozen-exit excluded. These are the REAL edge candidates.</p>
+  <h2>October 2026 picks after dedup + exclusion — FINAL LABELS (2026-10-23 gate review)</h2>
+  <p style="color:#94a3b8;">All 3 bugs applied: deduplicated by (symbol, entry, exit), batch-closes excluded, lookahead excluded, frozen-exit excluded. <strong style="color:#fca5a5">Then the full 9-gate review was applied (2026-10-23): 5 of 6 picks FAIL hard gates. Previously shown as green PASS/CANDIDATE — that was wrong.</strong></p>
   <table>
     <tr><th>Strategy</th><th>Dir</th><th>Asset</th><th>n</th><th>WR</th><th>PF</th><th>One-pos PF</th><th>Bootstrap CI</th><th>P(>0)</th><th>Exit days</th><th>Gate</th></tr>
-    <tr><td>bond_yield_curve_slope</td><td>LONG</td><td>BOND</td><td>18</td><td>72.2%</td><td>9.44</td><td>3.55</td><td>[0.454,1.125]</td><td>1.0000</td><td>8</td><td style="color:#22c55e">PASS</td></tr>
-    <tr><td>rapid_momentum_filter_mut</td><td>SHORT</td><td>CRYPTO</td><td>55</td><td>65.5%</td><td>2.59</td><td>1.33</td><td>[0.543,2.120]</td><td>0.9998</td><td>16</td><td style="color:#22c55e">PASS</td></tr>
-    <tr><td>cvd_divergence</td><td>SHORT</td><td>CRYPTO</td><td>42</td><td>66.7%</td><td>2.60</td><td>1.66</td><td>[0.397,2.003]</td><td>0.9984</td><td>18</td><td style="color:#22c55e">PASS</td></tr>
-    <tr><td>prediction_market_consensus</td><td>SHORT</td><td>CRYPTO</td><td>682</td><td>56.0%</td><td>2.11</td><td>1.11</td><td>[0.670,1.031]</td><td>1.0000</td><td>22</td><td style="color:#22c55e">PASS</td></tr>
-    <tr><td>luxalgo_confluence</td><td>SHORT</td><td>CRYPTO</td><td>206</td><td>54.4%</td><td>1.65</td><td>1.27</td><td>[0.316,1.280]</td><td>1.0000</td><td>21</td><td style="color:#22c55e">PASS</td></tr>
-    <tr><td>forex_zscore_200d_fade</td><td>SHORT</td><td>FOREX</td><td>207</td><td>51.7%</td><td>1.44</td><td>2.53</td><td>[0.005,0.137]</td><td>0.9822</td><td>14</td><td style="color:#22c55e">PASS</td></tr>
+    <tr><td>bond_yield_curve_slope</td><td>LONG</td><td>BOND</td><td>18</td><td>72.2%</td><td>9.44</td><td>3.55</td><td>[0.454,1.125]</td><td>1.0000</td><td>8</td><td style="color:#f87171">FAIL — n=18&lt;100</td></tr>
+    <tr><td>rapid_momentum_filter_mut</td><td>SHORT</td><td>CRYPTO</td><td>55</td><td>65.5%</td><td>2.59</td><td>1.33</td><td>[0.543,2.120]</td><td>0.9998</td><td>16</td><td style="color:#f87171">FAIL — n=55&lt;100</td></tr>
+    <tr><td>cvd_divergence</td><td>SHORT</td><td>CRYPTO</td><td>42</td><td>66.7%</td><td>2.60</td><td>1.66</td><td>[0.397,2.003]</td><td>0.9984</td><td>18</td><td style="color:#f87171">FAIL — n=42&lt;100</td></tr>
+    <tr><td>prediction_market_consensus</td><td>SHORT</td><td>CRYPTO</td><td>682</td><td>56.0%</td><td>2.11</td><td>1.11</td><td>[0.670,1.031]</td><td>1.0000</td><td>22</td><td style="color:#f87171">FAIL — one-pos PF 1.11, CI [0.68,1.05]</td></tr>
+    <tr><td>luxalgo_confluence</td><td>SHORT</td><td>CRYPTO</td><td>206</td><td>54.4%</td><td>1.65</td><td>1.27</td><td>[0.316,1.280]</td><td>1.0000</td><td>21</td><td style="color:#ca8a04">CANDIDATE — CI-lo 0.32&lt;1.2</td></tr>
+    <tr><td>forex_zscore_200d_fade</td><td>SHORT</td><td>FOREX</td><td>207</td><td>51.7%</td><td>1.44</td><td>2.53</td><td>[0.005,0.137]</td><td>0.9822</td><td>14</td><td style="color:#f87171">FAIL — PF 1.44&lt;1.5</td></tr>
   </table>
-  <p><strong>Regime:</strong> BOND (bond_yield_curve_slope), CRYPTO SHORT (rapid_momentum + cvd_divergence + prediction_market + luxalgo), FOREX SHORT (forex_zscore_200d_fade).</p>
-  <p><strong>These are CANDIDATE status.</strong> Not proven. n is deduplicated. One-position PF is the executable edge. Forward-validation needed.</p>
+  <p><strong>Regime (updated 2026-10-23):</strong> NO regime picks remain. bond/rapid/cvd/prediction_market/forex all FAIL hard gates; luxalgo_confluence stays CANDIDATE only (bootstrap CI-low 0.32 &lt; 1.2 gate). Nothing MONEY-READY.</p>
 </div>
 
 <div class="card">
-  <h2>Variety-pack mutual fund proposal (per-asset-class winners)</h2>
+  <h2>Variety-pack mutual fund proposal — <span style="color:#f87171">SHELVED 2026-10-23 (all constituents FAIL gates)</span></h2>
   <details>
     <summary style="cursor:pointer;color:#38bdf8;font-weight:bold;">Click to expand</summary>
     <div style="margin-top:12px;line-height:1.6;">
@@ -293,7 +293,7 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
         <tr><td>EQUITY</td><td colspan="7">No winner after dedup. regime_mild_bear SHORT fails gate (WR 38.5%).</td></tr>
         <tr><td>FUTURES</td><td colspan="7">No winner. commodity_momentum has only 4 unique trades.</td></tr>
       </table>
-      <p><strong>Status:</strong> CANDIDATE. Not proven. All numbers after dedup + artifact exclusion. One-position PF is the executable edge. Forward-validation needed before real capital.</p>
+      <p><strong>Status: SHELVED — NOT a proposal.</strong> On 2026-10-23 the 5 strategy constituents were relabelled FAIL (n&lt;100 or PF&lt;1.5 or one-position collapse). Table kept for provenance only. No real capital. Do not build.</p>
       <p><strong>Honest assessment:</strong> This is a short-term tactical fund (hours to days holding), NOT a long-term mutual fund. It would be marketed as an alternative-strategy ETF, not a mutual fund. No EQUITY or FUTURES allocation possible today.</p>
     </div>
   </details>
@@ -339,8 +339,9 @@ summary { cursor:pointer; color:#38bdf8; font-weight:bold; }
 <tr style="border-bottom:1px solid #222"><td style="padding:6px">Equal-weight all</td><td>9.1%</td><td>−3.1%</td><td>31%</td><td>8.2%</td><td>[−5.9,−0.5]</td><td>no</td></tr>
 <tr style="border-bottom:1px solid #222;font-weight:600"><td style="padding:6px">Always SPY (baseline)</td><td>12.1%</td><td>—</td><td>—</td><td>10.6%</td><td>—</td><td>—</td></tr>
 <tr style="border-bottom:1px solid #222;background:rgba(34,197,94,0.08)"><td style="padding:6px">Always VOO (cheap S&amp;P)</td><td>15.1%</td><td>+0.1%</td><td>93%</td><td>14.1%</td><td>[+0.02,+0.19]</td><td><strong style="color:#22c55e">YES</strong></td></tr>
-<tr style="background:rgba(34,197,94,0.08)"><td style="padding:6px">Always cheapest index (FXAIX)</td><td>12.6%</td><td>+0.5%</td><td>84%</td><td>11.0%</td><td>[+0.10,+0.83]</td><td><strong style="color:#22c55e">YES</strong></td></tr>
+<tr style="background:rgba(34,197,94,0.08)"><td style="padding:6px">Always cheapest index basket (FXAIX/FSKAX/VTSAX/VTI)</td><td>12.6%</td><td>+0.5%*</td><td>84%</td><td>11.0%</td><td>[+0.10,+0.83]</td><td><strong style="color:#22c55e">YES*</strong></td></tr>
 </table>
+<p style="background:rgba(250,204,36,0.07);padding:8px;border-left:3px solid #facc15;"><strong>*FXAIX correction (2026-10-23, reviewer query):</strong> The +0.5% row is the <em>basket</em> rule (it picked VTI in 7 of 19 years — a selection effect), <strong>not FXAIX-vs-SPY</strong>. On an identical window (2011-05-04 → 2026-10-21, dividend-adjusted): FXAIX 14.029%/yr vs SPY 13.964%/yr → <strong>gap +0.066%/yr, 95% CI [+0.058, +0.135]</strong> — exactly the 0.0795% fee gap (SPY 0.0945 − FXAIX 0.015). The fee saving is real; it is not skill. Code: PR #760 <code>tools/fund_walkforward_review.py</code>.</p>
 <p><strong>Verdict:</strong> No picking rule beat the index with statistical significance. The only significant wins are just holding a <em>cheaper</em> S&amp;P 500 fund (VOO/FXAIX vs SPY) — that is a fee saving, not skill. Sector rotation looked directional (+1.5%/yr) but its 95% CI includes zero. The obscure-winner hunt found <strong>MIDSX</strong> (1% fee, CAGR 0.05%, −89.7% drawdown) — a disaster, not a secret. Free 0% Fidelity ZERO funds match the index; they save ~0.08%/yr vs SPY, nothing more.</p>
 <p><strong>Canada starters (not advice):</strong> From $1: XEQT (0.20% MER, all equity) or VBAL (0.24%, gentler drops) on Wealthsimple TFSA. Cheapest S&amp;P 500 in CAD: XUS.TO (0.07%) or VFV.TO (0.09%). Full history where available: VFV.TO 17.2% CAGR / 14y; XEQT.TO 14.4% / 7y. These are index products — high CAGR is the market, not a manager.</p>
 <p><em>Full methodology + reproduce: <code>updates/2026-10-23-fund-selection-walkforward.md</code> · data <code>audit_dashboard/data/fund_wf_deep.json</code></em></p>
