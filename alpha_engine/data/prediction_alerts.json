@@ -1,10 +1,24 @@
 {
   "alerts": [
     {
+      "type": "MODEL_FLAT",
+      "severity": "WARNING",
+      "message": "Prediction variance 0.0069 < 0.01 -- model not discriminating between good and bad picks",
+      "timestamp": "2026-10-23T16:20:15.637555+00:00"
+    },
+    {
       "type": "PSI_SHIFT",
       "severity": "CRITICAL",
-      "message": "PSI = 0.832 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
-      "timestamp": "2026-10-23T14:20:17.280876+00:00"
+      "message": "PSI = 0.707 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
+      "timestamp": "2026-10-23T16:20:15.637555+00:00"
+    },
+    {
+      "type": "OUT_OF_DISTRIBUTION",
+      "severity": "WARNING",
+      "message": "AAPL (regime_accumulation) is OOD -- 2 features beyond 3.0 sigma, confidence reduced by 0.05",
+      "symbol": "AAPL",
+      "strategy": "regime_accumulation",
+      "timestamp": "2026-10-23T16:20:15.656727+00:00"
     },
     {
       "type": "CONSECUTIVE_LOSSES",
@@ -12,13 +26,13 @@
       "message": "Strategy 'luxalgo_confluence' has 5 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
       "strategy": "luxalgo_confluence",
       "streak": 5,
-      "timestamp": "2026-10-23T14:20:17.418043+00:00"
+      "timestamp": "2026-10-23T16:20:15.962513+00:00"
     }
   ],
   "summary": {
-    "total_alerts": 2,
+    "total_alerts": 4,
     "critical": 1,
-    "warning": 1,
+    "warning": 3,
     "info": 0,
     "sizing_multiplier": 0.5
   },
@@ -28,9 +42,9 @@
     "center_line": null
   },
   "prediction_dist": {
-    "psi": 0.832,
-    "mean_shift": 0.0233,
-    "current_var": 0.0156
+    "psi": 0.7075,
+    "mean_shift": 0.0226,
+    "current_var": 0.0069
   },
-  "updated_at": "2026-10-23T14:20:17.280876+00:00"
+  "updated_at": "2026-10-23T16:20:15.637555+00:00"
 }
