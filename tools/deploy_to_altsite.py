@@ -34,6 +34,10 @@ import re
 import shutil
 import tempfile
 from pathlib import Path
+import sys
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.ftp_credentials import load_ftp_environment, connect_ftp
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -163,6 +167,8 @@ def _load_env():
 
 
 def _env(key, fallback=""):
+    if key in {"FTP_SERVER", "FTP_HOST", "FTP_USER", "FTP_PASS"}:
+        load_ftp_environment()
     return os.environ.get(key, fallback).strip()
 
 
@@ -508,8 +514,7 @@ def main():
     # --- Deploy ---
     print(f"\nConnecting to FTP: {host} ...")
     try:
-        with ftplib.FTP(host, timeout=120) as ftp:
-            ftp.login(user, password)
+        with connect_ftp() as ftp:
             print("Connected.\n")
 
             total = deploy_staged(ftp, staging_dir, ftp_path)

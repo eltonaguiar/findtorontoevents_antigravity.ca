@@ -17,8 +17,7 @@
 # REQUIRES
 #   - git, curl, sha256sum (Git Bash on Windows ships these)
 #   - python3 + pytest (for smoke run)
-#   - FTP_USER + FTP_PASS in env, or sourced from
-#     C:/windows_env_backup_2026-04-14.md (peer agent's known location)
+#   - FTP_USER + FTP_PASS in env, or ~/dbpasses.txt via ftp_credentials.py
 set -uo pipefail
 
 DRY_RUN=0
@@ -38,17 +37,14 @@ cd "$REPO_ROOT"
 
 # --- Source FTP creds -------------------------------------------------------
 if [ -z "${FTP_USER:-}" ] || [ -z "${FTP_PASS:-}" ]; then
-  ENV_FILE="C:/windows_env_backup_2026-04-14.md"
-  if [ -f "$ENV_FILE" ]; then
-    FTP_USER="$(grep -E '^FTP_USER=' "$ENV_FILE" | head -1 | cut -d'=' -f2)"
-    FTP_PASS="$(grep -E '^FTP_PASS=' "$ENV_FILE" | head -1 | cut -d'=' -f2)"
-  fi
-fi
-if [ -z "${FTP_USER:-}" ] || [ -z "${FTP_PASS:-}" ]; then
-  echo "FTP_USER + FTP_PASS not set. Export both or place them in $ENV_FILE." >&2
-  exit 2
+  exec python3 tools/ftp_credentials.py -- bash "$0" "$@"
 fi
 FTP_HOST="${FTP_HOST:-ftps2.50webs.com}"
+export FTP_USER FTP_PASS
+ftp_curl() {
+  python3 -c 'import json, os; print("user = " + json.dumps(os.environ["FTP_USER"] + ":" + os.environ["FTP_PASS"]))' \
+    | curl --config - --ssl-reqd "$@"
+}
 REMOTE_BASE="/findtorontoevents.ca"
 
 # Files that ship via FTP. Keep in sync with .github/workflows/sports-smoke-and-e2e.yml deploy-guard.
@@ -128,7 +124,7 @@ CHANGED=()
 for f in "${SPORTS_FILES[@]}"; do
   [ -f "$f" ] || continue
   remote_url="ftp://$FTP_HOST$REMOTE_BASE/$f"
-  if ! curl --silent --max-time 30 --user "$FTP_USER:$FTP_PASS" -o "$TMPDIR/prod_$(basename "$f")" "$remote_url"; then
+  if ! ftp_curl --silent --max-time 30 -o "$TMPDIR/prod_$(basename "$f")" "$remote_url"; then
     echo "  miss $f (will upload as new)"
     CHANGED+=("$f")
     continue
@@ -165,7 +161,7 @@ echo
 echo "=== Uploading via FTP ==="
 FAILED=0
 for f in "${CHANGED[@]}"; do
-  if curl --silent --show-error --max-time 60 --user "$FTP_USER:$FTP_PASS" -T "$f" "ftp://$FTP_HOST$REMOTE_BASE/$f"; then
+  if ftp_curl --silent --show-error --max-time 60 -T "$f" "ftp://$FTP_HOST$REMOTE_BASE/$f"; then
     echo "  OK $f"
   else
     echo "  FAIL $f" >&2
@@ -173,7 +169,7 @@ for f in "${CHANGED[@]}"; do
   fi
 done
 if [ "$INCLUDE_ENV" -eq 1 ]; then
-  if curl --silent --show-error --max-time 60 --user "$FTP_USER:$FTP_PASS" -T "$ENV_UPLOAD_LOCAL" "ftp://$FTP_HOST$REMOTE_BASE/$ENV_UPLOAD_REMOTE"; then
+  if ftp_curl --silent --show-error --max-time 60 -T "$ENV_UPLOAD_LOCAL" "ftp://$FTP_HOST$REMOTE_BASE/$ENV_UPLOAD_REMOTE"; then
     echo "  OK $ENV_UPLOAD_REMOTE"
   else
     echo "  FAIL $ENV_UPLOAD_REMOTE" >&2
