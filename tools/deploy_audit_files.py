@@ -36,10 +36,15 @@ UPLOADS = [
     ("audit_dashboard/data/strategy_funnel_data.json",        "/findtorontoevents.ca/audit/data/strategy_funnel_data.json",         "pick_funnel"),
     ("audit_dashboard/data/nav_surface_edge_matrix.json",    "/findtorontoevents.ca/audit/data/nav_surface_edge_matrix.json",     "pick_funnel"),
     ("audit_dashboard/data/strategy_ic_analysis.json",        "/findtorontoevents.ca/audit/data/strategy_ic_analysis.json",         "pick_funnel"),
+    # 2026-10-23: mutual-fund ratings page (was missing from every deploy list -> live 404)
+    ("audit_dashboard/mutual-funds.html",                    "/findtorontoevents.ca/audit/mutual-funds.html",                    "mutual_funds"),
+    ("audit_dashboard/data/mutut_fund_rankings.json",        "/findtorontoevents.ca/audit/data/mutut_fund_rankings.json",         "mutual_funds"),
+    ("audit_dashboard/data/mf_walkforward_results.json",     "/findtorontoevents.ca/audit/data/mf_walkforward_results.json",      "mutual_funds"),
     ("audit_dashboard/model.html",                           "/findtorontoevents.ca/audit/model.html",                            "model"),
     ("audit_dashboard/ai-tournament.html",                   "/findtorontoevents.ca/audit/ai-tournament.html",                    "ai_tournament"),
     # 2026-10-19: Task 10 read-only ledger-benchmark panel + its sidecar JSON
     ("audit_dashboard/benchmark_proof.html",                 "/findtorontoevents.ca/audit/benchmark_proof.html",                  "healthchecks"),
+    ("audit_dashboard/opencode_beam.html",                   "/findtorontoevents.ca/audit/opencode_beam.html",                    "healthchecks"),
     ("audit_dashboard/data/benchmark_ledger_proof.json",     "/findtorontoevents.ca/audit/data/benchmark_ledger_proof.json",      "healthchecks"),
     ("audit_dashboard/ai_postmortem_helper.js",              "/findtorontoevents.ca/audit/ai_postmortem_helper.js",               "ai_tournament"),
     ("audit_dashboard/data/ai_tournament_picks_latest.json", "/findtorontoevents.ca/audit/data/ai_tournament_picks_latest.json",  "ai_tournament"),

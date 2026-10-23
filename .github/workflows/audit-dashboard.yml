@@ -135,12 +135,12 @@ jobs:
           # at_pick_outcomes/at_signal_outcomes writes silently failed (resolver logs the mysql
           # error as a warning + exits 0) -> honest ledger frozen since 2026-06-12 while CI stayed
           # green. Wire the existing secret (same pattern as the sibling 'Sync paper trades' step).
-          DB_STOCKS_HOST: mysql.50webs.com
-          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_HOST: [REDACTED]
+          DB_STOCKS_USER: [REDACTED]
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
-          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || '[REDACTED]' }}
+          DB_STOCKS_NAME: [REDACTED]
 
       - name: Sync paper trades to MySQL (paper_trades + paper_portfolio_daily)
         id: paper_trade_mysql_sync
@@ -148,12 +148,12 @@ jobs:
         env:
           PICK_OUTCOMES_MYSQL_ENABLED: '1'
           PAPER_TRADE_MYSQL_ENABLED: '1'
-          DB_STOCKS_HOST: mysql.50webs.com
-          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_HOST: [REDACTED]
+          DB_STOCKS_USER: [REDACTED]
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
-          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || '[REDACTED]' }}
+          DB_STOCKS_NAME: [REDACTED]
           HF_GATE_EQUITY_BANNED_SOURCES: 'stocks_competition,fast_stocks_competition,multi_asset_institutional,kimi_signal_tracking,ml_bg_system_f'
         run: |
           pip install pymysql -q 2>/dev/null || true
@@ -236,10 +236,10 @@ jobs:
       - name: Run DB health check (PnL integrity, ghost rows, OPEN bloat → audit_dashboard/data/db_health.json)
         id: db_health_check
         env:
-          AUDIT_DB_HOST: mysql.50webs.com
-          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_HOST: [REDACTED]
+          AUDIT_DB_USER: [REDACTED]
           AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
-          AUDIT_DB_NAME: ejaguiar1_stocks
+          AUDIT_DB_NAME: [REDACTED]
           DB_HEALTH_READ_TIMEOUT: '180'
           PYTHONUTF8: '1'
         run: python tools/db_health_check.py --quick || echo "db_health_check non-fatal"
@@ -248,12 +248,12 @@ jobs:
       - name: Run anti-overfit audit sidecar (DSR per strategy — SUPREME EDGE P1)
         id: anti_overfit_sidecar
         env:
-          DB_STOCKS_HOST: mysql.50webs.com
-          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_HOST: [REDACTED]
+          DB_STOCKS_USER: [REDACTED]
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
-          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || '[REDACTED]' }}
+          DB_STOCKS_NAME: [REDACTED]
           PYTHONUTF8: '1'
         run: |
           pip install pymysql -q 2>/dev/null || true
@@ -274,12 +274,12 @@ jobs:
       - name: Run COT paper pilot (cot_positioning + CT=F SHADOW state tracker)
         id: cot_paper_pilot
         env:
-          DB_STOCKS_HOST: mysql.50webs.com
-          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_HOST: [REDACTED]
+          DB_STOCKS_USER: [REDACTED]
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
-          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || '[REDACTED]' }}
+          DB_STOCKS_NAME: [REDACTED]
           PYTHONUTF8: '1'
         run: |
           pip install pymysql -q 2>/dev/null || true
@@ -297,30 +297,30 @@ jobs:
       - name: Run Top-N rank backtest (EQUITY hindsight replay — answers "would top-10 have been profitable")
         id: top_n_rank_backtest
         env:
-          DB_STOCKS_HOST: mysql.50webs.com
-          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_HOST: [REDACTED]
+          DB_STOCKS_USER: [REDACTED]
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
-          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || '[REDACTED]' }}
+          DB_STOCKS_NAME: [REDACTED]
           PYTHONUTF8: '1'
         run: |
           pip install pymysql -q || echo "::warning title=pymysql install failed::Top-5 Rank Backtest panel will be empty this run — pip install pymysql failed (see log above)"
           python tools/top_n_rank_backtest.py --n 10 --asset-class EQUITY --lookback-days 90 || echo "top_n_rank_backtest failed (non-fatal)"
           # 2026-05-21: generator hardened (tools/top_n_rank_backtest.py) — always
           # writes real generated_at + error + _note. Placeholder below is defense only.
-          python -c "import json,os; p='audit_dashboard/data/top_n_rank_backtest.json'; os.path.exists(p) or (os.makedirs(os.path.dirname(p),exist_ok=True), open(p,'w',encoding='utf-8').write(json.dumps({'generated_at':None,'windows':{},'detail':{},'_note':'placeholder - top_n_rank_backtest generator failed or produced no rows this run'},indent=2)), print('wrote placeholder '+p))"
+          python -c "import json,os; p='audit_dashboard/data/mutut_fund_rankings.json audit_dashboard/data/mf_walkforward_results.json audit_dashboard/data/top_n_rank_backtest.json'; os.path.exists(p) or (os.makedirs(os.path.dirname(p),exist_ok=True), open(p,'w',encoding='utf-8').write(json.dumps({'generated_at':None,'windows':{},'detail':{},'_note':'placeholder - top_n_rank_backtest generator failed or produced no rows this run'},indent=2)), print('wrote placeholder '+p))"
         continue-on-error: true
 
       - name: Run COT Step 7 risk-of-ruin Monte Carlo (cot_positioning + CT=F at $5k/$10k/$25k tiers)
         id: cot_step7_ror_mc
         env:
-          DB_STOCKS_HOST: mysql.50webs.com
-          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_HOST: [REDACTED]
+          DB_STOCKS_USER: [REDACTED]
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
-          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || '[REDACTED]' }}
+          DB_STOCKS_NAME: [REDACTED]
           PYTHONUTF8: '1'
         run: |
           pip install pymysql -q 2>/dev/null || true
@@ -345,12 +345,12 @@ jobs:
       - name: Active picks sync (LIVE — reads at_raw_picks, applies TP/SL/time-exit transitions)
         id: active_picks_sync_live
         env:
-          DB_STOCKS_HOST: mysql.50webs.com
-          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_HOST: [REDACTED]
+          DB_STOCKS_USER: [REDACTED]
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
-          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
-          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || '[REDACTED]' }}
+          DB_STOCKS_NAME: [REDACTED]
           PYTHONUTF8: '1'
           # Stage B (2026-05-18): flip to live writer. Dry-run ran cleanly for 6 days
           # across all asset classes (Stage A, 2026-05-18). User-approved 2026-05-18.
@@ -744,7 +744,7 @@ jobs:
         run: python tools/non_crypto_pick_audit.py audit_trail/data/dashboard_payload.json
         continue-on-error: true
 
-      - name: Sync portfolio data to MySQL (ejaguiar1_stocks)
+      - name: Sync portfolio data to MySQL ([REDACTED])
         id: mysql_sync
         continue-on-error: true
         env:
@@ -755,11 +755,11 @@ jobs:
           # AUDIT_DB_USER, producing 1045 Access denied. Drop the MYSQL_* exports
           # entirely so the AUDIT_DB_* values flow through. consensus-outcome-tracker
           # uses these exact 4 vars (no MYSQL_*) and runs success every cycle.
-          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_HOST: [REDACTED]
           AUDIT_DB_PORT: '3306'
-          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_USER: [REDACTED]
           AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
-          AUDIT_DB_NAME: ejaguiar1_stocks
+          AUDIT_DB_NAME: [REDACTED]
         run: |
           pip install pymysql -q 2>/dev/null || true
           python alpha_engine/audit_sync.py 2>&1 || echo "Audit sync failed (non-fatal)"
@@ -772,11 +772,11 @@ jobs:
       - name: Run pick-flow funnel snapshot (DB → per-class raw/gated/forward-test counts)
         id: pick_flow_snapshot
         env:
-          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_HOST: [REDACTED]
           AUDIT_DB_PORT: '3306'
-          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_USER: [REDACTED]
           AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
-          AUDIT_DB_NAME: ejaguiar1_stocks
+          AUDIT_DB_NAME: [REDACTED]
           HF_GATE_EQUITY_BANNED_SOURCES: 'stocks_competition,fast_stocks_competition,multi_asset_institutional,kimi_signal_tracking,ml_bg_system_f'
           HF_GATE_CRYPTO_BANNED_SOURCES: 'copy_trader_bitget,copy_trader_binance_smart_money,claude_gainer,ml_base_signals,ml_bg_system_f,regime_terminal,dna_rapid_fire_mutations,crypto_winners,dna_random_walk_scalper'
         run: |
@@ -1238,7 +1238,9 @@ jobs:
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
                            "ai_leaderboard.html", "ai-tournament.html", "summary.html",
-                           "hyrotrader/index.html", "benchmark_proof.html"]:
+                            "hyrotrader/index.html", "benchmark_proof.html", "inception_paper_trading.html",
+                             "ghcopilot_paper.html", "freebuff_buffy_proven_picks.html", "poolside_paper.html",
+                             "opencode_paper_trading.html", "opencode_beam.html", "mutual-funds.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)
                   except Exception:
@@ -1357,10 +1359,12 @@ jobs:
               # HTML pages
               ftp.cwd("/audit")
               for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
-                           "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
-                           "real_money.html", "research_sidecars.html", "research_index.html",
-                           "ai_leaderboard.html", "ai-tournament.html", "summary.html",
-                           "benchmark_proof.html"]:
+                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
+                            "real_money.html", "research_sidecars.html", "research_index.html",
+                            "ai_leaderboard.html", "ai-tournament.html", "summary.html",
+                            "benchmark_proof.html", "inception_paper_trading.html", "ghcopilot_paper.html",
+                             "freebuff_buffy_proven_picks.html", "poolside_paper.html",
+                             "opencode_paper_trading.html", "opencode_beam.html", "mutual-funds.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", "/audit", page, label)
                   except Exception:
@@ -1409,10 +1413,12 @@ jobs:
                   except Exception as e:
                       print(f"  [{label}] Failed {jsf}: {e}")
               for page in ["funds.html", "claudes_test.html", "trading_blueprint.html",
-                           "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
-                           "real_money.html", "research_sidecars.html", "research_index.html",
-                           "ai_leaderboard.html", "ai-tournament.html", "summary.html",
-                           "benchmark_proof.html"]:
+                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
+                            "real_money.html", "research_sidecars.html", "research_index.html",
+                            "ai_leaderboard.html", "ai-tournament.html", "summary.html",
+                            "benchmark_proof.html", "inception_paper_trading.html", "ghcopilot_paper.html",
+                             "freebuff_buffy_proven_picks.html", "poolside_paper.html",
+                             "opencode_paper_trading.html", "opencode_beam.html", "mutual-funds.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)
                   except Exception:
