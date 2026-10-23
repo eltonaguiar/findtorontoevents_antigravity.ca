@@ -1,0 +1,895 @@
+{
+ "generated_at": "2026-10-23T05:26:35+00:00",
+ "agent": "OPENCODE_BEAM (opencode/beam-free)",
+ "nfa": "NOT FINANCIAL ADVICE - research/QA only. This is not a recommendation to buy or sell any security. Past performance does not guarantee future results.",
+ "as_of_period_end": "2026-09-30",
+ "methodology": {
+  "claims": "frozen from official fund documents (URLs in each fund block)",
+  "prices": "Yahoo Finance adjusted closes (dividends reinvested)",
+  "calendar_tol_pp": "0.5 (0.75 YTD 2026)",
+  "period_tol_pp": 0.75,
+  "tracking_doc_tol_pp": "0.30 vs expected gap (~ -MER) for index-like",
+  "tracking_proxy_tol_pp": "0.75 direct proxy / 1.5 index-proxy / INFO active",
+  "proxy_notes": {
+   "SP500TR_CAD": "^SP500TR x USDCAD (matches CAD NY Rate NTR for VFV/TDB902)",
+   "VUG_fee": "+0.04pp (VUG expense) approximates Russell 1000 Growth TR",
+   "IXIC_div": "+0.9pp/yr estimated dividends for Nasdaq Composite (price index)",
+   "VT_fee": "+0.06pp (VT expense) for XEQT ACWI sanity proxy"
+  },
+  "beta_r2": "monthly returns, 60 months to 2026-09-30",
+  "sharpe_rf0": "daily mean/std annualized, rf=0 (not comparable to docs using rf>0)"
+ },
+ "funds": {
+  "XEQT": {
+   "name": "iShares Core All Equity Asset Allocation ETF",
+   "ticker": "XEQT.TO",
+   "inception": "2019-08-07",
+   "mer_pct": 0.19,
+   "mer_source": "iShares factsheet (Sep 2026): MER 0.19%; older ETF Facts 0.20%; mgmt fee cut 0.18->0.17 eff 2025-12",
+   "objective": "Long-term capital growth; ~100% global equity via fund-of-funds",
+   "documented_benchmark": null,
+   "risk_rating": "Medium (CSA category 3/5)",
+   "doc_sources": [
+    "https://www.blackrock.com/ca/investors/en/products/251883/ishares-core-all-equity-asset-allocation-etf/fund/1466735477082.ajax?fileType=pdf&fileName=XEQT_factsheet_en_CA.pdf"
+   ],
+   "doc_only": false,
+   "checks": {
+    "calendar": {
+     "status": "PASS",
+     "years": {
+      "2021": {
+       "published": 19.57,
+       "recomputed": 19.69,
+       "delta_pp": 0.12,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2022": {
+       "published": -10.93,
+       "recomputed": -10.99,
+       "delta_pp": -0.06,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2023": {
+       "published": 17.05,
+       "recomputed": 17.27,
+       "delta_pp": 0.22,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2024": {
+       "published": 24.67,
+       "recomputed": 24.38,
+       "delta_pp": -0.29,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2025": {
+       "published": 20.45,
+       "recomputed": 20.57,
+       "delta_pp": 0.12,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      }
+     },
+     "fail_years": [],
+     "minor_flags_gt_0.5pp": []
+    },
+    "periods": {
+     "status": "PASS",
+     "windows": {
+      "1y": {
+       "published": 18.88,
+       "recomputed": 18.99,
+       "delta_pp": 0.11,
+       "pass": true,
+       "window_days": 365
+      },
+      "3y": {
+       "published": 23.46,
+       "recomputed": 23.37,
+       "delta_pp": -0.09,
+       "pass": true,
+       "window_days": 1097
+      },
+      "5y": {
+       "published": 13.94,
+       "recomputed": 13.96,
+       "delta_pp": 0.02,
+       "pass": true,
+       "window_days": 1826
+      },
+      "si": {
+       "published": 14.45,
+       "recomputed": 14.72,
+       "delta_pp": 0.27,
+       "pass": true,
+       "truncated_history": false
+      }
+     },
+     "fail_windows": [],
+     "unverified_windows": [],
+     "data_quality_caveat": null
+    },
+    "tracking_doc": {
+     "status": "UNVERIFIED",
+     "reason": "no published benchmark series"
+    },
+    "tracking_independent": {
+     "status": "INFO",
+     "fund_5y_pct": 13.96,
+     "bench_proxy_5y_pct": 13.82,
+     "gap_pp": 0.15,
+     "tolerance_pp": 1.5,
+     "proxy": "VT+USDCAD"
+    },
+    "risk_vs_rating": {
+     "status": "PASS",
+     "doc_rating": "Medium (CSA category 3/5)",
+     "basis": "direct",
+     "vol_pct": 13.36,
+     "band": "Medium"
+    }
+   },
+   "recompute_5y": {
+    "vol_annual_pct": 13.36,
+    "mdd_pct": -19.06,
+    "cagr_pct": 13.96,
+    "n_days": 1826
+   },
+   "beta_r2_vs_proxy_5y": {
+    "beta": 0.9,
+    "r2": 0.96,
+    "n_months": 61
+   },
+   "sharpe_rf0_5y": 1.05,
+   "verdict": "KEPT (doc claims recompute)"
+  },
+  "VFV": {
+   "name": "Vanguard S&P 500 Index ETF",
+   "ticker": "VFV.TO",
+   "inception": "2012-11-02",
+   "mer_pct": 0.08,
+   "mer_source": "Vanguard factsheet (Sep 2026): MER 0.08%; ETF Facts (Dec 2025) 0.09%",
+   "objective": "Track S&P 500 Index, before fees",
+   "documented_benchmark": "Spliced S&P 500 Index (CAD NY Rate) Net Total Return",
+   "risk_rating": null,
+   "doc_sources": [
+    "https://www.vanguard.ca/advisor/en/products/etf/9561/9561.5?sid=2783&ret=1",
+    "https://www.vanguard.ca/advisor/en/products/etf/9561/9561.10?sid=10473&ret=1"
+   ],
+   "doc_only": false,
+   "checks": {
+    "calendar": {
+     "status": "PASS",
+     "years": {
+      "2016": {
+       "published": 8.5,
+       "recomputed": 7.63,
+       "delta_pp": -0.87,
+       "pass": true,
+       "tolerance_pp": 1.0,
+       "note": ""
+      },
+      "2017": {
+       "published": 13.6,
+       "recomputed": 13.67,
+       "delta_pp": 0.07,
+       "pass": true,
+       "tolerance_pp": 1.0,
+       "note": ""
+      },
+      "2018": {
+       "published": 3.4,
+       "recomputed": 2.94,
+       "delta_pp": -0.46,
+       "pass": true,
+       "tolerance_pp": 1.0,
+       "note": ""
+      },
+      "2019": {
+       "published": 24.5,
+       "recomputed": 25.15,
+       "delta_pp": 0.65,
+       "pass": true,
+       "tolerance_pp": 1.0,
+       "note": ""
+      },
+      "2020": {
+       "published": 15.6,
+       "recomputed": 15.61,
+       "delta_pp": 0.01,
+       "pass": true,
+       "tolerance_pp": 1.0,
+       "note": ""
+      },
+      "2021": {
+       "published": 27.64,
+       "recomputed": 27.51,
+       "delta_pp": -0.13,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2022": {
+       "published": -12.69,
+       "recomputed": -12.58,
+       "delta_pp": 0.11,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2023": {
+       "published": 23.25,
+       "recomputed": 23.23,
+       "delta_pp": -0.02,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2024": {
+       "published": 35.24,
+       "recomputed": 35.23,
+       "delta_pp": -0.01,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2025": {
+       "published": 12.23,
+       "recomputed": 12.18,
+       "delta_pp": -0.05,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      }
+     },
+     "fail_years": [],
+     "minor_flags_gt_0.5pp": [
+      "2016",
+      "2019"
+     ]
+    },
+    "periods": {
+     "status": "PASS",
+     "windows": {
+      "10y": {
+       "published": 15.89,
+       "recomputed": 15.9,
+       "delta_pp": 0.01,
+       "pass": true,
+       "window_days": 3652
+      },
+      "1y": {
+       "published": 18.12,
+       "recomputed": 18.15,
+       "delta_pp": 0.03,
+       "pass": true,
+       "window_days": 365
+      },
+      "3y": {
+       "published": 24.47,
+       "recomputed": 24.45,
+       "delta_pp": -0.02,
+       "pass": true,
+       "window_days": 1097
+      },
+      "5y": {
+       "published": 16.14,
+       "recomputed": 16.13,
+       "delta_pp": -0.01,
+       "pass": true,
+       "window_days": 1826
+      },
+      "si": {
+       "published": 17.52,
+       "recomputed": 17.61,
+       "delta_pp": 0.09,
+       "pass": true,
+       "truncated_history": false
+      }
+     },
+     "fail_windows": [],
+     "unverified_windows": [],
+     "data_quality_caveat": null
+    },
+    "tracking_doc": {
+     "status": "PASS",
+     "gaps_pct": {
+      "1y": -0.03,
+      "3y": -0.1,
+      "5y": -0.08,
+      "10y": -0.23
+     },
+     "mean_gap_pp": -0.11,
+     "expected_gap_pp": -0.08
+    },
+    "tracking_independent": {
+     "status": "PASS",
+     "fund_5y_pct": 16.13,
+     "bench_proxy_5y_pct": 16.25,
+     "gap_pp": -0.12,
+     "tolerance_pp": 0.75,
+     "proxy": "^SP500TR+USDCAD"
+    },
+    "risk_vs_rating": {
+     "status": "UNVERIFIED",
+     "reason": "document has no CSA risk rating"
+    }
+   },
+   "recompute_5y": {
+    "vol_annual_pct": 15.16,
+    "mdd_pct": -22.19,
+    "cagr_pct": 16.13,
+    "n_days": 1826
+   },
+   "beta_r2_vs_proxy_5y": {
+    "beta": 0.947,
+    "r2": 0.979,
+    "n_months": 61
+   },
+   "sharpe_rf0_5y": 1.07,
+   "verdict": "KEPT (doc claims recompute)"
+  },
+  "TDB902": {
+   "name": "TD U.S. Index Fund - e-Series",
+   "ticker": null,
+   "inception": "1999-11-26",
+   "mer_pct": 0.28,
+   "mer_source": "TD Fund Facts 2026-07-01: MER 0.28%",
+   "objective": "Replicate broad U.S. large-cap equity index",
+   "documented_benchmark": "Solactive U.S. Large Cap Index (CA) Net Total Return",
+   "risk_rating": "Medium (TD fund card)",
+   "doc_sources": [
+    "https://www.td.com/ca/en/investing/documents/factsheets/etfs/TDB902.pdf",
+    "https://www.fundlibrary.com/fund/3063497/td-us-index-e-fund/181765129"
+   ],
+   "doc_only": true,
+   "checks": {
+    "calendar": {
+     "status": "UNVERIFIED",
+     "reason": "no published calendar / no fund series"
+    },
+    "periods": {
+     "status": "UNVERIFIED",
+     "reason": "no fund price series"
+    },
+    "tracking_doc": {
+     "status": "UNVERIFIED",
+     "reason": "no published benchmark series"
+    },
+    "tracking_independent": {
+     "status": "UNVERIFIED",
+     "reason": "no fund price series"
+    },
+    "risk_vs_rating": {
+     "status": "PASS",
+     "doc_rating": "Medium (TD fund card)",
+     "basis": "benchmark-proxy vol (no fund series)",
+     "vol_pct": 17.92,
+     "band": "Medium"
+    },
+    "cross_source_consistency": {
+     "status": "PASS",
+     "fund_facts_10y": 15.1,
+     "fund_library_10y": 15.49,
+     "note": "different as-of (May vs Oct 2026) + e/F series fee delta"
+    }
+   },
+   "recompute_5y": {
+    "vol_annual_pct": 17.92,
+    "mdd_pct": -22.56,
+    "cagr_pct": 16.25,
+    "n_days": 1826
+   },
+   "recompute_5y_note": "benchmark proxy (no fund price series on Yahoo)",
+   "beta_r2_vs_proxy_5y": null,
+   "beta_r2_note": "n/a - no fund series to regress against proxy",
+   "cross_source_fund_library": {
+    "periods": {
+     "1y": 21.12,
+     "3y": 22.12,
+     "5y": 14.21,
+     "10y": 15.49
+    },
+    "benchmark": {
+     "1y": 21.47,
+     "3y": 22.03,
+     "5y": 14.94,
+     "10y": 16.03
+    },
+    "calendar": {
+     "2016": 7.2,
+     "2017": 13.15,
+     "2018": 2.91,
+     "2019": 24.02,
+     "2020": 18.4,
+     "2021": 25.87,
+     "2022": -14.4,
+     "2023": 24.08,
+     "2024": 35.57,
+     "2025": 12.64
+    },
+    "note": "Fund Library F-series (same portfolio, 0.29 fee) - independent citation",
+    "fund_vs_bench_10y": -0.54,
+    "fund_vs_bench_5y": -0.73
+   },
+   "verdict": "KEPT (doc claims recompute)"
+  },
+  "FXAIX": {
+   "name": "Fidelity 500 Index Fund",
+   "ticker": "FXAIX",
+   "inception": "1988-02-17",
+   "mer_pct": 0.015,
+   "mer_source": "Fidelity fund page: net expense 0.015% (gross 0.02%, waived)",
+   "objective": "Provide investment results closely corresponding to S&P 500",
+   "documented_benchmark": "S&P 500",
+   "risk_rating": null,
+   "doc_sources": [
+    "https://fundresearch.fidelity.com/mutual_funds/summary/315911703"
+   ],
+   "doc_only": false,
+   "checks": {
+    "calendar": {
+     "status": "PASS",
+     "years": {
+      "2016": {
+       "published": 11.97,
+       "recomputed": 11.97,
+       "delta_pp": 0.0,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2017": {
+       "published": 21.81,
+       "recomputed": 21.82,
+       "delta_pp": 0.01,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2018": {
+       "published": -4.4,
+       "recomputed": -4.43,
+       "delta_pp": -0.03,
+       "pass": true,
+       "tolerance_pp": 1.0,
+       "note": ""
+      },
+      "2019": {
+       "published": 31.47,
+       "recomputed": 31.48,
+       "delta_pp": 0.01,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2020": {
+       "published": 18.4,
+       "recomputed": 18.42,
+       "delta_pp": 0.02,
+       "pass": true,
+       "tolerance_pp": 1.0,
+       "note": ""
+      },
+      "2021": {
+       "published": 28.69,
+       "recomputed": 28.71,
+       "delta_pp": 0.02,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2022": {
+       "published": -18.13,
+       "recomputed": -18.14,
+       "delta_pp": -0.01,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2023": {
+       "published": 26.29,
+       "recomputed": 26.29,
+       "delta_pp": 0.0,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2024": {
+       "published": 25.0,
+       "recomputed": 25.01,
+       "delta_pp": 0.01,
+       "pass": true,
+       "tolerance_pp": 1.0,
+       "note": ""
+      },
+      "2025": {
+       "published": 17.86,
+       "recomputed": 17.84,
+       "delta_pp": -0.02,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": ""
+      },
+      "2026": {
+       "published": 12.73,
+       "recomputed": 12.73,
+       "delta_pp": 0.0,
+       "pass": true,
+       "tolerance_pp": 0.5,
+       "note": "YTD-to-09/30"
+      }
+     },
+     "fail_years": [],
+     "minor_flags_gt_0.5pp": []
+    },
+    "periods": {
+     "status": "PASS",
+     "windows": {
+      "10y": {
+       "published": 15.32,
+       "recomputed": 15.32,
+       "delta_pp": 0.0,
+       "pass": true,
+       "window_days": 3652
+      },
+      "1y": {
+       "published": 15.72,
+       "recomputed": 15.74,
+       "delta_pp": 0.02,
+       "pass": true,
+       "window_days": 365
+      },
+      "3y": {
+       "published": 22.87,
+       "recomputed": 22.84,
+       "delta_pp": -0.03,
+       "pass": true,
+       "window_days": 1097
+      },
+      "5y": {
+       "published": 13.78,
+       "recomputed": 13.78,
+       "delta_pp": -0.0,
+       "pass": true,
+       "window_days": 1826
+      },
+      "life": {
+       "published": 11.32,
+       "recomputed": null,
+       "delta_pp": null,
+       "pass": false,
+       "truncated_history": true
+      }
+     },
+     "fail_windows": [],
+     "unverified_windows": [
+      "life"
+     ],
+     "data_quality_caveat": null
+    },
+    "tracking_doc": {
+     "status": "PASS",
+     "gaps_pct": {
+      "1y": -0.02,
+      "3y": -0.02,
+      "5y": -0.01,
+      "10y": -0.01,
+      "life": -0.13
+     },
+     "mean_gap_pp": -0.04,
+     "expected_gap_pp": -0.01
+    },
+    "tracking_independent": {
+     "status": "PASS",
+     "fund_5y_pct": 13.78,
+     "bench_proxy_5y_pct": 13.79,
+     "gap_pp": -0.02,
+     "tolerance_pp": 0.75,
+     "proxy": "^SP500TR"
+    },
+    "risk_vs_rating": {
+     "status": "UNVERIFIED",
+     "reason": "document has no CSA risk rating"
+    }
+   },
+   "recompute_5y": {
+    "vol_annual_pct": 17.01,
+    "mdd_pct": -24.5,
+    "cagr_pct": 13.78,
+    "n_days": 1826
+   },
+   "beta_r2_vs_proxy_5y": {
+    "beta": 1.0,
+    "r2": 1.0,
+    "n_months": 61
+   },
+   "sharpe_rf0_5y": 0.85,
+   "verdict": "KEPT (doc claims recompute)"
+  },
+  "FSPGX": {
+   "name": "Fidelity Growth Index Fund",
+   "ticker": "FSPGX",
+   "inception": "2016-06-07",
+   "mer_pct": 0.035,
+   "mer_source": "Fidelity fund page: net expense 0.035%",
+   "objective": "Match Russell 1000 Growth Index",
+   "documented_benchmark": "Russell 1000 Growth",
+   "risk_rating": null,
+   "doc_sources": [
+    "https://fundresearch.fidelity.com/mutual_funds/summary/150851516"
+   ],
+   "doc_only": false,
+   "checks": {
+    "calendar": {
+     "status": "UNVERIFIED",
+     "reason": "no published calendar / no fund series"
+    },
+    "periods": {
+     "status": "PASS",
+     "windows": {
+      "10y": {
+       "published": 18.12,
+       "recomputed": 18.13,
+       "delta_pp": 0.01,
+       "pass": true,
+       "window_days": 3652
+      },
+      "1y": {
+       "published": 7.45,
+       "recomputed": 7.46,
+       "delta_pp": 0.01,
+       "pass": true,
+       "window_days": 365
+      },
+      "3y": {
+       "published": 24.24,
+       "recomputed": 24.21,
+       "delta_pp": -0.03,
+       "pass": true,
+       "window_days": 1097
+      },
+      "5y": {
+       "published": 13.63,
+       "recomputed": 13.64,
+       "delta_pp": 0.01,
+       "pass": true,
+       "window_days": 1826
+      },
+      "life": {
+       "published": 17.89,
+       "recomputed": 18.13,
+       "delta_pp": 0.24,
+       "pass": true,
+       "truncated_history": false
+      }
+     },
+     "fail_windows": [],
+     "unverified_windows": [],
+     "data_quality_caveat": null
+    },
+    "tracking_doc": {
+     "status": "PASS",
+     "gaps_pct": {
+      "1y": -0.05,
+      "3y": -0.02,
+      "5y": -0.03,
+      "10y": -0.04,
+      "life": -0.05
+     },
+     "mean_gap_pp": -0.04,
+     "expected_gap_pp": -0.04
+    },
+    "tracking_independent": {
+     "status": "PASS",
+     "fund_5y_pct": 13.64,
+     "bench_proxy_5y_pct": 13.92,
+     "gap_pp": -0.28,
+     "tolerance_pp": 1.5,
+     "proxy": "VUG"
+    },
+    "risk_vs_rating": {
+     "status": "UNVERIFIED",
+     "reason": "document has no CSA risk rating"
+    }
+   },
+   "recompute_5y": {
+    "vol_annual_pct": 21.86,
+    "mdd_pct": -32.66,
+    "cagr_pct": 13.64,
+    "n_days": 1826
+   },
+   "beta_r2_vs_proxy_5y": {
+    "beta": 0.94,
+    "r2": 0.984,
+    "n_months": 61
+   },
+   "sharpe_rf0_5y": 0.7,
+   "verdict": "KEPT (doc claims recompute)"
+  },
+  "FOCPX": {
+   "name": "Fidelity OTC Fund",
+   "ticker": "FOCPX",
+   "inception": "1984-12-31",
+   "mer_pct": 0.73,
+   "mer_source": "Fidelity: gross expense 0.73% (2025-09-29), rising to 0.78% (2026-09-29)",
+   "objective": "Capital appreciation; investments concentrated on Nasdaq-listed (mostly OTC) companies",
+   "documented_benchmark": "NASDAQ Composite",
+   "risk_rating": null,
+   "doc_sources": [
+    "https://fundresearch.fidelity.com/mutual_funds/summary/316077107"
+   ],
+   "doc_only": false,
+   "checks": {
+    "calendar": {
+     "status": "UNVERIFIED",
+     "reason": "no published calendar / no fund series"
+    },
+    "periods": {
+     "status": "UNVERIFIABLE",
+     "windows": {
+      "10y": {
+       "published": 22.68,
+       "recomputed": 21.71,
+       "delta_pp": -0.97,
+       "pass": false,
+       "window_days": 3652
+      },
+      "1y": {
+       "published": 51.72,
+       "recomputed": 39.51,
+       "delta_pp": -12.21,
+       "pass": false,
+       "window_days": 365
+      },
+      "3y": {
+       "published": 32.26,
+       "recomputed": 35.24,
+       "delta_pp": 2.98,
+       "pass": false,
+       "window_days": 1097
+      },
+      "5y": {
+       "published": 17.22,
+       "recomputed": 17.67,
+       "delta_pp": 0.45,
+       "pass": true,
+       "window_days": 1826
+      }
+     },
+     "fail_windows": [
+      "10y",
+      "1y",
+      "3y"
+     ],
+     "unverified_windows": [],
+     "data_quality_caveat": "Yahoo mutual-fund series inconsistent across windows (deltas [-0.97, -12.21, 2.98, 0.45]): distribution handling unreliable - reverify against official fund page"
+    },
+    "tracking_doc": {
+     "status": "INFO",
+     "gaps_pct": {
+      "1y": 22.24,
+      "3y": 7.52,
+      "5y": 3.82,
+      "10y": 3.24
+     },
+     "mean_gap_pp": 9.21,
+     "expected_gap_pp": -0.73
+    },
+    "tracking_independent": {
+     "status": "INFO",
+     "fund_5y_pct": 17.67,
+     "bench_proxy_5y_pct": 14.11,
+     "gap_pp": 3.56,
+     "tolerance_pp": 1.5,
+     "proxy": "^IXIC"
+    },
+    "risk_vs_rating": {
+     "status": "UNVERIFIED",
+     "reason": "document has no CSA risk rating"
+    }
+   },
+   "recompute_5y": {
+    "vol_annual_pct": 23.16,
+    "mdd_pct": -37.05,
+    "cagr_pct": 17.67,
+    "n_days": 1826
+   },
+   "beta_r2_vs_proxy_5y": {
+    "beta": 0.979,
+    "r2": 0.937,
+    "n_months": 61
+   },
+   "sharpe_rf0_5y": 0.82,
+   "verdict": "UNVERIFIABLE"
+  }
+ },
+ "agent_claims": [
+  {
+   "claim": "FXAIX 5-yr CAGR 15.7%/yr, Sharpe 1.03, MDD -23.9%",
+   "source": "Grok 20261023 fund deep-dive table",
+   "doc_truth": "Fidelity: 5y 13.78% (as of 09/30/2026); 1y 15.72%",
+   "recomputed_5y": {
+    "cagr": 13.78,
+    "mdd": -24.5,
+    "sharpe_rf0": 0.85,
+    "window_days": 1826
+   },
+   "recomputed_1y": 15.74,
+   "verdict": "FAIL - PERIOD MISLABELED",
+   "evidence": "Claimed 5y CAGR matches FXAIX's 1-YEAR (15.72), not 5y (13.78 doc / 13.78 recomputed 5y). Recomputed 5y Sharpe and MDD also do not reproduce the claimed 1.03 / -23.9%."
+  },
+  {
+   "claim": "FSPGX 5-yr CAGR 18.2%/yr, MDD -30.7%",
+   "source": "Grok 20261023 fund deep-dive table",
+   "doc_truth": "Fidelity: 5y 13.63%; 10y 18.12% (as of 09/30/2026)",
+   "recomputed_5y": 13.64,
+   "recomputed_10y": 18.13,
+   "recomputed_5y_mdd": -32.66,
+   "verdict": "FAIL - PERIOD MISLABELED",
+   "evidence": "Claimed 5y 18.2% matches the 10-YEAR figure (18.12 doc / 18.13 recomputed); recomputed 5y = 13.64."
+  },
+  {
+   "claim": "TDB902 (TD US Index e-Series) 17.08% CAGR",
+   "source": "Zoo winner-hunt note",
+   "doc_truth": "TD Fund Facts: 10-yr annualized 15.1% (as of 2026-05-31); Fund Library F-series 10y 15.49% (Oct 2026)",
+   "recomputed": null,
+   "verdict": "FAIL - NOT CONFIRMED",
+   "evidence": "No price series on Yahoo (e-series not exchange-listed), but both independent document sources show ~15.1-15.5% over 10y - the 17.08% claim is 1.6-2.0pp/yr higher; likely a shorter, luckier window."
+  },
+  {
+   "claim": "FOCPX outperforms VIGAX style-adjusted by +2.2pp/yr over 25 non-overlapping years (1994-2024), win 56%",
+   "source": "Buffy 20261023 fund picks note",
+   "doc_truth": "FOCPX 5y 17.22% (gross-exp 0.73%)",
+   "recomputed": {
+    "coverage": "2001-2024 (Yahoo VIGAX starts 2000-11; Buffy window 1994-2024)",
+    "n_years": 24,
+    "mean_annual_excess_pp": 2.88,
+    "win_rate_pct": 70.8,
+    "sub_2001_2009_pp": 4.05,
+    "sub_2010_2024_pp": 2.18,
+    "fo_full_period_cagr": 11.31,
+    "vigax_full_period_cagr": 9.47
+   },
+   "verdict": "PASS (partial window)",
+   "evidence": "Available overlap 2001-2024: mean annual excess = 2.88pp/yr (claim +2.2, band +/-0.75), win rate 70.8% (claim 56%). Sub-periods: 2001-09 4.05pp, 2010-24 2.18pp (Buffy's 1994-2009 leg NOT verifiable - no Yahoo series before 2000-11). Yahoo FOCPX distribution handling caveat applies to recent windows (see fund period check)."
+  },
+  {
+   "claim": "XEQT MER 0.19%",
+   "source": "GHCOPILOT FTP-rotation/fund note",
+   "doc_truth": "iShares factsheet (Sep 2026): MER 0.19%",
+   "recomputed": null,
+   "verdict": "PASS",
+   "evidence": "Matches current factsheet (older ETF Facts shows 0.20%; fee cut eff 2025-12)."
+  }
+ ],
+ "unique_contribution": "Doc-claim fidelity recompute (published numbers vs independent NAV math) + peer-agent claim verdicts. Distinct from Grok's 46-fund stats table, Zoo's criteria-predictiveness walk-forward, Buffy's 71-fund screening, and GHCopilot's scorecard code crosscheck - see updates/ doc.",
+ "summary": {
+  "fund_verdicts": {
+   "XEQT": "KEPT (doc claims recompute)",
+   "VFV": "KEPT (doc claims recompute)",
+   "TDB902": "KEPT (doc claims recompute)",
+   "FXAIX": "KEPT (doc claims recompute)",
+   "FSPGX": "KEPT (doc claims recompute)",
+   "FOCPX": "UNVERIFIABLE"
+  },
+  "agent_claim_verdicts": [
+   "FAIL - PERIOD MISLABELED",
+   "FAIL - PERIOD MISLABELED",
+   "FAIL - NOT CONFIRMED",
+   "PASS (partial window)",
+   "PASS"
+  ],
+  "n_drift": 0,
+  "n_kept": 5,
+  "headline": "Doc-vs-NAV fidelity: index funds' published numbers recompute within tolerance (track after fee); two Grok fund claims are period-mislabeled; Zoo's TDB902 17.08% not confirmed by either doc source. NOT FINANCIAL ADVICE."
+ }
+}
