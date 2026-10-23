@@ -142,13 +142,31 @@ the only trait that helps is <i>being cheap</i>.</div>
 <h2>2b · Live /audit picks — evaluated against this methodology (2026-10-23 17:45 UTC)</h2>
 <table>
 <tr><th>What the live board shows</th><th>What the evidence fields say</th><th>My verdict</th></tr>
-<tr><td>21 of 25 active picks labeled <b>STRONG_BUY</b> (scores 80–90: PFF/PFXF/QYLD/ARKW/VWO/EEM/EURCHF/USDNOK/EURGBP/EWJ/SCHF/JEPQ/XLE/PFFD/PFFA/VGT/VHT/SCHD/HDV)</td><td><code>intrabar_gate: NO_DATA</code>, <code>intrabar_fwd_n: null</code>, <code>db_n: 0</code> on every one</td><td><b>Not prospects.</b> These are discovery quant screens (RSI/Bollinger/vol/dividend). The payload's own <code>pro_level_gate</code> says "discovery quant scores alone do not qualify for STRONG_BUY" — the displayed label outruns the system's own rule.</td></tr>
-<tr><td>4 EQUITY rows (GOOGL/MU/NFLX/TTWO/PLTR) as WATCH</td><td>CLASS_DEMOTE (EQUITY class PF 0.86); GOOGL db_n=7 WR 14.3%, EURGBP db_n=23 WR 21.7%</td><td>Honest demotion. The only two picks with any DB history <b>lose</b> — tiny negative samples.</td></tr>
+<tr><td><b>20 of 25</b> active picks labeled <b>STRONG_BUY</b> (scores 80–90: PFF/PFXF/QYLD/ARKW/VWO/EEM/EURCHF/USDNOK/EURGBP/EWJ/SCHF/JEPQ/XLE/PFFD/PFFA/VGT/VHT/SCHD/HDV) — <i>count corrected per Grok's recheck</i></td><td><code>intrabar_gate: NO_DATA</code>, <code>intrabar_fwd_n: null</code>, <code>db_n: 0</code> on every one</td><td><b>Not prospects.</b> Discovery quant screens (RSI/Bollinger/vol/dividend). The payload's own <code>pro_level_gate</code> says "discovery quant scores alone do not qualify for STRONG_BUY" — dashboard-label bug per Grok+GHCopilot; allocation % should be 0.</td></tr>
+<tr><td>5 WATCH equity rows (GOOGL/MU/NFLX/TTWO/PLTR)</td><td>CLASS_DEMOTE (EQUITY class PF 0.86); GOOGL db_n=7 WR 14.3%, EURGBP db_n=23 WR 21.7%</td><td>Honest demotion. The only two picks with any DB history <b>lose</b> — tiny negative samples.</td></tr>
 <tr><td>Preferred-share cluster (PFF/PFXF/PFFD/PFFA) + QYLD — same theme 5×</td><td>Dividend-screen scores 82–90</td><td>Concentration in one income theme; covered-call ETFs (QYLD-style) have known NAV-decay mechanics. High yield ≠ edge. ABSTAIN.</td></tr>
 <tr><td>Recently closed book (3,500 picks)</td><td>WR 45.5%, avg +0.21%/trade <b>gross</b>; <code>after_cost_net_per_trade</code> 0% populated; 19% FORCE_CLOSED legacy</td><td>Cannot certify net profitability — the cost column the name promises is empty.</td></tr>
+<tr><td><b>NEW (Grok 14:55 ET): PF rises with hold time</b> — ≤48h: n=2,174 PF <b>0.99</b>; 2–7d 1.35; 7–30d 1.54; &gt;30d <b>1.66</b></td><td>The "edge" lives in trades held far past their stated horizons, resolved weeks later</td><td><b>Market drift + unlimited waiting, not signal skill.</b> Any strategy PF leaning on &gt;7-day rows is <b>unverified</b> until horizon-capped. MomentumEMA = HOLD (73 rows, one batch <code>closed_at</code>); XLF = decay (halves 3.07/0.94); IEF cohort = single-source audit-only.</td></tr>
 <tr><td>Smart Picks: 0 · money_ready: [] (live 15:42 UTC)</td><td>—</td><td>The system's own honest gates are empty — consistent with my independent verdict: <b>0 of 25 active picks pass.</b></td></tr>
 </table>
-<div class="eli5"><b>ELI5:</b> the board shows 21 bright green "strong buy" stickers — but when you open each sticker's back, there's no homework attached: no tested trades, no win record, nothing. Two of them that <i>do</i> have homework came back failing. A label without evidence is a wish, not a winner.</div>
+<div class="eli5"><b>ELI5:</b> the board shows 20 bright green "strong buy" stickers — but when you open each sticker's back, there's no homework attached: no tested trades, no win record, nothing. Two of them that <i>do</i> have homework came back failing. And the trades that <i>did</i> happen only "won" because they were left open far past when they were supposed to close — like a student who keeps writing the exam until they pass. A label without evidence is a wish, not a winner.</div>
+
+<h3>My PAPER candidate through the 10 gates (numeric, per Grok's round-4 request)</h3>
+<table>
+<tr><th>Gate</th><th>CRYPTO SHORT RSI30-50</th><th>Status</th></tr>
+<tr><td>1. n ≥ 100 (hard-only)</td><td>125</td><td class="s4">PASS</td></tr>
+<tr><td>2. PF_net ≥ 1.5</td><td>2.16</td><td class="s4">PASS</td></tr>
+<tr><td>3. PF CI-LB ≥ 1.2 (day-cluster bootstrap)</td><td>1.69</td><td class="s4">PASS</td></tr>
+<tr><td>4. Daily-MTM MDD ≤ 20%</td><td>not computed</td><td class="s0">NOT RUN</td></tr>
+<tr><td>5. Random-entry MC ≥ 95th pct (own exits)</td><td>not run</td><td class="s0">NOT RUN</td></tr>
+<tr><td>6. DSR &gt; 0.95 (trial count not logged — itself a failure)</td><td>not computed</td><td class="s0">NOT RUN</td></tr>
+<tr><td>7. PF @ 2× costs ≥ 1.3</td><td>not run</td><td class="s0">NOT RUN</td></tr>
+<tr><td>8. Top-symbol ≤ 30%</td><td>not reported</td><td class="s0">NOT RUN</td></tr>
+<tr><td>9. Both halves profitable</td><td>not run</td><td class="s0">NOT RUN</td></tr>
+<tr><td>10. Artifact detector (closed_at days)</td><td>not evaluated</td><td class="s0">NOT RUN</td></tr>
+</table>
+<div class="small"><b>3 PASS / 7 NOT RUN</b> — this candidate does not meet my own CANDIDATE definition; PAPER-ONLY stands. Reworded per Grok: the index <b>makes no timing claim</b>, so the gates don't apply to it — it is judged as a vehicle (cost, tracking, access), never as a gate-passing "winner".</div>
+<div class="banner"><b>Dashboard fix queue (endorsed by ≥2 agents):</b> (1) horizon-cap every strategy at its stated horizon and publish PF by hold-time bucket; (2) mark batch resolutions (&gt;20 rows, one closed_at) as BACKFILL and exclude from forward stats; (3) enforce STRONG_BUY eligibility (no NO_DATA gates / db_n=0, allocation 0). Until these land, <b>treat every /audit strategy PF as unverified.</b></div>
 
 <h3>Barrier of entry &amp; features — $1,000 vs $2,000 reality check (RBC, verified 2026-10-23)</h3>
 <table>
