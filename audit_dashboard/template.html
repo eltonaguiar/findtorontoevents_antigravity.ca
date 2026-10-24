@@ -819,8 +819,10 @@ a:hover { text-decoration: underline; }
 .metric-tip:hover::before, .metric-tip:focus-visible::before { opacity: 1; }
 @media (max-width: 640px) { .metric-tip::after { width: 220px; } }
 </style>
+<script src="audit_scorecard.js"></script>
 </head>
 <body>
+<section id="top-verified-picks" aria-live="polite"><h2>Top verified picks</h2><p>verdicts unavailable - loading evidence</p></section>
 <div class="toast-container" id="toast-container"></div>
 
 <div class="header">
@@ -1480,7 +1482,7 @@ a:hover { text-decoration: underline; }
     <span style="color:var(--blue)">Non-Crypto</span>
     <span style="color:var(--text);font-weight:600">Performance</span>
     <span id="perf-conviction-bar" style="display:flex;gap:4px;margin-left:auto;align-items:center"></span>
-    <button id="perf-help-btn" onclick="document.getElementById('perf-help-overlay').style.display='flex'" title="How to find edge: the exact filters, definitions, and what to avoid (based on 4,618 closed-pick analysis)" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;cursor:pointer;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;margin-left:6px;white-space:nowrap">? Guide</button>
+    <button id="perf-help-btn" onclick="var guide=document.querySelector('#top-verified-picks details');if(guide)guide.open=true;document.getElementById('top-verified-picks').scrollIntoView({behavior:'smooth'})" title="Common GROK labels, evidence gates and ELI5 metric explanations" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;cursor:pointer;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;margin-left:6px;white-space:nowrap">? Guide</button>
   </h3>
 
   <!-- Help popup overlay -->
@@ -1627,6 +1629,7 @@ a:hover { text-decoration: underline; }
     <div id="non-crypto-panel" style="flex:1;min-width:0"></div>
   </div>
 </section>
+<section id="audit-exit-plans"><h2>Open observations: exit plans</h2><p>Waiting for dated source records. No invented holding periods or price forecasts.</p></section>
 <div id="filter-active-indicator"></div>
 
 <div class="filter-bar" id="filter-bar">
@@ -6256,6 +6259,11 @@ function _convictionPredicate(mode) {
 }
 
 function renderConvictionBar() {
+  var auditedBar = el('perf-conviction-bar');
+  if (auditedBar) auditedBar.textContent = 'Audited snapshot: common exclusions; no post-hoc conviction filter';
+}
+
+function renderLegacyConvictionBar() {
   var bar = el('perf-conviction-bar');
   if (!bar) return;
   var modes = [
@@ -6321,6 +6329,11 @@ function renderConvictionBar() {
 }
 
 function renderNonCryptoPanel() {
+  if (window.AuditScorecard) window.AuditScorecard.load(D);
+  else if (el('non-crypto-panel')) el('non-crypto-panel').textContent = 'verdicts unavailable';
+}
+
+function renderLegacyNonCryptoPanel() {
   var container = el('non-crypto-panel');
   if (!container) return;
 
@@ -6757,6 +6770,11 @@ function _cryptoScoreBucket(p) {
 }
 
 function renderCryptoPanel() {
+  if (window.AuditScorecard) window.AuditScorecard.load(D);
+  else if (el('crypto-panel')) el('crypto-panel').textContent = 'verdicts unavailable';
+}
+
+function renderLegacyCryptoPanel() {
   var container = el('crypto-panel');
   if (!container) return;
 
