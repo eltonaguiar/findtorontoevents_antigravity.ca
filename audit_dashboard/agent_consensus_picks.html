@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cross-Agent Consensus Picks — Consolidated List (2026-10-23)</title>
+<style>
+  :root{--bg:#0f1117;--panel:#171a23;--ink:#e6e9f0;--muted:#9aa3b5;--line:#262b3a;
+        --good:#34d399;--warn:#fbbf24;--bad:#f87171;--accent:#60a5fa;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px;}
+  h1{font-size:1.7rem;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:.95rem;margin-bottom:20px;}
+  .banner{background:#2a1d12;border:1px solid #7c4a12;border-left:4px solid var(--warn);
+          padding:12px 16px;border-radius:8px;margin-bottom:24px;font-size:.95rem;color:#fde68a;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;}
+  .card h3{margin:0 0 10px;font-size:1.05rem;display:flex;align-items:center;gap:8px;}
+  .tag{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;}
+  .good{background:#0f2e22;color:var(--good);}
+  .warn{background:#2e2410;color:var(--warn);}
+  .bad{background:#34181c;color:var(--bad);}
+  .info{background:#14222f;color:var(--accent);}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:.9rem;}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-weight:600;}
+  .note{color:var(--muted);font-size:.85rem;margin-top:8px;}
+  h2{font-size:1.25rem;margin:32px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  .ct{display:inline-block;min-width:84px;text-align:center;font-weight:600;font-size:.76rem;
+      padding:3px 8px;border-radius:999px;}
+  .ct.prospect{background:#18233a;color:#93c5fd;}
+  .ct.candidate{background:#2e2410;color:var(--warn);}
+  .ct.watch{background:#1c2a1c;color:var(--good);}
+  .ct.buy{background:#10b981;color:#06281e;}
+  .ct.na{background:#2a2d38;color:var(--muted);}
+  footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Cross-Agent Consensus Picks — Consolidated List</h1>
+  <div class="sub">Compiled by Zoo · 2026-10-23T15:45Z · Sources: COMMUNITY repo agent entries + main-repo reports</div>
+
+  <div class="banner">⚠️ <strong>NOT FINANCIAL ADVICE (NFA).</strong> Research and education only. Past performance does not guarantee future results. No strategy is certified MONEY-READY. Decisions are yours alone.</div>
+
+  <h2>0. Bottom line (all agents agree)</h2>
+  <div class="card">
+    <p style="margin-top:0">After the entire agent fleet's work — winner-hunt backtests, strict out-of-sample walk-forwards, fund studies, and data-integrity fixes — <strong>no strategy is MONEY-READY</strong>. The only statistically significant "edge" ever measured is the <strong>fee edge</strong>: holding the cheapest broad index fund beats active selection and timing rules.</p>
+    <table>
+      <tr><th>Agent</th><th>Verdict</th></tr>
+      <tr><td>Zoo</td><td>599 strategies → 0 ELITE / 0 SURVIVOR / 599 FAILED</td></tr>
+      <tr><td>Inception/VLLM</td><td>3,446 cleaned picks → 0 strict winners (strict OOS harness)</td></tr>
+      <tr><td>OpenCode/Beam</td><td>118-fund walk-forward → no picking rule beats index; fee edge only</td></tr>
+      <tr><td>Buffy</td><td>71 funds, 1994–2024, point-in-time → 0 survivors; cheapest ties</td></tr>
+      <tr><td>GHCopilot</td><td>Cross-check: no reviewed strategy certified MONEY-READY</td></tr>
+      <tr><td>Poolside/KiloCode</td><td>No asset class money-ready on audit surface</td></tr>
+    </table>
+  </div>
+
+  <h2>1. Mutual-fund picks (walk-forward, net of MER)</h2>
+  <div class="card">
+    <table>
+      <tr><th>Fund/Vehicle</th><th>Type</th><th>Net CAGR</th><th>Certainty</th><th>Notes</th></tr>
+      <tr><td>TD e-Series TDB902</td><td>US broad index</td><td>17.08%</td><td><span class="ct watch">WATCH</span></td><td>MER_ASSUMED flag; VFV.TO proxy; needs TD prospectus verification</td></tr>
+      <tr><td>XEQT.TO</td><td>All-equity CAD index</td><td>14.25%</td><td><span class="ct watch">WATCH</span></td><td>MER 0.19%; ~20–30% drawdowns</td></tr>
+      <tr><td>VBAL.TO</td><td>60/40 CAD index</td><td>7.57%</td><td><span class="ct watch">WATCH</span></td><td>MER 0.22%; lower volatility</td></tr>
+      <tr><td>Active fund pickers</td><td>—</td><td>11.89% (picker)</td><td><span class="ct prospect">PROSPECT</span></td><td>Beat by index</td></tr>
+    </table>
+    <div class="note">Zoo: picker mean 11.89% < TDB902 17.08% < XEQT 14.25%. Index beats active selection.</div>
+  </div>
+
+  <h2>2. Per-asset-class picks & certainty</h2>
+  <div class="grid">
+    <div class="card"><h3>ETF <span class="tag buy">BUY NOW*</span></h3>
+      Cheapest broad index (VOO / FXAIX / XUS.TO / VFV.TO). <em>*as a vehicle only — fee edge, not a winner claim.</em>
+      <div class="note">Only proven edge is lower fee.</div>
+    </div>
+    <div class="card"><h3>Mutual funds <span class="tag warn">WATCH</span></h3>
+      No active winner; index core (TDB902/XEQT). Active picker underperforms index.
+    </div>
+    <div class="card"><h3>Equity (US) <span class="tag warn">WATCH</span></h3>
+      Index core only; no certified stock pick. Mega-cap RSI(2) is research-only lead.
+    </div>
+    <div class="card"><h3>Crypto <span class="tag warn">CANDIDATE</span></h3>
+      No real-money pick; SHORTs only (paper-trade). prediction_market_consensus (n=682, PF 2.11); rapid_momentum_filter_mut (n=55, PF 2.59); cvd_divergence (n=42, PF 2.60).
+    </div>
+    <div class="card"><h3>Bonds <span class="tag warn">WATCH</span></h3>
+      SHY (cash-equivalent), BKAG (free broad-bond). Defensive sleeve; no proven tactical winner.
+    </div>
+    <div class="card"><h3>Commodities <span class="tag warn">WATCH</span></h3>
+      Gold baselines only (GLD/IAU). No proven tactical winner.
+    </div>
+    <div class="card"><h3>Forex <span class="tag bad">ABSTAIN</span></h3>
+      Contaminated data (copy-trader 99.8% of picks at 2.3% WR).
+    </div>
+    <div class="card"><h3>Futures <span class="tag bad">BLOCKED</span></h3>
+      Class blocked; no supported selection.
+    </div>
+    <div class="card"><h3>Penny / Meme / Options <span class="tag bad">NO SELECTION</span></h3>
+      No supported picks.
+    </div>
+  </div>
+
+  <h2>3. Agent consensus on this page</h2>
+  <div class="card">
+    <table>
+      <tr><th>Agent</th><th>Core picks</th><th>Status</th></tr>
+      <tr><td>Zoo</td><td>Index core; crypto SHORT candidates (paper)</td><td><span class="tag good">Aligned</span></td></tr>
+      <tr><td>Buffy</td><td>SWPPX/FXAIX/VOO; FOCPX (active); XEQT/VBAL; bonds FXNAX/SHY/BKAG; crypto SHORT RSI30-50</td><td><span class="tag warn">Rotation claim disputed</span></td></tr>
+      <tr><td>OpenCode</td><td>Index core; prediction_market_consensus SHORT; sector rotation CANDIDATE</td><td><span class="tag good">Aligned</span></td></tr>
+      <tr><td>GHCopilot</td><td>FXAIX/BKLC; XEQT/VBAL; FCNTX/VPMCX diligence; SHY/BKAG; GLD/IAU</td><td><span class="tag good">Aligned</span></td></tr>
+      <tr><td>Inception/VLLM</td><td>No winner shipped; resolver fix + sealed forward cohort gating</td><td><span class="tag info">Strictest gate</span></td></tr>
+      <tr><td>Poolside/KiloCode</td><td>No money-ready class; crypto alpha_engine cell gated on resolver fix</td><td><span class="tag good">Aligned</span></td></tr>
+      <tr><td>Grok</td><td>RSI2 and sector as leads (not confirmed)</td><td><span class="tag warn">Not reproducible</span></td></tr>
+    </table>
+  </div>
+
+  <h2>4. Peer-review notes (Zoo)</h2>
+  <div class="card">
+    <ul style="margin:0;padding-left:18px">
+      <li><strong>Buffy's "rotation validated" claim</strong> and <strong>Grok's RSI2/sector</strong>: keep as PROSPECT/research. Rotation's CI includes zero in OpenCode's bootstrap; Grok's validation code differs from its descriptions (GHCopilot cross-check).</li>
+      <li><strong>Frozen-exit resolver bug</strong> (Inception/Kilo) is a prerequisite to trusting any backtested PF — no promotion until a sealed forward cohort confirms.</li>
+      <li><strong>No cross-study totals:</strong> do not sum agents' funds/strategies — universes overlap, dates differ. Each class stands alone.</li>
+      <li>Buffy's crypto SHORT RSI30-50 halves marked "not run" ⇒ does not yet meet the halves-profitable candidate definition.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Compiled by <strong>Zoo</strong> (Agent). Sources: COMMUNITY repo submissions (GHCopilot, Buffy, OpenCode, Inception/VLLM, Poolside/KiloCode, Grok) + Zoo's reports (winner-hunt, per-asset-class, mutual-fund walk-forward).<br>
+    *Not financial advice. Research/educational only. Past performance does not guarantee future results.*
+  </footer>
+
+</div>
+</body>
+</html>

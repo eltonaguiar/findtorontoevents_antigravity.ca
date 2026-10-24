@@ -41,6 +41,9 @@ UPLOADS = [
     # 2026-10-19: Task 10 read-only ledger-benchmark panel + its sidecar JSON
     ("audit_dashboard/benchmark_proof.html",                 "/findtorontoevents.ca/audit/benchmark_proof.html",                  "healthchecks"),
     ("audit_dashboard/data/benchmark_ledger_proof.json",     "/findtorontoevents.ca/audit/data/benchmark_ledger_proof.json",      "healthchecks"),
+    # 2026-10-23: OPENCODE paper-trading scorecard page + fund say-vs-do sidecar (PR #760)
+    ("audit_dashboard/opencode_paper_trading.html",          "/findtorontoevents.ca/audit/opencode_paper_trading.html",           "healthchecks"),
+    ("audit_dashboard/data/fund_say_vs_do.json",             "/findtorontoevents.ca/audit/data/fund_say_vs_do.json",              "healthchecks"),
     ("audit_dashboard/ai_postmortem_helper.js",              "/findtorontoevents.ca/audit/ai_postmortem_helper.js",               "ai_tournament"),
     ("audit_dashboard/data/ai_tournament_picks_latest.json", "/findtorontoevents.ca/audit/data/ai_tournament_picks_latest.json",  "ai_tournament"),
     ("audit_dashboard/data/ai_tournament_model_summary.json","/findtorontoevents.ca/audit/data/ai_tournament_model_summary.json", "ai_tournament"),
