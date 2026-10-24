@@ -178,29 +178,33 @@ def compute_sharpe(pnl_series: np.ndarray, annualize: bool = True) -> float:
     return float(sharpe)
 
 def compute_deflated_sharpe(sharpe_obs: float, n_trials: int, n_observations: int,
-                            base_sharpe: float = 0.0, conf_level: float = 0.95) -> float:
+                            base_sharpe: float = 0.0, conf_level: float = 0.95,
+                            annualization: float = 252.0) -> float:
     """
-    Compute Deflated Sharpe Ratio (DSR) per Bailey & Lopez de Prado (2014).
-    DSR adjusts the observed Sharpe for the number of trials tested.
-    Returns the deflated Sharpe (should be compared to 0 for significance).
+    Deflated Sharpe Ratio (Bailey & Lopez de Prado 2014) as a PROBABILITY in [0, 1].
+
+    Previous version returned a z-score (SR - E[max]*se)/se and compared an
+    ANNUALIZED Sharpe (x sqrt(252)) with a per-observation standard error, giving
+    impossible "DSR" values like 7.69 in strategy_funnel_data.json.
+    `sharpe_obs` is the annualized value produced by compute_sharpe(); it is
+    de-annualized here so SR and its standard error are on the same scale.
     """
-    if n_trials <= 1:
-        return sharpe_obs
-    # Estimate expected max Sharpe under null
+    if n_observations is None or n_observations < 2:
+        return 0.0
     from scipy.stats import norm
-    # Variance of Sharpe ratio estimator
-    var_sr = (1 + 0.5 * sharpe_obs**2) / n_observations if n_observations > 0 else 1
-    std_sr = math.sqrt(var_sr)
-    # Expected maximum of n_trials standard normals
-    # Approximation: E[max] ≈ Φ^{-1}(1 - 1/(n_trials * e)) where e ≈ 2.718
-    import scipy.special as sc
-    # Use order statistics approximation
-    k = n_trials
-    # E[max of k standard normals] ≈ sqrt(2 * ln(k)) for large k
-    expected_max = math.sqrt(2 * math.log(k)) if k > 1 else 0
-    # Deflated Sharpe
-    dsr = (sharpe_obs - expected_max * std_sr) / std_sr if std_sr > 0 else 0
-    return float(dsr)
+    sr = sharpe_obs / math.sqrt(annualization) if annualization else sharpe_obs
+    se = math.sqrt((1 + 0.5 * sr ** 2) / (n_observations - 1))
+    if se <= 0:
+        return 0.0
+    gamma = 0.5772156649
+    k = max(int(n_trials or 1), 1)
+    if k > 1:
+        e_max = ((1 - gamma) * norm.ppf(1 - 1.0 / k)
+                 + gamma * norm.ppf(1 - 1.0 / (k * math.e)))
+    else:
+        e_max = 0.0
+    sr0 = base_sharpe + e_max * se
+    return float(norm.cdf((sr - sr0) / se))
 
 def block_bootstrap(pnl_series: np.ndarray, block_size: int = 5,
                     n_iterations: int = 1000, confidence: float = 0.95) -> dict:

@@ -56,8 +56,10 @@ def test_per_pick_price_uses_newest_post_entry_bar_for_later_pick() -> None:
 
     early = _pick("2026-10-22T12:05:00Z")
     late = _pick("2026-10-22T14:05:00Z")
-
-    price_early = universal_pick_resolver._per_pick_price(early, "BTCUSDT", {"BTCUSDT": bars}, snapshot)
+    # Each pick is priced as of its own horizon (e.g. TIME_EXIT expiry); without
+    # as_of_ms the LATEST post-entry bar is used (the first bar == entry price -> 0% exits).
+    price_early = universal_pick_resolver._per_pick_price(
+        early, "BTCUSDT", {"BTCUSDT": bars}, snapshot, as_of_ms=_ms("2026-10-22T14:00:00Z"))
     price_late = universal_pick_resolver._per_pick_price(late, "BTCUSDT", {"BTCUSDT": bars}, snapshot)
 
     assert price_early == 66000.0
