@@ -5,15 +5,11 @@ import os
 import sys
 import ssl
 from ftplib import FTP_TLS
+from tools.ftp_credentials import get_ftp_credentials
 
 # Get credentials
-FTP_SERVER = 'ftps2.50webs.com'
-FTP_USER = 'ejaguiar1'
-FTP_PASS = os.getenv('FTP_PASS', '')
-
-if not FTP_PASS:
-    print("Error: FTP_PASS not set")
-    sys.exit(1)
+credentials = get_ftp_credentials()
+FTP_SERVER, FTP_USER, FTP_PASS = credentials.host, credentials.user, credentials.password
 
 FILES = [
     ('findcryptopairs/api/meme_scanner_fixed.php', '/findtorontoevents.ca/findcryptopairs/api/meme_scanner_fixed.php'),
@@ -27,7 +23,7 @@ print("="*60)
 
 try:
     print("Connecting to FTPS...")
-    ftps = FTP_TLS(FTP_SERVER)
+    ftps = FTP_TLS(FTP_SERVER, context=ssl.create_default_context())
     ftps.login(FTP_USER, FTP_PASS)
     ftps.prot_p()  # Switch to secure data connection
     print("Connected!")

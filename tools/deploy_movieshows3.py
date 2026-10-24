@@ -14,6 +14,10 @@ Run from project root:
 import os
 import ftplib
 from pathlib import Path
+import sys
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.ftp_credentials import load_ftp_environment, connect_ftp
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 WORKSPACE = _SCRIPT_DIR.parent
@@ -53,6 +57,8 @@ FILES_TO_DEPLOY = [
 ]
 
 def _env(key, fallback=""):
+    if key in {"FTP_SERVER", "FTP_HOST", "FTP_USER", "FTP_PASS"}:
+        load_ftp_environment()
     return os.environ.get(key, fallback).strip()
 
 
@@ -110,8 +116,7 @@ def main():
     print()
 
     try:
-        with ftplib.FTP(host) as ftp:
-            ftp.login(user, password)
+        with connect_ftp() as ftp:
             print("Connected to FTP.\n")
 
             uploaded = 0
