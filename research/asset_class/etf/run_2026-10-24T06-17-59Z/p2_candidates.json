@@ -1,0 +1,119 @@
+[
+  {
+    "spec_id": "etf_carry_yield_v1",
+    "asset_class": "ETF",
+    "entry": "At month-end, compute trailing 12-month dividend yield for each ETF in the universe; rank them. Go long the top 3 yield ETFs and short the bottom 3 yield ETFs. Enter positions at the next day open.",
+    "exit": "Close all positions at the next month-end (i.e., hold for ~1 month).",
+    "sizing": "Allocate equal dollar amount to each long and short leg; target portfolio volatility of 8% annualized using a rolling 60-day volatility estimate of the long-short spread.",
+    "universe": [
+      "XLK",
+      "XLF",
+      "XLE",
+      "XLV",
+      "XLI",
+      "XLY",
+      "XLP",
+      "XLU",
+      "XLB",
+      "XLRE",
+      "XLC"
+    ],
+    "regime_filter": "Skip the month if the 30-day realized volatility of SPY (proxy for market risk) exceeds 20% or if the 60-day SPY momentum is negative.",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Carry-Strategies-in-ETF-Markets"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "etf_spread_arbitrage_v1",
+    "asset_class": "ETF",
+    "entry": "Compute the daily spread S = XLF_price - XLE_price. Calculate its 60-day rolling mean \u03bc and standard deviation \u03c3. When S < \u03bc - 2\u03c3, go long XLF and short XLE; when S > \u03bc + 2\u03c3, go long XLE and short XLF. Enter at next day open.",
+    "exit": "Close the pair when the spread reverts to within 0.5\u03c3 of \u03bc or after a maximum holding period of 20 trading days, whichever comes first.",
+    "sizing": "Risk-scale each trade to target 1% of portfolio equity per pair, using the 20-day rolling volatility of the spread to set position size.",
+    "universe": [
+      "XLF",
+      "XLE"
+    ],
+    "regime_filter": "Skip trading on days when the VIX (proxy from ^VIX) exceeds 30 or when the 10-day average volume of either ETF falls below its 30-day median (liquidity filter).",
+    "source_refs": [
+      "https://www.federalreserve.gov/econres/feds/files/2018050pap.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "etf_cross_asset_momentum_v1",
+    "asset_class": "ETF",
+    "entry": "At month-end, compute 60-day total return for each ETF in the universe. Rank them and go long the top 4 performers, short the bottom 4 performers. Enter at next day open.",
+    "exit": "Rebalance monthly; close all positions at month-end and re-enter based on updated rankings.",
+    "sizing": "Allocate equal capital to each long and short leg; apply a portfolio-level volatility target of 10% annualized using a 60-day rolling volatility of the long-short basket.",
+    "universe": [
+      "XLK",
+      "XLF",
+      "XLE",
+      "XLV",
+      "XLI",
+      "XLY",
+      "XLP",
+      "XLU",
+      "XLB",
+      "XLRE",
+      "XLC"
+    ],
+    "regime_filter": "Skip the month if the 30-day realized volatility of the MSCI World Index (proxy via VTI) exceeds 18% or if the 60-day momentum of the S&P 500 is negative.",
+    "source_refs": [
+      "https://www.bis.org/publ/work845.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "etf_value_momentum_combo_v1",
+    "asset_class": "ETF",
+    "entry": "For each ETF, compute (a) trailing 12-month dividend yield and (b) 60-day total return. Standardize both metrics across the universe and sum to obtain a combined score. Go long the top 3 scoring ETFs and short the bottom 3. Enter at next day open after month-end ranking.",
+    "exit": "Hold positions for 30 calendar days or until the combined score rank changes by more than 2 positions, whichever occurs first.",
+    "sizing": "Equal dollar allocation per leg; scale to a target portfolio volatility of 9% annualized using a 30-day rolling volatility of the long-short spread.",
+    "universe": [
+      "XLK",
+      "XLF",
+      "XLE",
+      "XLV",
+      "XLI",
+      "XLY",
+      "XLP",
+      "XLU",
+      "XLB",
+      "XLRE",
+      "XLC"
+    ],
+    "regime_filter": "Skip the month if the 20-day average VIX exceeds 28 or if the 30-day realized volatility of the Bloomberg US Aggregate Bond Index (proxy via BND) exceeds 10%.",
+    "source_refs": [
+      "https://www.aqr.com/Insights/Research/Journal-Article/Carry-Strategies-in-ETF-Markets",
+      "https://www.bis.org/publ/work845.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  },
+  {
+    "spec_id": "etf_diagnostic_momentum_v1",
+    "asset_class": "ETF",
+    "entry": "Go long any ETF whose 60-day total return is positive at month-end; otherwise stay in cash.",
+    "exit": "Reassess monthly; exit any position whose 60-day return turns negative.",
+    "sizing": "Allocate up to 100% of capital to the single longest-positive-momentum ETF; if none, stay fully in cash.",
+    "universe": [
+      "XLK",
+      "XLF",
+      "XLE",
+      "XLV",
+      "XLI",
+      "XLY",
+      "XLP",
+      "XLU",
+      "XLB",
+      "XLRE",
+      "XLC"
+    ],
+    "regime_filter": "Skip the month if the 30-day realized volatility of SPY exceeds 22% (high-vol regime) to avoid noisy signals.",
+    "source_refs": [
+      "https://www.bis.org/publ/work845.pdf"
+    ],
+    "proposed_by_engine": "cerebras"
+  }
+]
