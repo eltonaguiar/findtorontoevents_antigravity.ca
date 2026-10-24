@@ -2,18 +2,15 @@
 import os, ssl
 from ftplib import FTP_TLS
 from pathlib import Path
+import sys
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.ftp_credentials import get_ftp_credentials
 
-host = "ftps2.50webs.com"
-user = os.environ.get("FTP_USER", "")
-pw   = os.environ.get("FTP_PASS", "")
-
-if not user or not pw:
-    print("FTP_USER / FTP_PASS not set — skipping deploy")
-    raise SystemExit(0)
+credentials = get_ftp_credentials()
+host, user, pw = credentials.host, credentials.user, credentials.password
 
 ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
 
 ftp = FTP_TLS(context=ctx)
 ftp.connect(host, 21, timeout=30)

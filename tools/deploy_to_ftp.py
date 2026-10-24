@@ -28,6 +28,10 @@ After deploy: run npm run verify:remote.
 import os
 import ftplib
 from pathlib import Path
+import sys
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.ftp_credentials import load_ftp_environment, connect_ftp
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 WORKSPACE = _SCRIPT_DIR.parent
@@ -50,6 +54,8 @@ DEFAULT_REMOTE_PATH = "findtorontoevents.ca"
 
 
 def _env(key: str, fallback: str = "") -> str:
+    if key in {"FTP_SERVER", "FTP_HOST", "FTP_USER", "FTP_PASS"}:
+        load_ftp_environment()
     return os.environ.get(key, fallback).strip()
 
 
@@ -483,8 +489,7 @@ def deploy_audit_only() -> None:
     print()
 
     try:
-        with ftplib.FTP(host) as ftp:
-            ftp.login(user, password)
+        with connect_ftp() as ftp:
             deploy_audit_dashboard(ftp, remote_path)
             if parent_root:
                 deploy_audit_dashboard(ftp, parent_root)
@@ -516,8 +521,7 @@ def deploy_live_monitor_only() -> None:
     print()
 
     try:
-        with ftplib.FTP(host) as ftp:
-            ftp.login(user, password)
+        with connect_ftp() as ftp:
             deploy_live_monitor(ftp, remote_path)
             if parent_root:
                 deploy_live_monitor(ftp, parent_root)
@@ -549,8 +553,7 @@ def deploy_favcreators_only() -> None:
     print()
 
     try:
-        with ftplib.FTP(host) as ftp:
-            ftp.login(user, password)
+        with connect_ftp() as ftp:
             deploy_favcreators(ftp, remote_path)
             if parent_root:
                 deploy_favcreators(ftp, parent_root)
@@ -590,8 +593,7 @@ def deploy_main_index_only() -> None:
     print()
 
     try:
-        with ftplib.FTP(host) as ftp:
-            ftp.login(user, password)
+        with connect_ftp() as ftp:
             ok = _upload_file(ftp, source, f"{remote_path}/index.html")
             if parent_root:
                 ok = _upload_file(ftp, source, f"{parent_root}/index.html") and ok
@@ -625,8 +627,7 @@ def deploy_updates_only() -> None:
     print()
 
     try:
-        with ftplib.FTP(host) as ftp:
-            ftp.login(user, password)
+        with connect_ftp() as ftp:
             deploy_updates(ftp, remote_path)
             if parent_root:
                 deploy_updates(ftp, parent_root)
@@ -659,8 +660,7 @@ def main() -> None:
     print()
 
     try:
-        with ftplib.FTP(host) as ftp:
-            ftp.login(user, password)
+        with connect_ftp() as ftp:
             print("Connected.\n")
 
             print(f"Uploading main site to {remote_path}/ ...")

@@ -7,15 +7,16 @@ Deploys files from findstocks/kimis_claw/ to the production server at ftps2.50we
 Usage:
     python deploy_kimis_claw_production.py
     
-Environment Variables (checked in order):
-    - FTP_USER, USERNAME, FTP_USERNAME, USER
-    - FTP_PASS, PASSWORD, FTP_PASSWORD, PASS, FTP_PASSWD
-    - FTP_HOST (defaults to ftps2.50webs.com)
+Credentials:
+    - Local ~/dbpasses.txt 50WEBS_FTP password for the default account
+    - FTP_USER / FTP_USERNAME, FTP_PASS / FTP_PASSWORD in CI
+    - FTP_HOST / FTP_SERVER (defaults to ftps2.50webs.com)
 """
 
 import os
 import sys
 import ftplib
+import ssl
 import time
 from pathlib import Path
 from typing import List, Tuple, Optional
@@ -55,57 +56,10 @@ class DeployResult:
 
 
 def get_ftp_credentials() -> Tuple[str, str, str]:
-    """
-    Retrieve FTP credentials from environment variables.
-    Checks multiple common variable names.
-    
-    Returns:
-        Tuple of (host, username, password)
-        
-    Raises:
-        SystemExit: If required credentials are not found
-    """
-    # Check for username in order of preference
-    username = None
-    username_vars = ["FTP_USER", "USERNAME", "FTP_USERNAME", "USER", "FTP_LOGIN"]
-    for var in username_vars:
-        username = os.environ.get(var)
-        if username:
-            print(f"[INFO] Found username from environment variable: {var}")
-            break
-    
-    # Check for password in order of preference
-    password = None
-    password_vars = ["FTP_PASS", "PASSWORD", "FTP_PASSWORD", "PASS", "FTP_PASSWD", "FTP_PWD"]
-    for var in password_vars:
-        password = os.environ.get(var)
-        if password:
-            # Don't print which var for security, just confirm found
-            print(f"[INFO] Found password from environment variable: {var}")
-            break
-    
-    # Check for host (optional, has default)
-    host = os.environ.get("FTP_HOST", DEFAULT_FTP_HOST)
-    if host != DEFAULT_FTP_HOST:
-        print(f"[INFO] Using custom FTP host from environment: FTP_HOST")
-    else:
-        print(f"[INFO] Using default FTP host: {DEFAULT_FTP_HOST}")
-    
-    # Validate required credentials
-    missing = []
-    if not username:
-        missing.append("username (checked: FTP_USER, USERNAME, FTP_USERNAME, USER)")
-    if not password:
-        missing.append("password (checked: FTP_PASS, PASSWORD, FTP_PASSWORD, PASS)")
-    
-    if missing:
-        print("[ERROR] Missing required FTP credentials:")
-        for item in missing:
-            print(f"  - {item}")
-        print("\nPlease set the appropriate environment variables and try again.")
-        sys.exit(1)
-    
-    return host, username, password
+    """Resolve only FTP-specific inputs; never use the operating-system login."""
+    from tools.ftp_credentials import get_ftp_credentials as load_credentials
+    credentials = load_credentials()
+    return credentials.host, credentials.user, credentials.password
 
 
 def connect_ftp(host: str, username: str, password: str, max_retries: int = MAX_RETRIES) -> ftplib.FTP:
@@ -127,8 +81,9 @@ def connect_ftp(host: str, username: str, password: str, max_retries: int = MAX_
     for attempt in range(1, max_retries + 1):
         try:
             print(f"[INFO] Connecting to {host} (attempt {attempt}/{max_retries})...")
-            ftp = ftplib.FTP(host, timeout=30)
+            ftp = ftplib.FTP_TLS(host, timeout=30, context=ssl.create_default_context())
             ftp.login(username, password)
+            ftp.prot_p()
             print(f"[SUCCESS] Connected to {host}")
             return ftp
         except Exception as e:
