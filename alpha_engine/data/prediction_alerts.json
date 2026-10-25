@@ -1,10 +1,24 @@
 {
   "alerts": [
     {
+      "type": "MODEL_FLAT",
+      "severity": "WARNING",
+      "message": "Prediction variance 0.0063 < 0.01 -- model not discriminating between good and bad picks",
+      "timestamp": "2026-10-25T04:40:06.286057+00:00"
+    },
+    {
       "type": "PSI_SHIFT",
       "severity": "CRITICAL",
-      "message": "PSI = 0.773 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
-      "timestamp": "2026-10-25T03:14:40.015387+00:00"
+      "message": "PSI = 1.168 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
+      "timestamp": "2026-10-25T04:40:06.286057+00:00"
+    },
+    {
+      "type": "OUT_OF_DISTRIBUTION",
+      "severity": "WARNING",
+      "message": "AAPL (regime_mild_bear) is OOD -- 2 features beyond 3.0 sigma, confidence reduced by 0.05",
+      "symbol": "AAPL",
+      "strategy": "regime_mild_bear",
+      "timestamp": "2026-10-25T04:40:06.290346+00:00"
     },
     {
       "type": "CONSECUTIVE_LOSSES",
@@ -12,7 +26,7 @@
       "message": "Strategy 'prediction_market_consensus' has 5 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
       "strategy": "prediction_market_consensus",
       "streak": 5,
-      "timestamp": "2026-10-25T03:14:40.337048+00:00"
+      "timestamp": "2026-10-25T04:40:06.344707+00:00"
     },
     {
       "type": "CONSECUTIVE_LOSSES",
@@ -20,13 +34,13 @@
       "message": "Strategy 'regime_accumulation' has 5 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
       "strategy": "regime_accumulation",
       "streak": 5,
-      "timestamp": "2026-10-25T03:14:40.337104+00:00"
+      "timestamp": "2026-10-25T04:40:06.344746+00:00"
     }
   ],
   "summary": {
-    "total_alerts": 3,
+    "total_alerts": 5,
     "critical": 1,
-    "warning": 2,
+    "warning": 4,
     "info": 0,
     "sizing_multiplier": 0.5
   },
@@ -36,9 +50,9 @@
     "center_line": null
   },
   "prediction_dist": {
-    "psi": 0.7729,
-    "mean_shift": 0.0281,
-    "current_var": 0.011
+    "psi": 1.1683,
+    "mean_shift": 0.0087,
+    "current_var": 0.0063
   },
-  "updated_at": "2026-10-25T03:14:40.015387+00:00"
+  "updated_at": "2026-10-25T04:40:06.286057+00:00"
 }
