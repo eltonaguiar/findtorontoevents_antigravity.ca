@@ -1,64 +1,92 @@
 {
   "metadata": {
-    "timestamp": "2026-10-27T21:26:09.231750+00:00",
+    "timestamp": "2026-10-28T00:28:58.132394+00:00",
     "total_mutations": 5,
-    "total_picks": 2,
-    "mutations_triggered": 2,
-    "mutations_silent": 3,
+    "total_picks": 3,
+    "mutations_triggered": 3,
+    "mutations_silent": 2,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_rapid_fire_mutations"
   },
   "picks": [
     {
-      "strategy": "rapid_trend_only_mut",
-      "symbol": "APTUSDT",
+      "strategy": "rapid_momentum_filter_mut",
+      "symbol": "BNBUSDT",
       "signal_type": "SELL",
       "direction": "SELL",
-      "entry_price": 0.684,
-      "take_profit": 0.668141,
-      "stop_loss": 0.695894,
-      "confidence": 0.5536,
+      "entry_price": 742.47,
+      "take_profit": 735.5947,
+      "stop_loss": 747.6265,
+      "confidence": 0.6833,
       "risk_reward": 1.33,
-      "reason": "RapidFire trend-only: SELL with 200-EMA trend, price below EMA200=$0.7330 (6.68% distance) \u2014 no counter-trend trades",
-      "timestamp": "2026-10-27T21:26:09.210659+00:00",
+      "reason": "RapidFire MACD-confirmed: SELL, histogram=-0.287080 (accelerating) \u2014 momentum confirmed",
+      "timestamp": "2026-10-28T00:28:58.122098+00:00",
       "category": "crypto",
       "source_system": "genome",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
       "parent_system": "rapid_fire",
-      "mutation_type": "trend_filter",
-      "ema_200": 0.732957,
-      "trend_distance": 0.0668,
+      "mutation_type": "momentum_filter",
+      "macd_histogram": -0.28708003,
+      "histogram_accelerating": true,
       "timeframe": "1h"
     },
     {
       "strategy": "rapid_rsi_filter_mut",
-      "symbol": "APTUSDT",
+      "symbol": "BNBUSDT",
       "signal_type": "SELL",
       "direction": "SELL",
-      "entry_price": 0.684,
-      "take_profit": 0.668141,
-      "stop_loss": 0.695894,
-      "confidence": 0.4761,
+      "entry_price": 742.47,
+      "take_profit": 735.5947,
+      "stop_loss": 747.6265,
+      "confidence": 0.4811,
       "risk_reward": 1.33,
-      "reason": "RapidFire RSI-filtered: SELL, RSI=45.4 (>40 room to fall) \u2014 not chasing extremes",
-      "timestamp": "2026-10-27T21:26:09.229360+00:00",
+      "reason": "RapidFire RSI-filtered: SELL, RSI=46.2 (>40 room to fall) \u2014 not chasing extremes",
+      "timestamp": "2026-10-28T00:28:58.130353+00:00",
       "category": "crypto",
       "source_system": "genome",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
       "parent_system": "rapid_fire",
       "mutation_type": "rsi_filter",
-      "rsi_14": 45.4,
+      "rsi_14": 46.2,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "rapid_top10_only_mut",
+      "symbol": "BNBUSDT",
+      "signal_type": "SELL",
+      "direction": "SELL",
+      "entry_price": 742.47,
+      "take_profit": 735.5947,
+      "stop_loss": 747.6265,
+      "confidence": 0.4792,
+      "risk_reward": 1.33,
+      "reason": "RapidFire top-10: SELL on BNBUSDT (top-10 mktcap), RSI=46.2 \u2014 liquid large-cap only",
+      "timestamp": "2026-10-28T00:28:58.128341+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "rapid_fire",
+      "mutation_type": "top10_filter",
+      "rsi_14": 46.2,
+      "is_top10": true,
       "timeframe": "1h"
     }
   ],
   "mutations_triggered": [
     {
-      "strategy": "rapid_trend_only_mut",
+      "strategy": "rapid_momentum_filter_mut",
       "parent": "rapid_fire",
-      "mutation": "trend_filter",
+      "mutation": "momentum_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "rapid_top10_only_mut",
+      "parent": "rapid_fire",
+      "mutation": "top10_filter",
       "picks": 1
     },
     {
@@ -69,8 +97,7 @@
     }
   ],
   "mutations_silent": [
-    "rapid_momentum_filter_mut",
-    "rapid_volume_gate_mut",
-    "rapid_top10_only_mut"
+    "rapid_trend_only_mut",
+    "rapid_volume_gate_mut"
   ]
 }
