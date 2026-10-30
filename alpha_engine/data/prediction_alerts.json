@@ -1,10 +1,22 @@
 {
   "alerts": [
     {
+      "type": "SPC_INVESTIGATE",
+      "severity": "WARNING",
+      "message": "Rolling WR 0.550 above UCL 0.528 -- possible data leakage or survivorship bias",
+      "timestamp": "2026-10-30T00:36:39.208406+00:00"
+    },
+    {
       "type": "MODEL_FLAT",
       "severity": "WARNING",
-      "message": "Prediction variance 0.0089 < 0.01 -- model not discriminating between good and bad picks",
-      "timestamp": "2026-10-29T22:13:35.928217+00:00"
+      "message": "Prediction variance 0.0097 < 0.01 -- model not discriminating between good and bad picks",
+      "timestamp": "2026-10-30T00:36:39.208406+00:00"
+    },
+    {
+      "type": "PSI_SHIFT",
+      "severity": "WARNING",
+      "message": "PSI = 0.251 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
+      "timestamp": "2026-10-30T00:36:39.208406+00:00"
     },
     {
       "type": "CONSECUTIVE_LOSSES",
@@ -12,7 +24,7 @@
       "message": "Strategy 'regime_accumulation' has 6 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
       "strategy": "regime_accumulation",
       "streak": 6,
-      "timestamp": "2026-10-29T22:13:36.073289+00:00"
+      "timestamp": "2026-10-30T00:36:39.343760+00:00"
     },
     {
       "type": "CONSECUTIVE_LOSSES",
@@ -20,25 +32,25 @@
       "message": "Strategy 'cta_fx_multifactor' has 6 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
       "strategy": "cta_fx_multifactor",
       "streak": 6,
-      "timestamp": "2026-10-29T22:13:36.073316+00:00"
+      "timestamp": "2026-10-30T00:36:39.343790+00:00"
     }
   ],
   "summary": {
-    "total_alerts": 3,
+    "total_alerts": 5,
     "critical": 0,
-    "warning": 3,
+    "warning": 5,
     "info": 0,
     "sizing_multiplier": 1.0
   },
   "spc": {
-    "status": "NORMAL",
-    "rolling_wr": 0.5,
-    "center_line": 0.2381
+    "status": "INVESTIGATE",
+    "rolling_wr": 0.55,
+    "center_line": 0.2411
   },
   "prediction_dist": {
-    "psi": 0.1582,
-    "mean_shift": 0.0119,
-    "current_var": 0.0089
+    "psi": 0.2505,
+    "mean_shift": 0.0002,
+    "current_var": 0.0097
   },
-  "updated_at": "2026-10-29T22:13:35.928217+00:00"
+  "updated_at": "2026-10-30T00:36:39.208406+00:00"
 }
