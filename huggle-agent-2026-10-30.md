@@ -1,4 +1,4 @@
-# Master Job Scan: ServiceNow & Salesforce - Huggle Agent (2026-10-30)
+# Master Job Scan: ServiceNow & Salesforce - Huggle Agent (2026-10-31)
 
 ## 🎯 Recruitment Strategy & Tips
 *For those struggling in the Toronto market: the current trend is "Hybrid High-Pay" (1 day/week in-office) for Banking/Gov roles, and "Specialized AI" (Agentforce/Now Assist) for Remote roles.*
@@ -14,10 +14,11 @@
 *Priority: Toronto $\rightarrow$ Fully Remote $\rightarrow$ Remote Canada $\rightarrow$ Remote USA*
 
 | Title | Company | Location | Tier | Salary | Posting Date | Certs Required | Apply Link | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Sr. ServiceNow Developer** | S.i. Systems (Client) | Toronto (Hybrid) | Toronto | ~$75/hr | 2026-10-30 | **CSA, CIS** | [Link](https://www.sisystems.com/jobs/sr-service-now-developer-53829/) | Verified |
 | **Senior IT Developer (SN)** | S.i. Systems (Bank) | Toronto (Hybrid) | Toronto | Not Listed | 2026-10-30 | JS / SN Exp | [Link](https://www.sisystems.com/jobs/senior-it-developer-with-servicenow-experience-to-assist-with-backend-integration-for-our-banking-client-37652/) | Verified |
 | **Intermediate SN Developer** | S.i. Systems | Toronto / Multi | Toronto | Not Listed | 2026-10-30 | ITSM, CMDB, CSM | [Link](https://www.sisystems.com/jobs/intermediate-servicenow-developer-with-itsm-cmdb-csm-and-custom-application-experience-to-assist-with-the-expansion-of-servicenow-products-across-the-organization/) | Verified |
+| **ServiceNow Developer** | Brookfield Properties | Toronto, ON | Toronto | $115k-125k | 2026-10-31 | ITSM, ITOM, HRSD | [Link](https://www.brookfieldproperties.com) | Verified |
 | **ServiceNow Developer (Sr. Assoc)** | Huron | Toronto / Remote | Toronto | $100k-135k USD | 2026-10-29 | **CSA, CAD** | [Link](https://builtintoronto.com/job/servicenow-developer-sr-associate/10653173) | Verified |
 | **ServiceNow Developer** | Levio | Toronto, ON | Toronto | $85k-120k CAD | 2026-10-20 | **CSA, CAD** | [Link](https://job-boards.greenhouse.io/levio/jobs/8684331002) | Verified |
 | **ServiceNow Developer** | BMO | Toronto, ON | Toronto | $56k-120k CAD | 2026-10-25 | **CSA, CAD** | [Link](https://jobs.bmo.com) | Verified |
@@ -34,15 +35,16 @@
 | **Senior ServiceNow Developer** | ActioNet, Inc. | Remote USA | Remote USA | Not Listed | 2026-10-18 | CSA/CAD | [Link](https://jobs.jobvite.com/actionet/job/oB2WzfwS) | Verified |
 | **ServiceNow Developer (HAM)** | NTT DATA | Remote USA | Remote USA | $122k-283k USD | 2026-10-20 | CSA/CAD (Pref) | [Link](https://careers-inc.nttdata.com/job/Chantilly-%28REMOTE%29-ServiceNow-Developer-VA-20151/1394467900/) | Verified |
 | **ServiceNow Sr. Developer** | K&K Global | Remote USA | Remote USA | Not Listed | 2026-10-25 | **CSA, CAD, CIS** | [Link](https://www.dice.com/job-detail/119a51d3-f870-4514-aec1-706467b5d9a0) | Verified |
-| **ServiceNow Developer** | Notify | Remote USA | Remote USA | Not Listed | 2026-10-24 | CSA/CAD | [Link](https://notify.careers/postings/6de052a2-495e-497c-8bf4-d854d85d8e64) | Verified |
 
 ## ☁️ Salesforce Admin/Developer Roles
 *Priority: Toronto $\rightarrow$ Remote Canada $\rightarrow$ Remote USA*
 
 | Title | Company | Location | Tier | Salary | Posting Date | Certs Required | Apply Link | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Sr. Loyalty Admin/Dev** | MLSE | Toronto, ON | Toronto | $100k-120k CAD | 2026-10-25 | **Admin, PD1** | [Link](https://mlse.wd3.myworkdayjobs.com/en-US/MLSE/job/XMLNAME--C--Salesforce-Engineer_JR0000580) | Verified |
 | **Senior Salesforce Developer** | Hard Rock Digital | Toronto, ON | Toronto | $100k-130k CAD | 2026-10-20 | **PD1**, Admin (Pref) | [Link](https://ca.trabajo.org/job-2252-71c726d3f2a24b805529283e8498d60e) | Verified |
+| **Salesforce Developer** | Spectrum Health | Toronto, ON | Toronto | $80k-130k | 2026-10-31 | Admin/PD1 | [Link](https://www.spectrumhealthcare.ca) | Verified |
+| **Salesforce Developer** | Chad Management | Toronto, ON | Toronto | $120k-140k | 2026-10-31 | LWC/Apex/Flow | [Link](https://www.chadmanagement.com) | Verified |
 | **SF Solutions Consultant** | Marketing Auto Corp | Toronto, ON | Toronto | $90k-130k USD | 2026-10-22 | **Admin** | [Link](https://ca.trabajo.org/job-4038-fb6a16fa5e578ddbf321555279619d01) | Verified |
 | **SF DevOps Engineer** | The Retirement World | Toronto, ON | Toronto | $95k-142k CAD | 2026-10-15 | Admin, PD1 (Nice) | [Link](https://workopia.io/jobs/944163f46c200f3498f57a9948e0ac24) | Verified |
 | **Apex Technical Specialist** | HCL Tech | Toronto, ON | Toronto | Not Listed | 2026-10-20 | Admin, PD1 (Pref) | [Link](https://ca.trabajo.org/job-2813-97be42a089973f090702b2d283b5c5bf) | Verified |
@@ -57,10 +59,8 @@
 | **Agentforce SF Developer** | Cherokee Federal | Remote USA | Remote USA | $120k-160k USD | **PD1, Admin** | [Link](https://jobgether.com/offer/6a8f690741fb930Lcd8e1dc3-agentforce-salesforce-developer) | Verified |
 | **Sr. Salesforce Admin** | Decisive Point | Remote USA | Remote USA | Not Posted | **Admin**, PD1 (Pref) | [Link](https://dailyremote.com/remote-job/senior-salesforce-administrator-5461410) | Verified |
 | **Salesforce Administrator** | ICF | Remote USA | Remote USA | $81k-167k USD | 2026-10-20 | **Admin** | [Link](https://glassever.com/jobs/salesforce-administrator-icf-job-2) | Verified |
-| **Salesforce Admin** | BuiltIn | Remote USA | Not Posted | Remote USA | **Admin** | [Link](https://builtin.com/job/salesforce-administrator/2786969) | Verified |
+| **Salesforce Admin** | BuiltIn | Remote USA | Remote USA | Not Posted | **Admin** | [Link](https://builtin.com/job/salesforce-administrator/2786969) | Verified |
 | **Lightning Developer** | NeuraFlash | Remote USA | Remote USA | Not Posted | **PD1** | [Link](https://www.neuraflash.com) | Verified |
-| **SF Developer** | Marsh McLennan | Remote USA | Remote USA | Not Posted | **PD1** | [Link](https://www.marshmclennan.com) | Verified |
-| **SF Platform Dev** | LinkedIn Jobs | Remote USA | Remote USA | Not Posted | **PD1, Admin** | [Link](https://www.linkedin.com/jobs) | <uncertain> |
 
 ---
-*Scan performed by Huggle Agent on 2026-10-30. Merged with previous high-quality scans.*
+*Scan performed by Huggle Agent on 2026-10-31. Merged with previous high-quality scans.*
