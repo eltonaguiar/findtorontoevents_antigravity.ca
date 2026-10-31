@@ -19,10 +19,12 @@
 | **Senior IT Developer (SN)** | S.i. Systems (Bank) | Toronto (Hybrid) | Toronto | Not Listed | 2026-10-30 | JS / SN Exp | [Link](https://www.sisystems.com/jobs/senior-it-developer-with-servicenow-experience-to-assist-with-backend-integration-for-our-banking-client-37652/) | Verified |
 | **Intermediate SN Developer** | S.i. Systems | Toronto / Multi | Toronto | Not Listed | 2026-10-30 | ITSM, CMDB, CSM | [Link](https://www.sisystems.com/jobs/intermediate-servicenow-developer-with-itsm-cmdb-csm-and-custom-application-experience-to-assist-with-the-expansion-of-servicenow-products-across-the-organization/) | Verified |
 | **ServiceNow Developer** | Brookfield Properties | Toronto, ON | Toronto | $115k-125k | 2026-10-31 | ITSM, ITOM, HRSD | [Link](https://www.brookfieldproperties.com) | Verified |
+| **ServiceNow System Admin** | TD Bank | Toronto, ON | Toronto | $81k-115k CAD | 2026-10-31 | **CSA** | [Link](https://ca.talent.com/view?id=632352095178790533) | Verified |
 | **ServiceNow Developer (Sr. Assoc)** | Huron | Toronto / Remote | Toronto | $100k-135k USD | 2026-10-29 | **CSA, CAD** | [Link](https://builtintoronto.com/job/servicenow-developer-sr-associate/10653173) | Verified |
 | **ServiceNow Developer** | Levio | Toronto, ON | Toronto | $85k-120k CAD | 2026-10-20 | **CSA, CAD** | [Link](https://job-boards.greenhouse.io/levio/jobs/8684331002) | Verified |
 | **ServiceNow Developer** | BMO | Toronto, ON | Toronto | $56k-120k CAD | 2026-10-25 | **CSA, CAD** | [Link](https://jobs.bmo.com) | Verified |
 | **Senior SN Developer & Architect** | SereneAid | Toronto, ON | Toronto | Not Listed | 2026-10-11 | **CSA, CAD** (Pref) | [Link](https://www.jobs.ca/sereneaid/jobs/senior-servicenow-developer-platform-architect-toronto-on-5a0eb8f911e0) | Verified |
+| **SN Admin / Auto Analyst** | Harris Computer | Remote (Ont) | Remote CAN | $80k-90k CAD | 2026-10-31 | **CSA** | [Link](https://ca.talent.com/view?id=638801396334203282) | Verified |
 | **Senior SN Developer** | S.i. Systems (Client) | Remote (EST) | Remote CAN | Not Listed | 2026-10-30 | **CSA, CIS, CTA** | [Link](https://www.sisystems.com/jobs/senior-servicenow-developer-to-support-the-configuration-and-development-of-the-servicenow-platform-for-a-professional-services-client/) | Verified |
 | **ServiceNow Tech Consultant** | Cognizant | Remote Canada | Remote CAN | $87k-100k CAD | 2026-10-15 | CSA/CAD (Pref) | [Link](https://careers.cognizant.com/global-en/jobs/00069526961/servicenow-technical-consultant/) | Verified |
 | **ServiceNow Solution Architect** | Cognizant | Remote CAN/USA | Remote CAN | $109k-125k CAD | 2026-10-15 | **CSA, CAD** | [Link](https://careers.cognizant.com/ca-en/jobs/00069775982/servicenow-solution-architect/) | Verified |
@@ -33,8 +35,6 @@
 | **SN ITAM Architect** | GlideFast | Remote US/CAN | Remote USA | $140k-185k CAD | 2026-10-24 | **CSA** | [Link](https://ca.linkedin.com/jobs/view/servicenow-itam-architect-at-glidefast-consulting-4215152325) | Verified |
 | **ServiceNow Developer** | MANTECH | Remote USA | Remote USA | $148k-263k USD | 2026-10-22 | **CSA, CAD** | [Link](https://careers.mantech.com/en_US/careers/JobDetail/ServiceNow-Developer/66593) | Verified |
 | **Senior ServiceNow Developer** | ActioNet, Inc. | Remote USA | Remote USA | Not Listed | 2026-10-18 | CSA/CAD | [Link](https://jobs.jobvite.com/actionet/job/oB2WzfwS) | Verified |
-| **ServiceNow Developer (HAM)** | NTT DATA | Remote USA | Remote USA | $122k-283k USD | 2026-10-20 | CSA/CAD (Pref) | [Link](https://careers-inc.nttdata.com/job/Chantilly-%28REMOTE%29-ServiceNow-Developer-VA-20151/1394467900/) | Verified |
-| **ServiceNow Sr. Developer** | K&K Global | Remote USA | Remote USA | Not Listed | 2026-10-25 | **CSA, CAD, CIS** | [Link](https://www.dice.com/job-detail/119a51d3-f870-4514-aec1-706467b5d9a0) | Verified |
 
 ## ☁️ Salesforce Admin/Developer Roles
 *Priority: Toronto $\rightarrow$ Remote Canada $\rightarrow$ Remote USA*
