@@ -1,6 +1,6 @@
 # FUTURES research P5 — SYNTHESIS swarm briefing
 
-You are one of 3 AI engines voting on the FUTURES research run at run_2026-10-24T06-18-08Z.
+You are one of 3 AI engines voting on the FUTURES research run at run_2026-10-31T06-11-41Z.
 
 P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA-crossover proxy of spec.entry, 5y window, 5bp round-trip costs) but the signal is SIMPLIFIED — spec.entry text is not yet parsed faithfully. A faithful-signal translator is queued for v3.
 
@@ -12,7 +12,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Allocate equal dollar amount to each leg; then scale the entire portfolio to target 8% annualized volatility using the 30-day rolling realized volatility of the portfolio (risk-parity scaling).
   - universe: ['DBC', 'GSG', 'DBA', 'USO', 'UNG', 'PDBC']
   - regime: Skip all trades on days when the CBOE Volatility Index (VIX) > 25 or when the NBER recession flag is active (US recession).
-  - P3: PF=2.9 WR=36.4% MDD=24.9% Sharpe=0.51 n=11
+  - P3: PF=2.91 WR=36.4% MDD=24.9% Sharpe=0.5 n=11
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBC (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -22,7 +22,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Equal dollar allocation per leg; apply risk-parity scaling to achieve a portfolio-wide target volatility of 10% annualized, using a 30-day rolling realized volatility estimate.
   - universe: ['DBC', 'GSG', 'DBA', 'USO', 'UNG', 'PDBC']
   - regime: Only trade during periods identified as economic expansions (NBER recession flag = false). Skip all days in recessions.
-  - P3: PF=2.9 WR=36.4% MDD=24.9% Sharpe=0.51 n=11
+  - P3: PF=2.91 WR=36.4% MDD=24.9% Sharpe=0.5 n=11
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBC (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -32,7 +32,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Risk-parity across all active legs targeting 9% annualized volatility, using a 30-day rolling realized volatility estimate.
   - universe: ['DBC', 'GSG', 'DBA', 'USO', 'UNG', 'PDBC']
   - regime: None beyond the regime definition; the strategy is inactive only when both expansion and recession flags are ambiguous (e.g., transition days).
-  - P3: PF=1.39 WR=22.2% MDD=42.6% Sharpe=0.24 n=36
+  - P3: PF=1.32 WR=22.2% MDD=42.6% Sharpe=0.2 n=36
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBC (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -42,7 +42,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Scale each leg so that the portfolio's 30-day rolling realized volatility equals a target of 10% annualized (volatility-targeting as in Harvey et al.).
   - universe: ['DBC', 'GSG', 'DBA', 'USO', 'UNG', 'PDBC']
   - regime: Skip trading on days when VIX > 30.
-  - P3: PF=2.9 WR=36.4% MDD=24.9% Sharpe=0.51 n=11
+  - P3: PF=2.91 WR=36.4% MDD=24.9% Sharpe=0.5 n=11
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBC (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -52,7 +52,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: Allocate equal risk to each pair; within each pair, size long and short legs equally. Apply portfolio-wide risk-parity scaling to target 9% annualized volatility (30-day rolling vol).
   - universe: ['DBC', 'GSG', 'USO', 'UNG']
   - regime: Skip trading on days when weekly change in US crude oil inventories exceeds 5 million barrels (proxy for market noise) or when VIX > 25.
-  - P3: PF=1.39 WR=22.2% MDD=42.6% Sharpe=0.24 n=36
+  - P3: PF=1.32 WR=22.2% MDD=42.6% Sharpe=0.2 n=36
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBC (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -62,7 +62,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed position size targeting 10% annualized volatility based on 30d historical vol
   - universe: ['DBC']
   - regime: skip when VIX > 25 OR 90d DBC volatility > 20%
-  - P3: PF=1.39 WR=22.2% MDD=42.6% Sharpe=0.24 n=36
+  - P3: PF=1.32 WR=22.2% MDD=42.6% Sharpe=0.2 n=36
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBC (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -72,7 +72,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed position size targeting 10% annualized volatility based on 60d historical vol
   - universe: ['PDBC']
   - regime: skip when VIX > 30 OR 90d PDBC volatility > 25%
-  - P3: PF=1.37 WR=37.0% MDD=42.0% Sharpe=0.29 n=46
+  - P3: PF=1.31 WR=37.0% MDD=42.0% Sharpe=0.25 n=46
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for PDBC (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -82,7 +82,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: risk-parity allocation targeting 8% annualized volatility based on 60d historical vol
   - universe: ['DBA']
   - regime: skip during recession regime (ISM PMI < 50) OR when VIX > 30
-  - P3: PF=1.38 WR=35.6% MDD=19.0% Sharpe=0.28 n=45
+  - P3: PF=1.37 WR=35.6% MDD=19.4% Sharpe=0.28 n=45
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for DBA (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -92,7 +92,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: dynamic sizing to maintain constant 10% annualized volatility based on 30d historical vol
   - universe: ['USO']
   - regime: skip when VIX > 35 OR 90d USO volatility > 30%
-  - P3: PF=1.22 WR=30.8% MDD=59.9% Sharpe=0.16 n=39
+  - P3: PF=1.19 WR=30.8% MDD=59.9% Sharpe=0.15 n=39
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for USO (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -102,7 +102,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed position size targeting 10% annualized volatility based on 30d historical vol
   - universe: ['GSG']
   - regime: skip when VIX > 30 OR 90d GSG volatility > 25%
-  - P3: PF=1.87 WR=40.5% MDD=34.4% Sharpe=0.45 n=37
+  - P3: PF=1.77 WR=40.5% MDD=34.4% Sharpe=0.41 n=37
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for GSG (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -124,7 +124,7 @@ If most candidates fail T2 floor (esp. n<100), the run-level verdict should be M
   "schema_version": "v1",
   "engine": "<your name>",
   "asset_class": "FUTURES",
-  "run_id": "run_2026-10-24T06-18-08Z",
+  "run_id": "run_2026-10-31T06-11-41Z",
   "synthesis": [
     {
       "spec_id": "<from list above>",
