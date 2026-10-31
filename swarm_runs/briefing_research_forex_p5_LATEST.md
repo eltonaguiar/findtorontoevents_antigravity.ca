@@ -1,6 +1,6 @@
 # FOREX research P5 — SYNTHESIS swarm briefing
 
-You are one of 3 AI engines voting on the FOREX research run at run_2026-10-24T06-17-35Z.
+You are one of 3 AI engines voting on the FOREX research run at run_2026-10-31T06-11-08Z.
 
 P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA-crossover proxy of spec.entry, 5y window, 5bp round-trip costs) but the signal is SIMPLIFIED — spec.entry text is not yet parsed faithfully. A faithful-signal translator is queued for v3.
 
@@ -12,7 +12,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: allocate full capital (100%) to the position; risk-adjusted size = 1 / rolling 60d volatility of UUP to target 8% annualized vol
   - universe: ['UUP']
   - regime: skip trade on any day where 90d realized volatility of UUP > 12% (high-vol regime)
-  - P3: PF=1.32 WR=40.4% MDD=14.4% Sharpe=0.35 n=57
+  - P3: PF=1.27 WR=40.4% MDD=14.4% Sharpe=0.31 n=57
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for UUP (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -42,7 +42,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: risk-parity: position size = 1 / rolling 60d volatility of UUP to target 8% annualized vol
   - universe: ['UUP', 'FXE']
   - regime: skip when spread < 0.5% over the past 30 days (compressed yield differential) OR when 90d realized volatility of UUP > 12%
-  - P3: PF=1.32 WR=40.4% MDD=14.4% Sharpe=0.35 n=57
+  - P3: PF=1.27 WR=40.4% MDD=14.4% Sharpe=0.31 n=57
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for UUP (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -52,7 +52,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: risk-parity weights as described in entry; target portfolio volatility = 8% annualized
   - universe: ['UUP', 'FXE', 'FXA', 'FXB', 'FXF']
   - regime: skip (set all weights to zero) on any month where the portfolio's 60d realized volatility exceeds 15% (high-risk regime)
-  - P3: PF=1.32 WR=40.4% MDD=14.4% Sharpe=0.35 n=57
+  - P3: PF=1.27 WR=40.4% MDD=14.4% Sharpe=0.31 n=57
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for UUP (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -74,7 +74,7 @@ If most candidates fail T2 floor (esp. n<100), the run-level verdict should be M
   "schema_version": "v1",
   "engine": "<your name>",
   "asset_class": "FOREX",
-  "run_id": "run_2026-10-24T06-17-35Z",
+  "run_id": "run_2026-10-31T06-11-08Z",
   "synthesis": [
     {
       "spec_id": "<from list above>",
