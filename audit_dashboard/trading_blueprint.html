@@ -116,7 +116,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <tr><td>Funding rate</td><td>Not included</td><td>Perpetual swap funding can be +/- 0.01-0.10% per 8h. Material for holds &gt;24h.</td></tr>
         <tr><td>PnL calculation</td><td>Entry vs TP/SL hit</td><td>Does NOT include fees. Actual returns ~0.20-0.40% worse than shown per trade.</td></tr>
         <tr><td>Price source</td><td>Binance spot API</td><td>Live prices fetched on page load. During outages, falls back to CoinGecko.</td></tr>
-        <tr><td>Avg hold time</td><td>2h (0.1 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
+        <tr><td>Avg hold time</td><td>13h (0.5 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
       </tbody></table>
 
       <h3>System Lifecycle</h3>
@@ -350,7 +350,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
           <td class="num" style="color:#22c55e">1.09</td>
           <td class="num" style="color:#22c55e">+0.08%</td>
           <td class="num">+2.3%</td>
-          <td class="num">-1.5%</td>
+          <td class="num">-1.4%</td>
         </tr><tr>
           <td><b>ai challenge predictable</b><br><span class="dim" style="font-size:11px">4 AI Challenge: Predictable. Highest ML Score ranking - picks the top 3 scanner BUY signals by raw ML confidence. R4 bes</span></td>
           <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
@@ -820,6 +820,18 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
           <td class="num">+1.9%</td>
           <td class="num">-1.1%</td>
         </tr><tr>
+          <td><b>signal validation</b><br><span class="dim" style="font-size:11px">No description available</span></td>
+          <td style="text-align:center;color:#f59e0b;font-weight:700;font-size:18px">C</td>
+          <td class="num">0</td>
+          <td class="num">482</td>
+          <td class="num">28</td><td class="num">45</td>
+          <td class="num" style="color:#ef4444">38.4%</td>
+          <td class="num" style="color:#ef4444">-11.31%</td>
+          <td class="num" style="color:#ef4444">0.87</td>
+          <td class="num" style="color:#ef4444">-0.15%</td>
+          <td class="num">+2.7%</td>
+          <td class="num">-1.9%</td>
+        </tr><tr>
           <td><b>breakout c spike</b><br><span class="dim" style="font-size:11px">Breakout Arena C - Spike Reverse. Detects price spikes using cosine similarity to historical spike archetypes, then trad</span></td>
           <td style="text-align:center;color:#ef4444;font-weight:700;font-size:18px">D</td>
           <td class="num">0</td>
@@ -1279,6 +1291,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
           <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL (unreal.)</th>
           <th>Age(h)</th><th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
         </tr></thead><tbody><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">77656.85</td><td class="num">75715.42875</td><td class="num">78821.70275</td>
+              <td class="num" style="color:#ef4444">-0.08%</td>
+              <td class="num">1h</td>
+              <td class="num">0.95</td><td class="num">1.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">5</td>
+              <td class="dim" style="font-size:11px">copy_pm_pm_f705fa04</td>
+              <td class="dim" style="font-size:11px">polymarket_signals</td>
+            </tr><tr>
               <td>SUI</td>
               <td style="color:#ef4444">SHORT</td>
               <td class="num">0.9023</td><td class="num">0.802286</td><td class="num">0.952307</td>
@@ -1353,6 +1376,17 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
           <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL (unreal.)</th>
           <th>Age(h)</th><th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
         </tr></thead><tbody><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">77656.85</td><td class="num">75715.42875</td><td class="num">78821.70275</td>
+              <td class="num" style="color:#ef4444">-0.08%</td>
+              <td class="num">1h</td>
+              <td class="num">0.95</td><td class="num">1.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">5</td>
+              <td class="dim" style="font-size:11px">copy_pm_pm_f705fa04</td>
+              <td class="dim" style="font-size:11px">polymarket_signals</td>
+            </tr><tr>
               <td>SUI</td>
               <td style="color:#ef4444">SHORT</td>
               <td class="num">0.9023</td><td class="num">0.802286</td><td class="num">0.952307</td>
@@ -1410,7 +1444,34 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
             </tr></tbody></table>
 
       <h3>C) Top 20 Vetted Only (Forward WR ≥ 55%, Forward Trades ≥ 10)</h3>
-      <p class='dim'>No picks matched criteria.</p>
+      
+        <div class="sim-summary">
+          <span><b>1</b> picks</span>
+          <span>WR: <b style="color:#ef4444">0.0%</b></span>
+          <span>Total PnL: <b style="color:#ef4444">-0.08%</b> (unrealized)</span>
+          <span>PF: <b style="color:#ef4444">0.0</b></span>
+          <span>Avg PnL: <b style="color:#ef4444">-0.08%</b></span>
+          <span>Worst pick: <b style="color:var(--red)">-0.08%</b></span>
+          <span>1 symbols</span>
+          <span>{'SHORT': 1}</span>
+          <span>Hold: avg 1h, max 1h</span>
+          <span style="color:var(--yellow)">Overlap: Top 10 Score: 1 shared; Top 20 Score: 1 shared; Top 20 High Agreement (≥3 systems): 1 shared; Mercury Top 20 (FWD-weighted): 1 shared</span>
+        </div>
+        <table><thead><tr>
+          <th>Symbol</th><th>Dir</th><th>Entry</th><th>TP</th><th>SL</th><th>PnL (unreal.)</th>
+          <th>Age(h)</th><th>Conf</th><th>R:R</th><th>FWD WR</th><th>Agree</th><th>Strategy</th><th>System</th>
+        </tr></thead><tbody><tr>
+              <td>BTC</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">77656.85</td><td class="num">75715.42875</td><td class="num">78821.70275</td>
+              <td class="num" style="color:#ef4444">-0.08%</td>
+              <td class="num">1h</td>
+              <td class="num">0.95</td><td class="num">1.7</td>
+              <td class="num" style="color:#22c55e">100%</td>
+              <td class="num">5</td>
+              <td class="dim" style="font-size:11px">copy_pm_pm_f705fa04</td>
+              <td class="dim" style="font-size:11px">polymarket_signals</td>
+            </tr></tbody></table>
 
       <h3>D) Top 20 High Agreement (≥3 systems agree)</h3>
       
@@ -1966,12 +2027,12 @@ Key changes:
       <p class="dim">Non-crypto picks from forex (7 strategies) and index futures (Connors RSI-2, TOM). These extend proven equity strategies to 24/5 markets.</p>
       
       <div class="card-grid">
-        <div class="card"><div class="card-label">Forex Picks</div><div class="card-val" style="color:var(--cyan)">5</div></div>
+        <div class="card"><div class="card-label">Forex Picks</div><div class="card-val" style="color:var(--cyan)">6</div></div>
         <div class="card"><div class="card-label">Futures Picks</div><div class="card-val" style="color:var(--yellow)">0</div></div>
-        <div class="card"><div class="card-label">Total Active</div><div class="card-val">5</div></div>
+        <div class="card"><div class="card-label">Total Active</div><div class="card-val">6</div></div>
         <div class="card"><div class="card-label">Unique Symbols</div><div class="card-val">5</div></div>
         <div class="card"><div class="card-label">Strategies</div><div class="card-val">2</div></div>
-        <div class="card"><div class="card-label">BUY Signals</div><div class="card-val" style="color:var(--green)">2</div></div>
+        <div class="card"><div class="card-label">BUY Signals</div><div class="card-val" style="color:var(--green)">3</div></div>
         <div class="card"><div class="card-label">SELL Signals</div><div class="card-val" style="color:var(--red)">3</div></div>
       </div>
       
@@ -1984,7 +2045,7 @@ Key changes:
         <br>Turn-of-Month on ES=F/NQ=F: Lakonishok &amp; Smidt (1988) TOM effect applies equally to index futures.
         <br>Forex: 7 strategies including carry trade, mean reversion, JPY risk-off, DXY correlation, BB squeeze, session momentum, and DXY RSI fade.
       </div>
-      <h3>Active Picks (5 total)</h3>
+      <h3>Active Picks (6 total)</h3>
       <div class="table-wrap">
       <table><thead><tr>
         <th>Symbol</th><th>Class</th><th>Signal</th><th>Entry</th><th>TP</th><th>SL</th>
@@ -1994,6 +2055,16 @@ Key changes:
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
           <td style="color:#22c55e;font-weight:700">BUY</td>
           <td class="num">0.83583</td><td class="num">0.84836745</td><td class="num">0.832589</td>
+          <td class="num">0.71</td><td class="num">7.7</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
+          <td class="dim" style="font-size:11px">Z-score=-2.10 below 200d SMA (0.86090), RSI=22. Backtest: 68.3% WR on 167 trades</td>
+        </tr><tr>
+          <td>EURGBP=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#22c55e;font-weight:700">BUY</td>
+          <td class="num">0.83583</td><td class="num">0.860898</td><td class="num">0.832589</td>
           <td class="num">0.71</td><td class="num">7.7</td>
           <td class="num" style="color:#888">+0.00%</td>
           <td class="num">0d</td>
