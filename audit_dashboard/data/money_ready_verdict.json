@@ -1,8 +1,176 @@
 {
-  "generated_at": "2026-11-01T04:19:17.955292+00:00",
+  "generated_at": "2026-11-01T05:55:13.974342+00:00",
   "generated_date": "2026-11-01",
   "source": "alpha_engine/money_ready_verdict.py --json",
   "classes": {
+    "FOREX": {
+      "intrabar_truth": {
+        "n": 575,
+        "wr": 0.3183,
+        "pf": 0.6521,
+        "source": "at_signal_outcomes.intrabar_*"
+      },
+      "sizing_source": "intrabar_truth",
+      "intrabar_daily_divergence": {
+        "daily_pf": 0.6354,
+        "daily_wr": 0.3619,
+        "honest_pf": 0.6521,
+        "honest_wr": 0.3183,
+        "honest_n": 575,
+        "pf_inflation_x": 0.97,
+        "wr_inflation_pp": 4.4,
+        "gate_source": "intrabar_truth",
+        "flag": false
+      },
+      "policy_clean_n": 409,
+      "policy_clean_wr": 0.3619,
+      "policy_clean_wr_pct": 36.19,
+      "policy_clean_pf": 0.6354,
+      "n_resolved": 575,
+      "wr": 0.3183,
+      "wr_pct": 31.83,
+      "pf": 0.6521,
+      "n_ok": true,
+      "wr_ok": false,
+      "pf_ok": false,
+      "dsr_ok": false,
+      "dsr_score": 0.003,
+      "pbo_ok": null,
+      "pbo": null,
+      "spa_ok": false,
+      "spa_p": 0.342,
+      "n_spa_pass": 0,
+      "expectancy": -0.003437,
+      "expectancy_ok": false,
+      "_slippage_gate_enabled": true,
+      "_slippage_recommend": null,
+      "_ml_enhanced_quarantine_enabled": true,
+      "_ml_enhanced_quarantine_n": 0,
+      "_ml_enhanced_quarantine_recommend": null,
+      "_mdd_gate_enforce": true,
+      "mdd": 0.8097,
+      "mdd_ok": false,
+      "cvar_95": -6.1519,
+      "cvar_ok": true,
+      "_mdd_cvar_gate_ok": false,
+      "_mdd_cvar_recommend": null,
+      "_fdr_gate_enforce": false,
+      "fdr_ok": null,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 1,
+      "_fdr_recommend": null,
+      "_single_source_gate_enforce": false,
+      "single_source_ok": true,
+      "n_profitable_multi_source": 1,
+      "n_profitable_single_source": 0,
+      "_single_source_recommend": null,
+      "recency_ok": true,
+      "recency_gate_48h": true,
+      "recency_days_since_last": 1.22,
+      "recency_most_recent": "2026-10-31T00:29:37.496088+00:00",
+      "recency_note": "ok",
+      "bootstrap_ci_lower": -0.006291,
+      "bootstrap_ci_upper": 0.00071,
+      "bootstrap_ci_ok": false,
+      "wf_oos_ratio": 1.7123,
+      "wf_oos_is_pf": 0.5514,
+      "wf_oos_oos_pf": 0.9441,
+      "wf_oos_ok": true,
+      "top_sleeves": [
+        {
+          "strategy": "non_crypto_consensus",
+          "n": 223,
+          "wr": 52.91,
+          "pf": 9.677,
+          "is_single_source": false,
+          "source": "resolver_grade",
+          "policy_blocked": false,
+          "note": "resolver_grade"
+        },
+        {
+          "strategy": "multi_asset_copytrader",
+          "n": 32,
+          "wr": 62.5,
+          "pf": 2.1785,
+          "is_single_source": true,
+          "source": "policy_clean",
+          "policy_blocked": false,
+          "note": "single-source"
+        }
+      ],
+      "_recency_warn": false,
+      "verdict": "NOT_READY",
+      "policy_frozen": true,
+      "data_source": "closed_picks",
+      "top_symbol": "USDJPY=X",
+      "top_symbol_share": 0.2054,
+      "concentration_capped": false,
+      "top_source": "UNKNOWN",
+      "top_source_share": 0.8729,
+      "source_concentration_capped": true,
+      "high_conviction_rate": 1.0,
+      "long_term_stability_rate": 1.0,
+      "details": {
+        "dsr": {
+          "ok": false,
+          "dsr_score": 0.003,
+          "note": ""
+        },
+        "pbo": {
+          "ok": null,
+          "note": "need \u22652 strategies with n\u226520, got 1",
+          "pbo": null
+        },
+        "spa": {
+          "ok": false,
+          "spa_p": 0.342,
+          "n_spa_pass": 0,
+          "n_strategies_tested": 1,
+          "note": ""
+        },
+        "expectancy": {
+          "expectancy": -0.003437,
+          "expectancy_ok": false,
+          "adj_win": 0.009626,
+          "adj_loss": 0.009536,
+          "slippage_bps": 5.0,
+          "note": ""
+        },
+        "mdd_cvar": {
+          "mdd": 0.8097,
+          "mdd_ok": false,
+          "cvar_95": -6.1519,
+          "cvar_ok": true,
+          "gate_ok": false,
+          "mdd_source": "registry"
+        },
+        "fdr": {
+          "ok": null,
+          "n_tested": 1,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": null,
+          "fdr_q": 0.1,
+          "note": "need >=2 testable strategies (n>=20), got 1"
+        },
+        "single_source": {
+          "ok": true,
+          "n_profitable": 1,
+          "n_profitable_single_source": 0,
+          "n_profitable_multi_source": 1,
+          "single_source_strategies": [],
+          "note": ""
+        },
+        "recency": {
+          "ok": true,
+          "gate_48h": true,
+          "most_recent": "2026-10-31T00:29:37.496088+00:00",
+          "days_since_last": 1.22,
+          "note": "ok"
+        }
+      }
+    },
     "CRYPTO": {
       "intrabar_truth": {
         "n": 3652,
@@ -13,7 +181,7 @@
       "sizing_source": "intrabar_truth",
       "intrabar_daily_divergence": {
         "daily_pf": 0.2834,
-        "daily_wr": 0.4553,
+        "daily_wr": 0.4552,
         "honest_pf": 0.919,
         "honest_wr": 0.3593,
         "honest_n": 3652,
@@ -22,9 +190,9 @@
         "gate_source": "intrabar_truth",
         "flag": false
       },
-      "policy_clean_n": 19893,
-      "policy_clean_wr": 0.4553,
-      "policy_clean_wr_pct": 45.53,
+      "policy_clean_n": 19896,
+      "policy_clean_wr": 0.4552,
+      "policy_clean_wr_pct": 45.52,
       "policy_clean_pf": 0.2834,
       "n_resolved": 3652,
       "wr": 0.3593,
@@ -39,8 +207,8 @@
       "pbo": 0.0,
       "spa_ok": true,
       "spa_p": 0.0,
-      "n_spa_pass": 29,
-      "expectancy": -0.063162,
+      "n_spa_pass": 30,
+      "expectancy": -0.063139,
       "expectancy_ok": false,
       "_slippage_gate_enabled": true,
       "_slippage_recommend": null,
@@ -58,24 +226,24 @@
       "fdr_ok": true,
       "n_fdr_pass": 24,
       "n_bonferroni_pass": 22,
-      "n_fdr_tested": 79,
+      "n_fdr_tested": 80,
       "_fdr_recommend": null,
       "_single_source_gate_enforce": false,
       "single_source_ok": true,
       "n_profitable_multi_source": 3,
-      "n_profitable_single_source": 27,
+      "n_profitable_single_source": 28,
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
-      "recency_days_since_last": 0.65,
+      "recency_days_since_last": 0.72,
       "recency_most_recent": "2026-10-31T12:44:35.873878+00:00",
       "recency_note": "ok",
-      "bootstrap_ci_lower": -0.049391,
-      "bootstrap_ci_upper": -0.043278,
+      "bootstrap_ci_lower": -0.049282,
+      "bootstrap_ci_upper": -0.043437,
       "bootstrap_ci_ok": false,
-      "wf_oos_ratio": 1.0464,
+      "wf_oos_ratio": 1.0462,
       "wf_oos_is_pf": 0.2769,
-      "wf_oos_oos_pf": 0.2897,
+      "wf_oos_oos_pf": 0.2896,
       "wf_oos_ok": true,
       "top_sleeves": [
         {
@@ -137,7 +305,7 @@
       "top_symbol_share": 0.1074,
       "concentration_capped": false,
       "top_source": "UNKNOWN",
-      "top_source_share": 0.9949,
+      "top_source_share": 0.995,
       "source_concentration_capped": true,
       "high_conviction_rate": 1.0,
       "long_term_stability_rate": 1.0,
@@ -150,21 +318,21 @@
         "pbo": {
           "ok": true,
           "pbo": 0.0,
-          "n_strategies": 79,
+          "n_strategies": 80,
           "note": ""
         },
         "spa": {
           "ok": true,
           "spa_p": 0.0,
-          "n_spa_pass": 29,
-          "n_strategies_tested": 79,
+          "n_spa_pass": 30,
+          "n_strategies_tested": 80,
           "note": ""
         },
         "expectancy": {
-          "expectancy": -0.063162,
+          "expectancy": -0.063139,
           "expectancy_ok": false,
-          "adj_win": 0.03877,
-          "adj_loss": 0.120325,
+          "adj_win": 0.038771,
+          "adj_loss": 0.120289,
           "slippage_bps": 15.0,
           "note": ""
         },
@@ -178,18 +346,18 @@
         },
         "fdr": {
           "ok": true,
-          "n_tested": 79,
+          "n_tested": 80,
           "n_fdr_pass": 24,
           "n_bonferroni_pass": 22,
           "min_p": 0.0,
           "fdr_q": 0.1,
-          "bonferroni_threshold": 0.001266,
+          "bonferroni_threshold": 0.00125,
           "note": ""
         },
         "single_source": {
           "ok": true,
-          "n_profitable": 30,
-          "n_profitable_single_source": 27,
+          "n_profitable": 31,
+          "n_profitable_single_source": 28,
           "n_profitable_multi_source": 3,
           "single_source_strategies": [
             "ADX Trend Confirmation",
@@ -209,175 +377,7 @@
           "ok": true,
           "gate_48h": true,
           "most_recent": "2026-10-31T12:44:35.873878+00:00",
-          "days_since_last": 0.65,
-          "note": "ok"
-        }
-      }
-    },
-    "FOREX": {
-      "intrabar_truth": {
-        "n": 575,
-        "wr": 0.3183,
-        "pf": 0.6521,
-        "source": "at_signal_outcomes.intrabar_*"
-      },
-      "sizing_source": "intrabar_truth",
-      "intrabar_daily_divergence": {
-        "daily_pf": 0.6388,
-        "daily_wr": 0.3634,
-        "honest_pf": 0.6521,
-        "honest_wr": 0.3183,
-        "honest_n": 575,
-        "pf_inflation_x": 0.98,
-        "wr_inflation_pp": 4.5,
-        "gate_source": "intrabar_truth",
-        "flag": false
-      },
-      "policy_clean_n": 410,
-      "policy_clean_wr": 0.3634,
-      "policy_clean_wr_pct": 36.34,
-      "policy_clean_pf": 0.6388,
-      "n_resolved": 575,
-      "wr": 0.3183,
-      "wr_pct": 31.83,
-      "pf": 0.6521,
-      "n_ok": true,
-      "wr_ok": false,
-      "pf_ok": false,
-      "dsr_ok": false,
-      "dsr_score": 0.003,
-      "pbo_ok": null,
-      "pbo": null,
-      "spa_ok": false,
-      "spa_p": 0.308,
-      "n_spa_pass": 0,
-      "expectancy": -0.003442,
-      "expectancy_ok": false,
-      "_slippage_gate_enabled": true,
-      "_slippage_recommend": null,
-      "_ml_enhanced_quarantine_enabled": true,
-      "_ml_enhanced_quarantine_n": 0,
-      "_ml_enhanced_quarantine_recommend": null,
-      "_mdd_gate_enforce": true,
-      "mdd": 0.8097,
-      "mdd_ok": false,
-      "cvar_95": -6.1519,
-      "cvar_ok": true,
-      "_mdd_cvar_gate_ok": false,
-      "_mdd_cvar_recommend": null,
-      "_fdr_gate_enforce": false,
-      "fdr_ok": null,
-      "n_fdr_pass": 0,
-      "n_bonferroni_pass": 0,
-      "n_fdr_tested": 1,
-      "_fdr_recommend": null,
-      "_single_source_gate_enforce": false,
-      "single_source_ok": true,
-      "n_profitable_multi_source": 1,
-      "n_profitable_single_source": 0,
-      "_single_source_recommend": null,
-      "recency_ok": true,
-      "recency_gate_48h": true,
-      "recency_days_since_last": 1.16,
-      "recency_most_recent": "2026-10-31T00:29:37.496088+00:00",
-      "recency_note": "ok",
-      "bootstrap_ci_lower": -0.006216,
-      "bootstrap_ci_upper": 0.000776,
-      "bootstrap_ci_ok": false,
-      "wf_oos_ratio": 1.6806,
-      "wf_oos_is_pf": 0.5575,
-      "wf_oos_oos_pf": 0.937,
-      "wf_oos_ok": true,
-      "top_sleeves": [
-        {
-          "strategy": "non_crypto_consensus",
-          "n": 223,
-          "wr": 52.91,
-          "pf": 9.677,
-          "is_single_source": false,
-          "source": "resolver_grade",
-          "policy_blocked": false,
-          "note": "resolver_grade"
-        },
-        {
-          "strategy": "multi_asset_copytrader",
-          "n": 32,
-          "wr": 62.5,
-          "pf": 2.1785,
-          "is_single_source": true,
-          "source": "policy_clean",
-          "policy_blocked": false,
-          "note": "single-source"
-        }
-      ],
-      "_recency_warn": false,
-      "verdict": "NOT_READY",
-      "policy_frozen": true,
-      "data_source": "closed_picks",
-      "top_symbol": "USDJPY=X",
-      "top_symbol_share": 0.2049,
-      "concentration_capped": false,
-      "top_source": "UNKNOWN",
-      "top_source_share": 0.8707,
-      "source_concentration_capped": true,
-      "high_conviction_rate": 1.0,
-      "long_term_stability_rate": 1.0,
-      "details": {
-        "dsr": {
-          "ok": false,
-          "dsr_score": 0.003,
-          "note": ""
-        },
-        "pbo": {
-          "ok": null,
-          "note": "need \u22652 strategies with n\u226520, got 1",
-          "pbo": null
-        },
-        "spa": {
-          "ok": false,
-          "spa_p": 0.308,
-          "n_spa_pass": 0,
-          "n_strategies_tested": 1,
-          "note": ""
-        },
-        "expectancy": {
-          "expectancy": -0.003442,
-          "expectancy_ok": false,
-          "adj_win": 0.00961,
-          "adj_loss": 0.009536,
-          "slippage_bps": 5.0,
-          "note": ""
-        },
-        "mdd_cvar": {
-          "mdd": 0.8097,
-          "mdd_ok": false,
-          "cvar_95": -6.1519,
-          "cvar_ok": true,
-          "gate_ok": false,
-          "mdd_source": "registry"
-        },
-        "fdr": {
-          "ok": null,
-          "n_tested": 1,
-          "n_fdr_pass": 0,
-          "n_bonferroni_pass": 0,
-          "min_p": null,
-          "fdr_q": 0.1,
-          "note": "need >=2 testable strategies (n>=20), got 1"
-        },
-        "single_source": {
-          "ok": true,
-          "n_profitable": 1,
-          "n_profitable_single_source": 0,
-          "n_profitable_multi_source": 1,
-          "single_source_strategies": [],
-          "note": ""
-        },
-        "recency": {
-          "ok": true,
-          "gate_48h": true,
-          "most_recent": "2026-10-31T00:29:37.496088+00:00",
-          "days_since_last": 1.16,
+          "days_since_last": 0.72,
           "note": "ok"
         }
       }
@@ -446,12 +446,12 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
-      "recency_days_since_last": 0.98,
+      "recency_days_since_last": 1.05,
       "recency_most_recent": "2026-10-31T04:43:15.277694+00:00",
       "recency_note": "ok",
-      "bootstrap_ci_lower": -0.000262,
-      "bootstrap_ci_upper": 0.013326,
-      "bootstrap_ci_ok": false,
+      "bootstrap_ci_lower": 0.00055,
+      "bootstrap_ci_upper": 0.014183,
+      "bootstrap_ci_ok": true,
       "wf_oos_ratio": 0.4199,
       "wf_oos_is_pf": 2.4686,
       "wf_oos_oos_pf": 1.0365,
@@ -469,9 +469,9 @@
         },
         {
           "strategy": "MeanReversionBB",
-          "n": 187,
-          "wr": 55.62,
-          "pf": 1.7883,
+          "n": 188,
+          "wr": 56.38,
+          "pf": 1.8449,
           "is_single_source": true,
           "source": "policy_clean",
           "policy_blocked": false,
@@ -547,7 +547,7 @@
           "ok": true,
           "gate_48h": true,
           "most_recent": "2026-10-31T04:43:15.277694+00:00",
-          "days_since_last": 0.98,
+          "days_since_last": 1.05,
           "note": "ok"
         }
       }
@@ -611,7 +611,7 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
-      "recency_days_since_last": 1.73,
+      "recency_days_since_last": 1.79,
       "recency_most_recent": "2026-10-30T10:54:47.107660+00:00",
       "recency_note": "ok",
       "bootstrap_ci_lower": null,
@@ -687,7 +687,7 @@
           "ok": true,
           "gate_48h": true,
           "most_recent": "2026-10-30T10:54:47.107660+00:00",
-          "days_since_last": 1.73,
+          "days_since_last": 1.79,
           "note": "ok"
         }
       }
@@ -756,7 +756,7 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
-      "recency_days_since_last": 1.4,
+      "recency_days_since_last": 1.46,
       "recency_most_recent": "2026-10-30T18:49:22.135908+00:00",
       "recency_note": "ok",
       "bootstrap_ci_lower": null,
@@ -829,7 +829,7 @@
           "ok": true,
           "gate_48h": true,
           "most_recent": "2026-10-30T18:49:22.135908+00:00",
-          "days_since_last": 1.4,
+          "days_since_last": 1.46,
           "note": "ok"
         }
       }
@@ -898,7 +898,7 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": false,
-      "recency_days_since_last": 5.48,
+      "recency_days_since_last": 5.55,
       "recency_most_recent": "2026-10-26T16:46:52.092283+00:00",
       "recency_note": "no picks closed in last 48h (last=5.5d ago)",
       "bootstrap_ci_lower": null,
@@ -971,7 +971,7 @@
           "ok": true,
           "gate_48h": false,
           "most_recent": "2026-10-26T16:46:52.092283+00:00",
-          "days_since_last": 5.48,
+          "days_since_last": 5.55,
           "note": "no picks closed in last 48h (last=5.5d ago)"
         }
       }
@@ -1040,9 +1040,9 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": false,
-      "recency_days_since_last": 2.64,
+      "recency_days_since_last": 2.71,
       "recency_most_recent": "2026-10-29T12:53:34.676640+00:00",
-      "recency_note": "no picks closed in last 48h (last=2.6d ago)",
+      "recency_note": "no picks closed in last 48h (last=2.7d ago)",
       "bootstrap_ci_lower": null,
       "bootstrap_ci_upper": null,
       "bootstrap_ci_ok": null,
@@ -1113,8 +1113,8 @@
           "ok": true,
           "gate_48h": false,
           "most_recent": "2026-10-29T12:53:34.676640+00:00",
-          "days_since_last": 2.64,
-          "note": "no picks closed in last 48h (last=2.6d ago)"
+          "days_since_last": 2.71,
+          "note": "no picks closed in last 48h (last=2.7d ago)"
         }
       }
     },
@@ -1182,7 +1182,7 @@
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
-      "recency_days_since_last": 1.82,
+      "recency_days_since_last": 1.88,
       "recency_most_recent": "2026-10-30T08:43:51.818377+00:00",
       "recency_note": "ok",
       "bootstrap_ci_lower": null,
@@ -1258,7 +1258,7 @@
           "ok": true,
           "gate_48h": true,
           "most_recent": "2026-10-30T08:43:51.818377+00:00",
-          "days_since_last": 1.82,
+          "days_since_last": 1.88,
           "note": "ok"
         }
       }
@@ -1322,7 +1322,7 @@
       "_single_source_recommend": null,
       "recency_ok": false,
       "recency_gate_48h": false,
-      "recency_days_since_last": 234.18,
+      "recency_days_since_last": 234.25,
       "recency_most_recent": "2026-03-11T23:57:30.269572+00:00",
       "recency_note": "no picks closed in last 14d (last=234.2d ago)",
       "bootstrap_ci_lower": null,
@@ -1395,7 +1395,7 @@
           "ok": false,
           "gate_48h": false,
           "most_recent": "2026-03-11T23:57:30.269572+00:00",
-          "days_since_last": 234.18,
+          "days_since_last": 234.25,
           "note": "no picks closed in last 14d (last=234.2d ago)"
         }
       }
@@ -1404,7 +1404,7 @@
   "drift": {
     "baseline": "2026-10-31T23:38:38.039457+00:00",
     "per_class": {
-      "CRYPTO": {
+      "FOREX": {
         "verdict_from": "NOT_READY",
         "verdict_to": "NOT_READY",
         "verdict_changed": false,
@@ -1413,7 +1413,7 @@
         "n_delta": 0,
         "gate_flips": {}
       },
-      "FOREX": {
+      "CRYPTO": {
         "verdict_from": "NOT_READY",
         "verdict_to": "NOT_READY",
         "verdict_changed": false,
