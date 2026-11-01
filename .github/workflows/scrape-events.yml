@@ -6,13 +6,39 @@ name: Scrape events
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 12 * * *'   # daily 12:00 UTC
+    # 23:00 America/Toronto. This scrape is what refreshes the events database
+    # (events_sync.php at the end of the job), so these crons ARE the DB's
+    # refresh time. GitHub cron is UTC-only and EST/EDT are an hour apart, so
+    # fire at both 04:00 UTC (23:00 EST) and 03:00 UTC (23:00 EDT); the `gate`
+    # job keeps whichever one actually lands on 23:00 local and drops the other.
+    - cron: '0 4 * * *'   # 04:00 UTC = 11:00 PM EST (winter)
+    - cron: '0 3 * * *'   # 03:00 UTC = 11:00 PM EDT (summer)
 
 permissions:
   contents: write   # read + push for events.json and last_update.json
 
 jobs:
+  # Keeps the 23:00 Toronto slot across daylight-saving changes: only one of the
+  # two crons matches local 23:00, and this job lets that one through.
+  gate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    outputs:
+      run: ${{ steps.clock.outputs.run }}
+    steps:
+      - id: clock
+        run: |
+          hour=$(TZ=America/Toronto date +%H)
+          if [ "$hour" = "23" ] || [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "run=yes" >> "$GITHUB_OUTPUT"
+            echo "Proceeding — America/Toronto $(TZ=America/Toronto date '+%Y-%m-%d %H:%M %Z')"
+          else
+            echo "run=no" >> "$GITHUB_OUTPUT"
+            echo "Skipping — America/Toronto time is ${hour}:00, not the 23:00 slot"
+          fi
+
   scrape:
+    needs: gate
+    if: needs.gate.outputs.run == 'yes'
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     steps:
       - name: Checkout
