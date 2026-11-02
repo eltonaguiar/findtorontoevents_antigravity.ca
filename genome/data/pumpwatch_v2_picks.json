@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2026-11-02T06:22:42.467601+00:00",
+    "timestamp": "2026-11-02T09:24:35.552038+00:00",
     "total_mutations": 5,
     "total_picks": 2,
     "mutations_triggered": 2,
@@ -14,68 +14,70 @@
   },
   "picks": [
     {
-      "strategy": "pump_large_cap_only_v2",
-      "symbol": "DOTUSDT",
-      "signal_type": "BUY",
-      "direction": "BUY",
-      "entry_price": 0.953,
-      "take_profit": 0.968994,
-      "stop_loss": 0.941005,
-      "confidence": 0.6837,
-      "risk_reward": 1.33,
-      "reason": "PumpV2 large-cap: DOTUSDT (top-10), vol=2.3x, RSI=50.8, price > SMA20 \u2014 high-quality universe only",
-      "timestamp": "2026-11-02T06:22:42.466164+00:00",
-      "category": "crypto",
-      "source_system": "genome",
-      "trust_tier": "SANDBOX",
-      "trust_weight": 0.3,
-      "parent_system": "pumpwatch_v2",
-      "mutation_type": "large_cap_filter",
-      "volume_ratio": 2.27,
-      "rsi_14": 50.8,
-      "is_top10": true,
-      "timeframe": "1h"
-    },
-    {
       "strategy": "pump_btc_correlated_v2",
-      "symbol": "DOTUSDT",
+      "symbol": "INJUSDT",
       "signal_type": "BUY",
       "direction": "BUY",
-      "entry_price": 0.953,
-      "take_profit": 0.968994,
-      "stop_loss": 0.941005,
-      "confidence": 0.6162,
+      "entry_price": 7.263,
+      "take_profit": 7.4363,
+      "stop_loss": 7.1331,
+      "confidence": 0.6193,
       "risk_reward": 1.33,
-      "reason": "PumpV2 BTC-correlated: vol=2.3x, BTC bullish (>$78168 EMA20), price > SMA10 \u2014 alt pump with BTC tailwind",
-      "timestamp": "2026-11-02T06:22:42.463704+00:00",
+      "reason": "PumpV2 BTC-correlated: vol=2.3x, BTC bullish (>$78167 EMA20), price > SMA10 \u2014 alt pump with BTC tailwind",
+      "timestamp": "2026-11-02T09:24:35.549000+00:00",
       "category": "crypto",
       "source_system": "genome",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
       "parent_system": "pumpwatch_v2",
       "mutation_type": "btc_correlation",
-      "volume_ratio": 2.27,
+      "volume_ratio": 2.32,
       "btc_bullish": true,
-      "btc_ema20": 78167.76,
+      "btc_ema20": 78167.28,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "INJUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 7.263,
+      "take_profit": 7.4363,
+      "stop_loss": 7.1331,
+      "confidence": 0.5249,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 trend-confirmed: vol=2.3x, price $7.2630 > EMA50=$7.2310 > EMA20=$7.2080  \u2014 uptrend pump only",
+      "timestamp": "2026-11-02T09:24:35.546358+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "trend_filter",
+      "volume_ratio": 2.32,
+      "ema_50": 7.231,
+      "ema_20": 7.208,
+      "ema_aligned": false,
+      "trend_strength": 0.0044,
       "timeframe": "1h"
     }
   ],
   "mutations_triggered": [
     {
+      "strategy": "pump_trend_confirmed_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
       "strategy": "pump_btc_correlated_v2",
       "parent": "pumpwatch_v2",
       "mutation": "btc_correlation",
       "picks": 1
-    },
-    {
-      "strategy": "pump_large_cap_only_v2",
-      "parent": "pumpwatch_v2",
-      "mutation": "large_cap_filter",
-      "picks": 1
     }
   ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
+    "pump_large_cap_only_v2",
     "pump_momentum_continuation_v2",
     "pump_fear_greed_filter_v2"
   ]
