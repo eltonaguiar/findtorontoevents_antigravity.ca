@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-11-02T03:25:26.641108+00:00",
+    "timestamp": "2026-11-02T06:22:42.467601+00:00",
     "total_mutations": 5,
-    "total_picks": 0,
-    "mutations_triggered": 0,
-    "mutations_silent": 5,
+    "total_picks": 2,
+    "mutations_triggered": 2,
+    "mutations_silent": 3,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
@@ -12,12 +12,70 @@
     "version": "v2",
     "focus": "loss_prevention"
   },
-  "picks": [],
-  "mutations_triggered": [],
+  "picks": [
+    {
+      "strategy": "pump_large_cap_only_v2",
+      "symbol": "DOTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.953,
+      "take_profit": 0.968994,
+      "stop_loss": 0.941005,
+      "confidence": 0.6837,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 large-cap: DOTUSDT (top-10), vol=2.3x, RSI=50.8, price > SMA20 \u2014 high-quality universe only",
+      "timestamp": "2026-11-02T06:22:42.466164+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "large_cap_filter",
+      "volume_ratio": 2.27,
+      "rsi_14": 50.8,
+      "is_top10": true,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_btc_correlated_v2",
+      "symbol": "DOTUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 0.953,
+      "take_profit": 0.968994,
+      "stop_loss": 0.941005,
+      "confidence": 0.6162,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 BTC-correlated: vol=2.3x, BTC bullish (>$78168 EMA20), price > SMA10 \u2014 alt pump with BTC tailwind",
+      "timestamp": "2026-11-02T06:22:42.463704+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "btc_correlation",
+      "volume_ratio": 2.27,
+      "btc_bullish": true,
+      "btc_ema20": 78167.76,
+      "timeframe": "1h"
+    }
+  ],
+  "mutations_triggered": [
+    {
+      "strategy": "pump_btc_correlated_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "btc_correlation",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_large_cap_only_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "large_cap_filter",
+      "picks": 1
+    }
+  ],
   "mutations_silent": [
     "pump_trend_confirmed_v2",
-    "pump_btc_correlated_v2",
-    "pump_large_cap_only_v2",
     "pump_momentum_continuation_v2",
     "pump_fear_greed_filter_v2"
   ]
