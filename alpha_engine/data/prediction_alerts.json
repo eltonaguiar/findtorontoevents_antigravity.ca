@@ -1,10 +1,10 @@
 {
   "alerts": [
     {
-      "type": "MODEL_FLAT",
+      "type": "PSI_SHIFT",
       "severity": "WARNING",
-      "message": "Prediction variance 0.0038 < 0.01 -- model not discriminating between good and bad picks",
-      "timestamp": "2026-11-03T02:16:41.765592+00:00"
+      "message": "PSI = 0.383 (threshold 0.2) -- prediction distribution has shifted significantly, retrain needed",
+      "timestamp": "2026-11-03T04:14:00.746383+00:00"
     },
     {
       "type": "CONSECUTIVE_LOSSES",
@@ -12,25 +12,33 @@
       "message": "Strategy 'myfxbook_retail_contrarian' has 5 consecutive losses -- should be auto-paused for 24h (verify risk_controls.py)",
       "strategy": "myfxbook_retail_contrarian",
       "streak": 5,
-      "timestamp": "2026-11-03T02:16:41.847273+00:00"
+      "timestamp": "2026-11-03T04:14:00.881236+00:00"
+    },
+    {
+      "type": "HERDING_BEHAVIOR",
+      "severity": "WARNING",
+      "message": "11 consecutive SHORT trades system-wide -- possible herding / directional bias",
+      "direction": "SHORT",
+      "streak": 11,
+      "timestamp": "2026-11-03T04:14:00.881466+00:00"
     }
   ],
   "summary": {
-    "total_alerts": 2,
+    "total_alerts": 3,
     "critical": 0,
-    "warning": 2,
+    "warning": 3,
     "info": 0,
     "sizing_multiplier": 1.0
   },
   "spc": {
     "status": "NORMAL",
-    "rolling_wr": 0.05,
-    "center_line": 0.1893
+    "rolling_wr": 0.0,
+    "center_line": 0.1886
   },
   "prediction_dist": {
-    "psi": 0.154,
-    "mean_shift": 0.0002,
-    "current_var": 0.0038
+    "psi": 0.3834,
+    "mean_shift": 0.0223,
+    "current_var": 0.0121
   },
-  "updated_at": "2026-11-03T02:16:41.765592+00:00"
+  "updated_at": "2026-11-03T04:14:00.746383+00:00"
 }
