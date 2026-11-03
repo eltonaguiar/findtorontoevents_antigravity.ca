@@ -310,6 +310,71 @@ if __name__ == "__main__":
     main()
 ```
 
+## Stage 4 — Fresh 48-Hour Scan (verified working 2026-11-03)
+
+For "what landed today/yesterday", swap the recency filter:
+
+```
+f_TPR=r1209600  →  14 days (default, broad sweep)
+f_TPR=r172800   →  48 hours (fresh scan)
+```
+
+**Round templates:**
+
+| Round | Scope | Queries | Location |
+|-------|-------|---------|----------|
+| 28 | GTA ServiceNow/Salesforce | 10 | `Greater Toronto Area, Canada` |
+| 29 | Remote Canada ServiceNow/Salesforce | 8 | `Canada` |
+| 30 | Banks / Telcos / Public sector | 8 | `Canada` |
+
+**Round 28 queries:** ServiceNow Developer/Architect/ITOM Toronto, ServiceNow Consultant
+Mississauga, ServiceNow Platform Developer GTA, Salesforce Developer/Architect/Technical Lead
+Toronto, Salesforce Administrator/CPQ Mississauga.
+
+**Round 29 queries:** ServiceNow Developer/Architect/Consultant/ITOM remote Canada,
+Salesforce Developer/Architect/Administrator/CPQ remote Canada.
+
+**Round 30 queries:** ServiceNow Scotiabank/RBC/TD Bank, Salesforce Bell/Rogers/Telus,
+ServiceNow Ontario Public Service, Salesforce Canada Revenue Agency.
+
+### CRITICAL: `f_TPR` is approximate — always verify `datePosted`
+
+Observed leak rate: **~4%** (30 of 731 rows were dated 2026-11-01 despite the 48h filter).
+Report the *verified* `datePosted` distribution from JSON-LD, never the filter's promise:
+
+```python
+dates = Counter(j.get("posted","")[:10] for j in raw)
+for d, n in sorted(dates.items(), reverse=True)[:12]:
+    print(f"  {d or '(blank)'}: {n}")
+```
+
+### CRITICAL BUG PATTERN — silent `except: continue` in prior-corpus loading
+
+**What happened:** An aggregator swallowed `FileNotFoundError` when the prior 684-job files
+weren't on the checked-out branch, fell back to the 259-URL file, and produced a
+plausible-but-wrong **197 net-new**. The correct count was **172**.
+
+**Rules that prevent it:**
+
+1. **Never use bare `except Exception: continue`** when loading priors. Catch
+   `FileNotFoundError` explicitly and print a warning; fail loudly on anything else.
+2. **Always print the loaded prior count** (`Prior known URLs: 684`) and sanity-check it
+   against what you expect. That one diagnostic line caught the bug.
+3. **Priors may live on another branch.** Retrieve with
+   `git show <branch>:<path> > /tmp/jobs/prior/<name>.json` — do not assume the working
+   directory contains them.
+4. **Never overwrite a good artifact with a suspect one.** Write to a new timestamped file
+   and move the bad one aside.
+
+### Expected yield
+
+A 48h GTA+Canada sweep at 26 queries × 3 pages produced:
+731 raw → 173 already-known → 382 intra-run dupes → 4 key dupes → **172 net-new**.
+Roughly **25–35% of a fresh sweep is already known**; expect ~170–200 new per 48h window
+when the previous sweep was <24h old.
+
+---
+
 **Run command:**
 ```bash
 python3 /tmp/jobs/jd_extractor.py /tmp/jd_urls.json
