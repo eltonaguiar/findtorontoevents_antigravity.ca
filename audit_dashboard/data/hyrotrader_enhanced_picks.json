@@ -211,16 +211,16 @@
           "expansion": true,
           "direction": "distribution"
         },
-        "trend": "uptrend",
+        "trend": "strong_downtrend",
         "sma_20": 1.26,
         "sma_50": 1.27,
         "current_price": 1.2593
       },
       "enhanced_scoring": {
-        "enhanced_score": 79,
+        "enhanced_score": 78,
         "breakdown": {
           "base": 85,
-          "ml_edge_blend": -6,
+          "ml_edge_blend": -7,
           "ml_blend_weights": "85%/15%"
         },
         "validation": "high_conviction",
@@ -352,18 +352,18 @@
       "ml_rank": 3
     },
     {
-      "id": "hyro-v2-eth-adxvol",
-      "rank": 2,
+      "id": "hyro-v2-btc-cci",
+      "rank": 1,
       "asset_class": "CRYPTO",
-      "label": "Ethereum \u2014 ADX Vol Breakout",
-      "symbol_hint": "ETHUSDT",
+      "label": "Bitcoin \u2014 CCI Divergence",
+      "symbol_hint": "BTCUSDT",
       "direction": "BOTH",
-      "confidence_pct": 90,
+      "confidence_pct": 92,
       "timeframe": "1H",
-      "strategy": "adx_vol_breakout",
-      "backtest_grade": "A",
-      "backtest_stats": "+$769 PnL, PF 1.76, 41% WR, $207 max DD, 46 trades/6mo",
-      "thesis": "Best risk-adjusted: lowest DD of any proven passer ($207). ADX>25 confirms real trend + volume surge >1.5\u00d7 avg validates breakout. Leaves $293 DD buffer.",
+      "strategy": "cci_divergence",
+      "backtest_grade": "A+",
+      "backtest_stats": "+$1125 PnL, PF 2.15, 52% WR, $263 max DD, 54 trades/6mo",
+      "thesis": "Best backtest passer. CCI(20) crosses above -100 = long; crosses below +100 = short. Highest profit factor of all tested strategies. Moderate DD leaves $237 buffer from $500 limit.",
       "entry_price": null,
       "stop_loss": null,
       "take_profit": null,
@@ -372,8 +372,8 @@
       "closed_at": null,
       "pnl_pct": null,
       "sl_confirmed": false,
-      "stop_plan": "SL = 1.5\u00d7 ATR. ADX confirms trend strength before entry \u2014 fewer false signals.",
-      "take_profit_plan": "TP = 2\u00d7 risk. +DI > -DI = long; -DI > +DI = short.",
+      "stop_plan": "SL = 1.5\u00d7 ATR below entry (long) or above entry (short). Must be live within 5 min.",
+      "take_profit_plan": "TP = 2\u00d7 risk. Book profits at target \u2014 trailing DD punishes round-trips.",
       "technical_indicators": {
         "rsi": 42.33,
         "macd": {
@@ -420,8 +420,8 @@
       },
       "backtest": {
         "status": "completed",
-        "win_rate": 33.8,
-        "avg_pnl": -0.33,
+        "win_rate": 44.4,
+        "avg_pnl": 0.15,
         "total_trades": 160,
         "wins": 54,
         "losses": 106,
