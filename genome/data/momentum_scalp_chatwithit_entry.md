@@ -1,9 +1,11 @@
-### Momentum Scalp Scanner (2026-11-04 00:01 UTC)
+### Momentum Scalp Scanner (2026-11-04 08:01 UTC)
 
 **New symbols scanned:** 3 gainers + 3 bounce candidates
-**Picks generated:** 2
+**Picks generated:** 4
 
 | # | Symbol | Dir | Entry | TP | SL | R:R | Conf | Strategy | 24h% | Reason |
 |---|--------|-----|-------|----|----|-----|------|----------|------|--------|
-| 1 | ZECUSDT | LONG | 1220.12 | 1262.09 | 1188.64 | 1.33 | 75% | `genesis_momentum_blend` | +7.7% | Genesis score 5/10: ST=bull ADX=2 RSI=71 mom5=1.2% |
-| 2 | ZECUSDT | LONG | 1220.63 | 1262.6 | 1189.15 | 1.33 | 75% | `genesis_momentum_blend` | +7.7% | Genesis score 5/10: ST=bull ADX=2 RSI=71 mom5=1.2% |
+| 1 | ZECUSDT | LONG | 1284.37 | 1334.82 | 1246.53 | 1.33 | 90% | `genesis_momentum_blend` | +13.0% | Genesis score 9/10: ST=bull ADX=2 RSI=69 mom5=8.1% |
+| 2 | ZECUSDT | LONG | 1284.37 | 1334.82 | 1246.53 | 1.33 | 90% | `genesis_momentum_blend` | +13.0% | Genesis score 9/10: ST=bull ADX=2 RSI=69 mom5=8.1% |
+| 3 | ZECUSDT | LONG | 1284.37 | 1334.82 | 1246.53 | 1.33 | 55% | `ema_momentum_volume` | +13.0% | EMA stack aligned (9>1245.8864 > 21>1222.8322 > 50) vol=0.0x |
+| 4 | ZECUSDT | LONG | 1284.37 | 1334.82 | 1246.53 | 1.33 | 55% | `ema_momentum_volume` | +13.0% | EMA stack aligned (9>1245.8864 > 21>1222.8322 > 50) vol=0.0x |
