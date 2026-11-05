@@ -1,29 +1,53 @@
 {
-  "generated_at": "2026-11-04T18:18:26.063653+00:00",
+  "generated_at": "2026-11-05T00:37:09.547149+00:00",
   "rolling_window_days": 30,
   "correlation_matrix": {
     "BTCUSDT": {
       "BTCUSDT": 1.0,
-      "ETHUSDT": 0.9467,
-      "BNBUSDT": 0.8057,
-      "XRPUSDT": 0.8879
+      "ETHUSDT": 0.9484,
+      "BNBUSDT": 0.8098,
+      "DOGEUSDT": 0.8717,
+      "SOLUSDT": 0.874,
+      "XRPUSDT": 0.8739
     },
     "ETHUSDT": {
-      "BTCUSDT": 0.9467,
+      "BTCUSDT": 0.9484,
       "ETHUSDT": 1.0,
-      "BNBUSDT": 0.7734,
-      "XRPUSDT": 0.8738
+      "BNBUSDT": 0.784,
+      "DOGEUSDT": 0.8859,
+      "SOLUSDT": 0.8846,
+      "XRPUSDT": 0.8591
     },
     "BNBUSDT": {
-      "BTCUSDT": 0.8057,
-      "ETHUSDT": 0.7734,
+      "BTCUSDT": 0.8098,
+      "ETHUSDT": 0.784,
       "BNBUSDT": 1.0,
-      "XRPUSDT": 0.782
+      "DOGEUSDT": 0.8082,
+      "SOLUSDT": 0.8901,
+      "XRPUSDT": 0.7761
+    },
+    "DOGEUSDT": {
+      "BTCUSDT": 0.8717,
+      "ETHUSDT": 0.8859,
+      "BNBUSDT": 0.8082,
+      "DOGEUSDT": 1.0,
+      "SOLUSDT": 0.9113,
+      "XRPUSDT": 0.9152
+    },
+    "SOLUSDT": {
+      "BTCUSDT": 0.874,
+      "ETHUSDT": 0.8846,
+      "BNBUSDT": 0.8901,
+      "DOGEUSDT": 0.9113,
+      "SOLUSDT": 1.0,
+      "XRPUSDT": 0.8795
     },
     "XRPUSDT": {
-      "BTCUSDT": 0.8879,
-      "ETHUSDT": 0.8738,
-      "BNBUSDT": 0.782,
+      "BTCUSDT": 0.8739,
+      "ETHUSDT": 0.8591,
+      "BNBUSDT": 0.7761,
+      "DOGEUSDT": 0.9152,
+      "SOLUSDT": 0.8795,
       "XRPUSDT": 1.0
     }
   },
@@ -31,38 +55,93 @@
     "BTCUSDT",
     "ETHUSDT",
     "BNBUSDT",
+    "DOGEUSDT",
+    "SOLUSDT",
     "XRPUSDT"
   ],
   "diversification": {
-    "avg_pairwise_correlation": 0.8449,
+    "avg_pairwise_correlation": 0.8648,
     "diversification_score": 0.0,
     "risk_level": "HIGH_RISK",
-    "crypto_symbol_count": 4,
-    "pair_count": 6
+    "crypto_symbol_count": 6,
+    "pair_count": 15
   },
   "cross_asset_correlations": {
     "btc_vs_spy": null,
     "btc_vs_dxy": null,
-    "btc_vs_eth": 0.9467
+    "btc_vs_eth": 0.9484
   },
   "alerts": [
     {
+      "type": "HIGH_CORRELATION_CLUSTER",
+      "severity": "HIGH",
+      "pair_count": 13,
+      "threshold": 5,
+      "top_pairs": [
+        {
+          "a": "BTCUSDT",
+          "b": "ETHUSDT",
+          "corr": 0.9484
+        },
+        {
+          "a": "DOGEUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.9152
+        },
+        {
+          "a": "DOGEUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.9113
+        },
+        {
+          "a": "BNBUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.8901
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "DOGEUSDT",
+          "corr": 0.8859
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.8846
+        },
+        {
+          "a": "SOLUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.8795
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.874
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.8739
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "DOGEUSDT",
+          "corr": 0.8717
+        }
+      ],
+      "message": "13 pairs with correlation > 0.8 (threshold: 5)"
+    },
+    {
       "type": "BTC_PORTFOLIO_CORRELATION",
       "severity": "HIGH",
-      "avg_btc_correlation": 0.8801,
+      "avg_btc_correlation": 0.8756,
       "threshold": 0.85,
       "message": "Portfolio avg BTC correlation 0.88 > 0.85 \u2014 effectively a BTC bet"
     }
   ],
-  "alert_count": 1,
-  "high_severity_alerts": 1,
+  "alert_count": 2,
+  "high_severity_alerts": 2,
   "diversification_history": [
-    {
-      "timestamp": "2026-10-28T12:26:07.360970+00:00",
-      "score": 24.7,
-      "avg_corr": 0.6012,
-      "risk_level": "MODERATE"
-    },
     {
       "timestamp": "2026-10-28T18:22:50.437237+00:00",
       "score": 24.3,
@@ -235,6 +314,12 @@
       "timestamp": "2026-11-04T18:18:26.063653+00:00",
       "score": 0.0,
       "avg_corr": 0.8449,
+      "risk_level": "HIGH_RISK"
+    },
+    {
+      "timestamp": "2026-11-05T00:37:09.547149+00:00",
+      "score": 0.0,
+      "avg_corr": 0.8648,
       "risk_level": "HIGH_RISK"
     }
   ]
