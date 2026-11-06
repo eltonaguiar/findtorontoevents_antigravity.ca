@@ -116,7 +116,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <tr><td>Funding rate</td><td>Not included</td><td>Perpetual swap funding can be +/- 0.01-0.10% per 8h. Material for holds &gt;24h.</td></tr>
         <tr><td>PnL calculation</td><td>Entry vs TP/SL hit</td><td>Does NOT include fees. Actual returns ~0.20-0.40% worse than shown per trade.</td></tr>
         <tr><td>Price source</td><td>Binance spot API</td><td>Live prices fetched on page load. During outages, falls back to CoinGecko.</td></tr>
-        <tr><td>Avg hold time</td><td>2h (0.1 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
+        <tr><td>Avg hold time</td><td>1h (0.0 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
       </tbody></table>
 
       <h3>System Lifecycle</h3>
@@ -159,7 +159,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <b>Honest Assessment:</b> The overall crypto portfolio is <b>unprofitable</b> with a 43.1% win rate and 1.03 profit factor.
         Expectancy is +0.04% per trade — meaning every trade loses on average.
         The system generates too many low-quality signals from unproven strategies. However, a subset of proven strategies shows strong positive results (see Section 4).
-        <br><br><b>Key Problem:</b> Avg loss (2.40%) exceeds avg win (3.26%), AND win rate is below 50%.
+        <br><br><b>Key Problem:</b> Avg loss (2.40%) exceeds avg win (3.25%), AND win rate is below 50%.
         A profitable system needs EITHER a high WR with reasonable R:R, OR a low WR with high R:R. We have neither in aggregate.
       </div>
     </div></div>
@@ -235,7 +235,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
           <td><b>rapid fire</b><br><span class="dim" style="font-size:11px">Rapid Fire 1h Scanner (NOW.py). High-frequency crypto scanner on 1h timeframe. WARNING: High-frequency noise, limited pr</span></td>
           <td style="text-align:center;color:#86efac;font-weight:700;font-size:18px">B</td>
           <td class="num">0</td>
-          <td class="num">186</td>
+          <td class="num">185</td>
           <td class="num">7</td><td class="num">6</td>
           <td class="num" style="color:#22c55e">53.8%</td>
           <td class="num" style="color:#22c55e">+16.42%</td>
@@ -438,7 +438,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         </tr><tr>
           <td><b>genetic programmer</b><br><span class="dim" style="font-size:11px">DARWIN GP Engine (GENESIS). Evolves trading strategies using genetic programming - buy/sell formulas are expression tree</span></td>
           <td style="text-align:center;color:#888;font-weight:700;font-size:18px">F</td>
-          <td class="num">7</td>
+          <td class="num">9</td>
           <td class="num">0</td>
           <td class="num">0</td><td class="num">0</td>
           <td class="num" style="color:#ef4444">0.0%</td>
@@ -1844,6 +1844,26 @@ Key changes:
           <td class="dim" style="font-size:11px">cta_fx_multifactor</td>
           <td class="dim" style="font-size:11px">FX Multifactor: carry_z=+2.12 (USD:4.5% vs JPY:0.25%), mom_z=+0.27 (12m=+2.2%), </td>
         </tr><tr>
+          <td>AUDUSD=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#22c55e;font-weight:700">BUY</td>
+          <td class="num">0.68975</td><td class="num">0.705677</td><td class="num">0.686302</td>
+          <td class="num">0.68</td><td class="num">4.6</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
+          <td class="dim" style="font-size:11px">Z-score=-1.77 below 200d SMA (0.70568), RSI=40. Backtest: 68.3% WR on 167 trades</td>
+        </tr><tr>
+          <td>AUDJPY=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#22c55e;font-weight:700">BUY</td>
+          <td class="num">108.791</td><td class="num">111.929431</td><td class="num">108.247045</td>
+          <td class="num">0.66</td><td class="num">5.8</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
+          <td class="dim" style="font-size:11px">Z-score=-1.63 below 200d SMA (111.92943), RSI=42. Backtest: 68.3% WR on 167 trad</td>
+        </tr><tr>
           <td>EURGBP=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
           <td style="color:#22c55e;font-weight:700">BUY</td>
@@ -1902,7 +1922,7 @@ Key changes:
           <td class="num" style="color:#888">+0.00%</td>
           <td class="num">0d</td>
           <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
-          <td class="dim" style="font-size:11px">Z-score=-1.78 below 200d SMA (0.86005), RSI=25. Backtest: 68.3% WR on 167 trades</td>
+          <td class="dim" style="font-size:11px">Z-score=-1.79 below 200d SMA (0.86005), RSI=25. Backtest: 68.3% WR on 167 trades</td>
         </tr><tr>
           <td>EURUSD=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
