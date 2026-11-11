@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "timestamp": "2026-11-11T09:23:38.063294+00:00",
+    "timestamp": "2026-11-11T12:20:15.281481+00:00",
     "total_mutations": 5,
-    "total_picks": 1,
-    "mutations_triggered": 1,
-    "mutations_silent": 4,
+    "total_picks": 2,
+    "mutations_triggered": 2,
+    "mutations_silent": 3,
     "symbols_scanned": 26,
     "interval": "1h",
     "system": "dna_pumpwatch_v2_mutations",
@@ -14,41 +14,71 @@
   },
   "picks": [
     {
-      "strategy": "pump_fear_greed_filter_v2",
-      "symbol": "INJUSDT",
+      "strategy": "pump_trend_confirmed_v2",
+      "symbol": "NEARUSDT",
       "signal_type": "BUY",
       "direction": "BUY",
-      "entry_price": 7.905,
-      "take_profit": 8.2522,
-      "stop_loss": 7.6446,
-      "confidence": 0.5739,
+      "entry_price": 3.773,
+      "take_profit": 3.9223,
+      "stop_loss": 3.661,
+      "confidence": 0.6494,
       "risk_reward": 1.33,
-      "reason": "PumpV2 extreme-fear: vol=1.9x at F&G=29 (<30), RSI=42.0 \u2014 institutional accumulation during panic",
-      "timestamp": "2026-11-11T09:23:38.062580+00:00",
+      "reason": "PumpV2 trend-confirmed: vol=2.4x, price $3.7730 > EMA50=$3.6321 > EMA20=$3.6499 (EMA stack aligned) \u2014 uptrend pump only",
+      "timestamp": "2026-11-11T12:20:15.268829+00:00",
       "category": "crypto",
       "source_system": "genome",
       "trust_tier": "SANDBOX",
       "trust_weight": 0.3,
       "parent_system": "pumpwatch_v2",
-      "mutation_type": "extreme_fear_contrarian",
-      "volume_ratio": 1.92,
-      "fear_greed": 29,
-      "rsi_14": 42.0,
+      "mutation_type": "trend_filter",
+      "volume_ratio": 2.44,
+      "ema_50": 3.6321,
+      "ema_20": 3.6499,
+      "ema_aligned": true,
+      "trend_strength": 0.0388,
+      "timeframe": "1h"
+    },
+    {
+      "strategy": "pump_btc_correlated_v2",
+      "symbol": "NEARUSDT",
+      "signal_type": "BUY",
+      "direction": "BUY",
+      "entry_price": 3.773,
+      "take_profit": 3.9223,
+      "stop_loss": 3.661,
+      "confidence": 0.6262,
+      "risk_reward": 1.33,
+      "reason": "PumpV2 BTC-correlated: vol=2.4x, BTC bullish (>$73896 EMA20), price > SMA10 \u2014 alt pump with BTC tailwind",
+      "timestamp": "2026-11-11T12:20:15.272602+00:00",
+      "category": "crypto",
+      "source_system": "genome",
+      "trust_tier": "SANDBOX",
+      "trust_weight": 0.3,
+      "parent_system": "pumpwatch_v2",
+      "mutation_type": "btc_correlation",
+      "volume_ratio": 2.44,
+      "btc_bullish": true,
+      "btc_ema20": 73896.02,
       "timeframe": "1h"
     }
   ],
   "mutations_triggered": [
     {
-      "strategy": "pump_fear_greed_filter_v2",
+      "strategy": "pump_trend_confirmed_v2",
       "parent": "pumpwatch_v2",
-      "mutation": "extreme_fear_contrarian",
+      "mutation": "trend_filter",
+      "picks": 1
+    },
+    {
+      "strategy": "pump_btc_correlated_v2",
+      "parent": "pumpwatch_v2",
+      "mutation": "btc_correlation",
       "picks": 1
     }
   ],
   "mutations_silent": [
-    "pump_trend_confirmed_v2",
-    "pump_btc_correlated_v2",
     "pump_large_cap_only_v2",
-    "pump_momentum_continuation_v2"
+    "pump_momentum_continuation_v2",
+    "pump_fear_greed_filter_v2"
   ]
 }
