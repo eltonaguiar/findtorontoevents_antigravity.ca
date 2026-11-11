@@ -123,11 +123,11 @@
         "current_price": 83.12
       },
       "enhanced_scoring": {
-        "enhanced_score": 80,
+        "enhanced_score": 79,
         "breakdown": {
           "base": 88,
           "bb_oversold": -3,
-          "ml_edge_blend": -5,
+          "ml_edge_blend": -6,
           "ml_blend_weights": "85%/15%"
         },
         "validation": "moderate",
@@ -166,6 +166,99 @@
       },
       "processed_at": "2026-11-11T04:51:13.352227+00:00",
       "ml_rank": 1
+    },
+    {
+      "id": "hyro-v2-xrp-bbsqueeze",
+      "rank": 4,
+      "asset_class": "CRYPTO",
+      "label": "XRP \u2014 BB Squeeze Breakout",
+      "symbol_hint": "XRPUSDT",
+      "direction": "BOTH",
+      "confidence_pct": 85,
+      "timeframe": "1H",
+      "strategy": "squeeze_breakout",
+      "backtest_grade": "A",
+      "backtest_stats": "+$947 PnL, PF 1.41, 40% WR, $279 max DD, 101 trades/6mo",
+      "thesis": "BB width at 40-bar low (squeeze) + volume breakout above upper/below lower BB + EMA50 trend confirmation. Captures explosive moves after low-vol compression.",
+      "entry_price": null,
+      "stop_loss": null,
+      "take_profit": null,
+      "status": "pending_entry",
+      "opened_at": null,
+      "closed_at": null,
+      "pnl_pct": null,
+      "sl_confirmed": false,
+      "stop_plan": "SL = 1.4\u00d7 ATR. Only fires when BB is in squeeze \u2014 avoids choppy conditions.",
+      "take_profit_plan": "TP = 2.2\u00d7 risk. Breakout targets are wider because squeeze precedes volatility expansion.",
+      "technical_indicators": {
+        "rsi": 33.42,
+        "macd": {
+          "macd": -0.0356,
+          "signal": -0.0349,
+          "histogram": -0.0007,
+          "direction": "bearish"
+        },
+        "bollinger": {
+          "upper": 1.19,
+          "middle": 1.11,
+          "lower": 1.03,
+          "pct_b": 0.227,
+          "squeeze": false
+        },
+        "atr_pct": 2.237,
+        "volume": {
+          "ratio": 0.44,
+          "expansion": false,
+          "direction": "neutral"
+        },
+        "trend": "strong_downtrend",
+        "sma_20": 1.11,
+        "sma_50": 1.19,
+        "current_price": 1.0645
+      },
+      "enhanced_scoring": {
+        "enhanced_score": 78,
+        "breakdown": {
+          "base": 85,
+          "ml_edge_blend": -7,
+          "ml_blend_weights": "85%/15%"
+        },
+        "validation": "high_conviction",
+        "notes": [],
+        "warnings": [
+          "ML cross-strategy match: using cci_divergence ranking for squeeze_breakout/XRPUSDT",
+          "ML optimizer: D \u2014 weak edge (39.4)"
+        ]
+      },
+      "backtest": {
+        "status": "completed",
+        "win_rate": 77.5,
+        "avg_pnl": 1.68,
+        "total_trades": 160,
+        "wins": 124,
+        "losses": 36,
+        "avg_bars_held": 14.6
+      },
+      "short_term_entry": {
+        "entry_quality": 77,
+        "actionable": true,
+        "horizon": "4-24h",
+        "reasons": [
+          "trend_aligned",
+          "macd_support",
+          "atr_in_tradeable_band",
+          "backtest_wr_support"
+        ]
+      },
+      "ml_edge": {
+        "ml_score": 39.4,
+        "ml_grade": "D",
+        "ml_method": "heuristic",
+        "ml_boost_applied": true,
+        "ml_cross_strategy_match": true
+      },
+      "processed_at": "2026-11-11T03:11:46.656623+00:00",
+      "ml_rank": 2
     },
     {
       "id": "hyro-v2-btc-cci",
@@ -442,18 +535,18 @@
       "ml_rank": 4
     },
     {
-      "id": "hyro-v2-xrp-bbsqueeze",
-      "rank": 4,
+      "id": "hyro-v2-avax-cmf",
+      "rank": 3,
       "asset_class": "CRYPTO",
-      "label": "XRP \u2014 BB Squeeze Breakout",
-      "symbol_hint": "XRPUSDT",
+      "label": "Avalanche \u2014 CMF Cross",
+      "symbol_hint": "AVAXUSDT",
       "direction": "BOTH",
-      "confidence_pct": 85,
+      "confidence_pct": 87,
       "timeframe": "1H",
-      "strategy": "squeeze_breakout",
+      "strategy": "cmf_cross",
       "backtest_grade": "A",
-      "backtest_stats": "+$947 PnL, PF 1.41, 40% WR, $279 max DD, 101 trades/6mo",
-      "thesis": "BB width at 40-bar low (squeeze) + volume breakout above upper/below lower BB + EMA50 trend confirmation. Captures explosive moves after low-vol compression.",
+      "backtest_stats": "+$962 PnL, PF 1.53, 44% WR, $230 max DD, 85 trades/6mo",
+      "thesis": "Chaikin Money Flow detects institutional accumulation/distribution. Cross above +0.05 = long (money flowing in); below -0.05 = short. High trade count ensures consistency rule compliance.",
       "entry_price": null,
       "stop_loss": null,
       "take_profit": null,
@@ -462,8 +555,8 @@
       "closed_at": null,
       "pnl_pct": null,
       "sl_confirmed": false,
-      "stop_plan": "SL = 1.4\u00d7 ATR. Only fires when BB is in squeeze \u2014 avoids choppy conditions.",
-      "take_profit_plan": "TP = 2.2\u00d7 risk. Breakout targets are wider because squeeze precedes volatility expansion.",
+      "stop_plan": "SL = 1.5\u00d7 ATR. CMF direction confirms volume-price agreement.",
+      "take_profit_plan": "TP = 2\u00d7 risk. 85 trades/6mo = ~3-4/week \u2014 good for 10-day minimum.",
       "technical_indicators": {
         "rsi": 30.67,
         "macd": {
@@ -593,7 +686,7 @@
           "ml_edge_blend": -12,
           "ml_blend_weights": "70%/30%"
         },
-        "validation": "moderate",
+        "validation": "high_conviction",
         "notes": [],
         "warnings": [
           "Price at lower Bollinger Band",
@@ -610,12 +703,10 @@
         "avg_bars_held": 14.1
       },
       "short_term_entry": {
-        "entry_quality": 77,
-        "actionable": true,
+        "entry_quality": 63,
+        "actionable": false,
         "horizon": "4-24h",
         "reasons": [
-          "trend_aligned",
-          "macd_support",
           "atr_in_tradeable_band",
           "backtest_wr_support"
         ]
