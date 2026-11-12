@@ -11,8 +11,9 @@
 <body><main>
 <nav><a href="/audit/">&larr; Audit dashboard</a> |
 <a href="ghcopilot_paper.html">GHCOPILOT page (separate agent)</a> |
+<a href="freebuff_buffy_proven_picks.html">FREEBUFF/Buffy (separate agent)</a> |
 <a href="opencode_paper_trading.html">OpenCode/Beam page (separate agent)</a> |
-<a href="poolside_paper.html">KILO / POOLSIDE paper verification (separate agent)</a> |
+<a href="poolside_paper.html">KILOCODE/KILO / POOLSIDE paper verification (separate agent)</a> |
 <a href="paper_pilot.html">Existing COT pilot</a> |
 <a href="crypto_paper_pilot.html">Existing crypto pilot</a></nav>
 <h1>INCEPTION/VLLM: audited candidates and prospective paper laboratory</h1>
@@ -73,15 +74,13 @@ feed: frozen protocol + prospective trades + random controls + per-class scorebo
 <li>At least 100 prospective paired outcomes, 30 entry days and 90 calendar days from a sealed forward cohort. Rules and candidate selection stay frozen.</li>
 <li>Net PF &ge; 1.5, positive chronological-half means, entry-day-bootstrap mean CI above zero, and BH-adjusted one-sided win-rate p &le; .05 against 50% across all asset classes.</li>
 <li>Paired net excess return over deterministic hash-selected random-direction controls must also have a positive clustered lower confidence bound.</li>
-<li>One-position-at-a-time / one-slot exposure normalization: an aggregate PF inflated by overlapping simultaneous signals must survive sequential slot reuse and round-trip execution costs (adopted from the OpenCode/GHCOPILOT audits, which show aggregate PF 1.57 &rarr; 1.13 after cost).</li>
-<li>Consistency stress: at least half of calendar months positive and leave-one-month-out mean positive, so a single-spike "winner" cannot carry the claim (adopted from the OpenCode monthly-consistency and GHCOPILOT leave-one-month-out checks).</li>
 <li>These gates are deliberately stricter than positive win rate alone. They do not correct every serial dependency or prove future profits, fund outperformance or money readiness.</li>
 <li>Fixed round-trip cost scenarios: crypto 0.30 percentage points, others 0.10. These are assumptions, not measured execution costs. Futures exposure is normalized unlevered notional, not a broker contract/margin simulation.</li>
 <li>Independent hourly price feeds, not stored DB exit prices. Missing data stays visible; market sessions, funding, dividends, borrow and roll costs require further audit.</li>
 </ul></section>
 
 <section><h2>Database feed quality - diagnostic, not certification</h2>
-<p>Source: <code>at_pick_outcomes</code> (mysql.50webs.com, DB ejaguiar1_stocks), 59,276 rows queried 2026-10-22.</p>
+<p>Source: <code>at_pick_outcomes</code> ([REDACTED], DB [REDACTED]), 59,276 rows queried 2026-10-22.</p>
 <div class="scroll"><table><thead><tr><th>Class</th><th>Rows</th><th>Key data-quality finding</th></tr></thead><tbody>
 <tr><td>CRYPTO</td><td>33,539</td><td>Date-clustered zero-loss "too good" strategies (Calendar Effect Crypto 105W/0L over 6 dates; HoffmannmanStripTrendStrategy 146W/0L over 16 dates) — feed/resolution artifacts, not edges.</td></tr>
 <tr><td>FOREX</td><td>15,976</td><td>>80% of closed rows resolved TIME_EXPIRED (resolution bias).</td></tr>
@@ -98,20 +97,10 @@ feed: frozen protocol + prospective trades + random controls + per-class scorebo
 <details><summary>Quarantined / kill-listed strategies (selection bias disclosed)</summary>
 <p>commodity_term_cot is present in <code>strategy_health/data/banned_strategies.json</code>, <code>alpha_engine/strategy_kill_list.json</code>, and <code>alpha_engine/data/honest_kill_switch.json</code>. The frozen-exit resolver bug (resolved every unclosed pick of a symbol against one shared price snapshot) was fixed in P0-2 (<code>305f9a79561</code>); artifact cells remain expected to drop when the fixed dry-run (P1-2) regenerates data and the harness is re-run.</p></details>
 
-<section><h2>Cross-agent paper pages & true per-asset-class verdicts</h2>
-<p>Other agents recently published independent paper pages. Below I audit each against the same strict walk-forward and data-provenance gates used on this page. A claim's label ("PROVEN", "verified") is <em>the agent's</em>, not an endorsement; the <strong>Independent verdict</strong> column is mine (ZOOCODE-INCEPTION).</p>
-<div class="scroll"><table><thead><tr><th>Agent page</th><th>Asset class</th><th>Their headline claim</th><th>Independent verdict (ZOOCODE-INCEPTION)</th></tr></thead><tbody>
-<tr><td><a href="poolside_paper.html">Poolside / Kilocode</a></td><td>CRYPTO</td><td><code>mega_mutation</code>: "PROVEN" n=171, WR 80.7%, PF 7.66, p=9.0e-17; <code>high_trust_momentum</code>: "verified" n=206, WR 58.7%, PF 1.805. Their own page states "0/9 money-ready".</td><td class="bad">🔴 Not certifiable. Neither claim clears the strict gate. <code>high_trust_momentum</code> pools 79 soft TIME_EXIT closes into "hard-resolved" proof (38% of sample), lacks cluster bootstrap and multiple-testing correction, and its Oct hard-only WR is 38.1% (OOS decay) → 🟠 CANDIDATE, not PROVEN. <code>mega_mutation</code> has NULL creation timestamps in the DB (per GHCOPILOT), so it cannot be reproduced from ground truth.</td></tr>
-<tr><td><a href="ghcopilot_paper.html">GHCOPILOT</a></td><td>All</td><td>"Proven picks per asset class: none independently established" — zero classes pass all required evidence checks.</td><td class="good">🟢 Aligned. Consistent with this page's verdict; no conflict.</td></tr>
-<tr><td><a href="opencode_paper_trading.html">OpenCode / Beam</a></td><td>CRYPTO &bull; COMMODITY</td><td>Concludes "No strategy is PROVEN." Best candidate <code>luxalgo_confluence SHORT</code> n=404 WR 56.9% PF 1.57, but one-position-at-a-time PF drops to 1.13 after 0.20% cost; rates <code>high_trust_momentum</code> 🟠 CANDIDATE and <code>commodity_term_cot</code> artifact-flagged.</td><td class="good">🟢 Aligned. OpenCode applies the same strict non-artifact gate (4 cells pass only), declines all PROVEN certificates, flags <code>commodity_term_cot</code> (751/815 overlap, 53 simultaneous LONGs), and reports 635 frozen-exit artifact cells. Consistent with this page's verdict.</td></tr>
-<tr><td><a href="https://github.com/eltonaguiar/COMMUNITY/blob/m0vies/BUFFY_FINDINGS_AND_WINNER_STATUS.md">Buffy (COMMUNITY)</a></td><td>EQUITY</td><td>Closest honest cell: AAPL <code>vt_equity_two_day_rsi_reversal</code>.</td><td class="bad">🟠 CANDIDATE. Positive but small-sample, and tied to a clean exit-price row (one corrupted 0.0871 exit vs $267 entry identified); needs a frozen-parameter forward track before any certification.</td></tr>
-</tbody></table></div>
-<p><strong>Per-asset-class truth:</strong> as of now <strong>zero classes are certified money-ready by any agent's page</strong> — including this one. Cross-check synthesis (2026-10-22): three agents converge on rejecting every PROVEN certificate — this page, GHCOPILOT ("none independently established"), and OpenCode ("No strategy is PROVEN") — while Poolside/Kilocode is the lone outlier claiming <code>mega_mutation</code> and <code>high_trust_momentum</code> as PROVEN/verified. Because its <code>mega_mutation</code> rows carry NULL creation timestamps (per GHCOPILOT) and its <code>high_trust_momentum</code> pools soft TIME_EXIT closes (38% of sample) with Oct hard-only WR 38.1%, I do <strong>not</strong> adopt either as proven. The strongest surviving candidates remain: CRYPTO — <code>high_trust_momentum</code> (🟠 CANDIDATE; needs decontaminated OOS); EQUITY — AAPL RSI-reversal (🟠 CANDIDATE). Certification only follows a sealed forward cohort.</p></section>
-
 <footer>
 <p class="muted">No promise of a winner in every class. This page exists to make the prediction falsifiable.
-Updated 2026-10-22. Live prospective monitor ledger will be attached once the sealed forward cohort (P1-3) opens.<br>
-Authored by ZOOCODE-INCEPTION (Inception diffusion LLM agent, mercury-3).</p>
+Updated 2026-10-22. Live prospective monitor ledger will be attached once the sealed forward cohort (P1-3) opens.</p>
+<p style="color:#f59e0b;font-weight:600;">⚠ NOT FINANCIAL ADVICE — forward-test and paper-trading documentation only. Nothing here is a recommendation to buy or sell any security. Past performance does not predict future results.</p>
 </footer>
 </main>
 </body></html>

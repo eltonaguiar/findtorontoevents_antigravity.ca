@@ -50,7 +50,7 @@ API_CONSULT = f"{REPO_ROOT}/tools/swarm/api_consult.py"
 # Hermes binary — full path required for non-interactive WSL shells
 HERMES_BIN = os.environ.get(
     "HERMES_BIN",
-    shutil.which("hermes") or "/home/zerou/.local/bin/hermes"
+    shutil.which("hermes") or "/home/eaguiar2015/.hermes/hermes-agent/hermes"
 )
 
 # Default timeout per agent (seconds) — free models can be slow
@@ -85,10 +85,6 @@ PAID_MODELS = {
     "xai": {
         "model": "grok-3-latest",
         "key_envs": ("X_AI_KEY", "XAI_API_KEY", "X_AI", "GROK_SUPER"),
-    },
-    "inception": {
-        "model": "mercury-2",
-        "key_envs": ("INCEPTION_AI_KEY", "INCEPTION_API_KEY"),
     },
     "openrouter": {
         "model": "openai/gpt-4o-mini",
@@ -330,7 +326,7 @@ def _paid_provider_for_role(role):
     role_map = {
         "researcher": "cerebras",
         "coder": "deepseek",
-        "reviewer": "inception",
+        "reviewer": "groq",
         "architect": "xai",
         "security-architect": "xai",
         "coordinator": "groq",
@@ -1080,7 +1076,7 @@ def run_swarm_brainstorm_review(mode="direct", timeout=None, tier="free", task=N
     reviewer_provider = PAID_MODELS.get("cerebras", {}).get("model", "deepseek-chat")
     # Use cerebras if available, else deepseek, else fall back to hermes via run_agent
     reviewer_call = None
-    for provider_key in ["cerebras", "deepseek", "xai", "inception"]:
+    for provider_key in ["cerebras", "deepseek", "xai", "groq"]:
         if provider_key in PAID_MODELS and check_paid_keys().get(provider_key):
             reviewer_call = provider_key
             break
@@ -1146,7 +1142,7 @@ def _run_brainstorm_model(model_tag: str, prompt: str, timeout: int = 120) -> st
         provider_raw = parts[0].lower()
         # Map known providers; anything else (nvidia, tencent, minimax, etc.)
         # goes through openrouter which routes to the correct backend.
-        if provider_raw in ("deepseek", "xai", "inception", "cerebras", "groq",
+        if provider_raw in ("deepseek", "xai", "cerebras", "groq",
                              "openrouter", "huggingface", "gemini", "github_models",
                              "pollinations", "nous", "ollama_cloud", "ollama_local"):
             provider = provider_raw

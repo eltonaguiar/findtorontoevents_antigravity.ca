@@ -47,8 +47,9 @@ class Provider:
 
 
 # Order = auto-detection preference. Providers verified working against
-# this environment (2026-05-15) are listed first; xai/inception are kept
-# for forward-compat but their keys currently fail (invalid key / 403).
+# this environment (2026-05-15) are listed first; xai is kept
+# for forward-compat but its key currently fails (invalid key / 403).
+# Inception/Mercury was removed 2026-11-12; the vendor sunsets the API 2026-12-28.
 PROVIDERS: tuple[Provider, ...] = (
     Provider(
         "deepseek",
@@ -110,12 +111,6 @@ PROVIDERS: tuple[Provider, ...] = (
         "https://api.x.ai/v1/chat/completions",
         "grok-3-latest",
         ("X_AI_KEY", "XAI_API_KEY", "X_AI", "GROK_SUPER", "GROK_API_KEY"),
-    ),
-    Provider(
-        "inception",
-        "https://api.inceptionlabs.ai/v1/chat/completions",
-        "mercury-2",
-        ("INCEPTION_AI_KEY", "INCEPTION_API_KEY"),
     ),
     Provider(
         "nous",

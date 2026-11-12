@@ -3,7 +3,7 @@
 (those are widely used by other peer agents and have been reverted by
 linters in the past — keep them stable; this module owns the swarm path).
 
-Supports: deepseek, nvidia_deepseek, cerebras, xai, inception, ollama_cloud,
+Supports: deepseek, nvidia_deepseek, cerebras, xai, ollama_cloud,
 ollama_local, openrouter, nous.
 
 Usage:
@@ -19,13 +19,12 @@ Env keys:
     NVIDIA_API_KEY / NGC_API_KEY / NVAPI_KEY
     CEREBRAS_API / CEREBRAS_API_KEY
     X_AI_KEY / XAI_API_KEY / X_AI / GROK_SUPER
-    INCEPTION_AI_KEY / INCEPTION_API_KEY
     OLLAMA_CLOUD_KEY (informational only — local `ollama` CLI does the call)
     OLLAMA_LOCAL_MODEL / OLLAMA_MODEL (optional; keyless local ollama)
     OPENROUTER (OpenAI-compat gateway, 200+ models from many vendors)
 
 Model overrides: DEEPSEEK_MODEL, NVIDIA_DEEPSEEK_MODEL, CEREBRAS_MODEL,
-                 XAI_MODEL, INCEPTION_MODEL, OLLAMA_CLOUD_MODEL,
+                 XAI_MODEL, OLLAMA_CLOUD_MODEL,
                  OLLAMA_LOCAL_MODEL, OPENROUTER_MODEL.
 """
 from __future__ import annotations
@@ -67,13 +66,6 @@ PROVIDERS: dict[str, dict] = {
         "url": "https://api.x.ai/v1/chat/completions",
         "model": "grok-3-latest",
         "key_envs": ("X_AI_KEY", "XAI_API_KEY", "X_AI", "GROK_SUPER", "GROK_API_KEY", "GROK_API_KEY_PAID"),
-        "max_tokens_field": "max_tokens",
-        "max_tokens": 4000,
-    },
-    "inception": {
-        "url": "https://api.inceptionlabs.ai/v1/chat/completions",
-        "model": "mercury-2",
-        "key_envs": ("INCEPTION_AI_KEY", "INCEPTION_API_KEY"),
         "max_tokens_field": "max_tokens",
         "max_tokens": 4000,
     },
@@ -164,7 +156,6 @@ SAMPLING_DEFAULTS: dict[str, dict] = {
     "deepseek":     {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
     "nvidia_deepseek": {"temperature": 1.0, "max_tokens": 8192, "top_p": 0.95},
     "xai":          {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
-    "inception":    {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
     "cerebras":     {"temperature": 0.2, "max_completion_tokens": 4000, "top_p": 1.0},
     "ollama_cloud": {"temperature": 0.2, "num_predict": 4000, "top_p": 1.0},
     "ollama_local": {"temperature": 0.2, "num_predict": 2500, "top_p": 1.0},
@@ -451,7 +442,7 @@ def call_openai_compat(provider: str, prompt: str, model_override: str | None,
     # encourages) HTTP-Referer + X-Title — used for per-app rate-limit
     # attribution and the public leaderboard. They're harmless on other
     # OpenAI-compat providers but we only send them for openrouter to avoid
-    # signaling a foreign origin to deepseek/xai/inception.
+    # signaling a foreign origin to deepseek/xai.
     extra_headers: dict | None = None
     if provider == "openrouter":
         extra_headers = {
@@ -470,7 +461,7 @@ def call_openai_compat(provider: str, prompt: str, model_override: str | None,
     if fp:
         meta["model_fingerprint"] = str(fp)
     usage = data.get("usage") or {}
-    # Standard OpenAI-compat keys; deepseek/xai/inception all comply.
+    # Standard OpenAI-compat keys; deepseek/xai all comply.
     meta["tokens_in"] = int(usage.get("prompt_tokens") or 0)
     meta["tokens_out"] = int(usage.get("completion_tokens") or 0)
     choices = data.get("choices") or [{}]

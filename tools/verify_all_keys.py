@@ -40,8 +40,8 @@ LABELS: list[tuple[str, str]] = [
     ("TOGETHER_API_KEY",        "TOGETHER AI API KEY:"),
     ("TOGETHER_API_KEY_ALT",    "TOGETHER AI API KEY ALT:"),
     ("CEREBRAS_API_KEY",        "CEREBRAS_FREE_API_KEY:"),
-    ("COHERE_API_KEY",          "COHERE_TRIAL_API_KEY"),
-    ("HF_API_TOKEN_ALT",        "HUGGING_FACE_TOKEN ALT(TRIED FINE GRAIN AND SETTING BUNCH OF CHECKBOXES):"),
+    ("COHERE_API_KEY",          "[REDACTED]"),
+    ("HF_API_TOKEN_ALT",        "[REDACTED] ALT(TRIED FINE GRAIN AND SETTING BUNCH OF CHECKBOXES):"),
     ("HF_API_TOKEN_READ",       "HUGGINF_FACE TOKEN ALT2(READ):"),
     ("FIREWORKS_API_KEY",       "FIREWORKS FREE API KEY:"),
     ("FIREWORKS_API_KEY_ALT",   "FIREWORKS FREE API KEY ALT:"),
@@ -58,25 +58,24 @@ LABELS: list[tuple[str, str]] = [
     ("HYPEREAL_API_KEY_ALT",    "HYPEREAL CLOUD API KEY 2:"),
     ("CF_ACCOUNT_ID",           "Cloudflare account iD:"),
     ("CF_API_TOKEN",            "Cloudflare API key:"),
-    ("OPENROUTER_API_KEY",      "OPEN ROUTER API KEY"),
+    ("OPENROUTER_API_KEY",      "[REDACTED]"),
     ("OFOX_AI_KEY",             "OFOX_API_KEY"),
     ("XAI_API_KEY",             "GROK:"),
-    ("OLLAMA_CLOUD_KEY",        "OLLAMA_CLOUD_KEY"),
+    ("[REDACTED]",        "[REDACTED]"),
     ("ANTHROPIC_API_KEY",       "ANTROPHIC"),
     ("ANTHROPIC_API_KEY_ALT",   "ANTR_MAY2026"),
     ("DEEPSEEK_API_KEY",        "DEEPSEEK_API"),
-    ("MOONSHOT_API_KEY",        "KIMI_MOONSHOT_APIKEY"),
-    ("MOONSHOT_API_KEY_ALT",    "KIMI_MOONSHOT_APIKEY2"),
+    ("MOONSHOT_API_KEY",        "[REDACTED]"),
+    ("MOONSHOT_API_KEY_ALT",    "[REDACTED]"),
     ("OPENAI_API_KEY",          "OPENAI_KEY"),
-    ("QWEN_API_KEY",            "QWEN_API_KEY_PRO"),
-    ("QWEN_API_KEY_FREE",       "QWEN_API_KEY_FREE"),
+    ("QWEN_API_KEY",            "[REDACTED]"),
+    ("[REDACTED]",       "[REDACTED]"),
     ("CHUTES_API_KEY",          "CHUTES"),
-    ("LLM7_API_KEY",            "LLM7_API_KEY_FREE"),
-    ("INCEPTION_API_KEY",       "INCEPTION_AI_KEY"),
+    ("LLM7_API_KEY",            "[REDACTED]"),
     ("NOVITA_API_KEY",          "NOVITA API KEY:"),
     ("CURSOR_API_KEY",          "CURSOR_API_KEY"),
-    ("KILOCODE_API_KEY",        "KILOCODE_API_KEY"),
-    ("OPENCODE_API_KEY",        "OPENCODE_API_KEY"),
+    ("[REDACTED]",        "[REDACTED]"),
+    ("[REDACTED]",        "[REDACTED]"),
 ]
 
 
@@ -362,12 +361,12 @@ def t_openai(key: str) -> tuple[str, str]:
 
 
 def t_qwen(key: str) -> tuple[str, str]:
-    return t_openai_compat("https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions", key, "qwen-turbo")
+    return t_openai_compat("[REDACTED]/chat/completions", key, "qwen-turbo")
 
 
 def t_qwen_free(key: str) -> tuple[str, str]:
     # Free key routed to the same intl compatible endpoint.
-    return t_openai_compat("https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions", key, "qwen-turbo")
+    return t_openai_compat("[REDACTED]/chat/completions", key, "qwen-turbo")
 
 
 def t_chutes(key: str) -> tuple[str, str]:
@@ -378,12 +377,8 @@ def t_llm7(key: str) -> tuple[str, str]:
     return t_openai_compat("https://api.llm7.io/v1/chat/completions", key, "gpt-4o-mini-2024-07-18")
 
 
-def t_inception(key: str) -> tuple[str, str]:
-    return t_openai_compat("https://api.inceptionlabs.ai/v1/chat/completions", key, "mercury-2")
-
-
 def t_novita(key: str) -> tuple[str, str]:
-    return t_openai_compat("https://api.novita.ai/openai/v1/chat/completions", key, "deepseek/deepseek-v4-pro")
+    return t_openai_compat("[REDACTED]/chat/completions", key, "deepseek/deepseek-v4-pro")
 
 
 # ---------- test plan ----------
@@ -419,7 +414,7 @@ TESTS: list[tuple[str, str, Any]] = [
     ("openrouter",        "OPENROUTER_API_KEY",      t_openrouter),
     ("ofox",              "OFOX_AI_KEY",             t_ofox),
     ("xai (grok)",        "XAI_API_KEY",             t_xai),
-    ("ollama_cloud",      "OLLAMA_CLOUD_KEY",        t_ollama_cloud),
+    ("ollama_cloud",      "[REDACTED]",        t_ollama_cloud),
     ("anthropic",         "ANTHROPIC_API_KEY",       t_anthropic),
     ("anthropic (alt)",   "ANTHROPIC_API_KEY_ALT",   t_anthropic),
     ("deepseek",          "DEEPSEEK_API_KEY",        t_deepseek),
@@ -427,10 +422,9 @@ TESTS: list[tuple[str, str, Any]] = [
     ("moonshot (kimi 2)", "MOONSHOT_API_KEY_ALT",    t_moonshot),
     ("openai",            "OPENAI_API_KEY",          t_openai),
     ("qwen (pro)",        "QWEN_API_KEY",            t_qwen),
-    ("qwen (free)",       "QWEN_API_KEY_FREE",       t_qwen_free),
+    ("qwen (free)",       "[REDACTED]",       t_qwen_free),
     ("chutes",            "CHUTES_API_KEY",          t_chutes),
     ("llm7",              "LLM7_API_KEY",            t_llm7),
-    ("inception",         "INCEPTION_API_KEY",       t_inception),
     ("novita",            "NOVITA_API_KEY",          t_novita),
 ]
 

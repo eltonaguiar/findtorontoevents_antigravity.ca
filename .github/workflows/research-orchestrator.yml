@@ -10,7 +10,8 @@
 # - workflow_dispatch: manual trigger with `class` input to refresh one
 #   class only.
 # - secrets required: DEEPSEEK_API, CEREBRAS_API, X_AI_KEY (or X_AI_SECONDOP).
-#   INCEPTION_AI_KEY optional. No swarm engine = workflow no-ops gracefully.
+#   No swarm engine = workflow no-ops gracefully.
+#   Inception/Mercury removed 2026-12-28 (vendor sunset) — do not re-add.
 #
 # OUTPUT:
 # - swarm_runs/research_<class>_p{1,2,5}_<ts>/  — per-pass raw output
@@ -84,7 +85,6 @@ jobs:
           CEREBRAS_API: ${{ secrets.CEREBRAS_API }}
           X_AI_KEY: ${{ secrets.X_AI_KEY }}
           X_AI_SECONDOP: ${{ secrets.X_AI_SECONDOP }}
-          INCEPTION_AI_KEY: ${{ secrets.INCEPTION_AI_KEY }}
         run: |
           set -e
           CLASS_INPUT="${{ inputs.asset_class || 'all' }}"

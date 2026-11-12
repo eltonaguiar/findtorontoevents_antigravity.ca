@@ -20,31 +20,25 @@ from graphify.llm import extract_corpus_parallel  # noqa: E402
 ROOT = Path(".")
 DOC_DIRS = ["docs", "reports", "updates", ".planning"]
 
-# --- register cerebras + inception as OpenAI-compatible backends ---
+# --- register cerebras as an OpenAI-compatible backend ---
 # xai dropped: both X_AI_KEY and GROK_SUPER rejected 400 by api.x.ai (revoked keys).
 # deepseek dropped: frequent malformed-JSON output. cerebras (gpt-oss-120b) is fast
-# and reliable; inception (mercury-2) likewise.
+# and reliable.
 gllm.BACKENDS["cerebras"] = {
     "base_url": "https://api.cerebras.ai/v1", "default_model": "gpt-oss-120b",
     "env_key": "CEREBRAS_API", "pricing": {"input": 0.3, "output": 0.5},
     "temperature": 0, "max_tokens": 16384,
 }
-gllm.BACKENDS["inception"] = {
-    "base_url": "https://api.inceptionlabs.ai/v1", "default_model": "mercury-2",
-    "env_key": "INCEPTION_AI_KEY", "pricing": {"input": 0.3, "output": 0.5},
-    "temperature": 0, "max_tokens": 16384,
-}
 
 os.environ.setdefault(
     "MOONSHOT_API_KEY",
-    os.environ.get("KIMI_MOONSHOT_APIKEY") or os.environ.get("KIMI_API_KEY") or "",
+    os.environ.get("[REDACTED]") or os.environ.get("KIMI_API_KEY") or "",
 )
 
 # (name, model, api_key)
 BACKENDS = [
     ("kimi", "kimi-k2.5", os.environ["MOONSHOT_API_KEY"]),
     ("cerebras", "gpt-oss-120b", os.environ.get("CEREBRAS_API", "")),
-    ("inception", "mercury-2", os.environ.get("INCEPTION_AI_KEY", "")),
 ]
 N = len(BACKENDS)
 

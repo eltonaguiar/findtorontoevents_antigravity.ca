@@ -10,7 +10,6 @@ ENGINE_KEY_ENVS = {
     "xai": ["XAI_API_KEY"],
     "cerebras": ["CEREBRAS_API_KEY"],
     "groq": ["GROQ_API_KEY", "GROQ_KEY"],
-    "inception": ["INCEPTION_AI_KEY", "INCEPTION_API_KEY"],
     "mistral": ["MISTRAL_API_KEY"],
     "nous": ["NOUS_API_KEY"],
     "openrouter": ["OPENROUTER_API_KEY"],
