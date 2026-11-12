@@ -6,7 +6,7 @@ result + raw sidecar. Logging/timing via swarm_log.CallTimer.
 
 Supported engines:
     CLI:  claude, gemini, opencode, kilo, copilot, agent (Cursor), kimi (Moonshot), openclaude
-    API:  deepseek, cerebras, xai, inception, ollama_cloud, ollama_local, openrouter (driven via tools/swarm/api_consult.py)
+    API:  deepseek, cerebras, xai, ollama_cloud, ollama_local, openrouter (driven via tools/swarm/api_consult.py)
 
 Excluded: codex (OpenAI Codex CLI — disabled 2026-05-05 per user request), freebuff (PTY engine — REMOVED 2026-05-04), codebuff (TUI-only + out of credits).
 
@@ -52,7 +52,7 @@ API_CONSULT = REPO / "tools" / "swarm" / "api_consult.py"
 CLI_ENGINES = {"claude", "gemini", "opencode", "kilo", "copilot", "agent", "kimi", "openclaude"}
 # PTY_ENGINES set removed 2026-05-04 with freebuff. Restore if a new PTY/TUI
 # engine is added later — also restore call_pty_engine() and pty_driver.py.
-API_ENGINES = {"deepseek", "cerebras", "xai", "inception", "ollama_cloud", "ollama_local", "openrouter", "nous", "groq", "huggingface", "gemini_api", "github_models", "pollinations", "ofox"}
+API_ENGINES = {"deepseek", "cerebras", "xai", "ollama_cloud", "ollama_local", "openrouter", "nous", "groq", "huggingface", "gemini_api", "github_models", "pollinations", "ofox"}
 
 # --- Grounding context: inject rejected-hypothesis leakage warnings ---
 _GROUNDING_CACHE: str | None = None
