@@ -151,3 +151,67 @@ curl -s http://localhost:4000/v1/chat/completions -H 'Content-Type: application/
   -d '{"model":"ULTRA_FREE_CLOUD_FAST","messages":[{"role":"user","content":"ok"}],"max_tokens":300}'
 git grep -in 'inception\|mercury' -- '*.py' '*.yml' '*.sh'   # expect: retirement comments only
 ```
+
+---
+
+## 9. Files for review
+
+Everything a reviewer needs, and what each artifact proves. Branch
+`scrub/inception-mercury-2026-11-12`, **37 files changed vs `main`**, in two commits:
+`df2eadf054cb` (36 files — the retirement) and `83787bd97b` (this chatlog). Tip at time of
+writing: `83787bd97b079fff1a40840d4e6aa98b64de7179`.
+
+The exact commit path list, in order: `/tmp/scrublist.txt` (36 lines).
+
+```
+tools/litellm_dynamic_models.py            tools/free_provider_audit.py
+tools/start_litellm_proxy.sh               tools/free_model_discovery.py
+litellm_config.yaml                        tools/api_model_roster.py
+tools/swarm/api_consult.py                 tools/model_picks_research.py
+tools/swarm/swarm_run.py                   tools/model_capability_probe.py
+tools/swarm/worker_runner.py               tools/local_swarm_review.py
+tools/swarm/swarm_followup.py              tools/_graphify_docs_multibackend.py
+tools/swarm/invent_personas.py             tools/swarm/README.md
+tools/swarm/safety.py                      tools/swarm/SPEC.md
+tools/swarm/ENGINE_KEY_ENVS.py             tools/swarm/PORTING.md
+tools/swarm_v2/swarms/core/llm_client.py   tools/swarm/swarm.config.example.json
+.ruflo/orchestrator.py                     .claude/skills/second-opinion/scripts/ask.py
+.ruflo/wizard.py                           .claude/skills/second-opinion/SKILL.md
+.github/workflows/research-orchestrator.yml .claude/skills/graphify-map/SKILL.md
+.github/workflows/ai-tournament-pipeline.yml .claude/skills/consult-multi/SKILL.md
+tools/verify_all_keys.py                   .env.example
+config/api_model_roster.json               audit_dashboard/inception_paper_trading.html
+```
+
+**Fix records** (repo rule — every fix gets one):
+
+| File | Size | What it is |
+|---|---|---|
+| `updates/2026-11-12-inception-mercury-api-sunset-migration.md` | 8,927 b | The fix record proper. §5 = the OPENROUTER label bug, §7 = hermesbackup addendum. |
+| `updates/2026-11-12-freebuff-swarm-coordination-chatlog.md` | 7,947 b | Earlier coordination log; superseded by this dated one. |
+| `updates/2026-11-12-FREEBUFF-chatlog-1959UTC.md` | 8,022 b | This file. |
+
+**Other repositories touched or consulted**
+
+- `eltonaguiar/hermesbackup` @ `875f448` (`master`) — provider block and
+  `credential_pool["custom:api.inceptionlabs.ai"]` removed; YAML and JSON re-parsed; 0
+  residual hits. Cosmetic only: history still holds the value until the key is revoked.
+- `eltonaguiar/SWARM_CONSOLIDATED` @ `8d15148` — peer-owned. `core/worker.py` line 9 still
+  lists `inception`; `REMAINING_TASKS.md` absent.
+- `eltonaguiar/FREELLM` PR #1 — unmerged, owner-side, **not** a wiring precondition.
+- `SWARM_CONSOLIDATED/FREEBUFF_SWARM_2026-11-12.MD` — the shared plan of record.
+
+**Peer artifact reviewed:** `testing123.md` (3,369 B, untracked in the domain repo root) —
+the other agent's export.
+
+**Never for review:** `~/dbpasses.txt`. It holds keys; only label *names* appear in these
+notes, never values.
+
+**Local-only, will not survive the session:** `/tmp/scrublist.txt` (the 36 paths),
+`/tmp/api_push2.py` (blobs → tree → commit → ref, how the branch was published),
+`/tmp/api_commit_one.py` (adds one file on top), `/tmp/scrubwt` (the worktree),
+`/tmp/freebuff.txt` and `/tmp/claude_ollama.txt` (the two coordination logs).
+
+**Shape caveat for reviewers:** the local worktree still carries the original four-commit
+history while GitHub shows the two squashed commits above. Same content, different shape —
+diff the branch, not my worktree.
