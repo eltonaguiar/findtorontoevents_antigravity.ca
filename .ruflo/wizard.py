@@ -43,13 +43,6 @@ PAID_MODELS = {
         "cost": "XAI subscription credits",
         "speed": "⚡ Fast",
     },
-    "inception": {
-        "model": "mercury-2",
-        "key_envs": ("INCEPTION_AI_KEY", "INCEPTION_API_KEY"),
-        "description": "Mercury-2 — fast text model. Good for review/lightweight tasks.",
-        "cost": "Inception Labs pricing",
-        "speed": "💨 Very fast (diffusion-based)",
-    },
     "openrouter": {
         "model": "openai/gpt-4o-mini",
         "key_envs": ("OPENROUTER_API_KEY", "OPENROUTER", "OPENROUTER_FREE_KEY"),
@@ -238,8 +231,6 @@ def print_key_setup_instructions():
          "DeepSeek platform → API Keys → Create. ~$0.27/1M input tokens"),
         ("X_AI_KEY", "https://console.x.ai",
          "X AI console → API Keys → Create. Grok-3 access via xai.com"),
-        ("INCEPTION_AI_KEY", "https://dashboard.inceptionlabs.ai",
-         "Inception Labs → API Keys → Create. Mercury-2 fast diffusion model"),
         ("GROQ_KEY", "https://console.groq.com/keys",
          "Groq console → API Keys → Create. Free tier available."),
         ("HUGGINGFACE_API", "https://huggingface.co/settings/tokens",
@@ -290,7 +281,7 @@ def get_paid_provider_for_role(role):
     role_map = {
         "researcher": "cerebras",
         "coder": "deepseek",
-        "reviewer": "inception",
+        "reviewer": "groq",
         "architect": "xai",
         "security-architect": "xai",
         "coordinator": "groq",

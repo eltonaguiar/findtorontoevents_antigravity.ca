@@ -14,7 +14,6 @@ Authoritative list: [`MANIFEST.txt`](MANIFEST.txt). Summary by category:
 
 ```
 # Core engine adapter + JSON-Schema gate
-tools/swarm/api_consult.py            REQUIRED  direct-API path (deepseek/cerebras/xai/inception/ollama_cloud)
 tools/swarm/schema_review.json        REQUIRED  JSON-Schema for worker output
 tools/swarm/schema_validate.py        REQUIRED  schema gate
 tools/swarm/worker_runner.py          REQUIRED  engine adapter
@@ -81,11 +80,9 @@ API engines:
 | `DEEPSEEK_API` (or `DEEPSEEK_API_KEY`) | deepseek | https://platform.deepseek.com → API keys | OpenAI-compatible |
 | `CEREBRAS_API` (or `CEREBRAS_API_KEY` / `CERBRAS_FREE_ITHINK`) | cerebras | https://cloud.cerebras.ai → API keys | Needs `cerebras-cloud-sdk` pip pkg |
 | `X_AI_KEY` (or `XAI_API_KEY` / `X_AI` / `GROK_SUPER`) | xai | https://console.x.ai → API keys | Grok 3 latest |
-| `INCEPTION_AI_KEY` (or `INCEPTION_API_KEY`) | inception | https://platform.inceptionlabs.ai → API keys | Use model `mercury-2`; `mercury` is deprecated |
 | `OLLAMA_CLOUD_KEY` | ollama_cloud | `ollama signin` → SSH key in `~/.ollama/id_ed25519` | **SSH ed25519 push key for `ollama push`, NOT a chat token.** Adapter shells out to local `ollama run gpt-oss:120b-cloud <prompt>`. |
 
 Optional model overrides: `DEEPSEEK_MODEL`, `CEREBRAS_MODEL`, `XAI_MODEL`,
-`INCEPTION_MODEL`, `OLLAMA_CLOUD_MODEL`.
 
 `.env` at repo root is auto-loaded by [`config_loader.load_dotenv()`](config_loader.py)
 when [`swarm_run.py`](swarm_run.py) / [`swarm_followup.py`](swarm_followup.py)

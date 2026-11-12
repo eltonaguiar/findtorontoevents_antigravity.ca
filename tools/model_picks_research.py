@@ -50,8 +50,7 @@ OLLAMA_CLOUD_PANEL = [
 # REST cloud panel
 REST_CLOUD_PANEL = [
     {"name": "grok-4-latest",      "role": "Grok-4 (X_AI)",            "kind": "xai",       "env": "X_AI_KEY"},
-    {"name": "mercury-2",          "role": "Mercury 2 (Inception)",    "kind": "inception", "env": "INCEPTION_AI_KEY"},
-    {"name": "moonshot-v1-32k",    "role": "Kimi K2 (Moonshot REST)",  "kind": "moonshot",  "env": "KIMI_MOONSHOT_APIKEY"},
+    {"name": "moonshot-v1-32k",    "role": "Kimi K2 (Moonshot REST)",  "kind": "moonshot",  "env": "[REDACTED]"},
 ]
 
 ASSET_CLASSES = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND"]
@@ -100,7 +99,6 @@ def call_ollama(model_cfg: dict, prompt: str, timeout: int = 600) -> str:
 def call_rest(model_cfg: dict, prompt: str, timeout: int = 120) -> str:
     urls = {
         "xai":       "https://api.x.ai/v1/chat/completions",
-        "inception": "https://api.inceptionlabs.ai/v1/chat/completions",
         "moonshot":  "https://api.moonshot.ai/v1/chat/completions",
     }
     env_name = model_cfg["env"]
@@ -109,7 +107,7 @@ def call_rest(model_cfg: dict, prompt: str, timeout: int = 120) -> str:
         # Multi-env fallback
         for alt in {
             "X_AI_KEY":             ["GROK_SUPER", "XAI_API_KEY"],
-            "KIMI_MOONSHOT_APIKEY": ["KIMI_API_KEY", "MOONSHOT_API_KEY"],
+            "[REDACTED]": ["KIMI_API_KEY", "MOONSHOT_API_KEY"],
         }.get(env_name, []):
             key = (os.environ.get(alt) or "").strip()
             if key:

@@ -520,7 +520,6 @@ with [`worker_runner.py`](worker_runner.py)'s dispatch table and
 | `deepseek` | API | `DEEPSEEK_API` | `python api_consult.py --provider deepseek -` | OpenAI-compatible `/chat/completions`; default model `deepseek-chat`. |
 | `cerebras` | API | `CEREBRAS_API` | `python api_consult.py --provider cerebras -` | Uses `cerebras-cloud-sdk` Python client; `max_completion_tokens` not `max_tokens`. |
 | `xai` | API | `X_AI_KEY` (or `XAI_API_KEY` / `X_AI` / `GROK_SUPER`) | `python api_consult.py --provider xai -` | Default model `grok-3-latest`. |
-| `inception` | API | `INCEPTION_AI_KEY` | `python api_consult.py --provider inception -` | Use `mercury-2`; `mercury` is deprecated and 404s. |
 | `ollama_cloud` | API (local CLI shell-out) | `ollama signin` | `python api_consult.py --provider ollama_cloud -` → `ollama run gpt-oss:120b-cloud <prompt>` | `OLLAMA_CLOUD_KEY` env is an SSH push key, NOT a chat token. Adapter ignores HTTP and shells out to local CLI, then runs smart-quote / wrap-dup repair to make output JSON-parseable. |
 | `openrouter` | API | `OPENROUTER` (Bearer) | `python api_consult.py --provider openrouter -` | OpenAI-compat HTTP gateway exposing 200+ models from many vendors (`<provider>/<model>` ids: `openai/gpt-4o-mini`, `anthropic/claude-haiku-4.5`, `x-ai/grok-2`, `meta-llama/llama-3.3-70b-instruct:free`, ...). Default model: `openai/gpt-4o-mini` (cheap+fast). Override via `OPENROUTER_MODEL` env or `--model`. Adapter sends `HTTP-Referer` + `X-Title` etiquette headers (rate-limit attribution + leaderboard credit). **Cost-cap caveat**: [`swarm_run.COST_PER_1K_TOKENS["openrouter"]`](swarm_run.py) carries the gpt-4o-mini rate ($0.15/M in, $0.60/M out). When user overrides to a more expensive model (e.g. Claude Opus, GPT-5) the pre-dispatch cost estimate becomes APPROXIMATE — actual spend can be ~100x the estimate. For precise cost gating with a non-default model, raise `--cost-cap-usd` accordingly or wrap the run with a per-model rate override. |
 | `codebuff` | n/a | n/a | EXCLUDED | TUI-only and account out of credits. Removed from the engine list. |
@@ -728,7 +727,6 @@ name. Callers can override per-call via three precedence-ordered surfaces
 SAMPLING_DEFAULTS = {
     "deepseek":     {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
     "xai":          {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
-    "inception":    {"temperature": 0.2, "max_tokens": 4000, "top_p": 1.0},
     "cerebras":     {"temperature": 0.2, "max_completion_tokens": 4000, "top_p": 1.0},
     "ollama_cloud": {"temperature": 0.2, "num_predict": 4000, "top_p": 1.0},
 }

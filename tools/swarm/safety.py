@@ -39,7 +39,6 @@ ENGINE_REQUIRED_KEYS: dict[str, tuple[str, ...]] = {
         "CEREBRAS_MODEL",
     ),
     "xai": ("X_AI_KEY", "XAI_API_KEY", "X_AI", "GROK_SUPER", "GROK_API_KEY", "GROK_API_KEY_PAID", "XAI_MODEL"),
-    "inception": ("INCEPTION_AI_KEY", "INCEPTION_API_KEY", "INCEPTION_API_KEY_PAID", "INCEPTION_MODEL", "INCEPTION_API_URL"),
     "ollama_cloud": ("OLLAMA_CLOUD_KEY", "OLLAMA_CLOUD_MODEL", "OLLAMA_CLOUD_URL"),
     "ollama_local": ("OLLAMA_LOCAL_MODEL", "OLLAMA_MODEL", "OLLAMA_HOST"),
     # OpenRouter — OpenAI-compat HTTP gateway exposing 200+ models.

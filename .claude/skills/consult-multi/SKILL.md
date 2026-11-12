@@ -1,6 +1,6 @@
 ---
 name: consult-multi
-description: Unified multi-provider AI consult tool. Wraps 11 LLM providers (NVIDIA NIM, Groq, Cerebras, Together, Fireworks, GitHub Models, HuggingFace, Gemini API, Cloudflare Workers AI, DeepInfra, Nous Research Portal) behind one CLI so multi-AI fan-outs and single-provider consults share one well-tested code path. Reads keys from ~/dbpasses.txt (gitignored). Use when the user says "/consult-multi", "fan to N peers", "multi-provider consult", or wants triangulation across many providers in one call. Subcommands - list, run (--provider), fan-out (--fanout).
+description: Unified multi-provider AI consult tool. Wraps 11 LLM providers (NVIDIA NIM, Groq, Cerebras, Together, Fireworks, GitHub Models, HuggingFace, Gemini API, Cloudflare Workers AI, DeepInfra, Nous Research Portal) behind one CLI so multi-AI fan-outs and single-provider consults share one well-tested code path. Reads keys from ~/dbpasses.txt (gitignored). Use when the user says "/consult-multi", "fan to N peers", "multi-provider consult", or wants triangulation across many providers in one call. Subcommands - list, run (--provider), fan-out (--fanout), plus confirmed vision and grounded web-search routing (--image, --online, --capabilities) via tools/vision_search_client.py.
 ---
 
 # consult-multi
@@ -73,6 +73,53 @@ Presets (each writes one `.md` per peer to `--out-dir`):
 - **`fast4`** — groq/llama-instant + cerebras + fireworks + gemini-flash. Sub-second responses.
 - **`reasoning4`** — kimi-K2.6 + gemini-pro + llama-405b + deepseek-v3. For heavy reasoning.
 - **`all9`** — one model per provider. Maximum diversity.
+
+## Vision and web browsing (`--image`, `--online`, `--capabilities`)
+
+Text-only consults are unchanged. Vision and browsing route through
+`tools/vision_search_client.py`, built after a live probe of all 46 providers in
+`~/dbpasses.txt` on 2026-11-09 (report: `reports/model_capability_probe_2026-11-09.md`).
+
+```bash
+python3 tools/consult_multi.py --capabilities         # what each provider can actually do
+python3 tools/consult_multi.py --probe web            # re-run the live probe
+python3 tools/consult_multi.py --image chart.png --prompt "read the watermark"
+python3 tools/consult_multi.py --online --prompt "today's BTC headline"
+python3 tools/consult_multi.py --provider gemini_api --image x.png --prompt "what colour is the dot"
+```
+
+- **Vision works on:** gemini (`2.5-flash`, `-flash-lite`), openrouter
+  (`nvidia/nemotron-3.5-super-vl:free`), nvidia (`meta/llama-3.2-90b-vision-instruct`),
+  huggingface (`Llama-4-Scout-17B`), deepinfra (`Qwen/Qwen3-VL-235B-A22B-Instruct`),
+  mistral (`ministral-3b-latest`), xai (`grok-4.20-0309-non-reasoning`), orcarouter.
+- **Browsing with citations works on:** gemini (`tools:[{google_search:{}}]` →
+  `groundingMetadata`), openrouter (model suffix `:online` → `url_citation` annotations),
+  xai (`/v1/responses` + `tools:[{type:web_search}]`).
+- **No vision at all:** deepseek, inception mercury, groq, cerebras, zai. OpenAI and
+  Anthropic keys exist but carry no credits (429 / 400). Mistral browsing is unavailable
+  (`WebSearchTool connector is not supported`).
+- Model quirks the client already handles: nemotron-VL rejects `temperature` and returns an
+  empty `content` unless `max_tokens` is generous; kimi-k3 requires `temperature: 1`; xai's
+  legacy `search_parameters` is 410-deprecated and 429s on rapid retries.
+
+Import it directly rather than going through the CLI:
+
+```python
+from tools.vision_search_client import ask, vision, web_search
+
+r = ask("What changed in BTC today?", search=True)
+print(r["text"], [c["url"] for c in r["citations"]])
+
+r = vision("Read the watermark text", "chart.png")
+```
+
+## Search API keys (audited 2026-11-09)
+
+`python3 tools/search_key_audit.py` tests every search/browsing key and prints verdicts
+without revealing values. Last result: **Jina Reader and Parallel AI working**; Brave
+(`SUBSCRIPTION_TOKEN_INVALID`), Tavily (plan cap), Exa and Firecrawl (no credits) need
+replacement. The auditor also flags duplicate/mislabelled keys — e.g. the Novita slot holds a
+copy of the Brave token, and the `OLLAMA_CLOUD_KEY` slot holds an SSH public key.
 
 ## Verified provider status (2026-05-25, 14 providers)
 

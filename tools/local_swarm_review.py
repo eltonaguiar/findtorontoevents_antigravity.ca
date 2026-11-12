@@ -38,8 +38,7 @@ CLOUD_PANEL = [
     {"name": "llama3.1-8b",                         "role": "fast-Llama (Cerebras)",      "kind": "cerebras", "env": "CEREBRAS_API"},
     {"name": "gpt-oss-120b",                        "role": "OpenAI-OSS (Cerebras)",      "kind": "cerebras", "env": "CEREBRAS_API"},
     {"name": "qwen-3-235b-a22b-instruct-2507",      "role": "frontier-Qwen (Cerebras)",   "kind": "cerebras", "env": "CEREBRAS_API"},
-    {"name": "mercury-2",                           "role": "Mercury 2 (Inception Labs)", "kind": "inception","env": "INCEPTION_AI_KEY"},
-    {"name": "moonshot-v1-32k",                     "role": "Kimi K2 (Moonshot)",         "kind": "moonshot", "env": "KIMI_MOONSHOT_APIKEY"},
+    {"name": "moonshot-v1-32k",                     "role": "Kimi K2 (Moonshot)",         "kind": "moonshot", "env": "[REDACTED]"},
     # MiMo via HF Router removed — free tier depleted (HTTP 402). Re-enable
     # if HF credits/PRO added.
 ]
@@ -121,9 +120,9 @@ def query(model_cfg: dict, prompt: str, timeout: int = 900) -> str:
     key = (os.environ.get(env_name) or "").strip()
     if not key:
         _ENV_FALLBACKS = {
-            "HF_TOKEN":             ["HUGGING_FACE_TOKEN", "HUGGINGFACE_TOKEN"],
+            "HF_TOKEN":             ["[REDACTED]", "HUGGINGFACE_TOKEN"],
             "X_AI_KEY":             ["GROK_SUPER", "XAI_API_KEY"],
-            "KIMI_MOONSHOT_APIKEY": ["KIMI_API_KEY", "MOONSHOT_API_KEY"],
+            "[REDACTED]": ["KIMI_API_KEY", "MOONSHOT_API_KEY"],
         }
         for alt in _ENV_FALLBACKS.get(env_name, []):
             key = (os.environ.get(alt) or "").strip()
@@ -135,7 +134,6 @@ def query(model_cfg: dict, prompt: str, timeout: int = 900) -> str:
         "xai":       "https://api.x.ai/v1/chat/completions",
         "cerebras":  "https://api.cerebras.ai/v1/chat/completions",
         "hf":        "https://router.huggingface.co/v1/chat/completions",
-        "inception": "https://api.inceptionlabs.ai/v1/chat/completions",
         "moonshot":  "https://api.moonshot.ai/v1/chat/completions",
     }
     payload = {

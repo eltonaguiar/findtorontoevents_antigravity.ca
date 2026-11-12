@@ -245,7 +245,7 @@ def design_personas(problem: str, num_personas: int,
                     primary_engine: str) -> tuple[dict, str, list[str]]:
     """Try primary engine, then fallbacks. Returns (design, engine_used, errors)."""
     fallback_chain = [primary_engine]
-    for fb in ("cerebras", "inception", "claude"):
+    for fb in ("cerebras", "claude"):
         if fb not in fallback_chain:
             fallback_chain.append(fb)
     prompt = META_PROMPT_TEMPLATE.format(problem=problem, num_personas=num_personas)

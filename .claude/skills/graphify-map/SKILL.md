@@ -82,12 +82,12 @@ For `*.md` / research / Pine — needs an LLM backend. There is **no
 
 | Backend | Model | Key env var | Notes |
 |---|---|---|---|
-| kimi | `kimi-k2.5` | `KIMI_MOONSHOT_APIKEY` (set as `MOONSHOT_API_KEY`) | reliable JSON |
+| kimi | `kimi-k2.5` | `[REDACTED]` (set as `MOONSHOT_API_KEY`) | reliable JSON |
 | cerebras | `gpt-oss-120b` | `CEREBRAS_API` | fastest, queue-throttles under load |
-| inception | `mercury-2` | `INCEPTION_AI_KEY` | reliable |
+| inception | `mercury-2` | `[REDACTED]` | reliable |
 
 Dropped: **xai/grok** (both `X_AI_KEY` + `GROK_SUPER` revoked), **deepseek**
-(frequent malformed JSON), **ollama-cloud** (`OLLAMA_CLOUD_KEY` is an SSH
+(frequent malformed JSON), **ollama-cloud** (`[REDACTED]` is an SSH
 push-key, not a chat token).
 
 Register the non-built-in backends at runtime and shard across them for ~3×
@@ -98,9 +98,6 @@ import graphify.llm as gllm
 gllm.BACKENDS["cerebras"] = {"base_url":"https://api.cerebras.ai/v1",
   "default_model":"gpt-oss-120b","env_key":"CEREBRAS_API","pricing":{"input":0.3,"output":0.5},
   "temperature":0,"max_tokens":16384}
-gllm.BACKENDS["inception"] = {"base_url":"https://api.inceptionlabs.ai/v1",
-  "default_model":"mercury-2","env_key":"INCEPTION_AI_KEY","pricing":{"input":0.3,"output":0.5},
-  "temperature":0,"max_tokens":16384}
 ```
 
 **Truncation fix (mandatory):** graphify's default `max_tokens=16384` truncates
@@ -110,7 +107,7 @@ graphify set `os.environ["GRAPHIFY_MAX_OUTPUT_TOKENS"]="32768"` AND pass
 keep output under the cap.
 
 `tools/_graphify_docs_multibackend.py` is the reference implementation — shards
-the `.md` corpus across kimi+cerebras+inception with the fix applied.
+the `.md` corpus across kimi+cerebras with the fix applied.
 
 ## Step 3 — Merge fragments (manual — CLI is broken)
 

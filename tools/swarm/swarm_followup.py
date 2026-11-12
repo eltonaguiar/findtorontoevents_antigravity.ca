@@ -71,7 +71,7 @@ ALL_ENGINES = (
     "claude", "gemini", "opencode", "kilo", "copilot", "agent", "kimi",
     "openclaude",
     # freebuff (PTY engine) removed 2026-05-04.
-    "deepseek", "cerebras", "xai", "inception", "ollama_cloud", "ollama_local", "openrouter",
+    "deepseek", "cerebras", "xai", "ollama_cloud", "ollama_local", "openrouter",
     "nous", "groq", "huggingface", "gemini_api", "github_models", "pollinations",
 )
 

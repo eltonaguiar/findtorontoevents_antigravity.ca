@@ -58,7 +58,7 @@ ALL_ENGINES = (
     "claude", "gemini", "opencode", "kilo", "copilot", "agent", "kimi",
     "openclaude",
     # freebuff (PTY engine) removed 2026-05-04.
-    "deepseek", "cerebras", "xai", "inception", "ollama_cloud", "ollama_local", "openrouter",
+    "deepseek", "cerebras", "xai", "ollama_cloud", "ollama_local", "openrouter",
     "nous", "groq", "huggingface", "gemini_api", "github_models", "pollinations", "ofox",
 )
 
@@ -69,7 +69,7 @@ ENGINE_PRESETS: dict[str, list[str]] = {
     "consensus-3":  ["deepseek", "xai", "kilo"],
     "fast-cheap":   ["cerebras", "deepseek"],
     "deep-strict":  ["claude", "kilo", "deepseek"],
-    "all-paid-api": ["deepseek", "xai", "cerebras", "inception", "ollama_cloud", "groq", "huggingface"],
+    "all-paid-api": ["deepseek", "xai", "cerebras", "ollama_cloud", "groq", "huggingface"],
     "all-keyless-local": ["ollama_local"],
     "all-cli":      ["claude", "gemini", "kilo", "opencode", "copilot", "agent"],
     "all-free-api": ["groq", "gemini_api", "github_models", "pollinations", "ollama_local", "ofox"],
@@ -90,7 +90,6 @@ COST_PER_1K_TOKENS: dict[str, dict[str, float]] = {
     "deepseek":     {"in": 0.00014, "out": 0.00028},  # V3 pricing
     "xai":          {"in": 0.005,   "out": 0.015},     # Grok 3
     "cerebras":     {"in": 0.0001,  "out": 0.0001},    # near-free tier
-    "inception":    {"in": 0.001,   "out": 0.002},     # estimate
     "ollama_cloud": {"in": 0.0,     "out": 0.0},       # subscription
     "ollama_local": {"in": 0.0,     "out": 0.0},       # local daemon, no API key
     "groq":         {"in": 0.00059, "out": 0.00079},   # llama-3.3-70b
@@ -620,7 +619,7 @@ def main() -> int:
     # returned () and it always passed through — the opposite of intended).
     # Codex disabled 2026-05-05 per user request.
     api_engines = {
-        "deepseek", "cerebras", "xai", "inception", "ollama_cloud",
+        "deepseek", "cerebras", "xai", "ollama_cloud",
         "openrouter", "nous", "groq", "huggingface", "kimi",
         "gemini_api", "github_models",
     }
