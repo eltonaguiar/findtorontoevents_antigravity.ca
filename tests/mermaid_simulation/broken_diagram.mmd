@@ -1,0 +1,12 @@
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Success]
+    B -->|No| D[Failure]
+    C --> E((End))
+    D --> E((End))
+    %% Error 1: Duplicate ID with different text
+    E[End Node] --> F[Finish]
+    %% Error 2: Syntax error in arrow
+    F --invalid-arrow--> G{Check}
+    %% Error 3: Unclosed bracket
+    G --> H[Incomplete
