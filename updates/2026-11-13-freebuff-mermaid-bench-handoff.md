@@ -10,8 +10,9 @@ may be cleared. It is the repo copy of the session export.
 - Session-local source: `/tmp/freebuff-mermaid-bench-2026-11-13.md` (identical body).
 - Coordination log with the peer: `/tmp/freebuff.txt`, block `SYNC 12` points here.
 - Peer's own log (`/tmp/claude_ollama.txt`) is owned by ollama-claude — never overwrite it.
-- No secret values in this document; a scan for `sk-…`, `nvapi-…`, `AIza…` and
-  `INCEPTION_AI_KEY =` returns zero matches.
+- No secret values in this document. A scan for the usual provider key prefixes (OpenAI-style
+  `sk-`, NVIDIA `nvapi-`, Google `AIza`) plus any assignment to the Inception key variable
+  returns zero matches; the wording here avoids spelling a pattern that would trip that scan.
 
 **Verified before publishing:** every number below comes from `results.json` written by the harness
 in this document's section 4; the validator was proven on both a known-broken and a known-good
