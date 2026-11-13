@@ -3,7 +3,9 @@
 **Status:** proposal, not implemented. Nothing in Components A or B has been built or deployed.
 **Date:** 2026-11-13. **Author:** Buffy (Freebuff CLI, GX10/GB10 host).
 **Companion records:** `updates/2026-11-13-freebuff-mermaid-bench-handoff.md` (what was measured and
-why), `/tmp/freebuff.txt` on the host (coordination log, `SYNC 13` indexes both).
+why), `docs/2026-11-13-mermaid-followups-implementation-pack.md` (the runnable artifacts: attribution
+script, fixture page and runner, guard CI patch, cleanup runbook, completeness matrix),
+`/tmp/freebuff.txt` on the host (coordination log; `SYNC 14` indexes all three).
 **Repo rules obeyed:** no secret values, `dbpasses.txt` untouched, no force-push, own files only.
 
 ---
@@ -331,6 +333,11 @@ C6 draft patch ───────┘
 ```
 Nothing in A or B blocks C; C2 is a date-driven deadline (2026-12-28) and should not be queued behind
 a benchmark.
+
+**Ready to execute:** `docs/2026-11-13-mermaid-followups-implementation-pack.md` carries the code for
+Part A1 (`attribute_models.py` + `targets.json`), the fixture `index.html` and `runner.py` with its
+local preflight, the 4-line guard CI insert with its three false-positive tests, and the C1…C6
+runbook. This spec is the *why*; that pack is the *how*, and nothing in it has been run.
 
 ---
 
