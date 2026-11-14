@@ -11,6 +11,13 @@ Review of all four sibling audits + the `inspect-wt` transcript agent, cross-ref
 | `finpredict-v3` | `.kilo/worktrees/finpredict-v3/2026-11-14/finpredict-v3/…` | data-hygiene guardian (runnable) + remediation plan | pushed to main |
 | `finpredict-v4` | `audits/2026-11-14/finpredict-v4_2026-11-14-1555/` (main repo `audits/`) | 7 deep-dives + 6 `proposed_fixes/*/QUICK_WINS.md` + peer_review of ML audit | **uncommitted** |
 | `inspect-wt` | `.inspect-wt/` (June snapshot) + pasted transcript | 5-turn audit | n/a |
+| `deepAI` (= `inspect-wt`, **Windows host**) | `E:\findtorontoevents_antigravity.ca\2026-11-14\{inspect-wt_20261114_1058, deepAI_proposed_fixes_20261114_1612}\` + worktree `.inspect-wt` | findings archive (summary.MD + 5 per-class summary MDs + chat_transcript) + proposed fixes (P0–P3 README, 8 `fixspecs/`, per-asset-class quick-wins, **a real `.patch`** for hyro-pick-perf freshness tripwire) | local branch `audit/live-audit-2026-11-14` (3 commits `fcac1d9017`, `5ef470dbb3`, `0cd7a1204e`) — **NOT pushed to origin** |
+
+### deepAI / inspect-wt peer — UNREVIEWABLE from this host
+
+The `deepAI` agent runs on the user's Windows machine (`E:\…`, `C:\Users\zerou\Desktop\…`). Its files and its branch `audit/live-audit-2026-11-14` are **not on this Linux host** (`/home/eaguiar2015/findtorontoevents_antigravity.ca/2026-11-14/inspect-wt_*` and `.inspect-wt/` do not exist; `git ls-remote origin` shows no `live-audit`/`deepai` branch). Its `chat_transcript_2026-11-14.md` is likewise absent (matches v2's and v4's "NOT FOUND" notes).
+
+**To review it:** the deepAI agent must `git push` its branch (it says it is "safe to push for peer review whenever you say so") or sync the folders to this host. Once pushed, fetch and review: (1) `summary.MD` + 5 per-class summaries, (2) `deepAI_proposed_fixes_20261114_1612/README.md` (P0–P3), (3) the `fixspecs/` (8 cross-asset) and per-asset-class quick-wins, (4) `patches/0001-hyro-pick-perf-freshness-tripwire.patch` — which corroborates my hyro staleness finding (hyro_pick_performance.json 6.6d stale) and is the only peer to ship an actual code patch.
 
 ## Corrections to my own doc (adopted from peers)
 
