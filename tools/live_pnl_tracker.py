@@ -19,11 +19,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+log = logging.getLogger("live_pnl")
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
@@ -67,18 +71,39 @@ def fetch_price(symbol: str, asset_class: str) -> tuple[float | None, str]:
 
     # ── Crypto: Binance first, CoinGecko fallback ──
     if ac in ("CRYPTO",):
+        import requests
+        # Retry loop for Binance
+        for attempt in range(2):
+            try:
+                resp = requests.get(
+                    f"https://api3.binance.com/api/v3/ticker/price?symbol={sym}",
+                    timeout=8)
+                if resp.status_code == 200:
+                    px = float(resp.json()["price"])
+                    if px > 0:
+                        return (px, "binance")
+                else:
+                    log.warning("Binance non-200 for %s: %s (attempt %d)", sym, resp.status_code, attempt + 1)
+            except Exception as e:
+                log.warning("Binance fetch error for %s: %s (attempt %d)", sym, e, attempt + 1)
+            if attempt == 0:
+                time.sleep(0.5)
+        # CoinGecko fallback (best-effort)
         try:
-            import requests
-            resp = requests.get(
-                f"https://api3.binance.com/api/v3/ticker/price?symbol={sym}",
-                timeout=8)
-            if resp.status_code == 200:
-                px = float(resp.json()["price"])
-                if px > 0:
-                    return (px, "binance")
-        except Exception:
-            pass
-            return (None, "no crypto price source")
+            cg_id = sym.lower().replace("usdt", "").replace("usd", "")
+            if cg_id:
+                cg_resp = requests.get(
+                    f"https://api.coingecko.com/api/v3/simple/price?ids={cg_id}&vs_currencies=usd",
+                    timeout=8)
+                if cg_resp.status_code == 200:
+                    cg_data = cg_resp.json()
+                    if cg_id in cg_data and "usd" in cg_data[cg_id]:
+                        px = float(cg_data[cg_id]["usd"])
+                        if px > 0:
+                            return (px, "coingecko")
+        except Exception as e:
+            log.warning("CoinGecko fallback error for %s: %s", sym, e)
+        return (None, "no crypto price source")
 
     # ── Equities / ETFs / Commodities / Forex: yfinance ──
     yf_sym = sym

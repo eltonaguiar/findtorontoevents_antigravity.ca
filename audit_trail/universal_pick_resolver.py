@@ -659,6 +659,7 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
             # un-stamped bars are KEPT (defensive — preserves un-stamped sources).
             bars = [b for b in ohlcv_bars if b.get("timestamp") is None or b["timestamp"] >= entry_ms]
             if not bars:
+                pick["_intrabar_no_postentry_bars"] = True
                 return None
 
     for bar in bars:
@@ -886,7 +887,11 @@ def _snapshot_prediction_market_entry(pick: dict, current_price: float) -> bool:
 
 
 def check_tp_sl(pick, current_price):
-    """Check if a pick has hit TP or SL. Returns (reason, exit_price, pnl_pct) or None."""
+    """Check if a pick has hit TP or SL. Returns (reason, exit_price, pnl_pct) or None.
+
+    2026-11-14: added valid-geometry guard + SL-first ordering for internal
+    consistency with _check_tp_sl_intrabar (same-bar tie → SL wins).
+    """
     direction = pick["direction"]
     entry = pick["entry_price"]
     tp = pick["take_profit"]
@@ -895,20 +900,27 @@ def check_tp_sl(pick, current_price):
     if not entry or (not tp and not sl):
         return None
 
-    if direction == "LONG":
-        if tp and current_price >= tp:
-            pnl = _compute_pnl(entry, tp, direction)
-            return ("TP_HIT", tp, pnl)
+    d = (direction or "LONG").upper()
+
+    # Valid-geometry guard (mirrors _check_tp_sl_intrabar Bug 1C)
+    if d in ("LONG", "BUY"):
+        if (sl and sl >= entry) or (tp and tp <= entry):
+            return None
+    else:
+        if (sl and sl <= entry) or (tp and tp >= entry):
+            return None
+
+    # SL-first conservative ordering (consistent with intrabar paths)
+    if d in ("LONG", "BUY"):
         if sl and current_price <= sl:
-            pnl = _compute_pnl(entry, sl, direction)
-            return ("SL_HIT", sl, pnl)
+            return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
+        if tp and current_price >= tp:
+            return ("TP_HIT", tp, _compute_pnl(entry, tp, direction))
     else:  # SHORT
-        if tp and current_price <= tp:
-            pnl = _compute_pnl(entry, tp, direction)
-            return ("TP_HIT", tp, pnl)
         if sl and current_price >= sl:
-            pnl = _compute_pnl(entry, sl, direction)
-            return ("SL_HIT", sl, pnl)
+            return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
+        if tp and current_price <= tp:
+            return ("TP_HIT", tp, _compute_pnl(entry, tp, direction))
     return None
 
 
@@ -1458,9 +1470,11 @@ def main():
             # intrabar). Tagged resolution_method="close_approx" so downstream WR/PF can
             # exclude/flag these. (Bug 1A: when bars exist but are older-than-pick stale,
             # intrabar replays the wrong window — entry-anchored fetch fix is pending.)
-            if result is None:
+            if result is None and not pick.get("_intrabar_no_postentry_bars"):
                 # Frozen-exit fix (2026-10-22): resolve this pick against its own
                 # price, not the single run-wide snapshot reused for every symbol pick.
+                # 2026-11-14: gated — skip close_approx for fresh picks with no
+                # post-entry bars (the snapshot is blind to intrabar SL wicks).
                 pp_price = _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price)
                 result = check_tp_sl(pick, pp_price)
                 if result:
