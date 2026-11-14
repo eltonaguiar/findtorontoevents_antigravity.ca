@@ -198,3 +198,31 @@ specialist partners (NeuraFlash/Slalom/OSF/Plative). Agency rows acceptable but 
    vendor-direct + specialist partners (NeuraFlash/Slalom/OSF/Plative).
 5. **Keep the hard Canada geo-filter** (`us_creep` noul 0.83) and target junior/mid roles, which are
    under-served relative to senior titles.
+
+---
+
+## 7. Merge outcome (2026-11-14, post-harvest)
+
+Run after all three harvest channels resolved (ATS, LinkedIn, partner/agency, plus Workday re-probe).
+Pushed to BESTIEJOB `main`, as commit `11dde88`.
+
+| Metric | Value |
+|---|---|
+| Inbox rows submitted (kilo-bestiejobs-v2, 2026-11-14) | 92 |
+| Net-new rows merged | +4 from this harvest (Avance HRSD, Zodiac SF Dev, Smart IT RCA + CIBC Salesforce Delivery) |
+| Duplicates skipped (already on the board) | 88 |
+| README row count after merge | 6,892 |
+| Pre-push guards | `check_readme_sort` OK; `readme_job_row_guard` PASS, 0 net row loss |
+| Bonus fix | Split 3 glued rows on README line 1234 (pre-existing corruption) so the merger lost nothing |
+
+### Date-verified leads
+- 2 of 9 partner leads verified: **BMO Lifecycle Analyst** + **BMO CMDB Admin** (both 2026-11-12,
+  from employer Phenom ATS `datePosted`). They duplicate the Workday rows already merged, so no new rows.
+- Remaining 7 leads (CGI, BDO, Cognizant, Deloitte×3, KPMG) remain `date relative — unverified`:
+  Indeed deep links hard-blocked (401/Cloudflare) and employer ATS sites gated/maintenance. Tracked in
+  `/tmp/jobrounds/partner_leads_verified.md` for a future round.
+
+### Workday re-probe (outage cleared)
+- TD / Manulife / BMO / CIBC / Sun Life all returned HTTP 200; 7 genuine SN/SF roles added as candidates.
+- Scotiabank (422 CXS, 500 landing) and RBC (404 site-ID) still blocked — need site-ID rediscovery when
+  search tooling is available.
