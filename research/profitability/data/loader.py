@@ -296,3 +296,44 @@ def panel(loader, symbols: list[str], **kwargs) -> pd.DataFrame:
     if not frames:
         raise RuntimeError("no symbols loaded")
     return pd.concat(frames, axis=1).sort_index()
+
+
+def binance_funding(symbol: str, start: str = "2020-01-01", end: str | None = None) -> pd.DataFrame:
+    """Binance USD-M perpetual funding history (8h intervals), paginated and cached."""
+    end = end or date.today().isoformat()
+    key = f"binance_funding:{symbol}:{start}:{end}"
+    path = _cache_path(f"funding_{symbol}.csv")
+    if path.exists():
+        df = pd.read_csv(path, parse_dates=["funding_time"]).set_index("funding_time")
+        if len(df) and df.index.max() >= pd.Timestamp(end) - pd.Timedelta(days=3):
+            _record({"key": key, "symbol": symbol, "source": "cache", "rows": len(df),
+                     "first": str(df.index.min().date()), "last": str(df.index.max().date()),
+                     "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
+            return df
+    start_ms = int(datetime.fromisoformat(start).replace(tzinfo=timezone.utc).timestamp() * 1000)
+    end_ms = int(datetime.fromisoformat(end).replace(tzinfo=timezone.utc).timestamp() * 1000)
+    rows, cursor = [], start_ms
+    while cursor < end_ms:
+        url = (f"https://fapi.binance.com/fapi/v1/fundingRate?symbol={symbol}"
+               f"&startTime={cursor}&endTime={end_ms}&limit=1000")
+        batch = json.loads(_fetch(url))
+        if not batch:
+            break
+        rows.extend(batch)
+        last = int(batch[-1]["fundingTime"])
+        if last <= cursor:
+            break
+        cursor = last + 1
+        time.sleep(0.15)
+    if not rows:
+        raise RuntimeError(f"no funding rows for {symbol}")
+    df = pd.DataFrame(rows)
+    df["funding_time"] = pd.to_datetime(df["fundingTime"], unit="ms", utc=True).dt.tz_convert(None)
+    df["rate"] = pd.to_numeric(df["fundingRate"], errors="coerce")
+    df = df.dropna(subset=["rate"])[["funding_time", "rate"]].drop_duplicates("funding_time").sort_values("funding_time")
+    df = df.set_index("funding_time")
+    df.to_csv(path)
+    _record({"key": key, "symbol": symbol, "source": "binance_fapi", "rows": len(df),
+             "first": str(df.index.min().date()), "last": str(df.index.max().date()),
+             "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
+    return df

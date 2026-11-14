@@ -39,7 +39,7 @@ def vol_scaled_tsmom(close: pd.DataFrame, lookback: int = 200, vol_window: int =
 
 
 def xs_momentum(close: pd.DataFrame, lookback: int = 28, top: int = 3,
-                min_history: int = 180, freq: str = "W-FRI") -> pd.DataFrame:
+                min_history: int = 180, freq: str = "W-FRI", skip: int = 0) -> pd.DataFrame:
     """Weekly cross-sectional momentum: equal-weight top-N by trailing return."""
     idx = close.index
     periods = idx.to_period(freq)
@@ -51,7 +51,7 @@ def xs_momentum(close: pd.DataFrame, lookback: int = 28, top: int = 3,
             continue
         cur = pd.Series(0.0, index=close.columns)
         if len(close.loc[:d]) >= min_history:
-            mom = (close.loc[d] / close.shift(lookback).loc[d] - 1.0)
+            mom = (close.shift(skip).loc[d] / close.shift(lookback).loc[d] - 1.0)
             valid = mom.dropna()
             valid = valid[hist_count.loc[d].reindex(valid.index) >= min_history]
             if len(valid) >= top:
@@ -160,3 +160,50 @@ def sector_momentum_cash(close: pd.DataFrame, cash_ret: pd.Series, lookback: int
                          top: int = 3) -> pd.DataFrame:
     risk = xs_momentum(close, lookback=lookback, top=top, min_history=lookback, freq="M")
     return _with_cash(risk, cash_ret)
+
+
+def xs_quantile(close: pd.DataFrame, lookback: int = 28, q: float = 0.2,
+                side: str = "top", min_history: int = 180, freq: str = "W-FRI",
+                trend_filter: pd.Series | None = None, skip: int = 0) -> pd.DataFrame:
+    """Cross-sectional top/bottom quantile, equal weight, rebalanced at `freq`."""
+    idx = close.index
+    periods = idx.to_period(freq)
+    rebal = pd.Series(idx, index=idx).groupby(periods).max()
+    hist_count = close.notna().cumsum()
+    tf = None
+    if trend_filter is not None:
+        tf = trend_filter.reindex(idx).ffill().fillna(False).astype(bool)
+    rows: dict[pd.Timestamp, pd.Series] = {}
+    for d in rebal:
+        if d not in close.index:
+            continue
+        cur = pd.Series(0.0, index=close.columns)
+        if len(close.loc[:d]) >= min_history and (tf is None or bool(tf.loc[d])):
+            mom = (close.shift(skip).loc[d] / close.shift(lookback).loc[d] - 1.0)
+            valid = mom.dropna()
+            valid = valid[hist_count.loc[d].reindex(valid.index) >= min_history]
+            n = len(valid)
+            k = max(1, int(n * q)) if n else 0
+            if n >= 5 and k > 0:
+                sel = valid.nlargest(k).index if side == "top" else valid.nsmallest(k).index
+                cur[sel] = 1.0 / k
+        rows[d] = cur
+    if not rows:
+        return pd.DataFrame(0.0, index=idx, columns=close.columns)
+    return pd.DataFrame(rows).T.reindex(idx).ffill().fillna(0.0)
+
+
+def tsmom_breadth(close: pd.DataFrame, lookback: int = 252, vol_window: int = 20,
+                  target_vol: float = 0.40, cap: float = 1.0, ann: int = 252) -> pd.DataFrame:
+    """Long/flat per asset when close > trailing SMA, vol-scaled, normalized to <=1."""
+    trend = (close > close.rolling(lookback, min_periods=lookback).mean()).astype(float)
+    realized = close.pct_change().rolling(vol_window, min_periods=vol_window).std() * np.sqrt(ann)
+    scale = (target_vol / realized).clip(upper=cap).fillna(0.0)
+    risk = (trend * scale).where(close.notna(), 0.0)
+    s = risk.sum(axis=1)
+    over = s > 1.0
+    if over.any():
+        risk.loc[over] = risk.loc[over].div(s[over], axis=0)
+    out = risk.copy()
+    out["CASH"] = (1.0 - risk.sum(axis=1)).clip(lower=0.0)
+    return out
