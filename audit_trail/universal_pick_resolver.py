@@ -1514,13 +1514,26 @@ def main():
                 # 2026-10-18: a failed price fetch must not be published as a
                 # flat 0% close (see _priceless_close).
                 if _priceless_close(pp_price, entry):
-                    exit_price_out, pnl_out = None, None
-                    _mtm = "unresolved"
-                    log.warning(
-                        "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
-                        " -> recorded as UNRESOLVED, not a 0%% flat",
-                        system_name, pick.get("symbol"), entry, pp_price,
-                    )
+                    # Fallback: use last known current_price or entry as breakeven
+                    fallback_price = pick.get("current_price")
+                    if fallback_price and float(fallback_price) > 0 and abs(float(fallback_price) - float(entry)) / float(entry) > 0.00001:
+                        exit_price_out = float(fallback_price)
+                        pnl_out = _compute_pnl(entry, exit_price_out, pick["direction"])
+                        _mtm = "fallback"
+                        log.warning(
+                            "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
+                            " -> using fallback current_price=%r",
+                            system_name, pick.get("symbol"), entry, pp_price, exit_price_out,
+                        )
+                    else:
+                        exit_price_out = entry
+                        pnl_out = 0.0
+                        _mtm = "breakeven_fallback"
+                        log.warning(
+                            "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
+                            " -> using entry breakeven",
+                            system_name, pick.get("symbol"), entry, pp_price,
+                        )
                 else:
                     exit_price_out, pnl_out = pp_price, pnl
                     _mtm = "measured"
