@@ -61,8 +61,12 @@ def _from_mysql() -> dict | None:
             SELECT category,
                    COUNT(*) AS total_picks,
                    SUM(CASE WHEN status IN ('WON','LOST','CLOSED','EXPIRED','TP_HIT','SL_HIT') THEN 1 ELSE 0 END) AS resolved,
-                   SUM(CASE WHEN status = 'WON' OR (pnl_pct IS NOT NULL AND pnl_pct > 0 AND status NOT IN ('LOST','ACTIVE','OPEN')) THEN 1 ELSE 0 END) AS wins,
-                   SUM(CASE WHEN status = 'LOST' OR (pnl_pct IS NOT NULL AND pnl_pct < 0) THEN 1 ELSE 0 END) AS losses,
+                    SUM(CASE WHEN status IN ('WON','TP_HIT') THEN 1
+                             WHEN status IN ('CLOSED','EXPIRED') AND pnl_pct IS NOT NULL AND pnl_pct > 0 THEN 1
+                             ELSE 0 END) AS wins,
+                    SUM(CASE WHEN status IN ('LOST','SL_HIT') THEN 1
+                             WHEN status IN ('CLOSED','EXPIRED') AND pnl_pct IS NOT NULL AND pnl_pct < 0 THEN 1
+                             ELSE 0 END) AS losses,
                    AVG(CASE WHEN pnl_pct IS NOT NULL THEN pnl_pct ELSE NULL END) AS avg_pnl_pct,
                    MAX(COALESCE(created_at, updated_at)) AS last_pick
             FROM trading_picks
@@ -158,7 +162,7 @@ def _format_payload(stats: dict, source: str) -> dict:
             "resolved": resolved,
             "wins": wins,
             "losses": s["losses"],
-            "win_rate_pct": round(100.0 * wins / resolved, 1) if resolved else None,
+            "win_rate_pct": round(100.0 * min(wins, resolved) / resolved, 1) if resolved else None,
             "avg_pnl_pct": round(s["pnl_sum"] / s["pnl_n"], 2) if s["pnl_n"] else None,
             "last_pick": s["last_pick"] or None,
         })

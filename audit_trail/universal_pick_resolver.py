@@ -659,6 +659,7 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
             # un-stamped bars are KEPT (defensive — preserves un-stamped sources).
             bars = [b for b in ohlcv_bars if b.get("timestamp") is None or b["timestamp"] >= entry_ms]
             if not bars:
+                pick["_intrabar_no_postentry_bars"] = True
                 return None
 
     for bar in bars:
@@ -886,7 +887,11 @@ def _snapshot_prediction_market_entry(pick: dict, current_price: float) -> bool:
 
 
 def check_tp_sl(pick, current_price):
-    """Check if a pick has hit TP or SL. Returns (reason, exit_price, pnl_pct) or None."""
+    """Check if a pick has hit TP or SL. Returns (reason, exit_price, pnl_pct) or None.
+
+    2026-11-14: added valid-geometry guard + SL-first ordering for internal
+    consistency with _check_tp_sl_intrabar (same-bar tie → SL wins).
+    """
     direction = pick["direction"]
     entry = pick["entry_price"]
     tp = pick["take_profit"]
@@ -895,20 +900,27 @@ def check_tp_sl(pick, current_price):
     if not entry or (not tp and not sl):
         return None
 
-    if direction == "LONG":
-        if tp and current_price >= tp:
-            pnl = _compute_pnl(entry, tp, direction)
-            return ("TP_HIT", tp, pnl)
+    d = (direction or "LONG").upper()
+
+    # Valid-geometry guard (mirrors _check_tp_sl_intrabar Bug 1C)
+    if d in ("LONG", "BUY"):
+        if (sl and sl >= entry) or (tp and tp <= entry):
+            return None
+    else:
+        if (sl and sl <= entry) or (tp and tp >= entry):
+            return None
+
+    # SL-first conservative ordering (consistent with intrabar paths)
+    if d in ("LONG", "BUY"):
         if sl and current_price <= sl:
-            pnl = _compute_pnl(entry, sl, direction)
-            return ("SL_HIT", sl, pnl)
+            return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
+        if tp and current_price >= tp:
+            return ("TP_HIT", tp, _compute_pnl(entry, tp, direction))
     else:  # SHORT
-        if tp and current_price <= tp:
-            pnl = _compute_pnl(entry, tp, direction)
-            return ("TP_HIT", tp, pnl)
         if sl and current_price >= sl:
-            pnl = _compute_pnl(entry, sl, direction)
-            return ("SL_HIT", sl, pnl)
+            return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
+        if tp and current_price <= tp:
+            return ("TP_HIT", tp, _compute_pnl(entry, tp, direction))
     return None
 
 
@@ -1311,22 +1323,28 @@ def main():
                 if pick_dt and pick.get("entry_price") and (now - pick_dt).total_seconds() > _max_hold * 3600:
                     entry = pick["entry_price"]
                     hold_hours = round((now - pick_dt).total_seconds() / 3600, 1)
+                    # Fallback: use last known current_price or entry as breakeven
+                    fallback_price = pick.get("current_price")
+                    if fallback_price and float(fallback_price) > 0 and abs(float(fallback_price) - float(entry)) / float(entry) > 0.00001:
+                        exit_price_out = float(fallback_price)
+                        pnl_out = _compute_pnl(entry, exit_price_out, pick["direction"])
+                        _mtm = "fallback"
+                        _note = "no-live-price|fallback_current_price"
+                    else:
+                        exit_price_out = entry
+                        pnl_out = 0.0
+                        _mtm = "breakeven_fallback"
+                        _note = "no-live-price|entry_breakeven"
                     resolved = {
                         **pick,
-                        # 2026-10-17 mark-to-market honesty fix: with no live
-                        # price for the symbol the move is UNKNOWN. Writing
-                        # exit_price=entry / pnl=0 fabricated a "flat 0%"
-                        # result. None keeps the close (so the pick still stops
-                        # accumulating in active ledgers) but tells every
-                        # consumer the PnL was never measured.
-                        "exit_price": None,
-                        "pnl_pct": None,
+                        "exit_price": exit_price_out,
+                        "pnl_pct": pnl_out,
                         "exit_reason": "TIME_EXIT",
                         "status": "CLOSED",
                         "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "hold_hours": hold_hours,
-                        "_note": "no-live-price",
-                        "_mtm": "unresolved",
+                        "_note": _note,
+                        "_mtm": _mtm,
                         "_resolver_version": RESOLVER_VERSION,
                         "_resolver_source": RESOLVER_SOURCE_ID,
                     }
@@ -1458,9 +1476,11 @@ def main():
             # intrabar). Tagged resolution_method="close_approx" so downstream WR/PF can
             # exclude/flag these. (Bug 1A: when bars exist but are older-than-pick stale,
             # intrabar replays the wrong window — entry-anchored fetch fix is pending.)
-            if result is None:
+            if result is None and not pick.get("_intrabar_no_postentry_bars"):
                 # Frozen-exit fix (2026-10-22): resolve this pick against its own
                 # price, not the single run-wide snapshot reused for every symbol pick.
+                # 2026-11-14: gated — skip close_approx for fresh picks with no
+                # post-entry bars (the snapshot is blind to intrabar SL wicks).
                 pp_price = _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price)
                 result = check_tp_sl(pick, pp_price)
                 if result:
@@ -1508,13 +1528,26 @@ def main():
                 # 2026-10-18: a failed price fetch must not be published as a
                 # flat 0% close (see _priceless_close).
                 if _priceless_close(pp_price, entry):
-                    exit_price_out, pnl_out = None, None
-                    _mtm = "unresolved"
-                    log.warning(
-                        "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
-                        " -> recorded as UNRESOLVED, not a 0%% flat",
-                        system_name, pick.get("symbol"), entry, pp_price,
-                    )
+                    # Fallback: use last known current_price or entry as breakeven
+                    fallback_price = pick.get("current_price")
+                    if fallback_price and float(fallback_price) > 0 and abs(float(fallback_price) - float(entry)) / float(entry) > 0.00001:
+                        exit_price_out = float(fallback_price)
+                        pnl_out = _compute_pnl(entry, exit_price_out, pick["direction"])
+                        _mtm = "fallback"
+                        log.warning(
+                            "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
+                            " -> using fallback current_price=%r",
+                            system_name, pick.get("symbol"), entry, pp_price, exit_price_out,
+                        )
+                    else:
+                        exit_price_out = entry
+                        pnl_out = 0.0
+                        _mtm = "breakeven_fallback"
+                        log.warning(
+                            "  TIME_EXIT %s %s has no usable price (entry=%r current=%r)"
+                            " -> using entry breakeven",
+                            system_name, pick.get("symbol"), entry, pp_price,
+                        )
                 else:
                     exit_price_out, pnl_out = pp_price, pnl
                     _mtm = "measured"

@@ -85,6 +85,26 @@ Rule: **never** emit `pnl_pct = 0.0` merely because a quote is missing. Use `nul
 3. **BOND ticker list drift:** the resolver list should use the canonical `BOND_SYMBOLS` (TLT, IEF, SHY, LQD, AGG, BND, HYG, JNK, SJNK, BKLN, EMB, TIP, MUB, IGIB), not TLH/GOVT/BNDX.
 4. **Mutual-fund prototype:** decide de-advertise (`NOT_BUILT`) vs productionize; do not count untracked prototype output as a live class.
 
+## RR2 additions (18:37Z peer review)
+
+| # | Fix | Target | Note |
+|---:|---|---|---|
+| R1 | Crypto entry provenance trio: keep `None` (never `or 0`); 0.5×–2× entry band; `_unquoted` → `UNQUOTED` with null PnL | `crypto_commodity.md`; `dashboard_generator.py` | Adopt all 3 |
+| R2 | Kalshi `entry_price: 0 → None`; exclude >7d-stale Kalshi picks | `kalshi_signal_agent.py:489` | Adopt |
+| R3 | Flat-fallback-TP placeholder detector keyed on **fallback TP**, not `3.0` | `dashboard_generator.py:7516,8081,8102` | Adopt |
+| R4 | BOND real-mark-only; `<80% priced ⇒ DATA_STALE`; 24h no-quote ⇒ `STALE_NO_QUOTE` (null PnL) | `bond_mutual_funds.md` | Adopt — best-executed peer file |
+| R5 | `stock_forex_prices.json` >24h age guard; FOREX min-agreement 1→2 as shadow | `equity_etf.md` / `forex_futures.md` | Adopt |
+
+**PnL unit warning:** the peer's `shared/normalize_pnl_units.py` normalizes to a **decimal ratio**,
+while deployed `dashboard_generator.py:8062-8064` writes **percent** and peer FX-1 expects percent.
+Merging the script unchanged flips every displayed PnL by **100×**. Rewrite before use.
+
+**RR2 vetoes:** invert ML calibration (CR-9); purge/DELETE or close-at-entry/stale with `pnl=0`
+(CR-1/8, ET-4, BO-3, FX-3); direction-blind mass `UPDATE positions` PnL backfill (CR-5) — corrupts
+SHORTs; build the mutual-fund class/scanner (MF-2..MF-10); FOREX hard-disable enforcement +
+blacklisting `forex_rsi2_mean_reversion` in `PROVEN_STRATEGIES` (FX-4/FX-8). Also veto the five
+conflicting dedup keys; use our single economic key.
+
 ## What deliberately is NOT a quick win
 
 - Re-enabling the audit-dashboard `push:` trigger — the 2026-05-19 cancel cascade is still active.

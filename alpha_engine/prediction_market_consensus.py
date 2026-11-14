@@ -586,9 +586,9 @@ def merge_into_active_picks(consensus_picks: list[dict[str, Any]]) -> int:
 
         merged_pick = dict(pick)
         merged_pick["status"] = "ACTIVE" if _float(merged_pick.get("entry_price")) > 0 else "SIGNAL"
-        merged_pick["entry_price"] = merged_pick.get("entry_price") or 0
-        merged_pick["take_profit"] = merged_pick.get("take_profit") or 0
-        merged_pick["stop_loss"] = merged_pick.get("stop_loss") or 0
+        merged_pick["entry_price"] = merged_pick.get("entry_price")
+        merged_pick["take_profit"] = merged_pick.get("take_profit")
+        merged_pick["stop_loss"] = merged_pick.get("stop_loss")
 
         active_picks.append(merged_pick)
         existing_keys.add(key)
