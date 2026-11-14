@@ -175,9 +175,12 @@ MIN_N_STRATEGY = 20       # minimum per-strategy picks for SPA inclusion
 # multiplicity-robust and cannot be MONEY_READY.
 # Shadow-first (default OFF, mirrors the MDD/ML gates): when off it only
 # stamps `_fdr_recommend`; set MONEY_READY_FDR_GATE=1 to hard-enforce.
+# 2026-11-14 remediation: hard-enforced by default — a class whose edge does
+# not survive Benjamini-Hochberg FDR across its strategy family cannot be
+# MONEY_READY (multiple-testing / look-elsewhere protection).
 FDR_Q = 0.10              # Benjamini-Hochberg false-discovery-rate level
 _FDR_GATE_ENFORCE: bool = (
-    os.environ.get("MONEY_READY_FDR_GATE", "0").strip().lower()
+    os.environ.get("MONEY_READY_FDR_GATE", "1").strip().lower()
     in ("1", "true", "yes", "on")
 )
 
@@ -191,8 +194,11 @@ _FDR_GATE_ENFORCE: bool = (
 # stamps `_single_source_recommend`; set MONEY_READY_SINGLE_SOURCE_GATE=1 to
 # hard-downgrade MONEY_READY -> NOT_READY when every profitable sleeve is
 # single-source.
+# 2026-11-14 remediation: hard-enforced by default — a class whose entire
+# profitable edge rests on single-source strategies is a feed idiosyncrasy,
+# not a class-level edge, and cannot be MONEY_READY.
 _SINGLE_SOURCE_GATE_ENFORCE: bool = (
-    os.environ.get("MONEY_READY_SINGLE_SOURCE_GATE", "0").strip().lower()
+    os.environ.get("MONEY_READY_SINGLE_SOURCE_GATE", "1").strip().lower()
     in ("1", "true", "yes", "on")
 )
 # M-070: a class whose resolved picks are dominated by ONE symbol is not a
