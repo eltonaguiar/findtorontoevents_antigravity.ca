@@ -362,7 +362,10 @@ model_list:
   # finish_reason=length; max_tokens=1024 and 2048 both returned proper
   # tool_calls (4/4). Give any qwen3 deployment >=1024 tokens.
   # ====================================================================
-  - {model_name: ULTRA_FREE_TOOLS, litellm_params: {model: hosted_vllm/qwen3-8b, api_key: local, api_base: http://localhost:8000/v1}}
+  # 2026-11-14: hosted_vllm/qwen3-8b REMOVED from ULTRA_FREE_TOOLS. vLLM :8000
+  # serves Qwen/Qwen2.5-14B-Instruct, not qwen3-8b, so this member returned
+  # HTTP 404 'The model `qwen3-8b` does not exist' on roughly 1 in 3 requests
+  # (measured 2026-11-14: 1 of 8 parallel calls failed).
   - {model_name: ULTRA_FREE_TOOLS, litellm_params: {model: ollama_chat/qwen2.5:14b,             api_key: local, api_base: http://localhost:11434}}
   - {model_name: ULTRA_FREE_TOOLS, litellm_params: {model: ollama_chat/qwen3:30b-a3b,            api_key: local, api_base: http://localhost:11434}}
 
@@ -386,6 +389,33 @@ model_list:
   # qwen2.5:7b was listed twice byte-for-byte, which silently doubled its
   # simple-shuffle weight in this group. One copy kept.
   - {model_name: ULTRA_FREE_TOOLS_FAST, litellm_params: {model: ollama_chat/qwen2.5:7b,   api_key: local, api_base: http://localhost:11434, keep_alive: 24h}}
+
+  # ====================================================================
+  # TOPNOTCH_LOCALONLY — local models that survived the 2026-11-14 benchmark.
+  # Every member runs on this box. No cloud fallback.
+  #
+  # Method: 10-topic classification over 3,250 tokens of SAM documentation,
+  # scored vs ground truth, adjacent scoring, 8 models in parallel.
+  #   gemma3:12b 7/10 0.85 6.8s | qwen2.5:14b 7/10 0.85 | deepseek-r1:32b 7/10 0.85
+  #   qwen2.5:32b 6/10 0.80 | qwen2.5-coder:14b 6/10 0.80 | vllm 14B 6/10 0.80
+  #   EXCLUDED: llama3.1:8b 5/10 (not worth a slot), qwen3.5:4b 0/10 (empty output)
+  #
+  # Stability 2026-11-14, 12-way parallel burst, 128-token replies:
+  #   vllm 12/12 15.1s | litellm 12/12 15.6s | ollama 12/12 32.9s | hermes 10/12 117.7s (HTTP 429)
+  # Nothing crashed or needed a restart.
+  #
+  # Bias directions: gemma3/qwen2.5:32b are CONSERVATIVE, qwen2.5:14b and
+  # coder:14b are GENEROUS. Read the disagreements, not just the vote.
+  # ====================================================================
+  - {model_name: TOPNOTCH_LOCALONLY_GEMMA,  litellm_params: {model: ollama_chat/gemma3:12b,        api_key: local, api_base: http://localhost:11434, keep_alive: 24h}}
+  - {model_name: TOPNOTCH_LOCALONLY_QWEN14, litellm_params: {model: ollama_chat/qwen2.5:14b,       api_key: local, api_base: http://localhost:11434, keep_alive: 24h}}
+  - {model_name: TOPNOTCH_LOCALONLY_QWEN32, litellm_params: {model: ollama_chat/qwen2.5:32b,       api_key: local, api_base: http://localhost:11434, keep_alive: 24h}}
+  - {model_name: TOPNOTCH_LOCALONLY_CODER,  litellm_params: {model: ollama_chat/qwen2.5-coder:14b, api_key: local, api_base: http://localhost:11434, keep_alive: 24h}}
+  - {model_name: TOPNOTCH_LOCALONLY_DEEP,   litellm_params: {model: ollama_chat/deepseek-r1:32b,   api_key: local, api_base: http://localhost:11434, keep_alive: 24h}}
+  - {model_name: TOPNOTCH_LOCALONLY_VLLM,   litellm_params: {model: hosted_vllm/Qwen/Qwen2.5-14B-Instruct, api_key: local, api_base: http://localhost:8000/v1}}
+  - {model_name: TOPNOTCH_LOCALONLY, litellm_params: {model: ollama_chat/gemma3:12b,  api_key: local, api_base: http://localhost:11434, keep_alive: 24h}}
+  - {model_name: TOPNOTCH_LOCALONLY, litellm_params: {model: ollama_chat/qwen2.5:14b, api_key: local, api_base: http://localhost:11434, keep_alive: 24h}}
+  - {model_name: TOPNOTCH_LOCALONLY, litellm_params: {model: hosted_vllm/Qwen/Qwen2.5-14B-Instruct, api_key: local, api_base: http://localhost:8000/v1}}
 
   # STRICT FREE-LOCAL - ROTATION across the two Ollama MoE models.
   # simple-shuffle picks a member per request; every member is local and free.
@@ -508,16 +538,17 @@ model_list:
 
   # MULTI - vLLM. Continuous batching: 54.7 tok/s AGGREGATE across 4 clients,
   # where Ollama serialises at ~74 tok/s single-stream and queues the rest.
+  # 2026-11-14: model corrected from qwen3-8b to what :8000 actually serves.
+  # The old name made this whole group return HTTP 404.
   - model_name: ULTRA_FREE_LOCAL_MULTI
     litellm_params:
-      model: hosted_vllm/qwen3-8b
+      model: hosted_vllm/Qwen/Qwen2.5-14B-Instruct
       api_key: local
       api_base: http://localhost:8000/v1
     model_info:
       mode: chat
-      max_input_tokens: 32768
+      max_input_tokens: 8192
       supports_function_calling: true
-      supports_reasoning: true
 
   # EMBED - nothing else on :4000 serves embeddings. 768-dim, verified.
   - model_name: ULTRA_FREE_LOCAL_EMBED
