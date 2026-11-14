@@ -11,7 +11,7 @@
 | 3 | Crypto funding carry | our v4 | 6.4–14.2 Sharpe, 5.6–7.2% notional | capital/1.5 CAGR 3.7–4.8% vs 4.5% cash; BTC-only 4.8% with n=10 | **NOT_PROVED / PILOT** |
 | 4 | Regime-filtered VWAP mean reversion | peer VWAP doc | 3.76 Sharpe, PF 1.21, PBO 0.489, DSR 1.0 | correct Sharpe ~1.18 (t=0.91, p=0.18); CSCV PBO 0.84–0.97; true DSR 0.83/N=1, 0.01/N=960; 79/129 stops breached intrabar (PF 0.81, −17.4%); OOS 7.18 months, not 22; concurrent 40%/symbol = 280% gross, −15.8% | **FALSIFIED** |
 | 5 | mega_mutation_macd_rsi / ema_momentum | flaxen-hair | forward n=50, WR 84%, PF 8.32; "statistically valid" | headline reproduces, but 21/50 are synthetic/replay rows; genuine OOS n=29; selection 8/33,000 uncorrected (best ledger p≈0.07); claimed backtest table not reproducible (m006/AVAX 0.54/41.7% not 4.66/87.5%); 13/24 TP_HIT never reached TP; strict n=16, WR 68.75%, PF 5.19 | **NOT_PROVED / FALSIFIED as "proven"** |
-| 6 | deepAI walk-forward variant C | `audit/live-audit-2026-11-14` | n=237, PF 1.26, +98.7pp, p<0.0013 | no Nov-14 payload/log; same script on Oct-23 payload: n=764, PF 0.906, −134.5pp, p=0.4825; slippage not deducted; Bonferroni truncated to 4; random-selection benchmark; `vwap-reversion-scout` (n=15) ≈47% of P/L | **FALSIFIED as stated / UNVERIFIED** |
+| 6 | deepAI walk-forward variant C | `audit/live-audit-2026-11-14` | n=237, PF 1.26, +98.7pp, p<0.0013 | reproduced exactly on live 34.58 MB payload (z=−0.84, null 0/800), but it is a **selection effect over clone re-emissions**, not an edge; Oct-23 payload gives PF 0.906/−134.5pp; slippage not deducted; Bonferroni truncated; random-selection benchmark; `vwap-reversion-scout` (n=15) ≈47% of P/L | **REPRODUCED / SELECTION EFFECT — NOT PROVED** |
 | 7 | `quan_engine` 95.8% WR, +669%, 284 trades | `PLAN_PATH_TO_PROFITABILITY.md` | blocked edge | real only in 2026-04-06 snapshot (292 closed, 280W/12L, PF 79.6, avg loss −0.73% = truncated-loss resolver artifact); today 0 resolved live; own DB 40.7% WR/PF 1.166 | **ARTIFACT** |
 | 8 | `st_rsi_momentum_confluence` 65.1% WR, PF 2.53, 258 trades | same plan | blocked edge | zero rows in five datasets; cited `walk_forward_validation.json` absent | **UNVERIFIED** |
 | 9 | SHORT 72.0% vs LONG 20.3% | same plan | direction edge | 25-row / 64-row cell; full population opposite (SHORT 31.6% n=307, LONG 47.2% n=3,181); today 53.6% vs 38.7% p=0.070; second ledger flips it | **ARTIFACT** |
@@ -19,6 +19,10 @@
 | 11 | Edge search v1–v4 | `updates/2026-11-14-edge-search-results.md` | 0/40 profitable | confirms negative | **VERIFIED NEGATIVE** |
 | 12 | Inspect-wt/deepAI final audit | `audit/live-audit-2026-11-14` | FAIL | independent notes agree with our FAIL (population clocks differ) | **VERIFIED NEGATIVE** |
 | 13 | Scratch-hippodraco audit/quickwins | `docs/scratch-hippodraco-audit-2026-11-14` | FAIL + quick wins | agrees on FAIL; quick wins overlap ours | **VERIFIED NEGATIVE** |
+| 14 | ITERATION-005 risk premium | `quant-audit-2026-11-14` | Sharpe 2.13, PF 1.40 | vs B&H ≈2.2; PF 1.40 fails its own PF>1.5 gate; no DSR at N=683; TSMOM365 OOS 0.57/null p=0.200 | **PILOT — alpha unproven** |
+| 15 | 6-gate scoring framework | `flaxen-hair` | certifies edges | DSR feeds annualized Sharpe into per-period SE (true SR 0.50 → 1.0000 instead of 0.0241); V hard-coded 0; no PBO/CSCV/SPA; worked n contradicts its formula | **INVALID** |
+| 16 | TradingView contest research | `flaxen-hair` | winner patterns predictive | descriptive only; 155 outcome-selected WON rows, no loser control; leaderboards unarchived; "add winners/target windows" is post-hoc; time cluster likely cron batching | **DESCRIPTIVE / NOT PROOF** |
+| 17 | Peer final folders | `final_2026_11_14/*` | multiple | all agree on FAIL; population clocks differ; quant-audit's own final recommends a VWAP its summary refutes; flaxen contradicts `production_enable` | **VERIFIED NEGATIVE / INTERNAL CONFLICTS** |
 
 ## Bottom line
 

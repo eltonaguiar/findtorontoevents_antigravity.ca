@@ -30,6 +30,9 @@ final_2026_11_14/finpredict-v2/
 - Full audit of the live `/audit` and `/hyrotrader` surfaces.
 - Independent replication + adversarial review of H10 and the peer VWAP claim.
 - Reviews of the flaxen-hair mega-mutation, deepAI variant C, and path-to-profitability claims.
+- FP5 review of all peer final packages (`finpredict`, `finpredict-v3`, `flaxen-hair`,
+  `quant-audit-2026-11-14`), including ITERATION-005, the 6-gate scoring framework, and the
+  TradingView contest research.
 
 ## What is excluded
 

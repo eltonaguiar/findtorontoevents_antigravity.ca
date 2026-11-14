@@ -85,10 +85,11 @@ Headline reproduces (n=50, WR 84.00%, PF 8.3193), but:
   WR 68.75%, PF 5.19.
 See `03_peer_reviews/FP1_flaxen_hair_mega_mutation.md`.
 
-### 4.3 deepAI variant C — **FALSIFIED as stated / UNVERIFIED**
-- No Nov-14 payload or output log archived; n=237/PF 1.26/+98.7pp/p<0.0013 unverified.
-- Same script on the only available (Oct-23) payload: n=764, WR 41.1%, **PF 0.906, −134.5pp,
-  p=0.4825** — the result flips.
+### 4.3 deepAI variant C — **REPRODUCED, BUT A SELECTION EFFECT — NOT PROVED**
+- `quant-audit` independently reproduced the headline on the live 34.58 MB payload: n=237, PF 1.26,
+  z=−0.84, null 0/800. The metric is real; the interpretation is not.
+- It is a selection effect over clone re-emissions (the same signal emitted many times), not an
+  independent edge; the earlier Oct-23 payload run gave n=764, PF 0.906, −134.5pp, p=0.4825.
 - "Net of slippage" is false: gross `pnl_pct`, `deduct_slippage` never called; percentage-point vs
   fraction-unit mismatch under-deducts ~100×.
 - Bonferroni truncated to 4 while the search has ≥46 cells; benchmark is random strategy
@@ -107,14 +108,33 @@ See `03_peer_reviews/FP2_deepAI_profitable_v1.md`.
   almost-disjoint ledgers** (62 shared IDs, −617% vs +2,182%) and 34 fixed-ladder PnL cohorts.
 See `03_peer_reviews/FP3_path_to_profitability.md`.
 
-### 4.5 Coverage / recent work
-- `final_2026_11_14/` contained no peer folders at review time; peer work was reviewed from its
-  worktrees and branches.
-- `audit/live-audit-2026-11-14` is now pushed (no merge base with main — copy, don't merge);
-  its final audit independently agrees with our FAIL.
-- `docs/scratch-hippodraco-audit-2026-11-14` agrees on FAIL; quick wins overlap ours.
-- Six profitability claims coexist; none is Tier-2 certified. The strongest negative evidence is
-  the pre-registered research (23 candidates, 0 proved) + VWAP falsification + edge search 0/40.
+### 4.5 Peer final folders (FP5)
+
+All peer packages now exist on `origin/main` and were reviewed:
+- `final_2026_11_14/finpredict` (v1), `finpredict-v3`, `flaxen-hair`, `quant-audit-2026-11-14`.
+- They agree on **FAIL**; differences are population clocks (691 vs 703 open; 3,377 vs 3,272 EXPIRED).
+- `finpredict-v3` contributes `pi_data_hygiene.py` / `pi_horizon_validation.py` (adopt as gates after
+  hardening the fallback so it cannot vacuous-pass).
+- `quant-audit` reproduced deepAI variant C exactly (n=237, PF 1.26, z=−0.84, null 0/800), confirming
+  it is a selection effect over clone re-emissions, not an edge.
+- Two peer docs are internally dangerous: `quant-audit/05_final/VERDICT.md` recommends deploying the
+  VWAP its own summary refutes; `flaxen-hair` docs contradict `production_enable`.
+
+### 4.6 Other peer claims
+
+- **ITERATION-005** (quant-audit): Sharpe 2.13 vs B&H ≈2.2, PF 1.40 (a bar ratio that fails its own
+  PF>1.5 gate), no DSR at N=683, independent TSMOM365 OOS 0.57/null p=0.200 → **PILOT, alpha unproven**.
+- **6-gate scoring framework** (flaxen): invalid as implemented. Its DSR feeds an annualized Sharpe
+  into a per-period SE (n=252, m=150, true SR 0.50 → returns 1.0000 instead of 0.0241 — the VWAP
+  bug), V is hard-coded 0, no PBO/CSCV/SPA, and its worked n≈385/100 contradict its own formula
+  (783/194). It cannot certify mega_mutation (n=50/8/9 vs its own n≥200 gate).
+- **TradingView contest research** (flaxen): descriptive, not predictive. Internal figures verify
+  (42/155 MomentumEMA; 76/155 at 14:00Z/21:00Z) against the committed winner report, but the cohort
+  is 155 outcome-selected WON rows with no loser control; leaderboard numbers are unarchived.
+  "Add winner symbols / target exit windows" is post-hoc; the time cluster is likely cron batching.
+- **v1 root-cause correction:** `update-environment:false` is inverted (0 false, 197 true); p95 is
+  111.6 min, not 84.5; and `resolution_method=None` for 100% of the 3,500 closed rows is a newly
+  identified blocker missing from C1.
 
 ---
 
@@ -153,7 +173,8 @@ See `03_peer_reviews/FP3_path_to_profitability.md`.
 
 1. **C0 — canonical PnL unit** at write time; reject mixed units; migrate with an audit log.
 2. **C1 — terminal resolver** for every pick (`TP_HIT`/`SL_HIT`/`TIME_EXIT`/`EXPIRED` + exit price
-   + `closed_at`), idempotent; assert `SUM(terminal)==COUNT(all)`.
+   + `closed_at` + `resolution_method`), idempotent; assert `SUM(terminal)==COUNT(all)`.
+   `resolution_method` is `None` for 100% of the 3,500-row closed ledger today.
 3. **C2 — admit-by-default-false gate**: independent n≥100, DSR≥0.95, PBO≤0.10, BH-FDR q<0.05,
    net PF≥1.25 at class costs; delete the FDR off-switch.
 4. **C3 — dedup/pseudo-replication**: canonical economic key; quarantine, never delete.
@@ -170,8 +191,8 @@ See `03_peer_reviews/FP3_path_to_profitability.md`.
 ## 8. Coverage and honesty notes
 
 - The user's `E:\` path is the Linux root `/home/eaguiar2015/findtorontoevents_antigravity.ca`.
-- Peer work was reviewed from local worktrees and pushed branches; no peer
-  `final_2026_11_14/<peer>/` folders existed at review time.
+- All peer `final_2026_11_14/<peer>/` folders (`finpredict`, `finpredict-v3`, `flaxen-hair`,
+  `quant-audit-2026-11-14`) were reviewed in FP5; their worktrees/branches were also inspected.
 - Numbers are from live JSON, GitHub API, local DB (read-only), or committed peer artifacts.
 - Items that could not be reproduced are marked `UNVERIFIED` in the individual reviews.
 - No fabricated numbers or sources; no secret values were printed.
