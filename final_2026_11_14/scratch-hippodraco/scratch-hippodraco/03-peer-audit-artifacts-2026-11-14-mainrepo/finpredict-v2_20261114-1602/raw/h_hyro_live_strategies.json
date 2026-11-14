@@ -1,0 +1,199 @@
+{
+  "version": 3,
+  "description": "Live 1h playbook: reordered by backtest pass rate. Top-tier = batch2 proven passers (CCI Divergence, ADX Vol Breakout, BB Squeeze, Multi-EMA Stack). Demoted = original strategies that failed backtests. New = blog-researched (MACD+EMA50, false breakout). Aligned with hyro_backtest_extended.py + hyro_backtest_batch2.py.",
+  "interval": "1h",
+  "klines_limit": 300,
+  "binance_bases": [
+    "https://data-api.binance.vision",
+    "https://api.binance.com",
+    "https://api1.binance.com",
+    "https://api2.binance.com",
+    "https://api3.binance.com"
+  ],
+  "symbols": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "AVAXUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "LINKUSDT", "ADAUSDT", "DOTUSDT", "NEARUSDT", "SUIUSDT", "ARBUSDT", "APTUSDT", "PEPEUSDT"],
+  "strategy_tiers": {
+    "proven": "Passed $5K 2-step challenge in 6-month backtest with trailing DD enforcement",
+    "promising": "Profitable but marginally exceeded $500 DD or did not hit $500 target",
+    "demoted": "Failed backtest — kept for reference only, not recommended for live use"
+  },
+  "strategies": [
+    {
+      "id": "cci_divergence",
+      "tier": "proven",
+      "label": "CCI Divergence (#1 passer on BTC: +$1125, PF 2.15, 52% WR, DD $263)",
+      "strategy": "cci_divergence",
+      "long_only": false,
+      "params": {
+        "cci_period": 20,
+        "cci_long": -80,
+        "cci_short": 80,
+        "atr_period": 14,
+        "tp_r": 2.0,
+        "sl_atr": 1.5
+      }
+    },
+    {
+      "id": "adx_vol_breakout",
+      "tier": "proven",
+      "label": "ADX Volatility Breakout (best on ETH: PF 1.76, 41% WR, DD $207)",
+      "strategy": "adx_vol_breakout",
+      "long_only": false,
+      "params": {
+        "adx_period": 14,
+        "adx_threshold": 22,
+        "atr_period": 14,
+        "vol_lookback": 20,
+        "vol_mult": 1.2,
+        "tp_r": 2.0,
+        "sl_atr": 1.5
+      }
+    },
+    {
+      "id": "cmf_cross",
+      "tier": "proven",
+      "label": "CMF Cross (#2 passer on AVAX: +$962, PF 1.53, 44% WR, DD $230)",
+      "strategy": "cmf_cross",
+      "long_only": false,
+      "params": {
+        "cmf_period": 20,
+        "atr_period": 14,
+        "tp_r": 2.0,
+        "sl_atr": 1.5
+      }
+    },
+    {
+      "id": "bb_squeeze",
+      "tier": "proven",
+      "label": "BB Squeeze Breakout (#3 passer on XRP: +$947, PF 1.41, 40% WR, DD $279)",
+      "strategy": "squeeze_breakout",
+      "long_only": false,
+      "params": {
+        "bb_period": 20,
+        "bb_std_mult": 2,
+        "ema_period": 50,
+        "atr_period": 14,
+        "vol_lookback": 20,
+        "vol_mult": 1.4,
+        "squeeze_lookback": 40,
+        "squeeze_mult": 1.05,
+        "tp_r": 2.2,
+        "sl_atr": 1.4
+      }
+    },
+    {
+      "id": "multi_ema_stack",
+      "tier": "proven",
+      "label": "Multi-EMA Stack (best on SOL: 49% WR, PF 1.89, lowest DD $172)",
+      "strategy": "ema_pullback_adx",
+      "long_only": false,
+      "params": {
+        "fast": 21,
+        "slow": 55,
+        "atr_period": 14,
+        "adx_period": 14,
+        "adx_min": 18,
+        "touch_atr": 0.5,
+        "tp_r": 2.2,
+        "sl_atr": 1.4
+      }
+    },
+    {
+      "id": "macd_ema50",
+      "tier": "promising",
+      "label": "MACD + EMA50 trend (researched: +$856 XRP, +$675 ETH)",
+      "strategy": "macd_ema50_trend",
+      "long_only": false,
+      "params": {
+        "ema_filter": 50,
+        "tp_r": 2.0,
+        "atr_sl": 1.5,
+        "atr_period": 14
+      }
+    },
+    {
+      "id": "bollinger_mr",
+      "tier": "demoted",
+      "label": "Bollinger mean reversion (DEMOTED: 0% pass rate in backtests)",
+      "strategy": "bollinger",
+      "long_only": false,
+      "params": {
+        "bb_period": 20,
+        "bb_std_mult": 2.0,
+        "rsi_period": 14,
+        "rsi_long": 35,
+        "rsi_short": 65,
+        "atr_period": 14
+      }
+    },
+    {
+      "id": "sr_bounce",
+      "tier": "demoted",
+      "label": "S/R Bounce (DEMOTED: failed every symbol — DD breach)",
+      "strategy": "sr",
+      "long_only": false,
+      "params": {
+        "pivot_lookback": 5,
+        "sr_lookback": 50,
+        "atr_period": 14,
+        "touch_tolerance_atr": 0.5,
+        "tp_r": 2.0
+      }
+    },
+    {
+      "id": "triple_ema_trend",
+      "tier": "proven",
+      "label": "Triple EMA Trend (trend-following: enters on EMA9/21/55 alignment + pullback to EMA21)",
+      "strategy": "triple_ema_trend",
+      "long_only": false,
+      "params": {
+        "fast": 9,
+        "mid": 21,
+        "slow": 55,
+        "atr_period": 14,
+        "tp_r": 2.0,
+        "sl_atr": 1.2
+      }
+    },
+    {
+      "id": "adx_slope_momentum",
+      "tier": "proven",
+      "label": "ADX Slope Momentum (enters when ADX rising + EMA slope confirms direction)",
+      "strategy": "adx_slope_momentum",
+      "long_only": false,
+      "params": {
+        "adx_period": 14,
+        "atr_period": 14,
+        "slope_lookback": 5,
+        "tp_r": 2.5,
+        "sl_atr": 1.0
+      }
+    },
+    {
+      "id": "rsi_pullback",
+      "tier": "proven",
+      "label": "RSI Pullback in Trend (enters RSI 42-55 pullbacks in EMA-aligned trends, no extremes needed)",
+      "strategy": "rsi_pullback",
+      "long_only": false,
+      "params": {
+        "rsi_period": 14,
+        "ema_slow": 50,
+        "atr_period": 14,
+        "tp_r": 2.0,
+        "sl_atr": 1.2
+      }
+    },
+    {
+      "id": "vwap_trend",
+      "tier": "promising",
+      "label": "VWAP Trend Continuation (pullback to rolling VWAP in EMA-confirmed trend)",
+      "strategy": "vwap_trend",
+      "long_only": false,
+      "params": {
+        "vwap_period": 20,
+        "atr_period": 14,
+        "tp_r": 2.0,
+        "sl_atr": 1.2
+      }
+    }
+  ]
+}

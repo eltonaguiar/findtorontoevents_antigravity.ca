@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-11-14T14:22:12.510776+00:00",
+  "strategy_name": "cot_positioning",
+  "symbol": "CT=F",
+  "asset_class": "COMMODITY",
+  "tier": "SHADOW_INSUFFICIENT_N",
+  "dsr": null,
+  "dsr_note": "DSR withheld: only 0 unique CFTC COT releases (need >=20). The prior DSR=1.0 / TIER_1_RENAISSANCE headline was an over-emission artifact (~20x re-emission of the same weekly release inflated n and WR). DSR=1.0 cannot be honestly emitted on this sample. See reports/cot_paper_pilot_overemission_falsified_20260513.md ; reports/cot_timing_leakage_audit_2026-05-13.md.",
+  "tier_note": "Tier downgraded to SHADOW_INSUFFICIENT_N: deduped n=0 < 20 unique releases.",
+  "falsification_refs": [
+    "reports/cot_paper_pilot_overemission_falsified_20260513.md",
+    "reports/cot_timing_leakage_audit_2026-05-13.md"
+  ],
+  "evidence_source": "deduped paper-pilot ledger (one trade per CFTC COT release week)",
+  "contract_spec": {
+    "exchange": "ICE Futures US",
+    "size_lbs": 50000,
+    "tick_usd": 5.0,
+    "round_trip_cost_usd": 10.0,
+    "base_price_usd_per_lb": 0.7,
+    "notional_usd": 35000.0,
+    "micro_contract_available": false
+  },
+  "window_days": 90,
+  "stats": {
+    "n_total": 0,
+    "n_wins": 0,
+    "n_losses": 0,
+    "wr_pct": 0.0,
+    "cum_pnl_usd": 0.0,
+    "avg_pnl_per_trade_usd": 0.0,
+    "expected_per_trade_low_usd": 3.4,
+    "expected_per_trade_high_usd": 13.4,
+    "n_unique_releases": 0,
+    "n_raw_emissions": 0,
+    "over_emission_ratio": null,
+    "dedup_basis": "one trade per unique CFTC COT release week (Tue report period)",
+    "trades": []
+  },
+  "graduation_gate": {
+    "verdict": "INSUFFICIENT_DATA",
+    "detail": "need 4+ trades, have 0",
+    "ready_for_live": false
+  },
+  "codex_state_machine": {
+    "current_state": "REHAB",
+    "next_state": "OOS_READY",
+    "target_state": "LIVE_ELIGIBLE",
+    "global_blockers": [
+      "all-classes-first per Codex governance (currently 0/6 SHADOW)",
+      "user single-class deviation accepted 2026-05-12"
+    ]
+  },
+  "nfa": "Research surface only. No real-money sizing without explicit user approval + graduation gate clear."
+}

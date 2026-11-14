@@ -1,0 +1,24 @@
+304 stopped EQUITY rows; replaying 25
+window: 48 x 1h candles from each pick's entry timestamp
+
+  10/25 …
+  20/25 …
+  25/25 …
+
+=== status ===
+  touched              11
+  stop_never_touched   14
+
+stop touched: 11   never touched: 14
+gap-through rate among touched: 45.5% (5 trades)
+
+=== PnL by fill model (percentage points, sum over the replayed sample) ===
+model            n      sum_pp     mean_pp
+recorded        11      -63.41     -5.7647
+at_stop         11      -50.07     -4.5516
+gap_aware       11      -83.62     -7.6014
+
+at_stop is an upper bound; gap_aware is the model now implemented in the resolver.
+A stop that was never touched cannot be a stop-out: those rows are mislabelled.
+
+wrote final_v3/05_evidence/stop_fill_replay_equity.json

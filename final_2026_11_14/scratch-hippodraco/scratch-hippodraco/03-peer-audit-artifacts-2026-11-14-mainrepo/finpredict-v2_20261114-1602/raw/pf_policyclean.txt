@@ -1,0 +1,27 @@
+generated 2026-11-14T14:30:05Z | counts {"raw_rows": 34540, "closed_rows": 28719, "after_flicker_filter": 24847, "deduped_rows": 24718, "policy_clean_rows": 22941, "dropped_not_closed": 5821, "dropped_spot_flicker": 3872, "dropped_duplicate_reemissions": 129, "dropped_policy_excluded": 1777}
+| policy_excluded 111 | canonical_view by_asset_class_policy_clean_net | display_tier discovery | promo False
+
+by_asset_class_policy_clean:
+  BOND         n=   1 WR=   0.0 PF=0.0 pnl=-0.0110 src=bond_duration_rotation single_src=1.0
+  COMMODITY    n=  14 WR=14.2857 PF=0.193881 pnl=-0.1781 src=file:mysql:at_pick_outcomes single_src=0.642857
+  CRYPTO       n=21988 WR=42.455 PF=0.266561 pnl=-1044.0519 src=file:mysql:at_pick_outcomes single_src=0.989494
+  EQUITY       n= 461 WR=42.9501 PF=0.722122 pnl=-3.2081 src=file:mysql:at_pick_outcomes single_src=0.986985
+  ETF          n=  15 WR=73.3333 PF=1.84055 pnl=1.3018 src=file:mysql:at_pick_outcomes single_src=0.933333
+  FOREX        n= 438 WR=35.6164 PF=0.866351 pnl=-0.3217 src=file:mysql:at_pick_outcomes single_src=0.869863
+  FUTURES      n=  13 WR=23.0769 PF=0.910721 pnl=-0.0153 src=multi_asset_scanner single_src=0.846154
+  MEME         n=  10 WR=  10.0 PF=0.026426 pnl=-0.6316 src=file:mysql:at_pick_outcomes single_src=1.0
+  PENNY_STOCK  n=   1 WR=   0.0 PF=0.0 pnl=-0.0131 src=multi_asset_scanner single_src=1.0
+
+by_asset_class (all):
+  BOND         n=    2 W=0 L=2 WR=0.0 PF=0.0 pnl=-0.016
+  COMMODITY    n=   69 W=31 L=38 WR=44.9275 PF=1.073094 pnl=0.094
+  CRYPTO       n=23636 W=9806 L=13769 WR=41.4876 PF=0.232423 pnl=-1309.691
+  EQUITY       n=  493 W=209 L=284 WR=42.3935 PF=0.706803 pnl=-3.622
+  ETF          n=   15 W=11 L=4 WR=73.3333 PF=1.84055 pnl=1.302
+  FOREX        n=  456 W=167 L=289 WR=36.6228 PF=1.21361 pnl=0.523
+  FUTURES      n=   36 W=11 L=25 WR=30.5556 PF=0.917639 pnl=-0.039
+  MEME         n=   10 W=1 L=9 WR=10.0 PF=0.026426 pnl=-0.632
+  PENNY_STOCK  n=    1 W=0 L=1 WR=0.0 PF=0.0 pnl=-0.013
+
+methodology {"dedup_key": ["strategy(source_system|strategy)", "symbol", "direction", "trade_date", "entry_price~2p"], "spot_flicker_threshold_pnl_pct": 0.0002, "spot_flicker_rule": "non-crypto closed pick with abs(pnl_pct) below threshold is dropped as resolver spot-flicker artifact", "win_definition": "pnl_pct > 0", "profit_factor": "gross_profit / gross_loss (loss magnitude); null when gross_loss == 0", "trade_date_fallback": ["entry_date", "entry_time", "timestamp", "created_at", "closed_at", "resolved_at", "exit_date", "exit_time"]}
+promotion_note P1-A (2026-06-12): pf_registry WR/PF is discovery-only unless PF_REGISTRY_PROMOTION_ELIGIBLE=1 AND intrabar_truth corroborates (n>=30).

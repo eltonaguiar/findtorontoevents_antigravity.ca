@@ -1,0 +1,35 @@
+# Peer review matrix (pass 2) — 2026-11-14
+
+This is a **second pass** over peer artifacts already committed/present locally: `audits/2026-11-14/finpredict-v4_2026-11-14-1555/`, `2026-11-14/finpredict-v2_20261114-1602/`, notes in `final_2026_11_14/scratch-hippodraco/04-worktree-notes/`, and your prior `scratch-hippodraco.MD` appendices.
+
+## Summary table
+
+| Peer / artifact | What it is | Strengths | Weaknesses / risks | My verdict (use / don’t) |
+|---|---|---|---|---|
+| **finpredict-v4** (`audits/…/finpredict-v4_2026-11-14-1555/`) | Structured audit dump: INDEX, evidence JSONs, deep dives (crypto/forex/noncrypto), dashboard metrics notes, market crossref, actions health, peer integration notes, `proposed_fixes/` (incl. commodity QUICK_WINS) | Clear file layout; evidence JSONs (`evidence_money_ready_verdict.json`, `evidence_intrabar_truth.json`, `evidence_pick_summary_stats.json`, `evidence_db_health.json`) are the right shape for re-validation; actions health report captures workflow pain; crossref narrative is useful as hypothesis list | **Internal contradictions flagged in v2 MASTER_AUDIT** (e.g. “0 active picks / 26-day repo snapshot” language alongside live 14:30Z deep-dive claims) — treat INDEX/dashboard prose as suspect unless tied to a timestamped fetch. `proposed_fixes/` includes **destructive/unblock ideas** (hard DELETE ghosts, mass UPDATEs, unblock FUTURES/COMMODITY, invert ML confidence framing in some forms, placeholder MF scanner) — **VETO**. Some numbers predate regen (e.g. older snapshot references called out in v2). | **Use as:** evidence-pack starting point + task list inputs. **Do not use:** as-is fix scripts or as proof of “current” without re-running queries/regen. |
+| **finpredict-v2** (`2026-11-14/finpredict-v2_20261114-1602/`, `MASTER_AUDIT.md`) | Consolidated audit + `recommendations/`, `actions_deepdive/`, peer review memos, profitability research pointer | Best **coherent narrative** of the set: separates curated vs raw inventories, documents ghost rows / survivorship, explains v4 contradictions, lists vetoed destructive fixes, gives reproduction steps. Aligns with “fail” verdict and multiple-testing framing. | Still a snapshot (~16:03Z captures in that archive context); Python-side calculations in prose should be re-derived from live DB/JSON for final numbers. Some “could not verify” items remain. | **Use as:** primary narrative + remediation skeleton. This is the most useful single peer artifact for planning. |
+| **finpredict-v3** (worktree notes) | Gatekeeper default flip mentioned in prior scratch appendices; hygiene scripts/tests mentioned conceptually | Directionally useful ideas: leakage-default change intent, `pi_data_hygiene.py`-style warn gates, horizon harness warnings (n not enough) | Prior scratch review: **merge-safe concerns** for gatekeeper flip (retrain/bundle parity, A/B sleeve behavior, test env mutation) — **not ready to merge as a drop-in prod change** without engineering work. | **Use as:** engineering checklist items only; do not copy blindly. |
+| **finpredict (v1)** (worktree notes) | P0 truth fixes cited (FX KeyError direction family, `summary_picks` WR>100%, None coercion in prediction market consensus) | Real bug classes; good patterns to study (OTHER bucket logging, fix fallback paths) | Risk of reintroducing silent LONG defaults if adopting naive “default BUY”; must fix fallback sync paths, not just main path. | **Use as:** patch patterns with caveats (see v2 recommendations + scratch A.5). |
+| **childlike-airport** | SQLite `live_picks.db` / `audit_trail.db` stale/sign-flip findings (reconciled in scratch appendices) | Valuable **separate data-store** reality check (DB lanes diverge from JSON narrative). | Counts/numbers were reconciled/corrected later (e.g. 129/129, age details) — always prefer the **latest reconciled** numbers in `scratch-hippodraco.MD` Appendix A / v2 MASTER_AUDIT over raw first-pass childlike claims. | **Use as:** corroboration that DB truth != dashboard JSON; verify with current queries. |
+| **flaxen-hair** | Broad audit-style worktree (many MDs present historically) | Large surface area of notes. | Prior scratch rating: **WEAK/stub-heavy in parts**; may be noisy. | **Use sparingly:** cherry-pick only claims you can re-verify. |
+| **hilarious-seer** | Quick-wins oriented branch | Sometimes fast prototypes. | Prior scratch rating: **WEAK**; rewritten mid-review in notes; empty scaffolding in places. | **Do not treat as evidence** without re-verification. |
+
+## What I agree with across peers (high confidence)
+1. **No asset class is money-ready today** under stated thresholds (n, PF, WR, costs, governance). This matches `money_ready_verdict.json` and v2/v4 consensus.
+2. **Headline metrics are polluted** by: mixed PnL units historically noted, zombie OPEN/backlog behavior, intrabar vs daily divergence, survivorship/ghost cohorts, stale ML/validation artifacts, and multiple-testing inflation.
+3. **Edge/Track/FWD-style forward fields are largely dead or misleading** on the live curated panel (per v2).  
+4. **Destructive “fixes” (mass deletes, fabricated outcomes, blind unblocks, confidence inversion framed wrong) are dangerous** — v2/v4 reviewers and your scratch notes align.
+
+## What I disagree with or flag (pass 2 cautions)
+- **Treat any single peer’s “verdict %” as final** until you regenerate from canonical truth (Phase A/B in synthesis). Peers used different snapshots (Oct 2026 proof JSON vs Nov dashboards vs old SQLite dumps).
+- **finpredict-v4 `proposed_fixes/commodity/QUICK_WINS.md`** style suggestions: the v2 reviewer veto list is the right filter — keep “policy + observability + tests + alignment” items conceptually, discard “unblock now”, “delete rows”, “fabricate rows”.
+- **“ML confidence inverted => code bug”** narratives: peers note **data/leakage/label issues** more often than the model math alone; your gatekeeper leakage default work must be paired with retrain + parity tests (scratch A.5) before claiming improvement.
+
+## Bottom line for “review your peers’ work”
+- **Best to anchor on:** `2026-11-14/finpredict-v2_20261114-1602/MASTER_AUDIT.md` + `recommendations/peer_review/*` + copied `finpredict-v4_2026-11-14-1555/evidence_*.json` (re-interpret with freshness).
+- **Worst to act on uncritically:** any “quick fix” that edits DB rows en masse, disables blocklists to “see data”, or flips confidence thresholds without a closed-loop retrain/audit.
+
+## Pass 2 corrections / clarifications (from re-reading)
+- **finpredict-v2 MASTER_AUDIT** is the best single narrative; prefer it over v4 prose where they conflict (v4 had repo-copy vs live-site confusion).
+- **Peer “profitability research” pointer** in v2 recommends *not* proving edge yet — I agree; do Phase A/B first.
+- If you want one concrete next action: **regenerate `money_ready_verdict.json` and `benchmark_ledger_proof.json` after fixing PnL units/backlog truth** (Phase 0→1), then re-run this review mentally against fresh numbers before any promotion talk.
