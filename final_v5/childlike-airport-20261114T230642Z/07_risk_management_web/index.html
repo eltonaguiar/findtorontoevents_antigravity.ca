@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Risk Management — final_v5 (childlike-airport)</title>
+  <style>
+    :root { --bg:#0b1020; --card:#121a33; --text:#e8eefc; --muted:#a9b7d9; --accent:#6ee7b7; --warn:#fbbf24; --bad:#f87171; --line:#243056; }
+    *{box-sizing:border-box} body{margin:0;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#0b1020,#0e1530);color:var(--text)}
+    header{padding:28px 20px;border-bottom:1px solid var(--line);background:rgba(18,26,51,.7)}
+    main{max-width:1100px;margin:0 auto;padding:20px;display:grid;gap:16px}
+    h1{margin:0 0 6px;font-size:1.6rem} h2{margin:0 0 10px;font-size:1.1rem}
+    p{margin:0 0 10px;color:var(--muted)} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+    .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.75rem;border:1px solid var(--line);color:var(--muted);margin-right:6px}
+    .ok{color:var(--accent)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+    ul{margin:8px 0 0 18px;color:var(--muted)} li{margin:4px 0}
+    table{width:100%;border-collapse:collapse;font-size:.92rem} th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    th{color:#cfe0ff;font-weight:600} code{background:#0a1228;padding:1px 5px;border-radius:4px;color:#d7e6ff}
+    footer{max-width:1100px;margin:0 auto;padding:8px 20px 28px;color:var(--muted);font-size:.85rem}
+    .banner{border-left:4px solid var(--warn);padding:10px 12px;background:#1a1a12;border-radius:8px;color:#f5e6b8}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Risk Management Framework</h1>
+  <p>final_v5 / childlike-airport — 2026-11-14T23:06:42Z · Evidence-first, gated; <strong>no strategy here is proven money-ready.</strong></p>
+  <div><span class="tag">Integrity before alpha</span><span class="tag">Net-of-cost</span><span class="tag">Benchmark-relative</span><span class="tag">Paper-forward</span><span class="tag">Kill-switch</span></div>
+</header>
+<main>
+  <section class="banner">
+    <strong class="warn">Not financial advice / not a deployment claim.</strong> Use only after data integrity, QA (including 0% PnL & blank-field validation), and all promotion gates pass. Candidates remain unproven until independently reproduced and paper-forward validated.
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>1. Position & Exposure Limits</h2>
+      <ul>
+        <li><strong>Risk per trade:</strong> ≤ 1–2% of risk capital (hard cap).</li>
+        <li><strong>Sizing:</strong> fractional Kelly (≤ 0.25–0.5×) only for edges passing gates; else fixed-fraction/vol-target.</li>
+        <li><strong>Concentration:</strong> cap per symbol/strategy/asset-class and correlated cluster; diversify sleeves.</li>
+        <li><strong>Leverage:</strong> default none; if used, pre-defined max gross/net and margin buffer.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>2. Loss & Drawdown Controls</h2>
+      <ul>
+        <li><strong>Stop loss:</strong> strategy-defined, gap-aware; assume slippage/worse fills (no optimistic fills).</li>
+        <li><strong>Daily loss cap:</strong> halt new risk after −3% to −5% (configure per sleeve).</li>
+        <li><strong>Monthly drawdown cap:</strong> halt & review at −10% to −20%; flatten to baseline on breach.</li>
+        <li><strong>Losing streak:</strong> pause after 3 consecutive full-risk losses; require post-mortem.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>3. Validation & Promotion Gates</h2>
+      <ul>
+        <li>Clean/provenanced data; reconciled PnL (gross & net); fresh marks (no silent 0%).</li>
+        <li>Net-of-realistic costs, OOS/walk-forward, <strong>benchmark-relative</strong>, leak-safe.</li>
+        <li>Targets: PF≥1.5 (≥1.2 contextual), Sharpe≥1.0, MDD&lt;20% (prefer &lt;15%), <code>PBO&lt;0.3</code>, <code>DSR&gt;0.95</code> (effective-N), n≥100 (≥500 pref. crypto).</li>
+        <li>Independent reproduction + monitored paper-forward before any capital.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>4. Data, QA & Kill-Switch</h2>
+      <ul>
+        <li><strong>0% PnL / blanks:</strong> every open & recently-closed pick must be dispositioned (validated vs suspect/stale/unquoted) against market data.</li>
+        <li><strong>Freshness SLA:</strong> no new risk on stale marks/feeds; surface UNQUOTED/STALE states.</li>
+        <li><strong>Auto kill-switch triggers:</strong> gate failure 2 checks, DD breach, stale data, unresolved PnL/mark defect, regime/vol shock beyond mandate.</li>
+        <li><strong>Manual halt:</strong> on unexplained reconciliation drift or incident.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>5. Asset-Class Risk Notes</h2>
+    <table>
+      <thead><tr><th>Class</th><th>Primary risks</th><th>Controls / benchmark</th></tr></thead>
+      <tbody>
+        <tr><td>Crypto</td><td>Gap/vol shocks, funding, exchange/venue risk, stale marks</td><td>Gap-aware fills, vol target, funding-aware net PnL, venue limits; vs B&H/risk-matched</td></tr>
+        <tr><td>Equities / ETFs</td><td>Market beta/drawdown, gaps, borrow/costs, concentration</td><td>Net-of-cost vs SPY/total-market; diversification; no beta mistaken for alpha</td></tr>
+        <tr><td>Mutual Funds (baseline)</td><td>Market/drawdown, rate/duration (bond), next-NAV timing, fee/tax drag</td><td>Low-cost/no-load only; NAV-based accounting; vs risk-matched blend; no intraday edge assumed</td></tr>
+        <tr><td>Forex / Futures / Commodities / Bonds</td><td>Leverage/roll/margin, spread/carry, regime shifts, data/mark quality</td><td>Blocked until clean marks, costed OOS, and gates pass; strict caps if ever enabled</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>6. Operational Checklist (pre-trade / ongoing)</h2>
+    <ul>
+      <li class="ok">✔ Cohort reconciled; critical fields non-blank; provenance & timestamps valid.</li>
+      <li class="ok">✔ 0% PnL picks dispositioned with fresh market-data comparison.</li>
+      <li class="ok">✔ Gross & net metrics computed; costs/slippage/funding modeled per class.</li>
+      <li class="ok">✔ Regime/freshness gates green; benchmarks loaded for same window.</li>
+      <li class="warn">▲ Paper-forward metrics within tolerance; drift monitored.</li>
+      <li class="bad">✖ Any unresolved integrity defect, stale feed, or gate breach → no new risk.</li>
+    </ul>
+  </section>
+</main>
+<footer>
+  Generated for <code>final_v5/childlike-airport-20261114T230642Z</code>. Aligns with finalized plan, QA plan, and peer-reviewed evidence (not a guarantee of performance).
+</footer>
+</body>
+</html>
