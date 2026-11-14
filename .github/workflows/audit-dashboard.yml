@@ -1037,6 +1037,13 @@ jobs:
             exit 1
           fi
 
+      - name: Build GROK verdicts from the final deploy snapshot
+        if: always()
+        run: |
+          python tools/audit_scorecard.py \
+            --input audit_dashboard/data/dashboard_data.json \
+            --output audit_dashboard/data/verdicts.json
+
       - name: Deploy to all 3 FTP sites in parallel
         # 2026-04-27: ADDED `if: always()` so FTP deploy runs even when the
         # preceding "Commit updated data" step fails. Previously, when commit/push
@@ -1164,6 +1171,7 @@ jobs:
               ftp_upload(ftp, "audit_dashboard/index.html", f"/{SITE_ROOT}/audit", "index.html", label)
               ftp_upload(ftp, "audit_dashboard/dashboard_enhancements.js", f"/{SITE_ROOT}/audit", "dashboard_enhancements.js", label)
               # 2026-05-19: index.html <script src>s these 3 too — never deployed -> 404
+              ftp_upload(ftp, "audit_dashboard/audit_scorecard.js", f"/{SITE_ROOT}/audit", "audit_scorecard.js", label)
               for jsf in ["money_ready_filter.js", "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{jsf}", f"/{SITE_ROOT}/audit", jsf, label)
@@ -1299,6 +1307,7 @@ jobs:
 
               # Main dashboard
               ftp_upload(ftp, "audit_dashboard/index.html", "/audit", "index.html", label)
+              ftp_upload(ftp, "audit_dashboard/audit_scorecard.js", "/audit", "audit_scorecard.js", label)
               # 2026-05-19: index.html <script src>s these 4 — never deployed -> 404
               for jsf in ["dashboard_enhancements.js", "money_ready_filter.js",
                           "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:
@@ -1405,6 +1414,7 @@ jobs:
 
               # Main dashboard + HTML pages
               ftp_upload(ftp, "audit_dashboard/index.html", f"/{SITE_ROOT}/audit", "index.html", label)
+              ftp_upload(ftp, "audit_dashboard/audit_scorecard.js", f"/{SITE_ROOT}/audit", "audit_scorecard.js", label)
               # 2026-05-19: index.html <script src>s these 4 — never deployed -> 404
               for jsf in ["dashboard_enhancements.js", "money_ready_filter.js",
                           "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:

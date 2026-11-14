@@ -473,7 +473,8 @@ def lock_digest(state):
 
 
 def deploy(path, link_footer=False):
-    targets = [(ROOT / "audit_dashboard/ghcopilot_paper.html", "/audit/ghcopilot_paper.html"),
+    targets = [(ROOT / "audit_dashboard/audit_scorecard.js", "/audit/audit_scorecard.js"),
+               (ROOT / "audit_dashboard/ghcopilot_paper.html", "/audit/ghcopilot_paper.html"),
                (path, "/audit/data/ghcopilot_paper.json")]
     with FTP_TLS(os.environ.get("FTP_SERVER", "ftps2.50webs.com"),
                  context=ssl.create_default_context(), timeout=60) as ftp:

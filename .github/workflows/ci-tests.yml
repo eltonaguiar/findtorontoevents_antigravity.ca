@@ -16,6 +16,9 @@ name: CI Tests
       - 'audit_trail/**'
       - 'audit_dashboard/template.html'
       - 'audit_dashboard/dashboard_enhancements.js'
+      - 'audit_dashboard/audit_scorecard.js'
+      - 'audit/gates.json'
+      - 'tools/audit_scorecard.py'
       - 'tests/**'
       - 'requirements.txt'
       - 'alpha_engine/requirements.txt'
@@ -27,6 +30,9 @@ name: CI Tests
       - 'audit_trail/**'
       - 'audit_dashboard/template.html'
       - 'audit_dashboard/dashboard_enhancements.js'
+      - 'audit_dashboard/audit_scorecard.js'
+      - 'audit/gates.json'
+      - 'tools/audit_scorecard.py'
       - 'tests/**'
       - 'requirements.txt'
       - 'alpha_engine/requirements.txt'
@@ -85,6 +91,11 @@ jobs:
         # the sum-of-percentages bug cannot regress. Ubuntu runners ship node;
         # the test reads audit_dashboard/template.html, no npm install needed.
         run: node tests/test_card_metrics.js
+
+      - name: Run common scorecard and exit-plan guards
+        run: |
+          python -m pytest tests/test_audit_scorecard.py tests/test_ghcopilot_paper_monitor.py -q
+          node --test tests/test_audit_scorecard_ui.js
 
       - name: Run active-pick WHY justification JS guard
         # Node test (not pytest) — locks in the per-pick "WHY" evidence tooltip
