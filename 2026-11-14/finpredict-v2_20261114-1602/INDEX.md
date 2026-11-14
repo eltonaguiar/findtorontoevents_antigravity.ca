@@ -24,6 +24,10 @@
 | `actions_deepdive/` | GitHub Actions deep dive: `ACTIONS_DEEP_DIVE.md`, GA1–GA4 reports, 365-row matrix, raw logs |
 | `raw/` | Live JSON, GitHub API JSON, workflow logs, per-symbol extracts |
 
+**Profitability research:** `../../../research/profitability/` — independent pre-registered
+12-candidate study. Verdict **NOT PROVED**; H10 is an exploratory, contaminated-OOS candidate.
+See `research/profitability/runs/v2/VERDICT.md`.
+
 ## Headline verdict
 
 **FAIL.** The system is not genuinely profitable and not statistically sound. Fleet
