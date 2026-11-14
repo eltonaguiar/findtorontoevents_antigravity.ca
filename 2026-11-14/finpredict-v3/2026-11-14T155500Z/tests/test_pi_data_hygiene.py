@@ -14,6 +14,7 @@ from tools.pi_data_hygiene import (  # noqa: E402
     run,
     summarize_active,
     summarize_zombies,
+    find_flat_cohorts,
 )
 
 ASOF = "2026-11-14T15:50:00+00:00"
@@ -138,6 +139,18 @@ def test_summarize_zombies():
     assert crypto["n"] == 3
     assert crypto["older_7d"] == 1
     assert crypto["null_price"] == 1
+
+
+def test_flat_cohort_detected():
+    closed = [{"strategy": "signal_validation", "pnl_pct": 3.00} for _ in range(12)]
+    assert find_flat_cohorts(closed) == {"signal_validation": 12}
+
+
+def test_flat_cohort_with_real_variance_not_flagged():
+    closed = []
+    for pnl in (3.0, 2.4, 5.1, -1.2, 3.0, 0.8):
+        closed.append({"strategy": "real_strategy", "pnl_pct": pnl})
+    assert find_flat_cohorts(closed) == {}
 
 
 @pytest.mark.skipif(

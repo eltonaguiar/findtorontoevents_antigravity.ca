@@ -166,6 +166,34 @@ def summarize_active(active: list, asof: str | None):
 
 ZOMBIE_AGE_HOURS = 168  # 7 days
 
+FLAT_PNL_TARGET = 3.0  # fabricated placeholder cohorts sit at exactly +3.00%
+FLAT_PNL_TOL = 0.02
+FLAT_MIN_WINS = 10
+
+
+def find_flat_cohorts(closed: list):
+    """Flag strategies whose ENTIRE record is wins pinned at exactly FLAT_PNL_TARGET
+    percent with zero losers — the signature of placeholder P/L, not market output.
+    """
+    groups: dict[str, list] = {}
+    for p in closed:
+        st = str(p.get("strategy") or "")
+        if not st:
+            continue
+        pnl = _num(p.get("pnl_pct"))
+        if pnl is None:
+            continue
+        groups.setdefault(st, []).append(pnl)
+    flagged: dict[str, int] = {}
+    for st, pnls in groups.items():
+        wins = [x for x in pnls if x > 0]
+        losses = [x for x in pnls if x < 0]
+        if len(wins) >= FLAT_MIN_WINS and not losses and all(
+            abs(w - FLAT_PNL_TARGET) < FLAT_PNL_TOL for w in wins
+        ):
+            flagged[st] = len(wins)
+    return flagged
+
 
 def summarize_zombies(raw: list, asof: str | None):
     """Scan the raw active feed for zombie rows per asset class.
@@ -228,7 +256,8 @@ def run(payload: dict, asof: str | None, show: bool):
         for tag in classify_closed(p):
             findings[tag].append((p.get("symbol"), p.get("closed_at") or p.get("timestamp")))
 
-    total = sum(len(v) for v in findings.values())
+    flat = find_flat_cohorts(closed)
+    total = sum(len(v) for v in findings.values()) + len(flat)
     print(f"payload generated_at: {payload.get('generated_at')}")
     print(f"active picks scanned: {len(active)}; recent_closed scanned: {len(closed)}")
     print(f"TOTAL FINDINGS: {total}")
@@ -244,6 +273,10 @@ def run(payload: dict, asof: str | None, show: bool):
     for ac, b in sorted(summarize_active(active, asof).items()):
         print(f"{ac:<14}{b['n']:>4}{b['live_quotes']:>13}{b['pinned']:>12}"
               f"{str(b['newest_signal_age_h']):>20}")
+    print(f"FABRICATED_FLAT_PNL_COHORT (strategies pinned at +{FLAT_PNL_TARGET}%, zero losers): {len(flat)}")
+    if show:
+        for st, n in sorted(flat.items(), key=lambda kv: -kv[1])[:15]:
+            print(f"    {st}  ({n} wins)")
     print()
     print(f"ACTIVE_RAW ZOMBIE SCAN (rows older than {ZOMBIE_AGE_HOURS}h or null price):")
     raw = picks.get("active_raw") or []

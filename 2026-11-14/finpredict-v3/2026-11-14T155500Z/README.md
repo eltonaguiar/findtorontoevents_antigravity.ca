@@ -15,9 +15,13 @@ Source: findtorontoevents.ca/audit live dashboard (payload generated 2026-11-14T
   - `ACTIVE_RAW ZOMBIE SCAN` — per-class count of rows older than 7d / with null price,
     so the raw feed's zombie population is visible (e.g. CRYPTO 3,577 rows: 3,085 older
     than 7d, 3,170 null-price).
+  - `FABRICATED_FLAT_PNL_COHORT` — strategies whose ENTIRE record is wins pinned at exactly
+    +3.00% with zero losers (placeholder P/L). On the live trimmed `recent_closed` window this
+    detector did not fire (the flat-3% cohort is found in the larger closed DB / other surfaces,
+    per sibling `finpredict` evidence).
   Run: `python tools/pi_data_hygiene.py --json audit_dashboard/data/dashboard_data.json --asof 2026-11-14T15:50:00+00:00 --show`
   Exit 1 when findings exist (CI-gateable).
-- `tests/test_pi_data_hygiene.py` — 11 tests (11 passed, 0.2s).
+- `tests/test_pi_data_hygiene.py` — 14 tests (14 passed, ~0.2s).
 - `updates/2026-11-14-prediction-data-hygiene.md` — full defect evidence + per-asset-class remediation plan with target code.
 
 ## Verified findings (evidence in the updates doc)
@@ -91,3 +95,38 @@ archive now carries the verified market cross-references.
 **Validator:** this archive now reflects both agents' evidence. Tool upgraded with the
 ACTIVE_RAW ZOMBIE scan. Nothing fabricated; peer items I could not independently confirm are
 attributed to the peer.
+
+## Sibling finpredict archives (2026-11-14) — reconciled
+
+The finpredict family produced sibling archives under the same root. Found and cross-checked:
+
+| Sibling | Path | State |
+|---|---|---|
+| `finpredict` (v1) | `2026-11-14/finpredict/2026-11-14T160004Z/` | pushed on branch `archive/2026-11-14-finpredict`; most complete merged audit doc |
+| `finpredict-v2` | `2026-11-14/finpredict-v2_20261114-1602/` | uncommitted; rich raw evidence + `sub/{C_crypto,E_statistical,G_peer_reconciliation}.md` |
+| `finpredict-v4` | `audits/2026-11-14/finpredict-v4_2026-11-14-1555/` | uncommitted; GitHub-API actions health + market crossref (19 picks) |
+| `finpredict-v3` (this) | `2026-11-14/finpredict-v3/2026-11-14T155500Z/` | pushed on `archive/2026-11-14-finpredict-v3` |
+
+Verified deltas from siblings (independent, agree with my data):
+- **Frozen "verified strategies" batch:** 127 OPEN picks seeded 2026-11-12 → 123 (96.9%) frozen
+  at pnl 0 / current==entry.
+- **Fabricated flat-3% cohort:** `signal_validation` (117), `macd_rsi_confluence` (138),
+  `meanreversionbb` (111) + more — every "win" exactly +3.00%, zero losers (placeholder P/L).
+  Detector added to the tool (does not fire on the trimmed `recent_closed` window).
+- **Metric-liveness:** `forward_wr`/`forward_trades`/`sym_track_*`/`strat_fwd_*` ~88–97% empty;
+  `history_*` and `profile_crypto_wr` 0% populated → Edge/Track/FWD columns render blank.
+- **Dead sidecar:** `stock_forex_prices.json` `updated_at` = 2026-04-11 (217d).
+- **Attribution refinement:** the `entry=0.0` garbage rows come from `prediction_market_consensus`
+  (not Kalshi); Kalshi feed rows themselves are just frozen (`current==entry`).
+- **Live 14d closed** (closed_at ≥ 2026-11-01): n=751, sum −333.2% — much worse than any
+  small-cohort figure.
+- **Five different "active" counts coexist:** 20 (curated `.picks.active`), 4,148 (`active_raw`),
+  263 (`concentration_summary.total_active`), 4,310 (`picks_now_live_pnl`), plus v4's "0". A
+  master review must name the surface before quoting a count.
+- **Corrections adopted from v2 reconciliation:** "37 active in June" is actually a May 2 payload;
+  "61% spot-flicker" is not reproducible (registry-wide flicker = 7.7%); June −1.4% 14d figure is
+  superseded by live −333% sum. I do NOT carry those stale numbers.
+
+Divergence note: v4's noncrypto verdicts are June-snapshot based (COMMODITY "dead since June",
+FUTURES "0 live") and contradict today's live payload (COMMODITY signals today at 14:22Z). Treat
+v4 noncrypto as June baseline, not today's state.

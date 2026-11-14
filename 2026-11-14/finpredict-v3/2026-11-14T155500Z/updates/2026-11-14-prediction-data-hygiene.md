@@ -58,6 +58,20 @@ BOND 9/15 null-price.
 
 ## Verification
 
-- `python3 -m pytest tests/test_pi_data_hygiene.py -q` → 12 passed.
-- Guardian dry-run on live payload reproduces the audited defects (2 stale crypto, 11 phantoms, 3 date-only seeds) + zombie scan.
+- `python3 -m pytest tests/test_pi_data_hygiene.py -q` → 14 passed.
+- Guardian dry-run on live payload reproduces the audited defects (2 stale crypto, 11 phantoms, 3 date-only seeds) + zombie scan + flat-cohort detector.
 - No live pipeline files were modified; this change is additive tooling + docs.
+
+## Sibling reconciliation (finpredict v1/v2/v4, 2026-11-14)
+
+Additional verified findings folded in (from sibling archives; independent, agreeing with this data):
+- Frozen "verified strategies" batch: 127 OPEN → 123 (96.9%) frozen at 0%.
+- Fabricated flat-3% cohort (`signal_validation`/`macd_rsi_confluence`/`meanreversionbb` + more,
+  286 trades, every win exactly +3.00%, zero losers). Detector added: `FABRICATED_FLAT_PNL_COHORT`.
+- Metric-liveness: `forward_*`/`sym_track_*`/`strat_fwd_*` ~88–97% empty; Edge/Track/FWD columns
+  render blank.
+- `stock_forex_prices.json` `updated_at` 2026-04-11 (217d dead).
+- Attribution: `entry=0.0` garbage rows from `prediction_market_consensus` (not Kalshi).
+- Live 14d closed sum −333.2% (n=751).
+- Adopted corrections: drop "37 active (June)" → May 2; "61% spot-flicker" → registry 7.7%;
+  June −1.4% 14d → superseded by live −333%.
