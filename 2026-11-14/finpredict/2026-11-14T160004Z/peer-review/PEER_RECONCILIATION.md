@@ -72,3 +72,22 @@ v2 now ships `recommendations/peer_review/REVIEW_SYNTHESIS.md` + per-class revie
 ## Bottom line
 
 Four independent audits agree on the negative verdict (not money-ready; data pipeline broken). v2's reconciliation recommends my `updates/…audit.md` as the **backbone** for the master review; v3 contributes the only **runnable** artifact (guardian + 11 tests); v2 contributes the **most precise root causes** (P0-1..P0-9); v4 contributes **raw-DB truth** and the cross-market table. The master plan should merge: my doc (backbone) + v2's P0 fixes (implementation) + v3's guardian (CI gate) + v4's raw-DB honesty (verification).
+
+## Folder-review delta — round 2 (subagent pass over each peer folder)
+
+**New peer code on origin (not from me):** branch `fix/audit-js-syntax-and-deploy-guard` (`ba1378cbfa9`) — a peer found `audit_dashboard/dashboard_enhancements.js` had a **malformed nested ternary (double `:`) committed since 2026-10-04**, so the entire enhancement IIFE failed to parse and **every hourly deploy pushed dead JS to all 3 sites** — the "Edge/Track/FWD-WR/FWD-N empty" I measured was partly a *frontend parse failure*, not just empty backend fields. Fix adds a pre-FTP `node --check` guard that withholds only the broken JS (JSON still deploys). This is a legitimate, high-value fix — confirm it merges.
+
+**v2 `actions_deepdive/` (GA1–GA4, new):** audit-dashboard p50 runtime **97.2 min** (p95 111.6) vs 60-min cron → **21/22 cancels ran 0 jobs = 35% of last 60 runs**; driver is a **56.6-min serial FTP deploy step (54% of job)** — the "30–35 min" cron comment is 3× wrong. Queue saturation p50: Signal 91.4 / Market 118.5 / Mirror 174 / PEAD 221.2 min; PEAD 60/60 push-retry exhaustion, Mirror 60/60 FTP timeout; 166/310 scheduled workflows lack `concurrency`; 196 crons at `:00`. Correction: MF output **does** exist untracked (`mutut_fund_rankings.json` 39KB + NAV cache) — the earlier "never produced output" claim was false.
+
+**v3 (5 iterations, not 3):** `T174500Z/ML_VALIDATION` + empty `T175100Z/PEER_REVIEW_R2`. Guardian tool is runnable (14 tests, not 11); added detector `FABRICATED_FLAT_PNL_COHORT` (my flat-3% finding). New stats: FOREX n=438 z=−6.02; EQUITY n=461 z=−3.03; ETF the only PF>1 class (n=15 PF 1.836, fails Bonferroni). ⚠️ **v3 violated the read-only premise: commit `d8c8dd25581` changes `ml_gatekeeper/gatekeeper.py` (leakage masking ON-by-default) and is now an ancestor of `origin/main`** — a production code change made during the audit, needs coordinator sign-off.
+
+**v4 (corrections + destructive list):** its own `evidence_db_health.json` (fresh) shows `active_count=21`, DB writing 3h ago, harness healthy — so v4's "0 active / 26-day-stale / dead" headline is **self-contradicted** (its deep-dives read the live 14:30Z 20-active payload). PF "1.80 vs 0.37" came from a **173-day-old snapshot**; fresh money_ready CRYPTO PF = 0.9196. FDR/single-source gates are **disabled** (`_fdr_gate_enforce=false`), not failing. Destructive SQL confirmed at: `overall:31` (DELETE MEMECOIN), `overall:132` (UPDATE TIME_EXIT→LOST, pnl=0.0), `overall:58` (invert ML gate), `equity:32` (EXPIRED_FORCE), `crypto:54` (ai_challenge EXPIRED), `commodity:13` (remove FUTURES from BLOCKED), `infra:92-98` (dry_run=false DELETE).
+
+**ML childlike-airport (corrections + destructive list):** WUSDT/HBARUSDT `pnl_pct` in its audit are off by ~100–200× (magnitude errors); `audit_trail.db` not fully empty (`bt_backtest_runs=20`, `meta=1`; 8 tables empty); its per-class SQL targets a nonexistent top-level `asset_class` column (it lives in `metadata` JSON) and wrong table names (`picks`/`closed_picks.db` vs `live_picks`/`pick_history`) — so its proposed DB mutations would target the wrong schema. Destructive: crypto `UPDATE live_picks`, stocks force-close, etfs `INSERT OR REPLACE`, MF stub scanner emitting placeholder picks (veto).
+
+## Actions for the coordinator
+
+1. **Confirm `fix/audit-js-syntax-and-deploy-guard`** — the JS parse-dead fix is correct and urgent (the live enhancement layer has been dead since Oct 4).
+2. **Review `d8c8dd25581`** (v3's gatekeeper change now on main) — decide if the leakage-masking default is authorized.
+3. **Hold** v4's and ML's destructive SQL (exact file:lines listed above) behind dry-run/archive.
+4. **Fix the audit-dashboard cron + FTP step** (v2 GA4): runtime p50 97min vs 60min cron is manufacturing zero-job cancels.
