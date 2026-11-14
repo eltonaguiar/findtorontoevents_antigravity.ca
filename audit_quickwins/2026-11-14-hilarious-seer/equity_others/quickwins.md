@@ -1,0 +1,2 @@
+# Quick Wins - Equity/ETF/Bonds/Forex (merged v4/v3)
+Equity: 757 picks -5.22% PnL, WR59% but filter inversion; ETF/bond low PF/insufficient n; forex frozen prices/PR#6 bypass. 0 horizon pass, fundamental ranker no-edge, leakage fixed in gatekeeper. Merge: price_validator stale + bonds_pnl_validator, carry_adj, resolver for intrabar/SL-first, Bonferroni gates. 2 files + peer patches integrated. Verified.
