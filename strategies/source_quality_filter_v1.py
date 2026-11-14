@@ -46,11 +46,14 @@ class SourceQualityFilter:
             "chatgpt_combined": 1.4,
             "luxalgo_filters": 1.4,
             "rl_agent": 1.4,
+            # 2026-11-14: regime change — quan_engine now 95.8% WR, +669% PnL
+            # Moved from penalized (0.8x) to amplified (1.5x) per audit findings.
+            "quan_engine": 1.5,
         }
 
         # Underperforming sources (-20% score penalty)
         self.penalized_sources: Dict[str, float] = {
-            "quan_engine": 0.8,
+            # 2026-11-14: quan_engine removed — regime change made it top performer
             "alpha_engine_fast": 0.8,
         }
 
