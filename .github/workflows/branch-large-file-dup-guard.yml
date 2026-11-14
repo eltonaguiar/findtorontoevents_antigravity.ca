@@ -88,41 +88,64 @@ jobs:
                   continue
               branches.append(ref[len('origin/'):])
 
-          blob_map = {}
-          path_map = collections.defaultdict(set)
+          # Pass 1 — SHA-only tree listing. A blob:none partial clone keeps trees
+          # but not blobs, so `git ls-tree -r` (WITHOUT -l) triggers NO lazy blob
+          # fetch. The previous `git ls-tree -r -l` made git fetch EVERY blob in
+          # every branch just to print sizes — the root cause of this job running
+          # 2-3h and never completing under concurrency.
+          sha_re = re.compile(r'^\d+\s+\w+\s+([0-9a-f]{40})\s+(.+)$')
+          path_map = collections.defaultdict(list)
           branch_count_by_blob = collections.defaultdict(set)
-
-          line_re = re.compile(r'^\d+\s+\w+\s+([0-9a-f]{40})\s+(\d+)\t(.+)$')
 
           for branch in branches:
               ref = f'origin/{branch}'
               try:
-                  out = subprocess.check_output(['git', 'ls-tree', '-r', '-l', ref], text=True)
+                  out = subprocess.check_output(['git', 'ls-tree', '-r', ref], text=True)
               except subprocess.CalledProcessError:
                   continue
 
               for line in out.splitlines():
-                  m = line_re.match(line)
+                  m = sha_re.match(line)
                   if not m:
                       continue
 
                   blob_sha = m.group(1)
-                  size = int(m.group(2))
-                  path = m.group(3)
+                  path = m.group(2)
 
-                  if size < min_size_bytes:
-                      continue
-
-                  blob_map[blob_sha] = size
                   branch_count_by_blob[blob_sha].add(branch)
-                  if len(path_map[blob_sha]) < 5:
-                      path_map[blob_sha].add(path)
+                  if len(path_map[blob_sha]) < 5 and path not in path_map[blob_sha]:
+                      path_map[blob_sha].append(path)
+
+          # Only blobs present in >= min_branch_copies branches can ever be a
+          # finding, so size (and lazy-fetch) ONLY those — nothing else.
+          candidates = [
+              sha for sha, brs in branch_count_by_blob.items()
+              if len(brs) >= min_branch_copies
+          ]
+
+          # Pass 2 — resolve sizes for candidate blobs only, batched. Verified:
+          # `cat-file --batch-check` lazy-fetches exactly the requested objects.
+          blob_map = {}
+          if candidates:
+              proc = subprocess.run(
+                  ['git', 'cat-file', '--batch-check=%(objectname) %(objectsize)'],
+                  input='\n'.join(candidates) + '\n',
+                  capture_output=True,
+                  text=True,
+              )
+              for line in proc.stdout.splitlines():
+                  parts = line.split()
+                  if len(parts) == 2 and parts[1].isdigit():
+                      blob_map[parts[0]] = int(parts[1])
+              missing = len(candidates) - len(blob_map)
+              if missing:
+                  print(f'::warning::{missing} candidate blob(s) could not be resolved (skipped).')
 
           findings = []
           for blob_sha, size in blob_map.items():
-              branch_set = branch_count_by_blob[blob_sha]
-              if len(branch_set) < min_branch_copies:
+              if size < min_size_bytes:
                   continue
+              branch_set = branch_count_by_blob[blob_sha]
 
               findings.append(
                   {
