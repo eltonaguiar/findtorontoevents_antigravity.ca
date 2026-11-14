@@ -26,6 +26,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+log = logging.getLogger("live_pnl")
+
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
@@ -82,26 +85,28 @@ def fetch_price(symbol: str, asset_class: str) -> tuple[float | None, str]:
                     last_err = "binance returned zero price"
                 else:
                     last_err = f"binance HTTP {resp.status_code}"
-                    logging.warning("[live_pnl] %s for %s (attempt %d)", last_err, sym, attempt + 1)
+                    log.warning("[live_pnl] %s for %s (attempt %d)", last_err, sym, attempt + 1)
             except Exception as exc:
                 last_err = f"binance exception: {exc}"
-                logging.warning("[live_pnl] %s for %s (attempt %d)", last_err, sym, attempt + 1)
+                log.warning("[live_pnl] %s for %s (attempt %d)", last_err, sym, attempt + 1)
             if attempt == 0:
                 time.sleep(0.5)
 
         # CoinGecko fallback
         try:
-            cg_resp = requests.get(
-                f"https://api.coingecko.com/api/v3/simple/price?ids={sym.lower()}&vs_currencies=usd",
-                timeout=8)
-            if cg_resp.status_code == 200:
-                data = cg_resp.json()
-                price_data = data.get(sym.lower(), {})
-                px = price_data.get("usd")
-                if px and float(px) > 0:
-                    return (float(px), "coingecko")
+            cg_id = sym.lower().replace("usdt", "").replace("usd", "")
+            if cg_id:
+                cg_resp = requests.get(
+                    f"https://api.coingecko.com/api/v3/simple/price?ids={cg_id}&vs_currencies=usd",
+                    timeout=8)
+                if cg_resp.status_code == 200:
+                    data = cg_resp.json()
+                    price_data = data.get(cg_id, {})
+                    px = price_data.get("usd")
+                    if px and float(px) > 0:
+                        return (float(px), "coingecko")
         except Exception as exc:
-            logging.warning("[live_pnl] coingecko fallback failed for %s: %s", sym, exc)
+            log.warning("[live_pnl] coingecko fallback failed for %s: %s", sym, exc)
 
         return (None, last_err)
 
