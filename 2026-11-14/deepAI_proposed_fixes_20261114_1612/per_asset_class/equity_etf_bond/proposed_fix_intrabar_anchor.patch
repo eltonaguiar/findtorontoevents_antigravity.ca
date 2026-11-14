@@ -1,0 +1,89 @@
+# proposed_fix_intrabar_anchor.patch — §A entry-time-anchored intrabar replay
+# Base: .inspect-wt @ f54efb3b4a. All context lines verified in audit_trail/universal_pick_resolver.py.
+# Ship behind RESOLVER_INTRABAR_ANCHOR=1 (see proposed_fix.md §A.3 gates).
+# Note: bars previously carried NO timestamps — yfinance path kept only OHLCV
+# (:502-510) and the Binance path discarded k[0] open_time (:537-548). The replay
+# in _check_tp_sl_intrabar (:558-596) therefore always started at the OLDEST bar
+# of the 5d/48-bar window, resolving pre-entry wicks as SL_HIT (root cause of the
+# ETF intrabar WR 2.2% / PF 0.0216 collapse — live_money_ready.json .classes.ETF).
+
+diff --git a/audit_trail/universal_pick_resolver.py b/audit_trail/universal_pick_resolver.py
+--- a/audit_trail/universal_pick_resolver.py
++++ b/audit_trail/universal_pick_resolver.py
+@@ -500,6 +500,7 @@ def _fetch_yfinance_ohlcv(symbol: str, period: str = "5d", interval: str = "1h")
+         bars = []
+         for _, row in hist.iterrows():
+             bars.append({
++                "t": row.name.isoformat() if hasattr(row.name, "isoformat") else str(row.name),
+                 "open": float(row.get("Open", 0)),
+                 "high": float(row.get("High", 0)),
+                 "low": float(row.get("Low", 0)),
+@@ -539,6 +540,7 @@ def _fetch_binance_klines_ohlcv(symbol: str, interval: str = "1h", limit: int =
+             bars = []
+             for k in data:
+                 if len(k) < 5:
+                     continue
+                 bars.append({
++                    "t_ms": int(k[0]),  # open_time ms — previously discarded
+                     "open": float(k[1]),
+                     "high": float(k[2]),
+                     "low": float(k[3]),
+@@ -558,7 +560,7 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
+-def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
++def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict], entry_ts: float | None = None):
+@@ (inside the bar loop, before evaluating each bar)
+     for bar in ohlcv_bars:
++        # G1 RESOLVER_INTRABAR_ANCHOR: skip bars that closed BEFORE the pick's
++        # entry. Legacy bug: the 5d/48h window always included pre-entry bars,
++        # so intraday-entered picks resolved SL_HIT off pre-entry wicks (ETF
++        # intrabar WR collapsed to 2.2% vs 39.5-73.3% daily). Bars without a
++        # timestamp keep legacy behavior (fail-open).
++        if os.environ.get("RESOLVER_INTRABAR_ANCHOR", "1") == "1" and entry_ts:
++            _bt = None
++            if bar.get("t_ms"):
++                _bt = bar["t_ms"] / 1000.0
++            elif bar.get("t"):
++                try:
++                    from datetime import datetime as _dt
++                    _bt = _dt.fromisoformat(str(bar["t"]).replace("Z", "+00:00")).timestamp()
++                except Exception:
++                    _bt = None
++            if _bt is not None and _bt < entry_ts:
++                continue
+         high = bar.get("high", 0)
+@@ (call site, ~1257)
+             result = None
+             intrabar_bars = ohlc_bars_cache.get(norm_sym, [])
+             if intrabar_bars:
+-                result = _check_tp_sl_intrabar(pick, intrabar_bars)
++                _entry_ts = None
++                try:
++                    _pdt = _parse_timestamp(pick.get("timestamp") or pick.get("entry_time"))
++                    if _pdt:
++                        _entry_ts = _pdt.timestamp() if hasattr(_pdt, "timestamp") else None
++                except Exception:
++                    _entry_ts = None
++                result = _check_tp_sl_intrabar(pick, intrabar_bars, entry_ts=_entry_ts)
+@@ (resolution result block, ~1265: mark clamped rewrites for later cohort audit)
+                 if entry > 0 and tp and sl:
+                     tp_pct = abs(tp - entry) / entry * 100
+                     sl_pct = abs(sl - entry) / entry * 100
++                    _clamp_note = []
+                     if tp_pct < 2.0:
+@@ (each clamp branch appends e.g. _clamp_note.append("tp_lo") / "tp_hi" / "sl_lo" / "sl_hi")
+@@ (after clamps)
++                    if _clamp_note:
++                        pick["_tp_sl_clamped"] = ",".join(_clamp_note)
+
+# ── Ops runbook (§A.2 step 4) ─────────────────────────────────────────────
+# 1. Deploy with RESOLVER_INTRABAR_ANCHOR=1; confirm "Intrabar OHLC cached" log
+#    lines unchanged in count (cache-building logic untouched).
+# 2. One-time backfill: re-run the resolver over the last ~14d of feeds so the
+#    intrabar cohort regenerates with anchored bars.
+# 3. Regenerate money_ready_verdict.json; verify G3 acceptance:
+#    ETF intrabar_daily_divergence.pf_inflation_x 84.99 -> < 2.0 (or flag false),
+#    ETF honest WR moves off 2.2% toward the 39.5-73.3% daily band.
+# 4. UNVERIFIED at f54efb3b4a: whichever post-base writer produces
+#    at_signal_outcomes.intrabar_* must be re-verified on origin/main (grep
+#    "at_signal_outcomes" + "intrabar") before this patch is merged there —
+#    if it forks _check_tp_sl_intrabar, apply the same anchor there too.
