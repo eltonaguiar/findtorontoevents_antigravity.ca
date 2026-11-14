@@ -3,12 +3,17 @@
 ## Why this file comes first
 Every class file in this folder assumes four upstream fixes. Without them, *no* PF, WR or
 Sharpe on this system's data can be certified — that is the merged finding of quant-audit
-(`resolution_method=None` ×3,500), finpredict-v3 (PnL-unit mix bug), and me (zombies,
-garbage ingest, ledger disagreement).
+(`resolution_method=None` ×3,500 — **since retracted by quant-audit**: the field is
+`exit_reason`, populated; I re-verified), finpredict-v3 (PnL-unit mix bug — **scoped**: real in
+`multi_asset_closed.json`, NOT the dashboard ledger, which I re-verified reproduces 3,500/3,500),
+and me (zombies, garbage ingest, ledger disagreement, **stop-fill overshoot**).
 
-## Order of operations (strict sequence)
-1. **Populate `resolution_method`** on every closed row + **fix PnL-unit mix**
-   (`dashboard_generator.py:8065-8072`). Unblocks ALL measurement.
+## Order of operations (strict sequence — UPDATED after quant-audit's final_v2 corrections)
+1. **Fix fill fidelity** (the #1 verified blocker: crypto realizes 2.970% on 1.932% planned
+   risk; 98.8% of the class loss is overshoot — fills-at-stop → PF 0.768 ≈ 1.00) **+ scope the
+   PnL-unit fix where it is real** (`multi_asset_closed.json`, active-pick garbage ingest).
+   `exit_reason` is already populated (SL_HIT/TP_HIT/FORCE_CLOSED/TIME_EXIT) — no backfill
+   needed; the nice-to-have is a field recording intrabar-vs-nominal *resolution*.
 2. **One canonical ledger** (my `fixspec_single_canonical_ledger`) + **zombie purge**
    (`fixspec_zombie_purge_and_reemission_guard`): kill the 3,272 EXPIRED pnl=0 rows,
    stop inverse re-emissions (2,262 mutations), make `recent_closed` the single truth.

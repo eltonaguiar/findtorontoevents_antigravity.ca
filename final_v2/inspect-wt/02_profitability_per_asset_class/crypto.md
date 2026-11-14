@@ -21,6 +21,19 @@
 3. **mega_mutation** (flaxen-hair): best system candidate (my V2: n=18 PF 3.20 p=0.048 both
    halves) but single-source, strict n=16, 21/50 rows synthetic → **disputed "PROVEN"**.
 
+## THE finding (quant-audit final_v2, independently verified by me)
+**98.8% of the crypto class loss is stop-fill slippage, not signal failure.**
+- My re-run: crypto `SL_HIT` n=771 — **planned risk 1.932% vs realized 2.970%** (prices run
+  through the stop before filling); `exit_price` ≠ `stop_loss` in 703/773; overshoot **+828.0pp
+  against −837.8pp** class total.
+- **Run the same signals with fills at the stop → class PF 0.768 → ≈1.00.**
+- Implication: before declaring crypto signals dead *or* alive, the fill model must be fixed —
+  and every other class's slippage assumptions (incl. my variant-C 0.416%/trade breakeven
+  buffer) must be tested against fill fidelity, not just fee schedules.
+- Also confirmed in this pass: `exit_reason` is populated (SL_HIT/TP_HIT/FORCE_CLOSED/TIME_EXIT)
+  and the 100× PnL-unit bug is NOT in this ledger (3,500/3,500 rows reproduce) — so the crypto
+  problem is narrower and more fixable than "broken data everywhere": it is **execution**.
+
 ## My plan (concrete, ordered)
 1. **Do not trade the system's crypto zoo. Ever.** Evidence: PF 0.23–0.92 everywhere, 76–87%
    zombies, frozen phantom prices. This is the *only* class where the honest answer is a
@@ -36,7 +49,8 @@
 4. **Funding carry ≤10–15% of book** as cash substitute (finpredict-v3's cap) — only after
    the price-freshness pipeline is live.
 5. **Data gates first** (see `_overall.md`): garbage-ingest guard (my fixspec — kills
-   entry=0.0 and 100× unit rows), zombie purge, `current_price` live or `UNQUOTED`.
+   entry=0.0 and 100× unit rows on the *active* surface), zombie purge, `current_price` live
+   or `UNQUOTED`, **and stop-fill fidelity** (the verified 98.8% loss driver above).
 
-**Tradable today: NO.** Earliest honest date: after mega_mutation verification + data gates;
-expected edge class = risk premium (0.5–1.0 Sharpe), not alpha.
+**Tradable today: NO.** Earliest honest date: after mega_mutation verification + fill-fidelity
+fix + data gates; expected edge class = risk premium (0.5–1.0 Sharpe), not alpha.
