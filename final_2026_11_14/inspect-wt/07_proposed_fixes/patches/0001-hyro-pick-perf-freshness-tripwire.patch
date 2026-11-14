@@ -1,0 +1,15 @@
+diff --git a/../.github/workflows/audit-dashboard.yml b/.github/workflows/audit-dashboard.yml
+index 33ef0da416..035e1f32b5 100644
+--- a/../.github/workflows/audit-dashboard.yml
++++ b/.github/workflows/audit-dashboard.yml
+@@ -584,6 +584,10 @@ jobs:
+               ("alpha_engine/data/walkforward_results.json",   "walkforward",  24*8),
+               # MA strategy: daily refresh via ma_strategy_forward_tracker.py;
+               # 48h tolerates one missed hourly run without false alarms.
++              # deepAI 2026-11-14: hyro_pick_performance.json went 157h stale on the live
++              # site while the "Hyro daily" workflow kept reporting success (silent
++              # deploy/emit break). Tripwire makes it visible instead of silent.
++              ("audit_dashboard/data/hyro_pick_performance.json", "hyro_pick_perf", 24*7),
+               ("audit_dashboard/data/ma_strategy_leaderboard.json", "ma_strategy", 48),
+               ("audit_dashboard/data/ma_strategy_signals.json",     "ma_strategy_signals", 48),
+           ]:
