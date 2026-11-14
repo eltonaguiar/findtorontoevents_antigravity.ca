@@ -92,3 +92,16 @@ All numbers above are from the live payload `/tmp/kilo/dashboard_data_latest.jso
 **Task 3 — Horizon harness re-run (DONE):** results in `results/` (n≥60: 6 groups, 0 pass; n≥30: 26 groups, 0 pass). No strategy in the recorded ledger is solidly profitable across time.
 
 **Task 4 — Fundamentals/earnings ranker scaffold (DONE, verified):** `tools/pi_fundamental_ranker.py` + `tests/test_pi_fundamental_ranker.py` (4 tests, pass). Honest chronological walk-forward with OOS; on the default no-signal mock it reports **NO EDGE DETECTED** (top-quantile WR 0.479, CI [0.439,0.520] includes 50%) — it does not force a positive result.
+
+## Post-audit peer reconciliation (R2, 2026-11-14 ~17:51Z)
+
+Merged/updated per peer-round-2 review (see `2026-11-14/finpredict-v3/2026-11-14T175100Z/PEER_REVIEW_R2/`):
+
+- **Adopted v2 as the reconciliation backbone** (fleet policy-clean n=22,941, WR 42.21%, PF 0.2657, z=−23.60; crypto 86.7% EXPIRED zombies; N=658 multiple-testing ≈32.9 false positives; PBO invalid T=20; `summary_picks` WR>100% bug; 5 conflicting "active" counts). This reinforces my ML verdict: no edge.
+- **Adopted scratch QW-ALL-1..9** as the implementation checklist (verified file:line targets).
+- **Merged v1 master-plan** after noting registry-ID duplication + 4 open decision conflicts to close before P1.
+- **Red-lined the ML-audit proposed SQL** (targets a non-existent top-level `asset_class` column → would no-op; destructive blanket UPDATE / row-move / `INSERT OR REPLACE`) and **vetoed the mutual-fund stub scanner** (adopt classification-only).
+- **Updated v4 evidence note**: `pick_summary_stats.json` is 173d stale (re-used) and FOREX PF figures conflict (2.02/0.108/0.66).
+- **Kept the rigor gate**: no "solid" claim until the horizon harness passes (n≥60/≥30; CI excludes 50%; PF>1.05; win-majority ≥66% of windows).
+
+Adjustments to my earlier conclusions: none reversed — all peer evidence strengthened the "no solid proven methodology" verdict. The ML code findings stand (leakage default now fixed; the fundamentals ranker and horizon harness are the gate).
