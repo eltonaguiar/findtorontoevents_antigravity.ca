@@ -10,6 +10,14 @@ Registry counts show the filter stack (34,540 raw → 22,941 policy-clean; flick
 policy 1,777; not-closed 5,821) — but each surface apparently applies its own subset, and nothing
 publishes the diff. Single-source concentration per class reaches 97.9% (CRYPTO).
 
+## Root-cause note (2026-11-14 peer cross-check)
+
+The 2–8x inter-surface spread is largely **NOMINAL vs INTRABAR-TRUTH resolution**, not arbitrary
+filtering: peer `reports/PAPER_PILOT_RESOLVER_FAIL_2026-06-05.md` documents the `NOMINAL_TP_LEGACY`
+bug where TP was assumed filled cleanly; 1h OHLCV replay reclassified 28%–100% of TPs as actually
+SL hits. Intrabar-truth must be the authoritative ledger; nominal must be retired or labelled.
+Also apply `DATE(closed_at) != '2026-06-04'` (peer: ~35,494 backfill-contaminated rows).
+
 ## Proposed design
 1. **One ledger build step** (new `tools/build_closed_ledger.py`, run once per cycle right after
    resolver): raw rows → flicker-filter → dedup → policy-filter → **one** table

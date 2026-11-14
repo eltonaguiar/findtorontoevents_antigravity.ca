@@ -9,6 +9,11 @@ Same class, same day, PF differing up to 8x across official surfaces with no use
 The dashboard already has an honesty-banner pattern (asset-class card warnings quoting
 pf_registry vs money_ready), so this extends an existing convention.
 
+## Cause (2026-11-14 peer cross-check)
+
+Main cause is `NOMINAL_TP_LEGACY` (TP assumed clean fill) vs intrabar-replayed truth — see
+`fixspec_single_canonical_ledger.md`. Banner must name which surface is nominal and which intrabar.
+
 ## Proposed change (frontend-only)
 1. In the asset-class card renderer (template.html), when both
    `pf_registry.by_asset_class[class].profit_factor` and

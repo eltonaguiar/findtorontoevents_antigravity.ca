@@ -7,6 +7,25 @@ This folder contains **suggestions only** — no core files were modified. Compa
 Patches are unified diffs against base `f54efb3b4a` (the worktree's HEAD). Origin/main has moved
 since June; expect to rebase. Apply with `git apply` or cherry-pick manually.
 
+## Peer cross-check (2026-11-14) — read `cross_check_and_merge.md` first
+
+Reviewed peer work in `reports/` (1,689 files), `docs/`, `updates/`, `.planning/`. Three
+corrections to my original audit, now applied to the fixspecs:
+1. **Zero-PnL root cause** = `TIME_EXPIRED` resolver writing pnl=0 in `backfill_widened/updated`
+   (peer `zero_pnl_data_pipeline_audit_2026-06-05.md`), not "spot flicker". Fix = re-resolve that
+   cohort + compute close-vs-entry.
+2. **Surface disagreement** = `NOMINAL_TP_LEGACY` (clean TP assumption) vs intrabar-truth replay
+   (28–100% of TPs were actually SLs, peer `PAPER_PILOT_RESOLVER_FAIL_2026-06-05.md`). Intrabar is
+   authoritative.
+3. **MISSED EDGE** = `mega_mutation::crypto` is the one T1-confirmed edge (peer n=295 WR 64.1%
+   PF 3.16; my Nov data confirms PF 3.20 in-window / 1.58 last-30d). Must be the pilot candidate.
+Plus: peer-specified source bans are still unenforced (live check finds `luxalgo_filter`,
+`prediction_market*` still emitting); `trading_picks` 2026-06-04 backfill caveat applies to my
+registry numbers; Playwright found 3 live bugs (`strategy_tribunal_latest.json` 404, brand-new
+CORS failures, funds.html stuck "Prices: Loading...").
+New files: `cross_check_and_merge.md`, `playwright_live_js_report.md`,
+`per_asset_class/crypto/quick_wins_and_proposed_fix.md`.
+
 ## Priority order
 
 ### P0 — silent-data breaks (user sees wrong numbers today)

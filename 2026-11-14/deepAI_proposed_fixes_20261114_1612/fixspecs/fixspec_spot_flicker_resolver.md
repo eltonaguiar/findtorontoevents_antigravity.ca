@@ -1,4 +1,11 @@
-# Fix spec — Spot-flicker resolver artifacts ("P/L stuck at 0%")
+# Fix spec — TIME_EXPIRED / spot-flicker zero-PnL artifacts ("P/L stuck at 0%")
+
+> **2026-11-14 peer cross-check correction.** Peer `reports/zero_pnl_data_pipeline_audit_2026-06-05.md`
+> found the root cause is NOT spot-flicker: 100% of 28,218 zero rows are `status=EXPIRED`,
+> `resolution_method=TIME_EXPIRED`, produced by the `backfill_widened_*` / `backfill_updated_*`
+> resolvers (81.2% / 96.6% zero share). The time-expiry resolver writes pnl=0 instead of computing
+> close-vs-entry. See §Root-cause-below. Newer resolvers (`backfill_2026-06-01`, `universal_v2`,
+> `signflip_purge`) are clean (<10%).
 
 ## Problem (evidence)
 - pf_registry counts: 28,719 closed rows → **3,872 (13.5%) dropped as "spot-flicker"**

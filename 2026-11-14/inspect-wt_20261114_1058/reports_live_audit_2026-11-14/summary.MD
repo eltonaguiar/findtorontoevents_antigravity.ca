@@ -64,3 +64,40 @@ hyrotrader) are polluted with zombies, garbage rows, contradictory statistics, a
 - `live_*.json` — small live payload copies; `actions_api/` — raw GitHub Actions API responses
 - NOT included (too large): dashboard_data.json (25MB), dashboard_payload.json (34MB), pf_registry.json (15MB)
   — re-downloadable from findtorontoevents.ca/audit/data/
+
+---
+
+## POST-REVIEW ADDENDUM (2026-11-14, after peer cross-check + live Playwright)
+
+Three corrections to the original audit above (full detail:
+`2026-11-14/deepAI_proposed_fixes_20261114_1612/cross_check_and_merge.md`):
+
+1. **Zero-PnL "spot-flicker" diagnosis refined.** Peer `reports/zero_pnl_data_pipeline_audit_2026-06-05.md`
+   shows the zeros are `status=EXPIRED` / `resolution_method=TIME_EXPIRED` from the
+   `backfill_widened/updated` resolvers (81%/97% zero share) — the resolver writes pnl=0 instead of
+   computing close-vs-entry. Per-class zero share: FUTURES 98.4%, BOND 89.1%, COMMODITY 84.9%,
+   FOREX 83.7%, ETF 83.1%, EQUITY 79.5%, CRYPTO 56.5%. This explains why non-crypto classes look
+   "dead" — they are almost entirely zero-resolved.
+2. **Surface disagreement explained, not arbitrary.** The dominant cause is
+   `NOMINAL_TP_LEGACY` (TP assumed filled cleanly) vs intrabar-truth replay, where 28–100% of
+   supposed TP hits were actually SL hits (peer `PAPER_PILOT_RESOLVER_FAIL_2026-06-05.md`).
+   Intrabar-truth (money_ready) is authoritative; registry/nominal numbers are inflated.
+3. **I missed a genuine edge: `mega_mutation::crypto`.** Peer T2 inventory: n=295, WR 64.1%,
+   PF 3.16, PASS_ALL_AXES (the only T1). My live Nov payload confirms: n=18 in-window WR 72.2%
+   PF 3.20; last-30d n=7 WR 57.1% PF 1.58. **This is the one real-edge candidate and should be the
+   forward pilot.** Correcting my blanket "no class has edge" statement: no *class* has edge, but
+   this one *strategy* does.
+
+Caveats added:
+- My registry-derived long-horizon numbers (CRYPTO PF 0.232 n=23,636) may include ~35,494 rows
+  contaminated by the 2026-06-04 `closed_at` backfill (peer `REAL_MONEY_MASTER_2026-06-05.md`).
+  My 14-day recompute (n=471) is from Nov data and is NOT affected.
+- Peer-specified source bans (`prediction_market_agents`, `polymarket_whale_tracker`,
+  `short_dominant_engine`, `polymarket_momentum`, `copy_trader_polymarket`, `luxalgo_filters`)
+  were never enforced: live `active_raw` still contains `luxalgo_filter` (16) and
+  `prediction_market*` (3) rows.
+
+Live Playwright (Chromium 1.58.2) result: **0 hard JS exceptions** on /audit, /audit/hyrotrader,
+/audit/funds.html, /audit/pick_funnel.html. Real bugs: `strategy_tribunal_latest.json` 404,
+cryptocompare/kucoin CORS failures, and funds.html "Prices: Loading..." never resolving.
+Report: `deepAI_proposed_fixes_20261114_1612/playwright_live_js_report.md`.
