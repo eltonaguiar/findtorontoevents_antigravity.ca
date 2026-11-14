@@ -18,9 +18,9 @@ Recurring failures (named step): CI Tests (3.11+3.12 "Run all tests"); Live Trad
 
 ---
 
-## 2. Active picks per asset class — FAIL (mostly stale, not "recent")
+## 2. Active picks per asset class — FAIL (signal-recent, price-frozen, inventory zombie)
 
-"Recent picks" are NOT actually recent for most classes. `picks.active_raw` = 4,148 rows, but the status split is the tell:
+"Recent" is **true only for the SIGNAL timestamp on the main panel**, not for prices or the raw inventory. The 20 clean `picks.active` have genuinely fresh signal times (COMMODITY 1.5h, CRYPTO ~2.0h, EQUITY 2.8–3.1h, ETF 3.6h, FOREX 1.5h, FUTURES 2.8h — peer `inspect-wt` confirmed the same ages), but their **PnL is frozen** because `current_price` is not re-quoted at build time. `picks.active_raw` = 4,148 rows is the zombie-laden truth:
 
 | class | OPEN | frozen at 0% (current==entry or null) | newest OPEN | age | verdict |
 |---|---|---|---|---|---|
@@ -33,7 +33,9 @@ Recurring failures (named step): CI Tests (3.11+3.12 "Run all tests"); Live Trad
 | COMMODITY | 27 | 18 (67%) | 11-14 14:24 | 1.5h | mixed |
 | SPORTS | 2 | 2 (**100%**) | 11-14 12:29 | 3.4h | **dead** |
 
-`EXPIRED` rows inside `active_raw`: 3,377 (CRYPTO 3,100). These are the "STALE (auto-expired >5762h)" leftovers from March that still inflate the raw count.
+`EXPIRED` rows inside `active_raw`: 3,377 (CRYPTO 3,100). These are the "STALE (auto-expired >5762h)" leftovers from March that still inflate the raw count. Peer `inspect-wt` measured the raw-feed ages directly: CRYPTO raw median **2,128h (89 days)**, oldest 6,421h (267d); FUTURES raw median 2,344h; BOND raw all ~25–26h.
+
+BOND is dead on both ends (answers "bonds 4 days ago?"): **newest CLOSED bond = ~98h (4.1 days) ago** (peer), while the 15 OPEN bond seeds are ~25h old with null prices. FUTURES: 3 OPEN, **0 closed ever**, `ES=F` seed `signal_time` is a bare `"2026-11-14"` date-only string → UI renders "no date".
 
 **Only 123/691 OPEN picks (17.8%) carry a genuinely live, entry-differing price with non-zero PnL.** Of the 20 "clean" picks displayed, only **NEARUSDT** has real PnL; everything else is pinned at `current == entry` → 0%.
 
@@ -112,7 +114,9 @@ Conclusion: `kalshi_mtf_consensus` is real code, but its output in the dashboard
 | USDCAD=X SHORT (entry 1.4269) | 1.4269 | −0.0% | 1.4258 (Frankfurter) | +0.08% | FROZEN |
 | NZDUSD=X LONG (entry 0.552517) | 0.552517 | −0.0% | 0.5532 (Frankfurter) | +0.13% | FROZEN |
 
-**NEARUSDT is genuine:** `(3.324−3.233)/3.324 = 2.738%` — exact. The "~3.1%" figure is the live price 3.222 (→3.07%), i.e. the pick is real but the stored current price is ~2h old. No fabrication in the arithmetic; only staleness.
+**NEARUSDT is genuine and plausible.** `(3.324−3.233)/3.324 = 2.738%` — exact, and my Binance live quote (3.222, →3.07%) confirms it. Peer `inspect-wt`'s sandbox could not fetch external quotes (marked UNVERIFIED); mine succeeded, so this is now externally verified. Magnitude is also plausible: peer's row-level trace shows NEAR genuinely traded 3.543→3.233 (+8.75% SHORT TP_HIT, Nov 10) and 3.675→−12.03% (LONG SL_HIT, Nov 13) — normal swings for a volatile altcoin. The user's "3.16%" is just the same pick re-marked a few minutes later (cur≈3.22). Not wrong data; a real, ~2h-stale quote.
+
+**Caveat — garbage entry rows exist elsewhere:** peer `inspect-wt` found `XRPUSDT SHORT entry=0.0` (emitted 2026-11-14T13:54 by `prediction_market_consensus`), `BTCUSDT SHORT entry=0.3322` (Oct 8–11) and `entry=1.334` (Aug 6–7). These are zero/garbage entry prices (BTC should be ~66,000), so a small fraction of rows are not trustworthy even though the NEAR row is.
 
 ---
 
@@ -146,14 +150,29 @@ Empty/placeholder: UEPS Swing + Closed Holds (n<100, no picks), `ta_baseline={}`
 - **Survivorship:** `total_closed_picks 16,126` → `valid_closed_picks 7,914` (49%) with `integrity_excluded 7,567` and `auto_expired_excluded 8,888`. The headline 41.8% WR is computed on the surviving ~half.
 - **Winners-only presentation:** `big_mover_monitor_3pct` shows +500% wins (HYPEUSDT `copy_hl_lb_none` ×many, `stochastic_momentum_index`, `crypto_vol_regime_accumulation`) without symmetric exposure of the matching −99% losers.
 - **Concentration:** 25.8% of all PnL is BTCUSDT; top-3 source systems (`luxalgo_filters`, `kimi_riseoftheclaw`, `ml_bg_system_f`) = 88.5% of capped positive PnL.
+- **Statistical significance (peer `inspect-wt`):** CRYPTO z = **−7.1** (significantly *worse* than random); EQUITY z = +1.39 (< 1.96, not significant). Their expected-luckers estimate: 361 strategy families + 285 baby strategies + mutation lab ⇒ **~260 PF>1.5 survivors expected by chance at p=5%** — i.e. the visible "winners" are fully explained by the number of trials. Their June anti-overfit gate independently found 31/38 (82%) OVERFIT_LIKELY (PBO on n=21, meaningless).
+- **Official surfaces disagree with each other:** CRYPTO PF 0.29 (registry long-horizon) vs 0.95 (money-ready) — the same class reports contradictory performance depending on which surface you read.
 
 ---
 
-## 10. Unverifiable / flagged, not guessed
+## 10. Peer cross-reference — inspect-wt agent (2026-11-14 transcript)
 
-- Individual US equity/ETF/futures marks against a paid-grade feed (Twelvedata/Stooq keyless endpoints rejected; Yahoo "Friday close" used by peer v3 for equities).
-- Whether `FORCE_CLOSED`/`TIME_EXIT` closures were marked at fair market vs arbitrary exit.
+A parallel audit agent (`inspect-wt`, June snapshot worktree) reached the same verdict and added findings I adopt here (not independently re-derived unless noted):
+
+- **Mutual funds are effectively UNBUILT** (the original brief listed them as an asset class). Only DB families `mutual_fund_v1/v2` (`mf_`/`mf2_`) + tactical rotation in `multi_asset/portfolio_defs.py` exist; `alpha_engine/mutual_fund_ranker.py` and `/audit/mutual-funds.html` do **not** exist. Mutual-fund predictions are planned, not delivered.
+- **Frozen-data additions (June snapshot):** 1,147/1,882 (61%) closed rows dropped as "spot-flicker" artifacts (|pnl|<0.02 bps, exit==entry); 3,509 non-canonical `FORCE_CLOSED_TOXIC` statuses (tier red); 57 `RESOLVE_FAILED_MAX_RETRIES` + 74/53 replay exits.
+- **Closed picks (June, last 14d, 191 trades): sum P/L ≈ −1.4%.** STOCKS PF 0.08 / WR 6.2% (n=48); FOREX PF 0.16; ETF PF 0.67–0.81; CRYPTO PF 1.19 (avg 0.00%); EQUITY PF 3.22 but n=24. Corroborates the negative verdict across a different window.
+- **Hyro staleness (the /audit/hyrotrader surface):** `hyro_pick_performance.json` generated 2026-11-08 → **157h (6.6d) stale**; `hyrotrader_picks.json` has **no timestamp**; `pick_funnel_snapshot.json` returns 404/HTML.
+- **Actions nuance:** "Unified Audit Dashboard" cancelled at 07:14/11:14/14:14 with **0 jobs executed** (discarded in queue — the cancel-cascade). Healthy pipelines (peer-listed): Hyro daily/bridge, ETF Emitter, Bond Agent, Commodities Agent, DB Freshness Guardian, Money-Ready Registry Gate, ML Gatekeeper, Pick Funnel nightly, Consensus Outcome Tracker.
+- **Honesty layer (June):** dashboard itself admits "0/9 asset classes money-ready" and that CRYPTO "PF 9–18 / WR 78–88%" surfaces are inflated by `claude_gainer_st` EXPIRED→WON mislabels (raw WR 33%). This is real engineering (honesty banners, slippage-adjusted P/L, freshness watchdogs) — but it confirms the numbers are not tradable.
+
+## 11. Unverifiable / flagged, not guessed
+
+- Workflow run logs (root-cause of failures) — require repo admin; both agents UNVERIFIED.
+- Individual US equity/ETF/futures marks against a paid-grade feed (Twelvedata/Stooq keyless rejected; Yahoo "Friday close" used for equities).
+- Whether `FORCE_CLOSED`/`TIME_EXIT`/`FORCE_CLOSED_TOXIC` closures were marked at fair market vs arbitrary exit.
 - Real-money vs paper distinction for active picks.
-- Exact full-sample EQUITY PF (three aggregators disagree: 8.86 vs positive-sum vs PF 0.70).
+- Exact full-sample EQUITY PF (three aggregators disagree: 8.86 / positive-sum / 0.70) and CRYPTO PF (0.29 registry vs 0.95 money-ready).
+- External crypto/forex quotes: **VERIFIED here** (Binance + Frankfurter succeeded in this session); peer `inspect-wt`'s sandbox blocked them (they marked UNVERIFIED).
 
 No fabricated numbers introduced; every figure above is read from the named file or API.

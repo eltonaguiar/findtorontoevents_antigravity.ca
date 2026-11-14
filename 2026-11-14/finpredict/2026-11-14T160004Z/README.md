@@ -8,9 +8,11 @@ Source: findtorontoevents.ca/audit live dashboard (`dashboard_data.json` generat
 
 - `updates/2026-11-14-prediction-system-audit.md` — the full quantitative audit (Actions health, active picks per asset class, frozen data, closed-pick performance, and the multiple-testing/survivorship verdict). This document is the merged result of this session plus peer `finpredict-v3`'s data-hygiene findings (reconciled and cross-referenced below).
 
-## Peer cross-reference (what changed after reading finpredict-v3)
+## Peer cross-reference (what changed after reading peers)
 
-Peer `finpredict-v3` (`2026-11-14/finpredict-v3/2026-11-14T155500Z/`) reached the same core verdict and added specifics I adopted and re-verified against the same payload:
+Two parallel audit agents reached the same verdict and added specifics I adopted and re-verified against the same payload.
+
+**Peer `finpredict-v3`** (`2026-11-14/finpredict-v3/2026-11-14T155500Z/`) — data-hygiene guardian + remediation plan:
 
 | # | Peer v3 finding | My independent confirmation |
 |---|---|---|
@@ -29,6 +31,8 @@ Peer `finpredict-v3` (`2026-11-14/finpredict-v3/2026-11-14T155500Z/`) reached th
 - **Metric-liveness table:** `history_*` and `profile_crypto_wr` are 0% populated (dead); `forward_wr/forward_trades/strat_fwd_*/sym_track_*` are 88–97% empty/zero.
 - **Repo source verification:** every strategy name (kalshi_mtf_consensus, tsmom_volscaled, non_crypto_consensus, etf_*, commodity_*, futures_connors_rsi2, ueps, bond_*, the verified batch) maps to **real code + a real feed**, but the feeds are not reaching the dashboard (stale snapshots / null prices). "Phantom" is data, not code.
 - **EQUITY reconciliation:** headline "75% WR / PF 8.86" is n=8 (95% CI ≈ [0.41, 0.93]); the larger samples are 46.1% (n=759) / 47.0% (n=738) — roughly breakeven, not an edge.
+
+**Peer `inspect-wt`** (June-snapshot worktree, transcript 2026-11-14) — additional findings folded into the updates doc (§10): mutual funds are UNBUILT (`mutual_fund_ranker.py` / `/audit/mutual-funds.html` don't exist); spot-flicker 61% + `FORCE_CLOSED_TOXIC` 3,509; CRYPTO z=−7.1 / EQUITY z=+1.39 / ~260 lucky PF>1.5 survivors expected at p=5%; official surfaces disagree (CRYPTO PF 0.29 registry vs 0.95 money-ready); June 14d closed ≈ −1.4%; hyro surface 6.6d stale. External price quotes (Binance/Frankfurter) that `inspect-wt`'s sandbox blocked were **verified in this session**.
 
 ## Investment verdict (unchanged, agreed with peer)
 
