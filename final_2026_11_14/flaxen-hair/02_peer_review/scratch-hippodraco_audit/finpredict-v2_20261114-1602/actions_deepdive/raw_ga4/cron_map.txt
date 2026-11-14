@@ -1,0 +1,411 @@
+### SUMMARY
+workflow files: 361
+with cron: 312
+with push trigger: 40
+with schedule+push: 26
+with concurrency: 159
+cancel-in-progress values: Counter({'false': 114, 'true': 33, '${{': 10, 'true,': 1, None: 1})
+
+### MINUTE CLUSTERS (all cron entries)
+  minute    0: 196
+  minute   30: 35
+  minute   15: 26
+  minute */30: 13
+  minute    5: 7
+  minute   40: 6
+  minute */15: 5
+  minute   20: 5
+  minute   25: 5
+  minute   35: 5
+  minute   37: 4
+  minute   10: 3
+  minute   17: 3
+  minute   23: 3
+  minute    3: 3
+  minute   45: 3
+  minute   47: 3
+  minute   48: 3
+  minute    7: 3
+  minute 18,48: 2
+  minute   19: 2
+  minute   22: 2
+  minute   42: 2
+  minute */10: 1
+  minute 0,30: 1
+  minute 10,40: 1
+  minute   11: 1
+  minute   12: 1
+  minute 13,43: 1
+  minute 14,44: 1
+  minute 15,45: 1
+  minute 16,46: 1
+  minute   18: 1
+  minute 2,32: 1
+  minute   26: 1
+  minute   28: 1
+  minute   29: 1
+  minute   32: 1
+  minute   33: 1
+  minute   36: 1
+  minute   43: 1
+  minute 5,35: 1
+  minute   52: 1
+  minute   54: 1
+  minute   56: 1
+  minute 7,37: 1
+  minute 7,52: 1
+  minute 8,38: 1
+  minute    9: 1
+  minute creates: 1
+
+### HOURLY CLUSTERS (:00, :10, :30)
+  :00 -> 196  :10 -> 3  :30 -> 35
+
+### WORKFLOWS WITH SCHEDULE+PUSH (push contention candidates)
+  ab_analysis.yml                               cron=['30 5 * * *'] group=ab-analysis ci=false
+  audit-drift-telemetry.yml                     cron=['10 */6 * * *'] group=None ci=None
+  audit-frontend-manifest.yml                   cron=['40 7 * * *'] group=None ci=None
+  autonomous_trading.yml                        cron=['0 */4 * * *'] group=None ci=None
+  baby-strat-forward-paper.yml                  cron=['15 * * * *'] group=baby-strat-forward-${{ github.event_name }} ci=${{
+  backtest-and-deploy.yml                       cron=['0 6 * * *', '0 14,16,18,20 * * 1-5', '0 */4 * * 0,6'] group=auto-commit-main-${{ github.workflow }} ci=false
+  battle_test.yml                               cron=['0 * * * *'] group=None ci=None
+  claudes-test-portfolios.yml                   cron=['*/30 * * * *'] group=claudes-test ci=false
+  cross-db-audit.yml                            cron=['0 6 * * *'] group=None ci=None
+  db-freshness-guardian.yml                     cron=['0 * * * *'] group=None ci=None
+  deploy-battleground-ftp.yml                   cron=['15 * * * *'] group=None ci=None
+  deploy-findcryptopairs-ftp.yml                cron=['15 */6 * * *'] group=None ci=None
+  dna_strategy_pipeline.yml                     cron=['11 */4 * * *'] group=dna-strategy ci=false
+  gate-config-emit.yml                          cron=['0 5 * * *'] group=gate-config-emit ci=false
+  genome-daily-pipeline.yml                     cron=['0 */3 * * *'] group=genome-daily ci=false
+  incidents-enhancements-nightly.yml            cron=['30 4 * * *'] group=incidents-enhancements ci=false
+  live_tracker.yml                              cron=['25 * * * *'] group=None ci=None
+  market_beating.yml                            cron=['0 */2 * * *'] group=None ci=None
+  schema-drift-watchdog.yml                     cron=['15 9 * * *'] group=None ci=None
+  self_optimizing_trading.yml                   cron=['0 */4 * * *'] group=None ci=None
+  signal_tracking.yml                           cron=['0 */2 * * *'] group=None ci=None
+  torontoevent-backtest-and-deploy-ROOCODE.yml  cron=['0 6 * * *', '*/15 14-21 * * 1-5', '0 */4 * * 0,6'] group=None ci=None
+  torontoevent-backtest-and-deploy.yml          cron=['0 6 * * *', '*/15 14-21 * * 1-5', '0 */4 * * 0,6'] group=None ci=None
+  torontoevent-deploy-riseoftheclaw.yml         cron=['*/30 * * * *'] group=None ci=None
+  validate-hf-asset-class.yml                   cron=['35 6 * * *'] group=None ci=None
+  walkforward-gate.yml                          cron=['informational (continue-on-error: true) so'] group=None ci=None
+
+### CONCURRENCY GROUPS (name -> files)
+  '${{ github.workflow }}-${{ github.ref }}': 6 files -> ['actions-failure-guardian.yml', 'conflict-marker-check.yml', 'money-ready-registry-gate.yml', 'no-stale-db-passwords.yml', 'secret-scan.yml', 'swarm-sync-v2.yml']
+  'auto-commit-main-${{ github.workflow }}': 6 files -> ['backtest-and-deploy.yml', 'battleground-mass-backtest.yml', 'buy-now-analysis.yml', 'darwin-evolution.yml', 'meta-strategy.yml', 'skyrocket-detector.yml']
+  'movies-database-refresh': 4 files -> ['deploy-movieshows-all.yml', 'fetch-movies-v3.yml', 'fetch-movies.yml', 'kimi-fetch-movies.yml']
+  'dashboard-publish': 3 files -> ['audit-dashboard.yml', 'operator-review-today.yml', 'rsi5070-forward-snapshot.yml']
+  'edge-stability-shared': 2 files -> ['edge-stability-daily.yml', 'edge-stability-refresh.yml']
+
+### CRON FULL LIST
+  2hour_challenge.yml                                ['0 12 * * 1-5']  push=False group=None ci=None
+  ab_analysis.yml                                    ['30 5 * * *']  push=True group=ab-analysis ci=false
+  academic-strategies-daily.yml                      ['0 13 * * *']  push=False group=academic-strategies-daily ci=false
+  actions-failure-guardian.yml                       ['*/30 * * * *']  push=False group=${{ github.workflow }}-${{ github.ref }} ci=false
+  adaptive-trust-tuner.yml                           ['15 0,12 * * *']  push=False group=None ci=None
+  ai-leaderboard-freshness.yml                       ['30 4 * * *']  push=False group=None ci=None
+  ai-model-portfolios-daily.yml                      ['0 22 * * 1-5']  push=False group=ai-model-portfolios-daily ci=false
+  ai-tournament-pipeline.yml                         ['0 12 * * *']  push=False group=ai-tournament-pipeline ci=false
+  ai-tournament-price-tracker.yml                    ['0 23 * * *']  push=False group=None ci=None
+  algorithm-competition-refresh.yml                  ['0 10 * * 0']  push=False group=None ci=None
+  alpha-engine-daily-picks.yml                       ['0 22 * * 1-5', '0 5 * * 0']  push=False group=None ci=None
+  alpha-engine-etf.yml                               ['5 */6 * * *']  push=False group=alpha-engine-etf-push ci=false
+  alpha-engine-fast.yml                              ['2,32 * * * *']  push=False group=alpha-engine-fast ci=false
+  alpha-engine-live.yml                              ['3 */2 * * *']  push=False group=alpha-engine-scanner ci=true
+  alpha-equity-breakout.yml                          ['30 22 * * 1-5']  push=False group=alpha-equity-breakout-push ci=false
+  alpha-gainer-capture.yml                           ['10,40 * * * *']  push=False group=alpha-gainer-capture ci=false
+  alpha-quant-stack.yml                              ['5,35 * * * *']  push=False group=alpha-quant-stack ci=false
+  alpha-trend-catcher.yml                            ['5 0,4,8,12,16,20 * * *']  push=False group=alpha-trend-catcher ci=false
+  alpha-verify-predictions.yml                       ['26 */2 * * *']  push=False group=alpha-verify-predictions ci=true
+  alpha-weekly-validation.yml                        ['0 6 * * 1']  push=False group=None ci=None
+  analyst-tracker.yml                                ['15 */4 * * *', '0 * * * *']  push=False group=None ci=None
+  asset-class-freshness-watchdog.yml                 ['30 13 * * *']  push=False group=asset-class-freshness-watchdog ci=false
+  asterdex-paper-trading.yml                         ['5 * * * *']  push=False group=None ci=None
+  audit-dashboard.yml                                ['10 * * * *']  push=False group=dashboard-publish ci=false
+  audit-drift-telemetry.yml                          ['10 */6 * * *']  push=True group=None ci=None
+  audit-frontend-manifest.yml                        ['40 7 * * *']  push=True group=None ci=None
+  audit-hourly-update.yml                            ['20 * * * *']  push=False group=auto-commit-main-audit-hourly-update ci=false
+  audit-impact-tracker.yml                           ['0 */6 * * *']  push=False group=None ci=None
+  auto-retire-daily.yml                              ['30 9 * * *']  push=False group=None ci=None
+  auto-shutdown-monitor.yml                          ['0 8 * * *']  push=False group=None ci=None
+  automated-reporting.yml                            ['0 8 * * *', '0 9 * * 1']  push=False group=None ci=None
+  autonomous_trading.yml                             ['0 */4 * * *']  push=True group=None ci=None
+  baby-strat-forward-paper.yml                       ['15 * * * *']  push=True group=baby-strat-forward-${{ github.event_name }} ci=${{
+  backfill-features.yml                              ['0 4 * * *']  push=False group=None ci=None
+  backfill.yml                                       ['0 */2 * * *']  push=False group=None ci=None
+  backtest-and-deploy.yml                            ['0 6 * * *', '0 14,16,18,20 * * 1-5', '0 */4 * * 0,6']  push=True group=auto-commit-main-${{ github.workflow }} ci=false
+  backup-verify.yml                                  ['0 6 15 * *']  push=False group=None ci=None
+  battle_test.yml                                    ['0 * * * *']  push=True group=None ci=None
+  benchmark-comparison.yml                           ['0 7 * * *']  push=False group=None ci=None
+  beta-portfolio-refresh.yml                         ['20 6 1 * *']  push=False group=beta-portfolio-refresh ci=false
+  blacklist-reconciler.yml                           ['0 4 * * *']  push=False group=blacklist-reconciler ci=false
+  bond-agent.yml                                     ['32 14 * * 1-5']  push=False group=bond-agent ci=true
+  breakout-arena.yml                                 ['10 * * * *']  push=False group=None ci=None
+  bt-backtest-trades-sync.yml                        ['0 4 * * 0']  push=False group=None ci=None
+  buy-now-analysis.yml                               ['0 */6 * * *']  push=False group=auto-commit-main-${{ github.workflow }} ci=false
+  cftc-cot-refresh.yml                               ['0 12 * * 6']  push=False group=None ci=None
+  check-streamer-status.yml                          ['0 */2 * * *']  push=False group=None ci=None
+  claude-gainer-ml-live.yml                          ['15,45 * * * *']  push=False group=None ci=None
+  claude-gainer-short-term.yml                       ['7,37 * * * *']  push=False group=claude-gainer-st ci=false
+  claude-gainer-tracker.yml                          ['15 */4 * * *', '15 13 * * *', '0 6 * * 0']  push=False group=None ci=None
+  claudes-test-portfolios.yml                        ['*/30 * * * *']  push=True group=claudes-test ci=false
+  coinglass-scanner.yml                              ['3 * * * *']  push=False group=None ci=None
+  commodities-agent.yml                              ['0 10 * * 1-5', '0 20 * * 1-5']  push=False group=commodities-agent ci=true
+  consensus-outcome-tracker.yml                      ['*/30 * * * *']  push=False group=consensus-outcome-tracker ci=false
+  contested-pick-checker.yml                         ['0 * * * *']  push=False group=None ci=None
+  continuous-improvement-monitor.yml                 ['36 */2 * * *']  push=False group=continuous-improvement-monitor ci=true
+  conviction-picks.yml                               ['56 * * * *']  push=False group=conviction-picks-discord ci=false
+  copy-trader-forward-test.yml                       ['17 * * * *']  push=False group=copy-trader-forward-test ci=false
+  copy-trader-intelligence.yml                       ['7,52 * * * *']  push=False group=copy-trader-intel ci=false
+  copytrader-tracker.yml                             ['42 */2 * * *']  push=False group=copytrader-tracker ci=false
+  correlation-monitor.yml                            ['15 0,6,12,18 * * *']  push=False group=correlation-monitor ci=false
+  cross-aggregator.yml                               ['8,38 * * * *']  push=False group=cross-system-signal-aggregator ci=${{
+  cross-db-audit.yml                                 ['0 6 * * *']  push=True group=None ci=None
+  cross-db-consistency.yml                           ['0 2 * * *']  push=False group=None ci=None
+  crypto-ml-tracker.yml                              ['0 * * * *']  push=False group=None ci=None
+  crypto-ohlcv-refresh.yml                           ['20 */4 * * *']  push=False group=crypto-ohlcv-refresh ci=false
+  crypto-smart-picks.yml                             ['47 */2 * * *']  push=False group=crypto-smart-picks ci=false
+  crypto-test-portfolios.yml                         ['15 */4 * * *']  push=False group=crypto-test-portfolios ci=false
+  crypto-winner-scan.yml                             ['*/15 * * * *', '0 */6 * * *', '0 3 * * 0']  push=False group=None ci=None
+  daily-feed-summary.yml                             ['0 */2 * * *']  push=False group=None ci=None
+  daily-miracle-scan.yml                             ['0 23 * * 1-5']  push=False group=None ci=None
+  daily-picks-snapshot.yml                           ['0 22 * * 1-5', '0 5 * * 1']  push=False group=None ci=None
+  daily-price-refresh.yml                            ['0 22 * * 1-5', '0 2 * * 2-6']  push=False group=None ci=None
+  daily-prices-yf-refresh.yml                        ['40 22 * * 1-5']  push=False group=daily-prices-yf-refresh ci=false
+  daily-scrutiny-engine.yml                          ['30 7 * * *']  push=False group=daily-scrutiny-engine ci=true
+  daily-stock-refresh.yml                            ['30 22 * * 1-5', '0 14 * * 1-5']  push=False group=None ci=None
+  daily-top-picks-filter.yml                         ['23 */4 * * *']  push=False group=None ci=None
+  daily_runs.yml                                     ['0 0 * * *']  push=False group=None ci=None
+  darwin-evolution.yml                               ['0 * * * *']  push=False group=auto-commit-main-${{ github.workflow }} ci=false
+  dashboard-pick-trader.yml                          ['43 * * * *']  push=False group=dashboard-pick-trader ci=true
+  data-pipeline-test.yml                             ['0 */6 * * *']  push=False group=None ci=None
+  db-backup-email.yml                                ['0 4 * * *']  push=False group=None ci=None
+  db-freshness-guardian.yml                          ['0 * * * *']  push=True group=None ci=None
+  db-sync-bidirectional.yml                          ['0 8 * * *']  push=False group=None ci=None
+  db-sync-to-mirror.yml                              ['0 6 * * *']  push=False group=None ci=None
+  deals-refresh.yml                                  ['0 14 * * 1', '0 14 1 * *']  push=False group=None ci=None
+  decile-separation-test.yml                         ['0 6 * * *']  push=False group=decile-separation-test ci=false
+  deploy-battleground-ftp.yml                        ['15 * * * *']  push=True group=None ci=None
+  deploy-findcryptopairs-ftp.yml                     ['15 */6 * * *']  push=True group=None ci=None
+  deploy-riseoftheclaw.yml                           ['0,30 * * * *']  push=False group="deploy-riseoftheclaw" ci=true
+  deploy-vetted-picks.yml                            ['15 */4 * * *']  push=False group=None ci=None
+  discord-bot.yml                                    ['5 */6 * * *']  push=False group=discord-bot ci=false
+  discord-heartbeat.yml                              ['0 */4 * * *']  push=False group=None ci=None
+  discord_status.yml                                 ['0 * * * *']  push=False group=None ci=None
+  dna-mutation-cycle.yml                             ['0 5 * * *']  push=False group=dna-mutation-cycle ci=false
+  dna_strategy_pipeline.yml                          ['11 */4 * * *']  push=True group=dna-strategy ci=false
+  dxy-state-update.yml                               ['30 13 * * 1-5']  push=False group=dxy-state-update ci=true
+  dynamic-alpha-engine.yml                           ['18,48 * * * *']  push=False group=dynamic-alpha-engine-push ci=false
+  dynamic-universe.yml                               ['37 */2 * * *']  push=False group=dynamic-universe ci=false
+  edge-decay-check.yml                               ['20 7 * * 1-5']  push=False group=None ci=None
+  edge-stability-daily.yml                           ['30 1 * * *']  push=False group=edge-stability-shared ci=false
+  edge-stability-refresh.yml                         ['30 0 * * *']  push=False group=edge-stability-shared ci=false
+  ema-retracement-scan.yml                           ['15 * * * *']  push=False group=ema-retracement-scanner ci=false
+  enhanced-ml-crypto.yml                             ['0 2 * * *', '19 */2 * * *']  push=False group=enhanced-ml-crypto ci=false
+  equities-agent.yml                                 ['0 13 * * 1-5', '0 21 * * 1-5']  push=False group=equities-agent ci=true
+  etf-agent.yml                                      ['30 14 * * 1-5']  push=False group=etf-agent ci=true
+  etf-bond-scanner.yml                               ['35 13 * * 1-5', '0 14 * * 1-5']  push=False group=None ci=None
+  fast-stocks-competition.yml                        ['0 14,18 * * 1-5']  push=False group=fast-stocks-competition ci=false
+  fc-crypto-pro.yml                                  ['0 */2 * * *']  push=False group=None ci=None
+  feature-signals-hourly.yml                         ['25 0,8,16 * * *']  push=False group=feature-signals-hourly ci=true
+  feature-stability-check.yml                        ['0 6 * * 1']  push=False group=None ci=None
+  feed-health.yml                                    ['25 */1 * * *']  push=False group=None ci=None
+  fetch-movies-v3.yml                                ['0 7 * * *']  push=False group=movies-database-refresh ci=false
+  forex-agent.yml                                    ['0 0,8,13,17 * * 1-5']  push=False group=forex-agent ci=true
+  forex-smart-picks.yml                              ['0 2,6,10,14,18,22 * * 1-5']  push=False group=None ci=None
+  forward-signal-scanner.yml                         ['0 */2 * * *']  push=False group=None ci=None
+  forward-test-new-strategies.yml                    ['0 */6 * * *']  push=False group=None ci=None
+  forward-tracking-v2.yml                            ['0 * * * *']  push=False group=None ci=None
+  forward_test.yml                                   ['0 0,4,8,12,16,20 * * *']  push=False group=None ci=None
+  fred-macro-refresh.yml                             ['0 */6 * * *']  push=False group=None ci=None
+  funding-rate-collector.yml                         ['30 0 * * *']  push=False group=funding-rate-collector ci=false
+  futures-agent.yml                                  ['0 14 * * 1-5', '0 22 * * 1-5', '0 22 * * 0']  push=False group=futures-agent ci=true
+  gainer-predictor.yml                               ['*/30 * * * *']  push=False group=gainer-predictor-scan ci=false
+  gate-config-emit.yml                               ['0 5 * * *']  push=True group=gate-config-emit ci=false
+  genome-daily-pipeline.yml                          ['0 */3 * * *']  push=True group=genome-daily ci=false
+  genome-evolution.yml                               ['0 6 * * 0']  push=False group=None ci=None
+  gha-stale-workflows-audit.yml                      ['30 5 * * *']  push=False group=None ci=None
+  gha-summary-report.yml                             ['0 */6 * * *']  push=False group=None ci=None
+  ghcopilot-paper-monitor.yml                        ['37 * * * *']  push=False group=ghcopilot-paper-monitor ci=false
+  goldmine-tracker.yml                               ['0 7 * * *', '0 18 * * *', '0 0 * * *']  push=False group=None ci=None
+  growth-stock-screener-daily.yml                    ['0 14 * * 1-5']  push=False group=growth-stock-screener-${{ github.event_name == 'push' && 'push' || 'cron' }} ci=${{
+  h004-backtest.yml                                  ['0 6 * * 1']  push=False group=None ci=None
+  h103-forward-logger.yml                            ['0 14 1 * *']  push=False group=h103-forward-logger ci=false
+  hc-parity.yml                                      ['0 15 * * 1']  push=False group=hc-parity ci=false
+  hierarchical-bayes.yml                             ['30 2 * * *']  push=False group=None ci=None
+  hindsight-learner.yml                              ['7 * * * *']  push=False group=hindsight-learner ci=false
+  hoffman-tracker.yml                                ['0 */6 * * *']  push=False group=None ci=None
+  honest-kill-switch.yml                             ['0 */12 * * *']  push=False group=None ci=None
+  hourly-master-picks.yml                            ['5 * * * *']  push=False group=None ci=None
+  hub-sync.yml                                       ['22 * * * *']  push=False group=None ci=None
+  hyro-bridge-regen.yml                              ['40 5 * * *']  push=False group=hyro-bridge-regen ci=false
+  hyro-daily.yml                                     ['35 13 * * *']  push=False group=hyro-daily ci=true
+  incidents-enhancements-nightly.yml                 ['30 4 * * *']  push=True group=incidents-enhancements ci=false
+  incubator-pipeline.yml                             ['0 6 * * *']  push=False group=None ci=None
+  incubator-strategies.yml                           ['15 */2 * * *']  push=False group=incubator-strategies ci=false
+  index-creator-content.yml                          ['0 3 * * *']  push=False group=None ci=None
+  insider-trades-refresh.yml                         ['0 11 * * 1']  push=False group=None ci=None
+  kimi-feb172026-live.yml                            ['0 */2 * * *', '0 */4 * * *', '0 0 * * *']  push=False group=None ci=None
+  kimi-goldmine-collector.yml                        ['0 13,15,17,19 * * 1-5', '0 */2 * * *']  push=False group=None ci=None
+  live-monitor-refresh.yml                           ['42 * * * *', '0 2 * * 0']  push=False group=None ci=None
+  live_spike_trading.yml                             ['29 */2 * * *']  push=False group=live-spike-trading ci=false
+  live_tracker.yml                                   ['25 * * * *']  push=True group=None ci=None
+  live_trading.yml                                   ['0 */4 * * *']  push=False group=None ci=None
+  live_trading_canada.yml                            ['0 */4 * * *']  push=False group=None ci=None
+  live_trading_canada_free.yml                       ['0 */4 * * *']  push=False group=None ci=None
+  low-score-tracker.yml                              ['5 * * * *']  push=False group=low-score-tracker ci=false
+  luxalgo-signals.yml                                ['25 * * * *']  push=False group=luxalgo-signals ci=false
+  macd-rsi-m048-shadow-daily.yml                     ['37 23 * * *']  push=False group=None ci=None
+  market_beating.yml                                 ['0 */2 * * *']  push=True group=None ci=None
+  master-automation-scheduler.yml                    ['0 * * * *', '0 */4 * * *', '0 3 * * *', '0 0 * * 0']  push=False group=None ci=None
+  master-picks-health.yml                            ['30 */4 * * *']  push=False group=None ci=None
+  mega-mutation-tracker.yml                          ['45 * * * *']  push=False group=mega-mutation-tracker ci=false
+  meme-scanner-v2.yml                                ['*/10 * * * *', '0 */3 * * *', '0 * * * *']  push=False group="meme-scanner-v2-${{ github.ref }}" ci=false
+  meme-scanner.yml                                   ['0 */2 * * *', '0 */3 * * *']  push=False group="meme-scanner-${{ github.ref }}" ci=false
+  mercury2-retrain.yml                               ['0 2 * * 0']  push=False group=mercury2-retrain-${{ github.event_name }} ci=${{
+  mercury2-scan.yml                                  ['35 * * * *']  push=False group=mercury2-scan ci=false
+  meta-strategy.yml                                  ['20 * * * *', '0 5,11,17,23 * * *']  push=False group=auto-commit-main-${{ github.workflow }} ci=false
+  mirror-site.yml                                    ['0 */6 * * *']  push=False group=mirror-site ci=false
+  missed-opportunity-scan.yml                        ['19 * * * *']  push=False group=missed-opportunity-scan ci=true
+  ml-battleground-f.yml                              ['47 * * * *']  push=False group=ml-battleground-f ci=true
+  ml-battleground-retrain.yml                        ['0 4 * * *']  push=False group=superpowers-retrain-${{ github.event_name }} ci=${{
+  ml-feedback-loop.yml                               ['0 */6 * * *']  push=False group=None ci=None
+  ml-feedback-retrain.yml                            ['23 */12 * * *']  push=False group=ml-feedback-retrain ci=false
+  ml-forward-test.yml                                ['30 */4 * * *']  push=False group=None ci=None
+  ml-gatekeeper-train-ab.yml                         ['12 19 * * *']  push=False group=None ci=None
+  ml-health-monitor.yml                              ['0 */6 * * *']  push=False group=None ci=None
+  ml-model-autotraining.yml                          ['0 */6 * * *']  push=False group=None ci=None
+  ml-monthly-retrain.yml                             ['0 4 1 * *']  push=False group=None ci=None
+  ml-staleness-watchdog.yml                          ['0 13 * * *']  push=False group=ml-staleness-watchdog ci=false
+  ml-strategy-reviver.yml                            ['23 */2 * * *']  push=False group=ml-strategy-reviver ci=true,
+  momentum-catcher.yml                               ['*/30 * * * *']  push=False group=momentum-catcher-writer ci=false
+  momentum-scanner.yml                               ['0 */4 * * *']  push=False group=None ci=None
+  momentum-tracker.yml                               ['37 * * * *']  push=False group=momentum-tracker ci=false
+  money-ready-snapshot.yml                           ['15 6 * * *']  push=False group=None ci=None
+  monthly-calibrator-refit.yml                       ['0 7 1 * *']  push=False group=None ci=None
+  monthly-tournament.yml                             ['0 6 1 * *']  push=False group=monthly-tournament ci=false
+  multi-asset-scanner.yml                            ['*/30 * * * *']  push=False group=None ci=None
+  mutation-analysis-report.yml                       ['25 6 * * 1']  push=False group=None ci=None
+  mutation-lab.yml                                   ['0 */3 * * *']  push=False group=mutation-lab ci=false
+  mutation-lifecycle-runner.yml                      ['30 5 * * *']  push=False group=mutation-lifecycle-runner ci=false
+  mysql-q001-sync.yml                                ['0 8 24 5 *']  push=False group=None ci=None
+  mysql-stale-picks-resolver.yml                     ['0 4 * * *']  push=False group=mysql-stale-picks-resolver ci=false
+  mysql-trading-sync.yml                             ['30 * * * *']  push=False group=mysql-trading-sync ci=false
+  news-video-healthcheck.yml                         ['0 15 * * 1,4']  push=False group=None ci=None
+  non-crypto-ab-test.yml                             ['30 13 * * 1-5', '30 19 * * 1-5', '30 1 * * 1-5', '30 7 * * 1-5']  push=False group=non-crypto-ab-test ci=false
+  now-scanner.yml                                    ['14,44 * * * *']  push=False group=now-scanner ci=false
+  obi-snapshot.yml                                   ['30 * * * *']  push=False group=None ci=None
+  operator-review-today.yml                          ['0 7 * * *', '0 7 * * * (UTC)']  push=False group=dashboard-publish ci=false
+  optimize-score-thresholds.yml                      ['30 3 * * *']  push=False group=optimize-scores ci=true
+  outcome-resolver.yml                               ['15 */1 * * *']  push=False group=outcome-resolver ci=false
+  overnight-mutations.yml                            ['0 2 * * 6']  push=False group=mutations ci=false
+  paper-pilot-daily.yml                              ['30 13 * * *']  push=False group=None ci=None
+  parquet-ingest.yml                                 ['0 */4 * * *']  push=False group=None ci=None
+  pead-shadow-collector.yml                          ['30 22 * * 1-5']  push=False group=pead-shadow-collector ci=false
+  penny-skyrocket-runner.yml                         ['48 14 * * 1-5']  push=False group=penny-skyrocket-runner ci=true
+  penny-stock-picks.yml                              ['0 12 * * 1-5']  push=False group=None ci=None
+  pick-data-quality-gate.yml                         ['15 13 * * *']  push=False group=None ci=None
+  pick-funnel-nightly.yml                            ['0 4 * * *']  push=False group=pick-funnel-nightly ci=false
+  pick-monitor-30min.yml                             ['0 */2 * * *']  push=False group=pick-monitor-30min-writer ci=false
+  picks-now-live-pnl.yml                             ['48 * * * *']  push=False group=picks-now-live-pnl ci=false
+  picks-now-refresh.yml                              ['0 6,12,18 * * *']  push=False group=None ci=None
+  picks_dispatch.yml                                 ['0 */4 * * *']  push=False group=None ci=None
+  poc-picks-checkpoint.yml                           ['0 21 18 7 *', '0 21 20 7 *']  push=False group=poc-picks-checkpoint ci=false
+  polymarket-signals.yml                             ['13,43 * * * *']  push=False group=polymarket-signals ci=true
+  populate-alpha-macro-daily.yml                     ['7 21 * * *']  push=False group=populate-alpha-macro ci=false
+  portfolio-trackers.yml                             ['15 * * * *']  push=False group=portfolio-trackers ci=false
+  pre-spike-scan.yml                                 ['0 12,13,14 * * 1-5']  push=False group=pre-spike-scan ci=true
+  prediction-market-agents.yml                       ['15 */2 * * *']  push=False group=prediction-market-agents ci=false
+  prediction-quality-tracker.yml                     ['47 * * * *']  push=False group=prediction-quality-tracker ci=true
+  proven-strategies-scanner.yml                      ['0 */2 * * *']  push=False group=None ci=None
+  prune-strategy-performance.yml                     ['0 3 * * *']  push=False group=prune-strategy-performance ci=false
+  quan-engine-live.yml                               ['*/30 * * * *']  push=False group=quan-engine-live ci=false
+  quant-auditor-deep-nightly.yml                     ['15 6 * * *']  push=False group=None ci=None
+  quick-guess-ml.yml                                 ['9 * * * *']  push=False group=quick-guess-ml ci=false
+  rapid-validation-CLAUDECODE_Feb152026.yml          ['15 */4 * * *']  push=False group=None ci=None
+  recommended-portfolio.yml                          ['28 * * * *']  push=False group=None ci=None
+  refresh-creator-updates.yml                        ['0 2 * * *']  push=False group=None ci=None
+  refresh-top-movies.yml                             ['0 */6 * * *']  push=False group=None ci=None
+  regime-detector.yml                                ['30 20 * * 1-5', '0 14 * * 0']  push=False group=None ci=None
+  regime-terminal.yml                                ['*/30 * * * *']  push=False group=regime-terminal ci=false
+  research-orchestrator.yml                          ['0 6 * * 6']  push=False group=None ci=None
+  riseoftheclaw-weekly-backtest.yml                  ['0 3 * * 0']  push=False group=None ci=None
+  robust-edge-miner.yml                              ['40 */12 * * *']  push=False group=robust-edge-miner ci=false
+  rsi5070-forward-snapshot.yml                       ['0 7 * * *']  push=False group=dashboard-publish ci=false
+  schema-drift-audit.yml                             ['0 3 * * *']  push=False group=None ci=None
+  schema-drift-watchdog.yml                          ['15 9 * * *']  push=True group=None ci=None
+  scrape-events.yml                                  ['0 4 * * *', '0 3 * * *']  push=False group=None ci=None
+  sec-edgar-fetch.yml                                ['0 13 * * 1-5', '0 6 * * 0']  push=False group=None ci=None
+  secret-rotation-reminder.yml                       ['creates a GitHub Issue on the 1st of every month reminding', '0 9 1 * *']  push=False group=None ci=None
+  secret-scan.yml                                    ['0 4 * * *']  push=False group=${{ github.workflow }}-${{ github.ref }} ci=true
+  self_optimizing_trading.yml                        ['0 */4 * * *']  push=True group=None ci=None
+  send-accountability-reminders.yml                  ['0 * * * *']  push=False group=None ci=None
+  sidecar-status-update.yml                          ['7 */4 * * *']  push=False group=None ci=None
+  sign-coherence-gate.yml                            ['0 4 * * *']  push=False group=sign-coherence-gate ci=false
+  signal-engine.yml                                  ['*/30 * * * *', '0 2 * * *']  push=False group=crypto-signal-engine-writer ci=false
+  signal-integrator.yml                              ['15 * * * *']  push=False group=signal-integrator ci=false
+  signal-quality-monitor.yml                         ['15 * * * *']  push=False group=None ci=None
+  signal-recorder.yml                                ['48 * * * *']  push=False group=signal-recorder-scan ci=false
+  signal_tracking.yml                                ['0 */2 * * *']  push=True group=None ci=None
+  simulation-picks-resolver.yml                      ['0 23 * * 6']  push=False group=None ci=None
+  skyrocket-detector.yml                             ['33 * * * *']  push=False group=auto-commit-main-${{ github.workflow }} ci=false
+  smart-money-tracker.yml                            ['0 11 * * 1-5', '0 14 * * 0']  push=False group=None ci=None
+  smart-picks-tracker.yml                            ['54 * * * *']  push=False group=smart-picks-publish ci=true
+  social-prediction-tracker.yml                      ['30 */2 * * *']  push=False group=None ci=None
+  social_investigation.yml                           ['0 12 * * *']  push=False group=None ci=None
+  specialized-scanners.yml                           ['0 1,5,9,13,17,21 * * *']  push=False group=specialized-scanners ci=false
+  spike-scanner.yml                                  ['0 */2 * * *']  push=False group=None ci=None
+  sports-betting-refresh.yml                         ['0 15,18,21,0,3 * * *']  push=False group=None ci=None
+  sports-data-snapshots.yml                          ['*/15 * * * *']  push=False group=sports-data-snapshots ci=false
+  sports-forensics-weekly.yml                        ['30 6 * * 1']  push=False group=None ci=None
+  sports-prediction-market-sync.yml                  ['0 14,20 * * *']  push=False group=sports-prediction-market-sync ci=false
+  sports-smoke-and-e2e.yml                           ['17 * * * *']  push=False group=sports-smoke-${{ github.ref }} ci=true
+  spy-data-refresh.yml                               ['0 6 * * *']  push=False group=None ci=None
+  stale-branch-cleanup.yml                           ['17 6 * * 1']  push=False group=None ci=None
+  statistical_validation.yml                         ['0 0 * * *']  push=False group=None ci=None
+  stocks-daily-stocksunify.yml                       ['40 21 * * 1-5']  push=False group=None ci=None
+  stocks-daily.yml                                   ['35 21 * * 1-5']  push=False group=stocks-daily-generator ci=true
+  stocksunify2-pull.yml                              ['5 13 * * *']  push=False group=None ci=None
+  strategy-forward-tester.yml                        ['15 */2 * * *']  push=False group=None ci=None
+  strategy-funnel-hourly.yml                         ['45 * * * *']  push=False group=auto-commit-main-strategy-funnel-hourly ci=false
+  strategy-health-monitor.yml                        ['0 */4 * * *']  push=False group=None ci=None
+  strategy-health-report.yml                         ['0 8 * * *']  push=False group=None ci=None
+  strategy-perf-by-class-rebuild.yml                 ['40 13 * * *']  push=False group=strategy-perf-by-class ci=false
+  strategy-tribunal.yml                              ['0 14 * * 5']  push=False group=None ci=None
+  sustained-gainer-scan.yml                          ['16,46 * * * *']  push=False group=sustained-gainer-scan ci=false
+  swarm-janitor.yml                                  ['0 4 * * *']  push=False group=None ci=None
+  swarm-pick-review.yml                              ['0 3 * * *']  push=False group=None ci=None
+  swarm-sync-v2.yml                                  ['*/30 * * * *']  push=False group=${{ github.workflow }}-${{ github.ref }} ci=false
+  swing_screener_daily.yml                           ['0 14 * * 1-5']  push=False group=ueps-swing-screener-${{ github.event_name == 'push' && 'push' || 'cron' }} ci=${{
+  system-health-check.yml                            ['0 */2 * * *']  push=False group=None ci=None
+  taste-profile-scan.yml                             ['0 3 * * 0']  push=False group=None ci=None
+  test-portfolios.yml                                ['22 * * * *']  push=False group=test-portfolios ci=true
+  top-gainers-scan.yml                               ['*/30 13-19 * * 1-5']  push=False group=top-gainers-scanner ci=true
+  torontoevent-algorithm-refresh.yml                 ['0 10 * * 0']  push=False group=None ci=None
+  torontoevent-backtest-and-deploy-ROOCODE.yml       ['0 6 * * *', '*/15 14-21 * * 1-5', '0 */4 * * 0,6']  push=True group=None ci=None
+  torontoevent-backtest-and-deploy.yml               ['0 6 * * *', '*/15 14-21 * * 1-5', '0 */4 * * 0,6']  push=True group=None ci=None
+  torontoevent-deploy-riseoftheclaw.yml              ['*/30 * * * *']  push=True group=None ci=None
+  torontoevent-goldmine-tracker.yml                  ['0 7 * * *', '0 18 * * *', '0 0 * * *']  push=False group=None ci=None
+  torontoevent-rapid-validation.yml                  ['18 * * * *']  push=False group=None ci=None
+  torontoevent-spike-scanner.yml                     ['*/30 * * * *']  push=False group=None ci=None
+  track-quick-picks.yml                              ['0 23 * * 1-5', '0 12 * * 0']  push=False group=None ci=None
+  traditional-test-portfolios.yml                    ['30 13 * * 1-5', '30 19 * * 1-5', '30 1 * * 1-5', '30 7 * * 1-5']  push=False group=traditional-test-portfolios ci=false
+  tv-paper-tpsl-watchdog.yml                         ['*/15 * * * *']  push=False group=None ci=None
+  tv-strategy-scanner.yml                            ['0 */4 * * *']  push=False group=None ci=None
+  ueps-pick-runner.yml                               ['15 */4 * * *']  push=False group=ueps-pick-runner-${{ github.event_name == 'push' && 'push' || 'cron' }} ci=${{
+  universe-expander.yml                              ['52 */4 * * *']  push=False group=universe-expander ci=false
+  update-creator-news.yml                            ['0 */2 * * *']  push=False group=None ci=None
+  validate-hf-asset-class.yml                        ['35 6 * * *']  push=True group=None ci=None
+  value_resolver_quarterly.yml                       ['0 7 1 */3 *']  push=False group=ueps-value-resolver-${{ github.event_name == 'push' && 'push' || 'cron' }} ci=${{
+  value_screener_weekly.yml                          ['0 6 * * 1']  push=False group=ueps-value-screener-${{ github.event_name == 'push' && 'push' || 'cron' }} ci=${{
+  verified-pilot-daily.yml                           ['15 6 * * *']  push=False group=None ci=None
+  volatile-alt-scanner.yml                           ['3 * * * *']  push=False group=volatile-alt-scanner ci=false
+  walk-forward-backtest.yml                          ['0 8 * * 0']  push=False group=None ci=None
+  walkforward-gate.yml                               ['informational (continue-on-error: true) so']  push=True group=None ci=None
+  weekly-filter.yml                                  ['0 6 * * 1']  push=False group=None ci=None
+  weekly-stock-simulation.yml                        ['0 6 * * 0']  push=False group=None ci=None
+  weekly-strategy-scorecard.yml                      ['0 0 * * 0']  push=False group=None ci=None
+  weekly_score_quartile_spread.yml                   ['15 14 * * 1']  push=False group=None ci=None
+  what-worked-insights.yml                           ['0 */4 * * *']  push=False group=None ci=None
+  winner-pattern-scanner.yml                         ['18,48 * * * *']  push=False group=winner-pattern-scanner-writer ci=true
+  worldclass-intelligence.yml                        ['30 11 * * 1-5', '0 14 * * 0']  push=False group=None ci=None
+  worldclass-pipeline.yml                            ['45 20 * * 1-5', '0 15 * * 0']  push=False group=None ci=None
