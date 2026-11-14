@@ -50,6 +50,18 @@ quick-wins/
 3. **Wire the live price path (medium risk):** QW-1, QW-12, QW-18, QW-17.
 4. **Infra (isolated):** QW-16, QW-15.
 
+## Peer-superseding fixes (fold in — more precise root causes)
+
+Peer `finpredict-v2` (`recommendations/patch_plan/P0_QUICK_WINS.md`) found three root causes *better* than the equivalents above, with exact line numbers:
+
+- **P0-1 Forex `KeyError: 'LONG'`** (`alpha_engine/scanner.py:2942`) — the real cause of the 93 ALPHA-engine failures/24h I logged as "Run Alpha Engine". Fix: normalize `LONG→BUY / SHORT→SELL` in a bucket helper.
+- **P0-3 Python 3.14 masquerade** — **197** workflows set `update-environment: false`, so `actions/setup-python` never activates the pinned 3.11 and `pandas==2.1.4` source-builds against system 3.14 → the "Install dependencies" cluster. Fix: delete `update-environment: false` in the failing cluster + assert interpreter.
+- **P0-2 `summary_picks.json` WR > 100%** (7 classes, INDEX 1,141%) — `tools/sync_summary_picks_json.py:63-65` counts wins/losses over *all* rows vs a subset for `resolved`. Fix: single terminal population + clamp/assert.
+- **P0-6 `sym_track_*` wrong population** (`dashboard_generator.py:1830-1832` fed the active list, always `[]`) — the "Track" column root cause. Fix: pass the closed ledger.
+- **P0-9 hardcoded Google API keys** in `STOCKSUNIFY/*/stock-api-keys.ts` and `MOVIESHOWS2/scroll-fix.js`; `dbpasses.txt` not in `.gitignore`.
+
+Peer `finpredict-v4` (`proposed_fixes/*/QUICK_WINS.md`) adds raw-DB honesty fixes (CRYPTO PF 1.80 dashboard vs 0.371 raw; Smart-Picks 91.7% single-source). Treat v2's `P0_QUICK_WINS.md` as the canonical implementation list; this folder's per-class files are the asset-class view.
+
 ## Guardrails
 
 - Do **not** wire `alpha_engine/forced_resolution.py` for live resolution — its header warns it is research-only (survivorship-bias risk).
