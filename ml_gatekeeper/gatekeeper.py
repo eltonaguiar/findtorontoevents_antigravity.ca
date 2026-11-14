@@ -93,8 +93,20 @@ _LEAKAGE_FEATURE_INDICES = (5, 6, 19, 30)  # forward_wr, strat_fwd_wr, eb_forwar
 
 
 def _drop_leakage_enabled() -> bool:
-    """Return True if env flag ML_GATE_DROP_LEAKAGE is set."""
-    return os.environ.get("ML_GATE_DROP_LEAKAGE", "").strip().lower() in ("1", "true", "yes")
+    """Leakage masking is ON by default (clean model is the production path).
+
+    Explicitly disable with ML_GATE_DROP_LEAKAGE=0|false. This flips the prior
+    opt-in default so the leaky features (forward_wr, strat_fwd_wr,
+    eb_forward_wr, age_hours) are masked in BOTH training and scoring unless a
+    user opts out. Audit 2026-11-14: the old model's leaky features were the
+    live emitter; masking-by-default forces train/score parity on the clean set.
+    """
+    val = os.environ.get("ML_GATE_DROP_LEAKAGE", "").strip().lower()
+    if val in ("0", "false", "no", "off"):
+        return False
+    if val in ("1", "true", "yes", "on"):
+        return True
+    return True
 
 
 def extract_features(pick):

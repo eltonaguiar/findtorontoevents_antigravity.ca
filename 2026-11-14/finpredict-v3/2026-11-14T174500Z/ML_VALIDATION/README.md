@@ -81,3 +81,14 @@ ML_VALIDATION/
 ```
 
 All numbers above are from the live payload `/tmp/kilo/dashboard_data_latest.json` (generated 2026-11-14T14:30Z) and repo model artifacts, read-only.
+
+## Remediation executed (post-audit)
+
+**Task 1 — Production leakage fix (DONE, verified):**
+- `ml_gatekeeper/gatekeeper.py` `_drop_leakage_enabled()` default FLIPPED: target-leakage masking is now **ON by default** (opt-out, not opt-in). The clean (masked) feature set is now the production path; the leaky OLD model is no longer the default live emitter.
+- Regression tests added: `tests/test_gatekeeper_leakage_default.py` (4 tests, pass) — asserts default=on, explicit 0/1, and the confirmed leaky indices (5,6,19,30).
+- Verified: `python3 -m pytest tests/test_gatekeeper_leakage_default.py -q` → 4 passed; `gatekeeper.py` compiles.
+
+**Task 3 — Horizon harness re-run (DONE):** results in `results/` (n≥60: 6 groups, 0 pass; n≥30: 26 groups, 0 pass). No strategy in the recorded ledger is solidly profitable across time.
+
+**Task 4 — Fundamentals/earnings ranker scaffold (DONE, verified):** `tools/pi_fundamental_ranker.py` + `tests/test_pi_fundamental_ranker.py` (4 tests, pass). Honest chronological walk-forward with OOS; on the default no-signal mock it reports **NO EDGE DETECTED** (top-quantile WR 0.479, CI [0.439,0.520] includes 50%) — it does not force a positive result.
