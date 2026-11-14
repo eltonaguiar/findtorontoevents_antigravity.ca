@@ -224,6 +224,67 @@ def find_stop_fill(
     return None
 
 
+def exit_fill_for_stop(
+    direction: Any,
+    stop: Optional[float],
+    polled_price: Optional[float] = None,
+    bars: Optional[Sequence[Dict[str, Any]]] = None,
+) -> Optional[Dict[str, Any]]:
+    """Fill price for a stop that a live scanner has just seen breached.
+
+    This is the fix for the kimi_riseoftheclaw leak, expressed as a pure
+    function so it can be tested without the 9,800-line scanner. The old
+    behaviour booked P&L at the *polled* price, i.e. wherever the market had
+    drifted to by the time the poll ran. No resting stop order can fill there:
+    it fills at the stop, or at the bar open when the bar gapped through it.
+
+    ``bars`` should be the bar(s) covering the exit — pass a single bar to keep
+    the model honest about *this* exit rather than scanning back to an older
+    breach. When no bars are available the stop level is used and the basis is
+    reported as ``stop``, which is the resting-order model; ``polled_price`` is
+    returned for the caller to record separately, never as the fill.
+
+    ``polled_price`` is accepted (and ignored for pricing) so callers cannot
+    accidentally use it as the fill again.
+    """
+    st = _f(stop)
+    if not st or st <= 0:
+        return None
+    if bars:
+        hit = find_stop_fill(direction, st, bars)
+        if hit:
+            return hit
+    return {"price": st, "basis": BASIS_STOP, "bar_index": None}
+
+
+def price_reached(direction: Any, level: Optional[float], bars: Sequence[Dict[str, Any]]) -> Optional[bool]:
+    """Was ``level`` ever traded inside ``bars``?
+
+    Used to separate two very different defects in a closed pick:
+
+      exit_price reached, stop never reached -> the trade exited on some OTHER
+          level (trailing stop, target, manual). The row is mislabelled, not
+          mis-filled: its ``exit_reason`` names the wrong mechanism.
+      exit_price never reached -> the recorded exit price is fictional; there
+          is no bar evidence the trade could have closed there at all.
+
+    Returns True/False, or None when the level is unusable.
+    """
+    lvl = _f(level)
+    if not lvl or lvl <= 0:
+        return None
+    long_side = _is_long(direction)
+    for bar in bars or []:
+        hi, lo = _f(bar.get("high")), _f(bar.get("low"))
+        if hi is None or lo is None:
+            continue
+        if long_side and lo <= lvl:
+            return True
+        if not long_side and hi >= lvl:
+            return True
+    return False
+
+
 # ---------------------------------------------------------------------------
 # Aggregate reporting
 # ---------------------------------------------------------------------------

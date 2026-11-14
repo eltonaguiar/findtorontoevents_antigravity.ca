@@ -93,7 +93,7 @@ earlier error (calling `resolution_method` null the P0) is corrected in both pla
 
 ---
 
-## B4 — OPEN (new, deepest): every non-crypto "SL_HIT" mostly exited *before* the stop
+## B4 — RESOLVED (new, deepest): every non-crypto "SL_HIT" mostly exited *before* the stop
 
 This one is not in any peer package.
 
@@ -130,6 +130,37 @@ the close). n=25 per class is enough to justify an investigation; it is not enou
 
 **What would settle it:** resolver logs or the writers' own trail history for ~20 rows per class. Until
 then, do not rank strategies by exit reason in these classes.
+
+### B4 — RESOLVED 2026-11-14: it is the label, not the price
+
+Settled with `tools/stop_fill_replay.py --truncate-at-exit`, which drops candles printed after the
+pick's recorded exit (the earlier replay's own stated weakness — "some touches may post-date the
+close"). On the never-touched rows it then asks a second question: did price ever reach the
+**recorded exit price**?
+
+| Class | sampled | stop touched | never touched | of the never-touched: reached a **different** level | never reached their own exit price |
+|---|---:|---:|---:|---:|---:|
+| EQUITY | 25 | 11 | 14 | **11** | 3 |
+| ETF | 25 | 12 | 13 | **12** | 1 |
+
+So explanation (2) is confirmed and (1) is the mechanism: these rows **did** hit a level — a trailed
+stop, a target, or a max-hold exit — and were stamped `SL_HIT`. The residual 3 + 1 never traded at
+their recorded exit price at all, which is data corruption rather than mislabelling.
+
+**The consequence that matters, and it is the opposite of what the fill work assumed:** on the touched
+subset, gap-aware filling makes EQUITY **worse** than the recorded number.
+
+| Class | recorded | at_stop | gap_aware |
+|---|---:|---:|---:|
+| EQUITY | −63.41 | −50.07 | **−83.62** |
+| ETF | −30.45 | −31.55 | −32.11 |
+
+With 45.5% of EQUITY touches gapping through, a stop-fill model is being fitted to trades that mostly
+did not stop out. **Do not extend the stop-fill fix to non-crypto exits.** For EQUITY/ETF the work
+item is reclassifying `exit_reason`, not improving the fill — until the label is right, every
+R-multiple, breakeven-WR and PF figure for these classes divides by the wrong denominator.
+
+n=25 per class: 11/14 and 12/13 is not a coin flip, but it is not a census either.
 
 ---
 
