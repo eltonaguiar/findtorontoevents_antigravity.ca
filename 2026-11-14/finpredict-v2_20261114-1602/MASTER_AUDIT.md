@@ -60,11 +60,13 @@
 
 ### Dashboard pipeline (`audit-dashboard.yml`)
 
+> **Superseded in detail by `actions_deepdive/ACTIONS_DEEP_DIVE.md` (17:50Z job-level pass).** Key corrections: p50 **97.2 min** / p95 **111.6 min** (not an 84.5 median); **21 of 22** recent audit cancels executed **zero jobs** (35% of all runs); queue p50 91–221 min for key jobs; PEAD fails **60/60** at commit. The bullets below are the 16:05Z snapshot.
+
 - **7 d:** 106 success / **61 cancelled** / 168 runs.
 - **24 h:** 13 success / **10 cancelled**.
-- Five sampled successful jobs ran **79.6–104.2 min** (median **84.5 min**) against a documented 30–35 min and a 115-min timeout.
-- 9 of the 24 h cancels were **zero-job queued runs** in the `dashboard-publish` group — the cancel cascade documented on 2026-05-19 is still active.
-- Push contention: Live Spike exhausted 8/8 push attempts; H-002 PEAD 10/10; mirror timed out at 30 min.
+- Sampled successful jobs ran **79.6–104.2 min** (median **84.5 min**) against a documented 30–35 min and a 115-min timeout; the 17:50Z pass measured p50 97.2 / p95 111.6 over 60 runs.
+- **21 of 22** recent audit cancels (95%) were zero-job queued runs in the `dashboard-publish` group — the cancel cascade documented on 2026-05-19 is still active.
+- Push contention: Live Spike exhausted 8/8 push attempts; H-002 PEAD **60/60** recent runs fail in `Commit shadow log`; mirror 60/60 failures are FTP-download timeouts.
 - `fetch_prices.php` returns HTTP **404**.
 
 ### Reconciliation with peers
@@ -204,8 +206,8 @@ So the columns are not "some dead fields" — they are structurally empty for th
 - **COMMODITY and FUTURES are administratively blocked:** `audit_trail/quality_gates.py:1724` sets `BLOCKED_ASSET_CLASSES = {"FOREX","COMMODITY","FUTURES","BOND"}`. A "live" commodity bucket is a display artifact, not an unblocked trading class.
 - **COMMODITY generator uses crypto proxies:** `alpha_engine/commodity_signal_generator.py:231-238` maps RNDR/ARB to "silver" and `:250` maps XLM/DOT to "oil". Rows labelled COMMODITY may carry no commodity exposure.
 - **AI Challenge crypto registry is stale:** `audit_dashboard/data/ai_challenge_antigravity_active_picks.json` has **9 OPEN rows, all `current_price=None`, `pnl_pct=0.0`, no timestamp fields** (age itself `UNVERIFIED`).
-- **SQLite layer is independently stale:** peer ML audit `updates/2026-11-14-ML-AUDIT-childlike-airport.md` found `data/live_picks.db` **128/129 active picks ~172 days stale**, **8 PnL sign contradictions**, **15 PnL mismatches**, and `data/audit_trail.db` **9 audit tables with 0 rows**; `pick_history` is all `REGISTERED` (no exits). This is a separate store from the dashboard JSON.
-- **Dashboard inflates CRYPTO PF ~5× vs raw DB:** v4 evidence reports dashboard CRYPTO PF **1.801** vs raw DB **0.371**, and Smart Picks PF **9.69** on 3 closed rows (91.7% one source). Peer-accepted, not independently re-derived here.
+- **SQLite layer is independently stale:** peer ML audit `updates/2026-11-14-ML-AUDIT-childlike-airport.md` found `data/live_picks.db` **128/129 active picks ~172 days stale**, **9 PnL sign contradictions**, **18 PnL mismatches**, and `data/audit_trail.db` **8 audit tables with 0 rows + 2 non-empty**; `pick_history` is all `REGISTERED` (no exits). This is a separate store from the dashboard JSON.
+- **Dashboard-vs-raw CRYPTO PF delta is snapshot-dependent:** v4's **1.801 vs 0.371** is a **173-day-old snapshot**; the fresh comparable values are **0.9196 vs 0.2628** (peer PF1). Treat the 5× inflation claim as historical, not current. Smart Picks PF 9.69 on 3 closed rows (91.7% one source) remains a small-sample artifact.
 - **Fabricated flat-3% cohort:** `signal_validation` (117), `macd_rsi_confluence` (138), `meanreversionbb` (111), `macd_crossover`, `momentumema`, `bollinger_squeeze`, `gpx/gpm_gen*` → **286 trades, every win exactly +3.00%, zero losers** (peer `finpredict`; adopted by `finpredict-v3`).
 - **127 "verified strategies" OPEN picks seeded 2026-11-12 12:15–12:19; 123 (96.9%) frozen** at PnL 0 / current==entry.
 - **11 frozen closed FOREX phantoms** (EURUSD, USDCHF, USDJPY, AUDUSD, GBPUSD, NZDUSD, SOFI; March 2026; `exit UNKNOWN`; `exit_price == entry_price`).
@@ -295,6 +297,8 @@ Only **10 of 3,500** closed rows are <24 h old. **2,221 are >30 d**, 1,132 >90 d
 - Bonferroni α = 7.599×10⁻⁵, **z_crit = 3.788** (one-sided); Šidák ≈ 7.795×10⁻⁵.
 - **21 strategies clear Bonferroni** — but **all 21 are the single-source, 90–100%-WR artifact cluster** (`single_source_pct = 1.00`, `top_source = file:mysql:at_pick_outcomes`), flagged `is_single_source_artifact = True` by the registry itself. That violates the independence assumption, so this is a data-generation artifact masquerading as 21 discoveries.
 - BH-FDR at q=0.05 rejects for 22 of 76 strategies with n≥30 — again all in the same correlated cluster.
+- **FDR gates are disabled, not failing** (peer correction): the pipeline does not currently enforce the FDR/Bonferroni gate on the live surface.
+- **Unreviewed production change:** commit `d8c8dd25581` flipped the ML gatekeeper leakage-masking default **ON** and is already on `origin/main`; it needs review because it changes which features the gate sees.
 
 ### PBO / DSR / Reality Check
 
@@ -425,7 +429,10 @@ Four independent reviewer subagents (crypto/commodity, equity/ETF/bond/MF, forex
 | 7 | COMMODITY/FUTURES | New finding: both are in `BLOCKED_ASSET_CLASSES` (`quality_gates.py:1724`); COMMODITY generator uses crypto proxies |
 | 8 | Mutual funds | "unbuilt" → **unbuilt in production / `origin/main`; untracked prototype exists in the main checkout** |
 | 9 | v4 reconciliation | "uniformly contradicted" → **v4 is internally contradictory** (INDEX says 0 active/26 d; its own deep-dives say 20 active/14:30Z) |
-| 10 | sqlite layer | Added ML-peer findings: `live_picks.db` 128/129 stale, 8 PnL sign bugs, empty `audit_trail.db` |
+| 10 | sqlite layer | Added ML-peer findings: `live_picks.db` 128/129 stale, 9 PnL sign bugs, 18 mismatches, `audit_trail.db` 8 empty + 2 non-empty |
+| 11 | Actions deep dive | Added `actions_deepdive/ACTIONS_DEEP_DIVE.md`: 8 unresolved latest-run failures, clusters A–E, 56 stale, audit p50 97.2/p95 111.6, 21/22 zero-job cancels, PEAD 60/60 |
+| 12 | Peer folders | Added `recommendations/peer_review/folders/PF1..PF5` + `FOLDER_REVIEW_SYNTHESIS.md`; 14 doc corrections and a 10-item veto list |
+| 13 | PnL unit bug | Added to `QUICK_WINS.md`: 9 sign pairs + 18 mismatches in `live_picks.db` |
 
 **Reviewer verdicts:** crypto/commodity **FAIL** (P0 can proceed; structural layer must be corrected), equity/ETF/bond/MF **FAIL** (4 corrections), forex/futures/CI **PASS conditional** (4 factual corrections), overall coherence **FAIL** (documentation conflicts, not the central conclusion). The central verdict — **FAIL / not demonstrably profitable** — survived every review.
 

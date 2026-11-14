@@ -20,7 +20,8 @@
 | `sub/F_sources.md` | Kalshi/Polymarket/copy-trader/Hyro authenticity |
 | `sub/G_peer_reconciliation.md` | Peer artifact inventory |
 | `recommendations/` | Ranked remediation: `QUICK_WINS.md`, `overall/ROADMAP.md`, `overall/DATA_CONTRACT.md`, `overall/CI_GATES.md`, `per_asset_class/*.md`, `patch_plan/*.md` |
-| `recommendations/peer_review/` | 4 reviewer memos + `REVIEW_SYNTHESIS.md` (corrections applied) |
+| `recommendations/peer_review/` | 4 reviewer memos + `REVIEW_SYNTHESIS.md` + `folders/PF1..PF5` + `FOLDER_REVIEW_SYNTHESIS.md` (corrections applied) |
+| `actions_deepdive/` | GitHub Actions deep dive: `ACTIONS_DEEP_DIVE.md`, GA1–GA4 reports, 365-row matrix, raw logs |
 | `raw/` | Live JSON, GitHub API JSON, workflow logs, per-symbol extracts |
 
 ## Headline verdict
