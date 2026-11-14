@@ -30,7 +30,7 @@
 - **Targets:** `prediction_market_agents/kalshi_signal_agent.py:489`; `alpha_engine/kalshi_signals.py:621/:650`; `audit_trail/quality_gates.py:6739`.
 - **Verify:** re-run `scan_kalshi()` → entry is `null`; stale rows excluded.
 
-## 6. Relabel/purge the flat-3% placeholder cohort (M / M)
+## 6. Detect & exclude the flat-3% placeholder cohort (M / M)
 - **Problem:** `signal_validation` (117), `macd_rsi_confluence` (138), `meanreversionbb` (111) + siblings: every win exactly 3.00%, zero losers = fallback TP stamped as realized PnL.
 - **Fix:** Add placeholder-P/L detector at closed-pick ingest: when a strategy's closed rows are all `pnl_pct == fallback_TP` with 100% WR and no `exit_price`, stamp `_placeholder_stats=True` and exclude from WR/PF rollups.
 - **Targets:** `dashboard_generator.py:7516` (`_coerce_closed_zero_pnl_from_outcome`), normalization `:8040–8081`, fallback TP `:8102`; blocklist seam `alpha_engine/strategy_blocklist.py:270–292`.

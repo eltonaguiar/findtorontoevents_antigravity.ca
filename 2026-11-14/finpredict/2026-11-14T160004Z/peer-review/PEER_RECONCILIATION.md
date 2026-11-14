@@ -85,6 +85,27 @@ Four independent audits agree on the negative verdict (not money-ready; data pip
 
 **ML childlike-airport (corrections + destructive list):** WUSDT/HBARUSDT `pnl_pct` in its audit are off by ~100–200× (magnitude errors); `audit_trail.db` not fully empty (`bt_backtest_runs=20`, `meta=1`; 8 tables empty); its per-class SQL targets a nonexistent top-level `asset_class` column (it lives in `metadata` JSON) and wrong table names (`picks`/`closed_picks.db` vs `live_picks`/`pick_history`) — so its proposed DB mutations would target the wrong schema. Destructive: crypto `UPDATE live_picks`, stocks force-close, etfs `INSERT OR REPLACE`, MF stub scanner emitting placeholder picks (veto).
 
+## Round-3 delta (deep pass 18:00Z — new peers + PnL-unit bug)
+
+**Peer roster is now 9, not 5.** Three more peers live on THIS host in worktrees I hadn't scanned:
+- `scratch-hippodraco` (`.kilo/worktrees/scratch-hippodraco/…/scratch-hippodraco-quick-wins/`, 11 files) — v3-R2 rates it **most implementation-ready**: `QW-ALL-1..9` checklist with `file:line` (freshness kill-switch `dashboard_generator.py:3187-3227`, `audit_sync.py:595` drops TP_HIT/SL_HIT, clamp, NULL-tombstone drain, intrabar-primary PF, CI contract tests, BOND minTrades honesty).
+- `flaxen-hair` (`.kilo/worktrees/flaxen-hair/updates/2026-11-14-flaxen-hair.md` + `quick_wins/01..08` + `quick_wins/shared/{normalize_pnl_units.py, validate_pick_ids.py}`) — **independent PnL recomputation**.
+- `hilarious-seer` (`.kilo/worktrees/hilarious-seer/audit_quickwins/2026-11-14-hilarious-seer/{overall,crypto,equity_others}/quickwins.md` + audit-summary) — corroboration only (no evidence files).
+
+**⚠️ PnL-unit mix bug (highest-value new fix, 3-peer corroborated):** `audit_trail/dashboard_generator.py:8065-8072` — when no prices exist, a fraction-vs-percent heuristic `if abs(pnl_val) < 0.10: pnl_val *= 100` misclassifies ambiguous values, so reported PnL is **mixed ratio/percent and off by up to 100×** across rows. flaxen-hair recomputed 93 closed rows (47 ratio / 32 percent / 14 off; same symbol+strategy rows differ by 100×); scratch-hippodraco + ML + hilarious-seer corroborate. This invalidates cross-class PnL aggregates. Target: replace the heuristic with an explicit unit column or price-derived-only PnL.
+
+**ML target leakage is REAL (corrects "ML code is sound"):** v3 `ML_VALIDATION` found leakage in `ml_gatekeeper/gatekeeper.py:170-186` (indices 5/6/19/30) + look-ahead in `claude_gainer_ml/train_model.py:685-711`. Commit `d8c8dd25581` (on main) flips `_drop_leakage_enabled()` ON by default — the fix is live but was made unreviewed during the audit. v3 horizon harness: **0/6 groups pass (n≥60), 0/26 (n≥30); 0 backtest↔forward overlap** — strengthens the negative verdict.
+
+**My 3 quick-win vetoes (from v2's PF1 review of my folder — accepted):**
+- `quick-wins/BOND.md` "stamp `current_price=entry_price`" → **veto** (manufactures the frozen-price artifact + false `yfinance_close` label). Replace with a real yfinance/FRED mark + coverage gate.
+- `quick-wins/FOREX.md` "purge 11 phantoms (data purge)" → **veto** (hard delete; provenance UNVERIFIED). Replace with `_is_valid_resolved_pick` validity filter / VOID quarantine, rows retained.
+- `quick-wins/CRYPTO.md` "relabel/purge flat-3% cohort" → **veto** the "purge". Replace with detector + `_placeholder_stats` exclusion from WR/PF, keep rows.
+- Also stale: my "confirm the JS-parse fix merges" is already done (`ba1378cbfa9`'s fix content is on `origin/main` via `5ad40e83c08`).
+
+**Actions nuance (from v2 GA2):** "Actions FAIL" should read **"hygiene FAIL / critical path PASS"** — 56/365 stale (20 never-run, 19 >90d) but the 5 critical schedules are fresh (audit-dashboard 17:14Z, audit-hourly-update 17:21Z, db-freshness-guardian 17:01Z, cross-db-audit 06:06Z, pick-funnel-nightly 04:05Z). New root causes: `wrong_guesses_log.json` 100.22 MB (GH001), Playwright 1.58.2 vs `ubuntu26.04-x64`, pandas `ME` frequency, 70 `continue-on-error:true` files.
+
+**v2 PF1 also adopted 12 of my fixes as canonical** (Kalshi `entry:0→None`, flat-3% detector, forward-seed `_unquoted`, UEPS tab suppression, `stock_forex_prices` consumer age-guard, FOREX threshold 1→2 shadow, visibility-floor gating, `edge_ratio` fix, `INSUFFICIENT` at `forward_trades==0`, outlier-clamp count, Wilson CI, entry band 0.5×–2×) and verified my citations 19/25 exact. PF5's merge plan names the remaining canonical conflicts to resolve: one `quote_status` enum (5-value), one dedup key (registry key), FUTURES/COMMODITY end-state, `FOREX_HARD_DISABLE` default.
+
 ## Actions for the coordinator
 
 1. **Confirm `fix/audit-js-syntax-and-deploy-guard`** — the JS parse-dead fix is correct and urgent (the live enhancement layer has been dead since Oct 4).
