@@ -21,6 +21,22 @@ linked per-class / patch-plan file for the full rationale.
 | **11** | Stop emitting zero-entry rows | 85 zero-entry rows incl. **XRPUSDT 0.0** from `prediction_market_consensus` | S | Low-Med | `crypto_commodity.md` P0-5 → `prediction_market_consensus.py:160,479,588-591` |
 | **12** | Make the FOREX block observable (shadow) | The PR #6 allowlist has **0 call sites**; **0/277** FOREX rows pass it | S | Low | `forex_futures.md` P0-6 → `non_crypto_policy.py:698-741,1026-1040` |
 
+## Actions P0 (deep dive, 17:50Z)
+
+These supersede the earlier CI ranks where they overlap. Full evidence: `../actions_deepdive/ACTIONS_DEEP_DIVE.md`.
+
+| # | Fix | Exact target | Impact |
+|---:|---|---|---|
+| A1 | Normalize `LONG/SHORT → BUY/SELL` before the FX map lookup | `alpha_engine/scanner.py:2937-2942` | Removes **15/30** failures (~88/day, ~558 runner-min) |
+| A2 | Remove `update-environment: false` (use `python -m pip`) so 3.11 is used | `forward_test.yml:33`, `live_trading.yml:29`, `live_trading_canada.yml:33`, `live_trading_canada_free.yml:43`, `picks_dispatch.yml:24`, `market_beating.yml:35`, `signal_tracking.yml:35` | Removes **7/30** failures, ~715 runner-min |
+| A3 | Fix CI frequency alias | `tests/test_combined_book_sleeves.py:17` (`ME` → `M`/`MS`) or pin pandas 2.2 | Removes **2/30**, unblocks CI |
+| A4 | Pin runner / upgrade Playwright | `sports-smoke-and-e2e.yml:53` (`ubuntu-24.04`), `:86`; `package.json:20` | Removes **5/30** |
+| A5 | Stop committing the 100 MB JSON | `missed-opportunity-scan.yml:43`; `.gitignore`; `git rm --cached`; rotate/LFS | Removes **1/30** |
+| A6 | Space audit cron to real runtime | `audit-dashboard.yml:5` → `'10 */2 * * *'`; `:55` timeout 115→130 | Eliminates ~21 zero-job discards/60 |
+| A7 | Split the shared concurrency group | `operator-review-today.yml:39`, `rsi5070-forward-snapshot.yml:59` → `dashboard-publish-daily` | Removes 3-way 07:00 contention |
+| A8 | Fix PEAD push loop | `pead-shadow-collector.yml:82-101` | Stops **60/60** commit failures |
+| A9 | Remove duplicate push triggers | `signal_tracking.yml:9-14`, `market_beating.yml:9-14` | Removes duplicate runs in a 91-min queue |
+
 ## Same-day but data-source specific
 
 - **Re-enable FRED in the bond scanner** (`SKIP_FRED=1` hard-coded): `bond_mutual_funds.md` QW-6 → `.github/workflows/etf-bond-scanner.yml:159`, `bond_scanner.py:289-296`. Effort S, low risk.
@@ -34,7 +50,7 @@ linked per-class / patch-plan file for the full rationale.
 - **COMMODITY/FUTURES are gate-blocked:** `audit_trail/quality_gates.py:1724` sets `BLOCKED_ASSET_CLASSES = {"FOREX","COMMODITY","FUTURES","BOND"}`. Any COMMODITY "live" bucket is a display artifact. Do not ship canonical-class plumbing that implies live commodity exposure until the block is deliberately resolved.
 - **COMMODITY provenance is synthetic:** `alpha_engine/commodity_signal_generator.py:231-238` maps RNDR/ARB to "silver" and `:250` maps XLM/DOT to "oil". Tag these rows as proxies; do not present them as commodity exposure.
 - **AI Challenge registry is stale:** `audit_dashboard/data/ai_challenge_antigravity_active_picks.json` — 9 OPEN, all null price, PnL 0.0, no timestamps.
-- **SQLite layer needs its own sync:** `data/live_picks.db` 128/129 active picks ~172 days stale; 8 PnL sign contradictions; `data/audit_trail.db` 9 audit tables with 0 rows; `pick_history` has no exits. Add a `live_picks` refresh/retire job and a PnL-sign assertion.
+- **SQLite layer needs its own sync:** `data/live_picks.db` 128/129 active picks ~172 days stale; **9 PnL sign contradictions + 18 PnL mismatches** (direction-aware, unit-consistent formula required); `data/audit_trail.db` 8 audit tables with 0 rows + 2 non-empty; `pick_history` has no exits. Add a `live_picks` refresh/retire job and a PnL-sign assertion.
 - **Headline n + Wilson CI:** every published WR must show n and a binomial/Wilson CI next to it (v1 `QW-1`). A WR without n is not a result.
 - **Force-close/age-out stale opens:** 691 OPEN, 63% of all picks never resolve. Add an age-out policy that emits a documented `TIME_EXIT` (not a silent 0% close).
 - **ETF watch-only:** `WATCH_ONLY_CLASSES` currently contains only BOND; add ETF while its policy-clean n is 15 and PF is not significant.

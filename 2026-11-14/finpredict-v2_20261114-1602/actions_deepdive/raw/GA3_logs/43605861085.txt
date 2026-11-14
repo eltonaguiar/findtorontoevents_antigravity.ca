@@ -1,0 +1,85 @@
+# RUN 43605861085
+# failed_lines=0 full_lines=2104 matched=67
+## failed_log_tail
+(no --log-failed output; API zip used)
+## matched_error_warning_lines
+##[group]GITHUB_TOKEN Permissions
+Secret source: Actions
+  lfs: false
+hint: to use in all of your new repositories, which will suppress this warning,
+Updating files:  35% (14401/41145)
+Updating files:  79% (32505/41145)
+Updating files:  96% (39500/41145)
+Updating files:  98% (40323/41145)
+  fail-on-cache-miss: false
+pip install "pytest>=7,<9" pytest-cov pytest-timeout
+Downloading pytz-2026.6-py2.py3-none-any.whl (506 kB)
+Using cached vectorbt-1.0.0-py3-none-any.whl (451 kB)
+Collecting pytest-timeout
+  Using cached pytest_timeout-2.4.0-py3-none-any.whl.metadata (20 kB)
+Using cached pytest_timeout-2.4.0-py3-none-any.whl (14 kB)
+Installing collected packages: pluggy, iniconfig, coverage, pytest, pytest-timeout, pytest-cov
+Successfully installed coverage-7.17.3 iniconfig-2.3.1 pluggy-1.7.0 pytest-8.4.2 pytest-cov-7.1.0 pytest-timeout-2.4.0
+14 passed, 0 failed.
+ok   — a healthy combo does not trigger the conflict cap
+18 passed, 0 failed.
+tests/test_m096_ctf_concentration_cap.py::TestM096CTFConcentrationCap::test_fail_open_when_no_data
+tests/test_money_ready_verdict.py::TestMoneyReadyVerdict::test_commodity_source_concentration_fails_above_60pct
+tests/test_pf_registry_tournament_db.py::test_tournament_loader_handles_connection_failure
+  --timeout=120 --timeout-method=thread \
+  --cov-report=term-missing:skip-covered \
+  --cov-fail-under=10 \
+  --no-cov-on-fail \
+plugins: cov-7.1.0, platformdirs-4.14.5, timeout-2.4.0
+timeout: 120.0s
+timeout method: thread
+timeout func_only: False
+collecting ... collected 6644 items / 1 error / 87 deselected / 10 skipped / 6557 selected
+==================================== ERRORS ====================================
+_____________ ERROR collecting tests/test_combined_book_sleeves.py _____________
+E   KeyError: 'ME'
+The above exception was the direct cause of the following exception:
+E   ValueError: Invalid frequency: ME
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/site-packages/pandas/core/arrays/datetimes.py:404: in _generate_range
+=============================== warnings summary ===============================
+tests/test_equity_price_failover_cache_path.py:53
+  /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/tests/test_equity_price_failover_cache_path.py:53: SyntaxWarning: invalid escape sequence '\B'
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+SKIPPED [1] tests/test_audit_metric_invariants.py:50: dashboard_data.json missing at /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json — run the audit pipeline or pull origin/main copy before running locally.
+SKIPPED [1] tests/test_dashboard_payload_contract.py:80: dashboard_data.json missing at /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json — see memory/feedback_dashboard_data_local_staleness; pull origin/main copy before running locally.
+ERROR tests/test_combined_book_sleeves.py - ValueError: Invalid frequency: ME
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=========== 10 skipped, 87 deselected, 1 warning, 1 error in 30.42s ============
+##[error]Process completed with exit code 2.
+  || echo "::warning title=known-drift tests still red::See 'Write known-drift quarantine list' step for the reconciliation TODO."
+ERROR: found no collectors for /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/tests/test_audit_metric_invariants.py::test_headline_total_pnl_is_the_compounded_value
+ERROR: not found: /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/tests/test_confidence_calibrator.py::CalibratorContractTests::test_no_op_when_flag_unset
+##[warning]See 'Write known-drift quarantine list' step for the reconciliation TODO.
+  if-no-files-found: warn
+(node:3126) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:3126) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:3138) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+##[warning]No files were found with the provided path: coverage.xml. No artifacts will be uploaded.
+##[group]Run python -m coverage report --skip-covered --skip-empty 2>/dev/null || true
+python -m coverage report --skip-covered --skip-empty 2>/dev/null || true
+##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Temporarily overriding HOME='/home/runner/work/_temp/bc723d2f-c6b9-48b1-8f95-9e3007d24401' before making global git config changes
+/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/pandas/core/arrays/datetimes.py:404: in _generate_range
+================= 10 skipped, 87 deselected, 1 error in 18.34s =================
+(node:2411) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:2411) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:2423) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+## full_log_tail
+/home/runner/work/_temp/git-credentials-fcef044d-7c56-40c1-8c33-aa75664d474b.config
+[command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-fcef044d-7c56-40c1-8c33-aa75664d474b.config
+[command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+/github/runner_temp/git-credentials-fcef044d-7c56-40c1-8c33-aa75664d474b.config
+[command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-fcef044d-7c56-40c1-8c33-aa75664d474b.config
+[command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+/github/runner_temp/git-credentials-fcef044d-7c56-40c1-8c33-aa75664d474b.config
+[command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-fcef044d-7c56-40c1-8c33-aa75664d474b.config
+[command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Removing credentials config '/home/runner/work/_temp/git-credentials-fcef044d-7c56-40c1-8c33-aa75664d474b.config'
+Cleaning up orphan processes
+##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

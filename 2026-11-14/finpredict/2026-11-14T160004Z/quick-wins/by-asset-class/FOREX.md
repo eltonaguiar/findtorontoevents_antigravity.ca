@@ -2,7 +2,7 @@
 
 ## 1. Purge the 11 frozen "phantom" closed rows (M / H)
 - **Problem:** 11 closed FOREX rows (pnl 0.0, `exit_reason=UNKNOWN`, `exit_price==entry_price`, Mar 2026) survive the validity filter. `_is_valid_resolved_pick()` does not reject them: `pnl==0` passes (:4867), `exit==entry` passes (:4903), `exit_reason=UNKNOWN` only dropped (:4942) when no close-marker — these have one.
-- **Fix:** Add purge clause: drop rows where `exit_reason in ("", "UNKNOWN") AND pnl_pct==0 AND exit_price==entry_price` for non-crypto. Do once as a data purge + once as a guard.
+- **Fix:** Quarantine (not delete): add a validity clause to `_is_valid_resolved_pick()` that excludes rows where `exit_reason in ("", "UNKNOWN") AND pnl_pct==0 AND exit_price==entry_price` for non-crypto — mark them `VOID`/phantom and retain them for audit. No hard delete.
 - **Targets:** `audit_trail/dashboard_generator.py` `_is_valid_resolved_pick()` (:4850) or pre-pass in `_build_recent_closed_picks()` (:6948); resolve-vs-purge in `alpha_engine/outcome_resolver.py` (:1180/:2660).
 - **Caution:** do NOT wire `alpha_engine/forced_resolution.py` (research-only, survivorship-bias warning).
 - **Verify:** `recent_closed` FOREX count drops by 11; no `UNKNOWN + pnl 0 + exit==entry` rows remain.
