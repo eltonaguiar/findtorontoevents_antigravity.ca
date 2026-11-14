@@ -128,3 +128,49 @@ finding an edge.
 **Success at day 90 is not "profitable".** It is: *one class with a pre-registered, benchmark-relative
 result and a known trial count.* That is the first point at which "is this profitable?" becomes a
 question this repo can answer.
+
+---
+
+## REVISION 2026-11-14 (same day, after the test was run): slot 1 is beta, and it failed its gate
+
+The EQUITY test pre-registered above was executed hours after this file was written. It **failed**.
+`tools/equity_vs_spy.py`, gate fixed in the module before running: n ≥ 100, mean excess > 0, t ≥ 2.0,
+mean excess > cost. Each pick paired with SPY over **that pick's own holding window**, adjusted closes
+(dividends in), shorts benchmarked against −SPY.
+
+| metric | value |
+|---|---:|
+| usable pairs | 738 |
+| strategy mean PnL | +0.3230% |
+| SPY, same windows | +0.1138% |
+| **mean excess** | **+0.2092%** |
+| **median excess** | **−0.5726%** |
+| t-statistic | **1.05** |
+| beat-SPY rate | 45.53% |
+
+| gate | result |
+|---|---|
+| G1 n ≥ 100 | PASS |
+| G2 mean excess > 0 | PASS (+0.21%) |
+| G3 t ≥ 2.0 | **FAIL (1.05)** |
+| G4 excess > cost | PASS (+0.21 > 0.10) |
+| **VERDICT** | **`NO_ALPHA_BETA`** |
+
+**What changes:** EQUITY still clears its cost gate (3.23×) but does not beat simply holding the index,
+and its **median pick loses 0.57% to SPY** — a positive mean carried by a right tail over a
+negative-median distribution. 54% of picks underperform an index fund that charges 3bp.
+
+Therefore, in the table above:
+
+- EQUITY is no longer "slot 1 — candidate". It is **slot 1 — closed as a source of edge**, retained
+  only as a measurement baseline. The 90-day sequence's week-1 decision point is thereby answered on
+  day 1: **beta**.
+- CRYPTO is promoted to **the only remaining candidate**, conditional on the fill fix, and its fixed
+  number is much smaller than first reported: the kimi correction is **+67.5pp** (crypto −837.8 →
+  −770.3), not the +727.3pp published earlier, which had measured a drifted `stop_loss` field rather
+  than the fill.
+- The mutual-fund subset in `MUTUAL_FUNDS_SUBSET.md` is **strengthened** by this result: if the equity
+  picks are beta with a −0.57% median shortfall, a low-cost broad index fund dominates them on
+  exposure, on fees, and on capital required.
+
+**Honest status of the system after today:** measurement improved, edge unproven in every class.
