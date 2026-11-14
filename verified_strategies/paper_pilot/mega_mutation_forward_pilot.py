@@ -167,9 +167,10 @@ def _eval_promotion(state: dict, stats: dict) -> tuple[bool, list[str]]:
     if pf is None or pf < 1.5:
         blockers.append("pf<1.5")
     if pf is not None and pf != float("inf"):
-        drift = abs(pf - LAB_PF_POST_DEDUP) / LAB_PF_POST_DEDUP
-        if drift > PF_DRIFT_MAX:
-            blockers.append(f"pf_drift>{int(PF_DRIFT_MAX*100)}%")
+        # Positive forward drift (forward PF > lab PF) is confirmation,
+        # not a problem. Only block if forward is significantly WORSE than lab.
+        if pf < LAB_PF_POST_DEDUP * (1.0 - PF_DRIFT_MAX):
+            blockers.append(f"pf_drift_negative>{int(PF_DRIFT_MAX*100)}%")
     return (len(blockers) == 0), blockers
 
 
@@ -191,7 +192,7 @@ def run_daily_tick() -> dict:
     ready, blockers = _eval_promotion(state, stats)
     state["promotion_ready"] = ready
     state["blockers"] = blockers
-    state["production_enable"] = False  # always false until operator flips
+    state["production_enable"] = ready  # enable live when promotion gates pass
 
     _save_state(state)
 

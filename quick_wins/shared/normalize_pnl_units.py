@@ -46,28 +46,38 @@ def normalize_picks(picks: list[dict[str, Any]]) -> dict[str, int]:
             stats["skipped_no_exit"] += 1
             continue
 
-        if entry in (None, 0) or exit_px in (None, 0) or direction is None:
+        if entry in (None, 0) or direction is None:
             stats["skipped_bad_price"] += 1
             continue
 
         stats["closed"] += 1
-        ratio = round((float(exit_px) / float(entry) - 1.0) * direction, 6)
 
-        existing = p.get("pnl_pct")
-        if isinstance(existing, (int, float)) and existing is not None:
-            # Heuristic: |value| > 1.0 stored as "pnl_pct" is almost certainly
-            # a percent number (e.g. -2.7041 = -2.7041%), not a ratio.
-            if abs(float(existing)) > 1.0 and abs(float(existing) - ratio) > 1e-6:
-                p["pnl_pct"] = round(float(existing) / 100.0, 6)
-                stats["converted_percent"] += 1
-            elif abs(float(existing) - ratio) > 1e-6:
+        # Case 1: we have exit_price -> recompute ratio from prices (authoritative)
+        if exit_px not in (None, 0):
+            ratio = round((float(exit_px) / float(entry) - 1.0) * direction, 6)
+            existing = p.get("pnl_pct")
+            if isinstance(existing, (int, float)) and existing is not None:
+                if abs(float(existing)) > 1.0 and abs(float(existing) - ratio) > 1e-6:
+                    p["pnl_pct"] = round(float(existing) / 100.0, 6)
+                    stats["converted_percent"] += 1
+                elif abs(float(existing) - ratio) > 1e-6:
+                    p["pnl_pct"] = ratio
+                    stats["fixed"] += 1
+                else:
+                    stats["fixed"] += 1
+            else:
                 p["pnl_pct"] = ratio
                 stats["fixed"] += 1
-            else:
-                stats["fixed"] += 1  # already correct ratio
-        else:
-            p["pnl_pct"] = ratio
-            stats["fixed"] += 1
+            continue
+
+        # Case 2: no exit_price but realized_pnl_pct exists (percent units -> ratio)
+        realized = p.get("realized_pnl_pct")
+        if isinstance(realized, (int, float)) and realized is not None:
+            p["pnl_pct"] = round(float(realized) / 100.0, 6)
+            stats["converted_percent"] += 1
+            continue
+
+        stats["skipped_bad_price"] += 1
     return stats
 
 
