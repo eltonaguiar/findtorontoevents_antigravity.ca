@@ -68,7 +68,9 @@ def get_daily_closes(
 
 
 def monthly_returns(series: pd.Series) -> pd.Series:
-    monthly = series.resample("ME").last().dropna()
+    # "ME" is a pandas >= 2.2 alias; requirements.txt pins 2.1.4, where resample
+    # raises ValueError: Invalid frequency: ME. MonthEnd() is valid on both.
+    monthly = series.resample(pd.offsets.MonthEnd()).last().dropna()
     if len(monthly) < 2:
         return pd.Series(dtype=float)
     # First month's return is measured against the first available close so

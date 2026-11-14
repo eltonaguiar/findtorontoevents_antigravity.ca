@@ -38,6 +38,21 @@ import math
 import pandas as pd
 import yfinance as yf
 
+# v11.9 — Honest stop fills. The ATR stop fires when the *polled* price is already
+# beyond it, and the old code then booked P&L at that polled price — an exit no
+# resting stop order could ever get. 2026-11-14 audit: 0 of 815 kimi SL rows were
+# booked at the stop they exited against, and the overshoot was 1.54x planned risk
+# on crypto. Fills now go through the same model the universal resolver uses: the
+# stop level, or the bar open when the bar gapped through it.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+try:
+    from audit_trail.stop_fill import exit_fill_for_stop
+except Exception as _sf_err:  # pragma: no cover - the scanner must still run
+    exit_fill_for_stop = None
+    print(f"  [v11.9] stop-fill model unavailable: {_sf_err}")
+
 # v11.3 — Multi-source data fetcher (Binance + CoinCap + Frankfurter + yfinance fallback)
 try:
     from multi_source_fetcher import (
@@ -8535,6 +8550,38 @@ def run_scanner() -> int:
             if not p.get("peakPrice"):
                 p["peakPrice"] = round(ep, 6)
 
+    def _safe_float(v):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
+
+    def _stop_fill_for_close(sym, stop, polled, data):
+        """(fill_price, basis) for a stop this scan has just seen breached.
+
+        Only the bar covering THIS exit is handed to the fill model: scanning
+        back over earlier bars would happily return an older breach and book a
+        stale price as today's exit. Falls back to the stop level (the resting
+        order model) when no OHLC is available, and to the polled price only
+        when the fill model itself is unavailable — recorded as basis
+        ``polled_late`` so the defect stays visible instead of silent.
+        """
+        if exit_fill_for_stop is None or not stop or stop <= 0:
+            return polled, "polled_late"
+        bars = []
+        df = data.get(sym) if isinstance(data, dict) else None
+        if df is not None and len(df):
+            try:
+                last = df.iloc[-1]
+                bars = [{"open": float(last["Open"]), "high": float(last["High"]),
+                         "low": float(last["Low"])}]
+            except Exception:
+                bars = []
+        hit = exit_fill_for_stop("LONG", stop, polled, bars)
+        if not hit:
+            return polled, "polled_late"
+        return float(hit["price"]), hit["basis"]
+
     # -----------------------------------------------------------------------
     # EXIT LOGIC — per-pick ATR-based stop-loss/take-profit/max-hold
     # v11.4: Uses per-pick stopPrice/targetPrice (ATR-based) instead of
@@ -8589,17 +8636,29 @@ def run_scanner() -> int:
             _pick_target = p.get("targetPrice")
             _pick_stop = p.get("stopPrice")
             exit_reason = None
+            # v11.9 — book at the price a RESTING order would have got, not at
+            # whatever the poll happened to see. A stop fills at the stop (or the
+            # bar open on a gap); a limit at the target fills at the target.
+            # Without this, a poll that ran hours late booked a loss far deeper
+            # than the plan, and a poll that ran past the target booked a gain
+            # far beyond it — both fictional. Time exits still use `curr`.
+            _exit_fill = curr
+            _exit_basis = "polled"
             if _pick_target and _pick_stop and entry > 0:
                 # ATR-based exit: compare current price against absolute levels
                 if curr >= _pick_target:
                     exit_reason = f"TAKE_PROFIT {ret*100:.1f}% (ATR target={_pick_target:.4f})"
+                    _exit_fill, _exit_basis = float(_pick_target), "target"
                 elif curr <= _pick_stop:
+                    _exit_fill, _exit_basis = _stop_fill_for_close(sym, _pick_stop, curr, data)
                     exit_reason = f"STOP_LOSS {ret*100:.1f}% (ATR stop={_pick_stop:.4f})"
             else:
                 # Legacy fallback: percentage-based exit
                 if ret >= TP:
                     exit_reason = f"TAKE_PROFIT {ret*100:.1f}%"
+                    _exit_fill, _exit_basis = entry * (1 + TP), "target"
                 elif ret <= SL:
+                    _exit_fill, _exit_basis = _stop_fill_for_close(sym, entry * (1 + SL), curr, data)
                     exit_reason = f"STOP_LOSS {ret*100:.1f}%"
             # Time exit and trailing stop apply regardless of TP/SL method
             if not exit_reason and hold_days >= MH:
@@ -8614,8 +8673,10 @@ def run_scanner() -> int:
                 # v11.6: Deduct transaction costs from P&L
                 _sym_cat = p.get("symbolCategory", cat)
                 _exit_cost_pct = _tc_get_round_trip_cost(sym, _sym_cat)
-                gross_pnl  = alloc * ret
-                net_ret = ret - _exit_cost_pct
+                # v11.9: realised return is measured at the FILL, not the poll.
+                _exit_ret = (_exit_fill - entry) / entry
+                gross_pnl  = alloc * _exit_ret
+                net_ret = _exit_ret - _exit_cost_pct
                 net_pnl = alloc * net_ret
                 cash += alloc + net_pnl
                 closed_pick = {
@@ -8624,9 +8685,17 @@ def run_scanner() -> int:
                     "exitReason": exit_reason,
                     "grossPnl":   round(gross_pnl, 2),        # v11.6: before costs
                     "pnl":        round(net_pnl, 2),           # v11.6: after costs (net)
-                    "grossReturnPct": round(ret * 100, 2),     # v11.6: gross return %
+                    "grossReturnPct": round(_exit_ret * 100, 2),  # v11.6: gross return %
                     "returnPct":  round(net_ret * 100, 2),     # v11.6: net return %
                     "transactionCostPct": round(_exit_cost_pct * 100, 3),  # v11.6: cost deducted
+                    # v11.9 provenance — which price we booked, where it came from,
+                    # and the poll we declined to book at. Kept so the fix is
+                    # auditable after the fact instead of looking like a rewrite.
+                    "exitPrice":  round(float(_exit_fill), 6),
+                    "polledPrice": round(float(curr), 6),
+                    "stopUsed":   _safe_float(_pick_stop),
+                    "targetUsed": _safe_float(_pick_target),
+                    "exitPriceBasis": _exit_basis,
                 }
                 closed.append(closed_pick)
                 total_exits += 1
@@ -8635,7 +8704,10 @@ def run_scanner() -> int:
                 append_audit(audit_path, {
                     "timestamp": now.isoformat(), "action": "CLOSE",
                     "algorithm": algo["id"], "symbol": sym,
-                    "reason": exit_reason, "price": curr, "pnl": round(net_pnl, 2),
+                    "reason": exit_reason, "price": round(float(_exit_fill), 6),
+                    "polled_price": round(float(curr), 6),
+                    "price_basis": _exit_basis,
+                    "pnl": round(net_pnl, 2),
                 })
             else:
                 surviving.append(p)

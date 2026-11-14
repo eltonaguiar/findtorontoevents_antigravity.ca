@@ -1,0 +1,163 @@
+# quick_wins.patch — EQUITY/ETF/BOND quick wins QW1-QW6
+# Base: .inspect-wt @ f54efb3b4a (HEAD 464035ff56). All context lines verified by grep at this base.
+# Apply with: git apply quick_wins.patch  (from repo root)
+# No core-file edits were made; this is a patch-only deliverable.
+
+diff --git a/audit_trail/dashboard_generator.py b/audit_trail/dashboard_generator.py
+--- a/audit_trail/dashboard_generator.py
++++ b/audit_trail/dashboard_generator.py
+@@ -6561,9 +6561,10 @@
+ # QW1: unify STOCK/STOCKS -> EQUITY. Previously _NC_ASSET_CLASSES carried both
+ # EQUITY and STOCK and _NC_ALIAS_MAP sent STOCKS->STOCK, producing a phantom
+ # empty STOCK bucket in summary.non_crypto_performance (verified in live payload)
+ # and silently missing _NON_CRYPTO_ASSET_CLASSES (line 5444) reservation.
+ _NC_ASSET_CLASSES = frozenset(
+-    {"FOREX", "EQUITY", "STOCK", "COMMODITY", "FUTURES", "ETF", "BOND"}
++    {"FOREX", "EQUITY", "COMMODITY", "FUTURES", "ETF", "BOND"}
+ )
+ _NC_ALIAS_MAP = {
+     "FX": "FOREX",
+     "EQUITIES": "EQUITY",
+-    "STOCKS": "STOCK",
++    "STOCKS": "EQUITY",
++    "STOCK": "EQUITY",
+     "COMMODITIES": "COMMODITY",
+     "FUTURE": "FUTURES",
+     "BONDS": "BOND",
+ }
+@@ -6693,7 +6694,7 @@
+         if resolved == AssetClass.MICRO_FUTURES:
+             return "FUTURES"
+-        val = resolved.value
++        val = _NC_ALIAS_MAP.get(resolved.value, resolved.value)  # QW1: STOCK->EQUITY
+         if val in _NC_ASSET_CLASSES:
+             return val
+@@ -4062,7 +4063,7 @@
+-    ("orphan_emitter_etf",
+-     "non_crypto_agent/data/etf_picks.json", None, "EQUITY"),
++    # QW2: was "EQUITY" — etf-agent.yml emits picks with no asset_class, so this
++    # stamp mislabeled orphan ETF rows into the EQUITY book.
++    ("orphan_emitter_etf",
++     "non_crypto_agent/data/etf_picks.json", None, "ETF"),
+@@ -13935,7 +13936,7 @@
+-    categories = ("FOREX", "EQUITY", "STOCK", "COMMODITY", "FUTURES", "BOND", "ETF")
++    categories = ("FOREX", "EQUITY", "COMMODITY", "FUTURES", "BOND", "ETF")  # QW1: drop phantom STOCK
+@@ -13947,17 +13948,20 @@
+     # QW1/QW3: defensive bucket creation — nc_asset_category_for_pick now
+     # normalizes STOCK->EQUITY, but an un-mapped category must never KeyError
+     # the build. Also track newest closed age for the template staleness badge.
++    _blank = lambda: {
++        "active": 0, "closed": 0, "wins": 0, "losses": 0, "flat": 0,
++        "resolved": 0, "win_rate": None, "total_pnl_pct": 0.0,
++        "newest_closed_age_hours": None,  # QW3
++    }
+     stats = {
+-        c: {
+-            "active": 0,
+-            "closed": 0,
+-            "wins": 0,
+-            "losses": 0,
+-            "flat": 0,
+-            "resolved": 0,
+-            "win_rate": None,
+-            "total_pnl_pct": 0.0,
+-        }
++        c: _blank()
+         for c in categories
+     }
+@@ (closed loop, ~13952)
+     for pick in closed:
+         cat = nc_asset_category_for_pick(pick)
+         if not cat:
+             continue
++        if cat not in stats:
++            stats[cat] = _blank()
+         pnl = _float(pick.get("net_pnl_pct", pick.get("pnl_pct", 0)))
+         capped = max(-500.0, min(500.0, pnl))
+         bucket = stats[cat]
+         bucket["closed"] += 1
++        _age = pick.get("age_hours")
++        if _age is None and pick.get("closed_at"):
++            try:
++                from datetime import datetime as _dt
++                _ca = str(pick["closed_at"]).replace("Z", "+00:00")
++                _age = (datetime.now(timezone.utc) - _dt.fromisoformat(_ca)).total_seconds() / 3600.0
++            except Exception:
++                _age = None
++        if _age is not None and (bucket["newest_closed_age_hours"] is None or _age < bucket["newest_closed_age_hours"]):
++            bucket["newest_closed_age_hours"] = round(float(_age), 1)
+         bucket["total_pnl_pct"] += capped
+@@ (active loop, ~13948)
+     for pick in active:
+         cat = nc_asset_category_for_pick(pick)
+         if cat:
++            if cat not in stats:
++                stats[cat] = _blank()
+             stats[cat]["active"] += 1
+
+diff --git a/audit_dashboard/template.html b/audit_dashboard/template.html
+--- a/audit_dashboard/template.html
++++ b/audit_dashboard/template.html
+@@ (~976, hoist the money_ready verdict for the nc-card renderer)
+-      fetch('./data/money_ready_verdict.json?' + Date.now())
++      fetch('./data/money_ready_verdict.json?' + Date.now())
+         .then(function(r){ return r.ok ? r.json() : null; })
+         .then(function(mv){
+           if (!mv || !mv.classes) return;  // keep dated static spans
++          window._moneyReadyClasses = mv.classes;  // QW3/QW4: reuse in nc-card + divergence badge
+@@ (~1010, inside the per-class span renderer, after gateBadges assembly)
++            // QW4: disclose daily-vs-intrabar divergence instead of silently
++            // quoting the (possibly poisoned) intrabar subset.
++            var _ivd = c.intrabar_daily_divergence;
++            if (_ivd && _ivd.flag === true) {
++              var _pfx = _ivd.pf_inflation_x != null ? Math.round(_ivd.pf_inflation_x * 10) / 10 : '?';
++              gateBadges += ' <span title="money_ready intrabar cohort diverges from daily-close cohort (daily PF ' + (_ivd.daily_pf != null ? Number(_ivd.daily_pf).toFixed(2) : '?') + ' vs intrabar PF ' + (_ivd.honest_pf != null ? Number(_ivd.honest_pf).toFixed(2) : '?') + ', inflation x' + _pfx + ') — see audit intrabar entry-anchor fix" style="background:rgba(251,146,60,0.15);color:#fb923c;border:1px solid rgba(251,146,60,0.4);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">⚠ DIVERGENT x' + _pfx + '</span>';
++            }
+@@ (~6323, nc-card render, right after "hasAnyData = true;")
+     if (serverActiveCount === 0 && serverClosedCount === 0) continue;
+     hasAnyData = true;
++    // QW3: staleness + frozen badges for BOND/ETF-style thin classes.
++    var _mrc = (window._moneyReadyClasses || {})[cat.key] || {};
++    var _newestClosed = serverCat.newest_closed_age_hours;
++    if (_mrc.policy_frozen === true) {
++      cardsHtml += '<div class="nc-row"><span class="nc-lbl">Class status</span><span class="nc-val" title="In BLOCKED_ASSET_CLASSES — operator-frozen; picks exist but are policy-excluded." style="color:#7dd3fc">🍦 FROZEN</span></div>';
++    }
++    if (_newestClosed != null && _newestClosed > 72) {
++      cardsHtml += '<div class="nc-row"><span class="nc-lbl">Freshness</span><span class="nc-val" style="color:var(--text-dim)">⏸ newest closed ' + fmt(_newestClosed, 1) + 'h ago</span></div>';
++    }
+
+diff --git a/tests/test_orphan_emitter_wire.py b/tests/test_orphan_emitter_wire.py
+--- a/tests/test_orphan_emitter_wire.py
++++ b/tests/test_orphan_emitter_wire.py
+@@ (~119)
+-    assert out["asset_class"] == "EQUITY"
++    assert out["asset_class"] == "ETF"  # QW2: orphan ETF emitter stamps ETF now
+
+diff --git a/.github/workflows/bond-agent.yml b/.github/workflows/bond-agent.yml
+--- a/.github/workflows/bond-agent.yml
++++ b/.github/workflows/bond-agent.yml
+@@ -8,7 +8,9 @@
+ on:
+   schedule:
+-    - cron: '32 14 * * 1-5'
++    # QW5: paused while BOND is operator-frozen (quality_gates.py:1726
++    # BLOCKED_ASSET_CLASSES, freeze dated 2026-06-03). Re-enable only via
++    # proposed_fix.md §B Gate B2 (paper-only 60d HYG/LQD pass).
++    # - cron: '32 14 * * 1-5'
+   workflow_dispatch:
+
+diff --git a/audit_dashboard/funds.html b/audit_dashboard/funds.html
+--- a/audit_dashboard/funds.html
++++ b/audit_dashboard/funds.html
+@@ (~1353, data-age indicator)
+         if (D.generated_at) {
+           const age = Date.now() - new Date(D.generated_at).getTime();
+           const mins = Math.round(age / 60000);
+-          document.getElementById('data-age').textContent = mins < 60 ? `${mins}m ago` : `${Math.round(mins/60)}h ago`;
++          const _ageEl = document.getElementById('data-age');
++          _ageEl.textContent = mins < 60 ? `${mins}m ago` : `${Math.round(mins/60)}h ago`;
++          if (mins > 120) {  // QW6: self-evident staleness
++            _ageEl.textContent = `⚠ ${_ageEl.textContent} (stale)`;
++            _ageEl.style.color = 'var(--red)';
++          }
+         }

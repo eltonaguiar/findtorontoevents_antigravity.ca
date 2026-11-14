@@ -444,6 +444,11 @@ def passes_stamped_tier_supplemental_path(pick: Dict[str, Any], corr_registry: O
 def passes_high_conviction_pick(
     pick: Dict[str, Any], corr_registry: Optional[MutableMapping[str, str]] = None
 ) -> bool:
+    # 2026-11-14: per-class cost gate runs BEFORE the quality gates. A pick whose
+    # asset class cannot cover 3x its round-trip cost is not "high conviction"
+    # regardless of how good its score looks. Fail-open on unknown/stale index.
+    if not passes_per_class_cost_gate(pick):
+        return False
     if evaluate_hc_gates_1to9(pick, corr_registry=corr_registry):
         return True
     return passes_stamped_tier_supplemental_path(pick, corr_registry=corr_registry)
@@ -503,3 +508,31 @@ def passes_hc_after_cost(pick: Dict[str, Any]) -> bool:
         return float(net) > 0 and float(lb) >= 50.0
     except (TypeError, ValueError):
         return True  # malformed fields — don't filter
+
+
+# ---------------------------------------------------------------------------
+# 2026-11-14 — Per-class cost gate (idea #2, final_v2/quant-audit-2026-11-14)
+# ---------------------------------------------------------------------------
+# Blocks a pick when its ASSET CLASS's average PnL per closed trade is under
+# 3x the modelled round-trip cost for that class. Rationale: the payload's own
+# slippage validator scored ETF at 267% and COMMODITY at 422% of average PnL —
+# i.e. costs already exceed the entire average result — while ~390 picks/month
+# kept being emitted.
+#
+# Index comes from tools/per_class_cost_gate.py (config/per_class_cost_gate.json)
+# built from closed rows + tools/data/transaction_costs.json.
+#
+# Default-ON but fail-open: no index, stale index, unknown class, or n < 30 all
+# PASS. Set PER_CLASS_COST_GATE_ENABLED=0 to disable entirely.
+from tools.per_class_cost_gate import gate_pick as _gate_pick  # noqa: E402
+
+
+def passes_per_class_cost_gate(pick: Dict[str, Any]) -> bool:
+    """True when the pick's class clears the 3x-cost rule (or evidence is absent)."""
+    if _os.environ.get("PER_CLASS_COST_GATE_ENABLED", "1").strip() == "0":
+        return True
+    try:
+        verdict = _gate_pick(pick or {})
+    except Exception:  # noqa: BLE001 — a gate must never crash the filter
+        return True
+    return bool(verdict.get("allowed", True))

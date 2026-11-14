@@ -614,6 +614,42 @@ def _parse_ts_ms(ts_str):
 # banners (recorded decision). Set RESOLVER_ENTRY_ANCHORED=0 to roll back instantly.
 _ENTRY_ANCHORED = os.environ.get("RESOLVER_ENTRY_ANCHORED", "1").strip() == "1"
 
+# Gap-aware fills (2026-11-14). A bar whose range spans the stop proves the level
+# traded, but it does NOT prove we filled there: if the bar OPENED beyond the
+# level, a resting stop filled at the open, not at the level. The pre-2026-11-14
+# code returned the level unconditionally, which understated stop losses on
+# gap-down bars (and overstated TP gains on gap-up bars). Default ON: filling at
+# the touched level across a gap is not a defensible fill model. Set
+# RESOLVER_GAP_AWARE_FILL=0 to restore legacy byte-identical behaviour.
+_GAP_AWARE_FILL = os.environ.get("RESOLVER_GAP_AWARE_FILL", "1").strip() == "1"
+
+
+def _gap_fill_price(bar_open, level, long_side: bool, is_stop: bool):
+    """Price a resting order would fill at inside a bar that breached ``level``.
+
+    Gap through the level  -> fill at the bar open (worse for a stop, better for
+                              a take-profit: both are what actually happens)
+    Otherwise              -> fill at the level itself
+
+    Flag OFF or unusable open -> return the level unchanged (legacy behaviour).
+    """
+    if not _GAP_AWARE_FILL or not level or not bar_open:
+        return level
+    try:
+        o = float(bar_open)
+        lvl = float(level)
+    except (TypeError, ValueError):
+        return level
+    if o <= 0:
+        return level
+    if is_stop:
+        if (long_side and o < lvl) or (not long_side and o > lvl):
+            return o
+    else:
+        if (long_side and o > lvl) or (not long_side and o < lvl):
+            return o
+    return level
+
 
 def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
     """Check TP/SL against intrabar OHLC data (not just close price).
@@ -665,6 +701,7 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
     for bar in bars:
         high = bar.get("high", 0)
         low = bar.get("low", 0)
+        bar_open = bar.get("open", 0)
         if not high or not low:
             continue
 
@@ -675,18 +712,30 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
             if _ENTRY_ANCHORED and sl_hit and tp_hit:
                 pick["_intrabar_ambiguous"] = True
             if sl_hit:
-                return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
+                fill = _gap_fill_price(bar_open, sl, True, True)
+                if fill != sl:
+                    pick["_intrabar_fill_basis"] = "gap_through"
+                return ("SL_HIT", fill, _compute_pnl(entry, fill, direction))
             if tp_hit:
-                return ("TP_HIT", tp, _compute_pnl(entry, tp, direction))
+                fill = _gap_fill_price(bar_open, tp, True, False)
+                if fill != tp:
+                    pick["_intrabar_fill_basis"] = "gap_through"
+                return ("TP_HIT", fill, _compute_pnl(entry, fill, direction))
         else:  # SHORT
             sl_hit = bool(sl and high >= sl)
             tp_hit = bool(tp and low <= tp)
             if _ENTRY_ANCHORED and sl_hit and tp_hit:
                 pick["_intrabar_ambiguous"] = True
             if sl_hit:
-                return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
+                fill = _gap_fill_price(bar_open, sl, False, True)
+                if fill != sl:
+                    pick["_intrabar_fill_basis"] = "gap_through"
+                return ("SL_HIT", fill, _compute_pnl(entry, fill, direction))
             if tp_hit:
-                return ("TP_HIT", tp, _compute_pnl(entry, tp, direction))
+                fill = _gap_fill_price(bar_open, tp, False, False)
+                if fill != tp:
+                    pick["_intrabar_fill_basis"] = "gap_through"
+                return ("TP_HIT", fill, _compute_pnl(entry, fill, direction))
 
     return None
 

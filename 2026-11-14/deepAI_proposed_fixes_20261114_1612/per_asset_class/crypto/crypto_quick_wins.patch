@@ -1,0 +1,40 @@
+# CRYPTO quick-win patches — verified anchors @ f54efb3b4a (.inspect-wt)
+# Diff 1 = QW2 (prediction_market_consensus emitter: stop emitting entry_price=0 rows)
+# Diff 2 = QW6 (template.html: 'awaiting price' instead of 0.00% for unpriced rows)
+# Documents only — not applied. Re-grep anchors against production before merging.
+--- a/alpha_engine/prediction_market_consensus.py
++++ b/alpha_engine/prediction_market_consensus.py
+@@ -583,10 +583,18 @@ def _merge_consensus_into_active_picks(...):
+ 
+         merged_pick = dict(pick)
+-        merged_pick["status"] = "ACTIVE" if _float(merged_pick.get("entry_price")) > 0 else "SIGNAL"
+-        merged_pick["entry_price"] = merged_pick.get("entry_price") or 0
++        _mp_entry = _float(merged_pick.get("entry_price"))
++        # Unpriceable guard: never write an entry_price<=0 row into
++        # active_picks.json. entry<=0 means every price source failed
++        # (_extract_trade_levels returns (0,0,0)); such rows later render as
++        # OPEN picks with fake 0% PnL (2026-11-14 audit: 62 OPEN zero-entry
++        # CRYPTO rows in picks.active_raw). Leave them to the signal output;
++        # dashboard_generator._snapshot_prediction_market_entry reprices
++        # signal-only PM rows at build time.
++        if _mp_entry <= 0:
++            skipped += 1
++            continue
++        merged_pick["status"] = "ACTIVE" if _mp_entry > 0 else "SIGNAL"
+         merged_pick["take_profit"] = merged_pick.get("take_profit") or 0
+         merged_pick["stop_loss"] = merged_pick.get("stop_loss") or 0
+ 
+         active_picks.append(merged_pick)
+         existing_keys.add(key)
+         merged += 1
+--- a/audit_dashboard/template.html
++++ b/audit_dashboard/template.html
+@@ -13014,7 +13014,10 @@
+     html += '<td style="text-align:right;font-weight:600">' + fmtPrice(p.live) + '</td>';
+-    html += '<td style="text-align:center;color:' + pnlColor + ';font-weight:600">' + ((p.pnl_pct || 0) > 0 ? '+' : '') + (p.pnl_pct || 0).toFixed(2) + '%</td>';
++    // Unpriced rows (entry missing/0, or no server-side pnl and no live price)
++    // must not read as flat 0.00% trades — show honest placeholder instead.
++    var _unpriced = (p.pnl_pct == null && !p.live) || !p.entry;
++    html += '<td style="text-align:center;color:' + (_unpriced ? 'var(--text-dim)' : pnlColor) + ';font-weight:600">' + (_unpriced ? 'awaiting price' : ((p.pnl_pct || 0) > 0 ? '+' : '') + (p.pnl_pct || 0).toFixed(2) + '%') + '</td>';
+     html += '<td style="text-align:center">' + (p.tp_remaining_pct || 0).toFixed(0) + '%</td>';
+     html += '<td style="text-align:left;font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="' + (p.strategy || '') + '">' + (p.strategy || '?').substring(0, 22) + '</td>';

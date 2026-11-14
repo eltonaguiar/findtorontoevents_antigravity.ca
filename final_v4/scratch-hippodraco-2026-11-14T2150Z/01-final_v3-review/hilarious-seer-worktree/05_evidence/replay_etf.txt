@@ -1,0 +1,24 @@
+262 stopped ETF rows; replaying 25
+window: 48 x 1h candles from each pick's entry timestamp
+
+  10/25 …
+  20/25 …
+  25/25 …
+
+=== status ===
+  touched              15
+  stop_never_touched   10
+
+stop touched: 15   never touched: 10
+gap-through rate among touched: 20.0% (3 trades)
+
+=== PnL by fill model (percentage points, sum over the replayed sample) ===
+model            n      sum_pp     mean_pp
+recorded        15      -35.61     -2.3743
+at_stop         15      -40.55     -2.7035
+gap_aware       15      -41.92     -2.7944
+
+at_stop is an upper bound; gap_aware is the model now implemented in the resolver.
+A stop that was never touched cannot be a stop-out: those rows are mislabelled.
+
+wrote final_v3/05_evidence/stop_fill_replay_etf.json

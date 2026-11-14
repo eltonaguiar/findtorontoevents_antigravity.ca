@@ -7772,6 +7772,12 @@ def stamp_after_cost_fields(pick: dict, index: dict) -> None:
         pick["after_cost_net_per_trade"] = None
         pick["wilson_lb_wr"] = None
         pick["is_ac_survivor"] = None
+        # NOTE (2026-11-14): the per-class fallback that fills these when the
+        # strategy is unindexed deliberately lives at the CALLER, not here.
+        # Keeping this function contract-faithful ("not found -> None") is what
+        # tests/test_hc_after_cost_gate.py asserts, and an earlier revision that
+        # stamped inside this branch broke two of those tests
+        # (assert 0.223 is None). See the call site for the fallback.
 
 
 def _classify_contract_safe(symbol) -> str:
@@ -8525,6 +8531,21 @@ def _normalize_pick(raw, source_system: str, status: str = "OPEN") -> dict:
         _pick.setdefault("after_cost_net_per_trade", None)
         _pick.setdefault("wilson_lb_wr", None)
         _pick.setdefault("is_ac_survivor", None)
+
+    # 2026-11-14: the strategy-level B16 index is normally absent — all 3,500
+    # closed rows in the live payload carried after_cost_net_per_trade=None, so
+    # the field the HC after-cost gate reads was dead in production. Fall back to
+    # the per-class cost-gate index (tools/per_class_cost_gate.py) so after-cost
+    # net is populated honestly at class granularity instead of staying null.
+    # Applied here (the caller) rather than inside stamp_after_cost_fields so
+    # that function keeps its contract and its existing tests stay meaningful.
+    # Never raises: a missing/stale index simply leaves the None values.
+    if _pick.get("after_cost_net_per_trade") is None:
+        try:
+            from tools.per_class_cost_gate import stamp_class_after_cost
+            stamp_class_after_cost(_pick)
+        except Exception:  # noqa: BLE001 — stamping must never break normalization
+            pass
 
     # Net-of-cost PnL overlay (PR-A, 2026-05-02). Per the hedge-fund-uplift
     # roadmap (reports/HEDGE_FUND_UPLIFT_ROADMAP_2026_05_02.md) and the
