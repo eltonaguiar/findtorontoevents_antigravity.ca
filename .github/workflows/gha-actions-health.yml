@@ -1,0 +1,26 @@
+name: GHA actions health
+
+on:
+  schedule:
+    # Every 6 hours (staggered from the DB freshness guardian's :10 and the
+    # artifact-gate's :30 to avoid queue collisions).
+    - cron: '20 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  health:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check GitHub Actions health
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
+        run: python tools/check_github_actions_health.py
