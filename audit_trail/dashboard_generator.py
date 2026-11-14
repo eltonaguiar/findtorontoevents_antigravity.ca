@@ -7772,6 +7772,18 @@ def stamp_after_cost_fields(pick: dict, index: dict) -> None:
         pick["after_cost_net_per_trade"] = None
         pick["wilson_lb_wr"] = None
         pick["is_ac_survivor"] = None
+        # 2026-11-14: the strategy-level B16 index is normally absent — all
+        # 3,500 closed rows in the live payload carried
+        # after_cost_net_per_trade=None, so the field the HC after-cost gate
+        # reads was dead in production. Fall back to the per-class cost-gate
+        # index (tools/per_class_cost_gate.py) so after-cost net is populated
+        # honestly at class granularity instead of staying null forever.
+        # Never raises: a missing/stale index simply leaves the None values.
+        try:
+            from tools.per_class_cost_gate import stamp_class_after_cost
+            stamp_class_after_cost(pick)
+        except Exception:  # noqa: BLE001 — stamping must never break normalization
+            pass
 
 
 def _classify_contract_safe(symbol) -> str:
