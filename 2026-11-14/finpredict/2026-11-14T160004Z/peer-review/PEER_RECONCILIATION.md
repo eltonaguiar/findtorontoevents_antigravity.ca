@@ -36,6 +36,13 @@ From **v2** (`P0_QUICK_WINS.md`, root causes with line numbers):
 - **P0-6 — `sym_track_*` built from the wrong population**: `_enrich_live_pnl` calls `_build_strategy_symbol_track_stats` with the *active* list filtered to closed statuses (always `[]`), not the closed ledger (`dashboard_generator.py:1830-1832` vs call site `:14551`). Explains the dead "Track" column.
 - **P0-9 — security**: hardcoded Google API keys tracked in `STOCKSUNIFY/…/stock-api-keys.ts` (×2) and `TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/scroll-fix.js`; `dbpasses.txt` not in `.gitignore`.
 
+From **v2 — expanded per-asset-class remediation** (added since first read; `recommendations/{QUICK_WINS.md, per_asset_class/*, overall/{ROADMAP,DATA_CONTRACT,CI_GATES}.md}`):
+- **Vacuous PASS bug**: a class with `active_count == 0` short-circuits to `thresholdPass=true` (`dashboard_generator.py:6824-6826`), so **BOND renders a green PASS with 0 picks** while `money_ready_verdict` says `INSUFFICIENT_DATA`. Fix: `active_count==0 or resolved_n<30 → INSUFFICIENT_DATA` + a `NOT_BUILT` status. (Also affects ETF/FUTURES.)
+- **MUTUAL FUNDS ranker is an untracked prototype**: `alpha_engine/mutual_fund_ranker.py` + `mutual_fund_metadata.csv` exist only as `??` files in the main checkout, **absent from `origin/main`**, with a `mutut_fund_rankings.json` typo and no output ever produced. Recommendation: de-advertise + `NOT_BUILT`, do not build a live MF pick class (monthly NAV has no intraday mark).
+- **FOREX PR#6 block is dead code**: the allowlist has **0 call sites**; **0/277** FOREX rows pass it. Fix: make it observable (shadow mode), don't silently assume it blocks.
+- **44/44 COMMODITY rows are `=F` futures** (canonical class = FUTURES); 49/277 FOREX rows aren't spot FX; ETFs sit inside EQUITY. Fix: symbol-authoritative `canonical_asset_class` + a `FUTURES_ROLLUP`, keep the display bucket.
+- **Reject date-only timestamps at ingest** (`dashboard_generator.py:8136-8154, 8351-8352`) — same root cause as the FUTURES "no date" finding, now with the resolver-side location.
+
 From **v4** (`INDEX.md`, live Binance/Yahoo + raw DB):
 - **Dashboard vs raw-DB P/L inflation**: CRYPTO recent-closed PF **1.80** vs raw-DB 90d PF **0.371** (~5×); Smart-Picks CRYPTO "PF 9.69 / WR 78.9%" is **91.7% one source** (`claude_gainer_st`) with only **3 closed rows**; EQUITY dashboard PF 0.70 vs raw PF 5.56 (filter *inverts*).
 - **Alpha Engine (primary scanner) DEAD**: last 10 runs = 9 cancelled + 1 failure.
