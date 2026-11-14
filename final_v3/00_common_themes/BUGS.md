@@ -282,9 +282,17 @@ turns **−617.5pp into +238.3pp** while removing 78.9% of emissions.
 
 ## B13 — FAIL: 360 workflow files with no owner map and heavy schedule collisions
 
-Measured this session: **360** workflow files; **0** have `concurrency:`, **0** have
-`timeout-minutes:`; many share the same cron minute. See `../01_plan/GITHUB_ACTIONS_FIXES.md` for the
-counts and the fix list. The `push:` trigger on `audit-dashboard.yml` was removed 2026-05-19 for a
+Measured this session: **360** workflow files; **161** have `concurrency:` (199 do not), **271** have
+`timeout-minutes:` (89 do not), **39** still declare a `push:` trigger; many share the same cron
+minute (20 on `0 6 * * *`). See `../01_plan/GITHUB_ACTIONS_FIXES.md` for the fix list.
+
+> **Corrected 2026-11-14** after `final_v3/feat-stop-fill-cost-gate-final-v3/02-improvement-plan/GITHUB_ACTIONS_FIXES.md`
+> caught it. This paragraph previously read "**0** have `concurrency:`, **0** have `timeout-minutes:`",
+> which is false. The counts were verified twice — locally, and by an independent scan of `origin/main` —
+> and the peer's 161/271/39 match exactly. Two of my own documents disagreed (the earlier PR text said
+> "199 without `concurrency`"); the wrong one is the one that shipped. The conclusion is unaffected —
+> 199 workflows that can race on the same output is still the defect — but a fabricated count in a bug
+> report is exactly the failure being documented, so it is left visible rather than quietly edited. The `push:` trigger on `audit-dashboard.yml` was removed 2026-05-19 for a
 real cancel-cascade; nothing prevents the same pattern from re-emerging in the other 359.
 
 ---
