@@ -24,12 +24,13 @@ Rule: long an asset when its close > 200-day SMA, else flat; position sized to a
 
 **This is a real method**: it turns a −3% CAGR / −72% drawdown buy-and-hold into +6% CAGR / −13% drawdown, with Sharpe 0.50 and **out-of-sample Sharpe (0.70) HIGHER than in-sample (0.42)** — the opposite of overfitting. This is the managed-futures/CTA playbook that real "winners" use.
 
-## The honest statistical caveat
+## The honest statistical caveat (corrected — do not overstate)
 
-- t-stat (daily mean > 0): full = 0.74, OOS = 0.57 → **not yet p<0.05** (needs >1.96).
-- Bootstrap 95% CI on Sharpe: [−0.81, 1.86] → still crosses zero.
+- t-stat (daily mean > 0): full = 0.74, OOS = 0.57 → **not yet p<0.05**.
+- **Block-bootstrap 95% CI on Sharpe: [−0.77, 2.08] → still crosses zero.**
+- Paired test vs buy-and-hold (equal-weight 20): the improvement is **mostly a volatility/drawdown reduction** (vol-targeting + flat-when-bear), not a proven raw-return edge — the raw daily mean difference is ~0 bps over this window.
 
-A Sharpe of 0.5 is a genuine edge but needs **~15+ years of daily data (or ~4000+ days) or far more assets** for the CI to exclude zero. This is exactly why the academic literature needs 50–100 assets and decades: the premia are real but small.
+**Corrected framing:** the method's value is **risk-adjusted** (Sharpe 0.50 vs −0.05, maxDD −13% vs −72%) — it turns a violent −72%-drawdown buy-and-hold into a smooth +6%/−13% profile. That is real and is exactly what managed-futures funds sell. But the *raw* alpha (mean daily return) is small and **not statistically significant over 800 days / 20 assets**. This is consistent with the literature: trend premia are real but small (Sharpe ~0.3–0.7) and require **breadth (50–100 assets) + decades** to be statistically proven. Do not claim "statistically valid profitability" on this sample.
 
 ## Next iteration to close the significance gap (005)
 
