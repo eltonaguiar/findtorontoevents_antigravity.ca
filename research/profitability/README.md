@@ -32,6 +32,14 @@ also failed. Full reasoning: `runs/v2/VERDICT.md`, `runs/v3/VERDICT.md`, `runs/v
 | H20 Crypto momentum + BTC trend | −0.08 | −21.3% | −0.01 Sharpe | NOT_PROVED |
 | H14 Crypto XS reversal | −0.36 | −44.3% | −0.01 Sharpe | NOT_PROVED |
 
+## Peer claim check (VWAP)
+
+The peer claim `updates/2026-11-14-PROFITABLE-APPROACH-VWAP-MEAN-REVERSION.md` was independently
+replicated and falsified: reported Sharpe 3.76 is an annualization artifact (correct ~1.18,
+t=0.91, p=0.18); the PBO 0.489 is degenerate (proper CSCV 0.84–0.97); 61% of trades breached
+stops intrabar (PF 0.81, −17.4%); and the OOS is 7.18 months, not 22. See
+`validation/VWAP_VERDICT.md`.
+
 ## Why nothing is proved
 
 - **H10**: post-hoc cash variant of H7 on the same seen OOS; DSR fails at effective N≈38 (0.9365),

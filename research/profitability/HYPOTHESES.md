@@ -64,6 +64,12 @@ Every candidate tested is listed here. `N` for multiple-testing includes all row
 - Reports: `runs/v2/REPORT.md`, `runs/v2/ROBUSTNESS.md`, `runs/v2/VERDICT.md`,
   `validation/REPLICATION_H10.md`, `validation/STATS_REVIEW_H10.md`.
 
+## Peer claims reviewed
+
+| Claim | Source | Verdict | Reason |
+|---|---|---|---|
+| Regime-filtered VWAP mean reversion, 4h crypto | `updates/2026-11-14-PROFITABLE-APPROACH-VWAP-MEAN-REVERSION.md` | **FALSIFIED** | Sharpe annualization 3.76→~1.18 (t=0.91); PBO 0.489 degenerate (CSCV 0.84–0.97); 79/129 trades breached stops intrabar (PF 0.81, −17.4%); OOS 7.18 months, not 22; 5-symbol n=72, not 129; concurrent 40%/symbol = 280% gross, −15.8%. |
+
 ## Status definitions
 
 - `UNTESTED` — declared, no run yet.

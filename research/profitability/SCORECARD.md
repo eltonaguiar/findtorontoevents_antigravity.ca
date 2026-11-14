@@ -26,6 +26,7 @@
 | v2 | +5 | H10 RSI2+cash: 1.83 Sharpe, 22.0% CAGR, DSR 0.978 at N=12 | NOT_PROVED (contaminated OOS; effective N=38; 2-day lag 0.70) |
 | v3 | +8 | H16 ETF XS momentum: 0.98 Sharpe vs 1.18 benchmark | NOT_PROVED (0/8; SPA 0.488) |
 | v4 | +3 | H22 BTC funding carry: 14.2 Sharpe, 7.2% notional, 4.8% capital-adjusted | NOT_PROVED (economic; n=10; H21/H23 below cash) |
+| Peer VWAP | 8 strategies/5 symbols | reported 3.76 Sharpe, PF 1.21 | **FALSIFIED**: correct Sharpe ~1.18 (t=0.91, p=0.18); intrabar stops PF 0.81; CSCV PBO 0.84–0.97; OOS 7.18 months |
 
 ## What was learned
 
@@ -37,6 +38,9 @@
    1.5× capital it returns 3.7–4.8% vs 4.5% cash. Only BTC-only clears cash, with 10 trades.
 4. A high Sharpe on a low-vol carry is not an equity-beating edge. Economic significance and
    capital efficiency matter as much as statistical significance.
+5. The peer "provably profitable" VWAP claim is an artifact: annualization error (3.76 → ~1.18),
+   degenerate PBO (proper CSCV 0.84–0.97), ignored intrabar stops (PF 0.81), and a 7.18-month
+   OOS mislabelled as 22 months. It is not proof.
 
 ## On TradingView contest winners
 
