@@ -1,12 +1,16 @@
 import os, ftplib
+import ssl
 from pathlib import Path
+from tools.ftp_credentials import get_ftp_credentials
 
 def deploy_audit():
     # 50webs deployment
     print("Deploying to 50webs...")
     try:
-        ftp = ftplib.FTP('ftps2.50webs.com', timeout=60)
-        ftp.login('ejaguiar1', os.getenv('FTP_PASS', ''))
+        credentials = get_ftp_credentials()
+        ftp = ftplib.FTP_TLS(credentials.host, timeout=60, context=ssl.create_default_context())
+        ftp.login(credentials.user, credentials.password)
+        ftp.prot_p()
         
         local_file = r'e:\findtorontoevents_antigravity.ca\audit_dashboard\index.html'
         
@@ -37,8 +41,12 @@ def deploy_audit():
     # GoDaddy deployment
     print("\nDeploying to GoDaddy...")
     try:
-        ftp2 = ftplib.FTP('162.210.101.36', timeout=60)
-        ftp2.login('findtoro', os.getenv('FTP_PASS', ''))
+        host = os.environ["FTPGODADDYHOST_TE_DOTNET"]
+        user = os.environ["FTPGODADDYUSER"]
+        password = os.environ["FTPGODADDYPASS"]
+        ftp2 = ftplib.FTP_TLS(host, timeout=60, context=ssl.create_default_context())
+        ftp2.login(user, password)
+        ftp2.prot_p()
         
         # Paths: /public_html/audit_dashboard/ and /public_html/audit/
         for remote_dir in ['/public_html/audit_dashboard', '/public_html/audit']:

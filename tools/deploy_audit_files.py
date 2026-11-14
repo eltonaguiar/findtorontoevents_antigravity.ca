@@ -21,6 +21,9 @@ from ftplib import FTP_TLS
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
+from tools.ftp_credentials import get_ftp_credentials
 
 # (local_path_relative_to_repo, remote_path_on_50webs, optional_tag)
 UPLOADS = [
@@ -157,12 +160,12 @@ def main():
     ap.add_argument("--verify-content", action="store_true", help="Download and verify JSON content (e.g. model count)")
     args = ap.parse_args()
 
-    user = os.environ.get("FTP_USER")
-    pw = os.environ.get("FTP_PASS")
-    host = os.environ.get("FTP_SERVER", "ftps2.50webs.com")
-    if not (user and pw):
-        print("ERROR: FTP_USER + FTP_PASS env vars required", file=sys.stderr)
+    try:
+        credentials = get_ftp_credentials()
+    except (OSError, ValueError) as exc:
+        print(f"ERROR: FTP credentials unavailable ({type(exc).__name__})", file=sys.stderr)
         sys.exit(2)
+    host, user, pw = credentials.host, credentials.user, credentials.password
 
     targets = UPLOADS if not args.only else [t for t in UPLOADS if t[2] == args.only]
     if not targets:
@@ -171,7 +174,7 @@ def main():
     print(f"Target host: {host}  user: {user}  uploads: {len(targets)}  dry-run: {args.dry_run}")
     ftps = None
     if not args.dry_run:
-        ftps = FTP_TLS(host, timeout=30)
+        ftps = FTP_TLS(host, timeout=30, context=ssl.create_default_context())
         ftps.login(user, pw)
         ftps.prot_p()
 

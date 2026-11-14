@@ -5,9 +5,13 @@ from __future__ import annotations
 import ftplib
 import os
 import sys
+import ssl
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from tools.ftp_credentials import get_ftp_credentials
 DEFAULT_LOCAL = REPO_ROOT / "reports" / "gha_actions_summary.html"
 REMOTE_PATH = "/findtorontoevents.ca/updates/gha-summary.html"
 
@@ -17,19 +21,15 @@ def deploy_summary(local_path: Path | None = None) -> None:
     if not local.is_file():
         raise FileNotFoundError(f"Summary HTML not found: {local}")
 
-    server = os.environ.get("FTP_SERVER") or os.environ.get("FTP_HOST") or "ftps2.50webs.com"
-    user = os.environ.get("FTP_USER") or ""
-    password = os.environ.get("FTP_PASS") or ""
-    if not user or not password:
-        print("ERROR: FTP_USER and FTP_PASS must be set", file=sys.stderr)
-        sys.exit(1)
+    credentials = get_ftp_credentials()
+    server, user, password = credentials.host, credentials.user, credentials.password
 
     remote_dir = "/".join(REMOTE_PATH.split("/")[:-1])
     remote_name = REMOTE_PATH.split("/")[-1]
     size = local.stat().st_size
 
     print(f"Connecting to {server} as {user}…")
-    ftp = ftplib.FTP_TLS(server)
+    ftp = ftplib.FTP_TLS(server, context=ssl.create_default_context())
     ftp.login(user, password)
     ftp.prot_p()
 
