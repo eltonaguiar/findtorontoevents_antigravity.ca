@@ -60,15 +60,11 @@ def _from_mysql() -> dict | None:
             """
             SELECT category,
                    COUNT(*) AS total_picks,
-                   SUM(CASE WHEN status IN ('WON','LOST','CLOSED','EXPIRED','TP_HIT','SL_HIT') THEN 1 ELSE 0 END) AS resolved,
-                    SUM(CASE WHEN status IN ('WON','TP_HIT') THEN 1
-                             WHEN status IN ('CLOSED','EXPIRED') AND pnl_pct IS NOT NULL AND pnl_pct > 0 THEN 1
-                             ELSE 0 END) AS wins,
-                    SUM(CASE WHEN status IN ('LOST','SL_HIT') THEN 1
-                             WHEN status IN ('CLOSED','EXPIRED') AND pnl_pct IS NOT NULL AND pnl_pct < 0 THEN 1
-                             ELSE 0 END) AS losses,
-                   AVG(CASE WHEN pnl_pct IS NOT NULL THEN pnl_pct ELSE NULL END) AS avg_pnl_pct,
-                   MAX(COALESCE(created_at, updated_at)) AS last_pick
+                   SUM(CASE WHEN status IN ('WON','LOST','TP_HIT','SL_HIT') THEN 1 ELSE 0 END) AS resolved,
+                   SUM(CASE WHEN status = 'WON' THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE WHEN status = 'LOST' THEN 1 ELSE 0 END) AS losses,
+                    AVG(CASE WHEN pnl_pct IS NOT NULL THEN pnl_pct ELSE NULL END) AS avg_pnl_pct,
+                    MAX(COALESCE(created_at, updated_at)) AS last_pick
             FROM trading_picks
             WHERE category IS NOT NULL AND category != ''
             GROUP BY category
@@ -138,9 +134,13 @@ def _from_local_json() -> dict:
                         pnl_f = float(pnl)
                         s["pnl_sum"] += pnl_f
                         s["pnl_n"] += 1
-                        if pnl_f > 0 or st == "WON":
+                        # EXPIRED/CLOSED picks must NOT be counted as WON/LOST
+                        # based on pnl sign alone — only decisive TP_HIT/SL_HIT
+                        # statuses determine win/loss. EXPIRED rows with pnl>0
+                        # are not wins; they are unresolved/time-exited.
+                        if st == "WON" or (st == "TP_HIT" and pnl_f > 0):
                             s["wins"] += 1
-                        elif pnl_f < 0 or st == "LOST":
+                        elif st == "LOST" or (st == "SL_HIT" and pnl_f < 0):
                             s["losses"] += 1
                     except (TypeError, ValueError):
                         pass
