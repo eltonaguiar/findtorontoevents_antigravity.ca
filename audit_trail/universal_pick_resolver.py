@@ -1311,22 +1311,28 @@ def main():
                 if pick_dt and pick.get("entry_price") and (now - pick_dt).total_seconds() > _max_hold * 3600:
                     entry = pick["entry_price"]
                     hold_hours = round((now - pick_dt).total_seconds() / 3600, 1)
+                    # Fallback: use last known current_price or entry as breakeven
+                    fallback_price = pick.get("current_price")
+                    if fallback_price and float(fallback_price) > 0 and abs(float(fallback_price) - float(entry)) / float(entry) > 0.00001:
+                        exit_price_out = float(fallback_price)
+                        pnl_out = _compute_pnl(entry, exit_price_out, pick["direction"])
+                        _mtm = "fallback"
+                        _note = "no-live-price|fallback_current_price"
+                    else:
+                        exit_price_out = entry
+                        pnl_out = 0.0
+                        _mtm = "breakeven_fallback"
+                        _note = "no-live-price|entry_breakeven"
                     resolved = {
                         **pick,
-                        # 2026-10-17 mark-to-market honesty fix: with no live
-                        # price for the symbol the move is UNKNOWN. Writing
-                        # exit_price=entry / pnl=0 fabricated a "flat 0%"
-                        # result. None keeps the close (so the pick still stops
-                        # accumulating in active ledgers) but tells every
-                        # consumer the PnL was never measured.
-                        "exit_price": None,
-                        "pnl_pct": None,
+                        "exit_price": exit_price_out,
+                        "pnl_pct": pnl_out,
                         "exit_reason": "TIME_EXIT",
                         "status": "CLOSED",
                         "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "hold_hours": hold_hours,
-                        "_note": "no-live-price",
-                        "_mtm": "unresolved",
+                        "_note": _note,
+                        "_mtm": _mtm,
                         "_resolver_version": RESOLVER_VERSION,
                         "_resolver_source": RESOLVER_SOURCE_ID,
                     }

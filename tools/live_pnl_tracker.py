@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import sys
 import time
@@ -67,18 +68,42 @@ def fetch_price(symbol: str, asset_class: str) -> tuple[float | None, str]:
 
     # ── Crypto: Binance first, CoinGecko fallback ──
     if ac in ("CRYPTO",):
+        import requests
+        last_err = "binance unreachable"
+        for attempt in range(2):
+            try:
+                resp = requests.get(
+                    f"https://api3.binance.com/api/v3/ticker/price?symbol={sym}",
+                    timeout=8)
+                if resp.status_code == 200:
+                    px = float(resp.json()["price"])
+                    if px > 0:
+                        return (px, "binance")
+                    last_err = "binance returned zero price"
+                else:
+                    last_err = f"binance HTTP {resp.status_code}"
+                    logging.warning("[live_pnl] %s for %s (attempt %d)", last_err, sym, attempt + 1)
+            except Exception as exc:
+                last_err = f"binance exception: {exc}"
+                logging.warning("[live_pnl] %s for %s (attempt %d)", last_err, sym, attempt + 1)
+            if attempt == 0:
+                time.sleep(0.5)
+
+        # CoinGecko fallback
         try:
-            import requests
-            resp = requests.get(
-                f"https://api3.binance.com/api/v3/ticker/price?symbol={sym}",
+            cg_resp = requests.get(
+                f"https://api.coingecko.com/api/v3/simple/price?ids={sym.lower()}&vs_currencies=usd",
                 timeout=8)
-            if resp.status_code == 200:
-                px = float(resp.json()["price"])
-                if px > 0:
-                    return (px, "binance")
-        except Exception:
-            pass
-            return (None, "no crypto price source")
+            if cg_resp.status_code == 200:
+                data = cg_resp.json()
+                price_data = data.get(sym.lower(), {})
+                px = price_data.get("usd")
+                if px and float(px) > 0:
+                    return (float(px), "coingecko")
+        except Exception as exc:
+            logging.warning("[live_pnl] coingecko fallback failed for %s: %s", sym, exc)
+
+        return (None, last_err)
 
     # ── Equities / ETFs / Commodities / Forex: yfinance ──
     yf_sym = sym
