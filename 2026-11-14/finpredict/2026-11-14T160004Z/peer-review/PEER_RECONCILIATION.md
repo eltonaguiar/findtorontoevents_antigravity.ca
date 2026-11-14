@@ -55,6 +55,20 @@ From **v4's ML peer review** (`childlike-airport`):
 
 v4's `INDEX.md` claims "dashboard shows **0 active picks**, `dashboard_data.json` **26 days old**, freshly-painted empty shell". **This is based on the stale repo copy** (`audit_dashboard/data/dashboard_data.json` = Oct 23), **not** the live site. The live `findtorontoevents.ca/audit/data/dashboard_data.json` I downloaded is `generated_at 2026-11-14T14:30Z` with 20 curated actives / 4,148 raw / 3,500 recent-closed. v2's `G_peer_reconciliation.md` §caution flags the same. **Do not propagate "empty dashboard"** — it describes a stale local file, not the deployed surface.
 
+## v2 peer-review synthesis (added check 2/6)
+
+v2 now ships `recommendations/peer_review/REVIEW_SYNTHESIS.md` + per-class reviewer memos + `inspect-wt_integration.md`. New/corrected facts:
+
+- **FOREX date-only is 105/277 `entry_time`**, not 12 (my/v3 figure was understated).
+- **COMMODITY generator uses crypto proxies** (its "commodity" signals are derived from crypto price proxies), and both COMMODITY and FUTURES are in `BLOCKED_ASSET_CLASSES` (`quality_gates.py:1724`).
+- **Duplicate-ID correction:** 248 groups / 297 extra rows / 56 cross-ledger conflicts.
+- **v3 shipped 3 timestamped iterations** (`T155500Z`, `T161500Z`, `T161700Z`) — the latter two add `QUICK_WINS/` + `PEER_REVIEW/`.
+- **Two more peers exist:**
+  - `ML childlike-airport` — **on this host** at `updates/2026-11-14-ML-AUDIT-childlike-airport/` with `proposed_fixes/{overall,crypto,stocks,bonds,mutual_funds,forex,etfs}/` (SQLite `live_picks.db` 172d-stale finding; ML code sound / data bug).
+  - `hilarious-seer` — **Windows host, not accessible here** (`updates/…-hilarious-seer-*` absent, like deepAI).
+- **Veto list (agreed by v2 reviewers):** v4's `proposed_fixes/**` contains destructive SQL and dangerous reversals — `DELETE` ghost rows, `UPDATE TIME_EXIT→LOST, pnl_pct=0.0`, `EXPIRED_FORCE` mass rewrite, invert ML gate, unblock FUTURES/COMMODITY without a real feed, add `MUTUAL_FUND` to canonical classes before an emitter exists, re-enable audit-dashboard `push:` trigger. **Do not apply.**
+- **Unified fix contract (adopt for master plan):** quote status `LIVE/LAST_CLOSE/STALE/UNQUOTED/PLACEHOLDER`; `pnl_pct=null` when unquoted (never fabricated 0); ID dedup key + economic key `(symbol,strategy,direction,entry_time,entry_price)`; `summary_picks` single terminal population; `class_canonical` + `class_raw` + `class_mismatch`.
+
 ## Bottom line
 
 Four independent audits agree on the negative verdict (not money-ready; data pipeline broken). v2's reconciliation recommends my `updates/…audit.md` as the **backbone** for the master review; v3 contributes the only **runnable** artifact (guardian + 11 tests); v2 contributes the **most precise root causes** (P0-1..P0-9); v4 contributes **raw-DB truth** and the cross-market table. The master plan should merge: my doc (backbone) + v2's P0 fixes (implementation) + v3's guardian (CI gate) + v4's raw-DB honesty (verification).
