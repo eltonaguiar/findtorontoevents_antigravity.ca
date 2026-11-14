@@ -1,0 +1,301 @@
+{
+  "generated_at": "2026-05-25T05:46:20.818392Z",
+  "source": {
+    "dashboard_data_json": "audit/data/dashboard_data.json (audit_dashboard/data/dashboard_data.json missing \u2014 fallback used)",
+    "db_table": "ejaguiar1_stocks.at_raw_picks (90d window via closed_at)"
+  },
+  "ELI5": "Two views per class: (A) the dashboard's curated 'recent_closed' cohort that /audit displays, and (B) the raw DB rollup from at_raw_picks last 90d. Divergence between (A) and (B) reveals filtering bias (e.g. the dashboard's Smart Picks CRYPTO is 91% one source 'claude_gainer_st' which has only 3 closed rows in the raw DB).",
+  "shrinkage_prior": "Beta(alpha=10, beta=10) \u2014 neutral 50% prior with prior_n=20. wr_shrunk = (wins+10)/(n+20).",
+  "by_class": {
+    "BOND": {
+      "n_active": 0,
+      "dashboard_all_closed": {
+        "label": "dashboard recent_closed (all decisive)",
+        "n": 7,
+        "wins": 4,
+        "losses": 3,
+        "wr_pct": 57.14,
+        "wr_shrunk_pct": 51.85,
+        "pf": 25.901,
+        "mean_pnl_pct": 0.7061,
+        "max_dd_equity_curve_pct": 0.2
+      },
+      "dashboard_smart_picks": {
+        "label": "dashboard recent_closed (elite>=60 & conf>=0.60)",
+        "n": 0
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d (DB-side ground truth)"
+      }
+    },
+    "COMMODITY": {
+      "n_active": 0,
+      "dashboard_all_closed": {
+        "label": "dashboard recent_closed (all decisive)",
+        "n": 202,
+        "wins": 91,
+        "losses": 111,
+        "wr_pct": 45.05,
+        "wr_shrunk_pct": 45.5,
+        "pf": 1.079,
+        "mean_pnl_pct": 0.0321,
+        "max_dd_equity_curve_pct": 28.63
+      },
+      "dashboard_smart_picks": {
+        "label": "dashboard recent_closed (elite>=60 & conf>=0.60)",
+        "n": 0
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d (DB-side ground truth)"
+      }
+    },
+    "CRYPTO": {
+      "n_active": 73,
+      "dashboard_all_closed": {
+        "label": "dashboard recent_closed (all decisive)",
+        "n": 2129,
+        "wins": 1098,
+        "losses": 1031,
+        "wr_pct": 51.57,
+        "wr_shrunk_pct": 51.56,
+        "pf": 1.801,
+        "mean_pnl_pct": 0.5428,
+        "max_dd_equity_curve_pct": 271.1
+      },
+      "dashboard_smart_picks": {
+        "label": "dashboard recent_closed (elite>=60 & conf>=0.60)",
+        "n": 337,
+        "wins": 266,
+        "losses": 71,
+        "wr_pct": 78.93,
+        "wr_shrunk_pct": 77.31,
+        "pf": 9.69,
+        "mean_pnl_pct": 1.828,
+        "max_dd_equity_curve_pct": 46.72
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d (DB-side ground truth)",
+        "n_total": 46324,
+        "n_decisive": 2001,
+        "wins": 788,
+        "losses": 1213,
+        "wr_pct": 39.38,
+        "wr_shrunk_pct": 39.49,
+        "pf": 0.371,
+        "mean_pnl_pct": -4.6041,
+        "sum_pos_pnl": 125717.35,
+        "sum_neg_pnl": -338997.18
+      }
+    },
+    "EQUITY": {
+      "n_active": 8,
+      "dashboard_all_closed": {
+        "label": "dashboard recent_closed (all decisive)",
+        "n": 567,
+        "wins": 212,
+        "losses": 355,
+        "wr_pct": 37.39,
+        "wr_shrunk_pct": 37.82,
+        "pf": 0.704,
+        "mean_pnl_pct": -0.7212,
+        "max_dd_equity_curve_pct": 627.81
+      },
+      "dashboard_smart_picks": {
+        "label": "dashboard recent_closed (elite>=60 & conf>=0.60)",
+        "n": 4,
+        "wins": 2,
+        "losses": 2,
+        "wr_pct": 50.0,
+        "wr_shrunk_pct": 50.0,
+        "pf": 0.56,
+        "mean_pnl_pct": -0.7303,
+        "max_dd_equity_curve_pct": 6.64
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d (DB-side ground truth)",
+        "n_total": 9043,
+        "n_decisive": 8249,
+        "wins": 5501,
+        "losses": 2748,
+        "wr_pct": 66.69,
+        "wr_shrunk_pct": 66.65,
+        "pf": 5.555,
+        "mean_pnl_pct": 4.9362,
+        "sum_pos_pnl": 54437.5,
+        "sum_neg_pnl": -9799.63
+      }
+    },
+    "ETF": {
+      "n_active": 0,
+      "dashboard_all_closed": {
+        "label": "dashboard recent_closed (all decisive)",
+        "n": 13,
+        "wins": 4,
+        "losses": 9,
+        "wr_pct": 30.77,
+        "wr_shrunk_pct": 42.42,
+        "pf": 0.338,
+        "mean_pnl_pct": -0.8779,
+        "max_dd_equity_curve_pct": 15.94
+      },
+      "dashboard_smart_picks": {
+        "label": "dashboard recent_closed (elite>=60 & conf>=0.60)",
+        "n": 0
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d (DB-side ground truth)",
+        "n_total": 156,
+        "n_decisive": 121,
+        "wins": 82,
+        "losses": 39,
+        "wr_pct": 67.77,
+        "wr_shrunk_pct": 65.25,
+        "pf": 2.594,
+        "mean_pnl_pct": 1.7565,
+        "sum_pos_pnl": 445.88,
+        "sum_neg_pnl": -171.87
+      }
+    },
+    "FOREX": {
+      "n_active": 0,
+      "dashboard_all_closed": {
+        "label": "dashboard recent_closed (all decisive)",
+        "n": 516,
+        "wins": 235,
+        "losses": 281,
+        "wr_pct": 45.54,
+        "wr_shrunk_pct": 45.71,
+        "pf": 2.02,
+        "mean_pnl_pct": 0.4122,
+        "max_dd_equity_curve_pct": 46.85
+      },
+      "dashboard_smart_picks": {
+        "label": "dashboard recent_closed (elite>=60 & conf>=0.60)",
+        "n": 0
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d (DB-side ground truth)",
+        "n_total": 6893,
+        "n_decisive": 6051,
+        "wins": 5039,
+        "losses": 1012,
+        "wr_pct": 83.28,
+        "wr_shrunk_pct": 83.17,
+        "pf": 0.108,
+        "mean_pnl_pct": -5.0651,
+        "sum_pos_pnl": 4211.21,
+        "sum_neg_pnl": -39125.26
+      }
+    },
+    "FUTURES": {
+      "n_active": 0,
+      "dashboard_all_closed": {
+        "label": "dashboard recent_closed (all decisive)",
+        "n": 14,
+        "wins": 1,
+        "losses": 13,
+        "wr_pct": 7.14,
+        "wr_shrunk_pct": 32.35,
+        "pf": 0.582,
+        "mean_pnl_pct": -0.4413,
+        "max_dd_equity_curve_pct": 10.16
+      },
+      "dashboard_smart_picks": {
+        "label": "dashboard recent_closed (elite>=60 & conf>=0.60)",
+        "n": 0
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d (DB-side ground truth)",
+        "n_total": 2697,
+        "n_decisive": 2681,
+        "wins": 1340,
+        "losses": 1341,
+        "wr_pct": 49.98,
+        "wr_shrunk_pct": 49.98,
+        "pf": 131.597,
+        "mean_pnl_pct": 371.2199,
+        "sum_pos_pnl": 1008846.18,
+        "sum_neg_pnl": -7666.17
+      }
+    },
+    "MEMECOIN": {
+      "n_active": 0,
+      "dashboard_all_closed": {
+        "label": "absent from dashboard recent_closed",
+        "n": 0
+      },
+      "dashboard_smart_picks": {
+        "label": "absent",
+        "n": 0
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d",
+        "n_total": 1528,
+        "n_decisive": 96,
+        "wins": 33,
+        "losses": 63,
+        "wr_pct": 34.38,
+        "wr_shrunk_pct": 37.07,
+        "pf": 0.579,
+        "mean_pnl_pct": -2.5971,
+        "sum_pos_pnl": 5449.4,
+        "sum_neg_pnl": -9415.16
+      }
+    },
+    "UNKNOWN": {
+      "n_active": 0,
+      "dashboard_all_closed": {
+        "label": "absent from dashboard recent_closed",
+        "n": 0
+      },
+      "dashboard_smart_picks": {
+        "label": "absent",
+        "n": 0
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d",
+        "n_total": 125,
+        "n_decisive": 0,
+        "wins": 0,
+        "losses": 0,
+        "wr_pct": null,
+        "wr_shrunk_pct": null,
+        "pf": null,
+        "mean_pnl_pct": 0.0,
+        "sum_pos_pnl": 0.0,
+        "sum_neg_pnl": 0.0
+      }
+    },
+    "PENNY_STOCK": {
+      "n_active": 0,
+      "dashboard_all_closed": {
+        "label": "absent from dashboard recent_closed",
+        "n": 0
+      },
+      "dashboard_smart_picks": {
+        "label": "absent",
+        "n": 0
+      },
+      "db_raw_picks_90d": {
+        "label": "ejaguiar1_stocks.at_raw_picks 90d",
+        "n_total": 106,
+        "n_decisive": 0,
+        "wins": 0,
+        "losses": 0,
+        "wr_pct": null,
+        "wr_shrunk_pct": null,
+        "pf": null,
+        "mean_pnl_pct": 0.0,
+        "sum_pos_pnl": 0.0,
+        "sum_neg_pnl": 0.0
+      }
+    }
+  },
+  "notes": [
+    "CRYPTO Smart-Picks cohort (n=337, WR=78.93%, PF=9.69) on the dashboard is dominated by source_system=claude_gainer_st (309/337 = 91.7%) and strategy=st_fear_greed_contrarian (236/337 = 70.0%) \u2014 it is one strategy's track record, not a portfolio.",
+    "EXPIRED-status rows in that cohort are counted as WON when intraday drift was positive (63.9% WR on 97 EXPIRED rows). This inflates WR by treating not-hit picks as wins.",
+    "DB-side raw at_raw_picks (90d) shows CRYPTO closed-decisive WR=39.38% (n=2001), PF=0.371 \u2014 diametrically opposite to the dashboard cohort.",
+    "1864 duplicate (symbol, signal_timestamp, source_system) groups exist in CRYPTO 90d at_raw_picks \u2014 count inflation risk.",
+    "Leakage check: no rows where closed_at <= signal_timestamp (PASS for that specific check)."
+  ]
+}

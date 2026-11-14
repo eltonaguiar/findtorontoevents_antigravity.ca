@@ -1,0 +1,49 @@
+--- FOREX class symbol composition ---
+rows 277 | genuine FX rows 228 | currency-ETF rows 44 {'UUP': 9, 'FXA': 13, 'FXC': 5, 'CEW': 10, 'FXE': 2, 'FXY': 4, 'FXB': 1} | crypto(mislabeled) rows 5 ['EURUSDT'] | other []
+  strategies used by ETF-subset: {'Quality Compounders': 36, 'Value + Quality': 4, 'Consecutive Beats': 4}
+
+--- class symbol sanity (active_raw) ---
+EQUITY: n=182 unique_syms=78 ETF_SYMBOLS_in_class=['XLE', 'XLK', 'QQQ', 'SPY'] BOND_SYMBOLS_in_class=[] FUT_SUFFIX_in_class=0 ([])
+ETF: n=38 unique_syms=17 ETF_SYMBOLS_in_class=['USO', 'XLE', 'SPY', 'XOP', 'XLK', 'EFA', 'QQQ', 'IWM'] BOND_SYMBOLS_in_class=[] FUT_SUFFIX_in_class=0 ([])
+BOND: n=15 unique_syms=5 ETF_SYMBOLS_in_class=[] BOND_SYMBOLS_in_class=['SHY', 'EMB', 'TLT', 'HYG', 'JNK'] FUT_SUFFIX_in_class=0 ([])
+COMMODITY: n=44 unique_syms=11 ETF_SYMBOLS_in_class=[] BOND_SYMBOLS_in_class=[] FUT_SUFFIX_in_class=11 (['GC=F', 'CL=F', 'NG=F', 'HG=F', 'ZS=F', 'SB=F'])
+FUTURES: n=13 unique_syms=6 ETF_SYMBOLS_in_class=[] BOND_SYMBOLS_in_class=[] FUT_SUFFIX_in_class=6 (['ES=F', 'NG=F', 'GC=F', 'CL=F', 'ZN=F', 'YM=F'])
+
+--- EQUITY rows whose symbol is a known ETF/BOND/FUT ---
+   XLE etf_vix_regime_rotation 2026-11-13T14:37:10.208878+00:00
+   XLK etf_vix_regime_rotation 2026-11-13T14:37:10.209274+00:00
+   QQQ regime_terminal 2026-11-14T13:05:09Z
+   SPY cta_golden_cross_200 2026-11-14T13:06:40.071436+00:00
+   SPY cta_golden_cross_200 2026-11-14T13:06:40.071436+00:00
+   SPY low_volatility_factor 2026-05-29T16:05:37.058191+00:00
+   QQQ low_volatility_factor 2026-05-29T16:05:37.059488+00:00
+   XLK sector_rotation_etf 2026-05-29T16:05:37.064741+00:00
+   SPY cta_golden_cross_200 2026-11-14T13:06:40.071436+00:00
+
+--- ETF rows whose symbol is a known BOND ETF ---
+
+--- ETFS in ETF class that are bond-credit products but not in BOND_SYMBOLS ---
+  VCSH rows: 1
+
+--- duplicate STOCKS-like strategy names used across classes ---
+   top_gainer_predictor -> {'CRYPTO', 'FOREX'}
+   inverse_luxalgo_confluence -> {'COMMODITY', 'CRYPTO', 'FOREX', 'FUTURES'}
+   non_crypto_consensus -> {'COMMODITY', 'FOREX'}
+   cta_golden_cross_200 -> {'EQUITY', 'CRYPTO'}
+   regime_mild_bear -> {'EQUITY', 'CRYPTO'}
+   regime_mild_bull -> {'EQUITY', 'FOREX'}
+   super signal (strong) via kimi -> {'CRYPTO', 'ETF'}
+   super signal (strong) via alpha_engine -> {'EQUITY', 'CRYPTO'}
+   stoch-rsi-scout -> {'EQUITY', 'ETF'}
+   rsi-divergence-scout -> {'EQUITY', 'ETF'}
+   quality-momentum-scout -> {'EQUITY', 'ETF'}
+   adx-trend-scout -> {'EQUITY', 'ETF'}
+   incubator_gainer -> {'CRYPTO', 'FOREX'}
+   volume_spike_breakout -> {'CRYPTO', 'FOREX'}
+   MomentumEMA -> {'CRYPTO', 'FOREX'}
+   MeanReversionBB -> {'CRYPTO', 'FOREX'}
+   Quality Compounders -> {'EQUITY', 'CRYPTO', 'FOREX'}
+   Value + Quality -> {'EQUITY', 'CRYPTO', 'FOREX'}
+   Consecutive Beats -> {'EQUITY', 'CRYPTO', 'FOREX'}
+   Earnings Drift -> {'EQUITY', 'CRYPTO'}
+   momentum-factor -> {'EQUITY', 'ETF'}
