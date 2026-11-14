@@ -1,6 +1,6 @@
 # FOREX research P5 — SYNTHESIS swarm briefing
 
-You are one of 3 AI engines voting on the FOREX research run at run_2026-11-07T06-10-57Z.
+You are one of 3 AI engines voting on the FOREX research run at run_2026-11-14T06-11-15Z.
 
 P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA-crossover proxy of spec.entry, 5y window, 5bp round-trip costs) but the signal is SIMPLIFIED — spec.entry text is not yet parsed faithfully. A faithful-signal translator is queued for v3.
 
@@ -12,7 +12,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: allocate full capital (100%) to the position; risk-adjusted size = 1 / rolling 60d volatility of UUP to target 8% annualized vol
   - universe: ['UUP']
   - regime: skip trade on any day where 90d realized volatility of UUP > 12% (high-vol regime)
-  - P3: PF=1.36 WR=42.1% MDD=14.4% Sharpe=0.39 n=57
+  - P3: PF=1.39 WR=41.1% MDD=14.4% Sharpe=0.42 n=56
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for UUP (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -22,7 +22,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: risk-parity: position size = 1 / rolling 60d volatility of FXA to target 8% annualized vol
   - universe: ['FXA']
   - regime: skip when 30d realized volatility of UUP (proxy for global risk) > 10%
-  - P3: PF=0.53 WR=27.8% MDD=21.6% Sharpe=-0.43 n=36
+  - P3: PF=0.56 WR=30.6% MDD=21.6% Sharpe=-0.4 n=36
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for FXA (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -32,7 +32,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: risk-parity: position size = 1 / rolling 60d volatility of FXA to target 8% annualized vol
   - universe: ['FXA']
   - regime: skip when 90d realized volatility of UUP > 12% (high-vol regime)
-  - P3: PF=0.53 WR=27.8% MDD=21.6% Sharpe=-0.43 n=36
+  - P3: PF=0.56 WR=30.6% MDD=21.6% Sharpe=-0.4 n=36
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for FXA (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -42,7 +42,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: risk-parity: position size = 1 / rolling 60d volatility of UUP to target 8% annualized vol
   - universe: ['UUP', 'FXE']
   - regime: skip when spread < 0.5% over the past 30 days (compressed yield differential) OR when 90d realized volatility of UUP > 12%
-  - P3: PF=1.36 WR=42.1% MDD=14.4% Sharpe=0.39 n=57
+  - P3: PF=1.39 WR=41.1% MDD=14.4% Sharpe=0.42 n=56
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for UUP (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -52,7 +52,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: risk-parity weights as described in entry; target portfolio volatility = 8% annualized
   - universe: ['UUP', 'FXE', 'FXA', 'FXB', 'FXF']
   - regime: skip (set all weights to zero) on any month where the portfolio's 60d realized volatility exceeds 15% (high-risk regime)
-  - P3: PF=1.36 WR=42.1% MDD=14.4% Sharpe=0.39 n=57
+  - P3: PF=1.39 WR=41.1% MDD=14.4% Sharpe=0.42 n=56
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for UUP (1255 bars). Signal: momentum (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -74,7 +74,7 @@ If most candidates fail T2 floor (esp. n<100), the run-level verdict should be M
   "schema_version": "v1",
   "engine": "<your name>",
   "asset_class": "FOREX",
-  "run_id": "run_2026-11-07T06-10-57Z",
+  "run_id": "run_2026-11-14T06-11-15Z",
   "synthesis": [
     {
       "spec_id": "<from list above>",

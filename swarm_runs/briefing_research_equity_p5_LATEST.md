@@ -1,6 +1,6 @@
 # EQUITY research P5 — SYNTHESIS swarm briefing
 
-You are one of 3 AI engines voting on the EQUITY research run at run_2026-11-07T06-11-04Z.
+You are one of 3 AI engines voting on the EQUITY research run at run_2026-11-14T06-11-25Z.
 
 P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA-crossover proxy of spec.entry, 5y window, 5bp round-trip costs) but the signal is SIMPLIFIED — spec.entry text is not yet parsed faithfully. A faithful-signal translator is queued for v3.
 
@@ -22,7 +22,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: exposure = min(1, target_vol / recent_vol)
   - universe: ['SPY']
   - regime: skip when 20-day realized volatility of SPY exceeds 40% (extreme market stress)
-  - P3: PF=52.67 WR=100.0% MDD=18.8% Sharpe=0.83 n=3
+  - P3: PF=55.81 WR=100.0% MDD=18.8% Sharpe=0.87 n=3
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for SPY (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -32,7 +32,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed dollar exposure of $10,000 per leg; net market exposure = 0 (market-neutral)
   - universe: ['VTI', 'SPY']
   - regime: skip when 20-day realized volatility of SPY > 35% (high-vol regime)
-  - P3: PF=5.62 WR=80.0% MDD=19.3% Sharpe=0.82 n=5
+  - P3: PF=5.88 WR=80.0% MDD=19.3% Sharpe=0.85 n=5
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for VTI (1255 bars). Signal: sma_cross (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -52,7 +52,7 @@ P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA
   - sizing: fixed $15,000 per leg; net market exposure = 0 (beta-neutral)
   - universe: ['VTI', 'QQQ']
   - regime: skip when 20-day realized volatility of SPY > 30% (high-vol regime)
-  - P3: PF=4.56 WR=83.3% MDD=22.4% Sharpe=0.69 n=6
+  - P3: PF=4.75 WR=83.3% MDD=22.4% Sharpe=0.72 n=6
   - P4: INDEPENDENT (max|ρ|=0.0 vs (no shipped strategies found))
   - notes: v3a REAL — yfinance prices for VTI (1255 bars). Signal: breakout (keyword-routed from spec.entry). LLM-driven signal translation queued for v3b.
 
@@ -74,7 +74,7 @@ If most candidates fail T2 floor (esp. n<100), the run-level verdict should be M
   "schema_version": "v1",
   "engine": "<your name>",
   "asset_class": "EQUITY",
-  "run_id": "run_2026-11-07T06-11-04Z",
+  "run_id": "run_2026-11-14T06-11-25Z",
   "synthesis": [
     {
       "spec_id": "<from list above>",
