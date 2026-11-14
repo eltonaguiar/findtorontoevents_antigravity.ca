@@ -12,6 +12,7 @@
 | `finpredict-v3` | `.kilo/worktrees/finpredict-v3/2026-11-14/finpredict-v3/2026-11-14T155500Z/` | hygiene audit (77 lines), `tools/pi_data_hygiene.py`, 14 tests | yes |
 | `finpredict-v4` | `audits/2026-11-14/finpredict-v4_2026-11-14-1555/` (main repo root, not the worktree) | `INDEX.md` + 6 reports + 4 evidence JSON | appears uncommitted |
 | `inspect-wt` transcript | pasted by user; claimed Windows path not found on Linux | claims only | n/a |
+| `inspect-wt` findings + deepAI fixes | **REPORTED on Windows `E:\`** — `2026-11-14/inspect-wt_20261114_1058/` and `2026-11-14/deepAI_proposed_fixes_20261114_1612/`; branch `audit/live-audit-2026-11-14` (`fcac1d9017..0cd7a1204e`) | **NOT PRESENT on this Linux host; not on origin** | unknown |
 
 ## Agreement matrix
 
@@ -59,6 +60,7 @@ finding (Alpha Engine is unhealthy) is correct.
 
 ## Not found / not verifiable
 
+- The `inspect-wt` findings archive (`2026-11-14/inspect-wt_20261114_1058/`), the `deepAI` fixes (`2026-11-14/deepAI_proposed_fixes_20261114_1612/`), and branch `audit/live-audit-2026-11-14` are reported on the Windows host `E:\findtorontoevents_antigravity.ca`, but **none exist on this Linux host and no such branch is on `origin`**. Verified with `find`, `.inspect-wt` absence, `git worktree list`, and `git ls-remote`. See `recommendations/peer_review/inspect-wt_integration.md`.
 - The transcript file at `C:\Users\zerou\Desktop\chat_transcript_2026-11-14.md` does not exist on this Linux host.
 - `finpredict-v4` has no dated audit folder inside its own worktree; the artifacts live in the main repo's `audits/` directory and appear uncommitted.
 - Workflow warning census and mid-retry root causes remain `UNVERIFIED` (see `MASTER_AUDIT.md` §8).
