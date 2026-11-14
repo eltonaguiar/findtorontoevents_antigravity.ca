@@ -14,7 +14,11 @@ def _monthly_series(months, vals):
     return pd.Series(vals, index=pd.to_datetime([f"{m}-01" for m in months]))
 
 
-_MONTH_ENDS = pd.date_range("2025-01-31", periods=13, freq="ME")
+# `freq="ME"` is a pandas >= 2.2 alias; requirements.txt pins 2.1.4, where it raises
+# ValueError: Invalid frequency: ME. That single error aborted collection for the
+# whole gating suite (6,714 tests, "Interrupted: 1 error during collection"), so CI
+# had been unable to run ANY tests. The MonthEnd() offset is valid on 2.1 and 2.2+.
+_MONTH_ENDS = pd.date_range("2025-01-31", periods=13, freq=pd.offsets.MonthEnd())
 
 
 # --- trend ---
