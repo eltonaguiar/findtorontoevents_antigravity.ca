@@ -2936,9 +2936,11 @@ def rank_and_filter_signals(signals: list[dict], ranker: MLSignalRanker,
     from collections import defaultdict as _dd
     _forex_by_sym = _dd(lambda: {"BUY": [], "SELL": []})
     _non_forex = []
+    _forex_dir_map = {"LONG": "BUY", "SHORT": "SELL", "BUY": "BUY", "SELL": "SELL"}
     for s in signals:
         if s.get("category") == "forex":
-            sig_type = s.get("signal_type", "BUY")
+            raw_dir = str(s.get("signal_type", "BUY")).strip().upper()
+            sig_type = _forex_dir_map.get(raw_dir, "BUY")
             _forex_by_sym[s["symbol"]][sig_type].append(s)
         else:
             _non_forex.append(s)
