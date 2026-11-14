@@ -164,6 +164,33 @@ def summarize_active(active: list, asof: str | None):
     return by_class
 
 
+ZOMBIE_AGE_HOURS = 168  # 7 days
+
+
+def summarize_zombies(raw: list, asof: str | None):
+    """Scan the raw active feed for zombie rows per asset class.
+
+    A zombie is a row that is old (signal older than ZOMBIE_AGE_HOURS) or
+    that has no current_price (never quoted). The raw feed can contain
+    long-dead rows that poison "active" counts.
+    """
+    now = _now(asof)
+    by: dict[str, dict] = {}
+    for p in raw:
+        ac = _asset_class(p)
+        b = by.setdefault(ac, {"n": 0, "older_7d": 0, "null_price": 0})
+        b["n"] += 1
+        cur = _num(p.get("current_price"))
+        if cur is None:
+            b["null_price"] += 1
+        ts = _parse_ts(p.get("signal_time") or p.get("timestamp") or p.get("entry_time"))
+        if ts is not None:
+            age_h = (now - ts).total_seconds() / 3600.0
+            if age_h > ZOMBIE_AGE_HOURS:
+                b["older_7d"] += 1
+    return by
+
+
 def _parse_ts(v) -> datetime | None:
     if not v:
         return None
@@ -179,9 +206,12 @@ def _parse_ts(v) -> datetime | None:
         except ValueError:
             return None
     try:
-        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+        ts = datetime.fromisoformat(s.replace("Z", "+00:00"))
     except ValueError:
         return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return ts
 
 
 def run(payload: dict, asof: str | None, show: bool):
@@ -214,6 +244,15 @@ def run(payload: dict, asof: str | None, show: bool):
     for ac, b in sorted(summarize_active(active, asof).items()):
         print(f"{ac:<14}{b['n']:>4}{b['live_quotes']:>13}{b['pinned']:>12}"
               f"{str(b['newest_signal_age_h']):>20}")
+    print()
+    print(f"ACTIVE_RAW ZOMBIE SCAN (rows older than {ZOMBIE_AGE_HOURS}h or null price):")
+    raw = picks.get("active_raw") or []
+    if raw:
+        print(f"{'CLASS':<14}{'n':>6}{'older_7d':>10}{'null_price':>11}")
+        for ac, b in sorted(summarize_zombies(raw, asof).items()):
+            print(f"{ac:<14}{b['n']:>6}{b['older_7d']:>10}{b['null_price']:>11}")
+    else:
+        print("    (no active_raw present)")
     return total
 
 

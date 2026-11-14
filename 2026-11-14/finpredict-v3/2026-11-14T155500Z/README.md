@@ -11,7 +11,10 @@ Source: findtorontoevents.ca/audit live dashboard (payload generated 2026-11-14T
   - `FROZEN_CLOSED_PHANTOM` (closed picks resolved to 0% with exit UNKNOWN, exit==entry)
   - `DATE_ONLY_SEED` (signal_time/entry_time stored as bare YYYY-MM-DD → UI renders "no date")
   - `NULL_PRICE`, `PLACEHOLDER_ENTRY`
-  - prints TRUE per-class recency (signal age vs whether a live quote exists).
+  - prints TRUE per-class recency (signal age vs whether a live quote exists)
+  - `ACTIVE_RAW ZOMBIE SCAN` — per-class count of rows older than 7d / with null price,
+    so the raw feed's zombie population is visible (e.g. CRYPTO 3,577 rows: 3,085 older
+    than 7d, 3,170 null-price).
   Run: `python tools/pi_data_hygiene.py --json audit_dashboard/data/dashboard_data.json --asof 2026-11-14T15:50:00+00:00 --show`
   Exit 1 when findings exist (CI-gateable).
 - `tests/test_pi_data_hygiene.py` — 11 tests (11 passed, 0.2s).
@@ -38,19 +41,53 @@ Not money-ready. Aggregate closed book negative: WR 41.8%, PF 0.94, equal-weight
 - `python3 -m pytest tests/test_pi_data_hygiene.py -q` → 11 passed
 - Guardian live run: 2 stale crypto prices, 11 frozen phantoms, 3 date-only seeds.
 
-## Peer reconciliation status (2026-11-14 ~16:00Z)
+## Peer reconciliation (2026-11-14, after peer transcript supplied)
 
-Attempted to reconcile against peer-agent findings ("another agent's findings" / a
-`chat_transcript_2026-11-14.md`). The cited file path is a Windows path
-(`C:\Users\zerou\Desktop\chat_transcript_2026-11-14.md`) on a different machine
-and is NOT readable from this Linux host. I searched for a local copy:
+Peer = the `audit/live-audit-2026-11-14` agent (June snapshot + Nov 14 live). I reconciled
+its findings against my verified ones. Convergences and deltas below. Peer left external
+market-quote verification UNVERIFIED (blocked); I completed it (Binance + Yahoo), so this
+archive now carries the verified market cross-references.
 
-- Shared task board: no peer messages posted yet.
-- `origin/main` under `2026-11-14/`: only this `finpredict-v3` archive (no peer archive merged).
-- Worktrees: `wt-audit-prediction-system` (branch `audit-prediction-system-20261114-154529`) is a plain checkout of `main`; its `chat_transcript.MD` is an OLD 2026-05-15 file, not today's.
-- Project root: only `bestiejob/` job-discovery files today (unrelated to prediction audit). No master-plan/review/findings doc found.
+### Convergences (peer corroborates my findings)
+- Crypto "1.9h ago" = signal age on the main panel; raw `active_raw` feed is full of zombies
+  (peer: CRYPTO median age 89d; mine: 3,085/3,577 older than 7d). Concur.
+- Bonds "4 days ago": peer newest closed BOND = 98h (4.1d); mine = last settled TLT Nov 10. Concur.
+- FUTURES dead: peer median raw age 2,344h; mine 10/13 raw older than 7d, ES=F placeholder. Concur.
+- `hyro_pick_performance.json` stale ~157–158h (peer + mine agree, ~6.6d).
+- Verdict: not money-ready; `money_ready_verdict` empty; aggregate negative. Concur.
 
-**Conclusion:** no peer findings were accessible to reconcile against. This archive stands
-as the finpredict-v3 session deliverable, UNCHANGED pending peer input. The reviewer agent
-should reconcile against the full audit report + this data-hygiene guardian. Items I could
-NOT verify against peer work are marked accordingly; nothing here is fabricated.
+### Deltas added from peer (now folded into my findings)
+- **Honesty-layer root cause:** CRYPTO headline PF 9–18 / WR 78–88% surfaces are inflated by
+  `claude_gainer_st` picks with **EXPIRED→WON resolver mislabels**; honest numbers are
+  pf_registry policy-clean-net (PF 0.98 / WR 39.7%) and money_ready_verdict (PF 0.96 / WR 31.3%).
+  This explains why official surfaces disagree (my "policy_clean 0.26 vs intrabar 0.92" vs peer's
+  0.98/0.96).
+- **Multiple-testing quantification:** your361 strategy families + 285 baby strategies + mutation lab
+  ⇒ ~260 lucky PF>1.5 survivors expected at p=5%. June anti-overfit: 31/38 (82%) OVERFIT_LIKELY.
+  z-scores: CRYPTO z=−7.1 (significantly worse than random), EQUITY z=1.39 (needs 1.96). This is
+  the strongest direct answer to "profitable or artifact?" — mostly artifact.
+- **Prediction-market-consensus garbage:** `XRPUSDT SHORT entry=0.0` emitted 2026-11-14T13:54 by
+  `prediction_market_consensus`; BTCUSDT garbage entries 0.3322 / 1.334. Directly answers the
+  "kalshi/mtf real?" question — the consensus feed emits zero-entry placeholder rows; on-disk
+  kalshi snapshot ~7mo stale with null prices.
+- **Mutual funds effectively unbuilt:** `alpha_engine/mutual_fund_ranker.py` and
+  `/audit/mutual-funds.html` do not exist (institutional plan item F2). So "mutual funds" class
+  is planned, not implemented.
+- **Frozen scope depth:** 1,147/1,882 closed rows dropped as "spot-flicker" artifacts
+  (|pnl|<0.02bps, exit==entry); 3,509 non-canonical FORCE_CLOSED_TOXIC statuses (tier red);
+  exit reasons include 57 RESOLVE_FAILED_MAX_RETRIES; open incubator BTC picks stuck at
+  current_price=None / pnl=0.
+- **Actions health deltas:** Unified Audit Dashboard cancelled 3× with 0 jobs executed (queue
+  discard); ALPHA ENGINE FAST had 2 failures in last 4 runs; Daily Prices yfinance failed Nov 12
+  and 13. Root causes of runner failures remain UNVERIFIED (admin logs).
+
+### Where I go beyond peer
+- External price verification: Binance (crypto) + Yahoo (equity/ETF/futures/forex/commodity) —
+  all matched to the cent / 0.25–1.3% crypto deltas. Peer left these UNVERIFIED.
+- NEARUSDT: peer cites resolved trades +8.75% TP_HIT (entry 3.543) and −12.03% SL_HIT;
+  the user's "3.16%" is not reproducible (my payload says 2.74%, live 2.98%) — magnitude plausible,
+  exact figure an artifact.
+
+**Validator:** this archive now reflects both agents' evidence. Tool upgraded with the
+ACTIVE_RAW ZOMBIE scan. Nothing fabricated; peer items I could not independently confirm are
+attributed to the peer.

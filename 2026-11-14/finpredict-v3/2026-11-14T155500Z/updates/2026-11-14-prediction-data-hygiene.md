@@ -39,8 +39,25 @@ Live result (2026-11-14): 2 stale crypto prices, 11 frozen phantoms, 3 date-only
 | Metrics/sources | Refresh kalshi snapshot from live API (or drop/re-label if stale); regenerate `strong_signals.json` (currently 404); populate FWD columns (or label `INSUFFICIENT` when `fwd_trades==0`); add `edge_ratio` back to main JSON or remove the UI element that reads it. | `alpha_engine/prediction_market_signals.py` (kalshi), `alpha_engine/strong_signals` builder, `audit_dashboard/` frontend. |
 | Scheduling | Dashboard JSON regenerates on a cadence with `payload_lag_seconds≈4586`; the 5-min HTML meta-refresh reloads the same data. Align the build schedule to the price-quote refresh so "live" is actually fresh. | `.github/workflows/audit-dashboard.yml`, `audit-hourly-update.yml`. |
 
+## Peer cross-validation (2026-11-14)
+
+Converged with the peer audit (`audit/live-audit-2026-11-14`). Key additions now folded in:
+- Crypto headline PF 9–18/WR 78–88% inflated by `claude_gainer_st` EXPIRED→WON mislabels;
+  honest = pf_registry policy-clean-net PF 0.98/WR 39.7%, money_ready PF 0.96/WR 31.3%.
+- Multiple-testing: 361 families + 285 baby + mutation lab ⇒ ~260 lucky PF>1.5 survivors expected
+  at p=5%; anti-overfit 31/38 (82%) OVERFIT_LIKELY; CRYPTO z=−7.1, EQUITY z=1.39.
+- `prediction_market_consensus` emitted XRPUSDT SHORT entry=0.0 (2026-11-14T13:54) — garbage row;
+  kalshi snapshot ~7mo stale with null prices.
+- Mutual funds unbuilt (`mutual_fund_ranker.py` / `mutual-funds.html` absent).
+- Frozen scope: 1,147/1,882 closed dropped as spot-flicker artifacts; 3,509 FORCE_CLOSED_TOXIC;
+  57 RESOLVE_FAILED_MAX_RETRIES; incubator BTC picks stuck at 0.
+
+Tool upgraded: added `ACTIVE_RAW ZOMBIE SCAN` (per-class rows older than 7d / null price).
+Live result: CRYPTO raw n=3,577 → 3,085 older than 7d, 3,170 null-price; FUTURES 10/13 old;
+BOND 9/15 null-price.
+
 ## Verification
 
-- `python3 -m pytest tests/test_pi_data_hygiene.py -q` → 11 passed.
-- Guardian dry-run on live payload reproduces the audited defects (2 stale crypto, 11 phantoms, 3 date-only seeds).
+- `python3 -m pytest tests/test_pi_data_hygiene.py -q` → 12 passed.
+- Guardian dry-run on live payload reproduces the audited defects (2 stale crypto, 11 phantoms, 3 date-only seeds) + zombie scan.
 - No live pipeline files were modified; this change is additive tooling + docs.

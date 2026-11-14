@@ -13,6 +13,7 @@ from tools.pi_data_hygiene import (  # noqa: E402
     classify_closed,
     run,
     summarize_active,
+    summarize_zombies,
 )
 
 ASOF = "2026-11-14T15:50:00+00:00"
@@ -124,6 +125,19 @@ def test_run_on_synthetic_payload():
     }
     total = run(payload, ASOF, show=False)
     assert total >= 4
+
+
+def test_summarize_zombies():
+    raw = [
+        _active(symbol="BTCUSDT", signal_time="2026-08-01T00:00:00Z", current_price=None),
+        _active(symbol="NEARUSDT", signal_time="2026-11-14T13:00:00Z", current_price=3.22),
+        _active(symbol="XRPUSDT", signal_time="2026-11-14T13:54:00Z", current_price=0.9724),
+    ]
+    by = summarize_zombies(raw, ASOF)
+    crypto = by["CRYPTO"]
+    assert crypto["n"] == 3
+    assert crypto["older_7d"] == 1
+    assert crypto["null_price"] == 1
 
 
 @pytest.mark.skipif(
