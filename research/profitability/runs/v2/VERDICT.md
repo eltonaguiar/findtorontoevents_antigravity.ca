@@ -18,12 +18,18 @@ mechanically passed the pre-registered gates on 2024-01-01..2026-11-13:
 | OOS trades | 111 | — |
 | DSR (N=12) | 0.978 | — |
 | p-value | 0.00194 | — |
-| PBO (all 12, common calendar) | 0.106 | — |
+| PBO (all 12) | 0.106 OOS-only / **0.417 full-sample** | — |
 | 2× cost Sharpe | 1.68 | — |
 | Bootstrap p05 | 1.28 | — |
 
-It was independently reproduced to 10+ decimals by a separate agent and contains no lookahead
-bug. That is **not** enough for a proof.
+It was independently reproduced by a separate agent and contains no lookahead bug. That is
+**not** enough for a proof.
+
+> **Artifact reconciliation.** The table above is from `results.json` regenerated at 18:36Z after
+> the cost-timing and RSI edge-case fixes. The adversarial review was computed on the 18:25Z
+> pre-fix snapshot (Sharpe 1.8452, DSR 0.9789, p 0.001802, 2× 1.6834). Both sets fail the strict
+> standard; see the erratum in `validation/STATS_REVIEW_H10.md`. The PBO 0.106 is an OOS-only
+> label; the standard full-sample all-12 CSCV PBO is **0.417** (still <0.5, but much weaker).
 
 ## Why H10 is NOT PROVED
 
@@ -45,6 +51,20 @@ bug. That is **not** enough for a proof.
    CAGR 17.61%; H10 = 1.83 / 22.0%. The +3.6 pp is ~0.827 × the 4.38% cash yield.
 8. **Out-of-universe is suggestive, not proof.** DIA/IWM/VTI 2024-2026 H10 Sharpes 1.28–1.94
    suggest a broad 2024-2026 short-term reversal regime, not a durable, regime-independent edge.
+
+## Independent ledger cross-check (peer-reported, corroboration only)
+
+A separate production-ledger audit (3,500 `recent_closed` rows) reached the same negative
+direction, but the ledger is unstable intraday so treat these as corroboration, not a second proof:
+
+- `recent_closed` net-negative: Σ PnL **−469.5%** at the 14:30Z snapshot; it moved to **−574.1%**
+  and PF 0.92 → 0.903 by 17:58Z.
+- No candidate survived **N=683** in the peer's Bonferroni sweep.
+- OOS decay/reversal; 0/9 asset classes money-ready; `readiness.sizing_allowed=false` 9/9.
+- Kill-switch exercised 42/56 yet `pf_lift = −0.0223`.
+
+The peer's 70/30 split is **not** a clean OOS (the window was inside its own selection sample),
+so it does not establish proof.
 
 ## What would prove it
 

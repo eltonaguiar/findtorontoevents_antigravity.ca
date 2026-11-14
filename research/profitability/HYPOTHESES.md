@@ -14,7 +14,7 @@ Every candidate tested is listed here. `N` for multiple-testing includes all row
 | H7 | Equity RSI(2) | SPY/QQQ | 10/50/5, 5 bps | **NOT_PROVED** | Sharpe 1.50, CAGR 17.6% vs 18.6% B&H; fails absolute return |
 | H8 | Sector-ETF RSI(2) + T-bill cash | 10 sectors | 10/50/5, 5 bps | **NOT_PROVED** | Sharpe 1.16, DSR 0.603, fails DSR/benchmark |
 | H9 | International-ETF RSI(2) + cash | 10 countries | 10/50/5, 5 bps | **NOT_PROVED** | Sharpe 0.31, CAGR 4.1% |
-| H10 | Core RSI(2) + T-bill cash | SPY/QQQ | 10/50/5, 5 bps | **NOT_PROVED (exploratory)** | Sharpe 1.83, CAGR 22.0%, DSR 0.978 at N=12, but fails at effective N≈38 (0.9365), ex-top-1 (0.8993), and 2-day lag (0.696); OOS contaminated per §4 |
+| H10 | Core RSI(2) + T-bill cash | SPY/QQQ | 10/50/5, 5 bps | **NOT_PROVED (exploratory)** | Sharpe 1.83, CAGR 22.0%, DSR 0.978 at N=12, p=0.00194; PBO 0.106 OOS-only / 0.417 full-sample; fails at effective N≈38 (0.9365), ex-top-1 (0.8993), and 2-day lag (0.696); OOS contaminated per §4 |
 | H11 | Sector RSI(2) + trend + cash | 10 sectors | 200d trend, 10/50/5 | **NOT_PROVED** | Sharpe 1.04, DSR 0.529 |
 | H12 | Sector 12-1 momentum + cash | 10 sectors | 252d, top 3, monthly | **NOT_PROVED** | Sharpe 1.14, n=22, DSR 0.589 |
 
@@ -30,7 +30,7 @@ Every candidate tested is listed here. `N` for multiple-testing includes all row
 ### v2 — 2026-11-14
 - Added 5 candidates (N=12 cumulative): H8–H12.
 - Added T-bill yield on idle cash using Treasury.gov 13-week coupon-equivalent.
-- H10 mechanically passed all gates (Sharpe 1.83, CAGR 22.0%, DSR 0.978 at N=12, p=0.00194,
+- H10 mechanically passed all gates (Sharpe 1.83, CAGR 22.0%, DSR 0.978 at N=12, p=0.00194; PBO 0.106 OOS-only / 0.417 full-sample,
   PBO 0.106 over all 12 on the common calendar, 2× cost Sharpe ~1.68).
 - **Adversarial review downgraded H10 to NOT_PROVED**: post-hoc H7 variant on the already-seen
   OOS; effective N≈38 -> DSR 0.9365; ex-best-day DSR 0.8993; 2-day-lag Sharpe 0.696; clean

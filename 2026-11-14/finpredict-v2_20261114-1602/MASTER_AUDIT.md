@@ -85,7 +85,7 @@
 
 | Population | Rows | What it is |
 |---|---:|---|
-| `picks.active` | **20** | Curated panel shown on the page |
+| `picks.active` | **20 at 14:30Z; 10 at 16:15Z / 17:58Z** | Curated panel; snapshot-specific, never observed at 0 |
 | `picks.active_raw` | **4,148** (3,851 unique IDs) | Full emitted inventory |
 | `picks.recent_closed` | **3,500** | Closed-pick feed |
 | `performance.by_asset_class` "active" | **158** | Internal inconsistency: 7.9× the curated panel |
@@ -214,6 +214,14 @@ So the columns are not "some dead fields" — they are structurally empty for th
 - **HyroTrader page is a static template:** `hyrotrader_picks.json` has no timestamp, 7 `pending_entry` rows with null prices, `account_snapshot.last_session_date = 2026-04-08`, journal `trades: []`; two fetches give identical SHA-256.
 - **Non-standard JSON:** `money_ready_verdict.json` contains `NaN`; `strategy_ic_analysis.json` contains `Infinity` → browser `JSON.parse` throws.
 - **Dead tabs/panels:** Smart Picks empty (`total_scored: 0`, last batch 2026-11-11), Score Tracker is browser `localStorage` only, Regime 0/263 with data, Walkforward empty, ML Health 173 d, Permutations 12/13 zero-active.
+
+### Frontend / browser validation (18:37Z peer + independent)
+
+- `/audit`: **0 pageErrors**, **8 failed requests** — 4× CryptoCompare `histohour?fsym=HYPE` CORS and 4× allorigins→KuCoin `ERR_ABORTED`. Both are **optional HYPE enrichment** in `fetchBinanceKlinesWithFailover` (`audit_dashboard/template.html:18042-18109`); HYPE is deliberately skipped on Binance (`:18040`), and the function fails silently. Picks/PnL are unaffected.
+- `/audit`: **1 new 404** — `data/strategy_tribunal_latest.json`. The producer exists (`tools/strategy_kill_tribunal.py:181-183`) but the file is neither committed nor deployed. `template.html:1021-1026` degrades gracefully ("No tribunal report yet").
+- React error **#418** is deterministic but comes from the **events-site `/next/` island** (`/next/_next/static/chunks/dde2c8e6322d1671.js`), not `/audit/`; the homepage still renders 51 event links and 26 images, so user-visible loss is **UNVERIFIED**. A CI spec that fails on any pageError would be permanently red without an allowlist.
+- `/audit/hyrotrader`: **0 pageErrors / 0 console / 0 failed**.
+- v4 `INDEX.md` remains internally contradictory after its 18:05Z rewrite: `:46`/`:66` concede 20 curated/fresh, but `:92` still says "ALL EMPTY (0 active picks)" and `:43`/`:94` say Alpha Engine "DEAD" while live picks carry 17:50:41Z signals.
 
 ---
 

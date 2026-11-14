@@ -5,6 +5,13 @@
 **Claim under review:** H10 passes all pre-registered gates with cumulative `N=12`;
 DSR 0.979, p=0.0018, Bonferroni α=0.00417, PBO 0.238, bootstrap p05 1.28, 2×-cost Sharpe 1.68.
 
+> **ERRATUM (2026-11-14T18:40Z):** the numbers in this review were computed on the 18:25Z
+> pre-fix snapshot. `run_v1.py`/`run_v2.py` were regenerated at 18:34:40/18:36:05 after the
+> cost-timing and RSI edge-case fixes. Final committed H10: Sharpe **1.8322**, DSR **0.9776**,
+> p **0.001941**, 2× **1.6596**, bootstrap p05 **1.2690**; PBO 0.106 is OOS-only, full-sample
+> all-12 is **0.417**. The conclusion is unchanged: H10 is NOT_PROVED (contaminated OOS,
+> effective N≈38 DSR 0.9365, ex-best-day 0.8993, 2-day lag 0.696).
+
 **Bottom line:** the arithmetic reproduces, and the *implemented* gate code returns `PROVISIONAL`.
 The statistical and protocol integrity does **not** support `PROVISIONAL`. The OOS window was
 already inspected in v1, and H10 is explicitly a post-hoc capital-efficiency variant of H7
