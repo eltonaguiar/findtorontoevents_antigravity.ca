@@ -673,6 +673,8 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
             tp_hit = bool(tp and high >= tp)
             if _ENTRY_ANCHORED and sl_hit and tp_hit:
                 pick["_intrabar_ambiguous"] = True
+            if sl_hit or tp_hit:
+                pick["_hit_bar_ts"] = bar.get("timestamp")
             if sl_hit:
                 return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
             if tp_hit:
@@ -682,6 +684,8 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
             tp_hit = bool(tp and low <= tp)
             if _ENTRY_ANCHORED and sl_hit and tp_hit:
                 pick["_intrabar_ambiguous"] = True
+            if sl_hit or tp_hit:
+                pick["_hit_bar_ts"] = bar.get("timestamp")
             if sl_hit:
                 return ("SL_HIT", sl, _compute_pnl(entry, sl, direction))
             if tp_hit:
@@ -690,7 +694,7 @@ def _check_tp_sl_intrabar(pick: dict, ohlcv_bars: list[dict]):
     return None
 
 
-def _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price):
+def _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price, as_of_ms=None):
     """Resolve a PER-PICK reference price instead of reusing one frozen
     snapshot for every pick of a symbol (Bug: frozen-exit stamping).
 
@@ -710,15 +714,22 @@ def _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price):
     bars = ohlc_bars_cache.get(norm_sym) or []
     entry_ms = _parse_ts_ms(pick.get("timestamp"))
     if entry_ms is not None and bars:
-        # Chronological: the FIRST bar at/after entry is the pick's own close
-        # (entry-anchored; different entries anchor to different bars, so each
-        # pick resolves against its own price, not one shared snapshot).
+        # LATEST bar at/after entry (and at/before as_of_ms, e.g. the TIME_EXIT
+        # expiry). Returning the FIRST bar after entry priced every exit at the
+        # entry bar's close -> ~0.00% "flat" TIME_EXITs and close_approx checks
+        # that could never reach TP/SL.
+        best = None
         for b in bars:
             ts = b.get("timestamp")
-            if ts is not None and ts >= entry_ms:
-                close = b.get("close")
-                if close:
-                    return float(close)
+            if ts is None or ts < entry_ms:
+                continue
+            if as_of_ms is not None and ts > as_of_ms:
+                continue
+            close = b.get("close")
+            if close and (best is None or ts > best[0]):
+                best = (ts, float(close))
+        if best is not None:
+            return best[1]
     return current_price
 
 
@@ -883,6 +894,18 @@ def _snapshot_prediction_market_entry(pick: dict, current_price: float) -> bool:
             pick["take_profit"] = round(entry * 1.025, 8)
             pick["stop_loss"] = round(entry * 0.985, 8)
     return True
+
+
+def _hit_ts_iso(hit_ms, now):
+    """ISO-Z for the intrabar hit bar (open_time ms); run time if unknown/future."""
+    try:
+        if hit_ms is not None:
+            dt = datetime.fromtimestamp(int(hit_ms) / 1000, tz=timezone.utc)
+            if dt <= now:
+                return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    except (TypeError, ValueError, OverflowError, OSError):
+        pass
+    return now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def check_tp_sl(pick, current_price):
@@ -1446,6 +1469,9 @@ def main():
             # Check TP/SL — unified intrabar OHLC replay for ALL symbols
             result = None
             _res_method = None
+            # Bound for every path (was only set in close_approx branch -> NameError /
+            # stale previous-pick price on intrabar hits).
+            pp_price = None
             intrabar_bars = ohlc_bars_cache.get(norm_sym, [])
             if intrabar_bars:
                 result = _check_tp_sl_intrabar(pick, intrabar_bars)
@@ -1480,7 +1506,9 @@ def main():
                     "exit_reason": reason,
                     "status": "CLOSED",
                     "resolution_method": _res_method,  # "intrabar" (accurate) | "close_approx" (Bug 1B)
-                    "resolved_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    # Stamp the bar where SL/TP was actually touched, not the resolver
+                    # run time (PR #749 batch-close artifact). Falls back to run time.
+                    "resolved_at": _hit_ts_iso(pick.pop("_hit_bar_ts", None), now),
                     "current_price_at_resolve": pp_price,
                     "_resolver_version": RESOLVER_VERSION,
                     "_resolver_source": RESOLVER_SOURCE_ID,
@@ -1503,7 +1531,9 @@ def main():
             if pick_dt and (now - pick_dt).total_seconds() > _max_hold * 3600:
                 # Time exit — compute PnL at the PICK's OWN price (frozen-exit fix
                 # 2026-10-22), falling back to the run-wide snapshot when no bars.
-                pp_price = _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price)
+                _expiry_ms = int((pick_dt.timestamp() + _max_hold * 3600) * 1000)
+                pp_price = _per_pick_price(pick, norm_sym, ohlc_bars_cache, current_price,
+                                           as_of_ms=_expiry_ms)
                 pnl = _compute_pnl(entry, pp_price, pick["direction"])
                 # 2026-10-18: a failed price fetch must not be published as a
                 # flat 0% close (see _priceless_close).
