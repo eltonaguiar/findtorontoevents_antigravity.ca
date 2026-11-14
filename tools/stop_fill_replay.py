@@ -22,6 +22,11 @@ Usage:
     python3 tools/stop_fill_replay.py --payload /tmp/peercheck/dashboard_payload.json \
         --source kimi_riseoftheclaw --limit 40
     python3 tools/stop_fill_replay.py --payload X --class CRYPTO --limit 80 --json out.json
+    python3 tools/stop_fill_replay.py --payload X --class EQUITY --limit 25 --truncate-at-exit
+
+``--truncate-at-exit`` drops bars that printed after the pick's recorded exit.
+Without it a "stop was touched" verdict can be manufactured by price action that
+happened AFTER we were already flat, which overstates the fix's effect.
 """
 from __future__ import annotations
 
@@ -40,7 +45,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from audit_trail.stop_fill import find_stop_fill  # noqa: E402
+from audit_trail.stop_fill import find_stop_fill, price_reached  # noqa: E402
 
 _HOSTS = ("api.binance.com", "data-api.binance.vision", "api1.binance.com")
 _STOP_REASONS = {"SL_HIT", "STOP_LOSS", "SL", "LOST"}
@@ -168,9 +173,10 @@ def pnl_at(entry: float, price: float, direction: str) -> float:
     return (price - entry) / entry * 100.0 * mult
 
 
-def replay_one(row: Dict[str, Any]) -> Dict[str, Any]:
+def replay_one(row: Dict[str, Any], truncate_at_exit: bool = False) -> Dict[str, Any]:
     entry = _f(row.get("entry_price"))
     stop = _f(row.get("stop_loss"))
+    exit_ms = _parse_ms(row.get("closed_at") or row.get("exit_time"))
     recorded = _f(row.get("pnl_pct"))
     direction = str(row.get("direction") or "LONG").upper()
     out = {
@@ -207,10 +213,29 @@ def replay_one(row: Dict[str, Any]) -> Dict[str, Any]:
         out["status"] = "no_candles"
         return out
 
+    if truncate_at_exit and exit_ms is not None:
+        # Bars after the real exit never informed the exit decision. Keeping them
+        # inflates "stop was touched" with price action that happened while we
+        # were already flat — the exact overstatement this flag exists to stop.
+        bars = [b for b in bars if b["timestamp"] <= exit_ms + 3_600_000]
+        out["bars_after_truncate"] = len(bars)
+        if not bars:
+            out["status"] = "no_candles"
+            return out
+
     hit = find_stop_fill(direction, stop, bars)
     out["at_stop_pnl"] = round(pnl_at(entry, stop, direction), 4)
     if hit is None:
         out["status"] = "stop_never_touched"
+        # Split the two defects: did price ever reach the RECORDED exit price?
+        #   other_level   -> exited on a different mechanism (trail/target/manual),
+        #                    so exit_reason names the wrong thing
+        #   never_reached -> the recorded exit price never traded; it is fictional
+        reached = price_reached(direction, _f(row.get("exit_price")), bars)
+        out["exit_price_reached"] = reached
+        out["exit_basis"] = (
+            "other_level" if reached is True else "never_reached" if reached is False else None
+        )
         return out
     out["status"] = "touched"
     out["gapped"] = hit["basis"] == "gap_through"
@@ -248,6 +273,8 @@ def summarize(results: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
         "status_counts": dict(statuses),
         "touched": block(touched),
         "never_touched": block(never),
+        "never_touched_other_level": sum(1 for r in never if r.get("exit_basis") == "other_level"),
+        "never_touched_never_reached": sum(1 for r in never if r.get("exit_basis") == "never_reached"),
         "gapped_count": sum(1 for r in touched if r.get("gapped")),
         "gap_rate_pct": round(100 * sum(1 for r in touched if r.get("gapped")) / len(touched), 1) if touched else None,
         "measured_n": len(measured),
@@ -275,6 +302,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--class", dest="cls", default="CRYPTO")
     ap.add_argument("--source", help="restrict to one source_system")
     ap.add_argument("--limit", type=int, default=40)
+    ap.add_argument("--truncate-at-exit", action="store_true",
+                    help="drop bars after the recorded exit time (needed to judge whether "
+                         "a stop could really have fired before the pick was closed)")
     ap.add_argument("--json", help="write full results here")
     args = ap.parse_args(argv)
 
@@ -296,7 +326,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     results = []
     for i, row in enumerate(sample, 1):
-        res = replay_one(row)
+        res = replay_one(row, truncate_at_exit=args.truncate_at_exit)
         results.append(res)
         if i % 10 == 0 or i == len(sample):
             print(f"  {i}/{len(sample)} …", flush=True)
@@ -307,6 +337,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     for k, v in s["status_counts"].items():
         print(f"  {k:<20} {v}")
     print(f"\nstop touched: {s['touched']['n']}   never touched: {s['never_touched']['n']}")
+    print(f"  of the never-touched: {s['never_touched_other_level']} reached a DIFFERENT level "
+          f"(mislabelled exit), {s['never_touched_never_reached']} never reached the recorded "
+          f"exit price at all (fictional exit)")
     print(f"gap-through rate among touched: {s['gap_rate_pct']}% ({s['gapped_count']} trades)\n")
 
     print("=== PnL by fill model (percentage points, sum over the replayed sample) ===")
