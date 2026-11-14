@@ -40,6 +40,9 @@ SHADOW_TAG = "pilot_verified_edge"
 VERIFIED_SOURCES = {"quan_engine", "st_rsi_momentum_confluence"}
 VERIFIED_STRATEGIES = {"quan_engine", "st_rsi_momentum_confluence", "st_rsi_momentum_confluence_symbol_locked"}
 
+# Explicitly blocked variants (toxic despite similar names)
+BLOCKED_VARIANTS = {"quan_engine_scalp", "quan_engine_scalp_hybrid", "inverse_quan_engine_scalp"}
+
 # Position sizing: 1% per trade (TradingView real-money standard)
 POSITION_SIZE_PCT = 1.0
 
@@ -57,8 +60,9 @@ LIVE_OUTPUT = REPO / "audit_dashboard" / "data" / "pilot_verified_edges.json"
 
 
 def _load_all_signals() -> list[dict]:
-    """Collect signals from all source JSONs."""
+    """Collect signals from all source JSONs and SQLite DBs."""
     signals = []
+    # --- JSON sources ---
     signal_dirs = [
         REPO / "quan_engine" / "data",
         REPO / "predictions" / "data",
@@ -78,6 +82,63 @@ def _load_all_signals() -> list[dict]:
                         signals.append(item)
             except Exception as exc:
                 log.debug("Skip %s: %s", f, exc)
+
+    # --- SQLite: quan_engine DB ---
+    db_path = REPO / "quan_engine" / "data" / "quan_engine.db"
+    if db_path.exists():
+        try:
+            import sqlite3
+            conn = sqlite3.connect(str(db_path))
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            # Try to discover table names
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tables = [r[0] for r in cur.fetchall()]
+            log.debug("quan_engine DB tables: %s", tables)
+            # Read from likely pick tables
+            for table in tables:
+                if "pick" in table.lower() or "signal" in table.lower() or "trade" in table.lower():
+                    try:
+                        cur.execute(f"SELECT * FROM {table} LIMIT 1000")
+                        rows = cur.fetchall()
+                        for row in rows:
+                            item = dict(row)
+                            item["_source_db"] = f"quan_engine.db/{table}"
+                            item["source_system"] = item.get("source_system", "quan_engine")
+                            signals.append(item)
+                        log.info("Loaded %d rows from quan_engine.db/%s", len(rows), table)
+                    except Exception as exc:
+                        log.debug("Skip table %s: %s", table, exc)
+            conn.close()
+        except Exception as exc:
+            log.warning("quan_engine DB read failed: %s", exc)
+
+    # --- SQLite: live_picks.db ---
+    live_db = REPO / "data" / "live_picks.db"
+    if live_db.exists():
+        try:
+            import sqlite3
+            conn = sqlite3.connect(str(live_db))
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tables = [r[0] for r in cur.fetchall()]
+            for table in tables:
+                if "pick" in table.lower() or "active" in table.lower():
+                    try:
+                        cur.execute(f"SELECT * FROM {table} LIMIT 1000")
+                        rows = cur.fetchall()
+                        for row in rows:
+                            item = dict(row)
+                            item["_source_db"] = f"live_picks.db/{table}"
+                            signals.append(item)
+                        log.info("Loaded %d rows from live_picks.db/%s", len(rows), table)
+                    except Exception:
+                        pass
+            conn.close()
+        except Exception as exc:
+            log.debug("live_picks.db read failed: %s", exc)
+
     return signals
 
 
@@ -86,6 +147,10 @@ def _is_verified_edge(signal: dict) -> bool:
     source = str(signal.get("source_system", signal.get("source", ""))).lower()
     strategy = str(signal.get("strategy", "")).lower()
     direction = str(signal.get("direction", "LONG")).upper()
+
+    # Block toxic variants explicitly
+    if strategy in BLOCKED_VARIANTS or source in BLOCKED_VARIANTS:
+        return False
 
     # Edge 1 & 2: verified source/strategy
     if source in VERIFIED_SOURCES or strategy in VERIFIED_STRATEGIES:
@@ -135,35 +200,49 @@ def _apply_direction_bias(signal: dict) -> dict:
 
 
 def _apply_position_sizing(signal: dict) -> dict:
-    """Set position size to 1% with ATR-based stop."""
-    signal["position_size_pct"] = POSITION_SIZE_PCT
-    signal["_pilot_sizing"] = "1pct_atr_based"
-
+    """Set position size to 1% with ATR-based stop and dynamic sizing."""
     entry = float(signal.get("entry_price", 0) or 0)
     atr = float(signal.get("atr", signal.get("atr_pct", 0)) or 0)
+    direction = str(signal.get("direction", "LONG")).upper()
 
-    if entry > 0 and atr > 0:
-        # ATR-based stop: 2x ATR for swing trades
+    # Volatility-adjusted position sizing
+    if atr > 0 and entry > 0:
+        # Risk 1% of account per trade, sized by volatility
+        # position = (account * 0.01) / (atr * 2) — but we output % of account
+        risk_pct = 1.0  # 1% risk per trade
+        sl_distance_pct = atr * 2  # 2x ATR stop
+        position_size = risk_pct / sl_distance_pct * 100 if sl_distance_pct > 0 else POSITION_SIZE_PCT
+        position_size = min(position_size, 5.0)  # Cap at 5% max
+        signal["position_size_pct"] = round(position_size, 2)
+        signal["_pilot_sizing"] = "volatility_adjusted"
+
+        # ATR-based stop and target
         sl_distance = entry * (atr / 100) * 2
-        direction = str(signal.get("direction", "LONG")).upper()
         if direction in ("SHORT", "SELL"):
             signal["stop_loss"] = round(entry + sl_distance, 8)
-            signal["take_profit"] = round(entry - sl_distance * 1.5, 8)  # 1.5:1 R:R
+            signal["take_profit"] = round(entry - sl_distance * 2.0, 8)  # 2:1 R:R for snipers
         else:
             signal["stop_loss"] = round(entry - sl_distance, 8)
-            signal["take_profit"] = round(entry + sl_distance * 1.5, 8)
+            signal["take_profit"] = round(entry + sl_distance * 2.0, 8)
         signal["_pilot_sl_basis"] = "2x_atr"
+        signal["_pilot_risk_reward"] = "2:1"
     else:
-        # Fallback: fixed 2% stop, 3% target (1.5:1 R:R)
+        # Fallback: fixed 1% sizing with 2% stop, 4% target (2:1 R:R)
+        signal["position_size_pct"] = POSITION_SIZE_PCT
         if entry > 0:
-            direction = str(signal.get("direction", "LONG")).upper()
             if direction in ("SHORT", "SELL"):
                 signal["stop_loss"] = round(entry * 1.02, 8)
-                signal["take_profit"] = round(entry * 0.97, 8)
+                signal["take_profit"] = round(entry * 0.96, 8)
             else:
                 signal["stop_loss"] = round(entry * 0.98, 8)
-                signal["take_profit"] = round(entry * 1.03, 8)
+                signal["take_profit"] = round(entry * 1.04, 8)
         signal["_pilot_sl_basis"] = "fixed_2pct_fallback"
+        signal["_pilot_risk_reward"] = "2:1"
+
+    # Add risk metadata
+    signal["_pilot_max_daily_loss_pct"] = 5.0
+    signal["_pilot_max_monthly_loss_pct"] = 20.0
+    signal["_pilot_stop_after_3_losses"] = True
 
     return signal
 
