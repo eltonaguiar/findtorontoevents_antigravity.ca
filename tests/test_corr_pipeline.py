@@ -28,11 +28,10 @@ def test_correlation_engine():
     print("=" * 60)
 
     if not os.path.exists(CORR_SAMPLE):
-        print(f"FAIL: Sample file not found: {CORR_SAMPLE}")
-        return False
+        raise FileNotFoundError(f"Sample file not found: {CORR_SAMPLE}")
 
     result = subprocess.run(
-        ['python3', CORR_ENGINE, '--input', CORR_SAMPLE, '--dry-run'],
+        [sys.executable, CORR_ENGINE, '--input', CORR_SAMPLE, '--dry-run'],
         capture_output=True, text=True
     )
 
@@ -40,9 +39,7 @@ def test_correlation_engine():
     if result.stderr:
         print("STDERR:", result.stderr)
 
-    if result.returncode != 0:
-        print(f"FAIL: Exit code {result.returncode}")
-        return False
+    assert result.returncode == 0, f"correlation_engine exited {result.returncode}: {result.stderr}"
 
     # Programmatic verification
     sys.path.insert(0, SCRIPTS_DIR)
@@ -59,7 +56,6 @@ def test_correlation_engine():
 
     print(f"✓ Correlation engine: {result_data['pair_count']} pairs, "
           f"{result_data['stats']['high_corr']} high-corr pairs")
-    return True
 
 
 def test_data_lag_monitor():
@@ -89,7 +85,7 @@ def test_data_lag_monitor():
         tmp_path = f.name
 
     result = subprocess.run(
-        ['python3', LAG_MONITOR, '--input', tmp_path, '--dry-run'],
+        [sys.executable, LAG_MONITOR, '--input', tmp_path, '--dry-run'],
         capture_output=True, text=True
     )
 
@@ -99,9 +95,7 @@ def test_data_lag_monitor():
 
     os.unlink(tmp_path)
 
-    if result.returncode != 0:
-        print(f"FAIL: Exit code {result.returncode}")
-        return False
+    assert result.returncode == 0, f"data_lag_monitor exited {result.returncode}: {result.stderr}"
 
     # Programmatic check
     from data_lag_monitor import compute_lag_stats
@@ -116,7 +110,6 @@ def test_data_lag_monitor():
 
     print(f"✓ Data lag monitor: max_lag={stats['max_lag_minutes']}min, "
           f"stale={stats['stale_count']}, flagged={len(stats['flagged'])}")
-    return True
 
 
 def test_schema_validation():
@@ -128,7 +121,7 @@ def test_schema_validation():
     schema_path = os.path.join(PROJECT_ROOT, 'schemas', 'correlation_schema.json')
     if not os.path.exists(schema_path):
         print(f"SKIP: Schema not found: {schema_path}")
-        return True
+        return
 
     with open(CORR_SAMPLE) as f:
         data = json.load(f)
@@ -149,7 +142,6 @@ def test_schema_validation():
                 assert field in pair, f"Missing pair field: {field}"
 
     print(f"✓ Schema validation passed ({len(data.get('pairs', []))} pairs)")
-    return True
 
 
 def main():
@@ -163,8 +155,7 @@ def main():
 
     for test_fn in tests:
         try:
-            if not test_fn():
-                all_passed = False
+            test_fn()
         except Exception as e:
             print(f"FAIL: {test_fn.__name__}: {e}")
             all_passed = False

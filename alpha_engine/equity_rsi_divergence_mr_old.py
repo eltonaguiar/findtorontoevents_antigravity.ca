@@ -165,5 +165,4 @@ def equity_rsi_divergence_mr(data: Dict[str, pd.DataFrame]) -> List[Dict[str, An
                 "timestamp": _now_iso(),
             })
 
-    return signals</content>
-<parameter name="filePath">C:\findtorontoevents_antigravity.ca\alpha_engine\equity_rsi_divergence_mr.py
+    return signals

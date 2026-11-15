@@ -33,7 +33,7 @@ on:
 # Cancelling is safe — the only writer ("Update job health page") runs after the
 # long scan completes, so a cancelled run never leaves a partial write.
 concurrency:
-  group: branch-large-file-dup-guard
+  group: branch-large-file-dup-guard-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -304,7 +304,7 @@ jobs:
 
       - name: Upload findings artifact
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: branch-large-blob-findings
           path: branch_large_blob_findings.json

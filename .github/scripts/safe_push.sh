@@ -54,24 +54,35 @@ if [ -z "$REMOTE_URL" ] && [ -n "$_TOKEN" ] && [ -n "${GITHUB_REPOSITORY:-}" ]; 
         -H "Accept: application/vnd.github+json" \
         "https://api.github.com/repos/${GITHUB_REPOSITORY}" 2>/dev/null || echo "000")
     if [ "$_auth_check" != "200" ]; then
-        _err_msg=$(cat "$_AUTH_TMP" 2>/dev/null | python3 -c "
+        _auth_status=$(_AUTH_CODE="$_auth_check" python3 -c "
 import json, sys, os
-code=os.environ.get('_auth_check','?')
+code = os.environ.get('_AUTH_CODE', '?')
+msg = ''
 try:
-    d=json.load(sys.stdin)
-    msg=d.get('message', d.get('error', 'unknown error'))
-    print(f'Token validation failed (HTTP {code}): {msg}')
-except:
-    print(f'Token validation failed (HTTP {code})')
-" 2>/dev/null || echo "Token validation failed (HTTP $_auth_check)")
-        echo "ERROR: $_err_msg"
-        echo "  → Check that GH_PAT secret is set and the token has 'repo' scope (full push access)."
-        echo "  → If using github.token directly, verify the workflow has 'permissions: contents: write'."
-        echo "  → A 401/403 means the token is invalid or expired. A 404 means the repo path is wrong."
-        rm -f "$_AUTH_TMP" 2>/dev/null || true
-        exit 1
+    with open(sys.argv[1], 'r', encoding='utf-8', errors='replace') as fh:
+        d = json.load(fh)
+    msg = str(d.get('message') or d.get('error') or '')
+except Exception:
+    pass
+low = msg.lower()
+if code in ('429', '000') or 'rate limit' in low or 'secondary rate' in low:
+    print(f'RATELIMIT:HTTP {code}: {msg}')
+else:
+    print(f'FAIL:Token validation failed (HTTP {code}): {msg or \"unknown error\"}')
+" "$_AUTH_TMP" 2>/dev/null || echo "FAIL:Token validation failed (HTTP $_auth_check)")
+        if [[ "$_auth_status" == RATELIMIT:* ]]; then
+            echo "::warning::Token preflight bypassed (${_auth_status#RATELIMIT:}) — proceeding with git push."
+        else
+            echo "ERROR: ${_auth_status#FAIL:}"
+            echo "  → Check that GH_PAT secret is set and the token has 'repo' scope (full push access)."
+            echo "  → If using github.token directly, verify the workflow has 'permissions: contents: write'."
+            echo "  → A 401/403 means the token is invalid or expired. A 404 means the repo path is wrong."
+            rm -f "$_AUTH_TMP" 2>/dev/null || true
+            exit 1
+        fi
+    else
+        echo "  (token auth validated OK)"
     fi
-    echo "  (token auth validated OK)"
 fi
 rm -f "$_AUTH_TMP" 2>/dev/null || true
 

@@ -22,9 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          filter: blob:none
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: pip
@@ -63,7 +66,10 @@ jobs:
           git diff --staged --quiet && echo "no changes" && exit 0
           git commit -m "data(filter): regen daily_top_picks_filter $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
           for i in 1 2 3 4 5; do
-            git pull --rebase origin main && git push origin main && exit 0
+            if git fetch --quiet --depth=1 --filter=blob:none origin main && git rebase --quiet origin/main && git push origin main; then
+              exit 0
+            fi
+            git rebase --abort >/dev/null 2>&1 || true
             sleep 15
           done
           echo "::warning::push lost race after 5 retries; data is on disk + FTP'd"

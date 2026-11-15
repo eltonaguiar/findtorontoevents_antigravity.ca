@@ -120,3 +120,27 @@ freezing the events site on torontoevent.net. That is now unblocked.
   failure signal.
 - `Verified pilot daily` 1/1 fail and `Backup Restore Verification` 1/3 fail —
   worth a separate look, not touched here.
+
+## Addendum 2026-11-15 09:0xZ — the 553 is fixed; volume is now the limiter
+
+Re-dispatched after the first fix merged (run **43695030179**):
+
+- `553 Prohibited file name`: **0 occurrences** (was 2 per run) — the exclusion works.
+- New/remaining failure: `The action 'Download from findtorontoevents.ca (50webs FTP)' has timed out after 30 minutes`, after **15,225 transfers**.
+- Measured throughput: **507 files/min**. Remaining workload after the excludes:
+  27,692 − 3,794 = **23,898 files ≈ 47 min** for a cold pull.
+
+The deeper defect: each run starts on a fresh runner with an **empty**
+`/tmp/site_mirror`, so every 6-hourly run re-downloads the whole tree from
+scratch and can never finish before the cap.
+
+**Fix (this commit):** persist the tree with `actions/cache@v5`
+(`key: site-mirror-<run_id>`, `restore-keys: site-mirror-`), so every pull after
+the first is incremental, and raise the download cap 30 → 50 min so a cold pull
+fits inside the 90-min job budget (50 download + 15 + 15 uploads + ~2).
+
+A cold run may still exceed 50 min; the cache post-step saves progress anyway, so
+the next run resumes instead of restarting.
+
+**Still NOT MEASURED end-to-end:** at 09:11Z `torontoevent.net/events.json` was
+still `last_updated 2026-10-06` / 21,737 events, i.e. no upload has succeeded yet.

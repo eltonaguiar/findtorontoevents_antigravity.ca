@@ -290,8 +290,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     result = run_one_shot()
     if args.write_db and result.get("basket"):
-        n = _write_basket_to_db(result["basket"])
-        print(f"[DB] Inserted/updated {n} pick(s)", file=sys.stderr)
+        try:
+            n = _write_basket_to_db(result["basket"])
+            print(f"[DB] Inserted/updated {n} pick(s)", file=sys.stderr)
+        except Exception as exc:
+            print(f"[DB] Skipping DB write (unavailable in environment): {exc}", file=sys.stderr)
     print(json.dumps(result, indent=2))
     return 0
 

@@ -58,12 +58,20 @@ def _sharpe_std_error(
     Analytical standard error of the Sharpe ratio incorporating
     skewness and excess kurtosis (Bailey & Lopez de Prado 2014).
     """
-    n = len(returns)
+    arr = np.asarray(returns, dtype=float)
+    arr = arr[~np.isnan(arr)]
+    n = len(arr)
     if n <= 1:
         return np.nan
 
-    sk = skew(returns, bias=False)
-    kurt_val = kurtosis(returns, fisher=True, bias=False)
+    # Constant or near-zero-variance series have degenerate higher moments and
+    # emit SciPy catastrophic-cancellation RuntimeWarnings.
+    if np.ptp(arr) == 0.0 or np.std(arr) < 1e-12:
+        sk = 0.0
+        kurt_val = 0.0
+    else:
+        sk = skew(arr, bias=False) if n >= 3 else 0.0
+        kurt_val = kurtosis(arr, fisher=True, bias=False) if n >= 4 else 0.0
 
     term1 = (1 + 0.5 * sharpe ** 2) / (n - 1)
     term2 = (sk * sharpe) / (6 * np.sqrt(n))

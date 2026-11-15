@@ -50,6 +50,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          filter: blob:none
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -105,7 +106,7 @@ jobs:
         # if: always() — upload whatever the screener produced even on failure
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: swing_screener_picks_${{ github.run_id }}
           path: |
