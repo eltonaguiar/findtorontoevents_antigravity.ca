@@ -100,7 +100,7 @@ jobs:
               echo "ERROR: Push permanently rejected — aborting"; exit 1
             fi
             if echo "$push_output" | grep -qiE "non-fast-forward|fetch first|\[rejected\]|behind its remote"; then
-              if git fetch --quiet origin main && git rebase --quiet origin/main; then
+              if git fetch --quiet origin main && git rebase --autostash --quiet origin/main; then
                 echo "Rebased onto origin/main — retrying push immediately"; continue
               fi
               git rebase --abort >/dev/null 2>&1 || true
