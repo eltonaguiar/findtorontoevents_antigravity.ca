@@ -17,12 +17,13 @@ concurrency:
 jobs:
   reconcile:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          filter: blob:none
+          token: ${{ secrets.GH_PAT || github.token }}
 
       - uses: actions/setup-python@v6
         with:
@@ -52,11 +53,7 @@ jobs:
           git add audit_dashboard/data/blacklist_reconciliation.json
           if ! git diff --cached --quiet; then
             git commit -m "chore(blacklist): nightly reconciler snapshot [skip ci]"
-            for i in 1 2 3; do
-              git pull --rebase --autostash origin main || break
-              git push origin HEAD:main && break
-              sleep $((i * 5))
-            done
+            TOKEN_FOR_PUSH="${{ secrets.GH_PAT || github.token }}" bash .github/scripts/safe_push.sh
           else
             echo "No changes to commit."
           fi

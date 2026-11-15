@@ -97,15 +97,24 @@ def _cache_read(ticker: str, kind: str) -> Optional[dict]:
     if time.time() - p.stat().st_mtime > CACHE_TTL_SEC:
         return None
     try:
-        return json.loads(p.read_text(encoding="utf-8"))
+        data = json.loads(p.read_text(encoding="utf-8"))
     except Exception:
         return None
+    if not isinstance(data, dict):
+        return None
+    cached_at = data.pop("_cached_at", None)
+    # Enforce payload-level timestamp so git checkouts (whose file mtime equals
+    # checkout time) cannot treat old committed cache JSONs as fresh.
+    if not isinstance(cached_at, (int, float)) or (time.time() - float(cached_at)) > CACHE_TTL_SEC:
+        return None
+    return data
 
 
 def _cache_write(ticker: str, kind: str, payload: dict) -> None:
     p = _cache_path(ticker, kind)
     try:
-        p.write_text(json.dumps(payload), encoding="utf-8")
+        stored = {**payload, "_cached_at": time.time()}
+        p.write_text(json.dumps(stored), encoding="utf-8")
     except Exception as exc:
         logger.debug("cache write failed for %s.%s: %s", ticker, kind, exc)
 
