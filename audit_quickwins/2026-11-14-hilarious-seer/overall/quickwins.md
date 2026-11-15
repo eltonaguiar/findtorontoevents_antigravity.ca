@@ -42,3 +42,55 @@ New peer deliverable from **childlike-airport** (commit `4b7762bf`, main branch,
 - **CRYPTO positions**: conditional on stop-fill fix forward evidence only
 - **Data quality**: PnL unit contract fix is absolute P0; 37/49 closed PnL=0% are FABRICATED_FLAT; 87.4% active_raw have blank current_price
 - **No capital deployment** until 90-day paper PF>1.5 post-costs with benchmark proof and DSR≥0.95
+
+---
+
+## Cron-update 2026-11-15T01:30Z — finpredict-v4 WIRED_IN + inspect-wt plans reviewed
+
+### finpredict-v4 WIRED_IN (childlike-airport, commit `1b0f8e56`)
+Peer published their own WIRED_IN folder with Faber 200d MA + dual-momentum algorithm, picks (VTI/TLT/SGOV/BND), and elimination rationale.
+
+**Convergence:**
+- Eliminations align: both reject Connors RSI-2, intraday scalping, FOREX intraday, prediction-market copy-trading, VWAP overfit
+- Both converge on low-cost index ETFs as only credible allocation base
+- Both agree 0/9 asset classes produce money-ready active alpha
+
+**Conflict — HIGH:**
+- Peer claims Faber 200d MA is "live, backtest-proven" with **Sharpe 1.01**, maxDD -18.8% (2008-2026)
+- Our WIREDIN backtest (`prove_dual_momentum.py`, 2010-2026, equity-heavy 5-asset) produced **Sharpe 0.40** and was ELIMINATED
+- Peer admits Faber loses to B&H in raw return (7.39× vs 7.93×) — violates our "beat benchmark after costs" gate
+- The 1.01 figure is period- and universe-dependent (2008 GFC inclusion + all-asset mix); does not replicate in our test
+- **Verdict:** Sharpe 1.01 claim is unverified for general use. Downgrade TLT/SGOV to PASSIVE_HOLD. Tag Faber as "risk-overlay only — does not beat B&H" until independent replication.
+
+### inspect-wt per-class profitability plans (eltonaguiar, commit `31a76141`)
+Peer published 21 files across 9 folders: 7 per-class plans, style analysis, SubQ consult (47 answers), 26 essential questions, 10 case studies, 7 agent prompts.
+
+**Assessment: inspect-wt is more rigorous and honest than our plan.**
+
+**Key merge candidates (P0-P2):**
+- **P0:** Close EQUITY as edge source (post-#773) — one new pre-registered trial only. Our plan is too hopeful on `stocks_rsi2_pullback`.
+- **P0:** Add bounded 2-mutation kill-or-cure rule for FOREX. Documented kill is a deliverable.
+- **P0:** Benchmark-relative gate stack (SPY / 60/40 / AGG+cash) in every per-class plan.
+- **P1:** Merge 26 essential questions (especially Q19–Q24 on governance: "Who can say NO?", "What did we kill this month?", "When will we know to stop?"). Our plan lacks governance.
+- **P1:** Merge evidence-ranked algorithm tiers (Tier 1 academic+real money, Tier 2 contested, Tier 3 retail folklore debunked). ICT/FVG: 0/648 backtests beat B&H.
+- **P1:** Merge cost-to-horizon arithmetic table (scalping needs 0.15–0.6%/trade = "Nowhere retail").
+- **P1:** SubQ fact-check tagging (GROUNDED/PARTIAL/UNGROUNDED) for all external consults.
+- **P2:** 10 case studies + 5-pattern synthesis (regulator on-ramp, 3rd-party verification, transparent drawdown, model governance, time+audited reporting).
+- **P2:** Add "kill is a deliverable" language to FOREX/COMMODITY agent prompts.
+- **P2:** Add QA-only agent prompt (no strategy research; success = other agents trust PnL fields).
+- **P2:** Add sunset clause (Q24) to essential questions.
+
+**hilarious-seer commits pushed:**
+- `d2406057` — WIRED_IN folder: SPECIFICATION.md (algorithm per asset class, pick justifications, backtest evidence, forward tracker protocol), ELIMINATION_LOG.md (detailed rejection rationale), BACKTEST_EVIDENCE.json (machine-readable summary)
+
+---
+
+## Current unified verdict (all peers + WIRED_IN)
+- **0/166 money-ready, 0/9 strategies, 0/42 forward-test candidates** — no statistically significant edge proven anywhere
+- **Faber dual-momentum claim (Sharpe 1.01) is UNVERIFIED** — period/universe dependent, loses to B&H in raw return
+- **Only viable path**: passive beta (VTI/BND 60/40) — captures equity risk premium, not alpha
+- **EQUITY active edge: CLOSED** (post-#773) — one pre-registered trial only
+- **FOREX: bounded 2-mutation protocol** — kill is a deliverable
+- **CRYPTO positions**: conditional on stop-fill fix forward evidence only
+- **Data quality**: PnL unit contract fix is absolute P0; 37/49 closed PnL=0% are FABRICATED_FLAT
+- **No capital deployment** until 90-day paper PF>1.5 post-costs with benchmark proof and DSR≥0.95
