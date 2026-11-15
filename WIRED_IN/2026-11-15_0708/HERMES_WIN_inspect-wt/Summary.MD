@@ -51,7 +51,30 @@
 - **Multi-asset portfolio:** 0/1 (risk-parity fails on real capital)
 - **Near-misses:** 3/30 (10% conversion potential) but all require longer data/fewer costs
 
-## 4. NEXT STEPS (Phase 2)
+## 4. NEXT STEPS (Phase 2 — IN PROGRESS)
+
+### 4.0 PHASE 2 STATUS (updated 2026-11-15)
+
+**First pre-registered run executed.** `experiments/etfs_dual_momentum_20261115_001/` → **DEAD (5/9 offline gates)**.
+
+| Evidence | Result |
+|---|---|
+| Locked holdout 2019–2026 CAGR | 10.93% vs SPY 16.79% |
+| Sharpe | 0.79 vs SPY 0.90 |
+| Max drawdown | −25.7% vs SPY −33.7% (**the only win**) |
+| Excess vs SPY | −5.96%/yr, t = −1.17, p(1-sided) = 0.88 |
+| Bootstrap CI on excess | [−13.5%, +2.0%], 7.4% of paths positive |
+| Deflated Sharpe (1,307 trials) | 0.138 → fail |
+| Shuffle control | **FAIL** — 90% of permuted-price variants beat the real strategy |
+
+**Interpretation:** dual momentum in this universe is a **drawdown-control tool, not an alpha source** — the 12-1 ranking adds nothing over random selection among seven correlated ETFs; the entire return difference is asset mix plus the cash filter. `Plan/etfs/` is therefore closed as an alpha candidate (re-testing with other SMA/momentum lengths is forbidden parameter hunting). It is now an input to `Plan/multi_asset/` as a risk overlay, benchmarked against static 60/40.
+
+**Infrastructure shipped with this run:**
+- `proof/harness.py` — block bootstrap, shuffle control, deflated Sharpe, regime split, walk-forward, trade stats (seeded, reusable)
+- `proof/gate_audit.py` — CI-able check of the repo's promotion gates. **Currently exits 1: `MONEY_READY_FDR_GATE=0` and `MONEY_READY_SINGLE_SOURCE_GATE=0` are still disabled.**
+- `harvested_ideas/00_inventory.csv` — rebuilt as a valid CSV; all 30 cited paths verified to exist
+
+**Blocked:** `equity_quality_momentum_20261115_001` needs point-in-time ROIC fundamentals. A price-only proxy would silently change the hypothesis, so it stays unrun rather than fake-run.
 
 ### 4.1 Paper-Trading Pilot (PRIORITY)
 - **Target:** VPIN+LGBM ensemble (F3) – passes most proof steps, only fails on sample size
