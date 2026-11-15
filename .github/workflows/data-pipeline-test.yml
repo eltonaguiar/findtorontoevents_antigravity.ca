@@ -61,13 +61,33 @@ jobs:
       with:
         script: |
           try {
-            await github.rest.issues.create({
+            const title = 'Data Pipeline Failure Detected';
+            const body = `Data pipeline test failed at ${new Date().toISOString()}. [Workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            const open = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Data Pipeline Failure Detected',
-              body: `Data pipeline test failed at ${new Date().toISOString()}. [Workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
-              labels: ['data-pipeline', 'alert']
+              state: 'open',
+              labels: 'data-pipeline',
+              per_page: 100,
             });
+            const dup = open.find((i) => !i.pull_request && i.title === title);
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: dup.number,
+                body,
+              });
+              core.notice(`Commented on existing open issue #${dup.number} (no duplicate).`);
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['data-pipeline', 'alert']
+              });
+            }
           } catch (e) {
             console.log('Could not open issue (permissions or API): ' + e.message);
           }

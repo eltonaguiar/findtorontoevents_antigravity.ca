@@ -94,6 +94,37 @@ def _prune_old_entries(entries: list, days: int = LOG_RETENTION_DAYS) -> list:
     return [e for e in entries if e.get("timestamp", "") >= cutoff]
 
 
+def _dedup_wrong_entries(entries: list) -> list:
+    """Deduplicate SL-hit entries per closed pick to prevent log bloat (>100 MB)."""
+    seen = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        key = (
+            entry.get("symbol", ""),
+            entry.get("strategy", ""),
+            entry.get("entry_price"),
+            entry.get("exit_price"),
+            entry.get("exit_date", ""),
+        )
+        existing = seen.get(key)
+        if existing is None or str(entry.get("timestamp", "")) < str(existing.get("timestamp", "")):
+            seen[key] = entry
+    return sorted(seen.values(), key=lambda e: str(e.get("timestamp", "")))
+
+
+def _dedup_missed_entries(entries: list) -> list:
+    """Deduplicate missed-gainer entries to at most one record per (symbol, UTC hour)."""
+    seen = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        key = (entry.get("symbol", ""), str(entry.get("timestamp", ""))[:13])
+        if key not in seen:
+            seen[key] = entry
+    return sorted(seen.values(), key=lambda e: str(e.get("timestamp", "")))
+
+
 # ---------------------------------------------------------------------------
 # 1. Fetch top Binance gainers with failover
 # ---------------------------------------------------------------------------
@@ -517,9 +548,9 @@ def run_analysis() -> dict:
     missed_log.extend(missed)
     wrong_log.extend(wrong)
 
-    # Prune old entries
-    missed_log = _prune_old_entries(missed_log)
-    wrong_log = _prune_old_entries(wrong_log)
+    # Deduplicate and prune old entries (prevents wrong_guesses_log.json >100 MB)
+    missed_log = _dedup_missed_entries(_prune_old_entries(missed_log))
+    wrong_log = _dedup_wrong_entries(_prune_old_entries(wrong_log))
 
     _save_json(MISSED_GAINERS_LOG, missed_log)
     _save_json(WRONG_GUESSES_LOG, wrong_log)

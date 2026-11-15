@@ -25,18 +25,18 @@ name: Operator Review — Manual Candidates daily snapshot
 
 'on':
   schedule:
-    - cron: '0 7 * * *'  # Daily at 07:00 UTC (after audit-dashboard 06:10 hourly runs ~35min)
+    - cron: '30 7 * * *'  # Daily at 07:30 UTC (staggered from audit-dashboard :10 & rsi5070 07:00)
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
 concurrency:
-  # Shares dashboard-publish with audit-dashboard.yml so the 35-min hourly job
-  # serializes against this daily. cancel-in-progress=false queues, never
-  # cancels. Lost-queue ordering is OK because the JSON write is idempotent
-  # (regenerable from seed + live data on every run).
-  group: dashboard-publish
+  # Own concurrency group so this daily job is not evicted from the shared
+  # `dashboard-publish` queue slot behind hourly 35-115m audit-dashboard runs.
+  # Each GHA runner isolates writes in its own checkout and safe_push.sh
+  # serializes git commits/pushes cleanly.
+  group: operator-review-today
   cancel-in-progress: false
 
 jobs:
@@ -134,43 +134,7 @@ jobs:
           fi
           n_picks=$(python3 -c "import json; print(len(json.load(open('audit_dashboard/data/operator_review_today.json'))['picks']))")
           git commit -m "chore(operator-review): daily manual-candidates snapshot n=${n_picks} [skip ci]"
-          # 5-attempt push loop mirroring safe_push.sh — fast retries on lock
-          # contention. Persistent rejection (branch protection) skips the
-          # remaining attempts.
-          push_ok=false
-          for i in 1 2 3 4 5; do
-            push_rc=0
-            push_output=$(git push origin main 2>&1) || push_rc=$?
-            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
-            if [ $push_rc -eq 0 ]; then
-              push_ok=true
-              break
-            fi
-            if echo "$push_output" | grep -qiE "pre-receive hook declined|push declined due to|protected branch|GH[0-9]{3}|refusing to (allow|update)"; then
-              echo "ERROR: Push permanently rejected — aborting"
-              break
-            fi
-            # Non-fast-forward: main advanced under us (another publisher
-            # in the shared `dashboard-publish` group, or a push-triggered
-            # workflow). Retrying the identical push cannot recover (run 43688791845
-            # exhausted all 5 attempts this way). Only operator_review_today.json
-            # is staged, so rebase onto the new main cannot conflict.
-            if echo "$push_output" | grep -qiE "non-fast-forward|fetch first|\[rejected\]|behind its remote"; then
-              if git fetch --quiet origin main && git rebase --quiet origin/main; then
-                echo "Rebased onto origin/main — retrying push immediately"
-                continue
-              fi
-              git rebase --abort >/dev/null 2>&1 || true
-              echo "::warning::rebase onto origin/main failed — falling back to timed retry"
-            fi
-            delay=$((2 ** i + RANDOM % 5))
-            [ $delay -gt 60 ] && delay=$((60 + RANDOM % 5))
-            sleep "$delay"
-          done
-          if [ "$push_ok" = false ]; then
-            echo "ERROR: Push failed after 5 attempts"
-            exit 1
-          fi
+          bash .github/scripts/safe_push.sh
 
       - name: Summary
         if: always()
@@ -179,6 +143,6 @@ jobs:
           n_picks=$(python3 -c "import json,sys; d=json.load(open('audit_dashboard/data/operator_review_today.json')); print(len(d.get('picks',[])))")
           echo "- picks: \"$n_picks\""
           echo "- workflow: operator-review-today"
-          echo "- queue-group: dashboard-publish (shares with audit-dashboard)"
-          echo "- cron: 0 7 * * * (UTC)"
+          echo "- queue-group: operator-review-today"
+          echo "- cron: 30 7 * * * (UTC)"
           echo "- manual: gh workflow run operator-review-today.yml --ref main"

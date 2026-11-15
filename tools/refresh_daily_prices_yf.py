@@ -18,9 +18,9 @@ import argparse
 import sys
 from pathlib import Path
 
-# Repo root must be importable regardless of invocation style
-# (python tools/x.py puts tools/ on sys.path, so `import tools` would fail).
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 from tools.db_env import get_stocks_creds  # noqa: E402
 import pymysql  # noqa: E402
 

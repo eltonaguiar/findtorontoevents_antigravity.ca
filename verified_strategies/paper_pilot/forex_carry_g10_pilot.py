@@ -178,30 +178,11 @@ def run_one_shot() -> dict:
         "month": month,
         "n_closed": state.get("n_closed", 0),
         "open_legs": len(legs),
+        "basket": legs,
         "lab_reference": {"n": LAB_N, "wr": LAB_WR, "pf": LAB_PF},
         "forex_hard_disable": "0 — production enabled",
         "promotion_note": "Need 30 forward monthly closes + PF within 30% of lab",
     }
-
-
-def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--one-shot", action="store_true")
-    ap.add_argument("--write-db", action="store_true", help="Write basket legs to trading_picks")
-    args = ap.parse_args(argv)
-    if not args.one_shot:
-        ap.print_help()
-        return 0
-    result = run_one_shot()
-    if args.write_db and result["basket"]:
-        n = _write_basket_to_db(result["basket"])
-        print(f"[DB] Inserted/updated {n} pick(s)", file=sys.stderr)
-    print(json.dumps(result, indent=2))
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
 
 
 def _write_basket_to_db(legs: list[dict]) -> int:
@@ -214,71 +195,95 @@ def _write_basket_to_db(legs: list[dict]) -> int:
     except ImportError:
         yf = None
 
-    creds = get_stocks_creds()
+    _KEEP = ("host", "user", "password", "database", "port", "connect_timeout", "read_timeout")
+    creds = {k: v for k, v in get_stocks_creds().items() if k in _KEEP}
     conn = pymysql.connect(**creds, cursorclass=pymysql.cursors.DictCursor)
-    cur = conn.cursor()
+    try:
+        cur = conn.cursor()
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-    inserted = 0
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        inserted = 0
 
-    for leg in legs:
-        month = _month_key(); pick_id = f"fxcarry_{leg['ccy']}_{month}"
-        pair = leg["pair"]
+        for leg in legs:
+            month = _month_key()
+            pick_id = f"fxcarry_{leg['ccy']}_{month}"
+            pair = leg["pair"]
 
-        # Fetch live price from yfinance
-        entry_price = 1.0
-        if yf is not None:
-            try:
-                ticker = yf.Ticker(pair)
-                hist = ticker.history(period="1d")
-                if not hist.empty:
-                    entry_price = float(hist["Close"].iloc[-1])
-            except Exception:
-                pass  # fallback to 1.0 placeholder
+            # Fetch live price from yfinance
+            entry_price = 1.0
+            if yf is not None:
+                try:
+                    ticker = yf.Ticker(pair)
+                    hist = ticker.history(period="1d")
+                    if not hist.empty:
+                        entry_price = float(hist["Close"].iloc[-1])
+                except Exception:
+                    pass  # fallback to 1.0 placeholder
 
-        # Monthly carry: 1.5% TP / 1.0% SL (conservative for carry factor)
-        if leg["direction"] == "LONG":
-            take_profit = round(entry_price * 1.015, 6)
-            stop_loss = round(entry_price * 0.990, 6)
-        else:
-            take_profit = round(entry_price * 0.985, 6)
-            stop_loss = round(entry_price * 1.010, 6)
+            # Monthly carry: 1.5% TP / 1.0% SL (conservative for carry factor)
+            if leg["direction"] == "LONG":
+                take_profit = round(entry_price * 1.015, 6)
+                stop_loss = round(entry_price * 0.990, 6)
+            else:
+                take_profit = round(entry_price * 0.985, 6)
+                stop_loss = round(entry_price * 1.010, 6)
 
-        row = {
-            "id": pick_id,
-            "symbol": pair,
-            "direction": "LONG" if leg["direction"] == "LONG" else "SHORT",
-            "strategy": STRATEGY_ID,
-            "entry_price": entry_price,
-            "take_profit": take_profit,
-            "stop_loss": stop_loss,
-            "confidence": 0.65,
-            "elite_score": 70,
-            "trust_score": 65,
-            "category": "FOREX",
-            "source_system": STRATEGY_ID,
-            "status": "OPEN",
-            "pnl_pct": None,
-            "exit_price": None,
-            "created_at": now,
-            "closed_at": None,
-            "exit_reason": None,
-        }
-        cur.execute("""
-            INSERT INTO trading_picks
-                (id, symbol, direction, strategy, entry_price, take_profit, stop_loss,
-                 confidence, elite_score, trust_score, category, source_system,
-                 status, pnl_pct, exit_price, created_at, closed_at, exit_reason)
-            VALUES
-                (%(id)s, %(symbol)s, %(direction)s, %(strategy)s, %(entry_price)s,
-                 %(take_profit)s, %(stop_loss)s, %(confidence)s, %(elite_score)s,
-                 %(trust_score)s, %(category)s, %(source_system)s, %(status)s,
-                 %(pnl_pct)s, %(exit_price)s, %(created_at)s, %(closed_at)s, %(exit_reason)s)
-            ON DUPLICATE KEY UPDATE
-                status = VALUES(status), created_at = VALUES(created_at)
-        """, row)
-        inserted += 1
+            row = {
+                "id": pick_id,
+                "symbol": pair,
+                "direction": "LONG" if leg["direction"] == "LONG" else "SHORT",
+                "strategy": STRATEGY_ID,
+                "entry_price": entry_price,
+                "take_profit": take_profit,
+                "stop_loss": stop_loss,
+                "confidence": 0.65,
+                "elite_score": 70,
+                "trust_score": 65,
+                "category": "FOREX",
+                "source_system": STRATEGY_ID,
+                "status": "OPEN",
+                "pnl_pct": None,
+                "exit_price": None,
+                "created_at": now,
+                "closed_at": None,
+                "exit_reason": None,
+            }
+            cur.execute("""
+                INSERT INTO trading_picks
+                    (id, symbol, direction, strategy, entry_price, take_profit, stop_loss,
+                     confidence, elite_score, trust_score, category, source_system,
+                     status, pnl_pct, exit_price, created_at, closed_at, exit_reason)
+                VALUES
+                    (%(id)s, %(symbol)s, %(direction)s, %(strategy)s, %(entry_price)s,
+                     %(take_profit)s, %(stop_loss)s, %(confidence)s, %(elite_score)s,
+                     %(trust_score)s, %(category)s, %(source_system)s, %(status)s,
+                     %(pnl_pct)s, %(exit_price)s, %(created_at)s, %(closed_at)s, %(exit_reason)s)
+                ON DUPLICATE KEY UPDATE
+                    status = VALUES(status), created_at = VALUES(created_at)
+            """, row)
+            inserted += 1
 
-    conn.commit()
-    conn.close()
-    return inserted
+        conn.commit()
+        return inserted
+    finally:
+        conn.close()
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--one-shot", action="store_true")
+    ap.add_argument("--write-db", action="store_true", help="Write basket legs to trading_picks")
+    args = ap.parse_args(argv)
+    if not args.one_shot:
+        ap.print_help()
+        return 0
+    result = run_one_shot()
+    if args.write_db and result.get("basket"):
+        n = _write_basket_to_db(result["basket"])
+        print(f"[DB] Inserted/updated {n} pick(s)", file=sys.stderr)
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
