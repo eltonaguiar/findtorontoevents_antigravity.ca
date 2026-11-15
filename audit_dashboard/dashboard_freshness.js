@@ -111,13 +111,25 @@
       label: 'Money Ready Verdict',
       description: 'DSR-verified Tier-1 deploy readiness',
       url: 'data/money_ready_verdict.json',
-      extract: function(json) { return json && (json.generated_at || json.generated_date); }
+      // 2026-11-15: fall back through as_of / summary.generated_at. The live tile read
+      // "No data available" while data/money_ready_verdict.json was 42 KB and 24 min old,
+      // because only generated_at was accepted and a producer-side key change was enough
+      // to blank the tile.
+      extract: function(json) {
+        return json && (json.generated_at || json.generated_date || json.as_of ||
+          (json.summary && json.summary.generated_at) ||
+          (json.metadata && json.metadata.generated_at));
+      }
     },
     {
       id: 'swarm-picks',
       label: 'Swarm Paper Picks',
-      description: 'TradingView swarm-generated paper trades',
+      description: 'Decommissioned 2026-06-12 — frozen file, not a live feed',
       url: 'data/swarm_picks.json',
+      // Retired source. Rendering it as a red STALE tile made the whole panel announce
+      // "STALE SOURCES DETECTED" forever because of a feed nobody maintains. It is
+      // labelled DECOMMISSIONED and excluded from the stale verdict instead.
+      decommissioned: true,
       extract: function(json) {
         if (!json || !json.length) return null;
         // Use the most recent created_at across all picks
@@ -162,7 +174,9 @@
     panel.id = 'data-freshness-panel';
     panel.style.cssText = 'max-width:1180px;margin:0 auto 12px;padding:12px 18px;background:linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,41,59,0.9));border:1px solid #334155;border-radius:10px;color:#e2e8f0;font-size:13px';
 
-    var hasStale = results.some(function(r) { return r.freshness && r.freshness.level === 'red'; });
+    var hasStale = results.some(function(r) {
+      return !r.decommissioned && r.freshness && r.freshness.level === 'red';
+    });
     var headerIcon = hasStale ? '&#x26A0;' : '&#x2705;';
     var headerColor = hasStale ? '#ef4444' : '#22c55e';
     var headerText = hasStale ? 'DATA FRESHNESS — STALE SOURCES DETECTED' : 'DATA FRESHNESS — ALL SOURCES CURRENT';
@@ -176,6 +190,10 @@
 
     results.forEach(function(r) {
       var f = r.freshness || freshnessLevel(null);
+      if (r.decommissioned) {
+        f = { level: 'retired', ageMs: f.ageMs, label: 'DECOMMISSIONED',
+              color: '#94a3b8', bg: 'rgba(148,163,184,0.12)' };
+      }
       var est = r.timestamp ? fmtEST(r.timestamp) : 'no data';
       var age = ageText(f.ageMs);
       var isStale = f.level === 'red';

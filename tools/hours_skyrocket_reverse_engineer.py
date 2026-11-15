@@ -267,6 +267,18 @@ RULES = {
     "filing in last 24h + breakout": lambda d: (d["filing_24h"] > 0) & (d["donch_break"] >= -0.002),
     "VIX > 25 (stressed regime)": lambda d: d["vix_level"] > 25,
     "VIX falling (r1<0) + squeeze": lambda d: (d["vix_r1"] < 0) & (d["atr_comp"] < 0.9),
+    # VIX combos (2026-11-15). Question: does the regime add anything ON TOP of the
+    # candle pattern, or is "VIX > 25" just re-labelling the same bars? Each combo is
+    # read next to its candle-only parent (squeeze / breakout / vol surge / RSI<30),
+    # which stays in the table above, so the marginal contribution is visible.
+    "VIX>25 + squeeze": lambda d: (d["vix_level"] > 25) & (d["atr_comp"] < 0.9),
+    "VIX>25 + breakout": lambda d: (d["vix_level"] > 25) & (d["donch_break"] >= -0.001),
+    "VIX>25 + vol surge >1.5x": lambda d: (d["vix_level"] > 25) & (d["vol_surge"] > 1.5),
+    "VIX>25 + oversold (RSI<30)": lambda d: (d["vix_level"] > 25) & (d["rsi"] < 30),
+    "VIX rising (r1>0) + breakout": lambda d: (d["vix_r1"] > 0) & (d["donch_break"] >= -0.001),
+    "VIX calm (<18) + squeeze + breakout": lambda d: (
+        (d["vix_level"] < 18) & (d["atr_comp"] < 0.9) & (d["donch_break"] >= -0.002)
+    ),
 }
 
 

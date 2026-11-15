@@ -908,7 +908,7 @@ a:hover { text-decoration: underline; }
     <span data-mg-class="COMMODITY"><strong style="color:#ef4444">COMMODITY</strong> &mdash; FAIL+INSUFF-N (policy-clean n=3 only; FUTURES proxy n=11 WR 9.09% PF 0.475). <strong style="color:#fca5a5">CT=F DSR=1.0 was FALSIFIED 2026-05-13</strong> (6.33&times; over-emission); pilot now <code>SHADOW_INSUFFICIENT_N</code> dsr=null.</span>
     <span data-mg-class="FOREX"><strong style="color:#ef4444">FOREX</strong> &mdash; BLOCKED (PR #6 consolidation 2026-05-31: all FOREX strategies blocked except cta_cross_asset_tsmom SHORT). Policy-clean net PF 0.29 / WR 46.1% / PnL -1026% (raw resolved cohort PF 9.67 is outlier-skewed; 7.6% WR on 12,673 resolved). Hard disable default ON in <code>non_crypto_policy.py</code>. forex_carry added to allowlist on probation. <code>recent_exits.json</code> cleaned of stale entries.</span>
     <span data-mg-class="BOND"><strong style="color:#94a3b8">BOND</strong> &mdash; ACCUMULATING (at_raw_picks: 78 rows, up from 2). Backtests PF 1.29&ndash;1.62 (bond_tlt_ief_v3, bond_hyg_lqd_v1) are orphan; universe limited to 5 symbols. First production emissions detected 2026-05-31.</span>
-    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health GREEN: ghost rows 0, status mismatch 0, non-canonical statuses 0.</span>
+    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health is reported by the live DB-health check at the top of this page, not asserted in this caption — the 2026-05-31 "ghost rows 0" cleanup did not hold, and the live check now reports ghost cohorts again, so read the check, not this line.</span>
   </div>
 <div id="kill-switch-panel" style="max-width:1180px;margin:0 auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(251,146,60,0.06));border:1px solid rgba(239,68,68,0.3);border-radius:12px;color:#fde68a;font-size:0.85em">
   <details open>
@@ -1387,7 +1387,19 @@ a:hover { text-decoration: underline; }
             + '</tr>';
         }).join('');
         var alphaCell = '<span style="color:#94a3b8;font-size:11px">' + fmt(bonfAlpha, 6) + '</span>';
-        host.innerHTML = ''
+        // 2026-11-15: this feed has no generator in the repo (no build_ic_analysis.py
+        // anywhere in the tree) and the deployed file is frozen at 2026-05-29, so an
+        // unlabelled "live" IC panel is misleading. Show its age once it is >72h old.
+        var staleNote = '';
+        if (data.generated_at) {
+          var ageH = (Date.now() - new Date(data.generated_at).getTime()) / 3600000;
+          if (ageH > 72) {
+            staleNote = '<div style="font-size:0.8em;color:#fca5a5;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:6px 10px;margin-bottom:8px">'
+              + '&#x26A0; Frozen feed: generated ' + Math.floor(ageH / 24) + ' days ago (' + String(data.generated_at).slice(0, 10) + '). '
+              + 'No builder for this file exists in the repo, so read IC as a 2026-05 snapshot, not current signal.</div>';
+          }
+        }
+        host.innerHTML = staleNote + ''
           + '<table style="width:100%;border-collapse:collapse;font-size:0.86em">'
           +   '<thead><tr style="border-bottom:1px solid rgba(148,163,184,0.3);color:#94a3b8;text-align:left">'
           +     '<th style="padding:6px 10px">Class</th>'
@@ -1408,7 +1420,7 @@ a:hover { text-decoration: underline; }
           + '</div>';
       })
       .catch(function(){
-        host.innerHTML = '<div style="font-size:0.85em;color:#94a3b8;font-style:italic">Failed to load IC analysis data. The <code>strategy_ic_analysis.json</code> endpoint may be unreachable or the file may be missing. Check that it exists in <code>audit_dashboard/data/</code> and the server is running.</div>';
+        host.innerHTML = '<div style="font-size:0.85em;color:#94a3b8;font-style:italic">Could not render IC analysis (fetch failed or the response could not be parsed). The file itself is served at <code>data/strategy_ic_analysis.json</code> — this is not evidence that it is missing.</div>';
         if (summary) summary.innerHTML = '';
         if (meta) meta.textContent = '';
       });

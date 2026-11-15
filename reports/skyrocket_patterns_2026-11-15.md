@@ -8,7 +8,7 @@ Feature sources live this run: VIX regime **yes**, SEC filing recency **29 ticke
 
 | class | bars | tickers | base rate | median ATR% | median spike size |
 |---|---|---|---|---|---|
-| CRYPTO | 137073 | 8 | 13.68% | 0.835% | 1.25% |
+| CRYPTO | 137145 | 8 | 13.67% | 0.835% | 1.25% |
 | EQUITY | 143099 | 29 | 14.59% | 1.802% | 2.7% |
 | ETF | 44409 | 9 | 16.90% | 0.778% | 1.17% |
 
@@ -16,52 +16,58 @@ Feature sources live this run: VIX regime **yes**, SEC filing recency **29 ticke
 
 | feature | AUC | top-decile rate | bottom-decile | lift | coverage |
 |---|---|---|---|---|---|
-| atr_comp | 0.462 | 17.39% | 11.80% | 1.2x | 100% |
+| atr_comp | 0.462 | 17.39% | 11.77% | 1.2x | 100% |
 | bb_z | 0.476 | 16.78% | 12.68% | 1.16x | 100% |
-| donch_break | 0.520 | 16.56% | 13.36% | 1.14x | 100% |
+| donch_break | 0.520 | 16.56% | 13.35% | 1.14x | 100% |
 | vix_r1 | 0.480 | 16.02% | 12.05% | 1.1x | 82% |
-| vol_surge | 0.519 | 16.34% | 12.78% | 1.13x | 100% |
+| vol_surge | 0.520 | 16.34% | 12.76% | 1.13x | 100% |
 | vix_level | 0.512 | 16.98% | 12.71% | 1.17x | 82% |
 | filing_24h | 0.508 | 14.52% | 14.52% | 1.0x | 100% |
-| range_exp | 0.494 | 15.47% | 13.72% | 1.07x | 100% |
-| rsi | 0.506 | 16.38% | 13.62% | 1.13x | 100% |
-| sma_dist | 0.506 | 15.18% | 13.87% | 1.05x | 100% |
-| r4 | 0.505 | 15.44% | 12.89% | 1.06x | 100% |
-| gap | 0.497 | 16.24% | 11.57% | 1.12x | 100% |
+| range_exp | 0.494 | 15.47% | 13.71% | 1.07x | 100% |
+| rsi | 0.506 | 16.37% | 13.61% | 1.13x | 100% |
+| sma_dist | 0.505 | 15.17% | 13.87% | 1.04x | 100% |
+| r4 | 0.505 | 15.44% | 12.88% | 1.06x | 100% |
+| gap | 0.497 | 16.24% | 11.56% | 1.12x | 100% |
 | log_hrs_filing | 0.502 | 16.33% | 13.42% | 1.12x | 44% |
-| r24 | 0.501 | 14.92% | 14.01% | 1.03x | 100% |
-| streak | 0.501 | 15.16% | 14.12% | 1.04x | 100% |
+| streak | 0.502 | 15.15% | 14.12% | 1.04x | 100% |
+| r24 | 0.501 | 14.93% | 14.02% | 1.03x | 100% |
 | r1 | 0.500 | 15.12% | 13.12% | 1.04x | 100% |
 
 ## Named patterns (train = first 70% of time, test = last 30%)
 
 | pattern | signals | train precision | test precision | test lift | avg fwd test |
 |---|---|---|---|---|---|
+| VIX>25 + breakout | 246 | 17.61% | 24.14% | 1.8x | 1.04% |
 | filing in last 24h + breakout | 142 | 18.81% | 19.51% | 1.45x | -0.301% |
+| VIX>25 + oversold (RSI<30) | 1855 | 17.33% | 18.93% | 1.41x | 0.431% |
 | VIX > 25 (stressed regime) | 17182 | 15.26% | 18.61% | 1.39x | 0.41% |
+| VIX>25 + vol surge >1.5x | 3340 | 17.41% | 18.67% | 1.39x | 0.257% |
+| VIX>25 + squeeze | 4678 | 18.82% | 18.53% | 1.38x | 0.326% |
 | breakout + squeeze | 4205 | 17.34% | 17.92% | 1.33x | 0.131% |
-| oversold snap (RSI<30) | 19415 | 15.17% | 17.66% | 1.32x | 0.412% |
+| VIX rising (r1>0) + breakout | 2486 | 17.20% | 17.84% | 1.33x | -0.04% |
+| oversold snap (RSI<30) | 19415 | 15.16% | 17.69% | 1.32x | 0.412% |
 | 20-bar breakout | 8962 | 17.62% | 17.16% | 1.28x | 0.112% |
 | squeeze + volume surge | 15091 | 16.80% | 16.43% | 1.22x | 0.04% |
 | breakout + vol >1.5x | 3064 | 19.88% | 16.36% | 1.22x | 0.161% |
-| volatility squeeze (atr_comp<0.8) | 72741 | 17.01% | 16.22% | 1.21x | 0.011% |
+| volatility squeeze (atr_comp<0.8) | 72741 | 17.01% | 16.22% | 1.21x | 0.01% |
 | squeeze + breakout + RSI<70 | 5459 | 17.55% | 16.07% | 1.2x | 0.091% |
 | VIX falling (r1<0) + squeeze | 48150 | 16.44% | 16.08% | 1.2x | 0.035% |
-| vol surge >2x | 39976 | 16.18% | 14.72% | 1.1x | 0.044% |
-| filing in last 24h | 8272 | 16.93% | 14.79% | 1.1x | -0.161% |
+| vol surge >2x | 39976 | 16.17% | 14.72% | 1.1x | 0.044% |
+| filing in last 24h | 8272 | 16.92% | 14.81% | 1.1x | -0.162% |
 | range expansion >2x ATR | 20654 | 15.18% | 14.32% | 1.07x | 0.065% |
-| 3+ up bars in a row | 38532 | 15.84% | 13.40% | 1.0x | 0.021% |
-| RSI 50-70 trend | 138439 | 14.85% | 12.82% | 0.95x | -0.012% |
-| pullback in uptrend (r24>0, r1<-1%) | 13019 | 13.37% | 10.64% | 0.79x | -0.026% |
+| VIX calm (<18) + squeeze + breakout | 4068 | 17.24% | 14.38% | 1.07x | -0.003% |
+| 3+ up bars in a row | 38544 | 15.84% | 13.38% | 1.0x | 0.019% |
+| RSI 50-70 trend | 138459 | 14.85% | 12.81% | 0.95x | -0.012% |
+| pullback in uptrend (r24>0, r1<-1%) | 13019 | 13.36% | 10.66% | 0.79x | -0.029% |
 | gap up >1% | 7273 | 9.23% | 8.89% | 0.66x | 0.084% |
 
 ## Model ceiling (chronological split)
 
-- all features: test AUC **0.5549**, base 13.43%, top-1% precision **14.37%** (1.07x lift)
-- candle-only model: test AUC **0.5423** → catalyst/regime features +0.013 AUC
-- rows: 227172 train / 97409 test
+- all features: test AUC **0.5553**, base 13.42%, top-1% precision **14.39%** (1.07x lift)
+- candle-only model: test AUC **0.5426** → catalyst/regime features +0.013 AUC
+- rows: 227256 train / 97397 test
 
-weights: `r1` -0.05, `r4` -0.01, `r24` -0.04, `vol_surge` +0.08, `range_exp` -0.05, `atr_comp` -0.13, `donch_break` +0.10, `rsi` -0.01, `sma_dist` +0.02, `bb_z` +0.02, `gap` +0.03, `streak` +0.00, `vix_level` +0.08, `vix_r1` -0.08, `log_hrs_filing` -0.03, `filing_24h` +0.03
+weights: `r1` -0.05, `r4` -0.01, `r24` -0.04, `vol_surge` +0.08, `range_exp` -0.04, `atr_comp` -0.13, `donch_break` +0.10, `rsi` -0.01, `sma_dist` +0.02, `bb_z` +0.02, `gap` +0.03, `streak` +0.00, `vix_level` +0.08, `vix_r1` -0.08, `log_hrs_filing` -0.03, `filing_24h` +0.03
 
 ## Live watchlist (latest bar scored by that model)
 
@@ -77,7 +83,7 @@ weights: `r1` -0.05, `r4` -0.01, `r24` -0.04, `vol_surge` +0.08, `range_exp` -0.
 | QQQ | ETF | 0.174 | +0.3% | -0.2% | 0.91x | 1.05 | 43 | -2.60% | 19.7 | — |
 | ABNB | EQUITY | 0.173 | +0.4% | -2.2% | 0.70x | 1.01 | 58 | -0.80% | 19.7 | 192 |
 | GME | EQUITY | 0.173 | -0.2% | +1.6% | 1.01x | 0.91 | 62 | -1.60% | 19.7 | 600 |
-| SNAP | EQUITY | 0.171 | -0.3% | +4.2% | 0.52x | 0.92 | 53 | -3.20% | 19.7 | 192 |
+| SNAP | EQUITY | 0.170 | -0.3% | +4.2% | 0.52x | 0.92 | 53 | -3.20% | 19.7 | 192 |
 | ARKK | ETF | 0.170 | +0.4% | -5.3% | 2.08x | 1.11 | 37 | -6.30% | 19.7 | — |
 
 ## Options flow — CURRENT SNAPSHOT ONLY (not backtested)

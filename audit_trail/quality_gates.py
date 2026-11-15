@@ -8893,7 +8893,16 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
         os.environ.get("FOREX_COPYTRADER_ENABLE", "0") == "1"
         and _forex_bypass_src == "multi_asset_copytrader"
     )
-    if str(asset_class).upper() == "FOREX" and _ae_config.FOREX_HARD_DISABLE and not _forex_copytrader_exempt:
+    # 2026-11-15: read the switch LIVE (env first, config value as the default).
+    # Reading only _ae_config.FOREX_HARD_DISABLE meant `FOREX_HARD_DISABLE=1` set after
+    # import did nothing — a kill-switch that silently ignored its own env var. Caught by
+    # tests/test_quality_gates.py::TestForexCopytradeBypas (reason stayed '' because the
+    # gate never ran). Config default is "0"/OFF since the 2026-06-05 re-enable.
+    _forex_hard_disable = _truthy(
+        os.environ.get("FOREX_HARD_DISABLE"),
+        "1" if _ae_config.FOREX_HARD_DISABLE else "0",
+    )
+    if str(asset_class).upper() == "FOREX" and _forex_hard_disable and not _forex_copytrader_exempt:
         pick["_hf_quality_gate_reason"] = "ns_e_forex_hard_disable"
         # F-003: emit INFO (not DEBUG) so FOREX hard-disable appears in the audit trail.
         # Ticket: MASTER_ACTION_PLAN_2026-05-18 F-001/F-003.
