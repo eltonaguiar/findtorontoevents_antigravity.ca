@@ -106,7 +106,7 @@ _sanitize() {
 _SHALLOW_FILE="$(git rev-parse --git-dir 2>/dev/null)/shallow"
 if [ -f "$_SHALLOW_FILE" ]; then
     echo "  (shallow repo — deepening history for pull/rebase)"
-    if ! timeout "${DEEPEN_TIMEOUT}" git fetch --no-recurse-submodules --deepen=150 origin main 2>&1 | _sanitize; then
+    if ! timeout "${DEEPEN_TIMEOUT}" git fetch --no-recurse-submodules --filter=blob:none --deepen=150 origin main 2>&1 | _sanitize; then
         echo "  FATAL: deepen fetch timed out after ${DEEPEN_TIMEOUT}s — shallow repo cannot rebase"
         echo "  Falling back to merge strategy (preserves commit, no rebase needed)"
         git config pull.rebase false 2>/dev/null || true
