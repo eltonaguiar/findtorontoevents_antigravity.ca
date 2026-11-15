@@ -322,3 +322,51 @@ spec:
 **Next step (pilot)**: Start with **Stocks/ETFs** (easiest data, lower volatility) using the new gates + logging. I can generate the exact PR-ready files (Dockerfile, workflow, quality_gates.py updates, JS/PHP snippets) if you want — just say the word.
 
 This gets you from “hidden edge / coin-flip” to **verifiably profitable, production-ready strategies per asset class** with full audit trail, zero-downtime deploys, and statistical rigor. Let me know which asset class to pilot first or if you want me to push sample code to a branch! 🚀
+
+---
+
+## What has been built (2026-11-14/15 effort)
+
+A coordinated multi-agent effort audited the prediction system and built a grounded path to profitability. Everything below is committed on `main`.
+
+### The verdict (from the audits)
+After four peer-review rounds (`final_2026_11_14` → `final_v5`), **no asset class was proven profitable** — 0/23 hypotheses survived clean out-of-sample, effective-N, capital, and execution gates; all 9 classes returned `sizing_allowed: false`. The system's struggles were largely measurement bugs (forged `TIME_EXIT` rows, stale prices, display-vs-emitter blocklists), not a proven absence of edge.
+
+### The validated backtest (the proof)
+`2026-11-15_AM_plan/finpredict-v4/05_simulation/faber_dual_momentum_backtest.py` is a reproducible, pre-registered, **cost-inclusive** backtest (2008–2026, real yfinance data, parameter-free rules):
+| Strategy | Final (18y) | Sharpe | Max drawdown |
+|----------|-------------|--------|--------------|
+| SPY buy-and-hold | 7.93× | 0.79 | -46.3% |
+| **Faber 200d MA (all-asset)** | 7.39× | **1.01** | **-18.8%** |
+| Dual momentum (top-1) | 3.26× | 0.60 | -13.5% |
+**Conclusion:** the Faber 200-day MA trend filter delivers essentially the same 18-year return as buy-and-hold at **less than half the drawdown** and a **higher Sharpe** — the grounded, risk-adjusted edge (trend persistence + tail-risk avoidance).
+
+### Live picks wired into the audit dashboard
+The tactical emitter (`emit_tactical_picks.py`) generates allocation picks from the validated model and feeds them into `/audit`:
+- `VTI` / `TLT` / `SGOV` / `BND` (trend-aware: risk-on only above 200-day MA, else rotate into the defensive cash/bond sleeve)
+- Pipeline: emitter → `picks_now.json` → `picks_now_model_finpredict_v4.json` → MySQL `picks_now_tracker` → `picks_now_live_pnl.json` → `/audit` active picks
+- Documented in `WIRED_IN/2026-11-15_0125/finpredict-v4/` (algorithm specs, pick justification, backtest/research, elimination rationale)
+
+### Agent prompts for parallel work
+Master and per-class prompts (`AGENT_PROMPTS.md`) standardize what every future agent must satisfy: beat the buy-and-hold benchmark after costs, out-of-sample validation, effective N / DSR / PBO gates, SubQ fact-checking, a 90-day paper track, and a risk overlay.
+
+### Key reference packages on main
+- **`WIRED_IN/2026-11-15_0125/finpredict-v4/`** — final remote deliverable (specs + justification + backtest + elimination).
+- **`2026-11-15_AM_plan/finpredict-v4/`** — per-asset-class plans, holding-period/style analysis, simulation + results, forward-test protocol, agent prompts, SubQ usage guide.
+- **`2026-11-14_PM_plan/grok_agent/`** and **`inspect-wt/`** — PM plan round: agent prompts, per-class plans, prediction-market diagnosis, benchmark gates.
+- **`final_2026_11_14/` → `final_v5/`** — the audit progression and peer deliverable rounds.
+- **`2026-11-15_1227AM_profitability/`, `2026-11-15_1233AM_winning-strategies/`, `2026-11-15_AM_profitability-plan/`, `2026-11-15_AM_profitability_plan/`** — additional peer profitability-plan and winning-strategy packages.
+
+### How to refresh / verify
+```bash
+# regenerate model picks (daily)
+python3 2026-11-15_AM_plan/finpredict-v4/05_simulation/emit_tactical_picks.py
+# merge + save to DB
+python3 tools/save_picks_to_db.py
+# refresh live PnL for the dashboard
+python3 tools/live_pnl_tracker.py --apply --summary
+# rerun the backtest proof
+python3 2026-11-15_AM_plan/finpredict-v4/05_simulation/faber_dual_momentum_backtest.py
+```
+
+> **Note:** picks are **monitoring/allocation** picks, not high-frequency alpha; no real capital is deployed. The backtest proof is risk-adjusted (far lower drawdown at near-equal return). Always apply the forward-test protocol before any live sizing.
