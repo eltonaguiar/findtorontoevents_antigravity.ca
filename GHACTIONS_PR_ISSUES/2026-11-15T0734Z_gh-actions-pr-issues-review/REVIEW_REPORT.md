@@ -161,12 +161,25 @@ Closed **34 stale PRs** (#562–#766) with a pointer to this review; superseded 
 
 Verified: all changed workflows parse with `yaml.safe_load`; `tools/run_verified_pilots_daily.py` passes `py_compile`.
 
-### 9.3 Failing jobs intentionally NOT forced green
-| Job | Why left failing | Owner action |
+### 9.3 Failing jobs intentionally NOT forced green| Job | Why left failing | Owner action |
 |---|---|---|
 | QA Market Validation | 191 critical flags are **real** (93 UNPRICED blank fields + 98 FOREX MISMATCH). Suppressing would let unvalidated PnL through. | Fix producer (blank `current_price`/`pnl_pct`) + reconcile FOREX quote source. See FIX-006. |
 | Verified pilot daily | One of 17 paper-pilot sub-steps returns non-zero (real signal, `ok=False`). | Use the new `failed_steps` field to identify and fix the failing pilot. |
 | Mirror | FTP flakiness on 50webs/GoDaddy (environmental). | Infra/retry work; cert verification also disabled (`ssl:verify-certificate no`). |
 | CI Tests (branch) | Belongs to a feature branch PR, not main. | Addressed in that PR. |
+
+## 10. Remaining & Closed-Today Issue Triage (2026-11-15 follow-up #2)
+
+All 7 remaining open issues plus the 40+ `backup-verify` issues closed today were investigated.
+
+| Issue | Finding | Action |
+|---|---|---|
+| #764 Security reminder (Nov) | Current month — correct to stay open | Kept |
+| #695, #685, #675, #668 Security reminders (Jul–Oct) | Superseded; workflow never closed prior months | Closed + **FIX-008** auto-closes prior months going forward |
+| #748 resolver `exit_price=0.0` | Live payload (generated_at 2026-11-15T07:54Z) has **0** `exit_price==0.0` rows across 3,500 `recent_closed` (was 38). `_priceless_close` present on main L276/L1589. | Closed with evidence. Residual: 49 `entry==exit` TIME_EXIT flat closes tracked separately. |
+| #654 event gap scan DEGRADED | No GHA workflow invokes `scan_event_gaps.py`; the 403s were an external Claude-Web container egress, not GHA. `scrape-events.yml` runs green 5/5 from GHA. Tool already supports `--baseline-file`. | Closed with evidence + recommendation to add a weekly GHA gap-scan job if desired. |
+| #606–#787 backup-verify (closed today) | Closed, but the underlying check was still failing on a **gitignored** file (`dashboard_data.json`). | **FIX-007** makes the check skip gitignored/generated files, fixing the false failure (not just the spam). |
+
+New fixes: **FIX-007** (backup-verify false failure), **FIX-008** (secret-reminder auto-close).
 
 *End of report.*

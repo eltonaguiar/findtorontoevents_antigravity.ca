@@ -59,11 +59,25 @@ jobs:
           failures = []
           results = {}
 
+          import subprocess
+          def _is_gitignored(path) -> bool:
+              """True if path is .gitignore'd (generated at runtime, not committed)."""
+              try:
+                  r = subprocess.run(["git", "check-ignore", "-q", str(path)],
+                                     capture_output=True)
+                  return r.returncode == 0
+              except Exception:
+                  return False
+
           # ── Query 1: trading_picks proxy (dashboard_data.json) ──────────
           DD = REPO / "audit_dashboard" / "data" / "dashboard_data.json"
           if not DD.exists():
-              failures.append("dashboard_data.json NOT FOUND")
-              results["trading_picks_count"] = "ERROR"
+              if _is_gitignored(DD):
+                  print("[backup-verify] SKIP dashboard_data.json (gitignored, generated at runtime — not expected in a fresh checkout)")
+                  results["trading_picks_count"] = "SKIP"
+              else:
+                  failures.append("dashboard_data.json NOT FOUND")
+                  results["trading_picks_count"] = "ERROR"
           else:
               try:
                   data = json.loads(DD.read_text(encoding="utf-8"))
@@ -111,6 +125,9 @@ jobs:
           for f in critical_files:
               p = REPO / f
               if not p.exists():
+                  if _is_gitignored(p):
+                      print(f"[backup-verify] SKIP (gitignored/generated, not in checkout): {f}")
+                      continue
                   failures.append(f"Critical file missing: {f}")
               elif p.stat().st_size == 0:
                   failures.append(f"Critical file is empty (0 bytes): {f}")
