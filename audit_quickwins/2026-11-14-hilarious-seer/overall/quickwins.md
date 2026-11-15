@@ -94,3 +94,58 @@ Peer published 21 files across 9 folders: 7 per-class plans, style analysis, Sub
 - **CRYPTO positions**: conditional on stop-fill fix forward evidence only
 - **Data quality**: PnL unit contract fix is absolute P0; 37/49 closed PnL=0% are FABRICATED_FLAT
 - **No capital deployment** until 90-day paper PF>1.5 post-costs with benchmark proof and DSR≥0.95
+
+---
+
+## Cron-update 2026-11-15T02:00Z — childlike-airport infrastructure + inspect-wt WIRED_IN reviewed
+
+### childlike-airport infrastructure (commit `9aaec03b`)
+Peer added 7 files: forward-test tracker (CSV-based, K1-K8 kill / P1-P7 promote signals), QA validator (5 checks, fail-closed gates, HTML dashboard), MF screener (8 hard gates, FXAIX/SWTSX pass), simulation monitor (yfinance live-price overlay).
+
+**Convergence:**
+- MF screener hard gates exactly match WIRED_IN specs (expense ratio, load, AUM, turnover, tracking error, track record, NAV freshness)
+- QA validator PnL=0 checks and blank-field flags align with our data-quality blockers
+
+**Conflict — MEDIUM-HIGH:**
+- **Tracker proliferation:** Three independent forward-test trackers now exist (JSON-based in cross_aggregation/, SQLite-based in incubator/testing/, CSV-based in alpha_engine/data/forward_testing/). Risk of divergent state and unclear ownership.
+- **QA validator overlap:** Blank-field checks, PnL=0 validation, and reasonability checks overlap with existing audit_trail/, ml_gatekeeper/, and alpha_engine/forward_validator.py infrastructure.
+- **Generated artifacts in source tree:** mf_screening_report.html and mf_screening_results.json committed under alpha_engine/data/forward_testing/ — should live in audit_dashboard/data/ or build output directory.
+- **Action:** Consolidate trackers into one canonical system or clearly demarcate ownership. Integrate QA gates into existing pick pipeline rather than maintaining separate validator.
+
+### inspect-wt WIRED_IN (eltonaguiar, commit `a05ebf48`)
+Peer published WIRED_IN folder with algorithm specs, pick justifications, backtest research, elimination rationale. Two deployable candidates under pre-registered forward gates.
+
+**Convergence (strong agreement):**
+- Core verdict identical: 0/9 money-ready, only passive beta honest
+- CRYPTO conditional on fill fidelity; FOREX blocked; BOND/COMMODITY blocked
+- Data quality as root blocker (resolution_method=None on 3,500 closed rows)
+- Variant C peer result (PF 1.26, p<0.0013) acknowledged by both
+
+**Key additions from inspect-wt we should merge:**
+1. **MF/ETF allocation sleeve specification** — monthly dual-momentum rotation (GTAA/Faber family), 12-1 trailing return, absolute-momentum filter, inverse-vol weights, 0.05% one-way cost + 0.15% MF drag. More sophisticated than our simple VTI/BND 60/40.
+2. **Variant C integration as forward pilot** — ¼-Kelly sizing (2.46%/trade), monthly PF tracking, pre-registered kill criteria. Bootstrap P(total>0)=91.6%, maxDD −4.4% at sizing.
+3. **Bonferroni-corrected randomization null** — explicit 646-strategy universe, ~32 expected false positives at p=5%, 0/800 randomization test (p<0.0013). Stricter than our PBO/SPA/FDR gates.
+4. **Tri-benchmark certification rule** — must beat SPY AND beat 60/40 on Calmar AND pass absolute gate. Prevents "low volatility" strategies that underperform B&H from advancing.
+5. **Pre-registered trial-ID discipline** — B8 per class, one pre-registered trial only for EQUITY RSI(2) short MR.
+
+**Conflict — resolvable:**
+- Their dual-momentum is our "failed" Faber test reframed vs 60/40 (beats on Calmar/drawdown, loses to SPY in raw return). Same family, different framing.
+- Their Variant C is our peer research promoted to pilot. They treat statistical survival as enough to run a pilot; we treat n<100 as blocking.
+
+### childlike-airport WIRED_IN reconciliation (commit `216763b0`)
+Peer added clarification that VTI/TLT/SGOV/BND picks are allocation/beta (risk premium capture, cost discipline), not proven alpha. Faber backtest is risk-adjusted (Sharpe 1.01 vs 0.79, maxDD −18.8% vs −46.3%) not absolute. Monitoring-only, no capital deployed.
+
+**Verdict:** This reconciliation partially addresses our UNVERIFIED flag on Sharpe 1.01 but does not resolve the "lose to B&H in raw return" gate violation. Tag remains: risk-overlay only.
+
+---
+
+## Current unified verdict (all peers + WIRED_IN + infrastructure)
+- **0/166 money-ready, 0/9 strategies, 0/42 forward-test candidates** — no statistically significant edge proven anywhere
+- **Faber dual-momentum claim (Sharpe 1.01) is UNVERIFIED** — period/universe dependent, loses to B&H in raw return; risk-overlay only
+- **Only viable path**: passive beta (VTI/BND 60/40 or MF/ETF monthly rotation sleeve) — captures equity risk premium, not alpha
+- **EQUITY active edge: CLOSED** (post-#773) — one pre-registered trial only
+- **FOREX: bounded 2-mutation protocol** — kill is a deliverable
+- **CRYPTO positions**: conditional on stop-fill fix forward evidence only
+- **Tracker proliferation risk:** 3 independent forward-test trackers — must consolidate
+- **Data quality**: PnL unit contract fix is absolute P0; 37/49 closed PnL=0% are FABRICATED_FLAT
+- **No capital deployment** until 90-day paper PF>1.5 post-costs with benchmark proof and DSR≥0.95
