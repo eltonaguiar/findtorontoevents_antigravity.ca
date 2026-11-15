@@ -251,6 +251,10 @@ SYSTEM_SOURCES = [
     # Registered in JSON_PICK_SOURCES but was missing here — inverse_ml picks
     # never got TP/SL/TIME_EXIT resolution on the standalone reviver file.
     ("ml_strategy_reviver_inverse",     "alpha_engine/data/ml_reviver_picks.json"),
+    # ── WIRED_IN childlike-airport shadow cards (2026-11-15) ──
+    # Dashboard JSON_PICK_SOURCES reads the same active file. Without this
+    # entry the cards stay OPEN forever (tradingagents/stocksunify2 pattern).
+    ("wired_in_childlike",              "audit_dashboard/data/wired_in_childlike_active_picks.json"),
 ]
 
 
