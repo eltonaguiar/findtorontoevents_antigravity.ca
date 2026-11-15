@@ -55,7 +55,7 @@ DEFAULT_PLAN = {
         # pre-registered forward clock instead of another retrospective look.
         "vwap-reversion-scout": {
             "class": "EQUITY", "hold_type": "long", "trades_per_year": 48,
-            "start": "2026-11-15", "backtest_max_dd": None,
+            "start": "2026-11-15", "backtest_max_dd": None, "auto_sync": True,
             "thesis": "Price >2% below its 20d VWAP with RSI<40 and the close in the upper half "
                       "of the day's range: institutional cost-basis reversion on liquid US names. "
                       "Exit on TP/SL or a 168h (7-day) time stop.",
@@ -110,10 +110,130 @@ def cmd_log(a):
            "hold_days": (d1 - d0).days,
            "ret_pct": round((a.exit / a.entry - 1) * 100, 4) if a.side == "long"
                       else round((a.entry / a.exit - 1) * 100, 4),
-           "thesis": a.thesis or "", "logged_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+           "thesis": a.thesis or "", "pick_id": getattr(a, "pick_id", None), "source": "manual",
+           "logged_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    _append(rec)
+    print(f"logged {a.strategy} {a.symbol}: pnl={pnl:+.2f} hold={rec['hold_days']}d")
+
+
+def _append(rec):
     with open(LEDGER, "a") as f:
         f.write(json.dumps(rec) + "\n")
-    print(f"logged {a.strategy} {a.symbol}: pnl={pnl:+.2f} hold={rec['hold_days']}d")
+
+
+def _parse_ts(s):
+    s = str(s or "").strip()
+    if not s:
+        return None
+    try:
+        v = datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except ValueError:
+        try:
+            v = datetime.strptime(s[:10], "%Y-%m-%d")
+        except ValueError:
+            return None
+    if v.tzinfo:
+        v = v.astimezone(timezone.utc).replace(tzinfo=None)
+    return v
+
+
+def _ledger_keys(trades):
+    """Idempotency keys: the pick id when present, plus a composite fallback so a
+    re-run after losing the id column still cannot double-count a trade."""
+    keys = set()
+    for t in trades:
+        if t.get("pick_id"):
+            keys.add("id:" + str(t["pick_id"]))
+        keys.add("k:%s|%s|%s|%s|%s" % (t.get("strategy"), t.get("symbol"), t.get("side"),
+                                       t.get("opened"), t.get("closed")))
+    return keys
+
+
+def cmd_sync(a):
+    """Append CLOSED picks from the live dashboard payload into the ledger so the
+    forward clock fills itself.
+
+    PRE-REGISTRATION GUARD (structural, not a flag): a pick is admitted only if it
+    CLOSED on or after that strategy's registered start date. Every pick that
+    produced the motivating prior closed before registration, so it cannot enter
+    the ledger. The sample that generated a hypothesis is therefore never allowed
+    to confirm it, and nobody has to remember not to backfill.
+    """
+    _ensure()
+    plan = load_plan()
+    if a.strategy:
+        strategies = [a.strategy]
+    else:
+        strategies = [k for k, v in plan["strategies"].items() if v.get("auto_sync")]
+    if not strategies:
+        print("no strategies registered with auto_sync; pass --strategy <name>")
+        return
+    if not os.path.exists(a.dashboard):
+        print(f"dashboard payload not found: {a.dashboard}")
+        return
+    payload = json.load(open(a.dashboard))
+    rows = ((payload.get("picks") or {}).get("recent_closed")) or []
+    existing = _ledger_keys(load_trades())
+    print(f"sync {a.dashboard} ({len(rows)} closed rows, generated_at {payload.get('generated_at')})")
+
+    total_added = 0
+    for k in strategies:
+        cfg = plan["strategies"].get(k, {})
+        since = _parse_ts(a.since or cfg.get("start") or plan.get("created"))
+        added = dupe = early = incomplete = 0
+        for p in rows:
+            if (p.get("strategy") or "") != k:
+                continue
+            closed = _parse_ts(p.get("closed_at") or p.get("resolved_at"))
+            opened = _parse_ts(p.get("timestamp") or p.get("entry_time"))
+            e, x = p.get("entry_price"), p.get("exit_price")
+            side = (p.get("direction") or "").strip().lower()
+            side = "long" if side in ("buy", "long") else "short" if side in ("sell", "short") else ""
+            if not (closed and opened and e and x and e > 0 and x > 0 and side):
+                incomplete += 1
+                continue
+            if since and closed < since:
+                early += 1
+                continue
+            key_id = ("id:" + str(p["id"])) if p.get("id") else None
+            key_c = "k:%s|%s|%s|%s|%s" % (k, p.get("symbol"), side, opened.date(), closed.date())
+            if (key_id and key_id in existing) or key_c in existing:
+                dupe += 1
+                continue
+            e, x = float(e), float(x)
+            qty = a.notional / e
+            pnl = (x - e) * qty if side == "long" else (e - x) * qty
+            rec = {
+                "strategy": k, "symbol": p.get("symbol"), "side": side,
+                "entry": e, "exit": x, "qty": round(qty, 8), "fees": 0.0,
+                "pnl": round(pnl, 6),
+                "opened": str(opened.date()), "closed": str(closed.date()),
+                "hold_days": (closed.date() - opened.date()).days,
+                "ret_pct": round((x / e - 1) * 100 if side == "long" else (e / x - 1) * 100, 4),
+                "thesis": "auto-synced from dashboard: %s" % (p.get("exit_reason") or "?"),
+                "pick_id": p.get("id"), "source": "dashboard_sync",
+                "asset_class": (p.get("asset_class") or "").upper(),
+                "notional_usd": a.notional,
+                "cost_model": "none - dashboard payload carries no fee field; PF here is GROSS",
+                "logged_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            }
+            if a.dry_run:
+                if added < 5:
+                    print(f"   would add {p.get('symbol'):9} {side:5} {rec['opened']} -> {rec['closed']} "
+                          f"pnl={pnl:+.2f} ({p.get('exit_reason')})")
+                added += 1
+            else:
+                _append(rec)
+                added += 1
+            existing.add(key_c)
+            if key_id:
+                existing.add(key_id)
+        total_added += added
+        print(f"  {k}: {'would append' if a.dry_run else 'appended'} {added} | "
+              f"closed before registration {early} | duplicate {dupe} | incomplete {incomplete}")
+    print(f"  total {'would append' if a.dry_run else 'appended'}: {total_added}")
+    if not a.dry_run and total_added:
+        print(f"  ledger now {len(load_trades())} rows -> {LEDGER}")
 
 
 def wilson_lower(w, n, z=1.645):
@@ -254,11 +374,19 @@ def main():
     lg.add_argument("--qty", type=float, default=1.0); lg.add_argument("--fees", type=float, default=0.0)
     lg.add_argument("--opened", required=True); lg.add_argument("--closed", required=True)
     lg.add_argument("--thesis", default="")
+    sy = sub.add_parser("sync")
+    sy.add_argument("--dashboard", default="audit_dashboard/data/dashboard_data.json")
+    sy.add_argument("--strategy", default="", help="default: every plan strategy with auto_sync")
+    sy.add_argument("--since", default="", help="override the pre-registration date (use with --dry-run)")
+    sy.add_argument("--notional", type=float, default=10000.0,
+                    help="notional per trade so ledger pnl stays in dollars like manual log entries")
+    sy.add_argument("--dry-run", action="store_true")
     sub.add_parser("status"); sub.add_parser("selftest")
     a = ap.parse_args()
     if a.cmd == "init":
         _ensure(); print(f"initialised {PLAN} and {LEDGER}")
     elif a.cmd == "log": cmd_log(a)
+    elif a.cmd == "sync": cmd_sync(a)
     elif a.cmd == "status": cmd_status(a)
     elif a.cmd == "selftest": sys.exit(cmd_selftest(a))
 

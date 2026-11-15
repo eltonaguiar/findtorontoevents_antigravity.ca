@@ -72,21 +72,33 @@ promoted earlier is being promoted on narrative.
 
 ## 4. How a trade enters the ledger
 
-One line per **closed** trade, never backfilled and never edited:
+One line per **closed** trade, never edited. Two entry paths:
 
 ```bash
+# (a) automatic: append picks that closed after registration
+python3 tools/forward_tracker.py sync --dry-run   # preview (writes nothing)
+python3 tools/forward_tracker.py sync             # append newly-closed picks
+
+# (b) manual
 python3 tools/forward_tracker.py log \
   --strategy vwap-reversion-scout --symbol QQQ --side long \
   --entry 604.12 --exit 611.40 --qty 1 --fees 0.72 \
   --opened 2026-11-16 --closed 2026-11-20 \
   --thesis "3.1% below 20d VWAP, RSI 34, close in upper range"
+
 python3 tools/forward_tracker.py status      # verdict per strategy
 python3 tools/forward_tracker.py selftest    # 8/8 rule cases
 ```
 
-The ledger (`state/forward_test/ledger.jsonl`) is empty as of registration — **nothing has been
-backfilled from the 28 historical picks**, because seeding a forward test with the sample that
-motivated it destroys the only property that makes it a forward test.
+**Sync cannot backfill, by construction.** A pick is admitted only if it closed on or after the
+strategy's registered `start` (2026-11-15). At registration the ledger is empty and `sync` reports
+`would append 0 | closed before registration 29` — the 29 picks that produced the prior are excluded
+because excluding them is the only thing that makes this a forward test. Idempotent by pick id plus a
+`strategy|symbol|side|opened|closed` composite, so re-runs cannot double-count.
+
+Synced rows carry `source: dashboard_sync`, the pick id, and an explicit `cost_model: none` — the
+dashboard payload has no fee field, so **forward PF from synced rows is gross** while the backtest
+assumed 6 bps/side. Read the eventual verdict with that gap in mind.
 
 ---
 
