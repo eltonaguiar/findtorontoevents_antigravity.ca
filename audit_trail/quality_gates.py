@@ -6780,6 +6780,41 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
     # forward-n without sizing or dashboard surfacing (enforce_sizing_override + display gate).
     tag_rsi5070_shadow(pick)
 
+    # ── ETF_SHORT_CLASS_BLOCK (2026-11-15) ──────────────────────────────────
+    # Deliberately FIRST in the gate chain: a later placement was unreachable for
+    # real picks because an earlier gate rejected them before this check ran
+    # (the first version of this gate silently never fired - caught by its test).
+    # Evidence: ETF SHORT n=75 WR 10.7% mean -2.56%/trade PF 0.09, inverted in
+    # BOTH time halves (8.1% / 13.2%). ETF LONG (WR 84.5% PF 8.28) is untouched.
+    # Kill-switch: ETF_SHORT_GATE_ENABLED=0. Fail-open on any error.
+    try:
+        _etf_ac = str(pick.get("asset_class", "") or "").upper()
+        if _etf_ac == "ETF" and os.environ.get("ETF_SHORT_GATE_ENABLED", "1") not in (
+            "0", "false", "FALSE", "False",
+        ):
+            from alpha_engine.config import ETF_BLOCKED_DIRECTIONS as _etf_blocked
+            _etf_measure = bool(
+                pick.get("forward_test_only") in (True, 1, "1", "true", "True")
+                or pick.get("forward_observation")
+                or pick.get("paper_pilot")
+                or pick.get("_monitor_mode")
+            )
+            _etf_dir = str(pick.get("direction") or pick.get("signal_type") or "").upper().strip()
+            if _etf_dir in ("BUY", "BUY_LONG"):
+                _etf_dir = "LONG"
+            elif _etf_dir in ("SELL", "SELL_SHORT"):
+                _etf_dir = "SHORT"
+            if not _etf_measure and _etf_dir in _etf_blocked:
+                pick["_hf_quality_gate_reason"] = "etf_short_class_block"
+                logger.info(
+                    "ETF_SHORT_CLASS_BLOCK: direction=%s rejected "
+                    "(symbol=%s strategy=%s; class WR 10.7%% n=75 PF 0.09)",
+                    _etf_dir, pick.get("symbol", "?"), pick.get("strategy", "?"),
+                )
+                return False
+    except Exception:
+        pass  # fail-open: never block picks on gate error
+
 
     # ── M-110: Pick Lifecycle Logger — entry scan (fail-soft, 2026-05-18) ──
     # Assigns a stable pick_id to every pick entering passes_active_gate().
@@ -10157,6 +10192,7 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
         pick["_pcg5_gates_triggered"] = _pcg5_shadow_result.get("gates_triggered", [])
     except Exception:
         pass  # fail-open: shadow only
+
 
     # ── M-042: COMMODITY SHORT-only gate (2026-05-17) ──────────────────────────
     # SHORT-only: PF=2.10/WR=58.06% (n=62) vs base PF=1.92/WR=55.22% (n=67).

@@ -5806,6 +5806,25 @@ function renderSummary() {
         tip: 'Last 100 closed trades compounded equal-weight, ±10% per-trade cap. Bounded headline metric for recent performance. (summary.total_pnl_pct_compounded_rolling_100)'
       };
     })(),
+    // 2026-11-15: whole-ledger compound rendered next to the rolling-100 headline,
+    // so one bad week can never read as "this system never made money".
+    (function() {
+      var v = s.total_pnl_pct_compounded_ew;
+      var has = (v !== null && v !== undefined && !Number.isNaN(v));
+      var r100 = s.total_pnl_pct_compounded_rolling_100;
+      var r100ok = (r100 !== null && r100 !== undefined && !Number.isNaN(r100));
+      var gap = (has && r100ok) ? (r100 - v) : null;
+      return {
+        label: 'Whole ledger',
+        value: has ? fmtPct(v) : '\u2014',
+        cls: has ? (v >= 0 ? 'positive' : 'negative') : '',
+        tip: 'Equal-weight geometric compound of EVERY capped closed trade, all-time.\n\n'
+          + 'Read this against Rolling 100 (the bounded headline, last 100 trades): a system whose whole-ledger '
+          + 'compound is positive while Rolling 100 is deeply negative is having a bad stretch, not proving it never worked.\n\n'
+          + (gap != null ? 'Rolling-100 minus whole-ledger: ' + fmtPct(gap) + '\n\n' : '')
+          + 'Source: summary.total_pnl_pct_compounded_ew'
+      };
+    })(),
     (function() {
       var v = s.total_pnl_pct_geomean_annualized;
       var has = (v !== null && v !== undefined && !Number.isNaN(v));
