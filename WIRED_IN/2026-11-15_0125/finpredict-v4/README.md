@@ -14,6 +14,7 @@
 | `pick_justifications/` | `PICK_JUSTIFICATION.md` | Why these picks / asset classes |
 | `backtest_research/` | `BACKTEST_AND_RESEARCH.md` | What was backtested/researched |
 | `elimination_rationale/` | `ELIMINATION_RATIONALE.md` | How the others were eliminated |
+| root | `RECONCILING_PICKS_VS_PROVEN.md` | Explains why picks can be emitted even though no asset class is *proven* profitable (beta vs alpha) |
 
 ---
 
