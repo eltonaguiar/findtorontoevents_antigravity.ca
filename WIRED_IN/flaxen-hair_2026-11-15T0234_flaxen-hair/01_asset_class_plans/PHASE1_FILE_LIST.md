@@ -1,41 +1,38 @@
 # PHASE 1 — File & Folder List for Sub-Agent Context
 
+**Worktree:** flaxen-hair_2026-11-15T0234_flaxen-hair  
 **Purpose:** Give sub-agents a head start by pointing them to exact files and folders to read first, so they don't waste time discovering the repository structure.
-
-**Generated:** 2026-11-15T0234Z  
-**Root:** `/home/eaguiar2015/findtorontoevents_antigravity.ca/.kilo/worktrees/flaxen-hair/`
 
 ---
 
-## TIER 1 — CRITICAL (Read First — These Contain Core Data)
+## TIER 1 — CRITICAL (Read first — these contain the core data)
 
 | # | File Path | Why It Matters |
 |---|-----------|----------------|
 | 1 | `multi_asset/data/multi_asset_picks.json` | 41 active picks, all `forward_test_only=true`, `pnl_pct=null`. No live PnL exists yet. |
 | 2 | `multi_asset/data/multi_asset_closed.json` | 93 closed picks (~8 months old, dated 2026-03-11 to 2026-03-13). Mixed PnL units (ratio vs percent ×100). Contains duplicate pick IDs. |
-| 3 | `multi_asset/data/institutional_picks.json` | 22 picks, all OPEN, dated 2026-04-03 (~7.5 months old). All stale. All `forward_test_only=true`, `pnl_pct=null`. |
+| 3 | `multi_asset/data/institutional_picks.json` | 22 picks, all OPEN, dated 2026-04-03 (~7.5 months old). All stale, never resolved. All `forward_test_only=true`, `pnl_pct=null`. |
 | 4 | `multi_asset/data/institutional_closed.json` | 23 closed picks, mixed PnL units, stale (~8 months old). |
 | 5 | `alpha_engine/risk_qa_validator.py` | QA validation framework — PnL=0% detection, blank field flags, stale data detection. |
 | 6 | `alpha_engine/data/forward_testing/forward_tracker.py` | Forward-test tracker with K1–K8 kill signals and P1–P7 promote signals. Currently empty (no trades logged yet). |
-| 7 | `alpha_engine/data/mutual_fund_metadata_sample.json` | Sample mutual fund metadata (7 funds) — reference for building mutual fund coverage. |
 
 ---
 
-## TIER 2 — HIGH PRIORITY (Read Second — Strategy Definitions)
+## TIER 2 — HIGH PRIORITY (Read second — strategy definitions)
 
 | # | File Path | Why It Matters |
 |---|-----------|----------------|
-| 8 | `alpha_engine/equity_strategies.py` | 15+ equity strategies defined (Connors RSI2, VIX spike reversal, dual momentum, etc.) |
-| 9 | `alpha_engine/crypto_strategies.py` | 35+ crypto strategies (MACD, RSI, Bollinger, ML-enhanced, etc.) |
-| 10 | `multi_asset/forex_strategies.py` | Forex strategies (RSI mean reversion, carry momentum, etc.) |
-| 11 | `multi_asset/commodity_futures_strategies.py` | Commodity futures strategies (14 strategies: momentum, COT positioning, etc.) |
-| 11 | `alpha_engine/bond_strategies.py` | Bond strategies (7 strategies: treasury yield curve, credit spread, etc.) |
+| 7 | `alpha_engine/equity_strategies.py` | 15+ equity strategies defined (Connors RSI2, VIX spike reversal, dual momentum, etc.) |
+| 8 | `alpha_engine/crypto_strategies.py` | 35+ crypto strategies (MACD, RSI, Bollinger, ML-enhanced, etc.) |
+| 9 | `multi_asset/forex_strategies.py` | Forex strategies (RSI mean reversion, carry momentum, etc.) |
+| 10 | `multi_asset/commodity_futures_strategies.py` | Commodity futures strategies (14 strategies: momentum, COT positioning, etc.) |
+| 11 | `alpha_engine/bond_strategies.py` | Bond strategies (7 strategies: treasury yield curve, credit spread, duration rotation, bond equity rotation, etc.) |
 | 12 | `alpha_engine/mutual_fund_strategies.py` | **DOES NOT EXIST** — confirms zero mutual fund coverage |
 | 13 | `alpha_engine/antigravity_strategies.py` | Antigravity strategy implementations (8 crypto strategies, 4 equity strategies) |
 
 ---
 
-## TIER 3 — MEDIUM PRIORITY (Read Third — Configuration & Infrastructure)
+## TIER 3 — MEDIUM PRIORITY (Read third — configuration & infrastructure)
 
 | # | File Path | Why It Matters |
 |---|-----------|----------------|
@@ -48,7 +45,7 @@
 
 ---
 
-## TIER 4 — REFERENCE (Read As Needed)
+## TIER 4 — REFERENCE (Read as needed)
 
 | # | File Path | Why It Matters |
 |---|-----------|----------------|
@@ -59,7 +56,7 @@
 
 ---
 
-## TIER 5 — DOCUMENTATION (Read Last, for Context)
+## TIER 5 — DOCUMENTATION (Read last, for context)
 
 | # | File Path | Why It Matters |
 |---|-----------|----------------|
@@ -91,7 +88,7 @@ If you only have time to read 5 files, read these in order:
 | A | `alpha_engine/mutual_fund_strategies.py` | Create — mutual fund strategies do not exist |
 | B | `alpha_engine/data/mutual_fund_metadata.csv` | Create — mutual fund metadata CSV |
 | C | `audit_dashboard/data/mutual_fund_nav_cache/` | Create — NAV cache directory for mutual fund data |
-|  | `alpha_engine/data/mutual_fund_metadata.json` | Create — mutual fund metadata JSON |
+| D | `alpha_engine/data/mutual_fund_metadata.json` | Create — mutual fund metadata JSON |
 
 ---
 

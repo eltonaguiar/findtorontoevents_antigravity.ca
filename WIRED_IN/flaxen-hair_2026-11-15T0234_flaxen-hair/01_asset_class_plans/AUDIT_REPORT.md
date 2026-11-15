@@ -24,7 +24,7 @@
 | EQUITY | 15+ strategies | 4 (all OPEN, null PnL) | 4 | 76.92 (n=6) | 83.3% (n=6) | SLOT 1 — needs n≥500 forward test |
 | ETF | 9 strategies | 0 | 0 | 10.00 (n=5) | 100.0% (n=5) | NOT_PROVED — n too small |
 | FOREX | 12 strategies | 0 | 23 (all forward_test_only) | 0.97 | 56% | BLOCKED — zero DSR survivors |
-| COMMODITY | 14 strategies | 0 closed, 7 open | 7 | 4.51 (n=10) | 80.0% (n=10) | BLOCKED — n < 60 |
+| COMMODITY | 14 strategies | 0 | 7 open | 4.51 (n=10) | 80.0% (n=10) | BLOCKED — n < 60 |
 | BOND | 7 strategies | 0 | 0 | 0.66 (n=11-18) | 54.5% | BLOCKED — n below min |
 | FUTURES | Various | 0 | 0 | N/A | N/A | DEAD — WR 5.9%, PnL -96% |
 | MEMECOIN | ~29 strategies | 0 | 0 | 0.50 | ~34% | QUARANTINED |
@@ -38,6 +38,7 @@
 ### 3.1 PnL Unit Mismatch
 **Files affected:** `multi_asset_closed.json`, `institutional_closed.json`  
 **Issue:** `pnl_pct` stored as decimal ratio (e.g., -0.04 = -4%) in some rows and as percent number (e.g., -2.7041 = -2.7041%) in others. Same symbol/strategy rows disagree up to 100×.  
+**Impact:** Cross-asset-class PnL aggregation wrong by up to 100×.  
 **Fix:** Normalize all to decimal ratio using `quick_wins/shared/normalize_pnl_units.py`.
 
 ### 4.2 Non-Unique Pick IDs
@@ -57,14 +58,14 @@
 
 ---
 
-## 4. PER-STRATEGY RESULTS
+## 5. PER-ASSET-CLASS RESULTS
 
 ### 4.1 EQUITY / STOCKS
 
 | Strategy | Symbol | Trades | WR % | PF | Sharpe | MaxDD % | PnL % | p-value | Passes Gates? |
 |----------|--------|--------|-------|----|--------|-------|---------|-------------|
-| vix_reversal | SPY | 6 | 83.3% | 76.92 | 1.14 | -18% | +13.56% | 0.109 | ❌ (n<100) |
-| connors_rsi2 | SPY | 6 | 83.3% | 2.09 | 0.29 | -8.84% | +9.60% | 0.188 | ❌ (n<100) |
+| connors_rsi2 | SPY | 6 | 83.3% | 76.92 | 1.14 | -18% | +13.56% | 0.109 | ❌ (n<100) |
+| connors_rsi2 | QQQ | 5 | 80.0% | 2.09 | 0.29 | -8.84% | +9.60% | 0.188 | ❌ (n<100) |
 | ema_stack | SPY | 12 | 50.0% | 1.03 | 0.01 | -8.27% | +0.61% | 0.613 | ❌ (PF<1.5) |
 | keltner_compression_v2 | SPY | 4 | 75.0% | 40.02 | 1.40 | -24.0% | +9.18% | 1.0 | ❌ (n<100) |
 | funding_sentiment | SPY | 6 | 83.3% | 3.09 | 0.43 | 0.0% | +19.49% | 0.109 | ❌ (n<100) |
@@ -73,7 +74,7 @@
 
 | Strategy | Symbol | Trades | WR % | PF | Sharpe | MaxDD | PnL % | p-value | Passes Gates? |
 |----------|--------|--------|-------|----|--------|-------|---------|-------------|
-| connors_rsi2 | BTC-USD | 3 | 33.33% | 0.37 | -0.48 | -17.6% | -11.04% | 1.0 | ❌ |
+| connors_rsi2 | BTC-USD | 3 | 33.3% | 0.37 | -0.48 | -17.6% | -11.04% | 1.0 | ❌ |
 | keltner_compression_v2 | BTC-USD | 8 | 37.5% | 0.71 | -0.15 | -31.0% | -11.49% | 0.855 | ❌ |
 | ema_stack | BTC-USD | 11 | 45.45% | 1.04 | 0.02 | -15.7% | +1.66% | 0.726 | ❌ |
 | funding_sentiment | BTC-USD | 10 | 50.0% | 0.30 | -0.48 | -48.75% | -39.34% | 0.623 | ❌ |

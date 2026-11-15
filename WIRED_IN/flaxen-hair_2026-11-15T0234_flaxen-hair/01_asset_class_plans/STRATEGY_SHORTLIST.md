@@ -18,7 +18,7 @@
 
 ### Stocks / Equity — Slot 1 Candidate
 
-| Strategy | Symbol | Trades | WR % | PF | Sharpe | MaxDD | PnL % | Top Gap |
+| Strategy | Symbol | Trades | WR % | PF | Sharpe | MaxDD | PnL % | Reason for Gap |
 |----------|--------|--------|-------|----|--------|-------|---------|-----------|
 | connors_rsi2 | SPY | 6 | 83.3% | 76.92 | 1.14 | -18% | +13.56% | n ≥ 100 needed |
 | keltner_compression_v2 | SPY | 4 | 75.0% | 2.09 | 0.29 | -24.0% | +9.18% | n ≥ 100 needed |
@@ -35,7 +35,7 @@
 
 | Strategy | Symbol | Trades | WR % | PF | Sharpe | MaxDD | PnL % | Reason for Gap |
 |----------|--------|--------|-------|----|--------|-------|---------|-----------|
-| connors_rsi2 | EURUSD=X | 3 | 33.3% | 0.37 | -0.48 | -17.6% | -11.04% | n < 50, PF < 1.5 |
+| connors_rsi2 | EURUSD=X | 3 | 33.3% | 0.37 | -0.48 | -17.6% | -11.04% | n ≥ 50 needed, PF < 1.5 |
 | keltner_compression_v2 | EURUSD=X | 8 | 37.5% | 0.71 | -0.15 | -31.0% | -11.49% | n < 50 |
 | ema_stack | BTC-USD | 11 | 45.45% | 1.04 | 0.02 | -15.7% | +1.66% | n < 50, PF < 1.5 |
 | funding_sentiment | BTC-USD | 10 | 50.0% | 0.30 | -0.48 | -48.75% | -39.34% | n < 100, PF < 1.5 |
@@ -57,7 +57,7 @@
 |----------|--------|--------|-------|----|--------|-------|---------|-----------|
 | N/A | N/A | 0 | N/A | N/A | N/A | N/A | N/A | n < 60 required |
 
-**Verdict:** No bond strategy has enough data. n < 60 required.
+**Verdict:** No bond strategy passes. n < 60 required.
 
 ### Futures — Dead
 
@@ -77,23 +77,39 @@
 
 ---
 
-## 2. DATA QUALITY ISSUES TO FIX FIRST
+## 2. DATA QUALITY FIXES TO IMPLEMENT FIRST
 
-| Issue | Severity | Count | File | Fix |
-|-------|----------|-------|------|-----|
-| PnL unit inconsistency | HIGH | 93 rows | multi_asset_closed.json | Normalize to decimal ratio |
-| Non-unique pick IDs | HIGH | 93 rows | multi_asset_closed.json | Add timestamp: `strategy::symbol::date_timestamp` |
-| Stale OPEN picks | HIGH | 23 picks | institutional_picks.json | Close or expire |
-| ml_score == confidence coupling | MEDIUM | All picks | Decouple ML score from confidence |
+| # | Issue | Severity | Count | File | Fix |
+|---|-------|----------|-------|------|-----|
+| 1 | PnL unit inconsistency | HIGH | 93 rows | `multi_asset_closed.json` | Normalize to decimal ratio |
+| 2 | Non-unique pick IDs | HIGH | 93 rows | `multi_asset_closed.json` | Add timestamp: `strategy::symbol::date_timestamp` |
+| 3 | Stale OPEN picks | HIGH | 23 picks | `institutional_picks.json` | Close or mark EXPIRED |
+| 4.4 | `ml_score == confidence` coupling | MEDIUM | All picks | Decouple ML score from confidence |
+
+### 4.1 Normalize PnL Units (P0)
+**File:** `quick_wins/shared/normalize_pnl_units.py`  
+**Action:** Recompute `pnl_pct = (exit_price / entry_price - 1) * direction` for all CLOSED picks. Store as decimal ratio (e.g., -0.04 = -4%). OPEN picks keep `pnl_pct=null`.
+
+### 4.2 Make Pick IDs Unique (P0)
+**File:** `multi_asset/scanner.py:_pick_id()`  
+**Action:** Add timestamp component: `f"{strategy}::{symbol}::{dt.strftime('%Y%m%d_%H%M%S')}"`
+
+### 4.3 Resolve Stale Open Picks (P0)
+**File:** `multi_asset/data/institutional_picks.json`  
+**Action:** Close or mark EXPIRED all picks dated 2026-04-03. Mark all 2026-11-12 picks as `forward_test_only=true` explicitly.
+
+### 4.4 Decouple ml_score from confidence (P1)
+**File:** `multi_asset/equity_strategies.py` and all strategy modules  
+**Action:** Compute `ml_score` independently from `confidence`. Do not copy confidence → ml_score.
 
 ---
 
 ## 3. RECOMMENDED NEXT STEPS
 
 ### Phase 1: Fix Data Quality (Immediate)
-1. Normalize PnL units across multi_asset_closed.json and institutional_closed.json
+1. Normalize PnL units across `multi_asset_closed.json` and `institutional_closed.json`
 2. Enforce unique pick IDs with timestamp component
-3. Resolve all 22 stale OPEN picks in institutional_picks.json
+3. Resolve all 22 stale OPEN picks in `institutional_picks.json`
 4. Decouple ml_score from confidence
 
 ### Phase 2: Forward-Test Top Candidates
