@@ -12,7 +12,7 @@ Harvested from the repo by Layer‑B semantic scan. Every entry has a file citat
 | Bayesian optimisation | `alpha_engine/bayes_optimizer.py` | Hyper‑parameter search; contributes to multiple‑testing load |
 | HMM / regime switching | `analysis/score_calibration.py`, `alpha_engine/regime_detector.py` | Regime labels used as a filter across classes |
 | ARIMA / SARIMA / Prophet | `alpha_page_tmp.txt`, research .md only | Documented in `25_Quantitative_Trading_Algorithms.md`; no production backtest module found |
-| Conformal prediction | `audit_trail/conformal_sizing.py` | Sizing intervals, not direction |
+| Conformal prediction | `alpha_engine/conformal_sizing.py` | Sizing intervals, not direction |
 | LSTM / Transformer | research .md only (`WORLDCLASS_CRYPTO_PREDICTION_SYSTEM.md`) | **Never implemented in a runnable, seeded backtest** — a genuine gap |
 | SVM / clustering | `analysis/*`, `ab_testing_agent/*` | Used for calibration/AB tests, not signals |
 
