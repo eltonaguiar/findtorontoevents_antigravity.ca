@@ -31,7 +31,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install --user pandas numpy yfinance requests
+        # pymysql required by forex_carry_g10_pilot.py --write-db (writes the
+        # carry basket to trading_picks); missing it failed the job with
+        # "ModuleNotFoundError: No module named 'pymysql'".
+        run: pip install --user pandas numpy yfinance requests pymysql
       - name: Run verified pilots
         env:
           VERIFY_SKIP_FRED: "1"
