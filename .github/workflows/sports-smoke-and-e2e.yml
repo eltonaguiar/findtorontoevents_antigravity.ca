@@ -50,7 +50,12 @@ concurrency:
 
 jobs:
   smoke:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # Pinned: `ubuntu-latest` now resolves to 24.04→26.04, and Playwright's
+    # browser download refuses 26.04 outright ("Playwright does not support
+    # chromium on ubuntu26.04-x64" — run 43689346545), which failed this
+    # hourly job on the install step, never reaching a single test.
+    # Revisit once playwright supports 26.04.
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-24.04' }}
     timeout-minutes: 6
     steps:
       - name: Checkout
