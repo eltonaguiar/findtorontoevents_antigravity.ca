@@ -137,7 +137,7 @@ python3 tools/forward_tracker.py log \
   --thesis "3.1% below 20d VWAP, RSI 34, close in upper range"
 
 python3 tools/forward_tracker.py status      # verdict per strategy
-python3 tools/forward_tracker.py selftest    # 8/8 rule cases + OF boundary checks
+python3 tools/forward_tracker.py selftest    # 21/21: 8 rule cases, 8 OF checks, 5 benchmark checks
 ```
 
 **Sync cannot backfill, by construction.** A pick is admitted only if it closed on or after the

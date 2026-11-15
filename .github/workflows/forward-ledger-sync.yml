@@ -69,12 +69,27 @@ jobs:
               print(f"::warning::could not parse generated_at ({exc}) — continuing")
           PY
 
+      # The registered endpoint is excess vs the class benchmark, so sync needs closes.
+      # Refreshed to /tmp and NEVER committed: audit-dashboard owns the tracked copy and
+      # two workflows writing one path is how you get push races.
+      - name: Refresh benchmark closes
+        run: |
+          python3 -m pip install --quiet requests   # build_benchmark_prices fetches lazily
+          BENCH=/tmp/benchmark_prices.json
+          if python3 tools/build_benchmark_prices.py --out "$BENCH"; then
+            echo "BENCH=$BENCH" >> "$GITHUB_ENV"
+          else
+            echo "::warning::benchmark refresh failed — falling back to the committed series"
+            echo "BENCH=audit_dashboard/data/benchmark_prices.json" >> "$GITHUB_ENV"
+          fi
+
       - name: Sync closed picks into the ledger
         run: |
           FLAG=""
           if [ "${{ inputs.dry_run }}" = "true" ]; then FLAG="--dry-run"; fi
           python3 tools/forward_tracker.py sync \
             --dashboard "$PAYLOAD" \
+            --bench-file "${BENCH:-audit_dashboard/data/benchmark_prices.json}" \
             --fee-bps-per-side 6 \
             $FLAG
 

@@ -31,7 +31,7 @@ Why hold_type matters: a strategy holding 60 days cannot reach n=20 in 90 days. 
 it on trade count would kill every slow strategy for being slow, not for losing. That is
 the "eliminate fast vs hold longer" split, decided by expected holding period, not by PnL.
 """
-import json, os, sys, math, random, argparse
+import json, os, sys, math, random, argparse, bisect
 from datetime import date, datetime, timezone
 
 # Cost assumption applied to synced ledger rows, on BOTH legs of the round trip.
@@ -44,6 +44,11 @@ DEFAULT_FEE_BPS_PER_SIDE = 6.0
 STATE = "state/forward_test"
 LEDGER = os.path.join(STATE, "ledger.jsonl")
 PLAN = os.path.join(STATE, "plan.json")
+
+# Daily benchmark closes, written by tools/build_benchmark_prices.py. The pre-registered
+# endpoint is excess vs this beta, so sync reads the SAME file the dashboard's excess
+# column reads rather than fetching its own prices — one series, one set of numbers.
+BENCH_FILE = os.path.join("audit_dashboard", "data", "benchmark_prices.json")
 
 # hold_type is pre-registered per strategy id. short = fast elimination clock.
 # Only backtest SURVIVORS belong here. The rest were killed on 2004-2026 evidence
@@ -151,6 +156,57 @@ def _append(rec):
         f.write(json.dumps(rec) + "\n")
 
 
+def _bench_series(path):
+    """Load the daily benchmark closes. Returns (payload, error)."""
+    try:
+        d = json.load(open(path))
+    except Exception as e:
+        return None, f"unreadable ({e})"
+    if not d.get("series"):
+        return None, "no series in file"
+    return d, None
+
+
+def _bench_excess(payload, cls, opened_day, closed_day):
+    """Benchmark return over the pick's own window, in percentage points.
+
+    Conventions copied from tools/pick_excess.py so the forward ledger and the
+    retrospective measurement speak the same language (otherwise the prior being
+    tested and the forward test would be different statistics):
+      * entry = last close on/before the pick's OPEN day
+      * exit  = last close on/before the pick's CLOSE day
+
+    A window that resolves to a single trading day is NOT scored from daily closes:
+    the move would be identically zero by construction, which would quietly hand the
+    pick a free +excess. It returns None with a reason instead, and the ledger records
+    the row as unbenchmarked rather than as zero excess.
+
+    Returns (ret_pct, entry_day, exit_day, symbol) or (None, None, None, reason).
+    """
+    if not payload:
+        return None, None, None, "no_benchmark_file"
+    cls = (cls or "").upper()
+    sym = (payload.get("benchmarks") or {}).get(cls)
+    if not sym:
+        return None, None, None, "no_benchmark_for_class:%s" % (cls or "?")
+    s = (payload.get("series") or {}).get(sym) or {}
+    dates, closes = s.get("dates") or [], s.get("closes") or []
+    if not dates or len(dates) != len(closes):
+        return None, None, None, "no_series:%s" % sym
+
+    def at(day):
+        i = bisect.bisect_right(dates, day) - 1
+        return (dates[i], closes[i]) if i >= 0 else (None, None)
+
+    d0, p0 = at(opened_day)
+    d1, p1 = at(closed_day)
+    if p0 is None or p1 is None or p0 <= 0:
+        return None, None, None, "outside_series:%s" % sym
+    if d0 == d1:
+        return None, None, None, "window_collapsed_to_one_trading_day"
+    return (p1 / p0 - 1.0) * 100.0, d0, d1, sym
+
+
 def _parse_ts(s):
     s = str(s or "").strip()
     if not s:
@@ -205,12 +261,20 @@ def cmd_sync(a):
     rows = ((payload.get("picks") or {}).get("recent_closed")) or []
     existing = _ledger_keys(load_trades())
     print(f"sync {a.dashboard} ({len(rows)} closed rows, generated_at {payload.get('generated_at')})")
+    # Benchmark closes for the registered excess endpoint. Refreshed to a temp path in CI
+    # (network) and defaulted to the committed dashboard file locally, so the ledger and
+    # the dashboard's excess column are computed from the same series.
+    bench, berr = (None, "disabled by --no-benchmark")
+    if not a.no_benchmark:
+        bench, berr = _bench_series(a.bench_file)
+    print(f"  benchmark: {a.bench_file if not a.no_benchmark else '(none)'} -> "
+          f"{'loaded, generated ' + str(bench.get('generated_utc')) if bench else 'UNAVAILABLE: ' + str(berr)}")
 
     total_added = 0
     for k in strategies:
         cfg = plan["strategies"].get(k, {})
         since = _parse_ts(a.since or cfg.get("start") or plan.get("created"))
-        added = dupe = early = incomplete = class_mismatch = 0
+        added = dupe = early = incomplete = class_mismatch = bench_ok = bench_na = 0
         want_class = (cfg.get("class") or "").upper()
         for p in rows:
             if (p.get("strategy") or "") != k:
@@ -251,6 +315,18 @@ def cmd_sync(a):
                                                                    DEFAULT_FEE_BPS_PER_SIDE)))
             fees = a.notional * (bps / 10000.0) * 2.0
             pnl = pnl_gross - fees
+            ret_pct = (x / e - 1) * 100 if side == "long" else (e / x - 1) * 100
+            # The REGISTERED endpoint is excess vs the class benchmark. Attaching it here
+            # is what keeps the interim looks testing the pre-registered statistic; routed
+            # rows fall back only when a benchmark genuinely cannot cover the window, and
+            # the reason travels with the row instead of becoming a silent zero.
+            cls = (p.get("asset_class") or "").upper() or want_class
+            bx, bd0, bd1, bnote = _bench_excess(bench, cls,
+                                              opened.date().isoformat(), closed.date().isoformat())
+            if bx is None:
+                bench_na += 1
+            else:
+                bench_ok += 1
             rec = {
                 "strategy": k, "symbol": p.get("symbol"), "side": side,
                 "entry": e, "exit": x, "qty": round(qty, 8), "fees": round(fees, 6),
@@ -258,7 +334,12 @@ def cmd_sync(a):
                 "fee_bps_per_side": bps,
                 "opened": str(opened.date()), "closed": str(closed.date()),
                 "hold_days": (closed.date() - opened.date()).days,
-                "ret_pct": round((x / e - 1) * 100 if side == "long" else (e / x - 1) * 100, 4),
+                "ret_pct": round(ret_pct, 4),
+                "excess_pp": (round(ret_pct - bx, 4) if bx is not None else None),
+                "bench_symbol": (bnote if bx is not None else None),
+                "bench_ret_pct": (round(bx, 4) if bx is not None else None),
+                "bench_window": (f"{bd0}..{bd1}" if bx is not None else None),
+                "bench_note": (None if bx is not None else bnote),
                 "thesis": "auto-synced from dashboard: %s" % (p.get("exit_reason") or "?"),
                 "pick_id": p.get("id"), "source": "dashboard_sync",
                 "asset_class": (p.get("asset_class") or "").upper(),
@@ -268,8 +349,12 @@ def cmd_sync(a):
             }
             if a.dry_run:
                 if added < 5:
+                    ex = (f" excess={rec['excess_pp']:+.2f}pp vs {rec['bench_symbol']}"
+                          if rec.get("excess_pp") is not None
+                          else f" excess=n/a ({rec.get('bench_note')})")
                     print(f"   would add {p.get('symbol'):9} {side:5} {rec['opened']} -> {rec['closed']} "
-                          f"gross={pnl_gross:+.2f} fees={fees:.2f} net={pnl:+.2f} ({p.get('exit_reason')})")
+                          f"gross={pnl_gross:+.2f} fees={fees:.2f} net={pnl:+.2f}{ex} "
+                          f"({p.get('exit_reason')})")
                 added += 1
             else:
                 _append(rec)
@@ -280,7 +365,7 @@ def cmd_sync(a):
         total_added += added
         print(f"  {k}: {'would append' if a.dry_run else 'appended'} {added} | "
               f"closed before registration {early} | duplicate {dupe} | incomplete {incomplete} | "
-              f"class mismatch {class_mismatch}")
+              f"class mismatch {class_mismatch} | benchmarked {bench_ok} | no benchmark {bench_na}")
     print(f"  total {'would append' if a.dry_run else 'appended'}: {total_added}")
     if not a.dry_run and total_added:
         print(f"  ledger now {len(load_trades())} rows -> {LEDGER}")
@@ -454,8 +539,11 @@ def interim_verdict(cfg, trades, today=None):
         return None
     alpha = float(d.get("alpha", 0.05))
     if not trades:
+        # No rows means nothing is missing a benchmark either — 0, not None, so
+        # "no benchmark attached" and "no trades yet" stay distinguishable.
         return dict(verdict="CONTINUE", endpoint=d.get("endpoint", "excess_pp"), n=0,
                     target=n_final, next_look=looks[0], z=None, boundary=None,
+                    endpoint_missing_rows=0,
                     note=f"0/{looks[0]} windows to the first look")
     endpoint, per_row = _endpoint(trades)
     wins = {}
@@ -467,6 +555,14 @@ def interim_verdict(cfg, trades, today=None):
     base = dict(endpoint=endpoint, n=n, target=n_final,
                 boundaries=[round(b, 3) for b in bounds],
                 achieved_alpha=round(achieved, 4), alpha=alpha)
+    # Which statistic was actually tested, and what was missing from the registered one.
+    # A verdict that silently swaps endpoint is not a forward test of the registration.
+    missing = sum(1 for r in trades if not isinstance(r.get("excess_pp"), (int, float)))
+    base["endpoint_missing_rows"] = missing
+    if endpoint != d.get("endpoint", "excess_pp"):
+        base["endpoint_note"] = (f"{missing} of {len(trades)} rows carry no benchmark; "
+                                 f"verdict tested {endpoint}, not the registered "
+                                 f"{d.get('endpoint', 'excess_pp')}")
     reached = [i for i, L in enumerate(looks) if n >= L]
     if not reached:
         base.update(verdict="CONTINUE", next_look=looks[0], z=None,
@@ -648,8 +744,34 @@ def cmd_selftest(a):
         print(f"  [{'PASS' if okv else 'FAIL'}] {label}")
         ok += okv
 
-    total = len(cases) + len(checks)
-    print(f"\n{ok}/{total} checks pass ({len(cases)} rule cases, {len(checks)} OF checks)")
+    print("\nselftest: benchmark leg for the registered excess endpoint")
+    bench = {"benchmarks": {"EQUITY": "SPY", "ETF": "SPY", "CRYPTO": "BTC"},
+             "series": {"SPY": {"dates": ["2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08"],
+                                "closes": [100.0, 102.0, 101.0, 110.0]},
+                        "BTC": {"dates": ["2026-01-05", "2026-01-08"], "closes": [50000.0, 45000.0]}}}
+    bchecks = []
+    got = _bench_excess(bench, "EQUITY", "2026-01-05", "2026-01-08")
+    bchecks.append((f"2-day SPY 100->110 is +10.00pp (got {got[0]:+.2f})" if got[0] is not None else "bench ret computed",
+                    got[0] is not None and abs(got[0] - 10.0) < 1e-9 and got[3] == "SPY"))
+    got = _bench_excess(bench, "EQUITY", "2026-01-06", "2026-01-06")
+    bchecks.append((f"same-day window is NOT scored as 0 excess (got {got[3]})",
+                    got[0] is None and got[3] == "window_collapsed_to_one_trading_day"))
+    got = _bench_excess(bench, "EQUITY", "2025-12-01", "2026-01-08")
+    bchecks.append((f"window starting before the series is refused (got {got[3]})",
+                    got[0] is None and str(got[3]).startswith("outside_series")))
+    got = _bench_excess(bench, "FOREX", "2026-01-05", "2026-01-08")
+    bchecks.append((f"class with no benchmark is named, not defaulted (got {got[3]})",
+                    got[0] is None and str(got[3]).startswith("no_benchmark_for_class")))
+    got = _bench_excess(bench, "CRYPTO", "2026-01-05", "2026-01-08")
+    bchecks.append((f"a pick's excess is its own return minus this beta (BTC {got[0]:+.2f}pp)",
+                    got[0] is not None and abs(got[0] - (-10.0)) < 1e-9))
+    for label, okv in bchecks:
+        print(f"  [{'PASS' if okv else 'FAIL'}] {label}")
+        ok += okv
+
+    total = len(cases) + len(checks) + len(bchecks)
+    print(f"\n{ok}/{total} checks pass ({len(cases)} rule cases, {len(checks)} OF checks, "
+          f"{len(bchecks)} benchmark checks)")
     return 0 if ok == total else 1
 
 
@@ -673,6 +795,10 @@ def main():
     sy.add_argument("--fee-bps-per-side", type=float, default=None,
                     help="cost assumption applied to both legs (default: plan fee_bps_per_side, else %.1f)"
                          % DEFAULT_FEE_BPS_PER_SIDE)
+    sy.add_argument("--bench-file", default=BENCH_FILE,
+                    help="daily benchmark closes (default: the dashboard's own file)")
+    sy.add_argument("--no-benchmark", action="store_true",
+                    help="skip the benchmark leg; rows then have no excess_pp and verdicts fall back")
     sy.add_argument("--dry-run", action="store_true")
     sub.add_parser("status"); sub.add_parser("selftest")
     a = ap.parse_args()
