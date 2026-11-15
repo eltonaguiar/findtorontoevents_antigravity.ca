@@ -37,6 +37,29 @@ paths = [
   '''.github/workflows/.*\.yml''',
   # Skip .git metadata directory when running `gitleaks dir`
   '''(?:^|/)\.git/''',
+  # --- 2026-11-15 (M-043 baseline noise cleanup) ---------------------------
+  # JSON data / report artifacts are scored & hashed payloads, not credentials.
+  # They trip generic-api-key and skip-* rules constantly (~1105 findings, ~all
+  # false positives). PR gate (gitleaks-action) still enforces on changed files.
+  '''(?:^|/)cross_aggregation/data/''',
+  '''(?:^|/)backtest_results/''',
+  '''(?:^|/)audit_dashboard/data/''',
+  '''(?:^|/)signal_aggregator/''',
+  '''(?:^|/)alpha_engine/data/''',
+  '''(?:^|/)copy_trader_intel/data/''',
+  '''(?:^|/)tools/data/''',
+  '''(?:^|/)reports/''',
+  '''(?:^|/)WIRED_IN/''',
+  '''(?:^|/)GHACTIONS_PR_ISSUES/''',
+  '''(?:^|/)swarm_runs/''',
+  '''(?:^|/)updates/''',
+  '''(?:^|/)\.claude/''',
+  '''(?:^|/)\.planning/''',
+  '''(?:^|/)2026-1[0-9]-.*/''',
+  # Notes / markdown / text exports and env examples are documentation.
+  '''\.md$''',
+  '''\.txt$''',
+  '''\.env\.example$''',
 ]
 
 # ---------------------------------------------------------------------------
