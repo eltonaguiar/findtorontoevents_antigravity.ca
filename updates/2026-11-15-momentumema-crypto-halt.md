@@ -63,6 +63,40 @@ the choice is visible.
 The `("CRYPTO", "MomentumEMA")` pair entry exists so the crypto halt survives a future narrowing of the
 global list to class level — the exact edit that would otherwise silently unblock crypto.
 
+## 3. The strategy block was not airtight — closed at the emitter seam
+
+Re-checking the halt against the live payload rather than trusting the API returned a leak:
+
+```text
+MomentumEMA entry timestamps: 2026-02-20 .. 2026-06-08
+entries AFTER the 2026-06-05 retirement: 5
+  2026-06-07T03:16 BTC-USD   2026-06-07T05:37 DOT-USD   2026-06-07T05:37 SOL-USD
+  2026-06-07T22:28 DOT-USD   2026-06-08T01:03 AVAX-USD
+```
+
+So `is_blocked_strategy()` was already True while picks were still being written. The strategy-level
+kill is consulted by some paths and not by the writer that produced these.
+
+**The emitter is unambiguous:**
+
+| signal_validation | Rows |
+|---|---:|
+| closed rows, all classes | 102 |
+| — CRYPTO | 73 |
+| — CRYPTO strategy breakdown | **MomentumEMA 73 (100%)** |
+| — FOREX | 29 (already pair-blocked) |
+| active rows (any class) | **0** |
+| distinct `closed_at` on CRYPTO | **1** |
+
+Added `("CRYPTO", "signal_validation")` to `BLOCKED_ASSET_SOURCE_PAIRS`, mirroring the existing
+`("FOREX", "signal_validation")` entry. On crypto this source emits nothing but a retired strategy
+and holds 0 open picks, so the block removes no live signal — it closes the path that demonstrably
+wrote 5 picks after the strategy was killed.
+
+Corroboration that this source is already considered unreliable:
+`alpha_engine/negative_knowledge_registry.py:58` carries
+`signal_validation: {n: 353, reason: "ghost_picks_stale"}`.
+
 ---
 
 ## Verification

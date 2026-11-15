@@ -2570,6 +2570,16 @@ PNL_SANITY_MIN = -50.0  # No active pick should be beyond -50% without SL firing
 # non-crypto books. Keep this narrow so verified PM/pro-trader sources still flow.
 BLOCKED_ASSET_SOURCE_PAIRS = {
     ("FOREX", "signal_validation"),
+    # 2026-11-15: CRYPTO signal_validation — the emitter behind the MomentumEMA leak.
+    # Its ENTIRE CRYPTO output is MomentumEMA (73 of 73 rows), and 5 of those rows were emitted
+    # AFTER MomentumEMA was retired on 2026-06-05 (2026-06-07 x4, 2026-06-08 x1), so the
+    # strategy-level kill was not airtight on the emit path. That crypto history is 73 rows
+    # sharing ONE closed_at batch timestamp: mean +0.84pp raw but -11.56pp against BTC.
+    # On CRYPTO this source currently has 0 active picks and contributes no strategy that is
+    # not already blocked, so the blast radius is nil. Re-admission requires the emitter to
+    # consult strategy_blocklist at write time and to produce a non-blocked strategy with
+    # >= 20 resolved crypto picks.
+    ("CRYPTO", "signal_validation"),
     # EAGLE2 Phase 0 (2026-06-02): CRYPTO concentration drag + false consensus.
     ("CRYPTO", "incubator_gainer"),
     ("CRYPTO", "regime_terminal"),
