@@ -49,6 +49,24 @@ DEFAULT_PLAN = {
                          "backtest_max_dd": -0.218, "thesis": "10M SMA overlay: risk reduction, not alpha"},
         "BTC_TREND200": {"class": "CRYPTO", "hold_type": "long", "trades_per_year": 2.7,
                          "backtest_max_dd": -0.636, "thesis": "200d SMA on BTC: promising, DSR 0.84"},
+        # Registered 2026-11-15 on live-ledger evidence only: 28 closed picks over 25
+        # independent windows, +1.96pp vs SPY, CLUSTERED t=1.99. That t does not clear 2.0
+        # and 25 windows is too few to promote on — which is exactly why it needs a
+        # pre-registered forward clock instead of another retrospective look.
+        "vwap-reversion-scout": {
+            "class": "EQUITY", "hold_type": "long", "trades_per_year": 48,
+            "start": "2026-11-15", "backtest_max_dd": None,
+            "thesis": "Price >2% below its 20d VWAP with RSI<40 and the close in the upper half "
+                      "of the day's range: institutional cost-basis reversion on liquid US names. "
+                      "Exit on TP/SL or a 168h (7-day) time stop.",
+            "baseline": {"source": "reports/pick_excess_returns.json", "measured_on": "2026-11-15",
+                         "n_picks": 28, "n_windows": 25, "mean_excess_pp": 1.96,
+                         "t_cluster": 1.99, "excess_win_rate_pct": 60.7, "median_hold_hours": 145,
+                         "status": "PRIOR ONLY — not evidence that survives forward testing"},
+            "kill_rule": "slow clock (median hold >5d): 180d & n>=8 & PF<1.00 -> KILL; "
+                         "365d & n>=20 & PF<1.05 -> KILL; breaker n>=10 & PF<0.75 -> KILL. "
+                         "PROMOTE requires 365d, n>=20, PF>=1.15 and boot5(PF)>1.00.",
+        },
     },
     "killed_in_backtest": {
         "RSI2_SPY": "0.21% CAGR, SR -0.64, DSR 0.00, negative at 2x costs",

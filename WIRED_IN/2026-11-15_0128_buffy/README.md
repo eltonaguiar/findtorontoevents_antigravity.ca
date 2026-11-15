@@ -37,7 +37,8 @@ drawdown, same Sharpe, return cost equal to trading costs).
 | [`specs/SPEC_PREDICTION.md`](specs/SPEC_PREDICTION.md) | Binary settlement resolver + calibration stats, tested 15/15; still **not measured** (no obtainable price history) |
 | [`PICK_JUSTIFICATION.md`](PICK_JUSTIFICATION.md) | What I recommend, the exact live parameters, and what would falsify it |
 | [`BACKTEST_AND_RESEARCH.md`](BACKTEST_AND_RESEARCH.md) | Data, method, all results, 2× cost stress, IS/OOS, bugs fixed, literature consulted, limits |
-| [`EXCESS_RETURNS.md`](EXCESS_RETURNS.md) | **The live-pick excess column, measured**: EQUITY / ETF / CRYPTO picks vs their beta, coverage, clustered t-stats |
+| [`EXCESS_RETURNS.md`](EXCESS_RETURNS.md) | **The live-pick excess column, measured**: EQUITY / ETF / CRYPTO picks vs their beta, coverage, clustered t-stats, and where the crypto shortfall comes from |
+| [`FORWARD_TEST.md`](FORWARD_TEST.md) | Which rules are on a forward clock, the pre-registered kill/promote rules, and the prior each one started from |
 | [`ELIMINATION_LOG.md`](ELIMINATION_LOG.md) | Each of the 8 rules and 6 classes, the gate it failed, and what eliminating it cost |
 | `artifacts/` | `backtest_path_forward.json`, `backtest_path_forward_2xcost.json`, `forward_plan.json`, `pick_excess_returns.json`, `pm_calibration.json` |
 
@@ -66,13 +67,15 @@ real, but DSR 0.84 is below the 0.95 bar.
 
 | Class | Picks scored | Windows | Mean pick | Mean β | Excess | t (clustered) |
 |---|---:|---:|---:|---:|---:|---:|
-| EQUITY | 653 | 386 | +0.45% | +0.21% | +0.24pp | 0.96 |
-| ETF | 475 | 261 | +0.16% | +0.09% | +0.06pp | −0.22 |
-| CRYPTO | 1,017 | 241 | +0.46% | +1.75% | **−1.29pp** | **−4.60** |
+| EQUITY | 674 | 407 | +0.44% | +0.20% | +0.238pp | 0.97 |
+| ETF | 498 | 279 | +0.08% | +0.06% | +0.023pp | −0.62 |
+| CRYPTO | 1,825 | 884 | +0.20% | +1.00% | **−0.795pp** | **−3.65** |
 
 EQUITY and ETF live picks are statistically indistinguishable from holding their beta. CRYPTO live
-picks are **worse than holding BTC**. Method, coverage and the clustered-t-stat rationale are in
-[`EXCESS_RETURNS.md`](EXCESS_RETURNS.md).
+picks are **worse than holding BTC**. The crypto shortfall is **concentrated**: `MomentumEMA` alone is
+58.2% of it (−11.56pp per pick, t −7.84), while the other 48 crypto strategies net **+39.4pp**. Method,
+coverage, the hourly fallback for sub-day picks and the clustered-t-stat rationale are in
+[`EXCESS_RETURNS.md`](EXCESS_RETURNS.md); the forward clock is in [`FORWARD_TEST.md`](FORWARD_TEST.md).
 
 ---
 
@@ -99,9 +102,11 @@ never merged into that N.
 ## Status
 
 **NO-GO for real capital.** No asset class in this repo has a forward-verified edge, and the live
-picks now have a measured excess column instead of an `unknown` one: EQUITY +0.24pp (t=0.96) and ETF
-+0.06pp (t=−0.22) are indistinguishable from their beta; CRYPTO is **−1.29pp (t=−4.60)**, i.e. worse
-than holding BTC. See [`EXCESS_RETURNS.md`](EXCESS_RETURNS.md). What this submission establishes is
+picks now have a measured excess column instead of an `unknown` one: EQUITY +0.238pp (t=0.97) and ETF
++0.023pp (t=−0.62) are indistinguishable from their beta; CRYPTO is **−0.795pp (t=−3.65)**, i.e. worse
+than holding BTC, with 58.2% of that shortfall from a single rule. See
+[`EXCESS_RETURNS.md`](EXCESS_RETURNS.md); the one candidate rule is on a pre-registered forward clock
+in [`FORWARD_TEST.md`](FORWARD_TEST.md), with **zero** forward trades so far. What this submission establishes is
 narrower and defensible: *measured* evidence that low-cost beta works after costs, that the
 drawdown-reduction overlay is cheap, that four specific active rules plus one entire asset class do
 **not** work, and that the live crypto book underperforms its own benchmark.

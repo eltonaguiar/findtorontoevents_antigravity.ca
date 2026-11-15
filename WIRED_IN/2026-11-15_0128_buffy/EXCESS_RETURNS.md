@@ -1,137 +1,159 @@
-# Live-pick excess returns — the "unknown" column, measured
+# Live-Pick Excess Returns — measured
 
-**Agent:** buffy (Codebuff) · **Date:** 2026-11-15
-**Tool:** [`tools/pick_excess.py`](../../tools/pick_excess.py) · **Artifact:** [`artifacts/pick_excess_returns.json`](artifacts/pick_excess_returns.json)
-**Source data:** `audit_dashboard/data/dashboard_data.json`, `picks.recent_closed`, generated `2026-10-19T19:40:11Z`
+**Regenerated:** 2026-11-15 · **Tool:** [`tools/pick_excess.py`](../../tools/pick_excess.py) · **Artifact:** [`artifacts/pick_excess_returns.json`](artifacts/pick_excess_returns.json)
 
----
-
-## 1. What was unknown, and what it is now
-
-`SPEC_EQUITY.md` said, correctly at the time, that the repo's single-stock picks had **no
-excess-return number** — so their edge was `unknown`, not proven and not refuted. The same was true
-for ETF and CRYPTO live picks. That gap is now closed: every closed pick in those three classes is
-compared against its class beta over the pick's **own holding window**, and the aggregate is reported
-with a t-stat that cannot be inflated by batch-fired picks.
-
-| Class | Picks scored | Distinct windows | Mean pick | Mean β over same window | **Excess** | t (clustered) | Excess win rate |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| **EQUITY** | 653 | 386 | +0.45% | +0.21% | **+0.24pp** | **0.96** | 46.1% |
-| **ETF** | 475 | 261 | +0.16% | +0.09% | **+0.06pp** | **−0.22** | 46.7% |
-| **CRYPTO** | 1,017 | 241 | +0.46% | +1.75% | **−1.29pp** | **−4.60** | 42.5% |
-
-Read this as: **EQUITY and ETF live picks are statistically indistinguishable from simply holding
-their beta.** The point estimate is positive but |t| < 1, so the honest verdict is *no demonstrated
-edge*, not *a small edge*. **CRYPTO live picks are materially worse than holding BTC** — −1.29pp per
-pick at t = −4.60, i.e. the picks lose ~1.3pp against the benchmark each time they fire, and the
-benchmark beat them in 57.5% of picks.
-
-That last line is the substantive finding of this document. The crypto book is not merely
-unproven against beta; on this sample it is **negative** against beta.
+Every other document in this folder says the live EQUITY / ETF / CRYPTO picks have `unknown`
+excess. This one replaces that with a number, measured per pick against the class beta over the
+pick's own holding window.
 
 ---
 
-## 2. Method, fixed before results were seen
+## 1. Result
 
-* **Trade universe:** every closed EQUITY/ETF/CRYPTO pick with usable entry and exit prices — 3,263
-  picks in total.
-* **Pick return:** the dashboard's own convention, so numbers reconcile with `pnl_pct`:
-  `long = exit/entry − 1`, `short = entry/exit − 1`. Where the recomputed return disagrees with
-  `pnl_pct` by more than 0.5pp, the pick is excluded and counted as a data-quality miss.
-* **Benchmark:** the class beta, not a peer strategy — **SPY** for EQUITY and ETF, **BTC-USD** for
-  CRYPTO, daily adjusted close.
-* **Window:** last close **on or before** the signal date → last close **on or before** the close
-  date. If those resolve to the same trading day the pick has no measurable benchmark window and is
-  excluded, never scored as zero excess.
-* **Excess:** `pick return − benchmark return`, in percentage points. A short that profits while SPY
-  rises has positive excess; that is the entire purpose of comparing against beta.
+| Class | Picks scored | Independent windows | Mean pick | Mean β | **Excess** | Excess WR | t (clustered) | t (naive) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| EQUITY | 674 | 407 | +0.44% | +0.20% | **+0.238pp** | 45.7% | 0.97 | 1.14 |
+| ETF | 498 | 279 | +0.08% | +0.06% | **+0.023pp** | 45.0% | −0.62 | 0.21 |
+| CRYPTO | 1,825 | 884 | +0.20% | +1.00% | **−0.795pp** | 40.9% | **−3.65** | −5.83 |
 
-### Coverage (all exclusions are counted, none are silently dropped)
+Read it against the benchmark, never on its own:
 
-| Outcome | Picks | Share of 3,263 |
-|---|---:|---:|
-| Scored | **2,145** | **65.7%** |
-| Window collapsed (entry and exit resolve to the same benchmark close) | 1,056 | 32.3% |
-| Recomputed return differs from `pnl_pct` by > 0.5pp (ledger data-quality miss) | 49 | 1.5% |
-| No usable entry/exit price | 9 | 0.3% |
-| Unparseable dates | 4 | 0.1% |
+- **EQUITY**: +0.24pp per pick over holding SPY, t = 0.97. Not an edge, not a hole — **indistinguishable
+  from beta**. But note the shape: mean **+0.24pp** while median is **−0.61pp** and only **45.7%** of
+  picks beat their benchmark. The positive mean is a right tail, not a typical trade.
+- **ETF**: +0.02pp, t = −0.62. **No measurable edge**; the median pick (−0.17pp) is negative.
+- **CRYPTO**: picks return +0.20% on average while simply holding BTC over the same windows returned
+  **+1.00%**. That is **−0.795pp per pick**, t = **−3.65**. The crypto book is a statistically
+  significant way to underperform its own benchmark.
 
-The 1,056 collapsed windows are a **structural limit**, not a bug: comparing an intraday hold to a
-daily benchmark has no defensible answer, and inventing one (e.g. treating same-day excess as 0)
-would bias every fast strategy toward "no edge". Median hold by class: EQUITY 120h, ETF 98h,
-CRYPTO 9.4h — so this exclusion necessarily bites hardest on the fastest crypto rules.
-
-### Why the t-stat is clustered
-
-Picks closed on the same pair of days share one market move and are **not independent**. A naive
-per-pick t-stat therefore overstates significance whenever a strategy fires in batches. Each
-`(entry_day, exit_day)` window is collapsed to its mean excess and the t-stat is computed over
-windows. The difference is not cosmetic:
-
-| Class | Naive per-pick t | Clustered t | Verdict change |
-|---|---:|---:|---|
-| EQUITY | +1.12 | 0.96 | no |
-| ETF | **+0.56** | **−0.22** | **sign flips** |
-| CRYPTO | −6.19 | −4.60 | no (magnitude drops 26%) |
-
-`ETF` flips sign under the correct unit of observation. Any claim resting on the naive number would
-have been wrong.
-
-One strategy demonstrates the failure mode in full: `hs_Auros_66M` has 8 picks that are all the same
-six-month window (identical entry day, exit day and return), so it has **one** independent
-observation and the tool reports `n/a` rather than a t-stat of −169,292.
+None of the three classes shows a positive excess that survives its own t-statistic.
 
 ---
 
-## 3. Strategy-level detail
+## 2. Why the crypto number is smaller than in the previous run (−1.29pp → −0.795pp)
 
-Headline requires n ≥ 5. Best and worst of 57 strategies:
+Not an improvement. **Coverage changed.** The previous run could only score windows of at least one
+full trading day, so 20-minute scalps were excluded as `window_collapsed`. Adding an hourly
+benchmark fallback brought **852 sub-day picks** back into the sample:
 
-| Strategy | n | Windows | Excess | t (clustered) | Excess WR |
+| Class | Sub-day picks recovered | Their mean excess | Multi-day picks only | All picks (this run) |
+|---|---:|---:|---:|---:|
+| EQUITY | 21 of 674 | +0.215pp | +0.238pp | +0.238pp |
+| ETF | 23 of 498 | **−0.833pp** | +0.064pp | +0.023pp |
+| CRYPTO | 808 of 1,825 | −0.173pp | **−1.290pp** | −0.795pp |
+
+The multi-day crypto subset reproduces the previously published **−1.290pp exactly**, which is the
+consistency check that matters: the method did not drift, only its coverage widened. The 808
+recovered crypto picks are *less bad* than the multi-day ones, so adding them **dilutes** the class
+mean toward zero. Reporting −0.795pp without this table would look like the book improved. It did not.
+
+---
+
+## 3. Where the crypto shortfall actually comes from
+
+54 crypto strategies, **−1,451.6pp** cumulative excess. It is not spread evenly — it is concentrated
+in a handful of rules:
+
+| Strategy | Picks | Windows | Mean excess | t (clustered) | Share of shortfall |
 |---|---:|---:|---:|---:|---:|
-| `bb-squeeze-breakout-scout` | 6 | 5 | +3.52pp | 0.84 | 50.0% |
-| `vix-mean-rev-scout` | 8 | 6 | +2.23pp | 1.49 | 62.5% |
-| `donchian-stock-breakout` | 42 | 39 | +2.01pp | 1.45 | 59.5% |
-| `vwap-reversion-scout` | 28 | 25 | +1.96pp | **1.99** | 60.7% |
-| `gap-and-go-stocks` | 21 | 20 | +1.68pp | 1.11 | 47.6% |
-| … | | | | | |
-| `fibonacci-bounce-scout` | 12 | 12 | −2.95pp | −2.70 | 8.3% |
-| `MomentumEMA` | 73 | 37 | −11.56pp | −7.84 | 4.1% |
-| `clone_hl_copy_PensionFund_24M` | 8 | 2 | −11.91pp | −0.54 | 12.5% |
-| `clone_hl_copy_lb_None` | 17 | 2 | −17.65pp | −7.57 | 0.0% |
-| `hs_Auros_66M` | 8 | **1** | −17.93pp | n/a | 0.0% |
+| MomentumEMA | 73 | 37 | **−11.56pp** | **−7.84** | **58.2%** |
+| clone_hl_copy_lb_None | 17 | 2 | −17.65pp | n/a | 20.7% |
+| hs_Auros_66M | 8 | 1 | −17.93pp | n/a | 9.9% |
+| clone_hl_copy_PensionFund_24M | 8 | 2 | −11.91pp | n/a | 6.6% |
+| st_fear_greed_contrarian (Revival) | 3 | 1 | −18.04pp | n/a | 3.7% |
+| hs_ABC_41M | 3 | 1 | −18.00pp | n/a | 3.7% |
+| luxalgo_confluence | 1,173 | 579 | −0.03pp | −1.89 | 2.6% |
 
-`vwap-reversion-scout` is the only row in the top group reaching t ≈ 2 on 25 independent windows.
-That is a **lead worth forward-testing**, not a proven edge: 25 windows clears no multiple-testing
-correction across 57 strategies, and the 5% bar for 57 trials is roughly |t| > 2.9.
+**The top six account for more than the entire shortfall** (their total is −1,491.0pp against a class
+total of −1,451.6pp). The other 48 strategies net **+39.4pp** between them — i.e. the crypto book
+*excluding* these six is roughly flat, not losing.
 
----
+**Only `MomentumEMA` is both large and measurable.** It is 58.2% of the damage, has 37 independent
+windows, and t = −7.84. Its excess win rate is **4.1%** — it beats BTC almost never, and its −11.56pp
+mean is driven by the size of the misses rather than their frequency. This is the one rule whose
+crypto allocation should be stopped on evidence.
 
-## 4. What this does and does not establish
+The `clone_hl_*` and `hs_*` rows are **unmeasurable**, not proven bad: `clone_hl_copy_lb_None`'s
+−17.65pp rests on **2 windows** (17 picks that are clones of the same two days), and `hs_Auros_66M`
+on **1**. A t-statistic is not reported below 5 windows for exactly this reason — an earlier version of
+this tool printed t = **−63.47** for a 2-window group, which is what two similarly bad days look like,
+not an edge.
 
-**Does:** fills the `unknown` cells. EQUITY/ETF picks now have a measured, non-significant positive
-excess; CRYPTO picks have a measured, significant negative excess against BTC. `SPEC_EQUITY.md` and
-`SPEC_CRYPTO.md` cite these numbers instead of saying "unknown".
-
-**Does not:** establish portfolio-level performance. Per-pick excess is an average over trades of
-unequal size, overlapping in time and with no capital constraint — it is not the return of a
-portfolio that held them. A strategy can have positive per-pick excess and negative portfolio
-return if it sizes up after losses. Treat §3 as a screen for what to forward-test, not as a track
-record.
-
-**Also does not:** resolve the 1,056 excluded picks. Measuring those needs intraday benchmark bars
-(hourly SPY/BTC), which this repo does not cache. That is the next data dependency if fast rules are
-to be judged at all.
+**Bulk is not the problem.** `luxalgo_confluence` is 64% of all crypto picks (1,173 of 1,825) yet
+contributes 2.6% of the shortfall, at −0.03pp per pick.
 
 ---
 
-## 5. Reproduce
+## 4. Crypto strategies that are (weakly) positive
 
-```bash
-python3 tools/pick_excess.py                       # -> reports/pick_excess_returns.json
-python3 tools/pick_excess.py --classes EQUITY --min-n 10
+Six crypto rules show positive mean excess on at least 8 independent windows. **None is significant**,
+and this is the honest way to report them — as candidates for a forward clock, not as edges:
+
+| Strategy | Windows | Mean excess | t (clustered) |
+|---|---:|---:|---:|
+| funding-rate-reversal | 14 | +0.95pp | 0.16 |
+| orderbook-imbalance | 14 | +0.21pp | 0.27 |
+| crypto_liquidity_wick_reversal_v1 | 43 | +0.16pp | 0.61 |
+| strong consensus (alpha_engine, quan_engine) | 43 | +0.13pp | 0.73 |
+| momentum_breakout | 47 | +0.11pp | 0.32 |
+| multi_period_rsi_confluence_eth | 25 | +0.08pp | 0.24 |
+
+The leading candidate for the equity side is `vwap-reversion-scout` (+1.96pp on 25 windows,
+t = 1.99), which is now on a pre-registered forward clock — see [`FORWARD_TEST.md`](FORWARD_TEST.md).
+
+---
+
+## 5. Method
+
+```text
+pick_return    = exit/entry - 1        (long)
+               = entry/exit - 1        (short)      # the dashboard's own convention
+bench_return   = last close on/before entry  ->  last close on/before exit
+excess_pp      = pick_return - bench_return         # percentage points
+benchmark      = EQUITY -> SPY, ETF -> SPY, CRYPTO -> BTC-USD
 ```
 
-Benchmark series are cached under `data/cache/pick_excess/` using explicit `period1`/`period2`
-epochs — the `range=max&interval=1d` form silently returns monthly bars and would corrupt every
-window that spans a month boundary.
+Why the class beta and not a peer strategy: a peer comparison answers "is this rule better than that
+rule", and the question here is "did the pick beat simply owning the exposure". A SHORT that profits
+while SPY rises has **positive** excess, which is the point.
+
+**Sub-day windows.** If entry and exit resolve to the same trading day there is no daily benchmark
+window, and the pick falls back to **Yahoo 60-minute bars** (last bar at or before each timestamp,
+requiring strictly increasing timestamps). 852 picks were recovered this way. Anything still
+unseparable — 204 picks — is excluded as `window_collapsed` and **never scored as zero excess**.
+
+**Independence.** Picks closed on the same pair of days share one market move. Every reported t is
+therefore computed over `(entry_day, exit_day)` windows, not over picks. The naive per-pick t is shown
+beside it to make the overstatement visible: ETF's naive t is **+0.21** while its clustered t is
+**−0.62** — the same data, opposite sign. Reporting only the naive figure would have claimed an ETF
+edge that does not exist. Below 5 windows no t is reported at all.
+
+**Exclusions** (all counted, none silently dropped): benchmark window collapsed 204, ledger price and
+`pnl_pct` disagree by more than 0.5pp 49, missing or non-positive price 9, unparseable dates 4.
+
+---
+
+## 6. Coverage
+
+| | Count |
+|---|---:|
+| Scored | **2,997** of 3,263 closed EQUITY/ETF/CRYPTO picks (91.8%) |
+| — daily benchmark | 2,145 |
+| — hourly benchmark | 852 |
+| Excluded | 266 (204 window collapsed, 49 pnl mismatch, 9 no price, 4 no dates) |
+
+---
+
+## 7. Limits — what this number is not
+
+- **Not a portfolio return.** Trades overlap with no capital constraint, so summing excess is not what
+  an account would have earned. These are per-trade statistics.
+- **Benchmark, not risk-adjusted peer.** Excess vs SPY/BTC says nothing about whether the pick used
+  more or less risk to get there.
+- **Short-sample rules stay unmeasured.** Several crypto rows have 1–2 windows after clustering; they
+  are named above as unmeasurable rather than ranked.
+- **Signal timestamps are assumed to be about fill time.** The ledger stores `timestamp`/`entry_time`;
+  a pick priced well away from where the market traded then would distort its own excess. The
+  `pnl_mismatch` filter (49 picks) catches the worst of this, not all of it.
+- **Hourly bars are unadjusted.** Correct for a sub-day difference from a single series; irrelevant to
+  multi-day picks, which use adjusted daily closes.
