@@ -1,0 +1,77 @@
+{
+  "schema": "wired_in.final_v001/1.0",
+  "generated_at": "2026-11-15T07:41Z",
+  "worktree": "wire-fix-ghactions-pr-issues-v2",
+  "objective": "Find and prove profitable strategies per asset class, net of cost, out-of-sample, forward-verified, and publish verdicts to findtorontoevents.ca/audit",
+  "global_verdict": "NO_PROVEN_EDGE",
+  "money_ready": [],
+  "gates": [
+    {"id": 0, "name": "data_integrity", "pass": "no flat/frozen/ghost pollution"},
+    {"id": 1, "name": "pre_registration", "pass": "H-id + fixed spec + trial_count + benchmark"},
+    {"id": 2, "name": "cost_adjusted_backtest", "pass": "net PF>1 and net expectancy>0 vs benchmark"},
+    {"id": 3, "name": "significance", "pass": "bootstrap CI_low>0, DSR>=0.95, PBO<0.5"},
+    {"id": 4, "name": "walk_forward_oos", "pass": "OOS retains>=50% IS edge, OOS PF>1"},
+    {"id": 5, "name": "robustness", "pass": "2x cost, param, regime, symbol robustness"},
+    {"id": 6, "name": "forward_ledger", "pass": "n_closed>=100 or windows>=152, net of cost"},
+    {"id": 7, "name": "benchmark_excess", "pass": "mean_excess>0, t>=1.96 (or adjusted)"},
+    {"id": 8, "name": "implementation", "pass": "capacity, slippage, sizing, no look-ahead"},
+    {"id": 9, "name": "monitoring", "pass": "drift monitor + auto-retire wired"}
+  ],
+  "kill_rules": [
+    "n>=20 and mean_excess<0 and boot5(PF)<1.00",
+    "n>=50 and mean_excess<+0.25pp",
+    "DSR<0.95 with true trial count"
+  ],
+  "promotion_requires": {"n_closed": 100, "mean_excess": ">0", "abs_t": 1.96, "dsr": 0.95, "pbo": "<0.5", "gate5": true},
+  "benchmark_map": {
+    "EQUITY": "SPY", "ETF": "SPY", "MUTUAL_FUND": "category_benchmark",
+    "BOND": "AGG", "FOREX": "DXY_or_pair_BH", "CRYPTO": "BTC-USD",
+    "COMMODITY_FUTURES": "GLD_or_underlying_BH", "PENNY": "IWM"
+  },
+  "cost_rt_bps": {
+    "EQUITY": 12, "ETF": 12, "CRYPTO": 30, "FOREX": 0,
+    "BOND": 12, "COMMODITY_FUTURES": 0, "MUTUAL_FUND": 0, "PENNY": 60
+  },
+  "cost_notes": {
+    "FOREX": "spread + 1 pip + swap",
+    "COMMODITY_FUTURES": "1 tick + commission + roll",
+    "MUTUAL_FUND": "NAV + redemption, T+1"
+  },
+  "classes": {
+    "CRYPTO": {"state": "NOT_READY", "n": 3705, "wr": 35.87, "pf": 0.9196, "top_hypothesis": "H-201"},
+    "EQUITY": {"state": "NOT_READY", "n": 250, "wr": 59.2, "pf": 0.9392, "top_hypothesis": "H-301"},
+    "ETF": {"state": "SHADOW", "n_closed": 0, "forward_target": 152, "top_hypothesis": "H-103"},
+    "MUTUAL_FUND": {"state": "KILLED_NO_DATA_PATH"},
+    "BOND": {"state": "INSUFFICIENT_DATA", "n": 1},
+    "FOREX": {"state": "NOT_READY", "n": 612, "wr": 32.19, "pf": 0.6596, "hard_disabled": true},
+    "COMMODITY_FUTURES": {"state": "WATCH_NEGATIVE_EXPECTANCY", "n": 229, "pf": 1.0256, "expectancy": -0.0017},
+    "PENNY": {"state": "KILLED_INSUFFICIENT_SAMPLE", "n": 4}
+  },
+  "research_queue": [
+    {"id": "H-103", "class": "ETF", "rank": 1, "prior_pf": 3.57, "ci": [1.64, 9.69], "alpha_t": 2.36},
+    {"id": "H-201", "class": "CRYPTO", "rank": 2},
+    {"id": "H-301", "class": "EQUITY", "rank": 3},
+    {"id": "H-302", "class": "EQUITY", "rank": 4},
+    {"id": "H-120", "class": "CRYPTO", "rank": 5},
+    {"id": "H-401", "class": "FOREX", "rank": 6},
+    {"id": "H-501", "class": "COMMODITY_FUTURES", "rank": 7},
+    {"id": "H-601", "class": "ETF", "rank": 8}
+  ],
+  "measurement_wiring": {
+    "forward_tracker_on_main": true,
+    "forward_tracker_wired": false,
+    "ledger_rows": 0,
+    "pick_excess_on_main": false,
+    "benchmark_prices_on_main": false,
+    "forward_clock_on_main": false,
+    "dashboard_tags_on_main": false,
+    "ftp_upload_list_includes_clock": false,
+    "blocking_prs": [713, 786, 785]
+  },
+  "phases": [
+    {"id": 0, "name": "unblock_ci_and_ledger", "days": 3},
+    {"id": 1, "name": "make_clock_run_and_publish", "weeks": 3},
+    {"id": 2, "name": "run_best_hypothesis_to_significance", "weeks": 10},
+    {"id": 3, "name": "promote_or_kill", "weeks": 16}
+  ]
+}
