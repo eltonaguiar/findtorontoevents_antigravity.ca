@@ -99,3 +99,17 @@ cutoff, then the artifact cross-check decided whether a green run meant data.
   `feature-signals-hourly` tick is 16:25Z and `audit-dashboard` is hourly. Until
   then the live timestamps remain 2026-11-11 and 2026-11-08. The proof to look
   for is `generated_at` moving past those values on the live site.
+
+## Addendum — sequencing correction
+
+The first commit merged (#807) carried the validator fix and this document, but
+its workflow edit silently aborted on a line-ending mismatch: the publish line in
+`feature-signals-hourly.yml` did not match the literal string, the script exited
+before writing, and the job still ran `git push`. That was caught by the
+verification step (`safe_push present: False`), which means the claim above was
+briefly not backed by code.
+
+The workflow change is applied in the follow-up commit on this branch, using an
+EOL-tolerant regex over the publish line, and re-verified with
+`yaml.safe_load` plus string assertions. Lesson: a guard that silently `exit 1`s
+inside a heredoc must be checked for by the step that follows it, not assumed.
