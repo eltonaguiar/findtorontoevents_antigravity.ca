@@ -44,3 +44,14 @@ jobs:
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
           DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
+          # Equity quote-chain credentials (alpha_engine/equity_price_failover.py).
+          # Adapters 2-6 return None immediately when their key is unset, leaving
+          # only Stooq (blocked from runner IPs) and yfinance (flaky) -> every
+          # ticker logs "ALL 7 sources failed". Supplying the keys restores the
+          # real chain; the gate logic itself is unchanged.
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY || secrets.FINNHUB }}
+          FINNHUB: ${{ secrets.FINNHUB_API_KEY || secrets.FINNHUB }}
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
