@@ -4,7 +4,7 @@
 **Status:** `INSTRUMENTED — NOT MEASURED` (settlement and calibration code exists and is tested;
 no obtainable price history to score against — see §5)
 
-**Module:** [`tools/pm_binary.py`](../../../tools/pm_binary.py) · **Artifact:** [`artifacts/pm_calibration.json`](artifacts/pm_calibration.json)
+**Module:** [`tools/pm_binary.py`](../../../tools/pm_binary.py) · **Artifact:** [`artifacts/pm_calibration.json`](../artifacts/pm_calibration.json)
 
 ---
 
