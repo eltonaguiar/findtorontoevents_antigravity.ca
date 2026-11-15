@@ -290,8 +290,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     result = run_one_shot()
     if args.write_db and result.get("basket"):
-        n = _write_basket_to_db(result["basket"])
-        print(f"[DB] Inserted/updated {n} pick(s)", file=sys.stderr)
+        # Fail-open: the DB write is best-effort (paper pilot). Missing DB creds
+        # in CI, a down DB, or a missing driver must not fail the whole pilot.
+        try:
+            n = _write_basket_to_db(result["basket"])
+            print(f"[DB] Inserted/updated {n} pick(s)", file=sys.stderr)
+        except Exception as e:
+            print(f"[DB] write-db failed (fail-open, pilot continues): {e}", file=sys.stderr)
     print(json.dumps(result, indent=2))
     return 0
 
