@@ -81,6 +81,11 @@ jobs:
       - name: Show verdict after sync
         run: python3 tools/forward_tracker.py status
 
+      # The panel must never compute its own verdicts: this imports the same
+      # decide()/interim_verdict() the CLI uses.
+      - name: Build dashboard clock panel data
+        run: python3 tools/build_forward_clock.py
+
       - name: Commit ledger changes only
         if: ${{ inputs.dry_run != true }}
         run: |
@@ -88,32 +93,31 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          if [ ! -f state/forward_test/ledger.jsonl ]; then
-            echo "No ledger file — nothing was admitted (pre-registration guard held). Nothing to commit."
-            exit 0
+          # The ledger may legitimately not exist yet (nothing admitted = the guard
+          # working). The clock panel still ships so the dashboard can show 0/152
+          # instead of hiding the strategy entirely.
+          if [ -f state/forward_test/ledger.jsonl ]; then
+            git add -- state/forward_test/ledger.jsonl
+          else
+            echo "no ledger file yet (nothing admitted)"
           fi
+          [ -f audit_dashboard/data/forward_clock.json ] && git add -- audit_dashboard/data/forward_clock.json
 
           # Explicit single-path add: this job may never stage plan.json, the
           # payload, or any other generator output.
-          git add -- state/forward_test/ledger.jsonl
-          if git diff --cached --quiet; then
-            echo "Ledger unchanged — no new closed picks since the last run."
-            exit 0
-          fi
 
           bash .github/scripts/assert_no_conflict_markers.sh || { echo "::error::conflict markers in ledger"; exit 1; }
 
-          staged=$(git diff --cached --name-only | wc -l | tr -d ' ')
-          if [ "$staged" != "1" ]; then
-            echo "::error::expected exactly 1 staged path (the ledger), got $staged:"
-            git diff --cached --name-only
-            exit 1
-          fi
-          if [ "$(git diff --cached --name-only)" != "state/forward_test/ledger.jsonl" ]; then
-            echo "::error::staged path is not the ledger"
-            exit 1
-          fi
+          # Only these two paths may ever reach the index. Anything else is a bug in
+          # this job, not a file to commit.
+          ALLOWED="state/forward_test/ledger.jsonl audit_dashboard/data/forward_clock.json"
+          for p in $(git diff --cached --name-only); do
+            case " $ALLOWED " in
+              *" $p "*) : ;;
+              *) echo "::error::refusing to commit unexpected path: $p"; exit 1 ;;
+            esac
+          done
 
-          rows=$(wc -l < state/forward_test/ledger.jsonl)
+          rows=$([ -f state/forward_test/ledger.jsonl ] && wc -l < state/forward_test/ledger.jsonl || echo 0)
           git commit -m "chore(forward-test): ledger sync $(date -u +'%Y-%m-%d') — ${rows} rows [skip ci]"
           bash .github/scripts/safe_push.sh
