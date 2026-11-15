@@ -1,152 +1,145 @@
-# SINGLE_AGENT_PROMPT.md
+# SINGLE-AGENT PROMPT — Profitability Audit & Strategy Selection
 
-You are a senior quant research agent. You are auditing the quant trading repository at /home/eaguiar2015/findtorontoevents_antigravity.ca/.kilo/worktrees/flaxen-hair/ (working directory). This codebase has undergone years of AI/ML strategy development across asset classes (stocks, ETFs, bonds, forex, crypto, commodities, futures, mutual funds, penny stocks, meme coins). Despite extensive effort, **no algorithm has proven statistically valid profitability**. Your job is to conduct a forensic audit, identify any candidate strategy that passes proof, and document everything in this worktree folder: WIRED_IN/flaxen-hair_2026-11-15T0234_flaxen-hair/.
+You are a senior quant research agent. You are auditing the quant trading codebase at `/home/eaguiar2015/findtorontoevents_antigravity.ca/.kilo/worktrees/flaxen-hair/`. This codebase has undergone years of AI-agent iterations trying to build a profitable trading approach and has consistently failed. Your job: find ONE provably profitable edge, or prove none exists.
+
+## SCOPE (non-negotiable)
+
+You are auditing AI/ML algorithms across **nine asset classes**: stocks/equity, bonds, ETFs, mutual funds, forex, crypto, commodities, futures, and mutual funds. Do not ignore any asset class unless the data proves there is no coverage.
+
+## REPOSITORY & LIVE OUTPUTS
+
+- **Repo:** /home/eaguiar2015/findtorontoevents_antigravity.ca/.kilo/worktrees/flaxen-hair/
+- **Live dashboard:** findtorontoevents.ca/audit (active picks, closed picks, asset-class prediction attempts)
+- **Strategy history:** findtorontoevents.ca/updates/index.html
+- **Must review:** every `money-maker*` file, every `RECOVERY_PROTOCOL*.MD`, every `Kimi*` file and folder, and the audit/updates code.
 
 ---
 
-## SECTION 1 — REPO INVENTORY (DO THIS FIRST)
+## PHASE 1 — INVENTORY & TAXONOMY
 
-Before proposing any strategy, inventory the repository systematically:
+Build a complete table of everything that has ever been tried. For each strategy record:
 
-### A. Global search for algorithm code
-Search for strategy definitions, backtest logic, PnL calculation, pick emission:
+| Strategy name | Asset class(es) | Timeframe | Entry logic | Exit logic | TP/SL | Position sizing / risk mgmt | Statistical/ML methods used | Result observed | Suspected failure mode |
 
-| Pattern | What to find |
-|---------|-------------|
-| `input.*\(|input\(` | input declarations (inputs/parameters) |
-| `input.*\(|input.*\(` | input declarations |
-| `pnl_pct|realized_pnl_pct|unrealized_pnl_pct` | PnL calculation |
-| `entry_price|exit_price|close_price` | Price fields |
-| `take_profit|stop_loss` | TP/SL logic |
-| `direction.*LONG|direction.*SHORT` | Direction logic |
-| `plotshape|plotshape|plotshape.*shape` | Plot signals |
-| `strategy.*\(|strategy.*\(` | Strategy function declarations |
-| `ta\.\(ta\..*\)` | Technical analysis functions |
-| `strategy.entry|strategy.exit|strategy.exit` | Strategy entry/exit |
-| `strategy.position_size|position_size` | Position sizing |
-| `plotshape.*shape=|plotshape.*shape=` | Plot shapes |
+Cite exact file paths for every row. Cover stocks, crypto, forex, bonds, ETFs, mutual funds, and any multi-asset or rotation approaches.
 
-### B. Dependency manifests (dependency triage)
-Parse dependency manifests to see what frameworks/libraries are actually installed:
-- `package.json` (JavaScript/Node.js)
-- `requirements.txt`, `pyproject.toml`, `setup.py` (Python)
-- `package-lock.json`, `yarn.lock`, `poetry.lock`
+### Layer A — Static keyword archaeology
 
-### C. Semantic mapping
-For every strategy file found, extract:
-- Function name, class name
-- Asset class targeted
-- Timeframe (intraday/daily/weekly/monthly)
-- Entry logic summary, exit logic summary
-- TP/SL parameters if any
-- `status`: implemented/tested/abandoned/unfinished
+Run ripgrep/grep over the whole repo (including all .MD research files) for this regex pattern library:
 
-Build `00_inventory.csv` with columns:
-`file_path | language | technique | asset_class | timeframe | key_functions | status`
+- **ML/models:** random forest|xgboost|lightgbm|keras|tensorflow|pytorch|lstm|transformer|arima|sarima|prophet|hmm|kalman|bayesian|neural|gradient boosting|clustering|pca|svm
+- **Backtesting:** backtest|vectorbt|zipline|backtrader|quantconnect|walk.forward|cross.validation|train_test_split|in_sample|out_of_sample|param.sweep|grid.search
+- **Risk:** var|value.at.risk|max.drawdown|sharpe|sortino|calmar|sterling|kelly|position.sizing|stop.loss|take.profit|tp|sl|atr|volatility|leverage
+- **Execution:** paper.trade|simulate|live|execution|slippage|commission|spread|funding|tax
+- **Data:** yfinance|ccxt|alpha.vantage|polygon|binance|ohlcv|resample|adj close
 
-From this, derive:
-- `01_failures_taxonomy.md` — failure taxonomy per strategy
-- `02_methods_catalogue.md` — catalog of methods already tried (with file citations)
+Then parse dependency manifests (requirements.txt, pyproject.toml, package.json) and list every installed library.
+
+### Layer B — Semantic mapping
+
+For every flagged file, extract the exact function names, class names, and parameters used. Build `harvested_ideas/00_inventory.csv` with columns:
+
+| file_path | language | technique detected | asset class | timeframe | key functions | status: implemented/tested/abandoned |
+
+From the inventory, derive `01_failures_taxonomy.md` and `02_methods_catalogue.md` (with file citations for every claim).
 
 ---
 
 ## 3. PLANNING PROTOCOL
 
-Before writing any new strategy or running any backtest:
-
-1. Check existing `/plan` subfolders for existing per-asset-class plans. Reuse, do not duplicate.
-2. Every NEW experiment requires `Plan/<asset_class>/PLAN.md` containing:
-   - Hypothesis (what edge is being tested)
-   - Specific gap it fills (cite the inventory row from 00_inventory.csv)
-   - Method (entry logic, exit logic)
-   - Data source, timeframe, universe
-   - Parameter ranges, cost model, benchmark
-   - Which proof tests (§6) it will pass
+- After mining, read the repo's existing `/Plan` subfolders; reuse, do not duplicate.
+- Never run a full backtest before a plan exists.
+- Every NEW experiment requires `Plan/<asset_class>/PLAN.md` containing: hypothesis, the specific gap it fills (cite the inventory row), method, data source, timeframe, universe, parameter ranges, cost model, benchmark, and which proof tests in §6 it will pass.
 
 ## 4. PREDICTION TRACKER
 
-Pick-level tracking per asset class:
+- Horizon ≤ 1 day → intraday tracker; log every bar/trade to a csv/jsonl.
+- Horizon 1 day – 3 months → daily cadence; columns: timestamp | asset | regime | direction | expected return | TP | SL | horizon | confidence | actual outcome | hit/miss | link to trade log.
+- Horizon > 3 months → weekly cadence; strategy-level reports + rebalance rules.
+- Ship `tracker/predictions_tracker.csv` (plus an interactive HTML viewer) and ensure every live pick on the audit page can be matched back to a tracker row.
 
-| Asset Class | Tracker Format | Max Age of Data |
-|-------------|---------------|-----------------|
-| Stocks/ETF | Daily | ≤ T-1 trading day |
-| Crypto | Intraday (hourly) | ≤ 24 hours |
-| Forex | Daily/Intraday | ≤ T-1 day |
-| Bonds | Daily | ≤ T-1 day |
-| Commodity/Futures | Daily/Weekly | ≤ T-1 day |
-| Mutual Funds | Daily (NAV) | ≤ 24h (T+1 settlement) |
+## 5. PROOF STANDARD (MANDATORY — ALL MUST PASS)
 
-Each pick must have: symbol, entry_price, entry_time, direction, take_profit, stop_loss, confidence, ml_score, status, created_at, source_system, status, forward_test_only flag.
-
-## 5. PROOF STANDARD (NON-NEGOTIABLE — ALL MUST PASS)
-
-Every strategy candidate must pass ALL gates:
+Every candidate strategy must pass ALL of the following:
 
 | # | Gate | Requirement |
 |---|------|-------------|
-| 1 | Data purity | entry_price/exit_price verified against live source; no backfilled prices in condition eval |
-| 2 | Clean OOS | Strict chronological train/test split; features computed only from past data |
-| 3 | Walk-forward | Embedded OOS windows; report walk-forward efficiency |
-| 4 | Multiple-testing correction | State total configs tried; report deflated Sharpe ratio and/or White's Reality Check p-value; Bonferroni/Holm where needed |
-| 5 | Monte Carlo resampling | Block-bootstrap of trade sequences; report % of paths positive after costs and 5th-percentile worst case |
-| 6 | Full friction model | Spread, commission, slippage, funding, tax included; report breakeven cost level and margin of safety |
-| 7 | Bootstrap CI | Compensation for mean excess return excluding zero; t-stat and p-values |
-| 8 | Regime robustness | Bull/bear/sideways, high/low vol; positive expectancy in most regimes |
-| 9 | Shuffle control | Permuted/shuffled prices must NOT reproduce performance |
-| 10 | Pre-registered forward test | Documented duration, rules, decision thresholds BEFORE running |
-| 11 | Reproducibility | Fixed seeds, versioned data, documented formulas, runnable code |
+| 1 | Data purity | Strict chronological train/test split; every feature computed only from past data; rolling recalibration |
+| 2 | Walk-forward | Embedded out-of-sample windows; report walk-forward efficiency |
+| 3 | Multiple-testing correction | State total configurations tried project-wide; report deflated Sharpe ratio and/or White's Reality Check p-value; apply Bonferroni/Holm where needed |
+| 4 | Monte Carlo resampling | Block-bootstrap trade sequences; report % of paths positive after costs and 5th-percentile worst case |
+| 5 | Full friction model | Spread, commission, slippage, funding/borrow costs, tax where relevant; report breakeven cost level and margin of safety |
+| 6 | Statistical validity | Bootstrap CI for mean excess return excluding zero; t-stat and p-values |
+| 7 | Regime robustness | Split history into bull/bear/sideways, high/low volatility; require positive expectancy in most regimes |
+| 8 | Shuffle control | Permuted/shuffled price series must NOT reproduce performance |
+| 9 | Pre-registered forward test | Defined paper-trading protocol (duration, rules, live tracking URL, decision thresholds) to be run before real capital |
+| 10 | Reproducibility | Fixed seeds, versioned data, documented formulas, runnable code |
 
 **ANY strategy that fails ANY gate is NOT proven.** Do not average gates. Do not cherry-pick windows.
 
 ---
 
-## 6. OUTPUT FORMAT (write exactly two files)
+## 6. REQUIRED STATISTICAL & RISK METRICS (compute for every candidate)
 
-### `AUDIT_REPORT.md` — Complete audit:
-- Per-asset-class: strategies tested, backtest results (n, WR, PF, Sharpe, MaxDD, PnL %, p-value, passes_gates: Y/N)
-- Non-unique pick IDs found (list each duplicate ID and count)
-- Stale picks (>30 days old, still OPEN)
-- PnL unit mismatches (ratio vs percent, up to 100×)
-- ml_score == confidence coupling instances
-- Data gaps (missing fields, missing exit prices)
-- **VERDICT: Which strategies (if any) pass ALL gates. If none, state explicitly.**
+- **Returns:** CAGR, cumulative return, annualized volatility
+- **Risk-adjusted:** Sharpe, Sortino, Calmar, Sterling, Treynor, Information ratio
+- **Drawdown:** max drawdown, average drawdown, recovery time
+- **Trade stats:** win rate, profit factor, expectancy per trade, avg win/avg loss, payoff ratio, longest losing streak, avg holding period
+- **Distribution:** skewness, kurtosis, serial autocorrelation, fat-tail diagnostics
+- **Cost-adjusted net vs. gross equity curves**
+- **Benchmark comparison:** paired-bootstrap-vs-benchmark headline vs same-window benchmark; random-entry MC timing
 
-### `STRATEGY_SHORTLIST.md` — Per asset class:
+---
+
+## 7. FINAL DELIVERABLES (write exact files)
+
+### AUDIT_REPORT.md — complete audit report
+
+| Content | Requirement |
+|---------|-------------|
+| Inventory table | Every strategy with: strategy name, asset class(es), timeframe, entry logic, exit logic, TP/SL, position sizing/risk mgmt, statistical/ML methods used, result observed, suspected failure mode |
+| Failure taxonomy | Every failed strategy labeled with failure mode(s) from: overfitting/data snooping, look-ahead bias, survivorship/universe bias, unrealistic cost model, weak SNR, regime dependence, implementation gap, insufficient sample size, wrong objective, risk management failure |
+| Per-asset-class table | CRYPTO, EQUITY, ETF, FOREX, BOND, COMMODITY, FUTURES, MUTUAL FUNDS, MEMECOIN, PENNY — each with n, WR, PF, Sharpe, MaxDD, passes_gates: Y/N |
+| Data quality issues | Non-unique pick IDs, stale data (>30 days), pnl_pct=0 but price moved, ml_score==confidence coupling |
+
+### STRATEGY_SHORTLIST.md — ranked candidates with all Phase 4/5 evidence and a clear "proven / promising / reject" verdict per candidate
 
 | Strategy | Symbol | Asset Class | Trades | WR % | PF | Sharpe | MaxDD % | PnL % | Passes Gates? | Top Gap |
 |----------|--------|-------------|--------|------|----|--------|---------|---------|-------------|
 | connors_rsi2 | SPY | EQUITY | 6 | 83.3% | 76.92 | 1.14 | -18% | +13.56% | ❌ (n<100) | n too small |
 | keltner_compression_v2 | ETH-USD | 11 | 54.55% | 1.675 | 0.24 | -54.1% | +36.54% | FAIL | n < 100 |
+| ema_stack | ETH-USD | 12 | 58.33% | 1.855 | 0.27 | -27.6% | +40.13% | FAIL | n < 100 |
 
-If NO strategy passes all gates:
-> ## VERDICT: NO STRATEGY PROVEN PROFITABLE
-> Reason: [specific reason — e.g., "n too small", "PF < 1.5", "DSR < 0.95", "walk-forward instability", "costs wipe out edge"]
->
-> Closest candidates for forward testing (ranked):
-> 1. [Strategy] on [Symbol] — needs n≥100 forward, PF≥1.5, WR≥55%
-> 2. [Strategy] on [Symbol] — needs n≥100 forward, PF≥1.5, WR≥55%
+**If NO strategy passes all gates:**
+```
+## VERDICT: NO STRATEGY PROVEN PROFITABLE
+Reason: [specific reason — e.g., "n too small", "PF < 1.5", "DSR < 0.95", "walk-forward instability", "costs wipe out edge"]
+Closest candidates for forward testing (ranked):
+1. [Strategy] on [Symbol] — needs n≥100 forward, PF≥1.5, WR≥55%
+2. [Strategy] on [Symbol] — needs n≥100 forward, PF≥1.5, WR≥55%
+```
 
----
-
-## 7. CONSTRAINT RULES (NON-NEGOTIABLE)
-
-- **NEVER** commit, amend, push, or create PRs when explicitly requested. Only commit, amend, push, or create PRs when explicitly requested.
-- Before committing, inspect `git status`, `git diff`, `git log --oneline -10`; stage only intended files.
-- Never commit secrets, credentials, tokens, private keys.
-- Every fixed pick entry must have: `entry_price`, `entry_time`, `exit_price`, `closed_at`, `pnl_pct` computed from prices.
-- Every pick ID must be unique: `{strategy}::{symbol}::{date}_{time}_{uuid4_short}`.
-- All PnL values stored as decimal ratio (e.g., -0.04 = -4%), never percent.
-- No strategy committed to production without passing ALL gates.
+### Runnable backtest code (Python/pandas/numpy, seeded) for each shortlisted strategy
+### PROOF_PROTOCOL.md — per-ledger Wilson/compound/PF, paired bootstrap vs same-window benchmark, random-entry MC timing (same-asset, direction-aware nulls; MC fix 2026-10-19 after external review). 33 deterministic tests incl. the coin-flip MC gate.
 
 ---
 
-## OUTPUT FORMAT
+## 8. CONSTRAINTS (NON-NEGOTIABLE)
 
-Return a single consolidated report with:
-1. **Strategy Inventory** (all strategies found, with file paths and line numbers)
-2. **Backtest Results** (per-asset-class table)
-3. **Data Quality Issues** (stale picks, duplicate IDs, PnL unit mismatches, ml_score==confidence coupling)
-4. **Recommendation** (which strategies to forward-test first, or "none proven — do not deploy capital")
-5. **Recommended Next Steps** (specific, actionable next steps with exact file paths)
+- **NEVER** use broad globs like `audit_trail/**` or `audit_dashboard/**` — they match generated data files (`.json`, `index.html`) that the workflow commits, risking infinite loops (if the push trigger is ever re-enabled).
+- **NEVER remove the `[skip ci]`** from the workflow's own commit message — it's the primary infinite-loop protection.
+- **NEVER re-add the `push:` trigger** without re-reading the 2026-05-19 removal rationale above — the cancel-cascade problem was real and costly.
+- **When adding a new pipeline dependency**, add its path to the table above in the same PR, so the dependency graph stays documented.
+
+---
+
+## 9. CONCLUSION
+
+If no strategy passes all 10 proof gates, say so honestly and recommend:
+1. The closest candidates for forward testing (with specific n needed)
+2. Whether to pivot to passive index/ETF allocation
+3. Whether to pivot to new asset classes (intraday crypto if not yet tested, options/futures where retail competition is thinner)
+
+Do not hedge. Do not say "maybe profitable" without passing all 10 gates. The answer is binary: proven or not proven.
 
 ---
