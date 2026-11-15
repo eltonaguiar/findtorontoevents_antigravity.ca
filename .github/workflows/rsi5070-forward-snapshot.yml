@@ -219,6 +219,8 @@ jobs:
             push_rc=0
             push_output=$(git push origin HEAD:main 2>&1) || push_rc=$?
             echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            # NOTE: every retry below must first reconcile with origin/main —
+            # see the rebase branch after the permanent-rejection check.
             if [ $push_rc -eq 0 ]; then
               echo "Pushed successfully on attempt $i"
               push_ok=true
@@ -228,6 +230,20 @@ jobs:
             if echo "$push_output" | grep -qiE "pre-receive hook declined|push declined due to|protected branch|GH[0-9]{3}|refusing to (allow|update)"; then
               echo "ERROR: Push permanently rejected — aborting"
               exit 1
+            fi
+            # Non-fast-forward means main advanced under us (another publisher
+            # in the shared `dashboard-publish` group, or a push-triggered
+            # workflow). Retrying the identical push can NEVER succeed, which
+            # is why run 43688176979 burned all 10 attempts and lost the day's
+            # snapshot. Our commit touches two JSON files only, so rebasing
+            # onto the new main is conflict-free by construction.
+            if echo "$push_output" | grep -qiE "non-fast-forward|fetch first|\[rejected\]|behind its remote"; then
+              if git fetch --quiet origin main && git rebase --quiet origin/main; then
+                echo "Rebased onto origin/main — retrying push immediately"
+                continue
+              fi
+              git rebase --abort >/dev/null 2>&1 || true
+              echo "::warning::rebase onto origin/main failed — falling back to timed retry"
             fi
             delay=$((2 ** i + RANDOM % 10)); [ $delay -gt 60 ] && delay=$((60 + RANDOM % 10))
             echo "Push attempt $i failed, retrying in ${delay}s..."
