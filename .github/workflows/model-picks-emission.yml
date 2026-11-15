@@ -45,6 +45,12 @@ jobs:
       - name: Run tactical allocation emitter
         run: python3 2026-11-15_AM_plan/finpredict-v4/05_simulation/emit_tactical_picks.py
 
+      - name: Merge model picks into picks_now.json
+        # Appends model picks whose symbols are not already in picks_now.json
+        # (case-insensitive) BEFORE save_picks_to_db.py so they reach the DB.
+        # Non-fatal if the model file is missing; preserves generated_at.
+        run: python3 tools/merge_model_picks.py
+
       - name: Save picks to DB (picks_now_tracker)
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}

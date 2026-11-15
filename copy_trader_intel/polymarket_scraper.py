@@ -7,10 +7,13 @@ Uses Polymarket's public data API to discover leaderboard wallets, score them
 on crypto-only resolved positions, and convert their current crypto positions
 into copy-trader picks.
 
-Primary endpoints:
-  - GET https://data-api.polymarket.com/v1/leaderboard
-  - GET https://data-api.polymarket.com/closed-positions
-  - GET https://data-api.polymarket.com/positions
+Primary endpoints (Data API v2 — v1 was retired and now returns HTTP 410):
+  - GET https://data-api.polymarket.com/v2/leaderboard
+  - GET https://data-api.polymarket.com/v2/positions?status=OPEN
+  - GET https://data-api.polymarket.com/v2/positions?status=CLOSED
+
+Note: v2 pagination is cursor-only — pass `cursor` from the prior response's
+`pagination.next_cursor`; `offset` is rejected.
 
 The goal is not to mirror every profitable Polymarket bettor. It is to find
 wallets with repeatable crypto directional edge and copy only their current
@@ -43,10 +46,13 @@ if sys.platform == "win32":
 DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
-LEADERBOARD_URL = "https://data-api.polymarket.com/v1/leaderboard"
+# Polymarket Data API v2 (v1 endpoints return HTTP 410 — retired).
+LEADERBOARD_URL = "https://data-api.polymarket.com/v2/leaderboard"
+# Kept for provenance output only (save_polymarket_results "leaderboard_url").
 CRYPTO_LEADERBOARD_PAGE_URL = "https://polymarket.com/leaderboard/crypto/all/profit"
-POSITIONS_URL = "https://data-api.polymarket.com/positions"
-CLOSED_POSITIONS_URL = "https://data-api.polymarket.com/closed-positions"
+# Closed positions reuse this endpoint with status=CLOSED (v2 has no separate
+# /closed-positions path — /v2/closed-positions returns 404).
+POSITIONS_URL = "https://data-api.polymarket.com/v2/positions"
 BINANCE_PRICE_URLS = [
     "https://data-api.binance.vision/api/v3/ticker/price",
     "https://api.binance.us/api/v3/ticker/price",
@@ -450,11 +456,47 @@ def _group_directional_markets(
     return results
 
 
+def _v2_leaderboard_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Map a v2 leaderboard row (snake_case) to the legacy camelCase keys."""
+    return {
+        "proxyWallet": row.get("user_id"),
+        "userName": row.get("user_name"),
+        "verifiedBadge": row.get("verified"),
+        "pnl": row.get("pnl"),
+        "vol": row.get("volume"),
+        "rank": row.get("rank"),
+    }
+
+
+def _v2_next_cursor(payload: dict[str, Any]) -> str | None:
+    """Return the next cursor from a v2 payload, or None when exhausted."""
+    pagination = payload.get("pagination")
+    if not isinstance(pagination, dict) or not pagination.get("has_more"):
+        return None
+    cursor = pagination.get("next_cursor")
+    return str(cursor) if cursor else None
+
+
 def fetch_leaderboard(limit: int = LEADERBOARD_LIMIT) -> list[dict[str, Any]]:
-    data = _fetch_json(LEADERBOARD_URL, {"limit": limit})
-    if isinstance(data, list):
-        return data
-    return []
+    """Fetch the global v2 leaderboard (cursor-paginated), legacy keys."""
+    rows: list[dict[str, Any]] = []
+    cursor: str | None = None
+    while len(rows) < limit:
+        params: dict[str, Any] = {"limit": limit, "sort": "pnl"}
+        if cursor:
+            params["cursor"] = cursor
+        payload = _fetch_json(LEADERBOARD_URL, params)
+        if not isinstance(payload, dict):
+            break
+        page = payload.get("data")
+        if not isinstance(page, list) or not page:
+            break
+        rows.extend(_v2_leaderboard_row(row) for row in page if isinstance(row, dict))
+        next_cursor = _v2_next_cursor(payload)
+        if not next_cursor or next_cursor == cursor:
+            break
+        cursor = next_cursor
+    return rows[:limit]
 
 
 def _normalize_leaderboard_row(
@@ -484,53 +526,33 @@ def _normalize_leaderboard_row(
 
 
 def fetch_crypto_leaderboard(limit: int = LEADERBOARD_LIMIT) -> list[dict[str, Any]]:
-    html = _fetch_text(CRYPTO_LEADERBOARD_PAGE_URL)
-    if not html:
-        return []
+    """Merge the v2 crypto profit + volume leaderboards by wallet.
 
-    match = re.search(
-        r'<script id="__NEXT_DATA__" type="application/json"[^>]*>(.*?)</script>',
-        html,
-        re.S,
-    )
-    if not match:
-        print("  [WARN] Crypto leaderboard page missing __NEXT_DATA__ payload")
-        return []
-
-    try:
-        payload = json.loads(match.group(1))
-    except json.JSONDecodeError as exc:
-        print(f"  [WARN] Failed parsing crypto leaderboard payload: {exc}")
-        return []
-
-    queries = (
-        payload.get("props", {})
-        .get("pageProps", {})
-        .get("dehydratedState", {})
-        .get("queries", [])
-    )
+    Replaces the retired __NEXT_DATA__ HTML scrape (the page now serves RSC
+    self.__next_f chunks, so the old parse always failed).
+    """
+    # Two single-page v2 calls: category=crypto + sort=pnl / sort=volume.
+    boards: tuple[tuple[str, str], ...] = (("pnl", "profit"), ("volume", "volume"))
     by_wallet: dict[str, dict[str, Any]] = {}
-    for query in queries:
-        query_key = query.get("queryKey")
-        if (
-            not isinstance(query_key, list)
-            or len(query_key) < 5
-            or query_key[0] != "/leaderboard"
-            or query_key[2] != "all"
-            or query_key[4] != "crypto"
-        ):
+    for sort_param, sort_key in boards:
+        payload = _fetch_json(
+            LEADERBOARD_URL,
+            {"category": "crypto", "sort": sort_param, "limit": 120},
+        )
+        if not isinstance(payload, dict):
+            continue
+        page = payload.get("data")
+        if not isinstance(page, list):
             continue
 
-        sort_key = str(query_key[1] or "")
-        if sort_key not in {"profit", "volume"}:
-            continue
-
-        rows = query.get("state", {}).get("data", [])
-        if not isinstance(rows, list):
-            continue
-
-        for row in rows:
-            normalized = _normalize_leaderboard_row(row, source="crypto_leaderboard", sort_key=sort_key)
+        for row in page:
+            if not isinstance(row, dict):
+                continue
+            normalized = _normalize_leaderboard_row(
+                _v2_leaderboard_row(row),
+                source="crypto_leaderboard",
+                sort_key=sort_key,
+            )
             if not normalized:
                 continue
             wallet = normalized["proxyWallet"]
@@ -592,18 +614,114 @@ def fetch_candidate_leaderboard(limit: int = LEADERBOARD_LIMIT) -> list[dict[str
     return candidates[:limit]
 
 
+def _v2_unix_to_iso(value: Any) -> str:
+    """Convert a unix-seconds timestamp to an ISO-8601 UTC string."""
+    try:
+        ts = float(value)
+    except (TypeError, ValueError):
+        return ""
+    if ts <= 0:
+        return ""
+    try:
+        return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+    except (OverflowError, OSError, ValueError):
+        return ""
+
+
+def _v2_position_row(row: dict[str, Any], *, open_position: bool) -> dict[str, Any]:
+    """Map a v2 /positions row (snake_case) to the legacy camelCase shape.
+
+    `size` rule (single rule, keyed on row status):
+      - CLOSED rows: size = total_size — lifetime shares, which is what the
+        legacy ``_historical_exposure`` treats `size` as.
+      - OPEN rows:   size = current_size — live shares, which is what the
+        legacy ``_open_exposure`` treats `size` as.
+
+    `initialValue`: v2 zeroes entry_cost_usdc on CLOSED rows and leaves only
+    dust (observed: 0.013 on a $420k lifetime position), so trust it only
+    when it is plausibly the real cost basis — at least 50% of
+    total_size * avg_price — otherwise use that notional. Without this,
+    _historical_exposure would weight the position at ~$0 in
+    _group_directional_markets' notional math.
+    """
+    avg_price = _safe_float(row.get("avg_price"))
+    total_size = _safe_float(row.get("total_size"))
+    entry_cost = _safe_float(row.get("entry_cost_usdc"))
+    notional = total_size * avg_price
+    if entry_cost > 0 and (notional <= 0 or entry_cost >= 0.5 * notional):
+        initial_value = entry_cost
+    else:
+        initial_value = notional
+    timestamp = (
+        _v2_unix_to_iso(row.get("last_event_at"))
+        or _v2_unix_to_iso(row.get("first_entry_at"))
+        or str(row.get("end_date") or "")
+    )
+    return {
+        "proxyWallet": row.get("proxy_wallet"),
+        "conditionId": row.get("condition_id"),
+        "eventSlug": row.get("event_slug"),
+        "title": row.get("title") or "",
+        "slug": row.get("slug") or "",
+        "icon": row.get("icon") or "",
+        "outcome": row.get("outcome") or "",
+        "endDate": row.get("end_date") or "",
+        "avgPrice": avg_price,
+        "curPrice": _safe_float(row.get("current_price")),
+        "currentValue": _safe_float(row.get("current_value")),
+        "realizedPnl": _safe_float(row.get("realized_pnl")),
+        "size": _safe_float(row.get("current_size")) if open_position else total_size,
+        "initialValue": initial_value,
+        "totalBought": total_size,
+        "timestamp": timestamp,
+        "status": str(row.get("status") or ""),
+    }
+
+
+def _fetch_v2_positions(
+    wallet: str,
+    *,
+    status: str,
+    limit: int,
+) -> list[dict[str, Any]]:
+    """Fetch v2 /positions for a wallet, cursor-paginated, normalized."""
+    rows: list[dict[str, Any]] = []
+    cursor: str | None = None
+    open_position = status == "OPEN"
+    while len(rows) < limit:
+        params: dict[str, Any] = {
+            "user": wallet,
+            "limit": min(limit - len(rows), 200),
+            "status": status,
+        }
+        if cursor:
+            params["cursor"] = cursor
+        payload = _fetch_json(POSITIONS_URL, params)
+        if not isinstance(payload, dict):
+            break
+        page = payload.get("data")
+        if not isinstance(page, list) or not page:
+            break
+        rows.extend(
+            _v2_position_row(row, open_position=open_position)
+            for row in page
+            if isinstance(row, dict)
+        )
+        next_cursor = _v2_next_cursor(payload)
+        if not next_cursor or next_cursor == cursor:
+            break
+        cursor = next_cursor
+    return rows[:limit]
+
+
 def fetch_closed_positions(wallet: str, limit: int = CLOSED_POSITIONS_LIMIT) -> list[dict[str, Any]]:
-    data = _fetch_json(CLOSED_POSITIONS_URL, {"user": wallet, "limit": limit})
-    if isinstance(data, list):
-        return data
-    return []
+    """Fetch a wallet's CLOSED positions (v2 /positions?status=CLOSED)."""
+    return _fetch_v2_positions(wallet, status="CLOSED", limit=limit)
 
 
 def fetch_open_positions(wallet: str, limit: int = OPEN_POSITIONS_LIMIT) -> list[dict[str, Any]]:
-    data = _fetch_json(POSITIONS_URL, {"user": wallet, "limit": limit})
-    if isinstance(data, list):
-        return data
-    return []
+    """Fetch a wallet's OPEN positions (v2 /positions?status=OPEN)."""
+    return _fetch_v2_positions(wallet, status="OPEN", limit=limit)
 
 
 def _compute_recent_form(directional_history: list[dict[str, Any]]) -> dict[str, Any]:
