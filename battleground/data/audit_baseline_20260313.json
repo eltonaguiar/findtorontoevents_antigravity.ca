@@ -1,0 +1,138 @@
+{
+  "snapshot_timestamp": "2026-11-15T06:09:53.785235+00:00",
+  "audit_cutoff": "2026-03-13T11:30:00+00:00",
+  "description": "Baseline snapshot for 7 critical fixes applied 2026-03-13",
+  "fixes_applied": [
+    "1. SL placement fix (ATR-based instead of fixed %)",
+    "2. ML AUC threshold gate (>0.55 required)",
+    "3. Forward-validation minimum trades increased (15 -> 30)",
+    "4. DSR gate for incubator promotion (Sharpe >= 1.0)",
+    "5. Consensus minimum agreement count raised (2 -> 3)",
+    "6. Exit-reason tracking added to all systems",
+    "7. Walk-forward confirmation required before production"
+  ],
+  "systems": {
+    "alpha_engine": {
+      "system": "alpha_engine",
+      "aggregate": {
+        "total_strategies": 0,
+        "total_closed": 0,
+        "total_wins": 0,
+        "overall_wr": 0.0,
+        "total_sl_hits": 0,
+        "sl_hit_rate": 0.0
+      },
+      "before_audit": {
+        "total_closed": 2,
+        "wins": 0,
+        "losses": 2,
+        "win_rate": 0.0,
+        "avg_pnl_pct": -0.0085,
+        "total_pnl_pct": -0.017,
+        "sharpe": -45.937,
+        "sl_hit_count": 2,
+        "sl_hit_rate": 100.0
+      },
+      "after_audit": {
+        "total_closed": 123,
+        "wins": 70,
+        "losses": 53,
+        "win_rate": 56.91,
+        "avg_pnl_pct": -0.0001,
+        "total_pnl_pct": -0.0112,
+        "sharpe": -0.032,
+        "sl_hit_count": 20,
+        "sl_hit_rate": 16.26
+      }
+    },
+    "kimi_scanner": {
+      "system": "kimi_scanner",
+      "aggregate": {
+        "total_signals": 2531,
+        "wins": 655,
+        "losses": 1733,
+        "open": 143,
+        "win_rate": 27.4,
+        "avg_pnl": -0.33,
+        "total_pnl": -775.59
+      },
+      "ml": {
+        "cv_auc_mean": 0.5909,
+        "cv_auc_std": 0.0279,
+        "n_samples": 3292,
+        "mode": "random_forest",
+        "trained_at": "2026-11-15T05:34:31.191149+00:00"
+      },
+      "before_audit": {
+        "total": 0,
+        "wins": 0,
+        "losses": 0,
+        "wr": 0.0,
+        "avg_pnl": 0.0
+      },
+      "after_audit": {
+        "total": 0,
+        "wins": 0,
+        "losses": 0,
+        "wr": 0.0,
+        "avg_pnl": 0.0
+      }
+    },
+    "cross_aggregator": {
+      "system": "cross_aggregator",
+      "aggregate": {
+        "active_count": 7,
+        "closed_count": 200,
+        "total": 200,
+        "wins": 41,
+        "losses": 159,
+        "wr": 20.5,
+        "avg_pnl": -1.2551
+      },
+      "before_audit": {
+        "total": 0,
+        "wins": 0,
+        "losses": 0,
+        "wr": 0.0,
+        "avg_pnl": 0.0
+      },
+      "after_audit": {
+        "total": 200,
+        "wins": 41,
+        "losses": 159,
+        "wr": 20.5,
+        "avg_pnl": -1.2551
+      }
+    },
+    "incubator": {
+      "system": "incubator",
+      "aggregate": {
+        "active_strategies": 0,
+        "closed_count": 123
+      },
+      "before_audit": {
+        "total_closed": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "avg_pnl_pct": 0.0,
+        "total_pnl_pct": 0.0,
+        "sharpe": 0.0,
+        "sl_hit_count": 0,
+        "sl_hit_rate": 0.0
+      },
+      "after_audit": {
+        "total_closed": 0,
+        "wins": 0,
+        "losses": 0,
+        "win_rate": 0.0,
+        "avg_pnl_pct": 0.0,
+        "total_pnl_pct": 0.0,
+        "sharpe": 0.0,
+        "sl_hit_count": 0,
+        "sl_hit_rate": 0.0
+      }
+    }
+  },
+  "strategy_detail": {}
+}
