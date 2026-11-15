@@ -312,6 +312,201 @@ def boot_pf(rets, k=2000, seed=7):
     return (out[int(0.05 * k)], out[int(0.95 * k)])
 
 
+# ---------------------------------------------------------------------------
+# O'Brien-Fleming interim monitoring
+#
+# A fixed-sample test at n=152 can only speak once, ~2 years out. A sequential
+# design can speak earlier WITHOUT inflating type I, provided the boundaries are
+# fixed before the data arrive. That is what these are: c_k = C / sqrt(t_k) with
+# t_k the information fraction, and C solved numerically so the total one-sided
+# probability of crossing under H0 is exactly alpha.
+#
+# The solve uses the exact joint distribution (Z_k standardised, correlation
+# sqrt(t_j/t_k)), not a normal approximation, so the boundaries are the real
+# O'Brien-Fleming ones rather than the textbook C = z_{1-alpha/2} shortcut.
+# ---------------------------------------------------------------------------
+_GRID_N, _GRID_LO, _GRID_HI = 240, -8.0, 8.0
+_OF_CACHE = {}
+
+
+def _phi(x):
+    return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
+
+
+def _Phi(x):
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+
+def _grid():
+    n = _GRID_N
+    zs = [_GRID_LO + (_GRID_HI - _GRID_LO) * i / n for i in range(n + 1)]
+    w = [(_GRID_HI - _GRID_LO) / n] * (n + 1)
+    w[0] *= 0.5; w[-1] *= 0.5
+    return zs, w
+
+
+def _kernels(ts):
+    """Transition densities for standardised Z with Cov(Z_j, Z_k) = sqrt(t_j/t_k)."""
+    zs, w = _grid(); G = _GRID_N
+    out = [None]
+    for k in range(1, len(ts)):
+        rho = math.sqrt(ts[k - 1] / ts[k])
+        s = math.sqrt(max(1e-12, 1.0 - ts[k - 1] / ts[k]))
+        out.append([[_phi((zs[i] - zs[j] * rho) / s) / s * w[j] for j in range(G + 1)]
+                    for i in range(G + 1)])
+    return out
+
+
+def _tail(g, zs, c):
+    """Integrate g from c to +inf, interpolating inside the crossing cell.
+
+    A step mask (z_i >= c) makes the crossing probability jump by one grid cell as
+    the boundary bisection moves, which showed up as achieved-alpha jitter
+    (0.0494 vs 0.0507 for the same solved C). Linear interpolation removes it.
+    """
+    h = zs[1] - zs[0]
+    total = 0.0
+    for j in range(len(zs) - 1):
+        a, b = zs[j], zs[j + 1]
+        if b <= c:
+            continue
+        ga, gb = g[j], g[j + 1]
+        if a < c:
+            gc = ga + (gb - ga) * ((c - a) / (b - a))
+            total += (b - c) * (gc + gb) / 2.0
+        else:
+            total += h * (ga + gb) / 2.0
+    return total
+
+
+def _spend(C, ts, Ks):
+    """Total one-sided crossing probability (alpha spent) for boundary C/sqrt(t_k)."""
+    zs, w = _grid(); G = _GRID_N
+    cs = [C / math.sqrt(t) for t in ts]
+    g = [_phi(z) for z in zs]
+    total = _tail(g, zs, cs[0])
+    for k in range(1, len(ts)):
+        prev = [g[j] if zs[j] < cs[k - 1] else 0.0 for j in range(G + 1)]
+        K = Ks[k]
+        g = [sum(K[i][j] * prev[j] for j in range(G + 1)) for i in range(G + 1)]
+        total += _tail(g, zs, cs[k])
+    return total
+
+
+def of_boundaries(looks, n_final, alpha=0.05):
+    """-> (boundaries, achieved_alpha). Cached: the solve costs ~0.3s."""
+    key = (tuple(looks), n_final, round(alpha, 6))
+    if key in _OF_CACHE:
+        return _OF_CACHE[key]
+    ts = [l / float(n_final) for l in looks]
+    Ks = _kernels(ts)
+    lo, hi = 0.5, 4.0
+    for _ in range(50):
+        mid = (lo + hi) / 2.0
+        if _spend(mid, ts, Ks) > alpha: lo = mid
+        else: hi = mid
+    C = (lo + hi) / 2.0
+    res = ([C / math.sqrt(t) for t in ts], _spend(C, ts, Ks))
+    _OF_CACHE[key] = res
+    return res
+
+
+def _mean_sd(vals):
+    n = len(vals)
+    m = sum(vals) / n
+    if n < 2: return m, float("nan")
+    return m, math.sqrt(sum((x - m) ** 2 for x in vals) / (n - 1))
+
+
+def _endpoint(rows):
+    """Registered endpoint first.
+
+    The pre-registered statistic is excess_pp vs the class benchmark. Ledger rows
+    only carry it if the source supplied it; when they do not, this falls back to
+    net return and RETURNS THE NAME, so the verdict can say which statistic it
+    actually tested. Testing a different statistic than the pre-registered one
+    without saying so is how a forward test turns into a story.
+    """
+    if rows and all(isinstance(r.get("excess_pp"), (int, float)) for r in rows):
+        return "excess_pp", [float(r["excess_pp"]) for r in rows]
+    out = []
+    for r in rows:
+        notional = r.get("notional_usd") or (abs(r.get("entry") or 0.0) * abs(r.get("qty") or 1.0))
+        out.append((r.get("pnl", 0.0) / notional * 100.0) if notional else 0.0)
+    return "net_return_pp", out
+
+
+def _fmtz(x):
+    if x is None: return "n/a"
+    if isinstance(x, float):
+        if math.isnan(x): return "n/a"
+        if math.isinf(x): return "inf" if x > 0 else "-inf"
+    return f"{x:.2f}"
+
+
+def interim_verdict(cfg, trades, today=None):
+    """Apply the pre-registered O'Brien-Fleming looks. Returns None if the strategy
+    has no measurement design (most do not)."""
+    d = cfg.get("measurement_design") or {}
+    looks = d.get("interim_looks") or []
+    n_final = d.get("windows_needed_fixed_sample")
+    if not looks or not n_final:
+        return None
+    alpha = float(d.get("alpha", 0.05))
+    if not trades:
+        return dict(verdict="CONTINUE", endpoint=d.get("endpoint", "excess_pp"), n=0,
+                    target=n_final, next_look=looks[0], z=None, boundary=None,
+                    note=f"0/{looks[0]} windows to the first look")
+    endpoint, per_row = _endpoint(trades)
+    wins = {}
+    for r, v in zip(trades, per_row):
+        wins.setdefault((r.get("opened"), r.get("closed")), []).append(v)
+    win_means = [sum(v) / len(v) for v in wins.values()]
+    n = len(win_means)
+    bounds, achieved = of_boundaries(looks, n_final, alpha)
+    base = dict(endpoint=endpoint, n=n, target=n_final,
+                boundaries=[round(b, 3) for b in bounds],
+                achieved_alpha=round(achieved, 4), alpha=alpha)
+    reached = [i for i, L in enumerate(looks) if n >= L]
+    if not reached:
+        base.update(verdict="CONTINUE", next_look=looks[0], z=None,
+                    boundary=round(bounds[0], 3),
+                    note=f"{n}/{looks[0]} windows to the first look")
+        return base
+    k = reached[-1]
+    sub = win_means[:looks[k]]            # data available AT that scheduled look
+    m, sd = _mean_sd(sub)
+    se = sd / math.sqrt(len(sub)) if len(sub) > 1 else float("nan")
+    if math.isnan(se) or se == 0:
+        z = float("nan") if math.isnan(se) else (float("inf") if m > 0 else (0.0 if m == 0 else float("-inf")))
+    else:
+        z = m / se
+    b5, _ = boot_pf([t["pnl"] for t in trades])
+    base.update(z=(None if isinstance(z, float) and math.isnan(z) else round(z, 2)),
+                boundary=round(bounds[k], 3), look=looks[k],
+                mean_pp=round(m, 3),
+                sd_pp=(None if math.isnan(sd) else round(sd, 3)),
+                next_look=(looks[k + 1] if k + 1 < len(looks) else None),
+                windows_seen=n)
+    for kr in d.get("kill_rules") or []:
+        at = kr.get("at_n_windows", 0)
+        if n < at: continue
+        thr = kr.get("if_mean_lt_pp", 0.0)
+        pf_thr = kr.get("and_pf5_lt")
+        if m < thr and (pf_thr is None or (not math.isnan(b5) and b5 < pf_thr)):
+            base.update(verdict="KILL",
+                        note=f"mean {m:+.3f}pp < {thr:g}pp at n={n}" +
+                             (f" and boot5(PF)={b5:.2f} < {pf_thr:.2f}" if pf_thr is not None else ""))
+            return base
+    if not math.isnan(z) and z >= bounds[k]:
+        base.update(verdict="PROMOTE",
+                    note=f"z={_fmtz(z)} crosses the OF boundary {bounds[k]:.2f} at look n={looks[k]}")
+        return base
+    base.update(verdict="CONTINUE",
+                note=f"z={_fmtz(z)} < boundary {bounds[k]:.2f} at look n={looks[k]}")
+    return base
+
+
 def decide(name, cfg, trades, today):
     n = len(trades)
     hd = [t["hold_days"] for t in trades]
@@ -371,6 +566,18 @@ def cmd_status(a):
         rows.append(st)
         print(f"{k:<14}{st.get('n',0):>4}{st.get('days',0):>6}{st.get('wr',0)*100:>6.1f}%"
               f"{st.get('pf',0):>7.2f}{st.get('boot5',float('nan')):>7.2f}{st.get('avg_hold',0):>8.0f}d  {v:<13}{note}")
+    if any((plan["strategies"].get(r["strategy"]) or {}).get("measurement_design") for r in rows):
+        print("\npre-registered interim looks (O'Brien-Fleming, one-sided alpha shared across looks)")
+        for st in rows:
+            k = st["strategy"]
+            iv = interim_verdict(plan["strategies"].get(k, {}), by.get(k, []), today)
+            if not iv: continue
+            st["interim"] = iv
+            nxt = iv.get("next_look")
+            print(f"  {k:<24}{iv['verdict']:<10}windows {iv['n']:>4}/{iv['target']:<4}"
+                  f"look={str(iv.get('look') or '-'):>4} next={str(nxt or '-'):>4} "
+                  f"z={_fmtz(iv.get('z')):<6}bar={_fmtz(iv.get('boundary')):<6}endpoint={iv['endpoint']}")
+
     ap = os.path.join(STATE, "status.json")
     json.dump({"as_of": str(today), "rows": rows}, open(ap, "w"), indent=1)
     print(f"\nwrote {ap}")
@@ -410,7 +617,40 @@ def cmd_selftest(a):
         ok += got == want
         print(f"  [{flag}] {label:<32} want={want:<12} got={got:<12} ({note})")
     print(f"\n{ok}/{len(cases)} rule cases pass")
-    return 0 if ok == len(cases) else 1
+
+    print("\nselftest: O'Brien-Fleming interim boundaries")
+    looks, nf = [25, 50, 100, 152], 152
+    b, achieved = of_boundaries(looks, nf, 0.05)
+    checks = [
+        ("boundaries monotone decreasing", all(b[i] > b[i + 1] for i in range(len(b) - 1))),
+        (f"achieved alpha {achieved:.4f} within 0.02 of 0.05", abs(achieved - 0.05) <= 0.02),
+        (f"final boundary {b[-1]:.2f} >= z_0.95 1.645", b[-1] >= 1.6449 - 1e-9),
+        (f"first boundary {b[0]:.2f} > 2x final (early looks are strict)", b[0] > 2 * b[-1]),
+    ]
+    design = {"interim_looks": looks, "windows_needed_fixed_sample": nf, "alpha": 0.05}
+    def series(fn, count):
+        return [{"strategy": "X", "pnl": fn(i), "notional_usd": 1000.0, "hold_days": 5,
+                 "opened": str(base + timedelta(days=i)),
+                 "closed": str(base + timedelta(days=i + 3))} for i in range(count)]
+    iv = interim_verdict({"measurement_design": design}, series(lambda i: 30.0, looks[0]), base)
+    checks.append((f"overwhelming edge promotes at look 1 (z={_fmtz(iv.get('z'))})",
+                   iv["verdict"] == "PROMOTE"))
+    iv2 = interim_verdict({"measurement_design": design}, series(lambda i: 2.0 if i % 2 else -2.0, looks[0]), base)
+    checks.append((f"coin flip does NOT promote (z={_fmtz(iv2.get('z'))})",
+                   iv2["verdict"] == "CONTINUE"))
+    iv3 = interim_verdict({"measurement_design": design}, series(lambda i: 1.0, looks[0] - 1), base)
+    checks.append((f"below the first look stays CONTINUE (n={iv3['n']})",
+                   iv3["verdict"] == "CONTINUE" and iv3.get("z") is None))
+    kill_design = dict(design, kill_rules=[{"at_n_windows": 20, "if_mean_lt_pp": 0, "and_pf5_lt": 1.0}])
+    iv4 = interim_verdict({"measurement_design": kill_design}, series(lambda i: -10.0, looks[0]), base)
+    checks.append(("losing series KILLs at the look", iv4["verdict"] == "KILL"))
+    for label, okv in checks:
+        print(f"  [{'PASS' if okv else 'FAIL'}] {label}")
+        ok += okv
+
+    total = len(cases) + len(checks)
+    print(f"\n{ok}/{total} checks pass ({len(cases)} rule cases, {len(checks)} OF checks)")
+    return 0 if ok == total else 1
 
 
 def main():

@@ -65,6 +65,8 @@
     "se_pp": 0.621,
     "t_cluster": 1.74,
     "excess_win_rate_pct": 53.3,
+    "median_hold_hours": 119.12,
+    "median_hold_days": 4.96,
     "observed_span": "2026-03-11 .. 2026-10-13 (216d, 74 windows/yr)",
     "status": "IN-SAMPLE SELECTION ONLY — best clustered t of the 127 strategy/class pairs screened. Fails the Bonferroni bar (|t| >= 3.54 at k=127) and must not be described as a validated edge. The forward test is the only admissible evidence."
    },
@@ -75,10 +77,17 @@
     "windows_needed_fixed_sample": 152,
     "derivation": "n = ((z_0.975 + z_0.80) * sd / mean)^2 = ((1.96 + 0.84) * 4.122 / 1.084)^2 = 152 windows. At the observed 74 windows/yr that is ~2.0 years, the soonest a fixed-sample test can decide without inflating alpha.",
     "interim_looks": [25, 50, 100, 152],
-    "interim_rule": "O'Brien-Fleming alpha spending across the four looks so an early, large effect can promote without raising type I. Interims cannot KILL before n>=20 windows, and cannot PROMOTE before the fixed sample of 152.",
+    "endpoint": "excess_pp",
+    "interim_rule": "Lan-DeMets O'Brien-Fleming: boundary c_k = C/sqrt(t_k), C solved through the exact joint-normal recursion so total one-sided alpha = 0.05. IMPLEMENTED in tools/forward_tracker.py (of_boundaries, interim_verdict).",
+    "interim_boundaries": [4.211, 2.978, 2.105, 1.708],
+    "achieved_alpha": 0.05,
+    "kill_rules": [
+     {"at_n_windows": 20, "if_mean_lt_pp": 0.0, "and_pf5_lt": 1.0},
+     {"at_n_windows": 50, "if_mean_lt_pp": 0.25}
+    ],
     "cost_basis": "6 bps per side on both legs, applied by tools/forward_tracker.py sync; verdicts read NET pnl."
    },
-   "kill_rule": "KILL at any look with n>=20 windows if mean excess < 0 AND boot5(PF) < 1.00; KILL at n>=50 if mean excess < +0.25pp (below the cost-adjusted prior). PROMOTE requires the full 152 windows, mean excess > 0, and |t| >= 1.96. No promotion off interim looks."
+   "kill_rule": "KILL at any look with n>=20 windows if mean excess < 0 AND boot5(PF) < 1.00; KILL at n>=50 if mean excess < +0.25pp (below the cost-adjusted prior). PROMOTE requires crossing the pre-computed OF boundary at a scheduled look 4.21 / 2.98 / 2.11 / 1.71 with the endpoint mean > 0 — early promotion is allowed but demands roughly twice the final evidence."
   }
  },
  "killed_in_backtest": {

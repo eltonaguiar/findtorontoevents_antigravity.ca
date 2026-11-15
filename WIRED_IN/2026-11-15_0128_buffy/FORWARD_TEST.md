@@ -16,7 +16,7 @@ pre-registered: changing them after seeing results turns the test into another t
 | FABER10_SPY | ETF | ~8 months | 1.5 | 2026-11-15 | 33 trades, DSR 0.99, halves drawdown |
 | BTC_TREND200 | CRYPTO | ~4.5 months | 2.7 | 2026-11-15 | 30 trades, DSR 0.84 |
 | **vwap-reversion-scout** | **EQUITY** | **~6 days** | **~48** | **2026-11-15** | **28 picks, 25 windows, +1.96pp, t 1.99** |
-| **rs-breakout-scout** | **EQUITY** | not measured | **~74** | **2026-11-15** | **44 windows, +1.08pp, t 1.74 — fails multiplicity (§2b)** |
+| **rs-breakout-scout** | **EQUITY** | **~5 days** (median 119h) | **~74** | **2026-11-15** | **44 windows, +1.08pp, t 1.74 — fails multiplicity (§2b)** |
 
 Killed in backtest and **not** consuming forward months: `RSI2_SPY`, `DUALMOM_2`, `DUALMOM_3`,
 `SIXTY_FORTY`. A rule that already failed on 2004–2026 evidence does not earn a forward slot.
@@ -64,6 +64,7 @@ artifact**, EQUITY `rs-breakout-scout`:
 | Window sd | 4.12pp |
 | Clustered t | **+1.74** |
 | Excess win rate | 53.3% |
+| Median hold | **119.1h ≈ 5.0d** (n=45; p25 48.5h, p75 167.6h) |
 | Observed rate | 74 windows / 216d ≈ **74/yr** |
 
 **It is selected in-sample, and the record says so.** 127 strategy/class pairs were screened; with
@@ -80,9 +81,17 @@ one exit date cannot masquerade as many trades.
 | Primary test | one-sided: mean window excess > 0 |
 | Windows for 80% power | **152** (from n = ((1.96+0.84)·4.12/1.08)²) |
 | At the observed rate | ~2.0 years |
-| Interim looks | 25 / 50 / 100 / 152 windows, O'Brien-Fleming alpha spending |
+| Interim looks | 25 / 50 / 100 / 152 windows — **boundaries 4.21 / 2.98 / 2.11 / 1.71** (implemented, §2b note below) |
 | KILL | n ≥ 20 windows and mean excess < 0 with boot5(PF) < 1.00; or n ≥ 50 and mean excess < +0.25pp |
 | PROMOTE | 152 windows, mean excess > 0, |t| ≥ 1.96 — **no promotion off an interim look** |
+
+**The boundaries are computed, not declared.** `of_boundaries()` in
+[`tools/forward_tracker.py`](../../tools/forward_tracker.py) solves `c_k = C/√t_k` for `C` numerically
+through the exact joint distribution of the sequentially computed z-scores (correlation `√(t_j/t_k)`),
+giving `C = 1.7077` and an achieved one-sided alpha of **0.0500** against a target of 0.05 — the grid
+solution is slightly conservative, which is the safe direction. `interim_verdict()` then reports, at
+every scheduled look, the observed z against that look's boundary. An early promotion therefore needs
+z ≥ 4.21 at 25 windows, not the 1.73 the final look would accept.
 
 **The clock-fill problem is structural, not solved here.** The highest-frequency strategy in the book is
 `luxalgo_confluence` at 1,173 picks — and it sits at −0.03pp with t −1.89. Frequency and edge are
@@ -129,7 +138,7 @@ python3 tools/forward_tracker.py log \
   --thesis "3.1% below 20d VWAP, RSI 34, close in upper range"
 
 python3 tools/forward_tracker.py status      # verdict per strategy
-python3 tools/forward_tracker.py selftest    # 8/8 rule cases
+python3 tools/forward_tracker.py selftest    # 8/8 rule cases + OF boundary checks
 ```
 
 **Sync cannot backfill, by construction.** A pick is admitted only if it closed on or after the
