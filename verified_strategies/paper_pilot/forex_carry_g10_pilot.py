@@ -89,7 +89,12 @@ def _fetch_month_return(pair: str) -> float | None:
     if px is None or px.empty or len(px) < 2:
         return None
     col = "Close" if "Close" in px.columns else px.columns[0]
-    s = px[col].dropna()
+    s = px[col]
+    # yfinance >=1.8 can return a MultiIndex-column frame even for one ticker,
+    # so px["Close"] is a DataFrame; collapse to a Series before .iloc.
+    if getattr(s, "ndim", 1) > 1:
+        s = s.iloc[:, 0]
+    s = s.dropna()
     if len(s) < 2:
         return None
     return float(s.iloc[-1] / s.iloc[-2] - 1.0)
