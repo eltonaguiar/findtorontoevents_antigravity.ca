@@ -22,6 +22,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.GH_PAT || github.token }}
+          filter: blob:none
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -44,6 +45,6 @@ jobs:
             # safe_push.sh handles pull --rebase + merge fallback + ref-lock retries
             # internally; a manual `git pull --rebase origin main` here duplicated
             # that and raced other workflows pushing to main on their own schedules.
-            bash .github/scripts/safe_push.sh
+            TOKEN_FOR_PUSH="${{ secrets.GH_PAT || github.token }}" bash .github/scripts/safe_push.sh
           fi
 
