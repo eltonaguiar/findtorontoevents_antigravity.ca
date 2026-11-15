@@ -270,12 +270,29 @@ def run_etf_scanner(merge: bool = False) -> list[dict]:
                 continue
 
             # Tag and limit
+            import hashlib as _hl
             for sig in signals[:MAX_PICKS_PER_STRATEGY]:
                 sig["asset_class"] = "ETF"
                 sig["strategy"] = strategy_name
                 sig["source_system"] = "etf_scanner"
                 sig["timestamp"] = _now_iso()
                 sig["allocation"] = DEFAULT_ALLOCATION * STRATEGY_WEIGHT_OVERRIDES.get(strategy_name, 1.0)
+                # 2026-11-15: derive direction/id/status HERE, not only inside
+                # _merge_into_active_picks(). A plain (non-merge) run saved 12 of 15
+                # signals with direction=None even though they carried signal_type
+                # BUY/SELL, so direction-aware gates (including the ETF SHORT class
+                # block) and the dashboard could not tell a SELL from a LONG on the
+                # saved file. Derivation is deliberately keyed on an explicit
+                # BUY/LONG/SELL/SHORT signal_type: a signal with no signal_type is
+                # left undirected rather than silently defaulted to SHORT.
+                _st = str(sig.get("signal_type", "")).strip().upper()
+                if not sig.get("direction") and _st in ("BUY", "LONG", "SELL", "SHORT"):
+                    sig["direction"] = "LONG" if _st in ("BUY", "LONG") else "SHORT"
+                if not sig.get("id"):
+                    _raw = f"{sig.get('symbol')}-{strategy_name}-{_st}-{sig['timestamp']}"
+                    sig["id"] = "etf-" + _hl.md5(_raw.encode()).hexdigest()[:12]
+                if not sig.get("status"):
+                    sig["status"] = "OPEN"
                 all_signals.append(sig)
 
             logger.info(f"ETF strategy {strategy_name}: {len(signals)} signals, {min(len(signals), MAX_PICKS_PER_STRATEGY)} kept")
