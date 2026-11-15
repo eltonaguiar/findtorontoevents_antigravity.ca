@@ -1,6 +1,11 @@
 {
  "created": "2026-11-15",
  "rules_version": "1.1",
+ "cost_model": {
+  "fee_bps_per_side": 6.0,
+  "applies_to": "both legs of the round trip, on notional",
+  "note": "Applied by tools/forward_tracker.py sync. Ledger pnl is NET; pnl_gross keeps the raw move. Same basis as the vwap backtest."
+ },
  "strategies": {
   "FABER10_SPY": {
    "class": "ETF",
@@ -23,6 +28,7 @@
    "start": "2026-11-15",
    "backtest_max_dd": null,
    "auto_sync": true,
+   "fee_bps_per_side": 6.0,
    "thesis": "Price >2% below its 20d VWAP with RSI<40 and the close in the upper half of the day's range: institutional cost-basis reversion on liquid US names. Exit on TP/SL or a 168h (7-day) time stop.",
    "baseline": {
     "source": "reports/pick_excess_returns.json",
@@ -36,12 +42,51 @@
     "status": "PRIOR ONLY — not evidence that survives forward testing"
    },
    "kill_rule": "slow clock (median hold >5d): 180d & n>=8 & PF<1.00 -> KILL; 365d & n>=20 & PF<1.05 -> KILL; breaker n>=10 & PF<0.75 -> KILL. PROMOTE requires 365d, n>=20, PF>=1.15 and boot5(PF)>1.00."
+  },
+  "rs-breakout-scout": {
+   "class": "EQUITY",
+   "hold_type": "long",
+   "trades_per_year": 74,
+   "start": "2026-11-15",
+   "backtest_max_dd": null,
+   "auto_sync": true,
+   "strict_class": true,
+   "fee_bps_per_side": 6.0,
+   "thesis": "Relative-strength breakout on liquid US names: enter when strength is new against the market rather than absolute momentum. Registered because the vwap clock alone needs ~3 years to reach its promotion sample.",
+   "prior": {
+    "source": "reports/pick_excess_returns.json",
+    "measured_on": "2026-11-15",
+    "n_picks": 45,
+    "n_windows": 44,
+    "mean_basis": "window-mean (entry_day,exit_day clusters)",
+    "mean_excess_pp": 1.084,
+    "mean_excess_row_pp": 1.044,
+    "sd_window_pp": 4.122,
+    "se_pp": 0.621,
+    "t_cluster": 1.74,
+    "excess_win_rate_pct": 53.3,
+    "observed_span": "2026-03-11 .. 2026-10-13 (216d, 74 windows/yr)",
+    "status": "IN-SAMPLE SELECTION ONLY — best clustered t of the 127 strategy/class pairs screened. Fails the Bonferroni bar (|t| >= 3.54 at k=127) and must not be described as a validated edge. The forward test is the only admissible evidence."
+   },
+   "measurement_design": {
+    "primary": "One-sided test that the mean excess_pp per (entry_day, exit_day) window is > 0, clustered so batch closes count once and one exit date cannot masquerade as many trades.",
+    "alpha": 0.05,
+    "power_target": 0.80,
+    "windows_needed_fixed_sample": 152,
+    "derivation": "n = ((z_0.975 + z_0.80) * sd / mean)^2 = ((1.96 + 0.84) * 4.122 / 1.084)^2 = 152 windows. At the observed 74 windows/yr that is ~2.0 years, the soonest a fixed-sample test can decide without inflating alpha.",
+    "interim_looks": [25, 50, 100, 152],
+    "interim_rule": "O'Brien-Fleming alpha spending across the four looks so an early, large effect can promote without raising type I. Interims cannot KILL before n>=20 windows, and cannot PROMOTE before the fixed sample of 152.",
+    "cost_basis": "6 bps per side on both legs, applied by tools/forward_tracker.py sync; verdicts read NET pnl."
+   },
+   "kill_rule": "KILL at any look with n>=20 windows if mean excess < 0 AND boot5(PF) < 1.00; KILL at n>=50 if mean excess < +0.25pp (below the cost-adjusted prior). PROMOTE requires the full 152 windows, mean excess > 0, and |t| >= 1.96. No promotion off interim looks."
   }
  },
  "killed_in_backtest": {
   "RSI2_SPY": "0.21% CAGR, SR -0.64, DSR 0.00, negative at 2x costs",
   "DUALMOM_2": "-2.57%/yr vs matched exposure",
   "DUALMOM_3": "+2.55% IS then -6.34% OOS (regime overfit)",
-  "SIXTY_FORTY": "-3.03%/yr vs 60% SPY + 40% cash"
+  "SIXTY_FORTY": "-3.03%/yr vs 60% SPY + 40% cash",
+  "vol-contraction-scout_forward": "n=57 windows, +0.605pp, t +0.89 — screened and NOT registered: weakest significant-ish candidate, would consume the same clock as rs-breakout-scout",
+  "luxalgo_confluence": "1,173 picks but -0.032pp at t -1.89: the highest-frequency strategy in the book is a cost sink, which is why the clock-fill problem cannot be solved by picking a busier strategy"
  }
 }

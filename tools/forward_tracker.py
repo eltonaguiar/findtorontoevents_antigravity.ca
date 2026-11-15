@@ -34,6 +34,13 @@ the "eliminate fast vs hold longer" split, decided by expected holding period, n
 import json, os, sys, math, random, argparse
 from datetime import date, datetime, timezone
 
+# Cost assumption applied to synced ledger rows, on BOTH legs of the round trip.
+# Matches the 6 bps/side the vwap-reversion-scout backtest assumed, so a forward
+# PF is measured against the same cost basis as the prior it is testing.
+# Override per strategy with fee_bps_per_side in plan.json, or per run with
+# --fee-bps-per-side. `pnl` in the ledger is NET; `pnl_gross` keeps the raw move.
+DEFAULT_FEE_BPS_PER_SIDE = 6.0
+
 STATE = "state/forward_test"
 LEDGER = os.path.join(STATE, "ledger.jsonl")
 PLAN = os.path.join(STATE, "plan.json")
@@ -44,6 +51,8 @@ PLAN = os.path.join(STATE, "plan.json")
 DEFAULT_PLAN = {
     "created": date.today().isoformat(),
     "rules_version": "1.1",
+    "cost_model": {"fee_bps_per_side": 6.0,
+                   "applies_to": "both legs of the round trip, on notional"},
     "strategies": {
         "FABER10_SPY":  {"class": "ETF", "hold_type": "long",  "trades_per_year": 1.5,
                          "backtest_max_dd": -0.218, "thesis": "10M SMA overlay: risk reduction, not alpha"},
@@ -67,7 +76,28 @@ DEFAULT_PLAN = {
                          "365d & n>=20 & PF<1.05 -> KILL; breaker n>=10 & PF<0.75 -> KILL. "
                          "PROMOTE requires 365d, n>=20, PF>=1.15 and boot5(PF)>1.00.",
         },
+        # Registered 2026-11-15 as the second forward candidate: the vwap clock alone
+        # needs ~3 years to reach a promotion sample. Prior is IN-SAMPLE SELECTION
+        # (best clustered t of 127 pairs screened, |t|=1.74 vs a Bonferroni bar of
+        # 3.54) and is recorded as weak evidence, not as an edge.
+        "rs-breakout-scout": {
+            "class": "EQUITY", "hold_type": "long", "trades_per_year": 74,
+            "start": "2026-11-15", "backtest_max_dd": None, "auto_sync": True,
+            "strict_class": True, "fee_bps_per_side": 6.0,
+            "prior": {"n_picks": 45, "n_windows": 44, "mean_excess_pp": 1.084,
+                      "sd_window_pp": 4.122, "t_cluster": 1.74, "excess_win_rate_pct": 53.3,
+                      "status": "IN-SAMPLE SELECTION ONLY — fails Bonferroni (|t|>=3.54 at k=127)"},
+            "measurement_design": {"windows_needed_fixed_sample": 152,
+                                   "interim_looks": [25, 50, 100, 152],
+                                   "interim_rule": "O'Brien-Fleming alpha spending; no KILL before "
+                                                   "n>=20 windows, no PROMOTE before 152"},
+            "kill_rule": "KILL at any look with n>=20 if mean excess < 0 and boot5(PF) < 1.00; "
+                         "KILL at n>=50 if mean excess < +0.25pp. PROMOTE requires 152 windows, "
+                         "mean excess > 0 and |t| >= 1.96.",
+        },
     },
+    "cost_model": {"fee_bps_per_side": 6.0,
+                   "applies_to": "both legs of the round trip, on notional"},
     "killed_in_backtest": {
         "RSI2_SPY": "0.21% CAGR, SR -0.64, DSR 0.00, negative at 2x costs",
         "DUALMOM_2": "-2.57%/yr vs matched exposure",
@@ -180,7 +210,8 @@ def cmd_sync(a):
     for k in strategies:
         cfg = plan["strategies"].get(k, {})
         since = _parse_ts(a.since or cfg.get("start") or plan.get("created"))
-        added = dupe = early = incomplete = 0
+        added = dupe = early = incomplete = class_mismatch = 0
+        want_class = (cfg.get("class") or "").upper()
         for p in rows:
             if (p.get("strategy") or "") != k:
                 continue
@@ -192,6 +223,13 @@ def cmd_sync(a):
             if not (closed and opened and e and x and e > 0 and x > 0 and side):
                 incomplete += 1
                 continue
+            if (cfg.get("strict_class") and want_class
+                    and (p.get("asset_class") or "").upper() not in ("", want_class)):
+                # Opt-in: only when the prior was measured on ONE class (rs-breakout-scout
+                # is EQUITY-only). vwap-reversion-scout's prior spans EQUITY+ETF, so it does
+                # not set strict_class. Skipped rows are COUNTED, never silently dropped.
+                class_mismatch += 1
+                continue
             if since and closed < since:
                 early += 1
                 continue
@@ -202,11 +240,22 @@ def cmd_sync(a):
                 continue
             e, x = float(e), float(x)
             qty = a.notional / e
-            pnl = (x - e) * qty if side == "long" else (e - x) * qty
+            pnl_gross = (x - e) * qty if side == "long" else (e - x) * qty
+            # Net of costs. The dashboard payload has no fee field, so the backtest's
+            # assumption is applied explicitly: fee_bps_per_side on BOTH legs of the
+            # round trip. `pnl` (what decide() consumes) is the NET number, so a
+            # forward PF cannot look healthy by ignoring costs.
+            bps = (a.fee_bps_per_side if a.fee_bps_per_side is not None
+                   else cfg.get("fee_bps_per_side",
+                                (plan.get("cost_model") or {}).get("fee_bps_per_side",
+                                                                   DEFAULT_FEE_BPS_PER_SIDE)))
+            fees = a.notional * (bps / 10000.0) * 2.0
+            pnl = pnl_gross - fees
             rec = {
                 "strategy": k, "symbol": p.get("symbol"), "side": side,
-                "entry": e, "exit": x, "qty": round(qty, 8), "fees": 0.0,
-                "pnl": round(pnl, 6),
+                "entry": e, "exit": x, "qty": round(qty, 8), "fees": round(fees, 6),
+                "pnl": round(pnl, 6), "pnl_gross": round(pnl_gross, 6),
+                "fee_bps_per_side": bps,
                 "opened": str(opened.date()), "closed": str(closed.date()),
                 "hold_days": (closed.date() - opened.date()).days,
                 "ret_pct": round((x / e - 1) * 100 if side == "long" else (e / x - 1) * 100, 4),
@@ -214,13 +263,13 @@ def cmd_sync(a):
                 "pick_id": p.get("id"), "source": "dashboard_sync",
                 "asset_class": (p.get("asset_class") or "").upper(),
                 "notional_usd": a.notional,
-                "cost_model": "none - dashboard payload carries no fee field; PF here is GROSS",
+                "cost_model": "net: %g bps/side on both legs of %g notional" % (bps, a.notional),
                 "logged_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }
             if a.dry_run:
                 if added < 5:
                     print(f"   would add {p.get('symbol'):9} {side:5} {rec['opened']} -> {rec['closed']} "
-                          f"pnl={pnl:+.2f} ({p.get('exit_reason')})")
+                          f"gross={pnl_gross:+.2f} fees={fees:.2f} net={pnl:+.2f} ({p.get('exit_reason')})")
                 added += 1
             else:
                 _append(rec)
@@ -230,7 +279,8 @@ def cmd_sync(a):
                 existing.add(key_id)
         total_added += added
         print(f"  {k}: {'would append' if a.dry_run else 'appended'} {added} | "
-              f"closed before registration {early} | duplicate {dupe} | incomplete {incomplete}")
+              f"closed before registration {early} | duplicate {dupe} | incomplete {incomplete} | "
+              f"class mismatch {class_mismatch}")
     print(f"  total {'would append' if a.dry_run else 'appended'}: {total_added}")
     if not a.dry_run and total_added:
         print(f"  ledger now {len(load_trades())} rows -> {LEDGER}")
@@ -380,6 +430,9 @@ def main():
     sy.add_argument("--since", default="", help="override the pre-registration date (use with --dry-run)")
     sy.add_argument("--notional", type=float, default=10000.0,
                     help="notional per trade so ledger pnl stays in dollars like manual log entries")
+    sy.add_argument("--fee-bps-per-side", type=float, default=None,
+                    help="cost assumption applied to both legs (default: plan fee_bps_per_side, else %.1f)"
+                         % DEFAULT_FEE_BPS_PER_SIDE)
     sy.add_argument("--dry-run", action="store_true")
     sub.add_parser("status"); sub.add_parser("selftest")
     a = ap.parse_args()

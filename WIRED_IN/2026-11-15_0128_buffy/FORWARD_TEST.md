@@ -16,6 +16,7 @@ pre-registered: changing them after seeing results turns the test into another t
 | FABER10_SPY | ETF | ~8 months | 1.5 | 2026-11-15 | 33 trades, DSR 0.99, halves drawdown |
 | BTC_TREND200 | CRYPTO | ~4.5 months | 2.7 | 2026-11-15 | 30 trades, DSR 0.84 |
 | **vwap-reversion-scout** | **EQUITY** | **~6 days** | **~48** | **2026-11-15** | **28 picks, 25 windows, +1.96pp, t 1.99** |
+| **rs-breakout-scout** | **EQUITY** | not measured | **~74** | **2026-11-15** | **44 windows, +1.08pp, t 1.74 — fails multiplicity (§2b)** |
 
 Killed in backtest and **not** consuming forward months: `RSI2_SPY`, `DUALMOM_2`, `DUALMOM_3`,
 `SIXTY_FORTY`. A rule that already failed on 2004–2026 evidence does not earn a forward slot.
@@ -46,6 +47,47 @@ meaningful number of independent windows:
 **The honest caveat, stated before the result exists:** t = **1.99** does not clear 2.0, and 25
 windows is a small sample. This is a *prior*, not evidence. It is registered because it is the one
 candidate that has earned a forward clock — not because it has been shown to work.
+
+---
+
+## 2b. `rs-breakout-scout` — the second candidate, and why it is weaker
+
+One rule cannot fill a clock. vwap fires ~48×/yr and needs ~155 closed trades, so on its own it takes
+roughly three years. The second slot went to the best remaining candidate **as measured on the same
+artifact**, EQUITY `rs-breakout-scout`:
+
+| | Value |
+|---|---:|
+| Closed picks | 45 |
+| Independent windows | 44 |
+| Mean excess vs SPY | **+1.08pp** (window-mean; +1.04pp row-mean) |
+| Window sd | 4.12pp |
+| Clustered t | **+1.74** |
+| Excess win rate | 53.3% |
+| Observed rate | 74 windows / 216d ≈ **74/yr** |
+
+**It is selected in-sample, and the record says so.** 127 strategy/class pairs were screened; with
+that many looks the Bonferroni bar is |t| ≥ **3.54**, and +1.74 does not come close. Even on a
+much-reduced effective count (the strategies are correlated) it is a weak signal. It is registered
+because a forward clock is the only thing that can convert a weak signal into evidence or nothing —
+not because it has been shown to work.
+
+**Measurement design.** Windows are `(entry_day, exit_day)` clusters, so a batch close counts once and
+one exit date cannot masquerade as many trades.
+
+| | |
+|---|---|
+| Primary test | one-sided: mean window excess > 0 |
+| Windows for 80% power | **152** (from n = ((1.96+0.84)·4.12/1.08)²) |
+| At the observed rate | ~2.0 years |
+| Interim looks | 25 / 50 / 100 / 152 windows, O'Brien-Fleming alpha spending |
+| KILL | n ≥ 20 windows and mean excess < 0 with boot5(PF) < 1.00; or n ≥ 50 and mean excess < +0.25pp |
+| PROMOTE | 152 windows, mean excess > 0, |t| ≥ 1.96 — **no promotion off an interim look** |
+
+**The clock-fill problem is structural, not solved here.** The highest-frequency strategy in the book is
+`luxalgo_confluence` at 1,173 picks — and it sits at −0.03pp with t −1.89. Frequency and edge are
+anti-correlated in this ledger, which is why the honest answer to "make the clock fill faster" is
+"register more weak candidates and accept sequential monitoring", not "pick a busier strategy".
 
 ---
 
@@ -96,9 +138,20 @@ strategy's registered `start` (2026-11-15). At registration the ledger is empty 
 because excluding them is the only thing that makes this a forward test. Idempotent by pick id plus a
 `strategy|symbol|side|opened|closed` composite, so re-runs cannot double-count.
 
-Synced rows carry `source: dashboard_sync`, the pick id, and an explicit `cost_model: none` — the
-dashboard payload has no fee field, so **forward PF from synced rows is gross** while the backtest
-assumed 6 bps/side. Read the eventual verdict with that gap in mind.
+Synced rows carry `source: dashboard_sync`, the pick id, the gross move, the fee, and the net result.
+**Costs are applied, not assumed away:** `sync` charges **6 bps per side on both legs** (12 bps of
+notional round-trip), so `pnl` — the number the verdict rules read — is **net**, while `pnl_gross`
+keeps the raw move for auditing. That is the same cost basis the vwap backtest assumed, so a forward PF
+is measured against the prior it is testing rather than against a costless ideal.
+
+`sync` also filters by class **only when the strategy sets `strict_class`** — `rs-breakout-scout`'s
+prior is EQUITY-only, while `vwap-reversion-scout`'s prior spans EQUITY+ETF. Skipped rows are counted
+in the output (`class mismatch`), never silently dropped.
+
+**Automation.** [`.github/workflows/forward-ledger-sync.yml`](../../.github/workflows/forward-ledger-sync.yml)
+runs daily at 05:37 UTC: it fetches the live payload to `/tmp`, syncs, then commits **only**
+`state/forward_test/ledger.jsonl` with `[skip ci]` — and fails the job if anything else reaches the
+index. The pre-registration guard is inside the tool; the workflow cannot lift it.
 
 ---
 

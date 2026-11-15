@@ -1,0 +1,119 @@
+name: Forward Ledger — daily sync
+
+# Appends picks that CLOSED on/after a strategy's registered start date into
+# state/forward_test/ledger.jsonl, so the forward clock fills itself.
+# Pre-registration guard lives in the tool (tools/forward_tracker.py sync), not
+# here: a pick older than the strategy's `start` can never be admitted, so the
+# sample that motivated a hypothesis cannot confirm it.
+#
+# Why a separate workflow and not a step inside audit-dashboard.yml:
+#   - audit-dashboard runs hourly at :10 and has a documented cancel-cascade
+#     history; adding a commit to it means ~24 ledger commits/day instead of 1.
+#   - This job needs the *live* payload. Running it right after that build keeps
+#     the read fresh without coupling to a 35-minute job.
+#   - Ledger writes are append-only and once a day; a dedicated concurrency
+#     group makes overlapping runs impossible.
+
+on:
+  schedule:
+    - cron: "37 5 * * *"   # 05:37 UTC, after the hourly audit build has refreshed the live payload
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only — write nothing, commit nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forward-ledger-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PAYLOAD: /tmp/dashboard_data.json
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # Fetched to /tmp on purpose: the tracked audit_dashboard/data/dashboard_data.json
+      # is a stale snapshot, and overwriting it here would put a 25MB file in the
+      # commit and fight audit-dashboard for the same path.
+      - name: Fetch live dashboard payload
+        run: |
+          curl -fsS --retry 3 --retry-delay 5 --max-time 180 \
+            "https://findtorontoevents.ca/audit/data/dashboard_data.json" -o "$PAYLOAD"
+          python3 - "$PAYLOAD" <<'PY'
+          import json, sys, datetime as dt
+          d = json.load(open(sys.argv[1]))
+          rows = (d.get("picks") or {}).get("recent_closed") or []
+          gen = d.get("generated_at") or "?"
+          print(f"payload generated_at={gen} recent_closed={len(rows)}")
+          if not rows:
+              raise SystemExit("::error::payload has 0 recent_closed rows — refusing to sync from a broken payload")
+          try:
+              age_h = (dt.datetime.now(dt.timezone.utc)
+                       - dt.datetime.fromisoformat(str(gen).replace("Z", "+00:00"))).total_seconds() / 3600
+              print(f"payload age: {age_h:.1f}h")
+              if age_h > 48:
+                  print(f"::warning::payload is {age_h:.0f}h old — the live build may be stalled; syncing anyway")
+          except Exception as exc:
+              print(f"::warning::could not parse generated_at ({exc}) — continuing")
+          PY
+
+      - name: Sync closed picks into the ledger
+        run: |
+          FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then FLAG="--dry-run"; fi
+          python3 tools/forward_tracker.py sync \
+            --dashboard "$PAYLOAD" \
+            --fee-bps-per-side 6 \
+            $FLAG
+
+      - name: Show verdict after sync
+        run: python3 tools/forward_tracker.py status
+
+      - name: Commit ledger changes only
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          set -uo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ ! -f state/forward_test/ledger.jsonl ]; then
+            echo "No ledger file — nothing was admitted (pre-registration guard held). Nothing to commit."
+            exit 0
+          fi
+
+          # Explicit single-path add: this job may never stage plan.json, the
+          # payload, or any other generator output.
+          git add -- state/forward_test/ledger.jsonl
+          if git diff --cached --quiet; then
+            echo "Ledger unchanged — no new closed picks since the last run."
+            exit 0
+          fi
+
+          bash .github/scripts/assert_no_conflict_markers.sh || { echo "::error::conflict markers in ledger"; exit 1; }
+
+          staged=$(git diff --cached --name-only | wc -l | tr -d ' ')
+          if [ "$staged" != "1" ]; then
+            echo "::error::expected exactly 1 staged path (the ledger), got $staged:"
+            git diff --cached --name-only
+            exit 1
+          fi
+          if [ "$(git diff --cached --name-only)" != "state/forward_test/ledger.jsonl" ]; then
+            echo "::error::staged path is not the ledger"
+            exit 1
+          fi
+
+          rows=$(wc -l < state/forward_test/ledger.jsonl)
+          git commit -m "chore(forward-test): ledger sync $(date -u +'%Y-%m-%d') — ${rows} rows [skip ci]"
+          bash .github/scripts/safe_push.sh

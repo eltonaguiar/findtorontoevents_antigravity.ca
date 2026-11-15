@@ -419,6 +419,8 @@ Before sending any response, you MUST check for these patterns:
 | `audit_dashboard/excess_column.js` | Per-pick "vs Bench" column for the closed-picks drill-down (added 2026-11-15). External JS because the generator rebuilds index.html from template.html and would wipe an inline version. Reads `data/benchmark_prices.json`; sub-day windows render `—`, never 0. |
 | `audit_dashboard/data/benchmark_prices.json` | Sidecar for the excess column: SPY + BTC-USD daily closes (~25KB, not the 18MB payload). Regenerate: `python3 tools/build_benchmark_prices.py`. Auto-deploys via the `data/*.json` glob. |
 | `tools/build_benchmark_prices.py` | Generates the benchmark sidecar from `data/cache/pick_excess/` (fetches from Yahoo only when the cache is absent). |
+| `.github/workflows/forward-ledger-sync.yml` | Daily (05:37 UTC) `tools/forward_tracker.py sync`: fetches the live payload to `/tmp`, appends picks closed on/after each strategy's registered `start`, commits ONLY `state/forward_test/ledger.jsonl` with `[skip ci]`, pushes via `safe_push.sh`. Stage-path assertion fails the job if anything else gets staged. |
+| `tools/forward_tracker.py` + `state/forward_test/{plan.json,ledger.jsonl}` | Forward-test ledger. `plan.json` is the pre-registration record (tracked); `ledger.jsonl` holds net-of-cost rows (`pnl_gross`, `fees`, `fee_bps_per_side`, `pick_id`, `source`); `status.json` is scratch, never commit it. |
 | `audit_dashboard/blueprint_generator.py` | Trading blueprint page generator |
 | `audit_dashboard/merge_ai_challenge_picks.py` | AI challenge picks merger |
 | `audit_trail/dashboard_generator.py` | Main dashboard payload + HTML generator |

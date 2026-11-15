@@ -55,9 +55,10 @@ filter — it stores the dashboard's own numbers — so its count is one higher.
 
 ## Limits — stated because they matter for reading the eventual verdict
 
-- **`pnl` is GROSS.** The dashboard payload carries no fee field, so synced rows record `fees: 0.0` and
-  `cost_model` says so explicitly. The registered rule's backtest assumed 6 bps/side; a forward PF that
-  passes while ignoring costs is not the same claim as the backtest.
+- **`pnl` is now NET of costs.** This was `fees: 0.0` / `cost_model: none` for a few hours on 2026-11-15,
+  then superseded the same day by the fee model — see
+  [`2026-11-15-forward-clock-fill.md`](2026-11-15-forward-clock-fill.md). Synced rows carry
+  `pnl_gross`, `fees` and `fee_bps_per_side`, and the verdict rules read the net `pnl`.
 - **PnL is dollarised at a fixed $10,000 notional** so synced rows share a unit with manual `log` rows
   (which take dollar `pnl`). PF is a ratio and unit-independent, but expectancy is not, so mixing
   percent-PnL and dollar-PnL rows would corrupt the average. One notional per strategy keeps it clean.
