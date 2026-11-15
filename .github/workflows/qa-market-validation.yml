@@ -1,0 +1,46 @@
+name: QA Market Validation
+
+# Validates published open-pick PnL against independent market data feeds
+# (tools/qa_ledger.py). RED = any CRITICAL flag (unpriced, UNVERIFIED_ZERO,
+# mismatch, out-of-bounds). Fails the build to stop unvalidated PnL from
+# reaching the dashboard.
+#
+# Run: hourly + on push touching the ledger/QA files.
+
+on:
+  schedule:
+    - cron: '0 * * * *'        # every hour
+  push:
+    branches: [main]
+    paths:
+      - tools/qa_ledger.py
+      - audit_dashboard/data/picks_now_live_pnl.json
+      - .github/workflows/qa-market-validation.yml
+  workflow_dispatch:
+
+jobs:
+  qa-validation:
+    name: QA Market Validation
+    runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pandas numpy requests pymysql
+
+      - name: Run QA ledger
+        run: python tools/qa_ledger.py
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
