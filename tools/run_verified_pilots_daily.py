@@ -74,6 +74,25 @@ def main() -> int:
     }
     OUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"Wrote {OUT} ok={payload['ok']}")
+
+    # Surface exactly which pilot/stats step failed so the CI log and artifact
+    # are diagnosable (previously the job exited 1 with no indication of which
+    # of the 17 sub-steps broke). Pure additive logging — does not change the
+    # pass/fail outcome.
+    failed = [s for s in steps if s["returncode"] != 0]
+    if failed:
+        print(f"\n{len(failed)} FAILED STEP(S):")
+        for s in failed:
+            print(f"  rc={s['returncode']}  {' '.join(s['cmd'])}")
+            err = (s.get("stderr_tail") or "").strip()
+            if err:
+                print(f"    stderr: {err[:400]}")
+        payload["failed_steps"] = [
+            {"cmd": s["cmd"], "returncode": s["returncode"],
+             "stderr_tail": s.get("stderr_tail", "")} for s in failed
+        ]
+        OUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
     return 0 if payload["ok"] else 1
 
 
