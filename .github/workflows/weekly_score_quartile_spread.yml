@@ -21,6 +21,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install numpy
+      - name: Prefetch dashboard_data.json (gitignored live payload)
+        run: |
+          # analyze_audit_scores_vs_pnl.py reads audit_dashboard/data/dashboard_data.json,
+          # which is .gitignore'd, so it never exists in a fresh checkout and the
+          # analyzer returned "missing" -> exit 1 every week. Pull the live payload
+          # (same source audit-dashboard.yml uses) so the guardrail actually runs.
+          mkdir -p audit_dashboard/data
+          curl -fsS --max-time 180 \
+            "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
+            -o audit_dashboard/data/dashboard_data.json \
+            || echo "::warning::dashboard_data.json prefetch failed — analyzer will report missing"
       - name: Check spread vs floor
         run: python tools/weekly_score_quartile_regression.py
 

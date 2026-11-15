@@ -196,4 +196,17 @@ Enumerated all **367** workflows; for each, fetched its latest completed run sin
 
 Remaining 5: `mirror-site` (FTP/infra), `qa-market-validation` (correctly red), `verified-pilot-daily` (real pilot failure, now diagnosable), `hc-parity` & `mermaid-test-deploy` (branch-only, not main).
 
+## 12. 2-Week Sweep — all non-success conclusions (2026-11-01 → 11-15)
+
+Enumerated all 367 workflows; fetched runs since 2026-11-01; flagged latest-run non-success (failure/cancelled/timed_out/action_required/neutral/skipped). **23 flagged** (9 hard `failure`, 14 cancelled), **47 with no runs**.
+
+Fixed this round:
+- **algorithm-competition-refresh** & **torontoevent-algorithm-refresh** — missing `run_competition.py` (history strip) caused the slim-JSON step to hard-fail; now guarded (skip + warning).
+- **stale-branch-cleanup** — `compareCommits` "No common ancestor (gh-pages)" crashed the job; now try/catch-skips orphan branches.
+- **weekly_score_quartile_spread** — read gitignored `dashboard_data.json` (always "missing"); now prefetches the live payload.
+- **outcome-resolver** — 15m timeout → cancelled every run for 2 weeks; raised to 30m.
+- **blacklist-reconciler / stocksunify2-pull / swarm-pick-review / strategy-funnel-hourly** — hit 5/5/10/15m timeouts → cancelled; raised to 15/15/25/30m.
+
+Verified not-broken: ai-tournament-pipeline, battle_test, forex-agent, forex-smart-picks (`disabled_manually`); model-picks-emission (brand-new, scripts exist); annual/quarterly crons. Pending-cancel on `dashboard-publish` (operator-review-today, rsi5070) is a concurrency-design issue, documented not patched.
+
 *End of report.*

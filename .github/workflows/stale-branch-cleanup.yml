@@ -95,12 +95,21 @@ jobs:
                 continue;
               }
 
-              const cmp = await github.rest.repos.compareCommits({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                base: defaultBranch,
-                head: name
-              });
+              let cmp;
+              try {
+                cmp = await github.rest.repos.compareCommits({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  base: defaultBranch,
+                  head: name
+                });
+              } catch (e) {
+                // Orphan branches (e.g. gh-pages) share no ancestor with main, so
+                // compareCommits throws HttpError "No common ancestor between main
+                // and <branch>". That previously crashed the whole job (run 42574335497).
+                skipped.push(`${name}: compare failed (${(e && e.message) || e}) — likely orphan branch`);
+                continue;
+              }
 
               if (!(cmp.data.status === 'behind' || cmp.data.status === 'identical')) {
                 skipped.push(`${name}: not merged into ${defaultBranch} (${cmp.data.status})`);
