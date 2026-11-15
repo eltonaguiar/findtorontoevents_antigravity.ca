@@ -181,6 +181,7 @@ def tstat(xs):
 
 
 MIN_CLUSTERS = 5   # below this a t-stat describes two days, not an edge
+MIN_EXIT_DAYS = 3  # windows sharing one exit date are one market episode, not independent draws
 
 
 def cluster_t(rows):
@@ -191,12 +192,18 @@ def cluster_t(rows):
 
     Below MIN_CLUSTERS the t-stat is not reported. With 2 windows a t of -63 is arithmetically
     possible and completely uninformative: it only says the two windows were similarly bad,
-    which is what a batch of clones firing on the same two days always looks like."""
+    which is what a batch of clones firing on the same two days always looks like.
+
+    Exit diversity matters just as much as window count. A batch-close writes ONE closed_at to
+    many rows, so every window shares the same benchmark exit price: the windows then differ only
+    by entry date and are exposed to a single market episode. MomentumEMA's 73 crypto rows have
+    37 distinct entry days but exactly one exit timestamp, which is one episode, not 37 draws.
+    Below MIN_EXIT_DAYS distinct exit dates the t-stat is also withheld."""
     g = {}
     for r in rows:
         g.setdefault((r["entry_day"], r["exit_day"]), []).append(r["excess_pp"])
     clusters = [sum(v) / len(v) for v in g.values()]
-    if len(clusters) < MIN_CLUSTERS:
+    if len(clusters) < MIN_CLUSTERS or len({r["exit_day"] for r in rows}) < MIN_EXIT_DAYS:
         return None, len(clusters)
     return tstat(clusters), len(clusters)
 
@@ -214,6 +221,7 @@ def agg(rows, key):
             key: k,
             "n": len(rs),
             "n_windows": n_win,
+            "n_exit_days": len({r["exit_day"] for r in rs}),
             "mean_excess_pp": m,
             "median_excess_pp": sorted(ex)[len(ex) // 2],
             "t_stat": tstat(ex),
@@ -329,12 +337,13 @@ def main():
     crypto_total = sum(r["sum_excess_pp"] for r in crypto)
     print(f"\nCRYPTO driver decomposition: {len(crypto)} strategies, "
           f"{crypto_total:.1f}pp cumulative excess")
-    print(f"  {'strategy':<34}{'n':>5}{'win':>5}{'excess':>9}{'t_clust':>8}  share")
+    print(f"  {'strategy':<34}{'n':>5}{'win':>5}{'exit':>5}{'t_clust':>7}{'excess':>10}  share")
     for r in crypto[:10]:
         t = f"{r['t_cluster']:.2f}" if r["t_cluster"] is not None else "n/a"
         share = 100.0 * r["sum_excess_pp"] / crypto_total if crypto_total else 0.0
+        batch = "  BATCH-CLOSE" if r["n_exit_days"] < 3 else ""
         print(f"  {r['strategy_class'].split('|')[0][:34]:<34}{r['n']:>5}{r['n_windows']:>5}w"
-              f"{r['mean_excess_pp']:>8.2f}pp{t:>8}  {share:>6.1f}%")
+              f"{r['n_exit_days']:>4}x{t:>7}  {r['mean_excess_pp']:>8.2f}pp  {share:>5.1f}%{batch}")
 
     print(f"\n{'class':<8}{'n':>5}{'windows':>8}{'pick%':>8}{'bench%':>8}{'excess':>8}{'t_clust':>8}{'excWR':>7}")
     for r in by_class:
@@ -365,7 +374,9 @@ def main():
             "independence": "t_cluster collapses picks sharing one (entry_day, exit_day) window "
                             "to a single observation; t_stat is the naive per-pick version and "
                             "overstates significance whenever a strategy fires in batches. "
-                            f"t_cluster is null below {MIN_CLUSTERS} windows",
+                            f"t_cluster is null below {MIN_CLUSTERS} windows or {MIN_EXIT_DAYS} "
+                            "distinct exit dates, since windows sharing one batch closed_at are "
+                            "one market episode rather than independent draws",
             "hourly_fallback": "where the daily benchmark window collapses (entry and exit on the "
                                "same trading day) the benchmark is taken from Yahoo 60m bars at "
                                "the last bar at or before each timestamp; unresolved picks stay "

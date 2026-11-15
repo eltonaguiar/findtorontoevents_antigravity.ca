@@ -73,7 +73,8 @@ real, but DSR 0.84 is below the 0.95 bar.
 
 EQUITY and ETF live picks are statistically indistinguishable from holding their beta. CRYPTO live
 picks are **worse than holding BTC**. The crypto shortfall is **concentrated**: `MomentumEMA` alone is
-58.2% of it (−11.56pp per pick, t −7.84), while the other 48 crypto strategies net **+39.4pp**. Method,
+58.2% of it (−11.56pp per pick, 4.1% excess win rate; no valid t — all 73 exits share one batch
+timestamp), while the other 48 crypto strategies net **+39.4pp**. Method,
 coverage, the hourly fallback for sub-day picks and the clustered-t-stat rationale are in
 [`EXCESS_RETURNS.md`](EXCESS_RETURNS.md); the forward clock is in [`FORWARD_TEST.md`](FORWARD_TEST.md).
 

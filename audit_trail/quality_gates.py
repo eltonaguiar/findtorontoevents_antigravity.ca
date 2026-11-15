@@ -2586,6 +2586,18 @@ BLOCKED_ASSET_SOURCE_PAIRS = {
 
 BLOCKED_ASSET_STRATEGY_PAIRS = {
     ("FOREX", "MomentumEMA"),
+    # 2026-11-15: CRYPTO MomentumEMA halt. Measured on the live closed ledger against BTC:
+    # 73 picks, -11.56pp excess per pick, 4.1% excess win rate, and 58.2% of the ENTIRE crypto
+    # class shortfall (-1,451.6pp of -1,451.6pp total, before the +39.4pp the other 48
+    # strategies earn back). MomentumEMA is already in strategy_blocklist._RETIRED_STRATEGIES
+    # (class-agnostic, retired 2026-06-05 for n=54 WR 18.5%), so no picks are emitting today
+    # (0 active). This pair entry is defense-in-depth: it keeps the CRYPTO halt explicit and
+    # reviewable if the global retirement is ever narrowed to class level, because the EQUITY
+    # evidence for this rule is POSITIVE (WR 69.1% n=55) and a global un-retire would silently
+    # re-admit crypto. Significance is NOT measurable: all 73 rows share one closed_at batch
+    # timestamp, so their 37 windows are one market episode, not 37 independent draws.
+    # Re-admission: requires a per-row exit timestamp and a crypto excess that clears t=2.
+    ("CRYPTO", "MomentumEMA"),
     ("FOREX", "volume_spike_breakout"),
     # 2026-05-11 SUPREME EDGE re-block: TEMP UNBLOCK from 2026-05-08 was conditioned
     # on phantom_expired < 10% which has NOT been achieved (still 100% per DB Health

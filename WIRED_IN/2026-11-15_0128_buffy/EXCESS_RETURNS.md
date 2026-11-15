@@ -56,7 +56,7 @@ in a handful of rules:
 
 | Strategy | Picks | Windows | Mean excess | t (clustered) | Share of shortfall |
 |---|---:|---:|---:|---:|---:|
-| MomentumEMA | 73 | 37 | **−11.56pp** | **−7.84** | **58.2%** |
+| MomentumEMA | 73 | 37 | **−11.56pp** | n/a † | **58.2%** |
 | clone_hl_copy_lb_None | 17 | 2 | −17.65pp | n/a | 20.7% |
 | hs_Auros_66M | 8 | 1 | −17.93pp | n/a | 9.9% |
 | clone_hl_copy_PensionFund_24M | 8 | 2 | −11.91pp | n/a | 6.6% |
@@ -68,10 +68,18 @@ in a handful of rules:
 total of −1,451.6pp). The other 48 strategies net **+39.4pp** between them — i.e. the crypto book
 *excluding* these six is roughly flat, not losing.
 
-**Only `MomentumEMA` is both large and measurable.** It is 58.2% of the damage, has 37 independent
-windows, and t = −7.84. Its excess win rate is **4.1%** — it beats BTC almost never, and its −11.56pp
-mean is driven by the size of the misses rather than their frequency. This is the one rule whose
-crypto allocation should be stopped on evidence.
+**`MomentumEMA` is large. Its significance is not measurable.** It is 58.2% of the damage with an
+excess win rate of **4.1%** — it beats BTC almost never, and the −11.56pp mean is driven by the size
+of the misses rather than their frequency.
+
+† **No valid t-statistic, and the reason is a defect in the ledger, not a shortage of rows.** All 73
+rows carry **one** `closed_at` (a batch close), so all 37 windows share the same benchmark exit
+price: they differ only by entry date and ride a single market episode. An earlier revision of this
+document reported t = −7.84 for this row; that number overstates independence and has been withdrawn.
+The rule still should not trade crypto — a 4.1% excess win rate on 73 picks is not a statistical
+accident, and it is already retired globally in `alpha_engine/strategy_blocklist.py` and now pair-
+blocked at `("CRYPTO", "MomentumEMA")`. But the strength of the *significance* claim was mine to
+retract, and this is the retraction.
 
 The `clone_hl_*` and `hs_*` rows are **unmeasurable**, not proven bad: `clone_hl_copy_lb_None`'s
 −17.65pp rests on **2 windows** (17 picks that are clones of the same two days), and `hs_Auros_66M`
