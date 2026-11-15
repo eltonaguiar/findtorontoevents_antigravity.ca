@@ -39,6 +39,21 @@ Ran `run_simulation_backtest.py` against live yfinance data (2020-01-01 → 2025
 
 This independently validates the plan's conclusion: **no asset class is currently proven profitable.**
 
+## Cross-Reference: Parallel Simulation (Buffy/Codebuff)
+
+A parallel agent ran a separate pre-registered backtest at `2026-11-15_1233AM_winning-strategies/buffy/10_simulations/` using different data (2004-2026 monthly + daily, real T-bill cash, 6bps equity / 15bps crypto costs, DSR, 2x cost stress, IS/OOS). **It reached the same conclusion:**
+
+| Finding | My simulation (2020-2025) | Buffy backtest (2004-2026) |
+|---------|---------------------------|---------------------------|
+| Low-cost beta profitable after costs | N/A (not tested as beta core) | SUPPORTED (10.76% CAGR, DSR 0.99) |
+| No active rule beats benchmark | 0/37 passed all gates | NO active rule beat matched-exposure |
+| RSI(2) swing rule | Deeply negative (-118% to -186%) | REJECTED (0.21% CAGR, DSR 0.00) |
+| Dual momentum | Not tested | REJECTED (-2.57%/yr) |
+| BTC trend | Negative (-18% to -130%) | PROMISING but unproven (DSR 0.84) |
+| Trend overlay reduces drawdown | N/A | SUPPORTED (-21.8% vs -50.8% MDD) |
+
+Both simulations agree: **beta capture is the only proven path; no active rule has a statistically significant edge.** Buffy's forward protocol (`FORWARD_PROTOCOL.md`) adds a Stage 0 "kill in backtest" framework and FAST vs SLOW strategy handling that complements the forward-test tracking protocol in `08_qa_validation/FORWARD_TEST_TRACKING_PROTOCOL.md`.
+
 ## Immediate Go/No-Go Rule
 
 **No real-money allocation until ≥1 asset class passes ALL gates:**
