@@ -45,6 +45,21 @@ jobs:
           python-version: "3.11"
 
       # ------------------------------------------------------------------
+      # 2b. Fetch the live dashboard payload (gitignored in the repo)
+      # ------------------------------------------------------------------
+      # audit_dashboard/data/dashboard_data.json is intentionally gitignored
+      # (.gitignore), so a fresh actions/checkout never contains it. Fetch the
+      # published copy instead of failing the whole check on a repo artifact
+      # that cannot exist here.
+      - name: Fetch dashboard_data.json from production
+        run: |
+          mkdir -p audit_dashboard/data
+          curl -fsS --max-time 60 \
+            "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
+            -o audit_dashboard/data/dashboard_data.json \
+            || echo "::warning::dashboard_data.json fetch failed — trading_picks proxy check degraded"
+
+      # ------------------------------------------------------------------
       # 3. Run smoke queries
       # ------------------------------------------------------------------
       - name: Run backup smoke queries
@@ -62,8 +77,11 @@ jobs:
           # ── Query 1: trading_picks proxy (dashboard_data.json) ──────────
           DD = REPO / "audit_dashboard" / "data" / "dashboard_data.json"
           if not DD.exists():
-              failures.append("dashboard_data.json NOT FOUND")
-              results["trading_picks_count"] = "ERROR"
+              # Intentionally gitignored -> never in actions/checkout. The
+              # fetch step may have pulled the published copy; absence is a
+              # degraded check, not a hard failure.
+              print("::warning::dashboard_data.json not present — skipping trading_picks proxy")
+              results["trading_picks_count"] = "SKIPPED"
           else:
               try:
                   data = json.loads(DD.read_text(encoding="utf-8"))
@@ -102,8 +120,10 @@ jobs:
                   results["at_pick_outcomes_count"] = "ERROR"
 
           # ── Query 3: critical data file existence ────────────────────────
+          # NOTE: audit_dashboard/data/dashboard_data.json is gitignored and is
+          # validated via Query 1 above (best-effort, fetched from production).
+          # Do NOT list it here — it can never exist at checkout.
           critical_files = [
-              "audit_dashboard/data/dashboard_data.json",
               "alpha_engine/data/recent_exits.json",
               "alpha_engine/data/ml_health_status.json",
               "audit_dashboard/data/pcg5_log.json",
@@ -188,13 +208,34 @@ jobs:
               '_Auto-opened by `.github/workflows/backup-verify.yml` (A17.1)_',
             ].join('\n');
 
-            await github.rest.issues.create({
+            // Idempotent: reuse the existing open backup-verify issue instead
+            // of filing a duplicate on every run (the guardian re-runs this
+            // job, which used to create dozens of identical issues).
+            const open = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `[backup-verify] Restore check FAILED — ${new Date().toISOString().slice(0,10)}`,
-              body: body,
-              labels: ['backup-verify', 'automated'],
+              state: 'open',
+              labels: 'backup-verify',
+              per_page: 100,
             });
+            const dup = open.find((i) => i.title.startsWith('[backup-verify]'));
+            if (dup) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: dup.number,
+                body,
+              });
+              core.notice(`Reused existing open backup-verify issue #${dup.number} (no duplicate).`);
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `[backup-verify] Restore check FAILED — ${new Date().toISOString().slice(0,10)}`,
+                body: body,
+                labels: ['backup-verify', 'automated'],
+              });
+            }
 
       # ------------------------------------------------------------------
       # 5. Print success summary
@@ -206,5 +247,35 @@ jobs:
           echo "  Backup Restore Verification: PASSED"
           echo "  Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           echo "=========================================="
+
+      # ------------------------------------------------------------------
+      # 6. On success: auto-close any stale backup-verify issue
+      # ------------------------------------------------------------------
+      - name: Close stale issue on success
+        if: success()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const open = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'backup-verify',
+              per_page: 100,
+            });
+            for (const i of open) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: i.number,
+                body: `✅ Backup verification passed at ${new Date().toISOString()} — closing.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: i.number,
+                state: 'closed',
+              });
+            }
 
 # re-registered 2026-05-23 after stripped-history reset (4aaa6ff848f)

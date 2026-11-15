@@ -115,6 +115,7 @@ def find_unresolved_latest_failures(
                 "branch": latest.get("head_branch"),
                 "conclusion": latest.get("conclusion"),
                 "created_at": latest.get("created_at"),
+                "run_attempt": latest.get("run_attempt", 1),
                 "html_url": latest.get("html_url"),
             }
         )
@@ -568,6 +569,16 @@ def main() -> int:
     pages = int(os.getenv("FAILURE_GUARD_PAGES", "6"))
     per_page = int(os.getenv("FAILURE_GUARD_PER_PAGE", "100"))
     max_age_hours = float(os.getenv("FAILURE_GUARD_MAX_AGE_HOURS", "72"))
+    # Comma-separated workflow names that must never be auto-retried (e.g.
+    # verification jobs that fail by design until infra is fixed). Lowercased.
+    excluded = {
+        s.strip().lower()
+        for s in os.getenv("FAILURE_GUARD_EXCLUDE", "").split(",")
+        if s.strip()
+    }
+    # Hard cap on re-runs per workflow run, so a permanent failure cannot be
+    # retried forever (this is what created dozens of duplicate issues).
+    max_attempt = int(os.getenv("FAILURE_GUARD_MAX_ATTEMPT", "3"))
     workflow_stale_hours = float(os.getenv("FAILURE_GUARD_WORKFLOW_STALE_HOURS", "168"))
     workflow_pages = int(os.getenv("FAILURE_GUARD_WORKFLOW_PAGES", "5"))
     chronic_window = int(os.getenv("FAILURE_GUARD_CHRONIC_WINDOW", "15"))
@@ -609,6 +620,16 @@ def main() -> int:
         row["age_hours"] = round(age_h, 2)
         if age_h > max_age_hours:
             row["rerun_message"] = f"skipped (age {age_h:.1f}h > {max_age_hours:.1f}h)"
+            continue
+
+        _name = (row.get("workflow_name") or "").strip().lower()
+        if _name in excluded:
+            row["rerun_message"] = "skipped (workflow in FAILURE_GUARD_EXCLUDE)"
+            continue
+        if int(row.get("run_attempt") or 1) >= max_attempt:
+            row["rerun_message"] = (
+                f"skipped (run_attempt {row.get('run_attempt')} >= cap {max_attempt})"
+            )
             continue
 
         run_id = int(row["run_id"])
