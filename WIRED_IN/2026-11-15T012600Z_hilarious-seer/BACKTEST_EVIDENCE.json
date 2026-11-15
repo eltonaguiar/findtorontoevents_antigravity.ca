@@ -1,0 +1,132 @@
+{
+  "worktree": "hilarious-seer",
+  "generated_at": "2026-11-15T01:26:00Z",
+  "branch": "audit/hilarious-seer-plan-2026-11-15",
+  "verdict": "0/166 money-ready, 0/9 strategies, 0/42 forward-test candidates",
+  "only_viable_path": "passive_beta",
+  "backtests": [
+    {
+      "name": "passive_beta_vti_bnd_60_40",
+      "script": "simulations/prove_passive_beta.py",
+      "asset_class": "EQUITY",
+      "data_source": "Yahoo Finance",
+      "period": "2015-01-01 to 2026-11-14",
+      "total_return_pct": 211.8,
+      "annualized_return_pct": 8.8,
+      "sharpe_ratio": 0.40,
+      "max_drawdown_pct": -21.8,
+      "benchmark_spy_sharpe": 0.73,
+      "benchmark_spy_maxdd_pct": -34.2,
+      "verdict": "PROFITABLE",
+      "verdict_reason": "Captures equity risk premium with lower drawdown than SPY. Not alpha.",
+      "forward_tracker_status": "FULL_LIVE"
+    },
+    {
+      "name": "connors_rsi2_spy",
+      "script": "simulations/prove_equity_rsi2.py",
+      "asset_class": "EQUITY",
+      "data_source": "Yahoo Finance",
+      "period": "2010-01-01 to 2026-11-14",
+      "total_return_pct": -12.6,
+      "profit_factor": 0.99,
+      "win_rate_pct": 50.0,
+      "max_drawdown_pct": -46.0,
+      "benchmark_spy_total_return_pct": 345.7,
+      "verdict": "ELIMINATED",
+      "verdict_reason": "Underperforms buy-and-hold by 358pp. MaxDD -46% worse than benchmark. PF 0.99.",
+      "elimination_trigger": "MaxDD breach + benchmark underperformance",
+      "forward_tracker_status": "ELIMINATED"
+    },
+    {
+      "name": "dual_momentum_faber",
+      "script": "simulations/prove_dual_momentum.py",
+      "asset_class": "ETF",
+      "data_source": "Yahoo Finance",
+      "period": "2010-01-01 to 2026-11-14",
+      "annualized_return_pct": 9.1,
+      "sharpe_ratio": 0.40,
+      "max_drawdown_pct": -23.9,
+      "benchmark_spy_annualized_return_pct": 14.7,
+      "benchmark_spy_sharpe": 0.73,
+      "verdict": "FAIL",
+      "verdict_reason": "Does not improve on SPY in return, Sharpe, or drawdown. Transaction costs erode edge.",
+      "forward_tracker_status": "ELIMINATED"
+    }
+  ],
+  "peer_backtests_reviewed": [
+    {
+      "peer": "childlike-airport",
+      "commit": "4b7762bf",
+      "strategies_tested": 42,
+      "combinations_passing_live_gate": 0,
+      "best_candidate": {
+        "symbol": "SPY",
+        "strategy": "connors_rsi2",
+        "pf": 76.92,
+        "wr_pct": 83.3,
+        "sharpe": 1.14,
+        "n": 6,
+        "verdict": "REJECTED — n<30, statistically insignificant"
+      }
+    },
+    {
+      "peer": "kilo",
+      "approach": "regime_filtered_vwap_mr",
+      "asset": "CRYPTO",
+      "sharpe": 3.76,
+      "pf": 1.21,
+      "maxdd_pct": 10.0,
+      "n": 129,
+      "pbo": 0.489,
+      "verdict": "VALIDATED — borderline PBO, needs forward test"
+    },
+    {
+      "peer": "kilo",
+      "approach": "vol_targeted_trend",
+      "asset": "CRYPTO",
+      "sharpe": 2.13,
+      "pf": 1.40,
+      "maxdd_pct": 17.4,
+      "verdict": "PROVEN — needs forward test with stop-fill fix"
+    },
+    {
+      "peer": "deepAI",
+      "approach": "walk_forward_variant_c",
+      "asset": "EQUITY/ETF",
+      "pf": 1.26,
+      "p_value": 0.0013,
+      "verdict": "PILOT — insufficient n for live capital"
+    }
+  ],
+  "live_ledger_summary": {
+    "CRYPTO": {"n": 2069, "wr_pct": 45.7, "pf": 1.31, "mean_pnl_pct": 0.385, "cost_multiple": -1.421, "verdict": "FAIL"},
+    "EQUITY": {"n": 680, "wr_pct": 48.2, "pf": 1.23, "mean_pnl_pct": 0.486, "cost_multiple": 3.23, "verdict": "MARGINAL"},
+    "ETF": {"n": 503, "wr_pct": 44.3, "pf": 1.07, "mean_pnl_pct": -0.165, "cost_multiple": 0.404, "verdict": "FAIL"},
+    "FOREX": {"n": 159, "wr_pct": 40.3, "pf": 0.66, "mean_pnl_pct": -0.528, "cost_multiple": -1.938, "verdict": "FAIL"},
+    "BOND": {"n": 35, "wr_pct": 33.3, "pf": 0.56, "mean_pnl_pct": -0.342, "cost_multiple": -4.414, "verdict": "FAIL"},
+    "COMMODITY": {"n": 8, "wr_pct": 50.0, "pf": 1.03, "mean_pnl_pct": 0.897, "cost_multiple": -3.984, "verdict": "FAIL"},
+    "FUTURES": {"n": 1, "wr_pct": 0.0, "pf": 0.0, "mean_pnl_pct": -0.675, "cost_multiple": null, "verdict": "FAIL"}
+  },
+  "data_quality_blockers": {
+    "fabricated_flat_closes": "37/49 closed PnL=0% rows have exit_price=entry_price (not marked to market)",
+    "null_current_price_pct": 87.4,
+    "stale_price_caches_days": 161,
+    "stop_fill_late_pct": 92.6,
+    "expired_won_mislabel_pct": "dashboard 78.93% vs DB raw 39.38%",
+    "zombie_inverse_mutation_rows": 2267,
+    "blank_entry_time_pct": 49.9
+  },
+  "capital_deployment_policy": {
+    "status": "FROZEN",
+    "reason": "No asset class passes all money-ready gates simultaneously",
+    "minimum_requirements": {
+      "paper_pf": 1.5,
+      "paper_wr_pct": 55,
+      "paper_dsr": 0.95,
+      "paper_duration_days": 90,
+      "benchmark_proof_required": true,
+      "post_costs_required": true
+    },
+    "exception": "Passive beta (VTI/BND) may be deployed as benchmark capture only, not as alpha strategy"
+  }
+}
