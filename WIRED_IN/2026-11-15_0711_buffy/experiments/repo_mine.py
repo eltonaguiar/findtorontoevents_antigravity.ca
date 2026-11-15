@@ -16,9 +16,11 @@ from collections import Counter, defaultdict
 ROOT = os.getcwd()
 OUT = sys.argv[1] if len(sys.argv) > 1 else "."
 SKIP_DIRS = {".git", "node_modules", ".worktrees", "__pycache__", ".venv", "venv",
-             ".mypy_cache", ".pytest_cache", "dist", "build"}
+             ".mypy_cache", ".pytest_cache", "dist", "build", "WIRED_IN", "archive",
+             "final_v4", "backups", ".claude", ".agents", ".local", "coinglass_strategies"}
 EXTS = {".py", ".md", ".pine", ".js", ".ts", ".json", ".txt", ".yml", ".yaml"}
-MAX_BYTES = 2_000_000
+MAX_BYTES = 200_000
+MAX_FILES = 25_000
 
 PATTERNS = {
     "ML:tree-ensemble": r"random[_ ]?forest|xgboost|lightgbm|catboost|gradient.?boosting",
@@ -62,6 +64,7 @@ TF = [(r"\b1m\b|\b1min", "1m"), (r"\b5m\b", "5m"), (r"\b15m\b", "15m"),
 
 
 def iter_files():
+    seen = 0
     for d, dirs, fs in os.walk(ROOT):
         dirs[:] = [x for x in dirs if x not in SKIP_DIRS and not x.startswith(".git")]
         for f in fs:
@@ -74,6 +77,9 @@ def iter_files():
                     continue
             except OSError:
                 continue
+            seen += 1
+            if seen > MAX_FILES:
+                return
             yield p, ext
 
 
