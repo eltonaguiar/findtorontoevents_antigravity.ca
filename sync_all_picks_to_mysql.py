@@ -28,6 +28,24 @@ if str(REPO_ROOT) not in sys.path:
 
 from audit_trail.asset_classification import canonicalize_symbol
 
+# ── Schema note (PE-01) ──
+# The following ALTER TABLE statements add columns required by this script.
+# Run these against the target MySQL database before deploying this version:
+#
+#   ALTER TABLE at_raw_picks
+#     ADD COLUMN pnl_unit ENUM('RATIO','PERCENT') DEFAULT 'PERCENT',
+#     ADD COLUMN pnl_source VARCHAR(64) DEFAULT NULL,
+#     ADD COLUMN gross_pnl DOUBLE DEFAULT NULL,
+#     ADD COLUMN net_pnl DOUBLE DEFAULT NULL,
+#     ADD COLUMN quote_status ENUM('LIVE','STALE','UNQUOTED','FABRICATED_FLAT') DEFAULT 'UNQUOTED';
+#
+#   ALTER TABLE bt_backtest_trades
+#     ADD COLUMN pnl_unit ENUM('RATIO','PERCENT') DEFAULT 'PERCENT',
+#     ADD COLUMN pnl_source VARCHAR(64) DEFAULT NULL,
+#     ADD COLUMN gross_pnl DOUBLE DEFAULT NULL,
+#     ADD COLUMN net_pnl DOUBLE DEFAULT NULL,
+#     ADD COLUMN quote_status ENUM('LIVE','STALE','UNQUOTED','FABRICATED_FLAT') DEFAULT 'UNQUOTED';
+
 # ── MySQL config ──
 os.environ.setdefault("AUDIT_DB_HOST", "mysql.50webs.com")
 os.environ.setdefault("AUDIT_DB_USER", "ejaguiar1_stocks")
@@ -287,6 +305,58 @@ def _parse_ts(raw_ts):
     return None
 
 
+def _validate_row(symbol, entry_price, direction, qty=None):
+    """Validate a pick row before insert. Returns (is_valid, reason)."""
+    if not symbol:
+        return False, "missing_symbol"
+    if entry_price is None or entry_price <= 0:
+        return False, "invalid_entry_price"
+    if not direction:
+        return False, "missing_direction"
+    if qty is not None and qty <= 0:
+        return False, "invalid_qty"
+    return True, ""
+
+
+def _extract_pnl_meta(pick, pnl_val):
+    """Extract PnL metadata: unit, source field, gross, net."""
+    pnl_source = "unknown"
+    for key in ("pnl_pct", "realized_pnl_pct", "gross_pnl_pct", "net_pnl_pct", "pnl"):
+        if key in pick and pick[key] is not None:
+            pnl_source = key
+            break
+
+    pnl_unit = str(pick.get("pnl_unit", "") or "").upper().strip()
+    if pnl_unit not in ("RATIO", "PERCENT"):
+        if "_pct" in pnl_source or "_percent" in pnl_source:
+            pnl_unit = "PERCENT"
+        else:
+            pnl_unit = "PERCENT"  # conservative default for this codebase
+    gross = _safe_float(pick.get("gross_pnl", pick.get("gross_pnl_pct")))
+    net = _safe_float(pick.get("net_pnl", pick.get("net_pnl_pct")))
+    return pnl_unit, pnl_source, gross, net
+
+
+def _infer_quote_status(pick, entry_price, exit_price, pnl, status):
+    """Infer quote_status from available data."""
+    qs = str(pick.get("quote_status", "") or "").upper().strip()
+    if qs in ("LIVE", "STALE", "UNQUOTED", "FABRICATED_FLAT"):
+        return qs
+    if status == "OPEN":
+        current = _safe_float(pick.get("current_price"))
+        if current is None:
+            return "UNQUOTED"
+        return "LIVE"
+    # Closed-like statuses
+    if exit_price is not None and entry_price is not None and entry_price > 0:
+        if exit_price == entry_price and pnl == 0:
+            return "FABRICATED_FLAT"
+        return "LIVE"
+    if pnl is None and exit_price is None:
+        return "UNQUOTED"
+    return "STALE"
+
+
 # ── JSON source definitions ──
 
 JSON_SOURCES = [
@@ -409,6 +479,7 @@ class PickSyncer:
             "bt_trades_inserted": 0,
             "dupes_skipped": 0,
             "rate_limited": 0,
+            "flagged": 0,
             "errors": 0,
             "sources_processed": 0,
         }
@@ -478,7 +549,9 @@ class PickSyncer:
 
     def _insert_raw_pick(self, source_system, symbol, asset_class, direction,
                          entry, tp, sl, confidence, strategy, signal_ts,
-                         status, exit_price, pnl_pct, exit_reason, payload=None):
+                         status, exit_price, pnl_pct, exit_reason, payload=None,
+                         pnl_unit="PERCENT", pnl_source="", gross_pnl=None,
+                         net_pnl=None, quote_status="UNQUOTED"):
         """Upsert a pick into at_raw_picks. Returns True if inserted/updated."""
         if not symbol or not direction:
             return False
@@ -549,8 +622,9 @@ class PickSyncer:
                 "(id, aggregation_run_id, source_system, symbol, asset_class, direction, "
                 "entry_price, take_profit, stop_loss, risk_reward, confidence, strategy, "
                 "raw_payload, signal_timestamp, recorded_at, dedup_hash, created_by, "
-                "status, exit_price, pnl_pct, exit_reason) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+                "status, exit_price, pnl_pct, exit_reason, "
+                "pnl_unit, pnl_source, gross_pnl, net_pnl, quote_status) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
                 "ON DUPLICATE KEY UPDATE "
                 "aggregation_run_id = VALUES(aggregation_run_id), "
                 "recorded_at = VALUES(recorded_at), "
@@ -575,6 +649,11 @@ class PickSyncer:
                 "  WHEN VALUES(status) <> 'OPEN' AND NULLIF(VALUES(exit_reason), '') IS NOT NULL THEN VALUES(exit_reason) "
                 "  ELSE exit_reason "
                 "END, "
+                "pnl_unit = COALESCE(VALUES(pnl_unit), pnl_unit), "
+                "pnl_source = COALESCE(VALUES(pnl_source), pnl_source), "
+                "gross_pnl = COALESCE(VALUES(gross_pnl), gross_pnl), "
+                "net_pnl = COALESCE(VALUES(net_pnl), net_pnl), "
+                "quote_status = COALESCE(VALUES(quote_status), quote_status), "
                 "closed_at = CASE "
                 "  WHEN VALUES(status) <> 'OPEN' THEN COALESCE(closed_at, VALUES(recorded_at)) "
                 "  ELSE closed_at "
@@ -584,7 +663,8 @@ class PickSyncer:
                  _safe_float(confidence), strategy,
                  _safe_json(payload),
                  parsed_ts, _now(), dedup, "full_sync",
-                 status, _safe_float(exit_price), _safe_float(pnl_pct), exit_reason)
+                 status, _safe_float(exit_price), _safe_float(pnl_pct), exit_reason,
+                 pnl_unit, pnl_source, _safe_float(gross_pnl), _safe_float(net_pnl), quote_status)
             )
             if cur.rowcount > 0:
                 if status == "OPEN":
@@ -607,8 +687,10 @@ class PickSyncer:
             return False
 
     def _insert_bt_trade(self, source_db, source_table, symbol, asset_class,
-                         direction, strategy, entry, exit_price, tp, sl,
-                         entry_time, exit_time, pnl, status, conf, raw_data):
+                          direction, strategy, entry, exit_price, tp, sl,
+                          entry_time, exit_time, pnl, status, conf, raw_data,
+                          pnl_unit="PERCENT", pnl_source="", gross_pnl=None,
+                          net_pnl=None, quote_status="UNQUOTED"):
         """Insert into bt_backtest_trades."""
         if self.dry_run:
             self.stats["bt_trades_inserted"] += 1
@@ -619,14 +701,16 @@ class PickSyncer:
                 "INSERT INTO bt_backtest_trades "
                 "(source_db, source_table, symbol, asset_class, direction, strategy, "
                 "entry_price, exit_price, take_profit, stop_loss, entry_time, exit_time, "
-                "pnl_pct, status, confidence, raw_data, imported_at) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                "pnl_pct, status, confidence, raw_data, imported_at, "
+                "pnl_unit, pnl_source, gross_pnl, net_pnl, quote_status) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                 (source_db, source_table, symbol, asset_class, direction, strategy,
                  _safe_float(entry), _safe_float(exit_price), _safe_float(tp), _safe_float(sl),
                  _parse_ts(entry_time), _parse_ts(exit_time),
                  _safe_float(pnl), status, _safe_float(conf),
                  _safe_json(raw_data),
-                 _now())
+                 _now(),
+                 pnl_unit, pnl_source, _safe_float(gross_pnl), _safe_float(net_pnl), quote_status)
             )
             self.stats["bt_trades_inserted"] += 1
             return True
@@ -657,16 +741,20 @@ class PickSyncer:
         exit_price = _safe_float(p.get("exit_price", p.get("exitPrice")))
         pnl = _safe_float(p.get("pnl_pct", p.get("realized_pnl_pct",
                           p.get("gross_pnl_pct", p.get("net_pnl_pct")))))
-        if pnl and 0 < abs(pnl) < 1:
-            pnl = pnl * 100
         status = _norm_status(p.get("status", ""), exit_price)
         exit_reason = p.get("exit_reason", p.get("close_reason", ""))
+
+        pnl_unit, pnl_source, gross_pnl, net_pnl = _extract_pnl_meta(p, pnl)
+        quote_status = _infer_quote_status(p, entry, exit_price, pnl, status)
 
         return {
             "symbol": sym, "direction": direction, "entry": entry,
             "tp": tp, "sl": sl, "confidence": conf, "strategy": strategy,
             "timestamp": ts, "exit_price": exit_price, "pnl": pnl,
             "status": status, "exit_reason": exit_reason,
+            "pnl_unit": pnl_unit, "pnl_source": pnl_source,
+            "gross_pnl": gross_pnl, "net_pnl": net_pnl,
+            "quote_status": quote_status,
         }
 
     def _load_json(self, path):
@@ -741,7 +829,11 @@ class PickSyncer:
         inserted = 0
         for p in picks:
             f = self._parse_pick_fields(p)
-            if not f["symbol"] or not f["entry"] or f["entry"] <= 0:
+            is_valid, flag_reason = _validate_row(f["symbol"], f["entry"], f["direction"])
+            if not is_valid:
+                self.stats["flagged"] += 1
+                if self.stats["flagged"] <= 5:
+                    print(f"    [FLAG] {f['symbol']} skipped: {flag_reason}")
                 continue
             cat_hint = p.get("category", p.get("asset_class", ""))
             ac = derive_asset_class(f["symbol"], source_system, f["entry"], cat_hint)
@@ -764,6 +856,11 @@ class PickSyncer:
                 f["pnl"] if is_closed else None,
                 f["exit_reason"] if is_closed else None,
                 p,
+                pnl_unit=f.get("pnl_unit", "PERCENT"),
+                pnl_source=f.get("pnl_source", ""),
+                gross_pnl=f.get("gross_pnl"),
+                net_pnl=f.get("net_pnl"),
+                quote_status=f.get("quote_status", "UNQUOTED"),
             ):
                 inserted += 1
 
@@ -855,8 +952,6 @@ class PickSyncer:
                     exit_price = _safe_float(d.get("exit_price", d.get("exitPrice")))
                     pnl = _safe_float(d.get("pnl_pct", d.get("realized_pnl_pct",
                                       d.get("gross_pnl_pct", d.get("pnl")))))
-                    if pnl and 0 < abs(pnl) < 1:
-                        pnl = pnl * 100
                     conf = _safe_float(d.get("confidence", d.get("ml_score",
                                        d.get("score", 0.5))))
                     if conf and conf > 1:
@@ -869,18 +964,31 @@ class PickSyncer:
                     exit_reason = str(d.get("exit_reason", d.get("close_reason", "")) or "")
                     ac = derive_asset_class(sym, source_name, entry or 0)
 
-                    # Insert into at_raw_picks if valid entry
-                    if entry and entry > 0 and direction:
-                        if self._insert_raw_pick(
-                            source_name, sym, ac, direction, entry, tp, sl, conf,
-                            strategy, ts, status, exit_price, pnl, exit_reason, d
-                        ):
-                            inserted += 1
+                    is_valid, flag_reason = _validate_row(sym, entry, direction)
+                    if not is_valid:
+                        self.stats["flagged"] += 1
+                        if self.stats["flagged"] <= 5:
+                            print(f"    [FLAG] {sym} skipped: {flag_reason}")
+                        continue
 
-                    # Also insert into bt_backtest_trades for complete history
+                    pnl_unit, pnl_source, gross_pnl, net_pnl = _extract_pnl_meta(d, pnl)
+                    quote_status = _infer_quote_status(d, entry, exit_price, pnl, status)
+
+                    if self._insert_raw_pick(
+                        source_name, sym, ac, direction, entry, tp, sl, conf,
+                        strategy, ts, status, exit_price, pnl, exit_reason, d,
+                        pnl_unit=pnl_unit, pnl_source=pnl_source,
+                        gross_pnl=gross_pnl, net_pnl=net_pnl,
+                        quote_status=quote_status,
+                    ):
+                        inserted += 1
+
                     self._insert_bt_trade(
                         db_path_rel, table, sym, ac, direction, strategy,
-                        entry, exit_price, tp, sl, ts, exit_time, pnl, status, conf, d
+                        entry, exit_price, tp, sl, ts, exit_time, pnl, status, conf, d,
+                        pnl_unit=pnl_unit, pnl_source=pnl_source,
+                        gross_pnl=gross_pnl, net_pnl=net_pnl,
+                        quote_status=quote_status,
                     )
 
                 if inserted:
@@ -1089,6 +1197,7 @@ class PickSyncer:
         print(f"  BT trades inserted:     {self.stats['bt_trades_inserted']}")
         print(f"  Dupes skipped:          {self.stats['dupes_skipped']}")
         print(f"  Rate limited:           {self.stats['rate_limited']}")
+        print(f"  Flagged (invalid):      {self.stats['flagged']}")
         print(f"  Errors:                 {self.stats['errors']}")
         print(f"  Sources processed:      {self.stats['sources_processed']}")
         total = (self.stats['json_active_inserted'] + self.stats['json_closed_inserted']
