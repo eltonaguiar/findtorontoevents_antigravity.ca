@@ -4281,6 +4281,16 @@ JSON_PICK_SOURCES.append((
     None,
 ))
 
+# WIRED_IN childlike-airport shadow cards (2026-11-15).
+# Discretionary per-class monitoring picks. Paper-only. Outcomes settle via
+# universal_pick_resolver (SYSTEM_SOURCES entry must stay in sync).
+# Spec: WIRED_IN/2026-11-15T0150Z_childlike-airport/
+JSON_PICK_SOURCES.append((
+    "wired_in_childlike",
+    "audit_dashboard/data/wired_in_childlike_active_picks.json",
+    "audit_dashboard/data/wired_in_childlike_closed_picks.json",
+))
+
 PORTFOLIO_SOURCES = [
     ("paper_trading", "paper_trading/data/portfolios.json"),
     ("kimi_algorithms", "KIMI_RISEOFTHECLAW/data/portfolio_state.json"),
@@ -4294,6 +4304,7 @@ PORTFOLIO_SOURCES = [
 # Picks are still loaded for display but flagged with paper_trade=True.
 _PAPER_ONLY_SYSTEMS = {
     "kimi_claw_research",  # Frozen Feb 2026 research portfolio — unrealized paper gains counted as "wins"
+    "wired_in_childlike",  # 2026-11-15 shadow cards — display for monitoring, do not count as forward-tested wins
 }
 
 # ── Hidden/inactive systems ──

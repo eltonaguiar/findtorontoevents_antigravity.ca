@@ -1,0 +1,113 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Risk Management — /audit</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--dim:#8b949e;
+--red:#f85149;--amb:#d29922;--grn:#3fb950;--blu:#58a6ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:14px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;padding:28px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:28px 0 8px;color:var(--blu);
+border-bottom:1px solid var(--line);padding-bottom:6px}
+.sub{color:var(--dim);font-size:12px;margin-bottom:18px}
+table{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:13px}
+th,td{text-align:left;padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700}
+.bad{background:rgba(248,81,73,.15);color:var(--red);border:1px solid var(--red)}
+.warn{background:rgba(210,153,34,.15);color:var(--amb);border:1px solid var(--amb)}
+.good{background:rgba(63,185,80,.15);color:var(--grn);border:1px solid var(--grn)}
+.na{color:var(--dim);font-style:italic}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:10px 0}
+.note{color:var(--dim);font-size:12px;margin:4px 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.kpi .k{color:var(--dim);font-size:11px;text-transform:uppercase}
+.kpi .v{font-size:19px;font-weight:700;margin-top:2px}
+code{background:#21262d;padding:1px 5px;border-radius:4px;font-size:12px}
+</style></head><body>
+<h1>Risk Management</h1>
+<div class="sub">Source: live /audit payload (2026-11-14T22:34:02.886936+00:00) + Yahoo monthly history. Built 2026-11-14T23:37:16Z. All methodologies are applied to measured data; no figure here is a forecast.</div>
+<div class="panel">
+<b>Ledger headline:</b> <span class="badge bad">INCOMPLETE</span> 
+Censored +87.4% of open positions have no market price, so no win-rate or profit-factor on this page may be read as a performance claim. n = 3500 closed rows.
+</div>
+<div class="panel"><b>Row-level verification:</b> 
+<span class="badge bad">37 fabricated flat closes</span> 
+of 49 closed zeros checked against real market closes; 11 cannot be windowed (no usable exit-date close). A fabricated flat is a row whose <code>exit_price</code> is not the close on its own exit date — i.e. the exit was never marked to market.
+</div>
+<div class="panel"><b>Known caveats baked into these numbers</b><ul>
+<li>includes rows the validator flags as FABRICATED_FLAT: exit_price is not the close on its own exit date</li>
+<li>censored_pct is the share of open positions with no market price</li>
+<li>max drawdown is compounded; at a negative mean the path tends to -100% by construction</li>
+</ul></div>
+<h2>Risk-adjusted return (per trade, n=3500)</h2>
+<div class="grid">
+<div class="kpi"><div class="k">win rate</div><div class="v">+41.6%</div></div>
+<div class="kpi"><div class="k">profit factor</div><div class="v">0.907</div></div>
+<div class="kpi"><div class="k">mean / trade</div><div class="v">-0.154%</div></div>
+<div class="kpi"><div class="k">median / trade</div><div class="v">-0.873%</div></div>
+<div class="kpi"><div class="k">mean ÷ stdev</div><div class="v">-0.038</div></div>
+<div class="kpi"><div class="k">sortino</div><div class="v">-0.056</div></div>
+</div>
+<p class="note">mean ÷ stdev is a per-trade ratio, not an annualised Sharpe (these 3500 trades are not one continuous series).</p>
+<h2>Tail risk</h2><table><tr><th>Measure</th><th>Value</th><th>Reading</th></tr>
+<tr><td>CVaR 95% (expected shortfall)</td><td>-7.96%</td><td class=note>mean of the worst 5% of trades</td></tr>
+<tr><td>CVaR 99%</td><td>-11.48%</td><td class=note>mean of the worst 1%</td></tr>
+<tr><td>skew</td><td>0.573</td><td class=note>positive = fat right tail</td></tr>
+<tr><td>max drawdown (compounded)</td><td>-100.0%</td><td class=note>compounded equity path; terminal -100.0%</td></tr>
+<tr><td>ulcer index</td><td>365.95</td><td class=note>depth × duration of drawdown</td></tr>
+</table>
+<h2>Position sizing</h2><table><tr><th>Method</th><th>Result</th><th>Action</th></tr>
+<tr><td>Kelly fraction</td><td>-0.0538</td><td><span class="badge bad">DO NOT BET (negative edge)</span></td></tr>
+<tr><td>Payoff ratio (avg win ÷ avg loss)</td><td>1.243:1</td><td class=note>avg win +3.62% · avg loss -2.92%</td></tr>
+<tr><td>Monte-Carlo risk of ruin</td><td>+44.4%</td><td class=note>2,000 paths × 200 trades at the observed win rate; ruin = book halves</td></tr>
+</table>
+<p class="note">A negative Kelly fraction means the measured edge is negative at any bet size. The correct size is zero until the edge is repaired — that is arithmetic, not opinion.</p>
+<h2>Concentration</h2><table><tr><th>Measure</th><th>Value</th></tr>
+<tr><td>HHI by asset class</td><td>0.385</td></tr>
+<tr><td>Top emitter share</td><td>+37.2%</td></tr>
+<tr><td>Top emitters</td><td class=note>luxalgo_confluence (1303), rs-breakout-scout (133), momentum-factor (105)</td></tr>
+</table>
+<h2>Fund / ETF exposure — measured base rates</h2>
+<p class="note">These are the only numbers on this page that describe a positive-expectation instrument. They are the equity risk premium, measured — not a prediction, and not this system's output. <b>Caveat:</b> Yahoo monthly closes are price-only (no distributions), so total return is understated, severely so for bond funds.</p>
+<table><tr><th>Instrument</th><th>History</th><th>CAGR</th><th>Vol</th><th>Sharpe</th><th>Sortino</th><th>Max DD</th><th>CVaR95 (mo)</th></tr>
+<tr><td>S&P 500 (SPY)</td><td class=note>1993-02→2026-11 (407mo)</td><td>+8.71%</td><td>+14.74%</td><td>0.64</td><td>0.97</td><td>-52.2%</td><td>-9.65%</td></tr>
+<tr><td>Vanguard S&P 500 ETF (VOO)</td><td class=note>2010-10→2026-11 (195mo) <span class="badge warn">SHORT·EXCL 2008</span></td><td>+12.10%</td><td>+14.03%</td><td>0.89</td><td>1.45</td><td>-24.8%</td><td>-8.64%</td></tr>
+<tr><td>Nasdaq-100 (QQQ)</td><td class=note>1999-04→2026-11 (333mo)</td><td>+9.58%</td><td>+23.21%</td><td>0.51</td><td>0.77</td><td>-81.1%</td><td>-15.27%</td></tr>
+<tr><td>US Aggregate bonds (AGG)</td><td class=note>2003-10→2026-11 (279mo) <span class="badge warn">SHORT·EXCL 2008</span></td><td>-0.29%</td><td>+4.42%</td><td>-0.04</td><td>-0.06</td><td>-22.8%</td><td>-3.05%</td></tr>
+<tr><td>Financials sector (XLF)</td><td class=note>1999-01→2026-11 (336mo)</td><td>+4.04%</td><td>+20.94%</td><td>0.30</td><td>0.42</td><td>-79.9%</td><td>-14.61%</td></tr>
+</table>
+<h2>Probability of a positive return, by holding period</h2>
+<p class="note">Rolling windows over the instrument's full monthly history. Overlapping windows: the intervals are not independent, so treat these as descriptive base rates, not as p-values.</p>
+<table><tr><th>Instrument</th><th>Horizon</th><th>Windows</th><th>P(positive)</th><th>Median</th><th>Worst</th><th>Best</th></tr>
+<tr><td>S&P 500 (SPY)</td><td>1 year</td><td>395</td><td><b>+78.5%</b></td><td>+12.24%</td><td>-44.75%</td><td>+53.77%</td></tr>
+<tr><td>S&P 500 (SPY)</td><td>5 years</td><td>347</td><td><b>+76.1%</b></td><td>+56.14%</td><td>-35.72%</td><td>+222.36%</td></tr>
+<tr><td>S&P 500 (SPY)</td><td>10 years</td><td>287</td><td><b>+90.2%</b></td><td>+99.47%</td><td>-40.17%</td><td>+279.27%</td></tr>
+<tr><td>Vanguard S&P 500 ETF (VOO)</td><td>1 year</td><td>183</td><td><b>+85.8%</b></td><td>+13.87%</td><td>-19.52%</td><td>+53.83%</td></tr>
+<tr><td>Vanguard S&P 500 ETF (VOO)</td><td>5 years</td><td>135</td><td><b>+100.0%</b></td><td>+73.41%</td><td>+25.17%</td><td>+117.00%</td></tr>
+<tr><td>Vanguard S&P 500 ETF (VOO)</td><td>10 years</td><td>75</td><td><b>+100.0%</b></td><td>+196.04%</td><td>+138.79%</td><td>+280.99%</td></tr>
+<tr><td>Nasdaq-100 (QQQ)</td><td>1 year</td><td>321</td><td><b>+79.4%</b></td><td>+16.05%</td><td>-67.35%</td><td>+76.38%</td></tr>
+<tr><td>Nasdaq-100 (QQQ)</td><td>5 years</td><td>273</td><td><b>+86.8%</b></td><td>+93.47%</td><td>-66.60%</td><td>+235.80%</td></tr>
+<tr><td>Nasdaq-100 (QQQ)</td><td>10 years</td><td>213</td><td><b>+89.7%</b></td><td>+240.90%</td><td>-58.07%</td><td>+612.61%</td></tr>
+<tr><td>US Aggregate bonds (AGG)</td><td>1 year</td><td>267</td><td><b>+53.9%</b></td><td>+0.29%</td><td>-17.22%</td><td>+9.22%</td></tr>
+<tr><td>US Aggregate bonds (AGG)</td><td>5 years</td><td>219</td><td><b>+58.4%</b></td><td>+1.90%</td><td>-17.67%</td><td>+13.74%</td></tr>
+<tr><td>US Aggregate bonds (AGG)</td><td>10 years</td><td>159</td><td><b>+62.9%</b></td><td>+5.90%</td><td>-15.90%</td><td>+15.58%</td></tr>
+<tr><td>Financials sector (XLF)</td><td>1 year</td><td>324</td><td><b>+63.3%</b></td><td>+7.81%</td><td>-70.58%</td><td>+93.16%</td></tr>
+<tr><td>Financials sector (XLF)</td><td>5 years</td><td>276</td><td><b>+77.2%</b></td><td>+39.72%</td><td>-74.56%</td><td>+185.53%</td></tr>
+<tr><td>Financials sector (XLF)</td><td>10 years</td><td>216</td><td><b>+50.9%</b></td><td>+22.20%</td><td>-68.62%</td><td>+329.55%</td></tr>
+</table>
+<h2>Fee drag</h2>
+<table><tr><th>Scenario</th><th>Growth of 1.0 over 20y</th></tr>
+<tr><td>0.03% expense ratio</td><td>5.284</td></tr>
+<tr><td>0.60% expense ratio</td><td>4.757</td></tr>
+<tr><td><b>Terminal value lost to the higher fee</b></td><td><b>9.98%</b></td></tr>
+</table>
+<p class="note">Same portfolio, same 8.71% measured CAGR — only the fee differs. The fee is the one input that is certain.</p>
+<h2>What this page does not claim</h2><div class=panel><ul>
+<li>That the ledger is profitable. It is not: PF < 1 and Kelly < 0 on the measured sample.</li>
+<li>That any class has an edge. No metric here carries a published n; see the plan (§3 W1).</li>
+<li>That a fund's past hit rate is a forecast. Over 1 month an equity index is close to a coin flip.</li>
+<li>That short-history instruments (VOO, 2010→) are safer. They simply have not been tested by a bear market.</li>
+</ul></div>
+<p class="note">Regenerate: <code>python3 tools/risk_page_builder.py --payload https://findtorontoevents.ca/audit/data/dashboard_data.json</code></p>
+</body></html>

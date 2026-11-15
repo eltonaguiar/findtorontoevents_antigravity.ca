@@ -3743,5 +3743,155 @@
         "stopping": "Run this frozen family once. No parameter search after seeing returns. Publish all failures. No production orders, universe edits, strategy kills or dashboard generator."
       }
     }
+  ],
+  "copilot_fund_etf_simulation_2026_11_15": [
+    {
+      "id": "H-142",
+      "asset_class": "ETF",
+      "family": "wrapper_correct_passive_portfolio_simulation",
+      "description": "Hold FZROX/FXAIX/VTSAX/SPY/VTI/BND/SGOV separately, no selection, ranking, timing or changes; evaluate full common history and same shorter tactical window. Existing Yahoo adjusted-close/raw-close caches2021-11-15..2026-11-13; funded USD100000; exact common dates, no fills at signal close;5bps per traded dollar each side and20bps stress; initial/final costs; NAV expenses embedded; no taxes/platform/FX; no leverage. Daily funded TR-unit NAV, not actual fill proof. Historical summaries previously viewed, no virgin OOS.",
+      "test_statistic": "Calendar-time net account CAGR/Sharpe/MDD, same-window SPY excess/IR,95%paired joint block mean-excess CI; no daily-return-as-independent-trade harness",
+      "acceptance_criteria": {
+        "absolute_profit": "net account return>0, descriptive only",
+        "raw_spy_outperformance": "net CAGR above same-window SPY net CAGR",
+        "allocation_screen": "tactical only: net Sharpe>=0.8,MDD<=20%,positive SPY mean excess in both before2025/from2025 segments and positive95%paired mean-excess CI lower bound for21/60/120session blocks; all required",
+        "capital_eligible": false,
+        "trade_harness": "UNTESTED; portfolio marks not fabricated independent picks"
+      },
+      "economic_prior": "Equity market exposure may capture a risk premium; low fees reduce drag. This does not imply timing alpha, guaranteed profit or SPY outperformance.",
+      "status": "UNTESTED",
+      "registered_at": "2026-11-15T00:43:53.413123+00:00",
+      "data_sample_lock": {
+        "protocol_sha256": "0932321fb81f5e14a59c4c164582702fb696a6ef7680a186dafb5c09e28a1029",
+        "history_previously_seen": true,
+        "optimization_allowed": false,
+        "trial_count": 1,
+        "scenario_seed": 20261115,
+        "scenario_paths": 1000,
+        "block_sessions": [
+          21,
+          60,
+          120
+        ],
+        "horizon_sessions": [
+          21,
+          63,
+          252,
+          756
+        ]
+      },
+      "result": {
+        "verdict": "UNTESTED",
+        "tested_at": "2026-11-15T00:52:51.715186+00:00",
+        "capital_eligible": false,
+        "forward_n": 0,
+        "research_label": "BASELINE_POSITIVE_NOT_PREDICTIVE_ALPHA",
+        "reason": "Daily funded NAV and joint risk scenarios executed; no independent trade-pick harness or pristine OOS/forward admission. Preserve original pre-registration and existing gates.",
+        "result_path": "2026-11-15_AM_profitability-plan/copilot-financial-review/simulation_results.json",
+        "input_sha256": "38776f8af974b4c502c3e866f26fd63759e8cd58374b3e1fefd296c3aff6b0f5",
+        "runner_sha256": "c4caaf715539cdfc5c70ffd0b9da4c521d74316b01d29d15d2388b1c76b9cba8",
+        "base_cost_metrics": {
+          "start": "2021-11-15",
+          "end": "2026-11-13",
+          "account_observations": 1255,
+          "initial_usd": 100000.0,
+          "final_usd": 173048.352167351,
+          "total_return_pct": 73.048352167351,
+          "cagr_pct": 11.607210112653398,
+          "volatility_pct": 17.16342708371129,
+          "excess_sharpe_vs_sgov": 0.5055784264885195,
+          "mdd_loss_pct": 24.503767219514828,
+          "max_underwater_observed_sessions": 488,
+          "daily_es97_5_loss_pct": 3.1083884871781176,
+          "es_tail_observations": 32,
+          "cost_usd": 136.5424723073354,
+          "dollar_turnover_fraction_sum": 1.9995002498750625
+        },
+        "next_step": "Maintain a passive paper reference under a separate mandate, not fund-selection alpha.",
+        "results_sha256": "15aafe71d12eadfad0d5a6407fcc52f44996c67a13a54e2d803d4db22c60b8ef",
+        "methodology_correction": "Boundary fees excluded from regular block pool and applied once per simulated path; same rules and byte-identical actual NAV;13tests pass; no eligibility change.",
+        "serialization_note": "LF CSV normalization only; all source hashes and price/NAV values preserved"
+      },
+      "banned_check": "Descriptive baseline, NOT H-141 survivor manager selection, H-140 beta-neutral factor, or killed crypto/FX family. Existing baseline outcomes disclosed; no new independent alpha claim.",
+      "protocol_path": "2026-11-15_AM_profitability-plan/copilot-financial-review/08_SIMULATION_PLAN.md"
+    },
+    {
+      "id": "H-143",
+      "asset_class": "ETF",
+      "family": "single_asset_month_end_trend_replication",
+      "description": "At observed complete calendar month end compare SPY adjusted close to mean of last10month-end adjusted closes. Strictly greater ->100%SPY else100%SGOV; execute next common observed close, old holdings earn through execution close; no incomplete last-month signal; first allocation after10monthends; hold/drift until next target. Existing Yahoo adjusted-close/raw-close caches2021-11-15..2026-11-13; funded USD100000; exact common dates, no fills at signal close;5bps per traded dollar each side and20bps stress; initial/final costs; NAV expenses embedded; no taxes/platform/FX; no leverage. Daily funded TR-unit NAV, not actual fill proof. Historical summaries previously viewed, no virgin OOS.",
+      "test_statistic": "Calendar-time net account CAGR/Sharpe/MDD, same-window SPY excess/IR,95%paired joint block mean-excess CI; no daily-return-as-independent-trade harness",
+      "acceptance_criteria": {
+        "absolute_profit": "net account return>0, descriptive only",
+        "raw_spy_outperformance": "net CAGR above same-window SPY net CAGR",
+        "allocation_screen": "tactical only: net Sharpe>=0.8,MDD<=20%,positive SPY mean excess in both before2025/from2025 segments and positive95%paired mean-excess CI lower bound for21/60/120session blocks; all required",
+        "capital_eligible": false,
+        "trade_harness": "UNTESTED; portfolio marks not fabricated independent picks"
+      },
+      "economic_prior": "Slow trend persistence could reduce bear exposure, but whipsaw/opportunity costs can lose to SPY. Fixed textbook diagnostic, not optimized expected alpha.",
+      "status": "UNTESTED",
+      "registered_at": "2026-11-15T00:43:53.413123+00:00",
+      "data_sample_lock": {
+        "protocol_sha256": "0932321fb81f5e14a59c4c164582702fb696a6ef7680a186dafb5c09e28a1029",
+        "history_previously_seen": true,
+        "optimization_allowed": false,
+        "trial_count": 1,
+        "scenario_seed": 20261115,
+        "scenario_paths": 1000,
+        "block_sessions": [
+          21,
+          60,
+          120
+        ],
+        "horizon_sessions": [
+          21,
+          63,
+          252,
+          756
+        ]
+      },
+      "result": {
+        "verdict": "UNTESTED",
+        "tested_at": "2026-11-15T00:52:51.715186+00:00",
+        "capital_eligible": false,
+        "forward_n": 0,
+        "research_label": "FAIL_ALLOCATION_ALPHA_SCREEN",
+        "reason": "Daily funded NAV and joint risk scenarios executed; no independent trade-pick harness or pristine OOS/forward admission. Preserve original pre-registration and existing gates.",
+        "result_path": "2026-11-15_AM_profitability-plan/copilot-financial-review/simulation_results.json",
+        "input_sha256": "38776f8af974b4c502c3e866f26fd63759e8cd58374b3e1fefd296c3aff6b0f5",
+        "runner_sha256": "c4caaf715539cdfc5c70ffd0b9da4c521d74316b01d29d15d2388b1c76b9cba8",
+        "base_cost_metrics": {
+          "start": "2022-09-01",
+          "end": "2026-11-13",
+          "account_observations": 1055,
+          "initial_usd": 100000.0,
+          "final_usd": 145502.33429590092,
+          "total_return_pct": 45.502334295900916,
+          "cagr_pct": 9.340190460463461,
+          "volatility_pct": 12.035112713786045,
+          "excess_sharpe_vs_sgov": 0.43829039087965965,
+          "mdd_loss_pct": 11.856720103465246,
+          "max_underwater_observed_sessions": 132,
+          "daily_es97_5_loss_pct": 2.125244010504996,
+          "es_tail_observations": 27,
+          "cost_usd": 1132.6540497301112,
+          "dollar_turnover_fraction_sum": 19.990504747626186
+        },
+        "next_step": "Remove this exact10month SPY/SGOV challenger from alpha-forward queue; do not retune against the same sample.",
+        "comparisons": {
+          "spy_cagr_excess_pp": -8.750782788771502,
+          "information_ratio_vs_spy": -0.7781440000853955,
+          "mean_spy_exposure": 0.8415559772296015,
+          "absolute_backtest_profit": true,
+          "raw_spy_outperformance": false,
+          "risk_diagnostic_improvement": false
+        },
+        "results_sha256": "15aafe71d12eadfad0d5a6407fcc52f44996c67a13a54e2d803d4db22c60b8ef",
+        "methodology_correction": "Boundary fees excluded from regular block pool and applied once per simulated path; same rules and byte-identical actual NAV;13tests pass; no eligibility change.",
+        "serialization_note": "LF CSV normalization only; all source hashes and price/NAV values preserved"
+      },
+      "banned_check": "Related-family replication of non-killed H-103 allocation research; not H-109 VIX gate, H-141 annual survivor selection or killed equity price-factor tests. One variant counted with its parent, not independent corroboration.",
+      "protocol_path": "2026-11-15_AM_profitability-plan/copilot-financial-review/08_SIMULATION_PLAN.md"
+    }
   ]
 }
