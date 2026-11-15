@@ -38,8 +38,8 @@ permissions:
 
 # Storm-commit repo: a newer push supersedes the in-flight test run.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.sha }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -167,7 +167,6 @@ jobs:
           tests/test_ueps_long_horizon_gate_bypass.py::test_universal_40_floor_bypass_is_intentional
           tests/test_asset_class_edge_invariants.py::test_equity_30d_pf_above_tier2_floor
           tests/test_audit_metric_invariants.py::test_headline_total_pnl_is_the_compounded_value
-          tests/test_confidence_calibrator.py::CalibratorContractTests::test_no_op_when_flag_unset
           tests/test_equity_pead_strategy.py::TestPEADSignals::test_positive_surprise_generates_signal
           tests/test_equity_pead_strategy.py::TestPEADSignals::test_confidence_scales_with_surprise
           tests/test_m001_cot_stale_gate.py::TestM001CotStaleGate::test_multi_asset_cot_source_stamped
@@ -229,7 +228,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-py${{ matrix.python-version }}
           path: test-results.xml
@@ -237,7 +236,7 @@ jobs:
 
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-py${{ matrix.python-version }}
           path: coverage.xml

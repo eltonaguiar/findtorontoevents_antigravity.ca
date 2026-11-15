@@ -51,11 +51,19 @@ def _last_close(symbol: str) -> float:
     if px is None or px.empty:
         return 0.0
     col = "Close" if "Close" in px.columns else px.columns[0]
-    return float(px[col].dropna().iloc[-1].item() if hasattr(px[col].dropna().iloc[-1], "item") else px[col].dropna().iloc[-1])
+    s = px[col]
+    if getattr(s, "ndim", 1) > 1:
+        s = s.iloc[:, 0]
+    s = s.dropna()
+    if s.empty:
+        return 0.0
+    last_val = s.iloc[-1]
+    if hasattr(last_val, "item"):
+        last_val = last_val.item()
+    return float(last_val)
 
 
 def _twelve_month_returns() -> dict[str, float]:
-    import pandas as pd
     import yfinance as yf
 
     out: dict[str, float] = {}
@@ -67,10 +75,21 @@ def _twelve_month_returns() -> dict[str, float]:
         if px is None or px.empty:
             continue
         col = "Close" if "Close" in px.columns else px.columns[0]
-        s = px[col].dropna()
+        s = px[col]
+        # yfinance >=1.8 can return a MultiIndex-column frame even for one
+        # ticker, so px["Close"] is a DataFrame; collapse to a Series.
+        if getattr(s, "ndim", 1) > 1:
+            s = s.iloc[:, 0]
+        s = s.dropna()
         if len(s) < LOOKBACK_DAYS:
             continue
-        out[sym] = float(s.iloc[-1] / s.iloc[-LOOKBACK_DAYS] - 1.0)
+        v1 = s.iloc[-1]
+        v0 = s.iloc[-LOOKBACK_DAYS]
+        if hasattr(v1, "item"):
+            v1 = v1.item()
+        if hasattr(v0, "item"):
+            v0 = v0.item()
+        out[sym] = float(v1 / v0 - 1.0)
     return out
 
 

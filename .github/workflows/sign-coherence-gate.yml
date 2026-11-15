@@ -35,13 +35,14 @@ permissions:
 jobs:
   scan:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
+          filter: blob:none
           token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Set up Python
@@ -97,7 +98,7 @@ jobs:
       - name: Commit JSON report
         if: always()
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -105,11 +106,7 @@ jobs:
             git add "${{ steps.scan.outputs.json_path }}"
             if ! git diff --cached --quiet; then
               git commit -m "audit: sign-coherence nightly snapshot [skip ci]"
-              for i in 1 2 3; do
-                if git push; then break; fi
-                git pull --rebase || true
-                sleep 5
-              done
+              bash .github/scripts/safe_push.sh
             fi
           fi
 

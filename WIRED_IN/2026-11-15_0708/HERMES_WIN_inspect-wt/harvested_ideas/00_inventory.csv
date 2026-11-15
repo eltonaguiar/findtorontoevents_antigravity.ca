@@ -1,0 +1,31 @@
+id,strategy,file_path,asset_class,timeframe,failure_mode,verdict,root_cause,path_verified
+F1,EMA600/EMA40 momentum cross,baby_strategies/kimi_ema600_40_momentum.py,equity,daily,"significance vs SPY (NO_ALPHA_BETA t=1.05)",DEAD,EQUITY closed as beta; no measurable alpha,YES
+F2,LGBM feature engineering + VWAP,baby_strategies/kimi_lgbm_features.py,equity,daily,shuffle control / look-ahead leak,DEAD,future data in feature pipeline,YES
+F3,VPIN + LGBM ensemble,baby_strategies/kimi_vpin_lgbm_ensemble.py,equity,daily,sample size (N<60) + cost margin,NEAR-MISS,edge too small to harvest after costs,YES
+F4,VPIN mean reversion,baby_strategies/kimi_vpin_reversion.py,equity,daily,walk-forward parameter drift,DEAD,regime dependence (bull only),YES
+F5,Volatility-momentum blend,baby_strategies/kimi_volatility_momentum_blend.py,equity,daily,friction model,NEAR-MISS,cost margin below 2x breakeven,YES
+F6,Quality-momentum factor,alpha_engine/advanced_strategies.py,equity,daily,multiple testing (deflated Sharpe),DEAD,uncorrected after project-wide trials,YES
+F7,Dual momentum (absolute + relative),alpha_engine/advanced_strategies.py,equity,weekly,walk-forward parameter drift,DEAD,whipsaw in sideways regimes,YES
+F8,Risk parity allocation,alpha_engine/advanced_risk_system.py,multi_asset,weekly,friction model,NEAR-MISS,cost-adjusted PF approx 1.00 at gate,YES
+F9,Crypto breakout + funding carry,alpha_engine/btc_breakout_strategy.py,crypto,hourly/daily,shuffle control / look-ahead leak,DEAD,future return leaked into breakout detection,YES
+F10,Prediction-market consensus copy,alpha_engine/prediction_market_consensus.py,prediction_markets,daily,structural (zero-sum + adverse selection + fees),DEAD,not a signal failure; follower edge does not exist,YES
+F11,Token unlock timing,alpha_engine/token_unlock_signals.py,crypto,event_driven,sample size (N<30),NEAR-MISS,event frequency too low,YES
+F12,COT contrarian backtest,tools/cot_contrarian_backtest.py,commodity,weekly,significance after costs,NEAR-MISS,pre-registered checks failed 4/4,YES
+F13,FX carry + momentum,alpha_engine/forex_carry_momentum_harvest.py,forex,daily,friction model,DEAD,spread exceeds gross edge,YES
+F14,Grid-search parameter optimisation,alpha_engine/auto_tuner.py,multi_asset,grid,multiple testing,DEAD,hundreds of grid points; no OOS survival,YES
+F15,Bayesian regime switching,alpha_engine/bayesian_regime_reference.py,multi_asset,daily,shuffle control,DEAD,regime labels unstable across windows,YES
+F16,HMM hidden-state momentum,analysis/score_calibration.py,equity,daily,walk-forward stability,NEAR-MISS,OOS performance collapses,YES
+F17,Conformal prediction sizing,alpha_engine/conformal_sizing.py,multi_asset,per_trade,walk-forward consistency,NEAR-MISS,calibration interval too wide,YES
+F18,Sterling drawdown scoring,audit_trail/mercury2_scoring.py,multi_asset,weekly,Monte Carlo tail,NEAR-MISS,5th percentile very negative,YES
+F19,Block bootstrap CI,analysis/score_calibration.py,multi_asset,post_hoc,significance (CI includes zero),DEAD,autocorrelation-aware CI admits noise,YES
+F20,Kelly + 3x cost gate,tools/per_class_cost_gate.py,multi_asset,per_trade,friction at threshold,NEAR-MISS,REQUIRED_COST_MULTIPLE=3.0 borderline,YES
+F21,Walk-forward validator,analysis/walkforward_optimizer.py,multi_asset,daily,forward PF below gate,NEAR-MISS,consistency passes but forward OOS fails,YES
+F22,FDR / single-source gates,alpha_engine/money_ready_verdict.py,multi_asset,weekly,gates ship disabled,DEAD,MONEY_READY_FDR_GATE=0 and SINGLE_SOURCE=0,YES
+F23,Gap-aware fill resolver,audit_trail/universal_pick_resolver.py,crypto,hourly,misapplied outside crypto,DEAD,worsens equity result when applied broadly,YES
+F24,Stop-fill replay (intrabar),tools/stop_fill_replay.py,equity,daily,PF still below gate,NEAR-MISS,improves PF but under 1.15,YES
+F25,ATR trailing stop variants,alpha_engine/advanced_risk_system.py,multi_asset,trailing,walk-forward stability,NEAR-MISS,no universal ATR multiple,YES
+F26,Random forest classifier,alpha_engine/advanced_statistical_strategies.py,equity,daily,shuffle control / look-ahead,DEAD,same leak class as F2,YES
+F27,Transformer on OHLCV,alpha_engine/advanced_statistical_strategies.py,crypto,daily,sample size,DEAD,daily bars insufficient for sequence model,YES
+F28,Portfolio risk-parity combo,alpha_engine/portfolio_manager.py,multi_asset,weekly,combined multiple testing,DEAD,deflated Sharpe on combination fails,YES
+F29,Transaction cost model,transaction_cost_model.py,multi_asset,per_trade,model exists but inconsistently applied,DEAD,cost model not wired into all scanners,YES
+F30,Risk-adjusted ratio suite,risk_adjusted_analysis.py,multi_asset,weekly,metrics only (no gate),DEAD,computes ratios but does not gate promotion,YES

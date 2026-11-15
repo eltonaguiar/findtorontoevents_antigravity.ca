@@ -54,6 +54,9 @@ def load_runs(repo: str, token: str, pages: int, per_page: int) -> List[Dict[str
             params={"per_page": per_page, "page": page},
         )
         if resp.status_code != 200:
+            if resp.status_code == 403 and "rate limit" in resp.text.lower():
+                print("::warning::guardian: GitHub REST rate limit hit — skipping this cycle")
+                return []
             raise RuntimeError(f"Failed to fetch runs page {page}: {resp.status_code} {resp.text[:300]}")
         payload = resp.json()
         chunk = payload.get("workflow_runs", [])
@@ -73,6 +76,9 @@ def load_workflows(repo: str, token: str, pages: int = 5, per_page: int = 100) -
             params={"per_page": per_page, "page": page},
         )
         if resp.status_code != 200:
+            if resp.status_code == 403 and "rate limit" in resp.text.lower():
+                print("::warning::guardian: GitHub REST rate limit hit (workflows) — skipping this cycle")
+                return []
             raise RuntimeError(f"Failed to fetch workflows page {page}: {resp.status_code} {resp.text[:300]}")
         payload = resp.json()
         chunk = payload.get("workflows", [])
@@ -489,17 +495,20 @@ def detect_masked_failures(
     token: str,
     runs: List[Dict[str, Any]],
     *,
-    max_runs: int = 40,
+    max_runs: int = 120,
     masker_workflows: frozenset = frozenset(),
+    max_annotation_checks: int = 30,
 ) -> List[Dict[str, Any]]:
     """Detect "green but lying" runs: a job with conclusion=success that contains
-    a step which actually failed (masked by continue-on-error: true). The top-level
-    guardian keys only on job conclusion, so these are otherwise invisible.
+    a step which actually failed (masked by continue-on-error: true) or emitted
+    failure-level error annotations. The top-level guardian keys only on job
+    conclusion, so these are otherwise invisible.
 
     Bounded to the most recent *max_runs* completed-success runs to stay within the
     API quota. If *masker_workflows* is non-empty, only those workflow names are probed.
     """
     masked: List[Dict[str, Any]] = []
+    ann_checks = 0
     candidates = [
         r for r in runs
         if r.get("status") == "completed" and r.get("conclusion") == "success"
@@ -523,6 +532,23 @@ def detect_masked_failures(
                 for st in (job.get("steps") or [])
                 if st.get("conclusion") in ("failure", "timed_out", "cancelled")
             ]
+            if not failed and job.get("id") and ann_checks < max_annotation_checks:
+                ann_checks += 1
+                ann_resp = gh_request(
+                    "GET", f"/repos/{repo}/check-runs/{job['id']}/annotations", token,
+                    params={"per_page": 50},
+                )
+                if ann_resp.status_code == 200:
+                    failed = [
+                        {
+                            "name": (a.get("title") or "error annotation")[:80],
+                            "conclusion": "error_annotation",
+                            "number": a.get("start_line") or 0,
+                        }
+                        for a in ann_resp.json()
+                        if a.get("annotation_level") == "failure"
+                        and "Process completed with exit code" not in (a.get("message") or "")
+                    ]
             if failed:
                 masked.append({
                     "run_id": rid,
@@ -708,8 +734,8 @@ def main() -> int:
 
     report["stale_data"] = stale_files
 
-    # --- Masked Failures (green job, failed step) ---
-    masked_max = int(os.getenv("FAILURE_GUARD_MASKED_MAX_RUNS", "40"))
+    # --- Masked Failures (green job, failed step or error annotation) ---
+    masked_max = int(os.getenv("FAILURE_GUARD_MASKED_MAX_RUNS", "120"))
     _maskers_env = os.getenv("FAILURE_GUARD_MASKER_WORKFLOWS", "").strip()
     maskers = frozenset(x.strip() for x in _maskers_env.split(",") if x.strip())
     masked_failures = detect_masked_failures(repo, token, runs, max_runs=masked_max, masker_workflows=maskers)

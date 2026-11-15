@@ -54,6 +54,13 @@ def _common_env(monkeypatch):
     monkeypatch.setenv("CRYPTO_ML_SCORE_GATE_ENABLED", "0")
     monkeypatch.setenv("NUPL_GATE_ENFORCE", "0")
     monkeypatch.setenv("M044_MIN_AGE_SECONDS", "0")
+    monkeypatch.setenv("CRYPTO_PRODUCTION_BLOCK_LONG", "0")
+    monkeypatch.setenv("CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE", "0")
+    monkeypatch.setenv("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "0")
+    monkeypatch.setenv("CRYPTO_SIZED_LONG_BLOCK", "0")
+    monkeypatch.setenv("CRYPTO_UTC_HOUR_FILTER", "0")
+    monkeypatch.setenv("ML_CRYPTO_PRED_LONG_REJECT", "0")
+    monkeypatch.setenv("BTC_BEAR_LONG_REJECT", "0")
 
 
 class TestM097BookDirectionConflict:

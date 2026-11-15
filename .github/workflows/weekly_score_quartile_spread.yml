@@ -21,6 +21,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install numpy
+      - name: Fetch dashboard payload (gitignored)
+        # analyze_audit_scores_vs_pnl.py reads audit_dashboard/data/dashboard_data.json,
+        # which is gitignored and never present at actions/checkout (it exits 1).
+        run: |
+          mkdir -p audit_dashboard/data
+          curl -fsS --max-time 60 \
+            "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
+            -o audit_dashboard/data/dashboard_data.json \
+            || echo "::warning::dashboard_data.json fetch failed — score/PnL analysis may be skipped"
+
       - name: Check spread vs floor
         run: python tools/weekly_score_quartile_regression.py
 

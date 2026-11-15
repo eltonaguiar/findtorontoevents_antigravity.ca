@@ -57,15 +57,15 @@ def fetch_external(symbol: str, aclass: str):
             return (p, "api_failover") if p else (None, None)
         if aclass in ("EQUITY", "ETF", "MUTUAL_FUNDS"):
             from alpha_engine.equity_price_failover import fetch_quote
-            q = fetch_quote(symbol, use_cache=True)
+            q = fetch_quote(symbol, use_cache=False)
             return (q.get("price"), q.get("source")) if q else (None, None)
         if aclass == "FOREX":
             from alpha_engine.forex_price_failover import fetch_forex_rate
-            q = fetch_forex_rate(symbol)
+            q = fetch_forex_rate(symbol, use_cache=False)
             return (q.get("price"), q.get("source")) if q else (None, None)
         if aclass in ("COMMODITY", "FUTURES"):
             from alpha_engine.commodity_price_failover import fetch_commodity_price
-            q = fetch_commodity_price(symbol)
+            q = fetch_commodity_price(symbol, use_cache=False)
             return (q.get("price"), q.get("source")) if q else (None, None)
     except Exception as e:            # noqa: BLE001
         return (None, f"ERR:{type(e).__name__}")

@@ -92,14 +92,23 @@ def _cache_read(pair: str) -> Optional[dict]:
     if time.time() - p.stat().st_mtime > CACHE_TTL_SEC:
         return None
     try:
-        return json.loads(p.read_text(encoding="utf-8"))
+        data = json.loads(p.read_text(encoding="utf-8"))
     except Exception:
         return None
+    if not isinstance(data, dict):
+        return None
+    cached_at = data.pop("_cached_at", None)
+    # Enforce payload-level timestamp so git checkouts (whose file mtime equals
+    # checkout time) cannot treat months-old committed cache JSONs as fresh.
+    if not isinstance(cached_at, (int, float)) or (time.time() - float(cached_at)) > CACHE_TTL_SEC:
+        return None
+    return data
 
 
 def _cache_write(pair: str, payload: dict) -> None:
     try:
-        _cache_path(pair).write_text(json.dumps(payload), encoding="utf-8")
+        stored = {**payload, "_cached_at": time.time()}
+        _cache_path(pair).write_text(json.dumps(stored), encoding="utf-8")
     except Exception as exc:
         logger.debug("cache write failed for %s: %s", pair, exc)
 
@@ -388,25 +397,28 @@ _ADAPTERS = [
 ]
 
 
-def fetch_forex_rate(pair: str) -> Optional[dict]:
+def fetch_forex_rate(pair: str, *, use_cache: bool = True) -> Optional[dict]:
     """Return rate for ``pair`` from the first working source.
 
     Args:
         pair: FX pair like "EURUSD", "GBPUSD=X", "EUR/USD"
+        use_cache: Whether to read/write on-disk TTL cache (default True).
 
     Returns:
         {"price": float, "base": str, "quote": str, "asof": str, "source": str}
         or None if all sources fail.
     """
     key = _normalize_pair(pair)
-    cached = _cache_read(key)
-    if cached:
-        return cached
+    if use_cache:
+        cached = _cache_read(key)
+        if cached:
+            return cached
 
     for adapter in _ADAPTERS:
         result = adapter(pair)
         if result and result.get("price", 0) > 0:
-            _cache_write(key, result)
+            if use_cache:
+                _cache_write(key, result)
             logger.debug("forex rate %s=%.5f from %s", key, result["price"], result["source"])
             return result
 

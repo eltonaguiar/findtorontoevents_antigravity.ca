@@ -30,6 +30,7 @@ jobs:
       with:
         token: ${{ secrets.GH_PAT || github.token }}
         fetch-depth: 0
+        filter: blob:none
       
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -75,7 +76,7 @@ jobs:
         python live_trading_bot_canada.py
         
     - name: Upload trading results
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: trading-results-${{ github.run_number }}-${{ github.run_id }}
         path: |

@@ -17,12 +17,14 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
+          filter: blob:none
+          token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -115,7 +117,7 @@ jobs:
           [ -f "$pf" ] || { echo "no picks_now.json to push"; exit 0; }
           pushed=0
           for i in 1 2 3 4 5; do
-            git fetch -q origin main || { sleep 3; continue; }
+            git fetch -q --depth=1 --no-tags --filter=blob:none origin main || { sleep 3; continue; }
             base=$(git rev-parse FETCH_HEAD)
             blob=$(git hash-object -w "$pf")
             idx=$(mktemp)

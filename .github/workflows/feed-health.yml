@@ -17,6 +17,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install dependencies
+        run: python -m pip install -q numpy requests
+
       - name: Fetch dashboard payload (FTP — file is gitignored, regenerated hourly)
         run: |
           mkdir -p audit_trail/data

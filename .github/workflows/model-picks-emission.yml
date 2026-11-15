@@ -28,12 +28,13 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
+          filter: blob:none
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -64,9 +65,15 @@ jobs:
         run: python3 tools/live_pnl_tracker.py --apply --summary
 
       - name: Commit regenerated model-picks payload
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add audit_dashboard/data/picks_now_model_finpredict_v4.json audit_dashboard/data/picks_now.json audit_dashboard/data/picks_now_live_pnl.json
-          git commit -m "data(model-picks): refresh tactical allocation picks [skip ci]" || echo "no changes"
-          git push origin main
+          if git diff --cached --quiet; then
+            echo "no changes"
+            exit 0
+          fi
+          git commit -m "data(model-picks): refresh tactical allocation picks [skip ci]"
+          bash .github/scripts/safe_push.sh

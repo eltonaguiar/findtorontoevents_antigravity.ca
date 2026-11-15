@@ -49,14 +49,12 @@ name: rsi5070 Forward-Test Snapshot (Daily)
         type: string
 
 concurrency:
-  # SHARES `dashboard-publish` group with audit-dashboard.yml. We write to the
-  # SAME output JSONs (`audit_dashboard/data/crypto_rsi5070_us_forward_status.json`
-  # + `audit_dashboard/data/entry_conditions_forward.json`) as the hourly job —
-  # without serializing, two writes to the same file mid-flight would corrupt
-  # the file. The audit-dashboard cron has timeout-minutes: 115 and is documented
-  # to take 30-35 min, so worst case our 25-min snapshot waits ~115 min behind
-  # it. Acceptable for a daily cron (the snapshot just lands later that day).
-  group: dashboard-publish
+  # Separate `rsi5070-forward-snapshot` group from audit-dashboard's
+  # `dashboard-publish`: sharing `dashboard-publish` caused this daily 07:00Z
+  # cron to be queued behind hourly 35-115m audit-dashboard runs and cancelled
+  # by concurrency queue eviction (only 1 pending slot per group). Each runner
+  # isolates writes in its own checkout and safe_push.sh serializes git pushes.
+  group: rsi5070-forward-snapshot
   cancel-in-progress: false
 
 permissions:

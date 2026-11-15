@@ -182,90 +182,117 @@ def create_tables(cur):
     print("Tables at_local_picks and at_signal_outcomes ready.")
 
 
+_PICK_SQL = (
+    "INSERT IGNORE INTO at_local_picks "
+    "(symbol, direction, entry_price, take_profit, stop_loss, confidence, "
+    "strategy, source_system, source_file, asset_class, status, exit_price, "
+    "exit_reason, pnl_pct, signal_timestamp) "
+    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+)
+_OUTCOME_SQL = (
+    "INSERT IGNORE INTO at_signal_outcomes "
+    "(symbol, direction, entry_price, take_profit, stop_loss, exit_price, "
+    "outcome, pnl_pct, source_system, strategy, asset_class, opened_at, closed_at) "
+    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+)
+_BATCH_SIZE = 500
+
+
+def _build_pick_row(symbol, direction, entry, tp, sl, confidence, strategy,
+                    source_system, source_file, status, exit_price, exit_reason,
+                    pnl_pct, signal_ts, row_asset_class=None):
+    # P0B 2026-06-12: central emission gate
+    allowed, _reason = is_emission_allowed(strategy, source_system)
+    if not allowed:
+        return None
+    return (
+        symbol, direction or "LONG", safe_float(entry), safe_float(tp),
+        safe_float(sl), safe_float(confidence), strategy,
+        source_system, source_file,
+        derive_asset_class(symbol, row_asset_class),
+        status or "OPEN", safe_float(exit_price), exit_reason,
+        safe_float(pnl_pct), safe_ts(signal_ts),
+    )
+
+
+def _build_outcome_row(symbol, direction, entry, tp, sl, exit_price, outcome,
+                       pnl_pct, source_system, strategy, opened_at, closed_at,
+                       row_asset_class=None):
+    # P0B 2026-06-12: central emission gate
+    allowed, _reason = is_emission_allowed(strategy, source_system)
+    if not allowed:
+        return None
+    # idx_dedup UNIQUE(symbol,direction,source_system,opened_at) only fires
+    # when opened_at is non-NULL. Fall back to closed_at; skip timestamp-less rows.
+    safe_opened = safe_ts(opened_at) or safe_ts(closed_at)
+    if safe_opened is None:
+        return None
+    return (
+        symbol, direction or "LONG", safe_float(entry), safe_float(tp),
+        safe_float(sl), safe_float(exit_price), outcome,
+        safe_float(pnl_pct), source_system, strategy,
+        derive_asset_class(symbol, row_asset_class),
+        safe_opened, safe_ts(closed_at),
+    )
+
+
+def _flush_batch(cur, sql, rows, batch_size=_BATCH_SIZE):
+    """Execute batched INSERT IGNORE chunks and commit once per batch."""
+    if not rows:
+        return 0
+    total = 0
+    conn = getattr(cur, "connection", None)
+    for idx in range(0, len(rows), batch_size):
+        chunk = rows[idx:idx + batch_size]
+        try:
+            cur.executemany(sql, chunk)
+            if cur.rowcount and cur.rowcount > 0:
+                total += cur.rowcount
+        except Exception:
+            for row in chunk:
+                try:
+                    cur.execute(sql, row)
+                    if cur.rowcount and cur.rowcount > 0:
+                        total += cur.rowcount
+                except Exception:
+                    pass
+        if conn is not None:
+            try:
+                conn.commit()
+            except Exception:
+                pass
+    return total
+
+
 def insert_pick(cur, symbol, direction, entry, tp, sl, confidence, strategy,
                 source_system, source_file, status, exit_price, exit_reason,
                 pnl_pct, signal_ts, row_asset_class=None):
-    # P0B 2026-06-12: central emission gate
-    allowed, reason = is_emission_allowed(strategy, source_system)
-    if not allowed:
-        return 0  # silently skip killed strategies
+    row = _build_pick_row(
+        symbol, direction, entry, tp, sl, confidence, strategy,
+        source_system, source_file, status, exit_price, exit_reason,
+        pnl_pct, signal_ts, row_asset_class=row_asset_class,
+    )
+    if row is None:
+        return 0
     try:
-        # P0-B: same central kill gate as insert_outcome (was missing on pick path)
-        try:
-            # NOTE: do NOT re-import is_emission_allowed here. It is imported at
-            # module scope (top of file); a local re-import makes the name a
-            # function-local, so the earlier unconditional use above raises
-            # UnboundLocalError (this is exactly what crashed the at_signal_outcomes
-            # mirror step once PR #608 unblocked it from reaching this code). 2026-06-19.
-            _allowed, _why = is_emission_allowed(strategy, source_system)
-            if not _allowed:
-                return 0
-        except ImportError:
-            pass
-        cur.execute(
-            "INSERT IGNORE INTO at_local_picks "
-            "(symbol, direction, entry_price, take_profit, stop_loss, confidence, "
-            "strategy, source_system, source_file, asset_class, status, exit_price, "
-            "exit_reason, pnl_pct, signal_timestamp) "
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-            (symbol, direction or "LONG", safe_float(entry), safe_float(tp),
-             safe_float(sl), safe_float(confidence), strategy,
-             source_system, source_file,
-             derive_asset_class(symbol, row_asset_class),
-             status or "OPEN", safe_float(exit_price), exit_reason,
-             safe_float(pnl_pct), safe_ts(signal_ts))
-        )
+        cur.execute(_PICK_SQL, row)
         return cur.rowcount
-    except Exception as e:
+    except Exception:
         return 0
 
 
 def insert_outcome(cur, symbol, direction, entry, tp, sl, exit_price, outcome,
                    pnl_pct, source_system, strategy, opened_at, closed_at,
                    row_asset_class=None):
-    # P0B 2026-06-12: central emission gate
-    allowed, reason = is_emission_allowed(strategy, source_system)
-    if not allowed:
-        return 0  # silently skip killed strategies
+    row = _build_outcome_row(
+        symbol, direction, entry, tp, sl, exit_price, outcome,
+        pnl_pct, source_system, strategy, opened_at, closed_at,
+        row_asset_class=row_asset_class,
+    )
+    if row is None:
+        return 0
     try:
-        # idx_dedup UNIQUE(symbol,direction,source_system,opened_at) only fires
-        # when opened_at is non-NULL. JSON picks without timestamp/created_at
-        # used to leak opened_at=NULL → 8-43x row duplication per pick
-        # (INCIDENT_OVERALL #91, 2026-06-04). Fall back to closed_at so the
-        # unique constraint always has a non-NULL value to dedup against.
-        safe_opened = safe_ts(opened_at) or safe_ts(closed_at)
-        # 2026-06-12 (ML audit P0): rows with NO resolvable timestamp bypass the
-        # UNIQUE dedup entirely (MySQL UNIQUE permits multiple NULLs) — kimi's
-        # corpus re-inserted EVERY hourly run (140k dup rows/7d, 99.4% dupes).
-        # A timestamp-less outcome is unanalyzable (no intrabar, no time-split)
-        # — skip it instead of polluting the table.
-        if safe_opened is None:
-            return 0
-        # P0-B (2026-06-12): this writer had NO kill gate — strategies killed at
-        # the scanner kept entering the honest ledger through here (#135). One
-        # central check; fail-open on import error so ingest never hard-breaks.
-        try:
-            # NOTE: do NOT re-import is_emission_allowed here. It is imported at
-            # module scope (top of file); a local re-import makes the name a
-            # function-local, so the earlier unconditional use above raises
-            # UnboundLocalError (this is exactly what crashed the at_signal_outcomes
-            # mirror step once PR #608 unblocked it from reaching this code). 2026-06-19.
-            _allowed, _why = is_emission_allowed(strategy, source_system)
-            if not _allowed:
-                return 0
-        except ImportError:
-            pass
-        cur.execute(
-            "INSERT IGNORE INTO at_signal_outcomes "
-            "(symbol, direction, entry_price, take_profit, stop_loss, exit_price, "
-            "outcome, pnl_pct, source_system, strategy, asset_class, opened_at, closed_at) "
-            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
-            (symbol, direction or "LONG", safe_float(entry), safe_float(tp),
-             safe_float(sl), safe_float(exit_price), outcome,
-             safe_float(pnl_pct), source_system, strategy,
-             derive_asset_class(symbol, row_asset_class),
-             safe_opened, safe_ts(closed_at))
-        )
+        cur.execute(_OUTCOME_SQL, row)
         return cur.rowcount
     except Exception:
         return 0
@@ -288,8 +315,8 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
     if not isinstance(data, list):
         return 0, 0
 
-    picks_cnt = 0
-    outcomes_cnt = 0
+    pick_rows = []
+    outcome_rows = []
     for p in data:
         symbol = p.get("symbol", p.get("ticker", ""))
         if not symbol:
@@ -350,12 +377,14 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
         sl = p.get("stop_loss", p.get("sl_price", p.get("sl", p.get("stop_price"))))
 
         row_ac = p.get("asset_class") or p.get("assetClass")
-        picks_cnt += insert_pick(
-            cur, symbol, direction, entry, tp, sl,
+        pick_row = _build_pick_row(
+            symbol, direction, entry, tp, sl,
             p.get("confidence"), strategy, source_system, filepath,
             status, exit_price, exit_reason, pnl, ts,
             row_asset_class=row_ac,
         )
+        if pick_row is not None:
+            pick_rows.append(pick_row)
 
         # ── Also insert into at_signal_outcomes for closed picks ──
         # This was MISSING before 2026-05-27 — only SQLite sources
@@ -380,12 +409,16 @@ def load_json_picks(cur, filepath, source_system, is_closed=False):
             if outcome:
                 closed_at = p.get("closed_at", p.get("exit_timestamp", p.get("resolved_at",
                              p.get("close_date", p.get("timestamp")))))
-                outcomes_cnt += insert_outcome(
-                    cur, symbol, direction, entry, tp, sl, exit_price,
+                out_row = _build_outcome_row(
+                    symbol, direction, entry, tp, sl, exit_price,
                     outcome, pnl, source_system, strategy, ts, closed_at,
                     row_asset_class=row_ac,
                 )
+                if out_row is not None:
+                    outcome_rows.append(out_row)
 
+    picks_cnt = _flush_batch(cur, _PICK_SQL, pick_rows)
+    outcomes_cnt = _flush_batch(cur, _OUTCOME_SQL, outcome_rows)
     return picks_cnt, outcomes_cnt
 
 
@@ -403,8 +436,8 @@ def load_sqlite_table(cur, db_path, table, source_system):
         print(f"  Error reading {db_path}:{table}: {e}")
         return 0, 0
 
-    picks = 0
-    outcomes = 0
+    pick_rows = []
+    outcome_rows = []
     for r in rows:
         d = dict(r)
         symbol = d.get("symbol", d.get("ticker", d.get("coin", "")))
@@ -435,24 +468,30 @@ def load_sqlite_table(cur, db_path, table, source_system):
         exit_reason = d.get("exit_reason", d.get("close_reason"))
 
         row_ac = d.get("asset_class") or d.get("assetClass")
-        picks += insert_pick(
-            cur, symbol, direction, entry, tp, sl, confidence, strategy,
+        pick_row = _build_pick_row(
+            symbol, direction, entry, tp, sl, confidence, strategy,
             source_system, f"{db_path}:{table}", status, exit_price,
             exit_reason, pnl, ts,
             row_asset_class=row_ac,
         )
+        if pick_row is not None:
+            pick_rows.append(pick_row)
 
         # If this has outcome data, also insert into at_signal_outcomes
         outcome = d.get("outcome", d.get("result"))
         if outcome or (status and status not in ("OPEN", "ACTIVE", "PENDING")):
             closed_at = d.get("closed_at", d.get("exit_timestamp", d.get("resolved_at")))
-            outcomes += insert_outcome(
-                cur, symbol, direction, entry, tp, sl, exit_price,
+            out_row = _build_outcome_row(
+                symbol, direction, entry, tp, sl, exit_price,
                 outcome or status, pnl, source_system, strategy, ts, closed_at,
                 row_asset_class=row_ac,
             )
+            if out_row is not None:
+                outcome_rows.append(out_row)
 
     db.close()
+    picks = _flush_batch(cur, _PICK_SQL, pick_rows)
+    outcomes = _flush_batch(cur, _OUTCOME_SQL, outcome_rows)
     return picks, outcomes
 
 
@@ -466,106 +505,108 @@ def main():
         _creds = dict(host="mysql.50webs.com", user="ejaguiar1_stocks",
                       password="", database="ejaguiar1_stocks",
                       connect_timeout=15, autocommit=True)
-    conn = pymysql.connect(**{**_creds, "autocommit": True})
-    cur = conn.cursor()
+    conn = pymysql.connect(**{**_creds, "autocommit": False})
+    try:
+        cur = conn.cursor()
 
-    create_tables(cur)
+        create_tables(cur)
+        conn.commit()
 
-    total_picks = 0
-    total_outcomes = 0
+        total_picks = 0
+        total_outcomes = 0
 
-    # ── 1. SQLite databases ──
-    sqlite_sources = [
-        ("data/live_picks.db", "pick_history", "live_picks_tracker"),
-        ("data/live_picks.db", "live_picks", "live_picks_tracker"),
-        ("KIMI_FEB172026/data/kimi_trading.db", "signals", "kimi_feb17"),
-        ("KIMI_RISEOFTHECLAW/data/signal_tracker.db", "tracked_signals", "kimi_signal_tracker"),
-        ("KIMI_RISEOFTHECLAW/data/kimi_trading.db", "picks", "kimi_riseoftheclaw"),  # DISABLED 2026-06-12
-        ("signal_recorder/data/signal_log.db", "signal_log", "signal_recorder"),
-        ("signal_recorder/data/signal_log.db", "signal_outcomes", "signal_recorder"),
-        ("sandbox/data/opposite_day.db", "opposite_picks", "opposite_day"),
-        ("coinglass_strategies/data/coinglass.db", "signals", "coinglass"),
-        ("meta_strategy/data/meta_strategy.db", "permutation_signals", "meta_strategy"),
-        ("battleground/data/bundle_babies.db", "bundle_trades", "bundle_babies"),
-    ]
+        # ── 1. SQLite databases ──
+        sqlite_sources = [
+            ("data/live_picks.db", "pick_history", "live_picks_tracker"),
+            ("data/live_picks.db", "live_picks", "live_picks_tracker"),
+            ("KIMI_FEB172026/data/kimi_trading.db", "signals", "kimi_feb17"),
+            ("KIMI_RISEOFTHECLAW/data/signal_tracker.db", "tracked_signals", "kimi_signal_tracker"),
+            ("KIMI_RISEOFTHECLAW/data/kimi_trading.db", "picks", "kimi_riseoftheclaw"),  # DISABLED 2026-06-12
+            ("signal_recorder/data/signal_log.db", "signal_log", "signal_recorder"),
+            ("signal_recorder/data/signal_log.db", "signal_outcomes", "signal_recorder"),
+            ("sandbox/data/opposite_day.db", "opposite_picks", "opposite_day"),
+            ("coinglass_strategies/data/coinglass.db", "signals", "coinglass"),
+            ("meta_strategy/data/meta_strategy.db", "permutation_signals", "meta_strategy"),
+            ("battleground/data/bundle_babies.db", "bundle_trades", "bundle_babies"),
+        ]
 
-    for db_path, table, system in sqlite_sources:
-        p, o = load_sqlite_table(cur, db_path, table, system)
-        total_picks += p
-        total_outcomes += o
-        print(f"  [{system}/{table}] picks={p}, outcomes={o}")
+        for db_path, table, system in sqlite_sources:
+            p, o = load_sqlite_table(cur, db_path, table, system)
+            total_picks += p
+            total_outcomes += o
+            print(f"  [{system}/{table}] picks={p}, outcomes={o}")
 
-    # ── 2. JSON pick files ──
-    json_sources = [
-        # (filepath, source_system, is_closed)
-        ("alpha_engine/data/active_picks.json", "alpha_engine", False),
-        ("alpha_engine/data/closed_picks.json", "alpha_engine", True),
-        ("mercury2/data/active_picks.json", "mercury2", False),
-        ("mercury2/data/closed_picks.json", "mercury2", True),
-        ("battleground/data/active_picks.json", "battleground", False),
-        ("battleground/data/closed_picks.json", "battleground", True),
-        ("crypto_ml_edge/data/active_picks.json", "crypto_ml_edge", False),
-        ("KIMI_RISEOFTHECLAW/data/active_picks.json", "kimi_riseoftheclaw", False),  # DISABLED 2026-06-12
-        ("KIMI_RISEOFTHECLAW/data/closed_picks.json", "kimi_riseoftheclaw", True),   # DISABLED 2026-06-12
-        ("coinglass_strategies/data/active_picks.json", "coinglass", False),
-        ("rl_agent/data/active_picks.json", "rl_agent", False),
-        ("genome/active_picks.json", "genome", False),
-        ("crypto_signal_engine/data/active_picks.json", "crypto_signal_engine", False),
-        ("crypto_signal_engine/data/closed_picks.json", "crypto_signal_engine", True),
-        # Multi-asset (forex + equity + institutional) — active and closed
-        ("multi_asset/data/active_picks.json", "multi_asset_copytrader", False),
-        ("multi_asset/data/multi_asset_closed.json", "multi_asset_copytrader", True),
-    ]
+        # ── 2. JSON pick files ──
+        json_sources = [
+            # (filepath, source_system, is_closed)
+            ("alpha_engine/data/active_picks.json", "alpha_engine", False),
+            ("alpha_engine/data/closed_picks.json", "alpha_engine", True),
+            ("mercury2/data/active_picks.json", "mercury2", False),
+            ("mercury2/data/closed_picks.json", "mercury2", True),
+            ("battleground/data/active_picks.json", "battleground", False),
+            ("battleground/data/closed_picks.json", "battleground", True),
+            ("crypto_ml_edge/data/active_picks.json", "crypto_ml_edge", False),
+            ("KIMI_RISEOFTHECLAW/data/active_picks.json", "kimi_riseoftheclaw", False),  # DISABLED 2026-06-12
+            ("KIMI_RISEOFTHECLAW/data/closed_picks.json", "kimi_riseoftheclaw", True),   # DISABLED 2026-06-12
+            ("coinglass_strategies/data/active_picks.json", "coinglass", False),
+            ("rl_agent/data/active_picks.json", "rl_agent", False),
+            ("genome/active_picks.json", "genome", False),
+            ("crypto_signal_engine/data/active_picks.json", "crypto_signal_engine", False),
+            ("crypto_signal_engine/data/closed_picks.json", "crypto_signal_engine", True),
+            # Multi-asset (forex + equity + institutional) — active and closed
+            ("multi_asset/data/active_picks.json", "multi_asset_copytrader", False),
+            ("multi_asset/data/multi_asset_closed.json", "multi_asset_copytrader", True),
+        ]
 
-    # ML Battleground systems
-    for sys_dir in glob.glob(str(REPO / "ml_battleground" / "system_*")):
-        sys_name = Path(sys_dir).name
-        for pick_type, closed in [("active_picks.json", False), ("closed_picks.json", True)]:
-            fpath = f"ml_battleground/{sys_name}/data/{pick_type}"
-            json_sources.append((fpath, f"ml_battleground_{sys_name}", closed))
+        # ML Battleground systems
+        for sys_dir in glob.glob(str(REPO / "ml_battleground" / "system_*")):
+            sys_name = Path(sys_dir).name
+            for pick_type, closed in [("active_picks.json", False), ("closed_picks.json", True)]:
+                fpath = f"ml_battleground/{sys_name}/data/{pick_type}"
+                json_sources.append((fpath, f"ml_battleground_{sys_name}", closed))
 
-    # ML Battleground ensemble
-    json_sources.append(("ml_battleground/ensemble_data/active_picks.json", "ml_battleground_ensemble", False))
-    json_sources.append(("ml_battleground/ensemble_data/closed_picks.json", "ml_battleground_ensemble", True))
+        # ML Battleground ensemble
+        json_sources.append(("ml_battleground/ensemble_data/active_picks.json", "ml_battleground_ensemble", False))
+        json_sources.append(("ml_battleground/ensemble_data/closed_picks.json", "ml_battleground_ensemble", True))
 
-    # Breakout arena
-    for approach in ["approach_a_sr_breakout", "approach_b_ml_breakout", "approach_c_spike_reverse"]:
-        for pick_type, closed in [("active_picks.json", False), ("closed_picks.json", True)]:
-            fpath = f"breakout_arena/{approach}/data/{pick_type}"
-            json_sources.append((fpath, f"breakout_{approach}", closed))
+        # Breakout arena
+        for approach in ["approach_a_sr_breakout", "approach_b_ml_breakout", "approach_c_spike_reverse"]:
+            for pick_type, closed in [("active_picks.json", False), ("closed_picks.json", True)]:
+                fpath = f"breakout_arena/{approach}/data/{pick_type}"
+                json_sources.append((fpath, f"breakout_{approach}", closed))
 
-    for filepath, system, is_closed in json_sources:
-        p_cnt, o_cnt = load_json_picks(cur, filepath, system, is_closed)
-        if p_cnt or o_cnt:
-            total_picks += p_cnt
-            total_outcomes += o_cnt
-            print(f"  [{system}] {'closed' if is_closed else 'active'}: {p_cnt} picks, {o_cnt} outcomes")
+        for filepath, system, is_closed in json_sources:
+            p_cnt, o_cnt = load_json_picks(cur, filepath, system, is_closed)
+            if p_cnt or o_cnt:
+                total_picks += p_cnt
+                total_outcomes += o_cnt
+                print(f"  [{system}] {'closed' if is_closed else 'active'}: {p_cnt} picks, {o_cnt} outcomes")
 
-    # ── Summary ──
-    cur.execute("SELECT COUNT(*) FROM at_local_picks")
-    lp_total = cur.fetchone()[0]
-    cur.execute("SELECT COUNT(*) FROM at_signal_outcomes")
-    so_total = cur.fetchone()[0]
+        # ── Summary ──
+        cur.execute("SELECT COUNT(*) FROM at_local_picks")
+        lp_total = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM at_signal_outcomes")
+        so_total = cur.fetchone()[0]
 
-    cur.execute("SELECT source_system, COUNT(*) FROM at_local_picks GROUP BY source_system ORDER BY 2 DESC")
-    by_system = cur.fetchall()
+        cur.execute("SELECT source_system, COUNT(*) FROM at_local_picks GROUP BY source_system ORDER BY 2 DESC")
+        by_system = cur.fetchall()
 
-    cur.execute("SELECT status, COUNT(*) FROM at_local_picks GROUP BY status ORDER BY 2 DESC")
-    by_status = cur.fetchall()
+        cur.execute("SELECT status, COUNT(*) FROM at_local_picks GROUP BY status ORDER BY 2 DESC")
+        by_status = cur.fetchall()
 
-    print(f"\n=== BACKFILL COMPLETE ===")
-    print(f"New picks inserted: {total_picks}")
-    print(f"New outcomes inserted: {total_outcomes}")
-    print(f"Total at_local_picks: {lp_total}")
-    print(f"Total at_signal_outcomes: {so_total}")
-    print(f"\nBy source system:")
-    for sys, cnt in by_system:
-        print(f"  {sys:<40} {cnt:>6}")
-    print(f"\nBy status:")
-    for st, cnt in by_status:
-        print(f"  {st:<20} {cnt:>6}")
-
-    conn.close()
+        print(f"\n=== BACKFILL COMPLETE ===")
+        print(f"New picks inserted: {total_picks}")
+        print(f"New outcomes inserted: {total_outcomes}")
+        print(f"Total at_local_picks: {lp_total}")
+        print(f"Total at_signal_outcomes: {so_total}")
+        print(f"\nBy source system:")
+        for sys, cnt in by_system:
+            print(f"  {sys:<40} {cnt:>6}")
+        print(f"\nBy status:")
+        for st, cnt in by_status:
+            print(f"  {st:<20} {cnt:>6}")
+    finally:
+        conn.close()
 
 
 if __name__ == "__main__":
