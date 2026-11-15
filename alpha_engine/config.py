@@ -1061,6 +1061,9 @@ TRAILING_STOP["futures"] = 0.06
 TRAILING_STOP["etf"]     = 0.06
 CATEGORY_RISK["bond"] = (-0.04, 0.06, 15)   # 4% stop, 6% target, 15 day max hold (low vol)
 TRAILING_STOP["bond"]     = 0.04
+# MF wired in via PE-09 (2026-11-15): same risk profile as ETF (basket, low vol)
+CATEGORY_RISK["mutual_fund"] = (-0.05, 0.10, 15)
+TRAILING_STOP["mutual_fund"] = 0.06
 
 # Convenience: all symbols flat list
 ALL_SYMBOLS: dict[str, dict] = {
