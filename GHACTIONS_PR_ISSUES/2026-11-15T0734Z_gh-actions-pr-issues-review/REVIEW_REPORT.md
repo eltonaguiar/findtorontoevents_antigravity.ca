@@ -146,4 +146,27 @@ See `fixes/` subfolder for per-fix documentation:
 
 ---
 
+## 9. Actions Taken (2026-11-15 follow-up)
+
+### 9.1 Stale PRs closed
+Closed **34 stale PRs** (#562–#766) with a pointer to this review; superseded or abandoned. Open PRs reduced from 36 to 2 active (my #790 + a peer's #788; #785/#786 were merged/closed externally during the session).
+
+### 9.2 Fixes applied — PR #790 (`fix/gha-backup-verify-dedup-2026-11-15`)
+| Fix | File | Change |
+|---|---|---|
+| FIX-001 | `.github/workflows/backup-verify.yml` | Dedup: comment on existing open `backup-verify` issue for today instead of creating a new one each failure. |
+| FIX-003 | `.github/workflows/forward-test-new-strategies.yml` | Added `concurrency` group; removed redundant manual `git pull --rebase` (safe_push.sh handles it). |
+| FIX-005 | `.github/workflows/sports-smoke-and-e2e.yml` | Pinned `smoke` job to `ubuntu-24.04` — Playwright 1.58.2 does not support Ubuntu 26.04. |
+| enhancement | `tools/run_verified_pilots_daily.py` | Print + persist `failed_steps` so the CI log names which pilot broke (additive; no pass/fail change). |
+
+Verified: all changed workflows parse with `yaml.safe_load`; `tools/run_verified_pilots_daily.py` passes `py_compile`.
+
+### 9.3 Failing jobs intentionally NOT forced green
+| Job | Why left failing | Owner action |
+|---|---|---|
+| QA Market Validation | 191 critical flags are **real** (93 UNPRICED blank fields + 98 FOREX MISMATCH). Suppressing would let unvalidated PnL through. | Fix producer (blank `current_price`/`pnl_pct`) + reconcile FOREX quote source. See FIX-006. |
+| Verified pilot daily | One of 17 paper-pilot sub-steps returns non-zero (real signal, `ok=False`). | Use the new `failed_steps` field to identify and fix the failing pilot. |
+| Mirror | FTP flakiness on 50webs/GoDaddy (environmental). | Infra/retry work; cert verification also disabled (`ssl:verify-certificate no`). |
+| CI Tests (branch) | Belongs to a feature branch PR, not main. | Addressed in that PR. |
+
 *End of report.*
