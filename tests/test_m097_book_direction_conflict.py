@@ -54,6 +54,19 @@ def _common_env(monkeypatch):
     monkeypatch.setenv("CRYPTO_ML_SCORE_GATE_ENABLED", "0")
     monkeypatch.setenv("NUPL_GATE_ENFORCE", "0")
     monkeypatch.setenv("M044_MIN_AGE_SECONDS", "0")
+    # Neutralize cross-cutting CRYPTO LONG gates (default ON in production/CI,
+    # e.g. repo var CRYPTO_PRODUCTION_BLOCK_LONG=1). The fixture here is a CRYPTO
+    # LONG pick used to isolate M-097; without these the pick is rejected before
+    # the gate under test, and the tests fail as `assert False is True` in CI.
+    # Mirrors test_blacklist_exec_gate_enforcement._NEUTRALIZE and
+    # test_phase1_active_gates._ClearPhase1Env.
+    monkeypatch.setenv("CRYPTO_PRODUCTION_BLOCK_LONG", "0")
+    monkeypatch.setenv("CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE", "0")
+    monkeypatch.setenv("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "0")
+    monkeypatch.setenv("CRYPTO_SIZED_LONG_BLOCK", "0")
+    monkeypatch.setenv("CRYPTO_UTC_HOUR_FILTER", "0")
+    monkeypatch.setenv("ML_CRYPTO_PRED_LONG_REJECT", "0")
+    monkeypatch.setenv("BTC_BEAR_LONG_REJECT", "0")
 
 
 class TestM097BookDirectionConflict:

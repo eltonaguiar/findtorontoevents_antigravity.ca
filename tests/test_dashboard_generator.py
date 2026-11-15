@@ -209,13 +209,24 @@ def test_prepare_prediction_market_consensus_signal_preserves_pm_source_lineage(
     assert prepared["high_conviction"] is True
 
 
-def test_pre_score_active_candidate_keeps_valid_zero_score_pick_alive() -> None:
+def test_pre_score_active_candidate_keeps_valid_zero_score_pick_alive(monkeypatch) -> None:
     # 2026-06-01: this test originally used source_system=prediction_market_consensus
     # as its example pick, but that source was RETIRED into BLOCKED_SOURCE_SYSTEMS
     # (quality_gates.py:2010-2015, data-corruption PRICE_MISMATCH rows), so the active
     # gate now hard-rejects it. The test is about the *generic* pre-score-candidate /
     # crypto-score-floor behavior, not pm_consensus specifically — use a valid,
     # non-blocked crypto source so the intent is preserved.
+    #
+    # 2026-11-15: neutralize the cross-cutting CRYPTO LONG gates (default ON in
+    # CI via repo var CRYPTO_PRODUCTION_BLOCK_LONG=1) so this CRYPTO LONG fixture
+    # reaches the assertion-under-test instead of being rejected first.
+    monkeypatch.setenv("CRYPTO_PRODUCTION_BLOCK_LONG", "0")
+    monkeypatch.setenv("CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE", "0")
+    monkeypatch.setenv("CRYPTO_BUY_DIRECTION_GATE_ENABLED", "0")
+    monkeypatch.setenv("CRYPTO_SIZED_LONG_BLOCK", "0")
+    monkeypatch.setenv("CRYPTO_UTC_HOUR_FILTER", "0")
+    monkeypatch.setenv("ML_CRYPTO_PRED_LONG_REJECT", "0")
+    monkeypatch.setenv("BTC_BEAR_LONG_REJECT", "0")
     pick = {
         "id": "signal_validation_BTCUSDT_202603270550",
         "symbol": "BTCUSDT",
