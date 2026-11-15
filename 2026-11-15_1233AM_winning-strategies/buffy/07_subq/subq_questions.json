@@ -1,0 +1,80 @@
+{
+  "bare": {
+    "label": "prior, no numbers",
+    "state": "Trading research platform. It emits daily picks across CRYPTO, EQUITY, ETF, FOREX,\nCOMMODITY, FUTURES, BOND, SPORTS and MEMECOIN, using 361 registered strategies.\nOutcomes are stored in MySQL and rendered on an audit dashboard. It also ingests\nPolymarket and Kalshi prediction-market signals and mirrors copy-trader wallets.\nThe operator wants a strategy that would make money if paper traded repeatedly, and\nwants to know why prediction-market copy trading has produced no winners."
+  },
+  "evidence": {
+    "label": "with measured ledger, fees, SPIVA",
+    "state": "Trading research platform. It emits daily picks across CRYPTO, EQUITY, ETF, FOREX,\nCOMMODITY, FUTURES, BOND, SPORTS and MEMECOIN, using 361 registered strategies.\nOutcomes are stored in MySQL and rendered on an audit dashboard. It also ingests\nPolymarket and Kalshi prediction-market signals and mirrors copy-trader wallets.\nThe operator wants a strategy that would make money if paper traded repeatedly, and\nwants to know why prediction-market copy trading has produced no winners.\n\nMEASURED LEDGER (2026-11-14T22:34Z, verified marks only): 6,968 closed rows, of which\n3,350 (48.1%) are forged flats where exit_price equals entry_price. Verified per class:\nCRYPTO n=2114 WR40% PF1.02; EQUITY n=738 WR47% PF1.15; ETF n=566 WR44% PF1.04;\nFOREX n=158 WR46% PF1.16; BOND n=35 PF0.59; COMMODITY n=7; FUTURES n=0.\n\nPREDICTION-MARKET EVIDENCE: the ledger has NO prediction-market asset class. The only\nclasses present are CRYPTO, EQUITY, ETF, FOREX, COMMODITY, BOND, FUTURES, SPORTS. Pick\nrows originating from polymarket/kalshi signals are tagged CRYPTO (32 rows) - a BTC price\nrange contract is filed as a crypto pick. So prediction-market outcomes are never\nverdicted separately and the system has never learned whether they work.\n\nFEES: Kalshi taker fee = ceil(0.07 x contracts x P x (1-P)). At 50c that is $1.75 per\n100 contracts = 3.5% of a $50 stake. At 10c it is $0.63 on $10 = 6.3%. At 90c it is\n0.7%. Polymarket international charges 0.04-0.07 by category; Polymarket US theta rose\nfrom 0.05 to 0.0695 during 2026. Makers pay zero and receive 15-25% rebates. The fee is\nsymmetric and peaks at a coin flip - exactly where forecasting edge is usually claimed.\n\nCOPY TRADING: mirroring a leader's taker fills pays the taker fee twice (open and close)\nand arrives after the leader's fill, so the mirrored price is worse by the amount the\nleader already moved. Leaderboards rank raw PnL, not risk-adjusted return, and a single\nlong-shot win dominates the ranking.\n\nBENCHMARKS: SPIVA US Year-End 2025 - 78.78% of large-cap active funds trailed the\nS&P 500 over 1 year, 88.96% over 5 years, 85.59% over 10 years, 92.89% over 20 years;\n95.01% of all domestic funds trailed the S&P Composite 1500 over 20 years. The index is\nthe thing that wins over time; the average active fund does not."
+  },
+  "questions": {
+    "prediction_market_viable_class": {
+      "type": "noul",
+      "instructions": "Judge whether prediction markets can be a profitable pick class for this system after fees.",
+      "criteria": {
+        "true": "Yes, a durable after-fee edge is plausible",
+        "false": "No, fees and structure prevent a durable edge"
+      }
+    },
+    "pm_copy_trading_wins": {
+      "type": "noul",
+      "instructions": "Judge whether copying top prediction-market wallets can beat fees plus mirroring delay.",
+      "criteria": {
+        "true": "Copying can beat the combined cost",
+        "false": "Copying cannot beat the combined cost"
+      }
+    },
+    "pm_should_be_own_class": {
+      "type": "noul",
+      "instructions": "Judge whether prediction markets need their own ledger class with their own outcomes.",
+      "criteria": {
+        "true": "Yes, separate class required",
+        "false": "No, tagging them as CRYPTO is adequate"
+      }
+    },
+    "benchmark_gate_required": {
+      "type": "noul",
+      "instructions": "Judge whether every class should be required to beat its buy-and-hold benchmark net of costs before being called profitable.",
+      "criteria": {
+        "true": "Yes, benchmark-relative performance is a required gate",
+        "false": "No, absolute profit factor is sufficient"
+      }
+    },
+    "active_mf_beats_index_20y": {
+      "type": "noul",
+      "instructions": "Judge whether an actively managed mutual fund is likely to beat its index over 20 years, given the SPIVA evidence.",
+      "criteria": {
+        "true": "Likely to beat",
+        "false": "Unlikely to beat"
+      }
+    },
+    "low_cost_fund_allocation_wins": {
+      "type": "noul",
+      "instructions": "Judge whether a low-cost index fund allocation is likely to produce positive real returns over 10+ years.",
+      "criteria": {
+        "true": "Likely positive over 10+ years",
+        "false": "Unlikely"
+      }
+    },
+    "best_next_target": {
+      "type": "choice",
+      "instructions": "Select the single best next target for a research agent to attempt.",
+      "criteria": {
+        "EQUITY": "Choose EQUITY",
+        "ETF": "Choose ETF",
+        "CRYPTO": "Choose CRYPTO",
+        "FOREX": "Choose FOREX",
+        "PREDICTION_MARKETS": "Choose PREDICTION_MARKETS",
+        "NONE": "Choose NONE"
+      }
+    },
+    "fee_kills_coinflip_edge": {
+      "type": "noul",
+      "instructions": "Judge whether the taker fee of 3.5-6.3% of stake at 10-50 cents prevents a small forecasting edge from being profitable.",
+      "criteria": {
+        "true": "Yes, the fee prevents small edges from being profitable",
+        "false": "No, small edges remain profitable after fees"
+      }
+    }
+  }
+}

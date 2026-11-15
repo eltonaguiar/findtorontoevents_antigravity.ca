@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent research result manifest",
+  "description": "Every agent writes one of these to results/<agent_id>/result.json. If a field is unknown, use null and say why in REPORT.md. Never invent a number.",
+  "type": "object",
+  "required": [
+    "agent_id",
+    "asset_class",
+    "hypothesis_id",
+    "benchmark",
+    "verdict",
+    "verified_n",
+    "trial_count",
+    "gates"
+  ],
+  "properties": {
+    "agent_id": { "type": "string", "examples": ["A1", "A2", "A6"] },
+    "asset_class": {
+      "type": "string",
+      "enum": ["EQUITY", "ETF", "CRYPTO", "FOREX", "BOND", "COMMODITY", "FUTURES", "PREDICTION", "MUTUAL_FUND", "LEDGER", "HARNESS"]
+    },
+    "hypothesis_id": {
+      "type": "string",
+      "description": "ID in reports/hypothesis_registry.json, registered BEFORE the test (rule M-107)."
+    },
+    "falsifier": {
+      "type": "string",
+      "description": "The kill rule as written before the test, verbatim.",
+      "examples": ["dead if excess <= 0 at n >= 100 verified"]
+    },
+    "benchmark": {
+      "type": "object",
+      "required": ["name", "matched_exposure", "exposure_method"],
+      "properties": {
+        "name": { "type": "string", "examples": ["SPY total return", "BTC buy-and-hold", "13-week T-bill", "AGG total return"] },
+        "matched_exposure": { "type": ["number", "null"], "minimum": 0, "maximum": 5 },
+        "exposure_method": { "type": "string", "description": "How average net exposure was computed." }
+      }
+    },
+    "cohort": {
+      "type": "object",
+      "required": ["definition", "start", "end", "months_covered"],
+      "properties": {
+        "definition": { "type": "string", "description": "Exact filter used, e.g. 'status IN terminal AND exit_price != entry_price'." },
+        "start": { "type": "string", "format": "date" },
+        "end": { "type": "string", "format": "date" },
+        "months_covered": { "type": "integer", "minimum": 0 },
+        "intrabar_validated": { "type": "boolean" },
+        "costs_subtracted_bps": { "type": ["number", "null"] }
+      }
+    },
+    "verified_n": { "type": "integer", "minimum": 0 },
+    "forged_rows_excluded": { "type": "integer", "minimum": 0 },
+    "trial_count": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "How many variants were tested, including failed ones. Used for the Deflated Sharpe denominator. Under-reporting is a falsification."
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "annualised_return_pct": { "type": ["number", "null"] },
+        "benchmark_return_pct_matched": { "type": ["number", "null"] },
+        "excess_return_pct": { "type": ["number", "null"] },
+        "beta": { "type": ["number", "null"] },
+        "jensen_alpha_pct": { "type": ["number", "null"] },
+        "jensen_alpha_tstat": { "type": ["number", "null"] },
+        "information_ratio": { "type": ["number", "null"] },
+        "tracking_error_pct": { "type": ["number", "null"] },
+        "up_capture": { "type": ["number", "null"] },
+        "down_capture": { "type": ["number", "null"] },
+        "capture_ratio": { "type": ["number", "null"] },
+        "batting_average": { "type": ["number", "null"] },
+        "m_squared_pct": { "type": ["number", "null"] },
+        "profit_factor_net": { "type": ["number", "null"] },
+        "sharpe_per_trade": { "type": ["number", "null"] },
+        "sharpe_annualised": { "type": ["number", "null"] },
+        "deflated_sharpe": { "type": ["number", "null"] },
+        "max_drawdown_pct_compounded": { "type": ["number", "null"] },
+        "kelly_fraction": { "type": ["number", "null"] },
+        "risk_of_ruin_pct": { "type": ["number", "null"] },
+        "excess_at_double_costs_pct": { "type": ["number", "null"] },
+        "brier_score": { "type": ["number", "null"], "description": "PREDICTION class only." }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "description": "One entry per gate in BENCHMARK_GATES.md section 6.",
+      "required": ["beats_benchmark_net", "n_ge_100", "three_months", "oos_both_halves", "dsr_ge_095", "kelly_positive", "survives_double_costs"],
+      "properties": {
+        "beats_benchmark_net": { "type": "boolean" },
+        "n_ge_100": { "type": "boolean" },
+        "three_months": { "type": "boolean" },
+        "intrabar_validated": { "type": ["boolean", "null"] },
+        "oos_both_halves": { "type": "boolean" },
+        "dsr_ge_095": { "type": "boolean" },
+        "kelly_positive": { "type": "boolean" },
+        "ruin_below_5pct": { "type": ["boolean", "null"] },
+        "down_capture_below_100": { "type": ["boolean", "null"] },
+        "survives_double_costs": { "type": "boolean" }
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["WIN", "CANDIDATE", "NO", "INVALID", "BLOCKED"],
+      "description": "WIN requires every gate true. CANDIDATE = promising but a gate unproven. NO = falsifier triggered. INVALID = measurement untrustworthy. BLOCKED = dependency missing."
+    },
+    "failed_gate": { "type": ["string", "null"], "description": "The first gate that failed, named." },
+    "forward_paper": {
+      "type": "object",
+      "properties": {
+        "round_trips": { "type": ["integer", "null"] },
+        "days": { "type": ["integer", "null"] },
+        "live_prices": { "type": ["boolean", "null"] }
+      }
+    },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "notes": { "type": "string", "description": "Known limitations, including anything you did not check." },
+    "generated_at": { "type": "string", "format": "date-time" }
+  }
+}
