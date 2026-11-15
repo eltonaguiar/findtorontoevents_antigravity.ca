@@ -16,8 +16,11 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
-sys.path.insert(0, "/home/eaguiar2015/findtorontoevents_antigravity.ca")
+# Repo root must be importable regardless of invocation style
+# (python tools/x.py puts tools/ on sys.path, so `import tools` would fail).
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.db_env import get_stocks_creds  # noqa: E402
 import pymysql  # noqa: E402
 

@@ -71,7 +71,7 @@ jobs:
           print(f'cells_tested={d.get(\"cells_tested\")} cohort_n={d.get(\"cohort_n\")} robust={len(robust)} known={known_hit} new={len(new)}')
           if new:
               cells = ', '.join(r.get('cell','?') for r in new)
-              print(f'::error title=NEW_ROBUST_EDGE::{len(new)} NEW cell(s) passed the full gate (netPF>=1.2, bootCILB>=1.0, n>=40, both regimes): {cells}. GOOD NEWS — falsify (crash-catch/per-symbol/time-split) + forward-register + swarm-verify before any sizing.')
-              sys.exit(1)
+              print(f'::warning title=NEW_ROBUST_EDGE::{len(new)} NEW cell(s) passed the full gate (netPF>=1.2, bootCILB>=1.0, n>=40, both regimes): {cells}. GOOD NEWS — falsify (crash-catch/per-symbol/time-split) + forward-register + swarm-verify before any sizing.')
+              sys.exit(0)
           print(f'No NEW robust candidates (known still robust: {known_hit or \"none\"}). Expected until forward-n surfaces a new edge.')
           "

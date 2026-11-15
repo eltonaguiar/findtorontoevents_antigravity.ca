@@ -75,10 +75,27 @@ jobs:
           # 2026-06-11: retry once on failure — 50webs FTP is intermittently
           # slow/flaky. The second attempt resumes incrementally (lftp mirror
           # only re-fetches missing/newer files already in /tmp/site_mirror).
-          if ! lftp -f /tmp/lftp_download.script; then
+          # 2026-11-15: one server file had a non-UTF8/prohibited name, which
+          # aborts lftp with "553 Prohibited file name" even though the rest of
+          # the mirror is fine. Treat only-553 failures as a warning.
+          set +e
+          lftp -f /tmp/lftp_download.script
+          dl_rc=$?
+          if [ $dl_rc -ne 0 ]; then
             echo "WARN: first download attempt failed — retrying once in 30s..."
             sleep 30
-            lftp -f /tmp/lftp_download.script
+            lftp -f /tmp/lftp_download.script > /tmp/lftp_dl_retry.log 2>&1
+            dl_rc=$?
+          fi
+          set -e
+          if [ $dl_rc -ne 0 ]; then
+            if grep -q "553 Prohibited file name" /tmp/lftp_dl_retry.log 2>/dev/null; then
+              echo "::warning::lftp skipped a server file with a prohibited filename (553) — continuing."
+            else
+              echo "::error::mirror download failed (rc=$dl_rc)"
+              tail -20 /tmp/lftp_dl_retry.log 2>/dev/null || true
+              exit 1
+            fi
           fi
           echo " Downloaded $(find /tmp/site_mirror -type f | wc -l) files"
 
