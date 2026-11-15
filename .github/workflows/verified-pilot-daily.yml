@@ -88,27 +88,7 @@ jobs:
           DATE_UTC=$(date -u +%Y-%m-%d)
           FABER_N=$(python -c 'import json;d=json.load(open("verified_strategies/paper_pilot/faber_taa_positions.json"));print(d.get("n_closed",0))' 2>/dev/null || echo "?")
           git commit -m "chore(verified-pilot): refresh paper pilots ${DATE_UTC} faber_closed_n=${FABER_N} [skip ci]"
-          push_ok=false
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            push_rc=0
-            push_output=$(git push origin HEAD:main 2>&1) || push_rc=$?
-            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
-            if [ $push_rc -eq 0 ]; then
-              echo "Pushed successfully on attempt $i"; push_ok=true; break
-            fi
-            if echo "$push_output" | grep -qiE "pre-receive hook declined|push declined due to|protected branch|GH[0-9]{3}|refusing to (allow|update)"; then
-              echo "ERROR: Push permanently rejected — aborting"; exit 1
-            fi
-            if echo "$push_output" | grep -qiE "non-fast-forward|fetch first|\[rejected\]|behind its remote"; then
-              if git fetch --quiet origin main && git rebase --autostash --quiet origin/main; then
-                echo "Rebased onto origin/main — retrying push immediately"; continue
-              fi
-              git rebase --abort >/dev/null 2>&1 || true
-              echo "::warning::rebase onto origin/main failed — falling back to timed retry"
-            fi
-            delay=$((2 ** i + RANDOM % 10)); [ $delay -gt 60 ] && delay=$((60 + RANDOM % 10))
-            echo "Push attempt $i failed, retrying in ${delay}s..."; sleep "$delay"
-          done
-          if [ "$push_ok" = false ]; then
-            echo "ERROR: All push attempts failed"; exit 1
-          fi
+          # safe_push.sh performs pull --rebase + retry with GIT_NET_TIMEOUT so a
+          # hung network push cannot block the job for 10+ minutes (observed
+          # 2026-11-15: run stuck in this step for 12+ min with updated_at frozen).
+          bash .github/scripts/safe_push.sh
