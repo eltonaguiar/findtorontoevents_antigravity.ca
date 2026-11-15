@@ -39,11 +39,19 @@ class Endpoint:
 # ---------------------------------------------------------------------------
 ENDPOINTS: list[Endpoint] = [
     Endpoint("deepseek", ("DEEPSEEK_API_KEY", "DEEPSEEK_API"),
-             "https://api.deepseek.com/v1", "deepseek-reasoner",
-             "DeepSeek reasoner — strongest cross-vendor second opinion."),
+             "https://api.deepseek.com/v1", "deepseek-v4-pro",
+             "DeepSeek V4 Pro — strongest cross-vendor second opinion."),
+    Endpoint("deepseek-flash", ("DEEPSEEK_API_KEY", "DEEPSEEK_API"),
+             "https://api.deepseek.com/v1", "deepseek-flash",
+             "DeepSeek Flash — fast/low-cost.", tier="fast"),
     Endpoint("groq", ("GROQ_API_KEY",),
-             "https://api.groq.com/openai/v1", "llama-3.3-70b-versatile",
-             "Groq — fast; also serves Kimi K2 / gpt-oss-120b.", tier="fast"),
+             "https://api.groq.com/openai/v1", "openai/gpt-oss-120b",
+             "Groq — fast; serves openai/gpt-oss-120b and qwen/qwen3.8-27b.",
+             extra_headers=(("User-Agent", "Mozilla/5.0"),), tier="fast"),
+    Endpoint("groq-qwen", ("GROQ_API_KEY",),
+             "https://api.groq.com/openai/v1", "qwen/qwen3.8-27b",
+             "Groq — Qwen 3.8 27B.",
+             extra_headers=(("User-Agent", "Mozilla/5.0"),), tier="fast"),
     Endpoint("cerebras", ("CEREBRAS_API", "CEREBRAS_API_KEY"),
              "https://api.cerebras.ai/v1", "llama-3.3-70b",
              "Cerebras — 30 RPM / 14.4k RPD free; gpt-oss-120b available.",
@@ -51,11 +59,13 @@ ENDPOINTS: list[Endpoint] = [
     Endpoint("xai-grok", ("XAI_API_KEY",),
              "https://api.x.ai/v1", "grok-3", "xAI Grok."),
     Endpoint("openrouter", ("OPENROUTER", "OPENROUTER_API_KEY"),
-             "https://openrouter.ai/api/v1", "deepseek/deepseek-chat",
+             "https://openrouter.ai/api/v1", "deepseek/deepseek-v4-flash:free",
              "OpenRouter — gateway; many :free models incl. gpt-oss-120b, "
-             "Qwen3-Coder-480B, inclusionai/ling-2.6-1t."),
-    Endpoint("kimi", ("KIMI_API_KEY", "KIMI_MOONSHOT_APIKEY"),
-             "https://api.moonshot.ai/v1", "moonshot-v1-32k", "Moonshot Kimi."),
+             "deepseek-v4-flash:free, inclusionai/ling-2.6-1t."),
+    Endpoint("kimi", ("PLATFORM_KIMI_AI_CONSOLE_API", "KIMI_API_KEY", "KIMI_MOONSHOT_APIKEY"),
+             "https://api.moonshot.ai/v1", "kimi-k3.1-pro", "Moonshot Kimi K3.1 Pro."),
+    Endpoint("kimi-code", ("PLATFORM_KIMI_AI_CONSOLE_API", "KIMI_API_KEY", "KIMI_MOONSHOT_APIKEY"),
+             "https://api.moonshot.ai/v1", "kimi-k2.7-code", "Moonshot Kimi K2.7 Code.", tier="fast"),
     # ---- new free providers (2026-05-18) ----
     Endpoint("mistral", ("MISTRA_API_KEY_FREE", "MISTRAL_API_KEY"),
              "https://api.mistral.ai/v1", "mistral-large-latest",
@@ -66,8 +76,8 @@ ENDPOINTS: list[Endpoint] = [
              "Mistral Codestral — 256K ctx, code-specialised, ~1 RPS/500K TPM.",
              tier="fast"),
     Endpoint("llm7", ("LLM7_API_KEY_FREE", "LLM7_API_KEY"),
-             "https://api.llm7.io/v1", "qwen2.5-coder-32b",
-             "LLM7.io free — qwen2.5-coder-32b, 131K ctx, 120 RPM with token. "
+             "https://api.llm7.io/v1", "DeepSeek-V4-Flash-0731",
+             "LLM7.io free — DeepSeek-V4-Flash-0731, 131K ctx, 120 RPM with token. "
              "REQUIRES a browser User-Agent header (bot-protection 403 without).",
              extra_headers=(("User-Agent", "Mozilla/5.0"),), tier="fast"),
     # ---- registered, not yet callable ----
@@ -115,14 +125,11 @@ def _windows_scoped_env(name: str) -> str:
 
 
 def resolve_key(env_vars: tuple[str, ...]) -> str:
-    """First resolvable key across the given env-var names. Process env first,
-    then Windows User/Machine registry scopes."""
+    """First resolvable key across the given env-var names. Windows User/Machine
+    registry scopes are checked first per variable so live key rotations take
+    effect immediately without restarting the parent shell."""
     for name in env_vars:
-        v = os.environ.get(name, "").strip()
-        if v:
-            return v
-    for name in env_vars:
-        v = _windows_scoped_env(name)
+        v = _windows_scoped_env(name) or os.environ.get(name, "").strip()
         if v:
             return v
     return ""

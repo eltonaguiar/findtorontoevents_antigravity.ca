@@ -62,11 +62,7 @@ def _winreg_key(name: str) -> str:
 
 def resolve_key(envs: tuple[str, ...]) -> str:
     for n in envs:
-        v = os.environ.get(n, "").strip()
-        if v:
-            return v
-    for n in envs:
-        v = _winreg_key(n)
+        v = _winreg_key(n) or os.environ.get(n, "").strip()
         if v:
             return v
     return ""
@@ -79,18 +75,18 @@ PROVIDERS: list[ProviderSpec] = [
                  "https://api.cerebras.ai/v1/models", "https://api.cerebras.ai/v1/chat/completions", "gpt-oss-120b"),
     ProviderSpec("groq", ("GROQ_API_KEY", "GROQ_KEY"),
                  "https://api.groq.com/openai/v1/models", "https://api.groq.com/openai/v1/chat/completions",
-                 "llama-3.3-70b-versatile"),
+                 "qwen/qwen3.8-27b", extra_headers={"User-Agent": "Mozilla/5.0"}),
     ProviderSpec("openrouter", ("OPENROUTER", "OPENROUTER_API_KEY", "OPENROUTER_API_KEY_PAID"),
                  "https://openrouter.ai/api/v1/models", "https://openrouter.ai/api/v1/chat/completions",
                  "openrouter/free"),
     ProviderSpec("deepseek", ("DEEPSEEK_API_KEY", "DEEPSEEK_API"),
-                 None, "https://api.deepseek.com/chat/completions", "deepseek-chat"),
+                 "https://api.deepseek.com/models", "https://api.deepseek.com/chat/completions", "deepseek-flash"),
     ProviderSpec("inception", ("INCEPTION_AI_KEY", "INCEPTION_API_KEY"),
                  None, "https://api.inceptionlabs.ai/v1/chat/completions", "mercury-2"),
     ProviderSpec("xai", ("XAI_API_KEY", "X_AI_KEY", "GROK_API_KEY"),
                  None, "https://api.x.ai/v1/chat/completions", "grok-3-latest"),
-    ProviderSpec("kimi", ("KIMI_API_KEY", "KIMI_MOONSHOT_APIKEY"),
-                 None, "https://api.moonshot.ai/v1/chat/completions", "moonshot-v1-32k"),
+    ProviderSpec("kimi", ("PLATFORM_KIMI_AI_CONSOLE_API", "KIMI_API_KEY", "KIMI_MOONSHOT_APIKEY"),
+                 "https://api.moonshot.ai/v1/models", "https://api.moonshot.ai/v1/chat/completions", "kimi-k3.1-pro"),
     ProviderSpec("huggingface", ("HUGGING_FACE_TOKEN", "HF_TOKEN", "HUGGINGFACE_API_KEY"),
                  None, "https://router.huggingface.co/v1/chat/completions",
                  "meta-llama/Llama-3.3-70B-Instruct"),
@@ -101,7 +97,7 @@ PROVIDERS: list[ProviderSpec] = [
                  None, "https://api.ofox.ai/v1/chat/completions", "z-ai/glm-4.7-flash:free"),
     ProviderSpec("llm7", ("LLM7_API_KEY_FREE", "LLM7_API_KEY"),
                  "https://api.llm7.io/v1/models", "https://api.llm7.io/v1/chat/completions",
-                 "qwen2.5-coder-32b", extra_headers={"User-Agent": "Mozilla/5.0"}),
+                 "DeepSeek-V4-Flash-0731", extra_headers={"User-Agent": "Mozilla/5.0"}),
     ProviderSpec("mistral", ("MISTRA_API_KEY_FREE", "MISTRAL_API_KEY"),
                  "https://api.mistral.ai/v1/models", "https://api.mistral.ai/v1/chat/completions",
                  "mistral-small-latest"),
@@ -134,7 +130,7 @@ def http_chat(url: str, key: str, model: str, headers: dict | None = None,
         "model": model,
         "messages": [{"role": "user", "content": PING_PROMPT}],
         "max_tokens": max_tokens,
-        "temperature": 0.1,
+        "temperature": 1.0 if ("moonshot.ai" in url or model.startswith("kimi-")) else 0.1,
     }
     if "cerebras" in url:
         body = {
@@ -156,7 +152,8 @@ def http_chat(url: str, key: str, model: str, headers: dict | None = None,
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             raw = json.loads(resp.read().decode("utf-8"))
         elapsed = round(time.time() - t0, 2)
-        text = raw.get("choices", [{}])[0].get("message", {}).get("content", "") or ""
+        msg = raw.get("choices", [{}])[0].get("message", {}) or {}
+        text = msg.get("content") or msg.get("reasoning_content") or msg.get("reasoning") or ""
         return True, elapsed, text[:500], ""
     except urllib.error.HTTPError as e:
         elapsed = round(time.time() - t0, 2)
