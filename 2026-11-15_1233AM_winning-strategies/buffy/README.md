@@ -59,6 +59,7 @@ one-hypothesis-per-agent, trial-count disclosure, and `results/<agent_id>/result
 | **3. Answers to the Nov-14 plan** | `2026-11-15_1227AM.../03_nov14_answers/ANSWERS.md` — confirms the no-deploy call, corrects four numbers (ETF 566 marks not "zero picks"; COMMODITY/FUTURES unmeasurable not PF 1.78; three CRYPTO PFs; DSR at N=38 vs 361) |
 | **4. Further essential questions** | `05_questions/QUESTIONS_ADDENDUM.md` (Q16–Q27) + predecessor's Q1–Q15. Repo answers **4 of 27** |
 | **5. Industry turnarounds** | `2026-11-15_1227AM.../05_industry/INDUSTRY_TURNAROUNDS.md` — AQR quant winter, Man AHL (Sharpe **0.24**), Medallion capacity, GIPS/independent-admin trust machinery |
+| **Review of the grok_agent package** | `09_review/GROK_AGENT_REVIEW.md` — what it gets right (Hoffman, The Leap as paper), what breaks (SubQ instruction, no fee math, two competing gate sets) |
 | **6. Metrics by perspective** | `06_metrics/METRICS_ADDENDUM.md` (benchmark-relative bars) + predecessor's absolute-metrics doc |
 
 ---
