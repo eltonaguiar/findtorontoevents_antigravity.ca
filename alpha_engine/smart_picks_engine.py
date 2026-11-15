@@ -2342,7 +2342,7 @@ def run():
         elif asset_class == "bond" or tf == "POSITION" or "macro" in cat:
             pick["tier"] = "POSITION"
             return "POSITION"
-        elif asset_class in ("equity", "etf", "futures"):
+        elif asset_class in ("equity", "etf", "futures", "mutual_fund"):
             pick["tier"] = "SWING"
             return "SWING"
         elif tf == "SCALP" or age < 2:

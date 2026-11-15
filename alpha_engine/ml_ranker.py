@@ -417,7 +417,7 @@ class MLSignalRanker:
         "btc_24h_change_norm",  # BTC 24h price change / 10 (10% cap) [-1, 1], default 0.0 — KEPT (Phase 20): removing broke feature count alignment with cached models; also used for direction_market_alignment computation. NOTE: correlated with direction_market_alignment (component); clean up on next full retrain.
     ]
 
-    CATEGORY_MAP = {"crypto": 0, "forex": 1, "stock": 2, "penny": 3, "meme": 4}
+    CATEGORY_MAP = {"crypto": 0, "forex": 1, "stock": 2, "penny": 3, "meme": 4, "mutual_fund": 5}
     REGIME_MAP = {
         "bull": 1, "bullish": 1, "trending": 1, "markup": 1, "uptrend": 1,
         "neutral": 0, "sideways": 0, "ranging": 0, "accumulation": 0, "transitional": 0,

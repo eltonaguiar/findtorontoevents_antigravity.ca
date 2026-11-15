@@ -47,7 +47,7 @@ def _normalize_category(pick: dict) -> str:
     3. known forex / futures symbols  →  'forex' / 'futures'
     """
     raw = (pick.get("category") or "").strip().lower()
-    if raw in ("equity", "etf", "bond", "index"):
+    if raw in ("equity", "etf", "bond", "index", "mutual_fund"):
         return raw
     if raw == "stocks":
         return "equity"
@@ -470,7 +470,7 @@ def _get_macro_regime_scores(pick: dict) -> dict[str, float]:
                 base_usd *= 0.5  # Stable USD → less impact
         except (TypeError, ValueError):
             pass
-    if category in ("equity", "forex", "commodity"):
+    if category in ("equity", "forex", "commodity", "mutual_fund"):
         scores["usd"] = base_usd
     elif category == "crypto":
         scores["usd"] = -base_usd * 1.2  # Crypto inversely correlated with USD
@@ -496,7 +496,7 @@ def _get_macro_regime_scores(pick: dict) -> dict[str, float]:
             base_curve = 0.0
     else:
         base_curve = 0.0
-    if category in ("equity", "etf"):
+    if category in ("equity", "etf", "mutual_fund"):
         scores["curve"] = base_curve
     elif category == "crypto":
         scores["curve"] = base_curve * 0.5  # Crypto less curve-sensitive
@@ -519,16 +519,16 @@ def _get_macro_regime_scores(pick: dict) -> dict[str, float]:
             v = float(vix_val)
             if v < 15:
                 # Very low vol → amplify risk-on signal
-                base_vol = max(base_vol, 0.3) if category in ("equity", "crypto") else base_vol
+                base_vol = max(base_vol, 0.3) if category in ("equity", "crypto", "mutual_fund") else base_vol
             elif v > 25:
                 # High vol → risk-off signal
-                base_vol = min(base_vol, -0.2) if category in ("equity", "crypto") else base_vol
+                base_vol = min(base_vol, -0.2) if category in ("equity", "crypto", "mutual_fund") else base_vol
             elif v > 30:
                 # Extreme vol → strong risk-off
-                base_vol = min(base_vol, -0.4) if category == "equity" else base_vol
+                base_vol = min(base_vol, -0.4) if category in ("equity", "mutual_fund") else base_vol
         except (TypeError, ValueError):
             pass
-    if category in ("equity", "crypto"):
+    if category in ("equity", "crypto", "mutual_fund"):
         scores["vol"] = base_vol
     elif category in ("forex", "commodity"):
         scores["vol"] = -base_vol * 0.5  # Flight to safety

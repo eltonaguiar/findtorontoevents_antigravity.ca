@@ -9,7 +9,7 @@ Usage:
         is_crypto, is_non_crypto,
         asset_class_from_symbol, normalize_symbol,
         FOREX_CODES, BOND_SYMBOLS, ETF_SYMBOLS, EQUITY_SYMBOLS,
-        COMMODITY_SYMBOLS,
+        MUTUAL_FUND_SYMBOLS, COMMODITY_SYMBOLS,
         CRYPTO_SOURCE_HINTS, CRYPTO_STRATEGY_HINTS,
     )
 """
@@ -59,6 +59,13 @@ EQUITY_SYMBOLS: frozenset[str] = frozenset({
     "ABBV", "AVGO", "HD", "LLY", "TMO", "ORCL", "LCID",
 })
 
+MUTUAL_FUND_SYMBOLS: frozenset[str] = frozenset({
+    # Fidelity low-cost index funds
+    "FXAIX", "FSKAX", "FXNAX", "FSMDX", "FSSNX", "FSGGX",
+    # Schwab low-cost index funds
+    "SWPPX", "SWTSX", "SWISX",
+})
+
 COMMODITY_SYMBOLS: frozenset[str] = frozenset({
     # Precious / industrial metals (yfinance roots and spot tickers)
     "GC", "SI", "HG", "PL", "PA", "ALI",
@@ -106,6 +113,7 @@ _CAT_MAP: dict[str, str] = {
     "bond": "bond",
     "commodity": "commodity", "futures": "futures",
     "equity": "equity", "stock": "equity", "stocks": "equity", "penny": "equity",
+    "mutual_fund": "mutual_fund", "mutualfund": "mutual_fund", "mf": "mutual_fund",
 }
 
 _LOWER_TO_UPPER: dict[str, str] = {
@@ -116,6 +124,7 @@ _LOWER_TO_UPPER: dict[str, str] = {
     "bond": "BOND",
     "futures": "FUTURES",
     "commodity": "COMMODITY",
+    "mutual_fund": "MUTUAL_FUND",
     "unknown": "UNKNOWN",
 }
 
@@ -163,6 +172,10 @@ def asset_class_from_symbol(symbol: str | None) -> str:
     if sym_core in ETF_SYMBOLS:
         return "etf"
 
+    # ── Known mutual-fund symbols ──
+    if sym_core in MUTUAL_FUND_SYMBOLS:
+        return "mutual_fund"
+
     # ── Known commodity symbols ──
     if sym_core in COMMODITY_SYMBOLS:
         return "commodity"
@@ -200,7 +213,7 @@ def normalize_asset_class(pick: dict[str, Any]) -> str:
       6. Known-symbol frozensets  (bond → ETF → equity, fallback when no category)
       7. Default fallback → equity
 
-    Returns: crypto | equity | forex | etf | bond | futures | commodity | unknown
+    Returns: crypto | equity | forex | etf | bond | futures | commodity | mutual_fund | unknown
     """
     # ── Field extraction ──
     raw_cat = str(pick.get("category") or pick.get("asset_class") or "").strip().lower()
@@ -249,6 +262,8 @@ def normalize_asset_class(pick: dict[str, Any]) -> str:
         return "commodity"
     if sym_core in ETF_SYMBOLS:
         return "etf"
+    if sym_core in MUTUAL_FUND_SYMBOLS:
+        return "mutual_fund"
     if sym_core in EQUITY_SYMBOLS:
         return "equity"
 

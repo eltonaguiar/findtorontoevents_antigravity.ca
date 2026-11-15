@@ -356,7 +356,7 @@ def apply_daily_loss_limit(
             # Killing them for score=0 creates a death spiral where they never accumulate data.
             if not active_picks:
                 return active_picks
-            _NON_CRYPTO_CATS = {"forex", "equity", "commodity", "futures", "bond", "etf"}
+            _NON_CRYPTO_CATS = {"forex", "equity", "commodity", "futures", "bond", "etf", "mutual_fund"}
             _scorable = [p for p in active_picks
                          if (p.get("category", "crypto")).lower() not in _NON_CRYPTO_CATS
                          or float(p.get("elite_score", p.get("score", 0)) or 0) > 0]

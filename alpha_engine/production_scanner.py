@@ -1023,7 +1023,7 @@ def enforce_portfolio_cap(
 
         if (
             asset_cat
-            in ("stock", "forex", "futures", "commodity", "equity", "etf", "bond")
+            in ("stock", "forex", "futures", "commodity", "equity", "etf", "bond", "mutual_fund")
             or is_elite_copy
         ):
             diversity_picks.append(p)
@@ -1056,7 +1056,7 @@ def enforce_portfolio_cap(
         1
         for p in kept
         if _get_asset_category(p)
-        in ("stock", "forex", "futures", "commodity", "equity", "etf", "bond")
+        in ("stock", "forex", "futures", "commodity", "equity", "etf", "bond", "mutual_fund")
     )
     ec = sum(1 for p in kept if _copy_source_quality(p)["tier"] in ("core", "verified"))
     print(
@@ -1247,7 +1247,7 @@ def apply_volatility_filter(picks: list[dict]) -> list[dict]:
         is_equity = _STOCK_CATEGORY_OVERRIDES.get(symbol) in (
             "stock",
             "etf",
-        ) or category in ("stock", "equity", "etf")
+        ) or category in ("stock", "equity", "etf", "mutual_fund")
 
         # Look up 24h change -- try exact symbol, then common variants
         change_24h = changes.get(symbol)
@@ -1614,7 +1614,7 @@ def cap_tp_targets(picks: list[dict]) -> list[dict]:
         elif category in ("commodity",):
             max_tp_dist = TP_CAP_COMMODITY
             max_sl_dist = SL_CAP_COMMODITY
-        elif category in ("equity", "stock", "etf"):
+        elif category in ("equity", "stock", "etf", "mutual_fund"):
             max_tp_dist = TP_CAP_EQUITY
             max_sl_dist = SL_CAP_EQUITY
         else:
@@ -2877,8 +2877,8 @@ def apply_quality_gates(
         gate_conf = float(pick.get("_quality_gate_confidence", conf) or conf)
         ml_score = pick.get("ml_score") or pick.get("_ml_score") or 0.5
         category = (pick.get("category") or "crypto").lower()
-        # Normalize stock/etf/bond → equity for consistent gating
-        if category in ("stock", "etf", "bond"):
+        # Normalize stock/etf/bond/mutual_fund → equity for consistent gating
+        if category in ("stock", "etf", "bond", "mutual_fund"):
             category = "equity"
         signal_type = (
             pick.get("signal_type") or pick.get("direction") or "BUY"

@@ -407,7 +407,7 @@ def volatility_predictability_score(
         if change > 0.1:
             return 0
         return -10      # Dead forex pair
-    elif category in ("stock", "equity", "etf"):
+    elif category in ("stock", "equity", "etf", "mutual_fund"):
         # Equity thresholds
         if change > 3.0:
             return 10
@@ -1733,7 +1733,7 @@ def compute_method_c_score(pick: dict, strategy_perf: Optional[dict] = None) -> 
     #   Only applies to equity/stock picks
     _asset_class = (pick.get("asset_class") or pick.get("category") or "").lower()
     sector_bonus = 0
-    if _asset_class in ("stock", "equity", "etf") or pick.get("sector"):
+    if _asset_class in ("stock", "equity", "etf", "mutual_fund") or pick.get("sector"):
         # Default VIX: 20.0 (neutral) - could be passed as parameter
         vix_level = pick.get("vix_level", 20.0)
         sector_bonus = compute_sector_rotation_bonus(pick, vix_level)

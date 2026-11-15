@@ -135,6 +135,7 @@ def _encode_direction(signal_type):
 CATEGORY_MAP = {
     "crypto": 1, "forex": 2, "equity": 3, "stock": 3,
     "futures": 4, "on-chain": 5, "commodity": 6, "etf": 7, "bond": 8,
+    "mutual_fund": 9,
 }
 
 

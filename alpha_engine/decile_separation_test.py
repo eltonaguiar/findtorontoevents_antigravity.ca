@@ -76,7 +76,7 @@ def _normalize_category(raw):
         return "crypto"
     if c in ("forex",):
         return "forex"
-    if c in ("equity", "stock", "etf", "bond", "commodity"):
+    if c in ("equity", "stock", "etf", "bond", "commodity", "mutual_fund"):
         return "equity"
     return c
 

@@ -144,7 +144,7 @@ def classify_asset(symbol, category_hint):
         return "crypto"
     if category_hint == "forex":
         return "forex"
-    if category_hint in ("stock", "stocks", "etf"):
+    if category_hint in ("stock", "stocks", "etf", "mutual_fund"):
         return "equity"
     if category_hint == "futures":
         return "equity"

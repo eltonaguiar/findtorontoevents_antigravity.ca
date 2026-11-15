@@ -28,6 +28,7 @@ CATEGORY_MAP = {
     'COMMODITY': ['commodity'],
     'FUTURES': ['futures'],
     'BOND': ['bond'],
+    'MUTUAL_FUND': ['mutual_fund'],
 }
 
 # ============================================================
