@@ -21,6 +21,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
+          filter: blob:none
           token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Setup Python
@@ -226,13 +227,17 @@ jobs:
                $DISCORD_WEBHOOK || true
       
       - name: Commit quality reports
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config --local user.email "quality-bot@github.com"
           git config --local user.name "Quality Monitor Bot"
           
           git add reports/quality/ 2>/dev/null || true
-          git diff --cached --quiet || git commit -m " Signal quality report [skip ci]"
-          bash .github/scripts/safe_push.sh
+          if ! git diff --cached --quiet; then
+            git commit -m " Signal quality report [skip ci]"
+            bash .github/scripts/safe_push.sh
+          fi
       
       - name: Upload quality artifacts
         uses: actions/upload-artifact@v6
@@ -240,4 +245,5 @@ jobs:
           name: quality-reports-${{ github.run_number }}
           path: reports/quality/
           retention-days: 7
+          if-no-files-found: ignore
 

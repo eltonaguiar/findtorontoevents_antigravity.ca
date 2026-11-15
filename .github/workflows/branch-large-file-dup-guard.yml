@@ -33,7 +33,7 @@ on:
 # Cancelling is safe — the only writer ("Update job health page") runs after the
 # long scan completes, so a cancelled run never leaves a partial write.
 concurrency:
-  group: branch-large-file-dup-guard-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  group: branch-large-file-dup-guard
   cancel-in-progress: true
 
 permissions:
@@ -42,6 +42,7 @@ permissions:
 jobs:
   detect-duplicate-large-blobs:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout (partial clone)
         uses: actions/checkout@v6

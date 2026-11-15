@@ -23,6 +23,7 @@ jobs:
         with:
           # secrets.GITHUB_TOKEN is not defined  use github.token or PAT for push
           token: ${{ secrets.GH_PAT || github.token }}
+          fetch-depth: 0
           filter: blob:none
 
       - name: Set up Python
@@ -103,6 +104,8 @@ jobs:
           fi
 
       - name: Commit results
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -110,28 +113,9 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git stash
-            git pull --rebase -X theirs origin main 2>/dev/null || {
-              git rebase --abort 2>/dev/null || true
-              git checkout --theirs -- alpha_engine/data/ 2>/dev/null || true
-              git add alpha_engine/data/ 2>/dev/null
-              git pull --no-rebase -X theirs origin main 2>/dev/null || true
-            }
-            git stash pop || {
-              # Resolve any stash pop conflicts by accepting our (stashed) version
-              # BUG FIX 2026-04-05 (mirrors 108b99aa85): comment already said "accepting our",
-              # but code tried --theirs first — silently reverting this workflow's regenerated
-              # files. Flipped to try --ours first so the comment matches the behavior.
-              git diff --name-only --diff-filter=U | while read -r f; do
-                git checkout --ours -- "$f" 2>/dev/null || git checkout --theirs -- "$f" 2>/dev/null || true
-                git add "$f" 2>/dev/null || true
-              done
-            }
-            git add findcryptopairs/now.html rapid_fire_data/ || true
-            git diff --cached --quiet && echo "No changes after pull" && exit 0
-            # issue #141: block conflict-marker commits after stash-pop recovery
+            # issue #141: block conflict-marker commits
             bash .github/scripts/assert_no_conflict_markers.sh || exit 1
             git commit -m "Rapid Fire scan $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
-            TOKEN_FOR_PUSH="${{ secrets.GH_PAT || github.token }}" bash .github/scripts/safe_push.sh
+            bash .github/scripts/safe_push.sh
           fi
 

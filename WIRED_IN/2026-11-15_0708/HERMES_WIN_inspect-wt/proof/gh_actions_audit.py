@@ -52,6 +52,62 @@ def age_hours(ts: str | None, now: datetime) -> float | None:
     return (now - t).total_seconds() / 3600.0
 
 
+def check_rate_limit(needed: int = 10) -> dict:
+    """Anonymous API allows 60 req/hr/IP shared with every other agent on this
+    host. If we are near the floor, say RATE_LIMITED loudly — reporting 'no
+    runs' for 366 workflows would read as a catastrophic outage when the truth
+    is 'we could not look'."""
+    try:
+        d = fetch(f"{API}/rate_limit")["resources"]["core"]
+    except Exception as e:
+        return {"ok": False, "reason": f"cannot read rate_limit: {e}"}
+    return {
+        "ok": d["remaining"] >= needed,
+        "remaining": d["remaining"],
+        "limit": d["limit"],
+        "reset_in_min": max(0, int((d["reset"] - __import__("time").time()) / 60)),
+    }
+
+
+def state_sweep(repo: str, branch: str, per_page: int = 50) -> dict:
+    """Query each terminal problem state directly.
+
+    The run-window scan above only sees the newest N runs, so a run that has
+    been QUEUED since May never appears in it. GitHub's status filter is the
+    only way to see them, and it is per-state (one call each).
+    """
+    states = ["action_required", "cancelled", "failure", "neutral",
+              "queued", "skipped", "stale", "timed_out", "waiting"]
+    now = datetime.now(timezone.utc)
+    out = {}
+    for s in states:
+        q = f"{API}/repos/{repo}/actions/runs?status={s}&per_page={per_page}&branch={branch}"
+        try:
+            d = fetch(q)
+        except Exception as e:
+            out[s] = {"error": str(e)}
+            continue
+        runs = d.get("workflow_runs", [])
+        if not runs:
+            out[s] = {"total": d.get("total_count", 0), "oldest": None, "oldest_age_h": None,
+                      "top": [], "zombie": 0}
+            continue
+        oldest = min(runs, key=lambda r: r["created_at"])
+        age = age_hours(oldest["created_at"], now)
+        # a queued run older than 2h is not backlog, it is wedged
+        zombie = sum(1 for r in runs
+                     if s == "queued" and (age_hours(r["created_at"], now) or 0) > 2.0)
+        out[s] = {
+            "total": d.get("total_count", 0),
+            "oldest": oldest["created_at"],
+            "oldest_age_h": round(age, 1) if age else None,
+            "zombie": zombie,
+            "top": [{"name": r["name"], "created_at": r["created_at"],
+                     "id": r["id"], "url": r.get("html_url")} for r in runs[:5]],
+        }
+    return out
+
+
 def collect_workflow_defs(repo: str, branch: str) -> dict[str, dict]:
     """All workflow files defined on the branch (catches never-run ones).
 
@@ -241,8 +297,19 @@ def main() -> int:
     ap.add_argument("--stuck-min", type=float, default=60.0)
     ap.add_argument("--secondary", default="eltonaguiar/BESTIEJOB")
     ap.add_argument("--secondary-runs", type=int, default=2)
+    ap.add_argument("--states", action="store_true",
+                    help="also sweep the 9 problem states directly (9 extra API calls)")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args()
+
+    rl = check_rate_limit(needed=(8 + a.pages + (9 if a.states else 0)))
+    if not rl.get("ok"):
+        print("RATE_LIMITED: cannot audit right now — this is NOT a green result.")
+        print(f"  remaining={rl.get('remaining')}/{rl.get('limit')} "
+              f"reset_in={rl.get('reset_in_min')}min reason={rl.get('reason','')}")
+        print("  The unauthenticated 60 req/hr limit is shared with every other agent on this host.")
+        print("  Fix: supply a GitHub token (GITHUB_TOKEN / PAT with actions:read) or retry after reset.")
+        return 2
 
     defs = collect_workflow_defs(a.repo, a.branch)
     runs = collect_runs(a.repo, a.pages, a.branch)
@@ -250,6 +317,8 @@ def main() -> int:
     res["runs_scanned"] = len(runs)
     sec = secondary_recent(a.secondary, a.secondary_runs, a.branch)
     res["secondary"] = sec
+    if a.states:
+        res["states"] = state_sweep(a.repo, a.branch)
 
     if a.json:
         print(json.dumps(res, indent=2))
@@ -284,7 +353,24 @@ def main() -> int:
             if state == "failure" and not r["resolved_by_later_success"]:
                 print(f"               {r['url']}")
 
-    return 1 if res["flagged"] else 0
+        st = res.get("states")
+        if st:
+            print("\n--- STATE SWEEP (direct status queries; window scan cannot see old runs) ---")
+            print(f"  {'state':16} {'total':>7} {'oldest':20} {'age_h':>8}  flag")
+            for name, v in st.items():
+                if v.get("error"):
+                    print(f"  {name:16} {'ERR':>7}  {v['error'][:40]}")
+                    continue
+                flag = ""
+                if name == "queued" and v.get("zombie"):
+                    flag = f"ZOMBIE x{v['zombie']} (queued > 2h, never acquired a runner)"
+                elif name in ("failure",) and v.get("total"):
+                    flag = "needs per-workflow triage (see RED rows above)"
+                print(f"  {name:16} {v.get('total', 0):>7} {str(v.get('oldest'))[:19]:20} "
+                      f"{str(v.get('oldest_age_h')):>8}  {flag}")
+
+    zombie = int((res.get("states") or {}).get("queued", {}).get("zombie") or 0)
+    return 1 if (res["flagged"] or zombie) else 0
 
 
 if __name__ == "__main__":

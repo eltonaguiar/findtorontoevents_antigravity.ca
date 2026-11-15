@@ -37,4 +37,8 @@ jobs:
           git add audit_dashboard/data/feature_signals_latest.json
           git add alpha_engine/data/feature_signals.json || true
           git diff --staged --quiet || git commit -m "chore(audit): refresh feature_signals [skip ci]"
-          git push || echo "::warning::push failed (concurrent commit)"
+          # 2026-11-15: a bare `git push` is non-fast-forward in this storm-commit
+          # repo, and `|| echo ::warning` swallowed the failure, so the refresh was
+          # committed locally and discarded on EVERY run. The published payload
+          # sat at 2026-11-11T08:30 for 4 days while this job stayed green.
+          bash .github/scripts/safe_push.sh

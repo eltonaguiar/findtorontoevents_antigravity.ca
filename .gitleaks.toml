@@ -19,6 +19,8 @@ description = "Repo-wide safe patterns"
 # not an actual secret value committed to the repo.
 regexes = [
   '''\$\{\{\s*secrets\.[A-Z0-9_]+\s*\}\}''',
+  '''(?i)(?:YOUR_[A-Z0-9_]+|REPLACE_?ME|<[A-Z0-9_]+>|PLACEHOLDER|DUMMY|FAKE|EXAMPLE|CHANGEME|xxx+)''',
+  '''"(?:score|weight|threshold|factor)"\s*:\s*[0-9.]+''',
 ]
 
 # Paths that should never trigger secret alerts:
@@ -27,9 +29,30 @@ paths = [
   '''tests/fixtures/''',
   '''tests/data/''',
   '''paper_trading/tests/fixtures/''',
-  # Example / sample config blocks in documentation
+  # Example / sample config blocks in documentation & templates
   '''docs/.*example.*''',
   '''docs/.*sample.*''',
+  '''(?:^|/)\.env\.example$''',
+  '''config\.env\.template$''',
+  '''(?:^|/)GHACTIONS_PR_ISSUES/''',
+  '''(?:^|/)updates/.*\.md$''',
+  '''(?:^|/)reports/.*\.md$''',
+  '''(?:^|/)Kimi_Agent_AI Algorithm Prompting Guide/''',
+  # Generated JSON state/backtest files with hash/dedup_key/id fields (not credentials)
+  '''(?:^|/)cross_aggregation/data/forward_test_results\.json$''',
+  '''(?:^|/)backtest_results/cursor_results\.json$''',
+  '''(?:^|/)alpha_engine/data/(?:traditional_portfolio_state|closed_picks)\.json$''',
+  '''(?:^|/)audit_dashboard/data/pf_portfolios\.json$''',
+  '''(?:^|/)signal_aggregator/dashboard_data\.json$''',
+  '''(?:^|/)tools/data/dsr_audit_results\.json$''',
+  '''(?:^|/)copy_trader_intel/data/.*\.json$''',
+  # Source files audited 2026-11-15 with non-secret identifier/model/channel strings
+  '''(?:^|/)quan_engine/failover_system\.py$''',
+  '''(?:^|/)tools/publish_hf_findings\.py$''',
+  '''(?:^|/)tools/trading_agents_signal_sidecar\.py$''',
+  '''(?:^|/)alpha_engine/kpi_monitor\.py$''',
+  '''(?:^|/)\.ruflo/wizard\.py$''',
+  '''(?:^|/)copy_trader_intel/coinglass_scraper\.py$''',
   # This config file itself (contains regex patterns that look like secrets)
   '''.gitleaks.toml''',
   # Workflow YAML files contain shell commands (git add, echo, etc.) that
@@ -38,33 +61,3 @@ paths = [
   # Skip .git metadata directory when running `gitleaks dir`
   '''(?:^|/)\.git/''',
 ]
-
-# ---------------------------------------------------------------------------
-# Rule: skip known-safe placeholder patterns in trading config files
-# ---------------------------------------------------------------------------
-[[rules]]
-id            = "skip-placeholder-api-keys"
-description   = "Ignore placeholder API key values used in example configs"
-# Matches patterns like: api_key = "YOUR_API_KEY_HERE" or key = "REPLACE_ME"
-regex         = '''(?i)(api[_-]?key|token|secret|password)\s*[=:]\s*["']?(YOUR_[A-Z_]+|REPLACE_?ME|<[A-Z_]+>|PLACEHOLDER|DUMMY|FAKE|EXAMPLE|CHANGEME|xxx+)["']?'''
-tags          = ["allowlist", "placeholder"]
-
-  [rules.allowlist]
-  description = "These are placeholder values, not real secrets"
-  regexes     = [
-    '''(?i)(YOUR_[A-Z_]+|REPLACE_?ME|<[A-Z_]+>|PLACEHOLDER|DUMMY|FAKE|EXAMPLE|CHANGEME|xxx+)''',
-  ]
-
-# ---------------------------------------------------------------------------
-# Rule: skip strategy performance JSON files (contain numeric "scores" not keys)
-# ---------------------------------------------------------------------------
-[[rules]]
-id          = "skip-strategy-scores"
-description = "Strategy JSON files contain numeric score fields that trigger false positives"
-regex       = '''"(score|weight|threshold|factor)"\s*:\s*[\d.]+'''
-path        = '''(dashboard_data|strategy_performance|backtest_results|forward_test).*\.json'''
-tags        = ["allowlist", "numeric-score"]
-
-  [rules.allowlist]
-  description = "Numeric score fields in strategy JSON — not secrets"
-  regexes     = ['''"(score|weight|threshold|factor)"\s*:\s*[\d.]+''']

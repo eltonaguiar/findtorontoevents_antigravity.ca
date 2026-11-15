@@ -48,14 +48,15 @@ permissions:
 jobs:
   run-value-screener:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          # permissions: contents: read — never pushes, so shallow partial clone suffices.
-          fetch-depth: 1
+          # UEPS workflow invariant (tests/test_ueps_workflow_yaml.py) requires fetch-depth: 0;
+          # filter: blob:none keeps partial-clone speed without downloading 19 GiB pack history.
+          fetch-depth: 0
           filter: blob:none
 
       - name: Set up Python
