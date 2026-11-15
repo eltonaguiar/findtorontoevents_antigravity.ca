@@ -9,16 +9,20 @@
 
 | Asset Class | Picks Justified? | Best Candidate | Gates Passed | Deployment Recommendation |
 |-------------|-----------------|----------------|--------------|---------------------------|
-| EQUITY | No | QQQ DualMA (2 trades) | 4/7* | Research slot 1 only |
-| CRYPTO | No | ADA-USD EMA Trend | 4/7 | Conditional research slot 2 |
+| EQUITY | No | QQQ DualMA (2 trades) | 4/7* | Research slot only |
+| CRYPTO | No | ADA-USD EMA Trend | 4/7 | Conditional — PBO=0.603 blocks |
 | ETF | No | None | N/A | Blocked (cohort mismatch) |
 | MUTUAL FUNDS | No | None (passive only) | N/A | Passive core allocation |
 | FOREX | No | None | N/A | Mutation-before-kill |
-| COMMODITY/FUTURES | No | None | N/A | Watch (low freq only) |
+| COMMODITY | **Partial** | multi_asset_copytrader / multi_asset_cot | Not yet gated | **Tier-1 candidate** — WR 93.8-94.1%, n=96-102, DB-verify pending |
+| FUTURES | No | None | N/A | Blocked (WR=2.5%) |
 | BOND | No | None | N/A | Blocked (insufficient data) |
 | MEME/PENNY_STOCK | No | None | N/A | Keep blocked |
 
 \* QQQ DualMA 4/7 is statistical artifact (2 trades, PF=999, DSR=0, PBO=0.999).
+
+**COMMODITY copy-trader/COT is the strongest proven edge in the system but has NOT yet been run through the full 7-gate money-ready framework. It is the top candidate for next-session gate evaluation.**
+
 
 ---
 

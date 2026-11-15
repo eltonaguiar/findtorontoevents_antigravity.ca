@@ -85,17 +85,31 @@ A strategy/asset class is eliminated when it fails any of the following:
 
 ---
 
-### COMMODITY / FUTURES — WATCH (LOW FREQUENCY)
+### COMMODITY / FUTURES — RESEARCH SLOT 1 (COMMODITY copy-trader/COT is strongest edge)
 
 | Strategy | Elimination Reason | Status |
 |----------|-------------------|--------|
-| COT Contrarian | Gate failed 4/4 (OOS n=30, PF 0.861, mean net -0.45%/trade) | ELIMINATED |
-| CTA Trend | Low n (7-229), 422% cost ratio, no contract identity pipeline | BLOCKED |
-| Multi-asset | Same data quality issues | BLOCKED |
+| multi_asset_copytrader COMMODITY | **NOT eliminated** — WR=93.8%, n=96, real edge | RESEARCH SLOT 1 |
+| multi_asset_cot COMMODITY | **NOT eliminated** — WR=94.1%, n=102, confirms copy-trader edge | RESEARCH SLOT 1 |
+| COT Contrarian (standalone) | Gate failed 4/4 (OOS n=30, PF 0.861, mean net -0.45%/trade) | ELIMINATED |
+| multi_asset_copytrader FOREX | WR=14.8%, n=662 — massive drag, mutate-before-kill | MUTATE-BEFORE-KILL |
+| multi_asset_copytrader FUTURES | WR=2.5%, n=157 — critical drain | SURGICAL BLOCK |
+| CTA Trend | Low n, no contract identity pipeline | BLOCKED |
 
-**Asset class status:** Blocked until data quality clears (real feed, contract identity, n ≥ 100).
+**Asset class status:** COMMODITY copy-trader/COT is the strongest proven edge in the system (WR 93.8-94.1%). Not yet run through full 7-gate money-ready framework — DB-verify and gate evaluation pending. FOREX and FUTURES subsets are blocked.
 
 ---
+
+## Updated Final Elimination Count
+
+| Category | Count |
+|----------|-------|
+| Strategies backtested and eliminated | 5+ (RSI2 Equity, DualMA Equity, Bollinger Equity, EMA Trend Crypto, Donchian Crypto, COT Contrarian standalone) |
+| Asset classes blocked (subset-level) | FOREX copy-trader, FUTURES copy-trader, ETF (cohort mismatch), Bond (insufficient data), Meme/Penny Stock |
+| Asset classes not built | Mutual Funds as active picks |
+| Asset classes as research slots | EQUITY, CRYPTO (prediction markets shadow), COMMODITY (copy-trader/COT — TOP CANDIDATE) |
+| Strategies passing all money-ready gates | 0 |
+| Asset classes money-ready | 0 |
 
 ### BOND — INSUFFICIENT DATA
 
