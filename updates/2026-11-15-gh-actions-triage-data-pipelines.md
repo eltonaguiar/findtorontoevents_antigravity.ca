@@ -80,10 +80,14 @@ onto a moved `main` cannot conflict by construction.
 
 ## Known limitations / follow-ups
 
-- The API-key secrets must exist on the repo (`gh secret list`). If a key is
-  absent the corresponding adapter still no-ops; the gate will keep failing and
-  the log line will keep saying "ALL 7 sources failed". That is honest behaviour,
-  but the fix is to add the secret, not to relax the gate.
+- **Measured secret audit** (`gh secret list`, 2026-11-15): the repo has
+  `FINNHUB_API_KEY`, `FINNHUB`, `ALPHA_VANTAGE_API_KEY`, `FMP_API_KEY`.
+  It does **not** have `TIINGO_API_KEY` or `TWELVE_DATA_API_KEY`, so adapters 3
+  and 4 still no-op. Before this fix the effective chain was 2 of 7
+  (Stooq + yfinance); after it, 5 of 7 (Stooq, Finnhub, Alpha Vantage, FMP,
+  yfinance). Adding the two missing secrets raises it to 7 of 7.
+  If the remaining sources are unavailable the gate still fails honestly — the
+  fix is to add the secret, never to relax the gate.
 - Stooq's anonymous endpoint and yfinance remain the only keyless paths; a
   runner-IP block on both is still possible. Monitor the first green run.
 - `Verified pilot daily` and `Backup Restore Verification` appeared in the
