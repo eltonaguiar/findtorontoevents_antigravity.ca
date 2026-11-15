@@ -323,6 +323,15 @@ def extract_signals_from_closed_picks(lookback_days: int = 30) -> list[dict]:
             sig_dt = datetime.fromisoformat(time_str)
         except (ValueError, TypeError):
             continue
+        # 2026-11-15: DB timestamps come back tz-naive (stored as UTC) while
+        # `cutoff` is tz-aware, so `sig_dt < cutoff` raised
+        #   TypeError: can't compare offset-naive and offset-aware datetimes
+        # This crashed the validator on EVERY audit-dashboard run, and the caller
+        # masked it (`|| echo non-fatal` + continue-on-error), so the published
+        # hyro_pick_performance.json stayed frozen at 2026-11-08 for 7 days.
+        # Assume naive values are UTC, which is how they are written.
+        if sig_dt.tzinfo is None:
+            sig_dt = sig_dt.replace(tzinfo=cutoff.tzinfo)
         if sig_dt < cutoff:
             continue
         
