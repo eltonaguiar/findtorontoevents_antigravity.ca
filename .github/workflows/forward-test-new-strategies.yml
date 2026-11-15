@@ -33,6 +33,29 @@ jobs:
       - name: Run forward-test tracker
         run: python alpha_engine/forward_test_new_strategies.py
 
+      - name: Validate proof-protocol metadata
+        if: success()
+        run: |
+          python3 << 'PYEOF'
+          import json, sys
+          try:
+              picks = json.load(open('alpha_engine/data/new_strategy_forward_results.json'))
+          except Exception as e:
+              print(f"::warning::Cannot read forward-test results: {e}")
+              sys.exit(0)
+          required_keys = ['pf', 'sharpe', 'n', 'wr', 'oos_pf']
+          missing_any = False
+          for i, p in enumerate(picks):
+              missing = [k for k in required_keys if k not in p]
+              if missing:
+                  missing_any = True
+                  print(f"::warning::Forward-test pick {i} missing proof-protocol keys: {missing}")
+          if missing_any:
+              print("::warning::Proof-protocol metadata incomplete — candidates not money-ready")
+          else:
+              print("Proof-protocol metadata present on all picks")
+          PYEOF
+
       - name: Commit results
         run: |
           git config user.name "forward-test-bot"
@@ -47,4 +70,3 @@ jobs:
             # that and raced other workflows pushing to main on their own schedules.
             TOKEN_FOR_PUSH="${{ secrets.GH_PAT || github.token }}" bash .github/scripts/safe_push.sh
           fi
-

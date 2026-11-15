@@ -150,6 +150,29 @@ jobs:
                     f"— real-empty market, not a data failure")
           EOF
 
+      - name: Validate proof-protocol metadata
+        if: success()
+        run: |
+          python3 << 'PYEOF'
+          import json, sys
+          try:
+              data = json.load(open('non_crypto_agent/data/equities_picks.json'))
+          except Exception as e:
+              print(f"::warning::Cannot read equities_picks.json: {e}")
+              sys.exit(0)
+          required_keys = ['pf', 'sharpe', 'n', 'wr', 'oos_pf']
+          missing_any = False
+          for i, p in enumerate(data.get('picks', [])):
+              missing = [k for k in required_keys if k not in p]
+              if missing:
+                  missing_any = True
+                  print(f"::warning::Equities pick {i} missing proof-protocol keys: {missing}")
+          if missing_any:
+              print("::warning::Proof-protocol metadata incomplete — candidates not money-ready")
+          else:
+              print("Proof-protocol metadata present on all picks")
+          PYEOF
+
       - name: Commit results
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
