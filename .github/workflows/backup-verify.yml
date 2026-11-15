@@ -154,11 +154,33 @@ jobs:
           PYEOF
 
       # ------------------------------------------------------------------
-      # 4. On failure: open a GitHub Issue
+      # 4a. Deduplication: check for an existing open issue for today
       # ------------------------------------------------------------------
-      - name: Open failure issue
+      - name: Check for existing today failure issue
+        id: dedup
+        if: failure() && steps.smoke.outcome == 'failure'
+        run: |
+          TODAY=$(date -u +%Y-%m-%d)
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" \
+            --state open --label backup-verify --label automated \
+            --search "Restore check FAILED — $TODAY" \
+            --json number,url -q '.[0].number // empty' 2>/dev/null || true)
+          if [ -n "$EXISTING" ]; then
+            echo "exists=$EXISTING" >> $GITHUB_OUTPUT
+            echo "Found existing open issue #$EXISTING for $TODAY — will comment instead of creating."
+          else
+            echo "exists=" >> $GITHUB_OUTPUT
+            echo "No existing open issue for $TODAY — will create one."
+          fi
+
+      # ------------------------------------------------------------------
+      # 4b. On failure: open or comment on a GitHub Issue
+      # ------------------------------------------------------------------
+      - name: Open or comment on failure issue
         if: failure() && steps.smoke.outcome == 'failure'
         uses: actions/github-script@v8
+        env:
+          BV_EXISTING_ISSUE: ${{ steps.dedup.outputs.exists }}
         with:
           script: |
             const fs = require('fs');
@@ -185,16 +207,28 @@ jobs:
               '2. Confirm critical data files exist and are non-empty',
               '3. Re-run via Actions → Backup Restore Verification → Run workflow',
               '',
-              '_Auto-opened by `.github/workflows/backup-verify.yml` (A17.1)_',
+              '_Auto-updated by `.github/workflows/backup-verify.yml` (A17.1)_',
             ].join('\n');
 
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `[backup-verify] Restore check FAILED — ${new Date().toISOString().slice(0,10)}`,
-              body: body,
-              labels: ['backup-verify', 'automated'],
-            });
+            const existing = process.env.BV_EXISTING_ISSUE;
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: parseInt(existing, 10),
+                body: '### Recurring failure — ' + new Date().toISOString() + '\n\n' + body,
+              });
+              console.log('Commented on existing issue #' + existing);
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `[backup-verify] Restore check FAILED — ${new Date().toISOString().slice(0,10)}`,
+                body: body,
+                labels: ['backup-verify', 'automated'],
+              });
+              console.log('Created new issue for ' + new Date().toISOString().slice(0,10));
+            }
 
       # ------------------------------------------------------------------
       # 5. Print success summary
