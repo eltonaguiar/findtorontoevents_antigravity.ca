@@ -1,0 +1,412 @@
+{
+  "generated_at_utc": "2026-11-15T00:41:10.737748+00:00",
+  "assumptions": {
+    "paths": 2000,
+    "horizon_years": 10,
+    "rf_cash": 0.03,
+    "equity_gbm": {
+      "mu": 0.09,
+      "sigma": 0.15,
+      "cost": 0.0005
+    },
+    "bonds_gbm_proxy": {
+      "mu": 0.04,
+      "sigma": 0.05
+    },
+    "blend_60_40": {
+      "rebalance_days": 21,
+      "corr_eq_bd": 0.1,
+      "annual_cost": 0.0005
+    },
+    "taa_toy": "regime-switching risky/defensive, monthly, 12m absolute momentum",
+    "note": "MODEL-BASED simulations (GBM/toy). Not live proof; no guarantee future regimes match."
+  },
+  "equity_buy_hold_proxy": {
+    "strategy": "Equity B&H proxy (mu 9%, vol 15%, 5bps cost)",
+    "paths": 2000,
+    "horizon_years": 10,
+    "median_cagr": 0.06949529873532456,
+    "p10_cagr": 0.007662917437552053,
+    "p90_cagr": 0.13371776478478348,
+    "median_sharpe": 0.34440425128448027,
+    "median_mdd": -0.2945268091890309,
+    "p90_mdd_worst": -0.4308824510448098,
+    "prob_positive": 0.922,
+    "prob_beat_cash_3pct": 0.787
+  },
+  "balanced_60_40": {
+    "strategy": "60/40 equity/bonds rebalance monthly (5bps cost)",
+    "paths": 2000,
+    "horizon_years": 10,
+    "median_cagr": 0.05985187370591338,
+    "p10_cagr": 0.021069317761505467,
+    "p90_cagr": 0.1014179832673966,
+    "median_sharpe": 0.36665832125309067,
+    "median_mdd": -0.1767592617199203,
+    "p90_mdd_worst": -0.26158948692664213,
+    "prob_positive": 0.9745,
+    "prob_beat_cash_3pct": 0.8315
+  },
+  "bonds_defensive_proxy": {
+    "strategy": "Bonds defensive proxy (mu 4%, vol 5%)",
+    "paths": 2000,
+    "horizon_years": 10,
+    "median_cagr": 0.03759035860358262,
+    "p10_cagr": 0.016141983615563182,
+    "p90_cagr": 0.05887299624342861,
+    "median_sharpe": 0.17800699529811914,
+    "median_mdd": -0.09162221781736857,
+    "p90_mdd_worst": -0.139780637257354,
+    "prob_positive": 0.988,
+    "prob_beat_cash_3pct": 0.677
+  },
+  "dual_momentum_toy": {
+    "toy": "regime-switching risky + defensive, monthly, 12m absolute momentum",
+    "paths": 1000,
+    "years": 20,
+    "buy_hold_risky_median_cagr": 0.07261293970405092,
+    "buy_hold_risky_median_mdd": -0.4230075016335795,
+    "dual_momentum_median_cagr": 0.12959691278843455,
+    "dual_momentum_median_mdd": -0.1814654282908968,
+    "dm_mdd_improved_share": 0.997,
+    "dm_positive_share": 1.0
+  },
+  "cost_sensitivity_rows": 80,
+  "cost_sensitivity_key": [
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.055,
+      "expectancy_net_R": 0.005,
+      "pf_net": 1.0087,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.055,
+      "expectancy_net_R": -0.045,
+      "pf_net": 0.9256,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.055,
+      "expectancy_net_R": -0.145,
+      "pf_net": 0.7803,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.055,
+      "expectancy_net_R": -0.245,
+      "pf_net": 0.6573,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.165,
+      "expectancy_net_R": 0.115,
+      "pf_net": 1.1991,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.165,
+      "expectancy_net_R": 0.065,
+      "pf_net": 1.1074,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.165,
+      "expectancy_net_R": -0.035,
+      "pf_net": 0.947,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.165,
+      "expectancy_net_R": -0.135,
+      "pf_net": 0.8112,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.275,
+      "expectancy_net_R": 0.225,
+      "pf_net": 1.3896,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.275,
+      "expectancy_net_R": 0.175,
+      "pf_net": 1.2893,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.275,
+      "expectancy_net_R": 0.075,
+      "pf_net": 1.1136,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.45,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.275,
+      "expectancy_net_R": -0.025,
+      "pf_net": 0.965,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.05,
+      "expectancy_net_R": 0.0,
+      "pf_net": 1.0,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.05,
+      "expectancy_net_R": -0.05,
+      "pf_net": 0.9091,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.05,
+      "expectancy_net_R": -0.15,
+      "pf_net": 0.75,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.05,
+      "expectancy_net_R": -0.25,
+      "pf_net": 0.6154,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.15,
+      "expectancy_net_R": 0.1,
+      "pf_net": 1.1905,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.15,
+      "expectancy_net_R": 0.05,
+      "pf_net": 1.0909,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.15,
+      "expectancy_net_R": -0.05,
+      "pf_net": 0.9167,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.15,
+      "expectancy_net_R": -0.15,
+      "pf_net": 0.7692,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.25,
+      "expectancy_net_R": 0.2,
+      "pf_net": 1.381,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.25,
+      "expectancy_net_R": 0.15,
+      "pf_net": 1.2727,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.25,
+      "expectancy_net_R": 0.05,
+      "pf_net": 1.0833,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.5,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.25,
+      "expectancy_net_R": -0.05,
+      "pf_net": 0.9231,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.045,
+      "expectancy_net_R": -0.005,
+      "pf_net": 0.9894,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.045,
+      "expectancy_net_R": -0.055,
+      "pf_net": 0.8889,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.045,
+      "expectancy_net_R": -0.155,
+      "pf_net": 0.713,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.1,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.045,
+      "expectancy_net_R": -0.255,
+      "pf_net": 0.5641,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.135,
+      "expectancy_net_R": 0.085,
+      "pf_net": 1.1799,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.135,
+      "expectancy_net_R": 0.035,
+      "pf_net": 1.0707,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.135,
+      "expectancy_net_R": -0.065,
+      "pf_net": 0.8796,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.3,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.135,
+      "expectancy_net_R": -0.165,
+      "pf_net": 0.7179,
+      "net_positive": false
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 5,
+      "expectancy_gross_R": 0.225,
+      "expectancy_net_R": 0.175,
+      "pf_net": 1.3704,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 10,
+      "expectancy_gross_R": 0.225,
+      "expectancy_net_R": 0.125,
+      "pf_net": 1.2525,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 20,
+      "expectancy_gross_R": 0.225,
+      "expectancy_net_R": 0.025,
+      "pf_net": 1.0463,
+      "net_positive": true
+    },
+    {
+      "gross_wr": 0.55,
+      "gross_pf": 1.5,
+      "rt_cost_bps": 30,
+      "expectancy_gross_R": 0.225,
+      "expectancy_net_R": -0.075,
+      "pf_net": 0.8718,
+      "net_positive": false
+    }
+  ],
+  "cost_sensitivity_summary": {
+    "total_scenarios": 80,
+    "scenarios_net_negative": 59,
+    "example_marginal_edge_killed_by_costs": 32,
+    "finding": "Marginal gross edges (PF<=1.1 or WR<=50%) frequently turn net-negative at 10-30bps RT costs."
+  },
+  "comparisons": {
+    "balanced_vs_equity_median_cagr_diff": -0.009643425029411179,
+    "balanced_vs_equity_median_mdd_improvement": 0.11776754746911061,
+    "note": "Balanced typically trades some CAGR for materially lower drawdown (risk-adjusted suitability depends on objective)."
+  }
+}
