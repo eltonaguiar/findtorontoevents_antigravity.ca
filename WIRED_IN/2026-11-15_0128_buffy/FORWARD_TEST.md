@@ -88,8 +88,7 @@ one exit date cannot masquerade as many trades.
 **The boundaries are computed, not declared.** `of_boundaries()` in
 [`tools/forward_tracker.py`](../../tools/forward_tracker.py) solves `c_k = C/√t_k` for `C` numerically
 through the exact joint distribution of the sequentially computed z-scores (correlation `√(t_j/t_k)`),
-giving `C = 1.7077` and an achieved one-sided alpha of **0.0500** against a target of 0.05 — the grid
-solution is slightly conservative, which is the safe direction. `interim_verdict()` then reports, at
+giving `C = 1.7077` and an achieved one-sided alpha of **0.0500** against a target of 0.05 — the solver reports the alpha it achieved, so any drift from 0.05 stays visible rather than assumed. `interim_verdict()` then reports, at
 every scheduled look, the observed z against that look's boundary. An early promotion therefore needs
 z ≥ 4.21 at 25 windows, not the 1.73 the final look would accept.
 

@@ -22,8 +22,7 @@ Solved for the registered schedule `[25, 50, 100, 152]` at `n_final=152`, alpha 
 | 3 | 100 | **2.11** |
 | 4 | 152 | **1.71** |
 
-`C = 1.7077`; achieved alpha **0.0500** vs a 0.05 target — the grid solution is very slightly
-conservative, which is the safe direction and is reported rather than rounded away.
+`C = 1.7077`; achieved alpha **0.0500** vs a 0.05 target — the solver reports the alpha it actually achieved, so any drift from 0.05 is visible rather than assumed.
 
 Raising the final bar from 1.645 to 1.73 is the price of looking early; raising the *first* bar to 4.27
 is what stops "we saw a big number at 25 windows" from becoming a promotion.
@@ -71,7 +70,7 @@ clock applies regardless; the borderline value is recorded rather than smoothed 
 
 | Check | Result |
 |---|---|
-| `of_boundaries([25,50,100,152], 152, 0.05)` | C=1.7077, boundaries [4.267, 3.017, 2.133, 1.730], achieved alpha 0.0500 |
+| `of_boundaries([25,50,100,152], 152, 0.05)` | C=1.7077, boundaries [4.211, 2.978, 2.105, 1.708], achieved alpha 0.0500 |
 | Monotone decreasing | yes |
 | Final boundary vs z_0.95 | 1.73 ≥ 1.645 (conservative, as OF requires) |
 | `selftest` | 8/8 rule cases + 7 OF checks |
