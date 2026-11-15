@@ -18,6 +18,7 @@
 11. [Frozen simulation plan](./08_SIMULATION_PLAN.md) and [actual executed backtests](./09_EXECUTED_SIMULATIONS.md)
 12. [Easy forward tracking and fast elimination](./10_FORWARD_TRACKING_PROTOCOL.md)
 13. [Independent review and corrected simulation costs](./11_INDEPENDENT_REVIEW_AND_CORRECTIONS.md)
+14. [WIRED_IN per-class specifications, justification and elimination](../../WIRED_IN/2026-11-15_012638_UTC_copilot-financial-review-20261115/README.md)
 
 ## Central conclusion
 
@@ -29,7 +30,7 @@ There are three different objectives:
 
 Each is reported separately. A mutual fund that rises with the market is not automatically a winning prediction algorithm or an S&P 500 outperformer. Longer holding periods do not guarantee profit.
 
-Prioritize **two research lanes**: diversified fund/ETF allocation with a frozen tactical challenger, and point-in-time diversified equity selection. All other classes stay measurable and paper-only; promising crypto recency is a conditional investigation, not a deployment signal.
+Prioritize **two research lanes**: transparent fund/ETF reference accounts and point-in-time diversified equity selection. The tested H-143 tactical challenger failed its alpha screen and is removed from that forward queue; a different tactical premise would need new preregistration and independent evidence. All other classes stay measurable and paper-only; promising crypto recency is a conditional investigation, not a deployment signal.
 
 ## Evidence and boundaries
 
@@ -39,7 +40,7 @@ Prioritize **two research lanes**: diversified fund/ETF allocation with a frozen
 - Completed **two successful SubQ Decisions API calls**, eight abstract methodology questions each. Only generic questions/public principles were included in the question payload; no repository code, portfolio data or credentials were included there or retained in the output. API authentication used an Authorization header.
 - Recomputed seven passive risk curves from retained market histories; reproduced three TAA operational failures and earlier validator/portfolio counterexamples offline.
 - Additional public research corroborated FINRA fund mechanics, official contest caveats, AQR trend research, CFA/GIPS and BlackRock's integrated risk/operations approach. Failed sources and unverified contest claims remain labeled.
-- No new strategy backtest, live paper trade, account access, DB mutation, workflow dispatch or production deployment is claimed.
+- The executed H-142/H-143 backtests are documented below. No live paper trade, account access, DB mutation, workflow dispatch or production deployment is claimed.
 
 The package is a research deliverable. Implementation agents must get their exact change scope approved, preserve shared peer work and pass the contracts in the prompts.
 
