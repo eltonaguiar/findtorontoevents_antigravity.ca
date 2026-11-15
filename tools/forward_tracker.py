@@ -371,6 +371,85 @@ def cmd_sync(a):
         print(f"  ledger now {len(load_trades())} rows -> {LEDGER}")
 
 
+def cmd_rescore(a):
+    """Recompute the benchmark leg on rows ALREADY in the ledger.
+
+    `sync` attaches excess_pp only to the picks it admits at that moment. If the benchmark
+    series is refreshed afterwards, earlier rows keep whatever closes existed then — so the
+    first pick a strategy ever logs can carry a stale excess (or a null with
+    `outside_series`) for the rest of the forward test, and the registered endpoint is then
+    only partly measured.
+
+    This rewrites the benchmark fields and NOTHING else: pnl, fees, entry, exit, membership
+    and therefore n are untouched, so re-scoring can never change the sample — only the
+    quality of the measurement applied to it. Rows that cannot be benchmarked get a null plus
+    the reason, never a zero.
+    """
+    _ensure()
+    trades = load_trades()
+    if not trades:
+        print(f"ledger is empty ({LEDGER}); nothing to rescore")
+        return 2
+    bench, berr = _bench_series(a.bench_file)
+    print(f"rescore {LEDGER} ({len(trades)} rows)")
+    print(f"  benchmark: {a.bench_file} -> "
+          f"{'loaded, generated ' + str(bench.get('generated_utc')) if bench else 'UNAVAILABLE: ' + str(berr)}")
+    if bench is None:
+        print("  refusing to rewrite rows: no series to score against")
+        return 2
+    plan = load_plan()
+    scored = cleared = changed = filtered = no_ret = 0
+    reasons = {}
+    out = []
+    for r in trades:
+        if a.strategy and r.get("strategy") != a.strategy:
+            filtered += 1
+            out.append(r)
+            continue
+        ret = r.get("ret_pct")
+        if not isinstance(ret, (int, float)):
+            # Do not synthesise ret_pct here: that is a different field with a different
+            # meaning, and a re-score must not quietly widen what it rewrote.
+            no_ret += 1
+            out.append(r)
+            continue
+        cfg = plan["strategies"].get(r.get("strategy"), {})
+        cls = (r.get("asset_class") or "").upper() or (cfg.get("class") or "").upper()
+        bx, bd0, bd1, note = _bench_excess(bench, cls, str(r.get("opened"))[:10],
+                                           str(r.get("closed"))[:10])
+        old = r.get("excess_pp")
+        if bx is None:
+            reasons[note] = reasons.get(note, 0) + 1
+            if old is not None:
+                cleared += 1
+                changed += 1
+            r.update(excess_pp=None, bench_symbol=None, bench_ret_pct=None,
+                     bench_window=None, bench_note=note)
+        else:
+            new = round(float(ret) - bx, 4)
+            if old is None or abs(new - float(old)) > 1e-9:
+                changed += 1
+            r.update(excess_pp=new, bench_symbol=note, bench_ret_pct=round(bx, 4),
+                     bench_window=f"{bd0}..{bd1}", bench_note=None)
+            scored += 1
+        out.append(r)
+    print(f"  scored {scored} | cleared {cleared} | no ret_pct {no_ret} | "
+          f"other strategy {filtered} | values changed {changed}")
+    for k in sorted(reasons):
+        print(f"    unbenchmarkable: {k} x{reasons[k]}")
+    print(f"  rows carrying excess: {scored}/{len(trades)}")
+    if a.dry_run:
+        print("  dry run: ledger untouched")
+        return 0
+    tmp = LEDGER + ".tmp"
+    with open(tmp, "w") as f:
+        for r in out:
+            f.write(json.dumps(r) + "\n")
+    os.replace(tmp, LEDGER)
+    print(f"  rewrote {LEDGER}")
+    return 0
+
+
 def wilson_lower(w, n, z=1.645):
     if n == 0: return 0.0
     p = w / n
@@ -800,12 +879,18 @@ def main():
     sy.add_argument("--no-benchmark", action="store_true",
                     help="skip the benchmark leg; rows then have no excess_pp and verdicts fall back")
     sy.add_argument("--dry-run", action="store_true")
+    rs = sub.add_parser("rescore")
+    rs.add_argument("--bench-file", default=BENCH_FILE,
+                    help="refreshed benchmark closes (default: the dashboard's own file)")
+    rs.add_argument("--strategy", default="", help="only rows for this strategy")
+    rs.add_argument("--dry-run", action="store_true")
     sub.add_parser("status"); sub.add_parser("selftest")
     a = ap.parse_args()
     if a.cmd == "init":
         _ensure(); print(f"initialised {PLAN} and {LEDGER}")
     elif a.cmd == "log": cmd_log(a)
     elif a.cmd == "sync": cmd_sync(a)
+    elif a.cmd == "rescore": sys.exit(cmd_rescore(a) or 0)
     elif a.cmd == "status": cmd_status(a)
     elif a.cmd == "selftest": sys.exit(cmd_selftest(a))
 
