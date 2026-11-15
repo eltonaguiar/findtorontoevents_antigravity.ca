@@ -150,9 +150,11 @@ jobs:
               echo "ERROR: Push permanently rejected — aborting"
               break
             fi
-            # Non-fast-forward: main advanced under us. Retrying the identical
-            # push cannot recover. Only operator_review_today.json is staged,
-            # so rebasing onto the new main is conflict-free.
+            # Non-fast-forward: main advanced under us (another publisher
+            # in the shared `dashboard-publish` group, or a push-triggered
+            # workflow). Retrying the identical push cannot recover (run 43688791845
+            # exhausted all 5 attempts this way). Only operator_review_today.json
+            # is staged, so rebase onto the new main cannot conflict.
             if echo "$push_output" | grep -qiE "non-fast-forward|fetch first|\[rejected\]|behind its remote"; then
               if git fetch --quiet origin main && git rebase --quiet origin/main; then
                 echo "Rebased onto origin/main — retrying push immediately"

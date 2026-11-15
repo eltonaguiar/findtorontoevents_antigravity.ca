@@ -219,6 +219,8 @@ jobs:
             push_rc=0
             push_output=$(git push origin HEAD:main 2>&1) || push_rc=$?
             echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            # NOTE: every retry below must first reconcile with origin/main —
+            # see the rebase branch after the permanent-rejection check.
             if [ $push_rc -eq 0 ]; then
               echo "Pushed successfully on attempt $i"
               push_ok=true
@@ -229,10 +231,12 @@ jobs:
               echo "ERROR: Push permanently rejected — aborting"
               exit 1
             fi
-            # Non-fast-forward: main advanced while we generated the snapshot.
-            # Retrying the identical push can never succeed. Only this
-            # workflow's JSON is staged, so rebasing onto the new main is
-            # conflict-free.
+            # Non-fast-forward means main advanced under us (another publisher
+            # in the shared `dashboard-publish` group, or a push-triggered
+            # workflow). Retrying the identical push can NEVER succeed, which
+            # is why run 43688176979 burned all 10 attempts and lost the day's
+            # snapshot. Our commit touches two JSON files only, so rebasing
+            # onto the new main is conflict-free by construction.
             if echo "$push_output" | grep -qiE "non-fast-forward|fetch first|\[rejected\]|behind its remote"; then
               if git fetch --quiet origin main && git rebase --quiet origin/main; then
                 echo "Rebased onto origin/main — retrying push immediately"

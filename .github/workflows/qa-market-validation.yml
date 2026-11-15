@@ -45,10 +45,13 @@ jobs:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
           DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
           # Equity quote-chain credentials (alpha_engine/equity_price_failover.py).
-          # Adapters 2-6 return None immediately when their key is unset, leaving
-          # only Stooq (blocked from runner IPs) and yfinance (flaky) -> every
-          # ticker logs "ALL 7 sources failed". Supplying the keys restores the
-          # real chain; the gate logic itself is unchanged.
+          # The chain has 7 adapters, but adapters 2-6 return None immediately
+          # when their key is unset — leaving only Stooq (its anonymous endpoint
+          # is blocked from GitHub-runner IPs) and yfinance (documented as flaky
+          # in GHA in that module's own docstring). That is exactly how run
+          # 43688541491 produced "fetch_quote(<ticker>): ALL 7 sources failed"
+          # for every single equity ticker and failed the gate. Without these
+          # keys this job cannot validate PnL, so it fails every hour forever.
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY || secrets.FINNHUB }}
           FINNHUB: ${{ secrets.FINNHUB_API_KEY || secrets.FINNHUB }}
           TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
