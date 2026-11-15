@@ -21,7 +21,15 @@ permissions:
 
 jobs:
   market-beating:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    # Pin to 24.04: ubuntu-latest now resolves to 26.04, whose system Python is
+    # 3.14. requirements.txt pins numpy==1.26.2 and pandas==2.1.4, which have no
+    # cp314 wheels — pip falls back to compiling pandas from source and dies on
+    # the Python 3.14 C-API change (_PyLong_AsByteArray now takes 6 args):
+    #   pandas/_libs/tslibs/base.cpython-314-*.pyx.c: error: too few arguments
+    #     to function '_PyLong_AsByteArray'; expected 6, have 5
+    # 24.04 ships Python 3.12, which has wheels for both pins. Revisit when the
+    # numpy/pandas pins move to versions with cp314 wheels.
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-24.04' }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v6

@@ -36,6 +36,14 @@ jobs:
         # (run 27370850869 timed out mid-transfer; 27350269502 succeeded same day).
         # Bumped to 30 + one lftp retry below; job budget (90) still has headroom
         # (30 + 15 + 15 upload steps + small env-deploy/verify steps).
+        # 2026-11-15: the real killer was NOT volume, it was ONE malformed name on
+        # the source FTP. lftp aborts the whole script (exit 1) on:
+        #   553 Prohibited file name: hot_trending_30m<garbage>%2527%2522\.json
+        # after 27,692 files were already transferred, so steps 4-7 (all three
+        # uploads, .env deploy, verify) were SKIPPED every 6h since 2026-11-14.
+        # Excluding that stray artifact lets the mirror exit 0 and actually upload.
+        # Also dropping pure ballast that can never be served: .git objects
+        # (4,796 paths in one run) and __pycache__/*.pyc (64).
         timeout-minutes: 30
         env:
           SRC_HOST: ${{ secrets.FTP_HOST }}
@@ -64,6 +72,10 @@ jobs:
             --exclude='^favcreators_source/.git/' \
             --exclude='^cakephp/vendor/' \
             --exclude='^findevents/next/_next/static/chunks/' \
+            --exclude='(^|/)\.git/' \
+            --exclude='(^|/)__pycache__/' \
+            --exclude-glob=*.pyc \
+            --exclude-glob=hot_trending_30m*%25* \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
