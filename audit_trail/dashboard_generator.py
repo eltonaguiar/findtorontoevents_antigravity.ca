@@ -17910,6 +17910,107 @@ def generate():
             _tier_counts["STANDARD"], _tier_counts["WATCH"],
         )
 
+        # ── PE-03 gates and badges ──
+        def _apply_pe03_gates_and_badges(pick: dict) -> None:
+            now = datetime.now(timezone.utc)
+            gate_failure_reasons = []
+
+            # freshness_gate
+            _fresh = False
+            for _k in ("updated_at", "last_price_update"):
+                _v = pick.get(_k)
+                if _v:
+                    try:
+                        _dt = datetime.fromisoformat(str(_v).replace("Z", "+00:00"))
+                        if _dt.tzinfo is None:
+                            _dt = _dt.replace(tzinfo=timezone.utc)
+                        if (now - _dt) <= timedelta(hours=72):
+                            _fresh = True
+                            break
+                    except Exception:
+                        pass
+            if not _fresh:
+                gate_failure_reasons.append("freshness_gate")
+
+            # cost_gate
+            _cost_ok = False
+            if pick.get("net_of_cost_pnl_pct") is not None:
+                _cost_ok = True
+            if pick.get("cost_cleared") is True:
+                _cost_ok = True
+            if not _cost_ok:
+                gate_failure_reasons.append("cost_gate")
+
+            # provenance_gate
+            if not pick.get("source") or not pick.get("strategy_id") or not pick.get("entry_time"):
+                gate_failure_reasons.append("provenance_gate")
+
+            # benchmark_gate
+            if pick.get("excess_vs_benchmark") is None:
+                gate_failure_reasons.append("benchmark_gate")
+
+            # apply tier override
+            if gate_failure_reasons:
+                pick["display_tier"] = "CANDIDATE_NOT_READY"
+                pick["gate_failure_reasons"] = gate_failure_reasons
+            else:
+                pick["gate_failure_reasons"] = []
+
+            # badges
+            badges = []
+
+            # UNQUOTED
+            if not pick.get("current_price"):
+                badges.append("UNQUOTED")
+
+            # STALE
+            _stale = True
+            for _k in ("updated_at", "last_price_update"):
+                _v = pick.get(_k)
+                if _v:
+                    try:
+                        _dt = datetime.fromisoformat(str(_v).replace("Z", "+00:00"))
+                        if _dt.tzinfo is None:
+                            _dt = _dt.replace(tzinfo=timezone.utc)
+                        if (now - _dt) <= timedelta(hours=72):
+                            _stale = False
+                            break
+                    except Exception:
+                        pass
+            if _stale:
+                badges.append("STALE")
+
+            # NULL_FIELD
+            if not pick.get("entry_price") or not pick.get("exit_price") or not pick.get("direction"):
+                badges.append("NULL_FIELD")
+
+            # FABRICATED_FLAT
+            try:
+                _pnl = float(pick.get("pnl_pct") or 0)
+                _entry = float(pick.get("entry_price") or 0)
+                _exit = float(pick.get("exit_price") or 0)
+                if _pnl == 0.0 and _entry > 0 and abs(_exit - _entry) / _entry <= 0.0001:
+                    badges.append("FABRICATED_FLAT")
+            except Exception:
+                pass
+
+            pick["badges"] = badges
+
+        _pe03_counts = {"ELITE": 0, "PREMIUM": 0, "STANDARD": 0, "WATCH": 0, "CANDIDATE_NOT_READY": 0}
+        for _p in payload["picks"]["active"]:
+            _apply_pe03_gates_and_badges(_p)
+            _pe03_counts[_p.get("display_tier", "WATCH")] = _pe03_counts.get(_p.get("display_tier", "WATCH"), 0) + 1
+        quality_stats["display_tier_counts"] = _pe03_counts
+        payload["summary"]["quality_stats"] = quality_stats
+        log.info(
+            "  PE-03 gating: ELITE=%d PREMIUM=%d STANDARD=%d WATCH=%d CANDIDATE_NOT_READY=%d",
+            _pe03_counts.get("ELITE", 0),
+            _pe03_counts.get("PREMIUM", 0),
+            _pe03_counts.get("STANDARD", 0),
+            _pe03_counts.get("WATCH", 0),
+            _pe03_counts.get("CANDIDATE_NOT_READY", 0),
+        )
+
         # ── HF CONVICTION TIERS (re-applied — lost in concurrent rebase) ──
         _hf_tier_counts = {"S": 0, "A": 0, "B": 0}
         try:
