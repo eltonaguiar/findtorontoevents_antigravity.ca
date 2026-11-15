@@ -89,10 +89,21 @@ def _fetch_month_return(pair: str) -> float | None:
     if px is None or px.empty or len(px) < 2:
         return None
     col = "Close" if "Close" in px.columns else px.columns[0]
-    s = px[col].dropna()
+    s = px[col]
+    # yfinance >=1.8 can return a MultiIndex-column frame even for one ticker,
+    # so px["Close"] is a DataFrame; collapse to a Series before .iloc.
+    if getattr(s, "ndim", 1) > 1:
+        s = s.iloc[:, 0]
+    s = s.dropna()
     if len(s) < 2:
         return None
-    return float(s.iloc[-1] / s.iloc[-2] - 1.0)
+    v1 = s.iloc[-1]
+    v0 = s.iloc[-2]
+    if hasattr(v1, "item"):
+        v1 = v1.item()
+    if hasattr(v0, "item"):
+        v0 = v0.item()
+    return float(v1 / v0 - 1.0)
 
 
 def _basket_return(basket: dict) -> float | None:
@@ -279,8 +290,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     result = run_one_shot()
     if args.write_db and result.get("basket"):
-        n = _write_basket_to_db(result["basket"])
-        print(f"[DB] Inserted/updated {n} pick(s)", file=sys.stderr)
+        try:
+            n = _write_basket_to_db(result["basket"])
+            print(f"[DB] Inserted/updated {n} pick(s)", file=sys.stderr)
+        except Exception as exc:
+            print(f"[DB] Skipping DB write (unavailable in environment): {exc}", file=sys.stderr)
     print(json.dumps(result, indent=2))
     return 0
 

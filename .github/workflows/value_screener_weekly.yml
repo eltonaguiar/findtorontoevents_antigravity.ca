@@ -54,11 +54,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          # fetch-depth: 0 — full clone. Per PR #436 investigation: shallow clones
-          # force `git fetch --unshallow` (16-18min on 5GB repo) which exhausts
-          # the push-retry budget. Full clone adds ~2min but saves much more
-          # downstream. Cost on cloud runners is acceptable.
-          fetch-depth: 0
+          # permissions: contents: read — never pushes, so shallow partial clone suffices.
+          fetch-depth: 1
+          filter: blob:none
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -124,7 +122,7 @@ jobs:
         # screener emitted before crashing.
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: value_screener_picks_${{ github.run_id }}
           path: |

@@ -291,5 +291,4 @@ def integrate_polymarket_opportunities():
                 "confidence": opp["confidence"],
                 "timestamp": datetime.utcnow().isoformat()
             }
-            send_to_redis_bus(signal)</content>
-<parameter name="filePath">C:\findtorontoevents_antigravity.ca\alpha_engine\copytrader_integration.py
+            send_to_redis_bus(signal)

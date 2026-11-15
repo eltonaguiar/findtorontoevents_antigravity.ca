@@ -1,5 +1,9 @@
-# Daily ETF dual-momentum paper pilot + Sunday walk-forward refresh.
-# Does not touch audit dashboard generators or production scanner flags.
+# Daily ETF dual-momentum + Faber TAA paper pilots + Sunday walk-forward refresh.
+# The pilots write results locally; this workflow now COMMITS the refreshed proof
+# artifacts to main so the forward record grows in git history instead of rotting
+# (reports/faber_forward_stats_latest.json was frozen at 2026-06-06 because the
+# prior version uploaded artifacts but never committed them). It still does NOT
+# touch production scanner flags or enable sizing.
 name: Verified pilot daily
 
 on:
@@ -7,17 +11,28 @@ on:
     - cron: "15 6 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: verified-pilot-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 jobs:
   pilot:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          token: ${{ secrets.GH_PAT || github.token }}
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install --user pandas numpy yfinance requests
+        run: pip install --user pandas numpy yfinance requests pymysql
       - name: Run verified pilots
         env:
           VERIFY_SKIP_FRED: "1"
@@ -26,7 +41,7 @@ jobs:
       - name: Strategy admissibility report
         run: python3 tools/strategy_admissibility_report.py --write
       - name: Upload pilot artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: verified-pilot-${{ github.run_id }}
           path: |
@@ -48,3 +63,32 @@ jobs:
             verified_strategies/paper_pilot/etf_dual_momentum_closed.json
             verified_strategies/WALKFORWARD_REPORT.json
           if-no-files-found: ignore
+      - name: Commit refreshed pilot proof to main
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "verified-pilot-bot"
+          git config user.email "bot@antigravity.ca"
+          # Narrow, explicit list of SMALL proof files (never the 17MB dashboard).
+          git add -f verified_strategies/paper_pilot/faber_taa_paper_log.jsonl || true
+          git add verified_strategies/paper_pilot/faber_taa_positions.json || true
+          git add reports/faber_forward_stats_latest.json || true
+          git add reports/pilot_forward_dashboard.json || true
+          git add reports/pilot_forward_summary.json || true
+          git add reports/verified_pilots_daily_latest.json || true
+          git add reports/etf_forward_stats_latest.json || true
+          git add audit_dashboard/data/verified_edge_status.json || true
+          git add audit_dashboard/data/strategy_admissibility.json || true
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          if git diff --cached --quiet; then
+            echo "No pilot changes to commit (unchanged from previous run)"
+            echo "::notice title=verified-pilot no-op::nothing advanced today"
+            exit 0
+          fi
+          DATE_UTC=$(date -u +%Y-%m-%d)
+          FABER_N=$(python -c 'import json;d=json.load(open("verified_strategies/paper_pilot/faber_taa_positions.json"));print(d.get("n_closed",0))' 2>/dev/null || echo "?")
+          git commit -m "chore(verified-pilot): refresh paper pilots ${DATE_UTC} faber_closed_n=${FABER_N} [skip ci]"
+          # safe_push.sh performs pull --rebase + retry with GIT_NET_TIMEOUT so a
+          # hung network push cannot block the job for 10+ minutes (observed
+          # 2026-11-15: run stuck in this step for 12+ min with updated_at frozen).
+          bash .github/scripts/safe_push.sh

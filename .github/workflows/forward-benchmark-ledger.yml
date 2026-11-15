@@ -1,0 +1,121 @@
+# Forward Benchmark Ledger — keeps the "beat buy-and-hold" measurement LIVE
+# ---------------------------------------------------------------------------
+# WHY THIS EXISTS
+# The repo has four deployed-but-UNSCHEDULED proof tools that convert "we have
+# no idea if we beat the market" into a measured, benchmark-relative number:
+#   - tools/build_benchmark_prices.py  -> audit_dashboard/data/benchmark_prices.json
+#   - tools/forward_tracker.py sync     -> state/forward_test/ledger.jsonl (pre-registered)
+#   - tools/build_forward_clock.py      -> audit_dashboard/data/forward_clock.json
+#   - tools/pick_excess.py              -> reports/pick_excess_returns.json
+#
+# The /audit dashboard already renders the "vs Bench" column (excess_column.js)
+# from reports/pick_excess_returns.json — but NOTHING refreshes that file, so
+# the excess-return number goes stale (the exact disease this repo keeps hitting).
+# This cron keeps it fresh daily so the headline "excess vs SPY / BTC" advances
+# legitimately instead of freezing at whatever was last run by hand.
+#
+# SAFETY (per AGENTS.md):
+#  - schedule-only + workflow_dispatch. NO push trigger (cancel-cascade guard).
+#  - own concurrency group, cancel-in-progress: false.
+#  - timeout-minutes bound.
+#  - narrow `git add` of 3 small JSONs (+ optional ledger); never broad globs.
+#  - commit carries [skip ci].
+#  - rebase-retry push loop (safe_push pattern) so main advancing under us is
+#    reconciled, not burned.
+#  - fail-loud on the two self-contained measurement steps (benchmark prices,
+#    forward clock). pick_excess is best-effort because it needs the 25MB
+#    production dashboard snapshot; a transient CDN miss warns, it does not lie.
+---
+name: Forward Benchmark Ledger Refresh (Daily)
+
+'on':
+  schedule:
+    # 08:35 UTC daily — after rsi5070 snapshot (07:00) and the hourly
+    # audit-dashboard publish. Offset from :00/:10/:20 minute-collision slots.
+    - cron: '35 8 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: forward-benchmark-ledger
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      PYTHONUTF8: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          update-environment: true
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pandas -q
+
+      - name: Build benchmark price series (SPY / BTC-USD)
+        # Self-contained (Yahoo). FAIL-LOUD — if this breaks, the excess column
+        # silently rots, which is the failure we are eliminating.
+        run: python tools/build_benchmark_prices.py --refresh
+
+      - name: Sync pre-registered forward ledger (admit only post-start picks)
+        # No-op is correct: the guard admits only picks that CLOSED on/after a
+        # strategy's registered start date. "appended 0" means the guard works.
+        run: python tools/forward_tracker.py sync
+
+      - name: Build forward clock (recompute windows from ledger)
+        run: python tools/build_forward_clock.py
+
+      - name: Fetch production dashboard snapshot (for excess scoring)
+        run: |
+          mkdir -p audit_dashboard/data
+          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
+            -o audit_dashboard/data/dashboard_data.json \
+            || echo "::warning::dashboard_data.json fetch failed — excess scoring will be skipped this run"
+          ls -la audit_dashboard/data/dashboard_data.json 2>&1 || true
+
+      - name: Score excess return vs benchmark (pick_excess)
+        run: |
+          if [ -s audit_dashboard/data/dashboard_data.json ]; then
+            python tools/pick_excess.py
+          else
+            echo "::warning title=excess skipped::dashboard snapshot unavailable; left prior reports/pick_excess_returns.json untouched"
+          fi
+
+      - name: Commit refreshed proof artifacts to main
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "forward-benchmark-bot"
+          git config user.email "bot@antigravity.ca"
+          # Narrow, explicit file list only (no broad globs).
+          git add audit_dashboard/data/benchmark_prices.json || true
+          git add audit_dashboard/data/forward_clock.json || true
+          git add reports/pick_excess_returns.json || true
+          [ -f state/forward_test/ledger.jsonl ] && git add state/forward_test/ledger.jsonl || true
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          if git diff --cached --quiet; then
+            echo "No proof-artifact changes to commit (series unchanged this run)"
+            echo "::notice title=forward-benchmark no-op::nothing advanced today"
+            exit 0
+          fi
+          DATE_UTC=$(date -u +%Y-%m-%d)
+          # Headline excess (if present) in the subject so git log is greppable.
+          HEAD=$(python -c 'import json;d=json.load(open("reports/pick_excess_returns.json"));print(d.get("headline",""))' 2>/dev/null || echo "")
+          git commit -m "chore(forward-benchmark): refresh benchmark ledger ${DATE_UTC} ${HEAD} [skip ci]"
+          # safe_push.sh: pull --rebase + retry with GIT_NET_TIMEOUT so a hung
+          # network push cannot freeze the job.
+          bash .github/scripts/safe_push.sh

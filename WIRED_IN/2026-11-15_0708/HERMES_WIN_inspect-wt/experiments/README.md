@@ -21,4 +21,5 @@ Each `run_id` folder must contain, before execution:
 
 | run_id | hypothesis | status |
 |---|---|---|
-| (none yet — Phase 2 opens the first run: `equity_quality_momentum_20261115_001`) | cross-sectional quality-momentum vs SPY | pre-registered, not started |
+| `etfs_dual_momentum_20261115_001` | dual momentum (10m SMA + 12-1, top 3, monthly) vs SPY | **EXECUTED 2026-11-15 → DEAD (5/9)**. Test CAGR 10.93% vs SPY 16.79%; excess −5.96%/yr (p=0.88); deflated Sharpe 0.14; shuffle FAIL (90% of permuted variants beat it). See `INTERPRETATION.md`. |
+| `equity_quality_momentum_20261115_001` | cross-sectional quality-momentum, S&P 500 | **BLOCKED** — needs point-in-time ROIC fundamentals; price-only proxy would change the hypothesis. |
