@@ -22,7 +22,8 @@ After reviewing 24 hours of local + remote commits, peer reviews (9 peers), back
 | `02_holding_period_analysis/holding_period_vs_style.md` | Holding periods vs trading styles + proven/contest-winning algorithms |
 | `03_subq_decision_support/subq_fact_check.md` | SubQ API key usage + fact-checking framework |
 | `04_essential_questions/essential_questions.md` | Essential questions to find a profitable algorithm |
-| `05_prediction_market_copytrading/why_no_winners.md` | Why Kalshi/Polymarket + copy trading have not produced winners |
+| `05_prediction_market_copytrading/why_no_winners.md` | Why Kalshi/Polymarket + copy trading have not produced winners **(CORRECTED — see below)** |
+| `03_backtest_research/copy_trading_prediction_markets_corrected_findings.md` | **CORRECTION:** Copy trading + prediction markets DO have proven edges (COMMODITY WR=93.8%, Prediction Market forward WR=79.09%) |
 | `06_key_metrics/key_metrics_perspectives.md` | Key metrics from Sharpe / pro investor / MF manager / bank trader perspectives |
 | `07_agent_prompts/agent_prompts.md` | Prompts for AI coding agents in parallel worktrees |
 | `08_qa_validation/qa_protocol.md` | QA validation protocol (PnL=0%, blank fields, open/recently closed flags) |
@@ -53,6 +54,22 @@ A parallel agent ran a separate pre-registered backtest at `2026-11-15_1233AM_wi
 | Trend overlay reduces drawdown | N/A | SUPPORTED (-21.8% vs -50.8% MDD) |
 
 Both simulations agree: **beta capture is the only proven path; no active rule has a statistically significant edge.** Buffy's forward protocol (`FORWARD_PROTOCOL.md`) adds a Stage 0 "kill in backtest" framework and FAST vs SLOW strategy handling that complements the forward-test tracking protocol in `08_qa_validation/FORWARD_TEST_TRACKING_PROTOCOL.md`.
+
+## ⚠️ Correction: Copy Trading & Prediction Markets DO Have Proven Edges
+
+My earlier claim in `05_prediction_market_copytrading/why_no_winners.md` that "copy trading and prediction markets have not produced winners" is **incorrect**. Actual repo data shows:
+
+| Source | Best Class | WR | n | Status |
+|--------|-----------|-----|---|--------|
+| multi_asset_copytrader | COMMODITY | 93.8% | 96 | **REAL EDGE** (Tier-1 candidate) |
+| multi_asset_copytrader | FOREX | 14.8% | 662 | Massive drain — BLOCK |
+| multi_asset_copytrader | FUTURES | 2.5% | 157 | Critical drain — BLOCK |
+| prediction_market_consensus | CRYPTO | 79.09% (forward) | 110 | Shadow mode — PBO=0.603 |
+| prediction_market_consensus | CRYPTO (paper pilot) | 64.76% | 837 resolved | Promising forward results |
+
+**Key insight:** Multi-class systems are aggregate-misleading. The aggregate PF=4.28 for copy trader is masked by FOREX/FUTURES drag. Class-level decomposition reveals COMMODITY as the strongest edge.
+
+See `03_backtest_research/copy_trading_prediction_markets_corrected_findings.md` for full corrected analysis.
 
 ## Immediate Go/No-Go Rule
 

@@ -1,463 +1,263 @@
 #!/usr/bin/env python3
+"""Forward-test tracker. Stats are recomputed from an append-only trade ledger.
+
+Kill/promote thresholds match the 2026-11-15 protocol. PnL is percent, not a
+fraction, and is direction-aware. An eliminated strategy is not restarted by
+the next log call.
 """
-Forward Test Tracker
-====================
+from __future__ import annotations
 
-Implements the kill-fast / hold-longer protocol from
-2026-11-15_AM_profitability_plan/parallel_agent_worktree/08_qa_validation/FORWARD_TEST_TRACKING_PROTOCOL.md
-
-Kill signals (K1-K8) checked after every trade:
-  K1: Negative net PnL after costs with 20+ trades
-  K2: Win rate < 35% with 30+ trades
-  K3: Profit factor < 0.80 with 25+ trades
-  K4: Max drawdown > 15%
-  K5: Sharpe < 0 with 30+ trades
-  K6: No trades for 14 consecutive days
-  K7: 8 consecutive losses
-  K8: Cost ratio > 200% of gross profit
-
-Promote signals (P1-P7) checked at trade 30:
-  P1: Positive net expectancy after 20 trades
-  P2: Win rate >= 45% after 30 trades
-  P3: Profit factor >= 1.10 after 25 trades
-  P4: Max drawdown < 10%
-  P5: Sharpe > 0.5 after 30 trades
-  P6: Trade frequency >= 1 per week
-  P7: Max consecutive losses <= 5
-
-Usage:
-  python3 forward_tracker.py log --strategy <id> --symbol <sym> --entry <px> --exit <px> --qty <n> --fees <f> --opened <date> --closed <date> [--thesis <text>]
-  python3 forward_tracker.py status
-  python3 forward_tracker.py evaluate --strategy <id>
-
-"""
-
-import csv
-import os
-import sys
 import argparse
-from datetime import datetime, timedelta, timezone
+import csv
+import statistics
+from datetime import datetime, timezone
 from pathlib import Path
 
 DATA_DIR = Path("alpha_engine/data/forward_testing")
-TRACKER_CSV = DATA_DIR / "forward_test_tracker.csv"
-ELIMINATED_CSV = DATA_DIR / "forward_test_eliminated.csv"
-MONEY_READY_CSV = DATA_DIR / "forward_test_money_ready.csv"
+TRACKER_CSV = "forward_test_tracker.csv"
+LEDGER_CSV = "forward_test_trades.csv"
+ELIMINATED_CSV = "forward_test_eliminated.csv"
 
-FIELDNAMES = [
-    "strategy_id","asset_class","symbol","start_date","total_trades","winning_trades",
-    "losing_trades","win_rate_pct","gross_profit_pct","gross_loss_pct","profit_factor",
-    "net_pnl_pct","max_drawdown_pct","sharpe","consecutive_losses","max_consecutive_losses",
-    "days_active","trades_per_week","cost_ratio_pct","status","kill_reason","last_updated"
+TRACKER_FIELDS = [
+    "strategy_id", "asset_class", "symbol", "start_date", "total_trades",
+    "winning_trades", "losing_trades", "win_rate_pct", "gross_profit_pct",
+    "gross_loss_pct", "profit_factor", "net_pnl_pct", "max_drawdown_pct",
+    "sharpe", "consecutive_losses", "max_consecutive_losses", "days_active",
+    "trades_per_week", "cost_ratio_pct", "status", "kill_reason", "last_updated",
 ]
+LEDGER_FIELDS = [
+    "strategy_id", "asset_class", "symbol", "direction", "entry", "exit",
+    "qty", "fees", "pnl_pct", "opened", "closed", "thesis", "logged_at",
+]
+ELIM_FIELDS = TRACKER_FIELDS + ["eliminated_date", "kill_details"]
 
-ELIMINATED_FIELDNAMES = [
-    "strategy_id","asset_class","symbol","start_date","eliminated_date","total_trades","winning_trades",
-    "losing_trades","win_rate_pct","gross_profit_pct","gross_loss_pct","profit_factor",
-    "net_pnl_pct","max_drawdown_pct","sharpe","consecutive_losses","max_consecutive_losses",
-    "days_active","trades_per_week","cost_ratio_pct","kill_reason","kill_details","last_updated"
-]
 
-MONEY_READY_FIELDNAMES = [
-    "strategy_id","asset_class","symbol","start_date","promoted_date","total_trades","winning_trades",
-    "losing_trades","win_rate_pct","gross_profit_pct","gross_loss_pct","profit_factor",
-    "net_pnl_pct","max_drawdown_pct","sharpe","dsr","pbo","max_dd_pct","gates_passed","gates_total",
-    "next_review_date","last_updated"
-]
+def _p(name: str) -> Path:
+    return DATA_DIR / name
 
 
 def ensure_files():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    for path, fields in [(TRACKER_CSV, FIELDNAMES), (ELIMINATED_CSV, ELIMINATED_FIELDNAMES), (MONEY_READY_CSV, MONEY_READY_FIELDNAMES)]:
+    for name, fields in (
+        (TRACKER_CSV, TRACKER_FIELDS),
+        (LEDGER_CSV, LEDGER_FIELDS),
+        (ELIMINATED_CSV, ELIM_FIELDS),
+    ):
+        path = _p(name)
         if not path.exists():
-            with open(path, "w", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=fields)
-                writer.writeheader()
+            with path.open("w", newline="") as fh:
+                csv.DictWriter(fh, fieldnames=fields).writeheader()
 
 
-def read_csv(path, fields):
+def read_csv(path: Path):
     if not path.exists():
         return []
-    with open(path, newline="") as f:
-        reader = csv.DictReader(f)
-        return [dict(r) for r in reader]
+    with path.open(newline="") as fh:
+        return [dict(r) for r in csv.DictReader(fh)]
 
 
-def write_csv(path, fields, rows):
-    with open(path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+def write_csv(path: Path, fields, rows):
+    with path.open("w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore")
         writer.writeheader()
-        writer.writerows(rows)
+        for row in rows:
+            writer.writerow({k: row.get(k, "") for k in fields})
+
+
+def trade_pnl_pct(entry, exit_px, fees, direction="LONG") -> float:
+    entry_p = float(entry)
+    exit_p = float(exit_px)
+    if entry_p <= 0:
+        raise ValueError("entry must be positive")
+    if str(direction).upper() == "SHORT":
+        gross = (entry_p - exit_p) / entry_p * 100.0
+    else:
+        gross = (exit_p - entry_p) / entry_p * 100.0
+    return gross - (abs(float(fees)) / entry_p * 100.0)
 
 
 def compute_stats(trades):
-    """Compute stats from a list of trade dicts with pnl_pct values."""
-    if not trades:
+    pnls = [float(t["pnl_pct"]) for t in trades]
+    if not pnls:
         return {
             "total_trades": 0, "winning_trades": 0, "losing_trades": 0,
             "win_rate_pct": 0.0, "gross_profit_pct": 0.0, "gross_loss_pct": 0.0,
             "profit_factor": 0.0, "net_pnl_pct": 0.0, "max_drawdown_pct": 0.0,
             "sharpe": 0.0, "consecutive_losses": 0, "max_consecutive_losses": 0,
-            "cost_ratio_pct": 0.0,
+            "cost_ratio_pct": 0.0, "days_active": 0, "trades_per_week": 0.0,
         }
-
-    pnls = [t["pnl_pct"] for t in trades]
     wins = [p for p in pnls if p > 0]
     losses = [p for p in pnls if p <= 0]
-
-    total = len(trades)
-    n_wins = len(wins)
-    n_losses = len(losses)
-    wr = n_wins / total * 100
-    gross_profit = sum(wins) if wins else 0.0
-    gross_loss = abs(sum(losses)) if losses else 0.0
-    pf = gross_profit / gross_loss if gross_loss > 0 else (999.0 if gross_profit > 0 else 0.0)
-    net_pnl = sum(pnls)
-
-    # Max drawdown on cumulative equity
-    cum = []
-    running = 0.0
+    gross_profit = sum(wins)
+    gross_loss = abs(sum(losses))
+    pf = gross_profit / gross_loss if gross_loss else (999.0 if gross_profit else 0.0)
+    cum = peak = max_dd = 0.0
+    consec = max_consec = 0
     for p in pnls:
-        running += p
-        cum.append(running)
-    peak = 0.0
-    max_dd = 0.0
-    for v in cum:
-        peak = max(peak, v)
-        dd = peak - v
-        max_dd = max(max_dd, dd)
-
-    # Sharpe (simple, per-trade)
-    import statistics
-    if len(pnls) > 1 and statistics.pstdev(pnls) > 0:
-        sharpe = (statistics.mean(pnls) / statistics.pstdev(pnls)) * (len(pnls) ** 0.5)
-    else:
-        sharpe = 0.0
-
-    # Consecutive losses
-    consec = 0
-    max_consec = 0
-    for p in pnls:
+        cum += p
+        peak = max(peak, cum)
+        max_dd = max(max_dd, peak - cum)
         if p <= 0:
             consec += 1
             max_consec = max(max_consec, consec)
         else:
             consec = 0
-
-    # Cost ratio
-    cost_ratio = 0.0
-    if gross_profit > 0:
-        # Estimate costs as part of pnl already netted; approximate
-        cost_ratio = 0.0  # will be set externally if costs tracked separately
-
+    if len(pnls) > 1 and statistics.pstdev(pnls) > 0:
+        sharpe = statistics.mean(pnls) / statistics.pstdev(pnls) * (len(pnls) ** 0.5)
+    else:
+        sharpe = 0.0
+    fee_pct = 0.0
+    for t in trades:
+        entry_p = float(t.get("entry") or 0)
+        if entry_p > 0:
+            fee_pct += abs(float(t.get("fees") or 0)) / entry_p * 100.0
+    cost_ratio = (fee_pct / gross_profit * 100.0) if gross_profit > 0 else 0.0
+    opened = [t.get("opened") or "" for t in trades if t.get("opened")]
+    closed = [t.get("closed") or "" for t in trades if t.get("closed")]
+    days = 1
+    if opened and closed:
+        try:
+            a = datetime.fromisoformat(min(opened).replace("Z", "+00:00"))
+            b = datetime.fromisoformat(max(closed).replace("Z", "+00:00"))
+            days = max(1, int((b - a).total_seconds() / 86400) + 1)
+        except ValueError:
+            days = max(1, len(trades))
     return {
-        "total_trades": total,
-        "winning_trades": n_wins,
-        "losing_trades": n_losses,
-        "win_rate_pct": round(wr, 2),
+        "total_trades": len(pnls),
+        "winning_trades": len(wins),
+        "losing_trades": len(losses),
+        "win_rate_pct": round(len(wins) / len(pnls) * 100.0, 2),
         "gross_profit_pct": round(gross_profit, 4),
         "gross_loss_pct": round(gross_loss, 4),
         "profit_factor": round(pf, 3),
-        "net_pnl_pct": round(net_pnl, 4),
+        "net_pnl_pct": round(sum(pnls), 4),
         "max_drawdown_pct": round(max_dd, 4),
         "sharpe": round(sharpe, 3),
         "consecutive_losses": consec,
         "max_consecutive_losses": max_consec,
-        "cost_ratio_pct": cost_ratio,
+        "cost_ratio_pct": round(cost_ratio, 2),
+        "days_active": days,
+        "trades_per_week": round(len(pnls) / max(days / 7.0, 0.1), 2),
     }
 
 
-def check_kill_signals(stats, days_active, trades_per_week, consecutive_losses_now):
-    """Return (kill_bool, kill_reason) if any K1-K8 triggers."""
-    if stats["total_trades"] >= 20 and stats["net_pnl_pct"] < 0:
+def check_kill_signals(stats):
+    n = stats["total_trades"]
+    if n >= 20 and stats["net_pnl_pct"] < 0:
         return True, "K1"
-    if stats["total_trades"] >= 30 and stats["win_rate_pct"] < 35:
+    if n >= 30 and stats["win_rate_pct"] < 35:
         return True, "K2"
-    if stats["total_trades"] >= 25 and stats["profit_factor"] < 0.80:
+    if n >= 25 and stats["profit_factor"] < 0.80:
         return True, "K3"
     if stats["max_drawdown_pct"] > 15:
         return True, "K4"
-    if stats["total_trades"] >= 30 and stats["sharpe"] < 0:
+    if n >= 30 and stats["sharpe"] < 0:
         return True, "K5"
-    if days_active >= 14 and stats["total_trades"] == 0:
+    if stats["days_active"] >= 14 and n == 0:
         return True, "K6"
-    if consecutive_losses_now >= 8:
+    if stats["consecutive_losses"] >= 8:
         return True, "K7"
-    if stats["cost_ratio_pct"] > 200:
+    if n >= 10 and stats["cost_ratio_pct"] > 200:
         return True, "K8"
     return False, None
 
 
-def check_promote_signals(stats, trades_per_week):
-    """Return True if all P1-P7 hold (at trade 30 checkpoint)."""
-    if stats["total_trades"] < 20:
+def check_promote_signals(stats):
+    if stats["total_trades"] < 30:
         return False
-    if stats["net_pnl_pct"] <= 0:
-        return False  # P1
-    if stats["total_trades"] < 30 or stats["win_rate_pct"] < 45:
-        return False  # P2
-    if stats["total_trades"] < 25 or stats["profit_factor"] < 1.10:
-        return False  # P3
-    if stats["max_drawdown_pct"] >= 10:
-        return False  # P4
-    if stats["total_trades"] < 30 or stats["sharpe"] <= 0.5:
-        return False  # P5
-    if trades_per_week < 1:
-        return False  # P6
-    if stats["max_consecutive_losses"] > 5:
-        return False  # P7
-    return True
-
-
-def log_trade(strategy_id, asset_class, symbol, entry, exit_px, qty, fees, opened, closed, thesis=""):
-    """Log a closed trade and update the tracker."""
-    ensure_files()
-    trades = read_csv(TRACKER_CSV, FIELDNAMES)
-
-    # Find existing strategy row
-    row = None
-    row_idx = None
-    for i, r in enumerate(trades):
-        if r["strategy_id"] == strategy_id:
-            row = r
-            row_idx = i
-            break
-
-    entry_p = float(entry)
-    exit_p = float(exit_px)
-    pnl_pct = (exit_p - entry_p) / entry_p * 100  # LONG assumption; adjust for SHORT if needed
-    # Subtract fees as % of entry
-    pnl_pct -= (float(fees) / entry_p) * 100
-
-    pnl_value = pnl_pct / 100.0
-
-    now = datetime.now(timezone.utc).isoformat()
-
-    if row is None:
-        # New strategy
-        trades_list = [{"pnl_pct": pnl_pct}]
-        stats = compute_stats(trades_list)
-        start = opened.split("T")[0] if "T" in opened else opened
-        new_row = {
-            "strategy_id": strategy_id,
-            "asset_class": asset_class,
-            "symbol": symbol,
-            "start_date": start,
-            "total_trades": stats["total_trades"],
-            "winning_trades": stats["winning_trades"],
-            "losing_trades": stats["losing_trades"],
-            "win_rate_pct": stats["win_rate_pct"],
-            "gross_profit_pct": stats["gross_profit_pct"],
-            "gross_loss_pct": stats["gross_loss_pct"],
-            "profit_factor": stats["profit_factor"],
-            "net_pnl_pct": stats["net_pnl_pct"],
-            "max_drawdown_pct": stats["max_drawdown_pct"],
-            "sharpe": stats["sharpe"],
-            "consecutive_losses": stats["consecutive_losses"],
-            "max_consecutive_losses": stats["max_consecutive_losses"],
-            "days_active": 1,
-            "trades_per_week": 1.0,
-            "cost_ratio_pct": stats["cost_ratio_pct"],
-            "status": "TRIAL",
-            "kill_reason": "",
-            "last_updated": now,
-        }
-        trades.append(new_row)
-        row = new_row
-    else:
-        # Update existing - need full trade history; for simplicity recompute from stored stats + new trade
-        # In production, we'd store full trade history. Here we approximate by updating aggregates.
-        old_n = int(row["total_trades"])
-        old_net = float(row["net_pnl_pct"])
-        old_wins = int(row["winning_trades"])
-        old_dd = float(row["max_drawdown_pct"])
-
-        new_n = old_n + 1
-        new_net = old_net + pnl_pct
-        new_wins = old_wins + (1 if pnl_value > 0 else 0)
-        new_losses = new_n - new_wins
-        new_wr = new_wins / new_n * 100
-
-        # Gross profit/loss approximation
-        old_gp = float(row["gross_profit_pct"])
-        old_gl = float(row["gross_loss_pct"])
-        new_gp = old_gp + (pnl_pct if pnl_value > 0 else 0)
-        new_gl = old_gl + (abs(pnl_pct) if pnl_value <= 0 else 0)
-        new_pf = new_gp / new_gl if new_gl > 0 else (999.0 if new_gp > 0 else 0.0)
-
-        new_dd = max(old_dd, abs(min(0, new_net)))  # rough DD estimate
-        new_sharpe = float(row["sharpe"]) if row.get("sharpe") else 0.0
-
-        # Consecutive losses
-        old_consec = int(row["consecutive_losses"])
-        old_max_consec = int(row["max_consecutive_losses"])
-        if pnl_value <= 0:
-            new_consec = old_consec + 1
-        else:
-            new_consec = 0
-        new_max_consec = max(old_max_consec, new_consec)
-
-        days = int(row["days_active"]) + 1
-        tpw = new_n / max(days / 7.0, 0.1)
-
-        # Cost ratio estimate
-        gross_profit_for_cost = new_gp if new_gp > 0 else 1
-        cost_ratio = (abs(float(fees)) / entry_p * 100) / gross_profit_for_cost * 100 if gross_profit_for_cost > 0 else 0
-
-        row.update({
-            "total_trades": new_n,
-            "winning_trades": new_wins,
-            "losing_trades": new_losses,
-            "win_rate_pct": round(new_wr, 2),
-            "gross_profit_pct": round(new_gp, 4),
-            "gross_loss_pct": round(new_gl, 4),
-            "profit_factor": round(new_pf, 3),
-            "net_pnl_pct": round(new_net, 4),
-            "max_drawdown_pct": round(new_dd, 4),
-            "sharpe": round(new_sharpe, 3),
-            "consecutive_losses": new_consec,
-            "max_consecutive_losses": new_max_consec,
-            "days_active": days,
-            "trades_per_week": round(tpw, 2),
-            "cost_ratio_pct": round(cost_ratio, 2),
-            "last_updated": now,
-        })
-
-    # Check kill signals
-    kill, reason = check_kill_signals(
-        {
-            "total_trades": int(row["total_trades"]),
-            "net_pnl_pct": float(row["net_pnl_pct"]),
-            "win_rate_pct": float(row["win_rate_pct"]),
-            "profit_factor": float(row["profit_factor"]),
-            "max_drawdown_pct": float(row["max_drawdown_pct"]),
-            "sharpe": float(row["sharpe"]),
-            "cost_ratio_pct": float(row["cost_ratio_pct"]),
-            "max_consecutive_losses": int(row["max_consecutive_losses"]),
-        },
-        int(row["days_active"]),
-        float(row["trades_per_week"]),
-        int(row["consecutive_losses"]),
+    return (
+        stats["net_pnl_pct"] > 0
+        and stats["win_rate_pct"] >= 45
+        and stats["profit_factor"] >= 1.10
+        and stats["max_drawdown_pct"] < 10
+        and stats["sharpe"] > 0.5
+        and stats["trades_per_week"] >= 1
+        and stats["max_consecutive_losses"] <= 5
     )
 
+
+def _eliminated_ids():
+    return {r.get("strategy_id") for r in read_csv(_p(ELIMINATED_CSV))}
+
+
+def log_trade(strategy_id, asset_class, symbol, entry, exit_px, qty, fees, opened, closed, thesis="", direction="LONG"):
+    ensure_files()
+    if strategy_id in _eliminated_ids():
+        print(f"REFUSED: {strategy_id} already eliminated — not restarted")
+        return
+    pnl = trade_pnl_pct(entry, exit_px, fees, direction)
+    now = datetime.now(timezone.utc).isoformat()
+    ledger = read_csv(_p(LEDGER_CSV))
+    ledger.append({
+        "strategy_id": strategy_id,
+        "asset_class": asset_class,
+        "symbol": symbol,
+        "direction": direction,
+        "entry": entry,
+        "exit": exit_px,
+        "qty": qty,
+        "fees": fees,
+        "pnl_pct": round(pnl, 4),
+        "opened": opened,
+        "closed": closed,
+        "thesis": thesis,
+        "logged_at": now,
+    })
+    write_csv(_p(LEDGER_CSV), LEDGER_FIELDS, ledger)
+    mine = [t for t in ledger if t["strategy_id"] == strategy_id]
+    stats = compute_stats(mine)
+    start = str(opened).split("T")[0]
+    row = {
+        "strategy_id": strategy_id,
+        "asset_class": asset_class,
+        "symbol": symbol,
+        "start_date": start,
+        "status": "TRIAL",
+        "kill_reason": "",
+        "last_updated": now,
+        **{k: stats[k] for k in (
+            "total_trades", "winning_trades", "losing_trades", "win_rate_pct",
+            "gross_profit_pct", "gross_loss_pct", "profit_factor", "net_pnl_pct",
+            "max_drawdown_pct", "sharpe", "consecutive_losses", "max_consecutive_losses",
+            "days_active", "trades_per_week", "cost_ratio_pct",
+        )},
+    }
+    kill, reason = check_kill_signals(stats)
+    tracker = [r for r in read_csv(_p(TRACKER_CSV)) if r.get("strategy_id") != strategy_id]
     if kill:
         row["status"] = "ELIMINATED"
         row["kill_reason"] = reason
-        # Move to eliminated file
-        eliminated = read_csv(ELIMINATED_CSV, ELIMINATED_FIELDNAMES)
-        elim_row = {k: row.get(k, "") for k in ELIMINATED_FIELDNAMES}
-        elim_row["eliminated_date"] = now
-        elim_row["kill_details"] = f"Kill signal {reason} triggered at {row['total_trades']} trades"
-        eliminated.append(elim_row)
-        write_csv(ELIMINATED_CSV, ELIMINATED_FIELDNAMES, eliminated)
-        trades = [r for r in trades if r["strategy_id"] != strategy_id]
+        eliminated = read_csv(_p(ELIMINATED_CSV))
+        eliminated.append({
+            **row,
+            "eliminated_date": now,
+            "kill_details": f"Kill signal {reason} at {row['total_trades']} trades",
+        })
+        write_csv(_p(ELIMINATED_CSV), ELIM_FIELDS, eliminated)
         print(f"ELIMINATED: {strategy_id} — kill signal {reason}")
     else:
-        # Check promote at trade 30
-        if int(row["total_trades"]) >= 30:
-            promote = check_promote_signals(
-                {
-                    "total_trades": int(row["total_trades"]),
-                    "net_pnl_pct": float(row["net_pnl_pct"]),
-                    "win_rate_pct": float(row["win_rate_pct"]),
-                    "profit_factor": float(row["profit_factor"]),
-                    "max_drawdown_pct": float(row["max_drawdown_pct"]),
-                    "sharpe": float(row["sharpe"]),
-                    "max_consecutive_losses": int(row["max_consecutive_losses"]),
-                },
-                float(row["trades_per_week"]),
-            )
-            if promote:
-                row["status"] = "EXTENDED"
-                print(f"PROMOTED: {strategy_id} — meets P1-P7 criteria, moving to EXTENDED TEST")
-
-    write_csv(TRACKER_CSV, FIELDNAMES, trades)
+        if check_promote_signals(stats):
+            row["status"] = "EXTENDED"
+            print(f"PROMOTED: {strategy_id} — P1-P7 from the full ledger")
+        tracker.append(row)
+    write_csv(_p(TRACKER_CSV), TRACKER_FIELDS, tracker)
     print(f"Logged trade for {strategy_id}: status={row['status']}, trades={row['total_trades']}, net_pnl={row['net_pnl_pct']}%")
 
 
 def status():
-    """Print current status of all tracked strategies."""
     ensure_files()
-    trades = read_csv(TRACKER_CSV, FIELDNAMES)
-    eliminated = read_csv(ELIMINATED_CSV, ELIMINATED_FIELDNAMES)
-
-    print("=" * 100)
-    print("FORWARD TEST TRACKER — ACTIVE STRATEGIES")
-    print("=" * 100)
-    if not trades:
-        print("(none)")
-    else:
-        for r in trades:
-            print(f"{r['strategy_id']:<30s} | {r['symbol']:<10s} | {r['status']:<12s} | "
-                  f"trades={int(r['total_trades']):>3d} | WR={r['win_rate_pct']:>6s}% | "
-                  f"PF={r['profit_factor']:>6s} | netPnL={r['net_pnl_pct']:>8s}% | "
-                  f"DD={r['max_drawdown_pct']:>6s}% | Sharpe={r['sharpe']:>6s} | "
-                  f"kill={r['kill_reason'] or '-'}")
-
-    print()
-    print("=" * 100)
-    print("ELIMINATED STRATEGIES")
-    print("=" * 100)
-    if not eliminated:
-        print("(none)")
-    else:
-        for r in eliminated[-10:]:
-            print(f"{r['strategy_id']:<30s} | {r['symbol']:<10s} | killed={r['kill_reason']} | "
-                  f"trades={int(r['total_trades'])} | netPnL={r['net_pnl_pct']}% | "
-                  f"details={r.get('kill_details','')}")
-
-
-def evaluate(strategy_id):
-    """Evaluate a specific strategy against kill/promote signals."""
-    ensure_files()
-    trades = read_csv(TRACKER_CSV, FIELDNAMES)
-    row = next((r for r in trades if r["strategy_id"] == strategy_id), None)
-    if not row:
-        print(f"Strategy {strategy_id} not found in tracker.")
-        return
-
-    kill, reason = check_kill_signals(
-        {
-            "total_trades": int(row["total_trades"]),
-            "net_pnl_pct": float(row["net_pnl_pct"]),
-            "win_rate_pct": float(row["win_rate_pct"]),
-            "profit_factor": float(row["profit_factor"]),
-            "max_drawdown_pct": float(row["max_drawdown_pct"]),
-            "sharpe": float(row["sharpe"]),
-            "cost_ratio_pct": float(row["cost_ratio_pct"]),
-            "max_consecutive_losses": int(row["max_consecutive_losses"]),
-        },
-        int(row["days_active"]),
-        float(row["trades_per_week"]),
-        int(row["consecutive_losses"]),
-    )
-
-    promote = check_promote_signals(
-        {
-            "total_trades": int(row["total_trades"]),
-            "net_pnl_pct": float(row["net_pnl_pct"]),
-            "win_rate_pct": float(row["win_rate_pct"]),
-            "profit_factor": float(row["profit_factor"]),
-            "max_drawdown_pct": float(row["max_drawdown_pct"]),
-            "sharpe": float(row["sharpe"]),
-            "max_consecutive_losses": int(row["max_consecutive_losses"]),
-        },
-        float(row["trades_per_week"]),
-    )
-
-    print(f"\nStrategy: {strategy_id} ({row['symbol']})")
-    print(f"  Status: {row['status']}")
-    print(f"  Trades: {row['total_trades']} | WR: {row['win_rate_pct']}% | PF: {row['profit_factor']}")
-    print(f"  Net PnL: {row['net_pnl_pct']}% | Max DD: {row['max_drawdown_pct']}% | Sharpe: {row['sharpe']}")
-    print(f"  Kill signal: {'YES — ' + reason if kill else 'none'}")
-    print(f"  Promote (P1-P7): {'YES' if promote else 'no'}")
+    print("FORWARD TEST TRACKER — ACTIVE")
+    for r in read_csv(_p(TRACKER_CSV)):
+        print(f"{r['strategy_id']} | {r['symbol']} | {r['status']} | trades={r['total_trades']} | net={r['net_pnl_pct']}% | kill={r.get('kill_reason') or '-'}")
+    print("ELIMINATED")
+    for r in read_csv(_p(ELIMINATED_CSV))[-10:]:
+        print(f"{r['strategy_id']} | {r.get('kill_reason')} | trades={r.get('total_trades')} | net={r.get('net_pnl_pct')}%")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Forward Test Tracker")
     sub = parser.add_subparsers(dest="command")
-
-    log_p = sub.add_parser("log", help="Log a closed trade")
+    log_p = sub.add_parser("log")
     log_p.add_argument("--strategy", required=True)
     log_p.add_argument("--asset-class", default="EQUITY")
     log_p.add_argument("--symbol", required=True)
@@ -468,21 +268,13 @@ def main():
     log_p.add_argument("--opened", required=True)
     log_p.add_argument("--closed", required=True)
     log_p.add_argument("--thesis", default="")
-
-    sub.add_parser("status", help="Show all strategy statuses")
-
-    eval_p = sub.add_parser("evaluate", help="Evaluate a strategy against kill/promote signals")
-    eval_p.add_argument("--strategy", required=True)
-
+    log_p.add_argument("--direction", default="LONG")
+    sub.add_parser("status")
     args = parser.parse_args()
-
     if args.command == "log":
-        log_trade(args.strategy, args.asset_class, args.symbol, args.entry, args.exit,
-                  args.qty, args.fees, args.opened, args.closed, args.thesis)
+        log_trade(args.strategy, args.asset_class, args.symbol, args.entry, args.exit, args.qty, args.fees, args.opened, args.closed, args.thesis, args.direction)
     elif args.command == "status":
         status()
-    elif args.command == "evaluate":
-        evaluate(args.strategy)
     else:
         parser.print_help()
 

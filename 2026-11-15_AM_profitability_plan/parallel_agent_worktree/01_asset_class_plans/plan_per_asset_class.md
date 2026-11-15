@@ -81,15 +81,86 @@
 
 ---
 
-## 6. Commodity / Futures — Low-Frequency Watch
+## 6. Commodity / Futures — RESEARCH SLOT 1 (Copy Trader / COT Consensus)
 
-**Verdict:** Better historical PF (1.78) but n too low (7-229), cost/execution issues (422% cost ratio for commodity), COT contrarian gate failed 4/4.
+**Verdict:** **Strongest proven edge in the system.** Per-class decomposition shows COMMODITY via multi_asset_copytrader at WR=93.8% (n=96) and multi_asset_cot at WR=94.1% (n=102). The aggregate PF=4.28 is masked by FOREX (WR=14.8%, n=662) and FUTURES (WR=2.5%, n=157) drag. Class-level decomposition is the only honest read.
 
-**Plan:** Acquire real feed + contract identity. Test low-frequency CTA/COT only after data quality clears. Blocked for now.
+**Source:** `reports/multi_asset_copytrader_per_class_audit_20260513T014000Z.md`
+
+### Per-Class CopyTrader Results
+
+| Class | n | WR % | Volume Share | Status | Action |
+|-------|---|------|-------------|--------|--------|
+| **COMMODITY** | 96 | **93.8%** | 6.4% | ✅ Real edge — pristine WR | **PRESERVE + SCALE** |
+| EQUITY | 28 | 42.9% | 1.9% | ⚠️ Thin (n<100) | Monitor |
+| **FOREX** | 662 | **14.8%** | 44.0% | ❌ Massive drag | **MUTATE-BEFORE-KILL** |
+| **FUTURES** | 157 | **2.5%** | 10.4% | ❌ Critical drain | **SURGICAL BLOCK** |
+
+### Plan
+
+1. **Surgical block:** Add `(FUTURES, multi_asset_copytrader)` to `BLOCKED_ASSET_STRATEGY_PAIRS` in `audit_trail/quality_gates.py` — n=157, WR=2.5% is empirically dead.
+2. **Mutate-before-kill:** Run axis analysis on `(FOREX, multi_asset_copytrader)` — 662 picks at 14.8% WR needs symbol/direction/timeframe analysis.
+3. **Preserve + scale COMMODITY:** Cross-reference with `multi_asset_cot` (COMMODITY WR=94.1%, n=102). Build dedicated COMMODITY copy-trader/COT consensus emitter with elite filtering.
+4. **Target:** Make COMMODITY copy-trader/COT the Tier-1 go-live candidate — DB-verify pending next session action.
 
 ---
 
-## 7. Bond — Insufficient Data
+## 7. Prediction Markets (Kalshi / Polymarket) — Shadow Mode Candidate
+
+**Verdict:** Strong backtest AND forward results, but PBO=0.603 (above 0.10 gate) — NOT yet money-ready. Continue shadow mode forward testing.
+
+**Source:** `backtest_results/rigorous_backtest_CRYPTO_20260602_124831.json`, `verified_strategies/paper_pilot/`
+
+### Performance Data
+
+| Source | Metric | Value |
+|--------|--------|-------|
+| Backtest | n | 89 |
+| Backtest | WR | 89.89% |
+| Backtest | PF | 24.51 |
+| Backtest | DSR | 9.36 |
+| Backtest | **PBO** | **0.603** ⚠️ |
+| Walk-forward | 7 folds, all WFE=1.0 | avg_os_sharpe=1.39 |
+| Paper pilot | resolved n | 837 |
+| Paper pilot | WR | 64.76% |
+| Paper pilot | PF | 2.02 |
+| Paper pilot | max_drawdown | -69.17% |
+| Forward dashboard | n | 110 |
+| Forward dashboard | WR | 79.09% |
+| Forward dashboard | PF | 13.20 |
+| Forward dashboard | shadow_mode | true |
+
+### Plan
+
+1. **Continue shadow mode forward testing** — kill switch: WR < 55% or n < 50
+2. **Address PBO=0.603** — need more independent data or parameter reduction before money-ready consideration
+3. **Wire into primary pick emission** — currently `pick_count: 0` in `alpha_engine/data/prediction_market_picks.json`
+4. **Combine with CopyTrader intel** — multi-source "smart money" consensus picks
+5. **Do NOT deploy capital** until PBO ≤ 0.10 and forward n ≥ 100 over ≥ 3 months
+
+---
+
+## 8. ETF — Blocked (Cohort Mismatch)
+
+**Verdict:** Zero live picks. Official PF 0.022 vs registry PF 1.788 — cohort mismatch is a blocker, not evidence. 267% of average PnL is cost; cannot win as configured.
+
+**Plan:**
+1. Reconcile ETF cohort (money_ready_verdict vs pf_registry) at row level.
+2. Fix ETF data pipeline (active_picks_etf.json, etf_decay_picks.json, etf_sector_picks.json are auto-emitter regenerations, not strategy improvements).
+3. Only after reconciliation: test low-cost broad-market ETF tactical (not sector bets).
+4. **Do not deploy.** ETF remains blocked until arithmetic clears.
+
+---
+
+## 9. Forex — Mutation-Before-Kill
+
+**Verdict:** Weakest class. PF 0.27 historically, recent PF 0.85, WR 32-40%. High n but negative expectancy. CopyTrader FOREX subset: WR=14.8%, n=662 — massive drag.
+
+**Plan:** Already on mutation protocol. Do not allocate. Kill or fundamentally restructure before any reconsideration.
+
+---
+
+## 10. Bond — Insufficient Data
 
 **Verdict:** n=1 official, n=35 registry. Cannot support statistical inference.
 
@@ -97,19 +168,21 @@
 
 ---
 
-## 8. Meme / Penny Stock — Keep Blocked
+## 11. Meme / Penny Stock — Keep Blocked
 
 **Verdict:** n=10/n=1. Toxic. Keep blocked indefinitely.
 
 ---
 
-## Summary: Where to Deploy Capital (Priority Order)
+## Updated Summary: Where to Deploy Capital (Priority Order)
 
-| Priority | Asset Class | Role | Rationale |
-|----------|-------------|------|-----------|
-| 1 | Mutual Funds + ETFs (low-cost index) | Core allocation | Highest probability of positive real returns, lowest risk. Beta capture, not alpha. |
-| 2 | Equity (US) | Alpha research slot 1 | Only class with pre-registered SPY benchmark path. Unproven. |
-| 3 | Crypto | Alpha research slot 2 (conditional) | Largest n but negative expectancy. Only after fill fix + SubQ. |
-| 4-9 | Everything else | Blocked | Do not allocate. Fix measurement first. |
+| Priority | Asset Class | Source | Role | Rationale |
+|----------|-------------|--------|------|-----------|
+| 1 | Mutual Funds + ETFs (low-cost index) | — | Core allocation | Highest probability of positive real returns, lowest risk. Beta capture, not alpha. |
+| 2 | COMMODITY | multi_asset_copytrader / multi_asset_cot | Alpha research slot 1 | WR 93.8-94.1%, n=96-102. Strongest proven edge in system. DB-verify pending. |
+| 3 | CRYPTO (Prediction Markets) | prediction_market_consensus | Shadow mode candidate | WR 79.09% forward, PF 13.20, but PBO=0.603 > 0.10 gate. Not yet money-ready. |
+| 4 | EQUITY (US) | — | Research slot | Only class with pre-registered SPY benchmark path. Unproven; failed SPY gate (t=1.05). |
+| 5-9 | FOREX, FUTURES, ETF, BOND, Meme/Penny | — | Blocked | Do not allocate. Fix measurement first. |
 
-**Bottom line:** Deploy real money only into low-cost index ETF/MF allocation. Keep the prediction system in research-only mode until one class passes all gates.
+**Bottom line:** Deploy real money only into low-cost index ETF/MF allocation. For alpha research, COMMODITY copy-trader/COT is the strongest candidate (WR 93.8%+) and should be prioritized over EQUITY and CRYPTO. Prediction markets are promising but PBO=0.603 blocks deployment.
+

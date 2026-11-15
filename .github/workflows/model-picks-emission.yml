@@ -1,0 +1,66 @@
+name: Model Picks Emission (finpredict-v4 tactical allocation)
+
+# Daily regeneration of the hypothesis-validated tactical allocation picks
+# (Faber 200d MA trend / dual momentum) and refresh of their live PnL.
+#
+# Emitter: 2026-11-15_AM_plan/finpredict-v4/05_simulation/emit_tactical_picks.py
+#          -> writes audit_dashboard/data/picks_now_model_finpredict_v4.json
+# Then the existing picks-now pipeline (save_picks_to_db + live_pnl_tracker)
+# makes them live in /audit/picks-now.html.
+#
+# Offset to avoid the :00/:30/48 mega-cluster; :22 is lightly used.
+
+on:
+  schedule:
+    - cron: "22 1 * * *"   # 01:22 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: model-picks-emission
+  cancel-in-progress: false
+
+jobs:
+  emit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip -q
+          python3 -m pip install yfinance pandas numpy pymysql requests -q
+
+      - name: Run tactical allocation emitter
+        run: python3 2026-11-15_AM_plan/finpredict-v4/05_simulation/emit_tactical_picks.py
+
+      - name: Save picks to DB (picks_now_tracker)
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
+        run: python3 tools/save_picks_to_db.py
+
+      - name: Refresh live PnL for dashboard
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
+        run: python3 tools/live_pnl_tracker.py --apply --summary
+
+      - name: Commit regenerated model-picks payload
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/picks_now_model_finpredict_v4.json audit_dashboard/data/picks_now.json audit_dashboard/data/picks_now_live_pnl.json
+          git commit -m "data(model-picks): refresh tactical allocation picks [skip ci]" || echo "no changes"
+          git push origin main

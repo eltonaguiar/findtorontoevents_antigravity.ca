@@ -10,7 +10,7 @@ with intraday TP/SL picking (daily NAV only).
 Hard gates (ALL must pass):
   - Expense ratio ≤ 0.09% (index) / ≤ 0.20% (active)
   - No load, no 12b-1
-  - Min initial investment ≤ $1,000
+  - Min initial investment ≤ $3,000 (Admiral shares are eligible)
   - AUM ≥ $1B
   - Turnover ≤ 20%
   - Tracking error ≤ 0.25% vs benchmark
@@ -33,7 +33,7 @@ HARD_GATES = {
     "expense_ratio_active": 0.0020,  # 0.20%
     "max_load": 0.0,
     "max_12b1": 0.0,
-    "max_min_initial": 1000.0,
+    "max_min_initial": 3000.0,  # Admiral share class, not a defect
     "min_aum": 1_000_000_000,        # $1B
     "max_turnover": 0.20,            # 20%
     "max_tracking_error": 0.0025,    # 0.25%
@@ -42,6 +42,18 @@ HARD_GATES = {
 }
 
 STARTER_UNIVERSE = ["VFIAX", "VTSAX", "FXAIX", "SWTSX", "VBTLX", "VWELX", "VGSLX", "VTIAX"]
+
+
+
+def _num_gate(actual, ok, threshold):
+    if actual is None or actual == "":
+        return {"pass": False, "status": "insufficient", "threshold": threshold, "actual": None}
+    try:
+        value = float(actual)
+    except (TypeError, ValueError):
+        return {"pass": False, "status": "insufficient", "threshold": threshold, "actual": actual}
+    passed = bool(ok(value))
+    return {"pass": passed, "status": "pass" if passed else "fail", "threshold": threshold, "actual": value}
 
 
 def screen_fund(fund):
@@ -65,16 +77,8 @@ def screen_fund(fund):
             "threshold": "None",
             "actual": fund.get("b_12b1"),
         },
-        "min_initial": {
-            "pass": fund.get("min_initial", 999999) <= HARD_GATES["max_min_initial"],
-            "threshold": f"≤ ${HARD_GATES['max_min_initial']:,.0f}",
-            "actual": fund.get("min_initial"),
-        },
-        "aum": {
-            "pass": fund.get("aum", 0) >= HARD_GATES["min_aum"],
-            "threshold": f"≥ ${HARD_GATES['min_aum']:,.0f}",
-            "actual": fund.get("aum"),
-        },
+        "min_initial": _num_gate(fund.get("min_initial"), lambda v: v <= HARD_GATES["max_min_initial"], f"≤ ${HARD_GATES['max_min_initial']:,.0f}"),
+        "aum": _num_gate(fund.get("aum"), lambda v: v >= HARD_GATES["min_aum"], f"≥ ${HARD_GATES['min_aum']:,.0f}"),
         "turnover": {
             "pass": fund.get("turnover", 999) <= HARD_GATES["max_turnover"],
             "threshold": f"≤ {HARD_GATES['max_turnover']:.0%}",
@@ -97,14 +101,16 @@ def screen_fund(fund):
         },
     }
 
-    failed = [k for k, v in gates.items() if not v["pass"]]
-    passed = len(failed) == 0
-
+    failed = [k for k, v in gates.items() if v.get("status") == "fail" or (v.get("status") is None and not v["pass"])]
+    insufficient = [k for k, v in gates.items() if v.get("status") == "insufficient"]
+    passed = not failed and not insufficient
     return {
         "symbol": fund.get("symbol"),
         "name": fund.get("name"),
         "passed": passed,
+        "status": "pass" if passed else ("insufficient" if insufficient and not failed else "fail"),
         "failed_gates": failed,
+        "insufficient_gates": insufficient,
         "gates": gates,
     }
 
@@ -151,7 +157,7 @@ th {{ background: #f4f4f4; }}
 <ul>
 <li>Expense ratio ≤ 0.09% (index) / 0.20% (active)</li>
 <li>No load, no 12b-1</li>
-<li>Min initial ≤ $1,000</li>
+<li>Min initial ≤ $3,000 (Admiral eligible; missing field = insufficient)</li>
 <li>AUM ≥ $1B</li>
 <li>Turnover ≤ 20%</li>
 <li>Tracking error ≤ 0.25%</li>

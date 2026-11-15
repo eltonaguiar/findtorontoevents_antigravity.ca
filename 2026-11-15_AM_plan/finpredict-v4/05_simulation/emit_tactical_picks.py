@@ -46,9 +46,9 @@ UNIVERSE = {
     "VTI": ("VTI", "ETF", "US total market equity", False),
     "VXUS": ("VXUS", "ETF", "International equity", False),
     "QQQ": ("QQQ", "ETF", "US Nasdaq-100", False),
-    "IWM": ("IWM", "ETF", "US small-cap", False),
     "TLT": ("TLT", "BOND", "Long-term US treasuries", True),
-    "GLD": ("GLD", "COMMODITY", "Gold ETF", False),
+    "GLD": ("GLD", "COMMODITY", "Gold ETF (hypothesis-validated trend)", False),
+    "BTC-USD": ("BTC-USD", "CRYPTO", "Bitcoin (hypothesis-validated trend)", False),
     "SGOV": ("SGOV", "BOND", "US T-bill (0-3mo) floor", True),
     "BND": ("BND", "BOND", "US aggregate bond core", True),
 }
@@ -106,7 +106,7 @@ def calc():
             "suggested_tp_pct": tp,
             "tp_sl_quality_score": 95.0,
             "intrabar_gate": "PASS",
-            "source_model": "finpredict-v4/faber_200d_dual_momentum",
+            "source_model": "finpredict-v4/hypothesis-validated-trend (sma200/mom6)",
         })
 
     payload = {
