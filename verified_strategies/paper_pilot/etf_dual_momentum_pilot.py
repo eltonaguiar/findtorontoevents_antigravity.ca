@@ -67,7 +67,12 @@ def _twelve_month_returns() -> dict[str, float]:
         if px is None or px.empty:
             continue
         col = "Close" if "Close" in px.columns else px.columns[0]
-        s = px[col].dropna()
+        s = px[col]
+        # yfinance >=1.8 can return a MultiIndex-column frame even for one
+        # ticker, so px["Close"] is a DataFrame; collapse to a Series.
+        if getattr(s, "ndim", 1) > 1:
+            s = s.iloc[:, 0]
+        s = s.dropna()
         if len(s) < LOOKBACK_DAYS:
             continue
         out[sym] = float(s.iloc[-1] / s.iloc[-LOOKBACK_DAYS] - 1.0)
