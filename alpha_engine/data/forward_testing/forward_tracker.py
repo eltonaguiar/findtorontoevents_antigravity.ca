@@ -235,7 +235,7 @@ def log_trade(strategy_id, asset_class, symbol, entry, exit_px, qty, fees, opene
 
     if row is None:
         # New strategy
-        trades_list = [{"pnl_pct": pnl_value}]
+        trades_list = [{"pnl_pct": pnl_pct}]
         stats = compute_stats(trades_list)
         start = opened.split("T")[0] if "T" in opened else opened
         new_row = {
@@ -324,7 +324,6 @@ def log_trade(strategy_id, asset_class, symbol, entry, exit_px, qty, fees, opene
         })
 
     # Check kill signals
-    stats = compute_stats([{"pnl_pct": float(row["net_pnl_pct"]) / 100}])  # rough
     kill, reason = check_kill_signals(
         {
             "total_trades": int(row["total_trades"]),
