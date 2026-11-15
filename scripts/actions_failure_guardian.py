@@ -54,6 +54,9 @@ def load_runs(repo: str, token: str, pages: int, per_page: int) -> List[Dict[str
             params={"per_page": per_page, "page": page},
         )
         if resp.status_code != 200:
+            if resp.status_code == 403 and "rate limit" in resp.text.lower():
+                print("::warning::guardian: GitHub REST rate limit hit — skipping this cycle")
+                return []
             raise RuntimeError(f"Failed to fetch runs page {page}: {resp.status_code} {resp.text[:300]}")
         payload = resp.json()
         chunk = payload.get("workflow_runs", [])
@@ -73,6 +76,9 @@ def load_workflows(repo: str, token: str, pages: int = 5, per_page: int = 100) -
             params={"per_page": per_page, "page": page},
         )
         if resp.status_code != 200:
+            if resp.status_code == 403 and "rate limit" in resp.text.lower():
+                print("::warning::guardian: GitHub REST rate limit hit (workflows) — skipping this cycle")
+                return []
             raise RuntimeError(f"Failed to fetch workflows page {page}: {resp.status_code} {resp.text[:300]}")
         payload = resp.json()
         chunk = payload.get("workflows", [])
