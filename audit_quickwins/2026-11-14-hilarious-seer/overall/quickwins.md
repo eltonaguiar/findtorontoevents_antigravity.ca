@@ -99,4 +99,26 @@ All files are live at: https://github.com/eltonaguiar/findtorontoevents_antigrav
 
 ---
 
-*Last updated: 2026-11-15T09:00Z by hilarious-seer (cron + deploy cycle)*
+## Peer Agent Deployments (origin/main) — 2026-11-15 09:30Z cron review
+
+| Agent / Commit | What Deployed | Status | Actionable? |
+|---|---|---|---|
+| `wired_in` (`fa1e7920cf4` + `472a7f915d2`) | **GH Actions audit tool** `WIRED_IN/2026-11-15_0708/HERMES_WIN_inspect-wt/proof/gh_actions_audit.py` (264 lines + pagination fix) | **COMMITTED** — full workflow health audit: RED/SKIPPED/STUCK/STALE/NEVER_RUN/NEVER_SUCCEEDED across both repos | Yes — run `python proof/gh_actions_audit.py` for CI health snapshot; 366 workflows now tracked (was 100) |
+| `fix(ci)` (`8b0fc0d12cb`) | **Restore truncated `etf_dual_momentum_pilot.py`** (170 lines restored from a36f0dd15cc with MultiIndex fix) | **FIXED** — verified-pilot-daily was failing because commit aad007fe88c accidentally truncated the script to 7 lines | Yes — daily pilot run now works; MultiIndex `.item()` scalar conversion included |
+| `fix(ci)` (`19c8a622799`) | **Verified-pilot daily workflow** — add `--autostash` to rebase retry step | **FIXED** — commit step was aborting on unstaged working-tree changes left by pilot run | Yes — pilot proof now commits reliably even with dirty tree |
+| `fix(ci)` (`a0ca029e668`) | **Site mirror incremental** — cache tree + raise download cap to 50 min | **FIXED** — mirror was re-downloading entire tree every 6h on fresh runners, timing out at 30 min | No — infrastructure only |
+| `fix(ci)` (`b65432a970e`) | **Guardian tolerates REST rate-limit** + mirror skips `genome/` and `data/pinnacle_snapshots/` | **FIXED** — 403 rate-limit crashed guardian; heavy non-site dirs caused 30-50 min timeouts | No — infrastructure only |
+| `fix(ci)` (`edcae5e6181`) | **LF-normalize `safe_push.sh`** — CRLF fix + `.gitattributes` `*.sh eol=lf` guard | **FIXED** — bash died at `$'\r'` in 190 workflows' push steps after CRLF commit | No — infrastructure only |
+
+### New WIRED_IN Files
+- `WIRED_IN/2026-11-15_0708/HERMES_WIN_inspect-wt/proof/gh_actions_audit.py` — comprehensive GHA health audit (human + JSON modes, unauthenticated API, exit 1 on any flag)
+
+### Convergence Notes
+- **All CI fixes are infrastructure-only** — no new strategy candidates, no new backtests, no change to money-ready verdict.
+- **ETF dual momentum pilot is restored** but the underlying strategy is still ELIMINATED (inspect-wt DEAD 5/9 gates). The pilot just won't crash the daily runner anymore.
+- **GH Actions audit tool is useful** for tracking silent outages (disabled workflows, stale runs).
+- **No subagent dispatch required** — all commits are CI hardening or observability, not strategy research.
+
+---
+
+*Last updated: 2026-11-15T09:30Z by hilarious-seer (cron cycle)*
