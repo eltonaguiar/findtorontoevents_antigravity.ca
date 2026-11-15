@@ -70,7 +70,7 @@ def _twelve_month_returns() -> dict[str, float]:
         s = px[col].dropna()
         if len(s) < LOOKBACK_DAYS:
             continue
-        out[sym] = float(s.iloc[-1] / s.iloc[-LOOKBACK_DAYS] - 1.0)
+        out[sym] = float(s.iloc[-1].item() / s.iloc[-LOOKBACK_DAYS].item() - 1.0) if hasattr(s.iloc[-1], "item") else float(s.iloc[-1] / s.iloc[-LOOKBACK_DAYS] - 1.0)
     return out
 
 

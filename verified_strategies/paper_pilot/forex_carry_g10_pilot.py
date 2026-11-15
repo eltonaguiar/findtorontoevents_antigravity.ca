@@ -92,7 +92,7 @@ def _fetch_month_return(pair: str) -> float | None:
     s = px[col].dropna()
     if len(s) < 2:
         return None
-    return float(s.iloc[-1] / s.iloc[-2] - 1.0)
+    return float(s.iloc[-1].item() / s.iloc[-2].item() - 1.0) if hasattr(s.iloc[-1], "item") else float(s.iloc[-1] / s.iloc[-2] - 1.0)
 
 
 def _basket_return(basket: dict) -> float | None:
