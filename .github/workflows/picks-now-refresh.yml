@@ -43,6 +43,12 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python3 tools/picks_now_professional.py
 
+      - name: Merge finpredict-v4 model picks
+        # Re-appends picks_now_model_finpredict_v4.json picks after the full
+        # regeneration above (which wipes them). Non-fatal if the model file is
+        # missing. Preserves generated_at so the freshness assert below still passes.
+        run: python3 tools/merge_model_picks.py
+
       - name: Freshness assert (fail-LOUD if picks_now.json was NOT regenerated)
         # The screener can exit 0 without writing a fresh JSON (data-fetch fallbacks), so the
         # Commit/FTP steps ship the STALE file and the live page silently freezes — observed
@@ -105,6 +111,7 @@ jobs:
         continue-on-error: true
         run: |
           pf=audit_dashboard/data/picks_now.json
+          mf=audit_dashboard/data/picks_now_model_finpredict_v4.json
           [ -f "$pf" ] || { echo "no picks_now.json to push"; exit 0; }
           pushed=0
           for i in 1 2 3 4 5; do
@@ -114,6 +121,10 @@ jobs:
             idx=$(mktemp)
             GIT_INDEX_FILE="$idx" git read-tree "$base"
             GIT_INDEX_FILE="$idx" git update-index --add --cacheinfo 100644,"$blob","$pf"
+            if [ -f "$mf" ]; then
+              mblob=$(git hash-object -w "$mf")
+              GIT_INDEX_FILE="$idx" git update-index --add --cacheinfo 100644,"$mblob","$mf"
+            fi
             tree=$(GIT_INDEX_FILE="$idx" git write-tree)
             rm -f "$idx"
             if [ "$tree" = "$(git rev-parse "$base^{tree}")" ]; then echo "picks_now.json unchanged vs origin/main"; pushed=1; break; fi

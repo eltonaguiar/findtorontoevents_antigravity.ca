@@ -85,18 +85,18 @@ A strategy/asset class is eliminated when it fails any of the following:
 
 ---
 
-### COMMODITY / FUTURES — RESEARCH SLOT 1 (COMMODITY copy-trader/COT is strongest edge)
+### COMMODITY / FUTURES — BLOCKED (Copy Trader Claims Debunked)
 
 | Strategy | Elimination Reason | Status |
 |----------|-------------------|--------|
-| multi_asset_copytrader COMMODITY | **NOT eliminated** — WR=93.8%, n=96, real edge | RESEARCH SLOT 1 |
-| multi_asset_cot COMMODITY | **NOT eliminated** — WR=94.1%, n=102, confirms copy-trader edge | RESEARCH SLOT 1 |
+| multi_asset_copytrader COMMODITY | **BLOCKED** — All 186 picks force-closed toxic (pnl=0), zero resolved trades. WR=93.8% claim debunked on 2026-05-16 as pre-dedup artifact | BLOCKED |
+| multi_asset_cot COMMODITY | **BLOCKED** — No resolved trades, same toxic force-close pattern | BLOCKED |
 | COT Contrarian (standalone) | Gate failed 4/4 (OOS n=30, PF 0.861, mean net -0.45%/trade) | ELIMINATED |
-| multi_asset_copytrader FOREX | WR=14.8%, n=662 — massive drag, mutate-before-kill | MUTATE-BEFORE-KILL |
-| multi_asset_copytrader FUTURES | WR=2.5%, n=157 — critical drain | SURGICAL BLOCK |
+| multi_asset_copytrader FOREX | WR=12.5% (win/total), n=160 — massive drag, mutate-before-kill | MUTATE-BEFORE-KILL |
+| multi_asset_copytrader FUTURES | WR=0% (unresolved), n=31 — all force-closed toxic | SURGICAL BLOCK |
 | CTA Trend | Low n, no contract identity pipeline | BLOCKED |
 
-**Asset class status:** COMMODITY copy-trader/COT is the strongest proven edge in the system (WR 93.8-94.1%). Not yet run through full 7-gate money-ready framework — DB-verify and gate evaluation pending. FOREX and FUTURES subsets are blocked.
+**Asset class status:** COMMODITY copy-trader/COT is BLOCKED — all picks force-closed toxic with zero resolved outcomes. FOREX and FUTURES subsets are blocked. No commodity copy-trader candidate is viable.
 
 ---
 
@@ -104,10 +104,10 @@ A strategy/asset class is eliminated when it fails any of the following:
 
 | Category | Count |
 |----------|-------|
-| Strategies backtested and eliminated | 5+ (RSI2 Equity, DualMA Equity, Bollinger Equity, EMA Trend Crypto, Donchian Crypto, COT Contrarian standalone) |
-| Asset classes blocked (subset-level) | FOREX copy-trader, FUTURES copy-trader, ETF (cohort mismatch), Bond (insufficient data), Meme/Penny Stock |
+| Strategies backtested and eliminated | 6+ (RSI2 Equity, DualMA Equity, Bollinger Equity, EMA Trend Crypto, Donchian Crypto, COT Contrarian standalone) |
+| Asset classes blocked (subset-level) | COMMODITY copy-trader (all force-closed toxic), FOREX copy-trader, FUTURES copy-trader, ETF (cohort mismatch), Bond (insufficient data), Meme/Penny Stock |
 | Asset classes not built | Mutual Funds as active picks |
-| Asset classes as research slots | EQUITY, CRYPTO (prediction markets shadow), COMMODITY (copy-trader/COT — TOP CANDIDATE) |
+| Asset classes as research slots | EQUITY, CRYPTO (prediction markets shadow) |
 | Strategies passing all money-ready gates | 0 |
 | Asset classes money-ready | 0 |
 

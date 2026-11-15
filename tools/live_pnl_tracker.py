@@ -146,6 +146,25 @@ def compute_pnl(entry: float, current: float, direction: str) -> float:
     return raw
 
 
+def dedupe_open_rows(rows) -> list:
+    """Keep ONE row per (symbol, direction) — the first occurrence.
+
+    Rows arrive ordered generated_at DESC (newest first), so the first
+    occurrence of each key is the newest open entry for that
+    (symbol, direction). Direction values are compared exactly as stored
+    (LONG/SHORT/STRONG_BUY/STRONG_SELL/BUY/SELL) — no normalization.
+    """
+    seen = set()
+    out = []
+    for r in rows:
+        key = (r.get("symbol"), r.get("direction"))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(r)
+    return out
+
+
 def build(apply_db: bool = False) -> dict:
     conn = _connect()
     cur = conn.cursor()
@@ -161,11 +180,15 @@ def build(apply_db: bool = False) -> dict:
         "WHERE exit_pnl_pct IS NULL AND entry_price > 0 "
         "ORDER BY generated_at DESC")
     picks = cur.fetchall()
+    n_rows_raw = len(picks)
+    picks = dedupe_open_rows(picks)  # one row per (symbol, direction), newest kept
 
-    print(f"[live_pnl] {len(picks)} unresolved picks to mark")
+    print(f"[live_pnl] {len(picks)} unresolved picks to mark "
+          f"({n_rows_raw} raw rows, deduped by symbol+direction)")
     if not picks:
         conn.close()
         return {"generated_at": datetime.now(timezone.utc).isoformat(),
+                "n_rows_raw": n_rows_raw,
                 "n_open": 0, "n_priced": 0, "picks": [],
                 "by_class": [], "summary": {"avg_pnl_pct": None, "n_positive": 0, "n_negative": 0}}
 
@@ -254,6 +277,7 @@ def build(apply_db: bool = False) -> dict:
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source": "picks_now_tracker (ejaguiar1_stocks), prices via yfinance/Binance",
+        "n_rows_raw": n_rows_raw,
         "n_open": len(picks),
         "n_priced": priced,
         "summary": {

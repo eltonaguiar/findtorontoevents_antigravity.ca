@@ -338,13 +338,17 @@ def _normalize_market(market: dict[str, Any]) -> dict[str, Any] | None:
 
     question = str(market.get("question") or market.get("title") or "").strip()
 
-    # Require a specific price target or percentage to qualify as a crypto-price signal
-    if not PRICE_TARGET_RE.search(question) and not PRICE_TARGET_RE.search(text_lower):
-        return None
-
     market_type = _classify_market(question)
     if not market_type:
         return None
+
+    # Require a specific $ price target for absolute-price types. `updown`
+    # direction markets ("Bitcoin Up or Down ...") have no dollar target by
+    # design — the UPDOWN_RE classification is their qualifying signal, so
+    # the price-target gate must not kill them.
+    if market_type != "updown":
+        if not PRICE_TARGET_RE.search(question) and not PRICE_TARGET_RE.search(text_lower):
+            return None
 
     probability = _extract_probability(market, market_type)
     if probability is None or probability < 0 or probability > 1:
@@ -374,25 +378,36 @@ def fetch_crypto_markets(limit: int = ACTIVE_MARKET_LIMIT) -> list[dict[str, Any
     """
     Fetch active Polymarket markets, then locally filter to strict crypto-only
     directional contracts.
+
+    Gamma caps `limit` at 100 per request (passing 500 returns 100 items), so
+    paginate with `offset` until `limit` raw markets are collected or a page
+    comes back short/empty.
     """
-    result = _fetch_json(
-        f"{GAMMA_API_BASE}/markets",
-        {
-            "active": "true",
-            "closed": "false",
-            "order": "volume",
-            "ascending": "false",
-            "limit": str(limit),
-        },
-    )
-    if not isinstance(result, list):
-        return []
+    raw: list[dict[str, Any]] = []
+    offset = 0
+    while len(raw) < limit:
+        page_limit = min(100, limit - len(raw))
+        result = _fetch_json(
+            f"{GAMMA_API_BASE}/markets",
+            {
+                "active": "true",
+                "closed": "false",
+                "order": "volume",
+                "ascending": "false",
+                "limit": str(page_limit),
+                "offset": str(offset),
+            },
+        )
+        if not isinstance(result, list) or not result:
+            break
+        raw.extend(market for market in result if isinstance(market, dict))
+        if len(result) < page_limit:
+            break
+        offset += len(result)
 
     normalized: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for market in result:
-        if not isinstance(market, dict):
-            continue
+    for market in raw:
         normalized_market = _normalize_market(market)
         if not normalized_market:
             continue
@@ -403,7 +418,7 @@ def fetch_crypto_markets(limit: int = ACTIVE_MARKET_LIMIT) -> list[dict[str, Any
         normalized.append(normalized_market)
 
     normalized.sort(key=lambda item: item["volume"], reverse=True)
-    logger.info("Polymarket strict filter kept %d/%d markets", len(normalized), len(result))
+    logger.info("Polymarket strict filter kept %d/%d markets", len(normalized), len(raw))
     return normalized
 
 
