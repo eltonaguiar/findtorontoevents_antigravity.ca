@@ -182,4 +182,18 @@ All 7 remaining open issues plus the 40+ `backup-verify` issues closed today wer
 
 New fixes: **FIX-007** (backup-verify false failure), **FIX-008** (secret-reminder auto-close).
 
+## 11. Stale-Failure Sweep — failures with no subsequent success (past 3 days)
+
+Enumerated all **367** workflows; for each, fetched its latest completed run since 2026-11-12. **10 workflows' latest run was `failure`** (no later success). Five fixed on `main`:
+
+| Workflow | Root cause | Fix |
+|---|---|---|
+| daily-prices-yf-refresh | hardcoded local `sys.path` → `No module named 'tools'` | portable repo-root insert (FIX-009) |
+| edge-stability-daily | raw `git push` rejected (fetch first) | `safe_push.sh` (FIX-010) |
+| pead-shadow-collector | hand-rolled push loop exhausted | `safe_push.sh` (FIX-011) |
+| daily-price-refresh | dead `fetch_prices.php` 404 | retired to `.disabled` (FIX-012) |
+| robust-edge-miner | `exit 1` on every NEW candidate ("good news") | warning + summary + exit 0 (FIX-013) |
+
+Remaining 5: `mirror-site` (FTP/infra), `qa-market-validation` (correctly red), `verified-pilot-daily` (real pilot failure, now diagnosable), `hc-parity` & `mermaid-test-deploy` (branch-only, not main).
+
 *End of report.*

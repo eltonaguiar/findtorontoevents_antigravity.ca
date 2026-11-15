@@ -42,9 +42,18 @@ jobs:
           AUDIT_DB_NAME: ejaguiar1_stocks
         run: python -m tools.edge.edge_stability --all --mysql
       - name: Commit refreshed JSONs
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add audit_dashboard/data/edge_stability/*.json
-          git diff --cached --quiet || git commit -m "chore(edge-stability): daily refresh [skip ci]"
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(edge-stability): daily refresh [skip ci]"
+          # safe_push.sh: pull --rebase + merge fallback + ref-lock retries.
+          # Raw `git push` here raced other workflows on main and failed with
+          # "! [rejected] main -> main (fetch first)" (run 43664077669).
+          bash .github/scripts/safe_push.sh

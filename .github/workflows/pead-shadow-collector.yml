@@ -77,31 +77,10 @@ jobs:
             exit 0
           fi
           git commit -m "chore(pead-shadow): collect H-002 shadow picks + earnings cache $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
-          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${{ github.repository }}.git"
-          push_ok=false
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            delay=$((i * i * 5 + RANDOM % 30))
-            [ $delay -gt 120 ] && delay=$((120 + RANDOM % 30))
-            git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
-              echo "Rebase failed on attempt $i (next delay ${delay}s)"
-              git rebase --abort 2>/dev/null || true
-              sleep "$delay"
-              continue
-            }
-            push_rc=0
-            push_output=$(git push origin main 2>&1) || push_rc=$?
-            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
-            if [ $push_rc -eq 0 ]; then
-              echo "Pushed on attempt $i"
-              push_ok=true
-              break
-            fi
-            echo "Push attempt $i failed, retrying in ${delay}s..."
-            sleep "$delay"
-          done
-          if [ "$push_ok" = false ]; then
-            echo "ERROR: All 10 push attempts failed — next cycle will self-heal."
-            exit 1
-          fi
+          # Delegate to the shared hardened push helper (token injection,
+          # auth validation, pull --rebase + merge fallback, ref-lock retries).
+          # The previous hand-rolled 10-attempt loop still exhausted and failed
+          # (run 43520036730) under concurrent main pushes.
+          bash .github/scripts/safe_push.sh
 
 # re-registered 2026-05-23 after stripped-history reset (4aaa6ff848f)

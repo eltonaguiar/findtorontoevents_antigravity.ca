@@ -16,8 +16,17 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
-sys.path.insert(0, "/home/eaguiar2015/findtorontoevents_antigravity.ca")
+# Portable repo-root insert — the previous hardcoded
+# "/home/eaguiar2015/findtorontoevents_antigravity.ca" only worked on the
+# operator's local box; on GitHub Actions the repo lives under
+# /home/runner/work/<repo>/<repo>, so `import tools` raised
+# ModuleNotFoundError and daily-prices-yf-refresh failed (run 43521235051).
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from tools.db_env import get_stocks_creds  # noqa: E402
 import pymysql  # noqa: E402
 

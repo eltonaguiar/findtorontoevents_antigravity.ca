@@ -57,7 +57,7 @@ jobs:
       - name: Alert if a ROBUST candidate appeared (fail-LOUD = good news, review now)
         run: |
           python3 -c "
-          import json, sys
+          import json, sys, os
           try:
               d = json.load(open('reports/entry_cell_scan_robust_latest.json'))
           except Exception as e:
@@ -71,7 +71,15 @@ jobs:
           print(f'cells_tested={d.get(\"cells_tested\")} cohort_n={d.get(\"cohort_n\")} robust={len(robust)} known={known_hit} new={len(new)}')
           if new:
               cells = ', '.join(r.get('cell','?') for r in new)
-              print(f'::error title=NEW_ROBUST_EDGE::{len(new)} NEW cell(s) passed the full gate (netPF>=1.2, bootCILB>=1.0, n>=40, both regimes): {cells}. GOOD NEWS — falsify (crash-catch/per-symbol/time-split) + forward-register + swarm-verify before any sizing.')
-              sys.exit(1)
+              msg = f'{len(new)} NEW cell(s) passed the full gate (netPF>=1.2, bootCILB>=1.0, n>=40, both regimes): {cells}. GOOD NEWS — falsify (crash-catch/per-symbol/time-split) + forward-register + swarm-verify before any sizing.'
+              print(f'::warning title=NEW_ROBUST_EDGE::{msg}')
+              sm = os.environ.get('GITHUB_STEP_SUMMARY')
+              if sm:
+                  with open(sm, 'a') as fh:
+                      fh.write(f'\n### NEW ROBUST EDGE(S) DETECTED — review before sizing\n\n{msg}\n')
+              # A new robust candidate is GOOD NEWS, not a CI error. Do not fail the
+              # run (previously sys.exit(1) left this cron permanently red whenever a
+              # candidate existed). Signal stays loud via the warning annotation,
+              # step summary, and the uploaded entry-cell-scan-robust artifact.
           print(f'No NEW robust candidates (known still robust: {known_hit or \"none\"}). Expected until forward-n surfaces a new edge.')
           "
