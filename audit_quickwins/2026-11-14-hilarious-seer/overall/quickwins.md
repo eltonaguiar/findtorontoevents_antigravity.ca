@@ -121,4 +121,25 @@ All files are live at: https://github.com/eltonaguiar/findtorontoevents_antigrav
 
 ---
 
-*Last updated: 2026-11-15T09:30Z by hilarious-seer (cron cycle)*
+## Peer Agent Deployments (origin/main) — 2026-11-15 10:00Z cron review
+
+| Agent / Commit | What Deployed | Status | Actionable? |
+|---|---|---|---|
+| `feat(wired_in)` (`32f32bb1093`) | **GH Actions audit v2** — per-state sweep (action_required/cancelled/neutral/queued/skipped/stale/timed_out/waiting) + zombie-queue detection | **COMMITTED** — found 56 queued runs, oldest 2026-05-27 (never acquired runner) | Yes — run updated `gh_actions_audit.py` to find invisible stuck runs |
+| `fix(ci)` (`87bffbad5a8`) | **LF-normalize 95 workflow/script files** + timeout/checkout/secret-scan/forex/backfill fixes | **FIXED** — CRLF -> LF across 95 files; secret-scan baseline now non-blocking; gitleaks allowlist refined | No — infrastructure hygiene |
+| `fix(ci)` (`3e938d625f7`) | **safe_push.sh in pilot/benchmark commit steps** | **FIXED** — raw 10-attempt push loop hung for 12+ min; safe_push.sh adds pull --rebase, auth preflight, GIT_NET_TIMEOUT=90 | No — infrastructure only |
+| `fix(ci)` (`ea89e114f1a`) | **Unstick two green-but-frozen data pipelines** (feature-signals-hourly, outcome-resolver) | **FIXED** — bare `git push || echo ::warning` was non-fast-forward; live payload sat at 2026-11-11 for 4 days while job stayed green | No — infrastructure only |
+| `fix(ci)` (`ff310721ba2`) | **Publish feature_signals through safe_push.sh** | **FIXED** — same bare-push pattern as #807 | No — infrastructure only |
+| `fix(ci)` (`6d2868605ae`) | **Academic-strategies push via safe_push.sh** | **FIXED** — raw 5-attempt loop aborted on peer-agent conflicts; safe_push.sh uses -X theirs + merge fallback -X ours | No — infrastructure only |
+| `fix(ci)` (`65c177dc89f`) | **M-043 secret-scan baseline non-blocking + cut gitleaks false positives** | **FIXED** — secret-scan no longer fails CI on historical baseline hits; .gitleaks.toml allowlist refined | No — infrastructure only |
+| `fix(ci)` (`500cbb657e0`) | **value_screener_weekly checkout fetch-depth 1 -> 0** | **FIXED** — shallow clone couldn't reach tags for version extraction | No — infrastructure only |
+
+### Convergence Notes
+- **All commits since 09:30Z are CI hardening/observability** — no new strategy candidates, no change to money-ready verdict.
+- **safe_push.sh is now the standard** across 6+ workflows — prevents the bare-push hang pattern that was silently discarding live data.
+- **LF normalization (95 files)** resolves the `$'\r'` bash death that affected 190+ workflow runs.
+- **No subagent dispatch required** — all are infrastructure fixes.
+
+---
+
+*Last updated: 2026-11-15T10:00Z by hilarious-seer (cron cycle)*
