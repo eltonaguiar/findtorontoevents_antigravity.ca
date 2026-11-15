@@ -1,0 +1,14 @@
+# Pre-Registered Experiment Plan — Forex (`FX1_Forex_Spread_Adjusted`)
+
+- **Trial ID:** `FX1` (`Plan/forex/PLAN.md`)
+- **Gap Filled (citing `00_inventory.csv` / `harvested_ideas/forex.md`):** Prior Forex audits revealed acute structural failure: `FOREX n=29 WR=27.6% PF=0.035` in `TESTING_PROTOCOL.MD`; `FOREX_HARD_DISABLE=0` left retail FX active in `live_dashboard_payload.json` (`n=187` closed picks with synthetic crypto contamination `'EURUSDT': 19`, `10` `pnl==0` rows, `SL_HIT=104` vs `TP_HIT=63`, gross mean `-0.155%`); `forex_futures_picks.json` exhibited corrupt Yahoo price scaling (`EURGBP=X` 688.17 vs 0.835); and legacy backtests failed to price realistic retail spread (`1.5–3.0 pips` round-trip ≈ `2–8 bps`), overnight triple-Wednesday swap/rollover drag, and Canadian speculative FX business/capital-gains tax.
+- **Hypothesis:** Applying realistic retail FX friction (`8 bps` round-trip spread+slippage+swap; `2 -> 15 bps` stress sweep) and excluding corrupted/synthetic rows (`EURUSDT`, `pnl==0`) confirms negative post-cost expectancy across both the live `/audit` FOREX cohort (`n=187`) and historical `audit/data/dashboard_data.json` FOREX cohort (`n=546`), justifying a hard disable (`FOREX_HARD_DISABLE=1`) rather than optimization.
+- **Data Sources:**
+  - Primary live cohort: `live_dashboard_payload.json` / portable `experiments/live_picks_snapshot.json` (`FOREX` closed picks, `n=187` raw; `n=158` after removing `pnl==0` and non-FX `EURUSDT`).
+  - Historical / pre-filter cohort benchmark: `audit/data/dashboard_data.json` (`FOREX` closed picks, `n=546`, dominated by `forex_rsi2_mean_reversion`, `n=326`).
+- **Universe & Timeframe:** Major/cross G10 FX (`AUDUSD=X`, `USDJPY=X`, `USDCHF=X`, `GBPUSD=X`, `EURJPY=X`, `NZDUSD=X`, `EURUSD=X`, `CADJPY=X`, `AUDJPY=X`, `GBPJPY=X`, `USDCAD=X`); `INTRADAY` & `SWING` (`london-breakout-scout`, `forex_rsi2_mean_reversion`, `forex-rsi-ema-scout`, `macd_rsi_confluence`).
+- **Cost & Canadian Tax Model:** Baseline `8 bps` round-trip spread + slippage + swap carry (`2 bps` to `15 bps` breakeven sweep); Canadian CRA FX taxation (spot FX gains/losses > CAD $200 subject to `26.76%` cap gains or `53.53%` ordinary income for frequent trading; zero TFSA eligibility for spot FX margin accounts — TFSA strictly prohibited from margin/CFD FX under ITA s.146.2).
+- **Benchmark:** `0%` zero-alpha cash/rf null (and `rf = 2.5%/yr` T-bill alternative).
+- **Pre-Registered Parameter Sweep (Sub-cohort Isolation Test):** Compare `All Clean FOREX` vs. `london-breakout-scout` vs. `forex_rsi2_mean_reversion` across WFO chronological splits to confirm no hidden regime or strategy slice passes DSR / MC / shuffle control.
+- **Proof Standard Tests Targeted (§6):** All 10 steps (`Temporal`, `WFO`, `DSR N=9 & N=646`, `Plain + Block MC`, `Friction + Breakeven`, `Bootstrap CI & t-stat`, `Regime Split`, `200-run Shuffle Control`, `Tracker Registration`, `Seed=42 Reproducibility`).
+

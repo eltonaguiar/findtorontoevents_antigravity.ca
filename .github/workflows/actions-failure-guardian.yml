@@ -41,6 +41,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT || github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          # Cap re-runs per run and never auto-retry known verification jobs.
+          FAILURE_GUARD_MAX_ATTEMPT: "3"
+          FAILURE_GUARD_EXCLUDE: "Backup Restore Verification"
         run: |
           python scripts/actions_failure_guardian.py
 

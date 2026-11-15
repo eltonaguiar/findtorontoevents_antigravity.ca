@@ -1,0 +1,154 @@
+{
+  "run_id": "2026-11-15_0725_inspect-wt",
+  "seed": 42,
+  "proof_standard": {
+    "n_new_trials": 9,
+    "n_repo_historical_trials": 646,
+    "mc_paths": 2000,
+    "block_bootstrap_len_monthly": 6,
+    "block_bootstrap_len_trades": 5,
+    "shuffle_runs": 200,
+    "alpha": 0.05,
+    "rf_annual": 0.025,
+    "dsr_pass_threshold": 0.95,
+    "dsr_promising_threshold": 0.80,
+    "wfe_pass_threshold": 0.50
+  },
+  "canadian_tax_model": {
+    "province_benchmark": "Ontario_top_marginal_2026",
+    "tfsa_rrsp_tax_rate": 0.0,
+    "cap_gains_effective_rate": 0.2676,
+    "ordinary_interest_or_business_rate": 0.5353,
+    "cap_gains_inclusion": 0.50
+  },
+  "datasets": {
+    "yahoo_monthly": "final_v4/inspect-wt/03_risk_management/yahoo_monthly.json",
+    "btc_1h_3mo": "data/cache/BTCUSDT_3mo_1h.csv",
+    "funding_dir": "data/funding_rate_archive",
+    "live_picks_snapshot": "WIRED_IN/2026-11-15_0725_inspect-wt/experiments/live_picks_snapshot.json.gz",
+    "live_picks_fallback_raw": ".inspect-wt/_audit_tmp/live_dashboard_payload.json"
+  },
+  "trials": [
+    {
+      "id": "E1",
+      "name": "E1_ETF_DualMom_VolTarget",
+      "asset_class": "ETFs",
+      "plan_path": "Plan/etfs/PLAN.md",
+      "timeframe": "Monthly (21d rebalance)",
+      "dataset": "yahoo_monthly",
+      "universe": ["SPY", "EFA", "EEM", "TLT", "IEF", "GLD", "VNQ", "DBC", "QQQ", "IWM"],
+      "benchmark": "60_40_SPY_AGG",
+      "round_trip_cost_bps": 10.0,
+      "tax_mode": "cap_gains",
+      "params": {"lookback": 12, "top_k": 2, "vol_target": 0.12, "max_weight": 0.50},
+      "sweep_grid": {"lookback": [9, 12, 15], "top_k": [2, 3, 4]}
+    },
+    {
+      "id": "M1",
+      "name": "M1_MutualFund_Sleeve_CAD_Tax",
+      "asset_class": "Mutual Funds",
+      "plan_path": "Plan/mutual_funds/PLAN.md",
+      "timeframe": "Monthly NAV (>=30d hold)",
+      "dataset": "yahoo_monthly",
+      "universe": ["SPY", "EFA", "EEM", "TLT", "IEF", "GLD", "VNQ", "DBC", "QQQ", "IWM"],
+      "benchmark": "60_40_SPY_AGG",
+      "round_trip_cost_bps": 0.0,
+      "annual_mer": 0.0015,
+      "mer_sweep": [0.0015, 0.0050, 0.0180],
+      "tax_mode": "cap_gains",
+      "params": {"lookback": 12, "top_k": 2, "vol_target": 0.12, "max_weight": 0.50}
+    },
+    {
+      "id": "MA1",
+      "name": "MA1_VariantC_MetaSelector",
+      "asset_class": "Multi-Asset (/audit Cohort)",
+      "plan_path": "Plan/multi_asset/PLAN.md",
+      "timeframe": "Mixed Live Picks (Monthly Re-rank)",
+      "dataset": "live_picks_snapshot",
+      "benchmark": "Zero_Alpha_Null",
+      "round_trip_cost_bps": 10.0,
+      "tax_mode": "ordinary",
+      "params": {"min_train_trades": 20, "min_train_pf": 1.3, "top_n_strategies": 6}
+    },
+    {
+      "id": "MA2",
+      "name": "MA2_MultiAsset_RiskParity_Combo",
+      "asset_class": "Multi-Asset (Sleeves)",
+      "plan_path": "Plan/multi_asset/PLAN.md",
+      "timeframe": "Monthly Risk-Parity Combo",
+      "dataset": "yahoo_monthly",
+      "sleeves": ["E1", "B1", "CM1", "TLT_IEF_Defensive"],
+      "benchmark": "60_40_SPY_AGG",
+      "round_trip_cost_bps": 10.0,
+      "tax_mode": "cap_gains",
+      "params": {"vol_lookback": 12, "sleeve_weights_cap": 0.50}
+    },
+    {
+      "id": "S1",
+      "name": "S1_Equity_Active_Picks_Cohort",
+      "asset_class": "Stocks / Equities",
+      "plan_path": "Plan/stocks/PLAN.md",
+      "timeframe": "Swing (1-14d)",
+      "dataset": "live_picks_snapshot",
+      "benchmark": "Zero_Alpha_Null",
+      "round_trip_cost_bps": 10.0,
+      "tax_mode": "cap_gains",
+      "params": {"asset_class_filter": "EQUITY", "exclude_zero_backfill": true}
+    },
+    {
+      "id": "C1",
+      "name": "C1_Crypto_Funding_And_Trend",
+      "asset_class": "Crypto",
+      "plan_path": "Plan/crypto/PLAN.md",
+      "timeframe": "1h Trend (ATR TP/SL + 72h MaxHold)",
+      "dataset": "btc_1h_3mo",
+      "benchmark": "BTCUSDT_BH",
+      "round_trip_cost_bps": 20.0,
+      "funding_8h_bps": 0.158,
+      "tax_mode": "ordinary",
+      "params": {"donchian_len": 48, "ema_fast": 24, "ema_slow": 168, "sl_atr": 2.0, "tp_atr": 4.0, "max_hold_bars": 72},
+      "sweep_grid": {"donchian_len": [24, 48, 72], "sl_atr": [1.5, 2.0, 2.5]}
+    },
+    {
+      "id": "B1",
+      "name": "B1_Bond_Duration_Rotation",
+      "asset_class": "Bonds",
+      "plan_path": "Plan/bonds/PLAN.md",
+      "timeframe": "Monthly (21d rebalance)",
+      "dataset": "yahoo_monthly",
+      "universe": ["TLT", "IEF", "AGG"],
+      "benchmark": "AGG_BH",
+      "round_trip_cost_bps": 10.0,
+      "tax_mode": "ordinary",
+      "params": {"lookback": 12, "top_k": 1, "vol_target": 0.10, "max_weight": 1.0},
+      "sweep_grid": {"lookback": [6, 9, 12], "top_k": [1, 2]}
+    },
+    {
+      "id": "CM1",
+      "name": "CM1_Commodity_Gold_Trend",
+      "asset_class": "Commodities",
+      "plan_path": "Plan/commodities/PLAN.md",
+      "timeframe": "Monthly (21d rebalance)",
+      "dataset": "yahoo_monthly",
+      "universe": ["GLD", "DBC"],
+      "benchmark": "GLD_BH",
+      "round_trip_cost_bps": 20.0,
+      "tax_mode": "cap_gains",
+      "params": {"lookback": 12, "top_k": 1, "vol_target": 0.12, "max_weight": 1.0},
+      "sweep_grid": {"lookback": [9, 12, 15], "vol_target": [0.10, 0.12, 0.15]}
+    },
+    {
+      "id": "FX1",
+      "name": "FX1_Forex_Spread_Adjusted",
+      "asset_class": "Forex",
+      "plan_path": "Plan/forex/PLAN.md",
+      "timeframe": "Intraday / Swing",
+      "dataset": "live_picks_snapshot",
+      "benchmark": "Zero_Alpha_Null",
+      "round_trip_cost_bps": 8.0,
+      "tax_mode": "ordinary",
+      "params": {"asset_class_filter": "FOREX", "exclude_non_fx_crypto": true}
+    }
+  ]
+}
+
