@@ -24,7 +24,10 @@ JS_CLI = REPO / "tools" / "hc_parity_test.js"
 OUT = REPO / "tools" / "data" / "hc_parity_baseline.json"
 
 sys.path.insert(0, str(REPO))
-from tools.hc_gates_python import passes_high_conviction_pick  # noqa: E402
+from tools.hc_gates_python import (  # noqa: E402
+    evaluate_hc_gates_1to9,
+    passes_stamped_tier_supplemental_path,
+)
 
 
 def _pick_id(pick: Dict[str, Any], idx: int) -> str:
@@ -58,7 +61,14 @@ def run_py(picks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
     for idx, pick in enumerate(picks):
         pid = _pick_id(pick, idx)
-        pass_ = passes_high_conviction_pick(pick, corr_registry=registry)
+        # Compare the JS-ported gate stack only. passes_high_conviction_pick()
+        # additionally applies a Python-only per-class cost gate (2026-11-14)
+        # that hc_filter.js does not implement; including it here reported a
+        # false "divergence" for every pick that gate blocks (60/3500 in CI).
+        pass_ = (
+            evaluate_hc_gates_1to9(pick, corr_registry=registry)
+            or passes_stamped_tier_supplemental_path(pick, corr_registry=registry)
+        )
         hc_tier = None
         if pass_:
             t = str(pick.get("hf_conviction_tier") or "").upper()
