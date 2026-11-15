@@ -95,3 +95,60 @@ onto a moved `main` cannot conflict by construction.
   likely dispatch-only or on another branch. Not diagnosed here.
 - `Feed Health Check` was queried but has no failed step output; it is not in the
   latest-run failure set.
+
+## Post-fix dispatch result (proof the QA fix works)
+
+Dispatched `QA Market Validation` on the fix branch, run **43690513115**:
+
+- The step log confirms the keys reached the process — `ALPHA_VANTAGE_API_KEY: ***`,
+  `FMP_API_KEY: ***`, while `TIINGO_API_KEY:` and `TWELVE_DATA_API_KEY:` were empty,
+  matching the secret audit above.
+- Result changed from *infrastructure failure* to *real validation*: **185 picks,
+  `unpriced=0` in all six classes** (BOND 54, COMMODITY 3, EQUITY 31, ETF 74,
+  FOREX 23, plus crypto). Before the fix every equity ticker logged
+  `ALL 7 sources failed`.
+- It still exits 1 — correctly — on 5 flags / **4 critical**:
+  `FOREX mismatch=3`, `COMMODITY mismatch=1`, `EQUITY blank_tp/sl=1`.
+
+That is the gate working as designed; it does **not** mean the CI fix failed.
+
+### Honest note on naming those picks
+
+An offline replay (`python3 tools/qa_ledger.py`) **cannot complete locally**: it
+performs up to `_MAX_EXT_CHECKS=250` live cross-checks, each with a 5s-per-adapter
+chain, and `timeout 180` killed it (`exit 124`, zero output).
+
+An earlier attempt appeared to name symbols (`AUDJPY=X` repeated with a constant
+0.63pp diff; `BLANK_TP_SL` on GOOGL/TTWO/PLTR/MU/NFLX). Those came from the
+**pre-existing** `audit_dashboard/data/qa_market_validation.json` (generated
+02:03:59, **4390** picks, 500 flags) — a different generation than the CI run's
+185 picks — because the replay wrote nothing and the stale file was parsed. They
+must not be attributed to run 43690513115, and that payload is not the current one.
+
+If that older report is representative, the FOREX pattern matters: an identical
+0.63pp gap on every AUDJPY=X row, despite different published values, is the
+signature of a **time lag** between the published PnL snapshot and the live
+external quote — not corrupt PnL. With `TOL_PP["FOREX"]=0.5`, a 0.63pp intraday
+move trips the gate by itself. That is a gate-calibration question (tolerance vs.
+payload refresh cadence), **NOT MEASURED** on the current payload.
+
+## Unrelated blocker found while triaging
+
+`branch-large-file-dup-guard` (`.github/workflows/branch-large-file-dup-guard.yml`)
+runs on every non-main branch push with
+`concurrency: group: branch-large-file-dup-guard, cancel-in-progress: true`.
+Concurrent branches therefore cancel each other: on the #785 run the *Checkout*
+step itself was `cancelled`, so steps 3–5 (fetch, scan, alert) were `skipped`
+while step 6 "Enforce fail-on-findings policy" still returned `success`. A
+cancelled guard is not a valid signal on either PR. Not fixed here — it is a
+repo-bloat guard, not a data-pipeline job.
+
+## Branch-rewrite note
+
+While this work was in progress another process merged `main` into the fix branch
+and rewrote it ("resolve merge conflicts in workflows for PR 786"). Verified after
+the rewrite that all four fixes are still present in the remote tree
+(`FINNHUB_API_KEY` x2, `TIINGO_API_KEY`, both rebase blocks, `ubuntu-24.04`), but
+this documentation was reverted to its pre-appendix state. This appendix was
+re-applied on top of the current remote head, without touching the working tree,
+because other agents were editing files concurrently.
