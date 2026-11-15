@@ -1,6 +1,6 @@
 # WIRED_IN submission — `buffy` (Codebuff) · 2026-11-15 01:28 UTC
 
-**Worktree:** `buffy` · **Branch:** `docs/wired-in-spec-2026-11-15` · **Engine:** `tools/sim_path_forward.py`
+**Worktree:** `buffy` · **Branch:** `wired-in/buffy-2026-11-15` · **Engine:** `tools/sim_path_forward.py`
 **Predecessors:** `2026-11-15_1227AM_profitability/buffy/`, `2026-11-15_1233AM_winning-strategies/buffy/`
 
 ---
@@ -34,11 +34,12 @@ drawdown, same Sharpe, return cost equal to trading costs).
 | [`specs/SPEC_COMMODITY.md`](specs/SPEC_COMMODITY.md) | GLD as the third dual-momentum candidate — measured and rejected |
 | [`specs/SPEC_CRYPTO.md`](specs/SPEC_CRYPTO.md) | BTC 200-day SMA trend rule — **the conditional pick** |
 | [`specs/SPEC_FOREX.md`](specs/SPEC_FOREX.md) | Not measured. Measurement design + why carry is not wired in |
-| [`specs/SPEC_PREDICTION.md`](specs/SPEC_PREDICTION.md) | Not measured. Binary settlement, and the fee curve that decides the class |
+| [`specs/SPEC_PREDICTION.md`](specs/SPEC_PREDICTION.md) | Binary settlement resolver + calibration stats, tested 15/15; still **not measured** (no obtainable price history) |
 | [`PICK_JUSTIFICATION.md`](PICK_JUSTIFICATION.md) | What I recommend, the exact live parameters, and what would falsify it |
 | [`BACKTEST_AND_RESEARCH.md`](BACKTEST_AND_RESEARCH.md) | Data, method, all results, 2× cost stress, IS/OOS, bugs fixed, literature consulted, limits |
+| [`EXCESS_RETURNS.md`](EXCESS_RETURNS.md) | **The live-pick excess column, measured**: EQUITY / ETF / CRYPTO picks vs their beta, coverage, clustered t-stats |
 | [`ELIMINATION_LOG.md`](ELIMINATION_LOG.md) | Each of the 8 rules and 6 classes, the gate it failed, and what eliminating it cost |
-| `artifacts/` | `backtest_path_forward.json`, `backtest_path_forward_2xcost.json`, `forward_plan.json` |
+| `artifacts/` | `backtest_path_forward.json`, `backtest_path_forward_2xcost.json`, `forward_plan.json`, `pick_excess_returns.json`, `pm_calibration.json` |
 
 ---
 
@@ -61,6 +62,20 @@ real, but DSR 0.84 is below the 0.95 bar.
 
 ---
 
+## Live-pick excess (the column that used to say "unknown")
+
+| Class | Picks scored | Windows | Mean pick | Mean β | Excess | t (clustered) |
+|---|---:|---:|---:|---:|---:|---:|
+| EQUITY | 653 | 386 | +0.45% | +0.21% | +0.24pp | 0.96 |
+| ETF | 475 | 261 | +0.16% | +0.09% | +0.06pp | −0.22 |
+| CRYPTO | 1,017 | 241 | +0.46% | +1.75% | **−1.29pp** | **−4.60** |
+
+EQUITY and ETF live picks are statistically indistinguishable from holding their beta. CRYPTO live
+picks are **worse than holding BTC**. Method, coverage and the clustered-t-stat rationale are in
+[`EXCESS_RETURNS.md`](EXCESS_RETURNS.md).
+
+---
+
 ## Reproduce
 
 ```bash
@@ -69,19 +84,26 @@ python3 tools/sim_path_forward.py --cost-mult 2.0 \
         --out reports/backtest_path_forward_2xcost.json # stress
 python3 tools/forward_tracker.py selftest              # 8/8 verdict-rule cases
 python3 tools/forward_tracker.py status                # forward ledger verdicts
+python3 tools/pick_excess.py                           # live-pick excess vs beta -> reports/pick_excess_returns.json
+python3 tools/pm_binary.py selftest                    # 15/15 binary settlement + calibration cases
+python3 tools/pm_binary.py fetch --max-markets 12      # PREDICTION calibration coverage (currently 0/12)
 ```
 
 Data comes from the Yahoo chart API (adjusted close, dividends + splits) and is cached under
-`data/cache/sim/`. Trial count is **N=8**; adding a strategy invalidates the deflated Sharpe and
-must be re-run.
+`data/cache/sim/` and `data/cache/pick_excess/`. Trial count is **N=8**; adding a strategy invalidates
+the deflated Sharpe and must be re-run. The PREDICTION class keeps a separate trial family and is
+never merged into that N.
 
 ---
 
 ## Status
 
-**NO-GO for real capital.** No asset class in this repo has a forward-verified edge. What this
-submission establishes is narrower and defensible: *measured* evidence that low-cost beta works after
-costs, that the drawdown-reduction overlay is cheap, and that four specific active rules plus one
-entire asset class do **not** work — each for a stated, checkable reason.
+**NO-GO for real capital.** No asset class in this repo has a forward-verified edge, and the live
+picks now have a measured excess column instead of an `unknown` one: EQUITY +0.24pp (t=0.96) and ETF
++0.06pp (t=−0.22) are indistinguishable from their beta; CRYPTO is **−1.29pp (t=−4.60)**, i.e. worse
+than holding BTC. See [`EXCESS_RETURNS.md`](EXCESS_RETURNS.md). What this submission establishes is
+narrower and defensible: *measured* evidence that low-cost beta works after costs, that the
+drawdown-reduction overlay is cheap, that four specific active rules plus one entire asset class do
+**not** work, and that the live crypto book underperforms its own benchmark.
 
 I am not claiming alpha anywhere in this folder.
