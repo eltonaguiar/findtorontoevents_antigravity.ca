@@ -303,7 +303,18 @@ def check_cta_tsmom_blend(df: pd.DataFrame, symbol: str) -> tuple[str, float, st
 
 
 def check_ig_contrarian(df: pd.DataFrame, symbol: str) -> tuple[str, float, str] | None:
-    """IG contrarian sentiment (RSI extreme as proxy)."""
+    """RSI-extreme contrarian rule — NOT a retail-positioning (IG) signal.
+
+    2026-11-15 review: the name and its STRATEGY_STATS entry
+    ("ig_contrarian_sentiment", Sharpe 5.87 / WR 58.3%) imply a data feed of IG
+    client positioning. This function reads no sentiment data at all — it only
+    uses RSI(14) plus the 5-bar slope of SMA(50). A Sharpe of 5.87 on FX is not
+    credible; it is almost certainly a small-sample artifact from the handful of
+    bars where RSI sat below 25 / above 75 with a confirming slope. Kept as-is
+    behaviourally so parallel work is not disrupted, but it must not be cited as
+    evidence of forex edge, and its 5.87 should be re-derived with a trade count
+    before anyone sizes on it.
+    """
     close = df["Close"]
     if len(close) < 55:
         return None
@@ -565,7 +576,14 @@ def merge_picks(existing: list[dict], new_picks: list[dict]) -> list[dict]:
 def main():
     print("=" * 60)
     print("FOREX SMART PICKS — Portfolio C (Multi-timeframe)")
-    print(f"Backtest: Sharpe 2.06 | WR 45.9% | PF 1.30 | PnL +20%")
+    # 2026-11-15: this line used to read "Backtest: Sharpe 2.06 | WR 45.9% |
+    # PF 1.30 | PnL +20%" as if it were current performance. Those are
+    # backtest figures for one historical configuration and have never been
+    # reproduced out-of-sample. Print the per-strategy stats actually used
+    # below by the Sharpe gate, and label them.
+    print("Backtest estimates (NOT forward-tested; see STRATEGY_STATS):")
+    for _s, _stat in STRATEGY_STATS.items():
+        print(f"  {_s:28} wr={_stat['wr']:.1%}  sharpe={_stat['sharpe']:+.2f}")
     print("=" * 60)
 
     # Check if it's a weekday
@@ -579,6 +597,11 @@ def main():
     # Asian close 07:00 + London open 08:00 provide optimal entry signals.
     # NY overlap (13-16) still within window for peak liquidity.
     if not (7 <= now.hour < 16):
+        # 2026-11-15: a session-window skip used to exit 0 with only a console
+        # line, so GitHub showed a green run that produced nothing. Emit a
+        # workflow annotation so a no-op is visible in the Actions UI.
+        print("::warning::Forex smart picks skipped: outside session window "
+              f"({now.hour}:00 UTC, required 07-16 UTC). No picks generated.")
         print(f"Outside active forex window (current: {now.hour}:00 UTC, required: 07-16 UTC). Skipping.")
         print("Forex signals generated during Asian close through NY overlap (07-16 UTC).")
         return
