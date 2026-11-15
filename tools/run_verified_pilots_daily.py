@@ -61,6 +61,10 @@ def main() -> int:
         # and cost-insensitive (drawdown ~halved at equal Sharpe).
         # reports: 2026-11-15_1233AM_winning-strategies/buffy/10_simulations/BACKTEST_PROOF.md
         _run([py, "verified_strategies/paper_pilot/faber_taa_pilot.py", "--one-shot"]),
+        # 2026-11-15 — BTC SMA200 + RSI2 mean-reversion paper pilot.
+        # The ONLY wealth-beating candidate (1.94 vs 1.67 B&H) from agent
+        # audits. Forward record grows in git until n>=30 for review.
+        _run([py, "verified_strategies/paper_pilot/btc_sma200_rsi2_pilot.py", "--one-shot"]),
         _run([py, "tools/etf_forward_stats.py", "--write"]),
         _run([py, "tools/crypto_wf_forward_stats.py", "--write"]),
         _run([py, "tools/faber_forward_stats.py", "--write"]),
