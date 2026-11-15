@@ -416,6 +416,9 @@ Before sending any response, you MUST check for these patterns:
 |------|------------|
 | `audit_dashboard/template.html` | Dashboard HTML template |
 | `audit_dashboard/dashboard_enhancements.js` | Dashboard JS enhancements |
+| `audit_dashboard/excess_column.js` | Per-pick "vs Bench" column for the closed-picks drill-down (added 2026-11-15). External JS because the generator rebuilds index.html from template.html and would wipe an inline version. Reads `data/benchmark_prices.json`; sub-day windows render `—`, never 0. |
+| `audit_dashboard/data/benchmark_prices.json` | Sidecar for the excess column: SPY + BTC-USD daily closes (~25KB, not the 18MB payload). Regenerate: `python3 tools/build_benchmark_prices.py`. Auto-deploys via the `data/*.json` glob. |
+| `tools/build_benchmark_prices.py` | Generates the benchmark sidecar from `data/cache/pick_excess/` (fetches from Yahoo only when the cache is absent). |
 | `audit_dashboard/blueprint_generator.py` | Trading blueprint page generator |
 | `audit_dashboard/merge_ai_challenge_picks.py` | AI challenge picks merger |
 | `audit_trail/dashboard_generator.py` | Main dashboard payload + HTML generator |

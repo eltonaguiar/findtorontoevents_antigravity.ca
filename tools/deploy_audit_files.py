@@ -55,6 +55,7 @@ UPLOADS = [
     ("audit_dashboard/data/strategy_tribunal_latest.json",   "/findtorontoevents.ca/audit/data/strategy_tribunal_latest.json",    "audit_data"),
     ("audit_dashboard/dashboard_freshness.js",               "/findtorontoevents.ca/audit/dashboard_freshness.js",                "audit_js"),
     ("audit_dashboard/dashboard_enhancements.js",            "/findtorontoevents.ca/audit/dashboard_enhancements.js",            "audit_js"),
+    ("audit_dashboard/excess_column.js",                     "/findtorontoevents.ca/audit/excess_column.js",                     "audit_js"),
     ("audit_dashboard/validation_metrics.js",                "/findtorontoevents.ca/audit/validation_metrics.js",                "audit_js"),
     ("alpha_engine/data/regime_report.json",                 "/findtorontoevents.ca/audit/data/regime_report.json",              "audit_data"),
     ("audit_dashboard/data/ai_tournament_model_diagnostics.json", "/findtorontoevents.ca/audit/data/ai_tournament_model_diagnostics.json", "ai_tournament"),

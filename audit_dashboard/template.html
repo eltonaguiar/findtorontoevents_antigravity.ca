@@ -7272,6 +7272,7 @@ function showNcDrillDown(catKey) {
       { key: 'sl', label: 'SL', type: 'num', cls: 'r' },
       { key: 'exit', label: 'Exit', type: 'num', cls: 'r' },
       { key: 'pnl', label: 'PnL%', type: 'num', cls: 'r' },
+      { key: 'excess', label: 'vs Bench', type: 'num', cls: 'r' },
       { key: 'score', label: 'Score', type: 'num', cls: 'r' },
       { key: 'opened', label: 'Opened (EST)', type: 'str' },
       { key: 'closed', label: 'Closed (EST)', type: 'str' },
@@ -7358,6 +7359,7 @@ function showNcDrillDown(catKey) {
     r += '<td class="r" style="color:#ef4444">' + (p.stop_loss ? parseFloat(p.stop_loss).toPrecision(6) : '\u2014') + '</td>';
     r += '<td class="r">' + (p.exit_price ? parseFloat(p.exit_price).toPrecision(6) : '\u2014') + '</td>';
     r += '<td class="r" style="font-weight:700;color:' + pnlClr(pnl) + '">' + fmtP(pnl) + '</td>';
+    r += (window.PickExcess ? window.PickExcess.cellHtml(p, pnl) : '<td class="r" style="color:var(--text-dim)" title="excess_column.js not loaded">\u2014</td>');
     r += '<td class="r" style="cursor:help;color:' + (scoreVal >= 50 ? '#22c55e' : scoreVal >= 30 ? 'var(--yellow)' : 'var(--text-dim)') + '" title="' + scoreTip.replace(/"/g, '&quot;') + '">' + (scoreVal || '\u2014') + '</td>';
     r += '<td style="font-size:10px">' + toEST(openTs) + '</td>';
     r += '<td style="font-size:10px">' + toEST(closeTs) + '</td>';
@@ -7497,6 +7499,7 @@ function showNcDrillDown(catKey) {
     if (col === 'exit') return parseFloat(p.exit_price || 0);
     if (col === 'current') return parseFloat(p.current_price || 0);
     if (col === 'pnl') return tableType === 'closed' ? getPnl(p) : parseFloat(p.pnl_pct || 0);
+    if (col === 'excess') return (typeof window !== 'undefined' && window.PickExcess) ? window.PickExcess.sortVal(p) : -1e9;
     if (col === 'opened') return p.timestamp || '';
     if (col === 'closed') return p.closed_at || p.resolved_at || '';
     if (col === 'exit_reason') return (p.exit_reason || '');
@@ -18985,6 +18988,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(auditEnhanceAllTables, 3500);
 });
 </script>
+<script src="excess_column.js"></script>
 <script src="dashboard_enhancements.js"></script>
     <!-- Quant-Grade Validation Metrics (Phase 1: WFE & Transaction Costs) -->
     <script src="validation_metrics.js"></script>
