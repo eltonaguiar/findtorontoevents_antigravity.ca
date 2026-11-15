@@ -38,6 +38,10 @@ jobs:
 
       - name: Create slim JSON for dashboard
         run: |
+          if [ ! -f STOCKS/competition/competition-results.json ]; then
+            echo "::warning title=missing-results::competition-results.json absent (backtester skipped) — keeping existing competition-slim.json"
+            exit 0
+          fi
           python3 -c "
           import json, os, math
           def sanitize(obj):
