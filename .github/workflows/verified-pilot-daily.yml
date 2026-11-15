@@ -1,5 +1,9 @@
-# Daily ETF dual-momentum paper pilot + Sunday walk-forward refresh.
-# Does not touch audit dashboard generators or production scanner flags.
+# Daily ETF dual-momentum + Faber TAA paper pilots + Sunday walk-forward refresh.
+# The pilots write results locally; this workflow now COMMITS the refreshed proof
+# artifacts to main so the forward record grows in git history instead of rotting
+# (reports/faber_forward_stats_latest.json was frozen at 2026-06-06 because the
+# prior version uploaded artifacts but never committed them). It still does NOT
+# touch production scanner flags or enable sizing.
 name: Verified pilot daily
 
 on:
@@ -7,12 +11,22 @@ on:
     - cron: "15 6 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: verified-pilot-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 jobs:
   pilot:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT || github.token }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -48,3 +62,52 @@ jobs:
             verified_strategies/paper_pilot/etf_dual_momentum_closed.json
             verified_strategies/WALKFORWARD_REPORT.json
           if-no-files-found: ignore
+      - name: Commit refreshed pilot proof to main
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "verified-pilot-bot"
+          git config user.email "bot@antigravity.ca"
+          # Narrow, explicit list of SMALL proof files (never the 17MB dashboard).
+          git add -f verified_strategies/paper_pilot/faber_taa_paper_log.jsonl || true
+          git add verified_strategies/paper_pilot/faber_taa_positions.json || true
+          git add reports/faber_forward_stats_latest.json || true
+          git add reports/pilot_forward_dashboard.json || true
+          git add reports/pilot_forward_summary.json || true
+          git add reports/verified_pilots_daily_latest.json || true
+          git add reports/etf_forward_stats_latest.json || true
+          git add audit_dashboard/data/verified_edge_status.json || true
+          git add audit_dashboard/data/strategy_admissibility.json || true
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          if git diff --cached --quiet; then
+            echo "No pilot changes to commit (unchanged from previous run)"
+            echo "::notice title=verified-pilot no-op::nothing advanced today"
+            exit 0
+          fi
+          DATE_UTC=$(date -u +%Y-%m-%d)
+          FABER_N=$(python -c 'import json;d=json.load(open("verified_strategies/paper_pilot/faber_taa_positions.json"));print(d.get("n_closed",0))' 2>/dev/null || echo "?")
+          git commit -m "chore(verified-pilot): refresh paper pilots ${DATE_UTC} faber_closed_n=${FABER_N} [skip ci]"
+          push_ok=false
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            push_rc=0
+            push_output=$(git push origin HEAD:main 2>&1) || push_rc=$?
+            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
+            if [ $push_rc -eq 0 ]; then
+              echo "Pushed successfully on attempt $i"; push_ok=true; break
+            fi
+            if echo "$push_output" | grep -qiE "pre-receive hook declined|push declined due to|protected branch|GH[0-9]{3}|refusing to (allow|update)"; then
+              echo "ERROR: Push permanently rejected — aborting"; exit 1
+            fi
+            if echo "$push_output" | grep -qiE "non-fast-forward|fetch first|\[rejected\]|behind its remote"; then
+              if git fetch --quiet origin main && git rebase --quiet origin/main; then
+                echo "Rebased onto origin/main — retrying push immediately"; continue
+              fi
+              git rebase --abort >/dev/null 2>&1 || true
+              echo "::warning::rebase onto origin/main failed — falling back to timed retry"
+            fi
+            delay=$((2 ** i + RANDOM % 10)); [ $delay -gt 60 ] && delay=$((60 + RANDOM % 10))
+            echo "Push attempt $i failed, retrying in ${delay}s..."; sleep "$delay"
+          done
+          if [ "$push_ok" = false ]; then
+            echo "ERROR: All push attempts failed"; exit 1
+          fi
