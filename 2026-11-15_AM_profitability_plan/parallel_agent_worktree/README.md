@@ -26,6 +26,18 @@ After reviewing 24 hours of local + remote commits, peer reviews (9 peers), back
 | `06_key_metrics/key_metrics_perspectives.md` | Key metrics from Sharpe / pro investor / MF manager / bank trader perspectives |
 | `07_agent_prompts/agent_prompts.md` | Prompts for AI coding agents in parallel worktrees |
 | `08_qa_validation/qa_protocol.md` | QA validation protocol (PnL=0%, blank fields, open/recently closed flags) |
+| `01_asset_class_plans/run_simulation_backtest.py` | Executable backtest simulation script (yfinance data, costs, walk-forward) |
+| `01_asset_class_plans/simulation_results_2026-11-15.json` | Raw simulation results (37 combos, ~150 walk-forward folds) |
+| `01_asset_class_plans/SIMULATION_RESULTS.md` | Human-readable simulation results summary |
+| `08_qa_validation/FORWARD_TEST_TRACKING_PROTOCOL.md` | Forward-test tracking: fast elimination vs hold longer |
+
+## Simulation Validation (executed 2026-11-15)
+
+Ran `run_simulation_backtest.py` against live yfinance data (2020-01-01 → 2025-12-31), 7 equity ETFs + 5 crypto symbols, 5 strategies, 37 symbol×strategy combos, 4 bps round-trip cost, 5-fold walk-forward.
+
+**Result: 0/37 combos passed all 7 money-ready gates.** Best performer (ADA-USD EMA Trend Crossover) passed 4/7 but failed Sharpe, DSR, PBO — confirming no statistically significant edge exists. DSR ≈ 0 and PBO ≈ 0.999 across nearly all combos.
+
+This independently validates the plan's conclusion: **no asset class is currently proven profitable.**
 
 ## Immediate Go/No-Go Rule
 
