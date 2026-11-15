@@ -62,7 +62,15 @@ def _max_hold_hours_for(pick: dict) -> int:
         ac = (normalized or raw).upper()
     except (AttributeError, TypeError):
         ac = raw
-    return MAX_HOLD_HOURS_BY_CLASS.get(ac, MAX_HOLD_HOURS)
+    default = MAX_HOLD_HOURS_BY_CLASS.get(ac, MAX_HOLD_HOURS)
+    try:
+        from alpha_engine.pick_failure_root_cause import explicit_hold_hours
+        override = explicit_hold_hours(pick)
+        if override is not None:
+            return override
+    except Exception:
+        pass
+    return default
 
 
 RESOLVED_FILE = ROOT / "audit_trail" / "data" / "universal_resolved_picks.json"

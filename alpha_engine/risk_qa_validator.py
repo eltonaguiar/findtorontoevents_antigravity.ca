@@ -62,16 +62,27 @@ def save_json(path, data):
         json.dump(data, f, indent=2, default=str)
 
 
+def _is_open(pick) -> bool:
+    return str(pick.get("status") or "OPEN").upper() in {"OPEN", "ACTIVE", "PENDING", "LIVE", ""}
+
+
 def check_blank_fields(pick):
-    """Return list of blank field issues with severity."""
+    """Blank-field flags. Exit fields are not required on an open card."""
     issues = []
+    skip = set()
+    if _is_open(pick):
+        skip = {"exit_price", "exit_time", "resolution_method", "pnl_pct"}
     for field, severity in REQUIRED_FIELDS.items():
+        if field in skip:
+            continue
         val = pick.get(field)
-        if val is None or val == "" or (isinstance(val, float) and val != val):  # NaN check
+        if val is None or val == "" or (isinstance(val, float) and val != val):
             issues.append({
+                "check": "blank_field",
                 "field": field,
                 "severity": severity,
                 "pick_id": pick.get("id") or pick.get("dedup_key") or "unknown",
+                "detail": f"Missing {field}",
             })
     return issues
 
@@ -94,7 +105,11 @@ def validate_pnl_zero(pick, market_data):
             # Closed pick with 0% PnL but price moved
             if status in ("CLOSED", "WON", "LOST", "TP_HIT", "SL_HIT"):
                 if entry and close_px:
-                    real_pnl = (close_px - entry) / entry * 100
+                    direction = str(pick.get("direction") or "LONG").upper()
+                    if direction == "SHORT":
+                        real_pnl = (entry - close_px) / entry * 100
+                    else:
+                        real_pnl = (close_px - entry) / entry * 100
                     if abs(real_pnl) > 0.5:  # >0.5% move = suspicious
                         issues.append({
                             "check": "pnl_zero_but_price_moved",
@@ -107,24 +122,29 @@ def validate_pnl_zero(pick, market_data):
                         })
 
             # Open position >72h without exit
-            if status in ("OPEN", "ACTIVE"):
+            if status in ("OPEN", "ACTIVE", "PENDING", "LIVE"):
                 if entry and current_px:
-                    created = pick.get("created_at") or pick.get("entry_time")
+                    created = pick.get("created_at") or pick.get("entry_time") or pick.get("timestamp")
                     if created:
                         try:
                             created_dt = datetime.fromisoformat(str(created).replace("Z", "+00:00"))
                             now = datetime.now(timezone.utc)
                             hours = (now - created_dt).total_seconds() / 3600
-                            if hours > 72:
-                                unrealized = (current_px - entry) / entry * 100
+                            horizon = float(pick.get("max_hold_hours") or pick.get("horizon_hours") or 72)
+                            if hours > horizon:
+                                direction = str(pick.get("direction") or "LONG").upper()
+                                if direction == "SHORT":
+                                    unrealized = (entry - current_px) / entry * 100
+                                else:
+                                    unrealized = (current_px - entry) / entry * 100
                                 issues.append({
-                                    "check": "open_position_over_72h",
+                                    "check": "open_past_horizon",
                                     "severity": "HIGH",
                                     "pick_id": pick.get("id") or "unknown",
                                     "hours_open": round(hours, 1),
                                     "unrealized_pnl_pct": round(unrealized, 2),
                                     "symbol": symbol,
-                                    "detail": f"Open {hours:.1f}h without exit, unrealized {unrealized:+.2f}%",
+                                    "detail": f"Open {hours:.1f}h past horizon {horizon:.0f}h, unrealized {unrealized:+.2f}%",
                                 })
                         except Exception:
                             pass
@@ -200,6 +220,10 @@ def check_reasonability(pick, market_data):
     if symbol and symbol in market_data and price is not None:
         md = market_data[symbol]
         close_px = md.get("close_price")
+        market_date = str(md.get("asof") or md.get("date") or "")[:10]
+        entry_date = str(pick.get("entry_date") or "")[:10]
+        if market_date and entry_date and market_date != entry_date:
+            close_px = None  # different session — not a same-bar disagreement
         if close_px and close_px > 0:
             try:
                 p = float(price)
