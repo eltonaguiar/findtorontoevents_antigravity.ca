@@ -89,6 +89,8 @@ jobs:
                   n = len(lb)
                   results["trading_picks_count"] = n
                   if n == 0:
+                      # Only fail if the file exists but is empty; 
+                      # if it was skipped, this block isn't reached.
                       failures.append(f"trading_picks: leaderboard is EMPTY (0 rows)")
                   else:
                       print(f"[backup-verify] trading_picks proxy: COUNT = {n}")
