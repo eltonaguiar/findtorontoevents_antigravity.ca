@@ -1,4 +1,4 @@
-# GH Actions Fix — CI Tests 8 deterministic failures
+# GH Actions Fixes — CI Tests + Verified-pilot false-failure
 
 **Date:** 2026-11-15
 **Author:** Kilo (wire-fix-ghactions-pr-issues-v3)
@@ -71,3 +71,20 @@ breakages — no duplication here:
   `TWELVE_DATA_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `FMP_API_KEY`) required by
   `qa-market-validation.yml` (per user instruction to defer secrets).
 - Secret rotation (5 open monthly reminders).
+
+## Fix 2 — `Verified pilot daily` false failure on strategy admission
+
+**Root cause:** `tools/run_verified_pilots_daily.py` runs
+`tools/strategy_admit.py --strategy etf_dual_momentum --asset-class ETF --write` as one
+of its steps, and gates the whole workflow on `all(returncode == 0)`. `strategy_admit.py`
+exits `1` when the strategy is **REJECTED** — a legitimate, expected daily outcome (the
+profitability audit found 0 strategies pass the 10-gate proof protocol). The workflow
+therefore failed every night (`Wrote .../verified_pilots_daily_latest.json ok=False`,
+exit 1), even though every pilot and stats step ran cleanly.
+
+**Fix:** mark the `strategy_admit.py` step as non-gating (`gating=False`). The admission
+verdict is a report, not a pipeline step; it stays visible in `reports/verified_pilots_daily_latest.json`
+(returncode + stderr preserved) but no longer fails the workflow. Real pilot/stats crashes
+still fail it (they remain gating).
+
+**Verified:** `python3 -c "import ast; ast.parse(open('tools/run_verified_pilots_daily.py').read())"` OK.
