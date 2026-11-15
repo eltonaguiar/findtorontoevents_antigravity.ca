@@ -53,14 +53,31 @@ def age_hours(ts: str | None, now: datetime) -> float | None:
 
 
 def collect_workflow_defs(repo: str, branch: str) -> dict[str, dict]:
-    """All workflow files defined on the branch (catches never-run ones)."""
+    """All workflow files defined on the branch (catches never-run ones).
+
+    The workflows endpoint is PAGINATED at 100/page — the repo has ~367
+    workflows, so a single page silently hides two-thirds of them.
+    """
     out = {}
-    try:
-        d = fetch(f"{API}/repos/{repo}/actions/workflows?per_page=100&branch={branch}")
-        for wf in d.get("workflows", []):
-            out[wf["name"]] = {"path": wf.get("path"), "id": wf.get("id"), "state": wf.get("state")}
-    except Exception as e:
-        print(f"WARN: workflow list failed: {e}", file=sys.stderr)
+    page = 1
+    while page <= 5:
+        try:
+            d = fetch(f"{API}/repos/{repo}/actions/workflows?per_page=100&page={page}&branch={branch}")
+        except Exception as e:
+            print(f"WARN: workflow list page {page} failed: {e}", file=sys.stderr)
+            break
+        batch = d.get("workflows", [])
+        if not batch:
+            break
+        for wf in batch:
+            out[wf["name"]] = {
+                "path": wf.get("path"),
+                "id": wf.get("id"),
+                "state": wf.get("state"),
+            }
+        if len(batch) < 100:
+            break
+        page += 1
     return out
 
 
@@ -98,6 +115,8 @@ def analyse(defs: dict[str, dict], runs: list[dict], stale_hours: float,
             "workflow": name,
             "path": d.get("path"),
             "defined": bool(d),
+            "state": d.get("state"),
+            "disabled": bool(d.get("state") and "disabled" in str(d.get("state"))),
             "runs_seen": len(rs),
             "flag": "OK",
             "detail": "",
@@ -105,6 +124,14 @@ def analyse(defs: dict[str, dict], runs: list[dict], stale_hours: float,
             "age_hours": round(age_hours(rs[0]["created_at"], now), 1) if rs else None,
             "last_url": rs[0].get("html_url") if rs else None,
         }
+
+        # A disabled workflow is a silent outage regardless of its run history:
+        # GitHub keeps showing the last (possibly green) run while nothing fires.
+        if row["disabled"]:
+            row["flag"] = "DISABLED"
+            row["detail"] = f"state={row['state']} — will not run until re-enabled"
+            rows.append(row)
+            continue
 
         if not rs:
             # NBNB: absence inside the scanned window is NOT proof it never ran.
@@ -161,8 +188,8 @@ def analyse(defs: dict[str, dict], runs: list[dict], stale_hours: float,
 
         rows.append(row)
 
-    order = {"RED_>1": 0, "RED_1": 1, "STUCK": 2, "NEVER_SUCCEEDED": 3, "SKIPPED": 4,
-             "STALE": 5, "NO_RUNS_IN_WINDOW": 6, "ODD": 7, "IN_FLIGHT": 8, "UNKNOWN": 9, "OK": 10}
+    order = {"RED_>1": 0, "RED_1": 1, "STUCK": 2, "DISABLED": 3, "NEVER_SUCCEEDED": 4, "SKIPPED": 5,
+             "STALE": 6, "NO_RUNS_IN_WINDOW": 7, "ODD": 8, "IN_FLIGHT": 9, "UNKNOWN": 10, "OK": 11}
     rows.sort(key=lambda r: (order.get(r["flag"], 99), -(r.get("streak") or 0), r["workflow"]))
 
     counts = defaultdict(int)
