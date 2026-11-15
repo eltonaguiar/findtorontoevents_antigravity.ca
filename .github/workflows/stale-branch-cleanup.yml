@@ -95,12 +95,20 @@ jobs:
                 continue;
               }
 
-              const cmp = await github.rest.repos.compareCommits({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                base: defaultBranch,
-                head: name
-              });
+              let cmp;
+              try {
+                cmp = await github.rest.repos.compareCommits({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  base: defaultBranch,
+                  head: name
+                });
+              } catch (e) {
+                // Unrelated histories (e.g. gh-pages) share no ancestor with
+                // main and can never be "merged"; skip instead of crashing.
+                skipped.push(`${name}: cannot compare to ${defaultBranch} (${e.message})`);
+                continue;
+              }
 
               if (!(cmp.data.status === 'behind' || cmp.data.status === 'identical')) {
                 skipped.push(`${name}: not merged into ${defaultBranch} (${cmp.data.status})`);
