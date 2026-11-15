@@ -337,7 +337,7 @@ def main():
     crypto_total = sum(r["sum_excess_pp"] for r in crypto)
     print(f"\nCRYPTO driver decomposition: {len(crypto)} strategies, "
           f"{crypto_total:.1f}pp cumulative excess")
-    print(f"  {'strategy':<34}{'n':>5}{'win':>5}{'exit':>5}{'t_clust':>7}{'excess':>10}  share")
+    print(f"  {'strategy':<34}{'n':>5}{'win':>6}{'exit':>5}{'t_clust':>7}{'excess':>10}  share")
     for r in crypto[:10]:
         t = f"{r['t_cluster']:.2f}" if r["t_cluster"] is not None else "n/a"
         share = 100.0 * r["sum_excess_pp"] / crypto_total if crypto_total else 0.0
