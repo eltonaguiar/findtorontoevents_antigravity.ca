@@ -55,6 +55,11 @@ def main() -> int:
         _run([py, "verified_strategies/paper_pilot/equity_bb_pilot.py", "--one-shot"]),
         _run([py, "verified_strategies/paper_pilot/equity_pead_drift_pilot.py", "--one-shot"]),
         _run([py, "verified_strategies/paper_pilot/forex_carry_g10_pilot.py", "--one-shot", "--write-db"]),
+        # 2026-11-15 — Faber TAA (GTAA-5, 10-month SMA) paper pilot. The one
+        # active rule buffy's sim_path_forward.py backtest showed is IS/OOS-stable
+        # and cost-insensitive (drawdown ~halved at equal Sharpe).
+        # reports: 2026-11-15_1233AM_winning-strategies/buffy/10_simulations/BACKTEST_PROOF.md
+        _run([py, "verified_strategies/paper_pilot/faber_taa_pilot.py", "--one-shot"]),
         _run([py, "tools/etf_forward_stats.py", "--write"]),
         _run([py, "tools/crypto_wf_forward_stats.py", "--write"]),
         _run([py, "tools/faber_forward_stats.py", "--write"]),
