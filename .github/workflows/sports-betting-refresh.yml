@@ -673,7 +673,11 @@ jobs:
       continue-on-error: true
       run: |
         echo "=== Custom Sports Picks Update ==="
-        python3 tools/update_custom_sports_picks.py
+        if [ -f tools/update_custom_sports_picks.py ]; then
+          python3 tools/update_custom_sports_picks.py
+        else
+          echo "tools/update_custom_sports_picks.py not present — skipping"
+        fi
         echo "Updated custom sports picks at $(date)"
 
     - name: Surface silent scraper failure
@@ -692,7 +696,7 @@ jobs:
         git stash pop || true
 
     - name: Commit updated picks
-      uses: stefanzweifel/git-auto-commit-action@v5
+      uses: stefanzweifel/git-auto-commit-action@v7
       with:
         commit_message: "[skip ci] Auto-update custom sports picks"
         file_pattern: backfill/sports_custom_picks.json

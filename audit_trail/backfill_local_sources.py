@@ -582,29 +582,39 @@ def main():
                 total_outcomes += o_cnt
                 print(f"  [{system}] {'closed' if is_closed else 'active'}: {p_cnt} picks, {o_cnt} outcomes")
 
-        # ── Summary ──
-        cur.execute("SELECT COUNT(*) FROM at_local_picks")
-        lp_total = cur.fetchone()[0]
-        cur.execute("SELECT COUNT(*) FROM at_signal_outcomes")
-        so_total = cur.fetchone()[0]
+        # ── Summary ── (best-effort after commit; InnoDB COUNT(*) on 125k+ rows can hit read timeout)
+        lp_total = so_total = None
+        by_system = []
+        by_status = []
+        try:
+            cur.execute("SELECT COUNT(*) FROM at_local_picks")
+            lp_total = cur.fetchone()[0]
+            cur.execute("SELECT COUNT(*) FROM at_signal_outcomes")
+            so_total = cur.fetchone()[0]
 
-        cur.execute("SELECT source_system, COUNT(*) FROM at_local_picks GROUP BY source_system ORDER BY 2 DESC")
-        by_system = cur.fetchall()
+            cur.execute("SELECT source_system, COUNT(*) FROM at_local_picks GROUP BY source_system ORDER BY 2 DESC")
+            by_system = cur.fetchall()
 
-        cur.execute("SELECT status, COUNT(*) FROM at_local_picks GROUP BY status ORDER BY 2 DESC")
-        by_status = cur.fetchall()
+            cur.execute("SELECT status, COUNT(*) FROM at_local_picks GROUP BY status ORDER BY 2 DESC")
+            by_status = cur.fetchall()
+        except Exception as exc:
+            print(f"::warning::Post-commit backfill summary query skipped ({exc})")
 
         print(f"\n=== BACKFILL COMPLETE ===")
         print(f"New picks inserted: {total_picks}")
         print(f"New outcomes inserted: {total_outcomes}")
-        print(f"Total at_local_picks: {lp_total}")
-        print(f"Total at_signal_outcomes: {so_total}")
-        print(f"\nBy source system:")
-        for sys, cnt in by_system:
-            print(f"  {sys:<40} {cnt:>6}")
-        print(f"\nBy status:")
-        for st, cnt in by_status:
-            print(f"  {st:<20} {cnt:>6}")
+        if lp_total is not None:
+            print(f"Total at_local_picks: {lp_total}")
+        if so_total is not None:
+            print(f"Total at_signal_outcomes: {so_total}")
+        if by_system:
+            print(f"\nBy source system:")
+            for sys_name, cnt in by_system:
+                print(f"  {sys_name:<40} {cnt:>6}")
+        if by_status:
+            print(f"\nBy status:")
+            for st, cnt in by_status:
+                print(f"  {st:<20} {cnt:>6}")
     finally:
         conn.close()
 

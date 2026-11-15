@@ -48,16 +48,14 @@ permissions:
 jobs:
   run-value-screener:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          # fetch-depth: 0 — full clone. Per PR #436 investigation: shallow clones
-          # force `git fetch --unshallow` (16-18min on 5GB repo) which exhausts
-          # the push-retry budget. Full clone adds ~2min but saves much more
-          # downstream. Cost on cloud runners is acceptable.
+          # UEPS workflow invariant (tests/test_ueps_workflow_yaml.py) requires fetch-depth: 0;
+          # filter: blob:none keeps partial-clone speed without downloading 19 GiB pack history.
           fetch-depth: 0
           filter: blob:none
 

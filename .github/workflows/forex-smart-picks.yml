@@ -2,8 +2,9 @@ name: Forex Smart Picks Scanner
 
 on:
   schedule:
-    # Every 4 hours on weekdays (Mon-Fri) during market hours
-    - cron: '0 2,6,10,14,18,22 * * 1-5'
+    # 2026-11-15: cron was `0 2,6,10,14,18,22 * * 1-5`, but main() exits unless
+    # the UTC hour is 07-16 (session window). Narrowed to active session slots.
+    - cron: '0 8,10,12,14 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -18,6 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
+          filter: blob:none
           token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Set up Python
