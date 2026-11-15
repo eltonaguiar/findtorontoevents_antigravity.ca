@@ -50,7 +50,7 @@ def test_cache_path_blocks_dotdot():
 def test_cache_path_blocks_backslash():
     """Backslash cannot create subpaths even on Windows."""
     from alpha_engine.equity_price_failover import _cache_path, CACHE_DIR
-    p = _cache_path("FOO\BAR", "quote")
+    p = _cache_path(r"FOO\BAR", "quote")
     assert p.parent == CACHE_DIR
     assert "\\" not in p.name
 

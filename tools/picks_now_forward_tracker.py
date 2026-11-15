@@ -128,4 +128,23 @@ def ensure_table(conn):
             dbf_wr DECIMAL(5,1) DEFAULT NULL,
             dbf_n_weighted DECIMAL(8,2) DEFAULT NULL,
             tp_sl_quality_score DECIMAL(5,1) DEFAULT NULL,
-            emi
+            UNIQUE KEY uniq_emit_pick (emit_ts, symbol, direction)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    """)
+    conn.commit()
+    return True
+
+
+def main() -> int:
+    """No-op entry point preserving module compatibility after legacy truncation."""
+    conn = _get_conn()
+    if conn is not None:
+        try:
+            ensure_table(conn)
+        finally:
+            conn.close()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

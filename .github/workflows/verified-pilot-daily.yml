@@ -23,15 +23,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+          filter: blob:none
           token: ${{ secrets.GH_PAT || github.token }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install --user pandas numpy yfinance requests
+        run: pip install --user pandas numpy yfinance requests pymysql
       - name: Run verified pilots
         env:
           VERIFY_SKIP_FRED: "1"
@@ -40,7 +41,7 @@ jobs:
       - name: Strategy admissibility report
         run: python3 tools/strategy_admissibility_report.py --write
       - name: Upload pilot artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: verified-pilot-${{ github.run_id }}
           path: |

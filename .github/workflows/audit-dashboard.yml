@@ -670,7 +670,8 @@ jobs:
         # and crashed with FileNotFoundError every cycle (silenced by `|| echo
         # "...non-fatal"`), which is why alpha_engine/data/walkforward_results.json
         # has had no `by_class` key since 2026-04-15.
-        run: python -m alpha_engine.walkforward_validator || echo "::warning title=walkforward validator failed::see log; alpha_engine/data/walkforward_results.json by_class panel will go stale (INCIDENT_OVERALL #45)"
+        run: |
+          python -m alpha_engine.walkforward_validator || echo "::warning title=walkforward validator failed::see log; alpha_engine/data/walkforward_results.json by_class panel will go stale (INCIDENT_OVERALL #45)"
         continue-on-error: true
 
       - name: Freshness tripwire — anti_overfit + walkforward (INCIDENT #45)
@@ -1127,14 +1128,33 @@ jobs:
                   print(f"  [{site_label}] research/asset_class missing; skipping research artifact deploy")
                   return
 
+              import os as _os
+              from datetime import datetime, timezone, timedelta
+
+              upload_all = _os.environ.get("UPLOAD_ALL_RESEARCH", "").strip() in ("1", "true", "yes")
+              cutoff_date = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
+              ensured_dirs = set()
+              uploaded = 0
+              skipped_old = 0
+
               for local_file in root.rglob("*"):
                   if not local_file.is_file():
                       continue
                   rel = local_file.relative_to(root)
+                  if not upload_all and rel.parts and rel.parts[0].startswith("run_"):
+                      run_date = rel.parts[0][4:14]
+                      if len(run_date) == 10 and run_date[4] == "-" and run_date < cutoff_date:
+                          skipped_old += 1
+                          continue
                   rel_parent = rel.parent.as_posix()
                   remote_dir = remote_prefix if rel_parent in ("", ".") else f"{remote_prefix}/{rel_parent}"
-                  ensure_nested_dir(ftp, remote_dir)
+                  if remote_dir not in ensured_dirs:
+                      ensure_nested_dir(ftp, remote_dir)
+                      ensured_dirs.add(remote_dir)
                   ftp_upload(ftp, str(local_file), remote_dir, local_file.name, site_label)
+                  uploaded += 1
+
+              print(f"  [{site_label}] research/asset_class deployed: uploaded={uploaded} skipped_old={skipped_old}")
 
           # ---------------------------------------------------------------------------
           # Site deploy functions
@@ -1533,8 +1553,10 @@ jobs:
           echo "=== Freshness content check (findtorontoevents.ca/audit) ==="
           banner=$(curl -sL --max-time 15 "https://findtorontoevents.ca/audit/" 2>/dev/null | grep -oE 'Static data updated [0-9-]+' | head -1 || echo "no-banner")
           echo "Live banner: $banner"
-          if echo "$banner" | grep -qE '2026-05-(1[6-9]|2[0-9])'; then
+          today_utc=$(date -u +%Y-%m-%d)
+          yesterday_utc=$(date -u -d '1 day ago' +%Y-%m-%d 2>/dev/null || date -u +%Y-%m-%d)
+          if echo "$banner" | grep -qE "(${today_utc}|${yesterday_utc})"; then
             echo "Freshness: OK (recent banner date)"
           else
-            echo "::warning title=audit-deploy-stale::Live findtorontoevents.ca/audit still shows old banner: $banner (expected 2026-05-20 or later). FTP deploy likely partial or failed for the main site."
+            echo "::warning title=audit-deploy-stale::Live findtorontoevents.ca/audit still shows old banner: $banner (expected ${today_utc} or ${yesterday_utc}). FTP deploy likely partial or failed for the main site."
           fi

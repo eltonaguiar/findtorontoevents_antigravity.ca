@@ -209,7 +209,18 @@ def test_prepare_prediction_market_consensus_signal_preserves_pm_source_lineage(
     assert prepared["high_conviction"] is True
 
 
-def test_pre_score_active_candidate_keeps_valid_zero_score_pick_alive() -> None:
+def test_pre_score_active_candidate_keeps_valid_zero_score_pick_alive(monkeypatch) -> None:
+    # Neutralize cross-cutting crypto LONG blocks when testing generic pre-score eligibility.
+    for var in (
+        "CRYPTO_PRODUCTION_BLOCK_LONG",
+        "CRYPTO_PRODUCTION_BLOCK_LONG_OVERRIDE",
+        "CRYPTO_BUY_DIRECTION_GATE_ENABLED",
+        "CRYPTO_SIZED_LONG_BLOCK",
+        "CRYPTO_UTC_HOUR_FILTER",
+        "ML_CRYPTO_PRED_LONG_REJECT",
+        "BTC_BEAR_LONG_REJECT",
+    ):
+        monkeypatch.setenv(var, "0")
     # 2026-06-01: this test originally used source_system=prediction_market_consensus
     # as its example pick, but that source was RETIRED into BLOCKED_SOURCE_SYSTEMS
     # (quality_gates.py:2010-2015, data-corruption PRICE_MISMATCH rows), so the active

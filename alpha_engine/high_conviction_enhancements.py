@@ -271,5 +271,4 @@ def generate_performance_alerts(active_picks: List[Dict[str, Any]],
         if recent_wr < 0.65:
             alerts.append(f"⚠️ High-conviction WR degraded to {recent_wr:.1%}")
 
-    return alerts</content>
-<parameter name="filePath">C:\findtorontoevents_antigravity.ca\alpha_engine\high_conviction_enhancements.py
+    return alerts
