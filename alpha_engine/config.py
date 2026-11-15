@@ -450,6 +450,17 @@ CRYPTO_BLOCKED_DIRECTIONS = frozenset({"BUY", "LONG", "STRONG_BUY"})
 # forward_test_only / june2026 shadow picks are exempt in quality_gates (master-loop P0-C note).
 CRYPTO_BLOCKED_DIRECTIONS_SIZED = frozenset({"BUY", "LONG", "STRONG_BUY"})
 
+# ETF_SHORT_CLASS_BLOCK (2026-11-15): ETF SHORT is anti-predictive for the whole class.
+# Ledger evidence (ai_tournament_picks_latest.json, 2,242 closed picks):
+#   ETF SHORT  n=75  WR 10.7%  mean -2.56%/trade  PF 0.09  sum -192.1
+#   ETF LONG   n=116 WR 84.5%  mean +2.66%/trade  PF 8.28  sum +309.0
+# The SHORT inversion survives a time split (8.1% WR first half / 13.2% second half),
+# so it is a structural sign error, not one bad regime. ETF LONG is the strongest book
+# in the system and is deliberately NOT touched by this gate.
+# Exempt (measurement-only): forward_test_only / forward_observation / paper_pilot / _monitor_mode.
+# Kill-switch: ETF_SHORT_GATE_ENABLED=0. Fail-open.
+ETF_BLOCKED_DIRECTIONS = frozenset({"SHORT", "SELL"})
+
 # M-037: ml_score floor — bottom 30% = 32.5% WR, top 30% = 60% WR
 MIN_ML_SCORE_CRYPTO = 0.65
 
