@@ -38,8 +38,8 @@ permissions:
 
 # Storm-commit repo: a newer push supersedes the in-flight test run.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.sha }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
