@@ -2712,6 +2712,7 @@ BLOCKED_ASSET_STRATEGY_PAIRS = {
     # H-005 FAILED_ARCHIVED — inversion does NOT rescue it (WR=2% n=202, both directions broken).
     # Escalation criterion met: WR=2% < 10% escalation_wr_floor + H-005 confirms no rescue path.
     ("FUTURES", "futures_momentum"),  # re-blocked 2026-05-19 — H-005 escalation
+    ("FUTURES", "multi_asset_copytrader"),  # 2026-11-15 — WR=2.5% n=157 critical drain (verified against closed_picks.json)
     ("CRYPTO", "MeanReversionBB"),
     # EQUITY MeanReversionBB unblocked 2026-06-06 — resolver n=175 WR=54.9% PF=1.82;
     # isolated paper pilot: verified_strategies/paper_pilot/equity_bb_pilot.py

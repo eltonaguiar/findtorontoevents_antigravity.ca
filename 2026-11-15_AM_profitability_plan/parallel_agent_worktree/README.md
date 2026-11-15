@@ -22,8 +22,8 @@ After reviewing 24 hours of local + remote commits, peer reviews (9 peers), back
 | `02_holding_period_analysis/holding_period_vs_style.md` | Holding periods vs trading styles + proven/contest-winning algorithms |
 | `03_subq_decision_support/subq_fact_check.md` | SubQ API key usage + fact-checking framework |
 | `04_essential_questions/essential_questions.md` | Essential questions to find a profitable algorithm |
-| `05_prediction_market_copytrading/why_no_winners.md` | Why Kalshi/Polymarket + copy trading have not produced winners **(CORRECTED — see below)** |
-| `03_backtest_research/copy_trading_prediction_markets_corrected_findings.md` | **CORRECTION:** Copy trading + prediction markets DO have proven edges (COMMODITY WR=93.8%, Prediction Market forward WR=79.09%) |
+| `05_prediction_market_copytrading/why_no_winners.md` | Why Kalshi/Polymarket + copy trading have not produced winners |
+| `03_backtest_research/copy_trading_prediction_markets_corrected_findings.md` | **CORRECTION:** Copy trading COMMODITY WR=93.8% claim **debunked** — all 186 picks force-closed toxic (pnl=0). Prediction markets PBO=0.603 blocks deployment. |
 | `06_key_metrics/key_metrics_perspectives.md` | Key metrics from Sharpe / pro investor / MF manager / bank trader perspectives |
 | `07_agent_prompts/agent_prompts.md` | Prompts for AI coding agents in parallel worktrees |
 | `08_qa_validation/qa_protocol.md` | QA validation protocol (PnL=0%, blank fields, open/recently closed flags) |
@@ -55,21 +55,23 @@ A parallel agent ran a separate pre-registered backtest at `2026-11-15_1233AM_wi
 
 Both simulations agree: **beta capture is the only proven path; no active rule has a statistically significant edge.** Buffy's forward protocol (`FORWARD_PROTOCOL.md`) adds a Stage 0 "kill in backtest" framework and FAST vs SLOW strategy handling that complements the forward-test tracking protocol in `08_qa_validation/FORWARD_TEST_TRACKING_PROTOCOL.md`.
 
-## ⚠️ Correction: Copy Trading & Prediction Markets DO Have Proven Edges
+## ⚠️ Correction: Copy Trading COMMODITY WR=93.8% Claim DEBUNKED
 
-My earlier claim in `05_prediction_market_copytrading/why_no_winners.md` that "copy trading and prediction markets have not produced winners" is **incorrect**. Actual repo data shows:
+My earlier claim in `03_backtest_research/copy_trading_prediction_markets_corrected_findings.md` that "copy trading COMMODITY WR=93.8% is a real edge" is **incorrect**. Ground-truth verification against `alpha_engine/data/closed_picks.json` shows:
 
-| Source | Best Class | WR | n | Status |
-|--------|-----------|-----|---|--------|
-| multi_asset_copytrader | COMMODITY | 93.8% | 96 | **REAL EDGE** (Tier-1 candidate) |
-| multi_asset_copytrader | FOREX | 14.8% | 662 | Massive drain — BLOCK |
-| multi_asset_copytrader | FUTURES | 2.5% | 157 | Critical drain — BLOCK |
-| prediction_market_consensus | CRYPTO | 79.09% (forward) | 110 | Shadow mode — PBO=0.603 |
-| prediction_market_consensus | CRYPTO (paper pilot) | 64.76% | 837 resolved | Promising forward results |
+| Source | Class | n | Resolved Wins | Resolved Losses | Status |
+|--------|-------|---|--------------|----------------|--------|
+| multi_asset_copytrader | COMMODITY | 186 | 0 | 0 | ❌ All force-closed toxic, pnl=0 |
+| multi_asset_copytrader | FOREX | 160 | 20 | 23 | ❌ WR 12.5% (win/total) — massive drain |
+| multi_asset_copytrader | FUTURES | 31 | 0 | 0 | ❌ All force-closed toxic — critical drain |
 
-**Key insight:** Multi-class systems are aggregate-misleading. The aggregate PF=4.28 for copy trader is masked by FOREX/FUTURES drag. Class-level decomposition reveals COMMODITY as the strongest edge.
+**The 93.8% WR claim was formally retracted on 2026-05-16** as a pre-dedup over-emission artifact (46× over-emission on CT=F cotton). Post-dedup WR collapsed to ~40%, PF to 0.17. DB-level data confirms n=635 WR=34.3% PF=0.74 — a consistent loser.
 
-See `03_backtest_research/copy_trading_prediction_markets_corrected_findings.md` for full corrected analysis.
+**Key insight:** Aggregate multi-class copy-trader numbers (PF=4.28) are aggregate-misleading. Class-level decomposition shows NO copy-trader class has a proven edge. All are either force-closed toxic (COMMODITY, FUTURES) or massively negative (FOREX).
+
+Prediction markets remain promising but unproven: forward WR=79.09% (n=110, shadow mode), but PBO=0.603 > 0.10 gate blocks deployment. Currently `pick_count: 0` — not emitting live picks.
+
+See `03_backtest_research/copy_trading_prediction_markets_corrected_findings.md` for full analysis.
 
 ## Immediate Go/No-Go Rule
 

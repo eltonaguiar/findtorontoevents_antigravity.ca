@@ -81,27 +81,41 @@
 
 ---
 
-## 6. Commodity / Futures — RESEARCH SLOT 1 (Copy Trader / COT Consensus)
+## 6. Commodity / Futures — BLOCKED (Copy Trader Claims Debunked)
 
-**Verdict:** **Strongest proven edge in the system.** Per-class decomposition shows COMMODITY via multi_asset_copytrader at WR=93.8% (n=96) and multi_asset_cot at WR=94.1% (n=102). The aggregate PF=4.28 is masked by FOREX (WR=14.8%, n=662) and FUTURES (WR=2.5%, n=157) drag. Class-level decomposition is the only honest read.
+**Verdict:** BLOCKED. No proven edge. The previously claimed COMMODITY copy-trader WR=93.8% (n=96) was **debunked on 2026-05-16** as a pre-dedup over-emission artifact (46× over-emission on CT=F cotton).
 
-**Source:** `reports/multi_asset_copytrader_per_class_audit_20260513T014000Z.md`
+**Source:** `alpha_engine/data/closed_picks.json` (ground truth), `reports/commodity_deep_dive_swarm_2026-05-16.md` (retraction)
 
-### Per-Class CopyTrader Results
+### Ground Truth from closed_picks.json
 
-| Class | n | WR % | Volume Share | Status | Action |
-|-------|---|------|-------------|--------|--------|
-| **COMMODITY** | 96 | **93.8%** | 6.4% | ✅ Real edge — pristine WR | **PRESERVE + SCALE** |
-| EQUITY | 28 | 42.9% | 1.9% | ⚠️ Thin (n<100) | Monitor |
-| **FOREX** | 662 | **14.8%** | 44.0% | ❌ Massive drag | **MUTATE-BEFORE-KILL** |
-| **FUTURES** | 157 | **2.5%** | 10.4% | ❌ Critical drain | **SURGICAL BLOCK** |
+| Metric | Value |
+|--------|-------|
+| multi_asset_copytrader COMMODITY picks | 186 |
+| Resolved wins | 0 |
+| Resolved losses | 0 |
+| All statuses | "CLOSED" (force-closed toxic) |
+| All pnl_pct | 0.0 |
+| All exit_reason | "FORCE_CLOSED_TOXIC" |
+| Effective WR | 0% (0/0 resolved) |
+
+**The 93.8% claim does NOT hold up.** All 186 COMMODITY copy-trader picks were force-closed with zero PnL — none were ever resolved with an actual trading outcome. The claim was formally retracted on 2026-05-16 (post-dedup WR collapsed to ~40%, PF to 0.17). DB-level data shows n=635 WR=34.3% PF=0.74 — a consistent loser.
+
+### Per-Class CopyTrader Results (Ground Truth)
+
+| Class | n | WR | Status | Action |
+|-------|---|-----|--------|--------|
+| **COMMODITY** | 186 | 0% (unresolved) | ❌ All force-closed toxic | **BLOCKED** |
+| EQUITY | 28 | 42.9% | ⚠️ Thin (n<100) | Monitor |
+| **FOREX** | 160 | 12.5% (win/total) | ❌ Massive drag | **MUTATE-BEFORE-KILL** |
+| **FUTURES** | 31 | 0% (unresolved) | ❌ All force-closed toxic | **SURGICAL BLOCK** |
 
 ### Plan
 
-1. **Surgical block:** Add `(FUTURES, multi_asset_copytrader)` to `BLOCKED_ASSET_STRATEGY_PAIRS` in `audit_trail/quality_gates.py` — n=157, WR=2.5% is empirically dead.
-2. **Mutate-before-kill:** Run axis analysis on `(FOREX, multi_asset_copytrader)` — 662 picks at 14.8% WR needs symbol/direction/timeframe analysis.
-3. **Preserve + scale COMMODITY:** Cross-reference with `multi_asset_cot` (COMMODITY WR=94.1%, n=102). Build dedicated COMMODITY copy-trader/COT consensus emitter with elite filtering.
-4. **Target:** Make COMMODITY copy-trader/COT the Tier-1 go-live candidate — DB-verify pending next session action.
+1. **Surgical block:** Add `(FUTURES, multi_asset_copytrader)` to `BLOCKED_ASSET_STRATEGY_PAIRS` in `audit_trail/quality_gates.py` — WR=0% n=31, all force-closed toxic.
+2. **Mutate-before-kill:** Run axis analysis on `(FOREX, multi_asset_copytrader)` — 160 picks at 12.5% WR needs symbol/direction/timeframe analysis.
+3. **COMMODITY:** Blocked — no resolved trades, all force-closed toxic. Do not allocate.
+4. **Target:** No commodity copy-trader candidate is viable for deployment.
 
 ---
 
@@ -179,10 +193,9 @@
 | Priority | Asset Class | Source | Role | Rationale |
 |----------|-------------|--------|------|-----------|
 | 1 | Mutual Funds + ETFs (low-cost index) | — | Core allocation | Highest probability of positive real returns, lowest risk. Beta capture, not alpha. |
-| 2 | COMMODITY | multi_asset_copytrader / multi_asset_cot | Alpha research slot 1 | WR 93.8-94.1%, n=96-102. Strongest proven edge in system. DB-verify pending. |
-| 3 | CRYPTO (Prediction Markets) | prediction_market_consensus | Shadow mode candidate | WR 79.09% forward, PF 13.20, but PBO=0.603 > 0.10 gate. Not yet money-ready. |
-| 4 | EQUITY (US) | — | Research slot | Only class with pre-registered SPY benchmark path. Unproven; failed SPY gate (t=1.05). |
-| 5-9 | FOREX, FUTURES, ETF, BOND, Meme/Penny | — | Blocked | Do not allocate. Fix measurement first. |
+| 2 | CRYPTO (Prediction Markets) | prediction_market_consensus | Shadow mode candidate | WR 79.09% forward, PF 13.20, but PBO=0.603 > 0.10 gate. Not yet money-ready. |
+| 3 | EQUITY (US) | — | Research slot | Only class with pre-registered SPY benchmark path. Unproven; failed SPY gate (t=1.05). |
+| 4-9 | COMMODITY, FOREX, FUTURES, ETF, BOND, Meme/Penny | — | Blocked | COMMODITY copy-trader claims debunked (all 186 picks force-closed toxic). Do not allocate. Fix measurement first. |
 
-**Bottom line:** Deploy real money only into low-cost index ETF/MF allocation. For alpha research, COMMODITY copy-trader/COT is the strongest candidate (WR 93.8%+) and should be prioritized over EQUITY and CRYPTO. Prediction markets are promising but PBO=0.603 blocks deployment.
+**Bottom line:** Deploy real money only into low-cost index ETF/MF allocation. No alpha source has passed all money-ready gates. COMMODITY copy-trader claims (WR=93.8%) were debunked — all 186 picks were force-closed toxic with zero PnL. Prediction markets are promising but PBO=0.603 blocks deployment.
 
