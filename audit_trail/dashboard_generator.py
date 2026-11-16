@@ -5616,7 +5616,7 @@ _TRACK_RECORD_CLOSED_SOURCES = {
 }
 # Non-crypto asset classes that should always have reserved closed-pick slots.
 # Without reservation, high-frequency crypto picks crowd them out of the 1000 cap.
-_NON_CRYPTO_ASSET_CLASSES = {"EQUITY", "ETF", "FOREX", "FUTURES", "COMMODITY", "BOND"}
+_NON_CRYPTO_ASSET_CLASSES = {"EQUITY", "ETF", "FOREX", "FUTURES", "COMMODITY", "BOND", "MUTUAL_FUND"}
 
 
 def _track_stats_key(strategy: str, symbol: str) -> str:
@@ -6078,7 +6078,7 @@ def compute_asset_class_health(ac_breakdown: dict) -> dict:
         }
     # Guarantee all 6 canonical trading classes always appear so dashboard
     # consumers and tests never need to guard against a missing key.
-    _CANONICAL = {"CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND"}
+    _CANONICAL = {"CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND", "MUTUAL_FUND"}
     _stub = {
         "status": "insufficient_data",
         "sample_tier": "insufficient",
@@ -6251,7 +6251,7 @@ def _build_resolution_coverage(
     (``RESOLUTION_GATE_PCT``) is surfaced so the dashboard can show a
     visual cue when a class falls below it.
     """
-    _CANONICAL = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND", "FUTURES"]
+    _CANONICAL = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND", "FUTURES", "MUTUAL_FUND"]
     gate_pct = 80.0
     out: dict[str, dict] = {}
     for cls in _CANONICAL:
@@ -6797,7 +6797,7 @@ def _should_reserve_closed_pick_for_track_record(pick: dict) -> bool:
 
 
 _NC_ASSET_CLASSES = frozenset(
-    {"FOREX", "EQUITY", "STOCK", "COMMODITY", "FUTURES", "ETF", "BOND"}
+    {"FOREX", "EQUITY", "STOCK", "COMMODITY", "FUTURES", "ETF", "BOND", "MUTUAL_FUND"}
 )
 _NC_ALIAS_MAP = {
     "FX": "FOREX",
@@ -6814,7 +6814,7 @@ def _normalize_nc_asset(value) -> str:
     return _NC_ALIAS_MAP.get(ac, ac)
 
 
-_PER_ASSET_CLASSES = ("CRYPTO", "EQUITY", "FOREX", "COMMODITY", "FUTURES", "BOND", "ETF")
+_PER_ASSET_CLASSES = ("CRYPTO", "EQUITY", "FOREX", "COMMODITY", "FUTURES", "BOND", "ETF", "MUTUAL_FUND")
 
 
 def _normalize_per_asset_class(value) -> str:
@@ -6875,9 +6875,12 @@ def _build_per_asset_quality_summary(
         avg_fwr = _mean(fwr_vals)
         active_count = len(class_active)
         smart_count = len(class_smart)
+        # 2026-11-16: a class with zero picks must NOT report a green
+        # thresholdPass (BOND showed pass=true on an empty book). Empty =
+        # unproven; this is what makes MUTUAL_FUND's debut verdict honest.
         threshold_pass = (
-            active_count == 0
-            or (
+            active_count > 0
+            and (
                 smart_count > 0
                 and avg_score >= min_score
                 and (avg_fwr == 0.0 or avg_fwr >= min_fwr)
@@ -14281,7 +14284,7 @@ def compute_non_crypto_performance(active: list, closed: list) -> dict:
 
 
 # B2 (2026-05-02): Asset-Class × Timeframe coverage grid
-_AC_TF_GRID_ASSET_CLASSES = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "BOND", "ETF", "FUTURES"]
+_AC_TF_GRID_ASSET_CLASSES = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "BOND", "ETF", "FUTURES", "MUTUAL_FUND"]
 _AC_TF_GRID_TIMEFRAMES = ["SCALP", "INTRADAY", "SWING", "POSITION"]
 
 

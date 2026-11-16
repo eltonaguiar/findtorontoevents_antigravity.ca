@@ -25,6 +25,16 @@ FOREX_CODES: frozenset[str] = frozenset({
     "ZAR", "TRY", "INR",
 })
 
+# Mutual funds price once daily at NAV; symbol universe lives in
+# alpha_engine/mutual_fund_nav.py so classification and the NAV loader agree.
+try:
+    from alpha_engine.mutual_fund_nav import MUTUAL_FUND_SYMBOLS, is_mutual_fund
+except ImportError:  # pragma: no cover - defensive for partial checkouts
+    MUTUAL_FUND_SYMBOLS: frozenset[str] = frozenset()
+
+    def is_mutual_fund(symbol: object) -> bool:  # type: ignore[misc]
+        return False
+
 BOND_SYMBOLS: frozenset[str] = frozenset({
     # Core rates / investment grade (2→14 expansion 2026-05-17)
     "TLT", "IEF", "SHY", "LQD", "AGG", "BND",
@@ -104,6 +114,8 @@ _CAT_MAP: dict[str, str] = {
     "forex": "forex", "fx": "forex",
     "etf": "etf",
     "bond": "bond",
+    "mutual_fund": "mutual_fund", "mutualfund": "mutual_fund",
+    "mutual_funds": "mutual_fund", "nav_fund": "mutual_fund",
     "commodity": "commodity", "futures": "futures",
     "equity": "equity", "stock": "equity", "stocks": "equity", "penny": "equity",
 }
@@ -114,6 +126,7 @@ _LOWER_TO_UPPER: dict[str, str] = {
     "equity": "EQUITY",
     "etf": "ETF",
     "bond": "BOND",
+    "mutual_fund": "MUTUAL_FUND",
     "futures": "FUTURES",
     "commodity": "COMMODITY",
     "unknown": "UNKNOWN",
@@ -162,6 +175,10 @@ def asset_class_from_symbol(symbol: str | None) -> str:
     # ── Known ETF symbols ──
     if sym_core in ETF_SYMBOLS:
         return "etf"
+
+    # ── Mutual funds (daily NAV, checked before equity/ETF guesses) ──
+    if sym_core in MUTUAL_FUND_SYMBOLS:
+        return "mutual_fund"
 
     # ── Known commodity symbols ──
     if sym_core in COMMODITY_SYMBOLS:
@@ -249,6 +266,8 @@ def normalize_asset_class(pick: dict[str, Any]) -> str:
         return "commodity"
     if sym_core in ETF_SYMBOLS:
         return "etf"
+    if sym_core in MUTUAL_FUND_SYMBOLS:
+        return "mutual_fund"
     if sym_core in EQUITY_SYMBOLS:
         return "equity"
 

@@ -186,11 +186,10 @@ PF 0.59 / 0.60. ETF is the least destructive class with a positive sum (worst
 non-class cohort: WR 54.0%, PF 1.35, +11.1%.
 
 **Missing classes.**
-* `MUTUAL_FUND`: **0 rows, 0 payload strings.** Not a registered class (class
-  id −1, dropped by the ML gate per `2026-11-15_AM_profitability-plan`), and the
-  separate `ejaguiar1_mutual_funds` DB is unreachable (1045) per
-  `SWARM_Nov162026/DB/DONE/DB_ACCESS_MATRIX.md`. Any mutual-fund tile elsewhere
-  on the site is not fed by this pipeline.
+* `MUTUAL_FUND`: was **0 rows, 0 payload strings** and not a registered
+  class; it is now registered (2026-11-16) with a daily-NAV data path and
+  appears as `INSUFFICIENT_DATA` / `thresholdPass=false` until picks exist
+  — see `updates/2026-11-16-mutual-fund-asset-class-nav.md`.
 * `SPORTS` exists as 2 rows only — no class surface.
 * `PENNY_STOCK` / `MEME` / `CHEAP_STOCKS` appear in `money_ready_verdicts` but
   have no rows in `picks` — verdicts on empty universes.

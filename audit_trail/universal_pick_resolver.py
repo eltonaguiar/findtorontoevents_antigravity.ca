@@ -25,6 +25,19 @@ from collections import defaultdict
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from audit_trail.pnl_ingest_sanity import apply_pnl_clamp_to_pick
+
+# 2026-11-16: mutual funds resolve on daily NAV instead of intraday OHLCV.
+try:
+    from alpha_engine.mutual_fund_nav import (
+        fetch_nav as _mf_fetch_nav,
+        is_mutual_fund as _mf_is_mutual_fund,
+    )
+except ImportError:  # pragma: no cover
+    def _mf_is_mutual_fund(symbol):  # type: ignore[misc]
+        return False
+
+    def _mf_fetch_nav(symbol):  # type: ignore[misc]
+        return None
 # 2026-11-16: binary prediction-market contracts settle on outcome, not on a
 # spot TP/SL (see audit_trail/pm_contract_resolver.py).
 try:
@@ -61,6 +74,7 @@ RESOLVER_SOURCE_ID = "universal_pick_resolver"  # EAGLE2 2026-06-02: source prov
 # slower than crypto. 24-48h was biased against forex/bonds (5-14 days to
 # resolve TP/SL). Per-class hold window prevents premature TIME_EXIT closes
 # from masking true win rate on slow markets while preserving crypto cadence.
+# 2026-11-16: mutual funds settle on daily NAV; allow a week before time-exit.
 MAX_HOLD_HOURS_BY_CLASS = {
     "CRYPTO": 48,
     "EQUITY": 96,
@@ -69,6 +83,7 @@ MAX_HOLD_HOURS_BY_CLASS = {
     "FUTURES": 96,
     "FOREX": 72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
     "BOND": 120,
+    "MUTUAL_FUND": 168,
 }
 
 
@@ -1436,6 +1451,16 @@ def main():
             orig_sym = pick["symbol"]
             norm_sym = _normalize_symbol(orig_sym)
             current_price = prices.get(norm_sym) or prices.get(orig_sym)
+            # ── Mutual funds price once daily at NAV (2026-11-16) ──
+            # An intraday OHLCV request returns nothing for a MUTUALFUND ticker,
+            # so without this the class could never be resolved. Use the daily NAV
+            # and record the source; TP/SL are evaluated against NAV closes.
+            if current_price is None and _mf_is_mutual_fund(orig_sym):
+                _nav = _mf_fetch_nav(orig_sym)
+                if _nav and _nav.get("nav"):
+                    current_price = float(_nav["nav"])
+                    pick["price_source"] = "mutual_fund_nav"
+                    pick["nav_date"] = _nav.get("nav_date")
 
             # ── Binary prediction-market contracts (2026-11-16) ──
             # "Will X happen?" has no spot price and no meaningful TP/SL.

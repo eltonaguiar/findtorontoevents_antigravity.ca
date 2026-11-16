@@ -4951,7 +4951,7 @@ function renderAssetClassQuality(hasFilters, activePicks, smartRows, f) {
   const summary = D.asset_class_summary || D.assetClassSummary || {};
   const smartByAsset = D.smart_picks_by_asset || D.smartPicksByAsset || {};
   const enforceMin = 10;
-  const classes = ['CRYPTO', 'EQUITY', 'FOREX', 'COMMODITY', 'FUTURES', 'BOND', 'ETF'];
+  const classes = ['CRYPTO', 'EQUITY', 'FOREX', 'COMMODITY', 'FUTURES', 'BOND', 'ETF', 'MUTUAL_FUND'];
   const targetAsset = ((f || {}).asset || '').toUpperCase();
   const visible = targetAsset ? classes.filter(a => a === targetAsset) : classes;
   const activeFallback = {};
@@ -5133,7 +5133,7 @@ function recomputePickAgeHours(pick, nowMs) {
 
 function isNonCryptoAssetClass(assetClass) {
   const ac = String(assetClass || '').toUpperCase();
-  return ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF';
+  return ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF' || ac === 'MUTUAL_FUND';
 }
 
 function isResolvedPick(pick) {
@@ -5241,7 +5241,7 @@ function getResolvedTradePnl(pick) {
   if (pick && pick.net_pnl_pct == null && typeof window !== 'undefined' && window.ValidationMetrics && window.ValidationMetrics.calculateNetPnL) {
     var ac = (pick.asset_class || pick.category || 'CRYPTO').toUpperCase();
     // Only apply cost adjustment for non-crypto assets; crypto costs are handled elsewhere or already in gross
-    if (ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF') {
+    if (ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF' || ac === 'MUTUAL_FUND') {
       // 2026-04-17 defensive: calculateNetPnL was returning {netPnlPct: NaN} for
       // some symbols, poisoning the totalPnl sum and producing NaN% on every
       // non-crypto tile. Validate the result; fall back to gross pnl on failure.
@@ -6412,6 +6412,7 @@ function renderNonCryptoPanel() {
     {key: 'FOREX', label: 'Forex', icon: '\u{1F4B1}', color: 'var(--blue)', borderColor: 'rgba(96,165,250,0.3)'},
     {key: 'COMMODITY', label: 'Commodities', icon: '\u{1F6E2}', color: 'var(--orange)', borderColor: 'rgba(251,146,60,0.3)'},
     {key: 'FUTURES', label: 'Futures', icon: '\u{1F4CA}', color: 'var(--yellow)', borderColor: 'rgba(245,158,11,0.3)'},
+    {key: 'MUTUAL_FUND', label: 'Mutual Funds', icon: '\u{1F3E6}', color: 'var(--cyan)', borderColor: 'rgba(34,211,238,0.3)'},
     {key: 'ETF', label: 'ETFs', icon: '\u{1F4E6}', color: 'var(--cyan)', borderColor: 'rgba(34,211,238,0.3)'},
     {key: 'BOND', label: 'Bonds', icon: '\u{1F4DC}', color: 'var(--purple)', borderColor: 'rgba(168,85,247,0.3)'}
   ];
@@ -7605,6 +7606,7 @@ function getAcMiniBadge(pick) {
   if (ac === 'EQUITY') return '<span class="ac-mini ac-mini-eq" title="Equity">EQ</span>';
   if (ac === 'COMMODITY') return '<span class="ac-mini ac-mini-cmd" title="Commodity">CMD</span>';
   if (ac === 'FUTURES') return '<span class="ac-mini ac-mini-fut" title="Futures">FUT</span>';
+  if (ac === 'MUTUAL_FUND') return '<span class="ac-mini ac-mini-mf" title="Mutual Fund (NAV)">MF</span>';
   if (ac === 'BOND') return '<span class="ac-mini ac-mini-bnd" title="Bond">BND</span>';
   if (ac === 'ETF') return '<span class="ac-mini ac-mini-etf" title="ETF">ETF</span>';
   if (pick.source_system === 'inverse_mutations') return '<span class="ac-mini ac-mini-inv" title="Inverse LOSER Strategy Mutation - reversing a historically poor strategy to capture alpha">INV</span>';
@@ -7630,7 +7632,7 @@ function populateFilters() {
     if (ac && ac !== 'STOCK') assetSet[ac === 'STOCK' ? 'EQUITY' : ac] = true;
   });
   // Preferred order
-  var assetOrder = ['CRYPTO','EQUITY','FOREX','COMMODITY','FUTURES','ETF'];
+  var assetOrder = ['CRYPTO','EQUITY','FOREX','COMMODITY','FUTURES','ETF','MUTUAL_FUND'];
   var assetSel = el('f-asset');
   // 2026-04-06: Clear existing options first to prevent duplicates (dropdown was
   // being populated twice, causing every option to appear 2x). Keep only the "All" default.
@@ -10209,7 +10211,7 @@ function computeScore(p) {
   // Systems with 0 closed non-crypto trades (goldmine_stocks, contrarian_consensus) are unproven.
   let ncQualityMult = 1.0;
   const _pickAc = ((p.asset_class || '') + '').toUpperCase();
-  const _isNonCrypto = _pickAc === 'EQUITY' || _pickAc === 'FOREX' || _pickAc === 'COMMODITY' || _pickAc === 'FUTURES' || _pickAc === 'ETF';
+  const _isNonCrypto = _pickAc === 'EQUITY' || _pickAc === 'FOREX' || _pickAc === 'COMMODITY' || _pickAc === 'FUTURES' || _pickAc === 'ETF' || _pickAc === 'MUTUAL_FUND';
   if (_isNonCrypto && D.systems) {
     const _ncSys = D.systems.find(s => s.name === p.source_system);
     const _ncClosedAll = _ncSys ? (_ncSys.closed_picks || 0) : 0;
@@ -10344,7 +10346,7 @@ function renderPicks() {
       const age = p.age_hours ?? 999;
       const pnl = p.pnl_pct ?? 0;
       const ac = ((p.asset_class || '') + '').toUpperCase();
-      const isNonCrypto = ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF';
+      const isNonCrypto = ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF' || ac === 'MUTUAL_FUND';
       const maxAge = isNonCrypto ? 336 : 72;
       if (age > maxAge && Math.abs(pnl) < 1) return false;
       return true;
@@ -11544,7 +11546,7 @@ function renderOverview() {
       const gridData = grid || (function() {
         const active = D.picks?.active || [];
         const TFS = ['SCALP','INTRADAY','SWING','POSITION'];
-        const ACS = ['CRYPTO','EQUITY','FOREX','COMMODITY','BOND','ETF','FUTURES'];
+        const ACS = ['CRYPTO','EQUITY','FOREX','COMMODITY','BOND','ETF','FUTURES','MUTUAL_FUND'];
         const cells = {}, tots = {}, empties = [];
         let hasUnk = false;
         active.forEach(p => {

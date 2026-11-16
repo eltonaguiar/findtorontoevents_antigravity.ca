@@ -223,7 +223,7 @@ MAX_SYMBOL_CONCENTRATION_BY_CLASS: dict[str, float] = {
 # 2026-05-28 Tier-1: the full set of asset classes /audit tracks. Every one
 # must appear in money_ready_verdict.json even at n=0 (as INSUFFICIENT_DATA)
 # so downstream consumers never assume a class is absent. Ref: action #9.
-CANONICAL_ASSET_CLASSES = ("CRYPTO", "EQUITY", "COMMODITY", "ETF", "FOREX", "BOND", "FUTURES")
+CANONICAL_ASSET_CLASSES = ("CRYPTO", "EQUITY", "COMMODITY", "ETF", "FOREX", "BOND", "FUTURES", "MUTUAL_FUND")
 
 
 def _is_class_policy_frozen(asset_class: str) -> bool:
@@ -261,6 +261,7 @@ SLIPPAGE_BPS: dict[str, float] = {
     "ETF": 8.0,
     "FOREX": 5.0,     # tight spreads
     "BOND": 8.0,
+    "MUTUAL_FUND": 8.0,
     "FUTURES": 10.0,
 }
 DEFAULT_SLIPPAGE_BPS: float = 10.0
@@ -284,6 +285,7 @@ CLASS_WR_FLOORS: dict[str, float] = {
     "FUTURES": 0.40,
     "ETF": 0.45,
     "BOND": 0.45,
+    "MUTUAL_FUND": 0.45,
     "EQUITY": 0.52,
     "CRYPTO": 0.50,
 }

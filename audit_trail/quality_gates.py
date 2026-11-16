@@ -494,6 +494,9 @@ ASSET_CLASS_SMART_THRESHOLDS = {
     "FUTURES": {"min_score": 45.0, "min_fwr": 0.50, "min_trades": 0},
     "BOND": {"min_score": 35.0, "min_fwr": 0.50, "min_trades": 0},
     "ETF": {"min_score": 35.0, "min_fwr": 0.50, "min_trades": 0},
+    # 2026-11-16: registered class, daily-NAV universe, zero picks today ->
+    # Smart gate stays empty (forward_validated=false) by design.
+    "MUTUAL_FUND": {"min_score": 40.0, "min_fwr": 0.50, "min_trades": 0},
 }
 SMART_PICKS_MIN_CONFIDENCE = 0.60  # FROZEN 2026-05-20 to 2026-08-18
 # ML score gate is currently DISABLED — ml_score is not reliably populated upstream,
