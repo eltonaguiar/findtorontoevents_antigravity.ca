@@ -833,6 +833,7 @@ jobs:
 
       #  Commit results to git 
       - name: Commit results
+        timeout-minutes: 30
         if: steps.mode.outputs.mode != 'report'
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
