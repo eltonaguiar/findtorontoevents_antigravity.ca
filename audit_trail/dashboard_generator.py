@@ -11112,8 +11112,11 @@ def collect_audit_events(limit=50):
 
     # Source 3: crypto_signal_engine audit
     cse = _safe_json(ROOT / "crypto_signal_engine/data/audit.json")
-    if cse and cse.get("new_picks"):
-        for pick in cse["new_picks"][-20:]:
+    new_picks = cse.get("new_picks") if isinstance(cse, dict) else None
+    if isinstance(new_picks, list):
+        for pick in new_picks[-20:]:
+            if not isinstance(pick, dict):
+                continue
             events.append(
                 {
                     "event_type": "CSE_NEW_PICK",
