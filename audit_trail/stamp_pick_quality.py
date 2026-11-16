@@ -39,6 +39,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+from audit_trail.forward_validation import apply_ledger_validation as _apply_ledger_fv
+
 
 def _float(v: Any, default: float = 0.0) -> float:
     """Coerce arbitrary input to float; return default on failure or falsy."""
@@ -195,8 +197,16 @@ def _load_closed() -> list:
 
 
 def _build_strategy_stats(closed: list) -> dict[str, dict]:
-    """Compute per-strategy WR, n, avg_pnl from closed picks."""
-    stats: dict[str, dict] = defaultdict(lambda: {"wins": 0, "total": 0, "pnl_sum": 0.0})
+    """Compute per-strategy n / WR / PF / avg_pnl from closed picks.
+
+    2026-11-16: adds resolved-only n and profit factor so `forward_validated`
+    can be decided from the ledger instead of emitter booleans. `n` stays the
+    raw closed count for back-compat; `resolved_n` / `pf` are the honest ones.
+    """
+    stats: dict[str, dict] = defaultdict(
+        lambda: {"wins": 0, "total": 0, "pnl_sum": 0.0,
+                 "resolved": 0, "gross_win": 0.0, "gross_loss": 0.0}
+    )
     for p in closed:
         s = _strategy_key(p)
         if not s:
@@ -206,14 +216,30 @@ def _build_strategy_stats(closed: list) -> dict[str, dict]:
         stats[s]["pnl_sum"] += float(pnl) if pnl is not None else 0.0
         if _is_won(p):
             stats[s]["wins"] += 1
-    return {
-        s: {
-            "n":       d["total"],
-            "wr":      d["wins"] / d["total"] if d["total"] > 0 else 0.0,
-            "avg_pnl": d["pnl_sum"] / d["total"] if d["total"] > 0 else 0.0,
+        try:
+            v = float(pnl) if pnl is not None else 0.0
+        except (TypeError, ValueError):
+            v = 0.0
+        if abs(v) > 0.01:
+            stats[s]["resolved"] += 1
+            if v > 0:
+                stats[s]["gross_win"] += v
+            else:
+                stats[s]["gross_loss"] += v
+    out = {}
+    for s, d in stats.items():
+        resolved = d["resolved"]
+        out[s] = {
+            "n":          d["total"],
+            "resolved_n": resolved,
+            "wr":         d["wins"] / d["total"] if d["total"] > 0 else 0.0,
+            "ledger_wr":  (d["gross_win"] / (d["gross_win"] + abs(d["gross_loss"])) * 100.0)
+                          if resolved > 0 else 0.0,
+            "pf":         (d["gross_win"] / abs(d["gross_loss"]))
+                          if d["gross_loss"] < 0 else None,
+            "avg_pnl":    d["pnl_sum"] / d["total"] if d["total"] > 0 else 0.0,
         }
-        for s, d in stats.items()
-    }
+    return out
 
 
 def _assign_trust_tier(wr: float, n: int) -> str:
@@ -341,6 +367,8 @@ def stamp_picks(picks: list, strategy_stats: dict, dry_run: bool = False) -> dic
         "quality_scored": 0,
         "trust_breakdown": {},
         "conviction_breakdown": {},
+        "forward_validated_promoted": 0,
+        "forward_validated_demoted": 0,
     }
 
     # Import conviction classifier (lazy to avoid circular imports)
@@ -402,6 +430,14 @@ def stamp_picks(picks: list, strategy_stats: dict, dry_run: bool = False) -> dic
         p["strat_fwd_wr"]     = round(wr, 3)
         p["strat_fwd_trades"] = n
         p["strat_fwd_avg_pnl"] = round(avg, 4)
+
+        # 2026-11-16: decide forward_validated from the strategy ledger, not
+        # only from what the emitter happened to set (several emitters hardcode
+        # False, which left 11 of 789 active picks flagged while 38 had a
+        # 20+ trade strategy history).
+        _led_change = _apply_ledger_fv(p, stats)
+        if _led_change:
+            summary["forward_validated_" + _led_change] += 1
 
         # 3. Stamp trust tier
         trust = _assign_trust_tier(wr, n)

@@ -16961,6 +16961,21 @@ def generate():
         compute_resolver_anomalies,
     )
 
+    # 2026-11-16: why forward_validated was rare — count what the ledger says
+    # now that the stamper promotes/demotes from it.
+    _fv_audit = {"validated": 0, "unvalidated": 0, "by_basis": {}, "by_class": {}}
+    for _p in final_active_picks:
+        _is_fv = _p.get("forward_validated") is True
+        _basis = str(
+            _p.get("forward_validated_basis") or ("emitter" if _is_fv else "unvalidated")
+        )
+        _bucket = "validated" if _is_fv else "unvalidated"
+        _fv_audit[_bucket] += 1
+        _fv_audit["by_basis"][_basis] = _fv_audit["by_basis"].get(_basis, 0) + 1
+        _klass = str(_p.get("asset_class") or "UNKNOWN").upper()
+        _fv_audit["by_class"].setdefault(_klass, {"validated": 0, "unvalidated": 0})
+        _fv_audit["by_class"][_klass][_bucket] += 1
+
     _pnl_headline = build_pnl_headline(
         headline=total_pnl_pct_compounded_rolling_100,
         rolling_100=total_pnl_pct_compounded_rolling_100,
@@ -17002,6 +17017,7 @@ def generate():
             # look like four competing claims about the same book.
             "pnl_headline": _pnl_headline,
             "resolver_anomalies": _resolver_anomalies,
+            "forward_validation_audit": _fv_audit,
             "proven_badge_audit": {
                 "rule": "PROVEN requires n>=20, WR>=50%, PF>=1.5 from resolved rows",
                 "demoted_from_proven_this_run": len(_PROVEN_DEMOTIONS),

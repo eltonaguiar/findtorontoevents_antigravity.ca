@@ -227,3 +227,21 @@ SHORTs, 5 pass score>=65 → 5 pass confidence → 4 pass R:R → **0** pass
 `forward_validated` (LONG: 5 → 3 → 3 → 0). The gate's binding constraint is
 forward validation. The flag is now env-overridable for the A/B, and blocked
 SHORTs are tagged `_smart_crypto_short_blocked` so the cost is measurable.
+
+
+## 7 · forward_validated is emitter-set, and the gate funnel is the real blocker
+
+`forward_validated` was written by emitters (several hardcode `False`); only 11 of
+789 active picks carried it while 38 had a 20+ trade strategy ledger. It is now
+decided by the ledger (n>=20, WR>=45%, PF>=1.0) in
+`audit_trail/forward_validation.py` via the stamper: 40 picks promoted (FOREX 27,
+EQUITY 8, ETF 5), 51/789 validated.
+
+That does **not** populate Smart Picks: `passes_active_gate` accepts 32 of 789
+(4.1%) and 0 of the 40 promoted picks pass it. The blockers are
+`equity_vix_gate_high_vix` (all equities, VIX>22), the FOREX directional gate
+(all FOREX longs), `TP_MAGNITUDE_IMPLAUSIBLE` (class TP caps) and crypto M-036.
+Cohort evidence: ETF 565 resolved 44.4%/PF 1.04 (XLF 54.5%/1.70 best, IWM
+35.4%/0.58 worst); copytraders 63 resolved 54.0%/1.35 with `copy_trader_clones`
+16 resolved 75.0%/4.43; prediction markets 27 active, 0 resolved.
+Detail: `updates/2026-11-16-forward-validated-ledger-recompute.md`.
