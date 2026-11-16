@@ -832,9 +832,8 @@
               'Failing checks: <strong>' + htmlEscape(_redList) + '</strong>. ' +
               'Ghost rows: ' + htmlEscape(_ghostLive) + '. ' +
               'Downstream panels (Top-N backtest, asset-class WR/PF, smart-picks scoring) read from the same DB and inherit this corruption.</span><br>';
-      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: <code>tools/cleanup_ghost_rows.py</code> shipped (2026-05-31: quarantined from canonical view — live raw count in the DB Health tile). <code>tools/db_health_check.py</code> emitting hourly; <code>forward_validator.py</code> writes canonical statuses. ' +
-              'Ghost rows, status mismatch, non-canonical statuses, and _bak tables all cleared as of 2026-05-31 DB audit. ' +
-              'See <a href="/updates/2026-05-31-pr1-data-integrity-repair.md" style="color:#fde68a;text-decoration:underline">PR #1 data integrity repair</a> and <a href="/updates/2026-05-31-incidents-enhancements-audit-summary.md" style="color:#fde68a;text-decoration:underline">incidents audit summary</a> for the full fix log.</span>';
+      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: the May 2026 cleanup did not clear the raw table. Live ghost count is the tile above (' + htmlEscape(_ghostLive) + '). Do not trade, and do not cite a cleared-ghost claim, while that count is above zero. ' +
+              '<code>tools/cleanup_ghost_rows.py</code> is dry-run first. See <a href="/updates/2026-11-16-audit-truth-layer-fixes.md" style="color:#fde68a;text-decoration:underline">2026-11-16 truth-layer note</a>.</span>';
       html += '</div>';
     } else if (payload.overall && payload.overall.harness_healthy === false) {
       var _failedN = payload.overall.checks_failed != null ? payload.overall.checks_failed : '?';
