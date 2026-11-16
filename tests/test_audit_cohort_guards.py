@@ -74,3 +74,26 @@ class TestEffectiveNCI:
         # COMMODITY headline: 40.2% WR on n=229 but only 48 distinct days.
         lo, hi = _wilson_ci_pct(40.2, 48)
         assert lo < 50.0 < hi, "day-clustered CI must straddle 50% (inconclusive)"
+
+
+class TestRegistryCountsPlacement:
+    """Regression: the 2026-11-16 counter first landed as a sibling of ``counts``
+    (top-level) so dashboards reading ``counts.impossible_winrate_cohorts`` got
+    None while the live file reported a top-level value of 10."""
+
+    def test_counter_is_inside_counts_dict(self):
+        import ast
+        import pathlib
+        src = pathlib.Path("tools/build_pf_registry.py").read_text(encoding="utf-8")
+        tree = ast.parse(src)
+        found = None
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Dict):
+                keys = [k.value for k in node.keys
+                        if isinstance(k, ast.Constant) and isinstance(k.value, str)]
+                if "raw_rows" in keys and "policy_clean_rows" in keys:
+                    found = keys
+                    break
+        assert found is not None, "counts dict literal not found"
+        assert "impossible_winrate_cohorts" in found, (
+            "impossible_winrate_cohorts must live inside the counts dict")

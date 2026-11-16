@@ -1112,10 +1112,12 @@ def main():
             "dropped_spot_flicker": cls["dropped_flicker"],
             "dropped_duplicate_reemissions": cls["dropped_dup"],
             "dropped_policy_excluded": dropped_policy,
+            # 2026-11-16 audit guard: symbol-level cohorts with >=30 closes and
+            # zero losses (resolution artifacts, not edge).
+            "impossible_winrate_cohorts": sum(
+                1 for r in css if r.get("impossible_winrate")
+            ),
         },
-        "impossible_winrate_cohorts": sum(
-            1 for r in css if r.get("impossible_winrate")
-        ),
         "policy_excluded_count": len(POLICY_EXCLUDED),
         "canonical_view": "by_asset_class_policy_clean_net",
         "display_tier": "discovery",
