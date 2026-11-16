@@ -66,6 +66,22 @@ def test_retired_june_pf_figures_are_not_quoted():
 
 
 @needs_template
+def test_prediction_market_sources_are_not_verified_alpha():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "if (pmSources.indexOf(source) !== -1) return false;" in html
+    assert "if (pmSources.indexOf(source) !== -1) return true;" not in html
+    gen = (ROOT / "audit_trail" / "dashboard_generator.py").read_text(encoding="utf-8")
+    assert "if source in _VERIFIED_ALPHA_PM_SOURCES or strategy.startswith(\"copy_pm_\"):\n        return False" in gen
+
+
+def test_headline_profit_factor_is_never_infinity():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "displayPF === Infinity ? '\\u221e'" not in html
+    assert "lossPnl > 0 ? winPnl / lossPnl : null" in html
+    assert "Math.abs(sharpe) > 5" in html
+
+
+@needs_template
 def test_prediction_markets_are_not_labelled_verified_alpha():
     html = TEMPLATE.read_text(encoding="utf-8")
     assert "prediction-market consensus (Polymarket/Kalshi), audited copy-trader" not in html

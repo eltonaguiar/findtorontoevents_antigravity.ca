@@ -1289,15 +1289,12 @@ a:hover { text-decoration: underline; }
     var rows = classes.sort().map(function(cls){
       var r = by_class[cls] || {};
       var sharpe = r.oos_sharpe;
-      var color = pickColor(sharpe);
-      // N_INSUFFICIENT: flag Sharpe values that are small-sample arithmetic artifacts.
-      // BOND has n=11 total; 2-pick test folds produce std≈0 → Sharpe→∞.
-      // Trigger: folds ≤ 10 AND worst_fold_wr === 0 (indicates degenerate fold).
-      var sharpeInsufficient = (r.folds != null && r.folds <= 10 && r.worst_fold_wr === 0);
-      var sharpeCell = fmt(sharpe, 3);
-      if (sharpeInsufficient) {
-        sharpeCell += ' <span title="N_INSUFFICIENT: Sharpe is an artifact of small test folds (n&lt;50 total picks; some folds have n=2, std≈0 → Sharpe→∞). Not indicative of real OOS edge." style="color:#f59e0b;font-size:0.8em;cursor:help">⚠ N_INSUF</span>';
-      }
+      var sharpeFinite = sharpe != null && isFinite(sharpe);
+      // |Sharpe| > 5 on a class walk-forward is a small-sample scale bug
+      // (BOND oos_sharpe -65.6), not an edge. Do not print it.
+      var sharpeUnusable = !sharpeFinite || Math.abs(sharpe) > 5 || (r.folds != null && r.folds <= 10 && r.worst_fold_wr === 0);
+      var color = sharpeUnusable ? '#94a3b8' : pickColor(sharpe);
+      var sharpeCell = sharpeUnusable ? 'n/a' : fmt(sharpe, 3);
       return ''
         + '<tr>'
         + '<td style="padding:6px 10px;font-weight:600;color:#e0e7ff">' + cls + '</td>'
@@ -3658,10 +3655,11 @@ function isVerifiedAlphaPick(pick) {
     forward_wr = forward_wr / 100.0;
   }
   
-  // Prediction market sources
-  var pmSources = ['pm_whale_signals', 'pm_kalshi_signals', 'pm_momentum_signals', 
+  // Prediction markets stay shadow (PBO 0.603). Not Verified Alpha.
+  var pmSources = ['pm_whale_signals', 'pm_kalshi_signals', 'pm_momentum_signals',
                    'prediction_market_consensus', 'polymarket_signals', 'pm_high_conviction'];
-  if (pmSources.indexOf(source) !== -1) return true;
+  if (pmSources.indexOf(source) !== -1) return false;
+  if (strategy.indexOf('copy_pm_') === 0) return false;
   
   // Copy trader sources with audit trail
   var copySources = ['copy_trader_intel', 'copy_trader_highscore', 'copy_trader_consensus', 
@@ -3669,7 +3667,6 @@ function isVerifiedAlphaPick(pick) {
   if (copySources.indexOf(source) !== -1) return true;
   
   // Verified copy strategy prefixes
-  if (strategy.indexOf('copy_pm_') === 0) return true;
   if (strategy.indexOf('clone_hl_') === 0) return true;
   if (strategy.indexOf('copy_hl_') === 0) return true;
   if (strategy.indexOf('hs_') === 0) return true;
@@ -5518,7 +5515,7 @@ function renderSummary() {
   const totalPnl = closedPicks.length > 0 ? outcomeStats.totalPnl : (statsFiltered ? 0 : s.total_pnl_pct);
   const winPnl = outcomeStats.winPnl;
   const lossPnl = outcomeStats.lossPnl;
-  const profitFactor = lossPnl > 0 ? winPnl / lossPnl : (winPnl > 0 ? Infinity : 0);
+  const profitFactor = lossPnl > 0 ? winPnl / lossPnl : null;
   const avgWin = outcomeStats.avgWin;
   const avgLoss = outcomeStats.avgLoss;
   const expectancy = closedPicks.length > 0 ? outcomeStats.expectancy : 0;
@@ -5585,7 +5582,7 @@ function renderSummary() {
     const sortedPnls = closedPicks.map(p => p.pnl_pct || 0).sort((a, b) => a - b);
     medianPnl = sortedPnls.length > 0 ? (sortedPnls.length % 2 === 1 ? sortedPnls[Math.floor(sortedPnls.length / 2)] : (sortedPnls[sortedPnls.length / 2 - 1] + sortedPnls[sortedPnls.length / 2]) / 2) : null;
     // Win/Loss ratio
-    winLossRatio = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? Infinity : 0);
+    winLossRatio = avgLoss > 0 ? avgWin / avgLoss : null;
     // Sharpe per trade (on capped returns)
     const cappedMean = cappedPnls.length > 0 ? cappedPnls.reduce((a, b) => a + b, 0) / cappedPnls.length : 0;
     const cappedStd = cappedPnls.length > 1 ? Math.sqrt(cappedPnls.reduce((s, v) => s + (v - cappedMean) ** 2, 0) / (cappedPnls.length - 1)) : 0;
@@ -5836,7 +5833,7 @@ function renderSummary() {
       }];
     })() : []),
     { label: 'Median Trade (n=' + (displayWins + displayLosses + displayFlat) + ')', value: medianPnl != null ? fmtPct(medianPnl) : '\u2014', cls: medianPnl != null ? (medianPnl >= 0 ? 'positive' : 'negative') : '', tip: 'Median PnL per trade. Unlike average, the median is NOT affected by outliers. If median is negative but total PnL is positive, a few big winners are masking many small losses. This is the most honest single metric.' },
-    { label: 'Profit Factor (n=' + (displayWins + displayLosses + displayFlat) + ')', value: displayPF === Infinity ? '\u221e' : displayPF != null ? fmt(displayPF, 2) : '\u2014', cls: displayPF >= 1.0 ? 'positive' : 'negative', tip: cardTips.profitFactor },
+    { label: 'Profit Factor (n=' + (displayWins + displayLosses + displayFlat) + ')', value: (displayPF != null && isFinite(displayPF)) ? fmt(displayPF, 2) : 'n/a', cls: (displayPF != null && isFinite(displayPF) && displayPF >= 1.0) ? 'positive' : ((displayPF != null && isFinite(displayPF)) ? 'negative' : ''), tip: cardTips.profitFactor },
     { label: 'Expectancy (n=' + (displayWins + displayLosses + displayFlat) + ')', value: displayExpectancy != null ? (displayExpectancy >= 0 ? '+' : '') + fmt(displayExpectancy, 2) + '%' : '\u2014', cls: displayExpectancy >= 0 ? 'positive' : 'negative', tip: cardTips.expectancy },
     { label: 'Avg Win / Loss', value: `+${fmt(displayAvgWin, 2)}% / -${fmt(displayAvgLoss, 2)}%`, tip: cardTips.avgWinLoss,
       sub: winLossRatio != null ? `<span style="color:var(--text-dim);font-size:10px">W/L Ratio: <span style="color:${winLossRatio >= 1 ? 'var(--green)' : 'var(--red)'}; font-weight:600">${fmt(winLossRatio, 2)}</span></span>` : '' },
