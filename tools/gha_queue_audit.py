@@ -68,6 +68,52 @@ def _percentile(values: List[float], pct: float) -> float:
     return ordered[idx]
 
 
+def _normalize_run(run: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize a run from either the REST API shape or the CDP-embedded
+    Actions-page shape (state.status / createdAt.timestamp / enum names)."""
+    def _ts(field: str, nested: str) -> str | None:
+        v = run.get(field)
+        if isinstance(v, str):
+            return v
+        obj = run.get(nested)
+        if isinstance(obj, dict):
+            return obj.get("timestamp")
+        return None
+
+    state = run.get("state") or {}
+    status = run.get("status") or state.get("status")
+    conclusion = run.get("conclusion") or state.get("conclusion")
+    if isinstance(status, str) and status.startswith("WORKFLOW_RUN_STATUS_"):
+        status = status.replace("WORKFLOW_RUN_STATUS_", "").lower()
+    if isinstance(conclusion, str) and conclusion.startswith("WORKFLOW_RUN_CONCLUSION_"):
+        conclusion = conclusion.replace("WORKFLOW_RUN_CONCLUSION_", "").lower()
+
+    branch = run.get("head_branch") or run.get("headBranch")
+    if not branch:
+        b = run.get("branch")
+        if isinstance(b, dict):
+            branch = b.get("title") or b.get("name")
+    if isinstance(branch, str) and branch.startswith("refs/heads/"):
+        branch = branch[len("refs/heads/"):]
+
+    wf_key = run.get("workflow_id") or run.get("workflowId") or run.get("workflowFilePath")
+
+    return {
+        "id": run.get("id"),
+        "run_number": run.get("runNumber") or run.get("run_number"),
+        "workflow_id": wf_key,
+        "workflow_name": run.get("name") or run.get("workflowName"),
+        "workflow_path": run.get("workflowFilePath"),
+        "status": status,
+        "conclusion": conclusion,
+        "created_at": _ts("created_at", "createdAt"),
+        "started_at": run.get("run_started_at") or _ts("created_at", "createdAt"),
+        "completed_at": run.get("updated_at") or _ts("updated_at", "updatedAt"),
+        "branch": branch,
+        "html_url": run.get("html_url") or run.get("htmlUrl") or run.get("runUrl"),
+    }
+
+
 def audit(
     runs: List[Dict[str, Any]],
     now: datetime,
@@ -77,37 +123,35 @@ def audit(
 ) -> Dict[str, Any]:
     queued_stuck: List[Dict[str, Any]] = []
     long_running: List[Dict[str, Any]] = []
-    durations_by_wf: Dict[int, List[float]] = defaultdict(list)
-    latest_by_wf: Dict[int, Dict[str, Any]] = {}
+    durations_by_wf: Dict[Any, List[float]] = defaultdict(list)
+    latest_by_wf: Dict[Any, Dict[str, Any]] = {}
 
-    for run in runs:
-        wid = run.get("workflow_id")
-        status = run.get("status")
-        conclusion = run.get("conclusion")
-        started = run.get("run_started_at") or run.get("created_at")
-        completed = run.get("updated_at")
-        dur = _duration_minutes(started, completed if status == "completed" else None, now)
+    for raw in runs:
+        run = _normalize_run(raw)
+        wid = run["workflow_id"]
+        status = run["status"]
+        dur = _duration_minutes(run["started_at"], run["completed_at"] if status == "completed" else None, now)
 
         if status == "completed":
             if wid is not None and dur > 0:
-                durations_by_wf[int(wid)].append(dur)
+                durations_by_wf[wid].append(dur)
             if wid is not None:
-                prev = latest_by_wf.get(int(wid))
-                if prev is None or (run.get("created_at") or "") > (prev.get("created_at") or ""):
-                    latest_by_wf[int(wid)] = run
+                prev = latest_by_wf.get(wid)
+                if prev is None or (run["created_at"] or "") > (prev["created_at"] or ""):
+                    latest_by_wf[wid] = run
             continue
 
         if status in ("queued", "pending"):
-            age = _duration_minutes(run.get("created_at"), None, now)
+            age = _duration_minutes(run["created_at"], None, now)
             if age >= queue_minutes:
                 queued_stuck.append({
-                    "run_id": run.get("id"),
-                    "run_number": run.get("run_number"),
-                    "workflow_name": run.get("name"),
+                    "run_id": run["id"],
+                    "run_number": run["run_number"],
+                    "workflow_name": run["workflow_name"],
                     "workflow_id": wid,
                     "status": status,
-                    "branch": run.get("head_branch"),
-                    "created_at": run.get("created_at"),
+                    "branch": run["branch"],
+                    "created_at": run["created_at"],
                     "age_minutes": round(age, 1),
                 })
             continue
@@ -115,12 +159,12 @@ def audit(
         if status == "in_progress":
             if dur >= long_minutes:
                 long_running.append({
-                    "run_id": run.get("id"),
-                    "run_number": run.get("run_number"),
-                    "workflow_name": run.get("name"),
+                    "run_id": run["id"],
+                    "run_number": run["run_number"],
+                    "workflow_name": run["workflow_name"],
                     "workflow_id": wid,
-                    "branch": run.get("head_branch"),
-                    "started_at": started,
+                    "branch": run["branch"],
+                    "started_at": run["started_at"],
                     "duration_minutes": round(dur, 1),
                 })
 
@@ -134,7 +178,7 @@ def audit(
             latest = latest_by_wf.get(wid) or {}
             duration_stats.append({
                 "workflow_id": wid,
-                "workflow_name": latest.get("name"),
+                "workflow_name": latest.get("workflow_name"),
                 "n": len(vals),
                 "p50_minutes": round(p50, 1),
                 "p90_minutes": round(p90, 1),
@@ -149,7 +193,7 @@ def audit(
         if latest.get("conclusion") in ("failure", "timed_out", "startup_failure", "stale", "action_required"):
             failed_no_success.append({
                 "workflow_id": wid,
-                "workflow_name": latest.get("name"),
+                "workflow_name": latest.get("workflow_name"),
                 "run_id": latest.get("id"),
                 "run_number": latest.get("run_number"),
                 "conclusion": latest.get("conclusion"),
