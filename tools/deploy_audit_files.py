@@ -52,6 +52,7 @@ UPLOADS = [
     # /audit template fetches ./data/strategy_tribunal_latest.json, so it must
     # be deployed here or the tribunal panel 404s. (local-missing => SKIP.)
     ("audit_dashboard/data/strategy_tribunal_latest.json",   "/findtorontoevents.ca/audit/data/strategy_tribunal_latest.json",    "audit_data"),
+    ("audit_dashboard/data/theory_tracker.json",             "/findtorontoevents.ca/audit/data/theory_tracker.json",              "audit_data"),
     ("audit_dashboard/dashboard_freshness.js",               "/findtorontoevents.ca/audit/dashboard_freshness.js",                "audit_js"),
     ("audit_dashboard/dashboard_enhancements.js",            "/findtorontoevents.ca/audit/dashboard_enhancements.js",            "audit_js"),
     ("audit_dashboard/data/strategy_tribunal_latest.json",    "/findtorontoevents.ca/audit/data/strategy_tribunal_latest.json",    "strategy_funnel"),

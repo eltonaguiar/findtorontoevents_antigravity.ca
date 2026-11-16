@@ -120,6 +120,13 @@
       description: 'Per-AI pick attribution & performance',
       url: 'data/ai_leaderboard/ai_leaderboard_index.json',
       extract: function(json) { return json && (json.generated_at || json.as_of); }
+    },
+    {
+      id: 'theory-tracker',
+      label: 'Theory / Hypothesis Tracker',
+      description: 'Theory portfolios & h0XX hypothesis harness rows',
+      url: 'data/theory_tracker.json',
+      extract: function(json) { return json && json.generated_at; }
     }
   ];
 

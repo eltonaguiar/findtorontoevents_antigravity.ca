@@ -908,7 +908,7 @@ a:hover { text-decoration: underline; }
     <span data-mg-class="COMMODITY"><strong style="color:#ef4444">COMMODITY</strong> &mdash; FAIL+INSUFF-N (policy-clean n=3 only; FUTURES proxy n=11 WR 9.09% PF 0.475). <strong style="color:#fca5a5">CT=F DSR=1.0 was FALSIFIED 2026-05-13</strong> (6.33&times; over-emission); pilot now <code>SHADOW_INSUFFICIENT_N</code> dsr=null.</span>
     <span data-mg-class="FOREX"><strong style="color:#ef4444">FOREX</strong> &mdash; BLOCKED (PR #6 consolidation 2026-05-31: all FOREX strategies blocked except cta_cross_asset_tsmom SHORT). Policy-clean net PF 0.29 / WR 46.1% / PnL -1026% (raw resolved cohort PF 9.67 is outlier-skewed; 7.6% WR on 12,673 resolved). Hard disable default ON in <code>non_crypto_policy.py</code>. forex_carry added to allowlist on probation. <code>recent_exits.json</code> cleaned of stale entries.</span>
     <span data-mg-class="BOND"><strong style="color:#94a3b8">BOND</strong> &mdash; ACCUMULATING (at_raw_picks: 78 rows, up from 2). Backtests PF 1.29&ndash;1.62 (bond_tlt_ief_v3, bond_hyg_lqd_v1) are orphan; universe limited to 5 symbols. First production emissions detected 2026-05-31.</span>
-    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health: ghost rows are quarantined from the canonical view (live raw count in the DB Health tile above — rows persist per the 2026-11-14 MASTER_AUDIT quarantine-not-delete policy); non-canonical statuses 0.</span>
+    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health GREEN: ghost rows 0, status mismatch 0, non-canonical statuses 0.</span>
   </div>
 <div id="kill-switch-panel" style="max-width:1180px;margin:0 auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(251,146,60,0.06));border:1px solid rgba(239,68,68,0.3);border-radius:12px;color:#fde68a;font-size:0.85em">
   <details open>
@@ -1030,6 +1030,37 @@ a:hover { text-decoration: underline; }
         + '<div style="margin-top:6px;font-size:11px;color:#fca5a5"><strong>Top KILL candidates:</strong> ' + kills + '</div>'
         + '<div style="margin-top:4px;font-size:11px;color:#94a3b8">Full report: <code>reports/strategy_tribunal_*.json</code>. Apply via workflow_dispatch + TRIBUNAL_APPLY secret.</div>';
     }).catch(function(){ var el = document.getElementById('strategy-tribunal-body'); if (el) el.textContent = 'Tribunal JSON unavailable.'; });
+  })();
+  </script>
+  <details id="theory-tracker-panel" style="margin:8px 0;padding:10px 14px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.35);border-radius:8px;color:#c4b5fd;font-size:12px;line-height:1.5">
+    <summary style="cursor:pointer;font-weight:700;color:#a78bfa">&#x1F9EA; Theory / Hypothesis Tracker</summary>
+    <div id="theory-tracker-body" style="margin-top:8px;color:#e5e7eb">Loading theory tracker&hellip;</div>
+  </details>
+  <script>
+  (function(){
+    function esc(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    fetch('./data/theory_tracker.json?' + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      var el = document.getElementById('theory-tracker-body');
+      if (!el) return;
+      var rows = (j && j.theories) || [];
+      if (!rows.length) { el.textContent = 'No theory / hypothesis rows yet — sidecar empty or not built (tools/build_theory_tracker_sidecar.py).'; return; }
+      var body = rows.map(function(t){
+        return '<tr>'
+          + '<td style="padding:4px 10px;font-weight:600;color:#e0e7ff">' + esc(t.name) + '</td>'
+          + '<td style="padding:4px 10px">' + (t.hypothesis ? esc(t.hypothesis) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px">' + (t.status ? esc(t.status) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px;text-align:right">' + (t.n == null ? '&mdash;' : esc(t.n)) + '</td>'
+          + '<td style="padding:4px 10px">' + (t.verdict ? esc(t.verdict) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px">' + (t.last_updated ? esc(t.last_updated) : '&mdash;') + '</td>'
+          + '</tr>';
+      }).join('');
+      el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:0.86em">'
+        + '<thead><tr style="border-bottom:1px solid rgba(148,163,184,0.3);color:#94a3b8;text-align:left">'
+        + '<th style="padding:4px 10px">Theory</th><th style="padding:4px 10px">Hypothesis</th><th style="padding:4px 10px">Status</th>'
+        + '<th style="padding:4px 10px;text-align:right">n</th><th style="padding:4px 10px">Verdict</th><th style="padding:4px 10px">Updated</th>'
+        + '</tr></thead><tbody>' + body + '</tbody></table>'
+        + '<div style="margin-top:4px;font-size:11px;color:#94a3b8">Source: <code>data/theory_tracker.json</code> &middot; built by <code>tools/build_theory_tracker_sidecar.py</code> from <code>alpha_engine/data/theory_portfolios.json</code> + newest <code>reports/h0XX_*.json</code>.</div>';
+    }).catch(function(){ var el = document.getElementById('theory-tracker-body'); if (el) el.textContent = 'Theory tracker JSON unavailable.'; });
   })();
   </script>
   <script src="audit_surface_truth_banner.js"></script>

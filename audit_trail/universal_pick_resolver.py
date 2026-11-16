@@ -216,6 +216,8 @@ SYSTEM_SOURCES = [
     ("pm_momentum_signals",      "prediction_market_agents/data/momentum_signals.json"),
     ("pm_whale_signals",         "prediction_market_agents/data/whale_signals.json"),
     ("pm_kalshi_signals",        "prediction_market_agents/data/kalshi_signals.json"),
+    ("pm_kalshi_re_signals",     "alpha_engine/data/kalshi_signals.json"),
+    ("pm_polymarket_re_signals",  "alpha_engine/data/polymarket_signals.json"),
     # ── AI Challenge Curators ──
     ("ai_challenge_claude",          "audit_dashboard/data/ai_challenge_claude_active_picks.json"),
     ("ai_challenge_grok",            "audit_dashboard/data/ai_challenge_grok_active_picks.json"),

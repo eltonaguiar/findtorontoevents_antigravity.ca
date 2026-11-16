@@ -4291,6 +4291,27 @@ JSON_PICK_SOURCES.append((
     "audit_dashboard/data/wired_in_childlike_closed_picks.json",
 ))
 
+# ── Prediction-market reverse-engineered signals (feed-trace audit 2026-11-16) ──
+# alpha_engine/polymarket_signals.py + alpha_engine/kalshi_signals.py write
+# alpha_engine/data/polymarket_signals.json + kalshi_signals.json (FTP-deployed,
+# gitignored). Read only by universal_pick_resolver.py before this registry
+# gap fix — their picks never reached the dashboard. NEW distinct keys on
+# purpose: the existing "polymarket_signals" key maps the copy_trader_intel
+# file and must not be repointed (double-ingest risk). Schema:
+# {updated_at, source, pick_count, picks: [...]} — _extract_picks() already
+# handles the `picks` key. Paper-only (shadow prediction markets); outcomes
+# settle via universal resolver.
+JSON_PICK_SOURCES.append((
+    "pm_polymarket_re_signals",
+    "alpha_engine/data/polymarket_signals.json",
+    None,
+))
+JSON_PICK_SOURCES.append((
+    "pm_kalshi_re_signals",
+    "alpha_engine/data/kalshi_signals.json",
+    None,
+))
+
 PORTFOLIO_SOURCES = [
     ("paper_trading", "paper_trading/data/portfolios.json"),
     ("kimi_algorithms", "KIMI_RISEOFTHECLAW/data/portfolio_state.json"),
@@ -4305,6 +4326,8 @@ PORTFOLIO_SOURCES = [
 _PAPER_ONLY_SYSTEMS = {
     "kimi_claw_research",  # Frozen Feb 2026 research portfolio — unrealized paper gains counted as "wins"
     "wired_in_childlike",  # 2026-11-15 shadow cards — display for monitoring, do not count as forward-tested wins
+    "pm_polymarket_re_signals",  # 2026-11-16 RE'd Polymarket signals — shadow PM feed, paper-only
+    "pm_kalshi_re_signals",  # 2026-11-16 RE'd Kalshi signals — shadow PM feed, paper-only
 }
 
 # ── Hidden/inactive systems ──
