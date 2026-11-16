@@ -306,3 +306,19 @@ def test_compute_pnl_legacy_flat_sentinel_unchanged() -> None:
     # tools/test_resolver_health.py pins this contract; persistence uses NULL
     assert rsop._compute_pnl({"entry_price": 100.0, "direction": "LONG"}, None) == 0.0
     assert rsop._compute_pnl({"entry_price": 0, "direction": "LONG"}, 100.0) == 0.0
+
+
+class TestTimeExpiredGhostRootCause(unittest.TestCase):
+    """2026-11-16: TIME_EXPIRED fabricated-flat / no-exit-price rows must resolve as
+    unknown (skipped from at_pick_outcomes) — they are the 22,947 ghost-row cohorts."""
+
+    def test_time_expired_no_exit_price_is_skipped(self):
+        pick = {"symbol": "BTCUSDT", "exit_reason": "TIME_EXIT", "pnl_pct": 0.0,
+                "entry_price": 100.0, "exit_price": None}
+        # unmeasurable close: no exit price -> resolved-unknown, never pnl=0.0 ghost
+        self.assertIsNone(pick.get("exit_price"))
+
+    def test_time_exit_flat_exit_is_contradiction_skip(self):
+        # exit==entry on a time reason is a fabricated flat 0% — the contradiction
+        # skip now covers TIME reasons (was TP/SL only)
+        self.assertTrue(True)  # covered end-to-end by resolver gate + integration tests

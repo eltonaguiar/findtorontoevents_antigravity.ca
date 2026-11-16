@@ -1171,13 +1171,23 @@ def _write_outcomes_to_mysql(resolved_picks: list) -> int:
                     _xp = pick.get("exit_price")
                     _ip = pick.get("entry_price")
                     _er = str(pick.get("exit_reason", "") or "").upper()
-                    if _er in ("TP_HIT", "SL_HIT", "TAKE_PROFIT", "STOP_LOSS") and _xp is not None and _ip is not None:
+                    if _er in ("TP_HIT", "SL_HIT", "TAKE_PROFIT", "STOP_LOSS",
+                               "TIME_EXIT", "EXPIRED", "TIME", "TIMEOUT", "MAX_HOLD") and _xp is not None and _ip is not None:
                         try:
                             if abs(float(_xp) - float(_ip)) < 1e-12:
                                 unverifiable += 1
                                 continue
                         except (TypeError, ValueError):
                             pass
+                    # 2026-11-16 ghost-rows root cause: the upstream settle path forces
+                    # pnl=0.0 on TIME_EXPIRED closes (fabricated "flat 0%") — the constant-
+                    # pnl cohorts behind the 22,947 ghost count. Time exits with no exit
+                    # price are unmeasurable: resolve as unknown (skip), matching
+                    # tools/resolve_stale_open_picks.py NULL semantics + summary_picks
+                    # resolved_unknown. Measured time-exits (real MTM) still persist.
+                    if status == "EXPIRED" and resolution_method == "TIME_EXPIRED" and _xp is None:
+                        unverifiable += 1
+                        continue
                     pnl_raw = float(pick.get("pnl_pct", pick.get("pnl", 0)) or 0)
                     pnl_pct = round(max(-100.0, min(100.0, pnl_raw)), 4)
 
