@@ -47,6 +47,18 @@ Display only, in `audit_dashboard/template.html`:
 
 No emitter changes. No sizing. No ghost-row deletion. No prediction-market promotion.
 
+## Addendum — intrabar ledger 2026-11-16T13:00Z
+
+Checked after the PR opened. Source: `intrabar_truth_by_class.json`, `money_ready_verdict.json` (13:04Z), `strategy_perf_by_class.json` (13:46Z), `db_health.json` (12:48Z).
+
+- Still 0 classes money-ready. EQUITY WR 59.2% with PF 0.94 and average −0.074% per trade. COMMODITY average +0.031% does not survive policy-clean (about n=17, PF 0.17).
+- `strategy_perf_by_class.json`: 356 cells have PF≥999 and zero losses. 14 cells pass n≥100, PF>1.5, WR≥50; 2 of those 14 are the 999 sentinel. Do not quote sleeve PFs (ADX 60, equity RSI-reversal 57) as class edge.
+- `pf_ok=true` on CHEAP_STOCKS is an empty/infinite sentinel, not a pass.
+- Some class `wr_ok` flags use a 40% floor, not 50%. A green WR flag is not the money-ready bar.
+- DSR is not ≥0.95 on any class. Walk-forward efficiency is not stored. `wf_oos_ok` can pass when both in-sample and out-of-sample PF are below 1.
+- AI leaderboard 93.8% is marked illustrative, n=301, not Tier-2. Tournament rows are not a book: a majority are `MISPRICED_ENTRY`.
+- `db_health.json` at 12:48Z already records 22,947 ghost rows, an unhealthy harness, 278 null resolved pnl, and a 27% magnitude mismatch. The live page footer that still says 5/5 is stale relative to that file.
+
 ## Left
 
 1. Let `audit-dashboard.yml` deploy #843 and this display fix. Then run `python3 tools/audit_honesty_live_check.py`.
