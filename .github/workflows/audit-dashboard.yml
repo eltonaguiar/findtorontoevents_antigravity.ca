@@ -1048,6 +1048,17 @@ jobs:
             exit 1
           fi
 
+      # 2026-11-16: the FTP deploy below globs audit_dashboard/data/*.json straight
+      # to the live site, bypassing deploy_audit_files.py's sanitizer. One bare
+      # `NaN`/`Infinity` (which Python emits by default) makes browser JSON.parse
+      # reject the whole document, so the panel shows "no data" on an HTTP-200 file
+      # that has a healthy byte count. Rewrite non-finite floats to null first, then
+      # assert every sidecar is browser-parseable before publishing.
+      - name: Enforce strict JSON on audit data sidecars
+        run: |
+          python3 tools/sanitize_audit_json.py --report
+          python3 tools/sanitize_audit_json.py --check
+
       - name: Deploy to all 3 FTP sites in parallel
         # 2026-04-27: ADDED `if: always()` so FTP deploy runs even when the
         # preceding "Commit updated data" step fails. Previously, when commit/push
