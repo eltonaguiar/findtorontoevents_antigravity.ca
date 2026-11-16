@@ -39,12 +39,10 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "data: GHCOPILOT sealed prospective ledger [skip ci]"
-            pushed=0
-            for attempt in 1 2 3 4 5; do
-              git pull --rebase origin main && git push origin HEAD:main && { pushed=1; break; }
-              sleep $((attempt * 5))
-            done
-            test "$pushed" = 1
+            # Hardened push helper: 90s per git op (no hang), shallow deepen +
+            # merge fallback, fail-fast auth. Replaces the inline pull-rebase
+            # loop with no per-op timeout. Non-zero exit fails the step.
+            bash .github/scripts/safe_push.sh
           fi
       - name: Deploy public monitor and preserve live footer
         if: always()
