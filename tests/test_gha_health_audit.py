@@ -5,6 +5,13 @@ Covers the R7 re-diagnosis from GHACTIONS_2026-11-16/
 bucketed by REAL mechanics (timeout-shaped / eviction-shaped / stack-kill / pr-close),
 with only the `external` residual as the true R7 signal. R6 excludes timeout-shaped
 cancels from its churn ratio and reports them as `timeout-kill` with the step name.
+
+Also covers the v1.2 cancel-bucket calibration (2026-11-16): the live v1.1 report's
+"external: 14" run shapes (dup-guard pre-fix copies / CI Tests supersede / RoC deploy
+cancel) are GitHub supersede-cancels ("Canceling since a higher priority waiting
+request for X exists" + a newer same/referenced run within ~10m) and bucket as the
+`supersede` sub-bucket reported under `stack-kill`; 13 of the 14 reclassify, 1 stays
+`external` (the true residual the run-ID-level manual analysis kept).
 """
 
 from __future__ import annotations
@@ -14,15 +21,22 @@ from datetime import timedelta
 from tools import gha_health_audit as gha
 from tools.gha_health_audit import (
     CANCEL_BUCKETS,
+    CANCEL_STACK_SUBS,
+    CANCEL_SUPERSEDE_MARKER,
     Ctx,
     FixtureClient,
     TriggerInfo,
     build_fixtures,
     cancel_killing_step,
     classify_cancel_run,
+    classify_cancel_run_detail,
     main,
     rule_r6,
     rule_r7,
+)
+
+SUPERSEDE_REASON = (
+    "Canceling since a higher priority waiting request for ci-tests exists"
 )
 
 
@@ -49,8 +63,8 @@ def started_job(name="report", started="2026-11-16T00:00:10Z", **extra):
     return [job]
 
 
-def make_ctx(runs, workflows, triggers, jobs_map):
-    cli = FixtureClient({"jobs": jobs_map, "latest": {}})
+def make_ctx(runs, workflows, triggers, jobs_map, annotations=None):
+    cli = FixtureClient({"jobs": jobs_map, "latest": {}, "annotations": annotations or {}})
     now = gha.FIXTURE_NOW
     return Ctx(now, "eltonaguiar/findtorontoevents_antigravity.ca",
                now - timedelta(days=8), runs, [], [], workflows, triggers, [], cli, False)
@@ -145,6 +159,97 @@ def test_precedence_eviction_before_stack_kill_and_pr_close():
 def test_bucket_names_are_the_documented_five():
     assert CANCEL_BUCKETS == ("timeout-shaped", "eviction-shaped", "stack-kill",
                               "pr-close", "external")
+    # v1.2: `supersede` is a SUB-bucket reported under stack-kill, not a 6th bucket
+    assert CANCEL_STACK_SUBS == ("supersede", "cancel-in-progress")
+
+
+# ---------------------------------------------------------------------------
+# v1.2 supersede sub-bucket (reported under stack-kill)
+# mechanic: "Canceling since a higher priority waiting request for X exists"
+# + a newer run of the same OR referenced workflow started within ~10m
+# ---------------------------------------------------------------------------
+
+def test_supersede_marker_plus_newer_run_is_stack_kill_supersede():
+    run = mk_run(created="2026-11-16T00:00:00Z", started="2026-11-16T00:00:02Z",
+                 ended="2026-11-16T00:04:00Z", cancel_reason=SUPERSEDE_REASON)
+    newer = mk_run(rid=2, conclusion="success", created="2026-11-16T00:03:00Z",
+                   started="2026-11-16T00:03:00Z", ended="2026-11-16T00:09:00Z")
+    jobs = started_job()
+    assert classify_cancel_run(run, jobs=jobs, job_timeouts_s=None,
+                               related_newer=[newer]) == "stack-kill"
+    assert classify_cancel_run_detail(run, jobs=jobs, job_timeouts_s=None,
+                                      related_newer=[newer]) == ("stack-kill", "supersede")
+
+
+def test_supersede_needs_marker_and_near_newer_run():
+    newer = mk_run(rid=2, conclusion="success", created="2026-11-16T00:03:00Z",
+                   started="2026-11-16T00:03:00Z", ended="2026-11-16T00:09:00Z")
+    jobs = started_job()
+    # no marker -> the newer run alone is not supersede evidence
+    plain = mk_run(created="2026-11-16T00:00:00Z", started="2026-11-16T00:00:02Z",
+                   ended="2026-11-16T00:04:00Z")
+    assert classify_cancel_run(plain, jobs=jobs, job_timeouts_s=None,
+                               related_newer=[newer]) == "external"
+    # marker but the newer run starts OUTSIDE the ~10m window -> not supersede
+    marked_far = mk_run(created="2026-11-16T00:00:00Z", started="2026-11-16T00:00:02Z",
+                        ended="2026-11-16T00:04:00Z", cancel_reason=SUPERSEDE_REASON)
+    far_newer = mk_run(rid=3, conclusion="success", created="2026-11-16T00:21:00Z",
+                       started="2026-11-16T00:21:00Z", ended="2026-11-16T00:27:00Z")
+    assert classify_cancel_run(marked_far, jobs=jobs, job_timeouts_s=None,
+                               related_newer=[far_newer]) == "external"
+    # marker but NO newer run at all -> not supersede
+    assert classify_cancel_run(marked_far, jobs=jobs, job_timeouts_s=None,
+                               related_newer=[]) == "external"
+
+
+def test_supersede_window_boundary_10m_and_eviction_precedence():
+    jobs = started_job()
+    run = mk_run(created="2026-11-16T00:00:00Z", started="2026-11-16T00:00:02Z",
+                 ended="2026-11-16T00:04:00Z", cancel_reason=SUPERSEDE_REASON)
+    near = mk_run(rid=2, conclusion="success", created="2026-11-16T00:09:00Z",
+                  started="2026-11-16T00:09:00Z", ended="2026-11-16T00:15:00Z")
+    outside = mk_run(rid=3, conclusion="success", created="2026-11-16T00:11:00Z",
+                     started="2026-11-16T00:11:00Z", ended="2026-11-16T00:17:00Z")
+    assert classify_cancel_run_detail(run, jobs=jobs, job_timeouts_s=None,
+                                      related_newer=[near]) == ("stack-kill", "supersede")
+    assert classify_cancel_run(run, jobs=jobs, job_timeouts_s=None,
+                               related_newer=[outside]) == "external"
+    # (b) 0-jobs pending kills stay eviction-shaped even with marker + near newer run
+    never = mk_run(started=None, ended="2026-11-16T00:05:00Z", cancel_reason=SUPERSEDE_REASON)
+    assert classify_cancel_run(never, jobs=[], job_timeouts_s=None,
+                               related_newer=[near]) == "eviction-shaped"
+
+
+def test_supersede_accepts_referenced_workflow_newer_runs():
+    # the newer run may belong to a REFERENCED (workflow_run upstream / shared
+    # concurrency group) workflow — the RoC deploy cancel shape
+    run = mk_run(rid=10, wid=900, created="2026-11-16T00:00:00Z",
+                 started="2026-11-16T00:00:02Z", ended="2026-11-16T00:05:00Z",
+                 cancel_reason=SUPERSEDE_REASON)
+    upstream_newer = mk_run(rid=11, wid=901, conclusion="success",
+                            created="2026-11-16T00:04:00Z",
+                            started="2026-11-16T00:04:30Z", ended="2026-11-16T00:10:00Z")
+    assert classify_cancel_run_detail(run, jobs=started_job(), job_timeouts_s=None,
+                                      related_newer=[upstream_newer]
+                                      ) == ("stack-kill", "supersede")
+
+
+def test_cancel_reason_text_scans_annotations_and_job_descriptions():
+    # live shape: the reason arrives via the /actions/runs/<id>/annotations payload
+    run = mk_run(created="2026-11-16T00:00:00Z", started="2026-11-16T00:00:02Z",
+                 ended="2026-11-16T00:04:00Z")
+    newer = mk_run(rid=2, conclusion="success", created="2026-11-16T00:02:00Z",
+                   started="2026-11-16T00:02:00Z", ended="2026-11-16T00:08:00Z")
+    anns = [{"message": SUPERSEDE_REASON}]
+    assert classify_cancel_run_detail(run, jobs=started_job(), job_timeouts_s=None,
+                                      related_newer=[newer], annotations=anns
+                                      ) == ("stack-kill", "supersede")
+    jobs_desc = [{"name": "j", "conclusion": "cancelled",
+                  "description": SUPERSEDE_REASON, "started_at": "2026-11-16T00:00:02Z",
+                  "steps": []}]
+    assert classify_cancel_run(run, jobs=jobs_desc, job_timeouts_s=None,
+                               related_newer=[newer]) == "stack-kill"
+    assert CANCEL_SUPERSEDE_MARKER in SUPERSEDE_REASON
 
 
 # ---------------------------------------------------------------------------
@@ -253,20 +358,66 @@ def test_r6_still_counts_plain_cancels_as_churn():
 
 def test_r7_bucket_counts_and_external_residual_by_run_id():
     runs, _queued, _running, workflows, triggers, fx = build_fixtures()
-    ctx = make_ctx(runs, workflows, triggers, fx["jobs"])
+    ctx = make_ctx(runs, workflows, triggers, fx["jobs"], fx.get("annotations"))
     res = rule_r7(ctx)
+    # v1.2 calibration: the 13 supersede shapes land under stack-kill; external keeps
+    # only the 2 true residuals (billing-sync + the 14th calibration run).
     assert res["bucket_counts"] == {
-        "timeout-shaped": 3, "eviction-shaped": 17, "stack-kill": 3,
-        "pr-close": 2, "external": 1,
+        "timeout-shaped": 3, "eviction-shaped": 17, "stack-kill": 16,
+        "pr-close": 2, "external": 2,
     }
-    assert res["cancelled_examined"] == 26
+    assert res["stack_kill_subs"] == {"supersede": 13, "cancel-in-progress": 3}
+    assert res["cancelled_examined"] == 40
     assert res["jobs_probed"] <= gha.MAX_CANCEL_JOB_PROBES
+    assert res["annotation_probes"] <= gha.MAX_CANCEL_ANNOTATION_PROBES
     ext = res["rows"]
-    assert len(ext) == 1
-    assert ext[0]["workflow"] == "billing-sync"
-    assert ext[0]["run_id"] is not None
-    assert ext[0]["class"] == "external"
-    assert "true R7 signal" in ext[0]["verdict"]
+    assert len(ext) == 2
+    assert {x["workflow"] for x in ext} == {"billing-sync", "CI Tests"}
+    assert all(x["class"] == "external" for x in ext)
+    assert all("true R7 signal" in x["verdict"] for x in ext)
+
+
+def test_calibration_real_14_run_shapes_reclassify_13_of_14():
+    """The real v1.1 "external: 14" shapes — dup-guard pre-fix copies, CI Tests
+    supersede, RoC deploy cancel — 13 reclassify out of `external` into
+    stack-kill/supersede; the 14th (no marker, no near newer run) stays external.
+
+    BEFORE (v1.1 rule set — no supersede rule): all 14 landed in `external` (the
+    live v1.1 report's external:14). That is reproduced below by draining the
+    supersede evidence (related_newer=[] / no annotations).
+    """
+    runs, _queued, _running, workflows, triggers, fx = build_fixtures()
+    ctx = make_ctx(runs, workflows, triggers, fx["jobs"], fx.get("annotations"))
+    calib = fx["calibration"]
+    by_id = {r["id"]: r for r in runs}
+    sup_ids = calib["supersede_ids"]
+    ext_ids = calib["external_ids"]
+    assert len(sup_ids) == 13 and len(ext_ids) == 1  # the real 14-run split
+
+    # AFTER: 13 x ("stack-kill", "supersede"), 1 x ("external", None)
+    for rid in sup_ids:
+        assert ctx.cancel_detail(by_id[rid]) == ("stack-kill", "supersede"), rid
+    for rid in ext_ids:
+        assert ctx.cancel_detail(by_id[rid]) == ("external", None), rid
+
+    # one of the 13 carries its reason ONLY via the /annotations payload (live shape)
+    inline = [by_id[rid] for rid in sup_ids if by_id[rid].get("cancel_reason")]
+    assert len(inline) == 12
+    ann_only = [by_id[rid] for rid in sup_ids if not by_id[rid].get("cancel_reason")]
+    assert len(ann_only) == 1
+    assert ctx.cancel_annotations_for(ann_only[0])  # fetched from the annotations endpoint
+
+    # BEFORE: the v1.1 classifier (timeout/eviction/120s-stack/pr-close only) put
+    # every one of the 14 in `external` — the supersede evidence is what reclassifies.
+    for rid in sup_ids + ext_ids:
+        r = by_id[rid]
+        jobs = ctx.cancel_jobs_for(r)
+        assert not gha._stack_kill_shaped(r, siblings=[], newer_run=ctx._newer_run_for(r),
+                                          window_s=gha.CANCEL_STACK_WINDOW_S)
+        assert not gha._pr_close_shaped(r)
+        assert classify_cancel_run(r, jobs=jobs, job_timeouts_s=[],
+                                   siblings=[], newer_run=ctx._newer_run_for(r),
+                                   related_newer=[]) == "external"
 
 
 def test_dry_run_exits_zero():
