@@ -1366,9 +1366,26 @@ class TestM044GateParity:
     """Gate-policy parity: CI fails if any gate config source drifts."""
 
     def test_forex_hard_disable_default_on(self, monkeypatch):
-        """FOREX_HARD_DISABLE must default to 1 (ON) — FOREX PF 0.87 is below T2."""
+        """FOREX_HARD_DISABLE default contract — reconciled to the 2026-06-05 re-enable.
+
+        CORRECT CONTRACT (updates/2026-06-05-forex-production-unblock-carry-g10.md +
+        alpha_engine/config.py): FOREX_HARD_DISABLE defaults to "0"/OFF since the
+        forex_carry_g10 carry backtest met the 2026-05-15 unlock criteria (PF 1.593 >
+        1.0, WR 60.4% > 45%, n=197 > 30). It is a kill-switch that RE-DISABLES the
+        class when set truthy, read LIVE at gate time (audit_trail/quality_gates.py
+        NS-E). This test name is kept from the 2026-05-15 M-044 snapshot, which pinned
+        the superseded default-ON policy ("FOREX must be blocked without override") —
+        that policy was explicitly retired on 2026-06-05, so the old assertion
+        (`result is False`) tested a contract that no longer exists. It is not
+        weakened: both directions of the switch are pinned below, and per-source FOREX
+        losers stay blocked by BLOCKED_SOURCES regardless of this flag.
+        """
         monkeypatch.delenv("FOREX_HARD_DISABLE", raising=False)
-        # Default env = no override; quality_gates should use default "1" = disabled
+        import alpha_engine.config as _cfg
+        assert _cfg.FOREX_HARD_DISABLE is False, (
+            "config drift: FOREX_HARD_DISABLE must default OFF ('0') to match the "
+            "2026-06-05 re-enable documented in alpha_engine/config.py"
+        )
         pick = {
             "id": "parity-forex-1",
             "symbol": "EURUSD=X",
@@ -1385,10 +1402,56 @@ class TestM044GateParity:
             "confidence": 0.55,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        result = passes_active_gate(pick)
-        assert result is False, (
-            "M-044 PARITY: FOREX_HARD_DISABLE must default ON — "
-            "FOREX passes_active_gate should return False without override"
+        passes_active_gate(pick)
+        assert pick.get("_hf_quality_gate_reason") != "ns_e_forex_hard_disable", (
+            "default-OFF contract: FOREX must not be tagged ns_e_forex_hard_disable "
+            "unless FOREX_HARD_DISABLE=1 is set explicitly"
+        )
+        # Deliberately not asserting the return value for the default case: other
+        # class gates legitimately apply to this synthetic pick. Only the hard-disable
+        # path is under test. The kill-switch direction IS pinned end-to-end:
+        monkeypatch.setenv("FOREX_HARD_DISABLE", "1")
+        kill_pick = dict(pick)
+        assert passes_active_gate(kill_pick) is False, (
+            "kill-switch: FOREX_HARD_DISABLE=1 must block FOREX"
+        )
+        assert kill_pick.get("_hf_quality_gate_reason") == "ns_e_forex_hard_disable", (
+            "kill-switch: expected ns_e_forex_hard_disable, got "
+            f"{kill_pick.get('_hf_quality_gate_reason')!r}"
+        )
+
+    def test_forex_hard_disable_env_is_read_live(self, monkeypatch):
+        """FOREX_HARD_DISABLE must take effect at call time, not import time.
+
+        Regression test for the 2026-11-16 drift: the NS-E gate compared against
+        _ae_config.FOREX_HARD_DISABLE, a value frozen at alpha_engine.config import,
+        so setting the env var in a running process (or a test) silently did nothing
+        and the reason string stayed ''. A kill-switch that ignores its own env var is
+        not a kill-switch. See audit_trail/quality_gates.py NS-E.
+        """
+        monkeypatch.setenv("FOREX_HARD_DISABLE", "1")
+        pick = {
+            "id": "parity-forex-live",
+            "symbol": "EURUSD=X",
+            "asset_class": "FOREX",
+            "source_system": "forex_carry",
+            "strategy": "forex_carry_test",
+            "status": "OPEN",
+            "direction": "LONG",
+            "entry_price": 1.0,
+            "take_profit": 1.05,
+            "stop_loss": 0.97,
+            "score": 80,
+            "trust_score": 8,
+            "confidence": 0.55,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        assert passes_active_gate(pick) is False, (
+            "FOREX_HARD_DISABLE=1 set at runtime must block FOREX"
+        )
+        assert pick.get("_hf_quality_gate_reason") == "ns_e_forex_hard_disable", (
+            "expected ns_e_forex_hard_disable, got "
+            f"{pick.get('_hf_quality_gate_reason')!r}"
         )
 
     def test_forex_hard_disable_can_be_overridden(self, monkeypatch):
