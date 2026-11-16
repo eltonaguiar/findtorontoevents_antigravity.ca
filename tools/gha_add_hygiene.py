@@ -6,22 +6,33 @@ Formatting-preserving textual insertion:
 - timeout-minutes inserted directly after each job's `runs-on:` line
 
 Only touches files where the block/field is absent. Idempotent.
+
+Usage:
+  python tools/gha_add_hygiene.py [--timeout N] [--cancel-in-progress true|false] \
+      <workflow.yml> [...]
+
+Defaults: --timeout 30, --cancel-in-progress true.
+Use --cancel-in-progress false for workflows that push to main or run long
+backtests (a superseded run should be allowed to finish its push).
 """
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
 WORKFLOWS = Path(".github/workflows")
 
-CONCURRENCY_BLOCK = """concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
-"""
+def _concurrency_block(cancel_in_progress: bool) -> str:
+    return (
+        "concurrency:\n"
+        "  group: ${{ github.workflow }}-${{ github.ref }}\n"
+        f"  cancel-in-progress: {'true' if cancel_in_progress else 'false'}\n"
+    )
 
 
-def add_concurrency(text: str) -> tuple[str, bool]:
+def add_concurrency(text: str, cancel_in_progress: bool = True) -> tuple[str, bool]:
     if "\nconcurrency:" in text or text.startswith("concurrency:"):
         return text, False
     lines = text.split("\n")
@@ -29,7 +40,7 @@ def add_concurrency(text: str) -> tuple[str, bool]:
     inserted = False
     for line in lines:
         if not inserted and line.rstrip() == "jobs:":
-            out.append(CONCURRENCY_BLOCK.rstrip("\n"))
+            out.append(_concurrency_block(cancel_in_progress).rstrip("\n"))
             out.append("")
             inserted = True
         out.append(line)
@@ -53,19 +64,22 @@ def add_timeouts(text: str, minutes: int = 30) -> tuple[str, bool]:
 
 
 def main() -> int:
-    targets = sys.argv[1:]
-    if not targets:
-        print("usage: add_hygiene.py <workflow.yml> [...]")
-        return 1
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--timeout", type=int, default=30)
+    ap.add_argument("--cancel-in-progress", default="true", choices=["true", "false"])
+    ap.add_argument("targets", nargs="+")
+    args = ap.parse_args()
+
+    cancel = args.cancel_in_progress == "true"
     changed = []
-    for name in targets:
+    for name in args.targets:
         p = WORKFLOWS / name
         if not p.exists():
             print(f"SKIP missing: {name}")
             continue
         text = p.read_text(encoding="utf-8")
-        new, c1 = add_concurrency(text)
-        new, c2 = add_timeouts(new)
+        new, c1 = add_concurrency(text, cancel)
+        new, c2 = add_timeouts(new, args.timeout)
         if new != text:
             p.write_text(new, encoding="utf-8")
             changed.append((name, c1, c2))
