@@ -40,6 +40,14 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: python -m alpha_engine.portfolio_theories || echo "::warning::Theory portfolios failed"
 
+      - name: Build theory tracker sidecar
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python3 tools/build_theory_tracker_sidecar.py
+          git add -f audit_dashboard/data/theory_tracker.json || true
+
       - name: Commit and push results
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}

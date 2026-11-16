@@ -43,8 +43,8 @@ jobs:
               git config user.email "swarm-janitor@noreply.local"
               git add swarm_runs/_janitor.log
               git commit -m "chore: weekly session cleanup [skip ci]" || echo "nothing to commit"
-              git pull --rebase origin main
-              git push origin HEAD:main || echo "push skipped (no changes)"
+              # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+              bash .github/scripts/safe_push.sh
             fi
           fi
 
