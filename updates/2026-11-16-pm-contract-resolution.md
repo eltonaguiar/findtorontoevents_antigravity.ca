@@ -53,11 +53,35 @@ ones (winning/losing payout math, unresolved-expiry with `pnl_pct=None`,
 live-market OPEN, side mapping, outcome normalisation, loader indexing);
 `audit_trail.universal_pick_resolver` imports with the contract flag on.
 
-## Limitation
+## 3. Outcome producer (added in the same change)
 
-No local outcome feed exists yet in this checkout, so contract picks would
-expire as `CONTRACT_UNRESOLVED` (pnl `None`) rather than settle. The resolver
-reads `data/pm_market_outcomes.json` first — a producer only needs to write
-`{"markets": [{"market_id"|"ticker": ..., "outcome": "YES"|"NO", "end_date": ...}]}`
-and settlement starts working with no further code change. None of the 27 live
-PM rows are contracts; all are `spot_derived`.
+Without a producer the resolver's contract branch would only ever expire picks.
+`audit_trail/pm_outcome_ingest.py` now builds the feed:
+
+* Polymarket Gamma `GET /markets?closed=true` — winner from `outcomes` +
+  `outcomePrices` (settled prices are 1.0 / 0.0).
+* Kalshi Trade API `GET /markets?status=settled` — winner from `result`.
+* Merges with the existing `data/pm_market_outcomes.json` (never drops known
+  outcomes) and writes atomically via `os.replace`.
+* Fail-open per source: a feed error is reported, the dashboard still builds,
+  and contract picks stay unresolved instead of being invented.
+* CLI: `python -m audit_trail.pm_outcome_ingest [--local-only] [--out PATH]`.
+
+Wired into `.github/workflows/audit-dashboard.yml` immediately **before** the
+"Resolve active picks" step, so the resolver sees outcomes from the same run.
+
+**Verified.** 7 offline tests (`tests/test_pm_outcome_ingest.py`) cover settled
+price parsing, unsettled rejection, Kalshi `result`, merge-with-existing,
+fail-open on a 429, `--local-only` (no fetch), and the full chain:
+ingest → `load_market_outcomes` → `resolve_contract_pick` settles a 0.30 YES
+contract at `+233.33%`. `--local-only` CLI smoke writes a valid empty feed when
+no local outcomes exist.
+
+## Remaining limitation
+
+The producer needs network egress from CI (it is fail-open if absent), and it
+only settles markets that are already closed at ingest time — a market that
+settles later is picked up on the next run because the file is merged, not
+replaced. None of the 27 live PM rows are contracts; all are `spot_derived`,
+so live settlement volume will start only when the emitters pass `market_id` +
+`contract_side` through to the pick.

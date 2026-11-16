@@ -131,6 +131,15 @@ jobs:
           python -m prediction_market_agents.orchestrator || echo "Prediction market agents failed (non-fatal)"
           python alpha_engine/combined_confidence_strategy.py || echo "Combined confidence strategy failed (non-fatal)"
 
+      # 2026-11-16: binary prediction-market contracts settle on the market outcome,
+      # not on spot TP/SL. The resolver reads data/pm_market_outcomes.json; this step
+      # produces it from the Kalshi/Polymarket settled-market APIs. Fail-open: a feed
+      # outage leaves contract picks EXPIRED-without-P&L rather than fake results.
+      - name: Ingest settled prediction-market outcomes
+        run: python -m audit_trail.pm_outcome_ingest || echo "::warning::PM outcome ingest failed (non-fatal - contract picks stay unresolved)"
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
       - name: Resolve active picks (TP/SL/time exits) across all systems
         id: resolve_active_picks
         run: |
