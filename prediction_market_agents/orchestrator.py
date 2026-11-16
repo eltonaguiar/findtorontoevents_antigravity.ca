@@ -293,6 +293,12 @@ def merge_into_active_picks(signals: List[Dict]) -> int:
             "reason": signal.get("reason", ""),
             "timestamp": signal.get("timestamp", now.isoformat()),
             "created_at": now.isoformat(),
+
+            # Hard shadow pin (2026-11-16 audit): prediction-market picks are
+            # research/shadow only and must never reach sizing until promoted.
+            "forward_test_only": True,
+            "sizing_allowed": False,
+            "shadow": True,
         }
 
         active_picks.append(pick)
