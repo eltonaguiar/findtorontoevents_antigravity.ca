@@ -40,3 +40,19 @@ This confirms the diagnosis: the step's 5-min cap kills the retry loop mid-fligh
 - B (branch): no duplicate CI cost; 65% branches stale; narrow stale `dup-guard` risk on active
   branches (merge-back by owners). → `2026-11-16_03-00Z_branch-audit/`
 - C (stale/flapping): 0 failures after 01:55Z; ALPHA the only flapper (now fixed). → folded here.
+
+## Re-check 06:00Z — no post-#829 run yet (peers moved the goalposts, favorably)
+- **No `dynamic-alpha-engine` run created after 04:44:52Z yet.** Latest = 04:35:36Z SUCCESS (pre-#829, old code).
+- Reason: a peer widened ALPHA's cron from `18,48 * * * *` (30-min) → **`23 */2 * * *` (every 2h)** (commit
+  `9b2bf9f8808`/`00f1f0e`, "widen inverted cron intervals that silently lost 43%/62% of fires"). Next fire ~06:23Z.
+- Also: peer `f2ba2441de2` raised the commit-step cap **15m → 30m** and bumped alpha-fast job 40→60m.
+- **My safe_push.sh change (PR #829) SURVIVED** that peer commit — the scheduled `alpha-engine` commit step
+  still ends with `if ! bash .github/scripts/safe_push.sh; then ::warning; fi` (origin/main line 208).
+- The remaining inline `git pull --rebase … 2>/dev/null` loop at origin/main ~L87-88 is inside the
+  **`wsl-direct` job** (manual `use_wsl_direct` dispatch only; skipped on every scheduled run) — not a
+  scheduled hang risk.
+- Net: safe_push + 30m cap are belt-and-suspenders; verification pending the first 2-hourly fire (~06:23Z),
+  whose commit step lands ~07:10–08:00Z. Re-check scheduled ~08:10Z.
+
+### Status vs wakeup criteria
+- Not yet PASS/FAIL — no post-merge run has executed (cron widened to 2h). Deferred, not failed.
