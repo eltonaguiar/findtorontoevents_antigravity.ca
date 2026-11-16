@@ -52,6 +52,27 @@ def test_static_per_class_snapshot_is_labelled_not_live():
 
 
 @needs_template
+def test_ghost_rows_are_not_called_a_passing_check():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "5/5 checks pass" not in html
+    assert "ghost-row check fails" in html
+
+
+@needs_template
+def test_retired_june_pf_figures_are_not_quoted():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "PF2.6" not in html
+    assert "PF2.4" not in html
+
+
+@needs_template
+def test_prediction_markets_are_not_labelled_verified_alpha():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "prediction-market consensus (Polymarket/Kalshi), audited copy-trader" not in html
+    assert "Prediction markets stay shadow" in html
+
+
+@needs_template
 def test_major_goal_header_declares_its_snapshot_date():
     html = TEMPLATE.read_text(encoding="utf-8")
     assert "snapshot 2026-11-16" in html, (
