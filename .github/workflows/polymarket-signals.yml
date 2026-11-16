@@ -80,8 +80,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add alpha_engine/data/polymarket_signals.json 2>/dev/null || true
-          git add alpha_engine/data/kalshi_signals.json 2>/dev/null || true
+          echo "::notice::polymarket_signals.json is gitignored (**/data/*_signals.json) — FTP-deployed only; git add would silently no-op"
+          echo "::notice::kalshi_signals.json is gitignored (**/data/*_signals.json) — FTP-deployed only; git add would silently no-op"
           git add alpha_engine/data/prediction_market_picks.json 2>/dev/null || true
           git add alpha_engine/data/prediction_market_whales.json 2>/dev/null || true
           git add copy_trader_intel/data/polymarket_trader_profiles.json 2>/dev/null || true

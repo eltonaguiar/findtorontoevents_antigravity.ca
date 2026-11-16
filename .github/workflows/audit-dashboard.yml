@@ -122,10 +122,10 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          python copy_trader_intel/polymarket_scraper.py || echo "Polymarket wallet scan failed (non-fatal)"
-          python alpha_engine/polymarket_signals.py || echo "Polymarket reverse-engineering failed (non-fatal)"
-          python alpha_engine/kalshi_signals.py || echo "Kalshi scan failed (non-fatal)"
-          python alpha_engine/prediction_market_consensus.py || echo "Prediction market consensus failed (non-fatal)"
+          python copy_trader_intel/polymarket_scraper.py || echo "::warning::Polymarket wallet scan failed (non-fatal — output stale until next green run)"
+          python alpha_engine/polymarket_signals.py || echo "::warning::Polymarket reverse-engineering failed (non-fatal — output stale until next green run)"
+          python alpha_engine/kalshi_signals.py || echo "::warning::Kalshi scan failed (non-fatal — output stale until next green run)"
+          python alpha_engine/prediction_market_consensus.py || echo "::warning::Prediction market consensus failed (non-fatal — output stale until next green run)"
           python -m prediction_market_agents.orchestrator || echo "Prediction market agents failed (non-fatal)"
           python alpha_engine/combined_confidence_strategy.py || echo "Combined confidence strategy failed (non-fatal)"
 
@@ -1192,7 +1192,7 @@ jobs:
               ftp_upload(ftp, "audit_dashboard/index.html", f"/{SITE_ROOT}/audit", "index.html", label)
               ftp_upload(ftp, "audit_dashboard/dashboard_enhancements.js", f"/{SITE_ROOT}/audit", "dashboard_enhancements.js", label)
               # 2026-05-19: index.html <script src>s these 3 too — never deployed -> 404
-              for jsf in ["money_ready_filter.js", "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:
+              for jsf in ["money_ready_filter.js", "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js", "excess_column.js", "forward_clock.js"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{jsf}", f"/{SITE_ROOT}/audit", jsf, label)
                   except Exception as e:
@@ -1329,7 +1329,7 @@ jobs:
               ftp_upload(ftp, "audit_dashboard/index.html", "/audit", "index.html", label)
               # 2026-05-19: index.html <script src>s these 4 — never deployed -> 404
               for jsf in ["dashboard_enhancements.js", "money_ready_filter.js",
-                          "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:
+                          "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js", "excess_column.js", "forward_clock.js"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{jsf}", "/audit", jsf, label)
                   except Exception as e:
@@ -1435,7 +1435,7 @@ jobs:
               ftp_upload(ftp, "audit_dashboard/index.html", f"/{SITE_ROOT}/audit", "index.html", label)
               # 2026-05-19: index.html <script src>s these 4 — never deployed -> 404
               for jsf in ["dashboard_enhancements.js", "money_ready_filter.js",
-                          "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:
+                          "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js", "excess_column.js", "forward_clock.js"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{jsf}", f"/{SITE_ROOT}/audit", jsf, label)
                   except Exception as e:
