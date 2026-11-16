@@ -122,7 +122,9 @@ git diff --name-status HEAD origin/main -- .github/workflows/
 
 Question answered per file: **if this file lands on `origin/main` as it exists on `HEAD`, does anything that currently produces live `/audit` content stop working, or does a new writer start?**
 
-Pinned for this analysis: `origin/main` as of 02:23Z (sha at time of analysis: `29b358a09605cc321e7900f38813368dfdbea38d`; main advances continuously — re-fetch before relying on any branch delta). File contents for the 9 deletions read at `707a07092a1b1e9227c3930311c8a5f2e318291f`.
+Pinned for this analysis: `origin/main` as of 02:31Z (sha at time of analysis: `b129d094d8002c331b8e5a0923276dccb35cf37b`; main advances continuously — re-fetch before relying on any branch delta). File contents for the 9 deletions read at `707a07092a1b1e9227c3930311c8a5f2e318291f`.
+
+**Re-verified at 02:31Z after #124:** the 12-row delta is **unchanged** against `b129d094d80` (same 9 `D` + 1 `M` + 2 `R`, byte-identical file list). Spot-checked on the fresh sha: `db-freshness-guardian.yml` still **present**, `cross-db-consistency.yml` still **absent**, `audit-dashboard.yml` / `deploy-competition-to-site.yml` / `deploy-fte-index.yml` all still **present**, and `dynamic-alpha-engine.yml` still **90 lines / `timeout-minutes: 90` on main vs 60 on HEAD**. The verdicts below are therefore current, not inherited.
 
 **Short answer: no. All 12 are dependency-free with respect to live `/audit` production.** Three of them (`cross-db-consistency`, `db-freshness-check`, `live_trading_canada_free`) write reports into `audit_dashboard/data/`, which *is* a `/audit` publish surface — but the specific files they write are either not in that publish path or are already produced by a surviving workflow. Detail below is per file.
 
