@@ -42,9 +42,16 @@ jobs:
   generate-picks:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 30
-    concurrency:
-      group: alpha-engine-${{ github.event.inputs.universe || 'default' }}
-      cancel-in-progress: true
+    # NOTE (review, 2026-11-16): a job-level `concurrency` block with
+    # `cancel-in-progress: true` keyed on `github.event.inputs.universe || 'default'`
+    # was removed here. `github.event.inputs` is only populated for
+    # workflow_dispatch, so every SCHEDULED run collapses into the single group
+    # `alpha-engine-default`, and cancel-in-progress:true then lets any overlapping
+    # run kill this one. The two crons (22:00 weekdays / 05:00 Sunday) do not
+    # currently overlap, so nothing is lost today — but the block buys zero
+    # protection and is the same pattern that silently lost 43%/62% of fires in
+    # audit-dashboard.yml and dynamic-alpha-engine.yml (PR #814). See
+    # GHACTIONS_2026-11-16/*_EST_gha_design/GHA_REMEDIATION_DESIGN.md.
 
     steps:
     #  Step 1: Checkout 
