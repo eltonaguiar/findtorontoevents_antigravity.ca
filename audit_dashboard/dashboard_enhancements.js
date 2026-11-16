@@ -744,10 +744,12 @@
     const pnl = pick('pnl_integrity');
     if (pnl) {
       cards.push({
-        title: 'PnL Integrity (sampled)',
+        title: 'Sign consistency (sampled)',
         value: (100 - pnl.mismatch_pct).toFixed(1) + '%',
         sub: htmlEscape((pnl.gt1pct_mismatch || 0).toLocaleString()) + ' / ' +
-             htmlEscape((pnl.sampled || 0).toLocaleString()) + ' mismatch >1pp',
+             htmlEscape((pnl.sampled || 0).toLocaleString()) + ' sign mismatch; magnitude ' +
+             htmlEscape((pnl.naive_magnitude_mismatch || 0).toLocaleString()) +
+             ' (' + htmlEscape(String(pnl.naive_magnitude_mismatch_pct != null ? pnl.naive_magnitude_mismatch_pct : '?')) + '%)',
         color: tierColor(pnl.tier),
       });
     }
