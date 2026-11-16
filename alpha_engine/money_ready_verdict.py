@@ -719,14 +719,23 @@ def _net_pnl(pick: dict) -> float:
     that the "REAL gross" verdict can survive while the "real money" verdict
     does not (a 7bp gross COMMODITY win is a net loss after the 12bp
     round-trip). `deduct_slippage` is the M-069-corrected fraction-unit
-    deduction. Fail-open: if the import is unavailable, fall back to gross.
+    deduction. Fail SAFE: if the import is unavailable, deduct the widest
+    charter round-trip (12bp) rather than falling back to gross.
     """
     gross = float(pick.get("pnl_pct") or 0)
     try:
         from alpha_engine.charter_slippage import deduct_slippage
         return deduct_slippage(gross, pick.get("asset_class"))
     except Exception:
-        return gross
+        # Fail SAFE (2026-11-16 audit): an unavailable slippage model must never
+        # silently promote a gross-only verdict. Deduct the widest round-trip in
+        # the charter table (COMMODITY 6bp one-way -> 12bp round-trip = 0.0012).
+        print(
+            "WARN: charter_slippage unavailable; applying conservative "
+            "12bp round-trip deduction",
+            file=sys.stderr,
+        )
+        return gross - 0.0012
 
 
 def _class_stats(picks: list[dict]) -> dict[str, dict]:

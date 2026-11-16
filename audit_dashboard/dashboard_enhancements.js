@@ -25,6 +25,19 @@
       .replace(/'/g, '&#39;');
   }
 
+  /**
+   * Format a profit factor. A PF of 999 / Infinity is the zero-loss sentinel
+   * (no losing trades in the cohort), not a real profit factor — rendering it
+   * as "999.00" or "∞" reads as a massive edge. Show "n/a" instead so the
+   * cohort is not quoted as edge. 2026-11-16 audit: strategy_perf_by_class
+   * has 356 cells with PF>=999 and zero losses.
+   */
+  function fmtPF(value) {
+    const n = Number(value);
+    if (value == null || !isFinite(n) || n >= 999) return 'n/a';
+    return n.toFixed(2);
+  }
+
   function isWin(p) {
     const rl = p._resolved_live || '';
     const st = p.status || '';
@@ -161,8 +174,8 @@
         const co = (s.cohort_n != null) ? 'cohort n=' + htmlEscape(String(s.cohort_n)) : '';
         const wr = (s.net_wr_pct != null) ? 'WR ' + htmlEscape(String(s.net_wr_pct)) + '%'
                 : (s.wr_pct != null ? 'WR ' + htmlEscape(String(s.wr_pct)) + '%' : '');
-        const pfc = (s.net_pf != null) ? 'PF ' + htmlEscape(String(s.net_pf))
-                  : (s.pf != null ? 'PF ' + htmlEscape(String(s.pf)) : '');
+        const pfc = (s.net_pf != null || s.pf != null)
+                  ? 'PF ' + htmlEscape(fmtPF(s.net_pf != null ? s.net_pf : s.pf)) : '';
         const meta = [co, wr, pfc].filter(Boolean).join(' · ');
         let note = '';
         if (s.note) note = '<div style="font-size:10px;color:#94a3b8;margin-top:2px">' + htmlEscape(s.note) + '</div>';
@@ -1093,7 +1106,7 @@
       const byClass = mr.by_class || {};
       const rows = Object.keys(byClass).sort().map(function (cls) {
         const v = byClass[cls] || {};
-        const pf = v.pf != null ? Number(v.pf).toFixed(2) : '—';
+        const pf = v.pf != null ? fmtPF(v.pf) : '—';
         const wr = v.wr != null ? (Number(v.wr) <= 1 ? (Number(v.wr) * 100).toFixed(1) : Number(v.wr).toFixed(1)) : '—';
         return '<span style="margin-right:12px"><b>' + htmlEscape(cls) + '</b> PF ' + pf + ' WR ' + wr + '%</span>';
       }).join('');
