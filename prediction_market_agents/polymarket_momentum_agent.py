@@ -62,19 +62,37 @@ def _snapshot_trade_levels(symbol: str, direction: str) -> tuple[float, float, f
     )
 
 
+def _emit_annotation(level: str, message: str) -> None:
+    """Emit a GitHub-Actions-style annotation on stderr (always visible in CI)."""
+    print(f"::{level}::{message}", file=sys.stderr, flush=True)
+
+
 def scan_momentum() -> dict[str, Any]:
     try:
-        from alpha_engine.polymarket_signals import fetch_crypto_markets, get_clob_momentum_signals
+        from alpha_engine.polymarket_signals import (
+            consume_fetch_errors,
+            fetch_crypto_markets,
+            get_clob_momentum_signals,
+        )
     except Exception as exc:
         logger.error("Failed to import shared Polymarket momentum logic: %s", exc)
-        return {"signals": [], "error": str(exc)}
+        notice = f"pm_momentum import failure: {exc}"
+        _emit_annotation("error", notice)
+        return {"signals": [], "error": str(exc), "status": "error", "notice": notice}
 
     logger.info("=" * 60)
     logger.info("  Polymarket Momentum Detector")
     logger.info("=" * 60)
 
-    markets = fetch_crypto_markets()
-    raw_signals = get_clob_momentum_signals(markets)
+    fetch_errors: list[str] = []
+    try:
+        markets = fetch_crypto_markets()
+        raw_signals = get_clob_momentum_signals(markets)
+    except Exception as exc:
+        logger.error("Polymarket momentum scan raised: %s", exc)
+        markets, raw_signals = [], []
+        fetch_errors = [f"scan raised: {exc}"]
+    fetch_errors.extend(consume_fetch_errors())
 
     signals = []
     for signal in raw_signals:
@@ -110,12 +128,37 @@ def scan_momentum() -> dict[str, Any]:
             }
         )
 
+    if signals:
+        status, notice, error = "ok", None, None
+    elif fetch_errors:
+        status = "error"
+        error = "; ".join(fetch_errors[:5])
+        notice = (
+            f"pm_momentum emitted 0 rows because upstream fetch/parse FAILED "
+            f"({len(fetch_errors)} error(s)): {error}"
+        )
+        _emit_annotation("error", notice)
+        logger.error("%s", notice)
+    else:
+        status = "empty"
+        error = None
+        notice = (
+            f"pm_momentum legitimately emitted 0 rows: {len(markets)} qualifying markets "
+            f"analyzed, none crossed the momentum threshold. Feed is FEEDING-BUT-QUIET, "
+            f"not broken — do not treat as data."
+        )
+        _emit_annotation("warning", notice)
+        logger.warning("%s", notice)
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source": "polymarket_momentum_detector",
         "markets_analyzed": len(markets),
         "momentum_signals": len(signals),
         "signals": signals,
+        "status": status,
+        "notice": notice,
+        "error": error,
     }
 
     _save_json(OUTPUT_FILE, payload)
@@ -129,6 +172,11 @@ if __name__ == "__main__":
     print(f"\nMomentum Detector Complete:")
     print(f"  Markets analyzed: {result.get('markets_analyzed', 0)}")
     print(f"  Momentum signals: {result.get('momentum_signals', 0)}")
+    print(f"  Status: {result.get('status', 'unknown')}")
     for sig in result.get("signals", [])[:10]:
         md = sig.get("momentum_data", {})
         print(f"  {sig.get('direction','?'):5s} {sig.get('symbol','?'):12s} Δ4h={md.get('delta_4h', 0):+.2%}")
+    if result.get("notice"):
+        print(f"  Notice: {result['notice']}")
+    if result.get("status") == "error":
+        sys.exit(2)

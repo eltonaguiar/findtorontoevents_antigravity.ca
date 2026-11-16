@@ -69,6 +69,31 @@ def _alert(sev, typ, msg, action, **kw):
     return {"severity": sev, "type": typ, "message": msg, "action": action, "details": kw}
 
 
+def _resolve_alert_strategy_name(pick):
+    """Map a pick to its real emitter name (fixes `unknown` alert rows).
+
+    2026-11-16: 51 kimi_riseoftheclaw closed rows carry `strategy` literally
+    stamped "unknown" (no algorithm field) and all merged into one `unknown`
+    degradation bucket. Resolve through alpha_engine.config
+    .resolve_strategy_name (strategy -> strategy_name -> algorithm ->
+    mutation_name -> source_system, alias-canonicalised) so alert rows name
+    their real emitter. Local fallback keeps the module import-safe.
+    """
+    try:
+        from alpha_engine.config import resolve_strategy_name
+        return resolve_strategy_name(pick)
+    except Exception:
+        p = pick or {}
+        for key in ("strategy", "strategy_name", "algorithm", "mutation_name", "source"):
+            v = p.get(key)
+            if v is not None and str(v).strip().lower() not in ("", "unknown", "none", "null"):
+                return str(v).strip()
+        v = p.get("source_system")
+        if v is not None and str(v).strip().lower() not in ("", "unknown", "none", "null"):
+            return str(v).strip()
+        return "unknown"
+
+
 def _strategy_baseline_wr_from_stats(stats, strat_name):
     """Use per-system strategy rows when present (fixes fwd_wr vs win_rate field bug)."""
     best_wr = None
@@ -111,7 +136,7 @@ def _strategy_degradation(active, closed, stats):
     cutoff = now - timedelta(days=_ROLLING_DAYS)
     by_strat = defaultdict(list)
     for p in closed or []:
-        key = p.get("strategy") or p.get("signal_type") or "unknown"
+        key = _resolve_alert_strategy_name(p)
         by_strat[key].append(p)
 
     for strat, picks in by_strat.items():
