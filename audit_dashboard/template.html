@@ -5796,7 +5796,7 @@ function renderSummary() {
       var v = s.total_pnl_pct_compounded_rolling_100;
       var has = (v !== null && v !== undefined && !Number.isNaN(v));
       return {
-        label: 'Rolling 100',
+        label: 'Rolling 100 (n=' + Math.min(100, displayWins + displayLosses + displayFlat) + ')',
         value: has ? fmtPct(v) : '—',
         cls: has ? (v >= 0 ? 'positive' : 'negative') : '',
         tip: 'Last 100 closed trades compounded equal-weight, ±10% per-trade cap. Bounded headline metric for recent performance. (summary.total_pnl_pct_compounded_rolling_100)'
@@ -5835,9 +5835,9 @@ function renderSummary() {
         sub: '<span style="font-size:9px;color:var(--text-dim)">' + String(conc.top1_source_system || '').replace(/</g, '') + '</span>'
       }];
     })() : []),
-    { label: 'Median Trade', value: medianPnl != null ? fmtPct(medianPnl) : '\u2014', cls: medianPnl != null ? (medianPnl >= 0 ? 'positive' : 'negative') : '', tip: 'Median PnL per trade. Unlike average, the median is NOT affected by outliers. If median is negative but total PnL is positive, a few big winners are masking many small losses. This is the most honest single metric.' },
-    { label: 'Profit Factor', value: displayPF === Infinity ? '\u221e' : displayPF != null ? fmt(displayPF, 2) : '\u2014', cls: displayPF >= 1.0 ? 'positive' : 'negative', tip: cardTips.profitFactor },
-    { label: 'Expectancy', value: displayExpectancy != null ? (displayExpectancy >= 0 ? '+' : '') + fmt(displayExpectancy, 2) + '%' : '\u2014', cls: displayExpectancy >= 0 ? 'positive' : 'negative', tip: cardTips.expectancy },
+    { label: 'Median Trade (n=' + (displayWins + displayLosses + displayFlat) + ')', value: medianPnl != null ? fmtPct(medianPnl) : '\u2014', cls: medianPnl != null ? (medianPnl >= 0 ? 'positive' : 'negative') : '', tip: 'Median PnL per trade. Unlike average, the median is NOT affected by outliers. If median is negative but total PnL is positive, a few big winners are masking many small losses. This is the most honest single metric.' },
+    { label: 'Profit Factor (n=' + (displayWins + displayLosses + displayFlat) + ')', value: displayPF === Infinity ? '\u221e' : displayPF != null ? fmt(displayPF, 2) : '\u2014', cls: displayPF >= 1.0 ? 'positive' : 'negative', tip: cardTips.profitFactor },
+    { label: 'Expectancy (n=' + (displayWins + displayLosses + displayFlat) + ')', value: displayExpectancy != null ? (displayExpectancy >= 0 ? '+' : '') + fmt(displayExpectancy, 2) + '%' : '\u2014', cls: displayExpectancy >= 0 ? 'positive' : 'negative', tip: cardTips.expectancy },
     { label: 'Avg Win / Loss', value: `+${fmt(displayAvgWin, 2)}% / -${fmt(displayAvgLoss, 2)}%`, tip: cardTips.avgWinLoss,
       sub: winLossRatio != null ? `<span style="color:var(--text-dim);font-size:10px">W/L Ratio: <span style="color:${winLossRatio >= 1 ? 'var(--green)' : 'var(--red)'}; font-weight:600">${fmt(winLossRatio, 2)}</span></span>` : '' },
     { label: 'W / L / F', value: `${displayWins} / ${displayLosses} / ${displayFlat}`, tip: cardTips.wl },
