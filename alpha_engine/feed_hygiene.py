@@ -196,7 +196,16 @@ def is_valid_active_pick(pick: dict) -> bool:
     if not strat_raw or strat_raw.lower() in _ANONYMOUS_STRATEGY_SENTINELS:
         return False
     sys_raw = str(pick.get("source_system") or "").strip()
-    if strat_raw.lower() == sys_raw.lower() and strat_raw != "":
+    # Prediction-market consensus legitimately names its strategy after its
+    # source system ("prediction_market_consensus" / "prediction_market_agents").
+    # That is a real named strategy, not an anonymous mirror — without this
+    # exemption every PM pick was rejected at ingest and never reached
+    # active_picks.json (2026-11-16 audit).
+    is_pm_source = any(
+        token in sys_raw.lower()
+        for token in ("prediction_market", "polymarket", "kalshi")
+    )
+    if strat_raw.lower() == sys_raw.lower() and strat_raw != "" and not is_pm_source:
         # Self-named strategy (strategy == source_system) — anonymous by convention.
         return False
 

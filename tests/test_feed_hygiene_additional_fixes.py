@@ -58,6 +58,21 @@ class TestAnonymousStrategyRejection(unittest.TestCase):
             _base_pick(strategy="Alpha_Engine", source_system="alpha_engine")
         ))
 
+    def test_prediction_market_self_named_accepted(self):
+        # PM consensus legitimately names its strategy after its source system.
+        # Without the exemption every PM pick was rejected at ingest and never
+        # reached active_picks.json (2026-11-16 audit).
+        self.assertTrue(is_valid_active_pick(_base_pick(
+            strategy="prediction_market_consensus",
+            source_system="prediction_market_consensus",
+        )))
+
+    def test_polymarket_self_named_accepted(self):
+        self.assertTrue(is_valid_active_pick(_base_pick(
+            strategy="polymarket_momentum",
+            source_system="polymarket_momentum",
+        )))
+
 
 class TestEnsureEntryTime(unittest.TestCase):
     def test_passthrough_when_entry_time_present(self):
