@@ -113,6 +113,7 @@ jobs:
     name: Generate Active Picks
     needs: evolve-strategies
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     outputs:
       picks_generated: ${{ steps.gen.outputs.picks_count }}
       regime_detected: ${{ steps.gen.outputs.regime }}
@@ -221,6 +222,7 @@ jobs:
     name: Check Phoenix Revival Candidates
     needs: generate-picks
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -269,6 +271,7 @@ jobs:
     name: Send Notifications
     needs: [generate-picks, phoenix-revival]
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     if: always()
     
     steps:
@@ -286,6 +289,7 @@ jobs:
     name: Register DNA Factory Strategies
     needs: evolve-strategies
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -363,6 +367,7 @@ jobs:
     name: Evaluate Tier Promotions
     needs: [generate-picks, factory-register]
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
