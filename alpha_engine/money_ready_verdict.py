@@ -458,6 +458,30 @@ def _load_picks(*, ci_mode: bool = False) -> list[dict]:
 PF_REGISTRY_PATH = REPO_ROOT / "audit_dashboard/data/pf_registry.json"
 
 
+# Sleeve plausibility guard (2026-11-16 audit). A profit factor this high on a
+# small cohort is almost always a resolution artifact rather than edge: the
+# registry carried "ADX Trend Confirmation" at PF 56.7 (BTCUSDT 91 wins / 0
+# losses) and the resolver ledger carried "GainerPredictor1hStrategy" at PF 120
+# (48/49 wins, all AVAXUSDT). Both reached the top of the Money-Ready sleeve
+# list as if actionable. Flag them as policy_blocked so the UI can never
+# promote them, and rank non-blocked sleeves first.
+_PF_IMPLAUSIBLE = 5.0
+_PLAUSIBLE_MIN_N = 100
+# A >=95% win rate on a directional trade is a labeling signature (TP-first or
+# untouched-SL fills), not an edge, regardless of cohort size. The resolver
+# sleeve path below hardcodes is_single_source=False, so it needs this guard
+# independently of the registry's single-source flag.
+_WR_IMPLAUSIBLE_PCT = 95.0
+_WR_PLAUSIBLE_MIN_N = 1000
+
+
+def _is_implausible(n: int, pf: float, wr: float) -> bool:
+    """True when PF/WR is too extreme for the cohort size to be credible."""
+    if pf > _PF_IMPLAUSIBLE and n < _PLAUSIBLE_MIN_N:
+        return True
+    return wr >= _WR_IMPLAUSIBLE_PCT and n < _WR_PLAUSIBLE_MIN_N
+
+
 def _top_money_ready_sleeves(reg: dict, asset_class: str, min_n: int = 30) -> list[dict]:
     """T2+ individual sleeves from strategy-level policy-clean net.
 
@@ -477,18 +501,25 @@ def _top_money_ready_sleeves(reg: dict, asset_class: str, min_n: int = 30) -> li
         pf_raw = r.get("profit_factor")
         pf = float(pf_raw) if pf_raw is not None else 0.0
         single = bool(r.get("is_single_source_artifact", False))
+        implausible = _is_implausible(n, pf, wr)
         if n >= min_n and wr >= 50.0 and pf >= 1.5:
+            note_parts = []
+            if single:
+                note_parts.append("single-source")
+            if implausible:
+                note_parts.append("implausible-stats")
             sleeves.append({
                 "strategy": r.get("strategy", "unknown"),
                 "n": n,
                 "wr": round(wr, 2),
                 "pf": round(pf, 4),
                 "is_single_source": single,
+                "implausible_pf": implausible,
                 "source": "policy_clean",
-                "policy_blocked": False,
-                "note": r.get("note", "") or ("single-source" if single else ""),
+                "policy_blocked": single or implausible,
+                "note": r.get("note", "") or "; ".join(note_parts),
             })
-    sleeves.sort(key=lambda s: s["pf"], reverse=True)
+    sleeves.sort(key=lambda s: (s["policy_blocked"], -s["pf"]))
     return sleeves[:5]
 
 
@@ -572,9 +603,12 @@ def _top_sleeves_from_outcomes(asset_class: str, min_n: int = 30) -> list[dict]:
         pf = gw / gl
         if n < min_n or wr < 50.0 or pf < 1.5:
             continue
+        implausible = _is_implausible(n, pf, wr)
         note_parts = ["resolver_grade"]
         if strat in blocked:
             note_parts.append("policy-blocked")
+        if implausible:
+            note_parts.append("implausible-stats")
         if strat.startswith("ml_enhanced") and ac == "CRYPTO":
             note_parts.append("ml_enhanced-family")
         sleeves.append({
@@ -583,11 +617,12 @@ def _top_sleeves_from_outcomes(asset_class: str, min_n: int = 30) -> list[dict]:
             "wr": round(wr, 2),
             "pf": round(pf, 4),
             "is_single_source": False,
+            "implausible_pf": implausible,
             "source": "resolver_grade",
-            "policy_blocked": strat in blocked,
+            "policy_blocked": (strat in blocked) or implausible,
             "note": "; ".join(note_parts),
         })
-    sleeves.sort(key=lambda s: s["pf"], reverse=True)
+    sleeves.sort(key=lambda s: (s["policy_blocked"], -s["pf"]))
     return sleeves[:5]
 
 
@@ -602,7 +637,11 @@ def _merge_top_sleeves(
             merged.append(s)
             seen.add(s.get("strategy"))
     merged.sort(
-        key=lambda x: (x.get("policy_blocked", False), -x.get("pf", 0)),
+        key=lambda x: (
+            x.get("policy_blocked", False),
+            x.get("implausible_pf", False),
+            -x.get("pf", 0),
+        ),
     )
     return merged[:5]
 
