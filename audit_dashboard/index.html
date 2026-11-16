@@ -854,7 +854,7 @@ a:hover { text-decoration: underline; }
   </div>
   <div style="margin-top:5px;color:#94a3b8;font-size:0.88em">
     <strong style="color:#86efac">&#x2705; DATA QUALITY IMPROVEMENTS (2026-05-31):</strong>
-    Ghost rows: 0 (was 22,947). Status-PnL mismatches: 0. Non-canonical statuses (WON/CLOSED_SL/CLOSED_TP/FLAT): all 0. Backup tables: removed.
+    Ghost rows: quarantined from the canonical view on 2026-05-31 (raw-table count is live in the DB Health tile above; rows persist per the 2026-11-14 MASTER_AUDIT, quarantine-not-delete policy). Status-PnL mismatches: cleared from the canonical view 2026-05-31 (live sampled count in DB Health tile). Non-canonical statuses (WON/CLOSED_SL/CLOSED_TP/FLAT): all 0. Backup tables: removed.
     at_raw_picks UNKNOWN: 3 (was thousands). FOREX: PR #6 policy-gate shipped (all blocked except cta_cross_asset_tsmom SHORT).
     BOND: now emitting (78 raw picks). See <code>updates/2026-05-31-pr1-data-integrity-repair.md</code>.
   </div>
@@ -877,7 +877,7 @@ a:hover { text-decoration: underline; }
 <div id="ml-calibration-inversion-banner" style="max-width:1180px;margin:8px auto 0;padding:9px 14px;background:linear-gradient(135deg,rgba(168,85,247,0.12),rgba(239,68,68,0.10));border:1px solid rgba(168,85,247,0.55);border-radius:10px;color:#fbcfe8;font-size:0.80em;line-height:1.5">
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <span style="font-weight:700;color:#a855f7;letter-spacing:0.4px;font-size:0.95em">&#x1F4CF; ML CALIBRATION INVERTED</span>
-    <span style="color:#fde68a;font-weight:600">High confidence != high win rate.</span>
+    <span style="color:#fde68a;font-weight:600">High confidence != high win rate.</span> <span style="color:#94a3b8;font-size:0.92em">(static measurement 2026-05-15)</span>
     <span style="color:#cbd5e1">CRYPTO conf&ge;0.90 &rarr; <strong style="color:#fca5a5">14.4% WR</strong>; conf 0.50-0.60 &rarr; <strong style="color:#86efac">60.3% WR</strong>.</span>
     <span style="color:#94a3b8">&middot;</span>
     <span style="color:#cbd5e1">EQUITY 0.85-0.90 &rarr; <strong style="color:#fca5a5">20% WR (worst band)</strong>; &gt;0.90 recovers.</span>
@@ -898,7 +898,7 @@ a:hover { text-decoration: underline; }
     <span style="color:#cbd5e1;font-size:0.95em;font-weight:600">Phenomenal performance across <strong style="color:#22c55e">ALL</strong> asset classes &mdash; sustainable, hedge-fund-grade.</span>
   </div>
   <div style="color:#94a3b8;font-size:0.78em;margin:4px 0 6px;font-style:italic">Sports betting tracked at <a href="/live-monitor/sports-betting.html" style="color:#a5b4fc;text-decoration:underline">/live-monitor/sports-betting.html</a> (separate KPIs).</div>
-  <div style="color:#cbd5e1;font-size:0.86em;font-weight:600;margin:2px 0 4px;line-height:1.45">0/6 money-ready. Honest intrabar-true (first-touch, SL-wins-ties): <strong style="color:#ef4444">CRYPTO 32.9% PF0.74</strong> (only class n&ge;100, FAIL) &middot; <strong style="color:#fbbf24">EQUITY 60% PF2.13 n=72</strong> (closest, INSUFF-N) &middot; COMMODITY 42% PF1.77 n=81. Bottleneck = clean-trade <em>supply</em>, not strategy supply. Cleanest leads (forward-track only, not sized): COMMODITY <code>futures_momentum</code> n57 63%/PF2.6, FOREX <code>forex_rsi2</code> n19 63%/PF2.4. Source: <code>intrabar_truth_by_class.json</code>.</div>
+  <div style="color:#cbd5e1;font-size:0.86em;font-weight:600;margin:2px 0 4px;line-height:1.45">0/10 money-ready &mdash; COMMODITY is the only WATCH; the other 9 classes are NOT_READY or INSUFFICIENT_DATA (live <code>money_ready_verdict.json</code>, 2026-11-16T04:07Z). Honest intrabar-true (first-touch, SL-wins-ties), snapshot 2026-11-16T04:03Z &mdash; the per-class tiles below auto-update, this sentence does not: <strong style="color:#ef4444">CRYPTO 35.8% PF0.92 n=3716</strong> FAIL &middot; <strong style="color:#ef4444">FOREX 32.2% PF0.66 n=612</strong> FAIL &middot; <strong style="color:#fbbf24">EQUITY 59.2% PF0.94 n=250</strong> (high WR, PF&lt;1 = net-negative) &middot; <strong style="color:#fbbf24">COMMODITY 40.2% PF1.03 n=229</strong> breakeven &middot; FUTURES 42.3% PF1.09 n=52 INSUFF-N. Bottleneck = clean-trade <em>supply</em>, not strategy supply. Historical leads (static, forward-track only, not sized): COMMODITY <code>futures_momentum</code> n57 63%/PF2.6, FOREX <code>forex_rsi2</code> n19 63%/PF2.4. Source: <code>intrabar_truth_by_class.json</code>.</div>
   <details style="margin-top:2px">
     <summary style="cursor:pointer;color:#94a3b8;font-size:0.8em">&#x25B8; Per-class audit notes &amp; disputes (click to expand)</summary>
   <div id="major-goal-classes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px 14px;font-size:0.82em;line-height:1.5;color:#bae6fd;margin-top:6px">
@@ -908,7 +908,7 @@ a:hover { text-decoration: underline; }
     <span data-mg-class="COMMODITY"><strong style="color:#ef4444">COMMODITY</strong> &mdash; FAIL+INSUFF-N (policy-clean n=3 only; FUTURES proxy n=11 WR 9.09% PF 0.475). <strong style="color:#fca5a5">CT=F DSR=1.0 was FALSIFIED 2026-05-13</strong> (6.33&times; over-emission); pilot now <code>SHADOW_INSUFFICIENT_N</code> dsr=null.</span>
     <span data-mg-class="FOREX"><strong style="color:#ef4444">FOREX</strong> &mdash; BLOCKED (PR #6 consolidation 2026-05-31: all FOREX strategies blocked except cta_cross_asset_tsmom SHORT). Policy-clean net PF 0.29 / WR 46.1% / PnL -1026% (raw resolved cohort PF 9.67 is outlier-skewed; 7.6% WR on 12,673 resolved). Hard disable default ON in <code>non_crypto_policy.py</code>. forex_carry added to allowlist on probation. <code>recent_exits.json</code> cleaned of stale entries.</span>
     <span data-mg-class="BOND"><strong style="color:#94a3b8">BOND</strong> &mdash; ACCUMULATING (at_raw_picks: 78 rows, up from 2). Backtests PF 1.29&ndash;1.62 (bond_tlt_ief_v3, bond_hyg_lqd_v1) are orphan; universe limited to 5 symbols. First production emissions detected 2026-05-31.</span>
-    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health GREEN: ghost rows 0, status mismatch 0, non-canonical statuses 0.</span>
+    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health (live <code>data/db_health.json</code>, 2026-11-16T03:52Z): 5/5 checks pass, status-PnL mismatches 0, non-canonical statuses 0 &mdash; and <strong>22,947 ghost rows remain quarantined out of the canonical view</strong> (quarantine-not-delete per the 2026-11-14 MASTER_AUDIT; live count is in the DB Health tile above). This footer is static and does not update itself.</span>
   </div>
 <div id="kill-switch-panel" style="max-width:1180px;margin:0 auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(251,146,60,0.06));border:1px solid rgba(239,68,68,0.3);border-radius:12px;color:#fde68a;font-size:0.85em">
   <details open>
@@ -1032,6 +1032,37 @@ a:hover { text-decoration: underline; }
     }).catch(function(){ var el = document.getElementById('strategy-tribunal-body'); if (el) el.textContent = 'Tribunal JSON unavailable.'; });
   })();
   </script>
+  <details id="theory-tracker-panel" style="margin:8px 0;padding:10px 14px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.35);border-radius:8px;color:#c4b5fd;font-size:12px;line-height:1.5">
+    <summary style="cursor:pointer;font-weight:700;color:#a78bfa">&#x1F9EA; Theory / Hypothesis Tracker</summary>
+    <div id="theory-tracker-body" style="margin-top:8px;color:#e5e7eb">Loading theory tracker&hellip;</div>
+  </details>
+  <script>
+  (function(){
+    function esc(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    fetch('./data/theory_tracker.json?' + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      var el = document.getElementById('theory-tracker-body');
+      if (!el) return;
+      var rows = (j && j.theories) || [];
+      if (!rows.length) { el.textContent = 'No theory / hypothesis rows yet — sidecar empty or not built (tools/build_theory_tracker_sidecar.py).'; return; }
+      var body = rows.map(function(t){
+        return '<tr>'
+          + '<td style="padding:4px 10px;font-weight:600;color:#e0e7ff">' + esc(t.name) + '</td>'
+          + '<td style="padding:4px 10px">' + (t.hypothesis ? esc(t.hypothesis) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px">' + (t.status ? esc(t.status) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px;text-align:right">' + (t.n == null ? '&mdash;' : esc(t.n)) + '</td>'
+          + '<td style="padding:4px 10px">' + (t.verdict ? esc(t.verdict) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px">' + (t.last_updated ? esc(t.last_updated) : '&mdash;') + '</td>'
+          + '</tr>';
+      }).join('');
+      el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:0.86em">'
+        + '<thead><tr style="border-bottom:1px solid rgba(148,163,184,0.3);color:#94a3b8;text-align:left">'
+        + '<th style="padding:4px 10px">Theory</th><th style="padding:4px 10px">Hypothesis</th><th style="padding:4px 10px">Status</th>'
+        + '<th style="padding:4px 10px;text-align:right">n</th><th style="padding:4px 10px">Verdict</th><th style="padding:4px 10px">Updated</th>'
+        + '</tr></thead><tbody>' + body + '</tbody></table>'
+        + '<div style="margin-top:4px;font-size:11px;color:#94a3b8">Source: <code>data/theory_tracker.json</code> &middot; built by <code>tools/build_theory_tracker_sidecar.py</code> from <code>alpha_engine/data/theory_portfolios.json</code> + newest <code>reports/h0XX_*.json</code>.</div>';
+    }).catch(function(){ var el = document.getElementById('theory-tracker-body'); if (el) el.textContent = 'Theory tracker JSON unavailable.'; });
+  })();
+  </script>
   <script src="audit_surface_truth_banner.js"></script>
   <!-- DISPUTED BANNER (Tier-0 fix 2026-05-28) — propagated from pick_funnel.html so /audit
        headline cannot be cited without the disclosure. Conditioned on money_ready_verdict
@@ -1143,7 +1174,7 @@ a:hover { text-decoration: underline; }
               '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span>' + frozenBadge + gateBadges + ' ' +
               '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' ' + cohortLabel + ')</span>' + discoveryLine + sleeveTxt;
             span.innerHTML = liveLine +
-              '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML)</summary>' +
+              '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML, 2026-05/06 — not live)</summary>' +
               '<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.45">' + span.dataset.mgStatic + '</div></details>';
           });
           var asof = document.getElementById('major-goal-asof');
@@ -1188,7 +1219,7 @@ a:hover { text-decoration: underline; }
                 String(label).replace(/"/g, '&quot;') + '">' + cRow.tier + ' single-symbol</span>';
       }
       span.innerHTML = html +
-        '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML)</summary>' +
+        '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML, 2026-05/06 — not live)</summary>' +
         '<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.45">' + span.dataset.mgStatic + '</div></details>';
     });
     var asof = document.getElementById('major-goal-asof');
@@ -1307,7 +1338,7 @@ a:hover { text-decoration: underline; }
      by tools/audit_pick_funnel/build_ic_analysis.py from dashboard_data.json::recent_closed.
      Significance gate: Bonferroni-corrected alpha = 0.05 / n_strategies.
      Negative IC means the scoring model is anti-predictive for that strategy. -->
-<div id="ic-analysis-card" style="max-width:1180px;margin:8px auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(59,130,246,0.10),rgba(139,92,246,0.06));border:1px solid rgba(99,102,241,0.4);border-radius:12px;color:#e0e7ff">
+<div id="ic-analysis-card" hidden data-retired-2026-11-16="producer never existed; artifact carried bare Infinity" style="max-width:1180px;margin:8px auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(59,130,246,0.10),rgba(139,92,246,0.06));border:1px solid rgba(99,102,241,0.4);border-radius:12px;color:#e0e7ff">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
     <span style="font-size:1.05em;font-weight:700;color:#818cf8;letter-spacing:0.4px">&#x1F4CA; Strategy IC Analysis</span>
     <span style="color:#cbd5e1;font-size:0.88em">Spearman rank correlation between <code style="color:#a5b4fc">elite_score</code> and PnL outcome — does the scoring model actually rank winners above losers?</span>
