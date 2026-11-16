@@ -156,7 +156,7 @@ jobs:
           python -m alpha_engine.bond_scanner $MERGE_FLAG
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          SKIP_FRED: '1'
+          SKIP_FRED: ${{ vars.BOND_SKIP_FRED || '0' }}
           PYTHONPATH: ${{ github.workspace }}
           TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
           MASSIVE_API_KEY: ${{ secrets.MASSIVE_API_KEY }}
