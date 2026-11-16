@@ -169,6 +169,18 @@ def check_pnl_integrity() -> dict:
     }
 
 
+def ghost_row_verdict(total_ghosts: int) -> dict:
+    """Yellow/red ghost counts must fail the check. A non-zero count is not a pass."""
+    n = int(total_ghosts or 0)
+    if n == 0:
+        tier, passed = "green", True
+    elif n < 1000:
+        tier, passed = "yellow", False
+    else:
+        tier, passed = "red", False
+    return {"tier": tier, "threshold_pass": passed}
+
+
 def check_ghost_rows() -> dict:
     """Freebuff 1.2 + my F2 + Kimi goldmine. Constant-pnl cohorts (n>1000,
     distinct_entries<5). Runs PER asset_class to fit shared-host /tmp budget
@@ -235,8 +247,7 @@ def check_ghost_rows() -> dict:
         "top_cohorts": cohorts[:15],
         "per_class_errors": per_class_errors,
         "per_class_sample": per_class_sample,
-        "tier": "green" if total_ghosts < 1000 else "yellow" if total_ghosts < 100000 else "red",
-        "threshold_pass": total_ghosts < 100000,
+        **ghost_row_verdict(total_ghosts),
     }
 
 

@@ -6546,8 +6546,8 @@ function renderNonCryptoPanel() {
       var grossWins = catClosed.reduce(function(s,p){ var pnl = getResolvedTradePnl(p); return pnl > FLAT_PNL_THRESHOLD ? s + pnl : s; }, 0);
       var grossLosses = Math.abs(catClosed.reduce(function(s,p){ var pnl = getResolvedTradePnl(p); return pnl < -FLAT_PNL_THRESHOLD ? s + pnl : s; }, 0));
       var profitFactor = grossLosses > 0 ? (grossWins / grossLosses) : (grossWins > 0 ? Infinity : null);
-      var pfColor = profitFactor === null ? 'var(--text-dim)' : profitFactor === Infinity ? 'var(--green)' : profitFactor >= 1.5 ? 'var(--green)' : profitFactor >= 1.0 ? 'var(--yellow)' : 'var(--red)';
-      var pfDisplay = profitFactor === null ? '—' : profitFactor === Infinity ? '∞' : fmt(profitFactor, 2);
+      var pfColor = profitFactor === null || profitFactor === Infinity ? 'var(--text-dim)' : profitFactor >= 1.5 ? 'var(--green)' : profitFactor >= 1.0 ? 'var(--yellow)' : 'var(--red)';
+      var pfDisplay = profitFactor === null || profitFactor === Infinity ? 'n/a' : fmt(profitFactor, 2);
 
       // Find top strategy. Require min 5 closed trades so a 1W/0L lucky strategy
       // doesn't outrank a 50W/30L durable one. Falls back to most-traded if no
@@ -6943,8 +6943,8 @@ function renderCryptoPanel() {
     var grossWins = catClosed.reduce(function(s, p) { var pv = Number(p.pnl_pct || 0); return pv > FLAT_PNL_THRESHOLD ? s + pv : s; }, 0);
     var grossLosses = Math.abs(catClosed.reduce(function(s, p) { var pv = Number(p.pnl_pct || 0); return pv < -FLAT_PNL_THRESHOLD ? s + pv : s; }, 0));
     var pf = grossLosses > 0 ? grossWins / grossLosses : (grossWins > 0 ? Infinity : null);
-    var pfColor = pf === null ? 'var(--text-dim)' : pf === Infinity ? 'var(--green)' : pf >= 1.5 ? 'var(--green)' : pf >= 1.0 ? 'var(--yellow)' : 'var(--red)';
-    var pfDisplay = pf === null ? '—' : pf === Infinity ? '∞' : fmt(pf, 2);
+    var pfColor = pf === null || pf === Infinity ? 'var(--text-dim)' : pf >= 1.5 ? 'var(--green)' : pf >= 1.0 ? 'var(--yellow)' : 'var(--red)';
+    var pfDisplay = pf === null || pf === Infinity ? 'n/a' : fmt(pf, 2);
 
     cardsHtml += '<div class="nc-card" style="border-color:' + cat.borderColor + '">';
     cardsHtml += '<div class="nc-header">';
@@ -11636,7 +11636,7 @@ function renderOverview() {
 
     if (openStatsRows.length > 0) {
       const osRows = openStatsRows.map(s => {
-        const wlRatio = s.losers > 0 ? (s.winners / s.losers).toFixed(1) : s.winners > 0 ? '\u221e' : '0';
+        const wlRatio = s.losers > 0 ? (s.winners / s.losers).toFixed(1) : 'n/a';
         return `<tr>
           <td>${sysLink(s.name)}</td>
           <td class="num">${s.total}</td>
@@ -17905,8 +17905,8 @@ async function init() {
   function updateAge() {
     const mins = Math.floor((Date.now() - genAt.getTime()) / 60000);
     const ageText = mins < 1 ? 'just now' : mins < 60 ? mins + 'm ago' : Math.floor(mins/60) + 'h ' + (mins%60) + 'm ago';
-    const ageColor = mins > 60 ? 'var(--red)' : mins > 15 ? 'var(--yellow)' : 'var(--green)';
-    const staleWarn = mins > 60 ? ' \u2014 DATA STALE! Check workflow status.' : '';
+    const ageColor = mins > 150 ? 'var(--red)' : mins > 90 ? 'var(--yellow)' : 'var(--green)';
+    const staleWarn = mins > 150 ? ' \u2014 DATA STALE vs 150m publish SLA. Check the hourly schedule, not a 60m false alarm.' : '';
     const sourceMeta = getAuditDataSourceMeta();
     const sourceBadge = ' <span style="color:' + sourceMeta.color + ';font-size:10px;" title="' + String(_auditDataSourceNote || '').replace(/"/g, '&quot;') + '">' + sourceMeta.label + '</span>';
     const freshBadge = freshLoaded ? ' <span style="color:#22c55e;font-size:10px;" title="Fresh data fetched from same-origin site JSON on page load">\u26a1 LIVE</span>' : '';

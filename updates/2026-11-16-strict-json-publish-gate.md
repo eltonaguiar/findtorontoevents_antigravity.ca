@@ -59,6 +59,33 @@ sidecars*, immediately before *Deploy to all 3 FTP sites in parallel*: rewrite p
    owner per emitter.
 4. **Ghost rows** — 22,947 constant-PnL rows remain, by policy quarantined not deleted
    (2026-11-14 MASTER_AUDIT). Cleaning them is a data mutation and needs explicit sign-off.
-5. **Live verification of this deploy** — the page's ghost-row wording, the two 404 JS files
-   and the sanitized payloads are only visible after a successful `audit-dashboard` run;
-   that is the next scheduled run (`:10` hourly) or the dispatch made alongside this commit.
+5. ~~Live verification of this deploy~~ — **done, see §5.**
+
+## 5. Post-deploy live verification (07:10Z) — PASSED
+
+The replacement run `audit-dashboard` **#43815224263** (`workflow_dispatch` on `main`, created
+06:12:51Z) picked the work up and deployed it. Re-checked against
+`https://findtorontoevents.ca/audit/` after the deploy landed:
+
+| Check | Before | After |
+|---|---|---|
+| `grep -c "Ghost rows: 0"` on `/audit/` | 1 | **0** |
+| `grep -c "22,947 ghost rows remain"` | 0 | **1** |
+| `grep -c "quarantined from the canonical view"` | 0 | **1** |
+| `GET /audit/forward_clock.js` | 404 | **200** |
+| `GET /audit/excess_column.js` | 404 | **200** |
+| `data/money_ready_verdict.json` parsed with `parse_constant` raising | `NaN` -> parse error | **STRICT OK** (46,399 B) |
+| `data/strategy_ic_analysis.json`, same parser | `Infinity` -> parse error | **STRICT OK** (42,157 B) |
+
+Two things worth remembering for the next deploy audit:
+
+- **`startedAt: null` is not proof of a wedged job.** The *successful* run `#43797722088` also
+  reports `startedAt: null` on its completed `generate-and-deploy` job, so that field alone is
+  meaningless here. The reliable wedge signal was the combination *state `in_progress` + zero
+  completed steps + no `updatedAt` movement*: run #43809108656 held 54 steps at 0 completed and
+  never moved from 05:16 to 06:11.
+- **Cancel acknowledgement is slow on a wedged run.** `gh run cancel`, the API
+  `POST .../force-cancel` and a second `gh run cancel` all returned success while the run stayed
+  `in_progress`; it flipped to `cancelled` roughly 7.5 minutes after the last attempt, which
+  unblocked the single-group `concurrency:` queue and let the replacement start.
+

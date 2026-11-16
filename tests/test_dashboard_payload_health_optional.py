@@ -14,11 +14,34 @@ import types
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[1]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
 from audit_trail.dashboard_payload_health import check_dashboard_payload  # noqa: E402
+
+
+_ABSENT = object()
+
+
+@pytest.fixture(autouse=True)
+def _restore_generator_module():
+    """Put the real audit_trail.dashboard_generator back after each test.
+
+    _install_fake_generator overwrites sys.modules for the whole pytest
+    session. This file sorts before the modules that import the real
+    generator, so leaking the stub broke their collection in CI
+    (CI Tests run 43820418075: 21 failed, 16 errors) while an isolated
+    run of this file still passed.
+    """
+    prior = sys.modules.get("audit_trail.dashboard_generator", _ABSENT)
+    yield
+    if prior is _ABSENT:
+        sys.modules.pop("audit_trail.dashboard_generator", None)
+    else:
+        sys.modules["audit_trail.dashboard_generator"] = prior
 
 
 def _install_fake_generator(sources, hidden=(), ghost=()):

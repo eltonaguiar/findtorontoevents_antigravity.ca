@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T10:09:25.591058+00:00",
+  "generated_at": "2026-11-16T07:07:13.093525+00:00",
   "methodology_doc": "docs/BACKTEST_ADMISSIBILITY_STANDARD.md",
   "quant_review": "reports/quant_strategy_root_cause_review_2026-06-02.md",
   "executive_answers": {
@@ -17,9 +17,9 @@
     "data_feeds": "Secondary; FRED carry fixed via curl cache; live pain is pick quality + methodology"
   },
   "live_money_ready": {
-    "generated_at": "2026-11-15T09:36:50.424442+00:00",
+    "generated_at": "2026-11-16T06:49:29.945481+00:00",
     "money_ready_classes": [],
-    "n_classes": 9,
+    "n_classes": 10,
     "by_class": {
       "FOREX": {
         "n": 612,
@@ -28,18 +28,8 @@
         "mdd": 0.8212,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.8863,
+        "top_source_share": 0.893,
         "root_cause": "PF 0.48, small n: carry lab thin; 14d raw shows high WR / PF 0.10 (EXPIRED mislabel). Not a data-feed outage \u2014 resolver/label issue."
-      },
-      "COMMODITY": {
-        "n": 229,
-        "wr": 0.4017,
-        "pf": 1.0256,
-        "mdd": 0.1975,
-        "verdict": "WATCH",
-        "top_source": "UNKNOWN",
-        "top_source_share": 0.6154,
-        "root_cause": "n=4 policy-clean; COT strategies dead post-leakage. Vol-scaled cross-mom lab Sharpe ~0.88."
       },
       "CRYPTO": {
         "n": 3716,
@@ -48,7 +38,7 @@
         "mdd": 1.0009,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.9967,
+        "top_source_share": 0.9964,
         "root_cause": "Policy-clean PF 0.89 (n~377): bulk scanner loss-skew; lab VWAP/Bollinger WF PASS but opt-in only. Proven pick_funnel cell (RR1.0-1.5 LONG) is subset \u2014 aggregate loses."
       },
       "EQUITY": {
@@ -58,8 +48,18 @@
         "mdd": 0.9999,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.9709,
+        "top_source_share": 0.9714,
         "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
+      },
+      "COMMODITY": {
+        "n": 229,
+        "wr": 0.4017,
+        "pf": 1.0256,
+        "mdd": 0.1841,
+        "verdict": "WATCH",
+        "top_source": "UNKNOWN",
+        "top_source_share": 0.6429,
+        "root_cause": "n=4 policy-clean; COT strategies dead post-leakage. Vol-scaled cross-mom lab Sharpe ~0.88."
       },
       "BOND": {
         "n": 1,
@@ -80,6 +80,16 @@
         "top_source": "institutional_picks_engine",
         "top_source_share": 0.6,
         "root_cause": "Best lab candidate: dual momentum Tier-2 (PF 1.60, n=104). Live policy-clean n=3 \u2014 need forward n>=100 before merge."
+      },
+      "CHEAP_STOCKS": {
+        "n": 1,
+        "wr": 1.0,
+        "pf": null,
+        "mdd": null,
+        "verdict": "INSUFFICIENT_DATA",
+        "top_source": "cheap_stock_cross_momentum_winner",
+        "top_source_share": 1.0,
+        "root_cause": ""
       },
       "FUTURES": {
         "n": 52,
@@ -121,99 +131,99 @@
       "summary": "0/9 classes money-ready on policy-clean net"
     },
     "ai_tournament": {
-      "generated_at": "2026-11-14T23:26:19.318720+00:00",
+      "generated_at": "2026-11-15T23:26:07.883192+00:00",
       "surface": "/audit/ai-tournament.html + pf.html",
       "trust_level": "paper_only \u2014 separate universe from Smart Picks",
       "top_by_pf_ci_lo": [
         {
           "model_id": "kimi_direct",
-          "pf_ci_lo": 1.231,
+          "pf_ci_lo": 1.241,
           "pf": 2.333,
           "wr": 0.629,
           "n": 62
         },
         {
           "model_id": "llm7_qwen",
-          "pf_ci_lo": 0.914,
+          "pf_ci_lo": 0.917,
           "pf": 2.13,
           "wr": 0.5208,
           "n": 48
         },
         {
           "model_id": "gpt4_1",
-          "pf_ci_lo": 0.816,
+          "pf_ci_lo": 0.812,
           "pf": 1.881,
           "wr": 0.5532,
           "n": 47
         },
         {
           "model_id": "grok3",
-          "pf_ci_lo": 0.776,
+          "pf_ci_lo": 0.779,
           "pf": 1.246,
           "wr": 0.541,
           "n": 122
         },
         {
           "model_id": "command_a",
-          "pf_ci_lo": 0.595,
+          "pf_ci_lo": 0.602,
           "pf": 1.357,
           "wr": 0.431,
           "n": 58
         },
         {
           "model_id": "claude_opus_4_7",
-          "pf_ci_lo": 0.565,
+          "pf_ci_lo": 0.571,
           "pf": 1.088,
           "wr": 0.3934,
           "n": 61
         },
         {
           "model_id": "deepseek_v4_flash",
-          "pf_ci_lo": 0.564,
+          "pf_ci_lo": 0.554,
           "pf": 1.34,
           "wr": 0.569,
           "n": 58
         },
         {
           "model_id": "gpt4o",
-          "pf_ci_lo": 0.479,
+          "pf_ci_lo": 0.473,
           "pf": 0.773,
           "wr": 0.4031,
           "n": 129
         },
         {
           "model_id": "groq_llama_3_70b",
-          "pf_ci_lo": 0.457,
+          "pf_ci_lo": 0.444,
           "pf": 1.137,
           "wr": 0.4839,
           "n": 31
         },
         {
           "model_id": "nous_hermes_4",
-          "pf_ci_lo": 0.446,
+          "pf_ci_lo": 0.435,
           "pf": 1.096,
           "wr": 0.4,
           "n": 35
         },
         {
-          "model_id": "pollinations_open",
-          "pf_ci_lo": 0.424,
-          "pf": 0.874,
-          "wr": 0.4043,
-          "n": 47
-        },
-        {
           "model_id": "kimi_k2_6",
-          "pf_ci_lo": 0.418,
+          "pf_ci_lo": 0.426,
           "pf": 1.002,
           "wr": 0.5,
           "n": 60
+        },
+        {
+          "model_id": "pollinations_open",
+          "pf_ci_lo": 0.423,
+          "pf": 0.874,
+          "wr": 0.4043,
+          "n": 47
         }
       ],
       "credible_n30_pf_ci_1_2": [
         {
           "model_id": "kimi_direct",
-          "pf_ci_lo": 1.231,
+          "pf_ci_lo": 1.241,
           "n": 62
         }
       ],
@@ -275,32 +285,33 @@
       ],
       "smart_picks_crypto_cell": {
         "asset_class": "CRYPTO",
-        "n": 57,
-        "wr_pct": 43.9,
-        "wr_shrunk_pct": 45.5,
-        "pf": 0.919,
-        "train_pf": 1.404,
-        "holdout_pf": 0.608,
+        "n": 22,
+        "wr_pct": 68.2,
+        "wr_shrunk_pct": 59.5,
+        "pf": 2.498,
+        "train_pf": 8.871,
+        "holdout_pf": 0.521,
         "pass_holdout": false,
         "pass_bonferroni": false,
         "is_edge": false,
-        "why_no_edge": "concentration=single_source_share=73% (luxalgo_filters) \u2014 cohort dominated by one source, not generalizable, concentration=top_symbol_share=71% (BTCUSDT)"
+        "why_no_edge": "small_n=n<22, overfit=train_pf-holdout_pf=8.35, concentration=single_source_share=63% (alpha_engine) \u2014 cohort dominated by one source, not generalizable"
       },
       "proven_cells_crypto": [],
       "recency_14d_by_class": {
         "FUTURES": {
-          "wr_pct": 42.58,
-          "pf": 1.376,
+          "wr_pct": 43.84,
+          "pf": 1.423,
           "caveats": [
             "single_source_concentration=100%_via_AlphaEngine"
           ]
         },
         "CRYPTO": {
-          "wr_pct": 44.62,
-          "pf": 1.042,
+          "wr_pct": 45.23,
+          "pf": 1.056,
           "caveats": [
-            "dup_groups=32",
-            "single_source_concentration=99%_via_AlphaEngine"
+            "dup_groups=31",
+            "single_source_concentration=99%_via_AlphaEngine",
+            "EXPIRED_pos_pnl_share=64%_likely_mislabeled_WON"
           ]
         },
         "UNKNOWN": {
@@ -319,8 +330,8 @@
           ]
         },
         "FOREX": {
-          "wr_pct": 11.54,
-          "pf": 0.086,
+          "wr_pct": 10.99,
+          "pf": 0.082,
           "caveats": [
             "single_source_concentration=100%_via_AlphaEngine"
           ]
@@ -346,7 +357,7 @@
         "lab_verdict": "PASS",
         "lab_pf": 2.746,
         "lab_n": 11,
-        "forward_n_closed": 1,
+        "forward_n_closed": 0,
         "forward_n_target": 100,
         "promotion_ready": false,
         "shadow_checkpoint_ready": false,
@@ -370,7 +381,7 @@
           "lab_verdict": "PASS",
           "lab_pf": 2.746,
           "lab_n": 11,
-          "forward_n_closed": 1,
+          "forward_n_closed": 0,
           "forward_n_target": 100,
           "promotion_ready": false,
           "shadow_checkpoint_ready": false,
@@ -426,7 +437,7 @@
         }
       ],
       "dashboard": {
-        "timestamp": "2026-11-15T10:08:57.203739+00:00",
+        "timestamp": "2026-11-16T07:07:12.913221+00:00",
         "forward_n_target": 100,
         "any_promotion_ready": false,
         "sleeves": {
@@ -439,7 +450,7 @@
             },
             "forward": {
               "source": "paper_pilot_virtual",
-              "n_closed": 1,
+              "n_closed": 0,
               "wr": 0.0,
               "pf": 0.0,
               "promotion_ready": false,
@@ -530,7 +541,7 @@
             }
           },
           "faber_taa": {
-            "timestamp": "2026-11-15T10:08:56.920447+00:00",
+            "timestamp": "2026-11-16T07:07:12.610692+00:00",
             "strategy": "faber_taa_paper_pilot",
             "n_closed": 0,
             "wr": 0.0,
@@ -559,8 +570,8 @@
               "strategy_id": "B_flip_PriceRocMeanReversion",
               "n_closed": 2,
               "wr": 0.5,
-              "pf": 0.5998,
-              "mean_pnl_pct": -0.0157,
+              "pf": 0.7075,
+              "mean_pnl_pct": -0.0097,
               "promotion_ready": false,
               "shadow_checkpoint_ready": false,
               "gates": [
@@ -578,8 +589,8 @@
               "strategy_id": "B_flip_PriceRocMeanReversion",
               "n_closed": 2,
               "wr": 0.5,
-              "pf": 0.5998,
-              "mean_pnl_pct": -0.0157,
+              "pf": 0.7075,
+              "mean_pnl_pct": -0.0097,
               "promotion_ready": false,
               "shadow_checkpoint_ready": false,
               "gates": [
@@ -621,17 +632,7 @@
               "shadow_gates": [
                 "n<30"
               ],
-              "open_position": {
-                "strategy": "inverse_ml_enhanced_BTCUSDT_15m_D",
-                "symbol": "BTCUSDT",
-                "direction": "SELL",
-                "status": "OPEN",
-                "entry_price": 65496.01,
-                "take_profit": 64775.55389,
-                "stop_loss": 66072.374888,
-                "entry_date": "2026-11-15",
-                "expires_at": "2026-11-15T12:08:49.551529+00:00"
-              }
+              "open_position": null
             },
             "forward_state_json": {
               "source": "paper_pilot_virtual",
@@ -650,35 +651,15 @@
               "shadow_gates": [
                 "n<30"
               ],
-              "open_position": {
-                "strategy": "inverse_ml_enhanced_BTCUSDT_15m_D",
-                "symbol": "BTCUSDT",
-                "direction": "SELL",
-                "status": "OPEN",
-                "entry_price": 65496.01,
-                "take_profit": 64775.55389,
-                "stop_loss": 66072.374888,
-                "entry_date": "2026-11-15",
-                "expires_at": "2026-11-15T12:08:49.551529+00:00"
-              }
+              "open_position": null
             },
-            "open_position": {
-              "strategy": "inverse_ml_enhanced_BTCUSDT_15m_D",
-              "symbol": "BTCUSDT",
-              "direction": "SELL",
-              "status": "OPEN",
-              "entry_price": 65496.01,
-              "take_profit": 64775.55389,
-              "stop_loss": 66072.374888,
-              "entry_date": "2026-11-15",
-              "expires_at": "2026-11-15T12:08:49.551529+00:00"
-            },
+            "open_position": null,
             "recommend_enable": false,
             "flag": "INVERSE_ML_BTC_15M_ENABLED"
           }
         },
         "bootstrap_forward": {
-          "timestamp": "2026-11-15T10:08:57.194361+00:00",
+          "timestamp": "2026-11-16T07:07:12.901417+00:00",
           "forward_n_target": 100,
           "any_promotion_ready": false,
           "sleeves": {
@@ -695,8 +676,8 @@
                 "strategy_id": "B_flip_PriceRocMeanReversion",
                 "n_closed": 2,
                 "wr": 0.5,
-                "pf": 0.5998,
-                "mean_pnl_pct": -0.0157,
+                "pf": 0.7075,
+                "mean_pnl_pct": -0.0097,
                 "promotion_ready": false,
                 "shadow_checkpoint_ready": false,
                 "gates": [
@@ -714,8 +695,8 @@
                 "strategy_id": "B_flip_PriceRocMeanReversion",
                 "n_closed": 2,
                 "wr": 0.5,
-                "pf": 0.5998,
-                "mean_pnl_pct": -0.0157,
+                "pf": 0.7075,
+                "mean_pnl_pct": -0.0097,
                 "promotion_ready": false,
                 "shadow_checkpoint_ready": false,
                 "gates": [
@@ -757,17 +738,7 @@
                 "shadow_gates": [
                   "n<30"
                 ],
-                "open_position": {
-                  "strategy": "inverse_ml_enhanced_BTCUSDT_15m_D",
-                  "symbol": "BTCUSDT",
-                  "direction": "SELL",
-                  "status": "OPEN",
-                  "entry_price": 65496.01,
-                  "take_profit": 64775.55389,
-                  "stop_loss": 66072.374888,
-                  "entry_date": "2026-11-15",
-                  "expires_at": "2026-11-15T12:08:49.551529+00:00"
-                }
+                "open_position": null
               },
               "forward_state_json": {
                 "source": "paper_pilot_virtual",
@@ -786,29 +757,9 @@
                 "shadow_gates": [
                   "n<30"
                 ],
-                "open_position": {
-                  "strategy": "inverse_ml_enhanced_BTCUSDT_15m_D",
-                  "symbol": "BTCUSDT",
-                  "direction": "SELL",
-                  "status": "OPEN",
-                  "entry_price": 65496.01,
-                  "take_profit": 64775.55389,
-                  "stop_loss": 66072.374888,
-                  "entry_date": "2026-11-15",
-                  "expires_at": "2026-11-15T12:08:49.551529+00:00"
-                }
+                "open_position": null
               },
-              "open_position": {
-                "strategy": "inverse_ml_enhanced_BTCUSDT_15m_D",
-                "symbol": "BTCUSDT",
-                "direction": "SELL",
-                "status": "OPEN",
-                "entry_price": 65496.01,
-                "take_profit": 64775.55389,
-                "stop_loss": 66072.374888,
-                "entry_date": "2026-11-15",
-                "expires_at": "2026-11-15T12:08:49.551529+00:00"
-              },
+              "open_position": null,
               "recommend_enable": false,
               "flag": "INVERSE_ML_BTC_15M_ENABLED"
             }
@@ -832,11 +783,11 @@
         "mode": "pilot",
         "equity_momentum_12_1": "FAIL",
         "crypto_donchian": "FAIL",
-        "etf_dual_momentum": "FAIL",
+        "etf_dual_momentum": "PASS",
         "bollinger_mr": "PASS",
         "vwap_reversion": "PASS",
         "dual_momentum": "PASS",
-        "dual_momentum_etf": "FAIL"
+        "dual_momentum_etf": "PASS"
       }
     }
   },
