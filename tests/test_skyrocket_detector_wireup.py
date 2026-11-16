@@ -70,8 +70,18 @@ def test_workflow_has_daily_cron() -> None:
     """Daily cron is sufficient — penny stocks don't need hourly scans and
     yfinance rate-limits get spicy with frequent runs."""
     text = WORKFLOW.read_text(encoding="utf-8")
-    # 14:48 UTC = offset from etf-agent (:30) + bond-agent (:32) per file comment
-    assert "'48 14 * * 1-5'" in text or "48 14 * * 1-5" in text
+    # 14:xx UTC weekdays = weekday daily. The MINUTE may be staggered repo-wide
+    # (crc32 anti-herd, e.g. commit 60d10dcf moved 48->34) so assert the
+    # semantic hour/day-of-week, not the exact minute.
+    import yaml
+
+    wf = yaml.safe_load(text)
+    on = wf.get("on", wf.get(True))
+    crons = [s["cron"] for s in on["schedule"] if isinstance(s, dict) and "cron" in s]
+    assert crons, "penny-skyrocket-runner.yml has no schedule cron"
+    assert crons[0].split()[1:] == ["14", "*", "*", "1-5"], (
+        f"expected weekday 14:xx UTC daily cron, got {crons[0]!r}"
+    )
 
 
 # ────────────────────────────────────────────────────────────────────────
