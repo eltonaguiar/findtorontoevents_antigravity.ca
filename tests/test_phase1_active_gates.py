@@ -124,6 +124,12 @@ class _ClearPhase1Env:
         "CONCENTRATION_CAP_ENABLED",
         "CRYPTO_CONCENTRATION_GATE",
         "MATRIX_SYMBOL_GATES",
+        # Added 2026-11-16: the per-class VIX regime gate now rejects EQUITY/ETF
+        # fixtures when live VIX is above 22/25. These tests target Phase-1
+        # TOD/dead-zone logic, so pin the unrelated VIX gates off.
+        "VIX_REGIME_ACTIVE_GATE_ENABLED",
+        "EQUITY_VIX_GATE_ENABLED",
+        "ETF_VIX_GATE_ENABLED",
     )
 
     def __enter__(self):
@@ -137,6 +143,9 @@ class _ClearPhase1Env:
         os.environ.setdefault("CONCENTRATION_CAP_ENABLED", "0")
         os.environ.setdefault("CRYPTO_CONCENTRATION_GATE", "0")
         os.environ.setdefault("MATRIX_SYMBOL_GATES", "0")
+        os.environ.setdefault("VIX_REGIME_ACTIVE_GATE_ENABLED", "0")
+        os.environ.setdefault("EQUITY_VIX_GATE_ENABLED", "0")
+        os.environ.setdefault("ETF_VIX_GATE_ENABLED", "0")
         return self
 
     def __exit__(self, *exc):
