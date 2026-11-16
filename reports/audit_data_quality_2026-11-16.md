@@ -30,7 +30,9 @@
 
 `audit_dashboard/template.html` holds two hand-curated `name → weight` maps, `_TRUST_PROVEN_STRATEGIES` and `_TRUST_PROVEN_SYSTEMS`, and `getTrustTier()` assigns the badge from them plus an auto-trust fallback. The **Proven Only** button filters by name against that assignment — `audit_dashboard/AUDIT_FRONTEND_MANIFEST.md:39` says so outright ("name-match, not a live closed-pick query"). `dashboard_generator.py` copies the resulting tier onto the pick as `trust_tier`.
 
-**All 97 PROVEN rows are emitted by a single source, `ml_bg_system_f`** (ledger n=97, WR 20.6%, PF 0.31). That system is explicitly commented out of `_TRUST_PROVEN_SYSTEMS` as "51.6% WR, PF 1.24 = marginal" and left to "auto-trust", so the badge is coming from the fallback path — and the fallback is granting PROVEN to a source that loses four trades in five.
+**All 97 PROVEN rows are emitted by a single source, `ml_bg_system_f`** (ledger n=97, WR 20.6%, PF 0.31). That system is explicitly commented out of `_TRUST_PROVEN_SYSTEMS` as "51.6% WR, PF 1.24 = marginal", so the badge is **not** a name match from that table: the payload's `trust_tier` is written upstream by the generator from a static strategy allowlist plus forward stats, and the UI's `getTrustTier()` re-derives its own tier from the JS registries in parallel. Neither layer re-reads the source's resolved rows, which say 20.6% WR and PF 0.31.
+
+**The published system rollup does not reconcile to the published picks.** `systems[]` for `ml_bg_system_f` claims **554 closed picks at 42.1% WR / PF 0.89**, while the payload exposes only **97 resolved rows** for the same source at 20.6% / 0.31. Across the 12 systems with at least 10 ledger trades, 2 disagree with their own picks by more than 15 points: `forward_signals` reports 0.0% WR against a 42.1% ledger (Δ42.1), `ml_bg_system_f` Δ21.5. Either the rollup counts rows the payload does not expose, or it counts them differently — either way the badge and the class tiles inherit the error.
 
 97 rows in the live payload carry `tier === PROVEN`. Every one of them fails the definition the page itself publishes (`pick_funnel.html`: WR_shrunk ≥ 55%, PF ≥ 1.5, n ≥ 20):
 
