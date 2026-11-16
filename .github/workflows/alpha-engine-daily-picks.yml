@@ -42,6 +42,16 @@ jobs:
   generate-picks:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 30
+    # NOTE (review, 2026-11-16): a job-level `concurrency` block with
+    # `cancel-in-progress: true` keyed on `github.event.inputs.universe || 'default'`
+    # was removed here. `github.event.inputs` is only populated for
+    # workflow_dispatch, so every SCHEDULED run collapses into the single group
+    # `alpha-engine-default`, and cancel-in-progress:true then lets any overlapping
+    # run kill this one. The two crons (22:00 weekdays / 05:00 Sunday) do not
+    # currently overlap, so nothing is lost today — but the block buys zero
+    # protection and is the same pattern that silently lost 43%/62% of fires in
+    # audit-dashboard.yml and dynamic-alpha-engine.yml (PR #814). See
+    # GHACTIONS_2026-11-16/*_EST_gha_design/GHA_REMEDIATION_DESIGN.md.
 
     steps:
     #  Step 1: Checkout 
@@ -158,7 +168,31 @@ jobs:
           echo "No report file generated."
         fi
 
-    #  Step 7: Deploy picks to live site via FTP 
+    #  Step 7: Validate proof-protocol metadata (soft audit, does not fail)
+    - name: Validate proof-protocol metadata
+      if: success()
+      run: |
+        python3 << 'PYEOF'
+        import json, sys
+        try:
+            picks = json.load(open('alpha_engine/output/latest_picks.json'))
+        except Exception as e:
+            print(f"::warning::Cannot read latest_picks.json: {e}")
+            sys.exit(0)
+        required_keys = ['pf', 'sharpe', 'n', 'wr', 'oos_pf']
+        missing_any = False
+        for i, p in enumerate(picks):
+            missing = [k for k in required_keys if k not in p]
+            if missing:
+                missing_any = True
+                print(f"::warning::Pick {i} missing proof-protocol keys: {missing}")
+        if missing_any:
+            print("::warning::Proof-protocol metadata incomplete — candidates not money-ready")
+        else:
+            print("Proof-protocol metadata present on all picks")
+        PYEOF
+
+    #  Step 8: Deploy picks to live site via FTP 
     - name: Deploy picks to live site
       if: success() && steps.picks.outputs.pick_count != '0'
       env:
@@ -201,7 +235,7 @@ jobs:
           echo "::warning::FTP upload failed"
         fi
 
-    #  Step 8: Upload artifacts 
+    #  Step 9: Upload artifacts 
     - name: Upload output artifacts
       if: always()
       uses: actions/upload-artifact@v6
@@ -212,7 +246,7 @@ jobs:
           alpha_output.log
         retention-days: 30
 
-    #  Step 9: Summary 
+    #  Step 10: Summary 
     - name: Summary
       if: always()
       run: |
@@ -229,7 +263,7 @@ jobs:
         echo " Artifacts: Available in Actions tab"
         echo "======================================================"
 
-    #  Step 10: Trigger existing stock refresh (cascade) 
+    #  Step 11: Trigger existing stock refresh (cascade) 
     - name: Trigger existing portfolio refresh
       if: success()
       run: |
@@ -239,6 +273,5 @@ jobs:
           "https://findtorontoevents.ca/findstocks/api/daily_refresh.php?key=stocksrefresh2026" \
           > /dev/null 2>&1 || true
         echo "PHP daily refresh triggered."
-
 
 # re-registered 2026-05-23 after stripped-history reset (4aaa6ff848f)
