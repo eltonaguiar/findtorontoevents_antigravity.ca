@@ -38,6 +38,14 @@ Nothing clears n≥100, WR≥50%, and PF≥1.5 together. No class should be size
 - PF 999 in `strategy_perf_by_class.json` is a zero-loss sentinel. Do not quote it.
 - Compound return and the sum of per-trade percents are different objects. A positive sum is not expectancy and is not a portfolio-construction edge.
 
+## ML and badge check
+
+`_calibrate_confidence` in `alpha_engine/score_booster.py` is a hardcoded score penalty, not a probability calibrator. It does not rewrite `confidence`. The live ML Health age is the gainer model trained 2026-05-25 (about 175 days). `ml_trading_enabled` is false in `alpha_engine/data/ml_health_status.json`.
+
+PR 843 changed the legend to shadow, but `isVerifiedAlphaPick` and `_is_verified_alpha_pick` still returned true for Polymarket/Kalshi sources, and `copy_pm_` prefixes did too. This branch returns false for those. Copy-trader rows that are not prediction-market copy stay in the badge. The +16 score bonus in `quality_gates.py` is unchanged; that is ranking, not this display fix.
+
+Deflated Sharpe, PBO, and walk-forward efficiency exist as tools. They are not gates on the summary cards. Do not read a card Sharpe as a deflated Sharpe.
+
 ## What this branch changes
 
 Display only, in `audit_dashboard/template.html`:

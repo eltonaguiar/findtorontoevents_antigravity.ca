@@ -3655,10 +3655,11 @@ function isVerifiedAlphaPick(pick) {
     forward_wr = forward_wr / 100.0;
   }
   
-  // Prediction market sources
-  var pmSources = ['pm_whale_signals', 'pm_kalshi_signals', 'pm_momentum_signals', 
+  // Prediction markets stay shadow (PBO 0.603). Not Verified Alpha.
+  var pmSources = ['pm_whale_signals', 'pm_kalshi_signals', 'pm_momentum_signals',
                    'prediction_market_consensus', 'polymarket_signals', 'pm_high_conviction'];
-  if (pmSources.indexOf(source) !== -1) return true;
+  if (pmSources.indexOf(source) !== -1) return false;
+  if (strategy.indexOf('copy_pm_') === 0) return false;
   
   // Copy trader sources with audit trail
   var copySources = ['copy_trader_intel', 'copy_trader_highscore', 'copy_trader_consensus', 
@@ -3666,7 +3667,6 @@ function isVerifiedAlphaPick(pick) {
   if (copySources.indexOf(source) !== -1) return true;
   
   // Verified copy strategy prefixes
-  if (strategy.indexOf('copy_pm_') === 0) return true;
   if (strategy.indexOf('clone_hl_') === 0) return true;
   if (strategy.indexOf('copy_hl_') === 0) return true;
   if (strategy.indexOf('hs_') === 0) return true;

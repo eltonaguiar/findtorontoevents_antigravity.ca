@@ -6574,16 +6574,16 @@ def _is_verified_alpha_pick(pick: dict) -> bool:
     source = str((pick or {}).get("source_system", "") or "").strip().lower()
     strategy = str((pick or {}).get("strategy", "") or "").strip().lower()
 
-    # Prediction market sources
-    if source in _VERIFIED_ALPHA_PM_SOURCES:
-        return True
+    # Prediction markets stay shadow. Do not badge them Verified Alpha.
+    if source in _VERIFIED_ALPHA_PM_SOURCES or strategy.startswith("copy_pm_"):
+        return False
 
     # Copy trader sources with audit trail
     if source in _VERIFIED_ALPHA_COPY_SOURCES:
         return True
 
     # Strategy prefixes indicating verified copy trading
-    if any(strategy.startswith(prefix) for prefix in _VERIFIED_ALPHA_COPY_PREFIXES):
+    if any(strategy.startswith(prefix) for prefix in _VERIFIED_ALPHA_COPY_PREFIXES if prefix != "copy_pm_"):
         return True
 
     # Curated multi-asset strategies
