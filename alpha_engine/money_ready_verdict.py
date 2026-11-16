@@ -1451,13 +1451,16 @@ def _simple_wf_oos_ratio(picks: list[dict], train_frac: float = 0.6) -> dict[str
     is_pf = _pf(train)
     oos_pf = _pf(oos)
     ratio = (oos_pf / is_pf) if is_pf > 0 and is_pf != float("inf") else None
-    ok = (ratio is not None) and (ratio >= 0.85)
+    # 2026-11-16 audit: a ratio >= 0.85 alone passes even when BOTH IS and OOS
+    # are unprofitable (e.g. IS 0.5 / OOS 0.45). Require the OOS leg to be
+    # actually profitable, not just "not much worse than IS".
+    ok = (ratio is not None) and (ratio >= 0.85) and (oos_pf >= 1.0)
     return {
         "ratio": round(ratio, 4) if ratio is not None else None,
         "is_pf": round(is_pf, 4) if is_pf not in (0, float("inf")) else is_pf,
         "oos_pf": round(oos_pf, 4) if oos_pf not in (0, float("inf")) else oos_pf,
         "ok": ok,
-        "note": f"train_frac={train_frac}; target OOS/IS >=0.85",
+        "note": f"train_frac={train_frac}; target OOS/IS >=0.85 and OOS PF >=1.0",
     }
 
 
