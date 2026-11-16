@@ -1,4 +1,5 @@
 name: ML Gatekeeper Train A/B (Phase D)
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 # Trains a SINGLE gatekeeper bundle per dispatch, selected by `drop_leakage`:
 #   drop_leakage=false -> ml_gatekeeper/models/gatekeeper_old.joblib
@@ -161,7 +162,7 @@ jobs:
             echo "No bundle changes to commit"
           else
             if [ -f .github/scripts/safe_commit_push.sh ]; then
-              bash .github/scripts/safe_commit_push.sh "feat(ml-gate-ab): refresh ${BUNDLE_NAME} via Phase D train workflow [skip ci]" "ml_gatekeeper/models/${BUNDLE_NAME}" || echo "push failed (non-fatal; artifact uploaded)"
+              bash .github/scripts/safe_commit_push.sh "feat(ml-gate-ab): refresh ${BUNDLE_NAME} via Phase D train workflow [skip ci]" "ml_gatekeeper/models/${BUNDLE_NAME}"
             else
               # Full clone (fetch-depth: 0 above) means no --unshallow needed.
               git config user.name "github-actions[bot]"

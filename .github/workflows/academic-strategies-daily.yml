@@ -66,7 +66,7 @@ jobs:
           # ccxt-style binance public, etc.). Keep installs minimal; each
           # strategy module is wrapped in try/except in the emitter so
           # missing deps degrade gracefully (logger.debug "not available").
-          pip install yfinance ccxt || true
+          pip install yfinance ccxt || echo "::warning::pip install failed — later steps may misbehave"
 
       - name: Run priority_picks_emitter (writes priority_picks.json)
         id: emit
