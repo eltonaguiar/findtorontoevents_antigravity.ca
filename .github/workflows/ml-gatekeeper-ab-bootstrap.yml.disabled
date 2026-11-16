@@ -17,6 +17,10 @@ concurrency:
 
 jobs:
   bootstrap:
+    # Defensive guard: this workflow is manual-only (workflow_dispatch).
+    # 2026-11-16: observed push-triggered runs with 0 jobs on main; block
+    # accidental/non-dispatch executions to avoid spurious failures.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

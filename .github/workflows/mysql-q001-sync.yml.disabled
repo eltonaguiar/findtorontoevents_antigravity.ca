@@ -8,6 +8,9 @@ on: {}
 
 jobs:
   mysql-sync:
+    # Defensive guard: allow only intended triggers. 2026-11-16 saw push events
+    # produce 0-job failures; do not execute on unexpected events.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
