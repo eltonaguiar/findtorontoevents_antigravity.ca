@@ -1,0 +1,70 @@
+# gha-health-audit — hardened GitHub Actions health guardian (rules R1-R12).
+#
+# Spec: GHACTIONS_2026-11-16/2026-11-15_21-45_EST_ghactions/06_GHA_BEST_PRACTICES_APPROACH.md §2
+#       + reports/gha_phase3_recommendations.md (queue/skip monitoring).
+# Detection-only: this job NEVER retries, kills or cancels runs (the existing
+# actions-failure-guardian.yml keeps owning retry self-healing).
+#
+# Enablement (deliberate, one step at a time):
+#   1. Land this file with `workflow_dispatch` ONLY (current state).
+#   2. Manually dispatch once and verify the run is GREEN and it committed
+#      GHACTIONS_LIVE/gha_health.json + gha_health_summary.md.
+#   3. Only then uncomment the `schedule:` block below.
+# Cron minute :37 is deliberately staggered — this repo has a cron-stampede
+# policy of never scheduling at :00 (see cron_stagger_plan.md).
+
+name: gha-health-audit
+
+on:
+  workflow_dispatch:
+  # enable after one green dispatch:
+  # schedule:
+  #   - cron: '37 */4 * * *'
+
+# Serialize: this workflow self-pushes a report commit; never let two runs race
+# on a non-fast-forward push to main (and never drop a completed audit).
+concurrency:
+  group: gha-health-audit
+  cancel-in-progress: false
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run GHA health audit (R1-R12)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python3 tools/gha_health_audit.py
+
+      - name: Commit report (only when content changed)
+        run: |
+          set -euo pipefail
+          # Stage first so the diff guard also covers the very first run
+          # (plain `git diff --quiet` cannot see untracked files).
+          git add GHACTIONS_LIVE/gha_health.json GHACTIONS_LIVE/gha_health_summary.md
+          if git diff --cached --quiet -- GHACTIONS_LIVE/gha_health.json GHACTIONS_LIVE/gha_health_summary.md; then
+            echo "Report content unchanged — no commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(gha): gha health report [skip ci]"
+          if ! git push origin HEAD:main; then
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Notify on audit failure
+        if: failure()
+        run: |
+          echo "CRITICAL: gha-health-audit failed to run"
+          echo "Manual intervention required — the health guardian itself is broken."

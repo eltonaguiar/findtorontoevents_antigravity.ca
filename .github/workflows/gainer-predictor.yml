@@ -36,6 +36,29 @@ jobs:
       - name: Run gainer data pipeline
         run: python incubator/agents/claude_code_01/gainer_data_pipeline.py
 
+      - name: Validate proof-protocol metadata
+        if: success()
+        run: |
+          python3 << 'PYEOF'
+          import json, sys
+          try:
+              picks = json.load(open('incubator/agents/claude_code_01/data/gainer_scores_latest.json'))
+          except Exception as e:
+              print(f"::warning::Cannot read gainer_scores_latest.json: {e}")
+              sys.exit(0)
+          required_keys = ['pf', 'sharpe', 'n', 'wr', 'oos_pf']
+          missing_any = False
+          for i, p in enumerate(picks):
+              missing = [k for k in required_keys if k not in p]
+              if missing:
+                  missing_any = True
+                  print(f"::warning::Gainer pick {i} missing proof-protocol keys: {missing}")
+          if missing_any:
+              print("::warning::Proof-protocol metadata incomplete — candidates not money-ready")
+          else:
+              print("Proof-protocol metadata present on all picks")
+          PYEOF
+
       - name: Commit results
         run: |
           git config user.name "Gainer Predictor"
@@ -47,4 +70,3 @@ jobs:
             echo "Push attempt $i failed, retrying..."
             sleep 5
           done
-
