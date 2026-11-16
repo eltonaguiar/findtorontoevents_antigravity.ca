@@ -28,12 +28,36 @@ PnL-Integrity `sign_mismatch:130` is a different metric — but the ghost-rows 0
 | Forward Validator Freshness | 0h, last WON/LOST 02:26:30 | `db_health.json::open_bloat` | FRESH (`validator_frozen=false`) |
 | `db_freshness.json` | — | not referenced by any page JS | **ORPHAN** (2026-05-23, RED) — dead file |
 
-## C. Prediction-market feeding gap
-`dashboard_generator.py` registers PM sources but data files are **absent on main**:
-`prediction_market_agents/data/{momentum,whale,kalshi}_signals.json` = **MISSING** → 3 registrations are
-**silent no-ops**. `copy_trader_intel/data/polymarket_picks.json` present (7KB);
-`wired_in_childlike_{active,closed}.json` present (active 4.6KB / closed 106B≈empty).
-*(Producer-workflow + classification detail: subagent SA2 — pending merge.)*
+## C. Prediction-market & WIRED feeding (verified via subagent SA2)
+**2 PM feeds genuinely reach `/audit`; 3 are dead/gitignored:**
+| Registered source | File | On main? | Feeds /audit? |
+|---|---|---|---|
+| `polymarket_signals` | `copy_trader_intel/data/polymarket_picks.json` | ✅ 7,082B (committed) | **YES** (polymarket-signals.yml `2,32 * * * *`) |
+| `prediction_market_consensus` | `alpha_engine/data/prediction_market_picks.json` (+ fallback consensus) | ✅ 6,203B (committed) | **YES** — live `pick_summary_stats_48h.json` shows `strategy:"prediction_market_consensus"` rows in `by_class.CRYPTO` |
+| `pm_momentum_signals` | `prediction_market_agents/data/momentum_signals.json` | ❌ | **NO — dead by design** (in `_GHOST_SYSTEMS`, skipped) |
+| `pm_whale_signals` | `prediction_market_agents/data/whale_signals.json` | ❌ (gitignored) | **Ephemeral** — produced only inside the `audit-dashboard` job's local workspace; never committed |
+| `pm_kalshi_signals` | `prediction_market_agents/data/kalshi_signals.json` | ❌ (gitignored) | **Ephemeral** — same |
+
+**Why whale/kalshi never persist:** `.gitignore:328` ignores `**/data/*_signals.json`; commit steps use
+`git add` without `-f` + `2>/dev/null || true` → silent skip. They exist only during the audit-dashboard
+run that regenerates them (`audit-dashboard.yml:129`), so they contribute **only on that job**, nothing
+persisted between runs.
+
+**Classification gotcha (important):** there is **no PREDICTION asset class**. PM picks carry
+`category:"crypto"` + USDT symbols → `_derive_asset_class` files them under **CRYPTO**. They are shown
+with a **"🔮 PM" badge** (`template.html:9191-9198`) but counted in the CRYPTO tile/WR/PF. So "are PMs
+feeding the dashboard?" = **yes, but invisibly inside CRYPTO**, not as a distinct class.
+
+**Data-integrity concern:** `_snapshot_prediction_market_entry` (`dashboard_generator.py:5493-5524`)
+backfills `entry_price` from the **spot** quote and derives TP/SL (`_derive_prediction_market_trade_levels`)
+for signal-only PM rows — i.e. a prediction-market contract is priced/TP-SL'd as if it were a spot crypto
+trade. This can distort PM pick PnL realism.
+
+**WIRED_IN:** origin/main has **24** top-level dirs; **only `wired_in_childlike` is wired**
+(`dashboard_generator.py:4288-4292`, resolver `:265`, paper-only flagged). The other **23 are unwired**
+(no `JSON_PICK_SOURCES`/`SYSTEM_SOURCES` entry, no code globs `WIRED_IN`) — including the per-stamp
+childlike folders (0230Z/0653Z/0700Z/0703Z/0709Z/final_v001) and all scratch/flaxen-hair/buffy/inspect-wt
+dirs. Only the single consolidated `audit_dashboard/data/wired_in_childlike_*.json` is consumed.
 
 ## D. By-design — do NOT "fix"
 - **"20 of 4209 active · 0 proven / 4189 gated out"** — trust-tier gating (proven = ≥30 trades & ≥45% WR). Honest; matches 0/9 money-ready.
@@ -60,7 +84,10 @@ silently degrades "Active PnL (Live)" and price tiles.
 1. **Truth-layer note** (`template.html:857`): drive from `db_health.json` or delete the false "Ghost rows: 0" — *misleads on data integrity*.
 2. **Money-Ready box**: fix the no-data render path (file is good).
 3. **Hide dead boxes** (Swarm Paper Picks) and either restore or hide **Strategy IC Analysis** + **regime report**.
-4. **Prediction-market**: produce/commit the 3 missing `prediction_market_agents` signal files, or remove the dead registrations.
-5. **db_health.json**: fix duplicate-key emit.
+4. **Prediction markets**: 2 feeds work (polymarket + consensus→CRYPTO). Decide fate of `pm_whale`/`pm_kalshi`
+   (either commit them by negating `.gitignore` for those two files, or remove the ephemeral registrations) and
+   fix PM spot-pricing (`_snapshot_prediction_market_entry`) so prediction contracts aren't TP/SL'd as spot crypto.
+5. **WIRED_IN**: 23 of 24 dirs are unwired — either register the intended ones or archive the rest.
+6. **db_health.json**: fix duplicate-key emit.
 
-*(Section C SA2 detail appended when the prediction-market/WIRED subagent returns.)*
+
