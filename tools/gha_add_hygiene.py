@@ -47,8 +47,20 @@ def add_concurrency(text: str, cancel_in_progress: bool = True) -> tuple[str, bo
     return "\n".join(out), inserted
 
 
+def _has_job_level_timeout(text: str) -> bool:
+    """True if any timeout-minutes is at job-level indent (<=4 spaces).
+    Step-level timeouts (8+ spaces, under a step) do not count."""
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if stripped.startswith("timeout-minutes:"):
+            indent = len(line) - len(line.lstrip())
+            if indent <= 4:
+                return True
+    return False
+
+
 def add_timeouts(text: str, minutes: int = 30) -> tuple[str, bool]:
-    if "timeout-minutes:" in text:
+    if _has_job_level_timeout(text):
         return text, False
     lines = text.split("\n")
     out = []

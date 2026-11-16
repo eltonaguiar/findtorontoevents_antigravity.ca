@@ -11,9 +11,14 @@ on:
   schedule:
     - cron: '5 12 * * 1-5'  # Weekdays at noon UTC (8 AM EST)
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   execute-challenge:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

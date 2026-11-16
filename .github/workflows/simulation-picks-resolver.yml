@@ -5,6 +5,10 @@ on:
     - cron: '29 23 * * 6'  # Saturday 23:00 UTC (weekly)
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   resolve-simulation-picks:
     runs-on: ubuntu-latest

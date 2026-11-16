@@ -5,6 +5,10 @@ on:
     - cron: '23 7 * * *'   # Daily at 07:00 UTC
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   benchmark:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}

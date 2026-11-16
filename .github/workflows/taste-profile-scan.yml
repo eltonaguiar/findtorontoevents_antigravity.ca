@@ -11,9 +11,14 @@ on:
     # Run weekly on Sundays at 3am UTC
     - cron: '42 3 * * 0'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6

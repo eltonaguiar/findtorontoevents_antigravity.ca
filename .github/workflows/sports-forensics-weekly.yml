@@ -6,6 +6,10 @@ on:
     - cron: '19 6 * * 1' # Mondays 06:30 UTC
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   forensics:
     runs-on: ubuntu-latest

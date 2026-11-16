@@ -43,6 +43,10 @@ name: Research Orchestrator (weekly)
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   research:
     runs-on: ubuntu-latest
