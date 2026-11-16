@@ -15,7 +15,7 @@ concurrency:
 jobs:
   alpha-fast:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
-    timeout-minutes: 40  # was 25, kept timing out (runs take 25min on 30min cron)
+    timeout-minutes: 60  # 25->40->60 (2026-11-16: 40m+ runtime drift vs 40m cap = chronic-kill risk)
 
     steps:
       - name: Checkout repository
