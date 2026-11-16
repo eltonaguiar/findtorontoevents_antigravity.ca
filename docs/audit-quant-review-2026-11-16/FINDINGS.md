@@ -17,7 +17,11 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 | FUTURES | 17 | 35.3 | 1.01 | ~1.2 | gross | 90d + policy-clean |
 | ETF | 19 | 68.4 | 1.79 | ~1.6 | gross | 90d + policy-clean |
 
-**Key defect:** All are gross (no costs). Net PF would be materially lower.
+**Key defects:**
+- All are gross (no costs). Net PF would be materially lower.
+- `strategy_perf_by_class.json` contains a **PF=999 / ∞ zero-loss sentinel** (356 cells with PF≥999 and zero losses); `pf_ok=true` on CHEAP_STOCKS is the same sentinel, not a pass. Do not quote sleeve PFs (e.g. ADX 60, equity RSI-reversal 57) as class edge.
+- Some class `wr_ok` flags use a **40% floor**, not the 50% money-ready bar — a green WR flag is not a pass.
+- `db_health.json` (12:48Z) records 22,947 ghost rows, **278 null resolved pnl**, and a **27% magnitude mismatch**; the live footer still said 5/5 because the checker is non-fatal (`|| echo`) and had not rerun.
 
 ---
 
@@ -86,7 +90,7 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 **ML assessment (verified on origin/main):**
 1. Target/feature leakage masking is **ON by default** (`ml_gatekeeper/gatekeeper.py:95` `_drop_leakage_enabled()`; `_LEAKAGE_FEATURE_INDICES=(5,6,19,30)` at `:92`; applied at `:195`). The opt-out is `ML_GATE_DROP_LEAKAGE=0`. This is a **strength**, not a defect.
 2. **Residual review item:** `ml_consensus/consensus.py:134` builds the consensus score from `strat_fwd_wr`/`forward_wr` (forward-looking performance). Not a training-leak (it is an aggregation weight), but it means the score chases past forward WR — document or gate it.
-3. **Calibration:** Brier/ECE computed in `alpha_engine/prediction_market_signals.py:1806` (research tracker) and `tools/brier_reliability_stub.py`; the live ML path should emit a reliability curve, not just a scalar.
+3. **Calibration:** Brier/ECE computed in `alpha_engine/prediction_market_signals.py:1806` (research tracker) and `tools/brier_reliability_stub.py`; the live ML path should emit a reliability curve, not just a scalar. **Correction:** `alpha_engine/score_booster.py::_calibrate_confidence` is a **hardcoded score penalty, not a probability calibrator** (it does not rewrite `confidence`); the live "ML calibration" text is a static 2026-05-15 measurement; `ml_trading_enabled=false` (`alpha_engine/data/ml_health_status.json`) and the gainer model is ~175 days old (trained 2026-05-25). Treat live ML calibration as stale/research-only.
 4. **Drift:** `ml_gatekeeper/models/drift_baseline.json` + `circuit_breaker_aggregator.py:234-250` KS ratio exist; retrain trigger wiring should be confirmed end-to-end.
 5. **Safety:** ML output is gated by `ml_gatekeeper` before sizing; no direct sizing path found.
 
@@ -100,7 +104,7 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 | 2 | Market microstructure (CLV, fees, depth, fill prob) | ABSENT | only virtual Kelly on `PM_BANKROLL=100` (`polymarket_btc_updown_agent.py:42,192`) |
 | 3 | Data integrity | PARTIAL | `pm_odds_history.py:305` (dedup, timestamps, volume); no cancelled/null-market flagging, no timezone canonicalization |
 | 4 | Signal construction | PARTIAL | `kalshi_signal_agent.py:53` (KXBTC→BTCUSDT), `pm_lead_lag_analyzer.py:208` (LEADING); **no documented look-ahead/stale guard** for Kalshi→spot mapping |
-| 5 | Risk sizing | PARTIAL | `pm_macro_overlay.py:309` forward_test_only=True, `btc_updown` DRY_RUN=true; **no hard pin in consensus merge** (`orchestrator.py:392`, `prediction_market_agents/orchestrator.py:48` MIN_MERGE_CONFIDENCE) |
+| 5 | Risk sizing | PARTIAL | `pm_macro_overlay.py:309` forward_test_only=True, `btc_updown` DRY_RUN=true; **no hard pin in consensus merge** (`orchestrator.py:392`, `prediction_market_agents/orchestrator.py:48` MIN_MERGE_CONFIDENCE). `isVerifiedAlphaPick`/`_is_verified_alpha_pick` still returned true for Polymarket/Kalshi/`copy_pm_` sources on main (display fix pending deploy). |
 | 6 | Forward tracking / resolution rule | PRESENT | `universal_pick_resolver.py:666` (intrabar first-touch, SL-wins-ties, `MAX_HOLD_HOURS_BY_CLASS`, TIME_EXIT fallback) |
 | 7 | Multiple testing | PARTIAL | `forward_validator.py:333` (White's Reality Check + DSR); no family-wise/FDR in PM cross-market |
 | 8 | Arbitrage / consistency | PARTIAL | `cross_market_consensus.py:229`, `pm_macro_overlay.py:334` (>=70% gate); **no negative-probability / impossible-odds guard** |
@@ -169,3 +173,31 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 - `effective_n_report.json`, `research/profitability/run_v3.py:276` (PBO, n_eff)
 - `prediction_market_agents/data/` (3 missing files)
 - `updates/2026-11-16-audit-quant-review.md` (this document)
+
+---
+
+## 10. Peer feedback incorporated (auditpage-v4, 2026-11-16T17:34Z)
+
+Source: `ACTIONPLAN_AUDITPAGE/2026-11-16T1734Z_auditpage-v4/FINDINGS.md` on origin/main. Items merged into this report:
+
+1. **Live page lags main.** PR #843 (audit truth layer) is merged on main (`9842be43e98`) but not yet deployed; live `/audit/` still shows the old "5/5 checks pass" and pre-#843 wording. Do not treat live as post-#843 until the next `audit-dashboard.yml` deploy.
+2. **PF 999 / ∞ sentinel.** 356 cells in `strategy_perf_by_class.json` have PF≥999 with zero losses; `pf_ok=true` on CHEAP_STOCKS is the same sentinel. Not a pass.
+3. **WR floor mismatch.** Some `wr_ok` flags use 40%, not the 50% money-ready bar.
+4. **Walk-forward Sharpe outlier.** BOND `oos_sharpe = -65.632` (`alpha_engine/data/walkforward_results.json::by_class.BOND.oos_sharpe`); peer display fix renders `|Sharpe|>5` as `n/a`.
+5. **ML calibration is not a calibrator.** `score_booster._calibrate_confidence` is a hardcoded penalty; live ML Health is ~175 days stale; `ml_trading_enabled=false`.
+6. **Verified-Alpha badge leakage.** `isVerifiedAlphaPick` / `_is_verified_alpha_pick` returned true for Polymarket/Kalshi/`copy_pm_` sources on main.
+7. **Gate quality.** DSR is not ≥0.95 on any class; `wf_oos_ok` can pass when both IS and OOS PF < 1; the ghost-row workflow step is non-fatal (`|| echo`), so a red ghost tier does not stop deploy.
+8. **Ledger hygiene.** `db_health.json` records 278 null resolved pnl and a 27% magnitude mismatch alongside the 22,947 ghosts.
+
+## 11. Review checklist for the final plan agent
+
+- [ ] Net-of-cost metrics mandatory (`money_ready_verdict.py:676-690` fail-open removed).
+- [ ] Walk-forward embargo (`walk_forward_validator.py:134-165`).
+- [ ] Circuit-breaker flatten implemented (root `portfolio_circuit_breaker.py:209-213`).
+- [ ] Stale drawdown state recomputes (`drawdown_circuit_breaker.py:245-252`).
+- [ ] Ghost-row checker made fatal; `db_health.json` regenerated.
+- [ ] PM shadow pin hard-enforced at merge; `record_resolution` wired.
+- [ ] PF 999 / ∞ sentinel removed from cards and gates.
+- [ ] ML calibration rebuilt as a real probability calibrator; stale 2026-05-15 text removed.
+- [ ] Verified-Alpha badge excludes PM/Kalshi/copy_pm.
+- [ ] DSR/WFE gates enforced, not displayed.
