@@ -1864,7 +1864,21 @@ def main() -> None:
                # ENH#131: explicit unit declarations — "wr" stays a fraction (existing
                # consumers depend on it); "wr_pct" is the additive percent twin matching
                # pf_registry's win_rate_pct convention.
-               "units": {"wr": "fraction", "wr_pct": "percent"}}
+               # 2026-11-16 audit: mdd/expectancy/bootstrap were bare numbers with no
+               # unit contract (CRYPTO mdd=1.0009 read as "1.0%" by any naive renderer
+               # when it is a 100.09% wipeout). Declare every non-wr unit explicitly;
+               # additive only, no field values changed.
+               "units": {
+                   "wr": "fraction",
+                   "wr_pct": "percent",
+                   "mdd": "fraction (1.0 = 100% drawdown; >1 = compounding path hit 0)",
+                   "cvar_95": "percent per trade (negative = loss)",
+                   "expectancy": "percent per trade",
+                   "bootstrap_ci_lower": "percent per trade",
+                   "bootstrap_ci_upper": "percent per trade",
+                   "policy_clean_wr_pct": "percent",
+                   "pf": "ratio",
+               }}
         out.update(results)
         print(json.dumps(_json_safe(out), indent=2, allow_nan=False))
     else:
