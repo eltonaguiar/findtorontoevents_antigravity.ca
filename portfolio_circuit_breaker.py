@@ -31,7 +31,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, Callable
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
@@ -63,6 +63,12 @@ class BreakerConfig:
     
     # Auto-flatten
     auto_flatten_on_trigger: bool = True
+    # Optional callback that actually closes positions:
+    #   callback(breaker) -> int  (number of positions flattened)
+    # The breaker has no position manager of its own, so production callers
+    # must inject this. When None, triggering can only log (never silently
+    # claim to have flattened). 2026-11-16 audit.
+    flatten_callback: Optional[Callable[["PortfolioCircuitBreaker"], int]] = None
 
 
 @dataclass
@@ -206,11 +212,28 @@ class PortfolioCircuitBreaker:
         if self.config.auto_flatten_on_trigger:
             self._flatten_all_positions()
     
-    def _flatten_all_positions(self):
-        """Flatten all open positions"""
+    def _flatten_all_positions(self) -> int:
+        """Flatten all open positions via the injected callback.
+
+        Returns the number of positions the callback reports flattened, or 0
+        when no callback is configured / the callback fails. Without a callback
+        the breaker cannot close anything, so it logs that explicitly instead
+        of silently pretending to flatten.
+        """
         logger.critical("[CircuitBreaker] AUTO-FLATTENING ALL POSITIONS")
-        # In production, this would call your position manager
-        # For now, just log
+        cb = getattr(self.config, "flatten_callback", None)
+        if cb is None:
+            logger.critical(
+                "[CircuitBreaker] NO flatten_callback configured — positions NOT closed"
+            )
+            return 0
+        try:
+            n = int(cb(self))
+        except Exception as e:
+            logger.critical("[CircuitBreaker] flatten_callback failed: %s", e)
+            return 0
+        logger.critical("[CircuitBreaker] Flattened %s position(s)", n)
+        return n
     
     def _exit_cooldown(self):
         """Exit cooldown and enter gradual reentry"""
