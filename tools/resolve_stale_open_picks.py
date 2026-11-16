@@ -5,7 +5,10 @@ tools/resolve_stale_open_picks.py — Batch-resolve stale live picks in MySQL
 
 Connects to the ejaguiar1_stocks MySQL database, finds OPEN (and ACTIVE for
 `trading_picks`) picks whose age exceeds the per-category MAX_HOLD_HOURS
-threshold, and batch-resolves them as ABANDONED/STALE_TIMEOUT with flat PnL.
+threshold, and batch-resolves them as ABANDONED/STALE_TIMEOUT with
+unmeasured PnL (pnl_pct=NULL — NOT 0.0: an unmeasurable close is
+"resolved-unknown", and a flat 0.0 would be read by WR/avg consumers as a
+real zero-PnL trade; see the 2026-11-16 cross-PC data-quality fleet finding).
 
 Supports both `at_raw_picks` (default) and `trading_picks` via --table.
 
@@ -25,6 +28,12 @@ Usage
 
     # Target trading_picks instead of at_raw_picks
     python tools/resolve_stale_open_picks.py --table trading_picks --execute --batch-size 500
+
+    # Migrate legacy unmeasurable closes pnl_pct=0.0 -> NULL (idempotent;
+    # dry-run first, then --execute). Emits BEFORE/AFTER cohort counts and
+    # `::notice::pnl_pct backfill: X zero->NULL of Y closed rows` per run.
+    python tools/resolve_stale_open_picks.py --backfill-pnl-null --table trading_picks
+    python tools/resolve_stale_open_picks.py --backfill-pnl-null --table trading_picks --execute
 
 Environment variables
 ---------------------
@@ -201,7 +210,14 @@ def is_stale(pick: dict) -> bool:
 
 
 def _compute_pnl(pick: dict, current_price: float | None = None) -> float:
-    """Compute PnL percentage for a time-exited pick."""
+    """Compute PnL percentage for a time-exited pick (measured path only).
+
+    Legacy contract kept for callers/tests: returns 0.0 when the close is
+    unmeasurable (no entry price, or no current price). Persistence does NOT
+    use this 0.0 sentinel — unmeasurable closes are written with
+    pnl_pct=NULL (resolved-unknown) so WR/avg consumers cannot misread them
+    as real zero-PnL trades (2026-11-16 fleet finding).
+    """
     entry = float(pick.get("entry_price") or 0)
     if entry <= 0:
         return 0.0
@@ -253,6 +269,87 @@ def _ensure_abandoned_enum(conn, table: str) -> bool:
             exc,
         )
         return False
+
+
+# ---------------------------------------------------------------------------
+# pnl_pct backfill: legacy unmeasurable closes 0.0 -> NULL (idempotent)
+# ---------------------------------------------------------------------------
+# Rows this resolver closed before the 2026-11-16 fix carry pnl_pct=0.0,
+# which WR/average consumers read as real zero-PnL trades. The unmeasurable
+# cohort is exactly the rows closed by this resolver's time-exit path
+# (exit_reason below); genuinely measured 0.0 closes from other paths are
+# NOT touched. Idempotent: the UPDATE only matches rows still at 0.0, so a
+# re-run maps 0 rows and the end state is stable.
+UNMEASURABLE_PNL_EXIT_REASONS = ("STALE_TIMEOUT", "TIME_EXIT_MAX_HOLD")
+
+
+def pnl_backfill_cohort_counts(conn, table: str = "at_raw_picks") -> dict:
+    """BEFORE/AFTER cohort counts for the unmeasurable-close pnl backfill."""
+    reasons_sql = ", ".join("'%s'" % r for r in UNMEASURABLE_PNL_EXIT_REASONS)
+    with conn.cursor() as cur:
+        cur.execute(
+            f"SELECT COUNT(*) AS closed_rows, "
+            f"SUM(CASE WHEN pnl_pct = 0.0 THEN 1 ELSE 0 END) AS zero_rows, "
+            f"SUM(CASE WHEN pnl_pct IS NULL THEN 1 ELSE 0 END) AS null_rows "
+            f"FROM {table} WHERE exit_reason IN ({reasons_sql})"
+        )
+        row = cur.fetchone() or {}
+    return {
+        "closed_rows": int(row.get("closed_rows") or 0),
+        "zero_rows": int(row.get("zero_rows") or 0),
+        "null_rows": int(row.get("null_rows") or 0),
+    }
+
+
+def backfill_pnl_zero_to_null(
+    conn, table: str = "at_raw_picks", execute: bool = False
+) -> dict:
+    """Map legacy unmeasurable closes pnl_pct=0.0 -> NULL.
+
+    Emits BEFORE/AFTER cohort counts plus
+    `::notice::pnl_pct backfill: X zero->NULL of Y closed rows` in the run
+    log. Idempotent: WHERE pnl_pct = 0.0 means a second run maps 0 rows.
+
+    Returns {table, mode, before, after, mapped} with the cohort counts.
+    """
+    if table not in _TABLE_CONFIG:
+        raise ValueError(f"Unknown table: {table}. Choose from {list(_TABLE_CONFIG.keys())}")
+
+    before = pnl_backfill_cohort_counts(conn, table=table)
+    log.info(
+        "pnl_pct backfill BEFORE: %d zero, %d null of %d closed rows",
+        before["zero_rows"], before["null_rows"], before["closed_rows"],
+    )
+
+    mapped = 0
+    if execute and before["zero_rows"]:
+        reasons_sql = ", ".join("'%s'" % r for r in UNMEASURABLE_PNL_EXIT_REASONS)
+        with conn.cursor() as cur:
+            cur.execute(
+                f"UPDATE {table} SET pnl_pct=NULL "
+                f"WHERE exit_reason IN ({reasons_sql}) AND pnl_pct = 0.0"
+            )
+            mapped = int(cur.rowcount or 0)
+        conn.commit()
+
+    after = pnl_backfill_cohort_counts(conn, table=table)
+    log.info(
+        "pnl_pct backfill AFTER:  %d zero, %d null of %d closed rows",
+        after["zero_rows"], after["null_rows"], after["closed_rows"],
+    )
+    would_or_did = mapped if execute else before["zero_rows"]
+    log.info(
+        "::notice::pnl_pct backfill: %d zero->NULL of %d closed rows",
+        would_or_did, before["closed_rows"],
+    )
+
+    return {
+        "table": table,
+        "mode": "EXECUTE" if execute else "DRY_RUN",
+        "before": before,
+        "after": after,
+        "mapped": mapped,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -390,11 +487,18 @@ def resolve_stale_open_picks(
                     for i in range(0, len(all_ids), chunk_size):
                         chunk = all_ids[i:i + chunk_size]
                         placeholders = ",".join(["%s"] * len(chunk))
+                        # pnl_pct=NULL (not 0.0): a stale time-exit has no
+                        # measured exit price, so its PnL is unmeasurable.
+                        # NULL = resolved-unknown — excluded from avg/sum
+                        # downstream (tools/sync_summary_picks_json.py) but
+                        # still counted as resolved. Idempotent: re-resolving
+                        # is a no-op (selection is by live status) and writing
+                        # NULL again changes nothing.
                         bulk_sql = (
                             f"UPDATE {table} SET "
                             f"status=%s, "
                             f"exit_reason=%s, "
-                            f"exit_price=entry_price, pnl_pct=0.0 "
+                            f"exit_price=entry_price, pnl_pct=NULL "
                             f"WHERE id IN ({placeholders})"
                         )
                         cur.execute(
@@ -438,6 +542,22 @@ def resolve_stale_open_picks(
 
         summary["batches_processed"] = batches_done
         summary["scan_offset_final"] = scan_offset
+
+        if execute:
+            # BEFORE/AFTER cohort counts for the NULL write — the run log is
+            # the audit trail for the 2026-11-16 pnl_pct semantics fix.
+            log.info(
+                "pnl_pct null-writes BEFORE: %d stale closes queued (cohort)",
+                summary["total_stale_found"],
+            )
+            log.info(
+                "pnl_pct null-writes AFTER:  %d closed with pnl_pct=NULL of %d stale closes",
+                summary["total_resolved"], summary["total_stale_found"],
+            )
+            log.info(
+                "::notice::pnl_pct null-writes: %d unmeasurable->NULL of %d stale closes",
+                summary["total_resolved"], summary["total_stale_found"],
+            )
 
     finally:
         conn.close()
@@ -525,6 +645,14 @@ def main() -> None:
         help="Target table (default: at_raw_picks)",
     )
     parser.add_argument(
+        "--backfill-pnl-null",
+        action="store_true",
+        help=(
+            "Only run the legacy pnl_pct=0.0 -> NULL backfill for unmeasurable "
+            "closes (idempotent) and exit; combine with --execute to write"
+        ),
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Output summary as JSON",
@@ -545,6 +673,19 @@ def main() -> None:
              args.table, args.batch_size, args.max_batches)
     log.info("DB: %s@%s:%s/%s", DB_USER, DB_HOST, DB_PORT, DB_NAME)
     log.info("Hold windows module: tools.pick_hold_windows")
+
+    if args.backfill_pnl_null:
+        log.info("=== pnl_pct 0.0 -> NULL backfill (unmeasurable closes) ===")
+        conn = _connect()
+        try:
+            result = backfill_pnl_zero_to_null(
+                conn, table=args.table, execute=args.execute
+            )
+        finally:
+            conn.close()
+        if args.json:
+            print(json.dumps(result, indent=2, default=str))
+        return
 
     summary = resolve_stale_open_picks(
         execute=args.execute,
