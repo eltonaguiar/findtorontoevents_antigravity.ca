@@ -10,8 +10,11 @@ concurrency:
 
 on:
   schedule:
-    # Staggered from :00/:45 to reduce push storms with other hourly workflows
-    - cron: '18,48 * * * *'
+    # 2026-11-16: runtime is 77-80 min against a 30-min cron (~2.6x the interval).
+    # Scheduled workflows keep only one pending run, so most :18/:48 fires were
+    # replaced before starting (~62% lost). Moved to a 2-hour cadence (120 min >
+    # runtime), staggered to :23 to stay off the :00/:10/:30 hourly cluster.
+    - cron: '23 */2 * * *'
   workflow_dispatch:
     inputs:
       mode:

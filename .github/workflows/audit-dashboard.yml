@@ -2,7 +2,15 @@ name: Unified Audit Dashboard
 
 'on':
   schedule:
-    - cron: '10 * * * *'  # Once per hour at :10 (job takes 30-35min, needs full hour gap)
+    # 2026-11-16: measured runtime is 63-125 min (timeout-minutes: 115) — LONGER
+    # than the old 60-min interval. For scheduled workflows GitHub keeps only ONE
+    # pending run per workflow, so every hourly fire that arrived while a run was
+    # still executing replaced the pending one: ~43% of fires never started
+    # (cancelled runs with jobs_executed=0 — the dashboard just went stale, no
+    # compute was wasted). Widening to every 3h (180 min > worst-case runtime)
+    # guarantees each fire actually lands. Cost: /audit data fresh within 3h
+    # instead of 1h; use workflow_dispatch for an on-demand refresh.
+    - cron: '10 */3 * * *'
   # 2026-05-19: push trigger REMOVED entirely (4-AI consensus — Grok + swarm
   # deepseek/xai/kilo). In this storm-commit repo, push-triggered runs piled
   # into the `dashboard-publish-push` concurrency group faster than the ~35-min
