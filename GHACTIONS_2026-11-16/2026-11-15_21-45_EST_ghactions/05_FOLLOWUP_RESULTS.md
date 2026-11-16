@@ -38,6 +38,31 @@ spike at the top of each hour is gone. Revert per file: `git checkout <pre-sha> 
   ~62% lost). Those interval fixes outrank pure minute-stagger for these 2 files — resolved to
   upstream content; their stagger is deliberate (:23). Stagger effective total: 283 files / 308 lines.
 
+## 3a. Errata + swarm reconciliation (03:10 UTC)
+
+- **Erratum — earlier "0 failures since 2026-11-16" rows (02:05 verification) measured an
+  EMPTY window:** the query used `created:>2026-11-16`, which per GitHub's day-exclusion
+  semantics means *after the end of* Nov 16. True failures since midnight = **8** (re-scraped
+  with `>=`): 2 × dynamic-alpha-engine (01:22/01:49 — root-caused by the sibling: 5-min
+  "Commit results" step cap, fixed in PR #813 at 02:39; verification run watched at 03:42) +
+  6 push-triggered runs (01:51/01:54, on the `chore(ci): disable…` and merge commits — none
+  recurred; 0 non-success in the 80 runs since). Net: no Bucket-1 additions.
+- **Duplicate-commit pattern (history hygiene):** sibling fixes appear as near-identical pairs
+  in main's history seconds apart with identical stats — `2295c7b374c`/`bd8df7dd0f3` (path
+  filters), `f085cde0177`/`9cbf415776a` (concurrency), `00f1f0e8066`/`9b2bf9f8808` (interval
+  widen). Final tree verified correct (YAML + frequency checks); the pairs are rebase/cherry
+  artifacts of the bot-push machinery, not double behavior.
+- **Disputed claim:** a sibling reports "0 phantom queued runs" (gh CLI via admin PAT).
+  Contradicted by 4 independent browser+API measurements of the 51-run ghost queue (5 batches
+  Aug-07→Nov-11, uncancelable 409/403/UI-fail). Re-verify with browser query `runs "is:queued"`;
+  escalation (GitHub Support) stands.
+- **New decision items from the swarm** (§5 watch): AsterDEX daily-summary permanently dead
+  (gate string `'0 0 * * *'` vs actual cron `'12 * * * *'` — never fires; fixing starts daily
+  public Discord posts → owner call); AI Tournament Pipeline disabled_manually since ~2026-06-05
+  (≈5-month silent outage of daily picks + DB ingest — matches our disabled-list finding).
+- **Cron-stagger early evidence:** run start-times now scattered (:17/:25/:36/:47/:55 past the
+  hour) with no :00 cluster — the 189-fire stampede visibly gone. Formal check at 03:28.
+
 ## 4. Verification of subsequent runs (stagger)
 
 | Check | When | Expectation |

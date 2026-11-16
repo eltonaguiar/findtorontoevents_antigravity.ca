@@ -7,6 +7,10 @@ on:
     - cron: "35 */1 * * *" # hourly at :25 (offset from audit-dashboard hourly)
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   health:
     runs-on: ubuntu-latest

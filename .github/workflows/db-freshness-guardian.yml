@@ -17,6 +17,10 @@ on:
       - .github/workflows/db-freshness-guardian.yml
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   freshness-check:
     name: DB Freshness Check
