@@ -14,9 +14,17 @@ This confirms the diagnosis: the step's 5-min cap kills the retry loop mid-fligh
 
 ## Post-fix run (created AFTER 02:39Z → 15m cap)
 - **run `43799911205`**, `workflow_dispatch`ed 03:44:02Z against `main` (which has the 15m step).
-- Expected: either pushes successfully (green) OR exhausts 10 retries (~12 min worst case) and exits
-  **green** via the warning path — in both cases **well under the 15-min cap, never "5 minutes"**.
-- Outcome check scheduled (~04:45Z; compute takes 36–90 min).
+- **OUTCOME (checked 04:45Z): FAILED — `The action 'Commit results' has timed out after 15 minutes.`**
+  - The 5→15m cap FIX ITSELF WORKED (failure says "15 minutes", not "5") — so PR #813 is verified as applied.
+  - BUT it revealed the deeper bug: the commit step's inline `git pull --rebase … 2>/dev/null` **HUNG**
+    with zero output for the entire 15 min (log: commit at 04:18:20, then silence → timeout 04:33:32).
+    No step cap can fix an infinite hang.
+- **Follow-up fix: PR #829** (merged 04:44:52Z `5dc8e96`) — replaced the inline loop with
+  `bash .github/scripts/safe_push.sh` (90s `GIT_NET_TIMEOUT` per git op, shallow deepen+merge fallback,
+  fail-fast auth), called non-fatally. A hung fetch/push can no longer hang the step.
+- **New verification target:** the first ALPHA run **created after 04:44:52Z** (i.e. NOT 04:35's
+  `43805037772`, which is pre-#829). Expected: commit step finishes in seconds–minutes (success, or
+  `::warning`+green), never a 15-min "timed out".
 
 ## Queue observation during verification
 - 43792072850's job **waited 33 min** for a runner (started 02:58 vs created 02:25) behind 43788456858.
