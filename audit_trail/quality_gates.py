@@ -9607,6 +9607,10 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     # EQUITY uses a lower threshold — score 30-50 = 66.7% WR PF 2.61 (different distribution from crypto)
     # FOREX uses a HIGHER threshold — MC sweep (n=367) shows 16% WR baseline, p=0.999 (catastrophic)
     _ac = _normalize_asset_class(pick.get("asset_class", "CRYPTO"))
+    # M-045/M-046/M-047 log with _sym. It was never bound here, so each of those
+    # blocks raised NameError inside its own `except Exception: pass` and silently
+    # failed open instead of rejecting. Bind it once.
+    _sym = str(pick.get("symbol", "") or "").upper()
     _cfg = ASSET_CLASS_SMART_THRESHOLDS.get(
         _ac, ASSET_CLASS_SMART_THRESHOLDS["CRYPTO"]
     )
