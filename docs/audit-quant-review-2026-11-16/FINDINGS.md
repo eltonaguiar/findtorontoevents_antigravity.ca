@@ -44,17 +44,17 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 | Continuous Kelly | PRESENT | `kelly_position_sizer.py:121-149` (mu/sigma^2) | Unused in production path |
 | Volatility targeting | PRESENT | `kelly_position_sizer.py:272-303`, `regime_position_sizer.py:324-348` | Soft (scaling) |
 | Risk-parity / HRP | ABSENT | – | – |
-| Max-DD / circuit breaker | PRESENT | `portfolio_circuit_breaker.py:50-66` (YELLOW -10 / RED -20 / HALT -30) | Hard on new entries, **soft on existing** (`_flatten_all_positions` is a stub, :209-213) |
+| Max-DD / circuit breaker | PRESENT | `alpha_engine/portfolio_circuit_breaker.py:50-73` (YELLOW -10 / RED -20 / HALT -30); root `portfolio_circuit_breaker.py:207` calls flatten | Hard on new entries, **soft on existing** (`_flatten_all_positions` is a log-only stub, root `portfolio_circuit_breaker.py:209-213`) |
 | Time-based stop / cooldown | PRESENT | `portfolio_circuit_breaker.py:60`, `circuit_breaker_aggregator.py:128` | Hard |
 | Recovery rules | PRESENT | `drawdown_circuit_breaker.py:163-173` | Hard |
 | Cross-asset correlation (live) | PARTIAL | `correlation_regime.json` (30d class-level only) | Advisory |
 | Cluster / crowded-trade penalty | PARTIAL | `regime_position_sizer.py:372-408` | Advisory |
 | Beta netting | ABSENT | – | – |
-| CVaR / Expected Shortfall | PRESENT | `risk_quantification_agent.py:424-426`, `portfolio_kelly_var.py:144-161` | Advisory (not enforced in hot path) |
+| CVaR / Expected Shortfall | PRESENT | `risk_quantification_agent.py:424-426`, `risk_management/portfolio_kelly_var.py:144-161` | Advisory (not enforced in hot path) |
 | Stress tests / scenario analysis | PRESENT | `risk_adjusted_analysis.py:268-366` | Advisory |
 | Skew / kurtosis / gap risk | PRESENT | `risk_adjusted_analysis.py:353-366` | Advisory |
 | Liquidity / ADV impact | ABSENT | – | – |
-| Gross/net exposure limits | PARTIAL | `portfolio_kelly_var.py:22-23` (50% cap) | Advisory |
+| Gross/net exposure limits | PARTIAL | `risk_management/portfolio_kelly_var.py:22-23` (quarter-Kelly, 10% max/1% min, 2% VaR) | Advisory |
 | Crypto funding / stablecoin / weekend gap | ABSENT | – | – |
 | Slippage model | PRESENT | `risk_adjusted_analysis.py:53-54` (0.05% + 0.03%) | Advisory |
 | Order sizing vs ADV | ABSENT | – | – |
@@ -67,10 +67,10 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 **Sizing math verdict:** fractional Kelly, continuous Kelly, vol-target and portfolio-Kelly+VaR are **formulaically correct** (quarter-Kelly for safety; CORRECT `f*=(p*b-q)/b`; portfolio VaR clip [1%,10%]; regime multipliers BULL 1.75x / CHOP 0.5x). The gap is **enforcement and integration**, not formula errors.
 
 **Top risk defects:**
-1. **P0** — `portfolio_circuit_breaker.py:209-213` `_flatten_all_positions()` only logs; breaker blocks new entries but leaves existing risk on when triggered.
+1. **P0** — root `portfolio_circuit_breaker.py:209-213` `_flatten_all_positions()` only logs; breaker blocks new entries but leaves existing risk on when triggered.
 2. **P1** — `alpha_engine/drawdown_circuit_breaker.py:245-252` returns FALSE when state is >2h old, silently allowing trading during an unresolved drawdown.
 3. **P1** — no live per-pick correlation gate; `correlation_regime.json` is 30d class-level only.
-4. **P2** — `portfolio_kelly_var` computes but is not called in the hot path (`production_scanner.py:6007-6016` is observability-only).
+4. **P2** — `risk_management/portfolio_kelly_var` computes but is not called in the hot path (`production_scanner.py:6007-6016` is observability-only).
 5. **P2** — crypto funding-rate / stablecoin-depeg / weekend-gap guards absent (`kelly_position_sizer.py:39-64` only zeroes FOREX).
 
 ---
@@ -79,16 +79,16 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 
 | Component | Purpose | Validation | Leakage | Calibration | Drift | Safety |
 |-----------|---------|------------|---------|-------------|-------|--------|
-| Gatekeeper (ml_gatekeeper/) | ML Pick Quality | Time Series Split | PRESENT (target/feature) | PRESENT (isotonic) | PRESENT | PRESENT (gated) |
-| Consensus (ml_consensus/) | ML Consensus | Time Series Split | PRESENT | PRESENT | PRESENT | PRESENT |
-| Hyro ML Optimizer | ML Pick Optimizer | Time Series Split | PRESENT | PRESENT | PRESENT | PRESENT |
+| Gatekeeper (ml_gatekeeper/) | ML Pick Quality | Time Series Split | **MASKED by default** (`gatekeeper.py:92-101` indices 5,6,19,30; applied `:195`) | PRESENT (isotonic) | PRESENT | PRESENT (gated) |
+| Consensus (ml_consensus/) | ML Consensus | Time Series Split | **Review**: `consensus.py:134` uses `strat_fwd_wr`/`forward_wr` in the score | PRESENT | PRESENT | PRESENT |
+| Hyro ML Optimizer | ML Pick Optimizer | Time Series Split | inherits gatekeeper masking | PRESENT | PRESENT | PRESENT |
 
-**Top 5 ML defects:**
-1. Target leakage (`_drop_leakage_enabled()` not enforced).
-2. Feature leakage (`eb_forward_wr` constructed from future data).
-3. Overfitting (regularization not tuned; early stopping missing).
-4. Calibration drift not monitored (Brier computed but not trended).
-5. No production off-switch; ML output can reach sizing without human veto.
+**ML assessment (verified on origin/main):**
+1. Target/feature leakage masking is **ON by default** (`ml_gatekeeper/gatekeeper.py:95` `_drop_leakage_enabled()`; `_LEAKAGE_FEATURE_INDICES=(5,6,19,30)` at `:92`; applied at `:195`). The opt-out is `ML_GATE_DROP_LEAKAGE=0`. This is a **strength**, not a defect.
+2. **Residual review item:** `ml_consensus/consensus.py:134` builds the consensus score from `strat_fwd_wr`/`forward_wr` (forward-looking performance). Not a training-leak (it is an aggregation weight), but it means the score chases past forward WR — document or gate it.
+3. **Calibration:** Brier/ECE computed in `alpha_engine/prediction_market_signals.py:1806` (research tracker) and `tools/brier_reliability_stub.py`; the live ML path should emit a reliability curve, not just a scalar.
+4. **Drift:** `ml_gatekeeper/models/drift_baseline.json` + `circuit_breaker_aggregator.py:234-250` KS ratio exist; retrain trigger wiring should be confirmed end-to-end.
+5. **Safety:** ML output is gated by `ml_gatekeeper` before sizing; no direct sizing path found.
 
 ---
 
@@ -117,9 +117,9 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 ## 6. Prioritized Fixes (P0/P1/P2)
 
 **P0 (must fix before any sizing claim)**
-1. `alpha_engine/money_ready_verdict.py:96` — apply net costs to all surface metrics; delete gross-only fallback.
-2. `alpha_engine/forward_validator.py:52` — add embargo guard (`if last_train_end > current_date - lookahead_days`).
-3. `portfolio_circuit_breaker.py:209-213` — implement real `_flatten_all_positions()` (close positions, cancel orders); breaker currently leaves existing risk on.
+1. `alpha_engine/money_ready_verdict.py:676-690` — net slippage deduction exists but **fails open to gross** when the import is unavailable (`:683-690`); make net mandatory for all surface metrics and remove the gross fallback.
+2. `walk_forward_validator.py:134-165` (`create_windows`, `train_end` at `:165`) — no purge/embargo between train and test windows; add an embargo gap.
+3. root `portfolio_circuit_breaker.py:209-213` — implement real `_flatten_all_positions()` (close positions, cancel orders); breaker currently leaves existing risk on.
 4. `audit_dashboard/data/db_health.json` + `dashboard_enhancements.js:750` — gate "Ghost rows: 0" banner on actual `total_ghost_rows == 0`.
 5. `prediction_market_agents/orchestrator.py:392` + `prediction_market_consensus.py:670` — hard `PREDICTION_MARKETS_SHADOW_ONLY` / forward_test_only pin at the merge; wire `SignalQualityTracker.record_resolution` into `universal_pick_resolver.py:666,1403`.
 6. `prediction_market_agents/` + resolver — reconcile Kalshi path split; produce the 3 missing PM files or drop registration.
@@ -128,7 +128,7 @@ Scope: per-asset-class performance, quant/statistical rigor, risk management, ML
 7. `alpha_engine/drawdown_circuit_breaker.py:245-252` — stale (>2h) state must recompute, not return FALSE.
 8. `research/profitability/run_v3.py:276` — replace naïve PBO with parameter-count-adjusted formula.
 9. `effective_n_report.json` — extend to Newey-West + clustering flag for intraday data.
-10. `ml_gatekeeper/gatekeeper.py:112`, `ml_consensus/consensus.py:158` — enforce `_drop_leakage_enabled()`; add target/feature leakage unit tests.
+10. `ml_consensus/consensus.py:134` — `strat_fwd_wr`/`forward_wr` weighting is forward-looking; document or gate. Add a leakage unit test locking `ml_gatekeeper/gatekeeper.py:92-101,195` masking.
 11. `kalshi_signal_agent.py:424` — timestamp-alignment / look-ahead guard before emitting spot-mapped signals.
 12. `production_scanner.py:5937-5940` — wire `PortfolioKellyVaR.size_position()` into the hot path.
 
