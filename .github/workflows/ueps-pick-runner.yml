@@ -93,6 +93,7 @@ jobs:
         id: commit
         if: steps.run_pickers.outcome == 'success'
         continue-on-error: true
+        timeout-minutes: 5
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
@@ -104,13 +105,23 @@ jobs:
           git add audit_dashboard/data/ueps_picks.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
-          else
-            TS=$(date -u +"%Y-%m-%d %H:%M UTC")
-            N_LONG=$(python -c "import json; print(json.load(open('audit_dashboard/data/ueps_picks.json'))['summary']['n_long'])" 2>/dev/null || echo "?")
-            N_SHORT=$(python -c "import json; print(json.load(open('audit_dashboard/data/ueps_picks.json'))['summary']['n_short'])" 2>/dev/null || echo "?")
-            git commit -m "data: ueps picks refresh - long=${N_LONG} short=${N_SHORT} (${TS}) [skip ci]"
-            bash .github/scripts/safe_push.sh
+            exit 0
           fi
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          TS=$(date -u +"%Y-%m-%d %H:%M UTC")
+          N_LONG=$(python -c "import json; print(json.load(open('audit_dashboard/data/ueps_picks.json'))['summary']['n_long'])" 2>/dev/null || echo "?")
+          N_SHORT=$(python -c "import json; print(json.load(open('audit_dashboard/data/ueps_picks.json'))['summary']['n_short'])" 2>/dev/null || echo "?")
+          git commit -m "data: ueps picks refresh - long=${N_LONG} short=${N_SHORT} (${TS}) [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          for i in 1 2 3; do
+            if bash .github/scripts/safe_push.sh; then
+              exit 0
+            fi
+            echo "Push attempt $i failed, retrying..."
+            sleep 5
+          done
+          echo "::warning::UEPS picks push failed after 3 retries (continue-on-error step)"
+          exit 1
 
       - name: Upload ueps_picks artifact
         if: always()
