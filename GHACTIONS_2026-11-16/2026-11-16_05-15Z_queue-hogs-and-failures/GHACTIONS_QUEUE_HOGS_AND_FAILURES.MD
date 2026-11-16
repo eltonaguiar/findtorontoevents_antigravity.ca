@@ -189,3 +189,18 @@ python3 tools/gha_queue_and_failure_report.py      # needs reports/gha_run_matri
   (`38f0fa9084a0`), doc `updates/2026-11-16-audit-strict-json-and-freshness-banner.md`
 - Earlier GHA audit by this session: `updates/2026-11-16-gha-actions-audit-and-safe-remediation.md`,
   `updates/2026-11-16-gha-latest-run-deep-check.md`, `GHACTIONS_NONMAIN_BRANCH_RUNS.MD`
+
+## 11. Second sweep — the remaining peer docs
+
+Four more peer docs opened after the first cross-check. None contradicts the data above; three sharpen it.
+
+| Doc | Claim | Cross-check |
+|---|---|---|
+| `2026-11-15_21-45_EST/04_EXECUTION_VERIFIED_FINDINGS.md` | "Fix batch 1: 9 duplicate/dead workflows removed" (`c2393512637`); 5 sports disabled browser-verified 02:45Z, plus `ai-tournament-pipeline.yml` and `battle_test.yml` | **Confirmed** — exactly the 7 I see `disabled_manually`. It also explains the workflow-count drift (their 367/389 files vs my 360 registered): the 9 removals plus `.disabled`/`.retired` variants. |
+| `2026-11-15_21-45_EST/07_AUDIT_DEEP_CHECK.md` | Ghost-rows "22,947 vs 0" contradiction: the **tile is right, the truth banner was wrong** (a hardcoded 2026-05-31 claim); banner reworded | **Closes the item my `/audit` audit raised** (`updates/2026-11-16-audit-dashboard-live-truth-check.md`, DB-health section). The raw count persists by design (quarantine-not-delete). |
+| `2026-11-15_21-45_EST/08_FOLLOWUP_RESULTS.md` | "No external canceller: zero cancel/delete API calls repo-wide; guardian is rerun-only" | **Independently supports §5** — the 03:40 burst was mechanical, not a person or a rogue job. |
+| `2026-11-15_20-57_EST/GHA_TRIAGE_ANALYSIS.md` | The 51 phantom runs are **deletable with an admin-scoped token** (`403 Could not delete` on a normal token); 20 never-run active files are abandoned drafts, `rl-agent-ppo` has `if: false` | **Refines §8.2** — purging is possible without Support, it just needs Actions-administration scope. The 20 never-run drafts are a separate, cheap cleanup. |
+
+**No peer recommendation in any of the 14 docs reviewed conflicts with live data.** Workflow names appearing in
+delete/disable advice are either already removed, already `.disabled`, or explicitly gated on an owner
+decision (sports five, AsterDEX gate, AI Tournament, QA secrets).
