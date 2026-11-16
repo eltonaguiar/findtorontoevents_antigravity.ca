@@ -14,6 +14,10 @@ on:
       - 'schemas/baseline_*.json'
       - '.github/workflows/schema-drift-watchdog.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   drift-check:
     runs-on: ubuntu-latest

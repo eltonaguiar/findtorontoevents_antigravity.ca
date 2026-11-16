@@ -11,6 +11,10 @@ permissions:
   contents: write
   actions: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   generate-and-publish:
     runs-on: ubuntu-latest

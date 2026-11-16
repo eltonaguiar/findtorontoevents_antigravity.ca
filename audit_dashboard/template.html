@@ -898,7 +898,7 @@ a:hover { text-decoration: underline; }
     <span style="color:#cbd5e1;font-size:0.95em;font-weight:600">Phenomenal performance across <strong style="color:#22c55e">ALL</strong> asset classes &mdash; sustainable, hedge-fund-grade.</span>
   </div>
   <div style="color:#94a3b8;font-size:0.78em;margin:4px 0 6px;font-style:italic">Sports betting tracked at <a href="/live-monitor/sports-betting.html" style="color:#a5b4fc;text-decoration:underline">/live-monitor/sports-betting.html</a> (separate KPIs).</div>
-  <div style="color:#cbd5e1;font-size:0.86em;font-weight:600;margin:2px 0 4px;line-height:1.45">0/10 money-ready &mdash; COMMODITY is the only WATCH; the other 9 classes are NOT_READY or INSUFFICIENT_DATA (live <code>money_ready_verdict.json</code>, 2026-11-16T04:07Z). Honest intrabar-true (first-touch, SL-wins-ties), snapshot 2026-11-16T04:03Z &mdash; the per-class tiles below auto-update, this sentence does not: <strong style="color:#ef4444">CRYPTO 35.8% PF0.92 n=3716</strong> FAIL &middot; <strong style="color:#ef4444">FOREX 32.2% PF0.66 n=612</strong> FAIL &middot; <strong style="color:#fbbf24">EQUITY 59.2% PF0.94 n=250</strong> (high WR, PF&lt;1 = net-negative) &middot; <strong style="color:#fbbf24">COMMODITY 40.2% PF1.03 n=229</strong> breakeven &middot; FUTURES 42.3% PF1.09 n=52 INSUFF-N. Bottleneck = clean-trade <em>supply</em>, not strategy supply. Do not forward-track the June sleeves COMMODITY <code>futures_momentum</code> n57 63%/PF2.6 or FOREX <code>forex_rsi2</code> n19 63%/PF2.4 &mdash; those figures are not in current JSON. <code>strategy_perf_by_class.json</code> now has <code>futures_momentum</code> n=681 WR 37.3% PF 0.25 and <code>forex_rsi2_mean_reversion</code> n=1091 WR 39.8% PF 0.38. Source for the class line: <code>intrabar_truth_by_class.json</code>. Research ledger, not a money book.</div>
+  <div style="color:#cbd5e1;font-size:0.86em;font-weight:600;margin:2px 0 4px;line-height:1.45">0/10 money-ready &mdash; COMMODITY is the only WATCH; the other 9 classes are NOT_READY or INSUFFICIENT_DATA (live <code>money_ready_verdict.json</code>, 2026-11-16T04:07Z). Honest intrabar-true (first-touch, SL-wins-ties), snapshot 2026-11-16T04:03Z &mdash; the per-class tiles below auto-update, this sentence does not: <strong style="color:#ef4444">CRYPTO 35.8% PF0.92 n=3716</strong> FAIL &middot; <strong style="color:#ef4444">FOREX 32.2% PF0.66 n=612</strong> FAIL &middot; <strong style="color:#fbbf24">EQUITY 59.2% PF0.94 n=250</strong> (high WR, PF&lt;1 = net-negative) &middot; <strong style="color:#fbbf24">COMMODITY 40.2% PF1.03 n=229</strong> breakeven &middot; FUTURES 42.3% PF1.09 n=52 INSUFF-N. Bottleneck = clean-trade <em>supply</em>, not strategy supply. Do not quote retired June sleeve figures; they are not in current JSON. <code>strategy_perf_by_class.json</code> now has <code>futures_momentum</code> n=681 WR 37.3% PF 0.25 and <code>forex_rsi2_mean_reversion</code> n=1091 WR 39.8% PF 0.38. Source for the class line: <code>intrabar_truth_by_class.json</code>. Research ledger, not a money book.</div>
   <details style="margin-top:2px">
     <summary style="cursor:pointer;color:#94a3b8;font-size:0.8em">&#x25B8; Per-class audit notes &amp; disputes (click to expand)</summary>
   <div id="major-goal-classes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px 14px;font-size:0.82em;line-height:1.5;color:#bae6fd;margin-top:6px">
@@ -908,7 +908,7 @@ a:hover { text-decoration: underline; }
     <span data-mg-class="COMMODITY"><strong style="color:#ef4444">COMMODITY</strong> &mdash; FAIL+INSUFF-N (policy-clean n=3 only; FUTURES proxy n=11 WR 9.09% PF 0.475). <strong style="color:#fca5a5">CT=F DSR=1.0 was FALSIFIED 2026-05-13</strong> (6.33&times; over-emission); pilot now <code>SHADOW_INSUFFICIENT_N</code> dsr=null.</span>
     <span data-mg-class="FOREX"><strong style="color:#ef4444">FOREX</strong> &mdash; BLOCKED (PR #6 consolidation 2026-05-31: all FOREX strategies blocked except cta_cross_asset_tsmom SHORT). Policy-clean net PF 0.29 / WR 46.1% / PnL -1026% (raw resolved cohort PF 9.67 is outlier-skewed; 7.6% WR on 12,673 resolved). Hard disable default ON in <code>non_crypto_policy.py</code>. forex_carry added to allowlist on probation. <code>recent_exits.json</code> cleaned of stale entries.</span>
     <span data-mg-class="BOND"><strong style="color:#94a3b8">BOND</strong> &mdash; ACCUMULATING (at_raw_picks: 78 rows, up from 2). Backtests PF 1.29&ndash;1.62 (bond_tlt_ief_v3, bond_hyg_lqd_v1) are orphan; universe limited to 5 symbols. First production emissions detected 2026-05-31.</span>
-    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health (live <code>data/db_health.json</code>, 2026-11-16T03:52Z): 5/5 checks pass, status-PnL mismatches 0, non-canonical statuses 0 &mdash; and <strong>22,947 ghost rows remain quarantined out of the canonical view</strong> (quarantine-not-delete per the 2026-11-14 MASTER_AUDIT; live count is in the DB Health tile above). This footer is static and does not update itself.</span>
+    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health (live <code>data/db_health.json</code>, 2026-11-16T03:52Z): not 5/5. The ghost-row check fails while <strong>22,947 ghost rows remain quarantined out of the canonical view</strong> (quarantine-not-delete per the 2026-11-14 MASTER_AUDIT; live count is in the DB Health tile above). This footer is static and does not update itself.</span>
   </div>
 <div id="kill-switch-panel" style="max-width:1180px;margin:0 auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(251,146,60,0.06));border:1px solid rgba(239,68,68,0.3);border-radius:12px;color:#fde68a;font-size:0.85em">
   <details open>
@@ -1289,15 +1289,12 @@ a:hover { text-decoration: underline; }
     var rows = classes.sort().map(function(cls){
       var r = by_class[cls] || {};
       var sharpe = r.oos_sharpe;
-      var color = pickColor(sharpe);
-      // N_INSUFFICIENT: flag Sharpe values that are small-sample arithmetic artifacts.
-      // BOND has n=11 total; 2-pick test folds produce std≈0 → Sharpe→∞.
-      // Trigger: folds ≤ 10 AND worst_fold_wr === 0 (indicates degenerate fold).
-      var sharpeInsufficient = (r.folds != null && r.folds <= 10 && r.worst_fold_wr === 0);
-      var sharpeCell = fmt(sharpe, 3);
-      if (sharpeInsufficient) {
-        sharpeCell += ' <span title="N_INSUFFICIENT: Sharpe is an artifact of small test folds (n&lt;50 total picks; some folds have n=2, std≈0 → Sharpe→∞). Not indicative of real OOS edge." style="color:#f59e0b;font-size:0.8em;cursor:help">⚠ N_INSUF</span>';
-      }
+      var sharpeFinite = sharpe != null && isFinite(sharpe);
+      // |Sharpe| > 5 on a class walk-forward is a small-sample scale bug
+      // (BOND oos_sharpe -65.6), not an edge. Do not print it.
+      var sharpeUnusable = !sharpeFinite || Math.abs(sharpe) > 5 || (r.folds != null && r.folds <= 10 && r.worst_fold_wr === 0);
+      var color = sharpeUnusable ? '#94a3b8' : pickColor(sharpe);
+      var sharpeCell = sharpeUnusable ? 'n/a' : fmt(sharpe, 3);
       return ''
         + '<tr>'
         + '<td style="padding:6px 10px;font-weight:600;color:#e0e7ff">' + cls + '</td>'
@@ -1526,7 +1523,7 @@ a:hover { text-decoration: underline; }
       <div style="font-size:12px;line-height:1.8;margin-bottom:18px;color:#cbd5e1">
         <strong style="color:#22c55e">PROVEN</strong> &mdash; A pick qualifies as PROVEN when its <em>strategy</em> has: (1) &ge;5 closed trades, (2) &ge;55% win rate after Bayesian shrink, (3) Profit Factor &ge;1.5, and (4) confidence &ge;0.7. Manually vetted systems (e.g., alpha_engine, battleground+) can also earn PROVEN status.<br>
         <strong style="color:#f59e0b">Smart Picks</strong> &mdash; An AI-curated basket. Every active pick is scored on 6 dimensions: <em>Regime match (25%)</em>, <em>Quality score (35%)</em>, <em>Freshness (15%)</em>, <em>TP upside remaining (15%)</em>, <em>Higher-timeframe alignment (10%)</em>, plus a <em>Proven Winner Boost (+8&ndash;15 pts)</em>. Only the top-ranked picks make it in.<br>
-        <strong style="color:#22d3ee">Verified Alpha</strong> &mdash; Signals that are auditable and verifiable: prediction-market consensus (Polymarket/Kalshi), audited copy-trader clones, or any strategy with &ge;55% forward win rate on &ge;5 trades.<br>
+        <strong style="color:#fbbf24">SHADOW</strong> &mdash; Prediction-market consensus (Polymarket/Kalshi) is not Verified Alpha and not PROVEN. PBO 0.603 fails the money-ready bar. Copy-trader rows are auditable only, not sized.<br>
         <strong style="color:#a855f7">High Conviction</strong> &mdash; The strictest preset. It applies shared hard gates (score &ge;40, trust tier, forward WR, regime alignment, consensus) <em>plus</em> per-asset-class floors. If a row shows here, it passed every single gate.<br>
         <strong style="color:#94a3b8">Trust Tiers</strong> &mdash; <span style="color:#22c55e">PROVEN</span> = elite edge. <span style="color:#4ade80">DEVELOPING</span> = good edge. <span style="color:#fbbf24">WATCH</span> = marginal. <span style="color:#f87171">SANDBOX</span> = unproven/new. <span style="color:#ef4444">PROBATION</span> = broken/banned system.
       </div>
@@ -3658,10 +3655,11 @@ function isVerifiedAlphaPick(pick) {
     forward_wr = forward_wr / 100.0;
   }
   
-  // Prediction market sources
-  var pmSources = ['pm_whale_signals', 'pm_kalshi_signals', 'pm_momentum_signals', 
+  // Prediction markets stay shadow (PBO 0.603). Not Verified Alpha.
+  var pmSources = ['pm_whale_signals', 'pm_kalshi_signals', 'pm_momentum_signals',
                    'prediction_market_consensus', 'polymarket_signals', 'pm_high_conviction'];
-  if (pmSources.indexOf(source) !== -1) return true;
+  if (pmSources.indexOf(source) !== -1) return false;
+  if (strategy.indexOf('copy_pm_') === 0) return false;
   
   // Copy trader sources with audit trail
   var copySources = ['copy_trader_intel', 'copy_trader_highscore', 'copy_trader_consensus', 
@@ -3669,7 +3667,6 @@ function isVerifiedAlphaPick(pick) {
   if (copySources.indexOf(source) !== -1) return true;
   
   // Verified copy strategy prefixes
-  if (strategy.indexOf('copy_pm_') === 0) return true;
   if (strategy.indexOf('clone_hl_') === 0) return true;
   if (strategy.indexOf('copy_hl_') === 0) return true;
   if (strategy.indexOf('hs_') === 0) return true;
@@ -5518,7 +5515,7 @@ function renderSummary() {
   const totalPnl = closedPicks.length > 0 ? outcomeStats.totalPnl : (statsFiltered ? 0 : s.total_pnl_pct);
   const winPnl = outcomeStats.winPnl;
   const lossPnl = outcomeStats.lossPnl;
-  const profitFactor = lossPnl > 0 ? winPnl / lossPnl : (winPnl > 0 ? Infinity : 0);
+  const profitFactor = lossPnl > 0 ? winPnl / lossPnl : null;
   const avgWin = outcomeStats.avgWin;
   const avgLoss = outcomeStats.avgLoss;
   const expectancy = closedPicks.length > 0 ? outcomeStats.expectancy : 0;
@@ -5585,7 +5582,7 @@ function renderSummary() {
     const sortedPnls = closedPicks.map(p => p.pnl_pct || 0).sort((a, b) => a - b);
     medianPnl = sortedPnls.length > 0 ? (sortedPnls.length % 2 === 1 ? sortedPnls[Math.floor(sortedPnls.length / 2)] : (sortedPnls[sortedPnls.length / 2 - 1] + sortedPnls[sortedPnls.length / 2]) / 2) : null;
     // Win/Loss ratio
-    winLossRatio = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? Infinity : 0);
+    winLossRatio = avgLoss > 0 ? avgWin / avgLoss : null;
     // Sharpe per trade (on capped returns)
     const cappedMean = cappedPnls.length > 0 ? cappedPnls.reduce((a, b) => a + b, 0) / cappedPnls.length : 0;
     const cappedStd = cappedPnls.length > 1 ? Math.sqrt(cappedPnls.reduce((s, v) => s + (v - cappedMean) ** 2, 0) / (cappedPnls.length - 1)) : 0;
@@ -5796,7 +5793,7 @@ function renderSummary() {
       var v = s.total_pnl_pct_compounded_rolling_100;
       var has = (v !== null && v !== undefined && !Number.isNaN(v));
       return {
-        label: 'Rolling 100',
+        label: 'Rolling 100 (n=' + Math.min(100, displayWins + displayLosses + displayFlat) + ')',
         value: has ? fmtPct(v) : '—',
         cls: has ? (v >= 0 ? 'positive' : 'negative') : '',
         tip: 'Last 100 closed trades compounded equal-weight, ±10% per-trade cap. Bounded headline metric for recent performance. (summary.total_pnl_pct_compounded_rolling_100)'
@@ -5835,9 +5832,9 @@ function renderSummary() {
         sub: '<span style="font-size:9px;color:var(--text-dim)">' + String(conc.top1_source_system || '').replace(/</g, '') + '</span>'
       }];
     })() : []),
-    { label: 'Median Trade', value: medianPnl != null ? fmtPct(medianPnl) : '\u2014', cls: medianPnl != null ? (medianPnl >= 0 ? 'positive' : 'negative') : '', tip: 'Median PnL per trade. Unlike average, the median is NOT affected by outliers. If median is negative but total PnL is positive, a few big winners are masking many small losses. This is the most honest single metric.' },
-    { label: 'Profit Factor', value: displayPF === Infinity ? '\u221e' : displayPF != null ? fmt(displayPF, 2) : '\u2014', cls: displayPF >= 1.0 ? 'positive' : 'negative', tip: cardTips.profitFactor },
-    { label: 'Expectancy', value: displayExpectancy != null ? (displayExpectancy >= 0 ? '+' : '') + fmt(displayExpectancy, 2) + '%' : '\u2014', cls: displayExpectancy >= 0 ? 'positive' : 'negative', tip: cardTips.expectancy },
+    { label: 'Median Trade (n=' + (displayWins + displayLosses + displayFlat) + ')', value: medianPnl != null ? fmtPct(medianPnl) : '\u2014', cls: medianPnl != null ? (medianPnl >= 0 ? 'positive' : 'negative') : '', tip: 'Median PnL per trade. Unlike average, the median is NOT affected by outliers. If median is negative but total PnL is positive, a few big winners are masking many small losses. This is the most honest single metric.' },
+    { label: 'Profit Factor (n=' + (displayWins + displayLosses + displayFlat) + ')', value: (displayPF != null && isFinite(displayPF)) ? fmt(displayPF, 2) : 'n/a', cls: (displayPF != null && isFinite(displayPF) && displayPF >= 1.0) ? 'positive' : ((displayPF != null && isFinite(displayPF)) ? 'negative' : ''), tip: cardTips.profitFactor },
+    { label: 'Expectancy (n=' + (displayWins + displayLosses + displayFlat) + ')', value: displayExpectancy != null ? (displayExpectancy >= 0 ? '+' : '') + fmt(displayExpectancy, 2) + '%' : '\u2014', cls: displayExpectancy >= 0 ? 'positive' : 'negative', tip: cardTips.expectancy },
     { label: 'Avg Win / Loss', value: `+${fmt(displayAvgWin, 2)}% / -${fmt(displayAvgLoss, 2)}%`, tip: cardTips.avgWinLoss,
       sub: winLossRatio != null ? `<span style="color:var(--text-dim);font-size:10px">W/L Ratio: <span style="color:${winLossRatio >= 1 ? 'var(--green)' : 'var(--red)'}; font-weight:600">${fmt(winLossRatio, 2)}</span></span>` : '' },
     { label: 'W / L / F', value: `${displayWins} / ${displayLosses} / ${displayFlat}`, tip: cardTips.wl },
@@ -13037,9 +13034,9 @@ function renderVerifiedAlpha() {
 
   var html = '';
   html += '<div style="padding:8px 0">';
-  html += '<h2 style="margin-bottom:8px;color:#22d3ee">Verified Alpha <span style="font-size:12px;color:var(--text-dim);font-weight:400">Prediction markets + auditable pro-trader rows only</span></h2>';
+  html += '<h2 style="margin-bottom:8px;color:#fbbf24">Shadow book <span style="font-size:12px;color:var(--text-dim);font-weight:400">Prediction markets stay shadow. Not PROVEN. Not sized.</span></h2>';
   html += '<div style="background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.28);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#c9f9ff">';
-  html += '<strong>Root-cause fix:</strong> this cohort is separated from the legacy all-systems headline so verified PM and audited copy sources can be judged on their own edge.<br>';
+  html += '<strong>Shadow only:</strong> prediction-market rows are separated so they are not read as a proven edge. Do not size them.<br>';
   html += esc(summary.status_note);
   html += '</div>';
   html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">';

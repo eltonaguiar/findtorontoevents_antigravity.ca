@@ -8,6 +8,17 @@ from pathlib import Path
 WORKFLOWS = Path(".github/workflows")
 
 
+def _has_job_level_timeout(text: str) -> bool:
+    """True if any timeout-minutes is at job-level indent (<=4 spaces)."""
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if stripped.startswith("timeout-minutes:"):
+            indent = len(line) - len(line.lstrip())
+            if indent <= 4:
+                return True
+    return False
+
+
 def add_job_timeout(text: str, minutes: int = 30) -> tuple[str, bool]:
     lines = text.split("\n")
     out = []
@@ -36,7 +47,7 @@ def add_job_timeout(text: str, minutes: int = 30) -> tuple[str, bool]:
                 block.append(nxt)
                 j += 1
             block_text = "\n".join(block)
-            if "timeout-minutes:" not in block_text and "runs-on:" in block_text:
+            if not _has_job_level_timeout(block_text) and "runs-on:" in block_text:
                 new_block = []
                 for bl in block:
                     new_block.append(bl)

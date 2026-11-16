@@ -186,6 +186,81 @@ STRATEGY_WEIGHT_OVERRIDES: dict[str, float] = {
 }
 DEFAULT_ALLOCATION = 2000.0  # Base per-pick allocation in dollars
 
+# ── REDUCE / probation state — enforceable flag (2026-11-16) ─────────────────
+# The /audit STRATEGY_DEGRADATION "REDUCE" verdict (cross_aggregation/
+# performance_alerts.py) was advisory-only. This is the REAL flag it maps to:
+# alpha_engine.score_booster reads it, stamps `size_multiplier` / `probation`
+# on matching picks (the sizing layer must honour `size_multiplier` before
+# allocating capital — same convention as `shadow_size_multiplier`), and
+# suppresses score boosts for probation strategies. score_booster also folds
+# live `performance_alerts` REDUCE rows into this map at runtime (default
+# 0.5x = T2 REDUCE per circuit_breaker_aggregator), so future alerts are
+# enforceable without a code change. Entries here are the operator's
+# decisions from the 2026-11-16 alerts and win over the runtime default.
+STRATEGY_PROBATION: dict[str, dict] = {
+    # crypto-momentum-scout: 7d WR 0% vs 41% baseline — DECISION: no new
+    # sizing at all until the edge recovers (0% on the rolling window).
+    "crypto-momentum-scout": {
+        "probation": True,
+        "size_multiplier": 0.0,
+        "reason": "STRATEGY_DEGRADATION REDUCE 2026-11-16: 7d WR 0% vs 41% baseline",
+    },
+    # forex_rsi2_mean_reversion (alert name "forex_rsi2"): 7d WR 5% vs 20%
+    # baseline — RECONCILE at half size (T2 REDUCE semantics) while its
+    # track record is re-measured (see STRATEGY_TRACK_ALIASES TODO re the
+    # connors_rsi2_scanner naming overlap).
+    "forex_rsi2_mean_reversion": {
+        "probation": True,
+        "size_multiplier": 0.5,
+        "reason": "STRATEGY_DEGRADATION REDUCE 2026-11-16: 7d WR 5% vs 20% baseline",
+    },
+}
+
+
+# ── Emitter name resolution (alert strategy-name mapping) ────────────────────
+# Closed rows can arrive with `strategy` literally stamped "unknown" (kimi
+# closed ledger — 51 rows in the 2026-11-16 payload, source_system
+# kimi_riseoftheclaw, no algorithm field) or carrying only `algorithm` /
+# `source_system`. Alert bucketing previously sent those to a merged
+# `unknown` bucket (performance_alerts._strategy_degradation). This maps a
+# pick to its REAL emitter name using the same resolution chain as pick
+# normalization, then canonicalises variant names via STRATEGY_TRACK_ALIASES.
+_UNNAMED_STRATEGY_TOKENS = {"", "unknown", "none", "null", "nan"}
+
+
+def resolve_strategy_name(pick: dict) -> str:
+    """Return the pick's real emitter/strategy name (never a silent `unknown`).
+
+    Resolution order matches dashboard pick normalization:
+    strategy -> strategy_name -> algorithm -> mutation_name -> source.
+    Names literally stamped "unknown" are treated as missing and resolved to
+    the emitting system instead. Falls back to "unknown" only when the pick
+    carries no identity at all.
+    """
+    name = ""
+    for key in ("strategy", "strategy_name", "algorithm", "mutation_name", "source"):
+        value = pick.get(key)
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text.lower() in _UNNAMED_STRATEGY_TOKENS:
+            continue
+        name = text
+        break
+    if not name:
+        source = pick.get("source_system")
+        if source is not None:
+            text = str(source).strip()
+            if text.lower() not in _UNNAMED_STRATEGY_TOKENS:
+                name = text
+    if not name:
+        return "unknown"
+    try:
+        name = STRATEGY_TRACK_ALIASES.get(name.lower(), name)
+    except Exception:
+        pass
+    return name
+
 # ---------------------------------------------------------------------------
 # Per-category risk parameters  (stop_loss_pct, take_profit_pct, max_hold_days)
 # These are DEFAULTS -- strategies can override with ATR-based TP/SL
@@ -340,7 +415,10 @@ MIN_ELITE_SCORE_BY_CLASS: dict[str, int] = {
 # FOREX hard disable — 2026-05-15
 # FOREX class re-enabled 2026-06-05: forex_carry_g10 extended backtest meets unlock condition.
 #   PF=1.593, WR=60.4%, n=197 (reports/forex_carry_backtest_extended_20260606.json)
-# Kill-switch: set env FOREX_HARD_DISABLE=0 to re-enable.
+# Kill-switch: set env FOREX_HARD_DISABLE=1 to RE-DISABLE (the default is "0"/OFF
+# since the re-enable above). Gates read the env LIVE at call time (env first, this
+# config value as the default — see audit_trail/quality_gates.py NS-E), so the flip
+# works without a re-import; the value here is only the default when env is unset.
 import os as _forex_os
 FOREX_HARD_DISABLE: bool = _forex_os.environ.get("FOREX_HARD_DISABLE", "0") not in ("0", "false", "FALSE", "False")
 del _forex_os

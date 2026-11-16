@@ -52,6 +52,43 @@ def test_static_per_class_snapshot_is_labelled_not_live():
 
 
 @needs_template
+def test_ghost_rows_are_not_called_a_passing_check():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "5/5 checks pass" not in html
+    assert "ghost-row check fails" in html
+
+
+@needs_template
+def test_retired_june_pf_figures_are_not_quoted():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "PF2.6" not in html
+    assert "PF2.4" not in html
+
+
+@needs_template
+def test_prediction_market_sources_are_not_verified_alpha():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "if (pmSources.indexOf(source) !== -1) return false;" in html
+    assert "if (pmSources.indexOf(source) !== -1) return true;" not in html
+    gen = (ROOT / "audit_trail" / "dashboard_generator.py").read_text(encoding="utf-8")
+    assert "if source in _VERIFIED_ALPHA_PM_SOURCES or strategy.startswith(\"copy_pm_\"):\n        return False" in gen
+
+
+def test_headline_profit_factor_is_never_infinity():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "displayPF === Infinity ? '\\u221e'" not in html
+    assert "lossPnl > 0 ? winPnl / lossPnl : null" in html
+    assert "Math.abs(sharpe) > 5" in html
+
+
+@needs_template
+def test_prediction_markets_are_not_labelled_verified_alpha():
+    html = TEMPLATE.read_text(encoding="utf-8")
+    assert "prediction-market consensus (Polymarket/Kalshi), audited copy-trader" not in html
+    assert "Prediction markets stay shadow" in html
+
+
+@needs_template
 def test_major_goal_header_declares_its_snapshot_date():
     html = TEMPLATE.read_text(encoding="utf-8")
     assert "snapshot 2026-11-16" in html, (

@@ -18,6 +18,11 @@ on:
 
 
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# 2026-11-16 least-privilege (S3 batch): explicit token scopes
 permissions:
   contents: read
 
@@ -26,6 +31,7 @@ jobs:
   rapid-validation:
 
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
 
       - name: Checkout repository

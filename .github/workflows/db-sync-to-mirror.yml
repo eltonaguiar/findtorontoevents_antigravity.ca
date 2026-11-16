@@ -17,6 +17,10 @@ env:
   EXPORT_SCRIPT_PATH: "_db_export_tmp.php"
   IMPORT_SCRIPT_PATH: "_db_import_tmp.php"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   sync-databases:
     name: "Sync databases to torontoevent.net"

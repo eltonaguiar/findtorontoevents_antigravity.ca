@@ -14,9 +14,14 @@ on:
           - stop
           - restart
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   manage-runner:
     runs-on: windows-latest
+    timeout-minutes: 30
     if: github.event.inputs.action != 'status'
     
     steps:
@@ -42,6 +47,7 @@ jobs:
 
   check-status:
     runs-on: windows-latest
+    timeout-minutes: 30
     if: github.event.inputs.action == 'status'
     
     steps:

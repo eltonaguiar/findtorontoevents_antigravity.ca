@@ -23,9 +23,12 @@ on:
           - '10'
 
 concurrency:
-  group: daily-stock-refresh
-  cancel-in-progress: false
-  queue: max
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# 2026-11-16 least-privilege (S3 batch): explicit token scopes
+permissions:
+  contents: read
 
 jobs:
   refresh-stock-data:

@@ -22,9 +22,14 @@ env:
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
   DISCORD_ML_CHANNEL_ID: '1469431505439948920'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   predict-and-track:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     permissions:
       contents: write
 
@@ -336,6 +341,7 @@ jobs:
   # Weekly retrain job
   weekly-retrain:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     permissions:
       contents: write
     if: contains(github.event.schedule || '', '0 6 * * 0') # Only Sunday 6 AM UTC

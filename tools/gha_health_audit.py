@@ -12,14 +12,15 @@ Specs:
     "CANCEL BUCKETS": per-cancel classification into timeout-shaped / eviction-shaped /
     stack-kill / pr-close, with only the unexplained `external` residual as the true R7
     signal. R6 excludes timeout-shaped cancels from churn (they are `timeout-kill` rows).
-  - GUARDIAN v1.1 RULE RE-READS (09_NEXT_PRACTICE_ENGAGEMENTS.md, section 4):
-    R1/R2/R3 surface timeout-shaped `cancelled` kills as broken/flapping (a workflow
-    whose runs die at its `timeout-minutes` nightly is degraded even though
-    BAD_CONCLUSIONS skips `cancelled`); R5 excludes timeout-shaped lifetimes from its
-    p90 hog baseline (killed runs are not normal durations); R9 re-derives every
-    stale/never-run verdict at run-ID level (per-workflow latest-run probe) and
-    withholds verdicts a truncated bulk sample cannot confirm — the "235 stale"-class
-    bulk-sampling artifact (08 §3) can no longer produce a stale row.
+  - v1.2 CANCEL-BUCKET CALIBRATION (2026-11-16): the live v1.1 report bucketed 14 runs as
+    `external` where a run-ID-level manual analysis found only 1 truly unexplained. The
+    13 misses were GitHub supersede-cancels — "Canceling since a higher priority waiting
+    request for X exists" (concurrency pending-slot replacement / workflow-level rerun
+    priority). `classify_cancel_run` now recognizes that mechanic as the `supersede`
+    SUB-bucket reported under `stack-kill` (bucket names stay the documented five):
+    marker annotation/reason AND a newer run of the same OR referenced (workflow_run
+    upstream) workflow started within ~10m. `eviction-shaped` still owns 0-jobs pending
+    kills; `external` remains the true residual.
   - Queue/skip monitoring intent: reports/gha_phase3_recommendations.md.
   - Output format (5 sections incl. "NOT AN ISSUE (recovered)"): AGENT_PROMPT_job_analysis.md
     section 5.
@@ -83,6 +84,7 @@ MAX_WORKFLOW_PAGES = 4                                                   # 367 w
 MAX_STATUS_PAGES = 3                                                     # queued / in_progress lists
 MAX_JOB_PROBES = int(os.getenv("GHA_HEALTH_MAX_JOB_PROBES", "40"))       # run->jobs calls (R3/R4/R8)
 MAX_CANCEL_JOB_PROBES = int(os.getenv("GHA_HEALTH_MAX_CANCEL_JOB_PROBES", "30"))  # cancelled-run jobs probes (R6/R7)
+MAX_CANCEL_ANNOTATION_PROBES = int(os.getenv("GHA_HEALTH_MAX_CANCEL_ANNOTATION_PROBES", "30"))  # cancelled-run annotation probes (R7 supersede reason)
 MAX_R9_PROBES = int(os.getenv("GHA_HEALTH_MAX_R9_PROBES", "50"))         # per-workflow latest-run calls
 MAX_WATCHLIST_PROBES = 8                                                 # R2 lookback probes
 
@@ -98,9 +100,19 @@ SKIP_MIN_RUNS = 5
 
 # R7 cancel bucketing (08_FOLLOWUP_RESULTS.md §3): real cancel mechanics, run-ID level.
 # Precedence: timeout-shaped > eviction-shaped > stack-kill > pr-close > external.
+# stack-kill carries two sub-buckets (v1.2 calibration, 2026-11-16):
+#   supersede         "Canceling since a higher priority waiting request for X exists"
+#                     + a newer run of the same OR referenced workflow started within
+#                     ~10m (concurrency pending-slot replacement / rerun priority)
+#   cancel-in-progress the original form: >=2 same-workflow cancelled runs created
+#                     within CANCEL_STACK_WINDOW_S of each other near a newer start
+# Sub-buckets are REPORTED under stack-kill; they are not separate top-level buckets.
 CANCEL_BUCKETS = ("timeout-shaped", "eviction-shaped", "stack-kill", "pr-close", "external")
+CANCEL_STACK_SUBS = ("supersede", "cancel-in-progress")
 CANCEL_TIMEOUT_TOLERANCE_S = 30      # run lifetime within ±30s of a job timeout-minutes
 CANCEL_STACK_WINDOW_S = 120          # same-workflow cancel cluster created_at spread / proximity to newer run start
+CANCEL_SUPERSEDE_WINDOW_S = 600      # supersede: newer same/referenced run start within ~10m of the victim
+CANCEL_SUPERSEDE_MARKER = "higher priority waiting request"  # GitHub's supersede-cancel annotation
 
 STALE_THRESHOLD_DAYS = {"hourly": 30, "daily": 30, "weekly": 60, "monthly": 90, "unknown": 60}
 
@@ -424,6 +436,15 @@ def fetch_run_jobs(cli: ApiClient, run_id: Any) -> List[Dict[str, Any]]:
     return data.get("jobs", [])
 
 
+def fetch_run_annotations(cli: ApiClient, run_id: Any) -> List[Dict[str, Any]]:
+    """Workflow-run annotations — the live carrier of GitHub's cancel reasons, e.g.
+    "Canceling since a higher priority waiting request for X exists" (R7 supersede)."""
+    data = cli.get(f"/repos/{cli.repo}/actions/runs/{run_id}/annotations", {"per_page": 50})
+    if isinstance(data, list):
+        return data
+    return data.get("annotations", []) if isinstance(data, dict) else []
+
+
 # ---------------------------------------------------------------------------
 # Analysis plumbing
 # ---------------------------------------------------------------------------
@@ -447,8 +468,10 @@ class Ctx:
         self.truncated = truncated
         self.job_probes = 0
         self.cancel_job_probes = 0
+        self.cancel_annotation_probes = 0
         self._cancel_jobs: Dict[Any, Optional[List[Dict[str, Any]]]] = {}
-        self._cancel_classes: Dict[Any, str] = {}
+        self._cancel_annotations: Dict[Any, Optional[List[Dict[str, Any]]]] = {}
+        self._cancel_details: Dict[Any, Tuple[str, Optional[str]]] = {}
         self.groups: Dict[Tuple[Any, str], List[Dict[str, Any]]] = {}
         for r in runs:
             wid = r.get("workflow_id")
@@ -525,22 +548,79 @@ class Ctx:
                 best, best_off = r, off
         return best
 
-    def cancel_class(self, run: Dict[str, Any]) -> str:
-        """Bucket a cancelled run (cached): timeout-shaped / eviction-shaped / stack-kill /
-        pr-close / external. See 08_FOLLOWUP_RESULTS.md §3 for the mechanics."""
+    def cancel_annotations_for(self, run: Dict[str, Any]) -> Optional[List[Dict[str, Any]]]:
+        """Workflow-run annotations for a cancelled run (shared cache, capped).
+        None = not probed (cap reached). Carries GitHub's cancel reason text
+        ("Canceling since a higher priority waiting request for X exists")."""
         rid = run.get("id")
-        if rid in self._cancel_classes:
-            return self._cancel_classes[rid]
+        if rid in self._cancel_annotations:
+            return self._cancel_annotations[rid]
+        anns: Optional[List[Dict[str, Any]]] = None
+        if self.cancel_annotation_probes < MAX_CANCEL_ANNOTATION_PROBES:
+            self.cancel_annotation_probes += 1
+            try:
+                anns = fetch_run_annotations(self.cli, rid)
+            except (RateLimitedError, ApiError):
+                anns = None
+        self._cancel_annotations[rid] = anns
+        return anns
+
+    def _related_newer_runs(self, run: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Candidate superseding runs for the v1.2 supersede rule: newer runs of the
+        SAME workflow or of a REFERENCED workflow (the victim's `workflow_run`
+        upstreams, name-matched). Window/proximity filtering happens in
+        classify_cancel_run_detail (supersede_window_s)."""
+        rc = _iso_to_dt(run.get("created_at"))
+        wid = run.get("workflow_id")
+        if rc is None or wid is None:
+            return []
+        related_wids = {int(wid)}
+        info = self.triggers_for_workflow(wid)
+        if info and info.workflow_run_upstreams:
+            ups = {u.strip().lower() for u in info.workflow_run_upstreams}
+            for wf in self.workflows:
+                if int(wf.get("id", -1)) != int(wid) and (wf.get("name") or "").strip().lower() in ups:
+                    related_wids.add(int(wf["id"]))
+        out: List[Dict[str, Any]] = []
+        for r in self.runs:
+            if r.get("id") == run.get("id") or r.get("workflow_id") is None:
+                continue
+            if int(r.get("workflow_id")) not in related_wids:
+                continue
+            cd = _iso_to_dt(r.get("created_at"))
+            if cd is not None and cd > rc:
+                out.append(r)
+        return out
+
+    def cancel_detail(self, run: Dict[str, Any]) -> Tuple[str, Optional[str]]:
+        """Bucket + sub-bucket for a cancelled run (cached): timeout-shaped /
+        eviction-shaped / stack-kill (supersede | cancel-in-progress) / pr-close /
+        external. See 08_FOLLOWUP_RESULTS.md §3 + the v1.2 calibration note."""
+        rid = run.get("id")
+        if rid in self._cancel_details:
+            return self._cancel_details[rid]
         jobs = self.cancel_jobs_for(run)
         timeouts = self.cancel_timeout_candidates(run, jobs)
         wid = run.get("workflow_id")
         siblings = [r for r in self.runs
                     if r.get("id") != rid and r.get("workflow_id") == wid
                     and r.get("status") == "completed" and r.get("conclusion") == "cancelled"]
-        cls = classify_cancel_run(run, jobs=jobs, job_timeouts_s=timeouts,
-                                  siblings=siblings, newer_run=self._newer_run_for(run))
-        self._cancel_classes[rid] = cls
-        return cls
+        # Annotation probe only when the run/jobs payload carries no supersede marker
+        # (live runs never carry it inline; fixture runs may).
+        if CANCEL_SUPERSEDE_MARKER in _cancel_reason_text(run, jobs):
+            anns: Optional[List[Dict[str, Any]]] = None
+        else:
+            anns = self.cancel_annotations_for(run)
+        detail = classify_cancel_run_detail(
+            run, jobs=jobs, job_timeouts_s=timeouts,
+            siblings=siblings, newer_run=self._newer_run_for(run),
+            related_newer=self._related_newer_runs(run), annotations=anns)
+        self._cancel_details[rid] = detail
+        return detail
+
+    def cancel_class(self, run: Dict[str, Any]) -> str:
+        """Bucket name only (cached) — see cancel_detail for the sub-bucket."""
+        return self.cancel_detail(run)[0]
 
     def wf_name(self, wid: Any) -> str:
         for wf in self.workflows:
@@ -562,21 +642,6 @@ def _norm_hog_name(name: Any) -> str:
     return str(name).strip().lower().replace("–", "-").replace("—", "-")
 
 
-def _is_degraded_run(ctx: "Ctx", run: Dict[str, Any]) -> bool:
-    """Hard-bad run for broken/flapping visibility (guardian v1.1, 09 §4 R1/R2/R3).
-
-    BAD_CONCLUSIONS deliberately skips `cancelled`: most cancels are kill mechanics
-    (eviction / stack-kill / pr-close — 08 §3). But a **timeout-shaped** cancel is a
-    health problem — the workflow's runs die at their `timeout-minutes` (nightly, say),
-    so the workflow is degraded even though its conclusion says `cancelled`. Those runs
-    must surface in R1 (broken) and count as failures in R3 (flapping), attributed to
-    their killing step via `cancel_killing_step`.
-    """
-    if run.get("conclusion") in BAD_CONCLUSIONS:
-        return True
-    return run.get("conclusion") == "cancelled" and ctx.cancel_class(run) == "timeout-shaped"
-
-
 # ---------------------------------------------------------------------------
 # R1 — failed-no-success (+ recovered / prune classification)
 # ---------------------------------------------------------------------------
@@ -587,7 +652,7 @@ def rule_r1(ctx: Ctx) -> Dict[str, Any]:
         comp = _completed(items)
         if not comp:
             continue
-        last_bad_idx = next((i for i, r in enumerate(comp) if _is_degraded_run(ctx, r)), None)
+        last_bad_idx = next((i for i, r in enumerate(comp) if r.get("conclusion") in BAD_CONCLUSIONS), None)
         if last_bad_idx is None:
             ctx.plain_green += 1
             continue
@@ -610,19 +675,12 @@ def rule_r1(ctx: Ctx) -> Dict[str, Any]:
             "html_url": run.get("html_url"),
             "class": "broken",
         }
-        if run.get("conclusion") == "cancelled":
-            # guardian v1.1 (09 §4 R1): timeout-shaped kill = degraded despite 'cancelled'
-            row["timeout_kill"] = True
-            row["killing_step"] = cancel_killing_step(ctx.cancel_jobs_for(run))
-            row["verdict"] = ("timeout-shaped cancel: run dies at its job timeout — degraded "
-                              "despite 'cancelled' conclusion (09 §4 R1)")
         if not ever_passed and age > 24 * 7:
             row["class"] = "prune"  # "never passed in life" + dormant => prune row, not an incident
         rows.append(row)
     rows.sort(key=lambda x: x.get("age_hours") or 0.0)
     return {"status": "ok", "rows": rows[:50],
-            "notes": (f"{len(rows)} failed-no-success group(s) incl. timeout-shaped cancel kills "
-                      f"(09 §4); window truncated={ctx.truncated}")}
+            "notes": f"{len(rows)} failed-no-success group(s); window truncated={ctx.truncated}"}
 
 
 # ---------------------------------------------------------------------------
@@ -715,23 +773,12 @@ def rule_r3(ctx: Ctx) -> Dict[str, Any]:
             continue
         if comp[0].get("conclusion") != "success":
             continue
-        fails = [r for r in comp if _is_degraded_run(ctx, r)]
+        fails = [r for r in comp if r.get("conclusion") in BAD_CONCLUSIONS]
         if len(fails) < FLAP_FAILS_MIN:
             continue
         steps: List[str] = []
         split = {"infra_flake": 0, "real_bug": 0}
         for run in fails[:2]:  # bounded: step names for at most 2 recent failing runs
-            if run.get("conclusion") == "cancelled":
-                # guardian v1.1 (09 §4 R3): timeout-shaped kill — attribute the kill to
-                # the step in flight (cancel_killing_step), not to failure steps
-                name = cancel_killing_step(ctx.cancel_jobs_for(run))
-                steps.append(name or "timeout-kill (step unknown)")
-                low = (name or "").lower()
-                if any(h in low for h in INFRA_STEP_HINTS):
-                    split["infra_flake"] += 1
-                else:
-                    split["real_bug"] += 1
-                continue
             try:
                 for job in ctx.jobs_for(run.get("id")):
                     for st in (job.get("steps") or []):
@@ -758,8 +805,7 @@ def rule_r3(ctx: Ctx) -> Dict[str, Any]:
         })
     rows.sort(key=lambda x: -x["fails_in_window"])
     return {"status": "ok", "rows": rows[:30],
-            "notes": (f"{len(rows)} flapper(s) (>= {FLAP_FAILS_MIN} fails / {FLAP_WINDOW} runs, latest green; "
-                      f"timeout-shaped kills count as fails, step via cancel_killing_step — 09 §4)")}
+            "notes": f"{len(rows)} flapper(s) (>= {FLAP_FAILS_MIN} fails / {FLAP_WINDOW} runs, latest green)"}
 
 
 # ---------------------------------------------------------------------------
@@ -804,9 +850,6 @@ def rule_r5(ctx: Ctx) -> Dict[str, Any]:
     for (wid, _b), items in ctx.groups.items():
         durs = []
         for r in _completed(items):
-            if r.get("conclusion") == "cancelled" and ctx.cancel_class(r) == "timeout-shaped":
-                continue  # guardian v1.1 (09 §4 R5): a timeout-killed lifetime is a KILL, not a
-                #           normal duration — pollutes the p90 hog baseline otherwise
             s, e = _run_start(r), _run_end(r)
             if s and e and e > s:
                 durs.append((e - s).total_seconds() / 3600.0)
@@ -842,8 +885,7 @@ def rule_r5(ctx: Ctx) -> Dict[str, Any]:
         })
     rows.sort(key=lambda x: -(x.get("runtime_hours") or 0))
     return {"status": "ok", "rows": rows[:30],
-            "notes": (f"{len(rows)} runner hog(s) (> {RUNNER_HOG_HOURS:.0f}h or > 2x p90; "
-                      f"timeout-shaped lifetimes excluded from the p90 baseline — 09 §4 R5)")}
+            "notes": f"{len(rows)} runner hog(s) (> {RUNNER_HOG_HOURS:.0f}h or > 2x p90)"}
 
 
 # ---------------------------------------------------------------------------
@@ -900,6 +942,70 @@ def _pr_close_shaped(run: Dict[str, Any]) -> bool:
     return any(isinstance(p, dict) and str(p.get("state", "")).lower() == "closed" for p in prs)
 
 
+def _cancel_reason_text(run: Dict[str, Any],
+                        jobs: Optional[List[Dict[str, Any]]] = None,
+                        annotations: Optional[List[Dict[str, Any]]] = None) -> str:
+    """Concatenated lower-cased cancel reason/annotation text for one run.
+
+    Scans the run-level reason carriers (`cancel_reason`, `cancel_annotation`,
+    `annotation`, `annotations`, `message` — live callers merge the
+    `/actions/runs/<id>/annotations` payload in via `annotations`), plus job-level
+    `description` / `annotations`. This is where GitHub surfaces its supersede
+    message: "Canceling since a higher priority waiting request for X exists".
+    """
+    parts: List[str] = []
+
+    def _add(value: Any) -> None:
+        if isinstance(value, str):
+            parts.append(value)
+        elif isinstance(value, dict):
+            for key in ("message", "text", "title", "details", "reason"):
+                _add(value.get(key))
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                _add(item)
+
+    for key in ("cancel_reason", "cancel_annotation", "annotation", "annotations", "message"):
+        _add(run.get(key))
+    _add(annotations)
+    for job in jobs or []:
+        _add(job.get("description"))
+        _add(job.get("annotations"))
+    return "\n".join(parts).lower()
+
+
+def _supersede_shaped(run: Dict[str, Any],
+                      jobs: Optional[List[Dict[str, Any]]],
+                      related_newer: Optional[List[Dict[str, Any]]],
+                      window_s: int,
+                      annotations: Optional[List[Dict[str, Any]]] = None) -> bool:
+    """v1.2 supersede-cancel: BOTH halves required (the 14-run calibration shapes —
+    dup-guard pre-fix copies / CI Tests supersede / RoC deploy cancel):
+
+      (1) cancel annotation/reason contains the GitHub supersede marker
+          ("Canceling since a higher priority waiting request for X exists" —
+          concurrency pending-slot replacement / workflow-level rerun priority), and
+      (2) a newer run of the SAME or a REFERENCED (workflow_run upstream) workflow
+          started within `window_s` (~10m) of this run's created_at.
+
+    `related_newer` holds those candidate superseding runs; when None, `newer_run`
+    (the caller's nearest same-workflow newer run) is the only candidate.
+    """
+    if CANCEL_SUPERSEDE_MARKER not in _cancel_reason_text(run, jobs, annotations):
+        return False
+    rc = _iso_to_dt(run.get("created_at"))
+    if rc is None:
+        return False
+    candidates = list(related_newer or [])
+    for cand in candidates:
+        if not isinstance(cand, dict) or cand.get("id") == run.get("id"):
+            continue
+        ns = _run_start(cand) or _iso_to_dt(cand.get("created_at"))
+        if ns is not None and abs((ns - rc).total_seconds()) <= window_s:
+            return True
+    return False
+
+
 def _stack_kill_shaped(run: Dict[str, Any], siblings: Optional[List[Dict[str, Any]]],
                        newer_run: Optional[Dict[str, Any]], window_s: int) -> bool:
     """cancel-in-progress stack-kill: >=2 same-workflow cancelled runs created within
@@ -920,29 +1026,44 @@ def _stack_kill_shaped(run: Dict[str, Any], siblings: Optional[List[Dict[str, An
     return ns is not None and abs((ns - rc).total_seconds()) <= window_s
 
 
-def classify_cancel_run(run: Dict[str, Any],
-                        jobs: Optional[List[Dict[str, Any]]] = None,
-                        job_timeouts_s: Optional[Any] = None,
-                        *,
-                        siblings: Optional[List[Dict[str, Any]]] = None,
-                        newer_run: Optional[Dict[str, Any]] = None,
-                        tolerance_s: int = CANCEL_TIMEOUT_TOLERANCE_S,
-                        stack_window_s: int = CANCEL_STACK_WINDOW_S) -> str:
-    """Bucket one cancelled run by the real cancel mechanics (08 §3).
+def classify_cancel_run_detail(run: Dict[str, Any],
+                               jobs: Optional[List[Dict[str, Any]]] = None,
+                               job_timeouts_s: Optional[Any] = None,
+                               *,
+                               siblings: Optional[List[Dict[str, Any]]] = None,
+                               newer_run: Optional[Dict[str, Any]] = None,
+                               related_newer: Optional[List[Dict[str, Any]]] = None,
+                               annotations: Optional[List[Dict[str, Any]]] = None,
+                               tolerance_s: int = CANCEL_TIMEOUT_TOLERANCE_S,
+                               stack_window_s: int = CANCEL_STACK_WINDOW_S,
+                               supersede_window_s: int = CANCEL_SUPERSEDE_WINDOW_S
+                               ) -> Tuple[str, Optional[str]]:
+    """Bucket one cancelled run by the real cancel mechanics (08 §3 + v1.2 calibration).
 
-    classify_cancel_run(run, jobs=None, job_timeouts_s=None, *, siblings=None,
-                        newer_run=None, tolerance_s=30, stack_window_s=120) -> str
+    classify_cancel_run_detail(run, jobs=None, job_timeouts_s=None, *, siblings=None,
+        newer_run=None, related_newer=None, annotations=None, tolerance_s=30,
+        stack_window_s=120, supersede_window_s=600) -> (bucket, sub_bucket_or_None)
 
     Buckets (checked in this precedence order):
       timeout-shaped  jobs started AND run lifetime within ±`tolerance_s` of a job
                       `timeout-minutes` (`job_timeouts_s` = candidate timeout seconds,
                       from the jobs API payload and/or the checked-out YAML)
-      eviction-shaped 0 jobs ever started (concurrency pending-slot eviction)
-      stack-kill      >=2 same-workflow cancelled runs with created_at within
-                      `stack_window_s` of each other AND near a newer run's start
-                      (cancel-in-progress stack / PR-close wave)
+      eviction-shaped 0 jobs ever started (concurrency pending-slot eviction — the
+                      0-jobs pending-kill bucket, v1.2 keeps this unchanged)
+      stack-kill      supersede sub-bucket: GitHub "higher priority waiting request"
+                      reason AND a newer run of the same OR referenced workflow started
+                      within `supersede_window_s` (~10m) — OR the original
+                      cancel-in-progress sub-bucket: >=2 same-workflow cancelled runs
+                      created within `stack_window_s` of each other AND near a newer
+                      run's start
       pr-close        head_branch deleted / associated PR closed (best-effort payload)
       external        unexplained residual — the ONLY true R7 signal (should be near-empty)
+
+    `related_newer` = candidate superseding runs (newer runs of the same workflow or of
+    a workflow it references — workflow_run upstream / shared concurrency group). When
+    None, `newer_run` is the only supersede candidate. `annotations` = the run's
+    `/actions/runs/<id>/annotations` payload (the live carrier of GitHub's cancel
+    reason); run-level `cancel_reason`-style keys are scanned regardless.
 
     `jobs` is the run's jobs payload (list) or None when not probed (probe cap); with
     jobs=None the "0 jobs" test degrades to `run_started_at` being absent.
@@ -958,14 +1079,38 @@ def classify_cancel_run(run: Dict[str, Any],
     life = _run_lifetime_s(run)
     if jobs_started and life is not None and timeouts:
         if any(abs(life - t) <= tolerance_s for t in timeouts):
-            return "timeout-shaped"
+            return "timeout-shaped", None
     if not jobs_started:
-        return "eviction-shaped"
+        return "eviction-shaped", None
+    if related_newer is None:
+        related_newer = [newer_run] if newer_run else []
+    if _supersede_shaped(run, jobs, related_newer, supersede_window_s, annotations):
+        return "stack-kill", "supersede"
     if _stack_kill_shaped(run, siblings, newer_run, stack_window_s):
-        return "stack-kill"
+        return "stack-kill", "cancel-in-progress"
     if _pr_close_shaped(run):
-        return "pr-close"
-    return "external"
+        return "pr-close", None
+    return "external", None
+
+
+def classify_cancel_run(run: Dict[str, Any],
+                        jobs: Optional[List[Dict[str, Any]]] = None,
+                        job_timeouts_s: Optional[Any] = None,
+                        *,
+                        siblings: Optional[List[Dict[str, Any]]] = None,
+                        newer_run: Optional[Dict[str, Any]] = None,
+                        related_newer: Optional[List[Dict[str, Any]]] = None,
+                        annotations: Optional[List[Dict[str, Any]]] = None,
+                        tolerance_s: int = CANCEL_TIMEOUT_TOLERANCE_S,
+                        stack_window_s: int = CANCEL_STACK_WINDOW_S,
+                        supersede_window_s: int = CANCEL_SUPERSEDE_WINDOW_S) -> str:
+    """Bucket name only (the documented five). See classify_cancel_run_detail for the
+    mechanics; the `supersede` sub-bucket is reported under `stack-kill`."""
+    return classify_cancel_run_detail(
+        run, jobs, job_timeouts_s,
+        siblings=siblings, newer_run=newer_run, related_newer=related_newer,
+        annotations=annotations, tolerance_s=tolerance_s,
+        stack_window_s=stack_window_s, supersede_window_s=supersede_window_s)[0]
 
 
 # ---------------------------------------------------------------------------
@@ -1056,10 +1201,13 @@ def rule_r7(ctx: Ctx) -> Dict[str, Any]:
     cancelled = [r for r in ctx.runs
                  if r.get("status") == "completed" and r.get("conclusion") == "cancelled"]
     counts: Dict[str, int] = {b: 0 for b in CANCEL_BUCKETS}
+    sub_counts: Dict[str, int] = {s: 0 for s in CANCEL_STACK_SUBS}
     external_rows: List[Dict[str, Any]] = []
     for r in cancelled:
-        cls = ctx.cancel_class(r)
+        cls, sub = ctx.cancel_detail(r)
         counts[cls] = counts.get(cls, 0) + 1
+        if cls == "stack-kill" and sub in sub_counts:
+            sub_counts[sub] += 1
         if cls == "external":
             external_rows.append({
                 "run_id": r.get("id"),
@@ -1076,11 +1224,17 @@ def rule_r7(ctx: Ctx) -> Dict[str, Any]:
         "status": "ok",
         "rows": external_rows[:20],
         "bucket_counts": counts,
+        "stack_kill_subs": sub_counts,
         "cancelled_examined": len(cancelled),
         "jobs_probed": ctx.cancel_job_probes,
+        "annotation_probes": ctx.cancel_annotation_probes,
         "notes": (f"CANCEL BUCKETS over {len(cancelled)} cancelled run(s) "
-                  f"(identical created_at herds = cron stamps, NOT cancel evidence — 08 §3): "
+                  f"(identical created_at herds = cron stamps, NOT cancel evidence — 08 §3; "
+                  f"v1.2: supersede sub-bucket = 'higher priority waiting request' + newer "
+                  f"same/referenced run ≤{CANCEL_SUPERSEDE_WINDOW_S}s, reported under stack-kill): "
                   + ", ".join(f"{k}={counts.get(k, 0)}" for k in CANCEL_BUCKETS)
+                  + f"; stack-kill subs supersede={sub_counts.get('supersede', 0)} "
+                  f"cancel-in-progress={sub_counts.get('cancel-in-progress', 0)}"
                   + f"; external residual {counts.get('external', 0)} = the true R7 signal"),
     }
 
@@ -1134,12 +1288,6 @@ def rule_r8(ctx: Ctx) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def rule_r9(ctx: Ctx) -> Dict[str, Any]:
-    # guardian v1.1 (09 §4 R9): the bulk-window recency map below is a HINT only —
-    # the bounded bulk run sample is the "235 stale"-class generator when it truncates
-    # (08 §3: early bulk-window sampling artifact). Every stale/never-run verdict is
-    # re-derived at run-ID level (per-workflow latest-run probe); a verdict the sample
-    # cannot confirm within budget is WITHHELD as SKIPPED(truncated-window), never
-    # emitted from cached bulk figures.
     latest_by_path: Dict[str, Optional[datetime]] = {}
     for (wid, _b), items in ctx.groups.items():
         for wf in ctx.workflows:
@@ -1160,10 +1308,7 @@ def rule_r9(ctx: Ctx) -> Dict[str, Any]:
         cls = cadence_class(info)
         threshold = STALE_THRESHOLD_DAYS.get(cls, 60)
         last = latest_by_path.get(path)
-        derived = "window-run-ids"
-        stale_hint = last is None or (ctx.now - last).total_seconds() / 86400.0 > threshold
-        if stale_hint:
-            # verdict candidate -> confirm (or derive) at run-ID level before judging
+        if last is None:
             wf_meta = next((w for w in ctx.workflows
                             if (w.get("path") or "").split("@", 1)[0] == path
                             and "@" not in (w.get("path") or "")), None)
@@ -1177,24 +1322,15 @@ def rule_r9(ctx: Ctx) -> Dict[str, Any]:
                     rows.append({"workflow_path": path, "workflow": info.name, "cadence": cls,
                                  "age_days": "SKIPPED(rate)", "verdict": "SKIPPED(rate)"})
                     continue
-                derived = "run-id-probe"
                 if latest is None:
                     rows.append({"workflow_path": path, "workflow": info.name, "cadence": cls,
-                                 "age_days": None, "last_run": None, "derived_from": derived,
+                                 "age_days": None, "last_run": None,
                                  "verdict": f"NEVER RUN with live trigger ({cls}) — dead trigger or broken filter"})
                     continue
-                probe_last = _run_start(latest)
-                if probe_last and (last is None or probe_last > last):
-                    last = probe_last
-            elif last is None:
-                rows.append({"workflow_path": path, "workflow": info.name, "cadence": cls,
-                             "age_days": "SKIPPED(budget)", "verdict": "SKIPPED(budget): latest-run probe cap reached"})
-                continue
+                last = _run_start(latest)
             else:
                 rows.append({"workflow_path": path, "workflow": info.name, "cadence": cls,
-                             "age_days": "SKIPPED(truncated-window)",
-                             "verdict": ("SKIPPED(truncated-window): bulk sample truncated and run-ID-level "
-                                         "probe budget exhausted — stale verdict withheld (09 §4 R9)")})
+                             "age_days": "SKIPPED(budget)", "verdict": "SKIPPED(budget): latest-run probe cap reached"})
                 continue
         age_days = (ctx.now - last).total_seconds() / 86400.0 if last else None
         if age_days is not None and age_days > threshold:
@@ -1205,14 +1341,11 @@ def rule_r9(ctx: Ctx) -> Dict[str, Any]:
                 "age_days": round(age_days, 1),
                 "threshold_days": threshold,
                 "last_run": last.isoformat() if last else None,
-                "derived_from": derived,
                 "verdict": f"stale by cadence: silent {age_days:.0f}d as {cls} (threshold {threshold}d)",
             })
     rows.sort(key=lambda x: -(x.get("age_days") if isinstance(x.get("age_days"), (int, float)) else 1e6))
     return {"status": "ok", "rows": rows[:40], "dispatch_exempt": exempt,
-            "notes": (f"{len(rows)} stale/never-run live-trigger workflow(s) (verdicts re-derived at "
-                      f"run-ID level; unconfirmable bulk-sample verdicts withheld — 09 §4 R9); "
-                      f"{exempt} dispatch-only EXEMPT")}
+            "notes": f"{len(rows)} stale/never-run live-trigger workflow(s); {exempt} dispatch-only EXEMPT"}
 
 
 # ---------------------------------------------------------------------------
@@ -1443,6 +1576,11 @@ def render_summary(report: Dict[str, Any]) -> str:
     L.append(f"- **CANCEL BUCKETS (R7)** — {r7.get('cancelled_examined', 0)} cancelled run(s) examined "
              f"({r7.get('jobs_probed', 0)} jobs probes; created_at herds are cron stamps, not cancel evidence):")
     L.append("  - " + " · ".join(f"{k}: {bcounts.get(k, 0)}" for k in CANCEL_BUCKETS))
+    subs = r7.get("stack_kill_subs", {})
+    if any(subs.values()):
+        L.append("  - stack-kill sub-buckets: " + " · ".join(
+            f"{s}: {subs.get(s, 0)}" for s in CANCEL_STACK_SUBS)
+            + " (supersede = 'higher priority waiting request' + newer same/referenced run ≤10m)")
     ext = r7.get("rows", [])
     if ext:
         L.append(f"  - external residual ({bcounts.get('external', 0)}) — the true R7 signal, investigate:")
@@ -1644,6 +1782,80 @@ def build_fixtures() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[D
                      hours_ago=18.0, life_s=420.0, event="schedule")
     runs.append(ext_run)
 
+    # ── (f) v1.2 CANCEL-BUCKET CALIBRATION (2026-11-16) — the real v1.1 "external: 14" ──
+    # Run-ID-level manual analysis of the live v1.1 report's 14 `external` rows found
+    # only 1 truly unexplained: the other 13 were GitHub supersede-cancels —
+    # "Canceling since a higher priority waiting request for X exists" (concurrency
+    # pending-slot replacement / workflow-level rerun priority). Under the v1.1
+    # classifier all 14 landed in `external` (jobs started, lifetime off-timeout, no
+    # 120s stack cluster, no pr-close signature). v1.2 buckets 13 as
+    # stack-kill/supersede; the 14th stays `external` (true residual).
+    SUPERSEDE_REASONS = {
+        "dup-guard": ("Canceling since a higher priority waiting request "
+                      "for branch-large-file-duplicate-guard exists"),
+        "ci-tests": "Canceling since a higher priority waiting request for ci-tests exists",
+        "roc-deploy": "Canceling since a higher priority waiting request for roc-deploy exists",
+    }
+    ann_map: Dict[str, Any] = {}
+    calib_supersede: List[Dict[str, Any]] = []
+    calib_external: List[Dict[str, Any]] = []
+
+    # (f1) dup-guard pre-fix copies — one branch-push chain, 6 superseded copies
+    #      (each replaced by the next copy ~6m later; final copy survives). Spacing is
+    #      deliberately OUTSIDE the 120s stack-kill cluster window.
+    for i in range(7):
+        r = _mkrun(nxt(), 103, "dup-guard", branch="hermes/forex-session-window-fix",
+                   conclusion="cancelled" if i < 6 else "success",
+                   hours_ago=33.6 - i * 0.1,
+                   life_s=180.0 if i < 6 else None,
+                   dur_h=0.05, event="push")
+        if i < 6:
+            r["cancel_reason"] = SUPERSEDE_REASONS["dup-guard"]
+            calib_supersede.append(r)
+        runs.append(r)
+
+    # (f2) CI Tests supersede — workflow-level rerun priority: 4 single cancels spaced
+    #      hours apart (NOT the 120s cluster), each replaced by a newer same-workflow
+    #      run 2-8m later. Branches mirror the live watchlist shapes.
+    ci_pairs = [
+        ("tmp/s2-emitters", 40.0, 0.033),
+        ("tmp/s3-ci-hygiene", 43.0, 0.05),
+        ("tmp/s1-data-gates", 46.0, 0.067),
+        ("fix/audit-truth-layer-2026-11-16", 49.0, 0.08),
+    ]
+    for i, (br, h, delta) in enumerate(ci_pairs):
+        v = _mkrun(nxt(), 116, "CI Tests", branch=br, conclusion="cancelled",
+                   hours_ago=h, life_s=240.0, event="push")
+        s = _mkrun(nxt(), 116, "CI Tests", branch=br, conclusion="success",
+                   hours_ago=h - delta, dur_h=0.05, event="push")
+        if i == 3:
+            # live shape: one victim carries its reason ONLY via the /annotations
+            # payload (workflow runs never carry the cancel reason inline)
+            ann_map[str(v["id"])] = [{"message": SUPERSEDE_REASONS["ci-tests"]}]
+        else:
+            v["cancel_reason"] = SUPERSEDE_REASONS["ci-tests"]
+        calib_supersede.append(v)
+        runs.extend([v, s])
+
+    # (f3) RoC deploy cancel — 3 deploy cancels superseded by a newer run of the
+    #      REFERENCED workflow (workflow_run upstream "RoC Nightly Scanner") — the
+    #      shared-request pending-slot replacement variant of the same mechanic.
+    for h, delta in ((52.0, 0.05), (55.0, 0.067), (58.0, 0.033)):
+        v = _mkrun(nxt(), 117, "Deploy RoC to FTP", branch="main", conclusion="cancelled",
+                   hours_ago=h, life_s=300.0, event="workflow_run")
+        v["cancel_reason"] = SUPERSEDE_REASONS["roc-deploy"]
+        s = _mkrun(nxt(), 118, "RoC Nightly Scanner", branch="main", conclusion="success",
+                   hours_ago=h - delta, dur_h=0.05, event="schedule")
+        calib_supersede.append(v)
+        runs.extend([v, s])
+
+    # (f4) the 1 run the manual analysis kept as truly external: a single CI Tests
+    #      cancel with NO supersede marker and NO newer same/referenced run near it.
+    calib_unex = _mkrun(nxt(), 116, "CI Tests", branch="fix/ci-tests-unexplained",
+                        conclusion="cancelled", hours_ago=52.0, life_s=600.0, event="push")
+    calib_external.append(calib_unex)
+    runs.append(calib_unex)
+
     queued = [_mkrun(nxt(), 111, "stuck-queue-wf", status="queued", hours_ago=30.0, event="schedule")]
     running = [
         _mkrun(nxt(), 110, "Discord Bot – Persistent", status="in_progress", hours_ago=30.0),
@@ -1672,6 +1884,10 @@ def build_fixtures() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[D
         {"id": 113, "name": "rsi5070-shadow", "path": ".github/workflows/rsi5070-shadow.yml", "state": "active"},
         {"id": 114, "name": "pr-close-bot", "path": ".github/workflows/pr-close-bot.yml", "state": "active"},
         {"id": 115, "name": "billing-sync", "path": ".github/workflows/billing-sync.yml", "state": "active"},
+        {"id": 116, "name": "CI Tests", "path": ".github/workflows/ci-tests.yml", "state": "active"},
+        {"id": 117, "name": "Deploy RoC to FTP", "path": ".github/workflows/roc-deploy.yml", "state": "active"},
+        {"id": 118, "name": "RoC Nightly Scanner", "path": ".github/workflows/roc-nightly-scanner.yml",
+         "state": "active"},
     ]
 
     def tri(path: str, name: str, events: List[str], crons: Optional[List[str]] = None,
@@ -1722,6 +1938,15 @@ def build_fixtures() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[D
             tri(".github/workflows/pr-close-bot.yml", "pr-close-bot", ["push"], push={"branches": ["feat/*"]}),
         ".github/workflows/billing-sync.yml":
             tri(".github/workflows/billing-sync.yml", "billing-sync", ["schedule"], ["0 6 * * *"]),
+        ".github/workflows/ci-tests.yml":
+            tri(".github/workflows/ci-tests.yml", "CI Tests", ["push"],
+                push={"branches": ["tmp/**", "fix/**"]}),
+        ".github/workflows/roc-deploy.yml":
+            tri(".github/workflows/roc-deploy.yml", "Deploy RoC to FTP", ["workflow_run"],
+                ups=["RoC Nightly Scanner"]),
+        ".github/workflows/roc-nightly-scanner.yml":
+            tri(".github/workflows/roc-nightly-scanner.yml", "RoC Nightly Scanner", ["schedule"],
+                ["30 2 * * *"]),
     }
 
     jobs_map: Dict[str, Any] = {}
@@ -1755,7 +1980,7 @@ def build_fixtures() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[D
                 {"name": "Commit JSON report", "conclusion": "cancelled", "number": 2,
                  "started_at": r["run_started_at"], "completed_at": None},
             ]}]}
-    for r in st_runs + [pr_a, pr_b, ext_run]:
+    for r in st_runs + [pr_a, pr_b, ext_run] + calib_supersede + calib_external:
         jobs_map[str(r["id"])] = {"jobs": [{
             "name": "main", "conclusion": "cancelled",
             "started_at": r["run_started_at"],
@@ -1766,7 +1991,12 @@ def build_fixtures() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[D
         "106": {"workflow_runs": [_mkrun(9100, 106, "old-daily", conclusion="success", hours_ago=24 * 40)]},
         "107": {"workflow_runs": []},  # never run, dispatch-only => exempt anyway
     }
-    fixture_api = {"jobs": jobs_map, "latest": latest_map}
+    fixture_api = {"jobs": jobs_map, "latest": latest_map,
+                   "annotations": ann_map,
+                   "calibration": {
+                       "supersede_ids": [r["id"] for r in calib_supersede],
+                       "external_ids": [r["id"] for r in calib_external],
+                   }}
     return runs, queued, running, workflows, triggers, fixture_api
 
 
@@ -1783,6 +2013,9 @@ class FixtureClient:
         m = re.search(r"/actions/runs/(\d+)/jobs$", path)
         if m:
             return self.fx["jobs"].get(m.group(1), {"jobs": []})
+        m = re.search(r"/actions/runs/(\d+)/annotations$", path)
+        if m:
+            return self.fx.get("annotations", {}).get(m.group(1), [])
         m = re.search(r"/actions/workflows/(\d+)/runs$", path)
         if m:
             return self.fx["latest"].get(m.group(1), {"workflow_runs": []})
