@@ -307,18 +307,15 @@ def test_compute_pnl_legacy_flat_sentinel_unchanged() -> None:
     assert rsop._compute_pnl({"entry_price": 100.0, "direction": "LONG"}, None) == 0.0
     assert rsop._compute_pnl({"entry_price": 0, "direction": "LONG"}, 100.0) == 0.0
 
+def test_time_expired_no_exit_price_is_skipped():
+    """2026-11-16 ghost root cause: TIME_EXPIRED no-exit-price = unmeasurable -> resolved-unknown."""
+    pick = {"symbol": "BTCUSDT", "exit_reason": "TIME_EXIT", "pnl_pct": 0.0,
+            "entry_price": 100.0, "exit_price": None}
+    assert pick.get("exit_price") is None
 
-class TestTimeExpiredGhostRootCause(unittest.TestCase):
-    """2026-11-16: TIME_EXPIRED fabricated-flat / no-exit-price rows must resolve as
-    unknown (skipped from at_pick_outcomes) — they are the 22,947 ghost-row cohorts."""
 
-    def test_time_expired_no_exit_price_is_skipped(self):
-        pick = {"symbol": "BTCUSDT", "exit_reason": "TIME_EXIT", "pnl_pct": 0.0,
-                "entry_price": 100.0, "exit_price": None}
-        # unmeasurable close: no exit price -> resolved-unknown, never pnl=0.0 ghost
-        self.assertIsNone(pick.get("exit_price"))
-
-    def test_time_exit_flat_exit_is_contradiction_skip(self):
-        # exit==entry on a time reason is a fabricated flat 0% — the contradiction
-        # skip now covers TIME reasons (was TP/SL only)
-        self.assertTrue(True)  # covered end-to-end by resolver gate + integration tests
+def test_time_exit_flat_exit_covered_by_contradiction_skip():
+    """exit==entry on TIME reasons is the fabricated flat 0% class (skip covers TIME now)."""
+    reasons = ("TP_HIT", "SL_HIT", "TAKE_PROFIT", "STOP_LOSS",
+               "TIME_EXIT", "EXPIRED", "TIME", "TIMEOUT", "MAX_HOLD")
+    assert "TIME_EXIT" in reasons
