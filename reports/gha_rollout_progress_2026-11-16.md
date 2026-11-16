@@ -33,7 +33,7 @@ Plus earlier: 29 high-frequency workflows (prior sessions).
 
 ## Remaining
 1. `_dynamic-runner-template.yml` — no triggers, documentation stub; leave as-is.
-2. Batch I: 2 static group collisions (`edge-stability-daily`/`edge-stability-refresh`, `fetch-movies*`) — verify whether they actually collide.
+2. ~~Batch I: 2 static group collisions~~ **VERIFIED 2026-11-16: not collisions.** `edge-stability-shared` (edge-stability-daily + edge-stability-refresh, same job on two schedules) and `movies-database-refresh` (4 movie workflows that all write the same DB) are deliberate cross-workflow serialization. Left unchanged.
 3. Observe post-rollout: confirm no new failures/queue growth (cron + actions-failure-guardian).
 4. Reusable `gha-scan-job.yml` — canary first.
 5. Peer PRs: ghactions (ETF SHORT gate), ghactions-v3 (commit hardening).
