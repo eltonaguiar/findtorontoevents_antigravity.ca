@@ -49,6 +49,101 @@ except ImportError:
     except ImportError:
         _HAS_MTF_GATE = False
 
+# ── REDUCE / probation state (2026-11-16) — enforceable alert flag ──────────
+# STRATEGY_PROBATION (config) is the real flag behind /audit's REDUCE verdicts.
+try:
+    from alpha_engine.config import STRATEGY_PROBATION, resolve_strategy_name
+except ImportError:
+    try:
+        from config import STRATEGY_PROBATION, resolve_strategy_name
+    except ImportError:
+        STRATEGY_PROBATION = {}
+        resolve_strategy_name = None  # type: ignore[assignment]
+
+
+def _strategy_key(pick: dict) -> str:
+    """Canonical emitter/strategy name for a pick (never a silent `unknown`)."""
+    if resolve_strategy_name is not None:
+        try:
+            return resolve_strategy_name(pick)
+        except Exception:
+            pass
+    return str(
+        pick.get("strategy")
+        or pick.get("algorithm")
+        or pick.get("source_system")
+        or "unknown"
+    )
+
+
+def _probation_flags_for(payload: dict) -> dict[str, dict]:
+    """Effective REDUCE/probation flags for this run.
+
+    Live `performance_alerts` rows with action=REDUCE and a details.strategy
+    are folded in (default 0.5x = T2 REDUCE per circuit_breaker_aggregator)
+    so every /audit REDUCE verdict is enforceable, not advisory. Static
+    STRATEGY_PROBATION config entries are the operator's decisions and win
+    over the runtime default.
+    """
+    flags: dict[str, dict] = {}
+    for alert in payload.get("performance_alerts", []) or []:
+        if not isinstance(alert, dict):
+            continue
+        if str(alert.get("action") or "").upper() != "REDUCE":
+            continue
+        details = alert.get("details") or {}
+        raw_name = details.get("strategy")
+        if not raw_name:
+            continue
+        name = _strategy_key({"strategy": raw_name})
+        if name == "unknown":
+            continue
+        flags.setdefault(
+            name,
+            {
+                "probation": True,
+                "size_multiplier": 0.5,
+                "reason": str(alert.get("message") or "REDUCE alert"),
+            },
+        )
+    for name, flag in (STRATEGY_PROBATION or {}).items():
+        flags[str(name)] = dict(flag or {"probation": True, "size_multiplier": 0.5})
+    return flags
+
+
+def _apply_probation_flags(active_picks: list[dict], payload: dict) -> dict:
+    """Stamp `size_multiplier` / `probation` on picks from REDUCE strategies.
+
+    The sizing layer must honour `size_multiplier` before allocating capital
+    (same convention as `shadow_size_multiplier`); `probation` also suppresses
+    score boosts in this run.
+    """
+    flags = _probation_flags_for(payload)
+    if not flags:
+        return {"enabled": False, "flagged": 0, "strategies": []}
+    flagged = 0
+    hit: set[str] = set()
+    for pick in active_picks:
+        name = _strategy_key(pick)
+        flag = flags.get(name)
+        if not flag:
+            continue
+        try:
+            mult = float(flag.get("size_multiplier", 0.5))
+        except (TypeError, ValueError):
+            mult = 0.5
+        pick["probation"] = True
+        pick["size_multiplier"] = mult
+        pick["probation_reason"] = str(flag.get("reason") or "")
+        flagged += 1
+        hit.add(name)
+    return {
+        "enabled": True,
+        "flagged": flagged,
+        "strategies": sorted(hit),
+        "flags": {k: v for k, v in flags.items()},
+    }
+
 # ──────────────────────────────────────────────────────────────────────
 # Binance circuit breaker (module-level)
 # ──────────────────────────────────────────────────────────────────────
@@ -758,6 +853,18 @@ def run_score_booster(payload_path: Path | None = None) -> dict:
     active_picks = payload.get("picks", {}).get("active", [])
     closed_picks = payload.get("picks", {}).get("recent_closed", [])
 
+    # ── REDUCE / probation enforcement (2026-11-16) ──
+    # Stamp size_multiplier/probation on picks from REDUCE-flagged strategies
+    # (STRATEGY_PROBATION config + live performance_alerts REDUCE rows) so the
+    # /audit REDUCE verdict is enforceable, not advisory.
+    probation_summary = _apply_probation_flags(active_picks, payload)
+    if probation_summary.get("flagged"):
+        log.info(
+            "REDUCE/probation enforcement: %d picks stamped (size_multiplier) across %d strategies",
+            probation_summary["flagged"],
+            len(probation_summary["strategies"]),
+        )
+
     # Load lesson data for consensus evidence adjustments
     consensus_lessons = _load_consensus_lessons()
     log.info("Loaded %d consensus lessons for evidence-aware adjustments", len(consensus_lessons))
@@ -782,6 +889,8 @@ def run_score_booster(payload_path: Path | None = None) -> dict:
     boost_details = []
 
     for pick in active_picks:
+        if pick.get("probation"):
+            continue
         family = _classify_family(pick)
         if not family:
             continue
@@ -849,6 +958,8 @@ def run_score_booster(payload_path: Path | None = None) -> dict:
                 strat_perf_data = json.load(f)
 
         for pick in active_picks:
+            if pick.get("probation"):
+                continue
             strat_name = pick.get("strategy", "")
             if not strat_name or strat_name not in strat_perf_data:
                 continue
@@ -1690,6 +1801,7 @@ def run_score_booster(payload_path: Path | None = None) -> dict:
         "sys_ac_wr_capped": sys_ac_capped,
         "short_edge_boosted": short_edge_boosted,
         "ctf_concentration_penalized": ctf_penalized,
+        "probation": probation_summary,
     }
 
     BOOST_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)

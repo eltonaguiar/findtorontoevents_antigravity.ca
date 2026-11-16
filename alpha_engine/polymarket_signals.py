@@ -194,8 +194,23 @@ RANGE_RE = re.compile(r"\bbetween\b", re.I)
 PRICE_RE = re.compile(r"\$\s*[\d,]+")
 
 
+_FETCH_ERRORS: list[str] = []
+
+
+def consume_fetch_errors() -> list[str]:
+    """Return-and-clear the recorded upstream fetch errors.
+
+    Callers that must not emit a silent empty result consult this after a
+    fetch pass so a network/API failure is distinguishable from a genuine
+    "no signals matched" outcome.
+    """
+    errors = list(_FETCH_ERRORS)
+    _FETCH_ERRORS.clear()
+    return errors
+
+
 def _fetch_json(url: str, params: dict[str, Any] | None = None) -> Any:
-    """Fetch JSON using stdlib only."""
+    """Fetch JSON using stdlib only. Failures are recorded, never raised."""
     if params:
         url = f"{url}?{urllib.parse.urlencode(params)}"
     req = urllib.request.Request(
@@ -210,10 +225,13 @@ def _fetch_json(url: str, params: dict[str, Any] | None = None) -> Any:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         logger.warning("HTTP %s fetching %s: %s", exc.code, url, exc.reason)
+        _FETCH_ERRORS.append(f"HTTP {exc.code} fetching {url}: {exc.reason}")
     except urllib.error.URLError as exc:
         logger.warning("URL error fetching %s: %s", url, exc.reason)
+        _FETCH_ERRORS.append(f"URL error fetching {url}: {exc.reason}")
     except Exception as exc:
         logger.warning("Unexpected error fetching %s: %s", url, exc)
+        _FETCH_ERRORS.append(f"Unexpected error fetching {url}: {exc}")
     return None
 
 
@@ -382,6 +400,13 @@ def fetch_crypto_markets(limit: int = ACTIVE_MARKET_LIMIT) -> list[dict[str, Any
     Gamma caps `limit` at 100 per request (passing 500 returns 100 items), so
     paginate with `offset` until `limit` raw markets are collected or a page
     comes back short/empty.
+
+    IMPORTANT (2026-11-16): sort by `order=volumeNum`, NOT `order=volume`.
+    Gamma now lexicographically sorts the *string* `volume` field when passed
+    `order=volume` (top hits were `99.993, 99.992197, 9999.11, ...`), which
+    turns the top-N window into an arbitrary market slice and starves the
+    downstream momentum pipeline of liquid markets. `volumeNum` is the numeric
+    sort key and is honoured (verified descending 80M -> 69M -> 55M).
     """
     raw: list[dict[str, Any]] = []
     offset = 0
@@ -392,7 +417,7 @@ def fetch_crypto_markets(limit: int = ACTIVE_MARKET_LIMIT) -> list[dict[str, Any
             {
                 "active": "true",
                 "closed": "false",
-                "order": "volume",
+                "order": "volumeNum",
                 "ascending": "false",
                 "limit": str(page_limit),
                 "offset": str(offset),
@@ -521,7 +546,8 @@ def calculate_clob_momentum(history: list[dict[str, Any]]) -> dict[str, Any] | N
                 selected = row
             else:
                 break
-        return _safe_float(selected.get("p"), current_prob) or current_prob
+        prob = _safe_float(selected.get("p"), current_prob)
+        return current_prob if prob is None else prob
 
     prob_4h = _prob_at(4)
     prob_24h = _prob_at(24)

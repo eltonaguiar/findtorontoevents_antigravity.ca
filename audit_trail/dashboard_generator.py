@@ -4455,7 +4455,6 @@ _GHOST_SYSTEMS = {
     "abc_forward_c",
     "funding_rate_arb",
     "momentum_scalp",
-    "pm_momentum_signals",
     "pumpwatch_mutations",
     "strategy_health",
     "live_spike_trader",
@@ -7285,13 +7284,24 @@ def _prepare_prediction_market_consensus_signal(raw_pick: dict) -> dict:
     if not pick.get("source_systems"):
         pick["source_systems"] = list(deduped_sources)
 
-    if pick.get("high_conviction") is None:
+    # pm_high_conviction alias gate — SAME validation for every row (fix
+    # 2026-11-16): previously `if pick.get("high_conviction") is None` plus a
+    # `consensus_data.high_conviction` OR-alias let rows SKIP these criteria and
+    # still land in the virtual pm_high_conviction tier, so alias rows bypassed
+    # the gate that source-derived rows pass. Upstream labels can now CONFIRM a
+    # gate-passing row only; an explicit upstream False opts out.
+    # fwd_wr normalisation: producers emit WR as a 0..1 fraction (see
+    # alpha_engine/prediction_market_consensus._pick_first_wr_fraction) while
+    # these criteria are stated in percent — compare in percent either way.
+    if pick.get("high_conviction") is not False:
         fwd_wr = _float(
             pick.get("forward_wr")
             or pick.get("strat_fwd_wr")
             or consensus_data.get("forward_wr")
             or 0
         )
+        if 0 < fwd_wr <= 1.5:
+            fwd_wr *= 100.0
         fwd_trades = int(
             _float(
                 pick.get("forward_trades")
@@ -7306,13 +7316,10 @@ def _prepare_prediction_market_consensus_signal(raw_pick: dict) -> dict:
             or 0
         )
         pick["high_conviction"] = bool(
-            consensus_data.get("high_conviction")
-            or (
-                source_count >= 3
-                and fwd_wr >= 55
-                and fwd_trades >= 8
-                and consensus_bias >= 0
-            )
+            source_count >= 3
+            and fwd_wr >= 55
+            and fwd_trades >= 8
+            and consensus_bias >= 0
         )
 
     pick["source_system"] = "prediction_market_consensus"

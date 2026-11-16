@@ -206,7 +206,12 @@ def test_prepare_prediction_market_consensus_signal_preserves_pm_source_lineage(
     assert prepared["source_count"] == 2
     assert prepared["agreement_count"] == 2
     assert prepared["pm_source_systems"] == ["kalshi_signal_agent", "polymarket_prediction"]
-    assert prepared["high_conviction"] is True
+    # 2026-11-16 pm_high_conviction alias-gate fix (data-quality finding): a
+    # `consensus_data.high_conviction` claim must NOT skip the criteria gate.
+    # This row has source_count 2 (< 3) and no forward track record, so it
+    # cannot hold the label — previously the claim short-circuited to True
+    # (that skip was the bypass; see tests/test_pm_high_conviction_alias.py).
+    assert prepared["high_conviction"] is False
 
 
 def test_pre_score_active_candidate_keeps_valid_zero_score_pick_alive(monkeypatch) -> None:
