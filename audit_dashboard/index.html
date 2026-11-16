@@ -854,7 +854,7 @@ a:hover { text-decoration: underline; }
   </div>
   <div style="margin-top:5px;color:#94a3b8;font-size:0.88em">
     <strong style="color:#86efac">&#x2705; DATA QUALITY IMPROVEMENTS (2026-05-31):</strong>
-    Ghost rows: 0 (was 22,947). Status-PnL mismatches: 0. Non-canonical statuses (WON/CLOSED_SL/CLOSED_TP/FLAT): all 0. Backup tables: removed.
+    Ghost rows are not cleared. The DB Health tile reads live <code>db_health.json</code> (2026-11-16: 22,947 rows, 10 MEMECOIN/meta_strategy cohorts). A non-zero count fails the check. Do not cite the 2026-05-31 cleared-ghost claim. Status-PnL sign contradictions: none in that file. Non-canonical statuses: 0. Backup tables: removed.
     at_raw_picks UNKNOWN: 3 (was thousands). FOREX: PR #6 policy-gate shipped (all blocked except cta_cross_asset_tsmom SHORT).
     BOND: now emitting (78 raw picks). See <code>updates/2026-05-31-pr1-data-integrity-repair.md</code>.
   </div>
@@ -898,7 +898,7 @@ a:hover { text-decoration: underline; }
     <span style="color:#cbd5e1;font-size:0.95em;font-weight:600">Phenomenal performance across <strong style="color:#22c55e">ALL</strong> asset classes &mdash; sustainable, hedge-fund-grade.</span>
   </div>
   <div style="color:#94a3b8;font-size:0.78em;margin:4px 0 6px;font-style:italic">Sports betting tracked at <a href="/live-monitor/sports-betting.html" style="color:#a5b4fc;text-decoration:underline">/live-monitor/sports-betting.html</a> (separate KPIs).</div>
-  <div style="color:#cbd5e1;font-size:0.86em;font-weight:600;margin:2px 0 4px;line-height:1.45">0/6 money-ready. Honest intrabar-true (first-touch, SL-wins-ties): <strong style="color:#ef4444">CRYPTO 32.9% PF0.74</strong> (only class n&ge;100, FAIL) &middot; <strong style="color:#fbbf24">EQUITY 60% PF2.13 n=72</strong> (closest, INSUFF-N) &middot; COMMODITY 42% PF1.77 n=81. Bottleneck = clean-trade <em>supply</em>, not strategy supply. Cleanest leads (forward-track only, not sized): COMMODITY <code>futures_momentum</code> n57 63%/PF2.6, FOREX <code>forex_rsi2</code> n19 63%/PF2.4. Source: <code>intrabar_truth_by_class.json</code>.</div>
+  <div style="color:#cbd5e1;font-size:0.86em;font-weight:600;margin:2px 0 4px;line-height:1.45">0 money-ready. Research ledger, not a money book. Honest intrabar-true snapshot, not the older 32.9%/PF0.74 or EQUITY PF2.13 headlines: <strong style="color:#ef4444">CRYPTO 35.8% PF0.92 n=3716</strong> FAIL &middot; <strong style="color:#ef4444">FOREX 32.2% PF0.66 n=612</strong> FAIL &middot; <strong style="color:#fbbf24">EQUITY 59.2% PF0.94 n=250</strong> (high WR, PF&lt;1) &middot; <strong style="color:#fbbf24">COMMODITY 40.2% PF1.03 n=229</strong> breakeven. Do not forward-track the June futures_momentum / forex_rsi2 sleeves; current <code>strategy_perf_by_class.json</code> has those strategies at PF 0.25 and PF 0.38. Source: <code>intrabar_truth_by_class.json</code>.</div>
   <details style="margin-top:2px">
     <summary style="cursor:pointer;color:#94a3b8;font-size:0.8em">&#x25B8; Per-class audit notes &amp; disputes (click to expand)</summary>
   <div id="major-goal-classes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px 14px;font-size:0.82em;line-height:1.5;color:#bae6fd;margin-top:6px">
@@ -6515,8 +6515,8 @@ function renderNonCryptoPanel() {
       var grossWins = catClosed.reduce(function(s,p){ var pnl = getResolvedTradePnl(p); return pnl > FLAT_PNL_THRESHOLD ? s + pnl : s; }, 0);
       var grossLosses = Math.abs(catClosed.reduce(function(s,p){ var pnl = getResolvedTradePnl(p); return pnl < -FLAT_PNL_THRESHOLD ? s + pnl : s; }, 0));
       var profitFactor = grossLosses > 0 ? (grossWins / grossLosses) : (grossWins > 0 ? Infinity : null);
-      var pfColor = profitFactor === null ? 'var(--text-dim)' : profitFactor === Infinity ? 'var(--green)' : profitFactor >= 1.5 ? 'var(--green)' : profitFactor >= 1.0 ? 'var(--yellow)' : 'var(--red)';
-      var pfDisplay = profitFactor === null ? '—' : profitFactor === Infinity ? '∞' : fmt(profitFactor, 2);
+      var pfColor = profitFactor === null || profitFactor === Infinity ? 'var(--text-dim)' : profitFactor >= 1.5 ? 'var(--green)' : profitFactor >= 1.0 ? 'var(--yellow)' : 'var(--red)';
+      var pfDisplay = profitFactor === null || profitFactor === Infinity ? 'n/a' : fmt(profitFactor, 2);
 
       // Find top strategy. Require min 5 closed trades so a 1W/0L lucky strategy
       // doesn't outrank a 50W/30L durable one. Falls back to most-traded if no
@@ -6912,8 +6912,8 @@ function renderCryptoPanel() {
     var grossWins = catClosed.reduce(function(s, p) { var pv = Number(p.pnl_pct || 0); return pv > FLAT_PNL_THRESHOLD ? s + pv : s; }, 0);
     var grossLosses = Math.abs(catClosed.reduce(function(s, p) { var pv = Number(p.pnl_pct || 0); return pv < -FLAT_PNL_THRESHOLD ? s + pv : s; }, 0));
     var pf = grossLosses > 0 ? grossWins / grossLosses : (grossWins > 0 ? Infinity : null);
-    var pfColor = pf === null ? 'var(--text-dim)' : pf === Infinity ? 'var(--green)' : pf >= 1.5 ? 'var(--green)' : pf >= 1.0 ? 'var(--yellow)' : 'var(--red)';
-    var pfDisplay = pf === null ? '—' : pf === Infinity ? '∞' : fmt(pf, 2);
+    var pfColor = pf === null || pf === Infinity ? 'var(--text-dim)' : pf >= 1.5 ? 'var(--green)' : pf >= 1.0 ? 'var(--yellow)' : 'var(--red)';
+    var pfDisplay = pf === null || pf === Infinity ? 'n/a' : fmt(pf, 2);
 
     cardsHtml += '<div class="nc-card" style="border-color:' + cat.borderColor + '">';
     cardsHtml += '<div class="nc-header">';
@@ -11605,7 +11605,7 @@ function renderOverview() {
 
     if (openStatsRows.length > 0) {
       const osRows = openStatsRows.map(s => {
-        const wlRatio = s.losers > 0 ? (s.winners / s.losers).toFixed(1) : s.winners > 0 ? '\u221e' : '0';
+        const wlRatio = s.losers > 0 ? (s.winners / s.losers).toFixed(1) : 'n/a';
         return `<tr>
           <td>${sysLink(s.name)}</td>
           <td class="num">${s.total}</td>
@@ -17874,8 +17874,8 @@ async function init() {
   function updateAge() {
     const mins = Math.floor((Date.now() - genAt.getTime()) / 60000);
     const ageText = mins < 1 ? 'just now' : mins < 60 ? mins + 'm ago' : Math.floor(mins/60) + 'h ' + (mins%60) + 'm ago';
-    const ageColor = mins > 60 ? 'var(--red)' : mins > 15 ? 'var(--yellow)' : 'var(--green)';
-    const staleWarn = mins > 60 ? ' \u2014 DATA STALE! Check workflow status.' : '';
+    const ageColor = mins > 150 ? 'var(--red)' : mins > 90 ? 'var(--yellow)' : 'var(--green)';
+    const staleWarn = mins > 150 ? ' \u2014 DATA STALE vs 150m publish SLA. Check the hourly schedule, not a 60m false alarm.' : '';
     const sourceMeta = getAuditDataSourceMeta();
     const sourceBadge = ' <span style="color:' + sourceMeta.color + ';font-size:10px;" title="' + String(_auditDataSourceNote || '').replace(/"/g, '&quot;') + '">' + sourceMeta.label + '</span>';
     const freshBadge = freshLoaded ? ' <span style="color:#22c55e;font-size:10px;" title="Fresh data fetched from same-origin site JSON on page load">\u26a1 LIVE</span>' : '';
