@@ -328,19 +328,29 @@ def _first_cron(filename: str) -> str:
     return get_on(workflow)["schedule"][0]["cron"]
 
 
+def _cron_semantic_fields(filename: str) -> list[str]:
+    """Return [hour, dom, month, dow] of the first cron, ignoring the minute field.
+
+    The minute is deliberately excluded so repo-wide crc32 cron staggering (to
+    kill the :00 queue stampede, e.g. commit 60d10dcf) does not break these
+    semantic-schedule assertions. We still pin hour/day/month/day-of-week.
+    """
+    return _first_cron(filename).split()[1:]
+
+
 def test_value_screener_weekly_cron_is_monday_6am_utc() -> None:
-    """value_screener_weekly: 0 6 * * 1 (Monday 06:00 UTC)."""
-    assert _first_cron("value_screener_weekly.yml") == "0 6 * * 1"
+    """value_screener_weekly: * 6 * * 1 (Monday 06:00 UTC; minute may be staggered)."""
+    assert _cron_semantic_fields("value_screener_weekly.yml") == ["6", "*", "*", "1"]
 
 
 def test_swing_screener_daily_cron_is_weekdays_14utc() -> None:
-    """swing_screener_daily: 0 14 * * 1-5 (Mon-Fri 14:00 UTC)."""
-    assert _first_cron("swing_screener_daily.yml") == "0 14 * * 1-5"
+    """swing_screener_daily: * 14 * * 1-5 (Mon-Fri 14:00 UTC; minute may be staggered)."""
+    assert _cron_semantic_fields("swing_screener_daily.yml") == ["14", "*", "*", "1-5"]
 
 
 def test_value_resolver_quarterly_cron_is_first_of_quarter() -> None:
-    """value_resolver_quarterly: 0 7 1 */3 * (1st of every 3rd month, 07:00 UTC)."""
-    assert _first_cron("value_resolver_quarterly.yml") == "0 7 1 */3 *"
+    """value_resolver_quarterly: * 7 1 */3 * (1st of every 3rd month, 07:00 UTC; minute may be staggered)."""
+    assert _cron_semantic_fields("value_resolver_quarterly.yml") == ["7", "1", "*/3", "*"]
 
 
 # ---------------------------------------------------------------------------

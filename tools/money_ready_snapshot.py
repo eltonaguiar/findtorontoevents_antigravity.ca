@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import subprocess
 import sys
@@ -50,6 +51,41 @@ VALID_VERDICTS = {"MONEY_READY", "WATCH", "NOT_READY", "INSUFFICIENT_DATA"}
 ARCHIVE_RETENTION_DAYS = 400
 
 
+def _reject_constant(name: str):
+    """Strict-JSON parse_constant hook: reject bare NaN/Infinity/-Infinity.
+
+    2026-10-19 incident (V2.1 P1): money_ready_verdict.json served HTTP 200
+    containing four `"dsr_score": NaN` tokens. Python's json module ACCEPTS
+    these literals by default, so the old `json.loads(proc.stdout)` silently
+    passed the corruption through and `json.dumps` re-emitted it into the
+    served artifact -- browser JSON.parse rejected it and the Money Ready tab
+    showed "No data available" despite a fresh timestamp. Raising
+    JSONDecodeError here routes into run_verdict's existing fail-loud branch,
+    per this module's documented contract (last-good artifact preserved,
+    never a corrupt publish).
+    """
+    raise json.JSONDecodeError(
+        f"non-finite constant {name!r} (NaN/Infinity) in verdict stdout", "", 0
+    )
+
+
+def _json_safe(obj):
+    """Recursively replace non-finite floats with None at the write boundary.
+
+    Local copy on purpose: the decoupling rule above forbids importing from
+    alpha_engine/money_ready_verdict.py. Covers NaN produced LOCALLY (e.g. a
+    drift ratio with zero denominator) even after upstream guards are in
+    place; allow_nan=False then guarantees nothing non-finite can escape.
+    """
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_json_safe(v) for v in obj]
+    if isinstance(obj, float) and not math.isfinite(obj):
+        return None
+    return obj
+
+
 def run_verdict() -> dict:
     """Exec the verdict script and parse its --json stdout. Fail loud."""
     if not VERDICT_SCRIPT.exists():
@@ -63,7 +99,7 @@ def run_verdict() -> dict:
         sys.exit(f"ERROR: money_ready_verdict.py exited {proc.returncode}\n"
                  f"--- stderr ---\n{proc.stderr.strip()}")
     try:
-        data = json.loads(proc.stdout)
+        data = json.loads(proc.stdout, parse_constant=_reject_constant)
     except json.JSONDecodeError as exc:
         sys.exit(f"ERROR: verdict stdout is not valid JSON: {exc}\n"
                  f"--- stdout (first 500) ---\n{proc.stdout[:500]}")
@@ -205,11 +241,11 @@ def main() -> int:
     }
 
     if args.dry_run:
-        print(json.dumps(snapshot, indent=2))
+        print(json.dumps(_json_safe(snapshot), indent=2, allow_nan=False))
         return 0
 
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    blob = json.dumps(snapshot, indent=2) + "\n"
+    blob = json.dumps(_json_safe(snapshot), indent=2, allow_nan=False) + "\n"
     CURRENT_PATH.write_text(blob, encoding="utf-8")
     # Daily archive: idempotent — a same-day rerun overwrites today's file.
     (ARCHIVE_DIR / f"money_ready_{snapshot['generated_date']}.json").write_text(

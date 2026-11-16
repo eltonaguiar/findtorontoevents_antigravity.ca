@@ -854,7 +854,7 @@ a:hover { text-decoration: underline; }
   </div>
   <div style="margin-top:5px;color:#94a3b8;font-size:0.88em">
     <strong style="color:#86efac">&#x2705; DATA QUALITY IMPROVEMENTS (2026-05-31):</strong>
-    Ghost rows: 0 (was 22,947). Status-PnL mismatches: 0. Non-canonical statuses (WON/CLOSED_SL/CLOSED_TP/FLAT): all 0. Backup tables: removed.
+    Ghost rows: quarantined from the canonical view on 2026-05-31 (raw-table count is live in the DB Health tile above; rows persist per the 2026-11-14 MASTER_AUDIT, quarantine-not-delete policy). Status-PnL mismatches: cleared from the canonical view 2026-05-31 (live sampled count in DB Health tile). Non-canonical statuses (WON/CLOSED_SL/CLOSED_TP/FLAT): all 0. Backup tables: removed.
     at_raw_picks UNKNOWN: 3 (was thousands). FOREX: PR #6 policy-gate shipped (all blocked except cta_cross_asset_tsmom SHORT).
     BOND: now emitting (78 raw picks). See <code>updates/2026-05-31-pr1-data-integrity-repair.md</code>.
   </div>
@@ -1307,7 +1307,7 @@ a:hover { text-decoration: underline; }
      by tools/audit_pick_funnel/build_ic_analysis.py from dashboard_data.json::recent_closed.
      Significance gate: Bonferroni-corrected alpha = 0.05 / n_strategies.
      Negative IC means the scoring model is anti-predictive for that strategy. -->
-<div id="ic-analysis-card" style="max-width:1180px;margin:8px auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(59,130,246,0.10),rgba(139,92,246,0.06));border:1px solid rgba(99,102,241,0.4);border-radius:12px;color:#e0e7ff">
+<div id="ic-analysis-card" hidden data-retired-2026-11-16="producer never existed; artifact carried bare Infinity" style="max-width:1180px;margin:8px auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(59,130,246,0.10),rgba(139,92,246,0.06));border:1px solid rgba(99,102,241,0.4);border-radius:12px;color:#e0e7ff">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
     <span style="font-size:1.05em;font-weight:700;color:#818cf8;letter-spacing:0.4px">&#x1F4CA; Strategy IC Analysis</span>
     <span style="color:#cbd5e1;font-size:0.88em">Spearman rank correlation between <code style="color:#a5b4fc">elite_score</code> and PnL outcome — does the scoring model actually rank winners above losers?</span>
