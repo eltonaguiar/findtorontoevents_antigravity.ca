@@ -116,7 +116,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <tr><td>Funding rate</td><td>Not included</td><td>Perpetual swap funding can be +/- 0.01-0.10% per 8h. Material for holds &gt;24h.</td></tr>
         <tr><td>PnL calculation</td><td>Entry vs TP/SL hit</td><td>Does NOT include fees. Actual returns ~0.20-0.40% worse than shown per trade.</td></tr>
         <tr><td>Price source</td><td>Binance spot API</td><td>Live prices fetched on page load. During outages, falls back to CoinGecko.</td></tr>
-        <tr><td>Avg hold time</td><td>1h (0.0 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
+        <tr><td>Avg hold time</td><td>7h (0.3 days)</td><td>Computed from current active picks. Historical may differ.</td></tr>
       </tbody></table>
 
       <h3>System Lifecycle</h3>
@@ -126,7 +126,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <tr><td>PROVEN</td><td>50+ closed trades, WR ≥ 50%, PF ≥ 1.0, documented forward results.</td><td>0.8−1.0x</td></tr>
         <tr><td>PROBATION</td><td>Documented poor performance: broken risk mgmt, consistently losing, or system errors.</td><td>0.10−0.15x</td></tr>
         <tr><td>DEMOTED</td><td>Strategy works on some assets but fails on others (asset-specific demotion).</td><td>0.25x</td></tr>
-        <tr><td>Killed</td><td>Auto-kill when criteria met (see below). 13 of 59 systems are grade F.</td><td>0x (disabled)</td></tr>
+        <tr><td>Killed</td><td>Auto-kill when criteria met (see below). 12 of 58 systems are grade F.</td><td>0x (disabled)</td></tr>
       </tbody></table>
 
       <h3>Kill Criteria (Mercury AI Recommended)</h3>
@@ -138,7 +138,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <br>• <b>Max Drawdown &gt; 30%</b> on $100 position sizing — unacceptable risk
         <br>• <b>No trades generated</b> in 14+ days — dormant/broken system
         <br>• <b>3 consecutive losing months</b> — persistent underperformance
-        <br><br>⚠️ <b>Current status:</b> Kill mechanism is NOT yet implemented. 13/59 grade-F systems remain active, generating noise and diluting signal quality.
+        <br><br>⚠️ <b>Current status:</b> Kill mechanism is NOT yet implemented. 12/58 grade-F systems remain active, generating noise and diluting signal quality.
       </div>
     </div></div>
 <div id="s1">
@@ -165,7 +165,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
     </div></div>
 <div id="s2">
     <div class="section">
-      <h2>2. System-by-System Breakdown (59 crypto systems with data)</h2>
+      <h2>2. System-by-System Breakdown (58 crypto systems with data)</h2>
       <p class="dim">Grade: A = proven profitable (WR≥55, PF≥1.5, 20+ trades), B = positive edge, C = marginal, D = insufficient data, F = unprofitable</p>
       <div class="table-wrap">
       <table><thead><tr>
@@ -892,13 +892,13 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
         <th>BT WR</th><th>FWD WR</th><th>FWD Trades</th><th>FWD PF</th>
         <th>Conf</th><th>R:R</th><th>Avg PnL</th><th>Health</th>
       </tr></thead><tbody><tr>
-          <td><b>copy_pm_pm_06dc5182</b></td>
-          <td class="num">1</td>
-          <td class="num">LONG:1</td>
-          <td class="num" style="font-size:11px">XRP</td>
-          <td class="num">n/a</td>
-          <td class="num" style="color:#22c55e">100.0%</td>
+          <td><b>tsmom_volscaled</b></td>
           <td class="num">3</td>
+          <td class="num">SHORT:3</td>
+          <td class="num" style="font-size:11px">NEAR, SOL, UNI</td>
+          <td class="num">n/a</td>
+          <td class="num" style="color:#ef4444">0.0%</td>
+          <td class="num">0</td>
           <td class="num" style="color:#ef4444">0.00</td>
           <td class="num">0.85</td>
           <td class="num">1.7</td>
@@ -926,7 +926,7 @@ AUDIT DASHBOARD: tracks all picks, monitors TP/SL resolution, computes performan
       <p class="dim">For an external reviewer to evaluate signal quality, they need to know the actual entry/exit rules, not just names. Strategies marked with "No documented rules" are a transparency gap.</p>
       <div class="table-wrap">
       <table><thead><tr><th style="min-width:180px">Strategy</th><th>Active</th><th>FWD WR/Trades</th><th>Entry/Exit Logic & Parameters</th></tr></thead>
-      <tbody><tr><td><b>copy_pm_pm_06dc5182</b></td><td class="num">1</td><td class="num" style="color:#22c55e">100%/3t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr><tr><td><b>copy_pm_facaie</b></td><td class="num">1</td><td class="num" style="color:#22c55e">100%/49t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr></tbody></table>
+      <tbody><tr><td><b>tsmom_volscaled</b></td><td class="num">3</td><td class="num" style="color:#ef4444">0%/0t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr><tr><td><b>inverse_luxalgo_confluence</b></td><td class="num">1</td><td class="num" style="color:#ef4444">0%/0t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr><tr><td><b>kalshi_mtf_consensus</b></td><td class="num">1</td><td class="num" style="color:#ef4444">0%/0t</td><td style="font-size:12px"><i>No documented entry/exit rules. Strategy logic needs documentation.</i></td></tr></tbody></table>
       </div>
       <div class="verdict-box neutral">
         <b>Transparency gap:</b> Many strategies lack documented entry/exit rules. This makes external review impossible for those strategies.
@@ -1226,8 +1226,8 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">0.95</td><td class="num">1.7</td>
               <td class="num" style="color:#22c55e">100%</td>
               <td class="num">6</td>
-              <td class="dim" style="font-size:11px">copy_pm_facaie</td>
-              <td class="dim" style="font-size:11px">polymarket_signals</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
             </tr><tr>
               <td>XRP</td>
               <td style="color:#22c55e">LONG</td>
@@ -1237,8 +1237,41 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">0.85</td><td class="num">1.7</td>
               <td class="num" style="color:#22c55e">100%</td>
               <td class="num">2</td>
-              <td class="dim" style="font-size:11px">copy_pm_pm_06dc5182</td>
-              <td class="dim" style="font-size:11px">polymarket_signals</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
+            </tr><tr>
+              <td>ARB</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.1633</td><td class="num">0.128454</td><td class="num">0.180723</td>
+              <td class="num" style="color:#22c55e">+18.00%</td>
+              <td class="num">25h</td>
+              <td class="num">0.70</td><td class="num">2.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">2</td>
+              <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
+              <td class="dim" style="font-size:11px">inverse_mutations</td>
+            </tr><tr>
+              <td>UNI</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">5.181</td><td class="num">3.9627</td><td class="num">5.7901</td>
+              <td class="num" style="color:#22c55e">+1.16%</td>
+              <td class="num">3h</td>
+              <td class="num">0.74</td><td class="num">2.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">0</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">1817.73</td><td class="num">1775.0496996</td><td class="num">1843.28706611</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.79</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">6</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr></tbody></table>
 
       <h3>B) Top 20 by Score</h3>
@@ -1267,8 +1300,8 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">0.95</td><td class="num">1.7</td>
               <td class="num" style="color:#22c55e">100%</td>
               <td class="num">6</td>
-              <td class="dim" style="font-size:11px">copy_pm_facaie</td>
-              <td class="dim" style="font-size:11px">polymarket_signals</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
             </tr><tr>
               <td>XRP</td>
               <td style="color:#22c55e">LONG</td>
@@ -1278,8 +1311,41 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">0.85</td><td class="num">1.7</td>
               <td class="num" style="color:#22c55e">100%</td>
               <td class="num">2</td>
-              <td class="dim" style="font-size:11px">copy_pm_pm_06dc5182</td>
-              <td class="dim" style="font-size:11px">polymarket_signals</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
+            </tr><tr>
+              <td>ARB</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.1633</td><td class="num">0.128454</td><td class="num">0.180723</td>
+              <td class="num" style="color:#22c55e">+18.00%</td>
+              <td class="num">25h</td>
+              <td class="num">0.70</td><td class="num">2.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">2</td>
+              <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
+              <td class="dim" style="font-size:11px">inverse_mutations</td>
+            </tr><tr>
+              <td>UNI</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">5.181</td><td class="num">3.9627</td><td class="num">5.7901</td>
+              <td class="num" style="color:#22c55e">+1.16%</td>
+              <td class="num">3h</td>
+              <td class="num">0.74</td><td class="num">2.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">0</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">1817.73</td><td class="num">1775.0496996</td><td class="num">1843.28706611</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.79</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">6</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr></tbody></table>
 
       <h3>C) Top 20 Vetted Only (Forward WR ≥ 55%, Forward Trades ≥ 10)</h3>
@@ -1338,8 +1404,19 @@ health_multiplier: healthy=1.0, degrading=0.7, other=0.5
               <td class="num">0.95</td><td class="num">1.7</td>
               <td class="num" style="color:#22c55e">100%</td>
               <td class="num">6</td>
-              <td class="dim" style="font-size:11px">copy_pm_facaie</td>
-              <td class="dim" style="font-size:11px">polymarket_signals</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
+            </tr><tr>
+              <td>ETH</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">1817.73</td><td class="num">1775.0496996</td><td class="num">1843.28706611</td>
+              <td class="num" style="color:#888">+0.00%</td>
+              <td class="num">1h</td>
+              <td class="num">0.79</td><td class="num">0.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">6</td>
+              <td class="dim" style="font-size:11px">kalshi_mtf_consensus</td>
+              <td class="dim" style="font-size:11px">pm_kalshi_signals</td>
             </tr></tbody></table>
 
       <h3>E) Mercury AI Recommended Scoring (FWD-weighted)</h3>
@@ -1374,8 +1451,8 @@ Key change: FWD WR weight increased from 0.25→0.30, R:R removed, trust tier ad
               <td class="num">0.95</td><td class="num">1.7</td>
               <td class="num" style="color:#22c55e">100%</td>
               <td class="num">6</td>
-              <td class="dim" style="font-size:11px">copy_pm_facaie</td>
-              <td class="dim" style="font-size:11px">polymarket_signals</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
             </tr><tr>
               <td>XRP</td>
               <td style="color:#22c55e">LONG</td>
@@ -1385,8 +1462,30 @@ Key change: FWD WR weight increased from 0.25→0.30, R:R removed, trust tier ad
               <td class="num">0.85</td><td class="num">1.7</td>
               <td class="num" style="color:#22c55e">100%</td>
               <td class="num">2</td>
-              <td class="dim" style="font-size:11px">copy_pm_pm_06dc5182</td>
-              <td class="dim" style="font-size:11px">polymarket_signals</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
+            </tr><tr>
+              <td>ARB</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">0.1633</td><td class="num">0.128454</td><td class="num">0.180723</td>
+              <td class="num" style="color:#22c55e">+18.00%</td>
+              <td class="num">25h</td>
+              <td class="num">0.70</td><td class="num">2.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">2</td>
+              <td class="dim" style="font-size:11px">inverse_luxalgo_confluenc</td>
+              <td class="dim" style="font-size:11px">inverse_mutations</td>
+            </tr><tr>
+              <td>UNI</td>
+              <td style="color:#ef4444">SHORT</td>
+              <td class="num">5.181</td><td class="num">3.9627</td><td class="num">5.7901</td>
+              <td class="num" style="color:#22c55e">+1.16%</td>
+              <td class="num">3h</td>
+              <td class="num">0.74</td><td class="num">2.0</td>
+              <td class="num" style="color:#ef4444">0%</td>
+              <td class="num">0</td>
+              <td class="dim" style="font-size:11px">tsmom_volscaled</td>
+              <td class="dim" style="font-size:11px">tsmom_strategy</td>
             </tr></tbody></table>
 
       <h3>F) Mercury Strict Filter (FWD Trades≥30, WR≥55%, PF≥1.2)</h3>
@@ -1879,8 +1978,8 @@ Key changes:
           <td>EURUSD=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
           <td style="color:#22c55e;font-weight:700">BUY</td>
-          <td class="num">1.103144</td><td class="num">1.11969116</td><td class="num">1.097628</td>
-          <td class="num">0.65</td><td class="num">8.9</td>
+          <td class="num">1.103144</td><td class="num">1.111969</td><td class="num">1.097628</td>
+          <td class="num">0.78</td><td class="num">1.6</td>
           <td class="num" style="color:#888">+0.00%</td>
           <td class="num">0d</td>
           <td class="dim" style="font-size:11px">forex_zscore_200d_fade</td>
@@ -1926,6 +2025,16 @@ Key changes:
           <td class="dim" style="font-size:11px">combined_confidence</td>
           <td class="dim" style="font-size:11px">Combined Confidence: CS=0.70 (HIGH), TE=0.60 (no trade history yet), MP=0.80; si</td>
         </tr><tr>
+          <td>AUDUSD=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#22c55e;font-weight:700">BUY</td>
+          <td class="num">0.678104</td><td class="num">0.683529</td><td class="num">0.674714</td>
+          <td class="num">0.78</td><td class="num">1.6</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">combined_confidence</td>
+          <td class="dim" style="font-size:11px">Combined Confidence: CS=0.77 (HIGH), TE=0.70 (no trade history yet), MP=0.85; si</td>
+        </tr><tr>
           <td>NZDUSD=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
           <td style="color:#22c55e;font-weight:700">BUY</td>
@@ -1955,6 +2064,16 @@ Key changes:
           <td class="num">0d</td>
           <td class="dim" style="font-size:11px">combined_confidence</td>
           <td class="dim" style="font-size:11px">Combined Confidence: CS=0.70 (HIGH), TE=0.60 (no trade history yet), MP=0.80; si</td>
+        </tr><tr>
+          <td>AUDJPY=X</td>
+          <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>
+          <td style="color:#22c55e;font-weight:700">BUY</td>
+          <td class="num">108.112999</td><td class="num">108.977903</td><td class="num">107.572434</td>
+          <td class="num">0.78</td><td class="num">1.6</td>
+          <td class="num" style="color:#888">+0.00%</td>
+          <td class="num">0d</td>
+          <td class="dim" style="font-size:11px">combined_confidence</td>
+          <td class="dim" style="font-size:11px">Combined Confidence: CS=0.77 (HIGH), TE=0.70 (no trade history yet), MP=0.85; si</td>
         </tr><tr>
           <td>EURGBP=X</td>
           <td><span style="background:#06b6d4;color:#000;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">FOREX</span></td>

@@ -109,7 +109,10 @@ jobs:
     defaults:
       run:
         shell: bash
-    timeout-minutes: 60
+    # Bumped 60 -> 90 (2026-11-16): the full scanner cycle routinely exceeds
+    # 60 min, so runs were being killed at the job timeout before their push,
+    # causing perpetual re-run churn (every cycle cancelled at ~60 min).
+    timeout-minutes: 90
 
     steps:
       - name: Runner Info
@@ -171,6 +174,7 @@ jobs:
 
       - name: Commit results
         if: success()
+        timeout-minutes: 5
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
