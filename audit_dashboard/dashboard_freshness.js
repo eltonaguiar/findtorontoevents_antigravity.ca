@@ -153,10 +153,20 @@
     panel.id = 'data-freshness-panel';
     panel.style.cssText = 'max-width:1180px;margin:0 auto 12px;padding:12px 18px;background:linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,41,59,0.9));border:1px solid #334155;border-radius:10px;color:#e2e8f0;font-size:13px';
 
+    // 2026-11-16: a source that failed to load (HTTP error, or a body the
+    // browser's JSON.parse rejects) carries no timestamp and used to be skipped
+    // by this verdict entirely — so the panel printed "ALL SOURCES CURRENT"
+    // directly above a tile reading "No data available" (seen live on
+    // money_ready_verdict.json while it shipped bare NaN tokens). Missing is
+    // not current: count it as a problem, and name it as a loading failure.
+    var hasMissing = results.some(function(r) { return !r.timestamp; });
     var hasStale = results.some(function(r) { return r.freshness && r.freshness.level === 'red'; });
-    var headerIcon = hasStale ? '&#x26A0;' : '&#x2705;';
-    var headerColor = hasStale ? '#ef4444' : '#22c55e';
-    var headerText = hasStale ? 'DATA FRESHNESS — STALE SOURCES DETECTED' : 'DATA FRESHNESS — ALL SOURCES CURRENT';
+    var hasProblem = hasStale || hasMissing;
+    var headerIcon = hasProblem ? '&#x26A0;' : '&#x2705;';
+    var headerColor = hasStale ? '#ef4444' : (hasMissing ? '#f59e0b' : '#22c55e');
+    var headerText = hasStale ? 'DATA FRESHNESS — STALE SOURCES DETECTED'
+                   : (hasMissing ? 'DATA FRESHNESS — SOURCE NOT LOADING'
+                   : 'DATA FRESHNESS — ALL SOURCES CURRENT');
 
     var html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">' +
       '<span style="font-size:15px;font-weight:700;color:' + headerColor + '">' + headerIcon + ' ' + esc(headerText) + '</span>' +
@@ -170,9 +180,10 @@
       var est = r.timestamp ? fmtEST(r.timestamp) : 'no data';
       var age = ageText(f.ageMs);
       var isStale = f.level === 'red';
+      var isMissing = !r.timestamp;
 
       html += '<div style="background:rgba(0,0,0,0.3);border:1px solid ' + f.color + '30;border-radius:8px;padding:10px 12px;position:relative' +
-        (isStale ? ';border-left:3px solid ' + f.color : '') + '">' +
+        ((isStale || isMissing) ? ';border-left:3px solid ' + f.color : '') + '">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
         '<span style="font-size:12px;font-weight:700;color:' + f.color + '">' + esc(r.label) + '</span>' +
         '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + f.color +
@@ -182,6 +193,7 @@
         (r.timestamp ? esc(est) + ' EST' : 'No data available') + '</div>' +
         '<div style="font-size:10px;color:#64748b;margin-top:2px">' + esc(age) + '</div>' +
         (isStale ? '<div style="font-size:9px;color:#fca5a5;margin-top:4px;padding:3px 6px;background:rgba(239,68,68,0.1);border-radius:4px">&#x26A0; Data is over 3 days old — may not reflect current state</div>' : '') +
+        (isMissing ? '<div style="font-size:9px;color:#fcd34d;margin-top:4px;padding:3px 6px;background:rgba(245,158,11,0.12);border-radius:4px">&#x26A0; No timestamp — file missing, unreachable, or not valid JSON. Treated as unverified, not current.</div>' : '') +
         '</div>';
     });
 

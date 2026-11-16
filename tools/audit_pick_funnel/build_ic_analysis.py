@@ -189,7 +189,12 @@ def compute_ic(recent_closed):
         wr_pct = (wins / n) * 100.0
         gross_win = sum(v for _, v in pairs if v > 0)
         gross_loss = abs(sum(v for _, v in pairs if v < 0))
-        pf = (gross_win / gross_loss) if gross_loss > 0 else (float("inf") if gross_win > 0 else 0.0)
+        # 2026-11-16: zero losing picks makes PF undefined, not infinite. The old
+        # branch published float("inf") (bare `Infinity` token pre-2026-05, the
+        # STRING "Infinity" after) -- the first kills browser JSON.parse and blanked
+        # the whole Strategy-IC panel, the second is a type landmine for any numeric
+        # consumer. Report null per the measurement contract (null plus reason).
+        pf = (gross_win / gross_loss) if gross_loss > 0 else None
         strategies.append({
             "asset_class": asset_class,
             "strategy": strategy,
@@ -197,7 +202,7 @@ def compute_ic(recent_closed):
             "ic": round(ic, 4),
             "p_value": round(p, 6),
             "wr_pct": round(wr_pct, 2),
-            "pf": round(pf, 4) if pf != float("inf") else "Infinity",
+            "pf": round(pf, 4) if pf is not None else None,
             "field_used": "elite_score",
         })
 
@@ -289,7 +294,9 @@ def main():
     result = compute_ic(recent_closed)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT, "w") as f:
-        json.dump(result, f, indent=2)
+        # allow_nan=False: fail loudly at build time rather than publish an artifact
+        # the browser's JSON.parse rejects wholesale.
+        json.dump(result, f, indent=2, allow_nan=False)
     print(f"Wrote {OUTPUT} ({len(result['strategies'])} strategies, "
           f"{len(result['by_class'])} classes, generated_at={result['generated_at']})")
 

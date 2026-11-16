@@ -16,11 +16,39 @@ on individual files so one missing file doesn't abort the whole batch (matches
 the GH-Actions soft-fail pattern).
 """
 from __future__ import annotations
-import os, ssl, sys, argparse, urllib.request
+import json, os, ssl, sys, argparse, tempfile, urllib.request
 from ftplib import FTP_TLS
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+
+
+def _strict_json_problem(raw: bytes) -> str | None:
+    """Return a reason string if `raw` is not browser-parseable strict JSON.
+
+    2026-11-16: the live Strategy-IC and Money-Ready panels both showed "no data"
+    on payloads that returned HTTP 200 and were perfectly valid to Python -- they
+    carried bare NaN / Infinity tokens, which `json` emits by default and the
+    browser's JSON.parse rejects for the WHOLE document. This check sits at the
+    publish boundary, so it also catches artifacts built by scripts not in this tree.
+    """
+    def _reject(tok: str):
+        raise ValueError(tok)
+    try:
+        json.loads(raw.decode("utf-8"), parse_constant=_reject)
+    except UnicodeDecodeError:
+        return "not UTF-8"
+    except ValueError as e:
+        return f"non-strict token {e}"
+    return None
+
+
+def _sanitize_json_bytes(raw: bytes) -> bytes:
+    """Replace non-finite floats (NaN / +-Infinity) with null, re-emit strictly."""
+    def _null_constant(_tok: str):
+        return None
+    data = json.loads(raw.decode("utf-8"), parse_constant=_null_constant)
+    return (json.dumps(data, indent=2, allow_nan=False) + "\n").encode("utf-8")
 
 # (local_path_relative_to_repo, remote_path_on_50webs, optional_tag)
 UPLOADS = [
@@ -35,6 +63,10 @@ UPLOADS = [
     ("audit_dashboard/data/top_edges_per_class.json",        "/findtorontoevents.ca/audit/data/top_edges_per_class.json",         "pick_funnel"),
     ("audit_dashboard/data/strategy_funnel_data.json",        "/findtorontoevents.ca/audit/data/strategy_funnel_data.json",         "pick_funnel"),
     ("audit_dashboard/data/nav_surface_edge_matrix.json",    "/findtorontoevents.ca/audit/data/nav_surface_edge_matrix.json",     "pick_funnel"),
+    # 2026-11-16: re-added after being dropped from this list. The live copy kept
+    # serving the 2026-05-29 build whose bare `"pf": Infinity` token made
+    # JSON.parse throw, so the Strategy-IC panel could never recover no matter what
+    # the builder produced. Builder now emits null for a non-finite PF.
     ("audit_dashboard/model.html",                           "/findtorontoevents.ca/audit/model.html",                            "model"),
     ("audit_dashboard/ai-tournament.html",                   "/findtorontoevents.ca/audit/ai-tournament.html",                    "ai_tournament"),
     # 2026-10-19: Task 10 read-only ledger-benchmark panel + its sidecar JSON
@@ -108,19 +140,28 @@ UPLOADS = [
 def upload(ftps: FTP_TLS, local: Path, remote: str, dry_run: bool) -> tuple[bool, str]:
     if not local.exists():
         return False, "local missing"
+    src, note = local, ""
+    if local.suffix == ".json":
+        problem = _strict_json_problem(local.read_bytes())
+        if problem:
+            # Publish a sanitized COPY rather than either shipping invalid JSON or
+            # mutating the repo artifact under the builder's feet.
+            src = Path(tempfile.mkdtemp(prefix="audit-deploy-")) / local.name
+            src.write_bytes(_sanitize_json_bytes(local.read_bytes()))
+            note = f" · SANITIZED ({problem})"
     parts = remote.strip("/").split("/")
     dirs, fname = parts[:-1], parts[-1]
     if dry_run:
-        return True, f"DRY-RUN would upload {local.stat().st_size:,} bytes"
+        return True, f"DRY-RUN would upload {src.stat().st_size:,} bytes{note}"
     try:
         ftps.cwd("/")
         for d in dirs:
             try: ftps.mkd(d)
             except Exception: pass
             ftps.cwd(d)
-        with open(local, "rb") as f:
+        with open(src, "rb") as f:
             ftps.storbinary(f"STOR {fname}", f)
-        return True, f"{local.stat().st_size:,} bytes"
+        return True, f"{src.stat().st_size:,} bytes{note}"
     except Exception as e:
         return False, f"{type(e).__name__}: {e}"
 
