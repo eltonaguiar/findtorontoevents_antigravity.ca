@@ -10864,6 +10864,83 @@ def concept_gate_shadow_audit(pick: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Absolute OPEN-Bloat Gate (P0, cross-PC data-quality fleet, 2026-11-16)
+# ──────────────────────────────────────────────────────────────────────────────
+# Threshold rationale — why max(500, 10 * active_count):
+#   The 2026-11-16 fleet finding: the picks ledger carried 91,855 OPEN rows
+#   against just 21 truly ACTIVE rows — a resolver backlog, not a book — yet
+#   the OPEN/active health tier still reported GREEN because every existing
+#   guard is ratio- or freshness-based and none bounds the ABSOLUTE size of
+#   the unresolved backlog.
+#   * floor 500   — max-hold windows (48-120h) resolve every live pick within
+#                   days, so a healthy steady-state OPEN backlog is a small
+#                   multiple of one day's emissions. 500 rows is generous
+#                   head-room even with 0-50 ACTIVE picks; past it the rows
+#                   are resolver debt, not book size.
+#   * 10x active  — no healthy book keeps >10 unresolved rows per truly
+#                   ACTIVE one. The ratio leg catches bloat at scale (e.g.
+#                   2,500 open vs 200 active) where the 500 floor alone
+#                   would stay silent.
+#   * max(., .)   — either leg alone misses cases: the floor protects quiet
+#                   periods (small active_count), the multiple protects busy
+#                   ones (500 open vs 100 active is fine; 2,500 is not).
+OPEN_BLOAT_ABS_FLOOR = 500
+OPEN_BLOAT_ACTIVE_MULTIPLE = 10
+OPEN_BLOAT_PREDICATE = "open_count > max(500, 10 * active_count)"
+
+
+def evaluate_open_bloat_gate(open_count: int, active_count: int) -> Dict[str, Any]:
+    """Absolute OPEN-bloat gate — pure function, no I/O.
+
+    Predicate (single source of truth, ``OPEN_BLOAT_PREDICATE``)::
+
+        open_count > max(500, 10 * active_count)  =>  tier caps at WATCH/FAIL
+
+    When the predicate fires the ledger tier is capped in the WATCH/FAIL band
+    (it can never report GREEN); the cap lands on FAIL because the pinned
+    fixture (91,855 open / 21 active) must FAIL and any absolute backlog
+    breach is resolver-backlog data-integrity failure, not a soft warning.
+
+    Fixtures (contract, mirrored in tests/test_quality_open_bloat_gate.py):
+        91855 open / 21 active -> FAIL   (fleet finding)
+          21 open / 21 active -> GREEN
+         300 open / 21 active -> GREEN
+
+    Returns:
+        {
+            "tier": "GREEN" | "FAIL",
+            "tier_cap": None | "FAIL",     # composite tiers cap at this
+            "bloated": bool,
+            "open_count": int,
+            "active_count": int,
+            "limit": int,                  # max(500, 10 * active_count)
+            "message": str,                # "OPEN bloat: N open vs M active — resolver backlog"
+            "predicate": str,
+        }
+    """
+    open_count = int(open_count)
+    active_count = max(int(active_count), 0)
+    limit = max(OPEN_BLOAT_ABS_FLOOR, OPEN_BLOAT_ACTIVE_MULTIPLE * active_count)
+    bloated = open_count > limit
+    if bloated:
+        message = (
+            f"OPEN bloat: {open_count} open vs {active_count} active — resolver backlog"
+        )
+    else:
+        message = f"OK: {open_count} open vs {active_count} active (limit {limit})"
+    return {
+        "tier": "FAIL" if bloated else "GREEN",
+        "tier_cap": "FAIL" if bloated else None,
+        "bloated": bloated,
+        "open_count": open_count,
+        "active_count": active_count,
+        "limit": limit,
+        "message": message,
+        "predicate": OPEN_BLOAT_PREDICATE,
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Open-Bloat Health Monitor (swarm Round C, 2026-05-14)
 # ──────────────────────────────────────────────────────────────────────────────
 def check_open_bloat_health(
@@ -10877,6 +10954,11 @@ def check_open_bloat_health(
     meaningful signal — the system is in "open-bloat" state. Failure mode #3
     from the proactive monitoring swarm (2026-05-14).
 
+    Also applies the absolute OPEN-bloat gate (2026-11-16 fleet fix): the
+    ratio-only scoring let a 91,855-OPEN / 21-ACTIVE ledger report healthy,
+    so ``evaluate_open_bloat_gate`` now caps the verdict at the FAIL level
+    ("pause" in this monitor's vocabulary) on absolute backlog breach.
+
     Returns:
         {
             "total": int,
@@ -10884,7 +10966,8 @@ def check_open_bloat_health(
             "open_pct": float,
             "status": "healthy" | "warn" | "pause",
             "action": str,
-            "by_class": { "CRYPTO": {"open_pct": float, "total": int}, ... }
+            "by_class": { "CRYPTO": {"open_pct": float, "total": int}, ... },
+            "open_bloat_gate": evaluate_open_bloat_gate(...) result
         }
     """
     if not active_picks:
@@ -10920,6 +11003,22 @@ def check_open_bloat_health(
         status = "healthy"
         action = "OK"
 
+    # Absolute OPEN-bloat gate (P0 2026-11-16): "open" = stuck-unresolved rows
+    # (OPEN/PENDING/empty), "active" = truly-ACTIVE rows — the fleet's
+    # OPEN vs ACTIVE split (91,855 vs 21 on the incident ledger).
+    _gate_open = sum(
+        1 for p in active_picks
+        if str(p.get("status", "") or "").lower() in {"open", "pending", ""}
+    )
+    _gate_active = sum(
+        1 for p in active_picks
+        if str(p.get("status", "") or "").lower() == "active"
+    )
+    bloat_gate = evaluate_open_bloat_gate(_gate_open, _gate_active)
+    if bloat_gate["bloated"]:
+        status = "pause"  # FAIL-level cap: absolute bloat never reports healthy
+        action = bloat_gate["message"]
+
     result = {
         "total": total,
         "open_count": open_count,
@@ -10927,6 +11026,7 @@ def check_open_bloat_health(
         "status": status,
         "action": action,
         "by_class": by_class,
+        "open_bloat_gate": bloat_gate,
     }
     logger.info("[OPEN_BLOAT] %s: %d/%d open (%.1f%%) — %s", status, open_count, total, open_pct * 100, action)
     return result
