@@ -76,6 +76,22 @@ _CLOSED_PICKS_PATHS = [
 # ---------------------------------------------------------------------------
 PROVEN_WR  = 0.55
 PROVEN_N   = 10
+
+# 2026-11-16 audit: prediction-market sources used to receive synthetic forward
+# stats when their ledger was empty (n=max(source_count,5), wr=max(...,0.50)),
+# which fed fabricated numbers into trust scoring and Smart Picks. An empty
+# ledger now stays empty; the pick is tagged instead.
+PM_SOURCES = frozenset({
+    "polymarket_signals",
+    "pm_polymarket_re_signals",
+    "pm_kalshi_signals",
+    "pm_kalshi_re_signals",
+    "pm_whale_signals",
+    "pm_momentum_signals",
+    "prediction_market_consensus",
+    "prediction_market_agents",
+    "kalshi_signals",
+})
 WATCH_WR   = 0.45
 WATCH_N    = 5
 MONITOR_WR = 0.35
@@ -373,17 +389,15 @@ def stamp_picks(picks: list, strategy_stats: dict, dry_run: bool = False) -> dic
         wr  = stats.get("wr", 0.0)
         avg = stats.get("avg_pnl", 0.0)
 
-        # FIX 2026-05-04: PM sources have no closed picks — use their own quality signals
+        # 2026-11-16 audit: the 2026-05-04 PM shortcut is removed. It handed
+        # prediction-market sources synthetic forward stats (n>=5, wr>=50%) when
+        # they had no closed picks, so an unvalidated source could pass trust
+        # gates and Smart Picks on numbers nobody measured. An empty ledger now
+        # keeps n=0 -> UNKNOWN, and the gap is tagged for the payload.
         source = str(p.get("source_system", "") or "").lower()
-        if source in {"pm_kalshi_signals", "pm_whale_signals", "polymarket_signals",
-                      "prediction_market_consensus"}:
-            if n == 0:  # Only override if no closed-pick stats exist
-                # Use PM-specific quality fields if available
-                pm_wr = _float(p.get("consensus_wr", p.get("profile_crypto_wr", 0.55)))
-                pm_n = _int(p.get("consensus_trades", p.get("source_count", 10)))
-                n = max(pm_n, 5)  # Minimum 5 to avoid Gate 4 block
-                wr = max(pm_wr, 0.50)  # Minimum 50% WR for PM consensus
-                avg = _float(p.get("consensus_pnl", 0.0))
+        if source in PM_SOURCES and n == 0:
+            p["pm_stats_source"] = "insufficient_ledger"
+            p["pm_stats_fabricated"] = False
 
         p["strat_fwd_wr"]     = round(wr, 3)
         p["strat_fwd_trades"] = n

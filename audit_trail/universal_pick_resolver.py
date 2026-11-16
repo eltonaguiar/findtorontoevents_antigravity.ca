@@ -25,6 +25,31 @@ from collections import defaultdict
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from audit_trail.pnl_ingest_sanity import apply_pnl_clamp_to_pick
+# 2026-11-16: binary prediction-market contracts settle on outcome, not on a
+# spot TP/SL (see audit_trail/pm_contract_resolver.py).
+try:
+    from audit_trail.pm_contract_resolver import (
+        classify_pick_kind as _pm_classify_kind,
+        is_contract_pick as _pm_is_contract_pick,
+        load_market_outcomes as _pm_load_market_outcomes,
+        resolve_contract_pick as _pm_resolve_contract_pick,
+    )
+
+    _PM_CONTRACT_RESOLVER = True
+except ImportError:
+    _PM_CONTRACT_RESOLVER = False
+
+    def _pm_is_contract_pick(pick):  # type: ignore[misc]
+        return False
+
+    def _pm_classify_kind(pick):  # type: ignore[misc]
+        return "spot_derived"
+
+    def _pm_load_market_outcomes():  # type: ignore[misc]
+        return {}
+
+    def _pm_resolve_contract_pick(pick, markets=None):  # type: ignore[misc]
+        return dict(pick)
 from alpha_engine.asset_class import normalize_asset_class
 from audit_trail.asset_classification import classify_asset
 from audit_trail.reverse_split_symbols import should_adjust_for_split
@@ -822,27 +847,58 @@ def _parse_timestamp(ts_str):
 # Scoring/quality fields to preserve when resolving picks
 # These are CRITICAL for quality analysis and must NOT be lost
 _SCORING_FIELDS = [
-    "elite_score", "method_a_score", "ml_composite_score", "antigravity_score",
-    "elite_grade", "method_a_grade", "ml_composite_grade", "ag_grade",
-    "elite_breakdown", "method_a_breakdown", "ml_composite_breakdown",
-    "trust_score", "trust_tier", "Trust Tier", "Trust Score",
-    "consensus_pct", "consensus_votes", "high_conviction",
-    "forward_wr", "forward_trades", "forward_status",
-    "confidence", "signal_probability", "tp_probability",
-    "risk_reward", "risk_reward_ratio", "atrValue",
-    "rsi_at_entry", "volume_ratio", "regime", "market_regime",
-    "enrichment", "ml_features", "signal_sources", "source_count",
-    "grade", "Score", "quality_score", "conviction_tier",
-    # Copy trader specific
-    "whale_score", "institutional_score", "hf_conviction_tier",
-    # Prediction market specific
-    "pm_consensus", "pm_confidence", "prediction_market_sources",
-    # C5 (crypto_edge_artifact_audit_2026_05_17.md §C5): preserve original
-    # signal timestamps so analytics can distinguish signal_time from the
-    # run-time stamp written into pick["timestamp"] by _extract_pick_fields.
-    # Without these, age_hours / staleness metrics read run-time as entry age.
-    "signal_time", "entry_time", "closed_at", "opened_at", "resolved_at",
-]
+    "elite_score",
+    "method_a_score",
+    "ml_composite_score",
+    "antigravity_score",
+    "elite_grade",
+    "method_a_grade",
+    "ml_composite_grade",
+    "ag_grade",
+    "elite_breakdown",
+    "method_a_breakdown",
+    "ml_composite_breakdown",
+    "trust_score",
+    "trust_tier",
+    "consensus_pct",
+    "consensus_votes",
+    "high_conviction",
+    "forward_wr",
+    "forward_trades",
+    "forward_status",
+    "confidence",
+    "signal_probability",
+    "tp_probability",
+    "risk_reward",
+    "risk_reward_ratio",
+    "rsi_at_entry",
+    "volume_ratio",
+    "regime",
+    "market_regime",
+    "enrichment",
+    "ml_features",
+    "signal_sources",
+    "source_count",
+    "grade",
+    "quality_score",
+    "conviction_tier",
+    "whale_score",
+    "institutional_score",
+    "hf_conviction_tier",
+    "pm_consensus",
+    "pm_confidence",
+    "prediction_market_sources",
+    "timestamp",
+    "signal_time",
+    "entry_time",
+    "closed_at",
+    "opened_at",
+    "resolved_at",
+    "market_id",
+    "contract_side",
+    "resolution_date",
+    "pm_resolution_status",
+]  # preserved through resolution; 2026-11-16 added the PM identity fields
 
 
 def _extract_pick_fields(raw, system_name):
@@ -1381,6 +1437,29 @@ def main():
             norm_sym = _normalize_symbol(orig_sym)
             current_price = prices.get(norm_sym) or prices.get(orig_sym)
 
+            # ── Binary prediction-market contracts (2026-11-16) ──
+            # "Will X happen?" has no spot price and no meaningful TP/SL.
+            # Settle from the market outcome (payout 1.0 / 0.0); keep it OPEN
+            # while live; expire with pnl_pct=None if the deadline passed
+            # without an outcome. Never resolve one on price geometry.
+            if _PM_CONTRACT_RESOLVER and _pm_is_contract_pick(pick):
+                _pm_row = _pm_resolve_contract_pick(pick, _pm_load_market_outcomes())
+                _pm_status = str(_pm_row.get("status", "OPEN")).upper()
+                if _pm_status in ("WON", "LOST", "EXPIRED"):
+                    _pm_row["_resolver_version"] = RESOLVER_VERSION
+                    _pm_row["_resolver_source"] = RESOLVER_SOURCE_ID
+                    newly_resolved.append(_pm_row)
+                    resolved_ids.add(pick_id)
+                    log.info(
+                        "  CONTRACT %s %s %s -> %s pnl=%s",
+                        system_name, pick.get("symbol"), pick.get("contract_side"),
+                        _pm_status, _pm_row.get("pnl_pct"),
+                    )
+                continue
+
+            if _is_prediction_market_pick(system_name, pick):
+                pick.setdefault("pm_pick_kind", _pm_classify_kind(pick))
+
             if current_price is None:
                 stats[system_name]["no_price"] += 1
                 # ── TIME_EXIT fallback for picks without live prices ──
@@ -1431,7 +1510,11 @@ def main():
                     )
                 continue
 
-            if (not pick["entry_price"] or pick["entry_price"] == 0) and _is_prediction_market_pick(system_name, pick):
+            if (
+                (not pick["entry_price"] or pick["entry_price"] == 0)
+                and _is_prediction_market_pick(system_name, pick)
+                and not _pm_is_contract_pick(pick)
+            ):
                 _snapshot_prediction_market_entry(pick, current_price)
 
             if not pick["entry_price"] or pick["entry_price"] == 0:
