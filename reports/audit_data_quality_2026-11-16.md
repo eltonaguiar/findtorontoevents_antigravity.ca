@@ -195,9 +195,13 @@ non-class cohort: WR 54.0%, PF 1.35, +11.1%.
 * `PENNY_STOCK` / `MEME` / `CHEAP_STOCKS` appear in `money_ready_verdicts` but
   have no rows in `picks` — verdicts on empty universes.
 * **Prediction markets: emitted, never resolved.** POLYMARKET 13 rows, KALSHI
-  14 rows, **0 resolved in either**. They cannot be validated at all in this
-  payload, and the synthetic-stats path in `stamp_pick_quality.py` was removed on 2026-11-16 (an empty ledger now stays `n=0`/`UNKNOWN` — see `updates/2026-11-16-pm-contract-resolution.md`).50)`) — a
-  fabricated-input path for trust scoring.
+  14 rows, **0 resolved in either** — they cannot be validated in this payload.
+  The synthetic-stats path in `stamp_pick_quality.py` (`n=max(source_count,5)`,
+  `wr=max(consensus_wr,0.50)`) was removed on 2026-11-16: an empty ledger now
+  stays `n=0` / `UNKNOWN` (see `updates/2026-11-16-pm-contract-resolution.md`).
+  All 27 live PM rows are spot trades derived from PM signals
+  (`pm_pick_kind=spot_derived`), not binary contracts — none is evidence about
+  a contract market.
 
 **Mega-caps ("stocks that only go up").**
 
