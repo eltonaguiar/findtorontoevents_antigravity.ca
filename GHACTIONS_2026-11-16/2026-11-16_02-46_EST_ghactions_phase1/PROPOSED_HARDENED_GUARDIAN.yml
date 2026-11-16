@@ -1,0 +1,59 @@
+# PROPOSED ONLY - DO NOT ENABLE WITHOUT REVIEW
+# Goal: extend failure-guardian with queue age, stale latest-no-success, and long-running signals.
+# Place under .github/workflows/ only after review/testing on a branch.
+
+name: actions-health-audit (proposed)
+
+on:
+  schedule:
+    - cron: "17 * * * *" # hourly, offset
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: actions-health-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Actions health report
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports/gha
+          python3 - <<'PY'
+          import json, os, subprocess, datetime, collections
+          repo = os.environ.get('GITHUB_REPOSITORY','eltonaguiar/findtorontoevents_antigravity.ca')
+          now = datetime.datetime.now(datetime.timezone.utc)
+          def gh(*args):
+            return subprocess.check_output(['gh',*args], text=True)
+          # TODO: paginate workflows/runs; compute latest-failed-no-subsequent-success,
+          # queued runs older than N minutes, in_progress older than timeout heuristic,
+          # active workflows with no success in >14/30/90 days, and recent skip/cancel rates.
+          report = {
+            'generated_at': now.isoformat(),
+            'repo': repo,
+            'notes': 'Scaffold: implement metrics + thresholds; commit JSON/MD report for trend tracking.'
+          }
+          open('reports/gha/actions_health_report.json','w').write(json.dumps(report,indent=2))
+          open('reports/gha/actions_health_report.md','w').write('# Actions Health Report\n\nGenerated: '+report['generated_at']+'\n')
+          PY
+
+      - name: Commit report
+        run: |
+          if git diff --quiet -- reports/gha 2>/dev/null; then echo "no changes"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/gha/actions_health_report.json reports/gha/actions_health_report.md
+          git commit -m "chore(gha): actions health report [skip ci]" || exit 0
+          git push
