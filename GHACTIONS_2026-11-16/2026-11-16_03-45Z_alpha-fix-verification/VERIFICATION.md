@@ -56,3 +56,24 @@ This confirms the diagnosis: the step's 5-min cap kills the retry loop mid-fligh
 
 ### Status vs wakeup criteria
 - Not yet PASS/FAIL — no post-merge run has executed (cron widened to 2h). Deferred, not failed.
+
+## FINAL 08:13Z — ALPHA PASS ✅ / CI Tests RESOLVED ✅
+### ALPHA safe_push (PR #829) — PASS, verified on live run
+- First post-#829 run **`43819637050`** (created 06:51:16Z, > 04:44:52Z merge) concluded **SUCCESS**.
+- Commit-step log evidence: `(shallow repo — deepening history for pull/rebase)` → `=== Push attempt 1/8 ===`
+  → `=== Push attempt 2/8 ===` → **`Pushed successfully on attempt 2`**. No hang, no `timed out`, no 5-min msg.
+- The old inline `git pull --rebase … 2>/dev/null` no-hang loop is gone; `safe_push.sh` deepens + retries + succeeds.
+- Prior runs (02:25, 03:44) failed with 5→15m timeouts (pre-fix). Fixed chain: #811 job 60→90, #813 step 5→15,
+  #829 inline-loop→safe_push. **Verified.**
+
+### CI Tests regression — RESOLVED
+- Failures: 05:27Z, 07:17Z (×2), 07:21Z — `ImportError: audit_trail.dashboard_generator not in sys.modules`
+  across ~5 test files (`test_etf_elite_floor_and_60d_enrich`, `test_hc_after_cost_gate`,
+  `test_m033_blocked_aggregator`, `test_derive_asset_class_precedence`, `test_m067_registry_reader`).
+- **Newest run `43828468855` (08:05:20Z) = SUCCESS.** A peer's fix between 07:21 and 08:05 cleared it.
+  The earlier worry (conftest/order-dependence from v4 `f107b7d`) is moot — main CI is green again.
+
+### Net
+ALPHA commit-step churn class is closed and verified; CI Tests green. Remaining work is the P1-P3 backlog
+in `GHACTIONS_2026-11-16/2026-11-16_0620Z_CONSOLIDATED/SUMMARY.MD` (DB integrity, 27 push migrations,
+dup-guard, zombie scheduler, etc.) — none of it a regression from this session's changes.
