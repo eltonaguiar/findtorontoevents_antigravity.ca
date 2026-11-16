@@ -23,7 +23,8 @@ REQUIRED = (
 
 
 def main() -> int:
-    html = urllib.request.urlopen(URL, timeout=30).read().decode("utf-8", "replace")
+    req = urllib.request.Request(URL, headers={"User-Agent": "audit-honesty-check"})
+    html = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "replace")
     bad = [s for s in FORBIDDEN if s in html]
     missing = [s for s in REQUIRED if s not in html]
     if bad or missing:
