@@ -61,8 +61,10 @@ def _from_mysql() -> dict | None:
             SELECT category,
                    COUNT(*) AS total_picks,
                    SUM(CASE WHEN status IN ('WON','LOST','TP_HIT','SL_HIT') THEN 1 ELSE 0 END) AS resolved,
-                   SUM(CASE WHEN status = 'WON' THEN 1 ELSE 0 END) AS wins,
-                   SUM(CASE WHEN status = 'LOST' THEN 1 ELSE 0 END) AS losses,
+                   -- 2026-11-16: resolver-v2 settles picks as TP_HIT/SL_HIT; counting only
+                   -- WON/LOST made wins=0/WR=0 for every class (all 11 showed 0%).
+                   SUM(CASE WHEN status IN ('WON','TP_HIT') THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE WHEN status IN ('LOST','SL_HIT') THEN 1 ELSE 0 END) AS losses,
                     AVG(CASE WHEN pnl_pct IS NOT NULL THEN pnl_pct ELSE NULL END) AS avg_pnl_pct,
                     MAX(COALESCE(created_at, updated_at)) AS last_pick
             FROM trading_picks
