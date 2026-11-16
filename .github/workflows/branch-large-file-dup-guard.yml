@@ -1,16 +1,16 @@
 name: Branch Large File Duplicate Guard
 
 on:
-  push:
-    branches-ignore:
-      - main
-    paths:
-      - '**/*.zip'
-      - '**/*.gz'
-      - '**/*.db'
-      - '**/*.parquet'
-      - 'data/**'
-      - 'reports/**'
+  # 2026-11-16: the push trigger was removed. This workflow had completed 0 of its
+  # last 30 runs (15/15 cancelled before, still cancelled after the 2026-11-15
+  # cancel-in-progress:false change) — so it provided ZERO protection while firing on
+  # every non-main push that touched data/** or reports/**, across 213 branches. Each
+  # run scanned every branch ref, could not finish inside its own 15-minute
+  # timeout-minutes cap, and held a runner slot. A duplicate-blob lint does not need
+  # per-push resolution: a weekly sweep plus workflow_dispatch covers it. See
+  # GHACTIONS_2026-11-16/*_EST_gha_design/GHA_REMEDIATION_DESIGN.md.
+  schedule:
+    - cron: '0 6 * * 0'  # Sundays 06:00 UTC
   workflow_dispatch:
     inputs:
       min_size_mb:
@@ -54,7 +54,10 @@ permissions:
 jobs:
   detect-duplicate-large-blobs:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 2026-11-16: was 15. The scan fetches every branch ref and walks each tree
+    # (2-3h across 213 branches), so a 15-minute cap guaranteed a kill mid-scan —
+    # every run died at exactly 15:00. Raised to 180 (GitHub's hard cap is 6h).
+    timeout-minutes: 180
     steps:
       - name: Checkout (partial clone)
         uses: actions/checkout@v6
