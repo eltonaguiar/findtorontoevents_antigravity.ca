@@ -196,8 +196,7 @@ non-class cohort: WR 54.0%, PF 1.35, +11.1%.
   have no rows in `picks` — verdicts on empty universes.
 * **Prediction markets: emitted, never resolved.** POLYMARKET 13 rows, KALSHI
   14 rows, **0 resolved in either**. They cannot be validated at all in this
-  payload, and `stamp_pick_quality.py` substitutes synthetic stats when the
-  ledger is empty (`n=max(source_count,5)`, `wr=max(consensus_wr,0.50)`) — a
+  payload, and the synthetic-stats path in `stamp_pick_quality.py` was removed on 2026-11-16 (an empty ledger now stays `n=0`/`UNKNOWN` — see `updates/2026-11-16-pm-contract-resolution.md`).50)`) — a
   fabricated-input path for trust scoring.
 
 **Mega-caps ("stocks that only go up").**
