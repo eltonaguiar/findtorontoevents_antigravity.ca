@@ -55,6 +55,15 @@ class DashboardPayloadHealth:
 _OPTIONAL_SYSTEMS: set[str] = {
     "pm_kalshi_re_signals",      # alpha_engine/kalshi_signals.py
     "pm_polymarket_re_signals",  # alpha_engine/polymarket_signals.py
+    # Dead-by-design / ephemeral prediction-market sources. These are in
+    # dashboard_generator._GHOST_SYSTEMS (pm_momentum_signals) or produced only
+    # inside the audit-dashboard job and never committed (pm_whale_signals /
+    # pm_kalshi_signals, gitignored `**/data/*_signals.json`), so they cannot
+    # emit a payload row on most runs. Requiring them failed Feed Health every
+    # hour (MISSING system rows ['pm_momentum_signals'], run 19:39Z 2026-11-16).
+    "pm_momentum_signals",       # prediction_market_agents/momentum_signals.json (GHOST)
+    "pm_whale_signals",          # prediction_market_agents/whale_signals.json (ephemeral)
+    "pm_kalshi_signals",         # prediction_market_agents/kalshi_signals.json (ephemeral)
 }
 
 
