@@ -11,6 +11,13 @@ on:
     workflows: ["Scrape events"]
     types: [completed]
 
+# 2026-11-16: deploy-fte-events-json.yml declared group fte-ftp-deploy but this
+# file declared nothing, so serialization was one-sided; both STOR
+# next/events.json + last_update.json on every "Scrape events" run.
+concurrency:
+  group: fte-ftp-deploy
+  cancel-in-progress: false
+
 permissions:
   contents: read
 

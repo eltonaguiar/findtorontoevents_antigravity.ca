@@ -10,8 +10,11 @@ concurrency:
 
 on:
   schedule:
-    # Staggered from :00/:45 to reduce push storms with other hourly workflows
-    - cron: '18,48 * * * *'
+    # 2026-11-16: runtime is 77-80 min against a 30-min cron (~2.6x the interval).
+    # Scheduled workflows keep only one pending run, so most :18/:48 fires were
+    # replaced before starting (~62% lost). Moved to a 2-hour cadence (120 min >
+    # runtime), staggered to :23 to stay off the :00/:10/:30 hourly cluster.
+    - cron: '23 */2 * * *'
   workflow_dispatch:
     inputs:
       mode:
@@ -109,7 +112,10 @@ jobs:
     defaults:
       run:
         shell: bash
-    timeout-minutes: 60
+    # Bumped 60 -> 90 (2026-11-16): the full scanner cycle routinely exceeds
+    # 60 min, so runs were being killed at the job timeout before their push,
+    # causing perpetual re-run churn (every cycle cancelled at ~60 min).
+    timeout-minutes: 90
 
     steps:
       - name: Runner Info
@@ -171,7 +177,13 @@ jobs:
 
       - name: Commit results
         if: success()
-        timeout-minutes: 5
+        # Bumped 5 -> 15 (2026-11-16): the push retry loop below is designed to
+        # run up to ~12 min worst case (exponential backoff capped ~97s x 10
+        # attempts), but the step capped at 5 min, so under push contention the
+        # step timed out mid-retry and turned a NON-FATAL push failure (warning +
+        # self-heal next cycle) into a RED job failure. 15 min lets all retries
+        # finish and exit clean; real failures still surface via the retry loop.
+        timeout-minutes: 15
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |

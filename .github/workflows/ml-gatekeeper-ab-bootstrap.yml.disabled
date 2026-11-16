@@ -1,22 +1,9 @@
 name: ML Gatekeeper A/B Bootstrap
 
-# One-shot workflow_dispatch to produce BOTH model bundles required by
-# ml_gatekeeper.gatekeeper.score_active_picks_ab():
-#   - gatekeeper_old.joblib  (with leakage features — baseline)
-#   - gatekeeper_new.joblib  (leakage-purged via ML_GATE_DROP_LEAKAGE=1)
-#
-# Until both files exist, score_active_picks_ab() falls back to single-model
-# scoring and the entire A/B infrastructure (ab_analysis.py, rollback tracker,
-# Phase D z-test, Phase E streak tracker) does nothing.
-#
-# Run manually via:
-#   gh workflow run ml-gatekeeper-ab-bootstrap.yml
-#
-# After both runs the artifacts are committed to main with [skip ci]; the
-# next audit-dashboard cron cycle will use them via score_active_picks_ab().
-
-on:
-  workflow_dispatch:
+# DISABLED 2026-11-16: one-shot A/B gatekeeper bootstrap; unused since its last
+# run failed (2026-05-27). Re-enable (restore `on:`) if
+# score_active_picks_ab() ever needs both bundles re-generated.
+on: {}
 
 permissions:
   contents: write
@@ -30,6 +17,10 @@ concurrency:
 
 jobs:
   bootstrap:
+    # Defensive guard: this workflow is manual-only (workflow_dispatch).
+    # 2026-11-16: observed push-triggered runs with 0 jobs on main; block
+    # accidental/non-dispatch executions to avoid spurious failures.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
