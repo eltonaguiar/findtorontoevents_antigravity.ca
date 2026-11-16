@@ -55,7 +55,6 @@ UPLOADS = [
     ("audit_dashboard/incidents.html",                       "/findtorontoevents.ca/audit/incidents.html",                        "incidents"),
     ("audit_dashboard/data/incidents_enhancements_feed.json","/findtorontoevents.ca/audit/data/incidents_enhancements_feed.json", "incidents"),
     ("audit_dashboard/strategy_audit_summary.html",          "/findtorontoevents.ca/audit/strategy_audit_summary.html",          "pick_funnel"),
-    ("audit_dashboard/strategy_complete_summary.html",       "/findtorontoevents.ca/audit/strategy_complete_summary.html",       "pick_funnel"),
     ("audit_dashboard/pick_funnel.html",                     "/findtorontoevents.ca/audit/pick_funnel.html",                      "pick_funnel"),
     ("audit_dashboard/data/pick_funnel_today.json",          "/findtorontoevents.ca/audit/data/pick_funnel_today.json",           "pick_funnel"),
     ("audit_dashboard/data/pick_funnel_90d.json",            "/findtorontoevents.ca/audit/data/pick_funnel_90d.json",             "pick_funnel"),
@@ -83,11 +82,22 @@ UPLOADS = [
     # Written by tools/strategy_kill_tribunal.py (strategy-tribunal.yml). The
     # /audit template fetches ./data/strategy_tribunal_latest.json, so it must
     # be deployed here or the tribunal panel 404s. (local-missing => SKIP.)
+    # 2026-11-16: de-duplicated — this exact (local, remote) pair was listed twice
+    # (tags audit_data + strategy_funnel) and uploaded twice per run.
     ("audit_dashboard/data/strategy_tribunal_latest.json",   "/findtorontoevents.ca/audit/data/strategy_tribunal_latest.json",    "audit_data"),
     ("audit_dashboard/data/theory_tracker.json",             "/findtorontoevents.ca/audit/data/theory_tracker.json",              "audit_data"),
+    # 2026-11-16 deploy-list sweep: the /audit template <script src>s / fetch()es
+    # these and they were missing here (belt-and-braces alongside the hourly
+    # audit-dashboard data/*.json glob).
+    ("audit_dashboard/data/crypto_rsi5070_us_forward_status.json", "/findtorontoevents.ca/audit/data/crypto_rsi5070_us_forward_status.json", "audit_data"),
+    ("audit_dashboard/data/hyro_quan_bridge.json",           "/findtorontoevents.ca/audit/data/hyro_quan_bridge.json",            "audit_data"),
+    ("audit_dashboard/data/claude_top_picks.json",           "/findtorontoevents.ca/audit/data/claude_top_picks.json",            "audit_data"),
+    ("audit_dashboard/data/ueps_picks.json",                 "/findtorontoevents.ca/audit/data/ueps_picks.json",                  "audit_data"),
+    ("audit_dashboard/data/claudes_test_dashboard.json",     "/findtorontoevents.ca/audit/data/claudes_test_dashboard.json",      "audit_data"),
+    ("audit_dashboard/hc_filter.js",                         "/findtorontoevents.ca/audit/hc_filter.js",                          "audit_js"),
+    ("audit_dashboard/money_ready_filter.js",                "/findtorontoevents.ca/audit/money_ready_filter.js",                 "audit_js"),
     ("audit_dashboard/dashboard_freshness.js",               "/findtorontoevents.ca/audit/dashboard_freshness.js",                "audit_js"),
     ("audit_dashboard/dashboard_enhancements.js",            "/findtorontoevents.ca/audit/dashboard_enhancements.js",            "audit_js"),
-    ("audit_dashboard/data/strategy_tribunal_latest.json",    "/findtorontoevents.ca/audit/data/strategy_tribunal_latest.json",    "strategy_funnel"),
     ("audit_dashboard/excess_column.js",                      "/findtorontoevents.ca/audit/excess_column.js",                      "audit_js"),
     ("audit_dashboard/forward_clock.js",                      "/findtorontoevents.ca/audit/forward_clock.js",                      "audit_js"),
     ("audit_dashboard/validation_metrics.js",                "/findtorontoevents.ca/audit/validation_metrics.js",                "audit_js"),

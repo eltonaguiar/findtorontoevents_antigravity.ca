@@ -22,6 +22,11 @@ on:
           - '5'
           - '10'
 
+concurrency:
+  group: daily-stock-refresh
+  cancel-in-progress: false
+  queue: max
+
 jobs:
   refresh-stock-data:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}

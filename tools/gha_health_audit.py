@@ -12,6 +12,14 @@ Specs:
     "CANCEL BUCKETS": per-cancel classification into timeout-shaped / eviction-shaped /
     stack-kill / pr-close, with only the unexplained `external` residual as the true R7
     signal. R6 excludes timeout-shaped cancels from churn (they are `timeout-kill` rows).
+  - GUARDIAN v1.1 RULE RE-READS (09_NEXT_PRACTICE_ENGAGEMENTS.md, section 4):
+    R1/R2/R3 surface timeout-shaped `cancelled` kills as broken/flapping (a workflow
+    whose runs die at its `timeout-minutes` nightly is degraded even though
+    BAD_CONCLUSIONS skips `cancelled`); R5 excludes timeout-shaped lifetimes from its
+    p90 hog baseline (killed runs are not normal durations); R9 re-derives every
+    stale/never-run verdict at run-ID level (per-workflow latest-run probe) and
+    withholds verdicts a truncated bulk sample cannot confirm — the "235 stale"-class
+    bulk-sampling artifact (08 §3) can no longer produce a stale row.
   - Queue/skip monitoring intent: reports/gha_phase3_recommendations.md.
   - Output format (5 sections incl. "NOT AN ISSUE (recovered)"): AGENT_PROMPT_job_analysis.md
     section 5.
@@ -554,6 +562,21 @@ def _norm_hog_name(name: Any) -> str:
     return str(name).strip().lower().replace("–", "-").replace("—", "-")
 
 
+def _is_degraded_run(ctx: "Ctx", run: Dict[str, Any]) -> bool:
+    """Hard-bad run for broken/flapping visibility (guardian v1.1, 09 §4 R1/R2/R3).
+
+    BAD_CONCLUSIONS deliberately skips `cancelled`: most cancels are kill mechanics
+    (eviction / stack-kill / pr-close — 08 §3). But a **timeout-shaped** cancel is a
+    health problem — the workflow's runs die at their `timeout-minutes` (nightly, say),
+    so the workflow is degraded even though its conclusion says `cancelled`. Those runs
+    must surface in R1 (broken) and count as failures in R3 (flapping), attributed to
+    their killing step via `cancel_killing_step`.
+    """
+    if run.get("conclusion") in BAD_CONCLUSIONS:
+        return True
+    return run.get("conclusion") == "cancelled" and ctx.cancel_class(run) == "timeout-shaped"
+
+
 # ---------------------------------------------------------------------------
 # R1 — failed-no-success (+ recovered / prune classification)
 # ---------------------------------------------------------------------------
@@ -564,7 +587,7 @@ def rule_r1(ctx: Ctx) -> Dict[str, Any]:
         comp = _completed(items)
         if not comp:
             continue
-        last_bad_idx = next((i for i, r in enumerate(comp) if r.get("conclusion") in BAD_CONCLUSIONS), None)
+        last_bad_idx = next((i for i, r in enumerate(comp) if _is_degraded_run(ctx, r)), None)
         if last_bad_idx is None:
             ctx.plain_green += 1
             continue
@@ -587,12 +610,19 @@ def rule_r1(ctx: Ctx) -> Dict[str, Any]:
             "html_url": run.get("html_url"),
             "class": "broken",
         }
+        if run.get("conclusion") == "cancelled":
+            # guardian v1.1 (09 §4 R1): timeout-shaped kill = degraded despite 'cancelled'
+            row["timeout_kill"] = True
+            row["killing_step"] = cancel_killing_step(ctx.cancel_jobs_for(run))
+            row["verdict"] = ("timeout-shaped cancel: run dies at its job timeout — degraded "
+                              "despite 'cancelled' conclusion (09 §4 R1)")
         if not ever_passed and age > 24 * 7:
             row["class"] = "prune"  # "never passed in life" + dormant => prune row, not an incident
         rows.append(row)
     rows.sort(key=lambda x: x.get("age_hours") or 0.0)
     return {"status": "ok", "rows": rows[:50],
-            "notes": f"{len(rows)} failed-no-success group(s); window truncated={ctx.truncated}"}
+            "notes": (f"{len(rows)} failed-no-success group(s) incl. timeout-shaped cancel kills "
+                      f"(09 §4); window truncated={ctx.truncated}")}
 
 
 # ---------------------------------------------------------------------------
@@ -685,12 +715,23 @@ def rule_r3(ctx: Ctx) -> Dict[str, Any]:
             continue
         if comp[0].get("conclusion") != "success":
             continue
-        fails = [r for r in comp if r.get("conclusion") in BAD_CONCLUSIONS]
+        fails = [r for r in comp if _is_degraded_run(ctx, r)]
         if len(fails) < FLAP_FAILS_MIN:
             continue
         steps: List[str] = []
         split = {"infra_flake": 0, "real_bug": 0}
         for run in fails[:2]:  # bounded: step names for at most 2 recent failing runs
+            if run.get("conclusion") == "cancelled":
+                # guardian v1.1 (09 §4 R3): timeout-shaped kill — attribute the kill to
+                # the step in flight (cancel_killing_step), not to failure steps
+                name = cancel_killing_step(ctx.cancel_jobs_for(run))
+                steps.append(name or "timeout-kill (step unknown)")
+                low = (name or "").lower()
+                if any(h in low for h in INFRA_STEP_HINTS):
+                    split["infra_flake"] += 1
+                else:
+                    split["real_bug"] += 1
+                continue
             try:
                 for job in ctx.jobs_for(run.get("id")):
                     for st in (job.get("steps") or []):
@@ -717,7 +758,8 @@ def rule_r3(ctx: Ctx) -> Dict[str, Any]:
         })
     rows.sort(key=lambda x: -x["fails_in_window"])
     return {"status": "ok", "rows": rows[:30],
-            "notes": f"{len(rows)} flapper(s) (>= {FLAP_FAILS_MIN} fails / {FLAP_WINDOW} runs, latest green)"}
+            "notes": (f"{len(rows)} flapper(s) (>= {FLAP_FAILS_MIN} fails / {FLAP_WINDOW} runs, latest green; "
+                      f"timeout-shaped kills count as fails, step via cancel_killing_step — 09 §4)")}
 
 
 # ---------------------------------------------------------------------------
@@ -762,6 +804,9 @@ def rule_r5(ctx: Ctx) -> Dict[str, Any]:
     for (wid, _b), items in ctx.groups.items():
         durs = []
         for r in _completed(items):
+            if r.get("conclusion") == "cancelled" and ctx.cancel_class(r) == "timeout-shaped":
+                continue  # guardian v1.1 (09 §4 R5): a timeout-killed lifetime is a KILL, not a
+                #           normal duration — pollutes the p90 hog baseline otherwise
             s, e = _run_start(r), _run_end(r)
             if s and e and e > s:
                 durs.append((e - s).total_seconds() / 3600.0)
@@ -797,7 +842,8 @@ def rule_r5(ctx: Ctx) -> Dict[str, Any]:
         })
     rows.sort(key=lambda x: -(x.get("runtime_hours") or 0))
     return {"status": "ok", "rows": rows[:30],
-            "notes": f"{len(rows)} runner hog(s) (> {RUNNER_HOG_HOURS:.0f}h or > 2x p90)"}
+            "notes": (f"{len(rows)} runner hog(s) (> {RUNNER_HOG_HOURS:.0f}h or > 2x p90; "
+                      f"timeout-shaped lifetimes excluded from the p90 baseline — 09 §4 R5)")}
 
 
 # ---------------------------------------------------------------------------
@@ -1088,6 +1134,12 @@ def rule_r8(ctx: Ctx) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def rule_r9(ctx: Ctx) -> Dict[str, Any]:
+    # guardian v1.1 (09 §4 R9): the bulk-window recency map below is a HINT only —
+    # the bounded bulk run sample is the "235 stale"-class generator when it truncates
+    # (08 §3: early bulk-window sampling artifact). Every stale/never-run verdict is
+    # re-derived at run-ID level (per-workflow latest-run probe); a verdict the sample
+    # cannot confirm within budget is WITHHELD as SKIPPED(truncated-window), never
+    # emitted from cached bulk figures.
     latest_by_path: Dict[str, Optional[datetime]] = {}
     for (wid, _b), items in ctx.groups.items():
         for wf in ctx.workflows:
@@ -1108,7 +1160,10 @@ def rule_r9(ctx: Ctx) -> Dict[str, Any]:
         cls = cadence_class(info)
         threshold = STALE_THRESHOLD_DAYS.get(cls, 60)
         last = latest_by_path.get(path)
-        if last is None:
+        derived = "window-run-ids"
+        stale_hint = last is None or (ctx.now - last).total_seconds() / 86400.0 > threshold
+        if stale_hint:
+            # verdict candidate -> confirm (or derive) at run-ID level before judging
             wf_meta = next((w for w in ctx.workflows
                             if (w.get("path") or "").split("@", 1)[0] == path
                             and "@" not in (w.get("path") or "")), None)
@@ -1122,15 +1177,24 @@ def rule_r9(ctx: Ctx) -> Dict[str, Any]:
                     rows.append({"workflow_path": path, "workflow": info.name, "cadence": cls,
                                  "age_days": "SKIPPED(rate)", "verdict": "SKIPPED(rate)"})
                     continue
+                derived = "run-id-probe"
                 if latest is None:
                     rows.append({"workflow_path": path, "workflow": info.name, "cadence": cls,
-                                 "age_days": None, "last_run": None,
+                                 "age_days": None, "last_run": None, "derived_from": derived,
                                  "verdict": f"NEVER RUN with live trigger ({cls}) — dead trigger or broken filter"})
                     continue
-                last = _run_start(latest)
-            else:
+                probe_last = _run_start(latest)
+                if probe_last and (last is None or probe_last > last):
+                    last = probe_last
+            elif last is None:
                 rows.append({"workflow_path": path, "workflow": info.name, "cadence": cls,
                              "age_days": "SKIPPED(budget)", "verdict": "SKIPPED(budget): latest-run probe cap reached"})
+                continue
+            else:
+                rows.append({"workflow_path": path, "workflow": info.name, "cadence": cls,
+                             "age_days": "SKIPPED(truncated-window)",
+                             "verdict": ("SKIPPED(truncated-window): bulk sample truncated and run-ID-level "
+                                         "probe budget exhausted — stale verdict withheld (09 §4 R9)")})
                 continue
         age_days = (ctx.now - last).total_seconds() / 86400.0 if last else None
         if age_days is not None and age_days > threshold:
@@ -1141,11 +1205,14 @@ def rule_r9(ctx: Ctx) -> Dict[str, Any]:
                 "age_days": round(age_days, 1),
                 "threshold_days": threshold,
                 "last_run": last.isoformat() if last else None,
+                "derived_from": derived,
                 "verdict": f"stale by cadence: silent {age_days:.0f}d as {cls} (threshold {threshold}d)",
             })
     rows.sort(key=lambda x: -(x.get("age_days") if isinstance(x.get("age_days"), (int, float)) else 1e6))
     return {"status": "ok", "rows": rows[:40], "dispatch_exempt": exempt,
-            "notes": f"{len(rows)} stale/never-run live-trigger workflow(s); {exempt} dispatch-only EXEMPT"}
+            "notes": (f"{len(rows)} stale/never-run live-trigger workflow(s) (verdicts re-derived at "
+                      f"run-ID level; unconfirmable bulk-sample verdicts withheld — 09 §4 R9); "
+                      f"{exempt} dispatch-only EXEMPT")}
 
 
 # ---------------------------------------------------------------------------

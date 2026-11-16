@@ -4,6 +4,9 @@ on:
     - cron: '50 */2 * * *'  # Every 2 hours (reduced from */15 to ease queue pressure)
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   scan:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
