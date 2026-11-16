@@ -656,6 +656,27 @@ except ImportError:
         return s
 
 
+# ── Ledger-backed PROVEN gate (2026-11-16 audit) ──
+# get_tier() is a *name* lookup: a source keeps PROVEN long after its ledger
+# turned negative (live case: ml_bg_system_f -> alias claws_of_doom -> PROVEN,
+# 97 rows at WR 20.6% / PF 0.31). Before the tier is written onto a pick, the
+# published rule (n>=20, WR>=50%, PF>=1.5 from resolved rows) is re-checked.
+try:
+    from audit_trail.proven_gate import check_pick_proven, demoted_tier
+
+    _PROVEN_GATE_AVAILABLE = True
+except ImportError:
+    _PROVEN_GATE_AVAILABLE = False
+
+    def check_pick_proven(pick, stats=None):  # type: ignore[misc]
+        return True, "gate_unavailable", {}
+
+    def demoted_tier(stats):  # type: ignore[misc]
+        return "WATCH"
+
+
+_PROVEN_DEMOTIONS: list[dict] = []
+
 _EQUITY_SYMBOLS = {
     "SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "TSLA", "META", "NVDA", "AMD", "NFLX",
     "DIS", "BA", "JPM", "GS", "V", "MA", "PYPL", "SQ", "COIN", "MSTR", "RIOT", "MARA", "HUT", "BITF",
@@ -14923,9 +14944,13 @@ def generate():
     # Until then, the metric should be read with the disclaimer:
     #   "fictitious sequential reinvestment of 1 unit on every trade"
     _MAX_PNL_COMPOUND = 10  # bumped from 2% (2026-06-04): 2% destroyed edge at scale; 10% loss-protective
+    # 2026-11-16 audit: keep the value BEFORE the -99/9999 display clamp so the
+    # payload can say a -1356% compounded figure was floored (it was shown as
+    # -99% with no indication).
     total_pnl_pct_compounded_ew = _compound_equal_weight_capped_sequence(
         resolved_closed, float(_MAX_PNL_COMPOUND)
     )
+    _compounded_ew_pre_floor = total_pnl_pct_compounded_ew
     # Hard sanity ceiling so the summary card doesn't show absurd numbers
     # while the redesign lands. 9999% is well above any realistic portfolio
     # return but visually communicates "uncapped".
@@ -16351,7 +16376,23 @@ def generate():
         pick["has_conflict"] = (
             _normalize_symbol(pick.get("symbol", "")) in conflict_symbols
         )
-        pick["trust_tier"] = get_tier(pick.get("source_system", ""))
+        _tier_from_registry = get_tier(pick.get("source_system", ""))
+        if _tier_from_registry == "PROVEN" and _PROVEN_GATE_AVAILABLE:
+            _proven_ok, _proven_reason, _proven_stats = check_pick_proven(pick)
+            if not _proven_ok:
+                _tier_from_registry = demoted_tier(_proven_stats)
+                pick["trust_tier_demoted_from"] = "PROVEN"
+                pick["trust_tier_demote_reason"] = _proven_reason
+                if len(_PROVEN_DEMOTIONS) < 500:
+                    _PROVEN_DEMOTIONS.append(
+                        {
+                            "symbol": pick.get("symbol"),
+                            "strategy": pick.get("strategy"),
+                            "source_system": pick.get("source_system"),
+                            "reason": _proven_reason,
+                        }
+                    )
+        pick["trust_tier"] = _tier_from_registry
         # ── Backfill antigravity_score for picks that skip production_scanner ──
         # Only ~4/61 picks currently have it because only production_scanner
         # emits antigravity_score/antigravity_safe/antigravity_tooltip at
@@ -16909,6 +16950,27 @@ def generate():
         log.debug("PCG-5 shadow hook failed (non-critical): %s", _pcg5_err)
     # ──────────────────────────────────────────────────────────────────────────
 
+    # 2026-11-16 audit: single labelled view of the four P&L totals, plus
+    # counts of resolved rows whose outcome contradicts their own geometry
+    # (stale exits beyond the planned stop, clamped losses, zeros on EXPIRED).
+    from audit_trail.pnl_totals_audit import (
+        build_pnl_headline,
+        compute_resolver_anomalies,
+    )
+
+    _pnl_headline = build_pnl_headline(
+        headline=total_pnl_pct_compounded_rolling_100,
+        rolling_100=total_pnl_pct_compounded_rolling_100,
+        sum_raw=total_pnl,
+        compounded_ew=total_pnl_pct_compounded_ew,
+        compounded_ew_pre_floor=_compounded_ew_pre_floor,
+        geomean_annualized=total_pnl_pct_geomean_annualized,
+    )
+    try:
+        _resolver_anomalies = compute_resolver_anomalies(all_closed_including_expired)
+    except Exception:
+        _resolver_anomalies = {}
+
     payload = {
         "generated_at": now,
         "metadata": {
@@ -16931,6 +16993,17 @@ def generate():
             "total_resolved": total_resolved,
             "zero_pnl_count": zero_pnl_count,
             "flat_count": zero_pnl_count,
+            # 2026-11-16 audit: labelled P&L basis + resolver anomaly counts.
+            # total_pnl_pct (rolling-100) is the headline; the other three were
+            # previously unlabelled, which made -77.67 / -1356.44 / -99.0 / -99.9
+            # look like four competing claims about the same book.
+            "pnl_headline": _pnl_headline,
+            "resolver_anomalies": _resolver_anomalies,
+            "proven_badge_audit": {
+                "rule": "PROVEN requires n>=20, WR>=50%, PF>=1.5 from resolved rows",
+                "demoted_from_proven_this_run": len(_PROVEN_DEMOTIONS),
+                "examples": _PROVEN_DEMOTIONS[:10],
+            },
             "auto_expired_excluded": len(all_closed_including_expired) - total_closed,
             "overall_win_rate": overall_wr,
             # total_pnl_pct is now compounded equal-weight (replaces raw additive sum).

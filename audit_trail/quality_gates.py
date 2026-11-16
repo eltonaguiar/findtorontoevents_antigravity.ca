@@ -852,7 +852,17 @@ ACTIVE_NON_CRYPTO_MIN_TRUST_SCORE = 3  # LOWERED 5ÔåÆ3 to match smart picks
 # values reflect later strategy performance (partial lookahead in backtest).
 # For LIVE picks the filter is forward-clean because trust_score is read from
 # the strategy_performance snapshot available AT pick creation time.
-SMART_PICKS_CRYPTO_LONG_ONLY = True
+# 2026-11-16 audit (findtorontoevents.ca/audit): the LONG-only constraint was
+# calibrated on a 7d window in April 2026 where SHORT PF 1.54 trailed LONG 1.91.
+# The full resolved ledger now says the opposite — LONG n=1,356 WR 32.7% PF 0.51
+# (Σ-1,514.8%) vs SHORT n=608 WR 55.6% PF 1.89 (Σ+617.0%). Verified that
+# un-flipping the flag does not currently admit anything (of 132 active crypto
+# SHORTs, 0 pass forward_validated), so the constraint stays default-ON and is
+# now env-overridable to let the A/B run without a code change:
+#   SMART_PICKS_CRYPTO_LONG_ONLY=0  -> allow crypto SHORTs through the gate
+SMART_PICKS_CRYPTO_LONG_ONLY = os.environ.get(
+    "SMART_PICKS_CRYPTO_LONG_ONLY", "1"
+).strip().lower() not in ("0", "false", "no", "off")
 
 # ── PSI (Population Stability Index) drift gate (task J / handoff P1) ──
 # PSI measures feature distribution drift between training and production.
@@ -9641,6 +9651,9 @@ def passes_smart_gate(pick: Dict[str, Any]) -> bool:
     if SMART_PICKS_CRYPTO_LONG_ONLY and _ac == "CRYPTO":
         _direction = str(pick.get("direction") or pick.get("signal_type") or "").upper()
         if _direction not in ("LONG", "BUY"):
+            # 2026-11-16: tag the rejection so the shadow cost of the gate is
+            # measurable from the payload (smart_gate_failure_histogram).
+            pick["_smart_crypto_short_blocked"] = True
             logger.debug(
                 "Smart gate: CRYPTO SHORT rejected (SMART_PICKS_CRYPTO_LONG_ONLY)"
             )

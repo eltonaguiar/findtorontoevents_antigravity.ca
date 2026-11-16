@@ -156,3 +156,72 @@ No gaps in the core pick contract: `symbol`, `direction`, `entry_price`, `take_p
 4. **Re-open the frozen gate review** (`SMART_PICKS_MIN_SCORE_*`, freeze expired 2026-08-18) and test `SMART_PICKS_CRYPTO_LONG_ONLY` against the SHORT ledger before it stays on.
 5. **Make class verdicts cite their window and denominator** on the card; make `thresholdPass` false when `activeCount == 0`.
 6. **Patch status/sign contradictions (15) and wrong-side stops (102)** at the writer, then re-emit.
+
+## 6 · Asset-class validation, missing classes, and the mega-cap question
+
+Recomputed from the same live payload (7,654 rows). Resolved = WON/LOST/CLOSED/
+TP_HIT/SL_HIT with |pnl| > 0.01%.
+
+| Class | rows | resolved n | WR | PF | avg/trade | ΣPnL | worst | share within ±3% |
+|---|---|---|---|---|---|---|---|---|
+| CRYPTO | 5,437 | 1,964 | 39.8% | 0.76 | −0.46% | −897.9% | −26.04% | 54.0% |
+| EQUITY | 935 | 739 | 47.1% | **1.15** | +0.31% | **+230.6%** | −24.60% | 40.6% |
+| ETF | 618 | 567 | 44.3% | 1.04 | +0.04% | +22.9% | −10.30% | 76.7% |
+| FOREX | 495 | 173 | 40.5% | 0.60 | −0.18% | −31.4% | −2.50% | 99.4% |
+| COMMODITY | 82 | 16 | 25.0% | 0.33 | −1.16% | −18.6% | −6.80% | 93.8% |
+| BOND | 48 | 35 | 37.1% | 0.59 | −0.22% | −7.7% | −1.28% | 100% |
+| FUTURES | 15 | 0 | — | — | — | — | — | — |
+
+**Is any class "generally safe"?** No, but two are *low-variance* for a bad
+reason: BOND (all 35 trades inside ±3%, worst −1.28%) and FOREX (99.4% inside
+±3%, worst −2.50%) lose because their stops are tight, not because they win —
+PF 0.59 / 0.60. ETF is the least destructive class with a positive sum (worst
+−10.3%, PF 1.04). EQUITY is the only class with positive expectancy *and* PF
+> 1.1; it also carries the second-worst tail (−24.6%).
+
+**Class subsets that actually clear PF 1.1 (n ≥ 45):** `XLF` 53.3% WF / PF 1.70
+(n=45), `QQQ` PF 1.22 (n=80), `SOXX` 1.18 (n=37), `XLE` 1.14 (n=58), `XLK` 1.13
+(n=64). The ETF aggregate is dragged down by `IWM` (PF 0.58, −26.9%, n=65) and
+`GLD` (0.82). The copytrader cohort — 267 rows, 63 resolved — is the best
+non-class cohort: WR 54.0%, PF 1.35, +11.1%.
+
+**Missing classes.**
+* `MUTUAL_FUND`: **0 rows, 0 payload strings.** Not a registered class (class
+  id −1, dropped by the ML gate per `2026-11-15_AM_profitability-plan`), and the
+  separate `ejaguiar1_mutual_funds` DB is unreachable (1045) per
+  `SWARM_Nov162026/DB/DONE/DB_ACCESS_MATRIX.md`. Any mutual-fund tile elsewhere
+  on the site is not fed by this pipeline.
+* `SPORTS` exists as 2 rows only — no class surface.
+* `PENNY_STOCK` / `MEME` / `CHEAP_STOCKS` appear in `money_ready_verdicts` but
+  have no rows in `picks` — verdicts on empty universes.
+* **Prediction markets: emitted, never resolved.** POLYMARKET 13 rows, KALSHI
+  14 rows, **0 resolved in either**. They cannot be validated at all in this
+  payload, and `stamp_pick_quality.py` substitutes synthetic stats when the
+  ledger is empty (`n=max(source_count,5)`, `wr=max(consensus_wr,0.50)`) — a
+  fabricated-input path for trust scoring.
+
+**Mega-caps ("stocks that only go up").**
+
+| Symbol | rows | active | resolved n | WR | PF | ΣPnL |
+|---|---|---|---|---|---|---|
+| AAPL | 86 | 7 | 78 | 55.1% | **1.74** | **+52.7%** |
+| JPM | 62 | 2 | 60 | 53.3% | 1.21 | +11.9% |
+| META | 58 | 8 | 47 | 46.8% | 1.23 | +21.1% |
+| AMZN | 70 | 5 | 65 | 41.5% | 0.99 | −0.7% |
+| GOOGL | 62 | 4 | 55 | 41.8% | 0.81 | −18.6% |
+| NVDA | 1 | 1 | 0 | — | — | — |
+| MSFT | 2 | 2 | 0 | — | — | — |
+| MCD | **0** | 0 | 0 | — | — | — |
+| V | 5 | 2 | 0 | — | — | — |
+| COST | 11 | 3 | 1 | 0% | 0 | −0.1% |
+
+Only AAPL has both a real sample and a real edge; NVDA/MSFT/MCD have no
+resolved history at all, so no claim about them is supportable from this
+payload.
+
+**Crypto direction test (pre-registered before flipping anything).** Flipping
+`SMART_PICKS_CRYPTO_LONG_ONLY` admits nothing today: of 132 active crypto
+SHORTs, 5 pass score>=65 → 5 pass confidence → 4 pass R:R → **0** pass
+`forward_validated` (LONG: 5 → 3 → 3 → 0). The gate's binding constraint is
+forward validation. The flag is now env-overridable for the A/B, and blocked
+SHORTs are tagged `_smart_crypto_short_blocked` so the cost is measurable.

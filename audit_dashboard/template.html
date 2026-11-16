@@ -9663,6 +9663,16 @@ const _TRUST_DEMOTED = {
   'multi_timeframe_ema_stack': {w: 0.15, reason: '-7.87% avg PnL, worst strategy (Mar 16 v97 audit)'},
 };
 function getTrustTier(p) {
+  // 2026-11-16 audit: dashboard_generator.py now re-checks PROVEN against the
+  // pick's resolved ledger (n>=20, WR>=50%, PF>=1.5). Respect that verdict —
+  // the name lookups below must not re-promote a pick the ledger rejected.
+  if (p && p.trust_tier_demoted_from === 'PROVEN') {
+    return {
+      tier: String(p.trust_tier || 'WATCH').toUpperCase(),
+      weight: 0.3,
+      reason: p.trust_tier_demote_reason || 'demoted: ledger check failed'
+    };
+  }
   const sys = (p.source_system || '').toLowerCase();
   const strat = (p.strategy || '').toLowerCase();
   // 1. PROBATION - system-level blocks (broken/garbage systems)
