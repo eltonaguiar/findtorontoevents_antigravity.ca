@@ -21,10 +21,15 @@ on:
     - cron: "34 6 15 * *"   # 15th of every month at 06:00 UTC
   workflow_dispatch:         # allow manual triggering
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backup-verify:
     name: Backup Restore Verification
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       issues: write
