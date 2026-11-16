@@ -826,7 +826,7 @@
               'Failing checks: <strong>' + htmlEscape(_redList) + '</strong>. ' +
               'Ghost rows: ' + htmlEscape(_ghostLive) + '. ' +
               'Downstream panels (Top-N backtest, asset-class WR/PF, smart-picks scoring) read from the same DB and inherit this corruption.</span><br>';
-      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: <code>tools/cleanup_ghost_rows.py</code> shipped (2026-05-31: 0 ghost rows confirmed). <code>tools/db_health_check.py</code> emitting hourly; <code>forward_validator.py</code> writes canonical statuses. ' +
+      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: <code>tools/cleanup_ghost_rows.py</code> shipped (2026-05-31: quarantined from canonical view — live raw count in the DB Health tile). <code>tools/db_health_check.py</code> emitting hourly; <code>forward_validator.py</code> writes canonical statuses. ' +
               'Ghost rows, status mismatch, non-canonical statuses, and _bak tables all cleared as of 2026-05-31 DB audit. ' +
               'See <a href="/updates/2026-05-31-pr1-data-integrity-repair.md" style="color:#fde68a;text-decoration:underline">PR #1 data integrity repair</a> and <a href="/updates/2026-05-31-incidents-enhancements-audit-summary.md" style="color:#fde68a;text-decoration:underline">incidents audit summary</a> for the full fix log.</span>';
       html += '</div>';

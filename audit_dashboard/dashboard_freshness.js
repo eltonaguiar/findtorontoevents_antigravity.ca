@@ -113,22 +113,7 @@
       url: 'data/money_ready_verdict.json',
       extract: function(json) { return json && (json.generated_at || json.generated_date); }
     },
-    {
-      id: 'swarm-picks',
-      label: 'Swarm Paper Picks',
-      description: 'TradingView swarm-generated paper trades',
-      url: 'data/swarm_picks.json',
-      extract: function(json) {
-        if (!json || !json.length) return null;
-        // Use the most recent created_at across all picks
-        var latest = null;
-        for (var i = 0; i < json.length; i++) {
-          var t = json[i].created_at;
-          if (t && (!latest || t > latest)) latest = t;
-        }
-        return latest;
-      }
-    },
+    
     {
       id: 'ai-leaderboard',
       label: 'AI Leaderboard',
@@ -145,7 +130,6 @@
     'dashboard-data':   ['last-updated', 'summary-cards-freshness'],
     'edge-stability':   ['edge-stability-freshness'],
     'money-ready':      ['money-ready-freshness'],
-    'swarm-picks':      ['swarm-panel-freshness'],
     'ai-leaderboard':   ['ai-leaderboard-freshness']
   };
 
