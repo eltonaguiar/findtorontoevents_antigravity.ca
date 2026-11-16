@@ -362,6 +362,15 @@ def run_all_agents() -> Dict[str, Any]:
     }
     momentum_signals = momentum_result.get("signals", [])
     all_signals.extend(momentum_signals)
+    # 2026-11-16: the registry source pm_momentum_signals reads this file — nothing
+    # ever wrote it (feed-health failed hourly on "missing_from_payload" once the
+    # source was un-ghosted). Always persist, even empty (status: ok/empty/error).
+    _save_json(Path(__file__).resolve().parent / "data" / "momentum_signals.json", {
+        "generated_at": __import__("datetime").datetime.utcnow().isoformat() + "Z",
+        "status": momentum_result.get("status", "ok"),
+        "notice": momentum_result.get("notice"),
+        "signals": momentum_signals,
+    })
 
     # Agent 3: Kalshi Multi-Timeframe Agent
     logger.info("\n[3/4] Running Kalshi Multi-Timeframe Agent...")
