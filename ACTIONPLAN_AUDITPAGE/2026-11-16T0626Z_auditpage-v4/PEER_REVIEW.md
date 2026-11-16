@@ -50,7 +50,7 @@ Plans on `origin/main`:
 ## Unsafe if executed as written
 
 - `tools/cleanup_ghost_rows.py --execute` against live `bt_backtest_trades` needs a dry-run diff and an explicit go-ahead. The plan is right to say dry-run first. The finalizer must not skip that.
-- "Consolidate the 4 PM workflows into one" and "archive `.disabled` workflows" are hygiene, not P0. Confirm each file is redundant before deleting. Hold the workflow list until the names are re-read from `.github/workflows/`, not copied from a subagent table.
+- "Consolidate the 4 PM workflows into one" undercounts. Eight workflow files mention polymarket/kalshi/prediction_market: `alpha-engine-live.yml` (8 `|| echo`), `audit-dashboard.yml` (5), `polymarket-signals.yml` (3), `sports-betting-refresh.yml` (1), plus `copy-trader-intelligence.yml`, `prediction-market-agents.yml`, `social-prediction-tracker.yml`, `sports-prediction-market-sync.yml`. Do not delete four files and call it done. `audit-dashboard.yml` must stay.
 - Adding `PREDICTION_MARKETS_SHADOW_ONLY` is the right direction (recorded decision: stay shadow, copy-trading rejected). Do not rescind that decision in the same PR that "makes PM wired".
 
 ## What the finalizer should assemble
@@ -58,3 +58,17 @@ Plans on `origin/main`:
 Use **kilo/auditpage (0625Z)** as the spine. Overlay **v4** for: sign-vs-magnitude, ghost check still green, stale-banner threshold, cron queue, PF `n/a` not `∞`, and this review's rejections. Use **06:23** only for the owner split and the evidence index. Drop its GHA failure table and the "positive-expectancy stream" sentence.
 
 Order stays: prose + check thresholds, then ghost cleanup (dry-run), then PM path reconcile (shadow only), then publish-queue. No sizing.
+
+## Claim check added 2026-11-16T06:33Z
+
+Independent read of the files the 0625Z and 06:23 plans cite. Passes are omitted. These change the final plan:
+
+8. **Do not forward-track `futures_momentum` n=57 / 63% / PF 2.6 or `forex_rsi2` n=19 / 63% / PF 2.4.** Those figures are not in current JSON. Nearest hit is prose in `reports/wsg_shadow_track_decision_2026-06-09.md` (PF 2.68 and 2.43). `strategy_perf_by_class.json` now says COMMODITY `futures_momentum` n=681 WR 37.3% PF 0.2488, and FOREX `forex_rsi2_mean_reversion` n=1091 WR 39.78% PF 0.3754. The June sleeve is stale. Drop P3 items that size a research queue off it.
+
+9. **PF>10 rows are real, and worse than the peer examples.** `strategy_perf_by_class.json` uses `win_rate_pct` / `profit_factor`. Top CRYPTO cells are PF **999** (zero-loss sentinel), not a measured factor: HoffmanStripTrendStrategy n=146, Calendar Effect Crypto n=105, VolumeWeightedMedianZScoreStrategy n=50, BTCSPXCorrBreakdownStrategy n=44. GainerPredictor1hStrategy n=49 PF 120 is the one the 06:23 plan named. Cap or blank PF when losses are 0. Do not quote 999 as edge.
+
+10. **Do not kill `signal_validation` for "PF 0.12 / MDD 123%".** Those literals are not on that name. PF 0.12 is hard-coded for COMMODITY COT at `audit_dashboard/template.html:13543`. `signal_validation` is on `_TIER2_PROMOTION_TARGETS` at `audit_trail/dashboard_generator.py:11708` and on a blocked-list string at `template.html:9503` ("10 trades, 0% WR, -18.4% PnL"). Card numbers are computed at `dashboard_generator.py:12037-12040`. Remove it from the promotion-target tuple. Separately delete the COT hard-coded PF.
+
+11. **BOND Sharpe -65.632 is real, but not in `audit_dashboard/data/`.** It is `alpha_engine/data/walkforward_results.json` `by_class.BOND.oos_sharpe`. Clamp there. A nearby -65.6365 in `institutional_metrics.json` is a different series. Do not "fix" the wrong file.
+
+12. **Kill-list line is exact.** `alpha_engine/config.py:294` `'prediction_market_consensus',  # WR 26%, -29% intrabar` inside `BLACKLISTED_STRATEGIES`. Shadow pin stays. Do not un-blacklist it to make the dashboard card look wired.
