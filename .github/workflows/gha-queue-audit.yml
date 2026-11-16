@@ -1,0 +1,58 @@
+name: GHA queue & duration audit
+
+on:
+  schedule:
+    # Every 4 hours, staggered from the failure guardian (:00/:30) and the
+    # stale-workflows audit (05:09) so the three monitors do not collide.
+    - cron: '17 */4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Queue + duration audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Run queue & duration audit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python tools/gha_queue_audit.py \
+            --out reports/gha_queue_audit.json \
+            || echo "::warning::queue audit failed (soft-fail)"
+
+      - name: Commit audit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f reports/gha_queue_audit.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No queue-audit changes to commit"
+          else
+            git commit -m "chore(gha): queue & duration audit [skip ci]"
+            for i in 1 2 3; do
+              bash .github/scripts/safe_push.sh && break
+              echo "Push attempt $i failed, retrying..."
+              sleep 5
+            done
+          fi
