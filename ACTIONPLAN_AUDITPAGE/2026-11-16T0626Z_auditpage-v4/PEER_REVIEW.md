@@ -26,13 +26,14 @@ Plans on `origin/main`:
 
 ## Reject or downgrade before the final plan
 
-1. **Reject P4 item 18 and TL;DR line 20 of the 06:23 plan** ("6 failing runs, start with `actions-failure-guardian`").
-   - `actions-failure-guardian` run `43812910225` completed **success** at 2026-11-16T05:51:13Z.
-   - `Deploy Rise of the Claw Dashboard` run `43812995439` completed **success** at 2026-11-16T05:52:02Z.
-   - Cited id `438129705` is not an 11-digit run id. Do not script against it.
-   - `db-freshness-guardian` last 10 main runs were success (latest `43809360293`, 05:18Z).
-   - `forward-validator.yml` does not exist.
-   - Re-list failures from a fresh per-workflow history. Do not open fix PRs from that table.
+1. **Reject P4 item 18 and TL;DR line 20 of the 06:23 plan** ("6 failing runs, start with `actions-failure-guardian`"). Rechecked 2026-11-16T06:32Z with `gh run view`. Every resolvable id **succeeded**. None of these is a broken workflow.
+   - `43812995439` Deploy Rise of the Claw Dashboard — success 05:52:02Z (latest).
+   - `43812993445` Deploy Rise of the Claw — success 05:52:01Z; later successes `43814271618` (06:04Z) and `43816313118` (06:22Z).
+   - `438129705` — **404**. Not a run id. Latest `actions-failure-guardian` on main is success `43812910225` at 05:51:13Z (last 8 all success).
+   - `43812864701` DARWIN ENGINE — success 05:50:47Z (latest).
+   - `43812822128` Claude's Test - Portfolio Manager — success 05:50:24Z (latest).
+   - `43812803756` Portfolio Trackers — success 05:50:15Z (latest).
+   - `forward-validator.yml` does not exist. Do not open fix PRs from that table.
 
 2. **Do not treat "PnL integrity 99.5%" as confirmed data quality.** The 06:23 table marks it CONFIRMED. The metric is sign consistency: 130/24,158. Naive magnitude mismatch in the same object is **6,535 / 24,158 (27.05%)**. The final plan must print both.
 
@@ -44,7 +45,7 @@ Plans on `origin/main`:
 
 6. **"PM data is wired" is only half true.** `alpha_engine/data/prediction_market_picks.json` exists (2 picks, `prediction_market_consensus`). `audit_dashboard/data/prediction_market_picks.json` does not. `kalshi_signals.json` is absent at both `alpha_engine/data/` and `prediction_market_agents/data/`. Keep the path-split fix. Do not say the feed is live.
 
-7. **Dashboard staleness is not the 60-minute string.** `template.html:17878` warns at `mins > 60`. Freshness panel goes red at 72h. Last **scheduled** Unified Audit Dashboard success was 2026-11-16T03:21:42Z (`43797722088`). No 04:10 or 05:10 schedule run in the last 15. Dispatches at 05:16 and 06:04 were cancelled; 06:12 was in progress. Concurrency group `dashboard-publish`, `cancel-in-progress: false`. The 06:23 plan never mentions this. Keep v4 §2.3–2.4. Do not re-add `push:`.
+7. **Dashboard staleness is not the 60-minute string.** `template.html:17878` warns at `mins > 60`. Freshness panel goes red at 72h. Last **scheduled** Unified Audit Dashboard success was 2026-11-16T03:21:42Z (`43797722088`). No 04:10 or 05:10 schedule run in the last 8. Dispatches at 05:16 and 06:04 were cancelled; `43815224263` (06:12Z) was still in progress at 06:32Z. Concurrency group `dashboard-publish`, `cancel-in-progress: false`. The 06:23 plan never mentions this. Keep v4 §2.3–2.4. Do not re-add `push:`.
 
 ## Unsafe if executed as written
 
