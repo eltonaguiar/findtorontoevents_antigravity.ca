@@ -1167,7 +1167,14 @@ a:hover { text-decoration: underline; }
             var sleeves = c.top_sleeves || [];
             if (sleeves.length) {
               var s0 = sleeves[0];
-              sleeveTxt = ' <span style="color:#a5b4fc;font-size:11px">Top: <code>' + (s0.strategy || '?') + '</code> (n=' + s0.n + ', PF=' + s0.pf + (s0.is_single_source ? ', &#x26a0; single-src' : '') + ')</span>';
+              if (s0.policy_blocked) {
+                // 2026-11-16: every candidate failed the plausibility guard
+                // (single-source registry artifact, PF>5 on n<100, or WR>=95%).
+                // Say so instead of headlining an artifact as "Top".
+                sleeveTxt = ' <span style="color:#fca5a5;font-size:11px" title="' + (s0.note || 'artifact') + '">No credible sleeve &mdash; top candidate flagged ' + (s0.note || 'artifact') + '</span>';
+              } else {
+                sleeveTxt = ' <span style="color:#a5b4fc;font-size:11px">Top: <code>' + (s0.strategy || '?') + '</code> (n=' + s0.n + ', PF=' + s0.pf + (s0.is_single_source ? ', &#x26a0; single-src' : '') + ')</span>';
+              }
             }
             if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;
             var liveLine = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +

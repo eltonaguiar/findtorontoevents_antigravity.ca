@@ -706,3 +706,108 @@ class TestQ2RegistryMddPreferred:
         result = _mdd_cvar_gate(returns, "COMMODITY", registry_mdd=None)
         assert result["mdd_source"] == "recompute"
         assert result["mdd"] < 0.20
+
+
+class TestSleevePlausibilityGuard:
+    """2026-11-16 audit: single-source / implausible-PF sleeves must never be
+    presented as actionable Money-Ready candidates.
+
+    Live evidence: ADX Trend Confirmation (BTCUSDT 91W/0L, PF 56.7) and
+    GainerPredictor1hStrategy (48/49 wins on AVAXUSDT, PF 120) were both
+    ranked as top sleeves with policy_blocked=False.
+    """
+
+    def _reg(self, rows):
+        return {"by_asset_class_strategy_policy_clean_net": rows}
+
+    def test_single_source_artifact_is_policy_blocked(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "ADX Trend Confirmation",
+            "n": 213, "win_rate_pct": 97.18, "profit_factor": 56.73,
+            "is_single_source_artifact": True,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert len(sleeves) == 1
+        assert sleeves[0]["policy_blocked"] is True
+        assert sleeves[0]["is_single_source"] is True
+        # ADX is 97.18% WR, which is itself implausible at n=213 (the WR guard
+        # covers n<1000), so it is flagged on both axes.
+        assert sleeves[0]["implausible_pf"] is True
+
+    def test_high_wr_large_n_is_policy_blocked(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "resolver_grade_sleeve",
+            "n": 394, "win_rate_pct": 97.5, "profit_factor": 11.0,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert sleeves[0]["implausible_pf"] is True
+        assert sleeves[0]["policy_blocked"] is True
+
+    def test_moderate_wr_large_n_not_flagged(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "realistic_sleeve",
+            "n": 1200, "win_rate_pct": 87.0, "profit_factor": 11.7,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert sleeves[0]["implausible_pf"] is False
+        assert sleeves[0]["policy_blocked"] is False
+
+    def test_implausible_pf_small_n_is_policy_blocked(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "GainerPredictor1hStrategy",
+            "n": 49, "win_rate_pct": 97.96, "profit_factor": 120.0,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert sleeves[0]["implausible_pf"] is True
+        assert sleeves[0]["policy_blocked"] is True
+
+    def test_implausible_pf_large_n_is_not_blocked_by_pf_guard(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "big_n_sleeve",
+            "n": 500, "win_rate_pct": 70.0, "profit_factor": 25.0,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert sleeves[0]["implausible_pf"] is False
+        assert sleeves[0]["policy_blocked"] is False
+
+    def test_plausible_clean_sleeve_stays_actionable(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "EQUITY", "strategy": "stocks_rsi2_pullback",
+            "n": 140, "win_rate_pct": 58.0, "profit_factor": 1.8,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "EQUITY")
+        assert sleeves[0]["policy_blocked"] is False
+        assert sleeves[0]["implausible_pf"] is False
+
+    def test_merge_ranks_blocked_sleeves_last(self):
+        from alpha_engine.money_ready_verdict import _merge_top_sleeves
+        registry = [
+            {"strategy": "artifact", "pf": 120.0, "policy_blocked": True,
+             "implausible_pf": True},
+            {"strategy": "clean", "pf": 1.9, "policy_blocked": False,
+             "implausible_pf": False},
+        ]
+        merged = _merge_top_sleeves(registry, [])
+        assert merged[0]["strategy"] == "clean"
+        assert merged[-1]["strategy"] == "artifact"
+
+    def test_merge_implausible_outranks_nothing_but_sorts_after_clean(self):
+        from alpha_engine.money_ready_verdict import _merge_top_sleeves
+        reg = [{"strategy": "clean_high_pf", "pf": 9.0,
+                "policy_blocked": False, "implausible_pf": False}]
+        out = [{"strategy": "resolver_artifact", "pf": 120.0,
+                "policy_blocked": True, "implausible_pf": True}]
+        merged = _merge_top_sleeves(reg, out)
+        assert merged[0]["strategy"] == "clean_high_pf"
+        assert merged[1]["strategy"] == "resolver_artifact"
