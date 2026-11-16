@@ -8842,11 +8842,17 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
                 )
                 return False
 
-    # NS-E / M-007: FOREX hard-disable until carry-factor (Edge #14) rehab.
-    # PF=0.87 / sizing_allowed bug fixed 2026-05-15 (dashboard_generator:5455).
-    # Default flipped ON (was "0") per user approval 2026-05-15: no FOREX
-    # emissions until carry backtest achieves PF>1.0 / WR>45 / n>30.
-    # Override: FOREX_HARD_DISABLE=0 to re-enable after carry ships.
+    # NS-E / M-007: FOREX hard-disable — class-wide kill-switch (Edge #14 rehab).
+    # History: flipped default ON 2026-05-15 (no FOREX emissions until the carry
+    # backtest achieved PF>1.0 / WR>45 / n>30), then re-enabled 2026-06-05 when
+    # forex_carry_g10 met that unlock condition (PF=1.593, WR=60.4%, n=197 —
+    # updates/2026-06-05-forex-production-unblock-carry-g10.md). Default is "0"/OFF
+    # since; env FOREX_HARD_DISABLE=1 RE-DISABLES (kill-switch).
+    # 2026-11-16: the switch is read LIVE at gate time (env first, the config constant
+    # as the default). Comparing the config constant alone froze it at
+    # alpha_engine.config import time, so the kill-switch set at runtime silently did
+    # nothing — a kill-switch that ignores its own env var. Caught by
+    # tests/test_quality_gates.py::TestForexCopytradeBypas (reason stayed '').
     #
     # FOREX_COPYTRADER_ENABLE=1 (default OFF): bypasses this gate ONLY
     # for source_system=multi_asset_copytrader. DO NOT ENABLE — all-time
@@ -8858,7 +8864,14 @@ def passes_active_gate(pick: Dict[str, Any]) -> bool:
         os.environ.get("FOREX_COPYTRADER_ENABLE", "0") == "1"
         and _forex_bypass_src == "multi_asset_copytrader"
     )
-    if str(asset_class).upper() == "FOREX" and _ae_config.FOREX_HARD_DISABLE and not _forex_copytrader_exempt:
+    if (
+        str(asset_class).upper() == "FOREX"
+        and _truthy(
+            os.environ.get("FOREX_HARD_DISABLE"),
+            "1" if _ae_config.FOREX_HARD_DISABLE else "0",
+        )
+        and not _forex_copytrader_exempt
+    ):
         pick["_hf_quality_gate_reason"] = "ns_e_forex_hard_disable"
         # F-003: emit INFO (not DEBUG) so FOREX hard-disable appears in the audit trail.
         # Ticket: MASTER_ACTION_PLAN_2026-05-18 F-001/F-003.
