@@ -4,7 +4,7 @@ name: "[torontoevent.net] Deploy Rise of the Claw"
 
 on:
   schedule:
-    - cron: '*/30 * * * *' # Was */15 main scanner at */20 deploys, this just mirrors
+    - cron: '17/30 * * * *' # Was */15 main scanner at */20 deploys, this just mirrors
   workflow_dispatch:
   push:
     branches:
@@ -21,6 +21,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:

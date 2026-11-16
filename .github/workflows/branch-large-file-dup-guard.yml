@@ -4,6 +4,13 @@ on:
   push:
     branches-ignore:
       - main
+    paths:
+      - '**/*.zip'
+      - '**/*.gz'
+      - '**/*.db'
+      - '**/*.parquet'
+      - 'data/**'
+      - 'reports/**'
   workflow_dispatch:
     inputs:
       min_size_mb:
@@ -32,9 +39,14 @@ on:
 # the correct granularity: only the newest scan needs to be in flight.
 # Cancelling is safe — the only writer ("Update job health page") runs after the
 # long scan completes, so a cancelled run never leaves a partial write.
+# 2026-11-15: with cancel-in-progress: true and auto-committer pushes every few
+# minutes, every run was cancelled before finishing (0 of the last 15 completed)
+# — the guard never produced a single result. Serialize instead: one global
+# group keeps "only the newest scan in flight" (1 running + 1 pending max, later
+# triggers rejected) while guaranteeing the in-flight scan completes.
 concurrency:
   group: branch-large-file-dup-guard
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write

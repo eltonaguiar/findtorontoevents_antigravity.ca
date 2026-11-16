@@ -1,24 +1,16 @@
 name: MySQL Q-001 — Create picks table + sync from JSON
 
-on:
-  # 2026-05-24 08:00 UTC — EQUITY MySQL unlock date (MySQL purge clears stale
-  # pre-resolver data; post-purge n≥240 EQUITY picks become available).
-  # After that date this schedule is harmless (idempotent upsert).
-  schedule:
-    - cron: "0 8 24 5 *"
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: "Dry run only (no writes)"
-        type: boolean
-        default: false
-      max_rows:
-        description: "Max closed_picks rows to sync (default 50000)"
-        type: string
-        default: "50000"
+# DISABLED 2026-11-16: one-time 2026-05-24 MySQL equity-unlock sync (Q-001);
+# its dated trigger passed and the last run failed (2026-05-24). Keep the
+# file but stop it from running. Re-enable by restoring `on:` if a future
+# backfill ever needs it.
+on: {}
 
 jobs:
   mysql-sync:
+    # Defensive guard: allow only intended triggers. 2026-11-16 saw push events
+    # produce 0-job failures; do not execute on unexpected events.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write

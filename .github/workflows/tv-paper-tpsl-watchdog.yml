@@ -3,11 +3,15 @@ name: TV Paper TP/SL Watchdog
 on:
   schedule:
     # Every 15 min
-    - cron: '*/15 * * * *'
+    - cron: '26,41,56,11 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   audit:

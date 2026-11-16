@@ -7,11 +7,15 @@ name: "Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities"
 on:
   schedule:
     # Every 30 minutes  covers London+NY overlap and Asian session
-    - cron: '*/30 * * * *'
+    - cron: '14/30 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   multi-asset-scan:

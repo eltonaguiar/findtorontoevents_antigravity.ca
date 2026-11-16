@@ -3,7 +3,7 @@ name: Autonomous Trading Bot - Runs Automatically Every 4 Hours
 on:
   # Run automatically every 4 hours (no user action needed!)
   schedule:
-    - cron: '0 */4 * * *' # 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
+    - cron: '42 */4 * * *' # 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
   
   # Also run on every push to main (when code updates)
   push:
@@ -21,9 +21,14 @@ permissions:
   contents: write
   actions: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   trade:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 45
     steps:
     - name: Checkout code
       uses: actions/checkout@v6

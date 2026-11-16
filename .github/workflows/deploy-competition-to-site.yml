@@ -18,6 +18,12 @@ on:
     workflows: ["Algorithm Competition Refresh", "Forward Test Daily", "Cross-System Signal Aggregator", "Conviction Picks Ultra-Selective Discord Alert", "Contested Pick Checker (Claude vs Antigravity)", "Audit Hourly Update", "Unified Audit Dashboard", "Fast Trading Variants  Master Scheduler"]
     types: [completed]
 
+# 2026-11-16: three trigger sources had no concurrency group — concurrent runs
+# interleaved lftp puts into /audit + /audit_dashboard (mixed-generation file sets).
+concurrency:
+  group: ftp-deploy-audit-dashboard-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
