@@ -229,8 +229,9 @@ def is_drawdown_breaker_active() -> bool:
     """
     Quick check: is the drawdown circuit breaker currently active?
 
-    Reads from the state file without recomputing. Scanners and trackers
-    call this before opening new positions.
+    Reads from the state file; if the state is stale (>2h) it recomputes from
+    the live portfolio rather than trusting the old level. Scanners and
+    trackers call this before opening new positions.
 
     Returns:
         True if breaker is ACTIVE or CRITICAL (new entries should be paused).
@@ -248,8 +249,18 @@ def is_drawdown_breaker_active() -> bool:
                 ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
                 age_hours = (datetime.now(timezone.utc) - ts).total_seconds() / 3600
                 if age_hours > 2.0:
-                    # Stale state -- don't block on old data, recompute needed
-                    return False
+                    # Stale state -- recompute from the live portfolio instead of
+                    # silently clearing a possibly-active breaker. A stale ACTIVE
+                    # state must never be treated as CLEAR.
+                    try:
+                        fresh = check_drawdown_breaker()
+                        return fresh.get("level") in (
+                            "CIRCUIT_BREAKER_ACTIVE",
+                            "CIRCUIT_BREAKER_CRITICAL",
+                        )
+                    except Exception:
+                        # Fail safe: never let a stale breaker silently clear.
+                        return True
             return True
     except Exception:
         pass
