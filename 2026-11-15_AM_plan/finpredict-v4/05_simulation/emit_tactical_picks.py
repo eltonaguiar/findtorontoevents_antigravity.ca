@@ -24,6 +24,7 @@ Data: real yfinance prices, auto-adjusted. Costs/reality checks included.
 
 import json
 import math
+import time
 import warnings
 from datetime import datetime, timezone
 from pathlib import Path
@@ -56,11 +57,32 @@ UNIVERSE = {
 START = "2010-01-01"
 
 
+def _fetch_prices():
+    # yfinance downloads can transiently fail (e.g. sqlite "database is locked"
+    # or a single dead ticker). Retry, and never let a bad download kill the
+    # whole daily emission with an IndexError on an empty frame.
+    tickers = sorted({t[0] for t in UNIVERSE.values()})
+    for attempt in range(3):
+        try:
+            px = yf.download(tickers, start=START, progress=False, auto_adjust=True)
+            if px is not None and not px.empty:
+                return px
+        except Exception as exc:  # noqa: BLE001
+            print(f"  download attempt {attempt + 1}/3 failed: {exc}")
+        time.sleep(5 * (attempt + 1))
+    return None
+
+
 def calc():
     # ---- fetch ----
-    tickers = [t[0] for t in UNIVERSE.values()]
-    px = yf.download(tickers, start=START, progress=False, auto_adjust=True)
+    px = _fetch_prices()
+    if px is None or px.empty:
+        print("WARNING: could not fetch any price data; skipping tactical emission")
+        return {}
     close = px["Close"].dropna(how="all").ffill().dropna()
+    if close.empty:
+        print("WARNING: price series empty after cleaning; skipping tactical emission")
+        return {}
     latest = close.iloc[-1]
     sma = close.rolling(SMA_WINDOW).mean().iloc[-1]
     # momentum: 6-month return
