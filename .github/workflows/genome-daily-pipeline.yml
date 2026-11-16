@@ -27,6 +27,7 @@ permissions:
 jobs:
   data-collection:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
@@ -117,6 +118,7 @@ jobs:
   strategy-permutation:
     needs: data-collection
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
@@ -168,6 +170,7 @@ jobs:
   quality-scoring:
     needs: strategy-permutation
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
@@ -274,6 +277,7 @@ jobs:
   deploy-to-ftp:
     needs: quality-scoring
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
