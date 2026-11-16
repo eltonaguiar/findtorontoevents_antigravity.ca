@@ -415,7 +415,10 @@ MIN_ELITE_SCORE_BY_CLASS: dict[str, int] = {
 # FOREX hard disable — 2026-05-15
 # FOREX class re-enabled 2026-06-05: forex_carry_g10 extended backtest meets unlock condition.
 #   PF=1.593, WR=60.4%, n=197 (reports/forex_carry_backtest_extended_20260606.json)
-# Kill-switch: set env FOREX_HARD_DISABLE=0 to re-enable.
+# Kill-switch: set env FOREX_HARD_DISABLE=1 to RE-DISABLE (the default is "0"/OFF
+# since the re-enable above). Gates read the env LIVE at call time (env first, this
+# config value as the default — see audit_trail/quality_gates.py NS-E), so the flip
+# works without a re-import; the value here is only the default when env is unset.
 import os as _forex_os
 FOREX_HARD_DISABLE: bool = _forex_os.environ.get("FOREX_HARD_DISABLE", "0") not in ("0", "false", "FALSE", "False")
 del _forex_os
