@@ -48,7 +48,7 @@ MAX_SNAPSHOT_AGE_HOURS = float(
 )
 
 
-def snapshot_age_hours(path: Path) -> float:
+def snapshot_age_hours(path: "Path | str") -> float:
     """Age of a snapshot in hours, from the most trustworthy stamp available.
 
     Do NOT lead with st_mtime. A git checkout resets every file's mtime to the
@@ -61,6 +61,9 @@ def snapshot_age_hours(path: Path) -> float:
     Order: filename stamp (`<YYYYMMDD>T<HHMMSS>Z.json`, what the fetcher writes)
     -> an in-file timestamp field -> st_mtime as a last resort.
     """
+    # Accept str as well as Path: glob() returns str, and a caller (or a QA
+    # harness) passing one used to crash on `path.name` instead of measuring.
+    path = Path(path)
     now = datetime.now(timezone.utc)
     m = re.search(r"(\d{8}T\d{6}Z)", path.name)
     if m:
