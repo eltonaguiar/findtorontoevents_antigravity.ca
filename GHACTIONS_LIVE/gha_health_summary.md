@@ -1,15 +1,15 @@
 # GHA Health Summary (R1-R12)
 
-- **Generated:** 2026-11-18T04:39:38.831701+00:00 · repo `eltonaguiar/findtorontoevents_antigravity.ca`
-- **Window:** 2026-11-10T04:39:38.831701+00:00 → 2026-11-18T04:39:38.831701+00:00 (1000 runs scanned, truncated=False; 363 workflows)
-- **API budget:** 97/300 calls used
+- **Generated:** 2026-11-18T08:39:56.287660+00:00 · repo `eltonaguiar/findtorontoevents_antigravity.ca`
+- **Window:** 2026-11-10T08:39:56.287660+00:00 → 2026-11-18T08:39:56.287660+00:00 (1000 runs scanned, truncated=False; 363 workflows)
+- **API budget:** 95/300 calls used
 
 ## 1. BROKEN NOW (action required)
 
 | Workflow | Branch | Last failure (ended) | Age h | Conclusion | Ever passed? |
 |---|---|---|---|---|---|
-| Sign-Coherence Gate | main | 2026-11-18T04:38:42Z | 0.02 | failure | NEVER (prune candidate if dormant) |
-| QA Market Validation | main | 2026-11-18T04:28:15Z | 0.19 | failure | NEVER (prune candidate if dormant) |
+| QA Market Validation | main | 2026-11-18T08:38:51Z | 0.02 | failure | NEVER (prune candidate if dormant) |
+| Sign-Coherence Gate | main | 2026-11-18T05:24:35Z | 3.26 | failure | NEVER (prune candidate if dormant) |
 
 ## 2. FLAPPING (watch list + failing steps)
 
@@ -27,27 +27,28 @@ _None — no workflow has ≥5 fails in its last 15 runs with a green latest._
 ## 3. QUEUE HOGS (phantom batches, runner hogs, churn %, volume/fan-in)
 
 - **Phantom queued runs (> 24h, 0 jobs):** 20
-  - run 43096994785 Portfolio Trackers (Real Money + Theory) queued 2026-11-11T20:35:58Z (age 152.06h) — uncancelable ⇒ GitHub Support batch
-  - run 43096994522 Sports endpoint smoke + Playwright queued 2026-11-11T20:35:58Z (age 152.06h) — uncancelable ⇒ GitHub Support batch
-  - run 43097000114 Deploy Vetted Master-Picks queued 2026-11-11T20:36:01Z (age 152.06h) — uncancelable ⇒ GitHub Support batch
-  - run 43097004990 Sustained Gainer Confluence Scanner queued 2026-11-11T20:36:04Z (age 152.06h) — uncancelable ⇒ GitHub Support batch
-  - run 43097010333 Claude Gainer ML  Live Scanner queued 2026-11-11T20:36:06Z (age 152.06h) — uncancelable ⇒ GitHub Support batch
-- **Runner hogs (in_progress > 2h or > 2x p90):** 0
+  - run 43096994785 Portfolio Trackers (Real Money + Theory) queued 2026-11-11T20:35:58Z (age 156.07h) — uncancelable ⇒ GitHub Support batch
+  - run 43096994522 Sports endpoint smoke + Playwright queued 2026-11-11T20:35:58Z (age 156.07h) — uncancelable ⇒ GitHub Support batch
+  - run 43097000114 Deploy Vetted Master-Picks queued 2026-11-11T20:36:01Z (age 156.07h) — uncancelable ⇒ GitHub Support batch
+  - run 43097004990 Sustained Gainer Confluence Scanner queued 2026-11-11T20:36:04Z (age 156.06h) — uncancelable ⇒ GitHub Support batch
+  - run 43097010333 Claude Gainer ML  Live Scanner queued 2026-11-11T20:36:06Z (age 156.06h) — uncancelable ⇒ GitHub Support batch
+- **Runner hogs (in_progress > 2h or > 2x p90):** 1
+  - Discord Bot  Persistent — 4.81h running (p90 n/a)
 - **Cancel churn (≥50% cancelled/15, own tick spacing, timeout-shaped excluded):** 0
-- **Timeout kills (R5/R6 `timeout-kill`, excluded from churn):** 2
+- **Timeout kills (R5/R6 `timeout-kill`, excluded from churn):** 1
   - [torontoevent.net] Deploy Competition to Live Site — run 44230471901 killed at 1818.0s mid-step `Deploy competition files to *** via FTP` — timeout problem, not churn
-  - [torontoevent.net] Deploy Rise of the Claw — run 44194043787 killed at 1805.0s mid-step `Verify deployment` — timeout problem, not churn
-- **CANCEL BUCKETS (R7)** — 5 cancelled run(s) examined (5 jobs probes; created_at herds are cron stamps, not cancel evidence):
-  - timeout-shaped: 2 · eviction-shaped: 1 · stack-kill: 0 · pr-close: 0 · external: 2
-  - external residual (2) — the true R7 signal, investigate:
-    - run 44210443672 DNA Strategy Pipeline — cancelled at 2026-11-18T01:17:10Z (branch main)
+- **CANCEL BUCKETS (R7)** — 4 cancelled run(s) examined (4 jobs probes; created_at herds are cron stamps, not cancel evidence):
+  - timeout-shaped: 1 · eviction-shaped: 0 · stack-kill: 0 · pr-close: 0 · external: 3
+  - external residual (3) — the true R7 signal, investigate:
     - run 44230805870 Baby Strat Real Forward Monitor — cancelled at 2026-11-18T04:14:46Z (branch main)
+    - run 44237903636 DNA Strategy Pipeline — cancelled at 2026-11-18T05:02:53Z (branch main)
+    - run 44252383098 ALPHA ENGINE - Live Autonomous Scanner — cancelled at 2026-11-18T08:29:20Z (branch main)
 - **workflow_run fan-in chains:** 7
-  - Deploy Competition to Live Site ← 8 upstreams ≈ 4.5 runs/day
+  - Deploy Competition to Live Site ← 8 upstreams ≈ 4.4 runs/day
   - [torontoevent.net] Deploy Competition to Live Site ← 4 upstreams ≈ 0.8 runs/day
   - Deploy Battleground to FTP ← 3 upstreams ≈ 0.9 runs/day
   - Deploy FindCryptoPairs to FTP ← 1 upstreams ≈ 1.6 runs/day
-  - Deploy findtorontoevents.ca next/events.json ← 1 upstreams ≈ 0.1 runs/day
+  - Deploy findtorontoevents.ca next/events.json ← 1 upstreams ≈ 0.2 runs/day
 
 ## 4. STALE / SKIPPED / PRUNE (trigger-aware verdicts)
 
@@ -56,19 +57,19 @@ _None — no workflow has ≥5 fails in its last 15 runs with a green latest._
 - **Stale-by-cadence (R9):** 40 (25 dispatch-only workflows EXEMPT by design)
   - Dynamic Runner Template [unknown] — NEVER RUN with live trigger (unknown) — dead trigger or broken filter
   - GHA scan job (reusable) [unknown] — NEVER RUN with live trigger (unknown) — dead trigger or broken filter
-  - GHA stale workflows audit [daily] — SKIPPED(budget): latest-run probe cap reached
-  - Growth Stock Screener Daily [weekly] — SKIPPED(budget): latest-run probe cap reached
-  - H-004 — Inventory Surprise + Roll Yield Backtest (real EIA data) [weekly] — SKIPPED(budget): latest-run probe cap reached
-  - H-103 Forward Logger [monthly] — SKIPPED(budget): latest-run probe cap reached
-  - HC Evaluator Parity Test [weekly] — SKIPPED(budget): latest-run probe cap reached
-  - Hyro Quan Bridge Regen [daily] — SKIPPED(budget): latest-run probe cap reached
+  - Hyro daily (filter + backtest) [daily] — SKIPPED(budget): latest-run probe cap reached
+  - Insider Trades Refresh [weekly] — SKIPPED(budget): latest-run probe cap reached
+  - macd_rsi_m048 Shadow Generator [daily] — SKIPPED(budget): latest-run probe cap reached
+  - Mercury 2  Weekly Retrain [weekly] — SKIPPED(budget): latest-run probe cap reached
+  - ML Feedback Retrain  Learn from Closed Trades [daily] — SKIPPED(budget): latest-run probe cap reached
+  - ML Gatekeeper Train A/B (Phase D) [daily] — SKIPPED(budget): latest-run probe cap reached
 - **Branch-only push waste (R10):** 0
 - **Prune rows (R1: never passed + dormant):** 0
 
 ## 5. NOT AN ISSUE (recovered) — suppressed count
 
 **0** workflow/branch group(s) had a success complete AFTER their most recent failure — suppressed per triage principle (recovered failures are explicitly filtered so 'green' and 'filtered noise' stay distinguishable).
-- additionally **217** group(s) were plain green (no failure in window).
+- additionally **229** group(s) were plain green (no failure in window).
 - queue-hog / stale rows above are live issues, NOT included in this suppressed count.
 
 ---
