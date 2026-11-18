@@ -110,3 +110,30 @@ For each strategy listed in the V3 report, a direct mapping to the backtesting a
 ---
 
 *This report is delivered as a complete LaTeX‑compatible Markdown file at `/home/eaguiar2015/findtorontoevents_antigravity.ca/STRATEGY_DISCOVERY_REPORT_V3_2026-11-18.md`.*
+
+## pnl_pct reconciliation
+
+**Definition(s)**: `pnl_pct` is the realized per-trade PnL expressed as a percentage of notional. It is extracted from field-name variants (`pnl_pct`, `net_pnl_pct`, `realized_pnl_pct`) in `portfolio_tracker/tracker.py` (`_extract_pnl()`, `_normalize_mercury2()`). The `verify_trades.py` path sums `realized_pnl_pct` from the SQLite `bundle_babies.db` table `bundle_trades`. The `audit_high_pnl.py` path uses `total_pnl_pct` from JSON artifacts (`alpha_engine/data/prove_winners_results.json`, `challenge_v3_history.json`).
+
+**Arithmetic consistency check** (N × avg PnL % vs Total PnL column in V3 table):
+
+| Strategy | N | Avg PnL % | Total PnL | N×Avg | Diff |
+|----------|---|-----------|-----------|-------|------|
+| ml_enhanced_FETUSDT_1d_B_lightgbm | 85 | 48.09 | 4087.77 | 4087.65 | +0.12 |
+| ml_enhanced_BNBUSDT_15m_B_lightgbm | 95 | 4.76 | 452.50 | 452.20 | +0.30 |
+| vwap_deviation_reversion_eth_v1 | 126 | 10.01 | 1261.77 | 1261.26 | +0.51 |
+| keltner-bounce | 1532 | 12.07 | 18494.06 | 18491.24 | +2.82 |
+| corr_vwap_reversion | 545 | 4.32 | 2354.95 | 2354.40 | +0.55 |
+| ml_enhanced_RENDERUSDT_1h_D_ensemble_stack | 95 | 7.76 | 737.65 | 737.20 | +0.45 |
+| multi_period_rsi_confluence_xrp | 144 | 4.02 | 579.28 | 578.88 | +0.40 |
+| multi_period_rsi_confluence | 173 | 2.32 | 401.03 | 401.36 | -0.33 |
+| crypto_keltner_compression_expansion_v1 | 149 | 8.03 | 1196.10 | 1196.47 | -0.37 |
+| hurst_regime_adaptive | 49 | 3.50 | 171.37 | 171.50 | -0.13 |
+
+All diffs are <0.4 % relative; the internal arithmetic of the V3 table is self-consistent. "Total PnL" is effectively N × avg PnL % (mean of per-trade pnl_pct values).
+
+**Discrepancy with backtest JSON**: `backtest_multi_strategy_results.json` (45 923 B) contains only 5 strategies (`BB_Squeeze_Breakout`, `EMA_Cross_Volume`, `Keltner_ADX`, `MACD_Divergence`, `StochRSI_Trend`). **None of the 10 V3 strategies appear in that file.** The report claim (line 87) that it "holds the detailed per-symbol run-stats" for the V3 list is factually incorrect for those 10 strategies.
+
+**What remains unverifiable**: The MySQL instance (`localhost`) was unreachable in the sandbox (per original report line 83). The `bundle_babies.db` SQLite verification path (`verify_trades.py`) could not be exercised against live data. All row counts, trade-level `realized_pnl_pct` sums, and per-strategy aggregates are therefore proxy-sourced or derived from in-memory JSON artifacts only.
+
+**Caveat**: Nothing in this section is promoted to DB-verified. All figures are derived from JSON artifacts or arithmetic reconstruction; the underlying MySQL `bundle_babies.db` / `backtests.bt_backtest_trades` tables remain inaccessible in this environment.
