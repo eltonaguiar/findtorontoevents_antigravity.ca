@@ -9,6 +9,16 @@ A simple text-based graphic with dark background and single line of centered whi
 
 > "Out of the six models listed, Qwen2-VL-7B-Instruct and Qwen3.5-9B are the only ones with vision capabilities."
 
+## Server Topology
+
+| Host | Port | Service | First Model |
+|---|---|---|---|
+| `localhost` / `127.0.0.1` | 1234 | LM Studio / llama-server | `mistralai/ministral-3-3b` |
+| `localhost` / `127.0.0.1` | 4000 | Cloud proxy | `ULTRA_FREE_CLOUD_LARGE` |
+| `192.168.2.52` | 11434 | Ollama | `qwen2.5vl:7b` |
+| `192.168.2.52` | 8003 | vLLM | `Qwen3-VL-2B-Instruct` |
+| `192.168.2.32` | — | — | No LLM servers responding |
+
 ## Working Vision Models
 
 | Server | Model | Endpoint | Method | Result |
@@ -34,4 +44,6 @@ A simple text-based graphic with dark background and single line of centered whi
 - **Ministral-3-3b on localhost:1234** requires the multimodal content array format (`{type: "text"}` + `{type: "image_url"}` parts), not the simple `images` field
 - **Ministral-3-3b on localhost:1234** initially hallucinated when using the simple `images` field format — only works with proper multimodal content parts
 - **vLLM on 192.168.2.52:8003** uses standard OpenAI-compatible `/v1/chat/completions` with image_url data URIs
+- **192.168.2.32** has no LLM servers on any scanned port (1234, 4000, 11434, 8003)
 - Port 8003 was initially not responding; confirmed active after remote reconfiguration to bind to `192.168.2.52:8003`
+- LM Studio models on disk (`E:\Users\zerou\.lmstudio\models`) are not loaded into a running server
