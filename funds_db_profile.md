@@ -2,7 +2,7 @@
 
 - Generated: 2026-11-18T06:35:13Z (UTC)
 - Host: `mysql.50webs.com` — MySQL 8.4.7 (source: `SHOW CREATE TABLE` / `information_schema`)
-- Lane: **funds** (mutual funds); crypto tables are profiled separately in `crypto_profile.md` and mirrored in this inventory for cross-reference.
+- Lane: **funds** (mutual funds); crypto tables are profiled separately in `crypto_db_profile.md` and mirrored in this inventory for cross-reference.
 - Method: direct `pymysql` connection + `SHOW TABLES`, `SHOW CREATE TABLE`, `SELECT COUNT(*)` where permitted.
 
 > [!WARNING]
@@ -1007,7 +1007,7 @@ _Schema detail for backup copies omitted (identical DDL family); full DDL for th
 
 ## Crypto-related tables (cross-reference, proxy `ejaguiar1_stocks`)
 
-11 crypto-tagged tables exist in the same proxy account. The dedicated `ejaguiar1_crypto` database is likewise refused (1045), so these are the best available schema evidence. Full crypto lane deliverable: `crypto_profile.md`.
+11 crypto-tagged tables exist in the same proxy account. The dedicated `ejaguiar1_crypto` database is likewise refused (1045), so these are the best available schema evidence. Full crypto lane deliverable: `crypto_db_profile.md`.
 
 | # | Table | Engine | Rows (`ejaguiar1_crypto`) | Rows (proxy `ejaguiar1_stocks`) | Created |
 |---|---|---|---|---|---|
