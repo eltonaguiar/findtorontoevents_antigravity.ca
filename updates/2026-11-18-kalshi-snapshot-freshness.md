@@ -64,6 +64,26 @@ verify_kalshi_picks.py parses OK
 The guard fires on the exact file that caused the incident, the run completes
 cleanly, and the live-fetch path is exercised rather than the stale cache.
 
+### Correction (found while re-checking against remote main)
+
+The first version of the guard measured age with `st_mtime`. Re-testing inside a
+fresh `git worktree` of `origin/main` showed the 2026-04-26 snapshot reporting
+**0h old** — a checkout resets every file's mtime to the checkout time. In CI,
+where the workflow always does a fresh checkout, an mtime-only guard would have
+**never fired**: the "fix" would have been decorative.
+
+`snapshot_age_hours()` now reads the stamp **in the filename** first
+(`<YYYYMMDD>T<HHMMSS>Z.json`, which is what `kalshi_sports_fetch.py` writes),
+then an in-file `generated_at`/`as_of`/`fetched_at`/`timestamp`/`stamp` field,
+and only then `st_mtime`.
+
+```
+# long-lived checkout (mtime intact)  -> 4230.4h old
+data/kalshi_snapshots/20260426T025427Z.json exists 4230h
+# fresh worktree (mtime = checkout)   -> still correct after the fix
+[verify] ignoring stale snapshot 20260426T025427Z.json (4230.8h old > 24h limit)
+```
+
 ## Not done (needs a decision / not authorised here)
 
 - The workflow has **not been pushed or triggered** — it will first run on the

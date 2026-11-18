@@ -46,6 +46,48 @@ SNAP_DIR = REPO / "data" / "kalshi_snapshots"
 MAX_SNAPSHOT_AGE_HOURS = float(
     os.environ.get("KALSHI_MAX_SNAPSHOT_AGE_HOURS", "24")
 )
+
+
+def snapshot_age_hours(path: Path) -> float:
+    """Age of a snapshot in hours, from the most trustworthy stamp available.
+
+    Do NOT lead with st_mtime. A git checkout resets every file's mtime to the
+    checkout time, so in CI (and in any fresh worktree) a 7-month-old committed
+    snapshot reports 0h old — proven 2026-11-18, when the 2026-04-26 file
+    measured "0h" in a clean `git worktree` while being 4,230h old on the
+    long-lived checkout. That makes an mtime-only guard silently useless
+    exactly where it runs.
+
+    Order: filename stamp (`<YYYYMMDD>T<HHMMSS>Z.json`, what the fetcher writes)
+    -> an in-file timestamp field -> st_mtime as a last resort.
+    """
+    now = datetime.now(timezone.utc)
+    m = re.search(r"(\d{8}T\d{6}Z)", path.name)
+    if m:
+        try:
+            ts = datetime.strptime(m.group(1), "%Y%m%dT%H%M%SZ").replace(
+                tzinfo=timezone.utc
+            )
+            return (now - ts).total_seconds() / 3600.0
+        except ValueError:
+            pass
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            for key in ("generated_at", "as_of", "fetched_at", "timestamp", "stamp"):
+                raw = data.get(key)
+                if not raw:
+                    continue
+                try:
+                    dt = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+                except ValueError:
+                    continue
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return (now - dt).total_seconds() / 3600.0
+    except (OSError, ValueError):
+        pass
+    return (time.time() - path.stat().st_mtime) / 3600.0
 PICKS_DEFAULT = REPO / "data" / "goldmine" / "sports_picks.json"
 SPORTS_HTML = REPO / "live-monitor" / "sports-betting.html"
 TARGET_SPORTS = {"ufc", "mma", "tennis", "golf", "nba"}
@@ -212,7 +254,7 @@ def fetch_or_load_snapshot(snapshot: Path | None,
         cands = sorted(SNAP_DIR.glob("*.json"))
         if cands:
             latest = cands[-1]
-            age_h = (time.time() - latest.stat().st_mtime) / 3600.0
+            age_h = snapshot_age_hours(latest)
             if MAX_SNAPSHOT_AGE_HOURS <= 0 or age_h <= MAX_SNAPSHOT_AGE_HOURS:
                 data = read_json(latest)
                 if isinstance(data, dict):
