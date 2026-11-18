@@ -84,20 +84,20 @@ Forex backtests are pending final verification. Initial insights indicate that *
 
 ## Strategy‑to‑backtest map
 
-For each strategy listed in the V3 report, a direct mapping to the backtesting artifact (if available) is captured in the table below. The file `backtest_multi_strategy_results.json` holds the detailed per‑symbol run‑stats.
+For each strategy listed in the V3 report, a mapping to the backtesting artifact is captured in the table below. **Correction:** `backtest_multi_strategy_results.json` (45 923 B) contains only five unrelated strategies (`BB_Squeeze_Breakout`, `EMA_Cross_Volume`, `Keltner_ADX`, `MACD_Divergence`, `StochRSI_Trend`) and holds **no** per‑symbol run‑stats for any of the 10 V3 strategies. The "Status" column below therefore records only whether a V3 figure could be checked against the artifact — it does not attest the mapping.
 
 | Strategy | Backtest file | Status |
 |----------|---------------|--------|
-| ml_enhanced_FETUSDT_1d_B_lightgbm | backtest_multi_strategy_results.json | Verified |
-| ml_enhanced_BNBUSDT_15m_B_lightgbm | backtest_multi_strategy_results.json | Verified |
-| vwap_deviation_reversion_eth_v1 | backtest_multi_strategy_results.json | Verified |
-| keltner-bounce | backtest_multi_strategy_results.json | Cautionary |
-| corr_vwap_reversion | backtest_multi_strategy_results.json | Cautionary |
-| ml_enhanced_RENDERUSDT_1h_D_ensemble_stack | backtest_multi_strategy_results.json | Verified |
-| multi_period_rsi_confluence_xrp | backtest_multi_strategy_results.json | Verified |
-| multi_period_rsi_confluence | backtest_multi_strategy_results.json | Verified |
-| crypto_keltner_compression_expansion_v1 | backtest_multi_strategy_results.json | Verified |
-| hurst_regime_adaptive | backtest_multi_strategy_results.json | Verified |
+| ml_enhanced_FETUSDT_1d_B_lightgbm | backtest_multi_strategy_results.json | Not in artifact |
+| ml_enhanced_BNBUSDT_15m_B_lightgbm | backtest_multi_strategy_results.json | Not in artifact |
+| vwap_deviation_reversion_eth_v1 | backtest_multi_strategy_results.json | Not in artifact |
+| keltner-bounce | backtest_multi_strategy_results.json | Not in artifact |
+| corr_vwap_reversion | backtest_multi_strategy_results.json | Not in artifact |
+| ml_enhanced_RENDERUSDT_1h_D_ensemble_stack | backtest_multi_strategy_results.json | Not in artifact |
+| multi_period_rsi_confluence_xrp | backtest_multi_strategy_results.json | Not in artifact |
+| multi_period_rsi_confluence | backtest_multi_strategy_results.json | Not in artifact |
+| crypto_keltner_compression_expansion_v1 | backtest_multi_strategy_results.json | Not in artifact |
+| hurst_regime_adaptive | backtest_multi_strategy_results.json | Not in artifact |
 
 ## Open questions
 
