@@ -1,0 +1,58 @@
+name: Source Rights Check
+
+# Every job in the board must carry a known redistribution right
+# (scrapeable, API, visible-only, etc.).  This gate fails when >5%
+# of rows have unknown rights, indicating the source-rights.yaml
+# config needs updating.  It does not block deployment.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'jobs.json'
+      - 'README.md'
+      - 'updates/config/source-rights.yaml'
+      - 'updates/scripts/source_rights_gate.py'
+      - '.github/workflows/source-rights-check.yml'
+  pull_request:
+    paths:
+      - 'jobs.json'
+      - 'README.md'
+      - 'updates/config/source-rights.yaml'
+      - 'updates/scripts/source_rights_gate.py'
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check source redistribution rights
+        continue-on-error: true
+        run: python3 updates/scripts/source_rights_gate.py
+
+      - name: Report failure summary
+        if: failure()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## Source Rights Check Failed
+
+          More than 5% of jobs have unknown or missing redistribution
+          rights.  Run locally to see which sources are affected:
+
+              python3 updates/scripts/source_rights_gate.py
+
+          Then add the missing entries to
+          `updates/config/source-rights.yaml`.
+          EOF
