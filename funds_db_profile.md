@@ -1,16 +1,12 @@
-# Funds DB Profile (ejaguiar1_mutual_funds)
+# Funds DB Profile
 
-**DB**: `ejaguiar1_mutual_funds` on `mysql.50webs.com` (MySQL 8.4.7)  
-**Profiled by**: `funds-profiler` (slice: mutual funds)  
-**Date**: 2026-11-18
+This document provides a schema-only profile for the mutual funds database. Due to MySQL being unreachable, the row counts are not available.
 
-## Summary
+## Table Inventory
 
-- **Tables**: proxy-based overview, indicating 12 current funds available for review.
+| Table Name | Row Count | Status               |
+|------------|-----------|----------------------|
+| ejaguiar1_mutual_funds | UNAVAILABLE (DB unreachable) | Unable to fetch row count due to DB down |
 
-## Insights on Non-Production of Picks
-- Describe why MF/ETFs are rarely surfacing under active picks.
-
-## Recommendations
-1. Alter the coding structure to consider new entries.
-2. Address the lack of mutual fund classifiers in the existing framework.
+## Notes
+- Current connection to the MySQL server is refused. Further inventory details will be provided once connectivity is restored.
