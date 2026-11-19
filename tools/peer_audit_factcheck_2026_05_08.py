@@ -11,7 +11,6 @@ from datetime import datetime, date
 
 os.environ['AUDIT_DB_HOST'] = 'mysql.50webs.com'
 os.environ['AUDIT_DB_USER'] = 'ejaguiar1_stocks'
-os.environ['AUDIT_DB_PASS = 'stocks1234560'
 os.environ['AUDIT_DB_NAME'] = 'ejaguiar1_stocks'
 
 from audit_trail.mysql_client import _create_connection

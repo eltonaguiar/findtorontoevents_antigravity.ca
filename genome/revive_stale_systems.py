@@ -213,7 +213,19 @@ def fetch_system_history_from_mysql(
 
     host = os.environ.get("AUDIT_DB_HOST", "mysql.50webs.com")
     user = os.environ.get("AUDIT_DB_USER", "ejaguiar1_stocks")
-    passwd = os.environ.get("AUDIT_DB_PASS", "stocks")
+    passwd = os.environ.get("AUDIT_DB_PASS")
+    if not passwd:
+        import json as _j, os as _o
+        for _p in (".env.dbpw", _o.path.expanduser("~/.env.dbpw")):
+            try:
+                with open(_p) as _f:
+                    passwd = _j.load(_f).get("stocks")
+                    if passwd:
+                        break
+            except (OSError, ValueError):
+                continue
+    if not passwd:
+        raise RuntimeError("AUDIT_DB_PASS not set and no .env.dbpw found")
     db = os.environ.get("AUDIT_DB_NAME", "ejaguiar1_stocks")
 
     try:

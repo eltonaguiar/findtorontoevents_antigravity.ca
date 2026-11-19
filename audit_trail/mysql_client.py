@@ -41,7 +41,26 @@ from audit_trail.asset_classification import resolve_asset_class, canonicalize_s
 DB_HOST = os.getenv("AUDIT_DB_HOST", "mysql.50webs.com")
 DB_PORT = int(os.getenv("AUDIT_DB_PORT", "3306"))
 DB_USER = os.getenv("AUDIT_DB_USER", "ejaguiar1_stocks")
-DB_PASS = os.getenv("AUDIT_DB_PASS", "stocks")
+def _resolve_db_pass() -> str:
+    """Resolve DB password from env or .env.dbpw. Never hardcode."""
+    v = os.getenv("AUDIT_DB_PASS")
+    if v:
+        return v
+    # Fall back to .env.dbpw
+    for path in (".env.dbpw", os.path.expanduser("~/.env.dbpw")):
+        try:
+            with open(path) as fh:
+                data = json.load(fh)
+                if "stocks" in data:
+                    return data["stocks"]
+        except (OSError, ValueError, KeyError):
+            continue
+    raise RuntimeError(
+        "AUDIT_DB_PASS not set and no .env.dbpw found. "
+        "Set AUDIT_DB_PASS env var or create .env.dbpw with {\"stocks\": \"...\"}"
+    )
+
+DB_PASS = _resolve_db_pass()
 DB_NAME = os.getenv("AUDIT_DB_NAME", "ejaguiar1_stocks")
 
 # Backtests-only DB target (2026-05-04, per
