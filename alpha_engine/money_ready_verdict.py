@@ -1199,6 +1199,12 @@ def _single_source_gate(picks: list[dict]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 # P1-A (2026-06-12): when intrabar n>=30, promotion gates use honest ledger.
+# Set MONEY_READY_INTRABAR_TRUTH=0 to judge strictly on the policy-clean rows
+# (used by unit tests, which must not be gated on a live artifact).
+_INTRABAR_TRUTH_ENABLED: bool = (
+    os.environ.get("MONEY_READY_INTRABAR_TRUTH", "1").strip().lower()
+    in ("1", "true", "yes", "on")
+)
 MIN_INTRABAR_N_FOR_SIZING = 30
 
 
@@ -1571,7 +1577,12 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
 
     results: dict[str, dict] = {}
     global _INTRABAR_TRUTH_CACHE
-    _INTRABAR_TRUTH_CACHE = {} if ci_mode else _intrabar_truth_map()
+    # Escape hatch for unit tests and for a deliberately policy-only run: without
+    # this, a synthetic fixture is judged against a live intrabar artifact and can
+    # never produce the verdict its own numbers imply.
+    _INTRABAR_TRUTH_CACHE = (
+        {} if (ci_mode or not _INTRABAR_TRUTH_ENABLED) else _intrabar_truth_map()
+    )
     for ac, stats in class_stats.items():
         if asset_class and ac != asset_class.upper():
             continue
@@ -1683,12 +1694,26 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             "policy_clean_wr_pct": round(_policy_wr * 100, 2),
             "policy_clean_pf": round(_policy_pf, 4) if _policy_pf != float("inf") else None,
             "n_resolved": _sizing_n,
-            "wr": round(_sizing_wr, 4),
+            # 2026-11-19 fix: this used to be `_sizing_wr`, i.e. the HONEST-INTRABAR
+            # overlay, published under the name "wr". The persisted file showed
+            # COMMODITY wr=0.4052 with sizing_source=intrabar_truth, so every reader
+            # (and every unit test) got a number that belonged to a different row set
+            # than the class being described — the same class of bug as the ETF
+            # 1.9%-vs-43.1% contradiction. "wr" now means the class's own resolved
+            # rows; the overlay is published separately and the basis is explicit.
+            "wr": round(wr, 4),
             # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
-            "wr_pct": round(_sizing_wr * 100, 2),
-            "pf": round(_sizing_pf, 4) if _sizing_pf != float("inf") else None,
+            "wr_pct": round(wr * 100, 2),
+            "pf": round(pf, 4) if pf != float("inf") else None,
+            "n": n,
             "n_ok": _sizing_n >= MIN_N_CLASS,
-            "wr_ok": _sizing_wr >= wr_floor,
+            # Descriptive, matches `wr` above. The gate uses `sizing_wr_ok`.
+            "wr_ok": wr >= wr_floor,
+            "policy_wr_ok": wr >= wr_floor,
+            "sizing_wr": round(_sizing_wr, 4),
+            "sizing_pf": round(_sizing_pf, 4) if _sizing_pf != float("inf") else None,
+            "sizing_wr_ok": _sizing_wr >= wr_floor,
+            "verdict_basis": _sizing_source,
             "pf_ok": _sizing_pf >= MIN_PF,
             "dsr_ok": dsr.get("ok"),
             "dsr_score": dsr.get("dsr_score"),

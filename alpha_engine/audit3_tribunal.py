@@ -106,6 +106,14 @@ MAX_SYMBOL_SHARE = 0.60
 MAX_SOURCE_SHARE = 0.90
 
 # Round-trip execution cost, in percent (pnl_pct is a percent).
+#
+# 2026-11-19: these are now the FALLBACK only. `load_rows` reads the publishing
+# dashboard's own measured slippage (`slippage_validation.asset_class_stats`, and
+# per-strategy from `flagged_strategies`) and overwrites the class table with the
+# measured value, so audit3 and the canonical view price execution identically.
+# The old constants were above measured for CRYPTO/EQUITY/ETF/FOREX (conservative)
+# and BELOW it for FUTURES/COMMODITY (optimistic), which meant a futures verdict
+# could survive a cost it never paid.
 SLIPPAGE_PCT = {
     "CRYPTO": 0.15,
     "EQUITY": 0.10,
@@ -119,6 +127,15 @@ SLIPPAGE_PCT = {
     "MUTUAL_FUND": 0.08,
 }
 DEFAULT_SLIPPAGE_PCT = 0.12
+
+#: Measured per-strategy round-trip cost in percent, keyed by casefolded strategy.
+#: Filled from the payload's slippage_validation.flagged_strategies.
+STRATEGY_SLIPPAGE_PCT: dict[str, float] = {}
+#: What the last load actually applied, for the report's provenance block.
+COST_BASIS: dict[str, Any] = {}
+
+#: A class cost is only trusted when it rests on this many measured closes.
+MIN_COST_SAMPLE = 30
 
 # Source-family buckets for the "is any surface actually good?" question.
 FAMILY_PATTERNS = (
@@ -331,6 +348,7 @@ def load_rows(path: str, drops: dict[str, int] | None = None
     LAST_DENOMINATOR.clear()
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
+    _apply_measured_costs(data)
     generated_at = None
     rows: Any = None
     if isinstance(data, list):
@@ -558,9 +576,63 @@ def _num(value: Any) -> float | None:
         return None
 
 
-def _net(r: dict) -> float:
+def _cost_pct(r: dict) -> float:
+    """Round-trip cost for one row: measured per-strategy, else measured class."""
+    strat = str(r.get("strategy") or "").strip().casefold()
+    if strat:
+        measured = STRATEGY_SLIPPAGE_PCT.get(strat)
+        if measured is not None:
+            return measured
     ac = str(r.get("asset_class") or "UNKNOWN").upper()
-    return float(r["pnl_pct"]) - SLIPPAGE_PCT.get(ac, DEFAULT_SLIPPAGE_PCT)
+    return SLIPPAGE_PCT.get(ac, DEFAULT_SLIPPAGE_PCT)
+
+
+def _net(r: dict) -> float:
+    return float(r["pnl_pct"]) - _cost_pct(r)
+
+
+def _apply_measured_costs(data: Any) -> dict[str, Any]:
+    """Adopt the dashboard's measured slippage for this run.
+
+    Reads `slippage_validation.asset_class_stats` (per-class measured mean) and
+    `flagged_strategies` (per-strategy measured mean). A class with fewer than
+    MIN_COST_SAMPLE measured closes keeps the flat fallback rather than inheriting
+    a noisy estimate. Never raises: a payload without the block prices exactly as
+    before and the report says so.
+    """
+    sv = (data or {}).get("slippage_validation") if isinstance(data, dict) else None
+    sv = sv if isinstance(sv, dict) else {}
+    applied: dict[str, float] = {}
+    for ac, row in (sv.get("asset_class_stats") or {}).items():
+        row = row if isinstance(row, dict) else {}
+        pct = _num(row.get("avg_slippage_pct"))
+        n = _num(row.get("n")) or 0
+        if pct and pct > 0 and n >= MIN_COST_SAMPLE:
+            applied[str(ac).upper()] = round(pct, 4)
+    strat: dict[str, float] = {}
+    flagged = sv.get("flagged_strategies")
+    if isinstance(flagged, dict):
+        for name, row in flagged.items():
+            row = row if isinstance(row, dict) else {}
+            pct = _num(row.get("avg_slippage_pct"))
+            if pct and pct > 0:
+                strat[str(name).strip().casefold()] = round(pct, 4)
+    if applied:
+        SLIPPAGE_PCT.update(applied)
+    STRATEGY_SLIPPAGE_PCT.clear()
+    STRATEGY_SLIPPAGE_PCT.update(strat)
+    COST_BASIS.clear()
+    COST_BASIS.update({
+        "model": "measured" if applied else "flat_fallback",
+        "class_cost_pct": dict(sorted(SLIPPAGE_PCT.items())),
+        "n_strategy_costs": len(strat),
+        "min_cost_sample": MIN_COST_SAMPLE,
+        "source": "payload.slippage_validation" if sv else "none",
+        "note": ("per-strategy measured where available, measured class otherwise"
+                 if applied else
+                 "payload carried no measured slippage; flat class constants used"),
+    })
+    return dict(COST_BASIS)
 
 
 def _direction(r: dict) -> str:
@@ -643,9 +715,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     # Cost-stress companion: the same net CI at twice the class slippage. Report
     # only — it never changes a verdict, it shows how much of an edge is a cost
     # assumption.
-    nets_2x = [float(r["pnl_pct"]) - 2.0 * SLIPPAGE_PCT.get(
-                   str(r.get("asset_class") or "UNKNOWN").upper(),
-                   DEFAULT_SLIPPAGE_PCT) for r in rows]
+    nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
     boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
     stable, halves = split_half_ok(nets)
     # Edge test (2026-11-19): expectancy, not P(win). A trend cell at WR 35% with
@@ -1118,6 +1188,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "bootstrap_resamples": BOOT_N,
             "bootstrap_seed": BOOT_SEED,
             "slippage_pct_by_class": SLIPPAGE_PCT,
+            "cost_basis": dict(COST_BASIS),
             "win_definition": "net pnl_pct > 0 after per-class round-trip slippage",
             "edge_test": "net-expectancy bootstrap CI, one-sided; WR is a descriptor only",
             "p_value": "one-sided bootstrap P(net mean <= 0), 2,000 seeded resamples",

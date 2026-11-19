@@ -17280,6 +17280,33 @@ def generate():
         ),
         "smart_picks_feed": smart_picks_feed,
         "smart_picks_snapshot_summary": smart_picks_snapshot_summary,
+        # A5 (2026-11-19): ONE smart-picks definition. The page carried two numbers
+        # that could not be reconciled: the live feed (0 picks, 0 scored) and a
+        # historical snapshot (95 picks, 68.4% WR). Both are true and they describe
+        # different things, so publish one object that names which is which instead
+        # of two keys a renderer can freely confuse.
+        "smart_picks": {
+            "definition": (
+                "Smart Picks = picks clearing SMART_PICKS_MIN_SCORE in the current "
+                "feed. The history figure is a batch-resolution snapshot: each batch "
+                "is priced at resolution, not at fill, so it is not comparable to the "
+                "live count and must not be quoted as a forward win rate."
+            ),
+            "now": {
+                "n_picks": len((smart_picks_feed or {}).get("picks") or []),
+                "total_scored": (smart_picks_feed or {}).get("total_scored"),
+                "metric_type": "live_feed",
+                "generated_at": (smart_picks_feed or {}).get("generated_at"),
+            },
+            "history": {
+                "n_picks": (smart_picks_snapshot_summary or {}).get("total_picks"),
+                "resolved_batches": (smart_picks_snapshot_summary or {}).get("resolved_batches"),
+                "win_rate_pct": (smart_picks_snapshot_summary or {}).get("win_rate"),
+                "metric_type": (smart_picks_snapshot_summary or {}).get("metric_type") or "snapshot",
+                "comparable_to_live_feed": False,
+                "caveat": "batch-resolution pricing, not execution fills",
+            },
+        },
         "verified_alpha": verified_alpha_summary,
         "research_reports": research_reports,
         "pcg5_shadow_summary": _pcg5_shadow_summary,
