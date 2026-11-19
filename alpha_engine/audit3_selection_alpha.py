@@ -166,8 +166,19 @@ def _close_at(series: list[tuple[int, float]], ts_ms: int, tol_ms: int) -> float
     return v if k - ts_ms <= tol_ms else None
 
 
-def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dict:
+def _num(v):
+    """Float or None — payload fields are frequently null or strings."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return f if f == f else None
+
+
+def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
+              collect: bool = False) -> dict:
     per = []
+    records: list[dict] = []
     missing = defaultdict(int)
     for r in rows:
         klass = _class(r)
@@ -196,6 +207,26 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dic
         hold_days = max((t1 - t0).total_seconds() / 86400.0, 0.0)
         per.append({"row": r, "class": klass, "dir": _dir(r), "pnl": pnl,
                     "hold": bench, "alpha": pnl - bench, "hold_days": hold_days})
+        if collect:
+            # Per-pick rows exist so a *slice* can be tested, not just a class.
+            # A class average hides the exit-geometry question (did TP cut
+            # winners short?) and the score question (does the score sort?).
+            records.append({
+                "class": klass, "dir": _dir(r),
+                "symbol": str(r.get("symbol") or ""),
+                "strategy": str(r.get("strategy") or ""),
+                "source": str(r.get("source_system") or ""),
+                "exit_reason": str(r.get("exit_reason") or r.get("exit_reason_raw") or ""),
+                "timeframe": str(r.get("trade_timeframe") or ""),
+                "trust_tier": str(r.get("at_issue_trust_tier") or r.get("trust_tier") or ""),
+                "score": _num(r.get("score")), "elite_score": _num(r.get("elite_score")),
+                "confidence": _num(r.get("confidence")),
+                "rr_ratio": _num(r.get("rr_ratio")),
+                "strat_fwd_wr": _num(r.get("strat_fwd_wr")),
+                "pnl": round(pnl, 4), "hold": round(bench, 4),
+                "alpha": round(pnl - bench, 4), "hold_days": round(hold_days, 4),
+                "entry_time": t0.isoformat(), "closed_at": t1.isoformat(),
+            })
 
     def agg(items):
         if not items:
@@ -236,15 +267,19 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dic
             items = [x for x in per if x["class"] == c and x["dir"] == d]
             if len(items) >= 20:
                 by_slice[f"{c}/{d}"] = agg(items)
-    return {"covered": len(per), "missing": dict(missing), "overall": agg(per),
-            "by_class": by_cls, "by_slice": by_slice,
-            "n_universe": len(rows)}
+    out = {"covered": len(per), "missing": dict(missing), "overall": agg(per),
+           "by_class": by_cls, "by_slice": by_slice, "n_universe": len(rows)}
+    if collect:
+        out["records"] = records
+    return out
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--picks", required=True)
     ap.add_argument("--out")
+    ap.add_argument("--rows-out", dest="rows_out",
+                    help="write one JSON line per covered pick (for slice scans)")
     args = ap.parse_args(argv)
     data = json.load(open(args.picks, encoding="utf-8"))
     rows = ((data.get("picks") or {}).get("recent_closed") or []) if isinstance(data, dict) else data
@@ -252,7 +287,8 @@ def main(argv=None) -> int:
     if not rows:
         print("ERROR: no usable picks", file=sys.stderr); return 2
     bars = load_bars(rows)
-    res = alpha_for(rows, bars)
+    res = alpha_for(rows, bars, collect=bool(args.rows_out))
+    recs = res.pop("records", [])
     res["schema"] = "audit3.selection_alpha.v1"
     res["generated_at"] = datetime.now(timezone.utc).isoformat()
     res["definition"] = ("alpha = pick net return - direction-adjusted buy & hold "
@@ -262,6 +298,10 @@ def main(argv=None) -> int:
                          f">= {MIN_HOLD_DAYS_FOR_HEADLINE:.0f} day(s)")
     if not res["covered"]:
         print(json.dumps(res, indent=1)); print("no price coverage", file=sys.stderr); return 3
+    if args.rows_out:
+        with open(args.rows_out, "w", encoding="utf-8") as fh:
+            for rec in recs:
+                fh.write(json.dumps(rec, default=str) + "\n")
     if args.out:
         json.dump(res, open(args.out, "w", encoding="utf-8"), indent=1)
     o = res["overall"]
