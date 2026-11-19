@@ -413,7 +413,7 @@ function render(d){
   };
   table('alphaCovTbl', [
     {key:'asset_class', label:'Class'},
-    {key:'priced', label:'Symbols priced', render:r=>`<span class="num">${r.priced}</span>`},
+    {key:'priced', label:'Instruments priced', render:r=>`<span class="num">${r.priced}</span>`},
     {key:'last_bar', label:'Last bar', render:r=>{
         if (r.last_bar == null) return '<span class="neg">no bars</span>';
         const age = staleDays(r.last_bar);
@@ -432,7 +432,7 @@ function render(d){
   $('alphaCovNote').innerHTML = alphaCovRows.length
     ? `<b>Bar coverage</b> explains an <i>unmeasured</i> class gate. The gate needs a bar at or
        after each pick's exit, so a pick closing after its table's last bar cannot be priced —
-       the count below shows symbols actually priced, and red dates are more than 7 days stale.`
+       the count below shows instruments actually priced (spelling variants such as BTC-USD / BTCUSDT collapse to one), and red dates are more than 7 days stale.`
     : '';
 
   // Coverage — the denominator. Without it every verdict above reads as if it
