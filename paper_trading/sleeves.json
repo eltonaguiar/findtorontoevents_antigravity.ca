@@ -8,6 +8,59 @@
       "symbol": "SPY",
       "asset_class": "EQUITY",
       "capital": 1400
+    },
+    {
+      "id": "etf-rotation",
+      "kind": "rotation",
+      "capital": 400,
+      "universe": [
+        "XLK",
+        "XLF",
+        "XLE",
+        "XLV",
+        "XLI",
+        "XLP",
+        "XLU",
+        "XLY",
+        "XLB",
+        "XLRE",
+        "XLC"
+      ],
+      "rules": {
+        "lookback_days": 126,
+        "top_n": 3,
+        "absolute_filter": true,
+        "min_positive_pct": 0.0,
+        "weights": "equal",
+        "rebalance": "monthly"
+      },
+      "preregistered_at": "2026-11-19",
+      "thesis": "Top-3 long-only sector ETFs by 6-month momentum; cash when the best momentum is negative. Backtest evidence: reports/TACTICAL_ROTATION_EDGE_2026-07-04.md (top5-6m Sharpe 0.88 vs SPY 0.74, MaxDD -19% vs -51%, 2007-2026). Forward n=0 - this sleeve exists to create forward rows, not to size."
+    },
+    {
+      "id": "etf-rotation-random",
+      "kind": "rotation_random",
+      "capital": 400,
+      "seed": 7,
+      "universe": [
+        "XLK",
+        "XLF",
+        "XLE",
+        "XLV",
+        "XLI",
+        "XLP",
+        "XLU",
+        "XLY",
+        "XLB",
+        "XLRE",
+        "XLC"
+      ],
+      "rules": {
+        "top_n": 3,
+        "rebalance": "monthly"
+      },
+      "preregistered_at": "2026-11-19",
+      "thesis": "Control arm: 3 pseudo-random sector ETFs on the same rebalance dates. If etf-rotation cannot beat this, its momentum selection adds nothing."
     }
   ]
 }

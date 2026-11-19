@@ -134,6 +134,127 @@ def random_arm_applicable(cfg: dict[str, Any]) -> bool:
     return cfg.get("kind") != "buy_hold"
 
 
+# ─────────────────────────────────────────── rotation sleeves (signal sleeves) ──
+def daily_closes(pairs: list[tuple[int, float]]) -> list[tuple[str, float]]:
+    """Collapse intraday (ts_ms, close) into one close per UTC date, sorted."""
+    by_day: dict[str, float] = {}
+    for ms, px in pairs or []:
+        day = datetime.fromtimestamp(int(ms) / 1000, timezone.utc).strftime("%Y-%m-%d")
+        by_day[day] = float(px)          # last bar of the day wins
+    return sorted(by_day.items())
+
+
+def momentum_pct(closes: list[tuple[str, float]], lookback_days: int) -> float | None:
+    """Simple momentum over the last ``lookback_days`` daily closes."""
+    if len(closes) < 2:
+        return None
+    window = closes[-(lookback_days + 1):]
+    if len(window) < 2 or window[0][1] <= 0:
+        return None
+    return (window[-1][1] / window[0][1] - 1.0) * 100.0
+
+
+def rotation_pick(series_by_symbol: dict[str, list[tuple[str, float]]],
+                  rules: dict[str, Any]) -> list[str]:
+    """Top-N by momentum, with an absolute filter: negative momentum -> cash."""
+    look = int(rules.get("lookback_days", 126))
+    top_n = int(rules.get("top_n", 3))
+    floor = float(rules.get("min_positive_pct", 0.0))
+    scored = []
+    for sym, closes in series_by_symbol.items():
+        m = momentum_pct(closes, look)
+        if m is not None:
+            scored.append((m, sym))
+    scored.sort(reverse=True)
+    picks = [s for m, s in scored[:top_n] if (m > floor or not rules.get("absolute_filter", True))]
+    return picks
+
+
+def rotation_rebalance(state: dict[str, Any], cfg: dict[str, Any],
+                       series_by_symbol: dict[str, list[tuple[str, float]]],
+                       prices: dict[str, float], day: str) -> dict[str, Any]:
+    """Equal-weight the momentum picks; all-in cash when nothing clears the filter."""
+    sid = cfg["id"]
+    rules = cfg.get("rules") or {}
+    capital = float(cfg.get("capital", 0))
+    sleeve = state["sleeves"].get(sid) or {
+        "kind": cfg.get("kind", "rotation"), "capital": capital, "cash": capital,
+        "positions": {}, "entry_date": day, "last_rebalance": None, "history": []}
+    # mark to market before rebalancing so cash accounting is honest
+    equity = float(sleeve["cash"]) + sum(
+        float(q) * float(prices.get(s, 0) or 0) for s, q in sleeve["positions"].items())
+    if cfg.get("kind") == "rotation_random":
+        # Control arm: same universe, same exposure, no momentum selection.
+        import random
+        rng = random.Random(int(cfg.get("seed", 7)) * 10000 + int(day[:7].replace("-", "")))
+        n = min(int(rules.get("top_n", 3)), len(series_by_symbol))
+        picks = sorted(rng.sample(sorted(series_by_symbol), n)) if n else []
+    else:
+        picks = rotation_pick(series_by_symbol, rules)
+    sleeve["positions"] = {}
+    if picks and all(prices.get(s) for s in picks):
+        per = equity / len(picks)
+        sleeve["positions"] = {s: per / float(prices[s]) for s in picks}
+        sleeve["cash"] = 0.0
+    else:
+        sleeve["cash"] = equity
+    sleeve["last_rebalance"] = day
+    sleeve["history"] = [h for h in sleeve["history"] if h["date"] != day]
+    sleeve["history"].append({"date": day, "equity": round(equity, 2)})
+    sleeve["history"].sort(key=lambda h: h["date"])
+    sleeve["picks"] = picks
+    state["sleeves"][sid] = sleeve
+    return sleeve
+
+
+def mark_rotation(state: dict[str, Any], cfg: dict[str, Any],
+                  prices: dict[str, float], day: str) -> float:
+    """Append a daily mark without changing positions (the non-rebalance days)."""
+    sid = cfg["id"]
+    s = state["sleeves"].get(sid)
+    if not s:
+        raise ValueError(f"{sid}: mark_rotation before rebalance")
+    equity = round(float(s["cash"]) + sum(
+        float(q) * float(prices.get(sym, 0) or 0) for sym, q in s["positions"].items()), 2)
+    s["history"] = [h for h in s["history"] if h["date"] != day]
+    s["history"].append({"date": day, "equity": equity})
+    s["history"].sort(key=lambda h: h["date"])
+    return equity
+
+
+def rotation_report(state: dict[str, Any], cfg: dict[str, Any],
+                    prices: dict[str, float], day: str) -> dict[str, Any]:
+    sid = cfg["id"]
+    s = state["sleeves"].get(sid)
+    if not s:
+        return {"id": sid, "status": "not_initialised", "capital": cfg.get("capital")}
+    equity = float(s["cash"]) + sum(
+        float(q) * float(prices.get(sym, 0) or 0) for sym, q in s["positions"].items())
+    capital = float(s["capital"])
+    peak = max([h["equity"] for h in s["history"]] + [equity])
+    return {"id": sid, "status": "live_paper", "kind": "rotation",
+            "capital": capital, "equity": round(equity, 2),
+            "cash": round(float(s["cash"]), 2),
+            "positions": {k: round(v, 6) for k, v in s["positions"].items()},
+            "picks": s.get("picks") or [],
+            "last_rebalance": s.get("last_rebalance"),
+            "return_pct": round((equity / capital - 1.0) * 100.0, 4) if capital else 0.0,
+            "drawdown_pct": round((equity / peak - 1.0) * 100.0, 4) if peak else 0.0,
+            "n_marks": len(s["history"]), "as_of": day}
+
+
+def _db_daily(symbols: list[str], day: str, days: int = 400) -> dict[str, list[tuple[str, float]]]:
+    import tools.stamp_entry_conditions as S
+    end = datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    hi = int(end.timestamp() * 1000) + 86_400_000
+    lo = hi - days * 86_400_000
+    out = {}
+    for sym in symbols:
+        bars = S.fetch_bars({"stock_ohlcv": {sym: (lo, hi)}}) or {}
+        out[sym] = daily_closes(bars.get(sym) or [])
+    return out
+
+
 def _db_price(symbol: str, day: str) -> float | None:
     """Last close for ``symbol`` on ``day`` from the canonical bar fetcher."""
     import tools.stamp_entry_conditions as S  # local import: keeps tests offline
@@ -167,7 +288,24 @@ def main(argv: list[str] | None = None) -> int:
     cfg = load_config(args.config)
     state = load_state(args.state)
     rows = []
+    series_cache: dict[str, list[tuple[str, float]]] = {}
     for sleeve in cfg["sleeves"]:
+        if sleeve.get("kind", "buy_hold") in ("rotation", "rotation_random"):
+            universe = sleeve.get("universe") or []
+            missing = [s for s in universe if s not in series_cache]
+            if missing:
+                series_cache.update(_db_daily(missing, args.date))
+            prices = {s: float(overrides[s]) if s in overrides
+                      else (series_cache[s][-1][1] if series_cache.get(s) else None)
+                      for s in universe}
+            cur = state["sleeves"].get(sleeve["id"])
+            month_changed = (not cur) or (cur.get("last_rebalance") or "")[:7] != args.date[:7]
+            if args.init or (args.mark and month_changed):
+                rotation_rebalance(state, sleeve, series_cache, prices, args.date)
+            elif args.mark and sleeve["id"] in state["sleeves"]:
+                mark_rotation(state, sleeve, prices, args.date)
+            rows.append(rotation_report(state, sleeve, prices, args.date))
+            continue
         px = price_of(sleeve["symbol"], args.date)
         if args.init:
             init_sleeve(state, sleeve, px, args.date)

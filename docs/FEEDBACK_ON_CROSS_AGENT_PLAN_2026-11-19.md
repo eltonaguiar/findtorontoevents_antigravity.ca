@@ -33,12 +33,13 @@ honesty, not alpha" framing. Those are the right priors and they are usually omi
 
 ## 3. Five corrections before building
 
-1. **PDT claim is unverified.** The plan states the $25k pattern-day-trader rule was repealed by
-   "FINRA Notice 26-10 (effective 2026-06-04)". No link, and I could not verify it today `[?]`.
-   Do not base the equity-day-trading case on it. If true, my own
-   `docs/ALLOCATION_2000_AND_LIVE_SIM_PLAN_2026-11-19.md` needs the same correction — so this
-   cuts both ways. Action: link and read the notice, then patch both docs. Note the Brazil/Taiwan
-   base rates stand either way, so the conclusion ("still a losing game") does not change.
+1. ~~PDT claim is unverified.~~ **VERIFIED — my flag is withdrawn.** FINRA Regulatory Notice
+   26-10, "FINRA Adopts New Intraday Margin Standards to Replace the Day Trading Margin
+   Requirements", published 2026-04-20, effective 2026-06-04, phase-in ends 2027-10-20
+   (`https://www.finra.org/rules-guidance/notices/26-10`): it replaces the day-trade-count and
+   **$25,000 minimum equity** requirements with exposure-proportional intraday margin. I have
+   patched my own allocation doc. The plan was right; the Brazil/Taiwan base rates still stand,
+   so the conclusion ("still a losing game") is unchanged.
 2. **Forward-gate mismatch.** The plan gates on "n≥100, PF CI-LB>1.0". audit3 does **not** use a
    PF CI. Its gates are: CANDIDATE = n≥30, net CI>0, q≤0.20; PROVEN_T2 = n≥100, net CI>0 at
    **2× class slippage**, DSR≥0.95, BH q≤0.10, split-half stable, concentration caps

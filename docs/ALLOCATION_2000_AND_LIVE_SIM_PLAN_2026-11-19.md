@@ -34,14 +34,20 @@ This is the most important number in the plan. Fixed costs do not scale down wit
 | Venue | Round-trip cost | Cost per $2k trade | 3 trades/day × 20 days | Monthly drag |
 |---|---|---:|---:|---:|
 | Crypto perp (taker 0.05% ×2 + ~0.05% slip) | ~0.15% | ~$3.00 | 60 trades | **~$180 = 9.0%** |
-| US equities (commission-free, spread ~2 bp) | ~0.04% | ~$0.80 | 60 trades | ~$48 = 2.4% (plus PDT rule) |
+| US equities (commission-free, spread ~2 bp) | ~0.04% | ~$0.80 | 60 trades | ~$48 = 2.4% (PDT $25k replaced — see note) |
 | FX micro (1 pip ≈ 0.01%) | ~0.02% | ~$0.40 | 60 trades | ~$24 = 1.2% (leverage risk) |
 | ETF rotation (monthly, 0–1 leg change) | ~0.02% | ~$0.40 | ~2 trades/mo | **~$0.80 = 0.04%** |
 
 A day-trading strategy on $2,000 must beat **9%/month gross** in crypto just to break even.
 That is why the honest answer is: **day trading is a paper-only research activity at this
-size**, and real money belongs in low-turnover sleeves. Also note the US **PDT rule**: a
-margin account under $25,000 is limited to 3 day trades per 5 days.
+size**, and real money belongs in low-turnover sleeves.
+
+**Correction (verified 2026-11-19):** the US pattern-day-trader rule is being replaced.
+FINRA Regulatory Notice 26-10 (published 2026-04-20, effective 2026-06-04, broker phase-in
+ends 2027-10-20) replaces the day-trade-count and **$25,000 minimum equity** requirements with
+exposure-proportional intraday margin. So $2,000 equity day trading is no longer barred by PDT
+at brokers that have implemented it — but the friction table above and the base rates
+(Chague et al.: 97% of persistent day traders lose) still argue against doing it with $2,000.
 
 ---
 
