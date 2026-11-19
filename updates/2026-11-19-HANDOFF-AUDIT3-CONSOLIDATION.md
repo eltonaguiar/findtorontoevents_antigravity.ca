@@ -112,3 +112,22 @@ python3 -m alpha_engine.audit3_tribunal --picks /tmp/a3/dashboard_data.json --ou
   re-captures them.
 
 *Not investment advice.*
+
+---
+
+## Addendum — subagent reports reconciled (2026-11-19)
+
+Every subagent report was reviewed; here is what was actionable and what was
+already handled or deliberately deferred.
+
+| Subagent flag | Status |
+|---|---|
+| `observe` is not a defined confirmatory status | **Resolved** — added to `status_meaning`; `load_confirmatory` does not validate an enum; `_pod_for` only accepts `pre_registered`, and a test pins that an `observe` pod cannot promote. |
+| Pod `hypothesis_id` were placeholders (no real ids) | **Resolved** — filed real `H-2026-11-19-01..05` in `reports/hypothesis_registry.json`; the forward-observation FK check accepts them. |
+| `trading/data/strategy_registry.json` declared but never materialized | **Resolved** — `tools/seed_strategy_registry.py` materializes it from the pod manifest (17 strategies: INCUBATOR/pending_review for observe/pre_registered, KILL_LIST/eliminated for post_hoc/declined). |
+| audit2 missing forward clock / trial counter / benchmarks / 3× cost gate | **Resolved (first cut)** — `tools/audit2_forward_summary.py` → `audit_dashboard/data/audit2_forward.json`; audit2 now renders a forward-evidence clock, trial budget, benchmark-leg table, and the 3× cost-gate note. |
+| Hypothesis registry has 30+ status spellings and a duplicate archive tail | **Deferred** — the evidence registry normalises the enum for its own view; rewriting 141 entries + a duplicate tail is high-risk and belongs in its own reviewed change. |
+| `strategy_perf_by_class.json` small-n positives (n<30, PF 199) | **Already handled** — audit2 treats these as traps/small-sample noise and never headlines raw PF. |
+| Selection alpha needs MySQL; unavailable in CI | **Already handled** — optional sidecar; the ledger states `available: false`; the alpha gate only fires when data exists. |
+| `v2/index.html` orphaned and contradicting audit3 | **Open** — documented; retire/re-point is a deploy decision. |
+| `bt_backtest_runs.asset_class` mislabel, USDT→CRYPTO carve-out | **Open** — needs DB/source changes; noted in the follow-ups. |
