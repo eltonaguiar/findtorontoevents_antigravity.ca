@@ -4113,6 +4113,14 @@ JSON_PICK_SOURCES = [
     ),
     ("pm_whale_signals", "prediction_market_agents/data/whale_signals.json", None),
     ("pm_kalshi_signals", "prediction_market_agents/data/kalshi_signals.json", None),
+    # Kalshi + Polymarket macro binary contracts (Fed/GDP/CPI/indices/yields).
+    # Outcome-resolved via pm_contract_resolver; flat mirror from
+    # tools/pm_macro_expansion.py. Shadow/forward-test only.
+    (
+        "pm_macro_expansion",
+        "alpha_engine/data/pm_macro_expansion_picks.json",
+        None,
+    ),
     # ── ML Gatekeeper & Consensus (Mercury-validated, Apr 2026) ──
     (
         "ml_gatekeeper",
@@ -8528,6 +8536,31 @@ def _normalize_pick(raw, source_system: str, status: str = "OPEN") -> dict:
         "regime": raw.get("regime") or raw.get("sentinel_regime"),
         "has_conflict": raw.get("has_conflict", False),
         "_source_score_breakdown": source_score_meta["_source_score_breakdown"],
+        # Timestamp / verification / bias-audit metadata (copytrader/multi-asset forward-only)
+        "signal_time_utc": str(
+            raw.get("signal_time_utc")
+            or raw.get("signal_timestamp")
+            or raw.get("source_open_time")
+            or raw.get("open_time")
+            or ""
+        ),
+        "signal_time_est": str(raw.get("signal_time_est") or ""),
+        "ingest_time_utc": str(
+            raw.get("ingest_time_utc")
+            or raw.get("timestamp")
+            or raw.get("generated_at")
+            or ""
+        ),
+        "ingest_time_est": str(raw.get("ingest_time_est") or ""),
+        "verification_state": str(
+            raw.get("verification_state")
+            or (
+                "verified_forward"
+                if raw.get("forward_validated")
+                else ("forward_test_only" if raw.get("forward_test_only") else "")
+            )
+        ),
+        "bias_controls": raw.get("bias_controls") if isinstance(raw.get("bias_controls"), dict) else {},
         # Leverage safety gate
         "max_safe_leverage": raw.get("max_safe_leverage", 2),
         "leverage_factors": raw.get("leverage_factors", {}),
