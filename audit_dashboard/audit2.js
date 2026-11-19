@@ -59,6 +59,16 @@ var RETIRED = [
   ["POD-LUXALGO-SHORT","post_hoc: registered after the rows were scored, 97.7% single-source; observe only."]
 ];
 
+var BENCHMARKS = [
+  ["CRYPTO", "BTC-USD hold", "excess vs hold; 2x slippage; IR>=0.5"],
+  ["EQUITY", "SPY total return", "IR>=0.5, down-capture, n>=100 forward"],
+  ["ETF", "SPY total return", "monthly cadence only (intraday cost artefact)"],
+  ["BOND", "AGG / T-bills", "duration-matched"],
+  ["COMMODITY", "GSG", "term-structure neutral"],
+  ["FUTURES", "GSG", "term-structure neutral"],
+  ["FOREX", "DXY", "trend/carry matched"]
+];
+
 function el(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
 function fmt(v,d){ if(v==null) return "—"; var n=Number(v); return isNaN(n)?esc(v):n.toFixed(d==null?3:d); }
@@ -71,6 +81,9 @@ function renderStatic(){
     return "<tr><td><strong>"+esc(t[0])+"</strong></td><td>"+esc(t[1])+"</td></tr>"; }).join("");
   el("retired").innerHTML = RETIRED.map(function(t){
     return "<tr><td><strong>"+esc(t[0])+"</strong></td><td>"+esc(t[1])+"</td></tr>"; }).join("");
+  el("benchRows").innerHTML = BENCHMARKS.map(function(b){
+    return "<tr><td><strong>"+esc(b[0])+"</strong></td><td>"+esc(b[1])+"</td><td>"+esc(b[2])+"</td></tr>";
+  }).join("");
   el("pods").innerHTML = PODS.map(function(p){
     var b = p.status==="pre_registered" ? "b-pre" : (p.status==="observe" ? "b-observe" : (p.status==="post_hoc"?"b-post":"b-declined"));
     return '<div class="card">'+
@@ -106,6 +119,11 @@ function renderLedger(d){
   }).join("");
   el("classRows").innerHTML = rows || '<tr><td colspan="8" class="muted">no class rows</td></tr>';
 
+  var sum = d.summary || {};
+  el("trialBudget").innerHTML = "Rolls used: <strong>"+fmt(sum.n_cells_tested,0)+"</strong> tested cells / <strong>"+fmt(sum.n_cells_total,0)+"</strong> total &middot; "+
+    "verdicts: proven "+fmt(sum.n_proven,0)+", candidate "+fmt(sum.n_candidate,0)+", weak "+fmt(sum.n_weak,0)+", kill "+fmt(sum.n_kill,0)+". "+
+    "Nothing promotes without forward rows.";
+
   var prov = d.provenance || {};
   var src = String(prov.source || d.source || "");
   var tmpWarn = /\/tmp\//.test(src) ? ' <strong style="color:var(--warn)">Warning: source is a /tmp build path, not a committed file.</strong>' : "";
@@ -133,6 +151,24 @@ function loadLedger(i){
   });
 }
 
+function loadForward(){
+  return fetch("audit2_forward.json", {cache:"no-store"}).then(function(r){
+    if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
+  }).then(function(f){
+    var rows = Object.keys(f.by_hypothesis||{}).map(function(h){
+      var v=f.by_hypothesis[h];
+      var ok = v.n>=100 && v.intrabar===v.n && v.benchmark_leg>=0.9*v.n;
+      var status = v.n===0 ? "0 rows — clock not accruing" : (ok ? "gate-ready" : "accruing");
+      return "<tr><td><strong>"+esc(h)+"</strong></td><td class=\"num\">"+fmt(v.n,0)+"</td><td class=\"num\">"+
+        fmt(v.benchmark_leg,0)+"/"+fmt(v.n,0)+"</td><td class=\"num\">"+fmt(v.intrabar,0)+"/"+fmt(v.n,0)+"</td><td>"+esc(status)+"</td></tr>";
+    }).join("");
+    el("forwardRows").innerHTML = rows || '<tr><td colspan="5" class="muted">no forward rows yet</td></tr>';
+  }).catch(function(){
+    el("forwardRows").innerHTML = '<tr><td colspan="5" class="muted">forward ledger unavailable</td></tr>';
+  });
+}
+
+loadForward();
 loadLedger(0)
   .then(function(d){
     renderLedger(d);

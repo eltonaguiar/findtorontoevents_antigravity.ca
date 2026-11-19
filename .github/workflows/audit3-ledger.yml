@@ -103,6 +103,9 @@ jobs:
             --picks /tmp/audit3/dashboard_data.json \
             --out /tmp/audit3/selection_alpha.json || true
 
+      - name: Build audit2 forward summary
+        run: python3 tools/audit2_forward_summary.py
+
       - name: Build audit3 ledger
         run: |
           alpha_arg=""
@@ -194,6 +197,7 @@ jobs:
           for local, remote in [
               ("audit_dashboard/audit2.html", "index.html"),
               ("audit_dashboard/audit2.js", "audit2.js"),
+              ("audit_dashboard/data/audit2_forward.json", "audit2_forward.json"),
           ]:
               with open(local, "rb") as f:
                   ftp.storbinary(f"STOR {remote}", f)
