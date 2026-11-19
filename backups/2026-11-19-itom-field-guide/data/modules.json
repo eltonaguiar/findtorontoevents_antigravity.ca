@@ -1,0 +1,1057 @@
+{
+  "_meta": {
+    "title": "ServiceNow ITOM knowledge base",
+    "version": "1.2.0",
+    "agent": "Kilo (deepseek-flash)",
+    "created": "2026-11-19",
+    "docs_release": "Australia",
+    "rules": [
+      "Every breadcrumb is a starting point; menu labels move between releases and with installed plugins.",
+      "Any statement that depends on subscription, plugin, or instance configuration must be verified on the instance.",
+      "Field names and roles are documented from the Australia release; confirm in the dictionary and role list."
+    ]
+  },
+  "modules": [
+    {
+      "id": "itom-overview",
+      "name": "ServiceNow IT Operations Management (ITOM)",
+      "app": "ITOM",
+      "confidence": "high",
+      "why": "ITOM keeps two pictures true: what exists and what is wrong with it. It is the product family behind the CMDB, service maps, alerts, reliability, and cloud governance.",
+      "primary_table": "cmdb_ci",
+      "tables": [
+        "cmdb_ci",
+        "cmdb_rel_ci",
+        "cmdb_ci_service_discovered",
+        "em_event",
+        "em_alert",
+        "ecc_queue"
+      ],
+      "roles": [
+        "admin",
+        "discovery_admin",
+        "sm_admin",
+        "evt_mgmt_admin",
+        "sn_itom_license.reader"
+      ],
+      "breadcrumbs": [
+        "All > IT Operations Management",
+        "All > Discovery > Discovery Schedules",
+        "All > Event Management > Alerts > All Alerts",
+        "All > Service Operations Workspace"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "cmdb_ci.name",
+            "why": "The identifier humans use"
+          },
+          {
+            "field": "cmdb_ci.sys_class_name",
+            "why": "Determines the CI class and behavior"
+          },
+          {
+            "field": "em_alert.ci",
+            "why": "Links the alert to the affected CI"
+          },
+          {
+            "field": "em_alert.severity",
+            "why": "Drives priority and response"
+          }
+        ]
+      },
+      "must_know": [
+        "Visibility writes the CMDB; AIOps consumes it",
+        "ITOM AIOps is the current docs name for the detection family sometimes called ITOM Health",
+        "Most ITOM products are separate subscriptions",
+        "Store apps update independently of family releases"
+      ],
+      "mistakes": [
+        "Buying before defining the use case",
+        "Mapping before the CMDB is clean",
+        "Assuming a PDI has entitlements",
+        "Treating events as work items"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 45,
+        "prove": 10,
+        "teach": 10
+      },
+      "labs": [
+        "labs/LAB-00-ORIENTATION.md"
+      ],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/r_ITOMApplications.html"
+      ],
+      "quiz": [
+        "Which product populates the CMDB?",
+        "What is the difference between an event and an alert?",
+        "Which family contains Event Management and HLA?"
+      ]
+    },
+    {
+      "id": "discovery",
+      "name": "ITOM Discovery",
+      "app": "ITOM Visibility",
+      "confidence": "high",
+      "why": "Discovery scans networks, classifies devices, identifies CIs, explores details, and updates the CMDB. It is the engine behind the CMDB.",
+      "primary_table": "cmdb_ci",
+      "tables": [
+        "cmdb_ci",
+        "cmdb_rel_ci",
+        "discovery_schedule",
+        "discovery_port_probe",
+        "discovery_classy",
+        "discovery_classy_proc",
+        "sa_pattern",
+        "ecc_queue",
+        "ecc_queue_event",
+        "ip_service_affinity"
+      ],
+      "roles": [
+        "discovery_admin",
+        "admin"
+      ],
+      "breadcrumbs": [
+        "All > Discovery > Discovery Schedules",
+        "All > Discovery > Status",
+        "All > Discovery > Output and Artifacts > ECC Queue",
+        "All > Discovery > Discovery Definition > Configuration Console",
+        "All > MID Server > Servers"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "discovery_schedule.discover",
+            "why": "Selects the scan type"
+          },
+          {
+            "field": "discovery_schedule.mid_server",
+            "why": "Determines the execution path"
+          },
+          {
+            "field": "ecc_queue.state",
+            "why": "Ready/Processing/Processed/Error"
+          },
+          {
+            "field": "cmdb_ci.sys_class_name",
+            "why": "Determines CI identity and relationships"
+          }
+        ]
+      },
+      "must_know": [
+        "Official phases: Scanning, Classification, Identification, Exploration",
+        "Probes collect; sensors parse; patterns use NDL",
+        "The MID Server starts communication over SOAP/HTTPS",
+        "IP service affinity records the protocol that succeeded"
+      ],
+      "mistakes": [
+        "Scanning a huge range with one schedule",
+        "Wrong credential order",
+        "MID Server cannot reach the subnet",
+        "Ignoring ECC errors",
+        "Treating found as reconciled"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 45,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [
+        "labs/LAB-01-DISCOVERY.md"
+      ],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/c_GetStartedWithDiscovery.html"
+      ],
+      "quiz": [
+        "Name the four phases",
+        "What does Shazzam do?",
+        "Probe vs sensor?",
+        "Where do you look first when discovery fails?"
+      ]
+    },
+    {
+      "id": "service-mapping",
+      "name": "ITOM Service Mapping",
+      "app": "ITOM Visibility",
+      "confidence": "high",
+      "why": "Service Mapping builds service instances from entry points and connections, providing impact analysis and service context for alerts.",
+      "primary_table": "cmdb_ci_service_discovered",
+      "tables": [
+        "cmdb_ci_service_discovered",
+        "cmdb_ci_service_by_tags",
+        "cmdb_ci_service_manual",
+        "cmdb_ci_query_based_service",
+        "cmdb_ci_endpoint",
+        "cmdb_rel_ci"
+      ],
+      "roles": [
+        "sm_admin",
+        "admin"
+      ],
+      "breadcrumbs": [
+        "All > Service Mapping",
+        "All > Service Mapping > Service Instances",
+        "All > Service Mapping > Administration"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "cmdb_ci_endpoint.host",
+            "why": "The service entry point; never localhost"
+          },
+          {
+            "field": "cmdb_ci_endpoint.port",
+            "why": "The service port"
+          },
+          {
+            "field": "cmdb_ci_service_discovered.name",
+            "why": "The service instance identity"
+          }
+        ]
+      },
+      "must_know": [
+        "Top-down mapping starts at an entry point",
+        "Methods: pattern, tag, traffic, Predictive Intelligence",
+        "Entry points live in cmdb_ci_endpoint",
+        "A map inherits CMDB quality"
+      ],
+      "mistakes": [
+        "Mapping before the CMDB is clean",
+        "Using localhost as an entry point",
+        "Weak tag discipline",
+        "Leaving traffic-based discovery on"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 45,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [
+        "labs/LAB-03-SERVICE-MAPPING.md"
+      ],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/service-mapping/c_ServiceMappingOverview.html"
+      ],
+      "quiz": [
+        "What is top-down discovery?",
+        "Name the four mapping methods",
+        "Which table stores entry points?",
+        "Why not localhost?"
+      ]
+    },
+    {
+      "id": "event-management",
+      "name": "ITOM Event Management",
+      "app": "ITOM AIOps",
+      "confidence": "high",
+      "why": "Event Management turns raw events into deduplicated, enriched, prioritised, CI-bound alerts and triggers the right response.",
+      "primary_table": "em_alert",
+      "tables": [
+        "em_event",
+        "em_alert",
+        "em_mapping_rule",
+        "em_mapping_pair",
+        "em_alert_priority_category_order",
+        "em_alert_priority_category_mapping",
+        "em_alert_priority_ci_type"
+      ],
+      "roles": [
+        "evt_mgmt_admin",
+        "evt_mgmt_operator",
+        "evt_team_operator",
+        "evt_mgmt_user",
+        "admin"
+      ],
+      "breadcrumbs": [
+        "All > Event Management > Rules > Event Rules",
+        "All > Event Management > Rules > Alert Correlation Rules",
+        "All > Event Management > Rules > Alert Management Rules",
+        "All > Event Management > Alerts > All Alerts",
+        "All > Service Operations Workspace"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "em_event.source",
+            "why": "Used by event rule matching"
+          },
+          {
+            "field": "em_alert.severity",
+            "why": "Critical/Major/Minor/Warning/OK"
+          },
+          {
+            "field": "em_alert.state",
+            "why": "Open/Reopen/Flapping/Closed; operational Acknowledged/Maintenance"
+          },
+          {
+            "field": "em_alert.ci",
+            "why": "Binds the alert to the affected CI"
+          }
+        ]
+      },
+      "must_know": [
+        "Events are raw; alerts are the work item",
+        "Event rules need a source/filter",
+        "Field mapping runs before alert generation",
+        "CI binding enables impact",
+        "Grouping precedes response to avoid duplicate incidents"
+      ],
+      "mistakes": [
+        "No event rule for a connector",
+        "Rule without a filter",
+        "No CI binding",
+        "No correlation",
+        "Duplicate incidents",
+        "No maintenance rules",
+        "Testing only as admin"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 45,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [
+        "labs/LAB-02-EVENT-TO-INCIDENT.md"
+      ],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/c_EM.html"
+      ],
+      "quiz": [
+        "Event vs alert?",
+        "What happens if a rule has no filter?",
+        "Where does field mapping apply?",
+        "What is a message key?",
+        "Name three CI binding types."
+      ]
+    },
+    {
+      "id": "health-log-analytics",
+      "name": "ITOM Health Log Analytics",
+      "app": "ITOM AIOps",
+      "confidence": "high",
+      "why": "HLA structures logs, learns normal patterns, detects anomalies, and sends events to Event Management. It is a separate licence.",
+      "primary_table": "em_event",
+      "tables": [
+        "em_event",
+        "em_alert"
+      ],
+      "roles": [
+        "evt_mgmt_admin",
+        "evt_mgmt_operator",
+        "evt_mgmt_user"
+      ],
+      "breadcrumbs": [
+        "All > Health Log Analytics",
+        "All > Health Log Analytics > Data Inputs",
+        "All > Service Operations Workspace"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "service instance",
+            "why": "First auto-mapping tag"
+          },
+          {
+            "field": "component",
+            "why": "Second auto-mapping tag"
+          },
+          {
+            "field": "source type",
+            "why": "Third auto-mapping tag"
+          }
+        ]
+      },
+      "must_know": [
+        "Passive vs active data inputs",
+        "Auto-mapping tags: service instance, component, source type",
+        "Test mode avoids permanent objects",
+        "HLA sends events to Event Management",
+        "Severity mapping is not one-to-one"
+      ],
+      "mistakes": [
+        "Treating HLA as included",
+        "No mapping",
+        "Too many source types",
+        "Ignoring time sync",
+        "Every anomaly becomes an incident"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 45,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [
+        "labs/LAB-04-HLA-LOG-ANOMALY.md"
+      ],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/health-log-analytics/hla-landing-page.html"
+      ],
+      "quiz": [
+        "What does HLA send to Event Management?",
+        "Name two passive and two active inputs",
+        "What are the three tags?",
+        "What is Test mode for?"
+      ]
+    },
+    {
+      "id": "reliability-stack",
+      "name": "ITOM reliability stack (SRM, SLO, Observability, Synthetic)",
+      "app": "ITOM AIOps",
+      "confidence": "high",
+      "why": "These products turn detection into a promise, a full-stack view, a reachability test, and a team workflow.",
+      "primary_table": "cmdb_ci_service_discovered",
+      "tables": [
+        "cmdb_ci_service_discovered",
+        "cmdb_ci_endpoint"
+      ],
+      "roles": [
+        "evt_mgmt_admin",
+        "evt_mgmt_operator",
+        "srm group member",
+        "service owner"
+      ],
+      "breadcrumbs": [
+        "All > Service Operations Workspace",
+        "All > Service Reliability Management",
+        "All > Service Level Objective Management",
+        "All > Service Observability",
+        "All > Synthetic Monitoring"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "SLO target",
+            "why": "The promise"
+          },
+          {
+            "field": "SLI",
+            "why": "The measurement"
+          },
+          {
+            "field": "error budget",
+            "why": "The allowed unreliability"
+          },
+          {
+            "field": "service tag",
+            "why": "Maps observability data to the service"
+          }
+        ]
+      },
+      "must_know": [
+        "SRM requires ITSM Standard + ITOM Operator Professional",
+        "SLOs are not SLAs",
+        "Service Observability maps vendor data with tags",
+        "Synthetic tests can run from ServiceNow, ACC proxy, or MID Server"
+      ],
+      "mistakes": [
+        "Treating synthetic tests as SLOs",
+        "SLO with no owner",
+        "Observability without tags",
+        "Monitoring everything"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 40,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [
+        "labs/LAB-03-SERVICE-MAPPING.md"
+      ],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/service-reliability-management/sr-landing-page.html"
+      ],
+      "quiz": [
+        "SLA vs SLO?",
+        "Which two subscriptions does SRM need?",
+        "How does observability map metrics to services?",
+        "Where can synthetic tests run?"
+      ]
+    },
+    {
+      "id": "cloud-accelerate",
+      "name": "ITOM Cloud Accelerate",
+      "app": "ITOM Cloud Accelerate",
+      "confidence": "high",
+      "why": "Cloud Accelerate handles cloud request, account lifecycle and certification, configuration governance, and cloud actions.",
+      "primary_table": "cloud account (model varies)",
+      "tables": [
+        "cloud account/CI records (model varies)"
+      ],
+      "roles": [
+        "Cloud Account Management admin",
+        "Requester",
+        "Approver",
+        "Certifier",
+        "Asset viewer",
+        "Account manager"
+      ],
+      "breadcrumbs": [
+        "All > Cloud Workspace",
+        "All > Cloud Services Catalog",
+        "All > Cloud Account Management",
+        "Guided Setup > ITOM Guided Setup"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "account owner",
+            "why": "Certification and accountability"
+          },
+          {
+            "field": "tag policy",
+            "why": "Governance and cost"
+          },
+          {
+            "field": "policy set",
+            "why": "Compliance scan scope"
+          }
+        ]
+      },
+      "must_know": [
+        "CPG is prepared for deprecation and not installed on new instances",
+        "Cloud Services Catalog replaces the CPG portals for new work",
+        "CAM handles account lifecycle and certification",
+        "CCG scans policy compliance"
+      ],
+      "mistakes": [
+        "Designing new work on CPG",
+        "Customising legacy CPG workflows",
+        "Confusing request, account, and compliance",
+        "No account owner",
+        "No tag policy"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 15,
+        "practice": 15,
+        "prove": 5,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/cloud-services-catalog/exploring-cloud-services-catalog.html"
+      ],
+      "quiz": [
+        "Which app for new cloud requests?",
+        "What does CAM certify?",
+        "What does CCG scan?",
+        "What is CGS a prerequisite for?"
+      ]
+    },
+    {
+      "id": "agent-client-collector",
+      "name": "Agent Client Collector",
+      "app": "Agent Client Collector",
+      "confidence": "high",
+      "why": "ACC collects deep host telemetry, inventory in isolated networks, and logs through an agent and a dedicated MID Server.",
+      "primary_table": "cmdb_ci",
+      "tables": [
+        "cmdb_ci"
+      ],
+      "roles": [
+        "ACC administrator",
+        "NOC user",
+        "Event Management administrator",
+        "CMDB/Discovery administrator"
+      ],
+      "breadcrumbs": [
+        "All > Agent Client Collector",
+        "All > MID Server > Servers"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "agent status",
+            "why": "Whether the agent is checking in"
+          },
+          {
+            "field": "CI association",
+            "why": "Whether data is useful"
+          },
+          {
+            "field": "certificate expiry",
+            "why": "Agents stop when certificates expire"
+          }
+        ]
+      },
+      "must_know": [
+        "Agent-based vs agentless",
+        "Data flows through a dedicated MID Server",
+        "ACC supports monitoring, visibility, air-gapped inventory, and log analytics",
+        "Certificate rotation is part of operations"
+      ],
+      "mistakes": [
+        "No MID Server plan",
+        "No certificate rotation",
+        "Too many checks",
+        "Agent installed but CI not matched"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 15,
+        "practice": 25,
+        "prove": 5,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/agent-client-collector/exploring-agent-client-collector.html"
+      ],
+      "quiz": [
+        "When use ACC instead of Discovery?",
+        "What does the agent send through?",
+        "Where is data associated?",
+        "What happens when a certificate expires?"
+      ]
+    },
+    {
+      "id": "metric-intelligence",
+      "name": "Metric Intelligence",
+      "app": "Metric Intelligence",
+      "confidence": "high",
+      "why": "Metric Intelligence detects abnormal metric behaviour against a CI's history, catching slow drift that event thresholds miss.",
+      "primary_table": "metric definition (model varies)",
+      "tables": [
+        "metric definition/connector records (model varies)"
+      ],
+      "roles": [
+        "evt_mgmt_admin",
+        "evt_mgmt_operator",
+        "evt_mgmt_user"
+      ],
+      "breadcrumbs": [
+        "All > Metric Intelligence",
+        "All > Service Operations Workspace"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "metric definition",
+            "why": "Defines the metric and source"
+          },
+          {
+            "field": "metric rule",
+            "why": "ML or static threshold"
+          },
+          {
+            "field": "CI association",
+            "why": "Gives the alert context"
+          }
+        ]
+      },
+      "must_know": [
+        "Two detection styles: ML anomaly and deterministic rules",
+        "Complements Event Management",
+        "Metric Explorer shows the raw metric",
+        "Alerts follow the Event Management pipeline"
+      ],
+      "mistakes": [
+        "Turning on every metric",
+        "No baseline",
+        "Static threshold copied from a dashboard",
+        "No CMDB binding",
+        "Duplicating Event Management thresholds"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 15,
+        "practice": 25,
+        "prove": 5,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/metric-intelligence/exploring-metric-intelligence.html"
+      ],
+      "quiz": [
+        "What does Metric Intelligence use as its baseline?",
+        "How is it different from Event Management?",
+        "What is Metric Explorer for?"
+      ]
+    },
+    {
+      "id": "itom-ai",
+      "name": "AI in ITOM (Otto, Now Assist, MCP)",
+      "app": "AI in ITOM",
+      "confidence": "high",
+      "why": "AI in ITOM adds assisted mapping, summarisation, generation, and agentic operations on top of trusted records. Governance is the prerequisite.",
+      "primary_table": "AI governance records (model varies)",
+      "tables": [
+        "AI governance records (model varies)"
+      ],
+      "roles": [
+        "AI admin",
+        "ITOM admin",
+        "service owner"
+      ],
+      "breadcrumbs": [
+        "All > AI Control Tower",
+        "All > AI Admin Hub",
+        "All > ITOM MCP Server Console"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "AI tier",
+            "why": "Foundation/Advanced/Prime"
+          },
+          {
+            "field": "model provider",
+            "why": "Availability and residency"
+          },
+          {
+            "field": "data handling/opt-out",
+            "why": "Compliance"
+          }
+        ]
+      },
+      "must_know": [
+        "Now Assist for ITOM is being prepared for future deprecation from Australia",
+        "Otto for ITOM and the MCP Server Console are the forward-looking surfaces",
+        "AI proposes, the record disposes",
+        "Regional and data restrictions apply"
+      ],
+      "mistakes": [
+        "Building on a deprecating surface",
+        "No model-availability check",
+        "Agent writes without approval",
+        "Trusting a summary as evidence"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 15,
+        "practice": 20,
+        "prove": 5,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/now-assist-for-it-operations-management.html"
+      ],
+      "quiz": [
+        "What is happening to Now Assist for ITOM?",
+        "Name the three AI tiers",
+        "Where are model providers controlled?",
+        "What is the rule of thumb for AI output?"
+      ]
+    },
+    {
+      "id": "visibility-suite",
+      "name": "ITOM Visibility specialist apps",
+      "app": "ITOM Visibility",
+      "confidence": "high",
+      "why": "Certificates, tags, firewall policies, AI agents, and content suggestions are the specialist Visibility problems that become audits or outages if ignored.",
+      "primary_table": "varies by app",
+      "tables": [
+        "certificate records (app-specific)",
+        "tag records (app-specific)",
+        "firewall records (app-specific)",
+        "cmdb_process_groups",
+        "discovery_snmp_oid"
+      ],
+      "roles": [
+        "app-specific admin",
+        "discovery_admin",
+        "CMDB administrator"
+      ],
+      "breadcrumbs": [
+        "All > Certificate Inventory and Management",
+        "All > Tag Governance",
+        "All > Firewall Audits and Reporting",
+        "All > AI Agent Topology Mapping",
+        "All > Discovery > Discovery Admin Workspace"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "certificate expiry",
+            "why": "Prevents outages"
+          },
+          {
+            "field": "tag policy",
+            "why": "Governance and cost"
+          },
+          {
+            "field": "firewall rule owner",
+            "why": "Audit defensibility"
+          },
+          {
+            "field": "AI agent/model CI",
+            "why": "Security and compliance"
+          }
+        ]
+      },
+      "must_know": [
+        "Each specialist app solves a different audit/outage problem",
+        "ITOM Content Service uses opt-in CDS data sharing",
+        "AI Agent Topology Mapping covers agents, models, and prompts",
+        "Cloud License Estimator estimates eligible cloud resources"
+      ],
+      "mistakes": [
+        "Buying the suite without a use case",
+        "Certificate discovery without an owner",
+        "Tag policy without enforcement",
+        "Treating estimator output as an invoice"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 15,
+        "practice": 20,
+        "prove": 5,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/itom-visibility/itom-visibility-landing-page.html"
+      ],
+      "quiz": [
+        "Which app audits TLS certificates?",
+        "What does Tag Governance do?",
+        "What does AI Agent Topology Mapping discover?",
+        "What is ITOM Content Service?"
+      ]
+    },
+    {
+      "id": "cmdb",
+      "name": "CMDB foundation (ITOM shared data)",
+      "app": "CMDB / ITOM Visibility",
+      "confidence": "high",
+      "why": "The shared data foundation all ITOM pillars trust: CI classes, relationships, service instances, CSDM, identification/reconciliation, and Service Graph Connectors.",
+      "primary_table": "cmdb_ci",
+      "tables": [
+        "cmdb_ci",
+        "cmdb_rel_ci",
+        "cmdb_ci_service_discovered",
+        "cmdb_ci_service_by_tags",
+        "cmdb_ci_service_manual",
+        "cmdb_ci_query_based_service",
+        "cmdb_ci_endpoint"
+      ],
+      "roles": [
+        "discovery_admin",
+        "sm_admin",
+        "evt_mgmt_admin",
+        "admin"
+      ],
+      "breadcrumbs": [
+        "All > CMDB",
+        "All > Service Mapping > Service Instances",
+        "System Definition > Tables"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "cmdb_ci.sys_class_name",
+            "why": "Defines CI identity and behavior"
+          },
+          {
+            "field": "cmdb_rel_ci.type",
+            "why": "The relationship type for maps and impact"
+          },
+          {
+            "field": "cmdb_ci_service_discovered.name",
+            "why": "The service instance identity"
+          }
+        ]
+      },
+      "must_know": [
+        "Every pillar relies on the CMDB",
+        "CSDM v5 labels the top-down table as service instance",
+        "Service Graph Connectors are Store-app integrations, subject to reconciliation",
+        "Identification beats scanning"
+      ],
+      "mistakes": [
+        "Connector without an owner",
+        "Wrong service table",
+        "CSDM ignored",
+        "Manual relationships without governance"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 30,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/itom-visibility/itom-visibility-use-case.html"
+      ],
+      "quiz": [
+        "Which table is the service instance for top-down mapping?",
+        "What do Service Graph Connectors do?",
+        "Which two CMDB tables does AIOps rely on?"
+      ]
+    },
+    {
+      "id": "automation-remediation",
+      "name": "Automation and remediation",
+      "app": "ITOM AIOps / Cloud Accelerate / LEAP",
+      "confidence": "high",
+      "why": "Turns detection into action across all pillars: alert automation, remediation, cloud remedies, tags, LEAP, and Ansible, with guardrails.",
+      "primary_table": "em_alert",
+      "tables": [
+        "em_alert",
+        "remediation task records",
+        "change_request",
+        "sa_rem_* (varies)"
+      ],
+      "roles": [
+        "evt_mgmt_admin",
+        "evt_team_operator",
+        "flow_designer",
+        "sn_itom_ccg.ccg_operator",
+        "sn_itom_tag.tag_governance_admin",
+        "LEAP admin",
+        "sn_itom_leap.leap_ansible_agent_worker"
+      ],
+      "breadcrumbs": [
+        "All > Service Operations Workspace > Express List",
+        "All > Event Management > Rules > Alert Management Rules",
+        "All > Tag Governance > Remediation",
+        "Workspaces > LEAP"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "automation type",
+            "why": "Ignore/Enrich/Group/Respond"
+          },
+          {
+            "field": "Response subflow",
+            "why": "What the respond automation executes"
+          },
+          {
+            "field": "remediation approval",
+            "why": "Creates a change request"
+          }
+        ]
+      },
+      "must_know": [
+        "Order: Ignore \u2192 Enrich \u2192 Group \u2192 Respond",
+        "Group before respond to avoid duplicates",
+        "Alert/CI remediation create remediation tasks",
+        "CCG and tag remediation can write to cloud",
+        "LEAP automates recurring incident patterns"
+      ],
+      "mistakes": [
+        "No approval gate",
+        "Non-idempotent responses",
+        "Auto-remediation too broad",
+        "No audit trail",
+        "No owner"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 35,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [
+        "labs/LAB-02-EVENT-TO-INCIDENT.md"
+      ],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/sow-itom-alert-automation.html"
+      ],
+      "quiz": [
+        "What is the alert automation order?",
+        "Why group before respond?",
+        "What record does a remediation workflow create?",
+        "What does approval-gated CCG remediation create?"
+      ]
+    },
+    {
+      "id": "resilience-security",
+      "name": "Resilience, security, and compliance",
+      "app": "ITOM cross-cutting",
+      "confidence": "high",
+      "why": "Supplies evidence for recovery, change control, security, and audits: backup-resource visibility, certificates, firewalls, cryptographic assets, cloud policy, and change-correlated RCA.",
+      "primary_table": "varies by app",
+      "tables": [
+        "cmdb_aws_backup_backup_plan (pattern)",
+        "cmdb_aws_backup_backup_vault (pattern)",
+        "cmdb_azure_recovery_services_vault_backup_item (pattern)",
+        "certificate records (app-specific)",
+        "firewall records (app-specific)",
+        "ccg violation/remediation records"
+      ],
+      "roles": [
+        "discovery_admin",
+        "evt_mgmt_admin",
+        "sn_change_write",
+        "sn_itom_ccg.ccg_operator",
+        "sn_itom_tag.tag_governance_admin"
+      ],
+      "breadcrumbs": [
+        "All > Certificate Inventory and Management",
+        "All > Firewall Audits and Reporting",
+        "All > Cryptographic Asset Compliance",
+        "All > Cloud Configuration Governance"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "certificate expiry",
+            "why": "Prevents predictable outages"
+          },
+          {
+            "field": "attestation status",
+            "why": "Ownership evidence"
+          },
+          {
+            "field": "un violation/scan",
+            "why": "Compliance evidence"
+          },
+          {
+            "field": "backup CI relationship",
+            "why": "Recovery visibility"
+          }
+        ]
+      },
+      "must_know": [
+        "ITOM does not replace backup/SecOps/compliance",
+        "Backup patterns show configuration, not restore",
+        "Probable RCA correlates alerts with change requests",
+        "Certificate/firewall/cryptographic apps produce audit evidence"
+      ],
+      "mistakes": [
+        "Treating ITOM as the backup platform",
+        "Assuming backup evidence proves restore",
+        "Certificate inventory without attestation",
+        "Firewall inventory without rule owners",
+        "No audit retention"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 30,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/discovery-and-service-mapping-patterns/aws-backup-plan.html"
+      ],
+      "quiz": [
+        "Does ITOM back up the platform?",
+        "What three factors does Probable RCA use?",
+        "What does Cryptographic Asset Compliance add?",
+        "What record does approval-gated CCG remediation create?"
+      ]
+    }
+  ]
+}
