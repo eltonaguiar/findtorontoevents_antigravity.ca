@@ -65,12 +65,17 @@ degrades to a clear message when the weekly job has not run yet.
 
 ## Verification
 
-- `python3 -m pytest tests/test_audit3_evidence.py -q` — 13 tests.
-- `python3 -m pytest tests/test_audit3_tribunal.py -q` — 16 tests (unchanged, still green).
-- `python3 alpha_engine/audit3_evidence.py --no-db --out /tmp/audit3_evidence.json`
-  — builds from the real repo payloads; record/strategy/source counts recorded below.
-- `python3 alpha_engine/audit3_evidence.py --out ...` — DB path exercised against
-  `ejaguiar1_backtests` read-only.
+- `python3 -m pytest tests/test_audit3_evidence.py -q` — 15 tests.
+- `python3 -m pytest tests/test_audit3_tribunal.py -q` — 16 tests (unchanged, still green);
+  31 together.
+- `python3 alpha_engine/audit3_evidence.py --no-db --out ...` — 52 records from 50 repo
+  files (the payloads that carry metrics).
+- Full run with the live DB: **2,727 records, 145 strategies, 50 source files,
+  ~66.7k trades covered, 11 class mismatches, 11 records recomputed from shipped
+  trade logs, DB connected (2,675 rows from 3 tables)**.
+- Live after deploy: `/audit3/audit3_evidence.json` 200 (2,523,018 B),
+  `/audit3/` 200 and contains the Evidence Registry tab; the ledger tab still
+  reports 11 kills / 34 weak / 65 segment cells.
 - Syntax: `py_compile`, plus `node --check` on the page's extracted `<script>`.
 
 ## What this does NOT do
