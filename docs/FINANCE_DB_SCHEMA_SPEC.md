@@ -479,3 +479,119 @@ tracked as E11 in `docs/EDGE_IDEAS_BACKLOG_2026-11-19.md`.
 Counts in this spec change hourly (`at_pick_outcomes` and the `bt_*` tables are
 written continuously). For staleness detection, `MAX(timestamp_column)` per table
 is the durable field; `TABLE_ROWS` is an estimate that drifts.
+
+---
+
+## Appendix B — Machine-learning algorithms in the build
+
+This appendix documents the ML algorithms actually implemented in the repo and
+how they map onto the database tables above. It is written from the codebase
+(`alpha_engine/`, `ml_consensus/`, `ml_gatekeeper/`, `ml_*` modules), not from
+the schema alone. It is a *ground-truth map* of what ML is currently running,
+what it is trained on, and which tables hold its artifacts.
+
+### B.1 Inventory of live ML systems
+
+| Module | Algorithm / approach | Trained on | Primary output | Status |
+|---|---|---|---|---|
+| `alpha_engine/ml_engine_v2.py` | Multi-model ensemble: XGBoost + LightGBM + RandomForest + LogisticRegression (`VotingClassifier`); `CalibratedClassifierCV`; `TimeSeriesSplit` (no shuffle); SMOTE / cost-sensitive / focal-loss for class imbalance; PR-AUC primary metric; validation-threshold tuning | Real closed picks (feedback loop) | Win-probability scores, filtered picks | Active (v2.0) |
+| `alpha_engine/ml_ranker.py` | Heterogeneous stacking ensemble — XGBoost/LightGBM primary, RF + CatBoost secondary (CatBoost `has_time=True` ordered boosting); **Boruta feature selection** (shadow features + RF); ~40 engineered features pruned to ~15–20; triple-barrier labels; meta-labeling gate at p=0.65 | Closed picks | Ranked signals, feature importance | Active (Phase 9/13) |
+| `ml_gatekeeper/gatekeeper.py` | Two models: (1) Pick-Quality classifier (P(profitable)), (2) Strategy-Regime router (rolling-window profitability per strategy+asset_class). Both trained on real closed picks with real PnL labels | 3,500+ resolved closed picks | Filtered pick JSON for dashboard | Active |
+| `ml_consensus/consensus.py` | Multi-system agreement model — learns which *combinations* of independent systems produce winning trades (observed ~65.8–67.6% WR on real closed picks) | Real closed-pick outcomes | Consensus score / combined signals | Active |
+| `crypto_fusion_predictor.py` | XGBRegressor ensemble + **GaussianHMM** (4-state regime model, `hmmlearn`) + StandardScaler + TimeSeriesSplit | OHLCV + funding/features | Crypto price/prediction + regime | Active |
+| `walkerforward_validator.py` | Rolling-window walk-forward validation; composite score = weighted(Sharpe, CAGR, win-rate, PF, drawdown, beta) + proof score (p-value, bootstrap CI, feature drift) | Closed trades | Ranked strategy list for dashboard | Active |
+| `regime_detector.py` / `market_regime_detector.py` | Multi-feature regime classifier (volatility via ATR/EWMA, trend, sentiment, liquidity); sometimes HMM-driven | Price/vol/VIX/macro | Regime label + recommended ensemble | Active |
+| `alpha_engine/forward_validator.py` | Forward (out-of-sample) validation; flags overfit | Closed picks | Forward-validation flags | Active |
+| `alpha_engine/score_booster.py` | Heuristic score boosting (non-ML, complements ML) | Picks | Boosted scores | Active |
+
+### B.2 Training-data hygiene (important for review)
+
+- **No synthetic data.** The gatekeeper, consensus, and engine all state
+  explicitly they train *only* on real resolved picks from the audit dashboard.
+- **Look-ahead bias controls.** `ml_engine_v2` uses 50+ properly lagged features,
+  time-series-aware splits (`TimeSeriesSplit`), and removes leaky outcome
+  features (entry_vs_optimal, hold_duration, MFE/MAE were removed in Phase 11
+  of the ranker because they caused AUC=1.0).
+- **Triple-barrier labeling.** The ranker labels trades +1 (TP hit) / 0
+  (expired/uncertain) / −1 (SL hit) with asymmetric sample weights
+  (loss=1.2, uncertain=0.5, win=1.0).
+- **Cold-start fallback.** The ranker falls back to heuristic scoring when fewer
+  than ~50 closed picks exist.
+
+### B.3 Where ML artifacts live in the DB
+
+The **`stocks`** database holds the ML operational tables. Freshness from the
+live scan (2026-11-19):
+
+| Table | What it stores | Rows | Freshness |
+|---|---|---|---|
+| `lm_signals` | Learning-machine generated signals | 113,134 | **active** (max signal_time 2026-11-19 05:09) |
+| `lm_snapshots` | ML portfolio snapshots (value, PnL, drawdown) | 6,004 | **active** (2026-11-19 05:09) |
+| `lm_kelly_fractions` | Kelly-criterion bankroll fractions per algo | 14 | **active** (2026-11-19 05:09) |
+| `lm_position_sizing` | Kelly × vol-scalar × regime sizing decisions | 3,735 | active (2026-11-18 20:46) |
+| `lm_market_regime` | HMM regime labels + Hurst/EWMA-vol/VIX composite | 796 | active (2026-11-18 20:50) |
+| `lm_smart_consensus` | Multi-factor consensus scores (technical/smart-money/insider/analyst/momentum/social) | 2,304 | active (2026-11-17) |
+| `lm_hour_learning` | Hour-level learning snapshots | 923 | active (2026-11-15) |
+| `lm_challenger_showdown` | Tournament/challenger comparison | 192 | active (2026-11-17) |
+| `ml_feature_store` | Engineered feature vectors (RSI, MACD, stoch, CCI, ROC, SMA, returns) | 396 | **stale** (max timestamp 2026-02-16) |
+| `walk_forward_summary` | Walk-forward validation summary | 10 | **stale** (2026-02-09) |
+| `lm_conviction_history` | High-conviction pick history | 12 | stale (2026-02-11) |
+| `ml_model_registry` | Model metadata (type, horizon, features, hyperparams, metrics) | 0 | empty |
+| `ml_models` | Model store | 0 | empty |
+| `lm_model_versions` | Per-algo deployed model versions | 0 | empty |
+| `lm_ensemble_weights` / `ml_ensemble_weights` | Ensemble weights | 0 | empty |
+| `ml_ab_tests` | A/B experiment log | 0 | empty |
+| `lm_prediction_calibration` / `ml_calibration_log` | Calibration curves | 0 | empty |
+| `ml_learning_curve` | Learning-curve data | 14 | present |
+
+The **`memecoin`** DB has ML stubs (`meme_ml_models`, `meme_ml_predictions`,
+`ml_models`, `ml_model_performance`, `crypto_indicators/patterns/signals`) —
+currently **empty** (0 rows). Crypto ML is written to `crypto_ohlcv` and
+`psi_*` tables instead.
+
+The **`sportsbet`** DB has an ML-augmented betting pipeline: `lm_sports_bets`
+carries `ml_win_prob`, `ml_prediction`, `ml_should_bet`, `ml_model_type`,
+`ml_confidence`, `ml_predicted_at`; `lm_sports_ml_predictions` holds the raw
+predictions; `lm_sports_ml_metrics` is empty. Freshness: active through
+2026-05-13 (bets), 2026-05-24 (odds) — see §5/§7.
+
+### B.4 Recommended review focus for a web-AI strategy reviewer
+
+1. **Ground truth for "what actually works"**: `bt_backtest_trades`
+   (~32.7M rows) + `at_pick_outcomes` (63k resolved picks) are the only
+   objective labels. Any new strategy evaluation should key off these.
+2. **Feature engineering source**: `ml_feature_store` shows the current feature
+   set (returns, RSI, MACD, stoch, Williams %R, CCI, ROC, SMA). The ranker's
+   Boruta selection (`alpha_engine/ml_ranker.py`) prunes to ~15–20 features —
+   review which survive.
+3. **Regime conditioning**: `lm_market_regime` (HMM + Hurst + EWMA-vol + VIX +
+   yield-curve) is the router that decides which strategy ensemble to run.
+   New strategies should be regime-tagged to plug into this router.
+4. **Consensus/unions**: `ml_consensus` learns which system *combinations*
+   win — a new strategy thesis can be validated by checking it adds uncorrelated
+   agreement to the existing ensemble.
+5. **Sizing is Kelly-based**: `lm_kelly_fractions` + `lm_position_sizing`
+   (Kelly × volatility-scalar × regime-modifier × decay) is the money
+   management layer; any new signal should integrate here, not bypass it.
+6. **Stale ML surface**: `ml_feature_store` (Feb 2026) and `walk_forward_summary`
+   (Feb 2026) are stale; the empty `ml_model_registry`/`ml_models`/registry
+   tables mean model versioning is not yet being persisted. A review should flag
+   these as gaps — the live systems run on JSON artifacts, not the DB registry.
+
+### B.5 Suggested new-strategy integrations
+
+- **Diversify regime signals**: the regime detector drives ensemble selection;
+  adding a correlation/cointegration or order-flow regime input would expand the
+  `lm_market_regime` feature set (Hurst, EWMA-vol, VIX, yield curve already there).
+- **Feature-store revival**: repopulate `ml_feature_store` (stale since Feb) to
+  feed the ranker/gatekeeper from a single canonical feature table rather than
+  per-module JSON.
+- **Model registry**: start persisting `ml_model_registry` / `ml_models` /
+  `lm_model_versions` so drift detection and rollback are DB-backed instead of
+  file-backed.
+- **Triple-barrier + meta-labeling** are already in the ranker; port the same
+  labeling to the sports ML (`lm_sports_bets`) and memecoin pipelines for a
+  consistent evaluation standard.
+- **Use `bt_backtest_trades` pre-aggregates** (by strategy/symbol/asset_class/
+  month) so new strategy backtests can be evaluated without full-table scans
+  (A.3).
