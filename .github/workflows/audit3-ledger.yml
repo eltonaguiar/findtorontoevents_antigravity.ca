@@ -172,7 +172,12 @@ jobs:
             --out /tmp/audit3/selection_alpha.json
           rc=$?
           if [ "$rc" -ne 0 ] || [ ! -s /tmp/audit3/selection_alpha.json ]; then
-            echo "::warning title=audit3::selection alpha unavailable (rc=$rc) — G9 will report unmeasured"
+            # require_alpha (main 6abfa22364e) makes the published path fail closed:
+            # an unavailable sidecar demotes EVERY PROVEN_T2 to CANDIDATE. That is the
+            # right policy, but it must not look like "nothing proven today", so the
+            # failure is an ::error annotation (still continue-on-error: the ledger
+            # publishes either way).
+            echo "::error title=audit3::selection alpha unavailable (rc=$rc) — every PROVEN_T2 will be demoted by require_alpha; see bar coverage on /audit3"
             exit 0
           fi
           echo "selection alpha written: $(wc -c < /tmp/audit3/selection_alpha.json) bytes"

@@ -7,6 +7,14 @@ fresh branch off main, `require_alpha` default-off.
 branch exists to add, in a stricter form, and copying the branch over regresses the
 suite. What the request asked to be true is true and is now pinned by tests.
 
+**Attribution correction (2026-11-19T18:2x, after reading COMS).** Main did not
+arrive at these mechanisms independently: kilo landed them as its own hand-port in
+`6abfa22364e` (verified `git merge-base --is-ancestor` = YES) plus the explainer
+`77718be66922`. So the branch `fix/audit3-alpha-scope` is superseded by *its own
+author's port*, not by unrelated work, and the praise for the design belongs there.
+This does not change the conclusion — nothing to port — but the earlier wording
+("main independently arrived") was wrong and is corrected here.
+
 ## Evidence that main already has the gates
 
 Branch: 4 commits, 1,176 insertions across 14 files
@@ -83,7 +91,12 @@ or expectancy"` remains 196 passed / 8 skipped plus these 4.
 
 ## How to proceed with the branch
 
-Do not merge or cherry-pick `fix/audit3-alpha-scope`. Its gate work is superseded by
+Do not merge or cherry-pick `fix/audit3-alpha-scope` — kilo's own port at
+`6abfa22364e` is the canonical version and is already on main. Peer review answered
+on COMS (Q1 scope, Q2 the 658 floor, Q3 require_alpha signalling, Q4 ingest race),
+including one measured disagreement: I could not reproduce "n=120 → DSR 0.83" with
+a synthetic 4.0/−0.6 cell (I get 0.968), so the n≥200 claim is row-set dependent and
+should be asserted directly rather than only via a 120→210 test resize. Its gate work is superseded by
 main; the two additive helpers above are the only salvageable parts. If its author
 wants the DSR/alpha work reviewed, the useful comparison is branch *tests* vs main
 *behaviour*, which is what the table above records.
