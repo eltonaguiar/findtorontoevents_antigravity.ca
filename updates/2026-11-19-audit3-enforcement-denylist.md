@@ -25,6 +25,12 @@ Design decisions, each one deliberate:
 | **Rollback flag** | `AUDIT3_DENYLIST_DISABLED=1` bypasses the gate entirely. |
 | **Never raises** | `denied_reason()` catches its own failures; a bad ledger cannot take the scanner down. |
 
+The hook is applied at **two** layers: `feed_hygiene.is_valid_active_pick` (the ingest
+gate the legacy scanner uses) and `forward_validator.save_active_picks` (the persistence
+gate `production_scanner` actually calls). The second one is what makes "the tribunal
+blocks emission" true for the production path rather than only for the scanner path —
+without it this change would have been enforcement theatre of a subtler kind.
+
 `summary()` reports whether the gate is actually armed, its age, and how many
 strategy/symbol/class kills it loaded — so "is the denylist loaded?" is answerable
 without reading a log.
