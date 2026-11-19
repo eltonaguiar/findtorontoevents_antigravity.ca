@@ -59,6 +59,16 @@ jobs:
             --apply --json --ledger reports/forward_observations.jsonl \
             | tee /tmp/forward_ingest.json
 
+      - name: Forward-growth watchdog (B3)
+        if: env.DB_PASS_STOCKS != '' || env.DB_PASSWORDS_JSON != ''
+        run: |
+          # Silent non-accrual is the failure mode this job exists to catch:
+          # eligible rows exist, the writer exits 0, and the ledger does not grow.
+          python3 tools/forward_growth_watchdog.py \
+            --ledger reports/forward_observations.jsonl \
+            --ingest-report /tmp/forward_ingest.json \
+            --max-age-days 7
+
       - name: Summarise ledger health
         if: env.DB_PASS_STOCKS != '' || env.DB_PASSWORDS_JSON != ''
         run: |
