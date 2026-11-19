@@ -46,6 +46,7 @@ PM_SYSTEMS = frozenset(
         "prediction_market_consensus",
         "prediction_market_agents",
         "kalshi_signals",
+        "pm_macro_expansion",
     }
 )
 
