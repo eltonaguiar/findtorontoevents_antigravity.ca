@@ -452,7 +452,7 @@
 - [DONE] Update inception default model from "mercury" to "mercury-2"
 - [DONE] Save "mercury-2" correction to memory
 - [DONE] Add CEREBRAS_API_KEY_PAID as separate key (paid tier) before CEREBRAS_API_KEY_FREE
-- [DONE] Store Cerebras paid key starting with `csk-ptx8n644y4ye3mywep9n3ttk2h9wn56mnktwd5f`
+- [DONE] Store Cerebras paid key starting with `csk-<REDACTED>`
 - [DONE] Add Gemini to llm_client.py
 - [DONE] Probe Nous, Kilo, Ollama Cloud, Together AI endpoints
 - [DONE] Test Kilo chat endpoint
