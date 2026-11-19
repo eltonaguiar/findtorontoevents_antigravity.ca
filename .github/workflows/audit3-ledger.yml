@@ -72,7 +72,20 @@ jobs:
                 "sha:", str(v.get("rows_sha256"))[:12])
           PY
           else
-            echo "::warning title=audit3::canonical view unreachable — this run scores the payload slice"
+            echo "::warning title=audit3::canonical view unreachable — checking whether the payload declared it"
+            python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/audit3/dashboard_data.json"))
+          block = d.get("resolved_closed_picks_net")
+          if isinstance(block, dict) and block.get("rows_file"):
+            # The payload declares a canonical view but we could not fetch it.
+            # Scoring the export slice here would silently understate coverage
+            # (21.4% vs 53.5%) — fail the run instead.
+            print("::error title=audit3::payload declares canonical view "
+                  f"{block.get('rows_file')} but it was not fetched; refusing to score the slice")
+            sys.exit(1)
+          print("payload carries no canonical block (legacy snapshot); scoring the slice")
+          PY
           fi
 
       # Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
