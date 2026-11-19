@@ -51,13 +51,18 @@ TOLERANCE_MS = {"CRYPTO": 3 * 3600_000, "EQUITY": 5 * 86400_000, "ETF": 5 * 8640
 
 
 def _conn():
+    """Resolve credentials through tools/db_env.py, never raw env vars.
+
+    `.env.dbpw` (DB_PASSWORDS_JSON) is canonical and the individual `DB_PASS_*`
+    variables are documented as stale after the 2026-05-12 rotation; pulling them
+    directly burned a host-block once. db_env.get_stocks_creds() handles the
+    priority order and raises ValueError when nothing is configured.
+    """
     import pymysql
-    return pymysql.connect(
-        host=os.environ.get("DB_HOST_STOCKS", "mysql.50webs.com"),
-        user=os.environ.get("DB_USER_STOCKS", "ejaguiar1_stocks"),
-        password=os.environ.get("DB_PASS_STOCKS") or os.environ.get("MYSQL_PASSWORD", ""),
-        database=os.environ.get("DB_NAME_STOCKS", "ejaguiar1_stocks"),
-        connect_timeout=20, read_timeout=120)
+    from tools.db_env import get_stocks_creds
+    keep = ("host", "user", "password", "database", "port", "connect_timeout")
+    creds = {k: v for k, v in get_stocks_creds().items() if k in keep}
+    return pymysql.connect(read_timeout=120, **creds)
 
 
 def symbol_candidates(sym: str, klass: str) -> list[str]:
