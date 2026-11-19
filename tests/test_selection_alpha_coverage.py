@@ -110,3 +110,20 @@ def test_distinct_instruments_are_still_counted_separately():
     assert cov["EQUITY"]["symbols_requested"] == 3   # AAPL, MSFT, BRK.B/BRK-B
     assert cov["EQUITY"]["symbols_found"] == 1
     assert cov["EQUITY"]["missing_symbols"] == ["BRK-B", "MSFT"]
+
+
+# --- FUTURES is a real payload class, not a synonym for COMMODITY -----------
+# futures_tsmom_winner emits on ES=F/NQ=F/GC=F/HG=F with asset_class=FUTURES and
+# _class() returns "FUTURES". Without a TABLE_FOR entry those picks were
+# unmeasurable by construction — the same defect BOND had.
+
+def test_futures_has_a_price_table_mapping():
+    from alpha_engine.audit3_selection_alpha import TABLE_FOR, TOLERANCE_MS
+    assert TABLE_FOR.get("FUTURES") == ("futures_daily_ohlcv", "date")
+    assert "FUTURES" in TOLERANCE_MS
+
+
+def test_every_payload_class_is_mappable():
+    from alpha_engine.audit3_selection_alpha import TABLE_FOR
+    for klass in ("BOND", "COMMODITY", "CRYPTO", "EQUITY", "ETF", "FOREX", "FUTURES"):
+        assert klass in TABLE_FOR, klass

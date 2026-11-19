@@ -46,6 +46,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+# Index-futures roots the FUTURES asset class emits on but the commodity universe
+# does not cover (see _extra_symbols).
+FUTURES_CLASS_ROOTS = ("ES", "NQ")
+
 TABLE_ALIASES = {
     "equity": "equity_daily_ohlcv",
     "etf": "etf_daily_ohlcv",
@@ -85,7 +89,13 @@ def _extra_symbols(table: str) -> list[str]:
     if table == "equity_daily_ohlcv":
         return sorted(EQUITY_SYMBOLS)
     if table == "futures_daily_ohlcv":
-        return sorted(f"{c}=F" if "=" not in c else c for c in COMMODITY_SYMBOLS)
+        roots = {f"{c}=F" if "=" not in c else c for c in COMMODITY_SYMBOLS}
+        # The FUTURES asset class (asset_class=FUTURES, futures_tsmom_winner) trades
+        # index futures, which COMMODITY_SYMBOLS does not carry. Without these the
+        # class gate priced only its gold/copper picks and silently dropped the
+        # ES/NQ ones — a measurement bias, not just a gap.
+        roots |= {f"{r}=F" for r in FUTURES_CLASS_ROOTS}
+        return sorted(roots)
     return []
 
 
