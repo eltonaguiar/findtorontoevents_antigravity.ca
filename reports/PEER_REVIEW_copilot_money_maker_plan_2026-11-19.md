@@ -323,3 +323,45 @@ the doc so nobody declares failure early or success accidentally.
 
 *This addendum reviews `017b66cf0dc`. Their branch was not modified; my additions live only on
 `review/buffy-money-maker-plan-2026-11-19`.*
+---
+
+## CORRECTION (20:25Z) — two of my five addendum items were wrong
+
+I re-read their runner instead of trusting my own grep, and I have to withdraw part of what I
+published. Recording it plainly rather than quietly editing the addendum.
+
+**A3 — RETRACTED ENTIRELY.** The runner **does** model cost at the point of emission:
+
+```python
+ROUND_TRIP_COST_PCT = 0.16
+COST_FLOOR_MULT = 4.0
+...
+floor_pct = COST_FLOOR_MULT * ROUND_TRIP_COST_PCT
+if expected < floor_pct:
+    return None
+```
+
+and the comment above it cites my own figures ("gross edge 1.4bp vs 12bp cost = fees ate 757% of
+gross"). So they had already implemented the recommendation before the first live tick. My grep
+used case-sensitive `cost`, which cannot match `COST_FLOOR_MULT` / `ROUND_TRIP_COST_PCT`, and I
+reported absent code as a missing feature. That is a review error, not a code gap.
+
+**A1 — downgraded from BLOCKER to design consequence.** `stop_pct: None  # close-only stop per
+hypothesis`, `close_stop_pct: -4.0`, plus `REVERTED` and `TIME` exits. The null TP/SL is a
+registered expression, not a bug. What still holds: those rows can never carry
+`intrabar_first_touch=True`, so the two close-only pods are structurally ineligible for PROVEN_T2
+and the doc should say so rather than inheriting "100% intrabar" as if it were satisfied.
+
+**What survives, narrower and real:** the CLOSE row writes
+
+```python
+"pnl_pct": pnl_pct,                              # (exit/entry - 1) * 100, gross
+"outcome": "WIN" if pnl_pct > 0 else "LOSS",     # graded gross
+```
+
+At 16 bps round trip, every trade finishing inside ±0.16% is graded with the wrong sign, and the
+slot guardrails (trailing DD, daily pause, consistency) accumulate gross P&L. Fix: emit
+`gross_pct` / `net_pct` / `cost_pct` and grade `outcome` on net. I have proposed exactly that as a
+branch, not a complaint.
+
+A2 (4h cadence mislabelled intraday) and A4 (guardrails endorsed) stand unchanged.
