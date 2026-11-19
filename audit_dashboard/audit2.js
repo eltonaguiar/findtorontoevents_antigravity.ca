@@ -124,6 +124,27 @@ function renderLedger(d){
     "verdicts: proven "+fmt(sum.n_proven,0)+", candidate "+fmt(sum.n_candidate,0)+", weak "+fmt(sum.n_weak,0)+", kill "+fmt(sum.n_kill,0)+". "+
     "Nothing promotes without forward rows.";
 
+  // Excluded-cohort decomposition (N6): show what the build dropped so the
+  // denominator is auditable, and say plainly that their PnL is not exported.
+  var cohorts = cov.excluded_cohorts || [];
+  var excEl = el("excludedCohorts");
+  if (excEl) {
+    if (cohorts.length) {
+      var rows = cohorts.map(function(c){
+        return '<div>&bull; <strong>' + esc(c.cohort) + '</strong>: ' +
+          fmt(c.n,0) + ' rows &mdash; ' + esc(c.reason || '') + '</div>';
+      }).join("");
+      excEl.innerHTML = '<div style="margin-bottom:6px"><strong>Dropped before scoring</strong> ' +
+        '(excluded cohorts, not a partition &mdash; they overlap):</div>' + rows +
+        '<div style="margin-top:6px">Their PnL is not exported, so the bias is not yet ' +
+        'measurable; run <code>tools/excluded_cohorts_report.py</code> on a payload that ' +
+        'keeps the rows.</div>';
+      excEl.className = "small muted";
+    } else {
+      excEl.innerHTML = "";
+    }
+  }
+
   var prov = d.provenance || {};
   var src = String(prov.source || d.source || "");
   var tmpWarn = /\/tmp\//.test(src) ? ' <strong style="color:var(--warn)">Warning: source is a /tmp build path, not a committed file.</strong>' : "";
