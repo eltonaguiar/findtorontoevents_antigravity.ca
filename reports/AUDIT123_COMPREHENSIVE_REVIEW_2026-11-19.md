@@ -416,7 +416,7 @@ The audit dashboard's Smart Picks already uses a **Volume Confirmation** compone
 - **Composite**: `0.45 × ValueComposite + 0.55 × QualityComposite` (v1.1 quality-tilt; v1.0 was 0.55/0.45) × SafetyGate. ValueComposite = 0.40 MagicFormulaPercentile + 0.35 AcquirersMultiplePercentile + 0.25 FCFYieldPercentile. QualityComposite = 0.50 Piotroski/9 + 0.30 ROIC_Stability + 0.20 DebtToEquityScore.
 - **MF screener** (`mf_screener.py`), **growth screener** (`growth_stock_screener.py`), **swing screener** (`swing_screener.py`), **short-side screener** (`short_side_screener.py`).
 - **UEPS** (§2.18): long-term value + swing, composite `0.55 × ValueComposite + 0.45 × QualityComposite × SafetyGate` (note: different weights than value_screener — 0.55/0.45 vs 0.45/0.55). **Inconsistency**: the two composites use different weights. Reconcile.
-- **Gap**: EQUITY has 45.26% WR / PF 1.09 in the ledger (WEAK). The value screener is opt-in sidecar (no production caller). UEPS n=0/100. **The picking methodology exists on paper but is not wired to production picks.**
+- **Update (2026-11-19)**: `value_screener_runner.py` IS wired to a weekly workflow (`value_screener_weekly.yml`, Mon 06:00 UTC). Runner executed successfully: 22 long-term value picks emitted from 49-ticker S&P 100 universe (ADBE, PYPL, NFLX, META, GOOGL, HD, QCOM, MA, XOM, V, ...). Report at `reports/value_screener_runs/2026-11-19.md`. Workflow still has `continue-on-error: true` guard — should be removed now that runner is stable. Weight inconsistency (value_screener 0.45/0.55 vs UEPS 0.55/0.45) still needs reconciliation. Momentum overlay not yet added. UEPS n=0/100 (no IV-attainment resolver wired).
 
 ### 10.2 Crypto
 - **ML-enhanced sleeves**: 4 survive DSR (n=27–34). Awaiting n≥100.
@@ -426,7 +426,7 @@ The audit dashboard's Smart Picks already uses a **Volume Confirmation** compone
 
 ### 10.3 Mutual funds
 - **No dedicated screener found** in `alpha_engine/` (searched: no `mutual_fund_screener`). `MUTUAL_FUND` exists as an asset class in the ledger (slippage 8 bps) but with minimal coverage.
-- **Gap**: mutual funds are essentially un-covered by picking methodology. Either drop the asset class or build a screener (e.g., expense ratio + alpha vs benchmark + manager tenure).
+- **Update (2026-11-19)**: `mf_screener.py` EXISTS (hard gates: expense ratio ≤0.09% index/≤0.20% active, no load, no 12b-1, min initial ≤$3K, AUM ≥$1B, turnover ≤20%, tracking error ≤0.25%, track record ≥10y, NAV freshness ≤24h). Starter universe: VFIAX, VTSAX, FXAIX, SWTSX, VBTLX, VWELX, VGSLX, VTIAX. `mutual_fund_nav.py` provides NAV data path. BUT: not wired to production (only used in worktrees). Needs: weekly workflow + pick emission + forward tracking. The screener is a PASSIVE core allocation tool, not an active pick system — mutual funds are structurally incompatible with intraday TP/SL.
 
 ### 10.4 Bonds / fixed income
 - `bond_connors_rsi2_backtest.json`, `bond_tlt_ief_backtest.json` exist. `fundamental_valuation_strategies.py` may cover bonds. Slippage 2–5 bps.

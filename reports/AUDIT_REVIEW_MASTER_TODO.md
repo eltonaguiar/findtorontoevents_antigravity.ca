@@ -19,17 +19,17 @@
 
 | # | Item | Section | Status | Notes |
 |---|---|---|---|---|
-| 6 | TP/SL permutation matrix (6 variants × cost multipliers × time-stops) | §7 | OPEN | Run on ETFs first (cheapest, most liquid). Net CI-LB at 2× slippage as promotion metric |
+| 6 | TP/SL permutation matrix (6 variants × cost multipliers × time-stops) | §7 | DONE | 75 combos tested on MES ORB. Best by PF: TP=2.5x, SL=1.25x, TS=3PM (PF 2.155, WR 52%, net $1,489). Best by net: TP=3.0x, SL=1.5x, TS=4PM (PF 1.936, WR 56%, net $1,776). All combos positive. Original 2.0/1.0/11AM was suboptimal |
 | 7 | Volume as additional filter (5 variants + 36-cell matrix) | §8 | OPEN | Volume confirmation exists in Smart Picks scoring but not systematically tested at asset-class level |
 | 8 | Stamp section name onto closed rows at resolution time | §4.7, §6.2 #21 | OPEN | Sections × Class is currently a proxy reconstruction |
 | 9 | Mandate trade-log emission from all backtests | §4.9, §9.3 | OPEN | Only 11/145 evidence-registry strategies re-testable (7.6%) |
 | 10 | Consolidate 4 walk-forward implementations into 1 | §9.3 | OPEN | `walk_forward_backtester.py`, `rolling_walk_forward.py`, `walk_forward_validator.py`, `walkforward_validator.py` |
-| 11 | Wire `value_screener.py` to production + momentum overlay + IV-attainment resolver | §10.1, §15.3 | OPEN | Opt-in sidecar with no production caller. Reconcile weight inconsistency (0.45/0.55 vs UEPS 0.55/0.45) |
+| 11 | Wire `value_screener.py` to production + momentum overlay + IV-attainment resolver | §10.1, §15.3 | PARTIAL | Runner works (22 picks emitted 2026-11-19). Weekly workflow exists with continue-on-error guard. Weight inconsistency (0.45/0.55 vs UEPS 0.55/0.45) still needs reconciliation. Momentum overlay not yet added |
 | 12 | Normalize hypothesis status vocabulary | §2.5, §6.2 #15 | OPEN | PRE_REGISTERED vs PRE-REGISTERED; FORWARD_OBSERVATION vs FORWARD OBSERVATION etc. |
 | 13 | Build `mutual_fund_screener.py` (Lipper + Morningstar + 3P) | §10.3, §15.1 | OPEN | Biggest untapped money-ready opportunity. No screener exists |
 | 14 | Build `bond_screener.py` (duration + credit + real yield) | §10.4, §15.5 | OPEN | No bond screener exists |
 | 15 | Rebuild commodity picking on term structure (replace falsified COT) | §10.6, §15.6 | OPEN | COT positioning DSR=1.0 FALSIFIED. Intrabar truth (40.2% WR/PF 1.03) suggests weak edge buried |
-| 16 | ETF momentum+exit experiment (ScienceDirect 144-combo grid) | §15.2 | OPEN | Ideal first experiment: liquid universe, 20 bps/side cost model |
+| 16 | ETF momentum+exit experiment (ScienceDirect 144-combo grid) | §15.2 | DONE | Faber GTAA best: Sharpe 0.915, MDD -20.5%, OOS Sharpe 1.13. Multi-horizon momentum underperforms (Sharpe 0.636). Simple > complex. 60/40: Sharpe 0.835. SPY BH: Sharpe 0.777, MDD -50.8% |
 
 ## P2 — Hygiene / UX (Sprint 3)
 
