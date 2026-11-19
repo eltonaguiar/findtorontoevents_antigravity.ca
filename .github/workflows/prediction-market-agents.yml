@@ -50,6 +50,14 @@ jobs:
           echo "============================================"
           python -m prediction_market_agents.orchestrator
 
+      - name: Run Kalshi + Polymarket macro expansion emitter
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        # Binary-contract picks (Fed/GDP/CPI/indices/yields). Non-blocking so a
+        # PM API hiccup never fails the agent run; the file is always written.
+        continue-on-error: true
+        run: python tools/pm_macro_expansion.py
+
       - name: Commit results
         run: |
           git config user.name "github-actions[bot]"
@@ -57,6 +65,7 @@ jobs:
 
           git add prediction_market_agents/data/*.json 2>/dev/null || true
           git add alpha_engine/data/active_picks.json 2>/dev/null || true
+          git add alpha_engine/data/pm_macro_expansion_picks.json 2>/dev/null || true
           git add copy_trader_intel/data/polymarket_trader_profiles.json 2>/dev/null || true
           git add copy_trader_intel/data/polymarket_picks.json 2>/dev/null || true
 

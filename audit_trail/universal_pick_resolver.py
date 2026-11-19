@@ -230,6 +230,14 @@ SYSTEM_SOURCES = [
     # ── Multi-Asset (forex + equity + crypto institutional) ──
     ("multi_asset",              "multi_asset/data/active_picks.json"),
     ("multi_asset_institutional","multi_asset/data/institutional_picks.json"),
+    # ── Multi-asset copytrader (forward-test, CTI) ──
+    ("multi_asset_copytrader",   "copy_trader_intel/data/multi_asset_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/forex_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/futures_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/stocks_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/commodity_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/bond_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "multi_asset/data/multi_asset_picks.json"),
     # ── Rapid Fire (NOW.py) ──
     ("rapid_fire",               "rapid_fire_data/active_picks.json"),
     # ── Stock & Multi-Asset competitions ──
@@ -258,6 +266,11 @@ SYSTEM_SOURCES = [
     ("pm_kalshi_signals",        "prediction_market_agents/data/kalshi_signals.json"),
     ("pm_kalshi_re_signals",     "alpha_engine/data/kalshi_signals.json"),
     ("pm_polymarket_re_signals",  "alpha_engine/data/polymarket_signals.json"),
+    # ── Kalshi + Polymarket macro contracts (Fed/GDP/CPI/indices/yields) ──
+    # Binary contracts settle on outcome (pm_contract_resolver), not price TP/SL.
+    # Read the tracked alpha_engine mirror: the agents/data envelope name matches
+    # the `**/data/*_signals.json` gitignore and would not be committed by CI.
+    ("pm_macro_expansion",       "alpha_engine/data/pm_macro_expansion_picks.json"),
     # ── AI Challenge Curators ──
     ("ai_challenge_claude",          "audit_dashboard/data/ai_challenge_claude_active_picks.json"),
     ("ai_challenge_grok",            "audit_dashboard/data/ai_challenge_grok_active_picks.json"),
@@ -365,6 +378,7 @@ _PREDICTION_MARKET_SYSTEMS = {
     "pm_momentum_signals",
     "pm_whale_signals",
     "pm_kalshi_signals",
+    "pm_macro_expansion",
 }
 
 
@@ -905,6 +919,12 @@ _SCORING_FIELDS = [
     "prediction_market_sources",
     "timestamp",
     "signal_time",
+    "signal_time_utc",
+    "signal_time_est",
+    "ingest_time_utc",
+    "ingest_time_est",
+    "verification_state",
+    "bias_controls",
     "entry_time",
     "closed_at",
     "opened_at",
