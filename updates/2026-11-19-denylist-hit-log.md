@@ -46,3 +46,15 @@ from alpha_engine.audit3_denylist_hits import summarize
 import json; print(json.dumps(summarize(), indent=1))
 PY
 ```
+
+## Follow-up: persist it from CI (2026-11-19)
+
+The log originally defaulted to `reports/audit3_denylist_hits.jsonl`. That is
+written on the CI **runner**, which is discarded at job end, and no workflow
+committed `reports/`, so the weekly review still had nothing to read.
+
+`DEFAULT_PATH` now points at
+**`alpha_engine/data/audit3_denylist_hits.jsonl`**: `alpha-engine-live.yml`
+already runs `git add alpha_engine/data/`, so denial rows are persisted with the
+scanner's normal commit — no new workflow step. `AUDIT3_DENYLIST_HIT_LOG` still
+overrides the path, and the 5 MB / 5,000-line rotation is unchanged.
