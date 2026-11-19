@@ -1,0 +1,42 @@
+diff --git a/alpha_engine/audit3_tribunal.py b/alpha_engine/audit3_tribunal.py
+index 9122db5ab15..37bacdc908c 100644
+--- a/alpha_engine/audit3_tribunal.py
++++ b/alpha_engine/audit3_tribunal.py
+@@ -958,6 +958,18 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
+             f"recency: trailing {recency['window_trades']} trades net mean "
+             f"{recency['window_net_mean']:+.4f}% < 0 — capped at CANDIDATE")
+ 
++    # --- P0 repair: required_n / mde_pct were referenced but never defined.
++    # Restored with the formula from 1ed98e59aaa (see reports/TRIBUNAL_MAIN_BROKEN).
++    required_n = None
++    mde_pct = None
++    _sd = float(boot.get("sd") or 0.0) if isinstance(boot, dict) else 0.0
++    _mean = float(boot.get("mean") or 0.0) if isinstance(boot, dict) else 0.0
++    if n >= 2 and _sd > 0 and _mean != 0:
++        try:
++            required_n = int(math.ceil((2.8 * _sd / abs(_mean)) ** 2))
++            mde_pct = round(2.8 * _sd / math.sqrt(n), 4)
++        except (ValueError, ZeroDivisionError):
++            required_n, mde_pct = None, None
+     out = dict(label)
+     out.update({
+         "n": n,
+@@ -1936,18 +1948,6 @@ def main(argv: list[str] | None = None) -> int:
+     ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
+                     help="forward-observations ledger that gates PROVEN_T2 "
+                          "(0 rows means no pod can promote)")
+-    ap.add_argument("--history", help="verdict-persistence sidecar (N1). Supplying "
+-                                      "an existing file enables the repeated-looks gate")
+-    ap.add_argument("--history-write", action="store_true",
+-                    help="write the updated persistence sidecar back to --history")
+-    ap.add_argument("--persistence-runs", type=int, default=PERSISTENCE_RUNS,
+-                    help="consecutive runs a verdict must persist (default "
+-                         f"{PERSISTENCE_RUNS})")
+-    ap.add_argument("--prev-ledger", help="previous audit3 ledger for the "
+-                                          "verdict-churn monitor")
+-    ap.add_argument("--max-churn", type=float, default=None,
+-                    help="exit 3 if the raw-verdict churn rate exceeds this "
+-                         f"(alert threshold is {CHURN_ALERT_THRESHOLD})")
+     args = ap.parse_args(argv)
+     drops: dict[str, int] = {}
+     try:

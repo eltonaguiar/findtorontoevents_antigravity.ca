@@ -75,3 +75,23 @@ verified on `fix/sleeve-implausible-pf-2026-11-19`, where the surrounding code r
 Replay of the patch onto main additionally surfaced three branch-drift defects (duplicate
 `--history`, missing `--sleeves`/`--benchmark` flags, a foreign `require_alpha=` kwarg).
 Any replay must land **after** the P0 above is repaired.
+
+## Update — full defect map after attempting the repair
+
+Repairing one defect exposed the next. Five distinct defects, not two:
+
+| # | Defect | Result |
+|---|---|---|
+| D1 | 5 duplicated argparse flags (`--history`, `--history-write`, `--persistence-runs`, `--prev-ledger`, `--max-churn`) | parse dies before any row |
+| D2 | `required_n` never assigned | `NameError` |
+| D3 | `mde_pct` never assigned | `NameError` |
+| D4 | `build_report()` called with `require_alpha=`, signature lacks it | `TypeError` |
+| D5 | `global_trial_count()` called 4 times, **defined nowhere in the repo** | `NameError` |
+
+After a diagnostic repair of all five, the CLI runs and produces a ledger — which is how
+the sleeve gate was finally exercised (see `PF_GATE_VERIFIED_2026-11-19.md`). The gate
+passes: implausible PF excluded, small-n excluded, sound sleeve rankable.
+
+D4 and D5 cannot be fixed by me mechanically: they need a decision about whether the alpha
+gate is meant to be enforced, and what the real global-trial count should be. Inventing
+either would silently change grading numbers.
