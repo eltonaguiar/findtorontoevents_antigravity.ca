@@ -66,6 +66,7 @@ if str(REPO_ROOT) not in sys.path:  # direct invocation
 from alpha_engine.audit3_tribunal import (  # noqa: E402
     SLIPPAGE_PCT,
     DEFAULT_SLIPPAGE_PCT,
+    PROVEN_MIN_NET_CI_LO_PCT,
     benjamini_hochberg,
     binom_sf,
     bootstrap_mean_ci,
@@ -163,6 +164,25 @@ def required_n(effect_pct: float, sd_pct: float, z: float = POWER_Z) -> int | No
     if not effect_pct or not sd_pct or effect_pct == 0:
         return None
     return int(math.ceil((z * sd_pct / abs(effect_pct)) ** 2))
+
+
+def required_n_mde(mde_pct: float, sd_pct: float, z: float = POWER_Z) -> int | None:
+    """Sample size for 80% power to detect a PRE-DECLARED minimum effect.
+
+    `mde_pct` is the minimum detectable effect the study commits to detect
+    *before* looking at the data (e.g. the tribunal's PROVEN net-CI lower
+    bound, 0.05 %/trade). It must NEVER be the cell's observed mean: plugging
+    an observed near-zero mean inflates n to infinity, and an observed lucky
+    mean collapses it -- the circular trap `required_n` falls into when its
+    callers pass the observed mean. Use `required_n` only when the effect size
+    is itself the hypothesis; use this helper to size a pre-registered gate.
+
+    Returns None when `mde_pct` or `sd_pct` is falsy/zero (no variance, no
+    effect, or degenerate input), signalling "sample size is not well-defined".
+    """
+    if not mde_pct or not sd_pct or mde_pct == 0 or sd_pct == 0:
+        return None
+    return int(math.ceil((z * sd_pct / abs(mde_pct)) ** 2))
 
 
 # ─────────────────────────────────────────────────────── §A beta accounting ──
@@ -418,6 +438,42 @@ def gate_provenance(rows: list[dict]) -> dict[str, Any]:
     }
 
 
+def power_analysis(rows: list[dict], mde_pct: float = PROVEN_MIN_NET_CI_LO_PCT,
+                   z: float = POWER_Z) -> dict[str, Any]:
+    """Per-class realized net-pnl SD and the pre-declared-MDE sample size.
+
+    For each asset class with >= 5 net-pnl observations, report the population
+    standard deviation (statistics.pstdev) of net pnl and the sample size that
+    80% power would need to detect `mde_pct` against that SD. The MDE is fixed
+    up front (the tribunal's PROVEN net-CI lower bound), so `required_n_mde`
+    never sees an observed cell mean -- it is non-circular by construction.
+    """
+    classes: dict[str, list[float]] = defaultdict(list)
+    for r in rows:
+        v = net_pnl(r)
+        if v is not None:
+            classes[_class(r)].append(v)
+    per_class = {}
+    for klass in sorted(classes):
+        vals = classes[klass]
+        if len(vals) < 5:
+            continue
+        sd = statistics.pstdev(vals)
+        per_class[klass] = {
+            "n": len(vals),
+            "net_pnl_sd_pct": round(sd, 4),
+            "required_n": required_n_mde(mde_pct, sd, z=z),
+        }
+    return {
+        "mde_pct": mde_pct,
+        "z": z,
+        "note": ("mde_pct is pre-declared (the tribunal's PROVEN net-CI lower "
+                 "bound), never the observed cell mean, to avoid the circular "
+                 "observed-mean trap in required_n"),
+        "by_asset_class": per_class,
+    }
+
+
 # ────────────────────────────────────────────────────────────────── report ──
 def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
     _PIT_ROWS.clear()
@@ -426,6 +482,7 @@ def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
     pit = pit_replay(rows)
     bat = battery(rows)
     prov = gate_provenance(rows)
+    power = power_analysis(rows)
 
     # Does the ledger's headline edge survive the PIT replay? That is the only
     # claim this module is willing to call "found".
@@ -457,6 +514,7 @@ def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
         "pit_replay": pit,
         "battery": bat,
         "gate_provenance": prov,
+        "power_analysis": power,
         "limitations": [
             "No per-symbol price series for the ledger window, so M1b selection "
             "alpha vs same-symbol buy-and-hold is still not computed; beta is "

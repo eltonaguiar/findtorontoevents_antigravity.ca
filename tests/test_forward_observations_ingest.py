@@ -110,6 +110,19 @@ def test_only_the_registered_condition_gets_rows():
     assert ING.classify(None, "CRYPTO") is None                     # unstamped
 
 
+def test_equity_breakout_pod_is_classified_by_strategy_and_direction():
+    # POD-EQUITY-BREAKOUT (pre-registered) is strategy-keyed, not feature-keyed:
+    # its `requires` is empty and it must match on emitter strategy + LONG direction
+    # so forward rows accrue to H-BABY-EQUITY-VT-PATTERN-SWEEP-001.
+    feats = _feats()
+    hid = "H-BABY-EQUITY-VT-PATTERN-SWEEP-001"
+    assert ING.classify(feats, "EQUITY", strategy="rs-breakout-scout", direction="LONG") == hid
+    assert ING.classify(feats, "ETF", strategy="donchian-stock-breakout", direction="LONG") == hid
+    assert ING.classify(feats, "EQUITY", strategy="rs-breakout-scout", direction="SHORT") is None
+    assert ING.classify(feats, "EQUITY", strategy="unrelated-momentum", direction="LONG") is None
+    assert ING.classify(feats, "CRYPTO", strategy="rs-breakout-scout", direction="LONG") == "H-119"
+
+
 def test_rows_outside_every_condition_are_skipped_not_rejected():
     rows, rejects, counts = ING.build_rows(
         [(_cohort(), _feats(F5="ASIA"), _bars())], now=NOW)

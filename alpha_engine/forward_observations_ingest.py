@@ -68,11 +68,24 @@ OTHER_BP = {"EQUITY": 8.0, "ETF": 8.0, "FOREX": 4.0, "COMMODITY": 12.0,
             "FUTURES": 12.0, "BOND": 2.0}
 
 #: Condition -> hypothesis. Only registered hypotheses may receive forward rows.
+#: A condition may match on asset class, an optional feature vector (`requires`),
+#: and optionally on the emitter's `strategy` / `direction`. `requires` is empty for
+#: strategy-keyed pods (the EQUITY/ETF breakout family has no F3/F5 entry condition).
 CONDITIONS = {
     "H-119": {
         "name": "crypto_rsi5070_us",
         "asset_classes": {"CRYPTO"},
         "requires": {"F3": "50-70", "F5": "US"},
+    },
+    "H-BABY-EQUITY-VT-PATTERN-SWEEP-001": {
+        "name": "equity_breakout_family",
+        "asset_classes": {"EQUITY", "ETF"},
+        "strategies": {
+            "donchian-stock-breakout", "rs-breakout-scout",
+            "vol-contraction-scout", "adx-trend-scout",
+        },
+        "directions": {"LONG"},
+        "requires": {},
     },
 }
 
@@ -173,14 +186,25 @@ def _iso(ts: Any) -> str:
     return str(ts or "")
 
 
-def classify(feats: dict | None, asset_class: str) -> str | None:
-    """Which registered condition (if any) this row's pre-entry features satisfy."""
+def classify(feats: dict | None, asset_class: str, strategy: str | None = None,
+             direction: str | None = None) -> str | None:
+    """Which registered condition (if any) this row satisfies.
+
+    Matches on asset class, then an optional feature vector, and — for
+    strategy-keyed pods — on the emitter's strategy and direction.
+    """
     if not feats:
         return None
+    name = str(strategy or "").strip().casefold()
+    d = str(direction or "").strip().upper()
     for hid, cond in CONDITIONS.items():
         if asset_class.upper() not in cond["asset_classes"]:
             continue
-        if all(str(feats.get(k)) == v for k, v in cond["requires"].items()):
+        if cond.get("strategies") and name not in cond["strategies"]:
+            continue
+        if cond.get("directions") and d not in cond["directions"]:
+            continue
+        if all(str(feats.get(k)) == v for k, v in cond.get("requires", {}).items()):
             return hid
     return None
 
@@ -252,7 +276,8 @@ def build_rows(entries: Iterable[tuple[dict, dict | None, Any]], now: datetime |
     counts: dict[str, int] = {}
     for p, feats, bars in entries:
         asset_class = str(p.get("asset_class") or "").strip().upper() or "UNKNOWN"
-        hid = classify(feats, asset_class)
+        hid = classify(feats, asset_class, strategy=p.get("strategy"),
+                       direction=p.get("direction"))
         if hid is None:
             counts["not_in_any_condition"] = counts.get("not_in_any_condition", 0) + 1
             continue

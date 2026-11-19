@@ -794,6 +794,23 @@ def save_active_picks(picks: list[dict]):
     except Exception:
         pass  # fail-open: never let a missing import crash the save
 
+    # -- Retired-strategy blocklist (defense-in-depth) --
+    # Emitters such as multi_asset write straight to active_picks.json without
+    # passing through feed_hygiene.is_valid_active_pick, so retired/paper-only
+    # strategies (e.g. forex_rsi2_mean_reversion, futures_momentum) can still land
+    # here. Block at the canonical save path so no retired strategy emits a row.
+    # Fail-open on a missing import; the ingest-side check in feed_hygiene remains
+    # the primary enforcement.
+    try:
+        from alpha_engine.strategy_blocklist import is_blocked_pick as _is_blocked_pick
+        _before = len(picks)
+        picks = [p for p in picks if not _is_blocked_pick(p)]
+        _removed = _before - len(picks)
+        if _removed:
+            print(f"  [BLOCKLIST] Filtered {_removed} retired/blocked-strategy picks before save")
+    except Exception:
+        pass  # fail-open: never let a missing import crash the save
+
     # -- Per-symbol caps & conflict resolution --
     # Max 2 picks per symbol. If LONG+SHORT conflict, keep the majority direction.
     # Added 2026-03-12: NIO had 6 picks, WIF had 7 (4 LONG + 1 SHORT), AUDJPY had 6.

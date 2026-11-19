@@ -22,12 +22,20 @@ G2  Net expectancy   per-trade net return (gross minus per-class slippage)
 G3  Multiplicity     Benjamini-Hochberg FDR q <= 0.10 across all tested cells;
                      Bonferroni threshold reported alongside.
 G4  Overfit          Deflated Sharpe Ratio >= 0.95 (Bailey & Lopez de Prado
-                     approximation; n_trials = tested cells).
+                     approximation; n_trials = global trial count — every
+                     distinct (asset_class, strategy, direction) cell scored,
+                     not only the n >= sample-floor survivors).
 G5  Stability        chronological split-half: both halves net expectancy > 0.
 G6  Concentration    no single symbol > 60% of a cell's trades, no single
                      source system > 90% (report-only at 60%).
 G7  Cost realism      slippage is deducted BEFORE every statistic. A 7bp gross
                      win is a net loss on COMMODITY (12bp round trip).
+G8  Selection alpha   direction-adjusted selection alpha (pick net - hold) 95%
+                     CI lower bound must be > 0 to reach PROVEN_T2; otherwise
+                     the cell is beta-dominant, not skill-proven.
+G9  Cost stress       the net-expectancy bootstrap CI at 2x the class slippage
+                     must still have a positive lower bound to reach PROVEN_T2
+                     or CANDIDATE; otherwise demote one tier.
 
 Verdicts
 --------
@@ -717,6 +725,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     # assumption.
     nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
     boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
+    stress_2x_ok = bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0)
     stable, halves = split_half_ok(nets)
     # Edge test (2026-11-19): expectancy, not P(win). A trend cell at WR 35% with
     # a 2.5 payoff is positive expectancy and cannot be judged by "won more often
@@ -773,6 +782,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
               and stable and top_sym_share <= MAX_SYMBOL_SHARE
               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
             verdict = "PROVEN_T2"
+            if not stress_2x_ok:
+                verdict = "CANDIDATE"
+                reasons.append("2x-cost stress: net CI lower bound <= 0 at 2x slippage")
             if top_src_share > MAX_SOURCE_SHARE:
                 # A single emitter can be PROVEN on the ledger; it is not
                 # sizing-eligible until an independent source replicates it.
@@ -783,6 +795,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
               and expect_ci_positive
               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
             verdict = "CANDIDATE"
+            if not stress_2x_ok:
+                verdict = "WEAK"
+                reasons.append("2x-cost stress: net CI lower bound <= 0 at 2x slippage")
         else:
             verdict = "WEAK"
             if wr < 0.5:
@@ -814,7 +829,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         "harm_q": None,   # filled after BH across the killed cells
         "net_ci_pct_2x": [round(boot_2x["ci_lo"], 4) if boot_2x.get("ci_lo") is not None else None,
                           round(boot_2x["ci_hi"], 4) if boot_2x.get("ci_hi") is not None else None],
-        "stress_2x_ok": bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0),
+        "stress_2x_ok": stress_2x_ok,
         "dsr": None,
         "split_half": ({"stable": stable, **{k: round(v, 4) for k, v in halves.items()}}
                        if halves else None),
@@ -920,6 +935,63 @@ def apply_harm_gate(bucket: list[dict]) -> None:
             c["verdict"] = "WEAK"
             c["reasons"].append(
                 f"negative but harm q={q:.3f} > {FDR_Q}: not proven, keep observing")
+
+
+def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
+    """G8 — selection alpha must be proven positive before promotion.
+
+    A cell (or class) that is profitable purely because the underlying rose
+    (market beta) must not reach PROVEN_T2. This gate looks up the
+    direction-adjusted selection alpha measured by
+    ``alpha_engine/audit3_selection_alpha.py`` and requires its bootstrap 95% CI
+    lower bound to be strictly positive.
+
+    * PROVEN_T2 without a positive-alpha proof is demoted to CANDIDATE and
+      flagged ``beta_dominant``.
+    * CANDIDATE without a positive-alpha proof keeps its verdict but is flagged
+      ``beta_dominant`` (it still needs forward paper to prove the edge is skill).
+
+    Fail-open only when the alpha sidecar is absent or empty — library callers
+    and unit tests that pass no alpha keep the pre-gate behaviour. The published
+    ledger always passes alpha (``audit3-ledger.yml`` runs the alpha sidecar).
+    """
+    if not isinstance(alpha, dict):
+        return
+    by_class = alpha.get("by_class") or {}
+    by_slice = alpha.get("by_slice") or {}
+    if not by_class and not by_slice:
+        return
+
+    def _alpha_lo(ac: Any, direction: Any) -> float | None:
+        ac = str(ac or "").strip().upper()
+        d = str(direction or "").strip().upper()
+        # Finest measurement first (class x direction slice), then the class
+        # aggregate, then "no measurement". by_class/by_slice are keyed uppercase
+        # by audit3_selection_alpha (via _class -> .upper()).
+        slice_entry = by_slice.get(f"{ac}/{d}")
+        if slice_entry and slice_entry.get("n"):
+            lo = (slice_entry.get("alpha_ci") or [None, None])[0]
+            if lo is not None:
+                return lo
+        cls_entry = by_class.get(ac)
+        if cls_entry and cls_entry.get("n"):
+            lo = (cls_entry.get("alpha_ci") or [None, None])[0]
+            if lo is not None:
+                return lo
+        return None
+
+    for c in bucket:
+        lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
+        alpha_proven = lo is not None and lo > 0
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
+        if not alpha_proven:
+            c["beta_dominant"] = True
+            if c["verdict"] == "PROVEN_T2":
+                c["verdict"] = "CANDIDATE"
+                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
+                       if lo is not None else
+                       "selection alpha unavailable for this class")
+                c["reasons"].append(f"G8 selection-alpha gate: {why} — beta-dominant")
 
 
 def segment_tags(r: dict) -> list[tuple[str, str]]:
@@ -1037,11 +1109,14 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     families: list[dict] = []
     segments: list[dict] = []
 
-    # PASS 1: count tested cells so DSR knows the multiplicity.
+    # PASS 1: count every distinct cell so DSR knows the FULL multiplicity. The
+    # Deflated Sharpe Ratio corrects for the number of hypotheses tried, so it
+    # must see the whole search space, not just the n >= WR_MIN_N survivors —
+    # filtering to "tested cells" under-corrects and lets overfit cells clear G4.
     strat_groups = _group(rows, lambda r: (str(r.get("asset_class") or "UNKNOWN").upper(),
                                            str(r.get("strategy") or r.get("source_system") or "(unattributed)"),
                                            _direction(r)))
-    n_trials = sum(1 for g in strat_groups.values() if len(g) >= WR_MIN_N)
+    n_trials = len(strat_groups)
 
     for (ac, strat, direction), group in strat_groups.items():
         pod = _pod_for(ac, strat, direction, confirmatory)
@@ -1160,6 +1235,13 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             if alpha.get(key) is not None:
                 selection[key] = alpha[key]
 
+    # G8 — selection alpha is a promotion gate, not just a class display column.
+    # A cell profitable on beta alone must not reach PROVEN_T2. Applied to the
+    # strategy, symbol and class buckets (all direction-aware); segments and
+    # source families are reconstructed/aggregate proxies and are left out.
+    for bucket in (cells, symbols, classes):
+        apply_selection_alpha_gate(bucket, alpha)
+
     # Kill tribunal: everything KILL plus near-kill (WEAK with negative mean).
     kills = []
     for scope, bucket in (("strategy", cells), ("symbol", symbols), ("class", classes)):
@@ -1270,9 +1352,15 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "promotion_rule": "PROVEN_T2 = n>=100, net CI lower bound >= "
                               f"{PROVEN_MIN_NET_CI_LO_PCT}%/trade, stable halves, no symbol > "
                               f"{MAX_SYMBOL_SHARE:.0%}, source share <= {MAX_SOURCE_SHARE:.0%}, "
-                              f"BH q <= {FDR_Q}, DSR >= {DSR_THRESHOLD}",
-            "cost_stress": "net CI is also reported at 2x the class slippage constant "
-                           "(report-only; never changes a verdict)",
+                              f"BH q <= {FDR_Q}, DSR >= {DSR_THRESHOLD}, "
+                              "selection alpha CI lower bound > 0 (G8)",
+            "selection_alpha_gate": "G8: PROVEN_T2 requires direction-adjusted "
+                                    "selection alpha (pick net - hold) bootstrap CI "
+                                    "lower bound > 0; a beta-only profitable cell is "
+                                    "demoted to CANDIDATE and flagged beta_dominant",
+            "cost_stress": "net CI lower bound at 2x the class slippage must stay "
+                           "positive to reach PROVEN_T2 or CANDIDATE (G9); otherwise "
+                           "the cell demotes one tier",
             "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni "
                             f"alpha/m = {0.05 / max(1, len(tested)):.6f}",
             "stability": "chronological split-half, both halves net mean > 0",
@@ -1334,9 +1422,12 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "input_sha256": input_sha256,
             "git_sha": _git_sha(),
             "n_cells_scored_with_dsr": sum(1 for c in cells if c.get("dsr") is not None),
-            "registry_note": "one canonical multiplicity N: n_cells_tested feeds "
-                             "BH, Bonferroni and DSR; DSR is only reported for "
-                             "cells inside that family",
+            "n_trials_dsr": n_trials,
+            "registry_note": "multiplicity is counted two ways on purpose: "
+                             "BH/Bonferroni operate on tested cells (n >= sample "
+                             "floor); DSR uses the global trial count (every "
+                             "distinct cell, so G4 corrects for the full search "
+                             "space).",
         },
     }
 
