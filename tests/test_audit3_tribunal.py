@@ -224,3 +224,16 @@ def test_load_rows_dedupes_and_drops_open(tmp_path):
     rows, generated = load_rows(str(p))
     assert generated == "2026-11-19T00:00:00Z"
     assert len(rows) == 1 and rows[0]["id"] == "a"
+
+
+def test_cell_reports_required_n_and_mde():
+    rows = _rows(60, 1.0) + _rows(60, -0.5)
+    cell = evaluate_cell(rows, 1, {"asset_class": "CRYPTO", "strategy": "s1",
+                                   "direction": "LONG"})
+    assert cell["required_n"] is not None and cell["required_n"] > 0
+    assert cell["mde_pct"] is not None and cell["mde_pct"] > 0
+    # no dispersion (all rows identical) -> no computable power/MDE
+    flat = evaluate_cell(_rows(20, 1.0), 1, {"asset_class": "CRYPTO",
+                                             "strategy": "s2", "direction": "LONG"})
+    assert flat["required_n"] is None
+    assert flat["mde_pct"] is None

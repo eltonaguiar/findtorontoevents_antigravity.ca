@@ -802,9 +802,23 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     else:
         reasons.append(f"n={n} < {WR_MIN_N}: no statistical claim")
 
+    # Power / MDE: how many trades this cell would need to confirm an edge of
+    # its observed size at 80% power (two-sided 5%), and the smallest effect
+    # the current n can detect. The n>=100 floor is a floor; this is the
+    # effect-sized number that tells a reader how far a cell still has to go.
+    sd = statistics.stdev(nets) if n >= 2 else None
+    mean_net = boot.get("mean", 0.0)
+    required_n = None
+    mde_pct = None
+    if sd is not None and sd > 0 and mean_net:
+        required_n = int(math.ceil((2.8 * sd / abs(mean_net)) ** 2))
+        mde_pct = round(2.8 * sd / math.sqrt(n), 4)
+
     out = dict(label)
     out.update({
         "n": n,
+        "required_n": required_n,
+        "mde_pct": mde_pct,
         "wins": wins,
         "wr": round(wr, 4),
         "wr_ci": [round(lo, 4), round(hi, 4)],
