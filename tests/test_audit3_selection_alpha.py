@@ -148,3 +148,31 @@ def test_min_hold_fields_present_even_when_nothing_qualifies():
     assert o["n_min_hold"] == 0
     assert o["min_hold_participation"] == 0.0
     assert o["alpha_pct_min_hold"] is None
+
+
+# ─────────────────────────────── G9: unmeasured is not the same as beta-only ──
+def test_g9_does_not_brand_cells_without_measured_alpha():
+    from alpha_engine.audit3_tribunal import apply_selection_alpha_gate
+    cells = [{"asset_class": "CRYPTO", "direction": "LONG", "verdict": "WEAK", "reasons": []}]
+    # the sidecar exists but carries no CRYPTO entry at all
+    apply_selection_alpha_gate(cells, {"by_class": {"ETF": {"n": 50, "alpha_ci": [0.2, 0.9]}}})
+    assert "beta_dominant" not in cells[0]
+    assert cells[0]["alpha_gate"] == {"alpha_ci_lo": None, "passed": None,
+                                      "status": "unmeasured"}
+
+
+def test_g9_flags_beta_only_cells_and_demotes_proven():
+    from alpha_engine.audit3_tribunal import apply_selection_alpha_gate
+    cells = [{"asset_class": "ETF", "direction": "LONG", "verdict": "PROVEN_T2", "reasons": []}]
+    apply_selection_alpha_gate(cells, {"by_class": {"ETF": {"n": 50, "alpha_ci": [-0.4, 0.1]}}})
+    assert cells[0]["beta_dominant"] is True
+    assert cells[0]["verdict"] == "CANDIDATE"
+    assert any("G9" in r for r in cells[0]["reasons"])
+
+
+def test_g9_keeps_proven_when_alpha_ci_lower_bound_is_positive():
+    from alpha_engine.audit3_tribunal import apply_selection_alpha_gate
+    cells = [{"asset_class": "ETF", "direction": "LONG", "verdict": "PROVEN_T2", "reasons": []}]
+    apply_selection_alpha_gate(cells, {"by_class": {"ETF": {"n": 50, "alpha_ci": [0.05, 0.6]}}})
+    assert cells[0]["verdict"] == "PROVEN_T2"
+    assert "beta_dominant" not in cells[0]
