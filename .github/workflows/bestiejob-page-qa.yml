@@ -1,0 +1,47 @@
+name: BESTIEJOB page QA
+
+on:
+  pull_request:
+    paths:
+      - 'docs/bestiejob/**'
+      - 'tests/bestiejob-page.spec.ts'
+      - 'playwright.bestiejob.config.ts'
+      - '.github/workflows/bestiejob-page-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/bestiejob/**'
+      - 'tests/bestiejob-page.spec.ts'
+      - 'playwright.bestiejob.config.ts'
+      - '.github/workflows/bestiejob-page-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bestiejob-page-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright test package + browser
+        run: |
+          npm install --no-save @playwright/test@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Run page QA
+        run: npx playwright test --config playwright.bestiejob.config.ts
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bestiejob-playwright-report
+          path: test-results
+          if-no-files-found: ignore
