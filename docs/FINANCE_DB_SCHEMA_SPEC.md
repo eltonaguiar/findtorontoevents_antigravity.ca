@@ -453,7 +453,9 @@ derives it and reports the disagreements (11 at the last run).
 
 ### A.3 `bt_backtest_trades` cannot be scanned ad hoc
 
-~**32.7M** rows. Naive `COUNT(*)`/range scans time out from CI. Pre-aggregate by
+≈**32.7M** rows measured by `COUNT(*)` (`TABLE_ROWS` estimates 34.6M — the
+estimate drifts, which is exactly why A.6 says to trust freshness over counts).
+Naive `COUNT(*)`/range scans time out from CI. Pre-aggregate by
 `(strategy, symbol, asset_class, month)` before any analysis touches it.
 
 ### A.4 The forex pipeline is stale end-to-end
