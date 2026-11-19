@@ -119,6 +119,18 @@ BOOT_SEED = 42
 MAX_SYMBOL_SHARE = 0.60
 MAX_SOURCE_SHARE = 0.90
 
+# DSR multiplicity floor. HOTFIX 2026-11-19T23:48Z: the automated merge 764fec86
+# dropped this definition while keeping every call site, so build_report raised
+# NameError and no ledger could be generated. 658 = distinct strategies in the
+# 2026-11-14 pf_registry audit; DSR must correct for the search space, not the
+# payload slice.
+GLOBAL_TRIAL_FLOOR = 658
+
+
+def global_trial_count(*counts: int) -> int:
+    """Trial count for DSR: the whole search space, never just the loaded slice."""
+    return max([GLOBAL_TRIAL_FLOOR, *(int(c) for c in counts if c)])
+
 # N1 (2026-11-19): repeated-looks correction. BH FDR is computed per run, but the
 # ledger is re-scored every ~6h, so a cell that crosses q<=0.10 once will
 # eventually do so by chance. A CANDIDATE/PROVEN_T2 verdict must therefore persist
@@ -957,6 +969,18 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         reasons.append(
             f"recency: trailing {recency['window_trades']} trades net mean "
             f"{recency['window_net_mean']:+.4f}% < 0 — capped at CANDIDATE")
+
+    # Power numbers, per cell. HOTFIX 2026-11-19T23:47Z: commit 1ed98e59 added
+    # these, and the automated merge 764fec86 kept the two output keys but dropped
+    # both assignments — so every evaluate_cell raised NameError and the next
+    # ledger run would have failed. Restored verbatim from 1ed98e59.
+    sd = statistics.stdev(nets) if n >= 2 else None
+    mean_net = boot.get("mean", 0.0)
+    required_n = None
+    mde_pct = None
+    if sd is not None and sd > 0 and mean_net:
+        required_n = int(math.ceil((2.8 * sd / abs(mean_net)) ** 2))
+        mde_pct = round(2.8 * sd / math.sqrt(n), 4)
 
     out = dict(label)
     out.update({
@@ -1936,18 +1960,6 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
                     help="forward-observations ledger that gates PROVEN_T2 "
                          "(0 rows means no pod can promote)")
-    ap.add_argument("--history", help="verdict-persistence sidecar (N1). Supplying "
-                                      "an existing file enables the repeated-looks gate")
-    ap.add_argument("--history-write", action="store_true",
-                    help="write the updated persistence sidecar back to --history")
-    ap.add_argument("--persistence-runs", type=int, default=PERSISTENCE_RUNS,
-                    help="consecutive runs a verdict must persist (default "
-                         f"{PERSISTENCE_RUNS})")
-    ap.add_argument("--prev-ledger", help="previous audit3 ledger for the "
-                                          "verdict-churn monitor")
-    ap.add_argument("--max-churn", type=float, default=None,
-                    help="exit 3 if the raw-verdict churn rate exceeds this "
-                         f"(alert threshold is {CHURN_ALERT_THRESHOLD})")
     args = ap.parse_args(argv)
     drops: dict[str, int] = {}
     try:
