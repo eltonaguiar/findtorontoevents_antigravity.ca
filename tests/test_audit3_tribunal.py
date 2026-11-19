@@ -698,3 +698,33 @@ def test_dsr_is_always_published_with_its_trial_count():
     for cls in rep["classes"]:
         if cls.get("dsr") is not None:
             assert cls["dsr_n_trials"] >= 658
+
+
+# ───────────────────────────── provenance: population, cost, win definition ──
+def test_every_number_is_joinable_to_its_provenance_triple():
+    rows = _rows(160, 1.5)
+    for i, r in enumerate(rows):
+        r["pnl_pct"] = 1.5 if i % 2 == 0 else -0.5
+        r["status"] = "WON" if r["pnl_pct"] > 0 else "LOST"
+        r["symbol"] = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"][i % 4]
+    rep = build_report(rows, "x.json", None)
+
+    p = rep["provenance"]
+    assert p["id"] and len(p["id"]) == 16
+    assert p["population"] in ("canonical", "payload_slice")
+    assert "round-trip slippage" in p["cost_model"]
+    assert p["win_definition"] == "net pnl_pct > 0 after round-trip class slippage"
+
+    for key in ("cells", "symbols", "classes", "segments", "source_families"):
+        for c in rep.get(key) or []:
+            assert c.get("provenance_id") == p["id"], (key, c.get("strategy"))
+
+
+def test_share_of_valid_is_machine_readable_not_silently_null():
+    rep = build_report(_rows(40, 1.0), "x.json", None)
+    cov = rep["coverage"]
+    assert "scored_share_of_valid_pct_status" in cov
+    if cov["scored_share_of_valid_pct"] is None:
+        assert cov["scored_share_of_valid_pct_status"] == "not_comparable"
+    else:
+        assert cov["scored_share_of_valid_pct_status"] == "ok"

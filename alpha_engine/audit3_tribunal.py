@@ -687,6 +687,8 @@ def payload_coverage(data: Any, scored_rows: list[dict],
         "scored_share_of_total_pct": (round(100.0 * scored / total, 2)
                                       if total else None),
         "scored_share_of_valid_pct": share_of_valid,
+        "scored_share_of_valid_pct_status": ("ok" if share_of_valid is not None
+                                            else "not_comparable"),
         "scored_share_of_valid_note": share_of_valid_note,
         "unscored_rows": (max(0, total - scored) if total else None),
         "cohorts_overlap": overlap,
@@ -1846,7 +1848,22 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "n_kill_classes": count("KILL", classes),
     }
 
-    return {
+    cov = coverage if coverage is not None else payload_coverage(None, rows)
+    provenance = {
+        "population": cov["denominator"].get("mode"),
+        "population_rows": cov.get("scored_rows"),
+        "population_total": cov.get("total_closed_picks"),
+        "cost_model": ("per-class round-trip slippage percent "
+                       + ", ".join(f"{k}={v}" for k, v in sorted(SLIPPAGE_PCT.items()))
+                       + "; the 2x stress gate doubles it"),
+        "win_definition": "net pnl_pct > 0 after round-trip class slippage",
+        "source": source,
+        "generated_at": run_at,
+    }
+    provenance["id"] = hashlib.sha256(
+        json.dumps(provenance, sort_keys=True).encode("utf-8")).hexdigest()[:16]
+
+    report = {
         "schema": "audit3.v1",
         "generated_at": run_at,
         "source": source,
@@ -1962,6 +1979,12 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "provenance": {
             "module": "alpha_engine/audit3_tribunal.py",
             "generator_version": GENERATOR_VERSION,
+            "id": provenance["id"],
+            "population": provenance["population"],
+            "population_rows": provenance["population_rows"],
+            "population_total": provenance["population_total"],
+            "cost_model": provenance["cost_model"],
+            "win_definition": provenance["win_definition"],
             "source_file": source,
             "source_generated_at": source_generated_at,
             "input_sha256": input_sha256,
@@ -1974,6 +1997,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                              "distinct cell scored.",
         },
     }
+    # Every rendered number must be joinable to its (population, cost, win) triple.
+    for bucket in (cells, symbols, classes, segments, families):
+        for c in bucket:
+            c["provenance_id"] = provenance["id"]
+    return report
 
 
 def main(argv: list[str] | None = None) -> int:
