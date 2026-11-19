@@ -78,15 +78,6 @@ CONDITIONS = {
         "asset_classes": {"CRYPTO"},
         "requires": {"F3": "50-70", "F5": "US"},
     },
-    "H-144": {
-        "name": "crypto_position_timeframe_selection",
-        "asset_classes": {"CRYPTO"},
-        "timeframes": {"POSITION"},
-        "requires": {},
-    },
-    # NOTE: order matters. Feature-keyed pods are matched first, so a POSITION row
-    # that also satisfies H-119's RSI/session stamp stays with H-119 and H-144 only
-    # receives rows no entry-condition pod claims.
     "H-BABY-EQUITY-VT-PATTERN-SWEEP-001": {
         "name": "equity_breakout_family",
         "asset_classes": {"EQUITY", "ETF"},
@@ -197,15 +188,16 @@ def _iso(ts: Any) -> str:
 
 
 def classify(feats: dict | None, asset_class: str, strategy: str | None = None,
-             direction: str | None = None, timeframe: str | None = None) -> str | None:
+             direction: str | None = None) -> str | None:
     """Which registered condition (if any) this row satisfies.
 
     Matches on asset class, then an optional feature vector, and — for
     strategy-keyed pods — on the emitter's strategy and direction.
     """
+    if not feats:
+        return None
     name = str(strategy or "").strip().casefold()
     d = str(direction or "").strip().upper()
-    tf = str(timeframe or "").strip().upper()
     for hid, cond in CONDITIONS.items():
         if asset_class.upper() not in cond["asset_classes"]:
             continue
@@ -213,14 +205,7 @@ def classify(feats: dict | None, asset_class: str, strategy: str | None = None,
             continue
         if cond.get("directions") and d not in cond["directions"]:
             continue
-        if cond.get("timeframes") and tf not in cond["timeframes"]:
-            continue
-        requires = cond.get("requires") or {}
-        if requires and not feats:
-            # A feature-keyed pod cannot be judged without the pre-entry stamp;
-            # a strategy/timeframe-keyed pod has no such requirement.
-            continue
-        if all(str((feats or {}).get(k)) == v for k, v in requires.items()):
+        if all(str(feats.get(k)) == v for k, v in cond.get("requires", {}).items()):
             return hid
     return None
 
@@ -294,8 +279,7 @@ def build_rows(entries: Iterable[tuple[dict, dict | None, Any]], now: datetime |
     for p, feats, bars in entries:
         asset_class = str(p.get("asset_class") or "").strip().upper() or "UNKNOWN"
         hid = classify(feats, asset_class, strategy=p.get("strategy"),
-                       direction=p.get("direction"),
-                       timeframe=p.get("trade_timeframe") or p.get("timeframe"))
+                       direction=p.get("direction"))
         if hid is None:
             counts["not_in_any_condition"] = counts.get("not_in_any_condition", 0) + 1
             if unmatched_out is not None:

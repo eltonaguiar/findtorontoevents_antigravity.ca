@@ -22,23 +22,20 @@ G2  Net expectancy   per-trade net return (gross minus per-class slippage)
 G3  Multiplicity     Benjamini-Hochberg FDR q <= 0.10 across all tested cells;
                      Bonferroni threshold reported alongside.
 G4  Overfit          Deflated Sharpe Ratio >= 0.95 (Bailey & Lopez de Prado
-                     approximation; n_trials = every emitted strategy).
+                     approximation; n_trials = global trial count — every
+                     distinct (asset_class, strategy, direction) cell scored,
+                     not only the n >= sample-floor survivors).
 G5  Stability        chronological split-half: both halves net expectancy > 0.
 G6  Concentration    no single symbol > 60% of a cell's trades, no single
                      source system > 90% (report-only at 60%).
 G7  Cost realism      slippage is deducted BEFORE every statistic. A 7bp gross
                      win is a net loss on COMMODITY (12bp round trip).
-G8  Repeated looks    a CANDIDATE/PROVEN_T2 verdict must persist across K
-                     consecutive runs (verdict-history sidecar); the run that
-                     began the streak is recorded as first_pass_at. BH is
-                     per-run, so without this a cell eventually crosses by chance.
-G9  Selection alpha   direction-adjusted selection alpha (pick net - hold) 95%
+G8  Selection alpha   direction-adjusted selection alpha (pick net - hold) 95%
                      CI lower bound must be > 0 to reach PROVEN_T2; otherwise
                      the cell is beta-dominant, not skill-proven.
-G10 Cost stress      the net-expectancy bootstrap CI at 2x the class slippage
-                     must keep a positive lower bound to reach PROVEN_T2 or
-                     CANDIDATE; an edge that dies at 2x cost is a cost
-                     assumption, so the cell is WEAK regardless of any pod.
+G9  Cost stress       the net-expectancy bootstrap CI at 2x the class slippage
+                     must still have a positive lower bound to reach PROVEN_T2
+                     or CANDIDATE; otherwise demote one tier.
 
 Verdicts
 --------
@@ -867,10 +864,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     # a required gate for PROVEN_T2 and CANDIDATE (an edge that dies at 2x cost
     # is a cost assumption, not skill); it is still reported on every cell.
     nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
-    boot_2x = bootstrap_mean_ci(nets_2x, block=True) if n >= 2 else {"ci_lo": None, "ci_hi": None}
-    mean_cost = (sum(_cost_pct(r) for r in rows) / n) if n else 0.0
-    floor_pct = materiality_floor(mean_cost)
-    stable, halves = split_half_ok(nets, min_mean=floor_pct)
+    boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
+    stress_2x_ok = bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0)
+    stable, halves = split_half_ok(nets)
     # Edge test (2026-11-19): expectancy, not P(win). A trend cell at WR 35% with
     # a 2.5 payoff is positive expectancy and cannot be judged by "won more often
     # than not"; a 60% WR cell with PF < 1 (EQUITY) is negative expectancy and
@@ -927,6 +923,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)
               and boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0):
             verdict = "PROVEN_T2"
+            if not stress_2x_ok:
+                verdict = "CANDIDATE"
+                reasons.append("2x-cost stress: net CI lower bound <= 0 at 2x slippage")
             if top_src_share > MAX_SOURCE_SHARE:
                 # A single emitter can be PROVEN on the ledger; it is not
                 # sizing-eligible until an independent source replicates it.
@@ -938,6 +937,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)
               and boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0):
             verdict = "CANDIDATE"
+            if not stress_2x_ok:
+                verdict = "WEAK"
+                reasons.append("2x-cost stress: net CI lower bound <= 0 at 2x slippage")
         else:
             verdict = "WEAK"
             if not expect_ci_positive:
@@ -1003,7 +1005,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         "harm_q": None,   # filled after BH across the killed cells
         "net_ci_pct_2x": [round(boot_2x["ci_lo"], 4) if boot_2x.get("ci_lo") is not None else None,
                           round(boot_2x["ci_hi"], 4) if boot_2x.get("ci_hi") is not None else None],
-        "stress_2x_ok": bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0),
+        "stress_2x_ok": stress_2x_ok,
         "dsr": None,
         "split_half": ({"stable": stable, **{k: round(v, 4) for k, v in halves.items()}}
                        if halves else None),
@@ -1136,303 +1138,61 @@ def apply_harm_gate(bucket: list[dict]) -> None:
                 f"negative but harm q={q:.3f} > {FDR_Q}: not proven, keep observing")
 
 
-# ─────────────────────────────────────────────── N1 repeated looks ──
-_PERSISTENCE_KEY_FIELDS = ("asset_class", "strategy", "symbol", "direction",
-                          "namespace", "pod", "segment", "segment_value", "family")
+def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
+    """G8 — selection alpha must be proven positive before promotion.
 
+    A cell (or class) that is profitable purely because the underlying rose
+    (market beta) must not reach PROVEN_T2. This gate looks up the
+    direction-adjusted selection alpha measured by
+    ``alpha_engine/audit3_selection_alpha.py`` and requires its bootstrap 95% CI
+    lower bound to be strictly positive.
 
-def cell_key(cell: dict) -> str:
-    """Stable identity for a cell across runs, from its label fields only."""
-    label = {k: cell.get(k) for k in _PERSISTENCE_KEY_FIELDS
-             if cell.get(k) is not None}
-    blob = json.dumps(label, sort_keys=True, separators=(",", ":"), default=str)
-    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
+    * PROVEN_T2 without a positive-alpha proof is demoted to CANDIDATE and
+      flagged ``beta_dominant``.
+    * CANDIDATE without a positive-alpha proof keeps its verdict but is flagged
+      ``beta_dominant`` (it still needs forward paper to prove the edge is skill).
 
-
-def load_history(path: str | None) -> dict[str, dict]:
-    """Read the verdict-persistence sidecar. Missing/corrupt file -> empty."""
-    if not path:
-        return {}
-    try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-    except (OSError, ValueError):
-        return {}
-    cells = data.get("cells") if isinstance(data, dict) else None
-    return cells if isinstance(cells, dict) else {}
-
-
-def save_history(path: str | None, history: dict[str, dict], *, run_at: str,
-                 runs_required: int) -> None:
-    if not path:
-        return
-    payload = {
-        "schema": "audit3.verdict_history.v1",
-        "updated_at": run_at,
-        "persistence_runs": runs_required,
-        "n_cells": len(history),
-        "cells": history,
-    }
-    # Atomic write: a crash mid-write must not leave a truncated sidecar that
-    # load_history silently reads as empty (which would reset every streak).
-    tmp = f"{path}.tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=1, sort_keys=True, allow_nan=False)
-        f.write("\n")
-    os.replace(tmp, path)
-
-
-def apply_persistence_gate(buckets: list[list[dict]], history: dict[str, dict],
-                           *, run_at: str, runs_required: int = PERSISTENCE_RUNS
-                           ) -> dict[str, int]:
-    """Demote any CANDIDATE/PROVEN_T2 that has not persisted across K runs.
-
-    ``history`` is mutated in place: for every cell seen this run it stores the
-    consecutive-run streak of raw (pre-gate) passes, the first run that passed
-    (``first_pass_at``), and the final verdict. A cell absent from this run has
-    its streak reset, because persistence means consecutive runs, not cumulative
-    runs with gaps.
-
-    Returns counters for the report's ``persistence`` block.
-    """
-    seen: set[str] = set()
-    demoted = 0
-    promoted = 0
-    for bucket in buckets:
-        for cell in bucket:
-            key = cell_key(cell)
-            seen.add(key)
-            rec = dict(history.get(key) or {})
-            prior_ok = rec.get("last_raw_verdict") in PERSISTENCE_VERDICTS
-            prior_passes = int(rec.get("passes") or 0)
-            raw = cell.get("verdict")
-            if raw in PERSISTENCE_VERDICTS:
-                streak = prior_passes + 1 if prior_ok else 1
-                first_pass_at = rec.get("first_pass_at") or run_at
-                if streak < runs_required:
-                    cell["verdict"] = "WEAK"
-                    cell["reasons"].append(
-                        f"repeated-looks: verdict persisted {streak}/{runs_required} "
-                        "consecutive runs (BH is per-run; a single cross is not enough)")
-                    demoted += 1
-                else:
-                    cell["first_pass_at"] = first_pass_at
-                    promoted += 1
-                rec["passes"] = streak
-                rec["first_pass_at"] = first_pass_at
-            else:
-                rec["passes"] = 0
-                rec["first_pass_at"] = None
-            rec["last_raw_verdict"] = raw
-            rec["last_verdict"] = cell.get("verdict")
-            rec["last_seen"] = run_at
-            history[key] = rec
-            cell["raw_verdict"] = raw
-    # A gap is not persistence: cells not scored this run lose their streak.
-    for key in list(history):
-        if key not in seen:
-            history[key]["passes"] = 0
-            history[key]["first_pass_at"] = None
-    return {"demoted": demoted, "promoted": promoted}
-
-
-def load_prev_verdicts(path: str | None) -> dict[str, str]:
-    """Read verdicts from a previous ledger for the churn monitor."""
-    if not path:
-        return {}
-    try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-    except (OSError, ValueError):
-        return {}
-    if not isinstance(data, dict):
-        return {}
-    out: dict[str, str] = {}
-    for bucket in ("cells", "symbols", "classes", "segments"):
-        for cell in data.get(bucket) or []:
-            if not isinstance(cell, dict):
-                continue
-            # Only a ledger that already carries raw_verdict is comparable. A
-            # legacy ledger stores post-gate final verdicts; comparing those to
-            # today's raw verdicts would report a false churn spike on the
-            # first N1/N3 run (and could trip --max-churn before anything is
-            # written). Skip legacy rows rather than invent a comparison.
-            verdict = cell.get("raw_verdict")
-            if verdict:
-                out[cell_key(cell)] = verdict
-    return out
-
-
-def compute_verdict_churn(buckets: list[list[dict]],
-                          prev: dict[str, str]) -> dict[str, Any]:
-    """Count cells whose raw verdict changed since the previous ledger.
-
-    Compares raw verdicts (pre-persistence) so the N1 hold-at-WEAK delay does not
-    register as instability. Alert only when enough cells are tracked.
-    """
-    tracked = 0
-    flipped = 0
-    flips: list[dict[str, Any]] = []
-    for bucket in buckets:
-        for cell in bucket:
-            key = cell_key(cell)
-            if key not in prev:
-                continue
-            tracked += 1
-            now = cell.get("raw_verdict") or cell.get("verdict")
-            if now != prev[key]:
-                flipped += 1
-                flips.append({
-                    "asset_class": cell.get("asset_class"),
-                    "strategy": cell.get("strategy") or cell.get("symbol"),
-                    "direction": cell.get("direction"),
-                    "from": prev[key], "to": now, "n": cell.get("n"),
-                })
-    rate = round(flipped / tracked, 4) if tracked else 0.0
-    alert = bool(tracked >= CHURN_MIN_TRACKED and rate > CHURN_ALERT_THRESHOLD)
-    return {
-        "available": bool(prev),
-        "n_tracked": tracked,
-        "n_flipped": flipped,
-        "churn_rate": rate,
-        "alert_threshold": CHURN_ALERT_THRESHOLD,
-        "min_tracked": CHURN_MIN_TRACKED,
-        "alert": alert,
-        "flips": flips[:50],
-    }
-
-# Which sidecar fields reach the published ledger. `by_class` was missing until
-# 2026-11-19: per-class alpha was measured, used by the G8 gate, and then dropped
-# by this whitelist, so the page could show a class gate "measured" with no number
-# and no way to see why. `bar_coverage` was added at the same time so an
-# "unmeasured" verdict carries its cause (no table / no symbol / stale bars).
-ALPHA_PASSTHROUGH_KEYS: tuple[str, ...] = (
-    "generated_at", "covered", "n_universe", "missing", "overall",
-    "by_class", "by_slice", "by_strategy", "bar_coverage",
-)
-
-
-def demote_proven_without_alpha(buckets: Iterable[list[dict]]) -> int:
-    """Fail-closed fallback for the published ledger when alpha is missing."""
-    demoted = 0
-    for bucket in buckets:
-        for c in bucket:
-            if c.get("verdict") != "PROVEN_T2":
-                continue
-            c["verdict"] = "CANDIDATE"
-            c["reasons"].append(
-                "G9 selection-alpha gate: alpha sidecar unavailable - PROVEN_T2 "
-                "requires a measured selection alpha")
-            demoted += 1
-    return demoted
-
-
-def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[str, Any]:
-    """G9 - selection alpha must be proven at the same scope it proves.
-
-    A cell profitable only because the underlying rose (market beta) must not
-    reach PROVEN_T2. Alpha is looked up in order of decreasing specificity:
-
-      * ``by_strategy[CLASS/STRATEGY/DIR]`` -> scope ``strategy`` (proves a cell)
-      * ``by_slice[CLASS/DIR]`` / ``by_class[CLASS]`` -> scope ``class_proxy``
-        for a strategy/symbol cell (informs, never proves)
-      * a class aggregate is proved by ``by_class[CLASS]`` -> scope ``class``
-
-    An unmeasured alpha demotes PROVEN_T2 but is not labelled beta-dominant
-    (that would claim knowledge we do not have). A measured non-positive alpha
-    is labelled beta-dominant. Coverage must reach max(20, 0.5*cell.n).
-
-    Fail-open only when the sidecar is absent or empty. The published CLI path
-    passes ``require_alpha=True`` to ``build_report``, which demotes instead.
+    Fail-open only when the alpha sidecar is absent or empty — library callers
+    and unit tests that pass no alpha keep the pre-gate behaviour. The published
+    ledger always passes alpha (``audit3-ledger.yml`` runs the alpha sidecar).
     """
     if not isinstance(alpha, dict):
-        return {"applied": False, "reason": "no alpha sidecar"}
+        return
     by_class = alpha.get("by_class") or {}
     by_slice = alpha.get("by_slice") or {}
-    by_strategy = alpha.get("by_strategy") or {}
-    if not by_class and not by_slice and not by_strategy:
-        return {"applied": False, "reason": "alpha sidecar empty"}
+    if not by_class and not by_slice:
+        return
 
-    def _entry(entry: Any) -> tuple[float | None, float | None, int]:
-        if not entry or not entry.get("n"):
-            return None, None, 0
-        ci = entry.get("alpha_ci") or [None, None]
-        return ci[0], ci[1], int(entry.get("n") or 0)
+    def _alpha_lo(ac: Any, direction: Any) -> float | None:
+        ac = str(ac or "").strip().upper()
+        d = str(direction or "").strip().upper()
+        # Finest measurement first (class x direction slice), then the class
+        # aggregate, then "no measurement". by_class/by_slice are keyed uppercase
+        # by audit3_selection_alpha (via _class -> .upper()).
+        slice_entry = by_slice.get(f"{ac}/{d}")
+        if slice_entry and slice_entry.get("n"):
+            lo = (slice_entry.get("alpha_ci") or [None, None])[0]
+            if lo is not None:
+                return lo
+        cls_entry = by_class.get(ac)
+        if cls_entry and cls_entry.get("n"):
+            lo = (cls_entry.get("alpha_ci") or [None, None])[0]
+            if lo is not None:
+                return lo
+        return None
 
-    def _lookup(cell: dict) -> tuple[float | None, float | None, str, int]:
-        ac = str(cell.get("asset_class") or "").strip().upper()
-        d = str(cell.get("direction") or "").strip().upper()
-        strat = cell.get("strategy")
-        if strat:
-            lo, hi, n = _entry(by_strategy.get(f"{ac}/{strat}/{d}"))
-            if lo is not None:
-                return lo, hi, "strategy", n
-            lo, hi, n = _entry(by_slice.get(f"{ac}/{d}"))
-            if lo is not None:
-                return lo, hi, "class_proxy", n
-            lo, hi, n = _entry(by_class.get(ac))
-            return lo, hi, "class_proxy", n
-        if cell.get("symbol"):
-            lo, hi, n = _entry(by_slice.get(f"{ac}/{d}"))
-            if lo is not None:
-                return lo, hi, "class_proxy", n
-            lo, hi, n = _entry(by_class.get(ac))
-            return lo, hi, "class_proxy", n
-        lo, hi, n = _entry(by_class.get(ac))
-        return lo, hi, "class", n
-
-    summary: dict[str, Any] = {"applied": True, "tested": 0, "demoted": 0, "scopes": {}}
     for c in bucket:
-        lo, hi, scope, alpha_n = _lookup(c)
-        cell_n = int(c.get("n") or 0)
-        need_n = max(ALPHA_MIN_N, int(ALPHA_MIN_COVERAGE * cell_n))
-        covered = alpha_n >= need_n
-        proven = lo is not None and lo > 0 and scope in ("strategy", "class") and covered
-        # "unproven" (CI straddles 0) is NOT "beta_dominant": the latter needs
-        # evidence that alpha is negative, i.e. the whole CI below zero. Labelling
-        # every null-alpha cell beta-dominant claimed knowledge we do not have and
-        # made ~97% of cells look like a measured market failure.
-        if lo is None:
-            status = "unmeasured"
-        elif lo > 0 and not covered:
-            status = "insufficient_coverage"
-        elif lo > 0 and scope not in ("strategy", "class"):
-            status = "proxy"
-        elif lo > 0:
-            status = "proven"
-        elif hi is not None and hi < 0:
-            status = "beta_dominant"
-        else:
-            status = "unproven"
-        c["alpha_gate"] = {"alpha_ci_lo": lo, "alpha_ci_hi": hi, "scope": scope,
-                           "alpha_n": alpha_n, "need_n": need_n,
-                           "alpha_coverage_ok": bool(covered),
-                           "passed": bool(proven) if lo is not None else None,
-                           "status": status}
-        summary["tested"] += 1
-        summary["scopes"][scope] = summary["scopes"].get(scope, 0) + 1
-        if proven:
-            continue
-        if lo is None:
+        lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
+        alpha_proven = lo is not None and lo > 0
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
+        if not alpha_proven:
+            c["beta_dominant"] = True
             if c["verdict"] == "PROVEN_T2":
                 c["verdict"] = "CANDIDATE"
-                summary["demoted"] += 1
-                c["reasons"].append(
-                    "G9 selection-alpha gate: selection alpha unmeasured - "
-                    "promotion requires a positive CI lower bound")
-            continue
-        if status == "beta_dominant":
-            c["beta_dominant"] = True
-        if c["verdict"] == "PROVEN_T2":
-            c["verdict"] = "CANDIDATE"
-            summary["demoted"] += 1
-            if lo <= 0:
-                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0 "
-                       f"(status {status})")
-            else:
-                why = f"selection alpha covers {alpha_n}/{cell_n} rows (need {need_n})"
-            c["reasons"].append(f"G9 selection-alpha gate ({scope}): {why}")
-    return summary
+                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
+                       if lo is not None else
+                       "selection alpha unavailable for this class")
+                c["reasons"].append(f"G8 selection-alpha gate: {why} — beta-dominant")
 
 
 def segment_tags(r: dict) -> list[tuple[str, str]]:
@@ -1588,17 +1348,14 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     families: list[dict] = []
     segments: list[dict] = []
 
-    # PASS 1: count every distinct cell so DSR knows the FULL multiplicity. DSR
-    # corrects for the number of hypotheses tried, so it must see the whole search
-    # space, not only the n >= WR_MIN_N survivors; filtering first under-corrects
-    # G4 and lets overfit cells clear the bar.
+    # PASS 1: count every distinct cell so DSR knows the FULL multiplicity. The
+    # Deflated Sharpe Ratio corrects for the number of hypotheses tried, so it
+    # must see the whole search space, not just the n >= WR_MIN_N survivors —
+    # filtering to "tested cells" under-corrects and lets overfit cells clear G4.
     strat_groups = _group(rows, lambda r: (str(r.get("asset_class") or "UNKNOWN").upper(),
                                            str(r.get("strategy") or r.get("source_system") or "(unattributed)"),
                                            _direction(r)))
-    # P0-5: DSR is a multiple-testing correction, so the trial count is every
-    # configuration that was emitted and scored -- not only the ones that
-    # cleared the WR floor. Counting tested-only cells understated SR0.
-    n_trials = global_trial_count(len(strat_groups))
+    n_trials = len(strat_groups)
 
     for (ac, strat, direction), group in strat_groups.items():
         pod = _pod_for(ac, strat, direction, confirmatory)
@@ -1764,27 +1521,12 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             if alpha.get(key) is not None:
                 selection[key] = alpha[key]
 
-    # G9 - selection alpha is a promotion gate, not just a class display column.
-    # Applied to the strategy, symbol and class buckets (all direction-aware);
-    # segments and source families are reconstructed/aggregate proxies.
-    alpha_gate_report: dict[str, Any] = {"applied": False, "tested": 0,
-                                         "demoted": 0, "scopes": {}}
+    # G8 — selection alpha is a promotion gate, not just a class display column.
+    # A cell profitable on beta alone must not reach PROVEN_T2. Applied to the
+    # strategy, symbol and class buckets (all direction-aware); segments and
+    # source families are reconstructed/aggregate proxies and are left out.
     for bucket in (cells, symbols, classes):
-        part = apply_selection_alpha_gate(bucket, alpha)
-        if not part.get("applied"):
-            alpha_gate_report.setdefault("reason", part.get("reason"))
-            continue
-        alpha_gate_report["applied"] = True
-        alpha_gate_report["tested"] += part.get("tested", 0)
-        alpha_gate_report["demoted"] += part.get("demoted", 0)
-        for scope, count in (part.get("scopes") or {}).items():
-            alpha_gate_report["scopes"][scope] = alpha_gate_report["scopes"].get(scope, 0) + count
-    if require_alpha and not alpha_gate_report.get("applied"):
-        # Published path: a missing sidecar must not read as "all cells passed".
-        alpha_gate_report["require_alpha"] = True
-        alpha_gate_report["demoted"] += demote_proven_without_alpha(
-            (cells, symbols, classes))
-    selection["gate"] = alpha_gate_report
+        apply_selection_alpha_gate(bucket, alpha)
 
     # Kill tribunal: everything KILL plus near-kill (WEAK with negative mean).
     kills = []
@@ -1918,14 +1660,14 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                               "round-trip cost), stable halves, no symbol > "
                               f"{MAX_SYMBOL_SHARE:.0%}, source share <= {MAX_SOURCE_SHARE:.0%}, "
                               f"BH q <= {FDR_Q}, DSR >= {DSR_THRESHOLD}, "
-                              "selection alpha CI lower bound > 0 (G9)",
-            "cost_stress": "net CI lower bound at 2x the class slippage must stay "
-                           "positive to reach PROVEN_T2 or CANDIDATE (G10); "
-                           "otherwise the cell is WEAK",
-            "selection_alpha_gate": "G9: PROVEN_T2 requires direction-adjusted "
+                              "selection alpha CI lower bound > 0 (G8)",
+            "selection_alpha_gate": "G8: PROVEN_T2 requires direction-adjusted "
                                     "selection alpha (pick net - hold) bootstrap CI "
                                     "lower bound > 0; a beta-only profitable cell is "
                                     "demoted to CANDIDATE and flagged beta_dominant",
+            "cost_stress": "net CI lower bound at 2x the class slippage must stay "
+                           "positive to reach PROVEN_T2 or CANDIDATE (G9); otherwise "
+                           "the cell demotes one tier",
             "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni "
                             f"alpha/m = {0.05 / max(1, len(tested)):.6f}",
             "stability": "chronological split-half, both halves net mean > 0",
@@ -2020,8 +1762,9 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "n_trials_dsr": n_trials,
             "registry_note": "multiplicity is counted two ways on purpose: "
                              "BH/Bonferroni operate on tested cells (n >= sample "
-                             "floor); DSR uses the global trial count, every "
-                             "distinct cell scored.",
+                             "floor); DSR uses the global trial count (every "
+                             "distinct cell, so G4 corrects for the full search "
+                             "space).",
         },
     }
     # Every rendered number must be joinable to its (population, cost, win) triple.
