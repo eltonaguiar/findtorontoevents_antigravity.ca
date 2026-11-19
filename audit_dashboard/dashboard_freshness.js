@@ -629,7 +629,7 @@
         esc(ageText(dashboardFresh.ageMs)) + ' old (' + esc(fmtEST(D.generated_at)) + ' EST). ' +
         'The information shown may not reflect current market conditions. ' +
         '<a href="#" onclick="location.reload();return false" style="color:#fbbf24;text-decoration:underline;font-weight:600">Reload page</a> or check ' +
-        '<a href="https://github.com/eaguiar2015/findtorontoevents_antigravity.ca/actions" target="_blank" style="color:#fbbf24;text-decoration:underline;font-weight:600">workflow status</a>.</div>';
+        '<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions" target="_blank" style="color:#fbbf24;text-decoration:underline;font-weight:600">workflow status</a>.</div>';
 
       var header = document.querySelector('.header');
       if (header && header.nextSibling) {
