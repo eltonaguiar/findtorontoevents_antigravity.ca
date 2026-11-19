@@ -56,18 +56,42 @@ jobs:
           assert len(rows) >= 100, f"only {len(rows)} closed rows — refusing to publish a thin ledger"
           PY
 
+      # Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
+      # when DB credentials exist. A missing secret must never block the ledger.
+      - name: Selection alpha (optional — needs the price tables)
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ]; then
+            echo "no DB_PASS_STOCKS secret — skipping selection alpha; the page states it is unavailable"
+            exit 0
+          fi
+          python3 alpha_engine/audit3_selection_alpha.py \
+            --picks /tmp/audit3/dashboard_data.json \
+            --out /tmp/audit3/selection_alpha.json || true
+
       - name: Build audit3 ledger
         run: |
+          alpha_arg=""
+          if [ -f /tmp/audit3/selection_alpha.json ]; then
+            alpha_arg="--alpha /tmp/audit3/selection_alpha.json"
+          fi
           python3 -m alpha_engine.audit3_tribunal \
             --picks /tmp/audit3/dashboard_data.json \
-            --out audit_dashboard/data/audit3_ledger.json
+            --out audit_dashboard/data/audit3_ledger.json $alpha_arg
           python3 - <<'PY'
           import json
           d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
           assert d["schema"] == "audit3.v1"
           s = d["summary"]
           assert s["n_rows"] >= 100, s
+          cov = d["coverage"]
+          assert cov["scored_rows"] == s["n_rows"], cov
+          assert cov["statement"], cov
           print("audit3 summary:", json.dumps(s))
+          print("audit3 coverage:", cov["statement"])
+          print("selection alpha:", d["selection_alpha"]["available"])
           PY
 
       - name: Commit ledger (data only, [skip ci])

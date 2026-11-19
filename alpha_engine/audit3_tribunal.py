@@ -297,8 +297,14 @@ def _to_dt(value: Any) -> datetime | None:
     return dt
 
 
-def load_rows(path: str) -> tuple[list[dict], str | None]:
-    """Load closed picks and the ledger's own generated_at, if present."""
+def load_rows(path: str, drops: dict[str, int] | None = None
+              ) -> tuple[list[dict], str | None]:
+    """Load closed picks and the ledger's own generated_at, if present.
+
+    drops: optional counter filled with why input rows did not become a scored
+    row. The export slice is already filtered upstream, so a page that only
+    reports ``len(rows)`` silently hides both those filters and these ones.
+    """
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     generated_at = None
@@ -322,19 +328,24 @@ def load_rows(path: str) -> tuple[list[dict], str | None]:
 
     seen: set[str] = set()
     clean: list[dict] = []
+    drop = drops if drops is not None else {}
     for r in rows:
         if not isinstance(r, dict):
+            drop["not_a_record"] = drop.get("not_a_record", 0) + 1
             continue
         pnl = r.get("pnl_pct")
         if not isinstance(pnl, (int, float)):
+            drop["no_numeric_pnl"] = drop.get("no_numeric_pnl", 0) + 1
             continue
         status = str(r.get("status") or "").upper()
         if status in ("OPEN", "PENDING", ""):
+            drop["not_closed"] = drop.get("not_closed", 0) + 1
             continue
         key = str(r.get("id") or "") or (
             f"{r.get('strategy')}|{r.get('symbol')}|{r.get('direction')}|"
             f"{r.get('closed_at') or r.get('timestamp')}|{pnl}")
         if key in seen:
+            drop["duplicate"] = drop.get("duplicate", 0) + 1
             continue
         seen.add(key)
         clean.append(r)
@@ -345,6 +356,99 @@ def load_rows(path: str) -> tuple[list[dict], str | None]:
         _to_dt(r.get("closed_at") or r.get("timestamp")) or
         datetime(1970, 1, 1, tzinfo=timezone.utc)))
     return clean, generated_at
+
+
+def _coverage_statement(scored: int, total: int | None, integrity: int | None,
+                        expired: int | None, overlap: bool) -> str:
+    if not total:
+        return ("The source payload carries no closed-book counts, so this ledger "
+                f"cannot state what share of the book its {scored:,} scored rows "
+                "represent.")
+    share = 100.0 * scored / total
+    parts = []
+    if integrity:
+        parts.append(f"{integrity:,} integrity-excluded")
+    if expired:
+        parts.append(f"{expired:,} auto-expired")
+    txt = (f"audit3 scores {scored:,} of {total:,} closed picks ({share:.1f}%). "
+           f"The other {max(0, total - scored):,} are not in this ledger")
+    if parts:
+        txt += (": the publishing dashboard reports " + " and ".join(parts)
+                + " rows, and no surface scores any of them.")
+    else:
+        txt += "."
+    if overlap:
+        txt += (" Those cohorts overlap, so they do not sum to the gap — read them as "
+                "reasons rows are missing, not as a partition.")
+    return txt
+
+
+def payload_coverage(data: Any, scored_rows: list[dict],
+                     drops: dict[str, int] | None = None) -> dict[str, Any]:
+    """How much of the published closed book this ledger actually judges.
+
+    The tribunal reads ``picks.recent_closed``, which is an export slice, not the
+    whole closed book: the publishing dashboard also reports cohorts it removes
+    before export (integrity failures, auto-expiries). Without this block the page
+    implies its verdicts cover every closed pick, which they do not.
+    """
+    summary = data.get("summary") if isinstance(data, dict) else None
+    summary = summary if isinstance(summary, dict) else {}
+
+    def _int(key: str) -> int | None:
+        v = summary.get(key)
+        return int(v) if isinstance(v, (int, float)) else None
+
+    total = _int("total_closed_picks")
+    valid = _int("valid_closed_picks")
+    integrity = _int("integrity_excluded")
+    expired = _int("auto_expired_excluded")
+    resolved = _int("total_resolved")
+    zero_pnl = _int("zero_pnl_count")
+    anomalies = summary.get("resolver_anomalies")
+    anomalies = anomalies if isinstance(anomalies, dict) else {}
+    scored = len(scored_rows)
+    stamps = sorted(s for s in ((r.get("closed_at") or r.get("timestamp"))
+                                for r in scored_rows)
+                    if isinstance(s, str) and s)
+
+    excluded: list[dict[str, Any]] = []
+    if integrity:
+        excluded.append({
+            "cohort": "integrity_excluded", "n": integrity,
+            "reason": "failed the publishing dashboard's own integrity checks "
+                      "(ghost rows, WON-vs-PnL sign contradictions, constant/zero "
+                      "pnl) and is removed before the export slice",
+        })
+    if expired:
+        excluded.append({
+            "cohort": "auto_expired", "n": expired,
+            "reason": "resolved by timeout instead of TP/SL; a timeout is neither a "
+                      "win nor a loss, so it is dropped before scoring and never "
+                      "counted against the strategy either",
+        })
+    overlap = bool(total and integrity and expired and integrity + expired > total)
+
+    return {
+        "scored_rows": scored,
+        "total_closed_picks": total,
+        "valid_closed_picks": valid,
+        "total_resolved": resolved,
+        "zero_pnl_count": zero_pnl,
+        "scored_share_of_total_pct": (round(100.0 * scored / total, 2)
+                                      if total else None),
+        "scored_share_of_valid_pct": (round(100.0 * scored / valid, 2)
+                                      if valid else None),
+        "unscored_rows": (max(0, total - scored) if total else None),
+        "cohorts_overlap": overlap,
+        "excluded_cohorts": excluded,
+        "row_drops": dict(sorted((drops or {}).items())),
+        "window": {"first_closed_at": stamps[0] if stamps else None,
+                   "last_closed_at": stamps[-1] if stamps else None},
+        "resolver_anomalies": {k: v for k, v in anomalies.items()
+                               if isinstance(v, (int, float))},
+        "statement": _coverage_statement(scored, total, integrity, expired, overlap),
+    }
 
 
 # ─────────────────────────────────────────────────────────────────── cells ──
@@ -554,7 +658,16 @@ def segment_tags(r: dict) -> list[tuple[str, str]]:
     return tags
 
 
-def build_report(rows: list[dict], source: str, source_generated_at: str | None) -> dict[str, Any]:
+def build_report(rows: list[dict], source: str, source_generated_at: str | None,
+                 coverage: dict[str, Any] | None = None,
+                 alpha: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Score every cell, then attach what the verdicts do NOT cover.
+
+    coverage: from payload_coverage() — the share of the closed book being judged.
+    alpha: optional sidecar from audit3_selection_alpha.py (needs price tables),
+           merged onto the class aggregates so the class table can lead with
+           selection skill instead of gross profit factor.
+    """
     n_cells = 0
     cells: list[dict] = []
     classes: list[dict] = []
@@ -641,6 +754,32 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None)
     for fam, group in sorted(fam_groups.items(), key=lambda kv: -len(kv[1])):
         families.append(evaluate_cell(group, max(1, len(fam_groups)),
                                       {"family": fam}))
+
+    # Selection alpha (M1b) joined onto the class aggregates when a sidecar was
+    # supplied. Kept optional: it needs per-symbol OHLC, so a job without DB
+    # credentials must still be able to publish an honest ledger.
+    alpha_by_class = (alpha or {}).get("by_class") or {} if isinstance(alpha, dict) else {}
+    for c in classes:
+        a = alpha_by_class.get(c["asset_class"]) or {}
+        if a.get("n"):
+            c["alpha_pct"] = a.get("alpha_pct")
+            c["alpha_ci"] = a.get("alpha_ci")
+            c["alpha_n"] = a.get("n")
+            c["alpha_wr"] = a.get("alpha_wr")
+            c["hold_net_pct"] = a.get("hold_net_pct")
+    selection: dict[str, Any] = {
+        "available": bool(alpha_by_class),
+        "definition": "alpha = pick net return - direction-adjusted buy & hold over "
+                      "the same entry..exit window (M1b)",
+        "source": "alpha_engine/audit3_selection_alpha.py (needs the price tables)",
+        "why_it_matters": "A +40% pick on a symbol that returned +60% is a selection "
+                          "failure; a win-rate or PF table cannot see that.",
+    }
+    if isinstance(alpha, dict):
+        for key in ("generated_at", "covered", "n_universe", "missing", "overall",
+                    "by_slice"):
+            if alpha.get(key) is not None:
+                selection[key] = alpha[key]
 
     # Kill tribunal: everything KILL plus near-kill (WEAK with negative mean).
     kills = []
@@ -753,6 +892,8 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None)
                                "timing-null companion report.",
         },
         "summary": summary,
+        "coverage": coverage if coverage is not None else payload_coverage(None, rows),
+        "selection_alpha": selection,
         "doctrine": {
             "name": "innocent-until-proven-guilty",
             "default_state": "not proven -- keep observing; absence of proof of "
@@ -792,18 +933,37 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="audit3 quantitative kill tribunal")
     ap.add_argument("--picks", required=True, help="dashboard_data.json or flat closed-pick list")
     ap.add_argument("--out", help="write ledger JSON here (else stdout)")
+    ap.add_argument("--alpha", help="selection-alpha sidecar from "
+                                     "alpha_engine/audit3_selection_alpha.py")
     args = ap.parse_args(argv)
+    drops: dict[str, int] = {}
     try:
-        rows, generated_at = load_rows(args.picks)
+        rows, generated_at = load_rows(args.picks, drops=drops)
     except (OSError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
-    report = build_report(rows, args.picks, generated_at)
+    try:
+        with open(args.picks, encoding="utf-8") as f:
+            source_payload = json.load(f)
+    except (OSError, ValueError):
+        source_payload = None
+    coverage = payload_coverage(source_payload, rows, drops)
+    alpha = None
+    if args.alpha:
+        try:
+            with open(args.alpha, encoding="utf-8") as f:
+                alpha = json.load(f)
+        except (OSError, ValueError) as exc:
+            print(f"WARNING: alpha sidecar unreadable ({exc}); continuing without it",
+                  file=sys.stderr)
+    report = build_report(rows, args.picks, generated_at, coverage=coverage, alpha=alpha)
     payload = json.dumps(report, indent=1, allow_nan=False)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(payload + "\n")
         print(f"wrote {args.out}: {report['summary']}")
+        print(f"coverage: {report['coverage']['statement']}")
+        print(f"selection alpha: {'joined' if report['selection_alpha']['available'] else 'not available'}")
     else:
         print(payload)
     return 0

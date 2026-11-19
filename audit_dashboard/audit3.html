@@ -119,9 +119,16 @@
   </nav>
 
   <section id="overview" class="on">
-    <div class="card"><h3>Asset classes — after costs, after multiplicity</h3>
+    <div class="card"><h3>Asset classes — selection alpha first, then cost, then multiplicity</h3>
       <div class="tblwrap"><table id="classTbl"></table></div>
+      <div class="note" id="alphaNote"></div>
       <div class="legend" id="verdictLegend"></div>
+    </div>
+    <div class="card"><h3>What this ledger does <em>not</em> score</h3>
+      <p class="muted" id="covStatement"></p>
+      <div class="grid" id="covKpis"></div>
+      <div class="tblwrap"><table id="covTbl"></table></div>
+      <p class="muted" style="margin:10px 0 0;font-size:12px" id="covNote"></p>
     </div>
     <div class="card"><h3>The only pipeline that can promote anything</h3>
       <div id="gates"></div>
@@ -298,8 +305,12 @@ function render(d){
     `BH-corrected across all ${tested} tests.`;
   $('disclaimer').textContent = d.not_money_ready_disclaimer;
 
+  const cov = d.coverage || {};
+  const sharePct = cov.scored_share_of_total_pct;
   $('kpis').innerHTML = [
     ['Closed picks', s.n_rows.toLocaleString(), 'blue'],
+    ['Share of book judged', sharePct==null ? '—' : sharePct+'%',
+      sharePct!=null && sharePct<50 ? 'red' : ''],
     ['Tested cells', tested, ''],
     ['Proven T2', s.n_proven, s.n_proven? 'green':'red'],
     ['Candidate', s.n_candidate, s.n_candidate? 'amber':'' ],
@@ -309,19 +320,79 @@ function render(d){
     ['Proven symbols', s.n_proven_symbols, s.n_proven_symbols? 'green':''],
   ].map(([k,v,c])=>`<div class="kpi ${c}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
 
-  // Classes
+  // Classes — selection alpha is the headline; PF is demoted because it scores
+  // how the trade was expressed, not whether the right thing was picked.
+  const alphaCell = (r) => {
+    if(r.alpha_pct==null) return '<span class="muted" style="font-size:11px">not computed</span>';
+    const ci = r.alpha_ci || [];
+    const ints = (ci[0]==null) ? '' :
+      ` <span class="muted" style="font-size:10px">[${fmtNum(ci[0])}, ${fmtNum(ci[1])}]</span>`;
+    const n = r.alpha_n ? ` <span class="muted" style="font-size:10px">n=${r.alpha_n}</span>` : '';
+    return `<span class="num ${signCls(r.alpha_pct)}"><b>${fmtNum(r.alpha_pct)}%</b></span>${ints}${n}`;
+  };
   table('classTbl', [
     {key:'asset_class', label:'Class'},
     {key:'n', label:'n', render:r=>`<span class="num">${r.n}</span>`},
     {key:'wr', label:'WR (Wilson 95%)', render:r=>`<span class="num">${fmtPct(r.wr)}</span>
        <span class="muted" style="font-size:10px">[${fmtPct(r.wr_ci[0])}, ${fmtPct(r.wr_ci[1])}]</span>`},
-    {key:'pf', label:'PF', render:r=>fmtNum(r.pf)},
-    {key:'gross_expectancy_pct', label:'Gross/trade', render:r=>fmtNum(r.gross_expectancy_pct)+'%'},
-    {key:'net_expectancy_pct', label:'Net/trade', render:r=>`<span class="${signCls(r.net_expectancy_pct)}">${fmtNum(r.net_expectancy_pct)}%</span>`},
+    {key:'alpha_pct', label:'Selection alpha vs hold', render:alphaCell},
+    {key:'net_expectancy_pct', label:'Net/trade', render:r=>`<span class="num ${signCls(r.net_expectancy_pct)}">${fmtNum(r.net_expectancy_pct)}%</span>`},
+    {key:'pf', label:'PF (raw)', render:r=>`<span class="muted">${fmtNum(r.pf)}</span>`},
+    {key:'gross_expectancy_pct', label:'Gross/trade', render:r=>`<span class="muted">${fmtNum(r.gross_expectancy_pct)}%</span>`},
     {key:'q_value', label:'BH q', render:r=>r.q_value==null?'—':Number(r.q_value).toFixed(3)},
     {key:'dsr', label:'DSR', render:r=>r.dsr==null?'—':Number(r.dsr).toFixed(3)},
     {key:'verdict', label:'Verdict', render:r=>pill(r.verdict)},
   ], d.classes, 'n', -1);
+
+  const sa = d.selection_alpha || {};
+  $('alphaNote').innerHTML = sa.available
+    ? `<b>Selection alpha</b> = pick net return minus the direction-adjusted return of
+       simply holding the same instrument over the same window (M1b;
+       ${(sa.covered||0).toLocaleString()}/${(sa.n_universe||0).toLocaleString()} picks priced).
+       Positive means the pick beat the hold; negative means it lost to doing nothing.
+       <b>PF and gross/trade are demoted</b> (right-hand columns, greyed) because they score
+       how the exit was expressed, not whether the right instrument was picked.`
+    : `<b>Selection alpha not computed in this build.</b> It needs per-symbol OHLC
+       (crypto_ohlcv / equity_daily_ohlcv / etf_daily_ohlcv), which this job can only read
+       with DB credentials. Without it the class verdicts below answer “did this beat zero”
+       — the weaker question — not “did this beat just holding the same thing”.`;
+
+  // Coverage — the denominator. Without it every verdict above reads as if it
+  // covered the whole closed book.
+  const pad = (v) => v==null ? '—' : Number(v).toLocaleString();
+  $('covStatement').textContent = cov.statement ||
+    'Coverage was not recorded in this ledger build.';
+  $('covKpis').innerHTML = [
+    ['Judged here', sharePct==null ? pad(cov.scored_rows) : sharePct+'% of the closed book',
+      sharePct!=null && sharePct<50 ? 'red' : ''],
+    ['Scored rows', pad(cov.scored_rows!=null?cov.scored_rows:s.n_rows), 'blue'],
+    ['Published closed picks', pad(cov.total_closed_picks), ''],
+    ['Not scored here', pad(cov.unscored_rows), 'amber'],
+  ].map(([k,v,c])=>`<div class="kpi ${c}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+
+  const covRows = (cov.excluded_cohorts||[]).map(c=>
+    ({cohort:c.cohort, n:c.n, why:c.reason}));
+  Object.entries(cov.resolver_anomalies||{}).forEach(([k,v])=>{
+    if(typeof v==='number' && v>0) covRows.push({cohort:k, n:v,
+      why:'resolver anomaly reported by the publishing dashboard (rows affected)'});
+  });
+  Object.entries(cov.row_drops||{}).forEach(([k,v])=>{
+    if(v>0) covRows.push({cohort:'dropped: '+k, n:v,
+      why:'rejected while loading the export slice into this ledger'});
+  });
+  table('covTbl', [
+    {key:'cohort', label:'Cohort / anomaly'},
+    {key:'n', label:'Rows', render:r=>`<span class="num">${Number(r.n).toLocaleString()}</span>`},
+    {key:'why', label:'Why it is not in the verdicts',
+     render:r=>`<span style="white-space:normal" class="muted">${esc(r.why)}</span>`},
+  ], covRows, 'n', -1);
+  $('covNote').textContent = [
+    (cov.window && cov.window.first_closed_at)
+      ? `Scored window: ${stamp(cov.window.first_closed_at)} → ${stamp(cov.window.last_closed_at)}.` : '',
+    cov.cohorts_overlap
+      ? 'The excluded cohorts overlap each other, so their counts do not add up to the unscored gap.' : '',
+    'These cohorts are reported by the publishing dashboard, not re-derived here; this ledger cannot vouch for how they were classified.'
+  ].filter(Boolean).join(' ');
 
   $('verdictLegend').innerHTML = ['PROVEN_T2','CANDIDATE','WEAK','KILL','INSUFFICIENT_N']
     .map(v=>pill(v)).join('') +
@@ -440,6 +511,11 @@ function render(d){
     {k:'source generated_at', v:(d.provenance||{}).source_generated_at || '—'},
     {k:'ledger generated_at', v:d.generated_at},
     {k:'cells scored with DSR', v:(d.provenance||{}).n_cells_scored_with_dsr},
+    {k:'share of closed book judged', v: sharePct==null ? 'not recorded'
+        : sharePct+'% ('+cov.scored_rows+' of '+cov.total_closed_picks+' closed picks)'},
+    {k:'selection alpha', v:(d.selection_alpha||{}).available
+        ? 'joined from ' + ((d.selection_alpha||{}).source||'sidecar')
+        : 'not computed in this build (needs DB price tables)'},
     {k:'bootstrap', v:`${conv.bootstrap_resamples} resamples, seed ${conv.bootstrap_seed}`},
     {k:'BH q', v:conv.fdr_q},
     {k:'DSR threshold', v:conv.dsr_threshold},
