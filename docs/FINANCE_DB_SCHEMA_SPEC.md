@@ -595,3 +595,31 @@ predictions; `lm_sports_ml_metrics` is empty. Freshness: active through
 - **Use `bt_backtest_trades` pre-aggregates** (by strategy/symbol/asset_class/
   month) so new strategy backtests can be evaluated without full-table scans
   (A.3).
+
+### B.6 Health & verdict — see the dedicated audit
+
+A full ML health/staleness/verdict audit (live model reports + resolved-pick
+ground truth) lives in
+[`ML_SYSTEMS_HEALTH_AUDIT_2026-11-19.md`](ML_SYSTEMS_HEALTH_AUDIT_2026-11-19.md).
+
+**Verdict in one line:** the ML layer is worth keeping — but only the validated
+**gatekeeper + consensus + ~9 positive-EV strategies**; it is under-deployed,
+not broken. Slightly modify + refresh, do not rewrite.
+
+Key empirical numbers (2026-11-19):
+
+- **Gatekeeper:** 12-fold walk-forward mean lift **10.44%** (p=0.008), true
+  holdout PF **2.826**, passed-WR 61% vs 52.2% baseline → keep.
+- **Consensus:** backtest WR 50.6% vs 41.9% single, cumulative PnL +38 vs −677
+  → keep.
+- **Mercury2:** top-3 hit rate 0%, IC ≈ 0 → weak/demote.
+- **Crypto-ML:** trained 2026-02-25 (STALE ~9mo) → retrain.
+- **Overall resolved picks:** WR 41.7%, avg PnL +0.085% → break-even as a
+  pool; edge is concentrated in CRYPTO/FOREX and the strategy core above.
+- **Positive-EV strategy core:** Multi-Timeframe Trend Alignment (87.1% WR,
+  +2.79%), Price Acceleration Detector (77.4%, +2.25%), non_crypto_consensus,
+  VerifiedStochRsi, Bollinger Squeeze, CCI Reversal, MeanReversionBB,
+  luxalgo_confluence, claude_ml_moderate.
+- **Net-negative to suppress:** Crypto RSI Scout (8.5% WR), Extreme Fear
+  Contrarian, rapid_rsi_filter, gainer_compression, futures_momentum, meme,
+  penny.
