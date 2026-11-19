@@ -557,14 +557,26 @@ def test_selection_alpha_gate_accepts_strategy_level_proof():
     assert "beta_dominant" not in cell
 
 
-def test_selection_alpha_gate_keeps_candidate_but_flags_it():
+def test_selection_alpha_gate_flags_measured_negative_alpha_as_beta_dominant():
     cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
             "verdict": "CANDIDATE", "reasons": []}
     apply_selection_alpha_gate(
-        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.2, 0.1]}}})
+        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.9, -0.2]}}})
     assert cell["verdict"] == "CANDIDATE"
     assert cell["beta_dominant"] is True
     assert cell["alpha_gate"]["status"] == "beta_dominant"
+
+
+def test_a_null_alpha_interval_is_unproven_not_beta_dominant():
+    """CI straddling zero is absence of proof, not proof of beta."""
+    cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
+            "verdict": "PROVEN_T2", "reasons": []}
+    summary = apply_selection_alpha_gate(
+        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.2, 0.1]}}})
+    assert summary["demoted"] == 1
+    assert cell["verdict"] == "CANDIDATE"
+    assert cell["alpha_gate"]["status"] == "unproven"
+    assert "beta_dominant" not in cell
 
 
 def test_selection_alpha_gate_reports_when_it_did_not_run():
