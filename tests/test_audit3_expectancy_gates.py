@@ -1,0 +1,105 @@
+"""Tests for the audit3 v2 gates: expectancy-primary, cost stress, hash provenance.
+
+The arena.ai review (AUDIT3_FEEDBACK_2026-11-19.md) is right that a win-rate gate
+makes a trend/premia cell unpromotable by construction. These tests pin the rule
+that replaced it, plus the trial-accounting and provenance fixes.
+"""
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from alpha_engine.audit3_tribunal import build_report  # noqa: E402
+
+
+def _rows(n_wins: int, n_losses: int, win: float, loss: float,
+          *, klass: str = "CRYPTO", symbols=("AAAUSDT", "BBBUSDT", "CCCUSDT", "DDDUSDT"),
+          sources=("src_a", "src_b"), tag: str | None = None) -> list[dict]:
+    """Build a deterministic row set: wins and losses interleaved so both
+    chronological halves carry the same edge (split-half stability)."""
+    cycle = [win] + [loss, loss]
+    rows, i = [], 0
+    while len(rows) < n_wins + n_losses:
+        v = cycle[i % 3]
+        if v == win and sum(1 for r in rows if r["pnl_pct"] > 0) >= n_wins:
+            v = loss
+        if v == loss and sum(1 for r in rows if r["pnl_pct"] <= 0) >= n_losses:
+            v = win
+        rows.append({
+            "id": f"r{i}", "asset_class": klass, "strategy": "cellA",
+            "symbol": symbols[i % len(symbols)], "direction": "LONG",
+            "source_system": sources[i % len(sources)],
+            "pnl_pct": v, "status": "WON" if v > 0 else "LOST",
+            "closed_at": f"2026-01-{(i % 28) + 1:02d}T00:00:00Z",
+            **({"trust_tier": tag} if tag else {}),
+        })
+        i += 1
+    return rows[:n_wins + n_losses]
+
+
+def test_expectancy_primary_promotes_low_win_rate_cell():
+    # 33% win rate, 3.0/-0.6 payoff: positive expectancy that a WR>50% gate
+    # could never certify.
+    rows = _rows(40, 80, 3.0, -0.6)
+    rep = build_report(rows, "x.json", None)
+    cell = rep["cells"][0]
+    assert cell["wr"] < 0.40
+    assert cell["net_expectancy_pct"] > 0
+    assert cell["p_wr"] > 0.9      # WR descriptor still says "not better than coin flip"
+    assert cell["p_value"] < 0.01  # expectancy test says "yes, edge"
+    assert cell["verdict"] == "PROVEN_T2"
+
+
+def test_high_win_rate_negative_expectancy_is_not_promoted():
+    rows = _rows(90, 30, 0.2, -1.2)
+    rep = build_report(rows, "x.json", None)
+    cell = rep["cells"][0]
+    assert cell["wr"] > 0.70
+    assert cell["net_expectancy_pct"] < 0
+    assert cell["verdict"] != "PROVEN_T2"
+
+
+def test_dsr_is_only_scored_inside_the_tested_family():
+    rows = _rows(40, 80, 3.0, -0.6)
+    # 40 extra rows split into three sub-floor strategies.
+    for i in range(36):
+        rows.append({"id": f"small{i}", "asset_class": "CRYPTO",
+                     "strategy": f"small{i % 3}", "symbol": "AAAUSDT",
+                     "direction": "LONG", "pnl_pct": 0.5, "status": "WON",
+                     "closed_at": "2026-02-01T00:00:00Z"})
+    rep = build_report(rows, "x.json", None)
+    assert all(c["dsr"] is None for c in rep["cells"]
+               if c["n"] < 20), "sub-floor cells must not publish a DSR"
+    assert rep["summary"]["n_cells_dsr_scored"] <= rep["summary"]["n_cells_tested"]
+
+
+def test_reconstructed_segment_cannot_be_proven():
+    rows = _rows(40, 80, 3.0, -0.6, tag="S")
+    rep = build_report(rows, "x.json", None)
+    segs = [c for c in rep["segments"] if c["segment"] == "trust_tier"]
+    assert segs, "expected a trust_tier segment cell"
+    for c in segs:
+        assert c["verdict"] in ("CANDIDATE", "WEAK")
+        assert all("reconstructed" in r for r in c["reasons"]) or c["verdict"] != "CANDIDATE"
+
+
+def test_cost_stress_2x_is_reported_and_stricter():
+    rows = _rows(40, 80, 3.0, -0.6)
+    cell = build_report(rows, "x.json", None)["cells"][0]
+    assert cell["net_ci_pct_2x"][0] is not None
+    assert cell["net_ci_pct_2x"][0] < cell["net_ci_pct"][0]
+    assert cell["stress_2x_ok"] == (cell["net_ci_pct_2x"][0] > 0)
+
+
+def test_provenance_carries_hash_and_version():
+    rep = build_report(_rows(10, 10, 1.0, -1.0), "x.json", None, input_sha256="deadbeef")
+    prov = rep["provenance"]
+    assert prov["input_sha256"] == "deadbeef"
+    assert prov["generator_version"].startswith("audit3.v")
+    assert "one canonical multiplicity N" in prov["registry_note"]
+    json.dumps(rep, allow_nan=False)

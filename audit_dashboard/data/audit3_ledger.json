@@ -1,6 +1,6 @@
 {
  "schema": "audit3.v1",
- "generated_at": "2026-11-19T05:28:57.716114+00:00",
+ "generated_at": "2026-11-19T05:32:38.474292+00:00",
  "source": "/tmp/audit3/dashboard_data.json",
  "source_generated_at": "2026-11-19T04:04:16.807952+00:00",
  "not_money_ready_disclaimer": "audit3 is an evidence ledger, not a signal service. PROVEN_T2 means the realized closed-pick ledger survives the listed gates; it does not guarantee future returns. No position sizing is emitted here.",
@@ -25,7 +25,11 @@
    "MUTUAL_FUND": 0.08
   },
   "win_definition": "net pnl_pct > 0 after per-class round-trip slippage",
-  "p_value": "one-sided exact binomial P(X>=wins) under p=0.5",
+  "edge_test": "net-expectancy bootstrap CI, one-sided; WR is a descriptor only",
+  "p_value": "one-sided bootstrap P(net mean <= 0), 2,000 seeded resamples",
+  "p_wr": "one-sided exact binomial P(X>=wins) under p=0.5 \u2014 reported, never gated",
+  "promotion_rule": "PROVEN_T2 = n>=100, net CI lower bound >= 0.05%/trade, stable halves, no symbol > 60%, source share <= 90%, BH q <= 0.1, DSR >= 0.95",
+  "cost_stress": "net CI is also reported at 2x the class slippage constant (report-only; never changes a verdict)",
   "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni alpha/m = 0.001111",
   "stability": "chronological split-half, both halves net mean > 0",
   "max_symbol_share": 0.6,
@@ -37,9 +41,10 @@
   "n_cells_tested": 45,
   "n_cells_total": 171,
   "n_symbol_cells": 61,
-  "n_proven": 0,
+  "n_cells_dsr_scored": 44,
+  "n_proven": 1,
   "n_candidate": 0,
-  "n_weak": 34,
+  "n_weak": 33,
   "n_kill": 11,
   "n_insufficient": 126,
   "kill_rate_pct": 24.44,
@@ -119,9 +124,15 @@
     -0.3449
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.8419,
+    -0.4949
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -130,6 +141,7 @@
    },
    "top_symbol_share": 0.0956,
    "top_source_share": 0.6586,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -155,10 +167,16 @@
     -0.277,
     0.5219
    ],
-   "p_value": 0.98986,
+   "p_value": 0.2825,
+   "p_wr": 0.98986,
    "q_value": 1.0,
-   "p_harm": 0.012272,
+   "p_harm": 0.7175,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.377,
+    0.4219
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.2055,
    "split_half": {
     "stable": false,
@@ -167,6 +185,7 @@
    },
    "top_symbol_share": 0.1064,
    "top_source_share": 0.9803,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.9% <= 50%",
@@ -192,10 +211,16 @@
     -0.263,
     0.2023
    ],
-   "p_value": 0.999606,
+   "p_value": 0.5755,
+   "p_wr": 0.999606,
    "q_value": 1.0,
-   "p_harm": 0.000531,
+   "p_harm": 0.4245,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.343,
+    0.1223
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0566,
    "split_half": {
     "stable": false,
@@ -204,6 +229,7 @@
    },
    "top_symbol_share": 0.137,
    "top_source_share": 0.9692,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 43.2% <= 50%",
@@ -229,10 +255,16 @@
     -0.2507,
     0.0091
    ],
-   "p_value": 0.999999,
+   "p_value": 0.9675,
+   "p_wr": 0.999999,
    "q_value": 1.0,
-   "p_harm": 2e-06,
+   "p_harm": 0.0325,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3007,
+    -0.0409
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0006,
    "split_half": {
     "stable": false,
@@ -241,6 +273,7 @@
    },
    "top_symbol_share": 0.1374,
    "top_source_share": 0.5403,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.69 < 0.8 at n=211 \u2014 watch only, harm not proven (net CI [-0.25, +0.01]) so it keeps observing"
@@ -265,9 +298,15 @@
     -2.0596
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -4.7008,
+    -2.1796
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -276,6 +315,7 @@
    },
    "top_symbol_share": 0.3091,
    "top_source_share": 0.6364,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -301,10 +341,16 @@
     -0.5569,
     0.0431
    ],
-   "p_value": 0.939275,
+   "p_value": 0.9495,
+   "p_wr": 0.939275,
    "q_value": 1.0,
-   "p_harm": 0.114741,
+   "p_harm": 0.0505,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6369,
+    -0.0369
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0018,
    "split_half": {
     "stable": false,
@@ -313,6 +359,7 @@
    },
    "top_symbol_share": 0.8824,
    "top_source_share": 0.9412,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 38.2% <= 50%",
@@ -339,14 +386,21 @@
     -2.8983,
     5.569
    ],
-   "p_value": 0.6875,
+   "p_value": 0.3185,
+   "p_wr": 0.6875,
    "q_value": 1.0,
-   "p_harm": 0.6875,
+   "p_harm": 0.6815,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.9984,
+    5.469
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.25,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -372,10 +426,16 @@
     0.4825,
     2.4495
    ],
-   "p_value": 0.040072,
-   "q_value": 0.868227,
-   "p_harm": 0.982459,
+   "p_value": 0.0005,
+   "p_wr": 0.040072,
+   "q_value": 0.010833,
+   "p_harm": 0.9995,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.3325,
+    2.2995
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.6901,
    "split_half": {
     "stable": true,
@@ -384,7 +444,8 @@
    },
    "top_symbol_share": 0.2121,
    "top_source_share": 0.5152,
-   "verdict": "WEAK",
+   "single_source": false,
+   "verdict": "CANDIDATE",
    "reasons": [],
    "sharpe": 0.5118,
    "sr0": 0.4135,
@@ -408,10 +469,16 @@
     0.4825,
     2.4495
    ],
-   "p_value": 0.040072,
-   "q_value": 0.868227,
-   "p_harm": 0.982459,
+   "p_value": 0.0005,
+   "p_wr": 0.040072,
+   "q_value": 0.010833,
+   "p_harm": 0.9995,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.3325,
+    2.2995
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.6901,
    "split_half": {
     "stable": true,
@@ -420,7 +487,8 @@
    },
    "top_symbol_share": 0.2121,
    "top_source_share": 0.5152,
-   "verdict": "WEAK",
+   "single_source": false,
+   "verdict": "CANDIDATE",
    "reasons": [],
    "sharpe": 0.5118,
    "sr0": 0.4135,
@@ -444,10 +512,16 @@
     0.618,
     2.1877
    ],
-   "p_value": 0.006387,
-   "q_value": 0.415155,
-   "p_harm": 0.996845,
+   "p_value": 0.0,
+   "p_wr": 0.006387,
+   "q_value": 0.0,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.468,
+    2.0377
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.871,
    "split_half": {
     "stable": true,
@@ -456,7 +530,8 @@
    },
    "top_symbol_share": 0.25,
    "top_source_share": 0.4722,
-   "verdict": "WEAK",
+   "single_source": false,
+   "verdict": "CANDIDATE",
    "reasons": [],
    "sharpe": 0.419,
    "sr0": 0.2799,
@@ -480,10 +555,16 @@
     -0.6523,
     1.6769
    ],
-   "p_value": 0.778165,
-   "q_value": 1.0,
-   "p_harm": 0.28285,
+   "p_value": 0.199,
+   "p_wr": 0.778165,
+   "q_value": 0.970125,
+   "p_harm": 0.801,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.7523,
+    1.5769
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0607,
    "split_half": {
     "stable": true,
@@ -492,6 +573,7 @@
    },
    "top_symbol_share": 0.0917,
    "top_source_share": 0.8899,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 46.8% <= 50%"
@@ -518,10 +600,16 @@
     -0.1416,
     1.0122
    ],
-   "p_value": 0.355852,
-   "q_value": 1.0,
-   "p_harm": 0.710355,
+   "p_value": 0.075,
+   "p_wr": 0.355852,
+   "q_value": 0.775357,
+   "p_harm": 0.925,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2916,
+    0.8622
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1887,
    "split_half": {
     "stable": true,
@@ -530,6 +618,7 @@
    },
    "top_symbol_share": 0.1624,
    "top_source_share": 0.3077,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.1372,
@@ -554,10 +643,16 @@
     -0.3041,
     1.1362
    ],
-   "p_value": 0.45378,
-   "q_value": 1.0,
-   "p_harm": 0.636226,
+   "p_value": 0.1225,
+   "p_wr": 0.45378,
+   "q_value": 0.79625,
+   "p_harm": 0.8775,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3841,
+    1.0562
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.119,
    "split_half": {
     "stable": true,
@@ -566,6 +661,7 @@
    },
    "top_symbol_share": 0.2162,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.135,
@@ -590,10 +686,16 @@
     -0.1577,
     0.7292
    ],
-   "p_value": 0.903631,
-   "q_value": 1.0,
-   "p_harm": 0.110561,
+   "p_value": 0.0965,
+   "p_wr": 0.903631,
+   "q_value": 0.784062,
+   "p_harm": 0.9035,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2577,
+    0.6292
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1416,
    "split_half": {
     "stable": false,
@@ -602,6 +704,7 @@
    },
    "top_symbol_share": 0.1184,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 47.5% <= 50%",
@@ -629,10 +732,16 @@
     -0.4803,
     0.9697
    ],
-   "p_value": 0.750761,
-   "q_value": 1.0,
-   "p_harm": 0.289861,
+   "p_value": 0.255,
+   "p_wr": 0.750761,
+   "q_value": 0.970125,
+   "p_harm": 0.745,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.5803,
+    0.8697
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0407,
    "split_half": {
     "stable": false,
@@ -641,6 +750,7 @@
    },
    "top_symbol_share": 0.1477,
    "top_source_share": 0.9659,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 48.1% <= 50%",
@@ -668,10 +778,16 @@
     -0.0357,
     0.4097
    ],
-   "p_value": 0.643885,
-   "q_value": 1.0,
-   "p_harm": 0.451079,
+   "p_value": 0.0675,
+   "p_wr": 0.643885,
+   "q_value": 0.775357,
+   "p_harm": 0.9325,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.0857,
+    0.3597
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1664,
    "split_half": {
     "stable": false,
@@ -680,6 +796,7 @@
    },
    "top_symbol_share": 0.3182,
    "top_source_share": 0.5455,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 48.5% <= 50%",
@@ -707,10 +824,16 @@
     -0.1526,
     0.4664
    ],
-   "p_value": 0.577714,
-   "q_value": 1.0,
-   "p_harm": 0.473948,
+   "p_value": 0.154,
+   "p_wr": 0.577714,
+   "q_value": 0.91,
+   "p_harm": 0.846,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2326,
+    0.3864
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0875,
    "split_half": {
     "stable": true,
@@ -719,6 +842,7 @@
    },
    "top_symbol_share": 0.188,
    "top_source_share": 0.9658,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 49.6% <= 50%"
@@ -745,10 +869,16 @@
     -0.3411,
     0.6642
    ],
-   "p_value": 0.967686,
-   "q_value": 1.0,
-   "p_harm": 0.039602,
+   "p_value": 0.2965,
+   "p_wr": 0.967686,
+   "q_value": 0.970125,
+   "p_harm": 0.7035,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4411,
+    0.5642
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0354,
    "split_half": {
     "stable": false,
@@ -757,6 +887,7 @@
    },
    "top_symbol_share": 0.1087,
    "top_source_share": 0.9957,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.8% <= 50%",
@@ -784,10 +915,16 @@
     -0.3264,
     0.5962
    ],
-   "p_value": 0.947232,
-   "q_value": 1.0,
-   "p_harm": 0.062073,
+   "p_value": 0.2965,
+   "p_wr": 0.947232,
+   "q_value": 0.970125,
+   "p_harm": 0.7035,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4264,
+    0.4962
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0323,
    "split_half": {
     "stable": false,
@@ -796,6 +933,7 @@
    },
    "top_symbol_share": 0.1162,
    "top_source_share": 0.9967,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 46.8% <= 50%",
@@ -823,10 +961,16 @@
     -0.2932,
     0.5099
    ],
-   "p_value": 0.988882,
-   "q_value": 1.0,
-   "p_harm": 0.013426,
+   "p_value": 0.2985,
+   "p_wr": 0.988882,
+   "q_value": 0.970125,
+   "p_harm": 0.7015,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3932,
+    0.4099
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0348,
    "split_half": {
     "stable": false,
@@ -835,6 +979,7 @@
    },
    "top_symbol_share": 0.1066,
    "top_source_share": 0.9816,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.9% <= 50%",
@@ -862,10 +1007,16 @@
     -0.277,
     0.5219
    ],
-   "p_value": 0.98986,
-   "q_value": 1.0,
-   "p_harm": 0.012272,
+   "p_value": 0.2825,
+   "p_wr": 0.98986,
+   "q_value": 0.970125,
+   "p_harm": 0.7175,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.377,
+    0.4219
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0347,
    "split_half": {
     "stable": false,
@@ -874,6 +1025,7 @@
    },
    "top_symbol_share": 0.1064,
    "top_source_share": 0.9803,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.9% <= 50%",
@@ -901,10 +1053,16 @@
     -0.2673,
     0.5289
    ],
-   "p_value": 0.988103,
-   "q_value": 1.0,
-   "p_harm": 0.014355,
+   "p_value": 0.2965,
+   "p_wr": 0.988103,
+   "q_value": 0.970125,
+   "p_harm": 0.7035,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3673,
+    0.4289
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0335,
    "split_half": {
     "stable": false,
@@ -913,6 +1071,7 @@
    },
    "top_symbol_share": 0.1049,
    "top_source_share": 0.9907,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.9% <= 50%",
@@ -940,10 +1099,16 @@
     -0.0714,
     0.3044
    ],
-   "p_value": 0.999992,
-   "q_value": 1.0,
-   "p_harm": 1.1e-05,
+   "p_value": 0.121,
+   "p_wr": 0.999992,
+   "q_value": 0.79625,
+   "p_harm": 0.879,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2214,
+    0.1544
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1201,
    "split_half": {
     "stable": true,
@@ -952,6 +1117,7 @@
    },
    "top_symbol_share": 0.0827,
    "top_source_share": 0.9516,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 44.0% <= 50%"
@@ -978,10 +1144,16 @@
     -0.2989,
     0.5064
    ],
-   "p_value": 0.992618,
-   "q_value": 1.0,
-   "p_harm": 0.00901,
+   "p_value": 0.294,
+   "p_wr": 0.992618,
+   "q_value": 0.970125,
+   "p_harm": 0.706,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3989,
+    0.4064
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0311,
    "split_half": {
     "stable": false,
@@ -990,6 +1162,7 @@
    },
    "top_symbol_share": 0.1058,
    "top_source_share": 0.9815,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.6% <= 50%",
@@ -1017,10 +1190,16 @@
     -0.0387,
     0.2112
    ],
-   "p_value": 0.926001,
-   "q_value": 1.0,
-   "p_harm": 0.099292,
+   "p_value": 0.0835,
+   "p_wr": 0.926001,
+   "q_value": 0.775357,
+   "p_harm": 0.9165,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.0887,
+    0.1612
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.146,
    "split_half": {
     "stable": false,
@@ -1029,6 +1208,7 @@
    },
    "top_symbol_share": 0.1871,
    "top_source_share": 0.7097,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 44.5% <= 50%",
@@ -1056,10 +1236,16 @@
     -0.0219,
     0.1983
    ],
-   "p_value": 0.996224,
-   "q_value": 1.0,
-   "p_harm": 0.005981,
+   "p_value": 0.0585,
+   "p_wr": 0.996224,
+   "q_value": 0.775357,
+   "p_harm": 0.9415,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.0719,
+    0.1483
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1793,
    "split_half": {
     "stable": false,
@@ -1068,6 +1254,7 @@
    },
    "top_symbol_share": 0.1288,
    "top_source_share": 0.6994,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 39.9% <= 50%",
@@ -1095,10 +1282,16 @@
     -0.1575,
     0.294
    ],
-   "p_value": 0.999794,
-   "q_value": 1.0,
-   "p_harm": 0.000261,
+   "p_value": 0.2665,
+   "p_wr": 0.999794,
+   "q_value": 0.970125,
+   "p_harm": 0.7335,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3075,
+    0.144
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0387,
    "split_half": {
     "stable": true,
@@ -1107,6 +1300,7 @@
    },
    "top_symbol_share": 0.1102,
    "top_source_share": 0.8242,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 44.5% <= 50%"
@@ -1133,10 +1327,16 @@
     -0.2367,
     0.2083
    ],
-   "p_value": 0.995197,
+   "p_value": 0.533,
+   "p_wr": 0.995197,
    "q_value": 1.0,
-   "p_harm": 0.006179,
+   "p_harm": 0.467,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3167,
+    0.1283
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0067,
    "split_half": {
     "stable": false,
@@ -1145,6 +1345,7 @@
    },
    "top_symbol_share": 0.1462,
    "top_source_share": 0.9865,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 44.4% <= 50%",
@@ -1172,10 +1373,16 @@
     -0.2504,
     0.2048
    ],
-   "p_value": 0.999547,
+   "p_value": 0.5625,
+   "p_wr": 0.999547,
    "q_value": 1.0,
-   "p_harm": 0.000609,
+   "p_harm": 0.4375,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3304,
+    0.1248
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0055,
    "split_half": {
     "stable": false,
@@ -1184,6 +1391,7 @@
    },
    "top_symbol_share": 0.1372,
    "top_source_share": 0.9708,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 43.2% <= 50%",
@@ -1211,10 +1419,16 @@
     -0.263,
     0.2023
    ],
-   "p_value": 0.999606,
+   "p_value": 0.5755,
+   "p_wr": 0.999606,
    "q_value": 1.0,
-   "p_harm": 0.000531,
+   "p_harm": 0.4245,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.343,
+    0.1223
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0051,
    "split_half": {
     "stable": false,
@@ -1223,6 +1437,7 @@
    },
    "top_symbol_share": 0.137,
    "top_source_share": 0.9692,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 43.2% <= 50%",
@@ -1250,10 +1465,16 @@
     -0.2821,
     0.1983
    ],
-   "p_value": 0.998007,
+   "p_value": 0.6205,
+   "p_wr": 0.998007,
    "q_value": 1.0,
-   "p_harm": 0.002656,
+   "p_harm": 0.3795,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3621,
+    0.1183
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0043,
    "split_half": {
     "stable": false,
@@ -1262,6 +1483,7 @@
    },
    "top_symbol_share": 0.1542,
    "top_source_share": 0.975,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 43.5% <= 50%",
@@ -1289,10 +1511,16 @@
     -0.1302,
     0.0576
    ],
-   "p_value": 1.0,
+   "p_value": 0.8025,
+   "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 1e-06,
+   "p_harm": 0.1975,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1802,
+    0.0076
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0012,
    "split_half": {
     "stable": false,
@@ -1301,6 +1529,7 @@
    },
    "top_symbol_share": 0.1169,
    "top_source_share": 0.7403,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 30.5% <= 50%",
@@ -1328,10 +1557,16 @@
     -0.2837,
     0.1724
    ],
-   "p_value": 0.999722,
+   "p_value": 0.68,
+   "p_wr": 0.999722,
    "q_value": 1.0,
-   "p_harm": 0.000378,
+   "p_harm": 0.32,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3637,
+    0.0924
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0024,
    "split_half": {
     "stable": false,
@@ -1340,6 +1575,7 @@
    },
    "top_symbol_share": 0.1379,
    "top_source_share": 0.9741,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 42.9% <= 50%",
@@ -1367,10 +1603,16 @@
     -0.304,
     0.1565
    ],
-   "p_value": 0.999638,
+   "p_value": 0.71,
+   "p_wr": 0.999638,
    "q_value": 1.0,
-   "p_harm": 0.00049,
+   "p_harm": 0.29,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.384,
+    0.0765
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0016,
    "split_half": {
     "stable": false,
@@ -1379,6 +1621,7 @@
    },
    "top_symbol_share": 0.1389,
    "top_source_share": 0.9826,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 43.1% <= 50%",
@@ -1406,10 +1649,16 @@
     -0.2507,
     0.0091
    ],
-   "p_value": 0.999999,
+   "p_value": 0.9675,
+   "p_wr": 0.999999,
    "q_value": 1.0,
-   "p_harm": 2e-06,
+   "p_harm": 0.0325,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3007,
+    -0.0409
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -1418,6 +1667,7 @@
    },
    "top_symbol_share": 0.1374,
    "top_source_share": 0.5403,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.69 < 0.8 at n=211 \u2014 watch only, harm not proven (net CI [-0.25, +0.01]) so it keeps observing"
@@ -1444,10 +1694,16 @@
     -0.2507,
     0.0091
    ],
-   "p_value": 0.999999,
+   "p_value": 0.9675,
+   "p_wr": 0.999999,
    "q_value": 1.0,
-   "p_harm": 2e-06,
+   "p_harm": 0.0325,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3007,
+    -0.0409
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -1456,6 +1712,7 @@
    },
    "top_symbol_share": 0.1374,
    "top_source_share": 0.5403,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.69 < 0.8 at n=211 \u2014 watch only, harm not proven (net CI [-0.25, +0.01]) so it keeps observing"
@@ -1482,10 +1739,16 @@
     -1.1097,
     0.9183
    ],
-   "p_value": 0.998155,
+   "p_value": 0.595,
+   "p_wr": 0.998155,
    "q_value": 1.0,
-   "p_harm": 0.004073,
+   "p_harm": 0.405,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1897,
+    0.8383
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0055,
    "split_half": {
     "stable": false,
@@ -1494,6 +1757,7 @@
    },
    "top_symbol_share": 0.1406,
    "top_source_share": 0.8281,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 32.8% <= 50%",
@@ -1521,10 +1785,16 @@
     -0.4802,
     0.1669
    ],
-   "p_value": 0.999977,
+   "p_value": 0.827,
+   "p_wr": 0.999977,
    "q_value": 1.0,
-   "p_harm": 3.8e-05,
+   "p_harm": 0.173,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.5602,
+    0.0869
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0006,
    "split_half": {
     "stable": false,
@@ -1533,6 +1803,7 @@
    },
    "top_symbol_share": 0.1746,
    "top_source_share": 0.981,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 38.7% <= 50%",
@@ -1560,10 +1831,16 @@
     -0.2869,
     -0.0304
    ],
-   "p_value": 0.999995,
+   "p_value": 0.9945,
+   "p_wr": 0.999995,
    "q_value": 1.0,
-   "p_harm": 9e-06,
-   "harm_q": 1e-05,
+   "p_harm": 0.0055,
+   "harm_q": 0.00575,
+   "net_ci_pct_2x": [
+    -0.3369,
+    -0.0804
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -1572,6 +1849,7 @@
    },
    "top_symbol_share": 0.1357,
    "top_source_share": 0.5729,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -1600,10 +1878,16 @@
     -0.5093,
     0.1664
    ],
-   "p_value": 0.797564,
+   "p_value": 0.8365,
+   "p_wr": 0.797564,
    "q_value": 1.0,
-   "p_harm": 0.33882,
+   "p_harm": 0.1635,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.5893,
+    0.0864
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0008,
    "split_half": {
     "stable": false,
@@ -1612,6 +1896,7 @@
    },
    "top_symbol_share": 0.8696,
    "top_source_share": 0.9565,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 43.5% <= 50%",
@@ -1640,10 +1925,16 @@
     -0.3731,
     -0.0318
    ],
-   "p_value": 0.998881,
+   "p_value": 0.993,
+   "p_wr": 0.998881,
    "q_value": 1.0,
-   "p_harm": 0.002098,
-   "harm_q": 0.002098,
+   "p_harm": 0.007,
+   "harm_q": 0.007,
+   "net_ci_pct_2x": [
+    -0.4231,
+    -0.0818
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -1652,6 +1943,7 @@
    },
    "top_symbol_share": 0.1351,
    "top_source_share": 0.7027,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -1680,10 +1972,16 @@
     -0.6373,
     0.1552
    ],
-   "p_value": 0.9331,
+   "p_value": 0.891,
+   "p_wr": 0.9331,
    "q_value": 1.0,
-   "p_harm": 0.143139,
+   "p_harm": 0.109,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.7173,
+    0.0752
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0004,
    "split_half": {
     "stable": false,
@@ -1692,6 +1990,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9545,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 36.4% <= 50%",
@@ -1720,10 +2019,16 @@
     -0.4573,
     -0.09
    ],
-   "p_value": 1.0,
+   "p_value": 0.999,
+   "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 0.0,
-   "harm_q": 0.0,
+   "p_harm": 0.001,
+   "harm_q": 0.001095,
+   "net_ci_pct_2x": [
+    -0.6073,
+    -0.24
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -1732,6 +2037,7 @@
    },
    "top_symbol_share": 0.092,
    "top_source_share": 0.7702,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero"
@@ -1758,10 +2064,16 @@
     -0.5569,
     0.0431
    ],
-   "p_value": 0.939275,
+   "p_value": 0.9495,
+   "p_wr": 0.939275,
    "q_value": 1.0,
-   "p_harm": 0.114741,
+   "p_harm": 0.0505,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6369,
+    -0.0369
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -1770,6 +2082,7 @@
    },
    "top_symbol_share": 0.8824,
    "top_source_share": 0.9412,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 38.2% <= 50%",
@@ -1798,10 +2111,16 @@
     -0.5569,
     0.0431
    ],
-   "p_value": 0.939275,
+   "p_value": 0.9495,
+   "p_wr": 0.939275,
    "q_value": 1.0,
-   "p_harm": 0.114741,
+   "p_harm": 0.0505,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6369,
+    -0.0369
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -1810,6 +2129,7 @@
    },
    "top_symbol_share": 0.8824,
    "top_source_share": 0.9412,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 38.2% <= 50%",
@@ -1838,10 +2158,16 @@
     -0.5569,
     0.0431
    ],
-   "p_value": 0.939275,
+   "p_value": 0.9495,
+   "p_wr": 0.939275,
    "q_value": 1.0,
-   "p_harm": 0.114741,
+   "p_harm": 0.0505,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6369,
+    -0.0369
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -1850,6 +2176,7 @@
    },
    "top_symbol_share": 0.8824,
    "top_source_share": 0.9412,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 38.2% <= 50%",
@@ -1878,10 +2205,16 @@
     -0.5569,
     0.0431
    ],
-   "p_value": 0.939275,
+   "p_value": 0.9495,
+   "p_wr": 0.939275,
    "q_value": 1.0,
-   "p_harm": 0.114741,
+   "p_harm": 0.0505,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6369,
+    -0.0369
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -1890,6 +2223,7 @@
    },
    "top_symbol_share": 0.8824,
    "top_source_share": 0.9412,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 38.2% <= 50%",
@@ -1918,10 +2252,16 @@
     -0.6118,
     0.01
    ],
-   "p_value": 0.969286,
+   "p_value": 0.9685,
+   "p_wr": 0.969286,
    "q_value": 1.0,
-   "p_harm": 0.068023,
+   "p_harm": 0.0315,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6918,
+    -0.07
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -1930,6 +2270,7 @@
    },
    "top_symbol_share": 0.931,
    "top_source_share": 0.931,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 34.5% <= 50%",
@@ -1958,10 +2299,16 @@
     -0.7479,
     0.0449
    ],
-   "p_value": 0.855378,
+   "p_value": 0.9535,
+   "p_wr": 0.855378,
    "q_value": 1.0,
-   "p_harm": 0.213521,
+   "p_harm": 0.0465,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.7979,
+    -0.0051
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -1970,6 +2317,7 @@
    },
    "top_symbol_share": 0.4737,
    "top_source_share": 0.6667,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.59 < 0.8 at n=57 \u2014 watch only, harm not proven (net CI [-0.75, +0.04]) so it keeps observing"
@@ -1997,9 +2345,15 @@
     -0.2314
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -0.7183,
+    -0.3814
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2008,6 +2362,7 @@
    },
    "top_symbol_share": 0.1012,
    "top_source_share": 0.7133,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2036,9 +2391,15 @@
     -0.1235
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -0.7618,
+    -0.1735
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2047,6 +2408,7 @@
    },
    "top_symbol_share": 0.2059,
    "top_source_share": 0.8529,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2076,9 +2438,15 @@
     -0.3449
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -0.8419,
+    -0.4949
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2087,6 +2455,7 @@
    },
    "top_symbol_share": 0.0956,
    "top_source_share": 0.6586,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2116,9 +2485,15 @@
     -0.3794
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -0.8722,
+    -0.5294
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2127,6 +2502,7 @@
    },
    "top_symbol_share": 0.0968,
    "top_source_share": 0.6705,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2156,9 +2532,15 @@
     -0.3987
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -0.9076,
+    -0.5487
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2167,6 +2549,7 @@
    },
    "top_symbol_share": 0.0992,
    "top_source_share": 0.703,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2196,9 +2579,15 @@
     -0.4458
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -1.1729,
+    -0.4958
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2207,6 +2596,7 @@
    },
    "top_symbol_share": 0.3958,
    "top_source_share": 0.6042,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2236,9 +2626,15 @@
     -0.465
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -1.2206,
+    -0.515
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2247,6 +2643,7 @@
    },
    "top_symbol_share": 0.3958,
    "top_source_share": 0.7708,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2275,10 +2672,16 @@
     -1.9093,
     0.1448
    ],
-   "p_value": 0.998408,
+   "p_value": 0.958,
+   "p_wr": 0.998408,
    "q_value": 1.0,
-   "p_harm": 0.002863,
+   "p_harm": 0.042,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.0093,
+    0.0448
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -2287,6 +2690,7 @@
    },
    "top_symbol_share": 0.1345,
    "top_source_share": 0.8739,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.68 < 0.8 at n=119 \u2014 watch only, harm not proven (net CI [-1.91, +0.14]) so it keeps observing"
@@ -2314,9 +2718,15 @@
     -1.0017
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -1.7313,
+    -1.1517
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2325,6 +2735,7 @@
    },
    "top_symbol_share": 0.1977,
    "top_source_share": 0.5026,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2353,10 +2764,16 @@
     -2.9368,
     0.2892
    ],
-   "p_value": 0.999844,
+   "p_value": 0.949,
+   "p_wr": 0.999844,
    "q_value": 1.0,
-   "p_harm": 0.000597,
+   "p_harm": 0.051,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.0368,
+    0.1892
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0003,
    "split_half": {
     "stable": false,
@@ -2365,6 +2782,7 @@
    },
    "top_symbol_share": 0.1944,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 22.2% <= 50%",
@@ -2392,10 +2810,16 @@
     -5.3459,
     1.0897
    ],
-   "p_value": 0.868412,
+   "p_value": 0.8365,
+   "p_wr": 0.868412,
    "q_value": 1.0,
-   "p_harm": 0.251722,
+   "p_harm": 0.1635,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -5.4659,
+    0.9697
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2404,6 +2828,7 @@
    },
    "top_symbol_share": 0.2,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 40.0% <= 50%",
@@ -2432,9 +2857,15 @@
     -1.0708
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -2.6914,
+    -1.2208
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2443,6 +2874,7 @@
    },
    "top_symbol_share": 0.3243,
    "top_source_share": 0.8378,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2471,10 +2903,16 @@
     -2.6027,
     -0.9646
    ],
-   "p_value": 1.0,
+   "p_value": 0.9995,
+   "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 5e-06,
-   "harm_q": 6e-06,
+   "p_harm": 0.0005,
+   "harm_q": 0.000575,
+   "net_ci_pct_2x": [
+    -2.6827,
+    -1.0446
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0005,
    "split_half": {
     "stable": false,
@@ -2483,6 +2921,7 @@
    },
    "top_symbol_share": 0.1538,
    "top_source_share": 0.8846,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2512,9 +2951,15 @@
     -1.5771
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -2.4301,
+    -1.7271
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2523,6 +2968,7 @@
    },
    "top_symbol_share": 0.1526,
    "top_source_share": 0.4193,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2551,10 +2997,16 @@
     -2.6981,
     -1.2032
    ],
-   "p_value": 0.999965,
+   "p_value": 1.0,
+   "p_wr": 0.999965,
    "q_value": 1.0,
-   "p_harm": 7e-05,
-   "harm_q": 7.3e-05,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -2.8481,
+    -1.3532
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2563,6 +3015,7 @@
    },
    "top_symbol_share": 0.0986,
    "top_source_share": 0.6268,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2592,9 +3045,15 @@
     -1.4849
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -2.6445,
+    -1.6349
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2603,6 +3062,7 @@
    },
    "top_symbol_share": 0.1104,
    "top_source_share": 0.5489,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2632,9 +3092,15 @@
     -2.4368
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -3.787,
+    -2.5568
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2643,6 +3109,7 @@
    },
    "top_symbol_share": 0.3778,
    "top_source_share": 0.7778,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2672,9 +3139,15 @@
     -2.0596
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.7008,
+    -2.1796
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2683,6 +3156,7 @@
    },
    "top_symbol_share": 0.3091,
    "top_source_share": 0.6364,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2712,9 +3186,15 @@
     -2.0596
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.7008,
+    -2.1796
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2723,6 +3203,7 @@
    },
    "top_symbol_share": 0.3091,
    "top_source_share": 0.6364,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2752,9 +3233,15 @@
     -2.0596
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.7008,
+    -2.1796
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2763,6 +3250,7 @@
    },
    "top_symbol_share": 0.3091,
    "top_source_share": 0.6364,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2792,9 +3280,15 @@
     -2.077
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.7175,
+    -2.197
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2803,6 +3297,7 @@
    },
    "top_symbol_share": 0.3148,
    "top_source_share": 0.6481,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2832,9 +3327,15 @@
     -3.5169
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.3844,
+    -3.6369
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2843,6 +3344,7 @@
    },
    "top_symbol_share": 0.4324,
    "top_source_share": 0.9459,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2872,9 +3374,15 @@
     -3.6993
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.4855,
+    -3.8193
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2883,6 +3391,7 @@
    },
    "top_symbol_share": 0.4571,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2913,10 +3422,16 @@
     -0.558,
     -0.1184
    ],
-   "p_value": 1.0,
+   "p_value": 0.9985,
+   "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 0.0,
-   "harm_q": 0.0,
+   "p_harm": 0.0015,
+   "harm_q": 0.001833,
+   "net_ci_pct_2x": [
+    -0.708,
+    -0.2684
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2925,6 +3440,7 @@
    },
    "top_symbol_share": 0.0809,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -2952,10 +3468,16 @@
     0.3522,
     0.9643
    ],
-   "p_value": 0.03005,
-   "q_value": 0.338062,
-   "p_harm": 0.975689,
+   "p_value": 0.0,
+   "p_wr": 0.03005,
+   "q_value": 0.0,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.2022,
+    0.8143
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.9766,
    "split_half": {
     "stable": true,
@@ -2964,8 +3486,11 @@
    },
    "top_symbol_share": 0.1008,
    "top_source_share": 0.9769,
-   "verdict": "WEAK",
-   "reasons": [],
+   "single_source": true,
+   "verdict": "PROVEN_T2",
+   "reasons": [
+    "single source 98% of trades \u2014 proven on the ledger, not sizing-eligible until replicated independently"
+   ],
    "sharpe": 0.1938,
    "sr0": 0.1025
   },
@@ -2987,10 +3512,16 @@
     -0.5584,
     0.4624
    ],
-   "p_value": 0.808937,
+   "p_value": 0.571,
+   "p_wr": 0.808937,
    "q_value": 1.0,
-   "p_harm": 0.248377,
+   "p_harm": 0.429,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6384,
+    0.3824
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0082,
    "split_half": {
     "stable": false,
@@ -2999,6 +3530,7 @@
    },
    "top_symbol_share": 0.1698,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 46.2% <= 50%",
@@ -3025,10 +3557,16 @@
     -0.0918,
     1.177
    ],
-   "p_value": 0.157153,
-   "q_value": 1.0,
-   "p_harm": 0.890741,
+   "p_value": 0.0465,
+   "p_wr": 0.157153,
+   "q_value": 0.4925,
+   "p_harm": 0.9535,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1718,
+    1.097
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.3037,
    "split_half": {
     "stable": true,
@@ -3037,6 +3575,7 @@
    },
    "top_symbol_share": 0.175,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.1888,
@@ -3060,10 +3599,16 @@
     -1.2948,
     1.2175
    ],
-   "p_value": 0.758606,
+   "p_value": 0.5365,
+   "p_wr": 0.758606,
    "q_value": 1.0,
-   "p_harm": 0.319986,
+   "p_harm": 0.4635,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3948,
+    1.1175
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0109,
    "split_half": {
     "stable": false,
@@ -3072,6 +3617,7 @@
    },
    "top_symbol_share": 0.3562,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 46.6% <= 50%",
@@ -3098,10 +3644,16 @@
     -0.2225,
     -0.0057
    ],
-   "p_value": 0.970029,
+   "p_value": 0.9815,
+   "p_wr": 0.970029,
    "q_value": 1.0,
-   "p_harm": 0.051711,
-   "harm_q": 0.051711,
+   "p_harm": 0.0185,
+   "harm_q": 0.0185,
+   "net_ci_pct_2x": [
+    -0.2725,
+    -0.0557
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -3110,6 +3662,7 @@
    },
    "top_symbol_share": 0.1875,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -3137,10 +3690,16 @@
     -0.7413,
     2.0876
    ],
-   "p_value": 0.812924,
-   "q_value": 1.0,
-   "p_harm": 0.262887,
+   "p_value": 0.2125,
+   "p_wr": 0.812924,
+   "q_value": 0.735577,
+   "p_harm": 0.7875,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.8413,
+    1.9876
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0706,
    "split_half": {
     "stable": false,
@@ -3149,6 +3708,7 @@
    },
    "top_symbol_share": 0.1613,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.2% <= 50%",
@@ -3176,9 +3736,15 @@
     -3.024
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -5.1798,
+    -3.174
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -3187,6 +3753,7 @@
    },
    "top_symbol_share": 0.1455,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -3214,10 +3781,16 @@
     -1.3737,
     0.2286
    ],
-   "p_value": 0.658255,
+   "p_value": 0.909,
+   "p_wr": 0.658255,
    "q_value": 1.0,
-   "p_harm": 0.445962,
+   "p_harm": 0.091,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.4737,
+    0.1286
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -3226,6 +3799,7 @@
    },
    "top_symbol_share": 0.2407,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.64 < 0.8 at n=54 \u2014 watch only, harm not proven (net CI [-1.37, +0.23]) so it keeps observing"
@@ -3251,10 +3825,16 @@
     -0.4262,
     1.8424
    ],
-   "p_value": 0.661096,
-   "q_value": 1.0,
-   "p_harm": 0.444942,
+   "p_value": 0.1415,
+   "p_wr": 0.661096,
+   "q_value": 0.578864,
+   "p_harm": 0.8585,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.5262,
+    1.7424
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1132,
    "split_half": {
     "stable": false,
@@ -3263,6 +3843,7 @@
    },
    "top_symbol_share": 0.25,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 48.1% <= 50%",
@@ -3289,10 +3870,16 @@
     -1.9053,
     1.1038
    ],
-   "p_value": 0.868781,
+   "p_value": 0.7265,
+   "p_wr": 0.868781,
    "q_value": 1.0,
-   "p_harm": 0.200531,
+   "p_harm": 0.2735,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.0053,
+    1.0038
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0033,
    "split_half": {
     "stable": false,
@@ -3301,6 +3888,7 @@
    },
    "top_symbol_share": 0.2353,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 43.1% <= 50%",
@@ -3327,10 +3915,16 @@
     -1.1986,
     0.8449
    ],
-   "p_value": 0.94054,
+   "p_value": 0.647,
+   "p_wr": 0.94054,
    "q_value": 1.0,
-   "p_harm": 0.101319,
+   "p_harm": 0.353,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.2786,
+    0.7649
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0048,
    "split_half": {
     "stable": false,
@@ -3339,6 +3933,7 @@
    },
    "top_symbol_share": 0.22,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 40.0% <= 50%",
@@ -3365,10 +3960,16 @@
     -4.3956,
     -2.0013
    ],
-   "p_value": 0.999999,
+   "p_value": 1.0,
+   "p_wr": 0.999999,
    "q_value": 1.0,
-   "p_harm": 5e-06,
-   "harm_q": 8e-06,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.5456,
+    -2.1513
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -3377,6 +3978,7 @@
    },
    "top_symbol_share": 0.2391,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -3404,10 +4006,16 @@
     -0.6089,
     4.2673
    ],
-   "p_value": 0.275742,
-   "q_value": 1.0,
-   "p_harm": 0.814351,
+   "p_value": 0.068,
+   "p_wr": 0.275742,
+   "q_value": 0.4925,
+   "p_harm": 0.932,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.7089,
+    4.1673
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.226,
    "split_half": {
     "stable": true,
@@ -3416,6 +4024,7 @@
    },
    "top_symbol_share": 0.2,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.2167,
@@ -3439,10 +4048,16 @@
     -1.9666,
     0.3836
    ],
-   "p_value": 0.724258,
+   "p_value": 0.9235,
+   "p_wr": 0.724258,
    "q_value": 1.0,
-   "p_harm": 0.382996,
+   "p_harm": 0.0765,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.0666,
+    0.2836
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0003,
    "split_half": {
     "stable": false,
@@ -3451,6 +4066,7 @@
    },
    "top_symbol_share": 0.2222,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 46.7% <= 50%",
@@ -3477,10 +4093,16 @@
     -3.7673,
     -0.9917
    ],
-   "p_value": 0.99522,
+   "p_value": 0.9995,
+   "p_wr": 0.99522,
    "q_value": 1.0,
-   "p_harm": 0.011314,
-   "harm_q": 0.012445,
+   "p_harm": 0.0005,
+   "harm_q": 0.000687,
+   "net_ci_pct_2x": [
+    -3.9173,
+    -1.1417
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -3489,6 +4111,7 @@
    },
    "top_symbol_share": 0.2045,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -3516,10 +4139,16 @@
     -0.1108,
     0.8535
    ],
-   "p_value": 0.271192,
-   "q_value": 1.0,
-   "p_harm": 0.819811,
+   "p_value": 0.069,
+   "p_wr": 0.271192,
+   "q_value": 0.4925,
+   "p_harm": 0.931,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1908,
+    0.7735
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.2229,
    "split_half": {
     "stable": true,
@@ -3528,6 +4157,7 @@
    },
    "top_symbol_share": 0.4186,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.2221,
@@ -3551,10 +4181,16 @@
     -1.2896,
     1.3478
    ],
-   "p_value": 0.860022,
+   "p_value": 0.5045,
+   "p_wr": 0.860022,
    "q_value": 1.0,
-   "p_harm": 0.2204,
+   "p_harm": 0.4955,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3896,
+    1.2478
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0123,
    "split_half": {
     "stable": false,
@@ -3563,6 +4199,7 @@
    },
    "top_symbol_share": 0.2619,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 42.9% <= 50%",
@@ -3589,10 +4226,16 @@
     -2.1698,
     1.0786
    ],
-   "p_value": 0.978221,
+   "p_value": 0.7695,
+   "p_wr": 0.978221,
    "q_value": 1.0,
-   "p_harm": 0.044215,
+   "p_harm": 0.2305,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.2698,
+    0.9786
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0025,
    "split_half": {
     "stable": false,
@@ -3601,6 +4244,7 @@
    },
    "top_symbol_share": 0.2381,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 35.7% <= 50%",
@@ -3627,10 +4271,16 @@
     -0.9471,
     0.4435
    ],
-   "p_value": 0.99024,
+   "p_value": 0.7655,
+   "p_wr": 0.99024,
    "q_value": 1.0,
-   "p_harm": 0.021779,
+   "p_harm": 0.2345,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.0271,
+    0.3635
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0023,
    "split_half": {
     "stable": false,
@@ -3639,6 +4289,7 @@
    },
    "top_symbol_share": 0.3095,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 33.3% <= 50%",
@@ -3666,9 +4317,15 @@
     -0.7563
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -1.6701,
+    -0.9063
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0101,
    "split_half": {
     "stable": false,
@@ -3677,6 +4334,7 @@
    },
    "top_symbol_share": 0.3902,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -3705,9 +4363,15 @@
     -3.6993
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.4855,
+    -3.8193
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -3716,6 +4380,7 @@
    },
    "top_symbol_share": 0.4571,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -3743,10 +4408,16 @@
     -2.8899,
     0.5541
    ],
-   "p_value": 0.955234,
+   "p_value": 0.9155,
+   "p_wr": 0.955234,
    "q_value": 1.0,
-   "p_harm": 0.087733,
+   "p_harm": 0.0845,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.9899,
+    0.4541
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0006,
    "split_half": {
     "stable": false,
@@ -3755,6 +4426,7 @@
    },
    "top_symbol_share": 0.2286,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 37.1% <= 50%",
@@ -3781,10 +4453,16 @@
     -0.8098,
     0.7349
    ],
-   "p_value": 0.696204,
+   "p_value": 0.5355,
+   "p_wr": 0.696204,
    "q_value": 1.0,
-   "p_harm": 0.432083,
+   "p_harm": 0.4645,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.8898,
+    0.6549
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0108,
    "split_half": {
     "stable": false,
@@ -3793,6 +4471,7 @@
    },
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 47.1% <= 50%",
@@ -3819,10 +4498,16 @@
     -1.0089,
     0.9273
    ],
-   "p_value": 0.707668,
+   "p_value": 0.5385,
+   "p_wr": 0.707668,
    "q_value": 1.0,
-   "p_harm": 0.427768,
+   "p_harm": 0.4615,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1089,
+    0.8273
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0106,
    "split_half": {
     "stable": false,
@@ -3831,6 +4516,7 @@
    },
    "top_symbol_share": 0.6,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 46.7% <= 50%",
@@ -3857,10 +4543,16 @@
     -0.308,
     0.0637
    ],
-   "p_value": 0.229129,
+   "p_value": 0.8985,
+   "p_wr": 0.229129,
    "q_value": 1.0,
-   "p_harm": 0.867535,
+   "p_harm": 0.1015,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.458,
+    -0.0863
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -3869,6 +4561,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -3895,10 +4588,16 @@
     -5.436,
     -0.5454
    ],
-   "p_value": 0.998842,
+   "p_value": 0.989,
+   "p_wr": 0.998842,
    "q_value": 1.0,
-   "p_harm": 0.004065,
-   "harm_q": 0.004968,
+   "p_harm": 0.011,
+   "harm_q": 0.0121,
+   "net_ci_pct_2x": [
+    -5.586,
+    -0.6954
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0003,
    "split_half": {
     "stable": false,
@@ -3907,6 +4606,7 @@
    },
    "top_symbol_share": 0.2069,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -3935,9 +4635,15 @@
     -0.05
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0,
    "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -0.1,
+    -0.1
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": {
     "stable": false,
@@ -3946,6 +4652,7 @@
    },
    "top_symbol_share": 0.2414,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -3971,10 +4678,16 @@
     -0.325,
     0.4055
    ],
-   "p_value": 0.956421,
+   "p_value": 0.4945,
+   "p_wr": 0.956421,
    "q_value": 1.0,
-   "p_harm": 0.092467,
+   "p_harm": 0.5055,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.375,
+    0.3555
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0152,
    "split_half": {
     "stable": false,
@@ -3983,6 +4696,7 @@
    },
    "top_symbol_share": 0.1429,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 35.7% <= 50%",
@@ -4009,10 +4723,16 @@
     -0.3308,
     0.357
    ],
-   "p_value": 0.649446,
+   "p_value": 0.4895,
+   "p_wr": 0.649446,
    "q_value": 1.0,
-   "p_harm": 0.5,
+   "p_harm": 0.5105,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4808,
+    0.207
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0137,
    "split_half": {
     "stable": false,
@@ -4021,6 +4741,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 48.1% <= 50%",
@@ -4048,10 +4769,16 @@
     -0.5854,
     0.1915
    ],
-   "p_value": 0.876106,
+   "p_value": 0.869,
+   "p_wr": 0.876106,
    "q_value": 1.0,
-   "p_harm": 0.221034,
+   "p_harm": 0.131,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.7354,
+    0.0415
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.001,
    "split_half": {
     "stable": false,
@@ -4060,6 +4787,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 40.7% <= 50%",
@@ -4088,9 +4816,15 @@
     -3.2579
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 5e-06,
-   "harm_q": 8e-06,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -6.6747,
+    -3.4079
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0025,
    "split_half": {
     "stable": false,
@@ -4099,6 +4833,7 @@
    },
    "top_symbol_share": 0.2308,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -4126,10 +4861,16 @@
     -1.0056,
     0.313
    ],
-   "p_value": 0.962241,
+   "p_value": 0.861,
+   "p_wr": 0.962241,
    "q_value": 1.0,
-   "p_harm": 0.084319,
+   "p_harm": 0.139,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.0856,
+    0.233
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0011,
    "split_half": {
     "stable": false,
@@ -4138,6 +4879,7 @@
    },
    "top_symbol_share": 0.3846,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 34.6% <= 50%",
@@ -4164,10 +4906,16 @@
     2.6092,
     3.9762
    ],
-   "p_value": 1e-05,
-   "q_value": 0.00045,
-   "p_harm": 0.999999,
+   "p_value": 0.0,
+   "p_wr": 1e-05,
+   "q_value": 0.0,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    2.4592,
+    3.8262
+   ],
+   "stress_2x_ok": true,
    "dsr": 1.0,
    "split_half": {
     "stable": true,
@@ -4176,6 +4924,7 @@
    },
    "top_symbol_share": 0.12,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 1.8407,
@@ -4199,10 +4948,16 @@
     -1.0242,
     5.2447
    ],
-   "p_value": 0.345019,
-   "q_value": 1.0,
-   "p_harm": 0.787822,
+   "p_value": 0.09,
+   "p_wr": 0.345019,
+   "q_value": 0.4925,
+   "p_harm": 0.91,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1242,
+    5.1447
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1845,
    "split_half": {
     "stable": true,
@@ -4211,6 +4966,7 @@
    },
    "top_symbol_share": 0.28,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.2673,
@@ -4234,10 +4990,16 @@
     -5.867,
     -3.2938
    ],
-   "p_value": 0.999999,
+   "p_value": 1.0,
+   "p_wr": 0.999999,
    "q_value": 1.0,
-   "p_harm": 1.8e-05,
-   "harm_q": 2.5e-05,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -6.017,
+    -3.4438
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -4246,6 +5008,7 @@
    },
    "top_symbol_share": 0.125,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -4273,10 +5036,16 @@
     0.5182,
     1.0234
    ],
-   "p_value": 0.000772,
-   "q_value": 0.01737,
-   "p_harm": 0.999861,
+   "p_value": 0.0,
+   "p_wr": 0.000772,
+   "q_value": 0.0,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.4682,
+    0.9734
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.9761,
    "split_half": {
     "stable": true,
@@ -4285,6 +5054,7 @@
    },
    "top_symbol_share": 0.9583,
    "top_source_share": 0.7917,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "single symbol 96% of trades"
@@ -4310,10 +5080,16 @@
     -1.5103,
     1.0404
    ],
-   "p_value": 0.797564,
+   "p_value": 0.661,
+   "p_wr": 0.797564,
    "q_value": 1.0,
-   "p_harm": 0.33882,
+   "p_harm": 0.339,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.6603,
+    0.8904
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0051,
    "split_half": {
     "stable": false,
@@ -4322,6 +5098,7 @@
    },
    "top_symbol_share": 0.2174,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 43.5% <= 50%",
@@ -4348,10 +5125,16 @@
     -0.8975,
     5.8958
    ],
-   "p_value": 0.584094,
-   "q_value": 1.0,
-   "p_harm": 0.584094,
+   "p_value": 0.096,
+   "p_wr": 0.584094,
+   "q_value": 0.4925,
+   "p_harm": 0.904,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.9975,
+    5.7958
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1645,
    "split_half": {
     "stable": true,
@@ -4360,6 +5143,7 @@
    },
    "top_symbol_share": 0.2727,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.2823,
@@ -4383,10 +5167,16 @@
     -0.7575,
     1.0063
    ],
-   "p_value": 0.584094,
+   "p_value": 0.404,
+   "p_wr": 0.584094,
    "q_value": 1.0,
-   "p_harm": 0.584094,
+   "p_harm": 0.596,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.8375,
+    0.9263
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0257,
    "split_half": {
     "stable": false,
@@ -4395,6 +5185,7 @@
    },
    "top_symbol_share": 0.2273,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)"
@@ -4420,10 +5211,16 @@
     -1.7307,
     1.0566
    ],
-   "p_value": 0.9331,
+   "p_value": 0.7045,
+   "p_wr": 0.9331,
    "q_value": 1.0,
-   "p_harm": 0.143139,
+   "p_harm": 0.2955,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.8107,
+    0.9766
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0042,
    "split_half": {
     "stable": false,
@@ -4432,6 +5229,7 @@
    },
    "top_symbol_share": 0.2727,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 36.4% <= 50%",
@@ -4458,10 +5256,16 @@
     -0.9776,
     0.3591
    ],
-   "p_value": 0.973761,
+   "p_value": 0.843,
+   "p_wr": 0.973761,
    "q_value": 1.0,
-   "p_harm": 0.0669,
+   "p_harm": 0.157,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.0576,
+    0.2791
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.002,
    "split_half": {
     "stable": false,
@@ -4470,6 +5274,7 @@
    },
    "top_symbol_share": 0.4091,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 31.8% <= 50%",
@@ -4496,10 +5301,16 @@
     -0.1932,
     0.4383
    ],
-   "p_value": 0.415906,
-   "q_value": 1.0,
-   "p_harm": 0.738266,
+   "p_value": 0.207,
+   "p_wr": 0.415906,
+   "q_value": 0.735577,
+   "p_harm": 0.793,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2432,
+    0.3883
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0854,
    "split_half": {
     "stable": true,
@@ -4508,6 +5319,7 @@
    },
    "top_symbol_share": 0.1818,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.1729,
@@ -4531,10 +5343,16 @@
     -0.9755,
     3.3744
    ],
-   "p_value": 0.191655,
-   "q_value": 1.0,
-   "p_harm": 0.905376,
+   "p_value": 0.1375,
+   "p_wr": 0.191655,
+   "q_value": 0.578864,
+   "p_harm": 0.8625,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.0755,
+    3.2744
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1237,
    "split_half": {
     "stable": true,
@@ -4543,6 +5361,7 @@
    },
    "top_symbol_share": 0.1905,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.2385,
@@ -4566,10 +5385,16 @@
     -0.2136,
     0.8972
    ],
-   "p_value": 0.020695,
-   "q_value": 0.310425,
-   "p_harm": 0.994091,
+   "p_value": 0.0985,
+   "p_wr": 0.020695,
+   "q_value": 0.4925,
+   "p_harm": 0.9015,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3637,
+    0.7472
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.2307,
    "split_half": {
     "stable": true,
@@ -4578,6 +5403,7 @@
    },
    "top_symbol_share": 0.1,
    "top_source_share": 0.6,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.3018,
@@ -4601,11 +5427,17 @@
     -1.1862,
     0.5984
    ],
-   "p_value": 0.916466,
+   "p_value": 0.77,
+   "p_wr": 0.916466,
    "q_value": null,
-   "p_harm": 0.179642,
+   "p_harm": 0.23,
    "harm_q": null,
-   "dsr": 0.0033,
+   "net_ci_pct_2x": [
+    -1.2662,
+    0.5184
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": 0.9184,
@@ -4613,12 +5445,11 @@
    },
    "top_symbol_share": 0.3158,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=19 < 20: no statistical claim"
-   ],
-   "sharpe": -0.1723,
-   "sr0": 0.5129
+   ]
   },
   {
    "asset_class": "ETF",
@@ -4638,11 +5469,17 @@
     -1.9861,
     -0.5952
    ],
-   "p_value": 0.999636,
+   "p_value": 0.9995,
+   "p_wr": 0.999636,
    "q_value": null,
-   "p_harm": 0.002213,
+   "p_harm": 0.0005,
    "harm_q": null,
-   "dsr": 0.0005,
+   "net_ci_pct_2x": [
+    -2.0661,
+    -0.6752
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": -1.4365,
@@ -4650,12 +5487,11 @@
    },
    "top_symbol_share": 0.5789,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=19 < 20: no statistical claim"
-   ],
-   "sharpe": -0.8689,
-   "sr0": 0.5129
+   ]
   },
   {
    "asset_class": "EQUITY",
@@ -4675,11 +5511,17 @@
     -3.353,
     3.5252
    ],
-   "p_value": 0.592735,
+   "p_value": 0.5445,
+   "p_wr": 0.592735,
    "q_value": null,
-   "p_harm": 0.592735,
+   "p_harm": 0.4555,
    "harm_q": null,
-   "dsr": 0.0138,
+   "net_ci_pct_2x": [
+    -3.453,
+    3.4252
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.262,
@@ -4687,12 +5529,11 @@
    },
    "top_symbol_share": 0.2778,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=18 < 20: no statistical claim"
-   ],
-   "sharpe": -0.0105,
-   "sr0": 0.5269
+   ]
   },
   {
    "asset_class": "CRYPTO",
@@ -4712,11 +5553,17 @@
     -7.1004,
     -2.5846
    ],
-   "p_value": 0.999863,
+   "p_value": 0.9995,
+   "p_wr": 0.999863,
    "q_value": null,
-   "p_harm": 0.001175,
+   "p_harm": 0.0005,
    "harm_q": null,
-   "dsr": 0.0007,
+   "net_ci_pct_2x": [
+    -7.2504,
+    -2.7346
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": -3.2709,
@@ -4724,12 +5571,11 @@
    },
    "top_symbol_share": 0.1765,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=17 < 20: no statistical claim"
-   ],
-   "sharpe": -1.0234,
-   "sr0": 0.5422
+   ]
   },
   {
    "asset_class": "CRYPTO",
@@ -4749,11 +5595,17 @@
     -0.3717,
     0.4629
    ],
-   "p_value": 0.40181,
+   "p_value": 0.493,
+   "p_wr": 0.40181,
    "q_value": null,
-   "p_harm": 0.772751,
+   "p_harm": 0.507,
    "harm_q": null,
-   "dsr": 0.0167,
+   "net_ci_pct_2x": [
+    -0.5217,
+    0.3129
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.0695,
@@ -4761,12 +5613,11 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=16 < 20: no statistical claim"
-   ],
-   "sharpe": 0.0109,
-   "sr0": 0.5589
+   ]
   },
   {
    "asset_class": "CRYPTO",
@@ -4786,11 +5637,17 @@
     -4.6356,
     -1.7412
    ],
-   "p_value": 0.996307,
+   "p_value": 1.0,
+   "p_wr": 0.996307,
    "q_value": null,
-   "p_harm": 0.017578,
+   "p_harm": 0.0,
    "harm_q": null,
-   "dsr": 0.0,
+   "net_ci_pct_2x": [
+    -4.7856,
+    -1.8912
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": -2.3191,
@@ -4798,12 +5655,11 @@
    },
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=15 < 20: no statistical claim"
-   ],
-   "sharpe": -1.0914,
-   "sr0": 0.5772
+   ]
   },
   {
    "asset_class": "CRYPTO",
@@ -4823,11 +5679,17 @@
     -4.3317,
     0.1059
    ],
-   "p_value": 0.982422,
+   "p_value": 0.969,
+   "p_wr": 0.982422,
    "q_value": null,
-   "p_harm": 0.059235,
+   "p_harm": 0.031,
    "harm_q": null,
-   "dsr": 0.0008,
+   "net_ci_pct_2x": [
+    -4.4817,
+    -0.0441
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": -1.7606,
@@ -4835,12 +5697,11 @@
    },
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=15 < 20: no statistical claim"
-   ],
-   "sharpe": -0.5193,
-   "sr0": 0.5772
+   ]
   },
   {
    "asset_class": "EQUITY",
@@ -4860,11 +5721,17 @@
     -1.2496,
     2.9665
    ],
-   "p_value": 0.303619,
+   "p_value": 0.2495,
+   "p_wr": 0.303619,
    "q_value": null,
-   "p_harm": 0.849121,
+   "p_harm": 0.7505,
    "harm_q": null,
-   "dsr": 0.0637,
+   "net_ci_pct_2x": [
+    -1.3496,
+    2.8665
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": 2.099,
@@ -4872,12 +5739,11 @@
    },
    "top_symbol_share": 0.2667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=15 < 20: no statistical claim"
-   ],
-   "sharpe": 0.1892,
-   "sr0": 0.5772
+   ]
   },
   {
    "asset_class": "EQUITY",
@@ -4897,11 +5763,17 @@
     -0.2838,
     6.1414
    ],
-   "p_value": 0.150879,
+   "p_value": 0.038,
+   "p_wr": 0.150879,
    "q_value": null,
-   "p_harm": 0.940765,
+   "p_harm": 0.962,
    "harm_q": null,
-   "dsr": 0.3418,
+   "net_ci_pct_2x": [
+    -0.3838,
+    6.0414
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": true,
     "first_half_mean": 4.8154,
@@ -4909,12 +5781,11 @@
    },
    "top_symbol_share": 0.4,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=15 < 20: no statistical claim"
-   ],
-   "sharpe": 0.4597,
-   "sr0": 0.5772
+   ]
   },
   {
    "asset_class": "CRYPTO",
@@ -4934,11 +5805,17 @@
     -0.1358,
     1.3809
    ],
-   "p_value": 0.395264,
+   "p_value": 0.0525,
+   "p_wr": 0.395264,
    "q_value": null,
-   "p_harm": 0.788025,
+   "p_harm": 0.9475,
    "harm_q": null,
-   "dsr": 0.253,
+   "net_ci_pct_2x": [
+    -0.2858,
+    1.2309
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": true,
     "first_half_mean": 0.9249,
@@ -4946,12 +5823,11 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=14 < 20: no statistical claim"
-   ],
-   "sharpe": 0.4408,
-   "sr0": 0.5975
+   ]
   },
   {
    "asset_class": "ETF",
@@ -4971,11 +5847,17 @@
     -0.6696,
     2.2417
    ],
-   "p_value": 0.395264,
+   "p_value": 0.167,
+   "p_wr": 0.395264,
    "q_value": null,
-   "p_harm": 0.788025,
+   "p_harm": 0.833,
    "harm_q": null,
-   "dsr": 0.1063,
+   "net_ci_pct_2x": [
+    -0.7496,
+    2.1617
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": true,
     "first_half_mean": 0.9621,
@@ -4983,12 +5865,11 @@
    },
    "top_symbol_share": 0.3571,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=14 < 20: no statistical claim"
-   ],
-   "sharpe": 0.2559,
-   "sr0": 0.5975
+   ]
   },
   {
    "asset_class": "FOREX",
@@ -5008,11 +5889,17 @@
     -2.05,
     -0.9786
    ],
-   "p_value": 0.999939,
+   "p_value": 0.9995,
+   "p_wr": 0.999939,
    "q_value": null,
-   "p_harm": 0.000916,
+   "p_harm": 0.0005,
    "harm_q": null,
-   "dsr": 0.0153,
+   "net_ci_pct_2x": [
+    -2.1,
+    -1.0286
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": -2.05,
@@ -5020,12 +5907,11 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=14 < 20: no statistical claim"
-   ],
-   "sharpe": -1.3146,
-   "sr0": 0.5975
+   ]
   },
   {
    "asset_class": "CRYPTO",
@@ -5045,11 +5931,17 @@
     -6.429,
     2.7911
    ],
-   "p_value": 0.953857,
+   "p_value": 0.832,
+   "p_wr": 0.953857,
    "q_value": null,
-   "p_harm": 0.133423,
+   "p_harm": 0.168,
    "harm_q": null,
-   "dsr": 0.0032,
+   "net_ci_pct_2x": [
+    -6.579,
+    2.6411
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": 0.5223,
@@ -5057,12 +5949,11 @@
    },
    "top_symbol_share": 0.3846,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=13 < 20: no statistical claim"
-   ],
-   "sharpe": -0.264,
-   "sr0": 0.6201
+   ]
   },
   {
    "asset_class": "EQUITY",
@@ -5082,11 +5973,17 @@
     -2.5758,
     2.2861
    ],
-   "p_value": 0.387207,
+   "p_value": 0.4955,
+   "p_wr": 0.387207,
    "q_value": null,
-   "p_harm": 0.806152,
+   "p_harm": 0.5045,
    "harm_q": null,
-   "dsr": 0.0145,
+   "net_ci_pct_2x": [
+    -2.6758,
+    2.1861
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": 0.3727,
@@ -5094,12 +5991,11 @@
    },
    "top_symbol_share": 0.25,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=12 < 20: no statistical claim"
-   ],
-   "sharpe": -0.0128,
-   "sr0": 0.6454
+   ]
   },
   {
    "asset_class": "EQUITY",
@@ -5119,11 +6015,17 @@
     -5.1095,
     -0.692
    ],
-   "p_value": 0.999756,
+   "p_value": 0.993,
+   "p_wr": 0.999756,
    "q_value": null,
-   "p_harm": 0.003174,
+   "p_harm": 0.007,
    "harm_q": null,
-   "dsr": 0.0003,
+   "net_ci_pct_2x": [
+    -5.2095,
+    -0.792
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
    "split_half": {
     "stable": false,
     "first_half_mean": -1.2993,
@@ -5131,12 +6033,11 @@
    },
    "top_symbol_share": 0.25,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=12 < 20: no statistical claim"
-   ],
-   "sharpe": -0.7736,
-   "sr0": 0.6454
+   ]
   },
   {
    "asset_class": "EQUITY",
@@ -5156,14 +6057,21 @@
     -4.7929,
     2.2784
    ],
-   "p_value": 0.980469,
+   "p_value": 0.837,
+   "p_wr": 0.980469,
    "q_value": null,
-   "p_harm": 0.089844,
+   "p_harm": 0.163,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -4.8929,
+    2.1784
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4444,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=9 < 20: no statistical claim"
@@ -5187,14 +6095,21 @@
     -6.6638,
     11.7485
    ],
-   "p_value": 0.253906,
+   "p_value": 0.263,
+   "p_wr": 0.253906,
    "q_value": null,
-   "p_harm": 0.910156,
+   "p_harm": 0.737,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -6.7638,
+    11.6485
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=9 < 20: no statistical claim"
@@ -5218,14 +6133,21 @@
     -2.7459,
     -0.2825
    ],
-   "p_value": 0.998047,
+   "p_value": 0.989,
+   "p_wr": 0.998047,
    "q_value": null,
-   "p_harm": 0.019531,
+   "p_harm": 0.011,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.8259,
+    -0.3625
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5556,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=9 < 20: no statistical claim"
@@ -5249,14 +6171,21 @@
     -2.7736,
     -0.8409
    ],
-   "p_value": 0.998047,
+   "p_value": 1.0,
+   "p_wr": 0.998047,
    "q_value": null,
-   "p_harm": 0.019531,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.8536,
+    -0.9209
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4444,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=9 < 20: no statistical claim"
@@ -5280,14 +6209,21 @@
     -0.7638,
     1.4668
    ],
-   "p_value": 0.636719,
+   "p_value": 0.343,
+   "p_wr": 0.636719,
    "q_value": null,
-   "p_harm": 0.636719,
+   "p_harm": 0.657,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.8838,
+    1.3467
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.25,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=8 < 20: no statistical claim"
@@ -5311,14 +6247,21 @@
     -2.0636,
     4.2611
    ],
-   "p_value": 0.363281,
+   "p_value": 0.1765,
+   "p_wr": 0.363281,
    "q_value": null,
-   "p_harm": 0.855469,
+   "p_harm": 0.8235,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.2136,
+    4.1111
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.375,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=8 < 20: no statistical claim"
@@ -5343,13 +6286,20 @@
     -0.1525
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.003906,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1578,
+    -0.3025
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.125,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=8 < 20: no statistical claim"
@@ -5373,14 +6323,21 @@
     -1.6933,
     3.3677
    ],
-   "p_value": 0.363281,
+   "p_value": 0.2245,
+   "p_wr": 0.363281,
    "q_value": null,
-   "p_harm": 0.855469,
+   "p_harm": 0.7755,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.7733,
+    3.2877
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=8 < 20: no statistical claim"
@@ -5404,14 +6361,21 @@
     -3.8895,
     0.5382
    ],
-   "p_value": 0.996094,
+   "p_value": 0.9355,
+   "p_wr": 0.996094,
    "q_value": null,
-   "p_harm": 0.035156,
+   "p_harm": 0.0645,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.9695,
+    0.4582
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.375,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=8 < 20: no statistical claim"
@@ -5435,14 +6399,21 @@
     -0.9464,
     0.1994
    ],
-   "p_value": 0.9375,
+   "p_value": 0.9055,
+   "p_wr": 0.9375,
    "q_value": null,
-   "p_harm": 0.226563,
+   "p_harm": 0.0945,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.0264,
+    0.1194
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=7 < 20: no statistical claim"
@@ -5466,14 +6437,21 @@
     2.8963,
     8.9818
    ],
-   "p_value": 0.0625,
+   "p_value": 0.0005,
+   "p_wr": 0.0625,
    "q_value": null,
-   "p_harm": 0.992188,
+   "p_harm": 0.9995,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    2.7463,
+    8.8318
+   ],
+   "stress_2x_ok": true,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5714,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=7 < 20: no statistical claim"
@@ -5498,13 +6476,20 @@
     -3.0297
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.007813,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -4.5743,
+    -3.1797
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5714,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=7 < 20: no statistical claim"
@@ -5528,14 +6513,21 @@
     -4.2816,
     0.8067
    ],
-   "p_value": 0.9375,
+   "p_value": 0.914,
+   "p_wr": 0.9375,
    "q_value": null,
-   "p_harm": 0.226563,
+   "p_harm": 0.086,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -4.3816,
+    0.7067
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4286,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=7 < 20: no statistical claim"
@@ -5559,14 +6551,21 @@
     -0.3047,
     5.5006
    ],
-   "p_value": 0.226563,
+   "p_value": 0.04,
+   "p_wr": 0.226563,
    "q_value": null,
-   "p_harm": 0.9375,
+   "p_harm": 0.96,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4047,
+    5.4006
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4286,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=7 < 20: no statistical claim"
@@ -5590,14 +6589,21 @@
     -2.2605,
     5.9796
    ],
-   "p_value": 0.5,
+   "p_value": 0.2015,
+   "p_wr": 0.5,
    "q_value": null,
-   "p_harm": 0.773438,
+   "p_harm": 0.7985,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.3605,
+    5.8796
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4286,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=7 < 20: no statistical claim"
@@ -5621,14 +6627,21 @@
     -1.672,
     0.4317
    ],
-   "p_value": 0.9375,
+   "p_value": 0.9025,
+   "p_wr": 0.9375,
    "q_value": null,
-   "p_harm": 0.226563,
+   "p_harm": 0.0975,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.752,
+    0.3517
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4286,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=7 < 20: no statistical claim"
@@ -5652,14 +6665,21 @@
     -0.4911,
     4.939
    ],
-   "p_value": 0.65625,
+   "p_value": 0.0755,
+   "p_wr": 0.65625,
    "q_value": null,
-   "p_harm": 0.65625,
+   "p_harm": 0.9245,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6411,
+    4.789
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.1667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=6 < 20: no statistical claim"
@@ -5683,14 +6703,21 @@
     -0.0427,
     2.4188
    ],
-   "p_value": 0.34375,
+   "p_value": 0.0305,
+   "p_wr": 0.34375,
    "q_value": null,
-   "p_harm": 0.890625,
+   "p_harm": 0.9695,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1927,
+    2.2689
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=6 < 20: no statistical claim"
@@ -5714,14 +6741,21 @@
     -0.4875,
     4.5216
    ],
-   "p_value": 0.109375,
+   "p_value": 0.058,
+   "p_wr": 0.109375,
    "q_value": null,
-   "p_harm": 0.984375,
+   "p_harm": 0.942,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6375,
+    4.3716
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=6 < 20: no statistical claim"
@@ -5745,14 +6779,21 @@
     -0.45,
     2.55
    ],
-   "p_value": 0.34375,
+   "p_value": 0.1175,
+   "p_wr": 0.34375,
    "q_value": null,
-   "p_harm": 0.890625,
+   "p_harm": 0.8825,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6,
+    2.4
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.1667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=6 < 20: no statistical claim"
@@ -5777,13 +6818,20 @@
     -1.6743
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.015625,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.4959,
+    -1.8243
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=6 < 20: no statistical claim"
@@ -5807,14 +6855,21 @@
     -3.7864,
     9.0666
    ],
-   "p_value": 0.65625,
+   "p_value": 0.2805,
+   "p_wr": 0.65625,
    "q_value": null,
-   "p_harm": 0.65625,
+   "p_harm": 0.7195,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.8664,
+    8.9866
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=6 < 20: no statistical claim"
@@ -5838,14 +6893,21 @@
     -0.921,
     0.844
    ],
-   "p_value": 0.8125,
+   "p_value": 0.552,
+   "p_wr": 0.8125,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.448,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.001,
+    0.764
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -5869,14 +6931,21 @@
     -1.1414,
     0.2081
    ],
-   "p_value": 0.8125,
+   "p_value": 0.9185,
+   "p_wr": 0.8125,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.0815,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.2214,
+    0.1281
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -5901,13 +6970,20 @@
     -3.7704
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.03125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -6.3126,
+    -3.9204
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.2,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -5931,14 +7007,21 @@
     -5.8231,
     1.4231
    ],
-   "p_value": 0.96875,
+   "p_value": 0.925,
+   "p_wr": 0.96875,
    "q_value": null,
-   "p_harm": 0.1875,
+   "p_harm": 0.075,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -5.9731,
+    1.2731
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -5962,14 +7045,21 @@
     -4.4431,
     5.9544
    ],
-   "p_value": 0.8125,
+   "p_value": 0.469,
+   "p_wr": 0.8125,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.531,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -4.5931,
+    5.8044
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -5993,14 +7083,21 @@
     -1.1889,
     0.6665
    ],
-   "p_value": 0.5,
+   "p_value": 0.5955,
+   "p_wr": 0.5,
    "q_value": null,
-   "p_harm": 0.8125,
+   "p_harm": 0.4045,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.2889,
+    0.5665
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -6025,13 +7122,20 @@
     -1.2858
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.03125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.2793,
+    -1.3858
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -6055,14 +7159,21 @@
     -5.5631,
     1.1623
    ],
-   "p_value": 0.8125,
+   "p_value": 0.8625,
+   "p_wr": 0.8125,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.1375,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -5.6631,
+    1.0623
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -6086,14 +7197,21 @@
     -8.3663,
     2.9473
    ],
-   "p_value": 0.96875,
+   "p_value": 0.875,
+   "p_wr": 0.96875,
    "q_value": null,
-   "p_harm": 0.1875,
+   "p_harm": 0.125,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -8.4663,
+    2.8473
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -6117,14 +7235,21 @@
     -0.5896,
     0.29
    ],
-   "p_value": 0.8125,
+   "p_value": 0.687,
+   "p_wr": 0.8125,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.313,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6396,
+    0.24
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.8,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -6149,13 +7274,20 @@
     -2.55
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.03125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.6,
+    -2.6
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -6179,14 +7311,21 @@
     -0.9127,
     0.6789
    ],
-   "p_value": 0.6875,
+   "p_value": 0.615,
+   "p_wr": 0.6875,
    "q_value": null,
-   "p_harm": 0.6875,
+   "p_harm": 0.385,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.9927,
+    0.5989
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6210,14 +7349,21 @@
     -1.2309,
     0.5819
    ],
-   "p_value": 0.9375,
+   "p_value": 0.8035,
+   "p_wr": 0.9375,
    "q_value": null,
-   "p_harm": 0.3125,
+   "p_harm": 0.1965,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3109,
+    0.5019
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6241,14 +7387,21 @@
     4.85,
     4.85
    ],
-   "p_value": 0.0625,
+   "p_value": 0.0,
+   "p_wr": 0.0625,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    4.7,
+    4.7
+   ],
+   "stress_2x_ok": true,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6272,14 +7425,21 @@
     -4.5725,
     1.4112
    ],
-   "p_value": 0.6875,
+   "p_value": 0.795,
+   "p_wr": 0.6875,
    "q_value": null,
-   "p_harm": 0.6875,
+   "p_harm": 0.205,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -4.7225,
+    1.2612
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.75,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6303,14 +7463,21 @@
     -8.2186,
     5.0518
    ],
-   "p_value": 0.9375,
+   "p_value": 0.744,
+   "p_wr": 0.9375,
    "q_value": null,
-   "p_harm": 0.3125,
+   "p_harm": 0.256,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -8.3186,
+    4.9518
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.75,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6334,14 +7501,21 @@
     -14.0394,
     8.9009
    ],
-   "p_value": 0.6875,
+   "p_value": 0.656,
+   "p_wr": 0.6875,
    "q_value": null,
-   "p_harm": 0.6875,
+   "p_harm": 0.344,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -14.1394,
+    8.8009
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.75,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6365,14 +7539,21 @@
     -1.0383,
     1.6813
    ],
-   "p_value": 0.3125,
+   "p_value": 0.3775,
+   "p_wr": 0.3125,
    "q_value": null,
-   "p_harm": 0.9375,
+   "p_harm": 0.6225,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1183,
+    1.6013
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.75,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6397,13 +7578,20 @@
     -0.3014
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.0625,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3329,
+    -0.3814
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6427,14 +7615,21 @@
     1.7741,
     5.4703
    ],
-   "p_value": 0.0625,
+   "p_value": 0.0,
+   "p_wr": 0.0625,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    1.6941,
+    5.3903
+   ],
+   "stress_2x_ok": true,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6459,13 +7654,20 @@
     -0.05
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.0625,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1,
+    -0.1
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6489,14 +7691,21 @@
     -2.8983,
     5.569
    ],
-   "p_value": 0.6875,
+   "p_value": 0.3185,
+   "p_wr": 0.6875,
    "q_value": null,
-   "p_harm": 0.6875,
+   "p_harm": 0.6815,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.9984,
+    5.469
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.25,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=4 < 20: no statistical claim"
@@ -6520,14 +7729,21 @@
     -1.2693,
     1.0278
    ],
-   "p_value": 0.875,
+   "p_value": 0.637,
+   "p_wr": 0.875,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.363,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3493,
+    0.9478
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6552,13 +7768,20 @@
     -1.121
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.2983,
+    -1.241
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6582,14 +7805,21 @@
     -1.2679,
     3.3387
    ],
-   "p_value": 0.875,
+   "p_value": 0.291,
+   "p_wr": 0.875,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.709,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3879,
+    3.2187
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6614,13 +7844,20 @@
     -2.15
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.3,
+    -2.3
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6644,14 +7881,21 @@
     -1.6885,
     3.726
    ],
-   "p_value": 0.5,
+   "p_value": 0.2585,
+   "p_wr": 0.5,
    "q_value": null,
-   "p_harm": 0.875,
+   "p_harm": 0.7415,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.8385,
+    3.576
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6676,13 +7920,20 @@
     -3.6612
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -6.1387,
+    -3.8112
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6707,13 +7958,20 @@
     -0.08
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3,
+    -0.23
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6738,13 +7996,20 @@
     -4.0727
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -7.2634,
+    -4.2227
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6768,14 +8033,21 @@
     -0.2652,
     3.0309
    ],
-   "p_value": 0.5,
+   "p_value": 0.2525,
+   "p_wr": 0.5,
    "q_value": null,
-   "p_harm": 0.875,
+   "p_harm": 0.7475,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4152,
+    2.8809
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6799,14 +8071,21 @@
     -1.2258,
     0.4111
    ],
-   "p_value": 0.875,
+   "p_value": 0.9705,
+   "p_wr": 0.875,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.0295,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3058,
+    0.3311
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6830,14 +8109,21 @@
     -1.2844,
     4.2961
    ],
-   "p_value": 0.5,
+   "p_value": 0.1585,
+   "p_wr": 0.5,
    "q_value": null,
-   "p_harm": 0.875,
+   "p_harm": 0.8415,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3644,
+    4.2161
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6861,14 +8147,21 @@
     4.92,
     9.4446
    ],
-   "p_value": 0.125,
+   "p_value": 0.0,
+   "p_wr": 0.125,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    4.84,
+    9.3646
+   ],
+   "stress_2x_ok": true,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6892,14 +8185,21 @@
     -5.85,
     1.4098
    ],
-   "p_value": 0.875,
+   "p_value": 0.727,
+   "p_wr": 0.875,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 0.273,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -5.93,
+    1.3298
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6924,13 +8224,20 @@
     -1.6201
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.1534,
+    -1.7001
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6955,13 +8262,20 @@
     -0.759
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.3687,
+    -0.839
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -6986,13 +8300,20 @@
     -0.0236
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.229,
+    -0.0736
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -7017,13 +8338,20 @@
     -0.05
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.125,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1,
+    -0.1
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -7047,14 +8375,21 @@
     -0.4825,
     0.6715
    ],
-   "p_value": 0.75,
+   "p_value": 0.2475,
+   "p_wr": 0.75,
    "q_value": null,
-   "p_harm": 0.75,
+   "p_harm": 0.7525,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.5625,
+    0.5915
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7078,14 +8413,21 @@
     2.8285,
     6.5767
    ],
-   "p_value": 0.25,
+   "p_value": 0.0,
+   "p_wr": 0.25,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    2.7085,
+    6.4567
+   ],
+   "stress_2x_ok": true,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7110,13 +8452,20 @@
     -20.9058
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -25.2236,
+    -21.0258
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7140,14 +8489,21 @@
     6.4033,
     7.9597
    ],
-   "p_value": 0.25,
+   "p_value": 0.0,
+   "p_wr": 0.25,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    6.2533,
+    7.8097
+   ],
+   "stress_2x_ok": true,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7171,14 +8527,21 @@
     -2.1256,
     1.4103
    ],
-   "p_value": 0.75,
+   "p_value": 0.7395,
+   "p_wr": 0.75,
    "q_value": null,
-   "p_harm": 0.75,
+   "p_harm": 0.2605,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.2756,
+    1.2603
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7203,13 +8566,20 @@
     -5.8124
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -10.2467,
+    -5.9624
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7234,13 +8604,20 @@
     -5.2836
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -21.036,
+    -5.4336
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7264,14 +8641,21 @@
     -6.9663,
     8.1077
    ],
-   "p_value": 0.75,
+   "p_value": 0.2605,
+   "p_wr": 0.75,
    "q_value": null,
-   "p_harm": 0.75,
+   "p_harm": 0.7395,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -7.0663,
+    8.0077
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7296,13 +8680,20 @@
     -1.2251
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -5.2345,
+    -1.3251
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7327,13 +8718,20 @@
     -2.5605
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.6628,
+    -2.6605
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7358,13 +8756,20 @@
     -5.1405
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -5.3393,
+    -5.2405
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7389,13 +8794,20 @@
     -0.0886
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.2,
+    -0.1886
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7420,13 +8832,20 @@
     -2.7786
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -7.4745,
+    -2.8786
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7450,14 +8869,21 @@
     -3.2872,
     5.3827
    ],
-   "p_value": 0.75,
+   "p_value": 0.2475,
+   "p_wr": 0.75,
    "q_value": null,
-   "p_harm": 0.75,
+   "p_harm": 0.7525,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.3672,
+    5.3027
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7481,14 +8907,21 @@
     0.7189,
     3.1612
    ],
-   "p_value": 0.25,
+   "p_value": 0.0,
+   "p_wr": 0.25,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.6389,
+    3.0812
+   ],
+   "stress_2x_ok": true,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7513,13 +8946,20 @@
     -1.0608
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.3541,
+    -1.1108
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7544,13 +8984,20 @@
     -0.1332
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.25,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2179,
+    -0.1832
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=2 < 20: no statistical claim"
@@ -7574,14 +9021,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7606,13 +9060,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7637,13 +9098,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7667,14 +9135,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7698,14 +9173,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7730,13 +9212,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7761,13 +9250,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7792,13 +9288,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7823,13 +9326,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7853,14 +9363,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7885,13 +9402,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7915,14 +9439,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7946,14 +9477,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -7978,13 +9516,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8008,14 +9553,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8040,13 +9592,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8070,14 +9629,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8102,13 +9668,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8133,13 +9706,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8164,13 +9744,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8195,13 +9782,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8225,14 +9819,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8256,14 +9857,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8288,13 +9896,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8319,13 +9934,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8349,14 +9971,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8381,13 +10010,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8412,13 +10048,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8443,13 +10086,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8474,13 +10124,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8504,14 +10161,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8536,13 +10200,20 @@
     null
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.5,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8566,14 +10237,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -8599,10 +10277,16 @@
     -0.5944,
     -0.0592
    ],
-   "p_value": 0.996077,
-   "q_value": 0.999999,
-   "p_harm": 0.006688,
-   "harm_q": 0.007643,
+   "p_value": 0.9905,
+   "p_wr": 0.996077,
+   "q_value": 1.0,
+   "p_harm": 0.0095,
+   "harm_q": 0.01,
+   "net_ci_pct_2x": [
+    -0.7444,
+    -0.2092
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -8611,6 +10295,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.4833,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -8638,10 +10323,16 @@
     -0.7115,
     0.0026
    ],
-   "p_value": 0.99648,
-   "q_value": 0.999999,
-   "p_harm": 0.006202,
+   "p_value": 0.974,
+   "p_wr": 0.99648,
+   "q_value": 1.0,
+   "p_harm": 0.026,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.8615,
+    -0.1474
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -8650,6 +10341,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.4771,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.64 < 0.8 at n=109 \u2014 watch only, harm not proven (net CI [-0.71, +0.00]) so it keeps observing"
@@ -8675,10 +10367,16 @@
     -0.3327,
     0.5571
    ],
-   "p_value": 0.631223,
-   "q_value": 0.999999,
-   "p_harm": 0.455536,
+   "p_value": 0.3005,
+   "p_wr": 0.631223,
+   "q_value": 0.880981,
+   "p_harm": 0.6995,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4127,
+    0.4771
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0289,
    "split_half": {
     "stable": false,
@@ -8687,6 +10385,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9625,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 48.8% <= 50%",
@@ -8714,10 +10413,16 @@
     -0.3728,
     0.2602
    ],
-   "p_value": 0.971668,
-   "q_value": 0.999999,
-   "p_harm": 0.046456,
+   "p_value": 0.6545,
+   "p_wr": 0.971668,
+   "q_value": 1.0,
+   "p_harm": 0.3455,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4528,
+    0.1802
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0036,
    "split_half": {
     "stable": false,
@@ -8726,6 +10431,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.925,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 40.0% <= 50%",
@@ -8753,10 +10459,16 @@
     -0.3193,
     3.2051
    ],
-   "p_value": 0.5,
-   "q_value": 0.999999,
-   "p_harm": 0.588928,
+   "p_value": 0.057,
+   "p_wr": 0.5,
+   "q_value": 0.267462,
+   "p_harm": 0.943,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4193,
+    3.1051
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.2334,
    "split_half": {
     "stable": true,
@@ -8765,6 +10477,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "single symbol 100% of trades"
@@ -8790,10 +10503,16 @@
     -0.0411,
     1.1476
    ],
-   "p_value": 0.285793,
-   "q_value": 0.999999,
-   "p_harm": 0.785896,
+   "p_value": 0.0335,
+   "p_wr": 0.285793,
+   "q_value": 0.185773,
+   "p_harm": 0.9665,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1411,
+    1.0476
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.3117,
    "split_half": {
     "stable": true,
@@ -8802,6 +10521,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9872,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "single symbol 100% of trades"
@@ -8827,10 +10547,16 @@
     -0.9573,
     0.5047
    ],
-   "p_value": 0.995395,
-   "q_value": 0.999999,
-   "p_harm": 0.009329,
+   "p_value": 0.7515,
+   "p_wr": 0.995395,
+   "q_value": 1.0,
+   "p_harm": 0.2485,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1073,
+    0.3547
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0017,
    "split_half": {
     "stable": false,
@@ -8839,6 +10565,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9242,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 34.8% <= 50%",
@@ -8866,10 +10593,16 @@
     -1.0412,
     0.7075
    ],
-   "p_value": 0.945572,
-   "q_value": 0.999999,
-   "p_harm": 0.087643,
+   "p_value": 0.6525,
+   "p_wr": 0.945572,
+   "q_value": 1.0,
+   "p_harm": 0.3475,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1412,
+    0.6075
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0037,
    "split_half": {
     "stable": false,
@@ -8878,6 +10611,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 40.9% <= 50%",
@@ -8905,10 +10639,16 @@
     -0.9316,
     -0.0682
    ],
-   "p_value": 0.999071,
-   "q_value": 0.999999,
-   "p_harm": 0.002136,
-   "harm_q": 0.002848,
+   "p_value": 0.99,
+   "p_wr": 0.999071,
+   "q_value": 1.0,
+   "p_harm": 0.01,
+   "harm_q": 0.01,
+   "net_ci_pct_2x": [
+    -1.0116,
+    -0.1482
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -8917,6 +10657,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9848,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -8944,10 +10685,16 @@
     -0.5885,
     0.7353
    ],
-   "p_value": 0.809134,
-   "q_value": 0.999999,
-   "p_harm": 0.266154,
+   "p_value": 0.4105,
+   "p_wr": 0.809134,
+   "q_value": 0.927426,
+   "p_harm": 0.5895,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6685,
+    0.6553
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0168,
    "split_half": {
     "stable": false,
@@ -8956,6 +10703,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.3% <= 50%",
@@ -8983,10 +10731,16 @@
     -0.5432,
     0.6138
    ],
-   "p_value": 0.400653,
-   "q_value": 0.999999,
-   "p_harm": 0.692672,
+   "p_value": 0.463,
+   "p_wr": 0.400653,
+   "q_value": 0.941433,
+   "p_harm": 0.537,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6432,
+    0.5138
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0122,
    "split_half": {
     "stable": false,
@@ -8995,6 +10749,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -9021,10 +10776,16 @@
     -1.0143,
     0.7246
    ],
-   "p_value": 0.951023,
-   "q_value": 0.999999,
-   "p_harm": 0.080941,
+   "p_value": 0.637,
+   "p_wr": 0.951023,
+   "q_value": 1.0,
+   "p_harm": 0.363,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1643,
+    0.5746
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0039,
    "split_half": {
     "stable": false,
@@ -9033,6 +10794,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9516,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 40.3% <= 50%",
@@ -9060,10 +10822,16 @@
     -0.8756,
     0.3207
    ],
-   "p_value": 0.980191,
-   "q_value": 0.999999,
-   "p_harm": 0.036089,
+   "p_value": 0.8285,
+   "p_wr": 0.980191,
+   "q_value": 1.0,
+   "p_harm": 0.1715,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.0256,
+    0.1707
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0008,
    "split_half": {
     "stable": false,
@@ -9072,6 +10840,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8689,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.78 < 0.8 at n=61 \u2014 watch only, harm not proven (net CI [-0.88, +0.32]) so it keeps observing"
@@ -9097,10 +10866,16 @@
     -1.3827,
     0.162
    ],
-   "p_value": 0.989793,
-   "q_value": 0.999999,
-   "p_harm": 0.019809,
+   "p_value": 0.9385,
+   "p_wr": 0.989793,
+   "q_value": 1.0,
+   "p_harm": 0.0615,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.5327,
+    0.012
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -9109,6 +10884,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.918,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.64 < 0.8 at n=61 \u2014 watch only, harm not proven (net CI [-1.38, +0.16]) so it keeps observing"
@@ -9134,10 +10910,16 @@
     -1.1549,
     0.5692
    ],
-   "p_value": 0.974053,
-   "q_value": 0.999999,
-   "p_harm": 0.04623,
+   "p_value": 0.7495,
+   "p_wr": 0.974053,
+   "q_value": 1.0,
+   "p_harm": 0.2505,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3049,
+    0.4192
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0018,
    "split_half": {
     "stable": false,
@@ -9146,6 +10928,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 38.3% <= 50%",
@@ -9173,10 +10956,16 @@
     -0.5899,
     0.923
    ],
-   "p_value": 0.551289,
-   "q_value": 0.999999,
-   "p_harm": 0.551289,
+   "p_value": 0.331,
+   "p_wr": 0.551289,
+   "q_value": 0.880981,
+   "p_harm": 0.669,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6699,
+    0.843
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0263,
    "split_half": {
     "stable": false,
@@ -9185,6 +10974,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9667,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -9211,10 +11001,16 @@
     -1.3811,
     0.6852
    ],
-   "p_value": 0.990831,
-   "q_value": 0.999999,
-   "p_harm": 0.018172,
+   "p_value": 0.779,
+   "p_wr": 0.990831,
+   "q_value": 1.0,
+   "p_harm": 0.221,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.5311,
+    0.5352
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0015,
    "split_half": {
     "stable": false,
@@ -9223,6 +11019,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9153,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 35.6% <= 50%",
@@ -9250,10 +11047,16 @@
     -1.129,
     0.7224
    ],
-   "p_value": 0.987627,
-   "q_value": 0.999999,
-   "p_harm": 0.02397,
+   "p_value": 0.684,
+   "p_wr": 0.987627,
+   "q_value": 1.0,
+   "p_harm": 0.316,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.279,
+    0.5724
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.003,
    "split_half": {
     "stable": false,
@@ -9262,6 +11065,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9138,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 36.2% <= 50%",
@@ -9289,10 +11093,16 @@
     -0.2286,
     0.423
    ],
-   "p_value": 0.5,
-   "q_value": 0.999999,
-   "p_harm": 0.604317,
+   "p_value": 0.305,
+   "p_wr": 0.5,
+   "q_value": 0.880981,
+   "p_harm": 0.695,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3786,
+    0.273
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.033,
    "split_half": {
     "stable": true,
@@ -9301,6 +11111,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.5088,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "single symbol 100% of trades"
@@ -9326,10 +11137,16 @@
     -1.5643,
     0.7922
    ],
-   "p_value": 0.992773,
-   "q_value": 0.999999,
-   "p_harm": 0.015014,
+   "p_value": 0.741,
+   "p_wr": 0.992773,
+   "q_value": 1.0,
+   "p_harm": 0.259,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.7143,
+    0.6422
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0019,
    "split_half": {
     "stable": false,
@@ -9338,6 +11155,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9636,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 34.5% <= 50%",
@@ -9365,10 +11183,16 @@
     -1.4107,
     0.4991
    ],
-   "p_value": 0.911499,
-   "q_value": 0.999999,
-   "p_harm": 0.140305,
+   "p_value": 0.79,
+   "p_wr": 0.911499,
+   "q_value": 1.0,
+   "p_harm": 0.21,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.5107,
+    0.3991
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0007,
    "split_half": {
     "stable": false,
@@ -9377,6 +11201,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9818,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.76 < 0.8 at n=55 \u2014 watch only, harm not proven (net CI [-1.41, +0.50]) so it keeps observing"
@@ -9402,10 +11227,16 @@
     -1.2982,
     0.0078
    ],
-   "p_value": 0.998081,
-   "q_value": 0.999999,
-   "p_harm": 0.004537,
+   "p_value": 0.973,
+   "p_wr": 0.998081,
+   "q_value": 1.0,
+   "p_harm": 0.027,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.4482,
+    -0.1422
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -9414,6 +11245,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9444,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "profit factor 0.55 < 0.8 at n=54 \u2014 watch only, harm not proven (net CI [-1.30, +0.01]) so it keeps observing"
@@ -9439,10 +11271,16 @@
     -1.086,
     0.6007
    ],
-   "p_value": 0.973281,
-   "q_value": 0.999999,
-   "p_harm": 0.049185,
+   "p_value": 0.7165,
+   "p_wr": 0.973281,
+   "q_value": 1.0,
+   "p_harm": 0.2835,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.236,
+    0.4507
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0024,
    "split_half": {
     "stable": false,
@@ -9451,6 +11289,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9623,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 37.7% <= 50%",
@@ -9478,10 +11317,16 @@
     -0.918,
     1.1128
    ],
-   "p_value": 0.915511,
-   "q_value": 0.999999,
-   "p_harm": 0.13584,
+   "p_value": 0.43,
+   "p_wr": 0.915511,
+   "q_value": 0.936786,
+   "p_harm": 0.57,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.068,
+    0.9628
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0151,
    "split_half": {
     "stable": false,
@@ -9490,6 +11335,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9623,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 41.5% <= 50%",
@@ -9517,10 +11363,16 @@
     -0.066,
     2.246
    ],
-   "p_value": 0.5,
-   "q_value": 0.999999,
-   "p_harm": 0.608077,
+   "p_value": 0.0315,
+   "p_wr": 0.5,
+   "q_value": 0.185773,
+   "p_harm": 0.9685,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.216,
+    2.096
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.3213,
    "split_half": {
     "stable": true,
@@ -9529,6 +11381,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8302,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "single symbol 100% of trades"
@@ -9554,10 +11407,16 @@
     -1.1347,
     1.6657
    ],
-   "p_value": 0.712075,
-   "q_value": 0.999999,
-   "p_harm": 0.389884,
+   "p_value": 0.3425,
+   "p_wr": 0.712075,
+   "q_value": 0.880981,
+   "p_harm": 0.6575,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.2847,
+    1.5157
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0268,
    "split_half": {
     "stable": false,
@@ -9566,6 +11425,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9412,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 47.1% <= 50%",
@@ -9593,10 +11453,16 @@
     -1.025,
     0.7544
    ],
-   "p_value": 0.760056,
-   "q_value": 0.999999,
-   "p_harm": 0.335906,
+   "p_value": 0.6005,
+   "p_wr": 0.760056,
+   "q_value": 1.0,
+   "p_harm": 0.3995,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.125,
+    0.6544
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0048,
    "split_half": {
     "stable": false,
@@ -9605,6 +11471,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 46.0% <= 50%",
@@ -9632,10 +11499,16 @@
     -0.9478,
     0.6702
    ],
-   "p_value": 0.977808,
-   "q_value": 0.999999,
-   "p_harm": 0.042717,
+   "p_value": 0.6575,
+   "p_wr": 0.977808,
+   "q_value": 1.0,
+   "p_harm": 0.3425,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.0978,
+    0.5202
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0041,
    "split_half": {
     "stable": false,
@@ -9644,6 +11517,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9796,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 36.7% <= 50%",
@@ -9671,10 +11545,16 @@
     0.2575,
     1.9161
    ],
-   "p_value": 0.076204,
-   "q_value": 0.774741,
-   "p_harm": 0.957283,
+   "p_value": 0.006,
+   "p_wr": 0.076204,
+   "q_value": 0.0915,
+   "p_harm": 0.994,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.1075,
+    1.7661
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.5666,
    "split_half": {
     "stable": true,
@@ -9683,7 +11563,8 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8776,
-   "verdict": "WEAK",
+   "single_source": false,
+   "verdict": "CANDIDATE",
    "reasons": [],
    "sharpe": 0.3611,
    "sr0": 0.3359
@@ -9706,10 +11587,16 @@
     -0.8581,
     0.6848
    ],
-   "p_value": 0.923796,
-   "q_value": 0.999999,
-   "p_harm": 0.126435,
+   "p_value": 0.6375,
+   "p_wr": 0.923796,
+   "q_value": 1.0,
+   "p_harm": 0.3625,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.9381,
+    0.6048
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0045,
    "split_half": {
     "stable": false,
@@ -9718,6 +11605,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9796,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 40.8% <= 50%",
@@ -9745,10 +11633,16 @@
     -1.0962,
     1.5701
    ],
-   "p_value": 0.76456,
-   "q_value": 0.999999,
-   "p_harm": 0.332733,
+   "p_value": 0.3535,
+   "p_wr": 0.76456,
+   "q_value": 0.880981,
+   "p_harm": 0.6465,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1962,
+    1.4701
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0216,
    "split_half": {
     "stable": false,
@@ -9757,6 +11651,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9792,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.8% <= 50%",
@@ -9784,10 +11679,16 @@
     -0.2661,
     0.6623
    ],
-   "p_value": 0.5,
-   "q_value": 0.999999,
-   "p_harm": 0.614567,
+   "p_value": 0.1815,
+   "p_wr": 0.5,
+   "q_value": 0.7381,
+   "p_harm": 0.8185,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.3461,
+    0.5823
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0718,
    "split_half": {
     "stable": false,
@@ -9796,6 +11697,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -9822,10 +11724,16 @@
     -3.4362,
     1.0421
    ],
-   "p_value": 0.993141,
-   "q_value": 0.999999,
-   "p_harm": 0.01577,
+   "p_value": 0.873,
+   "p_wr": 0.993141,
+   "q_value": 1.0,
+   "p_harm": 0.127,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.5362,
+    0.9421
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0007,
    "split_half": {
     "stable": false,
@@ -9834,6 +11742,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 32.6% <= 50%",
@@ -9861,10 +11770,16 @@
     -2.4342,
     2.7145
    ],
-   "p_value": 0.936855,
-   "q_value": 0.999999,
-   "p_harm": 0.111026,
+   "p_value": 0.4535,
+   "p_wr": 0.936855,
+   "q_value": 0.941433,
+   "p_harm": 0.5465,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.5342,
+    2.6145
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.013,
    "split_half": {
     "stable": false,
@@ -9873,6 +11788,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 39.5% <= 50%",
@@ -9900,10 +11816,16 @@
     -0.3638,
     2.1416
    ],
-   "p_value": 0.733645,
-   "q_value": 0.999999,
-   "p_harm": 0.377614,
+   "p_value": 0.0825,
+   "p_wr": 0.733645,
+   "q_value": 0.359464,
+   "p_harm": 0.9175,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.5138,
+    1.9916
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.1483,
    "split_half": {
     "stable": true,
@@ -9912,6 +11834,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9512,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 46.3% <= 50%",
@@ -9938,10 +11861,16 @@
     0.2498,
     2.353
    ],
-   "p_value": 0.036476,
-   "q_value": 0.741679,
-   "p_harm": 0.983224,
+   "p_value": 0.0105,
+   "p_wr": 0.036476,
+   "q_value": 0.102938,
+   "p_harm": 0.9895,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.0998,
+    2.203
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.5522,
    "split_half": {
     "stable": true,
@@ -9950,7 +11879,8 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8158,
-   "verdict": "WEAK",
+   "single_source": false,
+   "verdict": "CANDIDATE",
    "reasons": [],
    "sharpe": 0.4057,
    "sr0": 0.3815
@@ -9973,10 +11903,16 @@
     -0.9107,
     1.8252
    ],
-   "p_value": 0.686449,
-   "q_value": 0.999999,
-   "p_harm": 0.435707,
+   "p_value": 0.267,
+   "p_wr": 0.686449,
+   "q_value": 0.880981,
+   "p_harm": 0.733,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.0607,
+    1.6752
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0453,
    "split_half": {
     "stable": false,
@@ -9985,6 +11921,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8947,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "win rate 47.4% <= 50%",
@@ -10012,10 +11949,16 @@
     0.0883,
     1.6236
    ],
-   "p_value": 0.127938,
-   "q_value": 0.780422,
-   "p_harm": 0.928347,
+   "p_value": 0.0135,
+   "p_wr": 0.127938,
+   "q_value": 0.102938,
+   "p_harm": 0.9865,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.0617,
+    1.4736
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.4435,
    "split_half": {
     "stable": true,
@@ -10024,8 +11967,11 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.7105,
+   "single_source": false,
    "verdict": "WEAK",
-   "reasons": [],
+   "reasons": [
+    "DSR 0.444 < 0.50"
+   ],
    "sharpe": 0.3582,
    "sr0": 0.3815
   },
@@ -10047,10 +11993,16 @@
     -1.2423,
     1.7821
    ],
-   "p_value": 0.744312,
-   "q_value": 0.999999,
-   "p_harm": 0.371415,
+   "p_value": 0.3755,
+   "p_wr": 0.744312,
+   "q_value": 0.880981,
+   "p_harm": 0.6245,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.3223,
+    1.7021
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0249,
    "split_half": {
     "stable": false,
@@ -10059,6 +12011,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 45.9% <= 50%",
@@ -10086,10 +12039,16 @@
     -0.1145,
     1.2071
    ],
-   "p_value": 0.121492,
-   "q_value": 0.780422,
-   "p_harm": 0.933751,
+   "p_value": 0.048,
+   "p_wr": 0.121492,
+   "q_value": 0.244,
+   "p_harm": 0.952,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2645,
+    1.0571
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.2497,
    "split_half": {
     "stable": true,
@@ -10098,6 +12057,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8889,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "single symbol 100% of trades"
@@ -10123,10 +12083,16 @@
     0.7625,
     2.9118
    ],
-   "p_value": 0.004521,
-   "q_value": 0.13789,
-   "p_harm": 0.998532,
+   "p_value": 0.0005,
+   "p_wr": 0.004521,
+   "q_value": 0.01525,
+   "p_harm": 0.9995,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.6125,
+    2.7618
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.8226,
    "split_half": {
     "stable": true,
@@ -10135,6 +12101,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.7647,
+   "single_source": false,
    "verdict": "CANDIDATE",
    "reasons": [],
    "sharpe": 0.5773,
@@ -10158,10 +12125,16 @@
     0.1801,
     1.9929
    ],
-   "p_value": 0.114741,
-   "q_value": 0.780422,
-   "p_harm": 0.939275,
+   "p_value": 0.0095,
+   "p_wr": 0.114741,
+   "q_value": 0.102938,
+   "p_harm": 0.9905,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.0301,
+    1.8429
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.5263,
    "split_half": {
     "stable": true,
@@ -10170,7 +12143,8 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8529,
-   "verdict": "WEAK",
+   "single_source": false,
+   "verdict": "CANDIDATE",
    "reasons": [],
    "sharpe": 0.4153,
    "sr0": 0.4033
@@ -10193,10 +12167,16 @@
     0.1836,
     2.3488
    ],
-   "p_value": 0.114741,
-   "q_value": 0.780422,
-   "p_harm": 0.939275,
+   "p_value": 0.0125,
+   "p_wr": 0.114741,
+   "q_value": 0.102938,
+   "p_harm": 0.9875,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.0336,
+    2.1988
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.4202,
    "split_half": {
     "stable": true,
@@ -10205,8 +12185,11 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9118,
+   "single_source": true,
    "verdict": "WEAK",
-   "reasons": [],
+   "reasons": [
+    "DSR 0.420 < 0.50"
+   ],
    "sharpe": 0.3689,
    "sr0": 0.4033
   },
@@ -10228,10 +12211,16 @@
     -0.0022,
     2.2971
    ],
-   "p_value": 0.074806,
-   "q_value": 0.774741,
-   "p_harm": 0.964622,
+   "p_value": 0.0255,
+   "p_wr": 0.074806,
+   "q_value": 0.172833,
+   "p_harm": 0.9745,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1522,
+    2.1471
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.3615,
    "split_half": {
     "stable": false,
@@ -10240,6 +12229,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9032,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -10266,10 +12256,16 @@
     -0.5742,
     0.0829
    ],
-   "p_value": 0.899756,
-   "q_value": 0.999999,
-   "p_harm": 0.180797,
+   "p_value": 0.9315,
+   "p_wr": 0.899756,
+   "q_value": 1.0,
+   "p_harm": 0.0685,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6542,
+    0.0029
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0002,
    "split_half": {
     "stable": false,
@@ -10278,6 +12274,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9333,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 40.0% <= 50%",
@@ -10305,10 +12302,16 @@
     0.2688,
     1.8331
    ],
-   "p_value": 0.049369,
-   "q_value": 0.752877,
-   "p_harm": 0.978613,
+   "p_value": 0.0035,
+   "p_wr": 0.049369,
+   "q_value": 0.071167,
+   "p_harm": 0.9965,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.1188,
+    1.6831
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.6225,
    "split_half": {
     "stable": true,
@@ -10317,7 +12320,8 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8,
-   "verdict": "WEAK",
+   "single_source": false,
+   "verdict": "CANDIDATE",
    "reasons": [],
    "sharpe": 0.4923,
    "sr0": 0.4293
@@ -10340,10 +12344,16 @@
     0.4954,
     0.9662
    ],
-   "p_value": 0.000273,
-   "q_value": 0.016653,
-   "p_harm": 0.999948,
+   "p_value": 0.0,
+   "p_wr": 0.000273,
+   "q_value": 0.0,
+   "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    0.4454,
+    0.9162
+   ],
+   "stress_2x_ok": true,
    "dsr": 0.9865,
    "split_half": {
     "stable": true,
@@ -10352,6 +12362,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.6552,
+   "single_source": false,
    "verdict": "WEAK",
    "reasons": [
     "single symbol 100% of trades"
@@ -10377,10 +12388,16 @@
     -2.3299,
     0.2417
    ],
-   "p_value": 0.99373,
-   "q_value": 0.999999,
-   "p_harm": 0.017849,
+   "p_value": 0.9455,
+   "p_wr": 0.99373,
+   "q_value": 1.0,
+   "p_harm": 0.0545,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.4299,
+    0.1417
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0004,
    "split_half": {
     "stable": false,
@@ -10389,6 +12406,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 28.6% <= 50%",
@@ -10416,10 +12434,16 @@
     -1.7021,
     1.1562
    ],
-   "p_value": 0.907533,
-   "q_value": 0.999999,
-   "p_harm": 0.172464,
+   "p_value": 0.663,
+   "p_wr": 0.907533,
+   "q_value": 1.0,
+   "p_harm": 0.337,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.7821,
+    1.0762
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.004,
    "split_half": {
     "stable": false,
@@ -10428,6 +12452,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 39.3% <= 50%",
@@ -10455,10 +12480,16 @@
     -2.498,
     -1.0354
    ],
-   "p_value": 0.999545,
-   "q_value": 0.999999,
-   "p_harm": 0.002039,
-   "harm_q": 0.002848,
+   "p_value": 1.0,
+   "p_wr": 0.999545,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -2.648,
+    -1.1854
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -10467,6 +12498,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -10494,10 +12526,16 @@
     -0.5632,
     1.3846
    ],
-   "p_value": 0.212178,
-   "q_value": 0.999999,
-   "p_harm": 0.885239,
+   "p_value": 0.2045,
+   "p_wr": 0.212178,
+   "q_value": 0.779656,
+   "p_harm": 0.7955,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.6632,
+    1.2846
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0807,
    "split_half": {
     "stable": false,
@@ -10506,6 +12544,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -10532,10 +12571,16 @@
     -3.4416,
     -0.3616
    ],
-   "p_value": 0.988672,
-   "q_value": 0.999999,
-   "p_harm": 0.031957,
-   "harm_q": 0.031957,
+   "p_value": 0.99,
+   "p_wr": 0.988672,
+   "q_value": 1.0,
+   "p_harm": 0.01,
+   "harm_q": 0.01,
+   "net_ci_pct_2x": [
+    -3.5916,
+    -0.5116
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -10544,6 +12589,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -10571,10 +12617,16 @@
     -3.6308,
     0.7443
    ],
-   "p_value": 0.968043,
-   "q_value": 0.999999,
-   "p_harm": 0.075795,
+   "p_value": 0.9085,
+   "p_wr": 0.968043,
+   "q_value": 1.0,
+   "p_harm": 0.0915,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.7308,
+    0.6443
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0005,
    "split_half": {
     "stable": false,
@@ -10583,6 +12635,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 33.3% <= 50%",
@@ -10610,10 +12663,16 @@
     -4.3377,
     -1.9449
    ],
-   "p_value": 0.999756,
-   "q_value": 0.999999,
-   "p_harm": 0.0013,
-   "harm_q": 0.0026,
+   "p_value": 1.0,
+   "p_wr": 0.999756,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -4.4877,
+    -2.0949
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -10622,6 +12681,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -10649,10 +12709,16 @@
     -4.0145,
     5.2139
    ],
-   "p_value": 0.261734,
-   "q_value": 0.999999,
-   "p_harm": 0.856861,
+   "p_value": 0.346,
+   "p_wr": 0.261734,
+   "q_value": 0.880981,
+   "p_harm": 0.654,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -4.1145,
+    5.1139
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0272,
    "split_half": {
     "stable": false,
@@ -10661,6 +12727,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -10687,10 +12754,16 @@
     -1.3707,
     1.8096
    ],
-   "p_value": 0.584094,
-   "q_value": 0.999999,
-   "p_harm": 0.584094,
+   "p_value": 0.367,
+   "p_wr": 0.584094,
+   "q_value": 0.880981,
+   "p_harm": 0.633,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.4707,
+    1.7096
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.021,
    "split_half": {
     "stable": false,
@@ -10699,6 +12772,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -10725,10 +12799,16 @@
     -0.775,
     1.4261
    ],
-   "p_value": 0.331812,
-   "q_value": 0.999999,
-   "p_harm": 0.808345,
+   "p_value": 0.266,
+   "p_wr": 0.331812,
+   "q_value": 0.880981,
+   "p_harm": 0.734,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.875,
+    1.3261
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0532,
    "split_half": {
     "stable": false,
@@ -10737,6 +12817,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "split-half unstable (one half mean <= 0)",
@@ -10763,10 +12844,16 @@
     -6.6396,
     -1.5919
    ],
-   "p_value": 0.999799,
-   "q_value": 0.999999,
-   "p_harm": 0.001288,
-   "harm_q": 0.0026,
+   "p_value": 0.999,
+   "p_wr": 0.999799,
+   "q_value": 1.0,
+   "p_harm": 0.001,
+   "harm_q": 0.0016,
+   "net_ci_pct_2x": [
+    -6.7896,
+    -1.7419
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -10775,6 +12862,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -10802,10 +12890,16 @@
     -1.9175,
     -1.0226
    ],
-   "p_value": 0.999999,
-   "q_value": 0.999999,
-   "p_harm": 2e-05,
-   "harm_q": 0.00016,
+   "p_value": 1.0,
+   "p_wr": 0.999999,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -2.0675,
+    -1.1726
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -10814,6 +12908,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -10841,10 +12936,16 @@
     -3.568,
     2.001
    ],
-   "p_value": 0.942341,
-   "q_value": 0.999999,
-   "p_harm": 0.131588,
+   "p_value": 0.7635,
+   "p_wr": 0.942341,
+   "q_value": 1.0,
+   "p_harm": 0.2365,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -3.668,
+    1.901
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0033,
    "split_half": {
     "stable": false,
@@ -10853,6 +12954,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 35.0% <= 50%",
@@ -10880,10 +12982,16 @@
     -2.225,
     -0.875
    ],
-   "p_value": 0.99998,
-   "q_value": 0.999999,
-   "p_harm": 0.000201,
-   "harm_q": 0.000804,
+   "p_value": 1.0,
+   "p_wr": 0.99998,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "net_ci_pct_2x": [
+    -2.275,
+    -0.925
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0018,
    "split_half": {
     "stable": false,
@@ -10892,6 +13000,7 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -10920,9 +13029,15 @@
     -0.3656
    ],
    "p_value": 1.0,
+   "p_wr": 1.0,
    "q_value": null,
    "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.8517,
+    -0.4673
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -10931,6 +13046,7 @@
    },
    "top_symbol_share": 0.0416,
    "top_source_share": 0.8016,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -10956,10 +13072,16 @@
     -0.0798,
     0.2858
    ],
-   "p_value": 0.999984,
+   "p_value": 0.1135,
+   "p_wr": 0.999984,
    "q_value": null,
-   "p_harm": 2e-05,
+   "p_harm": 0.8865,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2298,
+    0.1358
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.4876,
    "split_half": {
     "stable": false,
@@ -10968,6 +13090,7 @@
    },
    "top_symbol_share": 0.0827,
    "top_source_share": 0.9509,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 44.2% <= 50%",
@@ -10993,10 +13116,16 @@
     -1.9153,
     -0.7291
    ],
-   "p_value": 0.996362,
+   "p_value": 1.0,
+   "p_wr": 0.996362,
    "q_value": null,
-   "p_harm": 0.007,
+   "p_harm": 0.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    -2.0298,
+    -0.8433
+   ],
+   "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -11005,6 +13134,7 @@
    },
    "top_symbol_share": 0.2346,
    "top_source_share": 0.6667,
+   "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
@@ -11030,11 +13160,17 @@
     0.8828,
     5.7397
    ],
-   "p_value": 0.031784,
+   "p_value": 0.005,
+   "p_wr": 0.031784,
    "q_value": null,
-   "p_harm": 0.990395,
+   "p_harm": 0.995,
    "harm_q": null,
-   "dsr": 0.8917,
+   "net_ci_pct_2x": [
+    0.7328,
+    5.5897
+   ],
+   "stress_2x_ok": true,
+   "dsr": null,
    "split_half": {
     "stable": true,
     "first_half_mean": 5.0327,
@@ -11042,12 +13178,11 @@
    },
    "top_symbol_share": 0.2632,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=19 < 20: no statistical claim"
-   ],
-   "sharpe": 0.6419,
-   "sr0": 0.2736
+   ]
   },
   {
    "family": "prediction_market",
@@ -11065,14 +13200,21 @@
     null,
     null
    ],
-   "p_value": 0.5,
+   "p_value": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=1 < 20: no statistical claim"
@@ -11316,7 +13458,7 @@
     "wr": 0.3833,
     "pf": 0.5434,
     "net_expectancy_pct": -0.3362,
-    "q_value": 0.999999,
+    "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.54 < 0.8",
@@ -11336,7 +13478,7 @@
     "wr": 0.3182,
     "pf": 0.5133,
     "net_expectancy_pct": -0.516,
-    "q_value": 0.999999,
+    "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.51 < 0.8",
@@ -11357,7 +13499,7 @@
     "wr": 0.2,
     "pf": 0.1499,
     "net_expectancy_pct": -1.804,
-    "q_value": 0.999999,
+    "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.15 < 0.8",
@@ -11378,7 +13520,7 @@
     "wr": 0.2917,
     "pf": 0.3458,
     "net_expectancy_pct": -1.9869,
-    "q_value": 0.999999,
+    "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.35 < 0.8",
@@ -11399,7 +13541,7 @@
     "wr": 0.1739,
     "pf": 0.1117,
     "net_expectancy_pct": -3.1953,
-    "q_value": 0.999999,
+    "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.11 < 0.8",
@@ -11420,7 +13562,7 @@
     "wr": 0.15,
     "pf": 0.1506,
     "net_expectancy_pct": -3.9177,
-    "q_value": 0.999999,
+    "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.15 < 0.8",
@@ -11441,7 +13583,7 @@
     "wr": 0.05,
     "pf": 0.0016,
     "net_expectancy_pct": -1.4369,
-    "q_value": 0.999999,
+    "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.00 < 0.8",
@@ -11461,7 +13603,7 @@
     "wr": 0.1,
     "pf": 0.1497,
     "net_expectancy_pct": -1.675,
-    "q_value": 0.999999,
+    "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.15 < 0.8",
@@ -11548,13 +13690,19 @@
    "FORWARD_SHADOW": 5
   },
   "open": [],
-  "untested_strategies": [],
+  "untested_strategies": [
+   "luxalgo_confluence"
+  ],
   "rule": "M-107: pre-register before any backtest; a strategy with no registered hypothesis cannot be promoted past CANDIDATE."
  },
  "provenance": {
   "module": "alpha_engine/audit3_tribunal.py",
-  "source_file": "/tmp/audit3/dashboard_data.json",
+  "generator_version": "audit3.v2",
+  "source_file": "/tmp/eh/dd.json",
   "source_generated_at": "2026-11-19T04:04:16.807952+00:00",
-  "n_cells_scored_with_dsr": 59
+  "input_sha256": "10da09f7c66eadffa3343ae5cef44671b3e73c47f7677909b5e413267b5cfd33",
+  "git_sha": "61dec6dd72d",
+  "n_cells_scored_with_dsr": 44,
+  "registry_note": "one canonical multiplicity N: n_cells_tested feeds BH, Bonferroni and DSR; DSR is only reported for cells inside that family"
  }
 }

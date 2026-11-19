@@ -1,6 +1,6 @@
 # Finance / Investment Database Schema Specification
 
-**Scope:** All MySQL databases on `mysql.50webs.com` that are finance/investment or
+**Scope:** All MySQL databases on `<DB_HOST>` that are finance/investment or
 backtesting related. Non-finance databases (`events`, `favcreators`, `news`,
 `tvmoviestrailers`) are documented only at the inventory level and are **not**
 detailed here.
@@ -13,7 +13,7 @@ tables (`TABLE_ROWS`), exact for the rest.
 
 ## 1. Connection / Host Layout
 
-- **Host:** `mysql.50webs.com:3306`
+- **Host:** `<DB_HOST>:3306`
 - **Model:** per-database users — user `ejaguiar1_<db>` accesses only database
   `ejaguiar1_<db>`. A single connection cannot do cross-DB operations; the
   backup tool uses a two-connection copy pattern.
@@ -406,10 +406,10 @@ market=totals  bet_type=Under 6.50  best_book=DraftKings
 
 ## 10. Source
 
-- Live schema pulled 2026-11-19 from `mysql.50webs.com` via
+- Live schema pulled 2026-11-19 from `<DB_HOST>` via
   `information_schema.COLUMNS` / `.TABLES` / `.STATISTICS`, plus `SELECT`
-  sample rows. Credentials resolved via the repo's `tools/db_env.py` +
-  `~/dbpasses.txt` per-DB user mapping. No credentials are exposed in this
+  sample rows. Credentials resolved via the repo's a runtime resolver (path not documented here) +
+  an operator-local credential store. No credentials or credential paths are documented in this
   document.
 - Raw scan dump: `/tmp/db_schema_dump.json`, `/tmp/stocks_tables.json`
   (local, not committed).
