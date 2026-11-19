@@ -135,7 +135,26 @@ Sources/records → Asset-class truth vs stored column → Hypothesis status →
 | `bh_family_n` | BH family size | multiplicity context | – | per namespace |
 | `raw_verdict` vs `verdict` | pre/post persistence | churn | – | persistence gate |
 
-### 3.2 Section-level defects
+### 3.2 Live integrity findings (19:05Z, after peer cross-check)
+
+Five facts a peer (buffy/review-main) raised, each re-derived from the 18:32:40Z ledger:
+
+1. **`raw_verdict == verdict` for 359/359 cells.** The persistence gate is a no-op on this
+   run — the page's "repeated looks" protection has nothing to compare against.
+2. **Only 3 of 67 cells with n≥20 have net-CI lower bound > 0**: `macd_rsi_m048` SHORT
+   (n=24, +3.03%/trade), `strong consensus` SHORT (n=24, PF 1,098 — an artifact), and
+   `forex_rsi2_mean_reversion` LONG (n=24, +0.895%). All three are WEAK at the n≥30 floor.
+3. **11 WEAK cells carried `reasons == []`** — including the best-looking cells (ETF
+   `rs-breakout-scout`, EQUITY `donchian-stock-breakout`). Their actual blocker is the CI
+   straddling zero, which the verdict logic never stated. Fixed: every WEAK now names the
+   blocking condition.
+4. **"0 CANDIDATE" is cell-scoped.** The symbol bucket holds **FOREX / AUDJPY / LONG,
+   n=33, net CI [0.242, 0.942]** — a CANDIDATE the KPI row does not count. The summary now
+   publishes `n_candidate_symbols` and a `summary_scope` note.
+5. **`selection_alpha.gate` does carry `applied/tested/demoted/scopes`**; it is nested under
+   `gate`, not top-level, which is why a reader scanning the block's keys misses it.
+
+### 3.3 Section-level defects
 
 - **`required_n` is published but never acted on.** A reader sees "EQUITY needs 7,389 rows
   (has 939)" and the page still presents EQUITY as the best class. That is fine as a ranking

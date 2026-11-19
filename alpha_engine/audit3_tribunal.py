@@ -938,6 +938,14 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
             verdict = "CANDIDATE"
         else:
             verdict = "WEAK"
+            if not expect_ci_positive:
+                # The primary blocker: the edge is not distinguishable from zero.
+                # Without this line a cell with a high WR, stable halves and no
+                # concentration ended up WEAK with reasons==[] (11 live cells).
+                lo_s = "n/a" if ci_lo is None else f"{ci_lo:+.3f}"
+                reasons.append(
+                    f"net-expectancy CI lower bound {lo_s} <= 0 — edge not "
+                    "distinguishable from zero")
             if wr < 0.5:
                 reasons.append(f"win rate {wr:.1%} <= 50%")
             if not stable:
@@ -1819,6 +1827,10 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "n_insufficient": count("INSUFFICIENT_N", cells),
         "kill_rate_pct": round(100.0 * count("KILL", cells) / len(tested), 2) if tested else 0.0,
         "n_proven_symbols": count("PROVEN_T2", symbols),
+        "n_candidate_symbols": count("CANDIDATE", symbols),
+        "n_weak_symbols": count("WEAK", symbols),
+        "summary_scope": "cell-level: n_proven/n_candidate count strategy cells only; "
+                         "symbol and class buckets are counted separately",
         "n_proven_classes": count("PROVEN_T2", classes),
         "n_kill_symbols": count("KILL", symbols),
         "n_segment_cells": len(segments),
