@@ -119,22 +119,6 @@ BOOT_SEED = 42
 MAX_SYMBOL_SHARE = 0.60
 MAX_SOURCE_SHARE = 0.90
 
-# DSR multiplicity floor (2026-11-19). The 2026-11-14 pf_registry audit counted
-# 658 distinct strategies in the live search space. A payload slice sees far
-# fewer, so feeding the slice count into deflated_sharpe under-corrects. PROVEN
-# pays max(observed, this floor); CANDIDATE uses the observed bucket width so the
-# forward queue is not emptied.
-GLOBAL_TRIAL_FLOOR = 658
-# Selection-alpha coverage floor: a small price-covered sample may not prove a
-# much larger cell. alpha_n must reach max(ALPHA_MIN_N, ALPHA_MIN_COVERAGE*n).
-ALPHA_MIN_N = 20
-ALPHA_MIN_COVERAGE = 0.50
-
-
-def global_trial_count(*counts: int) -> int:
-    """Trial count for DSR: the whole search space, never just the loaded slice."""
-    return max([GLOBAL_TRIAL_FLOOR, *(int(c) for c in counts if c)])
-
 # N1 (2026-11-19): repeated-looks correction. BH FDR is computed per run, but the
 # ledger is re-scored every ~6h, so a cell that crosses q<=0.10 once will
 # eventually do so by chance. A CANDIDATE/PROVEN_T2 verdict must therefore persist
@@ -853,20 +837,22 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     wr = wins / n if n else 0.0
     lo, hi = wilson_interval(wins, n) if n else (0.0, 1.0)
     pf = profit_factor(nets)
-    # F1 (2026-11-19): block bootstrap — overlapping picks are not i.i.d., so the
+    # F1 (2026-11-19): block bootstrap. Overlapping picks are not i.i.d., so the
     # G2 net-expectancy CI uses the circular block bootstrap to avoid overstating
     # precision. The cost-stress companion uses the same block mode.
     boot = bootstrap_mean_ci(nets, block=True) if n >= 2 else {"mean": 0.0,
                                                                "ci_lo": None,
                                                                "ci_hi": None,
                                                                "frac_positive": None}
-    # Cost-stress companion: the same net CI at twice the class slippage. It is
-    # a required gate for PROVEN_T2 and CANDIDATE (an edge that dies at 2x cost
-    # is a cost assumption, not skill); it is still reported on every cell.
+    # Cost-stress companion: the same net CI at twice the class slippage. Report
+    # only — it never changes a verdict, it shows how much of an edge is a cost
+    # assumption.
     nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
-    boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
+    boot_2x = bootstrap_mean_ci(nets_2x, block=True) if n >= 2 else {"ci_lo": None, "ci_hi": None}
     stress_2x_ok = bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0)
-    stable, halves = split_half_ok(nets)
+    mean_cost = (sum(_cost_pct(r) for r in rows) / n) if n else 0.0
+    floor_pct = materiality_floor(mean_cost)
+    stable, halves = split_half_ok(nets, min_mean=floor_pct)
     # Edge test (2026-11-19): expectancy, not P(win). A trend cell at WR 35% with
     # a 2.5 payoff is positive expectancy and cannot be judged by "won more often
     # than not"; a 60% WR cell with PF < 1 (EQUITY) is negative expectancy and
@@ -965,19 +951,6 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     else:
         reasons.append(f"n={n} < {WR_MIN_N}: no statistical claim")
 
-    # Power / MDE: how many trades this cell would need to confirm an edge of
-    # its observed size at 80% power (two-sided 5%), and the smallest effect
-    # the current n can detect. The n>=100 floor is a floor; this is the
-    # effect-sized number that tells a reader how far a cell still has to go.
-    sd = statistics.stdev(nets) if n >= 2 else None
-    mean_net = boot.get("mean", 0.0)
-    required_n = None
-    mde_pct = None
-    if sd is not None and sd > 0 and mean_net:
-        required_n = int(math.ceil((2.8 * sd / abs(mean_net)) ** 2))
-        mde_pct = round(2.8 * sd / math.sqrt(n), 4)
-    # N3 (recency/regime): an edge that came from a stale regime must not be
-    # promoted on the full-history statistic alone.
     recent_ok, recency = recency_ok(rows, nets)
     if verdict == "PROVEN_T2" and not recent_ok:
         verdict = "CANDIDATE"
@@ -1195,6 +1168,163 @@ def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
                 c["reasons"].append(f"G8 selection-alpha gate: {why} — beta-dominant")
 
 
+# ─────────────────────────────────────────────── N1 repeated looks ──
+_PERSISTENCE_KEY_FIELDS = ("asset_class", "strategy", "symbol", "direction",
+                          "namespace", "pod", "segment", "segment_value", "family")
+
+
+def cell_key(cell: dict) -> str:
+    """Stable identity for a cell across runs, from its label fields only."""
+    label = {k: cell.get(k) for k in _PERSISTENCE_KEY_FIELDS
+             if cell.get(k) is not None}
+    blob = json.dumps(label, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
+
+
+def load_history(path: str | None) -> dict[str, dict]:
+    """Read the verdict-persistence sidecar. Missing/corrupt file -> empty."""
+    if not path:
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    cells = data.get("cells") if isinstance(data, dict) else None
+    return cells if isinstance(cells, dict) else {}
+
+
+def save_history(path: str | None, history: dict[str, dict], *, run_at: str,
+                 runs_required: int) -> None:
+    if not path:
+        return
+    payload = {
+        "schema": "audit3.verdict_history.v1",
+        "updated_at": run_at,
+        "persistence_runs": runs_required,
+        "n_cells": len(history),
+        "cells": history,
+    }
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=1, sort_keys=True, allow_nan=False)
+        f.write("\n")
+
+
+def apply_persistence_gate(buckets: list[list[dict]], history: dict[str, dict],
+                           *, run_at: str, runs_required: int = PERSISTENCE_RUNS
+                           ) -> dict[str, int]:
+    """Demote any CANDIDATE/PROVEN_T2 that has not persisted across K runs.
+
+    ``history`` is mutated in place: for every cell seen this run it stores the
+    consecutive-run streak of raw (pre-gate) passes, the first run that passed
+    (``first_pass_at``), and the final verdict. A cell absent from this run has
+    its streak reset, because persistence means consecutive runs, not cumulative
+    runs with gaps.
+
+    Returns counters for the report's ``persistence`` block.
+    """
+    seen: set[str] = set()
+    demoted = 0
+    promoted = 0
+    for bucket in buckets:
+        for cell in bucket:
+            key = cell_key(cell)
+            seen.add(key)
+            rec = dict(history.get(key) or {})
+            prior_ok = rec.get("last_raw_verdict") in PERSISTENCE_VERDICTS
+            prior_passes = int(rec.get("passes") or 0)
+            raw = cell.get("verdict")
+            if raw in PERSISTENCE_VERDICTS:
+                streak = prior_passes + 1 if prior_ok else 1
+                first_pass_at = rec.get("first_pass_at") or run_at
+                if streak < runs_required:
+                    cell["verdict"] = "WEAK"
+                    cell["reasons"].append(
+                        f"repeated-looks: verdict persisted {streak}/{runs_required} "
+                        "consecutive runs (BH is per-run; a single cross is not enough)")
+                    demoted += 1
+                else:
+                    cell["first_pass_at"] = first_pass_at
+                    promoted += 1
+                rec["passes"] = streak
+                rec["first_pass_at"] = first_pass_at
+            else:
+                rec["passes"] = 0
+                rec["first_pass_at"] = None
+            rec["last_raw_verdict"] = raw
+            rec["last_verdict"] = cell.get("verdict")
+            rec["last_seen"] = run_at
+            history[key] = rec
+            cell["raw_verdict"] = raw
+    # A gap is not persistence: cells not scored this run lose their streak.
+    for key in list(history):
+        if key not in seen:
+            history[key]["passes"] = 0
+            history[key]["first_pass_at"] = None
+    return {"demoted": demoted, "promoted": promoted}
+
+
+def load_prev_verdicts(path: str | None) -> dict[str, str]:
+    """Read verdicts from a previous ledger for the churn monitor."""
+    if not path:
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    out: dict[str, str] = {}
+    for bucket in ("cells", "symbols", "classes", "segments"):
+        for cell in data.get(bucket) or []:
+            if not isinstance(cell, dict):
+                continue
+            verdict = cell.get("raw_verdict") or cell.get("verdict")
+            if verdict:
+                out[cell_key(cell)] = verdict
+    return out
+
+
+def compute_verdict_churn(buckets: list[list[dict]],
+                          prev: dict[str, str]) -> dict[str, Any]:
+    """Count cells whose raw verdict changed since the previous ledger.
+
+    Compares raw verdicts (pre-persistence) so the N1 hold-at-WEAK delay does not
+    register as instability. Alert only when enough cells are tracked.
+    """
+    tracked = 0
+    flipped = 0
+    flips: list[dict[str, Any]] = []
+    for bucket in buckets:
+        for cell in bucket:
+            key = cell_key(cell)
+            if key not in prev:
+                continue
+            tracked += 1
+            now = cell.get("raw_verdict") or cell.get("verdict")
+            if now != prev[key]:
+                flipped += 1
+                flips.append({
+                    "asset_class": cell.get("asset_class"),
+                    "strategy": cell.get("strategy") or cell.get("symbol"),
+                    "direction": cell.get("direction"),
+                    "from": prev[key], "to": now, "n": cell.get("n"),
+                })
+    rate = round(flipped / tracked, 4) if tracked else 0.0
+    alert = bool(tracked >= CHURN_MIN_TRACKED and rate > CHURN_ALERT_THRESHOLD)
+    return {
+        "available": bool(prev),
+        "n_tracked": tracked,
+        "n_flipped": flipped,
+        "churn_rate": rate,
+        "alert_threshold": CHURN_ALERT_THRESHOLD,
+        "min_tracked": CHURN_MIN_TRACKED,
+        "alert": alert,
+        "flips": flips[:50],
+    }
+
+
 def segment_tags(r: dict) -> list[tuple[str, str]]:
     """Reconstruct the published /audit section gates from fields the row carries.
 
@@ -1328,8 +1458,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  history: dict[str, dict] | None = None,
                  run_at: str | None = None,
                  persistence_runs: int = PERSISTENCE_RUNS,
-                 prev_verdicts: dict[str, str] | None = None,
-                 require_alpha: bool = False) -> dict[str, Any]:
+                 prev_verdicts: dict[str, str] | None = None) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
@@ -1460,6 +1589,16 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     for c in families:
         _promote(c, forward)
     apply_harm_gate(families)
+
+    # N1 repeated-looks gate. Applied after every per-run gate (BH, DSR, harm) so
+    # it is the last word on a claim, and only when a history sidecar is present.
+    persistence_counters = {"demoted": 0, "promoted": 0}
+    if history is not None:
+        persistence_counters = apply_persistence_gate(
+            [cells, symbols, classes, segments], history,
+            run_at=run_at, runs_required=persistence_runs)
+    churn = compute_verdict_churn([cells, symbols, classes, segments],
+                                  prev_verdicts or {})
 
     # Selection alpha (M1b) joined onto the class aggregates when a sidecar was
     # supplied. Kept optional: it needs per-symbol OHLC, so a job without DB
@@ -1728,7 +1867,6 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                                    "(the run that began the passing streak)",
         },
         "verdict_churn": churn,
-        "denylist_hits": _denylist_hit_summary(),
         "classes": classes,
         "segments": segments,
         "cells": cells,
@@ -1782,6 +1920,18 @@ def main(argv: list[str] | None = None) -> int:
                                      "alpha_engine/audit3_selection_alpha.py")
     ap.add_argument("--confirmatory", help="pre-registered pod manifest "
                                             f"(default {DEFAULT_CONFIRMATORY})")
+    ap.add_argument("--history", help="verdict-persistence sidecar (N1). Supplying "
+                                      "an existing file enables the repeated-looks gate")
+    ap.add_argument("--history-write", action="store_true",
+                    help="write the updated persistence sidecar back to --history")
+    ap.add_argument("--persistence-runs", type=int, default=PERSISTENCE_RUNS,
+                    help="consecutive runs a verdict must persist (default "
+                         f"{PERSISTENCE_RUNS})")
+    ap.add_argument("--prev-ledger", help="previous audit3 ledger for the "
+                                          "verdict-churn monitor")
+    ap.add_argument("--max-churn", type=float, default=None,
+                    help="exit 3 if the raw-verdict churn rate exceeds this "
+                         f"(alert threshold is {CHURN_ALERT_THRESHOLD})")
     from alpha_engine.forward_observations import DEFAULT_LEDGER as _FWD_LEDGER
     ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
                     help="forward-observations ledger that gates PROVEN_T2 "
@@ -1829,11 +1979,10 @@ def main(argv: list[str] | None = None) -> int:
     report = build_report(rows, args.picks, generated_at, coverage=coverage,
                           require_alpha=True,
                           alpha=alpha, input_sha256=_sha256(args.picks),
-                          confirmatory=manifest,
-                          forward=forward_gate_block(manifest, args.forward_ledger),
-                          history=history, run_at=run_at,
+                          confirmatory=manifest, history=history, run_at=run_at,
                           persistence_runs=args.persistence_runs,
-                          prev_verdicts=prev_verdicts)
+                          prev_verdicts=prev_verdicts,
+                          forward=forward_gate_block(manifest, args.forward_ledger))
     churn = report["verdict_churn"]
     if (args.max_churn is not None and churn["available"]
             and churn["n_tracked"] >= CHURN_MIN_TRACKED

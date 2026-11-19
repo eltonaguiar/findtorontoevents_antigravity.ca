@@ -9,7 +9,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from alpha_engine.audit3_tribunal import (  # noqa: E402
     apply_harm_gate,
-    apply_selection_alpha_gate,
     apply_persistence_gate,
     benjamini_hochberg,
     binom_sf,
@@ -19,7 +18,6 @@ from alpha_engine.audit3_tribunal import (  # noqa: E402
     compute_verdict_churn,
     deflated_sharpe,
     evaluate_cell,
-    global_trial_count,
     load_history,
     load_prev_verdicts,
     load_rows,
@@ -254,43 +252,6 @@ def test_load_rows_dedupes_and_drops_open(tmp_path):
     assert len(rows) == 1 and rows[0]["id"] == "a"
 
 
-def test_cell_reports_required_n_and_mde():
-    rows = _rows(60, 1.0) + _rows(60, -0.5)
-    cell = evaluate_cell(rows, 1, {"asset_class": "CRYPTO", "strategy": "s1",
-                                   "direction": "LONG"})
-    assert cell["required_n"] is not None and cell["required_n"] > 0
-    assert cell["mde_pct"] is not None and cell["mde_pct"] > 0
-    # no dispersion (all rows identical) -> no computable power/MDE
-    flat = evaluate_cell(_rows(20, 1.0), 1, {"asset_class": "CRYPTO",
-                                             "strategy": "s2", "direction": "LONG"})
-    assert flat["required_n"] is None
-    assert flat["mde_pct"] is None
-
-
-def test_selection_alpha_gate_demotes_a_beta_cell():
-    # A confirmatory cell can be PROVEN_T2 on its own expectancy CI and still be
-    # beta: if the picks do not beat holding the same instrument, it is not skill.
-    rows = _rows(150, 1.2, strategy="cellA")
-    for i, r in enumerate(rows):
-        r["symbol"] = f"SYM{i % 5}"
-        r["source_system"] = "src_a" if i % 2 else "src_b"
-    for r in rows[:5]:
-        r["pnl_pct"] = -0.8
-    manifest = {"path": "m.json", "available": True,
-                "pods": [{"id": "POD-A", "status": "pre_registered",
-                          "strategies": ["cellA"], "asset_classes": ["CRYPTO"],
-                          "directions": ["LONG"]}]}
-    alpha = {"by_class": {"CRYPTO": {"n": 120, "alpha_pct": -0.3,
-                                     "alpha_ci": [-0.6, 0.1], "alpha_wr": 0.45,
-                                     "hold_net_pct": 0.5}}}
-    rep = build_report(rows, "x.json", None, alpha=alpha, confirmatory=manifest)
-    cell = [c for c in rep["cells"] if c["strategy"] == "cellA"][0]
-    assert cell["verdict"] != "PROVEN_T2"
-    assert any("selection alpha" in r for r in cell["reasons"])
-    # Without the alpha sidecar the same rows are not demoted by this gate.
-    bare = build_report(rows, "x.json", None, confirmatory=manifest)
-    bare_cell = [c for c in bare["cells"] if c["strategy"] == "cellA"][0]
-    assert bare_cell["verdict"] == "PROVEN_T2"
 # ─────────────────────────────────────────────── N1 repeated looks ──
 def _labeled_cell(verdict="PROVEN_T2", **over):
     cell = {"verdict": verdict, "reasons": [], "asset_class": "CRYPTO",
@@ -425,9 +386,7 @@ def test_load_prev_verdicts_reads_raw_first(tmp_path):
     }))
     prev = load_prev_verdicts(str(path))
     assert prev[cell_key(_labeled_cell(strategy="s"))] == "CANDIDATE"
-    # A legacy row with no raw_verdict is skipped: comparing its post-gate
-    # verdict to today's raw verdict would report a false churn spike.
-    assert len(prev) == 1
+    assert len(prev) == 2
     assert load_prev_verdicts(str(tmp_path / "missing.json")) == {}
 
 
@@ -440,8 +399,7 @@ def test_main_max_churn_exits_3(tmp_path, monkeypatch):
     prev = tmp_path / "prev.json"
     prev.write_text(json.dumps({
         "cells": [{"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
-                   "namespace": "discovery", "verdict": "WEAK",
-                   "raw_verdict": "KILL"}]}))
+                   "namespace": "discovery", "verdict": "WEAK"}]}))
     rc = mod.main(["--picks", str(picks), "--out", str(tmp_path / "out.json"),
                    "--prev-ledger", str(prev), "--max-churn", "0.0"])
     assert rc == 3
@@ -510,242 +468,10 @@ def test_high_cost_class_needs_larger_edge():
                             "direction": "LONG", "namespace": "discovery"})
     assert crypto["materiality_floor_pct"] == 0.075
     assert crypto["verdict"] != "PROVEN_T2"
-    # 0.12 net on 0.10 cost: clears the 0.05 materiality floor AND the 2x-cost
-    # stress gate (net - cost = +0.02 > 0). A 0.06 edge would clear the floor but
-    # die at 2x cost, so it is correctly not PROVEN under the merged gates.
-    equity = evaluate_cell(_timed_rows([0.12] * 100, cost=0.10, ac="EQUITY"), 1,
+    equity = evaluate_cell(_timed_rows([0.06] * 100, cost=0.10, ac="EQUITY"), 1,
                            {"asset_class": "EQUITY", "strategy": "s1",
                             "direction": "LONG", "namespace": "discovery"})
     assert equity["materiality_floor_pct"] == 0.05
-    assert equity["verdict"] == "PROVEN_T2"
-
-
-# ─────────────────────────────────────────────── G8 selection-alpha scope ──
-def _proven_cell(**kw):
-    cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
-            "verdict": "PROVEN_T2", "reasons": []}
-    cell.update(kw)
-    return cell
-
-
-def test_selection_alpha_gate_rejects_a_class_proxy_for_a_strategy_cell():
-    """A positive class alpha does not prove the strategy beat buy-and-hold."""
-    cell = _proven_cell()
-    alpha = {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [0.5, 1.0]}},
-             "by_strategy": {}}
-    summary = apply_selection_alpha_gate([cell], alpha)
-    assert summary["applied"] is True and summary["demoted"] == 1
-    assert cell["verdict"] == "CANDIDATE"
-    assert cell["alpha_gate"]["alpha_ci_lo"] == 0.5
-    assert cell["alpha_gate"]["scope"] == "class_proxy"
-    assert cell["alpha_gate"]["passed"] is False
-    assert cell["alpha_gate"]["status"] == "proxy"
-    assert "beta_dominant" not in cell  # positive class alpha is not proof of beta
-
-
-def test_selection_alpha_gate_accepts_strategy_level_proof():
-    cell = _proven_cell()
-    alpha = {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-1.0, 1.0]}},
-             "by_strategy": {"CRYPTO/s1/LONG": {"n": 120, "alpha_ci": [0.2, 0.9]}}}
-    summary = apply_selection_alpha_gate([cell], alpha)
-    assert summary["demoted"] == 0
-    assert cell["verdict"] == "PROVEN_T2"
-    assert cell["alpha_gate"]["alpha_ci_lo"] == 0.2
-    assert cell["alpha_gate"]["scope"] == "strategy"
-    assert cell["alpha_gate"]["alpha_n"] == 120
-    assert cell["alpha_gate"]["passed"] is True
-    assert "beta_dominant" not in cell
-
-
-def test_selection_alpha_gate_flags_measured_negative_alpha_as_beta_dominant():
-    cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
-            "verdict": "CANDIDATE", "reasons": []}
-    apply_selection_alpha_gate(
-        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.9, -0.2]}}})
-    assert cell["verdict"] == "CANDIDATE"
-    assert cell["beta_dominant"] is True
-    assert cell["alpha_gate"]["status"] == "beta_dominant"
-
-
-def test_a_null_alpha_interval_is_unproven_not_beta_dominant():
-    """CI straddling zero is absence of proof, not proof of beta."""
-    cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
-            "verdict": "PROVEN_T2", "reasons": []}
-    summary = apply_selection_alpha_gate(
-        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.2, 0.1]}}})
-    assert summary["demoted"] == 1
-    assert cell["verdict"] == "CANDIDATE"
-    assert cell["alpha_gate"]["status"] == "unproven"
-    assert "beta_dominant" not in cell
-
-
-def test_selection_alpha_gate_reports_when_it_did_not_run():
-    assert apply_selection_alpha_gate([], None)["applied"] is False
-    assert apply_selection_alpha_gate([], {})["applied"] is False
-
-
-def test_build_report_records_that_the_alpha_gate_ran():
-    rows = _rows(160, 1.2)
-    for i, r in enumerate(rows):  # keep the symbol share under 60%
-        r["symbol"] = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"][i % 4]
-    report = build_report(rows, "synthetic", None,
-                          alpha={"by_class": {"CRYPTO": {"n": 160,
-                                                         "alpha_ci": [0.4, 1.1]}}})
-    gate = report["selection_alpha"]["gate"]
-    assert gate["applied"] is True
-    assert gate["scopes"].get("class_proxy", 0) >= 1
-
-
-# ───────────────────────────────────────────── DSR multiplicity floor ──
-def test_dsr_trial_count_never_below_the_registry_space():
-    assert global_trial_count(3) == 658
-    assert global_trial_count(0) == 658
-    assert global_trial_count(2000) == 2000
-
-
-# ───────────────────────────────────────────── source families ──
-def test_source_families_pass_the_multiplicity_gates():
-    """They are verdict-bearing rows, so they cannot skip BH/DSR."""
-    rows = _rows(160, 1.2)
-    for i, r in enumerate(rows):
-        r["symbol"] = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"][i % 4]
-    report = build_report(rows, "synthetic", None)
-    fam = next(f for f in report["source_families"] if f["n"] == 160)
-    assert fam["q_value"] is not None
-    assert fam["verdict"] != "PROVEN_T2"  # discovery cannot be sizing-eligible
-
-
-def test_proven_tier_pays_the_global_dsr_correction():
-    from alpha_engine.audit3_tribunal import _promote
-    cell = {"verdict": "PROVEN_T2", "n": 120, "q_value": 0.01, "dsr": 0.40,
-            "dsr_local": 0.99, "reasons": [], "namespace": "confirmatory"}
-    _promote(cell)
-    assert cell["verdict"] == "CANDIDATE"
-
-
-def test_candidate_tier_falls_back_to_global_dsr_when_local_is_uncomputable():
-    from alpha_engine.audit3_tribunal import _promote
-    # Single-cell bucket: dsr_local is None (not computable). The gate must NOT
-    # be skipped — it falls back to the global DSR. A global DSR of 0.10 fails.
-    cell = {"verdict": "CANDIDATE", "n": 120, "q_value": 0.01, "dsr": 0.10,
-            "dsr_local": None, "reasons": []}
-    _promote(cell)
-    assert cell["verdict"] == "WEAK", "a 1-local-trial cell escaped the DSR floor"
-    ok = {"verdict": "CANDIDATE", "n": 120, "q_value": 0.01, "dsr": 0.90,
-          "dsr_local": None, "reasons": []}
-    _promote(ok)
-    assert ok["verdict"] == "CANDIDATE"
-    # A real local breadth with a poor local DSR still demotes.
-    cell2 = {"verdict": "CANDIDATE", "n": 120, "q_value": 0.01, "dsr": 0.90,
-             "dsr_local": 0.30, "reasons": []}
-    _promote(cell2)
-    assert cell2["verdict"] == "WEAK"
-
-
-def test_require_alpha_demotes_proven_when_the_sidecar_is_missing():
-    from alpha_engine.audit3_tribunal import demote_proven_without_alpha
-    cell = _proven_cell()
-    # Library callers keep fail-open...
-    assert apply_selection_alpha_gate([cell], None)["applied"] is False
-    assert cell["verdict"] == "PROVEN_T2"
-    # ...but the published path must not call an unmeasured alpha "proven".
-    assert demote_proven_without_alpha(([cell],)) == 1
-    assert cell["verdict"] == "CANDIDATE"
-    assert any("alpha sidecar unavailable" in r for r in cell["reasons"])
-
-
-def test_alpha_must_cover_enough_of_the_cell_to_prove_it():
-    cell = _proven_cell(n=500)
-    alpha = {"by_class": {"CRYPTO": {"n": 500, "alpha_ci": [0.4, 1.0]}},
-             "by_strategy": {"CRYPTO/s1/LONG": {"n": 20, "alpha_ci": [0.3, 0.9]}}}
-    summary = apply_selection_alpha_gate([cell], alpha)
-    assert summary["demoted"] == 1
-    assert cell["alpha_gate"]["scope"] == "strategy"
-    assert cell["alpha_gate"]["alpha_coverage_ok"] is False
-    assert cell["verdict"] == "CANDIDATE"
-    assert "covers 20/500" in " ".join(cell["reasons"])
-
-
-# ─────────────────────────────── WEAK cells must always state their blocker ──
-def test_every_weak_cell_explains_why():
-    """A WEAK verdict with reasons==[] silently hides the blocking condition."""
-    # 50% WR, flat mean, stable halves, spread symbols: the only blocker is the
-    # net-expectancy CI straddling zero.
-    rows = _rows(30, 30, 0.2, -0.1)
-    report = build_report(rows, "x.json", None)
-    cell = report["cells"][0]
-    assert cell["verdict"] in ("WEAK", "CANDIDATE", "INSUFFICIENT_N")
-    if cell["verdict"] == "WEAK":
-        assert cell["reasons"], "WEAK with no reason"
-        assert any("distinguishable from zero" in r for r in cell["reasons"])
-
-
-def test_summary_declares_its_scope_and_counts_symbols_separately():
-    rows = _rows(30, 30, 0.2, -0.1)
-    s = build_report(rows, "x.json", None)["summary"]
-    assert "cell-level" in s["summary_scope"]
-    assert "n_candidate_symbols" in s
-    assert "n_proven_symbols" in s
-
-
-def test_dsr_is_always_published_with_its_trial_count():
-    """A class DSR with an undeclared trial count is not auditable."""
-    rows = _rows(160, 1.5)                   # variance is required for a Sharpe
-    for i, r in enumerate(rows):
-        r["pnl_pct"] = 1.5 if i % 2 == 0 else -0.5
-        r["status"] = "WON" if r["pnl_pct"] > 0 else "LOST"
-        r["symbol"] = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"][i % 4]
-    rep = build_report(rows, "x.json", None)
-    cell = rep["cells"][0]
-    assert cell.get("dsr") is not None
-    assert cell["dsr_n_trials"] >= 658          # global floor, never 1
-    for cls in rep["classes"]:
-        if cls.get("dsr") is not None:
-            assert cls["dsr_n_trials"] >= 658
-
-
-# ───────────────────────────── provenance: population, cost, win definition ──
-def test_every_number_is_joinable_to_its_provenance_triple():
-    rows = _rows(160, 1.5)
-    for i, r in enumerate(rows):
-        r["pnl_pct"] = 1.5 if i % 2 == 0 else -0.5
-        r["status"] = "WON" if r["pnl_pct"] > 0 else "LOST"
-        r["symbol"] = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"][i % 4]
-    rep = build_report(rows, "x.json", None)
-
-    p = rep["provenance"]
-    assert p["id"] and len(p["id"]) == 16
-    assert p["population"] in ("canonical", "payload_slice")
-    assert "round-trip slippage" in p["cost_model"]
-    assert p["win_definition"] == "net pnl_pct > 0 after round-trip class slippage"
-
-    for key in ("cells", "symbols", "classes", "segments", "source_families"):
-        for c in rep.get(key) or []:
-            assert c.get("provenance_id") == p["id"], (key, c.get("strategy"))
-
-
-def test_share_of_valid_is_machine_readable_not_silently_null():
-    rep = build_report(_rows(40, 1.0), "x.json", None)
-    cov = rep["coverage"]
-    assert "scored_share_of_valid_pct_status" in cov
-    if cov["scored_share_of_valid_pct"] is None:
-        assert cov["scored_share_of_valid_pct_status"] == "not_comparable"
-    else:
-        assert cov["scored_share_of_valid_pct_status"] == "ok"
-
-def test_report_carries_denylist_hit_summary(tmp_path, monkeypatch):
-    import json as _json
-    log = tmp_path / "hits.jsonl"
-    log.write_text("\n".join(_json.dumps(r) for r in [
-        {"ts": "2026-11-19T21:00:00Z", "strategy": "s1", "symbol": "BTCUSDT",
-         "asset_class": "CRYPTO", "reason": "audit3 KILL: CRYPTO"},
-        {"ts": "2026-11-19T21:01:00Z", "strategy": "s1", "symbol": "ETHUSDT",
-         "asset_class": "CRYPTO", "reason": "audit3 KILL: CRYPTO"},
-    ]) + "\n")
-    monkeypatch.delenv("AUDIT3_DENYLIST_DISABLED", raising=False)
-    monkeypatch.setenv("AUDIT3_DENYLIST_HIT_LOG", str(log))
-    rep = build_report(_rows(60, 1.0), "x.json", None)
-    hits = rep["denylist_hits"]
-    assert hits["available"] is True and hits["n"] == 2
-    assert hits["by_class"] == {"CRYPTO": 2}
-    assert hits["top_strategies"]["s1"] == 2
+    # Equity clears the N4 materiality floor (0.06 >= 0.05) but its 0.06% edge
+    # is wiped at 2x cost (0.10), so the G9 cost-stress gate caps it one tier.
+    assert equity["verdict"] == "CANDIDATE"

@@ -77,6 +77,14 @@ MIN_HOLD_DAYS_FOR_HEADLINE = 1.0
 ANNUALIZATION_DAYS = 365.0
 MIN_HOLD_DAYS_FLOOR = 1.0 / 24.0
 
+# N5 (2026-11-19): selection alpha is hold-time dependent. A 1-hour pick and a
+# 30-day pick are not the same claim, so the headline is reported per day and
+# annualised, and a minimum-hold participation figure shows how much of the book
+# actually held long enough to be comparable.
+MIN_HOLD_DAYS_FOR_HEADLINE = 1.0
+ANNUALIZATION_DAYS = 365.0
+MIN_HOLD_DAYS_FLOOR = 1.0 / 24.0
+
 
 def _conn():
     """Resolve credentials through tools/db_env.py, never raw env vars.
@@ -306,30 +314,10 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
             missing[f"no_bar:{klass}"] += 1
             continue
         move = (p1 / p0 - 1.0) * 100.0
-        bench = move if direction == "LONG" else -move
+        bench = move if _dir(r) == "LONG" else -move
         hold_days = max((t1 - t0).total_seconds() / 86400.0, 0.0)
-        per.append({"row": r, "class": klass, "dir": direction, "pnl": pnl,
+        per.append({"row": r, "class": klass, "dir": _dir(r), "pnl": pnl,
                     "hold": bench, "alpha": pnl - bench, "hold_days": hold_days})
-        if collect:
-            # Per-pick rows exist so a *slice* can be tested, not just a class.
-            # A class average hides the exit-geometry question (did TP cut
-            # winners short?) and the score question (does the score sort?).
-            records.append({
-                "class": klass, "dir": direction,
-                "symbol": str(r.get("symbol") or ""),
-                "strategy": str(r.get("strategy") or ""),
-                "source": str(r.get("source_system") or ""),
-                "exit_reason": str(r.get("exit_reason") or r.get("exit_reason_raw") or ""),
-                "timeframe": str(r.get("trade_timeframe") or ""),
-                "trust_tier": str(r.get("at_issue_trust_tier") or r.get("trust_tier") or ""),
-                "score": _num(r.get("score")), "elite_score": _num(r.get("elite_score")),
-                "confidence": _num(r.get("confidence")),
-                "rr_ratio": _num(r.get("rr_ratio")),
-                "strat_fwd_wr": _num(r.get("strat_fwd_wr")),
-                "pnl": round(pnl, 4), "hold": round(bench, 4),
-                "alpha": round(pnl - bench, 4), "hold_days": round(hold_days, 4),
-                "entry_time": t0.isoformat(), "closed_at": t1.isoformat(),
-            })
 
     def agg(items):
         if not items:

@@ -1283,7 +1283,7 @@ jobs:
 
               # HTML pages
               ftp.cwd(f"/{SITE_ROOT}/audit")
-              for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
+              for page in ["claudes_test.html", "audit2.html", "trading_blueprint.html", "funds.html",
                            "kimi_top_picks.html", "antigravity_picks.html", "portfolio_history.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
@@ -1293,6 +1293,13 @@ jobs:
                              "opencode_paper_trading.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)
+                  except Exception:
+                      pass
+              # audit2 loads audit2.js + audit2_forward.json relative to its own URL
+              for a2 in ["audit2.js", "audit2_forward.json"]:
+                  try:
+                      _a2src = "audit_dashboard/" + a2 if a2.endswith(".js") else "audit_dashboard/data/" + a2
+                      ftp_upload(ftp, _a2src, f"/{SITE_ROOT}/audit", a2, label)
                   except Exception:
                       pass
 
@@ -1408,7 +1415,7 @@ jobs:
 
               # HTML pages
               ftp.cwd("/audit")
-              for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
+              for page in ["claudes_test.html", "audit2.html", "trading_blueprint.html", "funds.html",
                             "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                             "real_money.html", "research_sidecars.html", "research_index.html",
                             "ai_leaderboard.html", "ai-tournament.html", "summary.html",
@@ -1417,6 +1424,13 @@ jobs:
                              "opencode_paper_trading.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", "/audit", page, label)
+                  except Exception:
+                      pass
+              # audit2 loads audit2.js + audit2_forward.json relative to its own URL
+              for a2 in ["audit2.js", "audit2_forward.json"]:
+                  try:
+                      _a2src = "audit_dashboard/" + a2 if a2.endswith(".js") else "audit_dashboard/data/" + a2
+                      ftp_upload(ftp, _a2src, "/audit", a2, label)
                   except Exception:
                       pass
 
@@ -1462,7 +1476,7 @@ jobs:
                       ftp_upload(ftp, f"audit_dashboard/{jsf}", f"/{SITE_ROOT}/audit", jsf, label)
                   except Exception as e:
                       print(f"  [{label}] Failed {jsf}: {e}")
-              for page in ["funds.html", "claudes_test.html", "trading_blueprint.html",
+              for page in ["funds.html", "claudes_test.html", "audit2.html", "trading_blueprint.html",
                             "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                             "real_money.html", "research_sidecars.html", "research_index.html",
                             "ai_leaderboard.html", "ai-tournament.html", "summary.html",
@@ -1471,6 +1485,13 @@ jobs:
                              "opencode_paper_trading.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)
+                  except Exception:
+                      pass
+              # audit2 loads audit2.js + audit2_forward.json relative to its own URL
+              for a2 in ["audit2.js", "audit2_forward.json"]:
+                  try:
+                      _a2src = "audit_dashboard/" + a2 if a2.endswith(".js") else "audit_dashboard/data/" + a2
+                      ftp_upload(ftp, _a2src, f"/{SITE_ROOT}/audit", a2, label)
                   except Exception:
                       pass
 

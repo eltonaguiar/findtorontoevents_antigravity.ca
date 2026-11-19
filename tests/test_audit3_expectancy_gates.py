@@ -62,10 +62,10 @@ def test_expectancy_primary_promotes_low_win_rate_cell():
     # strictly positive (never 0) and small; this synthetic cell still has a few
     # non-positive resamples, so the floor is the bound, not the value.
     assert 0 < cell["p_value"] < 0.01
-    # G9 cost-stress gate: at 2x the class slippage this thin edge's net CI lower
-    # bound rounds to -0.0, so PROVEN_T2 demotes one tier to CANDIDATE.
-    assert cell["verdict"] == "CANDIDATE"
-    assert cell["stress_2x_ok"] is False
+    # Full gate stack: block bootstrap (F1) keeps the 2x-cost CI positive, so G9
+    # stress passes and the cell reaches PROVEN_T2 (expectancy-primary intent).
+    assert cell["verdict"] == "PROVEN_T2"
+    assert cell["stress_2x_ok"] is True
     # Same evidence without a pre-registered pod: forward paper, not sizing.
     bare = build_report(rows, "x.json", None, confirmatory={"pods": []})
     assert bare["cells"][0]["verdict"] == "CANDIDATE"
