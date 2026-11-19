@@ -127,3 +127,16 @@ def test_random_control_arm_ignores_momentum_and_is_deterministic():
     p2 = S.rotation_rebalance(st2, cfg, series, prices, "2026-11-19")["picks"]
     assert p1 == p2 and len(p1) == 2       # deterministic, and does not prefer winners
     assert "A" in p1 or "A" not in p1      # selection is random, not momentum-driven
+
+
+def test_rotation_sleeve_matches_the_validated_spec():
+    """Pre-registration integrity: the sleeve must trade the studied universe/rules."""
+    import json
+    from pathlib import Path
+    cfg = json.loads((Path(__file__).resolve().parents[1] / "paper_trading" / "sleeves.json").read_text())
+    rot = next(s for s in cfg["sleeves"] if s["id"] == "etf-rotation")
+    assert len(rot["universe"]) == 14
+    assert rot["rules"]["top_n"] == 5
+    assert rot["rules"]["lookback_days"] == 189          # ~9 months, the regime-robust default
+    assert rot["rules"]["absolute_filter"] is True
+    assert "LAG-CORRECTED" in rot["thesis"]

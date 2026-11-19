@@ -275,7 +275,7 @@ This is the strongest evidence in the repo:
 The backtest is monthly-rebalanced (low turnover), which is why friction does not kill it —
 that is a genuinely favourable property. The proof gap is the forward clock, not the method.
 
-**Pre-registerable next test:** top-3 long-only sector rotation, monthly, vol-scaled,
+**Pre-registerable next test:** top-5 long-only asset-class ETF rotation (14-ETF universe, 9-month momentum), monthly, absolute filter,
 with a same-window SPY buy-and-hold benchmark leg and a random-entry null. `required_n` for
 the current ETF pod cell (rs-breakout, n=80) is ~201, so a 12-month forward run at monthly
 cadence cannot reach it; a weekly-cadence variant is needed to accumulate rows.

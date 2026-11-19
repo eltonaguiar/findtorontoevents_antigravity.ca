@@ -15,7 +15,7 @@ have a backtest we can attempt to replicate.
 
 | Candidate | Best evidence | Can $2k express it? | Verdict |
 |---|---|---|---|
-| **ETFs** | Top-3 sector rotation PF 2.05 / Sharpe 0.97 / MDD 16.1% (2015–2026), cost-robust | **Yes** — fractional shares, no leverage, ~1 bp spread, monthly turnover | **Pick** |
+| **ETFs** | Sector rotation PF 2.05 / Sharpe 0.97 / MDD 16.1% (2015–2026); TAA 9-month rotation lag-corrected Sharpe 0.82 vs SPY 0.69 with MDD −20.9% vs −52.9% | **Yes** — fractional shares, no leverage, ~1 bp spread, monthly turnover | **Pick** |
 | Futures | TSMOM: 58 contracts, 25+ years, positive for every contract (Grade A) | No — contract minimums and a diversified basket need far more capital | Paper only |
 | Equities | 12-1 momentum/value/quality (Grade A) | Partly — single names at $2k concentrate risk; no PDT headroom | Small sleeve |
 | Mutual funds | Fee arithmetic only | Yes, but it is beta, not edge | Core only |
@@ -56,7 +56,7 @@ at brokers that have implemented it — but the friction table above and the bas
 | Sleeve | Capital | Instrument | Why | Kill rule |
 |---|---:|---|---|---|
 | **Core beta** | $1,400 (70%) | One broad, low-cost index ETF (e.g. total US market) | Removes the need to be right; the only guaranteed-positive-expectancy exposure after fees | none (rebalance only) |
-| **Rotation** | $400 (20%) | Top-3 long-only sector ETFs, monthly, vol-scaled | The only in-house backtest with a plausible edge and low turnover | −15% or 3 negative months |
+| **Rotation** | $400 (20%) | Top-5 long-only asset-class ETFs, 9-month momentum, monthly, absolute filter (14-ETF universe) | The only in-house backtest with a plausible edge and low turnover; lag-corrected evidence is drawdown control, not excess return | −15% or 3 negative months |
 | **Sandbox** | $200 (10%) | **Paper only** — crypto/forex intraday | Learn and measure without paying the 9%/month friction | never funded until gates pass |
 
 **Hard rules:** ≤2% account risk per position; no leverage; no averaging down; every change
