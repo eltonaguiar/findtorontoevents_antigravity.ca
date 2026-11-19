@@ -8,13 +8,13 @@ const PUBLISHED = JSON.parse(fs.readFileSync(DATA_PATH, 'utf-8')) as Array<any>;
 
 test.describe('BESTIEJOB GitHub Pages', () => {
   test('loads with correct title and header', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await expect(page).toHaveTitle(/BestieJob/i);
     await expect(page.locator('h1')).toContainText(/SN\/SF Developer Leads/i);
   });
 
   test('renders every published lead from the JSON feed', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const rows = page.locator('#rows tr');
     await expect(rows).toHaveCount(PUBLISHED.length, { timeout: 10000 });
     await expect(page.locator('#count')).toContainText(`${PUBLISHED.length} of ${PUBLISHED.length}`);
@@ -36,7 +36,7 @@ test.describe('BESTIEJOB GitHub Pages', () => {
   test('track filter narrows to a single track', async ({ page }) => {
     const snCount = PUBLISHED.filter(r => r.track === 'servicenow').length;
     const sfCount = PUBLISHED.filter(r => r.track === 'salesforce').length;
-    await page.goto('/');
+    await page.goto('./');
 
     await page.locator('#track').selectOption('servicenow');
     const snBadges = page.locator('#rows tr td:nth-child(5) .badge');
@@ -54,7 +54,7 @@ test.describe('BESTIEJOB GitHub Pages', () => {
   });
 
   test('text search filters rows', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const term = String(PUBLISHED[0].company || PUBLISHED[0].title).split(' ')[0];
     await page.locator('#q').fill(term);
     const rows = page.locator('#rows tr');
@@ -66,7 +66,7 @@ test.describe('BESTIEJOB GitHub Pages', () => {
   });
 
   test('every row link is a safe external link', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const links = page.locator('#rows tr a');
     const n = await links.count();
     expect(n).toBe(PUBLISHED.length);
@@ -82,7 +82,7 @@ test.describe('BESTIEJOB GitHub Pages', () => {
     const errors: string[] = [];
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
     page.on('pageerror', e => errors.push(String(e)));
-    await page.goto('/');
+    await page.goto('./');
     await expect(page.locator('#rows tr').first()).toBeVisible({ timeout: 10000 });
     expect(errors, errors.join('\n')).toEqual([]);
   });
@@ -90,7 +90,7 @@ test.describe('BESTIEJOB GitHub Pages', () => {
   test('mobile viewport renders without horizontal page overflow', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
-    await page.goto('/');
+    await page.goto('./');
     await expect(page.locator('#rows tr').first()).toBeVisible({ timeout: 10000 });
     const overflow = await page.evaluate(() =>
       document.documentElement.scrollWidth - document.documentElement.clientWidth);
