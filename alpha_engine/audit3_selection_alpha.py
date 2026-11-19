@@ -37,6 +37,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from alpha_engine.audit3_tribunal import bootstrap_mean_ci  # noqa: E402
+try:  # shared canonicaliser: BUY/L/S must not become "?"
+    from alpha_engine.symbol_identity import direction_key as _dir_key
+except ImportError:  # pragma: no cover
+    def _dir_key(direction):
+        d = str(direction or "").strip().upper()
+        if d.startswith(("B", "L")):
+            return "LONG"
+        if d.startswith("S"):
+            return "SHORT"
+        return d or "UNKNOWN"
 from alpha_engine.audit3_edge_hunt import net_pnl, issued_at, closed_at, _class, _dir  # noqa: E402
 
 TABLE_FOR = {
@@ -229,6 +239,13 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
         if t0 is None or t1 is None or pnl is None:
             missing["no_timestamp"] += 1
             continue
+        if t0 >= t1:
+            # issued_at falls back to closed_at when no entry stamp exists; that
+            # makes p0 == p1, move == 0 and alpha == pnl, i.e. a fabricated zero
+            # benchmark that a beta-only strategy could pass G9 on.
+            missing["degenerate_window"] += 1
+            continue
+        direction = _dir_key(r.get("direction"))
         series = None
         for cand in symbol_candidates(r.get("symbol"), klass):
             key = f"{klass}:{cand}"
@@ -245,16 +262,16 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
             missing[f"no_bar:{klass}"] += 1
             continue
         move = (p1 / p0 - 1.0) * 100.0
-        bench = move if _dir(r) == "LONG" else -move
+        bench = move if direction == "LONG" else -move
         hold_days = max((t1 - t0).total_seconds() / 86400.0, 0.0)
-        per.append({"row": r, "class": klass, "dir": _dir(r), "pnl": pnl,
+        per.append({"row": r, "class": klass, "dir": direction, "pnl": pnl,
                     "hold": bench, "alpha": pnl - bench, "hold_days": hold_days})
         if collect:
             # Per-pick rows exist so a *slice* can be tested, not just a class.
             # A class average hides the exit-geometry question (did TP cut
             # winners short?) and the score question (does the score sort?).
             records.append({
-                "class": klass, "dir": _dir(r),
+                "class": klass, "dir": direction,
                 "symbol": str(r.get("symbol") or ""),
                 "strategy": str(r.get("strategy") or ""),
                 "source": str(r.get("source_system") or ""),
@@ -309,8 +326,21 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
             items = [x for x in per if x["class"] == c and x["dir"] == d]
             if len(items) >= 20:
                 by_slice[f"{c}/{d}"] = agg(items)
+    # Strategy-level alpha, keyed exactly as the tribunal labels its cells
+    # (CLASS/STRATEGY/DIRECTION). G9 needs this: a class aggregate can look like
+    # skill while one strategy inside it is pure beta.
+    def _strat(r: dict) -> str:
+        return str(r.get("strategy") or r.get("source_system") or "(unattributed)")
+
+    strat_items: dict[tuple[str, str, str], list[dict]] = {}
+    for x in per:
+        strat_items.setdefault((x["class"], _strat(x["row"]), x["dir"]), []).append(x)
+    by_strategy = {f"{c}/{st}/{d}": agg(items)
+                   for (c, st, d), items in sorted(strat_items.items())
+                   if len(items) >= 20}
     out = {"covered": len(per), "missing": dict(missing), "overall": agg(per),
-           "by_class": by_cls, "by_slice": by_slice, "n_universe": len(rows)}
+           "by_class": by_cls, "by_slice": by_slice, "by_strategy": by_strategy,
+           "n_universe": len(rows)}
     if collect:
         out["records"] = records
     return out

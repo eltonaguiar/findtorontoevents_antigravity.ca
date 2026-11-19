@@ -1,0 +1,113 @@
+name: forward observations ingest
+
+# P1-4: the forward-observation ledger (reports/forward_observations.jsonl) is the
+# only table that can mint PROVEN_T2 from evidence postdating a hypothesis. It was
+# filled once by hand on 2026-11-19 (430 H-119 rows, commit 5c0c42d) and then
+# stopped: nothing scheduled the writer, and the writer defaults to a dry run.
+# A ledger that does not accrue is indistinguishable from no ledger, so this job
+# runs the ingest on its own 6-hourly schedule and commits the result.
+#
+# Offsets: audit3-ledger owns ':23 */6', the denylist watchdog owns ':45 *'.
+# This job owns ':41 */6' so it never contends with either.
+#
+# Failure policy: if the DB secret is absent the job warns and exits green (the
+# same convention audit3-ledger uses for its optional selection-alpha step). If
+# the secret is present but ingestion fails, the job goes RED — a silent gap in
+# forward evidence is exactly the failure this job exists to surface.
+
+on:
+  schedule:
+    - cron: '41 */6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forward-observations-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+      DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install DB driver
+        run: python3 -m pip install --quiet 'pymysql>=1.1'
+
+      - name: Ingest honest cohort into the forward ledger
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "::warning title=forward-observations::no DB secret — ledger not accruing"
+            exit 0
+          fi
+          python3 -m alpha_engine.forward_observations_ingest \
+            --apply --json --ledger reports/forward_observations.jsonl \
+            | tee /tmp/forward_ingest.json
+
+      - name: Summarise ledger health
+        if: env.DB_PASS_STOCKS != '' || env.DB_PASSWORDS_JSON != ''
+        run: |
+          python3 - <<'PY'
+          import json
+          from collections import Counter
+          rows = [json.loads(l) for l in open("reports/forward_observations.jsonl") if l.strip()]
+          by_h = Counter(r.get("hypothesis_id") for r in rows)
+          rep = json.load(open("/tmp/forward_ingest.json"))
+          print(f"ledger rows={len(rows)} by_hypothesis={dict(by_h)}")
+          print(f"this run: admissible={rep.get('n_admissible')} "
+                f"added={rep.get('write',{}).get('added')} "
+                f"duplicates={rep.get('write',{}).get('duplicates')}")
+          # Every registered pod with no forward rows is a coverage hole the page
+          # must show; fail only when the ledger is empty (writer is broken).
+          assert rows, "forward ledger is empty after an --apply run"
+          # A verdict-bearing PROVEN/CANDIDATE cell with no forward instrument can
+          # never be confirmed. Say so loudly instead of letting the ledger look
+          # complete because it is non-empty.
+          try:
+              led = json.load(open("audit_dashboard/data/audit3_ledger.json"))
+          except Exception:
+              led = {}
+          cells = [c for c in (led.get("cells") or [])
+                   if c.get("verdict") in ("PROVEN_T2", "CANDIDATE")]
+          if cells:
+              print(f"promotion-eligible cells needing forward evidence: {len(cells)}")
+              for c in cells[:20]:
+                  print(f"  {c.get('verdict')} {c.get('asset_class')}/{c.get('strategy')}/"
+                        f"{c.get('direction')} n={c.get('n')}")
+          registered = set(by_h)
+          if not registered:
+              print("::warning title=forward-observations::no hypothesis has forward rows")
+          PY
+
+      - name: Commit ledger (data only, [skip ci])
+        if: env.DB_PASS_STOCKS != '' || env.DB_PASSWORDS_JSON != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/forward_observations.jsonl
+          if git diff --cached --quiet; then
+            echo "forward ledger unchanged"
+            exit 0
+          fi
+          git commit -m "chore(forward): accrue forward observations from honest cohort [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*5))
+          done
+          echo "::error title=forward-observations::ledger commit could not be pushed"
+          exit 1
