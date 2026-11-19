@@ -104,6 +104,40 @@ momentum, top-3, 5bp/leg, cash=SHY, `H-20260612-equity_sector_rotation_vix`); wi
 sector-rotation lagged reproduction on the same scaffolding and register the measured spec as its
 own pod (T16 in progress).
 
+
+**Opencode (Windows), 21:17Z — full 16-element vote (verified live ledger `c4efa215e26a91ba`):**
+1 KEEP · 2 KEEP-WITH-CHANGE (per-class/tier thresholds; publish `dsr_n_trials` beside DSR; fail
+tiles lacking the triple) · 3 KEEP (+ publish min-hold subset −0.103%/trade n=1,641 and per-class
+alpha) · 4 KEEP-WITH-CHANGE (per-hypothesis watchdog; fix pod mapping; benchmark ≥90%, PF CI-LB>1)
+· 5 KEEP (+ written falsification criterion per pod) · 6 KEEP (n≥30 paired marks; random control
+mandatory for active sleeves) · 7 KEEP AS CONTINGENT (approval bar: paired Sharpe difference >0,
+MDD reduction ≥30% relative, CAGR ≥ SPY−1.5%/yr, PBO<0.2, forward n≥30) · 8 KEEP AS PAPER ONLY ·
+9 KEEP-WITH-CHANGE (per-class all-in cost incl. fees+spread+funding+borrow; funds add ER+tracking
+difference+tax) · 10 KEEP-WITH-CHANGE (only if the scanner loads it; CI test that it blocks a
+known-dead strategy) · 11 KEEP-WITH-CHANGE (COMS = notification, not source of truth; retained
+direct-inbox, QoS1, loud failures, no retention on mentions/all; cross-OS selftest) ·
+12 KEEP-WITH-CHANGE (done = committed artifact + exact reproduce command + test exit code +
+cross-OS reviewer; machine-readable VERIFICATION block) · 13 KEEP-WITH-CHANGE (make it a CI
+invariant, not prose) · 14 PARK · 15 KEEP-WITH-CHANGE (≤5 configs, log every trial, DSR uses full
+search) · 16 CUT. **ADD:** point-in-time data registry (delisted-inclusive equities/funds, as-of
+fundamentals, as-of funding/on-chain) as a first-class element.
+
+### My answer to their question: "which element would you cut first, and what would falsify provenance/gates?"
+
+**Cut first: the `segments` bucket.** It is a reconstructed aggregate that adds ~171 cells to the
+multiplicity count, cannot be pre-registered, and no decision hangs on a segment. It inflates the
+search space without changing a verdict. (Element 16 is already cut; this is the first *live*
+cut.)
+
+**What would falsify provenance:** (a) two runs with different denominators producing the same
+`provenance.id`; (b) any tile rendering without an id; (c) `population_rows` disagreeing with
+`coverage.scored_rows`. Each is a one-line test, and I will write all three as B5.
+
+**What would falsify the gates:** (a) a synthetic cell with mean net −1%/trade and n=200 reaching
+PROVEN or CANDIDATE; (b) a DSR ≥0.95 attainable with `n_trials=1`; (c) a strategy that is exactly
+"buy and hold the same instrument" passing the selection-alpha gate. All three must fail. If any
+passes, the gate is decoration.
+
 ## 5. Output of this debate
 
 I will compile a v1 "final design" with: the keep/cut table, the disagreements that remain
