@@ -111,3 +111,47 @@ python3 -m pytest tests/test_intraday_stop.py tests/test_audit3_tribunal.py \
 python3 alpha_engine/intraday_stop.py --rows <alpha_rows.jsonl>   # re-measure the stop
 git log --oneline origin/rescue/coms-handoff-2026-11-19 -2
 ```
+
+## 8. Correction — §4 was wrong (same day, verified)
+
+§4 claimed N5 exists on neither main nor the rescue branch. That was inferred from a file
+hash instead of read, and it is **false**. Verified now:
+
+* main's `alpha_engine/audit3_selection_alpha.py` already **contains N5**
+  (`MIN_HOLD_DAYS_FOR_HEADLINE`, `alpha_per_day_pct`, `alpha_annualized_pct`,
+  `min_hold_participation`);
+* main's `audit3_tribunal.py` already has `_promote(cell, forward)` at line 990 — the
+  promotion path the worktree copy lacks.
+
+Diffing those worktrees against **main** (not against their old base `f9e6c8202a1`) shows
+the dirty sets are *stale*, not novel:
+
+| file | vanilla-handsaw vs main | lapis-chronometer vs main |
+|---|---|---|
+| `audit3_selection_alpha.py` | +12 −61 | (clean) |
+| `audit3_tribunal.py` | +34 −178 | +50 −535 |
+| `audit3_edge_hunt.py` | (clean) | +0 −59 |
+| `tests/test_audit3_selection_alpha.py` | +1 −13 | (clean) |
+| `tests/test_audit3_tribunal.py` | +3 −46 | (clean) |
+| `tests/test_audit3_expectancy_gates.py` | +5 −40 | +9 −41 |
+| `.github/workflows/audit3-ledger.yml` | +13 −49 | (clean) |
+
+Committing either would **delete** main's `db_env` credential path, the FX `=X`/`-`
+symbol normalisation, `--rows-out`, the canonical-view hard-fail, the audit2 deploy step
+and the conditional `--history --max-churn` wiring. The "688 lines" were older lines
+counted against an old base, not new work.
+
+**Rescue outcome: nothing unique, nothing lost, nothing to merge.** Ask #1 in §6 is
+withdrawn — those working trees can be discarded once their owners confirm. The durable
+warning from §4 stands in one form only: never run `git checkout` inside another agent's
+worktree, because it is the checked-out copy that gets destroyed, not the commit.
+
+## 9. E14 exit A/B — measured, and negative
+
+`tools/exit_ab_paper.py` prices a fixed-horizon time exit (no TP/SL) against the actual
+exit on the same 2,475 picks: delta is **−0.460%/pick at 1 day** (CI [−0.729, −0.191]),
+−0.291% at 3 days, −0.485% at 7 days. The blanket exit redesign is **rejected**. The only
+cell above zero is ETF at 7 days (+0.460%, n=261) — 1 of 9 class×horizon tests, so it
+needs pre-registration and a Bonferroni gate, not a deployment. Details:
+`updates/2026-11-19-exit-ab-paper.md`, `reports/exit_ab_paper_2026-11-19.json`.
+
