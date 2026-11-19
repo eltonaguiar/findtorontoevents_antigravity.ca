@@ -1022,6 +1022,10 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         dsr = deflated_sharpe(nets, n_trials)
         if dsr:
             out["dsr"] = round(dsr["dsr"], 4)
+            # A DSR without its trial count is not a multiplicity correction.
+            # Publish it on every bucket so a class DSR of 0.9 with n_trials=1
+            # becomes impossible to display.
+            out["dsr_n_trials"] = int(n_trials)
             out["sharpe"] = round(dsr["sharpe"], 4)
             out["sr0"] = round(dsr["sr0"], 4)
         if n_trials_local is not None and n_trials_local != n_trials:
@@ -1029,6 +1033,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
                 dloc = deflated_sharpe(nets, int(n_trials_local))
                 if dloc:
                     out["dsr_local"] = round(dloc["dsr"], 4)
+                    out["dsr_local_n_trials"] = int(n_trials_local)
             else:
                 out["dsr_local"] = None
     return out

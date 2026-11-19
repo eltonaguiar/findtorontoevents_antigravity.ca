@@ -682,3 +682,19 @@ def test_summary_declares_its_scope_and_counts_symbols_separately():
     assert "cell-level" in s["summary_scope"]
     assert "n_candidate_symbols" in s
     assert "n_proven_symbols" in s
+
+
+def test_dsr_is_always_published_with_its_trial_count():
+    """A class DSR with an undeclared trial count is not auditable."""
+    rows = _rows(160, 1.5)                   # variance is required for a Sharpe
+    for i, r in enumerate(rows):
+        r["pnl_pct"] = 1.5 if i % 2 == 0 else -0.5
+        r["status"] = "WON" if r["pnl_pct"] > 0 else "LOST"
+        r["symbol"] = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"][i % 4]
+    rep = build_report(rows, "x.json", None)
+    cell = rep["cells"][0]
+    assert cell.get("dsr") is not None
+    assert cell["dsr_n_trials"] >= 658          # global floor, never 1
+    for cls in rep["classes"]:
+        if cls.get("dsr") is not None:
+            assert cls["dsr_n_trials"] >= 658
