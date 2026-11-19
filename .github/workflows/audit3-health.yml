@@ -64,6 +64,28 @@ jobs:
                 ("n_proven", "n_candidate", "n_weak", "n_kill")})
           PY
 
+      # Hard failure past 24h, warning past 12h. The denylist watchdog guards
+      # staleness at 3 days; this is the faster, earlier alarm for the published
+      # ledger the dashboards read.
+      - name: Ledger freshness (warn 12h, fail 24h)
+        run: |
+          python3 - <<'PY'
+          import datetime, json, sys
+          d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
+          g = d.get("generated_at")
+          if not g:
+              print("::error title=audit3-health::ledger has no generated_at")
+              sys.exit(1)
+          dt = datetime.datetime.fromisoformat(g.replace("Z", "+00:00"))
+          age_h = (datetime.datetime.now(datetime.timezone.utc) - dt).total_seconds() / 3600
+          print(f"ledger age {age_h:.1f}h (generated_at {g})")
+          if age_h > 24:
+              print("::error title=audit3-health::ledger older than 24h")
+              sys.exit(1)
+          if age_h > 12:
+              print("::warning title=audit3-health::ledger older than 12h")
+          PY
+
       # Warning-only: the forward clock is the gate for promotion.
       - name: Forward-observation freshness
         run: |
