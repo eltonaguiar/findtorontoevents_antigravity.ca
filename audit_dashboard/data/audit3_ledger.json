@@ -1,7 +1,7 @@
 {
  "schema": "audit3.v1",
- "generated_at": "2026-11-19T04:47:31.634192+00:00",
- "source": "/tmp/audit3/dashboard_data.json",
+ "generated_at": "2026-11-19T04:53:06.940644+00:00",
+ "source": "/tmp/a3/dashboard_data.json",
  "source_generated_at": "2026-11-19T04:04:16.807952+00:00",
  "not_money_ready_disclaimer": "audit3 is an evidence ledger, not a signal service. PROVEN_T2 means the realized closed-pick ledger survives the listed gates; it does not guarantee future returns. No position sizing is emitted here.",
  "conventions": {
@@ -39,13 +39,25 @@
   "n_symbol_cells": 61,
   "n_proven": 0,
   "n_candidate": 0,
-  "n_weak": 33,
-  "n_kill": 12,
+  "n_weak": 34,
+  "n_kill": 11,
   "n_insufficient": 126,
-  "kill_rate_pct": 26.67,
+  "kill_rate_pct": 24.44,
   "n_proven_symbols": 0,
   "n_proven_classes": 0,
-  "n_kill_symbols": 13
+  "n_kill_symbols": 8,
+  "n_segment_cells": 65,
+  "n_proven_segments": 0,
+  "n_harmful_segments": 23,
+  "n_positive_segments": 3,
+  "n_kill_classes": 2
+ },
+ "doctrine": {
+  "name": "innocent-until-proven-guilty",
+  "default_state": "not proven -- keep observing; absence of proof of edge is not evidence of harm",
+  "kill_requires": "net-expectancy bootstrap 95% CI entirely < 0 AND Benjamini-Hochberg harm q <= 0.10",
+  "pf_rule": "PF < 0.8 is a watch flag only",
+  "nothing_deleted": "no closed pick, strategy or section is removed from the ledger by this module"
  },
  "classes": [
   {
@@ -66,6 +78,8 @@
    ],
    "p_value": 1.0,
    "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": null,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -77,7 +91,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.72 < 0.80 at n=1851",
+    "profit factor 0.72 < 0.8",
     "win rate 39.8% below 40%"
    ],
    "sharpe": -0.1341,
@@ -101,6 +115,8 @@
    ],
    "p_value": 0.98986,
    "q_value": 1.0,
+   "p_harm": 0.012272,
+   "harm_q": null,
    "dsr": 0.2055,
    "split_half": {
     "stable": false,
@@ -136,6 +152,8 @@
    ],
    "p_value": 0.999606,
    "q_value": 1.0,
+   "p_harm": 0.000531,
+   "harm_q": null,
    "dsr": 0.0566,
    "split_half": {
     "stable": false,
@@ -171,6 +189,8 @@
    ],
    "p_value": 0.999999,
    "q_value": 1.0,
+   "p_harm": 2e-06,
+   "harm_q": null,
    "dsr": 0.0006,
    "split_half": {
     "stable": false,
@@ -179,10 +199,9 @@
    },
    "top_symbol_share": 0.1374,
    "top_source_share": 0.5403,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "profit factor 0.69 < 0.80 at n=211",
-    "win rate 34.1% below 40%"
+    "profit factor 0.69 < 0.8 at n=211 \u2014 watch only, harm not proven (net CI [-0.25, +0.01]) so it keeps observing"
    ],
    "sharpe": -0.1284,
    "sr0": 0.0955
@@ -205,6 +224,8 @@
    ],
    "p_value": 1.0,
    "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": null,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -216,7 +237,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.12 < 0.80 at n=55",
+    "profit factor 0.12 < 0.8",
     "win rate 14.5% below 40%"
    ],
    "sharpe": -0.6723,
@@ -240,6 +261,8 @@
    ],
    "p_value": 0.939275,
    "q_value": 1.0,
+   "p_harm": 0.114741,
+   "harm_q": null,
    "dsr": 0.0018,
    "split_half": {
     "stable": false,
@@ -276,6 +299,8 @@
    ],
    "p_value": 0.6875,
    "q_value": 1.0,
+   "p_harm": 0.6875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.25,
@@ -284,6 +309,2547 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ]
+  }
+ ],
+ "segments": [
+  {
+   "segment": "grade",
+   "segment_value": "A",
+   "asset_class": "CRYPTO",
+   "n": 33,
+   "wins": 22,
+   "wr": 0.6667,
+   "wr_ci": [
+    0.4961,
+    0.8025
+   ],
+   "pf": 3.7096,
+   "gross_expectancy_pct": 1.622,
+   "net_expectancy_pct": 1.472,
+   "net_ci_pct": [
+    0.4825,
+    2.4495
+   ],
+   "p_value": 0.040072,
+   "q_value": 0.868227,
+   "p_harm": 0.982459,
+   "harm_q": null,
+   "dsr": 0.6901,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 2.3679,
+    "second_half_mean": 0.6289
+   },
+   "top_symbol_share": 0.2121,
+   "top_source_share": 0.5152,
+   "verdict": "WEAK",
+   "reasons": [],
+   "sharpe": 0.5118,
+   "sr0": 0.4135,
+   "reconstructed": true
+  },
+  {
+   "segment": "score_gate",
+   "segment_value": "score>=60",
+   "asset_class": "CRYPTO",
+   "n": 33,
+   "wins": 22,
+   "wr": 0.6667,
+   "wr_ci": [
+    0.4961,
+    0.8025
+   ],
+   "pf": 3.7096,
+   "gross_expectancy_pct": 1.622,
+   "net_expectancy_pct": 1.472,
+   "net_ci_pct": [
+    0.4825,
+    2.4495
+   ],
+   "p_value": 0.040072,
+   "q_value": 0.868227,
+   "p_harm": 0.982459,
+   "harm_q": null,
+   "dsr": 0.6901,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 2.3679,
+    "second_half_mean": 0.6289
+   },
+   "top_symbol_share": 0.2121,
+   "top_source_share": 0.5152,
+   "verdict": "WEAK",
+   "reasons": [],
+   "sharpe": 0.5118,
+   "sr0": 0.4135,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "B",
+   "asset_class": "CRYPTO",
+   "n": 72,
+   "wins": 47,
+   "wr": 0.6528,
+   "wr_ci": [
+    0.5376,
+    0.7525
+   ],
+   "pf": 2.7904,
+   "gross_expectancy_pct": 1.5568,
+   "net_expectancy_pct": 1.4068,
+   "net_ci_pct": [
+    0.618,
+    2.1877
+   ],
+   "p_value": 0.006387,
+   "q_value": 0.415155,
+   "p_harm": 0.996845,
+   "harm_q": null,
+   "dsr": 0.871,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 1.538,
+    "second_half_mean": 1.2756
+   },
+   "top_symbol_share": 0.25,
+   "top_source_share": 0.4722,
+   "verdict": "WEAK",
+   "reasons": [],
+   "sharpe": 0.419,
+   "sr0": 0.2799,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "B",
+   "asset_class": "EQUITY",
+   "n": 109,
+   "wins": 51,
+   "wr": 0.4679,
+   "wr_ci": [
+    0.3769,
+    0.5611
+   ],
+   "pf": 1.23,
+   "gross_expectancy_pct": 0.6095,
+   "net_expectancy_pct": 0.5095,
+   "net_ci_pct": [
+    -0.6523,
+    1.6769
+   ],
+   "p_value": 0.778165,
+   "q_value": 1.0,
+   "p_harm": 0.28285,
+   "harm_q": null,
+   "dsr": 0.0607,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 0.4552,
+    "second_half_mean": 0.5627
+   },
+   "top_symbol_share": 0.0917,
+   "top_source_share": 0.8899,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 46.8% <= 50%"
+   ],
+   "sharpe": 0.0802,
+   "sr0": 0.2275,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n<20",
+   "asset_class": "CRYPTO",
+   "n": 117,
+   "wins": 61,
+   "wr": 0.5214,
+   "wr_ci": [
+    0.4316,
+    0.6098
+   ],
+   "pf": 1.4496,
+   "gross_expectancy_pct": 0.5938,
+   "net_expectancy_pct": 0.4438,
+   "net_ci_pct": [
+    -0.1416,
+    1.0122
+   ],
+   "p_value": 0.355852,
+   "q_value": 1.0,
+   "p_harm": 0.710355,
+   "harm_q": null,
+   "dsr": 0.1887,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 0.3234,
+    "second_half_mean": 0.562
+   },
+   "top_symbol_share": 0.1624,
+   "top_source_share": 0.3077,
+   "verdict": "WEAK",
+   "reasons": [],
+   "sharpe": 0.1372,
+   "sr0": 0.2196,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "B",
+   "asset_class": "ETF",
+   "n": 74,
+   "wins": 38,
+   "wr": 0.5135,
+   "wr_ci": [
+    0.4018,
+    0.6239
+   ],
+   "pf": 1.3637,
+   "gross_expectancy_pct": 0.5192,
+   "net_expectancy_pct": 0.4392,
+   "net_ci_pct": [
+    -0.3041,
+    1.1362
+   ],
+   "p_value": 0.45378,
+   "q_value": 1.0,
+   "p_harm": 0.636226,
+   "harm_q": null,
+   "dsr": 0.119,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 0.5991,
+    "second_half_mean": 0.2792
+   },
+   "top_symbol_share": 0.2162,
+   "top_source_share": 1.0,
+   "verdict": "WEAK",
+   "reasons": [],
+   "sharpe": 0.135,
+   "sr0": 0.2761,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n>=20",
+   "asset_class": "EQUITY",
+   "n": 642,
+   "wins": 305,
+   "wr": 0.4751,
+   "wr_ci": [
+    0.4367,
+    0.5137
+   ],
+   "pf": 1.1418,
+   "gross_expectancy_pct": 0.4004,
+   "net_expectancy_pct": 0.3004,
+   "net_ci_pct": [
+    -0.1577,
+    0.7292
+   ],
+   "p_value": 0.903631,
+   "q_value": 1.0,
+   "p_harm": 0.110561,
+   "harm_q": null,
+   "dsr": 0.1416,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.9089,
+    "second_half_mean": -0.308
+   },
+   "top_symbol_share": 0.1184,
+   "top_source_share": 1.0,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 47.5% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.0519,
+   "sr0": 0.0937,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "C",
+   "asset_class": "EQUITY",
+   "n": 264,
+   "wins": 127,
+   "wr": 0.4811,
+   "wr_ci": [
+    0.4215,
+    0.5412
+   ],
+   "pf": 1.1041,
+   "gross_expectancy_pct": 0.3425,
+   "net_expectancy_pct": 0.2425,
+   "net_ci_pct": [
+    -0.4803,
+    0.9697
+   ],
+   "p_value": 0.750761,
+   "q_value": 1.0,
+   "p_harm": 0.289861,
+   "harm_q": null,
+   "dsr": 0.0407,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.8547,
+    "second_half_mean": -0.3697
+   },
+   "top_symbol_share": 0.1477,
+   "top_source_share": 0.9659,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 48.1% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.0394,
+   "sr0": 0.1462,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "C",
+   "asset_class": "FOREX",
+   "n": 66,
+   "wins": 32,
+   "wr": 0.4848,
+   "wr_ci": [
+    0.3685,
+    0.6029
+   ],
+   "pf": 1.5942,
+   "gross_expectancy_pct": 0.2239,
+   "net_expectancy_pct": 0.1739,
+   "net_ci_pct": [
+    -0.0357,
+    0.4097
+   ],
+   "p_value": 0.643885,
+   "q_value": 1.0,
+   "p_harm": 0.451079,
+   "harm_q": null,
+   "dsr": 0.1664,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.1022,
+    "second_half_mean": 0.4499
+   },
+   "top_symbol_share": 0.3182,
+   "top_source_share": 0.5455,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 48.5% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.1778,
+   "sr0": 0.2924,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "C",
+   "asset_class": "ETF",
+   "n": 234,
+   "wins": 116,
+   "wr": 0.4957,
+   "wr_ci": [
+    0.4323,
+    0.5593
+   ],
+   "pf": 1.1684,
+   "gross_expectancy_pct": 0.2459,
+   "net_expectancy_pct": 0.1659,
+   "net_ci_pct": [
+    -0.1526,
+    0.4664
+   ],
+   "p_value": 0.577714,
+   "q_value": 1.0,
+   "p_harm": 0.473948,
+   "harm_q": null,
+   "dsr": 0.0875,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 0.1276,
+    "second_half_mean": 0.2043
+   },
+   "top_symbol_share": 0.188,
+   "top_source_share": 0.9658,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 49.6% <= 50%"
+   ],
+   "sharpe": 0.0674,
+   "sr0": 0.1553,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "D",
+   "asset_class": "EQUITY",
+   "n": 469,
+   "wins": 215,
+   "wr": 0.4584,
+   "wr_ci": [
+    0.4138,
+    0.5037
+   ],
+   "pf": 1.0717,
+   "gross_expectancy_pct": 0.2519,
+   "net_expectancy_pct": 0.1519,
+   "net_ci_pct": [
+    -0.3411,
+    0.6642
+   ],
+   "p_value": 0.967686,
+   "q_value": 1.0,
+   "p_harm": 0.039602,
+   "harm_q": null,
+   "dsr": 0.0354,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.8423,
+    "second_half_mean": -0.5357
+   },
+   "top_symbol_share": 0.1087,
+   "top_source_share": 0.9957,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 45.8% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.0268,
+   "sr0": 0.1097,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "C",
+   "asset_class": "EQUITY",
+   "n": 611,
+   "wins": 286,
+   "wr": 0.4681,
+   "wr_ci": [
+    0.4288,
+    0.5077
+   ],
+   "pf": 1.057,
+   "gross_expectancy_pct": 0.2248,
+   "net_expectancy_pct": 0.1248,
+   "net_ci_pct": [
+    -0.3264,
+    0.5962
+   ],
+   "p_value": 0.947232,
+   "q_value": 1.0,
+   "p_harm": 0.062073,
+   "harm_q": null,
+   "dsr": 0.0323,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.6961,
+    "second_half_mean": -0.4447
+   },
+   "top_symbol_share": 0.1162,
+   "top_source_share": 0.9967,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 46.8% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.0217,
+   "sr0": 0.0961,
+   "reconstructed": true
+  },
+  {
+   "segment": "rr_gate",
+   "segment_value": "rr>=1.5",
+   "asset_class": "EQUITY",
+   "n": 760,
+   "wins": 349,
+   "wr": 0.4592,
+   "wr_ci": [
+    0.4241,
+    0.4948
+   ],
+   "pf": 1.0542,
+   "gross_expectancy_pct": 0.2197,
+   "net_expectancy_pct": 0.1197,
+   "net_ci_pct": [
+    -0.2932,
+    0.5099
+   ],
+   "p_value": 0.988882,
+   "q_value": 1.0,
+   "p_harm": 0.013426,
+   "harm_q": null,
+   "dsr": 0.0348,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.5739,
+    "second_half_mean": -0.3346
+   },
+   "top_symbol_share": 0.1066,
+   "top_source_share": 0.9816,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 45.9% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.0206,
+   "sr0": 0.0862,
+   "reconstructed": true
+  },
+  {
+   "segment": "origin",
+   "segment_value": "live",
+   "asset_class": "EQUITY",
+   "n": 761,
+   "wins": 349,
+   "wr": 0.4586,
+   "wr_ci": [
+    0.4235,
+    0.4941
+   ],
+   "pf": 1.0541,
+   "gross_expectancy_pct": 0.2194,
+   "net_expectancy_pct": 0.1194,
+   "net_ci_pct": [
+    -0.277,
+    0.5219
+   ],
+   "p_value": 0.98986,
+   "q_value": 1.0,
+   "p_harm": 0.012272,
+   "harm_q": null,
+   "dsr": 0.0347,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.575,
+    "second_half_mean": -0.335
+   },
+   "top_symbol_share": 0.1064,
+   "top_source_share": 0.9803,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 45.9% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.0206,
+   "sr0": 0.0861,
+   "reconstructed": true
+  },
+  {
+   "segment": "trust_tier",
+   "segment_value": "WATCH",
+   "asset_class": "EQUITY",
+   "n": 753,
+   "wins": 346,
+   "wr": 0.4595,
+   "wr_ci": [
+    0.4242,
+    0.4952
+   ],
+   "pf": 1.0527,
+   "gross_expectancy_pct": 0.2167,
+   "net_expectancy_pct": 0.1167,
+   "net_ci_pct": [
+    -0.2673,
+    0.5289
+   ],
+   "p_value": 0.988103,
+   "q_value": 1.0,
+   "p_harm": 0.014355,
+   "harm_q": null,
+   "dsr": 0.0335,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.5697,
+    "second_half_mean": -0.3351
+   },
+   "top_symbol_share": 0.1049,
+   "top_source_share": 0.9907,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 45.9% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.0201,
+   "sr0": 0.0866,
+   "reconstructed": true
+  },
+  {
+   "segment": "trust_tier",
+   "segment_value": "RELIABLE",
+   "asset_class": "CRYPTO",
+   "n": 1281,
+   "wins": 564,
+   "wr": 0.4403,
+   "wr_ci": [
+    0.4133,
+    0.4676
+   ],
+   "pf": 1.0796,
+   "gross_expectancy_pct": 0.2647,
+   "net_expectancy_pct": 0.1147,
+   "net_ci_pct": [
+    -0.0714,
+    0.3044
+   ],
+   "p_value": 0.999992,
+   "q_value": 1.0,
+   "p_harm": 1.1e-05,
+   "harm_q": null,
+   "dsr": 0.1201,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 0.1461,
+    "second_half_mean": 0.0834
+   },
+   "top_symbol_share": 0.0827,
+   "top_source_share": 0.9516,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 44.0% <= 50%"
+   ],
+   "sharpe": 0.0338,
+   "sr0": 0.0664,
+   "reconstructed": true
+  },
+  {
+   "segment": "score_gate",
+   "segment_value": "score<60",
+   "asset_class": "EQUITY",
+   "n": 756,
+   "wins": 345,
+   "wr": 0.4563,
+   "wr_ci": [
+    0.4212,
+    0.492
+   ],
+   "pf": 1.0494,
+   "gross_expectancy_pct": 0.2094,
+   "net_expectancy_pct": 0.1094,
+   "net_ci_pct": [
+    -0.2989,
+    0.5064
+   ],
+   "p_value": 0.992618,
+   "q_value": 1.0,
+   "p_harm": 0.00901,
+   "harm_q": null,
+   "dsr": 0.0311,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.5439,
+    "second_half_mean": -0.3251
+   },
+   "top_symbol_share": 0.1058,
+   "top_source_share": 0.9815,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 45.6% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.0188,
+   "sr0": 0.0864,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "C",
+   "asset_class": "FOREX",
+   "n": 155,
+   "wins": 69,
+   "wr": 0.4452,
+   "wr_ci": [
+    0.3692,
+    0.5238
+   ],
+   "pf": 1.3309,
+   "gross_expectancy_pct": 0.1352,
+   "net_expectancy_pct": 0.0852,
+   "net_ci_pct": [
+    -0.0387,
+    0.2112
+   ],
+   "p_value": 0.926001,
+   "q_value": 1.0,
+   "p_harm": 0.099292,
+   "harm_q": null,
+   "dsr": 0.146,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.0513,
+    "second_half_mean": 0.22
+   },
+   "top_symbol_share": 0.1871,
+   "top_source_share": 0.7097,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 44.5% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.1092,
+   "sr0": 0.1908,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n>=20",
+   "asset_class": "FOREX",
+   "n": 163,
+   "wins": 65,
+   "wr": 0.3988,
+   "wr_ci": [
+    0.3268,
+    0.4754
+   ],
+   "pf": 1.3871,
+   "gross_expectancy_pct": 0.1347,
+   "net_expectancy_pct": 0.0847,
+   "net_ci_pct": [
+    -0.0219,
+    0.1983
+   ],
+   "p_value": 0.996224,
+   "q_value": 1.0,
+   "p_harm": 0.005981,
+   "harm_q": null,
+   "dsr": 0.1793,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.0638,
+    "second_half_mean": 0.2314
+   },
+   "top_symbol_share": 0.1288,
+   "top_source_share": 0.6994,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 39.9% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": 0.1187,
+   "sr0": 0.186,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "B",
+   "asset_class": "CRYPTO",
+   "n": 1007,
+   "wins": 448,
+   "wr": 0.4449,
+   "wr_ci": [
+    0.4145,
+    0.4757
+   ],
+   "pf": 1.0451,
+   "gross_expectancy_pct": 0.2182,
+   "net_expectancy_pct": 0.0682,
+   "net_ci_pct": [
+    -0.1575,
+    0.294
+   ],
+   "p_value": 0.999794,
+   "q_value": 1.0,
+   "p_harm": 0.000261,
+   "harm_q": null,
+   "dsr": 0.0387,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 0.0629,
+    "second_half_mean": 0.0735
+   },
+   "top_symbol_share": 0.1102,
+   "top_source_share": 0.8242,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 44.5% <= 50%"
+   ],
+   "sharpe": 0.0193,
+   "sr0": 0.0748,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n>=20",
+   "asset_class": "ETF",
+   "n": 520,
+   "wins": 231,
+   "wr": 0.4442,
+   "wr_ci": [
+    0.4021,
+    0.4872
+   ],
+   "pf": 0.9897,
+   "gross_expectancy_pct": 0.0684,
+   "net_expectancy_pct": -0.0116,
+   "net_ci_pct": [
+    -0.2367,
+    0.2083
+   ],
+   "p_value": 0.995197,
+   "q_value": 1.0,
+   "p_harm": 0.006179,
+   "harm_q": null,
+   "dsr": 0.0067,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.1671,
+    "second_half_mean": -0.1903
+   },
+   "top_symbol_share": 0.1462,
+   "top_source_share": 0.9865,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 44.4% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0044,
+   "sr0": 0.1042,
+   "reconstructed": true
+  },
+  {
+   "segment": "rr_gate",
+   "segment_value": "rr>=1.5",
+   "asset_class": "ETF",
+   "n": 583,
+   "wins": 252,
+   "wr": 0.4322,
+   "wr_ci": [
+    0.3926,
+    0.4728
+   ],
+   "pf": 0.9822,
+   "gross_expectancy_pct": 0.0591,
+   "net_expectancy_pct": -0.0209,
+   "net_ci_pct": [
+    -0.2504,
+    0.2048
+   ],
+   "p_value": 0.999547,
+   "q_value": 1.0,
+   "p_harm": 0.000609,
+   "harm_q": null,
+   "dsr": 0.0055,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.0055,
+    "second_half_mean": -0.0363
+   },
+   "top_symbol_share": 0.1372,
+   "top_source_share": 0.9708,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 43.2% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0073,
+   "sr0": 0.0984,
+   "reconstructed": true
+  },
+  {
+   "segment": "origin",
+   "segment_value": "live",
+   "asset_class": "ETF",
+   "n": 584,
+   "wins": 252,
+   "wr": 0.4315,
+   "wr_ci": [
+    0.3919,
+    0.472
+   ],
+   "pf": 0.9797,
+   "gross_expectancy_pct": 0.0561,
+   "net_expectancy_pct": -0.0239,
+   "net_ci_pct": [
+    -0.263,
+    0.2023
+   ],
+   "p_value": 0.999606,
+   "q_value": 1.0,
+   "p_harm": 0.000531,
+   "harm_q": null,
+   "dsr": 0.0051,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.0153,
+    "second_half_mean": -0.0324
+   },
+   "top_symbol_share": 0.137,
+   "top_source_share": 0.9692,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 43.2% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0084,
+   "sr0": 0.0983,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "C",
+   "asset_class": "ETF",
+   "n": 480,
+   "wins": 209,
+   "wr": 0.4354,
+   "wr_ci": [
+    0.3917,
+    0.4801
+   ],
+   "pf": 0.9704,
+   "gross_expectancy_pct": 0.0469,
+   "net_expectancy_pct": -0.0331,
+   "net_ci_pct": [
+    -0.2821,
+    0.1983
+   ],
+   "p_value": 0.998007,
+   "q_value": 1.0,
+   "p_harm": 0.002656,
+   "harm_q": null,
+   "dsr": 0.0043,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.2591,
+    "second_half_mean": -0.3254
+   },
+   "top_symbol_share": 0.1542,
+   "top_source_share": 0.975,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 43.5% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0122,
+   "sr0": 0.1084,
+   "reconstructed": true
+  },
+  {
+   "segment": "trust_tier",
+   "segment_value": "WATCH",
+   "asset_class": "FOREX",
+   "n": 154,
+   "wins": 47,
+   "wr": 0.3052,
+   "wr_ci": [
+    0.2379,
+    0.3819
+   ],
+   "pf": 0.8192,
+   "gross_expectancy_pct": 0.0085,
+   "net_expectancy_pct": -0.0415,
+   "net_ci_pct": [
+    -0.1302,
+    0.0576
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 1e-06,
+   "harm_q": null,
+   "dsr": 0.0012,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.0616,
+    "second_half_mean": -0.0214
+   },
+   "top_symbol_share": 0.1169,
+   "top_source_share": 0.7403,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 30.5% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0693,
+   "sr0": 0.1914,
+   "reconstructed": true
+  },
+  {
+   "segment": "score_gate",
+   "segment_value": "score<60",
+   "asset_class": "ETF",
+   "n": 580,
+   "wins": 249,
+   "wr": 0.4293,
+   "wr_ci": [
+    0.3896,
+    0.4699
+   ],
+   "pf": 0.954,
+   "gross_expectancy_pct": 0.026,
+   "net_expectancy_pct": -0.054,
+   "net_ci_pct": [
+    -0.2837,
+    0.1724
+   ],
+   "p_value": 0.999722,
+   "q_value": 1.0,
+   "p_harm": 0.000378,
+   "harm_q": null,
+   "dsr": 0.0024,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.0121,
+    "second_half_mean": -0.1202
+   },
+   "top_symbol_share": 0.1379,
+   "top_source_share": 0.9741,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 42.9% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0194,
+   "sr0": 0.0986,
+   "reconstructed": true
+  },
+  {
+   "segment": "trust_tier",
+   "segment_value": "WATCH",
+   "asset_class": "ETF",
+   "n": 576,
+   "wins": 248,
+   "wr": 0.4306,
+   "wr_ci": [
+    0.3907,
+    0.4713
+   ],
+   "pf": 0.9407,
+   "gross_expectancy_pct": 0.0097,
+   "net_expectancy_pct": -0.0703,
+   "net_ci_pct": [
+    -0.304,
+    0.1565
+   ],
+   "p_value": 0.999638,
+   "q_value": 1.0,
+   "p_harm": 0.00049,
+   "harm_q": null,
+   "dsr": 0.0016,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.0151,
+    "second_half_mean": -0.1557
+   },
+   "top_symbol_share": 0.1389,
+   "top_source_share": 0.9826,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 43.1% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0252,
+   "sr0": 0.099,
+   "reconstructed": true
+  },
+  {
+   "segment": "score_gate",
+   "segment_value": "score<60",
+   "asset_class": "FOREX",
+   "n": 211,
+   "wins": 72,
+   "wr": 0.3412,
+   "wr_ci": [
+    0.2806,
+    0.4075
+   ],
+   "pf": 0.6891,
+   "gross_expectancy_pct": -0.0717,
+   "net_expectancy_pct": -0.1217,
+   "net_ci_pct": [
+    -0.2507,
+    0.0091
+   ],
+   "p_value": 0.999999,
+   "q_value": 1.0,
+   "p_harm": 2e-06,
+   "harm_q": null,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.064,
+    "second_half_mean": -0.1788
+   },
+   "top_symbol_share": 0.1374,
+   "top_source_share": 0.5403,
+   "verdict": "WEAK",
+   "reasons": [
+    "profit factor 0.69 < 0.8 at n=211 \u2014 watch only, harm not proven (net CI [-0.25, +0.01]) so it keeps observing"
+   ],
+   "sharpe": -0.1284,
+   "sr0": 0.1635,
+   "reconstructed": true
+  },
+  {
+   "segment": "origin",
+   "segment_value": "live",
+   "asset_class": "FOREX",
+   "n": 211,
+   "wins": 72,
+   "wr": 0.3412,
+   "wr_ci": [
+    0.2806,
+    0.4075
+   ],
+   "pf": 0.6891,
+   "gross_expectancy_pct": -0.0717,
+   "net_expectancy_pct": -0.1217,
+   "net_ci_pct": [
+    -0.2507,
+    0.0091
+   ],
+   "p_value": 0.999999,
+   "q_value": 1.0,
+   "p_harm": 2e-06,
+   "harm_q": null,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.064,
+    "second_half_mean": -0.1788
+   },
+   "top_symbol_share": 0.1374,
+   "top_source_share": 0.5403,
+   "verdict": "WEAK",
+   "reasons": [
+    "profit factor 0.69 < 0.8 at n=211 \u2014 watch only, harm not proven (net CI [-0.25, +0.01]) so it keeps observing"
+   ],
+   "sharpe": -0.1284,
+   "sr0": 0.1635,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n<20",
+   "asset_class": "ETF",
+   "n": 64,
+   "wins": 21,
+   "wr": 0.3281,
+   "wr_ci": [
+    0.2257,
+    0.45
+   ],
+   "pf": 0.9238,
+   "gross_expectancy_pct": -0.0437,
+   "net_expectancy_pct": -0.1237,
+   "net_ci_pct": [
+    -1.1097,
+    0.9183
+   ],
+   "p_value": 0.998155,
+   "q_value": 1.0,
+   "p_harm": 0.004073,
+   "harm_q": null,
+   "dsr": 0.0055,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -1.0983,
+    "second_half_mean": 0.8509
+   },
+   "top_symbol_share": 0.1406,
+   "top_source_share": 0.8281,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 32.8% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0296,
+   "sr0": 0.2969,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "D",
+   "asset_class": "ETF",
+   "n": 315,
+   "wins": 122,
+   "wr": 0.3873,
+   "wr_ci": [
+    0.3352,
+    0.4421
+   ],
+   "pf": 0.8755,
+   "gross_expectancy_pct": -0.0745,
+   "net_expectancy_pct": -0.1545,
+   "net_ci_pct": [
+    -0.4802,
+    0.1669
+   ],
+   "p_value": 0.999977,
+   "q_value": 1.0,
+   "p_harm": 3.8e-05,
+   "harm_q": null,
+   "dsr": 0.0006,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.3082,
+    "second_half_mean": -0.6143
+   },
+   "top_symbol_share": 0.1746,
+   "top_source_share": 0.981,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 38.7% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0531,
+   "sr0": 0.1338,
+   "reconstructed": true
+  },
+  {
+   "segment": "rr_gate",
+   "segment_value": "rr>=1.5",
+   "asset_class": "FOREX",
+   "n": 199,
+   "wins": 69,
+   "wr": 0.3467,
+   "wr_ci": [
+    0.2841,
+    0.4152
+   ],
+   "pf": 0.6165,
+   "gross_expectancy_pct": -0.1069,
+   "net_expectancy_pct": -0.1569,
+   "net_ci_pct": [
+    -0.2869,
+    -0.0304
+   ],
+   "p_value": 0.999995,
+   "q_value": 1.0,
+   "p_harm": 9e-06,
+   "harm_q": 1e-05,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.0532,
+    "second_half_mean": -0.2596
+   },
+   "top_symbol_share": 0.1357,
+   "top_source_share": 0.5729,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.62 < 0.8",
+    "win rate 34.7% below 40%"
+   ],
+   "sharpe": -0.1702,
+   "sr0": 0.1684,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "D",
+   "asset_class": "BOND",
+   "n": 23,
+   "wins": 10,
+   "wr": 0.4348,
+   "wr_ci": [
+    0.2563,
+    0.6319
+   ],
+   "pf": 0.6524,
+   "gross_expectancy_pct": -0.0919,
+   "net_expectancy_pct": -0.1719,
+   "net_ci_pct": [
+    -0.5093,
+    0.1664
+   ],
+   "p_value": 0.797564,
+   "q_value": 1.0,
+   "p_harm": 0.33882,
+   "harm_q": null,
+   "dsr": 0.0008,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.1626,
+    "second_half_mean": -0.1804
+   },
+   "top_symbol_share": 0.8696,
+   "top_source_share": 0.9565,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 43.5% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 87% of trades"
+   ],
+   "sharpe": -0.1984,
+   "sr0": 0.4953,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "D",
+   "asset_class": "FOREX",
+   "n": 111,
+   "wins": 40,
+   "wr": 0.3604,
+   "wr_ci": [
+    0.2771,
+    0.453
+   ],
+   "pf": 0.5323,
+   "gross_expectancy_pct": -0.1568,
+   "net_expectancy_pct": -0.2068,
+   "net_ci_pct": [
+    -0.3731,
+    -0.0318
+   ],
+   "p_value": 0.998881,
+   "q_value": 1.0,
+   "p_harm": 0.002098,
+   "harm_q": 0.002098,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.0339,
+    "second_half_mean": -0.3766
+   },
+   "top_symbol_share": 0.1351,
+   "top_source_share": 0.7027,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.53 < 0.8",
+    "win rate 36.0% below 40%"
+   ],
+   "sharpe": -0.2294,
+   "sr0": 0.2254,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n>=20",
+   "asset_class": "BOND",
+   "n": 22,
+   "wins": 8,
+   "wr": 0.3636,
+   "wr_ci": [
+    0.1973,
+    0.5705
+   ],
+   "pf": 0.5588,
+   "gross_expectancy_pct": -0.1775,
+   "net_expectancy_pct": -0.2575,
+   "net_ci_pct": [
+    -0.6373,
+    0.1552
+   ],
+   "p_value": 0.9331,
+   "q_value": 1.0,
+   "p_harm": 0.143139,
+   "harm_q": null,
+   "dsr": 0.0004,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.1063,
+    "second_half_mean": -0.4088
+   },
+   "top_symbol_share": 1.0,
+   "top_source_share": 0.9545,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 36.4% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 100% of trades"
+   ],
+   "sharpe": -0.2742,
+   "sr0": 0.5064,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "C",
+   "asset_class": "CRYPTO",
+   "n": 1445,
+   "wins": 607,
+   "wr": 0.4201,
+   "wr_ci": [
+    0.3949,
+    0.4457
+   ],
+   "pf": 0.8376,
+   "gross_expectancy_pct": -0.1204,
+   "net_expectancy_pct": -0.2704,
+   "net_ci_pct": [
+    -0.4573,
+    -0.09
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.4094,
+    "second_half_mean": -0.1317
+   },
+   "top_symbol_share": 0.092,
+   "top_source_share": 0.7702,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero"
+   ],
+   "sharpe": -0.0752,
+   "sr0": 0.0625,
+   "reconstructed": true
+  },
+  {
+   "segment": "trust_tier",
+   "segment_value": "WATCH",
+   "asset_class": "BOND",
+   "n": 34,
+   "wins": 13,
+   "wr": 0.3824,
+   "wr_ci": [
+    0.239,
+    0.5496
+   ],
+   "pf": 0.5143,
+   "gross_expectancy_pct": -0.1949,
+   "net_expectancy_pct": -0.2749,
+   "net_ci_pct": [
+    -0.5569,
+    0.0431
+   ],
+   "p_value": 0.939275,
+   "q_value": 1.0,
+   "p_harm": 0.114741,
+   "harm_q": null,
+   "dsr": 0.0001,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.2007,
+    "second_half_mean": -0.3491
+   },
+   "top_symbol_share": 0.8824,
+   "top_source_share": 0.9412,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 38.2% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 88% of trades"
+   ],
+   "sharpe": -0.309,
+   "sr0": 0.4073,
+   "reconstructed": true
+  },
+  {
+   "segment": "score_gate",
+   "segment_value": "score<60",
+   "asset_class": "BOND",
+   "n": 34,
+   "wins": 13,
+   "wr": 0.3824,
+   "wr_ci": [
+    0.239,
+    0.5496
+   ],
+   "pf": 0.5143,
+   "gross_expectancy_pct": -0.1949,
+   "net_expectancy_pct": -0.2749,
+   "net_ci_pct": [
+    -0.5569,
+    0.0431
+   ],
+   "p_value": 0.939275,
+   "q_value": 1.0,
+   "p_harm": 0.114741,
+   "harm_q": null,
+   "dsr": 0.0001,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.2007,
+    "second_half_mean": -0.3491
+   },
+   "top_symbol_share": 0.8824,
+   "top_source_share": 0.9412,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 38.2% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 88% of trades"
+   ],
+   "sharpe": -0.309,
+   "sr0": 0.4073,
+   "reconstructed": true
+  },
+  {
+   "segment": "rr_gate",
+   "segment_value": "rr>=1.5",
+   "asset_class": "BOND",
+   "n": 34,
+   "wins": 13,
+   "wr": 0.3824,
+   "wr_ci": [
+    0.239,
+    0.5496
+   ],
+   "pf": 0.5143,
+   "gross_expectancy_pct": -0.1949,
+   "net_expectancy_pct": -0.2749,
+   "net_ci_pct": [
+    -0.5569,
+    0.0431
+   ],
+   "p_value": 0.939275,
+   "q_value": 1.0,
+   "p_harm": 0.114741,
+   "harm_q": null,
+   "dsr": 0.0001,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.2007,
+    "second_half_mean": -0.3491
+   },
+   "top_symbol_share": 0.8824,
+   "top_source_share": 0.9412,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 38.2% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 88% of trades"
+   ],
+   "sharpe": -0.309,
+   "sr0": 0.4073,
+   "reconstructed": true
+  },
+  {
+   "segment": "origin",
+   "segment_value": "live",
+   "asset_class": "BOND",
+   "n": 34,
+   "wins": 13,
+   "wr": 0.3824,
+   "wr_ci": [
+    0.239,
+    0.5496
+   ],
+   "pf": 0.5143,
+   "gross_expectancy_pct": -0.1949,
+   "net_expectancy_pct": -0.2749,
+   "net_ci_pct": [
+    -0.5569,
+    0.0431
+   ],
+   "p_value": 0.939275,
+   "q_value": 1.0,
+   "p_harm": 0.114741,
+   "harm_q": null,
+   "dsr": 0.0001,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.2007,
+    "second_half_mean": -0.3491
+   },
+   "top_symbol_share": 0.8824,
+   "top_source_share": 0.9412,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 38.2% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 88% of trades"
+   ],
+   "sharpe": -0.309,
+   "sr0": 0.4073,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "C",
+   "asset_class": "BOND",
+   "n": 29,
+   "wins": 10,
+   "wr": 0.3448,
+   "wr_ci": [
+    0.1994,
+    0.5265
+   ],
+   "pf": 0.4531,
+   "gross_expectancy_pct": -0.2423,
+   "net_expectancy_pct": -0.3223,
+   "net_ci_pct": [
+    -0.6118,
+    0.01
+   ],
+   "p_value": 0.969286,
+   "q_value": 1.0,
+   "p_harm": 0.068023,
+   "harm_q": null,
+   "dsr": 0.0001,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.3975,
+    "second_half_mean": -0.252
+   },
+   "top_symbol_share": 0.931,
+   "top_source_share": 0.931,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 34.5% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 93% of trades"
+   ],
+   "sharpe": -0.3686,
+   "sr0": 0.4411,
+   "reconstructed": true
+  },
+  {
+   "segment": "trust_tier",
+   "segment_value": "RELIABLE",
+   "asset_class": "FOREX",
+   "n": 57,
+   "wins": 25,
+   "wr": 0.4386,
+   "wr_ci": [
+    0.3177,
+    0.5672
+   ],
+   "pf": 0.5919,
+   "gross_expectancy_pct": -0.2884,
+   "net_expectancy_pct": -0.3384,
+   "net_ci_pct": [
+    -0.7479,
+    0.0449
+   ],
+   "p_value": 0.855378,
+   "q_value": 1.0,
+   "p_harm": 0.213521,
+   "harm_q": null,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -1.1856,
+    "second_half_mean": 0.4797
+   },
+   "top_symbol_share": 0.4737,
+   "top_source_share": 0.6667,
+   "verdict": "WEAK",
+   "reasons": [
+    "profit factor 0.59 < 0.8 at n=57 \u2014 watch only, harm not proven (net CI [-0.75, +0.04]) so it keeps observing"
+   ],
+   "sharpe": -0.2236,
+   "sr0": 0.3146,
+   "reconstructed": true
+  },
+  {
+   "segment": "rr_gate",
+   "segment_value": "rr>=1.5",
+   "asset_class": "CRYPTO",
+   "n": 1709,
+   "wins": 689,
+   "wr": 0.4032,
+   "wr_ci": [
+    0.3801,
+    0.4266
+   ],
+   "pf": 0.7743,
+   "gross_expectancy_pct": -0.2444,
+   "net_expectancy_pct": -0.3944,
+   "net_ci_pct": [
+    -0.5683,
+    -0.2314
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.1987,
+    "second_half_mean": -0.59
+   },
+   "top_symbol_share": 0.1012,
+   "top_source_share": 0.7133,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.77 < 0.8"
+   ],
+   "sharpe": -0.1059,
+   "sr0": 0.0575,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "F",
+   "asset_class": "FOREX",
+   "n": 34,
+   "wins": 0,
+   "wr": 0.0,
+   "wr_ci": [
+    0.0,
+    0.1015
+   ],
+   "pf": 0.0,
+   "gross_expectancy_pct": -0.3676,
+   "net_expectancy_pct": -0.4176,
+   "net_ci_pct": [
+    -0.7118,
+    -0.1235
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.7853,
+    "second_half_mean": -0.05
+   },
+   "top_symbol_share": 0.2059,
+   "top_source_share": 0.8529,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.00 < 0.8",
+    "win rate 0.0% below 40%"
+   ],
+   "sharpe": -0.4717,
+   "sr0": 0.4073,
+   "reconstructed": true
+  },
+  {
+   "segment": "origin",
+   "segment_value": "live",
+   "asset_class": "CRYPTO",
+   "n": 1851,
+   "wins": 737,
+   "wr": 0.3982,
+   "wr_ci": [
+    0.3761,
+    0.4207
+   ],
+   "pf": 0.7246,
+   "gross_expectancy_pct": -0.3634,
+   "net_expectancy_pct": -0.5134,
+   "net_ci_pct": [
+    -0.6919,
+    -0.3449
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.5293,
+    "second_half_mean": -0.4975
+   },
+   "top_symbol_share": 0.0956,
+   "top_source_share": 0.6586,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.72 < 0.8",
+    "win rate 39.8% below 40%"
+   ],
+   "sharpe": -0.1341,
+   "sr0": 0.0552,
+   "reconstructed": true
+  },
+  {
+   "segment": "score_gate",
+   "segment_value": "score<60",
+   "asset_class": "CRYPTO",
+   "n": 1818,
+   "wins": 715,
+   "wr": 0.3933,
+   "wr_ci": [
+    0.3711,
+    0.4159
+   ],
+   "pf": 0.709,
+   "gross_expectancy_pct": -0.3994,
+   "net_expectancy_pct": -0.5494,
+   "net_ci_pct": [
+    -0.7222,
+    -0.3794
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.5302,
+    "second_half_mean": -0.5686
+   },
+   "top_symbol_share": 0.0968,
+   "top_source_share": 0.6705,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.71 < 0.8",
+    "win rate 39.3% below 40%"
+   ],
+   "sharpe": -0.1433,
+   "sr0": 0.0557,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n>=20",
+   "asset_class": "CRYPTO",
+   "n": 1734,
+   "wins": 676,
+   "wr": 0.3899,
+   "wr_ci": [
+    0.3672,
+    0.413
+   ],
+   "pf": 0.6994,
+   "gross_expectancy_pct": -0.4279,
+   "net_expectancy_pct": -0.5779,
+   "net_ci_pct": [
+    -0.7576,
+    -0.3987
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.5862,
+    "second_half_mean": -0.5697
+   },
+   "top_symbol_share": 0.0992,
+   "top_source_share": 0.703,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.70 < 0.8",
+    "win rate 39.0% below 40%"
+   ],
+   "sharpe": -0.1498,
+   "sr0": 0.057,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "D",
+   "asset_class": "FOREX",
+   "n": 48,
+   "wins": 1,
+   "wr": 0.0208,
+   "wr_ci": [
+    0.0037,
+    0.109
+   ],
+   "pf": 0.0722,
+   "gross_expectancy_pct": -0.7396,
+   "net_expectancy_pct": -0.7896,
+   "net_ci_pct": [
+    -1.1229,
+    -0.4458
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -1.5292,
+    "second_half_mean": -0.05
+   },
+   "top_symbol_share": 0.3958,
+   "top_source_share": 0.6042,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.07 < 0.8",
+    "win rate 2.1% below 40%"
+   ],
+   "sharpe": -0.6734,
+   "sr0": 0.3428,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n<20",
+   "asset_class": "FOREX",
+   "n": 48,
+   "wins": 7,
+   "wr": 0.1458,
+   "wr_ci": [
+    0.0725,
+    0.2717
+   ],
+   "pf": 0.1582,
+   "gross_expectancy_pct": -0.7727,
+   "net_expectancy_pct": -0.8227,
+   "net_ci_pct": [
+    -1.1706,
+    -0.465
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -1.1835,
+    "second_half_mean": -0.4619
+   },
+   "top_symbol_share": 0.3958,
+   "top_source_share": 0.7708,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.16 < 0.8",
+    "win rate 14.6% below 40%"
+   ],
+   "sharpe": -0.6545,
+   "sr0": 0.3428,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n<20",
+   "asset_class": "EQUITY",
+   "n": 119,
+   "wins": 44,
+   "wr": 0.3697,
+   "wr_ci": [
+    0.2884,
+    0.4593
+   ],
+   "pf": 0.6783,
+   "gross_expectancy_pct": -0.7576,
+   "net_expectancy_pct": -0.8576,
+   "net_ci_pct": [
+    -1.9093,
+    0.1448
+   ],
+   "p_value": 0.998408,
+   "q_value": 1.0,
+   "p_harm": 0.002863,
+   "harm_q": null,
+   "dsr": 0.0001,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.7434,
+    "second_half_mean": -0.9698
+   },
+   "top_symbol_share": 0.1345,
+   "top_source_share": 0.8739,
+   "verdict": "WEAK",
+   "reasons": [
+    "profit factor 0.68 < 0.8 at n=119 \u2014 watch only, harm not proven (net CI [-1.91, +0.14]) so it keeps observing"
+   ],
+   "sharpe": -0.1504,
+   "sr0": 0.2177,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "C",
+   "asset_class": "CRYPTO",
+   "n": 774,
+   "wins": 266,
+   "wr": 0.3437,
+   "wr_ci": [
+    0.3111,
+    0.3778
+   ],
+   "pf": 0.4548,
+   "gross_expectancy_pct": -1.1437,
+   "net_expectancy_pct": -1.2937,
+   "net_ci_pct": [
+    -1.5813,
+    -1.0017
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -1.3565,
+    "second_half_mean": -1.2309
+   },
+   "top_symbol_share": 0.1977,
+   "top_source_share": 0.5026,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.45 < 0.8",
+    "win rate 34.4% below 40%"
+   ],
+   "sharpe": -0.3137,
+   "sr0": 0.0854,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "D",
+   "asset_class": "EQUITY",
+   "n": 36,
+   "wins": 8,
+   "wr": 0.2222,
+   "wr_ci": [
+    0.1172,
+    0.3808
+   ],
+   "pf": 0.4935,
+   "gross_expectancy_pct": -1.2624,
+   "net_expectancy_pct": -1.3624,
+   "net_ci_pct": [
+    -2.9368,
+    0.2892
+   ],
+   "p_value": 0.999844,
+   "q_value": 1.0,
+   "p_harm": 0.000597,
+   "harm_q": null,
+   "dsr": 0.0003,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": 0.2022,
+    "second_half_mean": -2.927
+   },
+   "top_symbol_share": 0.1944,
+   "top_source_share": 1.0,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 22.2% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.2854,
+   "sr0": 0.3959,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n<20",
+   "asset_class": "COMMODITY",
+   "n": 20,
+   "wins": 8,
+   "wr": 0.4,
+   "wr_ci": [
+    0.2188,
+    0.6134
+   ],
+   "pf": 0.4155,
+   "gross_expectancy_pct": -1.5639,
+   "net_expectancy_pct": -1.6839,
+   "net_ci_pct": [
+    -5.3459,
+    1.0897
+   ],
+   "p_value": 0.868412,
+   "q_value": 1.0,
+   "p_harm": 0.251722,
+   "harm_q": null,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.5558,
+    "second_half_mean": -2.812
+   },
+   "top_symbol_share": 0.2,
+   "top_source_share": 1.0,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 40.0% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.2254,
+   "sr0": 0.5311,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "D",
+   "asset_class": "CRYPTO",
+   "n": 37,
+   "wins": 1,
+   "wr": 0.027,
+   "wr_ci": [
+    0.0048,
+    0.1382
+   ],
+   "pf": 0.0879,
+   "gross_expectancy_pct": -1.6378,
+   "net_expectancy_pct": -1.7878,
+   "net_ci_pct": [
+    -2.5414,
+    -1.0708
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.8915,
+    "second_half_mean": -2.6369
+   },
+   "top_symbol_share": 0.3243,
+   "top_source_share": 0.8378,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.09 < 0.8",
+    "win rate 2.7% below 40%"
+   ],
+   "sharpe": -0.7852,
+   "sr0": 0.3905,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "D",
+   "asset_class": "ETF",
+   "n": 26,
+   "wins": 2,
+   "wr": 0.0769,
+   "wr_ci": [
+    0.0214,
+    0.2414
+   ],
+   "pf": 0.1322,
+   "gross_expectancy_pct": -1.7633,
+   "net_expectancy_pct": -1.8433,
+   "net_ci_pct": [
+    -2.6027,
+    -0.9646
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 5e-06,
+   "harm_q": 6e-06,
+   "dsr": 0.0005,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -1.303,
+    "second_half_mean": -2.3836
+   },
+   "top_symbol_share": 0.1538,
+   "top_source_share": 0.8846,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.13 < 0.8",
+    "win rate 7.7% below 40%"
+   ],
+   "sharpe": -0.8647,
+   "sr0": 0.4658,
+   "reconstructed": true
+  },
+  {
+   "segment": "trust_tier",
+   "segment_value": "WATCH",
+   "asset_class": "CRYPTO",
+   "n": 570,
+   "wins": 173,
+   "wr": 0.3035,
+   "wr_ci": [
+    0.2672,
+    0.3425
+   ],
+   "pf": 0.3159,
+   "gross_expectancy_pct": -1.775,
+   "net_expectancy_pct": -1.925,
+   "net_ci_pct": [
+    -2.2801,
+    -1.5771
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -1.5799,
+    "second_half_mean": -2.2701
+   },
+   "top_symbol_share": 0.1526,
+   "top_source_share": 0.4193,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.32 < 0.8",
+    "win rate 30.4% below 40%"
+   ],
+   "sharpe": -0.4443,
+   "sr0": 0.0995,
+   "reconstructed": true
+  },
+  {
+   "segment": "rr_gate",
+   "segment_value": "rr<1.5",
+   "asset_class": "CRYPTO",
+   "n": 142,
+   "wins": 48,
+   "wr": 0.338,
+   "wr_ci": [
+    0.2654,
+    0.4192
+   ],
+   "pf": 0.4037,
+   "gross_expectancy_pct": -1.7947,
+   "net_expectancy_pct": -1.9447,
+   "net_ci_pct": [
+    -2.6981,
+    -1.2032
+   ],
+   "p_value": 0.999965,
+   "q_value": 1.0,
+   "p_harm": 7e-05,
+   "harm_q": 7.3e-05,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -4.0745,
+    "second_half_mean": 0.1851
+   },
+   "top_symbol_share": 0.0986,
+   "top_source_share": 0.6268,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.40 < 0.8",
+    "win rate 33.8% below 40%"
+   ],
+   "sharpe": -0.4141,
+   "sr0": 0.1993,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "D",
+   "asset_class": "CRYPTO",
+   "n": 317,
+   "wins": 83,
+   "wr": 0.2618,
+   "wr_ci": [
+    0.2165,
+    0.3129
+   ],
+   "pf": 0.3408,
+   "gross_expectancy_pct": -1.8383,
+   "net_expectancy_pct": -1.9883,
+   "net_ci_pct": [
+    -2.4945,
+    -1.4849
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -1.1463,
+    "second_half_mean": -2.8251
+   },
+   "top_symbol_share": 0.1104,
+   "top_source_share": 0.5489,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.34 < 0.8",
+    "win rate 26.2% below 40%"
+   ],
+   "sharpe": -0.4373,
+   "sr0": 0.1334,
+   "reconstructed": true
+  },
+  {
+   "segment": "grade",
+   "segment_value": "C",
+   "asset_class": "COMMODITY",
+   "n": 45,
+   "wins": 4,
+   "wr": 0.0889,
+   "wr_ci": [
+    0.0351,
+    0.2073
+   ],
+   "pf": 0.0601,
+   "gross_expectancy_pct": -2.9652,
+   "net_expectancy_pct": -3.0852,
+   "net_ci_pct": [
+    -3.667,
+    -2.4368
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -2.4109,
+    "second_half_mean": -3.7301
+   },
+   "top_symbol_share": 0.3778,
+   "top_source_share": 0.7778,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.06 < 0.8",
+    "win rate 8.9% below 40%"
+   ],
+   "sharpe": -1.4433,
+   "sr0": 0.3541,
+   "reconstructed": true
+  },
+  {
+   "segment": "trust_tier",
+   "segment_value": "RELIABLE",
+   "asset_class": "COMMODITY",
+   "n": 55,
+   "wins": 8,
+   "wr": 0.1455,
+   "wr_ci": [
+    0.0756,
+    0.2616
+   ],
+   "pf": 0.1207,
+   "gross_expectancy_pct": -3.0502,
+   "net_expectancy_pct": -3.1702,
+   "net_ci_pct": [
+    -4.5808,
+    -2.0596
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -2.0292,
+    "second_half_mean": -4.2703
+   },
+   "top_symbol_share": 0.3091,
+   "top_source_share": 0.6364,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.12 < 0.8",
+    "win rate 14.5% below 40%"
+   ],
+   "sharpe": -0.6723,
+   "sr0": 0.3203,
+   "reconstructed": true
+  },
+  {
+   "segment": "rr_gate",
+   "segment_value": "rr>=1.5",
+   "asset_class": "COMMODITY",
+   "n": 55,
+   "wins": 8,
+   "wr": 0.1455,
+   "wr_ci": [
+    0.0756,
+    0.2616
+   ],
+   "pf": 0.1207,
+   "gross_expectancy_pct": -3.0502,
+   "net_expectancy_pct": -3.1702,
+   "net_ci_pct": [
+    -4.5808,
+    -2.0596
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -2.0292,
+    "second_half_mean": -4.2703
+   },
+   "top_symbol_share": 0.3091,
+   "top_source_share": 0.6364,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.12 < 0.8",
+    "win rate 14.5% below 40%"
+   ],
+   "sharpe": -0.6723,
+   "sr0": 0.3203,
+   "reconstructed": true
+  },
+  {
+   "segment": "origin",
+   "segment_value": "live",
+   "asset_class": "COMMODITY",
+   "n": 55,
+   "wins": 8,
+   "wr": 0.1455,
+   "wr_ci": [
+    0.0756,
+    0.2616
+   ],
+   "pf": 0.1207,
+   "gross_expectancy_pct": -3.0502,
+   "net_expectancy_pct": -3.1702,
+   "net_ci_pct": [
+    -4.5808,
+    -2.0596
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -2.0292,
+    "second_half_mean": -4.2703
+   },
+   "top_symbol_share": 0.3091,
+   "top_source_share": 0.6364,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.12 < 0.8",
+    "win rate 14.5% below 40%"
+   ],
+   "sharpe": -0.6723,
+   "sr0": 0.3203,
+   "reconstructed": true
+  },
+  {
+   "segment": "score_gate",
+   "segment_value": "score<60",
+   "asset_class": "COMMODITY",
+   "n": 54,
+   "wins": 8,
+   "wr": 0.1481,
+   "wr_ci": [
+    0.077,
+    0.266
+   ],
+   "pf": 0.1215,
+   "gross_expectancy_pct": -3.0863,
+   "net_expectancy_pct": -3.2063,
+   "net_ci_pct": [
+    -4.5975,
+    -2.077
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -2.0268,
+    "second_half_mean": -4.3857
+   },
+   "top_symbol_share": 0.3148,
+   "top_source_share": 0.6481,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.12 < 0.8",
+    "win rate 14.8% below 40%"
+   ],
+   "sharpe": -0.6748,
+   "sr0": 0.3232,
+   "reconstructed": true
+  },
+  {
+   "segment": "elite_grade",
+   "segment_value": "D",
+   "asset_class": "COMMODITY",
+   "n": 37,
+   "wins": 0,
+   "wr": 0.0,
+   "wr_ci": [
+    0.0,
+    0.0941
+   ],
+   "pf": 0.0,
+   "gross_expectancy_pct": -3.7713,
+   "net_expectancy_pct": -3.8913,
+   "net_ci_pct": [
+    -4.2644,
+    -3.5169
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -3.02,
+    "second_half_mean": -4.7168
+   },
+   "top_symbol_share": 0.4324,
+   "top_source_share": 0.9459,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.00 < 0.8",
+    "win rate 0.0% below 40%"
+   ],
+   "sharpe": -3.4142,
+   "sr0": 0.3905,
+   "reconstructed": true
+  },
+  {
+   "segment": "forward_gate",
+   "segment_value": "fwd_n>=20",
+   "asset_class": "COMMODITY",
+   "n": 35,
+   "wins": 0,
+   "wr": 0.0,
+   "wr_ci": [
+    0.0,
+    0.0989
+   ],
+   "pf": 0.0,
+   "gross_expectancy_pct": -3.8994,
+   "net_expectancy_pct": -4.0194,
+   "net_ci_pct": [
+    -4.3655,
+    -3.6993
+   ],
+   "p_value": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -3.1871,
+    "second_half_mean": -4.8055
+   },
+   "top_symbol_share": 0.4571,
+   "top_source_share": 1.0,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.00 < 0.8",
+    "win rate 0.0% below 40%"
+   ],
+   "sharpe": -3.9156,
+   "sr0": 0.4015,
+   "reconstructed": true
   }
  ],
  "cells": [
@@ -307,6 +2873,8 @@
    ],
    "p_value": 1.0,
    "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -318,7 +2886,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.80 < 0.80 at n=754",
+    "profit factor 0.80 < 0.8",
     "win rate 36.2% below 40%"
    ],
    "sharpe": -0.102,
@@ -344,6 +2912,8 @@
    ],
    "p_value": 0.03005,
    "q_value": 0.338062,
+   "p_harm": 0.975689,
+   "harm_q": null,
    "dsr": 0.9766,
    "split_half": {
     "stable": true,
@@ -377,6 +2947,8 @@
    ],
    "p_value": 0.808937,
    "q_value": 1.0,
+   "p_harm": 0.248377,
+   "harm_q": null,
    "dsr": 0.0082,
    "split_half": {
     "stable": false,
@@ -413,6 +2985,8 @@
    ],
    "p_value": 0.157153,
    "q_value": 1.0,
+   "p_harm": 0.890741,
+   "harm_q": null,
    "dsr": 0.3037,
    "split_half": {
     "stable": true,
@@ -446,6 +3020,8 @@
    ],
    "p_value": 0.758606,
    "q_value": 1.0,
+   "p_harm": 0.319986,
+   "harm_q": null,
    "dsr": 0.0109,
    "split_half": {
     "stable": false,
@@ -482,6 +3058,8 @@
    ],
    "p_value": 0.970029,
    "q_value": 1.0,
+   "p_harm": 0.051711,
+   "harm_q": 0.051711,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -493,7 +3071,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.59 < 0.80 at n=64",
+    "profit factor 0.59 < 0.8",
     "win rate 39.1% below 40%"
    ],
    "sharpe": -0.2496,
@@ -519,6 +3097,8 @@
    ],
    "p_value": 0.812924,
    "q_value": 1.0,
+   "p_harm": 0.262887,
+   "harm_q": null,
    "dsr": 0.0706,
    "split_half": {
     "stable": false,
@@ -555,6 +3135,8 @@
    ],
    "p_value": 1.0,
    "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -566,7 +3148,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.16 < 0.80 at n=55",
+    "profit factor 0.16 < 0.8",
     "win rate 12.7% below 40%"
    ],
    "sharpe": -1.0537,
@@ -592,6 +3174,8 @@
    ],
    "p_value": 0.658255,
    "q_value": 1.0,
+   "p_harm": 0.445962,
+   "harm_q": null,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -600,9 +3184,9 @@
    },
    "top_symbol_share": 0.2407,
    "top_source_share": 1.0,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "profit factor 0.64 < 0.80 at n=54"
+    "profit factor 0.64 < 0.8 at n=54 \u2014 watch only, harm not proven (net CI [-1.37, +0.23]) so it keeps observing"
    ],
    "sharpe": -0.1845,
    "sr0": 0.3042
@@ -627,6 +3211,8 @@
    ],
    "p_value": 0.661096,
    "q_value": 1.0,
+   "p_harm": 0.444942,
+   "harm_q": null,
    "dsr": 0.1132,
    "split_half": {
     "stable": false,
@@ -663,6 +3249,8 @@
    ],
    "p_value": 0.868781,
    "q_value": 1.0,
+   "p_harm": 0.200531,
+   "harm_q": null,
    "dsr": 0.0033,
    "split_half": {
     "stable": false,
@@ -699,6 +3287,8 @@
    ],
    "p_value": 0.94054,
    "q_value": 1.0,
+   "p_harm": 0.101319,
+   "harm_q": null,
    "dsr": 0.0048,
    "split_half": {
     "stable": false,
@@ -735,6 +3325,8 @@
    ],
    "p_value": 0.999999,
    "q_value": 1.0,
+   "p_harm": 5e-06,
+   "harm_q": 8e-06,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -746,7 +3338,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.19 < 0.80 at n=46",
+    "profit factor 0.19 < 0.8",
     "win rate 17.4% below 40%"
    ],
    "sharpe": -0.7773,
@@ -772,6 +3364,8 @@
    ],
    "p_value": 0.275742,
    "q_value": 1.0,
+   "p_harm": 0.814351,
+   "harm_q": null,
    "dsr": 0.226,
    "split_half": {
     "stable": true,
@@ -805,6 +3399,8 @@
    ],
    "p_value": 0.724258,
    "q_value": 1.0,
+   "p_harm": 0.382996,
+   "harm_q": null,
    "dsr": 0.0003,
    "split_half": {
     "stable": false,
@@ -841,6 +3437,8 @@
    ],
    "p_value": 0.99522,
    "q_value": 1.0,
+   "p_harm": 0.011314,
+   "harm_q": 0.012445,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -852,7 +3450,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.32 < 0.80 at n=44",
+    "profit factor 0.32 < 0.8",
     "win rate 31.8% below 40%"
    ],
    "sharpe": -0.4979,
@@ -878,6 +3476,8 @@
    ],
    "p_value": 0.271192,
    "q_value": 1.0,
+   "p_harm": 0.819811,
+   "harm_q": null,
    "dsr": 0.2229,
    "split_half": {
     "stable": true,
@@ -911,6 +3511,8 @@
    ],
    "p_value": 0.860022,
    "q_value": 1.0,
+   "p_harm": 0.2204,
+   "harm_q": null,
    "dsr": 0.0123,
    "split_half": {
     "stable": false,
@@ -947,6 +3549,8 @@
    ],
    "p_value": 0.978221,
    "q_value": 1.0,
+   "p_harm": 0.044215,
+   "harm_q": null,
    "dsr": 0.0025,
    "split_half": {
     "stable": false,
@@ -983,6 +3587,8 @@
    ],
    "p_value": 0.99024,
    "q_value": 1.0,
+   "p_harm": 0.021779,
+   "harm_q": null,
    "dsr": 0.0023,
    "split_half": {
     "stable": false,
@@ -1019,6 +3625,8 @@
    ],
    "p_value": 1.0,
    "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
    "dsr": 0.0101,
    "split_half": {
     "stable": false,
@@ -1030,7 +3638,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.11 < 0.80 at n=41",
+    "profit factor 0.11 < 0.8",
     "win rate 2.4% below 40%"
    ],
    "sharpe": -0.963,
@@ -1056,6 +3664,8 @@
    ],
    "p_value": 1.0,
    "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -1067,7 +3677,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.00 < 0.80 at n=35",
+    "profit factor 0.00 < 0.8",
     "win rate 0.0% below 40%"
    ],
    "sharpe": -3.9156,
@@ -1093,6 +3703,8 @@
    ],
    "p_value": 0.955234,
    "q_value": 1.0,
+   "p_harm": 0.087733,
+   "harm_q": null,
    "dsr": 0.0006,
    "split_half": {
     "stable": false,
@@ -1129,6 +3741,8 @@
    ],
    "p_value": 0.696204,
    "q_value": 1.0,
+   "p_harm": 0.432083,
+   "harm_q": null,
    "dsr": 0.0108,
    "split_half": {
     "stable": false,
@@ -1165,6 +3779,8 @@
    ],
    "p_value": 0.707668,
    "q_value": 1.0,
+   "p_harm": 0.427768,
+   "harm_q": null,
    "dsr": 0.0106,
    "split_half": {
     "stable": false,
@@ -1201,6 +3817,8 @@
    ],
    "p_value": 0.229129,
    "q_value": 1.0,
+   "p_harm": 0.867535,
+   "harm_q": null,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -1237,6 +3855,8 @@
    ],
    "p_value": 0.998842,
    "q_value": 1.0,
+   "p_harm": 0.004065,
+   "harm_q": 0.004968,
    "dsr": 0.0003,
    "split_half": {
     "stable": false,
@@ -1248,7 +3868,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.32 < 0.80 at n=29",
+    "profit factor 0.32 < 0.8",
     "win rate 24.1% below 40%"
    ],
    "sharpe": -0.4605,
@@ -1274,6 +3894,8 @@
    ],
    "p_value": 1.0,
    "q_value": 1.0,
+   "p_harm": 0.0,
+   "harm_q": 0.0,
    "dsr": null,
    "split_half": {
     "stable": false,
@@ -1285,7 +3907,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.00 < 0.80 at n=29",
+    "profit factor 0.00 < 0.8",
     "win rate 0.0% below 40%"
    ]
   },
@@ -1309,6 +3931,8 @@
    ],
    "p_value": 0.956421,
    "q_value": 1.0,
+   "p_harm": 0.092467,
+   "harm_q": null,
    "dsr": 0.0152,
    "split_half": {
     "stable": false,
@@ -1345,6 +3969,8 @@
    ],
    "p_value": 0.649446,
    "q_value": 1.0,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": 0.0137,
    "split_half": {
     "stable": false,
@@ -1382,6 +4008,8 @@
    ],
    "p_value": 0.876106,
    "q_value": 1.0,
+   "p_harm": 0.221034,
+   "harm_q": null,
    "dsr": 0.001,
    "split_half": {
     "stable": false,
@@ -1419,6 +4047,8 @@
    ],
    "p_value": 1.0,
    "q_value": 1.0,
+   "p_harm": 5e-06,
+   "harm_q": 8e-06,
    "dsr": 0.0025,
    "split_half": {
     "stable": false,
@@ -1430,7 +4060,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.13 < 0.80 at n=26",
+    "profit factor 0.13 < 0.8",
     "win rate 7.7% below 40%"
    ],
    "sharpe": -1.1909,
@@ -1456,6 +4086,8 @@
    ],
    "p_value": 0.962241,
    "q_value": 1.0,
+   "p_harm": 0.084319,
+   "harm_q": null,
    "dsr": 0.0011,
    "split_half": {
     "stable": false,
@@ -1492,6 +4124,8 @@
    ],
    "p_value": 1e-05,
    "q_value": 0.00045,
+   "p_harm": 0.999999,
+   "harm_q": null,
    "dsr": 1.0,
    "split_half": {
     "stable": true,
@@ -1525,6 +4159,8 @@
    ],
    "p_value": 0.345019,
    "q_value": 1.0,
+   "p_harm": 0.787822,
+   "harm_q": null,
    "dsr": 0.1845,
    "split_half": {
     "stable": true,
@@ -1558,6 +4194,8 @@
    ],
    "p_value": 0.999999,
    "q_value": 1.0,
+   "p_harm": 1.8e-05,
+   "harm_q": 2.5e-05,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -1569,7 +4207,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.05 < 0.80 at n=24",
+    "profit factor 0.05 < 0.8",
     "win rate 8.3% below 40%"
    ],
    "sharpe": -1.4563,
@@ -1595,6 +4233,8 @@
    ],
    "p_value": 0.000772,
    "q_value": 0.01737,
+   "p_harm": 0.999861,
+   "harm_q": null,
    "dsr": 0.9761,
    "split_half": {
     "stable": true,
@@ -1630,6 +4270,8 @@
    ],
    "p_value": 0.797564,
    "q_value": 1.0,
+   "p_harm": 0.33882,
+   "harm_q": null,
    "dsr": 0.0051,
    "split_half": {
     "stable": false,
@@ -1666,6 +4308,8 @@
    ],
    "p_value": 0.584094,
    "q_value": 1.0,
+   "p_harm": 0.584094,
+   "harm_q": null,
    "dsr": 0.1645,
    "split_half": {
     "stable": true,
@@ -1699,6 +4343,8 @@
    ],
    "p_value": 0.584094,
    "q_value": 1.0,
+   "p_harm": 0.584094,
+   "harm_q": null,
    "dsr": 0.0257,
    "split_half": {
     "stable": false,
@@ -1734,6 +4380,8 @@
    ],
    "p_value": 0.9331,
    "q_value": 1.0,
+   "p_harm": 0.143139,
+   "harm_q": null,
    "dsr": 0.0042,
    "split_half": {
     "stable": false,
@@ -1770,6 +4418,8 @@
    ],
    "p_value": 0.973761,
    "q_value": 1.0,
+   "p_harm": 0.0669,
+   "harm_q": null,
    "dsr": 0.002,
    "split_half": {
     "stable": false,
@@ -1806,6 +4456,8 @@
    ],
    "p_value": 0.415906,
    "q_value": 1.0,
+   "p_harm": 0.738266,
+   "harm_q": null,
    "dsr": 0.0854,
    "split_half": {
     "stable": true,
@@ -1839,6 +4491,8 @@
    ],
    "p_value": 0.191655,
    "q_value": 1.0,
+   "p_harm": 0.905376,
+   "harm_q": null,
    "dsr": 0.1237,
    "split_half": {
     "stable": true,
@@ -1872,6 +4526,8 @@
    ],
    "p_value": 0.020695,
    "q_value": 0.310425,
+   "p_harm": 0.994091,
+   "harm_q": null,
    "dsr": 0.2307,
    "split_half": {
     "stable": true,
@@ -1905,6 +4561,8 @@
    ],
    "p_value": 0.916466,
    "q_value": null,
+   "p_harm": 0.179642,
+   "harm_q": null,
    "dsr": 0.0033,
    "split_half": {
     "stable": false,
@@ -1940,6 +4598,8 @@
    ],
    "p_value": 0.999636,
    "q_value": null,
+   "p_harm": 0.002213,
+   "harm_q": null,
    "dsr": 0.0005,
    "split_half": {
     "stable": false,
@@ -1975,6 +4635,8 @@
    ],
    "p_value": 0.592735,
    "q_value": null,
+   "p_harm": 0.592735,
+   "harm_q": null,
    "dsr": 0.0138,
    "split_half": {
     "stable": false,
@@ -2010,6 +4672,8 @@
    ],
    "p_value": 0.999863,
    "q_value": null,
+   "p_harm": 0.001175,
+   "harm_q": null,
    "dsr": 0.0007,
    "split_half": {
     "stable": false,
@@ -2045,6 +4709,8 @@
    ],
    "p_value": 0.40181,
    "q_value": null,
+   "p_harm": 0.772751,
+   "harm_q": null,
    "dsr": 0.0167,
    "split_half": {
     "stable": false,
@@ -2080,6 +4746,8 @@
    ],
    "p_value": 0.996307,
    "q_value": null,
+   "p_harm": 0.017578,
+   "harm_q": null,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -2115,6 +4783,8 @@
    ],
    "p_value": 0.982422,
    "q_value": null,
+   "p_harm": 0.059235,
+   "harm_q": null,
    "dsr": 0.0008,
    "split_half": {
     "stable": false,
@@ -2150,6 +4820,8 @@
    ],
    "p_value": 0.303619,
    "q_value": null,
+   "p_harm": 0.849121,
+   "harm_q": null,
    "dsr": 0.0637,
    "split_half": {
     "stable": false,
@@ -2185,6 +4857,8 @@
    ],
    "p_value": 0.150879,
    "q_value": null,
+   "p_harm": 0.940765,
+   "harm_q": null,
    "dsr": 0.3418,
    "split_half": {
     "stable": true,
@@ -2220,6 +4894,8 @@
    ],
    "p_value": 0.395264,
    "q_value": null,
+   "p_harm": 0.788025,
+   "harm_q": null,
    "dsr": 0.253,
    "split_half": {
     "stable": true,
@@ -2255,6 +4931,8 @@
    ],
    "p_value": 0.395264,
    "q_value": null,
+   "p_harm": 0.788025,
+   "harm_q": null,
    "dsr": 0.1063,
    "split_half": {
     "stable": true,
@@ -2290,6 +4968,8 @@
    ],
    "p_value": 0.999939,
    "q_value": null,
+   "p_harm": 0.000916,
+   "harm_q": null,
    "dsr": 0.0153,
    "split_half": {
     "stable": false,
@@ -2325,6 +5005,8 @@
    ],
    "p_value": 0.953857,
    "q_value": null,
+   "p_harm": 0.133423,
+   "harm_q": null,
    "dsr": 0.0032,
    "split_half": {
     "stable": false,
@@ -2360,6 +5042,8 @@
    ],
    "p_value": 0.387207,
    "q_value": null,
+   "p_harm": 0.806152,
+   "harm_q": null,
    "dsr": 0.0145,
    "split_half": {
     "stable": false,
@@ -2395,6 +5079,8 @@
    ],
    "p_value": 0.999756,
    "q_value": null,
+   "p_harm": 0.003174,
+   "harm_q": null,
    "dsr": 0.0003,
    "split_half": {
     "stable": false,
@@ -2430,6 +5116,8 @@
    ],
    "p_value": 0.980469,
    "q_value": null,
+   "p_harm": 0.089844,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4444,
@@ -2459,6 +5147,8 @@
    ],
    "p_value": 0.253906,
    "q_value": null,
+   "p_harm": 0.910156,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
@@ -2488,6 +5178,8 @@
    ],
    "p_value": 0.998047,
    "q_value": null,
+   "p_harm": 0.019531,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5556,
@@ -2517,6 +5209,8 @@
    ],
    "p_value": 0.998047,
    "q_value": null,
+   "p_harm": 0.019531,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4444,
@@ -2546,6 +5240,8 @@
    ],
    "p_value": 0.636719,
    "q_value": null,
+   "p_harm": 0.636719,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.25,
@@ -2575,6 +5271,8 @@
    ],
    "p_value": 0.363281,
    "q_value": null,
+   "p_harm": 0.855469,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.375,
@@ -2604,6 +5302,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.003906,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.125,
@@ -2633,6 +5333,8 @@
    ],
    "p_value": 0.363281,
    "q_value": null,
+   "p_harm": 0.855469,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -2662,6 +5364,8 @@
    ],
    "p_value": 0.996094,
    "q_value": null,
+   "p_harm": 0.035156,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.375,
@@ -2691,6 +5395,8 @@
    ],
    "p_value": 0.9375,
    "q_value": null,
+   "p_harm": 0.226563,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -2720,6 +5426,8 @@
    ],
    "p_value": 0.0625,
    "q_value": null,
+   "p_harm": 0.992188,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5714,
@@ -2749,6 +5457,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.007813,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5714,
@@ -2778,6 +5488,8 @@
    ],
    "p_value": 0.9375,
    "q_value": null,
+   "p_harm": 0.226563,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4286,
@@ -2807,6 +5519,8 @@
    ],
    "p_value": 0.226563,
    "q_value": null,
+   "p_harm": 0.9375,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4286,
@@ -2836,6 +5550,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 0.773438,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4286,
@@ -2865,6 +5581,8 @@
    ],
    "p_value": 0.9375,
    "q_value": null,
+   "p_harm": 0.226563,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4286,
@@ -2894,6 +5612,8 @@
    ],
    "p_value": 0.65625,
    "q_value": null,
+   "p_harm": 0.65625,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.1667,
@@ -2923,6 +5643,8 @@
    ],
    "p_value": 0.34375,
    "q_value": null,
+   "p_harm": 0.890625,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -2952,6 +5674,8 @@
    ],
    "p_value": 0.109375,
    "q_value": null,
+   "p_harm": 0.984375,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
@@ -2981,6 +5705,8 @@
    ],
    "p_value": 0.34375,
    "q_value": null,
+   "p_harm": 0.890625,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.1667,
@@ -3010,6 +5736,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.015625,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
@@ -3039,6 +5767,8 @@
    ],
    "p_value": 0.65625,
    "q_value": null,
+   "p_harm": 0.65625,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3068,6 +5798,8 @@
    ],
    "p_value": 0.8125,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3097,6 +5829,8 @@
    ],
    "p_value": 0.8125,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3126,6 +5860,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.03125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.2,
@@ -3155,6 +5891,8 @@
    ],
    "p_value": 0.96875,
    "q_value": null,
+   "p_harm": 0.1875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4,
@@ -3184,6 +5922,8 @@
    ],
    "p_value": 0.8125,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4,
@@ -3213,6 +5953,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 0.8125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4,
@@ -3242,6 +5984,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.03125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.4,
@@ -3271,6 +6015,8 @@
    ],
    "p_value": 0.8125,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6,
@@ -3300,6 +6046,8 @@
    ],
    "p_value": 0.96875,
    "q_value": null,
+   "p_harm": 0.1875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6,
@@ -3329,6 +6077,8 @@
    ],
    "p_value": 0.8125,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.8,
@@ -3358,6 +6108,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.03125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3387,6 +6139,8 @@
    ],
    "p_value": 0.6875,
    "q_value": null,
+   "p_harm": 0.6875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3416,6 +6170,8 @@
    ],
    "p_value": 0.9375,
    "q_value": null,
+   "p_harm": 0.3125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3445,6 +6201,8 @@
    ],
    "p_value": 0.0625,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3474,6 +6232,8 @@
    ],
    "p_value": 0.6875,
    "q_value": null,
+   "p_harm": 0.6875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.75,
@@ -3503,6 +6263,8 @@
    ],
    "p_value": 0.9375,
    "q_value": null,
+   "p_harm": 0.3125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.75,
@@ -3532,6 +6294,8 @@
    ],
    "p_value": 0.6875,
    "q_value": null,
+   "p_harm": 0.6875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.75,
@@ -3561,6 +6325,8 @@
    ],
    "p_value": 0.3125,
    "q_value": null,
+   "p_harm": 0.9375,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.75,
@@ -3590,6 +6356,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.0625,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -3619,6 +6387,8 @@
    ],
    "p_value": 0.0625,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -3648,6 +6418,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.0625,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -3677,6 +6449,8 @@
    ],
    "p_value": 0.6875,
    "q_value": null,
+   "p_harm": 0.6875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.25,
@@ -3706,6 +6480,8 @@
    ],
    "p_value": 0.875,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
@@ -3735,6 +6511,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3764,6 +6542,8 @@
    ],
    "p_value": 0.875,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3793,6 +6573,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
@@ -3822,6 +6604,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 0.875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3851,6 +6635,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3880,6 +6666,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
@@ -3909,6 +6697,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -3938,6 +6728,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 0.875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
@@ -3967,6 +6759,8 @@
    ],
    "p_value": 0.875,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
@@ -3996,6 +6790,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 0.875,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
@@ -4025,6 +6821,8 @@
    ],
    "p_value": 0.125,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
@@ -4054,6 +6852,8 @@
    ],
    "p_value": 0.875,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
@@ -4083,6 +6883,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
@@ -4112,6 +6914,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
@@ -4141,6 +6945,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.6667,
@@ -4170,6 +6976,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.125,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.3333,
@@ -4199,6 +7007,8 @@
    ],
    "p_value": 0.75,
    "q_value": null,
+   "p_harm": 0.75,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4228,6 +7038,8 @@
    ],
    "p_value": 0.25,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4257,6 +7069,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4286,6 +7100,8 @@
    ],
    "p_value": 0.25,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4315,6 +7131,8 @@
    ],
    "p_value": 0.75,
    "q_value": null,
+   "p_harm": 0.75,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4344,6 +7162,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4373,6 +7193,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4402,6 +7224,8 @@
    ],
    "p_value": 0.75,
    "q_value": null,
+   "p_harm": 0.75,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4431,6 +7255,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4460,6 +7286,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4489,6 +7317,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4518,6 +7348,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4547,6 +7379,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4576,6 +7410,8 @@
    ],
    "p_value": 0.75,
    "q_value": null,
+   "p_harm": 0.75,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4605,6 +7441,8 @@
    ],
    "p_value": 0.25,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4634,6 +7472,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4663,6 +7503,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.25,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 0.5,
@@ -4692,6 +7534,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4721,6 +7565,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4750,6 +7596,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4779,6 +7627,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4808,6 +7658,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4837,6 +7689,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4866,6 +7720,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4895,6 +7751,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4924,6 +7782,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4953,6 +7813,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -4982,6 +7844,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5011,6 +7875,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5040,6 +7906,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5069,6 +7937,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5098,6 +7968,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5127,6 +7999,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5156,6 +8030,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5185,6 +8061,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5214,6 +8092,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5243,6 +8123,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5272,6 +8154,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5301,6 +8185,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5330,6 +8216,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5359,6 +8247,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5388,6 +8278,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5417,6 +8309,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5446,6 +8340,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5475,6 +8371,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5504,6 +8402,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5533,6 +8433,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5562,6 +8464,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5591,6 +8495,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.5,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5620,6 +8526,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -5651,6 +8559,8 @@
    ],
    "p_value": 0.996077,
    "q_value": 0.999999,
+   "p_harm": 0.006688,
+   "harm_q": 0.007643,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -5662,7 +8572,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.54 < 0.80 at n=120",
+    "profit factor 0.54 < 0.8",
     "win rate 38.3% below 40%"
    ],
    "sharpe": -0.2355,
@@ -5688,6 +8598,8 @@
    ],
    "p_value": 0.99648,
    "q_value": 0.999999,
+   "p_harm": 0.006202,
+   "harm_q": null,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -5696,10 +8608,9 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.4771,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "profit factor 0.64 < 0.80 at n=109",
-    "win rate 37.6% below 40%"
+    "profit factor 0.64 < 0.8 at n=109 \u2014 watch only, harm not proven (net CI [-0.71, +0.00]) so it keeps observing"
    ],
    "sharpe": -0.1819,
    "sr0": 0.2252
@@ -5724,6 +8635,8 @@
    ],
    "p_value": 0.631223,
    "q_value": 0.999999,
+   "p_harm": 0.455536,
+   "harm_q": null,
    "dsr": 0.0289,
    "split_half": {
     "stable": false,
@@ -5761,6 +8674,8 @@
    ],
    "p_value": 0.971668,
    "q_value": 0.999999,
+   "p_harm": 0.046456,
+   "harm_q": null,
    "dsr": 0.0036,
    "split_half": {
     "stable": false,
@@ -5798,6 +8713,8 @@
    ],
    "p_value": 0.5,
    "q_value": 0.999999,
+   "p_harm": 0.588928,
+   "harm_q": null,
    "dsr": 0.2334,
    "split_half": {
     "stable": true,
@@ -5833,6 +8750,8 @@
    ],
    "p_value": 0.285793,
    "q_value": 0.999999,
+   "p_harm": 0.785896,
+   "harm_q": null,
    "dsr": 0.3117,
    "split_half": {
     "stable": true,
@@ -5868,6 +8787,8 @@
    ],
    "p_value": 0.995395,
    "q_value": 0.999999,
+   "p_harm": 0.009329,
+   "harm_q": null,
    "dsr": 0.0017,
    "split_half": {
     "stable": false,
@@ -5905,6 +8826,8 @@
    ],
    "p_value": 0.945572,
    "q_value": 0.999999,
+   "p_harm": 0.087643,
+   "harm_q": null,
    "dsr": 0.0037,
    "split_half": {
     "stable": false,
@@ -5942,6 +8865,8 @@
    ],
    "p_value": 0.999071,
    "q_value": 0.999999,
+   "p_harm": 0.002136,
+   "harm_q": 0.002848,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -5953,7 +8878,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.51 < 0.80 at n=66",
+    "profit factor 0.51 < 0.8",
     "win rate 31.8% below 40%"
    ],
    "sharpe": -0.2929,
@@ -5979,6 +8904,8 @@
    ],
    "p_value": 0.809134,
    "q_value": 0.999999,
+   "p_harm": 0.266154,
+   "harm_q": null,
    "dsr": 0.0168,
    "split_half": {
     "stable": false,
@@ -6016,6 +8943,8 @@
    ],
    "p_value": 0.400653,
    "q_value": 0.999999,
+   "p_harm": 0.692672,
+   "harm_q": null,
    "dsr": 0.0122,
    "split_half": {
     "stable": false,
@@ -6052,6 +8981,8 @@
    ],
    "p_value": 0.951023,
    "q_value": 0.999999,
+   "p_harm": 0.080941,
+   "harm_q": null,
    "dsr": 0.0039,
    "split_half": {
     "stable": false,
@@ -6089,6 +9020,8 @@
    ],
    "p_value": 0.980191,
    "q_value": 0.999999,
+   "p_harm": 0.036089,
+   "harm_q": null,
    "dsr": 0.0008,
    "split_half": {
     "stable": false,
@@ -6097,10 +9030,9 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.8689,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "profit factor 0.78 < 0.80 at n=61",
-    "win rate 37.7% below 40%"
+    "profit factor 0.78 < 0.8 at n=61 \u2014 watch only, harm not proven (net CI [-0.88, +0.32]) so it keeps observing"
    ],
    "sharpe": -0.1183,
    "sr0": 0.3011
@@ -6125,6 +9057,8 @@
    ],
    "p_value": 0.989793,
    "q_value": 0.999999,
+   "p_harm": 0.019809,
+   "harm_q": null,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -6133,10 +9067,9 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.918,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "profit factor 0.64 < 0.80 at n=61",
-    "win rate 36.1% below 40%"
+    "profit factor 0.64 < 0.8 at n=61 \u2014 watch only, harm not proven (net CI [-1.38, +0.16]) so it keeps observing"
    ],
    "sharpe": -0.2073,
    "sr0": 0.3011
@@ -6161,6 +9094,8 @@
    ],
    "p_value": 0.974053,
    "q_value": 0.999999,
+   "p_harm": 0.04623,
+   "harm_q": null,
    "dsr": 0.0018,
    "split_half": {
     "stable": false,
@@ -6198,6 +9133,8 @@
    ],
    "p_value": 0.551289,
    "q_value": 0.999999,
+   "p_harm": 0.551289,
+   "harm_q": null,
    "dsr": 0.0263,
    "split_half": {
     "stable": false,
@@ -6234,6 +9171,8 @@
    ],
    "p_value": 0.990831,
    "q_value": 0.999999,
+   "p_harm": 0.018172,
+   "harm_q": null,
    "dsr": 0.0015,
    "split_half": {
     "stable": false,
@@ -6271,6 +9210,8 @@
    ],
    "p_value": 0.987627,
    "q_value": 0.999999,
+   "p_harm": 0.02397,
+   "harm_q": null,
    "dsr": 0.003,
    "split_half": {
     "stable": false,
@@ -6308,6 +9249,8 @@
    ],
    "p_value": 0.5,
    "q_value": 0.999999,
+   "p_harm": 0.604317,
+   "harm_q": null,
    "dsr": 0.033,
    "split_half": {
     "stable": true,
@@ -6343,6 +9286,8 @@
    ],
    "p_value": 0.992773,
    "q_value": 0.999999,
+   "p_harm": 0.015014,
+   "harm_q": null,
    "dsr": 0.0019,
    "split_half": {
     "stable": false,
@@ -6380,6 +9325,8 @@
    ],
    "p_value": 0.911499,
    "q_value": 0.999999,
+   "p_harm": 0.140305,
+   "harm_q": null,
    "dsr": 0.0007,
    "split_half": {
     "stable": false,
@@ -6388,9 +9335,9 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9818,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "profit factor 0.76 < 0.80 at n=55"
+    "profit factor 0.76 < 0.8 at n=55 \u2014 watch only, harm not proven (net CI [-1.41, +0.50]) so it keeps observing"
    ],
    "sharpe": -0.1194,
    "sr0": 0.3171
@@ -6415,6 +9362,8 @@
    ],
    "p_value": 0.998081,
    "q_value": 0.999999,
+   "p_harm": 0.004537,
+   "harm_q": null,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -6423,10 +9372,9 @@
    },
    "top_symbol_share": 1.0,
    "top_source_share": 0.9444,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "profit factor 0.55 < 0.80 at n=54",
-    "win rate 31.5% below 40%"
+    "profit factor 0.55 < 0.8 at n=54 \u2014 watch only, harm not proven (net CI [-1.30, +0.01]) so it keeps observing"
    ],
    "sharpe": -0.2791,
    "sr0": 0.32
@@ -6451,6 +9399,8 @@
    ],
    "p_value": 0.973281,
    "q_value": 0.999999,
+   "p_harm": 0.049185,
+   "harm_q": null,
    "dsr": 0.0024,
    "split_half": {
     "stable": false,
@@ -6488,6 +9438,8 @@
    ],
    "p_value": 0.915511,
    "q_value": 0.999999,
+   "p_harm": 0.13584,
+   "harm_q": null,
    "dsr": 0.0151,
    "split_half": {
     "stable": false,
@@ -6525,6 +9477,8 @@
    ],
    "p_value": 0.5,
    "q_value": 0.999999,
+   "p_harm": 0.608077,
+   "harm_q": null,
    "dsr": 0.3213,
    "split_half": {
     "stable": true,
@@ -6560,6 +9514,8 @@
    ],
    "p_value": 0.712075,
    "q_value": 0.999999,
+   "p_harm": 0.389884,
+   "harm_q": null,
    "dsr": 0.0268,
    "split_half": {
     "stable": false,
@@ -6597,6 +9553,8 @@
    ],
    "p_value": 0.760056,
    "q_value": 0.999999,
+   "p_harm": 0.335906,
+   "harm_q": null,
    "dsr": 0.0048,
    "split_half": {
     "stable": false,
@@ -6634,6 +9592,8 @@
    ],
    "p_value": 0.977808,
    "q_value": 0.999999,
+   "p_harm": 0.042717,
+   "harm_q": null,
    "dsr": 0.0041,
    "split_half": {
     "stable": false,
@@ -6671,6 +9631,8 @@
    ],
    "p_value": 0.076204,
    "q_value": 0.774741,
+   "p_harm": 0.957283,
+   "harm_q": null,
    "dsr": 0.5666,
    "split_half": {
     "stable": true,
@@ -6704,6 +9666,8 @@
    ],
    "p_value": 0.923796,
    "q_value": 0.999999,
+   "p_harm": 0.126435,
+   "harm_q": null,
    "dsr": 0.0045,
    "split_half": {
     "stable": false,
@@ -6741,6 +9705,8 @@
    ],
    "p_value": 0.76456,
    "q_value": 0.999999,
+   "p_harm": 0.332733,
+   "harm_q": null,
    "dsr": 0.0216,
    "split_half": {
     "stable": false,
@@ -6778,6 +9744,8 @@
    ],
    "p_value": 0.5,
    "q_value": 0.999999,
+   "p_harm": 0.614567,
+   "harm_q": null,
    "dsr": 0.0718,
    "split_half": {
     "stable": false,
@@ -6814,6 +9782,8 @@
    ],
    "p_value": 0.993141,
    "q_value": 0.999999,
+   "p_harm": 0.01577,
+   "harm_q": null,
    "dsr": 0.0007,
    "split_half": {
     "stable": false,
@@ -6851,6 +9821,8 @@
    ],
    "p_value": 0.936855,
    "q_value": 0.999999,
+   "p_harm": 0.111026,
+   "harm_q": null,
    "dsr": 0.013,
    "split_half": {
     "stable": false,
@@ -6888,6 +9860,8 @@
    ],
    "p_value": 0.733645,
    "q_value": 0.999999,
+   "p_harm": 0.377614,
+   "harm_q": null,
    "dsr": 0.1483,
    "split_half": {
     "stable": true,
@@ -6924,6 +9898,8 @@
    ],
    "p_value": 0.036476,
    "q_value": 0.741679,
+   "p_harm": 0.983224,
+   "harm_q": null,
    "dsr": 0.5522,
    "split_half": {
     "stable": true,
@@ -6957,6 +9933,8 @@
    ],
    "p_value": 0.686449,
    "q_value": 0.999999,
+   "p_harm": 0.435707,
+   "harm_q": null,
    "dsr": 0.0453,
    "split_half": {
     "stable": false,
@@ -6994,6 +9972,8 @@
    ],
    "p_value": 0.127938,
    "q_value": 0.780422,
+   "p_harm": 0.928347,
+   "harm_q": null,
    "dsr": 0.4435,
    "split_half": {
     "stable": true,
@@ -7027,6 +10007,8 @@
    ],
    "p_value": 0.744312,
    "q_value": 0.999999,
+   "p_harm": 0.371415,
+   "harm_q": null,
    "dsr": 0.0249,
    "split_half": {
     "stable": false,
@@ -7064,6 +10046,8 @@
    ],
    "p_value": 0.121492,
    "q_value": 0.780422,
+   "p_harm": 0.933751,
+   "harm_q": null,
    "dsr": 0.2497,
    "split_half": {
     "stable": true,
@@ -7099,6 +10083,8 @@
    ],
    "p_value": 0.004521,
    "q_value": 0.13789,
+   "p_harm": 0.998532,
+   "harm_q": null,
    "dsr": 0.8226,
    "split_half": {
     "stable": true,
@@ -7132,6 +10118,8 @@
    ],
    "p_value": 0.114741,
    "q_value": 0.780422,
+   "p_harm": 0.939275,
+   "harm_q": null,
    "dsr": 0.5263,
    "split_half": {
     "stable": true,
@@ -7165,6 +10153,8 @@
    ],
    "p_value": 0.114741,
    "q_value": 0.780422,
+   "p_harm": 0.939275,
+   "harm_q": null,
    "dsr": 0.4202,
    "split_half": {
     "stable": true,
@@ -7198,6 +10188,8 @@
    ],
    "p_value": 0.074806,
    "q_value": 0.774741,
+   "p_harm": 0.964622,
+   "harm_q": null,
    "dsr": 0.3615,
    "split_half": {
     "stable": false,
@@ -7234,6 +10226,8 @@
    ],
    "p_value": 0.899756,
    "q_value": 0.999999,
+   "p_harm": 0.180797,
+   "harm_q": null,
    "dsr": 0.0002,
    "split_half": {
     "stable": false,
@@ -7271,6 +10265,8 @@
    ],
    "p_value": 0.049369,
    "q_value": 0.752877,
+   "p_harm": 0.978613,
+   "harm_q": null,
    "dsr": 0.6225,
    "split_half": {
     "stable": true,
@@ -7304,6 +10300,8 @@
    ],
    "p_value": 0.000273,
    "q_value": 0.016653,
+   "p_harm": 0.999948,
+   "harm_q": null,
    "dsr": 0.9865,
    "split_half": {
     "stable": true,
@@ -7339,6 +10337,8 @@
    ],
    "p_value": 0.99373,
    "q_value": 0.999999,
+   "p_harm": 0.017849,
+   "harm_q": null,
    "dsr": 0.0004,
    "split_half": {
     "stable": false,
@@ -7376,6 +10376,8 @@
    ],
    "p_value": 0.907533,
    "q_value": 0.999999,
+   "p_harm": 0.172464,
+   "harm_q": null,
    "dsr": 0.004,
    "split_half": {
     "stable": false,
@@ -7413,6 +10415,8 @@
    ],
    "p_value": 0.999545,
    "q_value": 0.999999,
+   "p_harm": 0.002039,
+   "harm_q": 0.002848,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -7424,7 +10428,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.15 < 0.80 at n=25",
+    "profit factor 0.15 < 0.8",
     "win rate 20.0% below 40%"
    ],
    "sharpe": -0.9682,
@@ -7450,6 +10454,8 @@
    ],
    "p_value": 0.212178,
    "q_value": 0.999999,
+   "p_harm": 0.885239,
+   "harm_q": null,
    "dsr": 0.0807,
    "split_half": {
     "stable": false,
@@ -7486,6 +10492,8 @@
    ],
    "p_value": 0.988672,
    "q_value": 0.999999,
+   "p_harm": 0.031957,
+   "harm_q": 0.031957,
    "dsr": 0.0001,
    "split_half": {
     "stable": false,
@@ -7497,7 +10505,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.35 < 0.80 at n=24",
+    "profit factor 0.35 < 0.8",
     "win rate 29.2% below 40%"
    ],
    "sharpe": -0.5141,
@@ -7523,6 +10531,8 @@
    ],
    "p_value": 0.968043,
    "q_value": 0.999999,
+   "p_harm": 0.075795,
+   "harm_q": null,
    "dsr": 0.0005,
    "split_half": {
     "stable": false,
@@ -7560,6 +10570,8 @@
    ],
    "p_value": 0.999756,
    "q_value": 0.999999,
+   "p_harm": 0.0013,
+   "harm_q": 0.0026,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -7571,7 +10583,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.11 < 0.80 at n=23",
+    "profit factor 0.11 < 0.8",
     "win rate 17.4% below 40%"
    ],
    "sharpe": -1.077,
@@ -7597,6 +10609,8 @@
    ],
    "p_value": 0.261734,
    "q_value": 0.999999,
+   "p_harm": 0.856861,
+   "harm_q": null,
    "dsr": 0.0272,
    "split_half": {
     "stable": false,
@@ -7633,6 +10647,8 @@
    ],
    "p_value": 0.584094,
    "q_value": 0.999999,
+   "p_harm": 0.584094,
+   "harm_q": null,
    "dsr": 0.021,
    "split_half": {
     "stable": false,
@@ -7669,6 +10685,8 @@
    ],
    "p_value": 0.331812,
    "q_value": 0.999999,
+   "p_harm": 0.808345,
+   "harm_q": null,
    "dsr": 0.0532,
    "split_half": {
     "stable": false,
@@ -7705,6 +10723,8 @@
    ],
    "p_value": 0.999799,
    "q_value": 0.999999,
+   "p_harm": 0.001288,
+   "harm_q": 0.0026,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -7716,7 +10736,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.15 < 0.80 at n=20",
+    "profit factor 0.15 < 0.8",
     "win rate 15.0% below 40%"
    ],
    "sharpe": -0.6956,
@@ -7742,6 +10762,8 @@
    ],
    "p_value": 0.999999,
    "q_value": 0.999999,
+   "p_harm": 2e-05,
+   "harm_q": 0.00016,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -7753,7 +10775,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.00 < 0.80 at n=20",
+    "profit factor 0.00 < 0.8",
     "win rate 5.0% below 40%"
    ],
    "sharpe": -1.4108,
@@ -7779,6 +10801,8 @@
    ],
    "p_value": 0.942341,
    "q_value": 0.999999,
+   "p_harm": 0.131588,
+   "harm_q": null,
    "dsr": 0.0033,
    "split_half": {
     "stable": false,
@@ -7816,6 +10840,8 @@
    ],
    "p_value": 0.99998,
    "q_value": 0.999999,
+   "p_harm": 0.000201,
+   "harm_q": 0.000804,
    "dsr": 0.0018,
    "split_half": {
     "stable": false,
@@ -7827,7 +10853,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.15 < 0.80 at n=20",
+    "profit factor 0.15 < 0.8",
     "win rate 10.0% below 40%"
    ],
    "sharpe": -1.0763,
@@ -7853,6 +10879,8 @@
    ],
    "p_value": 1.0,
    "q_value": null,
+   "p_harm": 0.0,
+   "harm_q": null,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -7864,7 +10892,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.71 < 0.80 at n=2117",
+    "profit factor 0.71 < 0.8",
     "win rate 38.8% below 40%"
    ],
    "sharpe": -0.1227,
@@ -7888,6 +10916,8 @@
    ],
    "p_value": 0.999984,
    "q_value": null,
+   "p_harm": 2e-05,
+   "harm_q": null,
    "dsr": 0.4876,
    "split_half": {
     "stable": false,
@@ -7923,6 +10953,8 @@
    ],
    "p_value": 0.996362,
    "q_value": null,
+   "p_harm": 0.007,
+   "harm_q": null,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
@@ -7934,7 +10966,7 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.30 < 0.80 at n=81",
+    "profit factor 0.30 < 0.8",
     "win rate 35.8% below 40%"
    ],
    "sharpe": -0.4903,
@@ -7958,6 +10990,8 @@
    ],
    "p_value": 0.031784,
    "q_value": null,
+   "p_harm": 0.990395,
+   "harm_q": null,
    "dsr": 0.8917,
    "split_half": {
     "stable": true,
@@ -7991,6 +11025,8 @@
    ],
    "p_value": 0.5,
    "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
    "dsr": null,
    "split_half": null,
    "top_symbol_share": 1.0,
@@ -8004,7 +11040,8 @@
  "kill_tribunal": {
   "criteria": [
    "net expectancy 95% CI entirely < 0",
-   "PF < 0.80 at n >= 50",
+   "BH harm q <= 0.1 across killed cells",
+   "PF < 0.8 at n >= 50 is a WATCH flag, never a kill on its own",
    "WR < 40% (diagnostic, not sufficient alone)"
   ],
   "kills": [
@@ -8020,7 +11057,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.80 < 0.80 at n=754",
+     "profit factor 0.80 < 0.8",
      "win rate 36.2% below 40%"
     ],
     "mutation": [
@@ -8040,7 +11077,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.59 < 0.80 at n=64",
+     "profit factor 0.59 < 0.8",
      "win rate 39.1% below 40%"
     ],
     "mutation": [
@@ -8060,28 +11097,11 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.16 < 0.80 at n=55",
+     "profit factor 0.16 < 0.8",
      "win rate 12.7% below 40%"
     ],
     "mutation": [
      "invert or heavily filter: WR<40% often means the emitter is a fade signal",
-     "require a second source before emitting"
-    ]
-   },
-   {
-    "scope": "strategy",
-    "asset_class": "EQUITY",
-    "strategy": "quality-minus-junk",
-    "direction": "LONG",
-    "n": 54,
-    "wr": 0.4815,
-    "pf": 0.6422,
-    "net_expectancy_pct": -0.555,
-    "q_value": 1.0,
-    "reasons": [
-     "profit factor 0.64 < 0.80 at n=54"
-    ],
-    "mutation": [
      "require a second source before emitting"
     ]
    },
@@ -8097,7 +11117,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.19 < 0.80 at n=46",
+     "profit factor 0.19 < 0.8",
      "win rate 17.4% below 40%"
     ],
     "mutation": [
@@ -8117,7 +11137,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.32 < 0.80 at n=44",
+     "profit factor 0.32 < 0.8",
      "win rate 31.8% below 40%"
     ],
     "mutation": [
@@ -8137,7 +11157,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.11 < 0.80 at n=41",
+     "profit factor 0.11 < 0.8",
      "win rate 2.4% below 40%"
     ],
     "mutation": [
@@ -8157,7 +11177,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.00 < 0.80 at n=35",
+     "profit factor 0.00 < 0.8",
      "win rate 0.0% below 40%"
     ],
     "mutation": [
@@ -8177,7 +11197,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.32 < 0.80 at n=29",
+     "profit factor 0.32 < 0.8",
      "win rate 24.1% below 40%"
     ],
     "mutation": [
@@ -8197,7 +11217,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.00 < 0.80 at n=29",
+     "profit factor 0.00 < 0.8",
      "win rate 0.0% below 40%"
     ],
     "mutation": [
@@ -8217,7 +11237,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.13 < 0.80 at n=26",
+     "profit factor 0.13 < 0.8",
      "win rate 7.7% below 40%"
     ],
     "mutation": [
@@ -8237,7 +11257,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.05 < 0.80 at n=24",
+     "profit factor 0.05 < 0.8",
      "win rate 8.3% below 40%"
     ],
     "mutation": [
@@ -8257,27 +11277,8 @@
     "q_value": 0.999999,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.54 < 0.80 at n=120",
+     "profit factor 0.54 < 0.8",
      "win rate 38.3% below 40%"
-    ],
-    "mutation": [
-     "invert or heavily filter: WR<40% often means the emitter is a fade signal",
-     "drop the dominant symbol and re-measure; edge is a single-name bet"
-    ]
-   },
-   {
-    "scope": "symbol",
-    "asset_class": "CRYPTO",
-    "strategy": "ETHUSDT",
-    "direction": "LONG",
-    "n": 109,
-    "wr": 0.3761,
-    "pf": 0.645,
-    "net_expectancy_pct": -0.3547,
-    "q_value": 0.999999,
-    "reasons": [
-     "profit factor 0.64 < 0.80 at n=109",
-     "win rate 37.6% below 40%"
     ],
     "mutation": [
      "invert or heavily filter: WR<40% often means the emitter is a fade signal",
@@ -8296,85 +11297,8 @@
     "q_value": 0.999999,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.51 < 0.80 at n=66",
+     "profit factor 0.51 < 0.8",
      "win rate 31.8% below 40%"
-    ],
-    "mutation": [
-     "invert or heavily filter: WR<40% often means the emitter is a fade signal",
-     "drop the dominant symbol and re-measure; edge is a single-name bet",
-     "require a second source before emitting"
-    ]
-   },
-   {
-    "scope": "symbol",
-    "asset_class": "CRYPTO",
-    "strategy": "SOLUSDT",
-    "direction": "LONG",
-    "n": 61,
-    "wr": 0.377,
-    "pf": 0.7763,
-    "net_expectancy_pct": -0.2804,
-    "q_value": 0.999999,
-    "reasons": [
-     "profit factor 0.78 < 0.80 at n=61",
-     "win rate 37.7% below 40%"
-    ],
-    "mutation": [
-     "invert or heavily filter: WR<40% often means the emitter is a fade signal",
-     "drop the dominant symbol and re-measure; edge is a single-name bet"
-    ]
-   },
-   {
-    "scope": "symbol",
-    "asset_class": "CRYPTO",
-    "strategy": "WIFUSDT",
-    "direction": "LONG",
-    "n": 61,
-    "wr": 0.3607,
-    "pf": 0.6366,
-    "net_expectancy_pct": -0.6521,
-    "q_value": 0.999999,
-    "reasons": [
-     "profit factor 0.64 < 0.80 at n=61",
-     "win rate 36.1% below 40%"
-    ],
-    "mutation": [
-     "invert or heavily filter: WR<40% often means the emitter is a fade signal",
-     "drop the dominant symbol and re-measure; edge is a single-name bet",
-     "require a second source before emitting"
-    ]
-   },
-   {
-    "scope": "symbol",
-    "asset_class": "EQUITY",
-    "strategy": "GOOGL",
-    "direction": "LONG",
-    "n": 55,
-    "wr": 0.4182,
-    "pf": 0.7641,
-    "net_expectancy_pct": -0.4383,
-    "q_value": 0.999999,
-    "reasons": [
-     "profit factor 0.76 < 0.80 at n=55"
-    ],
-    "mutation": [
-     "drop the dominant symbol and re-measure; edge is a single-name bet",
-     "require a second source before emitting"
-    ]
-   },
-   {
-    "scope": "symbol",
-    "asset_class": "CRYPTO",
-    "strategy": "XRPUSDT",
-    "direction": "LONG",
-    "n": 54,
-    "wr": 0.3148,
-    "pf": 0.5496,
-    "net_expectancy_pct": -0.671,
-    "q_value": 0.999999,
-    "reasons": [
-     "profit factor 0.55 < 0.80 at n=54",
-     "win rate 31.5% below 40%"
     ],
     "mutation": [
      "invert or heavily filter: WR<40% often means the emitter is a fade signal",
@@ -8394,7 +11318,7 @@
     "q_value": 0.999999,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.15 < 0.80 at n=25",
+     "profit factor 0.15 < 0.8",
      "win rate 20.0% below 40%"
     ],
     "mutation": [
@@ -8415,7 +11339,7 @@
     "q_value": 0.999999,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.35 < 0.80 at n=24",
+     "profit factor 0.35 < 0.8",
      "win rate 29.2% below 40%"
     ],
     "mutation": [
@@ -8436,7 +11360,7 @@
     "q_value": 0.999999,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.11 < 0.80 at n=23",
+     "profit factor 0.11 < 0.8",
      "win rate 17.4% below 40%"
     ],
     "mutation": [
@@ -8457,7 +11381,7 @@
     "q_value": 0.999999,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.15 < 0.80 at n=20",
+     "profit factor 0.15 < 0.8",
      "win rate 15.0% below 40%"
     ],
     "mutation": [
@@ -8478,7 +11402,7 @@
     "q_value": 0.999999,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.00 < 0.80 at n=20",
+     "profit factor 0.00 < 0.8",
      "win rate 5.0% below 40%"
     ],
     "mutation": [
@@ -8498,7 +11422,7 @@
     "q_value": 0.999999,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.15 < 0.80 at n=20",
+     "profit factor 0.15 < 0.8",
      "win rate 10.0% below 40%"
     ],
     "mutation": [
@@ -8519,26 +11443,8 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.72 < 0.80 at n=1851",
+     "profit factor 0.72 < 0.8",
      "win rate 39.8% below 40%"
-    ],
-    "mutation": [
-     "invert or heavily filter: WR<40% often means the emitter is a fade signal"
-    ]
-   },
-   {
-    "scope": "class",
-    "asset_class": "FOREX",
-    "strategy": "(class aggregate)",
-    "direction": "-",
-    "n": 211,
-    "wr": 0.3412,
-    "pf": 0.6891,
-    "net_expectancy_pct": -0.1217,
-    "q_value": 1.0,
-    "reasons": [
-     "profit factor 0.69 < 0.80 at n=211",
-     "win rate 34.1% below 40%"
     ],
     "mutation": [
      "invert or heavily filter: WR<40% often means the emitter is a fade signal"
@@ -8556,7 +11462,7 @@
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.12 < 0.80 at n=55",
+     "profit factor 0.12 < 0.8",
      "win rate 14.5% below 40%"
     ],
     "mutation": [
@@ -8605,7 +11511,7 @@
  },
  "provenance": {
   "module": "alpha_engine/audit3_tribunal.py",
-  "source_file": "/tmp/audit3/dashboard_data.json",
+  "source_file": "/tmp/a3/dashboard_data.json",
   "source_generated_at": "2026-11-19T04:04:16.807952+00:00",
   "n_cells_scored_with_dsr": 59
  }
