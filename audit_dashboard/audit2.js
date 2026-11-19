@@ -19,6 +19,9 @@ var PODS = [
   {id:"POD-FOREX-USDJPY-MOMENTUM", status:"observe", hypothesis:"H-2026-11-19-04", klass:"FOREX", dir:"LONG",
    evidence:"FXMom USDJPY n=42, Sharpe 2.018, MC p=0.48; FX data blocker (fx_prices stale to 2026-02-09).",
    gate:"Backfill the FX price history, then n>=100 forward rows."},
+  {id:"POD-CRYPTO-BTC-4H-RSI-MACD", status:"observe", hypothesis:"H-2026-11-19-07", klass:"CRYPTO", dir:"LONG",
+   evidence:"Paper sim slot (crypto_intraday_sim): RSI 50-70 with a rising positive MACD histogram; 4h bars via the tools.crypto_bars failover chain.",
+   gate:"n>=100 forward, net CI-LB>0 at 2x cost, 100% intrabar honesty, benchmark leg vs BTC hold."},
   {id:"POD-COMMODITY-ROLL-YIELD", status:"observe", hypothesis:"H-2026-11-19-05", klass:"COMMODITY", dir:"LONG / SHORT",
    evidence:"Academic factor (Erb-Harvey / Gorton-Rouwenhorst); the in-repo emitter is dormant (0 rows).",
    gate:"Needs a second-nearby contract feed before it can emit."}
@@ -185,7 +188,17 @@ function loadForward(){
       return "<tr><td><strong>"+esc(h)+"</strong></td><td class=\"num\">"+fmt(v.n,0)+"</td><td class=\"num\">"+
         fmt(v.benchmark_leg,0)+"/"+fmt(v.n,0)+"</td><td class=\"num\">"+fmt(v.intrabar,0)+"/"+fmt(v.n,0)+"</td><td>"+esc(status)+"</td></tr>";
     }).join("");
-    el("forwardRows").innerHTML = rows || '<tr><td colspan="5" class="muted">no forward rows yet</td></tr>';
+    // A registered observe pod with no rows is the important case: the clock is
+    // not accruing. Name it rather than hiding it behind "no forward rows yet".
+    var seen = {};
+    Object.keys(f.by_hypothesis||{}).forEach(function(h){ seen[h] = true; });
+    var zero = PODS.filter(function(p){ return p.hypothesis && !seen[p.hypothesis]; })
+      .map(function(p){
+        return '<tr><td><strong>'+esc(p.hypothesis)+'</strong></td><td class="num">0</td>'+
+          '<td class="num">0/0</td><td class="num">0/0</td>'+
+          '<td style="color:var(--warn)">0 rows &mdash; clock not accruing</td></tr>';
+      }).join("");
+    el("forwardRows").innerHTML = (rows + zero) || '<tr><td colspan="5" class="muted">no forward rows yet</td></tr>';
   }).catch(function(){
     el("forwardRows").innerHTML = '<tr><td colspan="5" class="muted">forward ledger unavailable</td></tr>';
   });
