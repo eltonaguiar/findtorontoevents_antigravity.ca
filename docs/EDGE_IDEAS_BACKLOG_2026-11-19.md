@@ -241,3 +241,45 @@ derivation should treat a `USDT` quote as CRYPTO regardless of the claimed class
   verified to exist in code before being listed in §3, and the DB inventory was
   re-queried where practical (409 tables, 285 `bt_backtest_runs`, 1.7M crypto bars).
 - Nothing in this doc is investment advice, and no entry is a signal.
+
+---
+
+## §14 arena.ai v3 delta (2026-11-19) — what is actually left
+
+Status of the v3 P0 list against what shipped today. Kept here so the next session does
+not re-derive it from a chat transcript.
+
+| v3 item | Status |
+|---|---|
+| canonical `resolved_closed_picks_net` view both pages query | **open** — the root fix for the ETF 1.9% vs 43.1% contradiction |
+| excluded-cohort panel ("judging 21.4% of the book") | **done** (#893) |
+| selection-alpha-vs-hold as the per-class headline | **done** (#893, `--alpha` sidecar + demoted PF) |
+| one smart-picks definition, one number | **open** |
+| kill the dead tier2 panel, the "Renaissance T1/T2/T3" labels, the PF-lift "POSITIVE" card | **open** |
+| gates ON by default, fail-open paths closed, rehab children inherit trial counts | **open** |
+| audit3 expectancy-CI as G1 | **done** (#895) |
+| confirmatory vs discovery multiplicity families | **done** (#898, pods in #901) |
+| KILL → denylist wiring | **done** (#898 ingest, #900 writer, #901 class gate) |
+| reconcile the H-119 two-vintage tiles | **open** |
+
+Three notes where v3 is right in a way that changes work order:
+
+1. **`STRATEGY_DISCOVERY_PROTOCOL.md` has no "why should this edge exist" filter.** Its
+   novelty and correlation-prune gates screen the *statistics* of a candidate, not its
+   economic prior, and its cost table predates the measured slippage telemetry
+   (0.0997% CRYPTO, 0.05% EQUITY, ETF = 234% of per-trade PnL). Prepend an economics
+   pre-filter before anything else in that protocol is reused.
+2. **`TESTING_PROTOCOL.MD` §6–§8 is a variant-generation machine.** Seven rehab stages
+   mutating failing parents into children silently resets multiplicity — each child
+   arrives looking like a fresh trial. Its Section 0 gates are sound; the rehab pipeline
+   needs `cumulative_trials` threaded through before it can run again.
+3. **EAGLE Grok-4.3's Tier-1 picks were backtest-size, not realized.** `stocks_rsi2`
+   PF 4.76 and `crypto_liquidity_wick_reversal_v1` n=4,904 are backtest rows; the
+   realized cohort is n=43 at +0.15%/trade, which is below round-trip cost. This is the
+   most expensive confusion in the repo and the reason the coverage panel now states the
+   denominator on every audit3 render.
+
+Agreed with v3's bottom line: **nothing on `/audit` is worth sizing today.** The
+difference is that the mechanism to prevent it is now enforced rather than described —
+killed cells are blocked at ingest and at write, class kills admit only
+CANDIDATE/PROVEN_T2 cells, and only a pre-registered pod can promote.
