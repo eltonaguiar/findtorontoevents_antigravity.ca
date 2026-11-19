@@ -757,6 +757,17 @@ def load_active_picks() -> list[dict]:
 
 
 def save_active_picks(picks: list[dict]):
+    # audit3 denylist (2026-11-19): never persist a pick the tribunal proved
+    # harmful. Fail-open — a missing or stale ledger denies nothing.
+    try:
+        from alpha_engine.audit3_denylist import denied_reason as _a3_denied
+    except ImportError:  # pragma: no cover
+        _a3_denied = None
+    if _a3_denied is not None and isinstance(picks, list):
+        _a3_blocked = [p for p in picks if _a3_denied(p)]
+        if _a3_blocked:
+            print(f"  [AUDIT3 DENYLIST] dropped {len(_a3_blocked)} killed pick(s) at write")
+            picks = [p for p in picks if not _a3_denied(p)]
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # -- Core whitelist kill-list filter --
