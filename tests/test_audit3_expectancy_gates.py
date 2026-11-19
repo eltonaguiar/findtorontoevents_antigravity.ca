@@ -46,7 +46,10 @@ def test_expectancy_primary_promotes_low_win_rate_cell():
     # 33% win rate, 3.0/-0.6 payoff: positive expectancy that a WR>50% gate
     # could never certify.
     rows = _rows(40, 80, 3.0, -0.6)
-    rep = build_report(rows, "x.json", None)
+    pod = {"path": "m.json", "available": True,
+           "pods": [{"id": "POD-A", "strategies": ["cellA"],
+                     "asset_classes": ["CRYPTO"]}]}
+    rep = build_report(rows, "x.json", None, confirmatory=pod)
     cell = rep["cells"][0]
     assert cell["wr"] < 0.40
     assert cell["net_expectancy_pct"] > 0
@@ -58,6 +61,10 @@ def test_expectancy_primary_promotes_low_win_rate_cell():
     # non-positive resamples, so the floor is the bound, not the value.
     assert 0 < cell["p_value"] < 0.01
     assert cell["verdict"] == "PROVEN_T2"
+    # Same evidence without a pre-registered pod: forward paper, not sizing.
+    bare = build_report(rows, "x.json", None, confirmatory={"pods": []})
+    assert bare["cells"][0]["verdict"] == "CANDIDATE"
+    assert bare["summary"]["n_proven"] == 0
 
 
 def test_high_win_rate_negative_expectancy_is_not_promoted():
@@ -89,8 +96,10 @@ def test_reconstructed_segment_cannot_be_proven():
     segs = [c for c in rep["segments"] if c["segment"] == "trust_tier"]
     assert segs, "expected a trust_tier segment cell"
     for c in segs:
-        assert c["verdict"] in ("CANDIDATE", "WEAK")
-        assert all("reconstructed" in r for r in c["reasons"]) or c["verdict"] != "CANDIDATE"
+        # Section membership is rebuilt from row fields, so a segment cell is
+        # never a registered pod and must never be sizing-eligible.
+        assert c["verdict"] != "PROVEN_T2"
+        assert c["namespace"] == "discovery"
 
 
 def test_cost_stress_2x_is_reported_and_stricter():
