@@ -113,6 +113,7 @@
     <button data-t="symbols">Symbols</button>
     <button data-t="sections">Sections × Class</button>
     <button data-t="families">Source Families</button>
+    <button data-t="evidence">Evidence Registry</button>
     <button data-t="hyp">Hypotheses</button>
     <button data-t="method">Method &amp; Limits</button>
   </nav>
@@ -180,6 +181,33 @@
         Family bucketing is name-based (strategy / source_system). It answers
         “does this whole surface carry edge?”, not “is this individual trader
         good?”. Per-trader reverse engineering needs its own ledger.
+      </p>
+    </div>
+  </section>
+
+  <section id="evidence">
+    <div class="card">
+      <h3>Evidence registry — backtests already in the repo and the database</h3>
+      <p class="muted" id="evSub">Loading registry…</p>
+      <div class="chips" id="evChips"></div>
+      <h4>Sources ingested (every record carries one of these hashes)</h4>
+      <div class="tblwrap" style="max-height:300px"><table id="evSrcTbl"></table></div>
+      <h4>Records — reported metrics, largest sample first</h4>
+      <div class="tblwrap"><table id="evTbl"></table></div>
+      <h4>Asset class — symbol-derived truth vs the stored column</h4>
+      <p class="muted" style="font-size:12px" id="evMisNote"></p>
+      <div class="tblwrap" style="max-height:260px"><table id="evMisTbl"></table></div>
+      <h4>Hypothesis status — one canonical enum</h4>
+      <div class="chips" id="evHypChips"></div>
+      <p class="muted" id="evHypNote" style="font-size:12px"></p>
+      <h4>Known gaps in the evidence base</h4>
+      <ul id="evGaps" class="muted" style="font-size:12.5px"></ul>
+      <p class="muted" style="margin:12px 0 0;font-size:12px">
+        Prior backtests are <b>evidence, not verdicts</b>. Without a trade log or a
+        per-symbol price series they cannot be re-scored against a timing null, so
+        nothing on this tab can promote a strategy. The tribunal on the other tabs
+        scores live/forward rows only; this registry exists so old work is never
+        thrown away for being inconvenient.
       </p>
     </div>
   </section>
@@ -444,6 +472,67 @@ $('tabs').addEventListener('click', e=>{
   document.querySelectorAll('section').forEach(s=>s.classList.toggle('on', s.id===b.dataset.t));
 });
 const stamp = (iso) => { try{ return new Date(iso).toUTCString().replace('GMT','UTC'); }catch(e){ return iso; } };
+
+function renderEvidence(d){
+  if(!$('evTbl')) return;
+  const s = d.summary || {};
+  $('evSub').textContent =
+    `${(s.n_records||0).toLocaleString()} evidence records · ${s.n_strategies||0} distinct ` +
+    `strategies · ${s.n_sources||0} files · ${s.total_trades_covered||0} trades covered · ` +
+    `${s.n_retestable_with_trade_log||0} records ship a usable trade log. ` +
+    `Database: ${d.db && d.db.connected ? 'read-only, connected' : 'not connected — ' + ((d.db&&d.db.error)||'skipped')}`;
+  $('evChips').innerHTML = Object.entries(s.by_class_derived||{})
+    .map(([k,v])=>`<span class="chip">${esc(k)} <b>${v}</b></span>`).join('') ||
+    '<span class="muted">No records.</span>';
+  table('evSrcTbl', [
+    {key:'path', label:'Source', render:r=>`<span class="num" style="white-space:normal">${esc(r.path)}</span>`},
+    {key:'records', label:'Records'},
+    {key:'bytes', label:'Bytes', render:r=>Number(r.bytes||0).toLocaleString()},
+    {key:'sha256', label:'sha256', render:r=>`<span class="muted num" style="font-size:10px">${esc((r.sha256||'').slice(0,16))}…</span>`},
+  ], d.sources||[], 'records', -1);
+  table('evTbl', [
+    {key:'strategy', label:'Strategy', render:r=>`<span class="num" style="white-space:normal">${esc(r.strategy)}</span>`},
+    {key:'asset_class_derived', label:'Class'},
+    {key:'surface', label:'Surface', render:r=>`<span class="muted" style="font-size:11px">${esc(r.surface)}</span>`},
+    {key:'n', label:'n', render:r=>`<span class="num">${r.n==null?'—':Number(r.n).toLocaleString()}</span>`},
+    {key:'wr', label:'WR', render:r=>`<span class="num">${fmtPct(r.wr)}</span>`},
+    {key:'pf', label:'PF', render:r=>fmtNum(r.pf)},
+    {key:'sharpe', label:'Sharpe', render:r=>fmtNum(r.sharpe)},
+    {key:'mdd_pct', label:'MaxDD', render:r=>r.mdd_pct==null?'—':fmtNum(r.mdd_pct,1)+'%'},
+    {key:'recomputed', label:'Recomputed', render:r=>r.recomputed
+      ? `<span class="num">n=${r.recomputed.n} WR ${fmtPct(r.recomputed.wr)} PF ${fmtNum(r.recomputed.pf)}</span>`
+      : '<span class="muted">stated only</span>'},
+    {key:'source_verdict', label:'Source verdict', render:r=>r.source_verdict==null?'—':esc(r.source_verdict)},
+    {key:'provenance', label:'Provenance', render:r=>`<span class="muted num" style="font-size:10.5px">${esc((r.provenance||{}).path || (r.provenance||{}).table || '')}</span>`},
+  ], (d.records||[]).slice(0,400), 'n', -1);
+  if((d.records||[]).length > 400){
+    $('evSub').textContent += ` Showing the 400 largest samples of ${d.records.length}; all records are in audit3_evidence.json.`;
+  }
+  const mis = d.class_mismatches||[];
+  $('evMisNote').textContent = mis.length
+    ? `${s.n_class_mismatches} rows store a class that disagrees with their symbol. The registry keeps both values instead of trusting the column.`
+    : 'No class disagreement between the stored column and the symbol.';
+  table('evMisTbl', [
+    {key:'symbol', label:'Symbol'}, {key:'claimed', label:'Stored class'},
+    {key:'derived', label:'Derived from symbol'}, {key:'strategy', label:'Strategy'},
+    {key:'n', label:'n'},
+  ], mis, 'n', -1);
+  const h = d.hypotheses || {};
+  $('evHypChips').innerHTML = Object.entries(h.canonical_counts||{})
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v])=>`<span class="chip">${esc(k)} <b>${v}</b></span>`).join('') ||
+    '<span class="muted">Registry unavailable.</span>';
+  $('evHypNote').textContent = h.available
+    ? `${h.total} hypotheses in ${h.registry_path}; ${h.n_raw_spellings} raw spellings collapse to ${h.n_canonical} canonical states. Status counts were previously unreliable because the same state was spelled many ways.`
+    : 'Hypothesis registry unavailable.';
+  $('evGaps').innerHTML = (d.known_gaps||[]).map(g=>`<li>${esc(g)}</li>`).join('');
+}
+
+fetch('audit3_evidence.json', {cache:'no-store'})
+  .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+  .then(renderEvidence)
+  .catch(err=>{ if($('evSub')) $('evSub').textContent =
+    'Evidence registry not published yet ('+err.message+'). The weekly audit3-evidence workflow writes it.'; });
 
 fetch('audit3_ledger.json', {cache:'no-store'})
   .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
