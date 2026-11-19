@@ -228,7 +228,7 @@ on main is still v1. Part 4 of v3.1 was checked line by line against `main`:
 | ETF needs the canonical view before any conclusion | view + declared denominator shipped | **addressed** |
 | H-119 two vintages | still open | **done** — fallback is now a labelled dated snapshot, the card names its vintage, and `gate_eta ~2026-06-25` is retired at source (n≥150 was already met at n=431; only `net_ci_lb_gt_1.15` fails) |
 | kill lists share exactly one name | still open | **done** — kept separate on purpose (name-only policy vs direction-aware expectancy; `luxalgo_confluence` is KILL LONG and CANDIDATE SHORT), with `tools/kill_list_reconcile.py` publishing the union and provenance |
-| `forward_observations` ledger | still open | **contract shipped** — schema + registry FK + one net-return definition + per-hypothesis clock + promotion rule + 24 tests in `alpha_engine/forward_observations.py`, contract in `docs/FORWARD_LEDGER_CONTRACT_2026-11-19.md`; ledger is honestly empty (0 rows) because ingestion is not wired |
+| `forward_observations` ledger | still open | **shipped and filled** — contract + clock + promotion rule (`alpha_engine/forward_observations.py`), read-only ingestion (`forward_observations_ingest.py`), **430 real forward rows for H-119** that reproduce the tracker's net PF within 0.4% (1.1147 vs 1.1191), and PROVEN_T2 now gated on them in audit3 |
 
 `docs/FINANCE_DB_SCHEMA_SPEC.md` note: the remaining `ejaguiar1_*` mentions were left
 in place. The review flags them "only if this repo is ever made public"; removing the

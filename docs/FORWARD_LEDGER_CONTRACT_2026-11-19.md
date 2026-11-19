@@ -69,16 +69,28 @@ H-119: 0/100 forward rows, 0.0/day, status NO_FORWARD_ROWS
 This is the deliberate opposite of the `~2026-06-25` promise that sat on the H-119 card
 for months: a rate you observed, or nothing.
 
-## What is deliberately not wired
+## Ingestion (wired 2026-11-19)
 
-**Ingestion.** Reading a cohort out of MySQL needs the RSI/session stampers plus a DB
-connection, so this ships the contract, the verifier, the clock and the promotion rule,
-and leaves the ledger honestly empty (`reports/forward_observations.jsonl`, 0 rows).
-Zero rows cannot promote anything — the correct state until an adapter fills it.
+`alpha_engine/forward_observations_ingest.py` fills the ledger read-only from the
+honest intrabar cohort, using the same stampers as the H-119 tracker. First run:
+3,756 cohort rows -> **430 forward rows for H-119**, ledger `ok=True`, and a re-run
+adds 0 (`duplicates: 430`), so ingestion is idempotent.
 
-Consequence, stated plainly: **`PROVEN_T2` is currently unreachable from forward
-evidence**, because there is none. audit3's zero PROVEN verdicts are therefore correct,
-not a bug.
+Cross-check, because two code paths agreeing means more than one agreeing with
+itself: the ledger's net PF **1.1147** (CI-LB **0.9213**) against the tracker's
+**1.1191** (CI-LB **0.9158**) on the same condition — 0.4% apart.
+
+The cohort's resolved return is authoritative. `exit_px` is derived from
+`intrabar_pnl_pct` because the recorded exit price disagrees with it on ~58% of
+honest rows; both the recorded exit and the disagreement are kept on the row as
+`resolver_exit_px` / `gross_mismatch_pp`.
+
+## Consequence, stated plainly
+
+**`PROVEN_T2` remains unreachable from forward evidence, now for a measured reason
+instead of a missing one:** H-119 has 430 forward rows and fails the rule on
+net PF CI-LB 0.9213 <= 1.0, IR 0.043 < 0.5 and benchmark coverage 79.8% < 90%.
+audit3's zero PROVEN verdicts are correct, not a bug.
 
 ## Usage
 

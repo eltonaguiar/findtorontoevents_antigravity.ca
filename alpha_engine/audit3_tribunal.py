@@ -843,8 +843,14 @@ def _group(rows: list[dict], key_fn) -> dict[Any, list[dict]]:
     return out
 
 
-def _promote(cell: dict) -> None:
-    """Apply the FDR and DSR gates that need the full tested family."""
+def _promote(cell: dict, forward: dict[str, Any] | None = None) -> None:
+    """Apply the FDR, DSR and forward-evidence gates.
+
+    forward: the block from forward_gate_block(). Only PROVEN_T2 is affected, and
+    only for its own pod's rows. ``None`` means the caller supplied no forward
+    evidence (library callers, unit tests) and preserves pre-gate behaviour; the
+    CLI always supplies a block, so the published ledger is always gated.
+    """
     if cell["n"] < WR_MIN_N:
         return
     # Multiplicity families are separate (2026-11-19): a pre-registered pod must
@@ -869,6 +875,27 @@ def _promote(cell: dict) -> None:
         elif cell.get("dsr") is not None and cell["dsr"] < DSR_THRESHOLD:
             cell["verdict"] = "CANDIDATE"
             cell["reasons"].append(f"DSR {cell['dsr']:.3f} < {DSR_THRESHOLD}")
+        if cell["verdict"] == "PROVEN_T2" and forward is not None:
+            # The ledger can only re-score history. A pod is confirmed by forward
+            # rows closed after it registered, never by the rows that motivated it.
+            gate = (forward.get("pods") or {}).get(cell.get("pod") or "") or {}
+            cell["forward_gate"] = {
+                "pod": cell.get("pod"),
+                "hypothesis_id": gate.get("hypothesis_id"),
+                "since": gate.get("since"),
+                "n_forward": gate.get("n_forward", 0),
+                "min_n": gate.get("min_n"),
+                "pf_ci_lb": gate.get("pf_ci_lb"),
+                "ir": gate.get("ir"),
+                "eligible": bool(gate.get("eligible")),
+            }
+            if not gate.get("eligible"):
+                cell["verdict"] = "CANDIDATE"
+                cell["reasons"].append(
+                    "forward gate: " + "; ".join(
+                        gate.get("reasons") or
+                        ["no forward rows for this pod — PROVEN_T2 needs forward "
+                         "evidence, not re-scored history"]))
     elif cell["verdict"] == "CANDIDATE":
         if q > CANDIDATE_Q:
             cell["verdict"] = "WEAK"
@@ -944,11 +971,58 @@ def _git_sha() -> str | None:
         return None
 
 
+def forward_gate_block(manifest: dict[str, Any] | None,
+                       ledger: str | None) -> dict[str, Any]:
+    """Forward evidence per pre-registered pod, judged by the ledger's own rule.
+
+    Only rows closed on/after the pod's ``registered_at`` count: a pod judged on
+    rows that predate its registration is a backtest with extra steps. Hypotheses
+    that are not pods are reported too, so an accruing lead is visible on the page
+    without becoming promotable.
+    """
+    from alpha_engine import forward_observations as FO
+
+    rows, read_errors = FO.load(ledger) if ledger else ([], [])
+    block: dict[str, Any] = {
+        "enforced": True,
+        "rule": ("a pod's cell reaches PROVEN_T2 only when its own forward rows "
+                 "(closed on/after registered_at) clear: "
+                 f"n>={FO.PROMOTION_MIN_N}, net PF CI-LB > {FO.PROMOTION_PF_CI_LB} "
+                 f"or IR >= {FO.PROMOTION_IR}, honest intrabar first-touch on 100%, "
+                 f"benchmark coverage >= {FO.BENCHMARK_COVERAGE_MIN:.0%}"),
+        "ledger": ledger,
+        "n_rows": len(rows),
+        "fingerprint": FO.ledger_fingerprint(ledger) if ledger else "absent",
+        "read_errors": read_errors,
+        "pods": {},
+        "hypotheses": {},
+    }
+    for pod in (manifest or {}).get("pods") or []:
+        if str(pod.get("status") or "").lower() != "pre_registered":
+            continue
+        hid = str(pod.get("hypothesis_id") or "").strip().upper()
+        since = str(pod.get("registered_at") or "").strip()
+        subset = [r for r in rows
+                  if str(r.get("hypothesis_id") or "").strip().upper() == hid
+                  and not (since and str(r.get("closed_at") or "")[:10] < since[:10])]
+        res = dict(FO.promotion(subset))
+        res.update({"pod": pod.get("id"), "hypothesis_id": hid or None,
+                    "since": since or None})
+        block["pods"][pod.get("id")] = res
+    seen = sorted({str(r.get("hypothesis_id") or "").upper()
+                   for r in rows if r.get("hypothesis_id")})
+    for hid in seen:
+        block["hypotheses"][hid] = FO.promotion(
+            [r for r in rows if str(r.get("hypothesis_id") or "").upper() == hid])
+    return block
+
+
 def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  coverage: dict[str, Any] | None = None,
                  alpha: dict[str, Any] | None = None,
                  input_sha256: str | None = None,
-                 confirmatory: dict[str, Any] | None = None) -> dict[str, Any]:
+                 confirmatory: dict[str, Any] | None = None,
+                 forward: dict[str, Any] | None = None) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
@@ -989,7 +1063,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             c["q_value"] = round(q, 6)
             c["bh_family_n"] = len(fam)
     for c in tested:
-        _promote(c)
+        _promote(c, forward)
     apply_harm_gate(cells)
 
     # Class-level aggregate.
@@ -1004,7 +1078,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     for c, q in zip(classes, benjamini_hochberg([c["p_value"] for c in classes])):
         c["q_value"] = round(q, 6)
     for c in classes:
-        _promote(c)
+        _promote(c, forward)
     classes.sort(key=lambda c: (-c["n"], c["asset_class"]))
 
     # Symbol x direction cells (n>=20 only — the rest is noise by construction).
@@ -1022,7 +1096,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     for c, q in zip(symbols, benjamini_hochberg([c["p_value"] for c in symbols])):
         c["q_value"] = round(q, 6)
     for c in symbols:
-        _promote(c)
+        _promote(c, forward)
     apply_harm_gate(symbols)
     symbols.sort(key=lambda c: (-c["n"], c["asset_class"], c["symbol"]))
 
@@ -1045,7 +1119,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     for c, q in zip(segments, benjamini_hochberg([c["p_value"] for c in segments])):
         c["q_value"] = round(q, 6)
     for c in segments:
-        _promote(c)
+        _promote(c, forward)
         # Section membership is reconstructed from row fields, not the live gate
         # decision, so a proxy may never carry the sizing-eligible verdict.
         if c["verdict"] == "PROVEN_T2":
@@ -1211,6 +1285,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "summary": summary,
         "coverage": coverage if coverage is not None else payload_coverage(None, rows),
         "selection_alpha": selection,
+        "forward_gate": (forward if isinstance(forward, dict) else {
+            "enforced": False,
+            "why": ("no forward ledger supplied to build_report(); PROVEN_T2 was not "
+                    "gated on forward evidence by this caller"),
+        }),
         "doctrine": {
             "name": "innocent-until-proven-guilty",
             "default_state": "not proven -- keep observing; absence of proof of "
@@ -1270,6 +1349,10 @@ def main(argv: list[str] | None = None) -> int:
                                      "alpha_engine/audit3_selection_alpha.py")
     ap.add_argument("--confirmatory", help="pre-registered pod manifest "
                                             f"(default {DEFAULT_CONFIRMATORY})")
+    from alpha_engine.forward_observations import DEFAULT_LEDGER as _FWD_LEDGER
+    ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
+                    help="forward-observations ledger that gates PROVEN_T2 "
+                         "(0 rows means no pod can promote)")
     args = ap.parse_args(argv)
     drops: dict[str, int] = {}
     try:
@@ -1294,7 +1377,8 @@ def main(argv: list[str] | None = None) -> int:
     manifest = load_confirmatory(args.confirmatory)
     report = build_report(rows, args.picks, generated_at, coverage=coverage,
                           alpha=alpha, input_sha256=_sha256(args.picks),
-                          confirmatory=manifest)
+                          confirmatory=manifest,
+                          forward=forward_gate_block(manifest, args.forward_ledger))
     payload = json.dumps(report, indent=1, allow_nan=False)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:
