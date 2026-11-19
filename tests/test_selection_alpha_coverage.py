@@ -61,3 +61,16 @@ def test_coverage_last_bar_is_the_maximum_not_the_last_key():
     bars = {"ETF:SPY": [(_ms(2026, 10, 30), 1.0), (_ms(2026, 3, 2), 2.0)]}
     cov = bar_coverage(bars, {"ETF": {"SPY"}})
     assert cov["ETF"]["last_bar"] == "2026-10-30"
+
+
+def test_bond_has_a_price_table_mapping():
+    """BOND had no TABLE_FOR entry, so its gate could never be measured."""
+    from alpha_engine.audit3_selection_alpha import TABLE_FOR, TOLERANCE_MS
+    assert TABLE_FOR.get("BOND") == ("etf_daily_ohlcv", "date")
+    assert "BOND" in TOLERANCE_MS
+
+
+def test_every_backfilled_class_has_a_table():
+    from alpha_engine.audit3_selection_alpha import TABLE_FOR
+    for klass in ("CRYPTO", "EQUITY", "ETF", "FOREX", "COMMODITY", "BOND"):
+        assert klass in TABLE_FOR, klass
