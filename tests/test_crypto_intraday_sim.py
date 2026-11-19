@@ -247,3 +247,13 @@ def validate_ok(FO, row) -> bool:
     problems = FO.validate(row, known_hypotheses={row["hypothesis_id"]})
     assert not problems, problems
     return True
+
+
+class TestFormingBarExclusion:
+    def test_forming_bar_is_dropped_completed_kept(self, sim):
+        now_ms = T0 + 10 * BAR_MS
+        bars = [_bar(T0 + i * BAR_MS, 100, 101, 99, 100) for i in range(10)]
+        forming = _bar(T0 + 10 * BAR_MS, 100, 101, 99, 100)  # not yet closed
+        out = sim.completed_bars(bars + [forming], now_ms)
+        assert forming not in out
+        assert len(out) == 10  # bar 9 closes exactly at now_ms and is kept
