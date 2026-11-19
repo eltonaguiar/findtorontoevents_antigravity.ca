@@ -1,0 +1,98 @@
+name: Surface Parity
+
+# Guards the /audit vs /audit3 ledger divergence documented in
+# reports/LEDGER_DIVERGENCE_ROOTCAUSE_2026-11-19.md.
+#
+# The two surfaces are published by two independent steps, so they drift: on
+# 2026-11-19 /audit served a build whose source_generated_at was 109 minutes older
+# than /audit3, which showed up as an 11-row difference (CRYPTO +8, EQUITY +1,
+# ETF +2) and a schema difference (denylist_hits present only on /audit3).
+#
+# Exit codes from tools/assert_surface_parity.py: 0 GREEN, 1 YELLOW, 2 RED.
+# This job fails only on RED so a deliberate, declared divergence can pass via
+# --allow-rows-diff with a --why reason.
+#
+# Deliberately NOT wired into audit-dashboard.yml: that workflow is a
+# pre-registered path the fleet agreed not to edit unattended.
+
+on:
+  schedule:
+    - cron: "35 * * * *"
+  workflow_dispatch:
+    inputs:
+      allow_rows_diff:
+        description: "Declare an acceptable row difference (blank = 0)"
+        required: false
+        default: ""
+      why:
+        description: "Reason for the declared difference (required if the above is set)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: surface-parity
+  cancel-in-progress: true
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run surface parity assertion
+        id: parity
+        run: |
+          set +e
+          ARGS=""
+          if [ -n "${{ github.event.inputs.allow_rows_diff }}" ]; then
+            ARGS="--allow-rows-diff ${{ github.event.inputs.allow_rows_diff }}"
+            if [ -n "${{ github.event.inputs.why }}" ]; then
+              ARGS="$ARGS --why \"${{ github.event.inputs.why }}\""
+            fi
+          fi
+          eval python3 tools/assert_surface_parity.py $ARGS
+          RC=$?
+          echo "rc=$RC" >> "$GITHUB_OUTPUT"
+          echo "exit code: $RC (0 GREEN, 1 YELLOW, 2 RED)"
+          # YELLOW (1) is informational; only RED fails the job.
+          if [ "$RC" -eq 2 ]; then
+            echo "::error::Surface parity is RED - /audit and /audit3 are serving different ledger builds"
+            exit 1
+          fi
+          exit 0
+
+      - name: Upload parity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surface-parity
+          path: reports/surface_parity.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Surface parity"
+            echo
+            echo "Exit code: \`${{ steps.parity.outputs.rc }}\` (0 GREEN / 1 YELLOW / 2 RED)"
+            echo
+            if [ -f reports/surface_parity.json ]; then
+              echo '```json'
+              head -c 3000 reports/surface_parity.json
+              echo
+              echo '```'
+            fi
+            echo
+            echo "Root cause and the deploy-order fix:"
+            echo "\`reports/LEDGER_DIVERGENCE_ROOTCAUSE_2026-11-19.md\`"
+          } >> "$GITHUB_STEP_SUMMARY"
