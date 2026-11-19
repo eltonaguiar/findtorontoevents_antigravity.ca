@@ -8,6 +8,8 @@ name: audit3 ledger
 #   * reads the live snapshot over HTTP instead of re-running the scanner
 #
 # Outputs (committed + deployed):
+#   audit_dashboard/data/audit3_verdict_history.json -> committed only; feeds the
+#     N1 repeated-looks gate (a CANDIDATE/PROVEN_T2 must persist across runs)
 #   audit_dashboard/data/audit3_ledger.json   -> /audit3/audit3_ledger.json
 #   audit_dashboard/audit3.html               -> /audit3/index.html
 
@@ -98,7 +100,11 @@ jobs:
           fi
           python3 -m alpha_engine.audit3_tribunal \
             --picks /tmp/audit3/dashboard_data.json \
-            --out audit_dashboard/data/audit3_ledger.json $alpha_arg
+            --out audit_dashboard/data/audit3_ledger.json $alpha_arg \
+            --history audit_dashboard/data/audit3_verdict_history.json \
+            --history-write \
+            --prev-ledger audit_dashboard/data/audit3_ledger.json \
+            --max-churn 0.30
           python3 - <<'PY'
           import json
           d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
@@ -127,7 +133,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add audit_dashboard/data/audit3_ledger.json
+          git add audit_dashboard/data/audit3_ledger.json audit_dashboard/data/audit3_verdict_history.json
           if git diff --cached --quiet; then
             echo "ledger unchanged"
             exit 0

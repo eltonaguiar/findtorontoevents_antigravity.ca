@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>audit2 — candidate &amp; methodology library</title>
+<style>
+:root{--bg:#0b0f14;--panel:#121821;--panel2:#0e141c;--line:#1f2937;--text:#e6edf3;--muted:#8b98a5;--accent:#4cc2ff;--good:#3fb950;--warn:#d29922;--bad:#f85149;--observe:#a371f7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:22px 26px;border-bottom:1px solid var(--line);background:var(--panel)}
+h1{margin:0 0 4px;font-size:20px}
+.sub{color:var(--muted);font-size:13px}
+main{padding:22px 26px;max-width:1180px;margin:0 auto}
+section{margin:0 0 26px}
+h2{font-size:15px;margin:0 0 10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+code{background:#0a0e14;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--line);text-transform:uppercase}
+.b-pre{color:var(--good);border-color:#1f6f38;background:#0f2418}
+.b-observe{color:var(--observe);border-color:#5a3a8a;background:#1a1226}
+.b-post{color:var(--muted)}.b-declined{color:var(--bad);border-color:#7a2a26;background:#241214}
+.v-PROVEN_T2,.v-CANDIDATE{color:var(--good)}.v-WEAK{color:var(--warn)}.v-KILL{color:var(--bad)}.v-INSUFFICIENT_N{color:var(--muted)}
+.muted{color:var(--muted)}.small{font-size:12px}
+.banner{border-left:3px solid var(--accent);background:var(--panel2);padding:10px 14px;border-radius:0 8px 8px 0;margin:0 0 12px}
+.warn{border-left-color:var(--warn)}
+details{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+summary{cursor:pointer;font-weight:600}
+blockquote{margin:8px 0 0;padding-left:12px;border-left:2px solid var(--line);color:var(--muted)}
+footer{padding:18px 26px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<header>
+  <h1>audit2 — candidate &amp; methodology library</h1>
+  <div class="sub">The positive side of <code>/audit3</code>'s kill tribunal: what is worth forward-testing, and the measurement kit to judge it. Nothing here is money-ready.</div>
+</header>
+<main>
+  <div id="ledgerStatus" class="banner warn">loading ledger…</div>
+
+  <section>
+    <h2>Doctrine</h2>
+    <details>
+      <summary>How this surface thinks about edge</summary>
+      <blockquote>“Public daily OHLCV is arbitraged by thousands of participants. Remaining public edges are (i) risk premia and (ii) microstructure/flow. Everything else is noise dressed as signal.”</blockquote>
+      <blockquote>“Volatility scaling is free alpha. Simply scaling positions by inverse realized vol improves Sharpe by 0.3+ for any momentum strategy.”</blockquote>
+      <blockquote>“Edge, if any exists, should be expressed with symmetric, vol-scaled, time-based exits and sized by vol targeting — the expression of every trade changes the statistics more than the signal does.”</blockquote>
+      <blockquote>“The binding constraint is hypothesis quality and trial budget, not techniques.”</blockquote>
+    </details>
+  </section>
+
+  <section>
+    <h2>Verdicts <span class="muted small">(from audit3_ledger.json)</span></h2>
+    <div class="card">
+      <div id="coverage" class="banner">—</div>
+      <table>
+        <thead><tr><th>Asset class</th><th>Verdict</th><th>n</th><th>Net expectancy/trade</th><th>Net 95% CI</th><th>2× cost OK</th><th>DSR</th><th>required_n</th></tr></thead>
+        <tbody id="classRows"><tr><td colspan="8" class="muted">—</td></tr></tbody>
+      </table>
+      <div class="small muted">2× cost OK = the net-expectancy CI still excludes zero at twice the class slippage (a required gate for PROVEN_T2 / CANDIDATE). required_n = trades needed to confirm the observed effect at 80% power.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Candidate &amp; observe pods</h2>
+    <div class="small muted" style="margin-bottom:10px">Pre-registered before forward data. <span class="badge b-pre">pre_registered</span> may confer confirmatory status; <span class="badge b-observe">observe</span> cannot promote until promoted to pre_registered.</div>
+    <div id="pods" class="cards"></div>
+  </section>
+
+  <section>
+    <h2>Forward evidence clock</h2>
+    <div class="card">
+      <div class="small muted" style="margin-bottom:8px">A pod can only promote on forward rows dated after its registration. Rows here come from <code>reports/forward_observations.jsonl</code>.</div>
+      <table><thead><tr><th>Hypothesis</th><th>Forward rows</th><th>Benchmark leg</th><th>Intrabar first-touch</th><th>Status</th></tr></thead><tbody id="forwardRows"><tr><td colspan="5" class="muted">—</td></tr></tbody></table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Trial budget &amp; benchmarks</h2>
+    <div class="card">
+      <div id="trialBudget" class="small muted">—</div>
+      <table style="margin-top:8px"><thead><tr><th>Class</th><th>Benchmark leg</th><th>Gate</th></tr></thead><tbody id="benchRows"></tbody></table>
+      <div class="small muted" style="margin-top:8px">Cost gate: average net PnL must be at least 3× the measured slippage. ETF slippage measured ≈234% of per-trade PnL (monthly cadence only); CRYPTO ≈37%.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Measures library</h2>
+    <div class="card"><table><thead><tr><th>Measure</th><th>What it is</th></tr></thead><tbody id="measures"></tbody></table></div>
+  </section>
+
+  <section>
+    <h2>Traps / graveyard</h2>
+    <div class="card"><table><thead><tr><th>Idea</th><th>Why it is not a candidate</th></tr></thead><tbody id="traps"></tbody></table></div>
+  </section>
+
+  <section>
+    <h2>Retired with reason</h2>
+    <div class="card"><table><thead><tr><th>Item</th><th>Reason</th></tr></thead><tbody id="retired"></tbody></table></div>
+  </section>
+
+  <section>
+    <h2>Provenance &amp; freshness</h2>
+    <div class="card small" id="provenance">—</div>
+  </section>
+</main>
+<footer>Not investment advice. Every live number on this page comes from <code>audit3_ledger.json</code>; the pod registry is a static snapshot dated 2026-11-19 because <code>reports/</code> is not web-served.</footer>
+<script src="audit2.js"></script>
+</body>
+</html>

@@ -102,6 +102,12 @@ CANDIDATE_MIN_N = 30
 # whose net-CI lower bound is below this is statistically positive but not worth
 # risking capital on: 5bp/trade is inside the error of the cost model itself.
 PROVEN_MIN_NET_CI_LO_PCT = 0.05
+# N4 (2026-11-19): the materiality floor scales with the applied cost model. A flat
+# 5bp floor is meaningful for FOREX (5bp cost) and inside the noise for CRYPTO
+# (15bp cost). The floor is the larger of the flat minimum and this fraction of
+# the cell's mean round-trip cost, so a verdict cannot rest on an edge smaller
+# than half the cost it had to overcome.
+MATERIALITY_COST_FRACTION = 0.5
 GENERATOR_VERSION = "audit3.v2"
 KILL_PF_N = 50          # n floor for the PF watch flag
 HARM_PF_WATCH = 0.80    # PF below this is a watch flag, never proof of harm
@@ -112,6 +118,28 @@ BOOT_N = 2000
 BOOT_SEED = 42
 MAX_SYMBOL_SHARE = 0.60
 MAX_SOURCE_SHARE = 0.90
+
+# N1 (2026-11-19): repeated-looks correction. BH FDR is computed per run, but the
+# ledger is re-scored every ~6h, so a cell that crosses q<=0.10 once will
+# eventually do so by chance. A CANDIDATE/PROVEN_T2 verdict must therefore persist
+# across this many consecutive runs before it is granted, and the run that first
+# passed is recorded as ``first_pass_at``.
+PERSISTENCE_RUNS = 2
+PERSISTENCE_VERDICTS = ("CANDIDATE", "PROVEN_T2")
+
+# N2 (2026-11-19): verdict-churn monitor. A cell flipping verdicts between runs
+# means the judge is noisy, not that the edge is real. Churn is measured on the
+# RAW verdict (before the N1 persistence gate), so the intentional hold-at-WEAK
+# delay is not mistaken for instability.
+CHURN_ALERT_THRESHOLD = 0.30
+CHURN_MIN_TRACKED = 20
+
+# N3 (2026-11-19): recency/regime gate. A cell whose edge came from a stale regime
+# must not be promoted on the full-history statistic alone. The trailing window
+# (last ~25% of closes, at least this many trades) must have a non-negative net
+# mean, else PROVEN_T2 is capped at CANDIDATE.
+RECENCY_WINDOW_FRACTION = 0.25
+RECENCY_MIN_TRADES = 5
 
 # Round-trip execution cost, in percent (pnl_pct is a percent).
 #
@@ -194,20 +222,50 @@ def binom_sf(k: int, n: int) -> float:
     return min(1.0, math.exp(m) * sum(math.exp(x - m) for x in logs))
 
 
+def _circular_blocks(rng: random.Random, n: int, block_len: int) -> list[int]:
+    """Circular moving-block index sequence covering n positions.
+
+    Each block starts at a uniform random offset and wraps around the end of the
+    series, so every position is reachable from any start. The sequence is
+    truncated to exactly n positions.
+    """
+    idx: list[int] = []
+    while len(idx) < n:
+        j = rng.randrange(n)
+        for t in range(block_len):
+            idx.append((j + t) % n)
+    return idx[:n]
+
+
 def bootstrap_mean_ci(values: list[float], n_boot: int = BOOT_N,
-                      seed: int = BOOT_SEED) -> dict[str, Any]:
-    """Percentile bootstrap 95% CI for the mean. Deterministic per seed."""
+                      seed: int = BOOT_SEED,
+                      block: bool = False) -> dict[str, Any]:
+    """Percentile bootstrap 95% CI for the mean. Deterministic per seed.
+
+    ``block=True`` uses a circular moving-block bootstrap with block length
+    ``~sqrt(n)``, which preserves temporal autocorrelation and widens the CI when
+    trades are clustered in time -- the honest interval for overlapping
+    positions, and the only one that keeps the G2 edge gate honest. The default
+    (``block=False``) is the historical i.i.d. resample and is unchanged, so a
+    call that does not opt in cannot silently alter a verdict.
+    """
     n = len(values)
     if n < 2:
         return {"mean": (values[0] if values else 0.0), "ci_lo": None,
                 "ci_hi": None, "frac_positive": None, "n_boot": 0}
     rng = random.Random(seed)
+    block_len = max(1, int(math.sqrt(n))) if block else 1
     means = []
     for _ in range(n_boot):
-        s = 0.0
-        for _ in range(n):
-            s += values[rng.randrange(n)]
-        means.append(s / n)
+        if block and block_len > 1:
+            idx = _circular_blocks(rng, n, block_len)
+            s = sum(values[i] for i in idx) / n
+        else:
+            s = 0.0
+            for _ in range(n):
+                s += values[rng.randrange(n)]
+            s /= n
+        means.append(s)
     means.sort()
     return {
         "mean": sum(values) / n,
@@ -215,6 +273,7 @@ def bootstrap_mean_ci(values: list[float], n_boot: int = BOOT_N,
         "ci_hi": means[int(0.975 * n_boot) - 1],
         "frac_positive": sum(1 for m in means if m > 0) / n_boot,
         "n_boot": n_boot,
+        "bootstrap_mode": "block" if block else "iid",
     }
 
 
@@ -313,15 +372,51 @@ def benjamini_hochberg(pvalues: list[float], q: float = FDR_Q) -> list[float]:
     return adjusted
 
 
-def split_half_ok(values: list[float]) -> tuple[bool, dict[str, float]]:
-    """Chronological split-half stability: both halves must have mean > 0."""
+def split_half_ok(values: list[float],
+                   min_mean: float = 0.0) -> tuple[bool, dict[str, float]]:
+    """Chronological split-half stability.
+
+    Both halves must have a mean strictly above ``min_mean`` (default 0.0
+    preserves the historical "positive mean" requirement). Passing a materiality
+    floor (F2, 2026-11-19) stops a microscopically-positive half from counting as
+    stable when a cell is promoted.
+    """
     if len(values) < 10:
         return False, {}
     mid = len(values) // 2
     first, second = values[:mid], values[mid:]
     m1 = sum(first) / len(first) if first else 0.0
     m2 = sum(second) / len(second) if second else 0.0
-    return (m1 > 0 and m2 > 0), {"first_half_mean": m1, "second_half_mean": m2}
+    return (m1 > min_mean and m2 > min_mean), {"first_half_mean": m1, "second_half_mean": m2}
+
+
+def recency_ok(rows: list[dict], nets: list[float],
+               fraction: float = RECENCY_WINDOW_FRACTION,
+               min_trades: int = RECENCY_MIN_TRADES) -> tuple[bool, dict[str, Any]]:
+    """Trailing-window sanity check (N3).
+
+    The last ``max(min_trades, round(fraction * n))`` closes must have a
+    non-negative net mean. Rows are ordered by ``closed_at``/``timestamp`` so a
+    caller passing an unsorted slice is still measured on the true recent window.
+    """
+    n = len(nets)
+    if n == 0:
+        return False, {"window_trades": 0, "window_net_mean": None}
+    pairs = list(zip(rows, nets))
+
+    def stamp(row: dict) -> datetime:
+        return (_to_dt(row.get("closed_at") or row.get("timestamp"))
+                or datetime.min.replace(tzinfo=timezone.utc))
+
+    pairs.sort(key=lambda pair: stamp(pair[0]))
+    k = min(n, max(min_trades, int(round(fraction * n))))
+    tail = [net for _, net in pairs[-k:]]
+    mean = sum(tail) / len(tail)
+    return mean >= 0.0, {
+        "window_trades": k,
+        "window_frac": round(k / n, 4),
+        "window_net_mean": round(mean, 4),
+    }
 
 
 # ────────────────────────────────────────────────────────────────── loading ──
@@ -599,6 +694,12 @@ def _net(r: dict) -> float:
     return float(r["pnl_pct"]) - _cost_pct(r)
 
 
+def materiality_floor(mean_cost_pct: float) -> float:
+    """N4: per-cell promotion floor, scaled by the applied cost model."""
+    return max(PROVEN_MIN_NET_CI_LO_PCT,
+               MATERIALITY_COST_FRACTION * float(mean_cost_pct))
+
+
 def _apply_measured_costs(data: Any) -> dict[str, Any]:
     """Adopt the dashboard's measured slippage for this run.
 
@@ -718,15 +819,22 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     wr = wins / n if n else 0.0
     lo, hi = wilson_interval(wins, n) if n else (0.0, 1.0)
     pf = profit_factor(nets)
-    boot = bootstrap_mean_ci(nets) if n >= 2 else {"mean": 0.0, "ci_lo": None,
-                                                   "ci_hi": None, "frac_positive": None}
+    # F1 (2026-11-19): block bootstrap. Overlapping picks are not i.i.d., so the
+    # G2 net-expectancy CI uses the circular block bootstrap to avoid overstating
+    # precision. The cost-stress companion uses the same block mode.
+    boot = bootstrap_mean_ci(nets, block=True) if n >= 2 else {"mean": 0.0,
+                                                               "ci_lo": None,
+                                                               "ci_hi": None,
+                                                               "frac_positive": None}
     # Cost-stress companion: the same net CI at twice the class slippage. Report
     # only — it never changes a verdict, it shows how much of an edge is a cost
     # assumption.
     nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
-    boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
+    boot_2x = bootstrap_mean_ci(nets_2x, block=True) if n >= 2 else {"ci_lo": None, "ci_hi": None}
     stress_2x_ok = bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0)
-    stable, halves = split_half_ok(nets)
+    mean_cost = (sum(_cost_pct(r) for r in rows) / n) if n else 0.0
+    floor_pct = materiality_floor(mean_cost)
+    stable, halves = split_half_ok(nets, min_mean=floor_pct)
     # Edge test (2026-11-19): expectancy, not P(win). A trend cell at WR 35% with
     # a 2.5 payoff is positive expectancy and cannot be judged by "won more often
     # than not"; a 60% WR cell with PF < 1 (EQUITY) is negative expectancy and
@@ -777,7 +885,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         elif (n >= PROVEN_MIN_N
               and expect_ci_positive
               and (boot.get("ci_lo") if boot.get("ci_lo") is not None else -1.0)
-              >= PROVEN_MIN_NET_CI_LO_PCT
+              >= floor_pct
               and boot.get("mean", 0) > 0
               and stable and top_sym_share <= MAX_SYMBOL_SHARE
               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
@@ -811,6 +919,13 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     else:
         reasons.append(f"n={n} < {WR_MIN_N}: no statistical claim")
 
+    recent_ok, recency = recency_ok(rows, nets)
+    if verdict == "PROVEN_T2" and not recent_ok:
+        verdict = "CANDIDATE"
+        reasons.append(
+            f"recency: trailing {recency['window_trades']} trades net mean "
+            f"{recency['window_net_mean']:+.4f}% < 0 — capped at CANDIDATE")
+
     out = dict(label)
     out.update({
         "n": n,
@@ -833,6 +948,10 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         "dsr": None,
         "split_half": ({"stable": stable, **{k: round(v, 4) for k, v in halves.items()}}
                        if halves else None),
+        "recency": recency,
+        "recent_ok": recent_ok,
+        "mean_cost_pct": round(mean_cost, 4),
+        "materiality_floor_pct": round(floor_pct, 4),
         "top_symbol_share": round(top_sym_share, 4),
         "top_source_share": round(top_src_share, 4),
         "single_source": bool(top_src_share > MAX_SOURCE_SHARE),
@@ -994,6 +1113,163 @@ def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
                 c["reasons"].append(f"G8 selection-alpha gate: {why} — beta-dominant")
 
 
+# ─────────────────────────────────────────────── N1 repeated looks ──
+_PERSISTENCE_KEY_FIELDS = ("asset_class", "strategy", "symbol", "direction",
+                          "namespace", "pod", "segment", "segment_value", "family")
+
+
+def cell_key(cell: dict) -> str:
+    """Stable identity for a cell across runs, from its label fields only."""
+    label = {k: cell.get(k) for k in _PERSISTENCE_KEY_FIELDS
+             if cell.get(k) is not None}
+    blob = json.dumps(label, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
+
+
+def load_history(path: str | None) -> dict[str, dict]:
+    """Read the verdict-persistence sidecar. Missing/corrupt file -> empty."""
+    if not path:
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    cells = data.get("cells") if isinstance(data, dict) else None
+    return cells if isinstance(cells, dict) else {}
+
+
+def save_history(path: str | None, history: dict[str, dict], *, run_at: str,
+                 runs_required: int) -> None:
+    if not path:
+        return
+    payload = {
+        "schema": "audit3.verdict_history.v1",
+        "updated_at": run_at,
+        "persistence_runs": runs_required,
+        "n_cells": len(history),
+        "cells": history,
+    }
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=1, sort_keys=True, allow_nan=False)
+        f.write("\n")
+
+
+def apply_persistence_gate(buckets: list[list[dict]], history: dict[str, dict],
+                           *, run_at: str, runs_required: int = PERSISTENCE_RUNS
+                           ) -> dict[str, int]:
+    """Demote any CANDIDATE/PROVEN_T2 that has not persisted across K runs.
+
+    ``history`` is mutated in place: for every cell seen this run it stores the
+    consecutive-run streak of raw (pre-gate) passes, the first run that passed
+    (``first_pass_at``), and the final verdict. A cell absent from this run has
+    its streak reset, because persistence means consecutive runs, not cumulative
+    runs with gaps.
+
+    Returns counters for the report's ``persistence`` block.
+    """
+    seen: set[str] = set()
+    demoted = 0
+    promoted = 0
+    for bucket in buckets:
+        for cell in bucket:
+            key = cell_key(cell)
+            seen.add(key)
+            rec = dict(history.get(key) or {})
+            prior_ok = rec.get("last_raw_verdict") in PERSISTENCE_VERDICTS
+            prior_passes = int(rec.get("passes") or 0)
+            raw = cell.get("verdict")
+            if raw in PERSISTENCE_VERDICTS:
+                streak = prior_passes + 1 if prior_ok else 1
+                first_pass_at = rec.get("first_pass_at") or run_at
+                if streak < runs_required:
+                    cell["verdict"] = "WEAK"
+                    cell["reasons"].append(
+                        f"repeated-looks: verdict persisted {streak}/{runs_required} "
+                        "consecutive runs (BH is per-run; a single cross is not enough)")
+                    demoted += 1
+                else:
+                    cell["first_pass_at"] = first_pass_at
+                    promoted += 1
+                rec["passes"] = streak
+                rec["first_pass_at"] = first_pass_at
+            else:
+                rec["passes"] = 0
+                rec["first_pass_at"] = None
+            rec["last_raw_verdict"] = raw
+            rec["last_verdict"] = cell.get("verdict")
+            rec["last_seen"] = run_at
+            history[key] = rec
+            cell["raw_verdict"] = raw
+    # A gap is not persistence: cells not scored this run lose their streak.
+    for key in list(history):
+        if key not in seen:
+            history[key]["passes"] = 0
+            history[key]["first_pass_at"] = None
+    return {"demoted": demoted, "promoted": promoted}
+
+
+def load_prev_verdicts(path: str | None) -> dict[str, str]:
+    """Read verdicts from a previous ledger for the churn monitor."""
+    if not path:
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    out: dict[str, str] = {}
+    for bucket in ("cells", "symbols", "classes", "segments"):
+        for cell in data.get(bucket) or []:
+            if not isinstance(cell, dict):
+                continue
+            verdict = cell.get("raw_verdict") or cell.get("verdict")
+            if verdict:
+                out[cell_key(cell)] = verdict
+    return out
+
+
+def compute_verdict_churn(buckets: list[list[dict]],
+                          prev: dict[str, str]) -> dict[str, Any]:
+    """Count cells whose raw verdict changed since the previous ledger.
+
+    Compares raw verdicts (pre-persistence) so the N1 hold-at-WEAK delay does not
+    register as instability. Alert only when enough cells are tracked.
+    """
+    tracked = 0
+    flipped = 0
+    flips: list[dict[str, Any]] = []
+    for bucket in buckets:
+        for cell in bucket:
+            key = cell_key(cell)
+            if key not in prev:
+                continue
+            tracked += 1
+            now = cell.get("raw_verdict") or cell.get("verdict")
+            if now != prev[key]:
+                flipped += 1
+                flips.append({
+                    "asset_class": cell.get("asset_class"),
+                    "strategy": cell.get("strategy") or cell.get("symbol"),
+                    "direction": cell.get("direction"),
+                    "from": prev[key], "to": now, "n": cell.get("n"),
+                })
+    rate = round(flipped / tracked, 4) if tracked else 0.0
+    alert = bool(tracked >= CHURN_MIN_TRACKED and rate > CHURN_ALERT_THRESHOLD)
+    return {
+        "available": bool(prev),
+        "n_tracked": tracked,
+        "n_flipped": flipped,
+        "churn_rate": rate,
+        "alert_threshold": CHURN_ALERT_THRESHOLD,
+        "min_tracked": CHURN_MIN_TRACKED,
+        "alert": alert,
+        "flips": flips[:50],
+    }
+
+
 def segment_tags(r: dict) -> list[tuple[str, str]]:
     """Reconstruct the published /audit section gates from fields the row carries.
 
@@ -1094,14 +1370,22 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  alpha: dict[str, Any] | None = None,
                  input_sha256: str | None = None,
                  confirmatory: dict[str, Any] | None = None,
-                 forward: dict[str, Any] | None = None) -> dict[str, Any]:
+                 forward: dict[str, Any] | None = None,
+                 history: dict[str, dict] | None = None,
+                 run_at: str | None = None,
+                 persistence_runs: int = PERSISTENCE_RUNS,
+                 prev_verdicts: dict[str, str] | None = None) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
     alpha: optional sidecar from audit3_selection_alpha.py (needs price tables),
            merged onto the class aggregates so the class table can lead with
            selection skill instead of gross profit factor.
+    history: verdict-persistence sidecar (N1). ``None`` disables the repeated-looks
+             gate entirely, so a standalone run without the sidecar keeps the
+             historical per-run behaviour.
     """
+    run_at = run_at or datetime.now(timezone.utc).isoformat()
     n_cells = 0
     cells: list[dict] = []
     classes: list[dict] = []
@@ -1208,6 +1492,16 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     for fam, group in sorted(fam_groups.items(), key=lambda kv: -len(kv[1])):
         families.append(evaluate_cell(group, max(1, len(fam_groups)),
                                       {"family": fam}))
+
+    # N1 repeated-looks gate. Applied after every per-run gate (BH, DSR, harm) so
+    # it is the last word on a claim, and only when a history sidecar is present.
+    persistence_counters = {"demoted": 0, "promoted": 0}
+    if history is not None:
+        persistence_counters = apply_persistence_gate(
+            [cells, symbols, classes, segments], history,
+            run_at=run_at, runs_required=persistence_runs)
+    churn = compute_verdict_churn([cells, symbols, classes, segments],
+                                  prev_verdicts or {})
 
     # Selection alpha (M1b) joined onto the class aggregates when a sidecar was
     # supplied. Kept optional: it needs per-symbol OHLC, so a job without DB
@@ -1328,7 +1622,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
 
     return {
         "schema": "audit3.v1",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": run_at,
         "source": source,
         "source_generated_at": source_generated_at,
         "not_money_ready_disclaimer": (
@@ -1350,7 +1644,9 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "p_value": "one-sided bootstrap P(net mean <= 0), 2,000 seeded resamples",
             "p_wr": "one-sided exact binomial P(X>=wins) under p=0.5 — reported, never gated",
             "promotion_rule": "PROVEN_T2 = n>=100, net CI lower bound >= "
-                              f"{PROVEN_MIN_NET_CI_LO_PCT}%/trade, stable halves, no symbol > "
+                              f"max({PROVEN_MIN_NET_CI_LO_PCT}%/trade, "
+                              f"{MATERIALITY_COST_FRACTION:.0%} of the cell's mean "
+                              "round-trip cost), stable halves, no symbol > "
                               f"{MAX_SYMBOL_SHARE:.0%}, source share <= {MAX_SOURCE_SHARE:.0%}, "
                               f"BH q <= {FDR_Q}, DSR >= {DSR_THRESHOLD}, "
                               "selection alpha CI lower bound > 0 (G8)",
@@ -1364,6 +1660,17 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni "
                             f"alpha/m = {0.05 / max(1, len(tested)):.6f}",
             "stability": "chronological split-half, both halves net mean > 0",
+            "recency_rule": (
+                f"PROVEN_T2 requires the trailing "
+                f"{RECENCY_WINDOW_FRACTION:.0%} of closes (min "
+                f"{RECENCY_MIN_TRADES}) to have a non-negative net mean; "
+                "otherwise the verdict is capped at CANDIDATE"),
+            "persistence_runs": persistence_runs if history is not None else None,
+            "persistence_rule": (
+                "a CANDIDATE/PROVEN_T2 verdict must persist across "
+                f"{persistence_runs} consecutive runs; BH is per-run, so a single "
+                "cross is not enough" if history is not None else
+                "disabled: no verdict-history sidecar supplied"),
             "max_symbol_share": MAX_SYMBOL_SHARE,
             "max_source_share": MAX_SOURCE_SHARE,
             "random_entry_mc": "not run here (needs per-symbol price series); "
@@ -1398,6 +1705,18 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                               "n_proven": sum(1 for c in f if c["verdict"] == "PROVEN_T2")}
                          for ns, f in bh_families.items()},
         },
+        "persistence": {
+            "rule": "repeated-looks: a CANDIDATE/PROVEN_T2 verdict must persist "
+                    f"across {persistence_runs} consecutive runs before it is granted",
+            "runs_required": persistence_runs if history is not None else None,
+            "available": history is not None,
+            "n_demoted_this_run": persistence_counters["demoted"],
+            "n_promoted_this_run": persistence_counters["promoted"],
+            "history_cells": len(history) if history is not None else 0,
+            "first_pass_at_field": "cells that cleared the gate carry first_pass_at "
+                                   "(the run that began the passing streak)",
+        },
+        "verdict_churn": churn,
         "classes": classes,
         "segments": segments,
         "cells": cells,
@@ -1440,6 +1759,18 @@ def main(argv: list[str] | None = None) -> int:
                                      "alpha_engine/audit3_selection_alpha.py")
     ap.add_argument("--confirmatory", help="pre-registered pod manifest "
                                             f"(default {DEFAULT_CONFIRMATORY})")
+    ap.add_argument("--history", help="verdict-persistence sidecar (N1). Supplying "
+                                      "an existing file enables the repeated-looks gate")
+    ap.add_argument("--history-write", action="store_true",
+                    help="write the updated persistence sidecar back to --history")
+    ap.add_argument("--persistence-runs", type=int, default=PERSISTENCE_RUNS,
+                    help="consecutive runs a verdict must persist (default "
+                         f"{PERSISTENCE_RUNS})")
+    ap.add_argument("--prev-ledger", help="previous audit3 ledger for the "
+                                          "verdict-churn monitor")
+    ap.add_argument("--max-churn", type=float, default=None,
+                    help="exit 3 if the raw-verdict churn rate exceeds this "
+                         f"(alert threshold is {CHURN_ALERT_THRESHOLD})")
     from alpha_engine.forward_observations import DEFAULT_LEDGER as _FWD_LEDGER
     ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
                     help="forward-observations ledger that gates PROVEN_T2 "
@@ -1466,10 +1797,29 @@ def main(argv: list[str] | None = None) -> int:
             print(f"WARNING: alpha sidecar unreadable ({exc}); continuing without it",
                   file=sys.stderr)
     manifest = load_confirmatory(args.confirmatory)
+    # No --history means the repeated-looks gate is OFF (standalone behaviour is
+    # unchanged); an existing sidecar means it is ON. A missing file under an
+    # explicit --history is an empty history, i.e. the first seeded run.
+    history = load_history(args.history) if args.history else None
+    prev_verdicts = load_prev_verdicts(args.prev_ledger)
+    run_at = datetime.now(timezone.utc).isoformat()
     report = build_report(rows, args.picks, generated_at, coverage=coverage,
                           alpha=alpha, input_sha256=_sha256(args.picks),
-                          confirmatory=manifest,
+                          confirmatory=manifest, history=history, run_at=run_at,
+                          persistence_runs=args.persistence_runs,
+                          prev_verdicts=prev_verdicts,
                           forward=forward_gate_block(manifest, args.forward_ledger))
+    churn = report["verdict_churn"]
+    if (args.max_churn is not None and churn["available"]
+            and churn["n_tracked"] >= CHURN_MIN_TRACKED
+            and churn["churn_rate"] > args.max_churn):
+        print(f"ERROR: verdict churn {churn['churn_rate']:.1%} "
+              f"({churn['n_flipped']}/{churn['n_tracked']}) exceeds "
+              f"--max-churn {args.max_churn:.1%}", file=sys.stderr)
+        return 3
+    if args.history_write:
+        save_history(args.history, history, run_at=run_at,
+                     runs_required=args.persistence_runs)
     payload = json.dumps(report, indent=1, allow_nan=False)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:

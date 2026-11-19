@@ -30,6 +30,9 @@ jobs:
           update-environment: true
           python-version: '3.12'
 
+      - name: Enforce strategy-generation freeze (P0 gate)
+        run: python3 tools/strategy_freeze_gate.py
+
       - name: Run forward-test tracker
         run: python alpha_engine/forward_test_new_strategies.py
 

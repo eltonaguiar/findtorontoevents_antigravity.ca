@@ -9,13 +9,21 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from alpha_engine.audit3_tribunal import (  # noqa: E402
     apply_harm_gate,
+    apply_persistence_gate,
     benjamini_hochberg,
     binom_sf,
     bootstrap_mean_ci,
     build_report,
+    cell_key,
+    compute_verdict_churn,
     deflated_sharpe,
     evaluate_cell,
+    load_history,
+    load_prev_verdicts,
     load_rows,
+    materiality_floor,
+    recency_ok,
+    save_history,
     split_half_ok,
     wilson_interval,
 )
@@ -64,6 +72,24 @@ def test_bootstrap_is_deterministic_and_directional():
     neg = bootstrap_mean_ci([-1.0] * 20)
     assert neg["ci_hi"] < 0
     assert neg["frac_positive"] == 0.0
+
+
+def test_block_bootstrap_widens_clustered_ci():
+    """F1: overlapping/clustered picks must not get an over-tight CI.
+
+    The same multiset of PnLs should produce a WIDER 95% CI when the wins are
+    clustered in one contiguous block than when they are spread evenly over
+    time. This is the property that keeps the G2 edge gate honest.
+    """
+    spread = [0.5, -0.5] * 50
+    clustered = [0.5] * 50 + [-0.5] * 50
+    a = bootstrap_mean_ci(spread, block=True)
+    b = bootstrap_mean_ci(clustered, block=True)
+    assert a["bootstrap_mode"] == "block" and b["bootstrap_mode"] == "block"
+    assert b["ci_hi"] - b["ci_lo"] > a["ci_hi"] - a["ci_lo"]
+    # The i.i.d. default is unchanged and does not opt into block mode.
+    iid = bootstrap_mean_ci(spread)
+    assert iid["bootstrap_mode"] == "iid"
 
 
 def test_bh_is_monotone_and_matches_worked_example():
@@ -224,3 +250,228 @@ def test_load_rows_dedupes_and_drops_open(tmp_path):
     rows, generated = load_rows(str(p))
     assert generated == "2026-11-19T00:00:00Z"
     assert len(rows) == 1 and rows[0]["id"] == "a"
+
+
+# ─────────────────────────────────────────────── N1 repeated looks ──
+def _labeled_cell(verdict="PROVEN_T2", **over):
+    cell = {"verdict": verdict, "reasons": [], "asset_class": "CRYPTO",
+            "strategy": "s1", "direction": "LONG", "namespace": "discovery"}
+    cell.update(over)
+    return cell
+
+
+def test_cell_key_is_stable_and_distinct():
+    a = _labeled_cell()
+    b = _labeled_cell()
+    c = _labeled_cell(symbol="BTCUSDT")
+    assert cell_key(a) == cell_key(b)
+    assert cell_key(a) != cell_key(c)
+
+
+def test_persistence_demotes_first_run_then_promotes_second():
+    history: dict = {}
+    run1 = "2026-11-19T00:00:00Z"
+    run2 = "2026-11-19T06:00:00Z"
+    first = _labeled_cell()
+    counters = apply_persistence_gate([[first]], history, run_at=run1)
+    assert first["verdict"] == "WEAK"
+    assert counters["demoted"] == 1 and counters["promoted"] == 0
+    assert any("repeated-looks" in r for r in first["reasons"])
+    key = cell_key(first)
+    assert history[key]["passes"] == 1
+    assert history[key]["first_pass_at"] == run1
+    assert history[key]["last_raw_verdict"] == "PROVEN_T2"
+
+    second = _labeled_cell()
+    counters2 = apply_persistence_gate([[second]], history, run_at=run2)
+    assert second["verdict"] == "PROVEN_T2"
+    assert counters2["promoted"] == 1 and counters2["demoted"] == 0
+    assert second["first_pass_at"] == run1, "first_pass_at must be the streak origin"
+
+
+def test_persistence_streak_counts_raw_verdict_not_final():
+    """A demotion must not reset the streak: K consecutive raw passes promote."""
+    history: dict = {}
+    apply_persistence_gate([[_labeled_cell()]], history, run_at="t1")
+    apply_persistence_gate([[_labeled_cell()]], history, run_at="t2")
+    cell = _labeled_cell()
+    apply_persistence_gate([[cell]], history, run_at="t3")
+    assert cell["verdict"] == "PROVEN_T2"
+
+
+def test_persistence_gap_resets_streak():
+    history = {"deadbeef": {"passes": 5, "first_pass_at": "t0",
+                            "last_raw_verdict": "PROVEN_T2",
+                            "last_verdict": "PROVEN_T2", "last_seen": "t0"}}
+    apply_persistence_gate([[]], history, run_at="t1")
+    assert history["deadbeef"]["passes"] == 0
+    assert history["deadbeef"]["first_pass_at"] is None
+
+
+def test_persistence_ignores_non_promoted_verdicts():
+    history: dict = {}
+    weak = _labeled_cell(verdict="WEAK")
+    apply_persistence_gate([[weak]], history, run_at="t1")
+    assert history[cell_key(weak)]["passes"] == 0
+    assert history[cell_key(weak)]["first_pass_at"] is None
+
+
+def test_history_sidecar_roundtrip(tmp_path):
+    path = str(tmp_path / "history.json")
+    assert load_history(path) == {}
+    history = {"k": {"passes": 2, "first_pass_at": "t0",
+                     "last_raw_verdict": "CANDIDATE", "last_verdict": "CANDIDATE",
+                     "last_seen": "t0"}}
+    save_history(path, history, run_at="t1", runs_required=2)
+    loaded = load_history(path)
+    assert loaded["k"]["passes"] == 2
+    assert loaded["k"]["first_pass_at"] == "t0"
+
+
+def test_build_report_persistence_gate_end_to_end():
+    rows = _rows(150, 1.2)
+    for i, r in enumerate(rows):
+        r["symbol"] = f"SYM{i % 5}"
+    for r in rows[:5]:
+        r["pnl_pct"] = -0.8
+        r["status"] = "LOST"
+    baseline = build_report(rows, "synthetic", None)
+    assert baseline["persistence"]["available"] is False
+    assert baseline["summary"]["n_candidate"] >= 1
+
+    gated = build_report(rows, "synthetic", None, history={})
+    assert gated["persistence"]["available"] is True
+    assert gated["persistence"]["n_demoted_this_run"] >= 1
+    assert gated["summary"]["n_candidate"] == 0
+    assert gated["summary"]["n_weak"] > baseline["summary"]["n_weak"]
+    json.dumps(gated, allow_nan=False)
+
+
+# ─────────────────────────────────────────────── N2 verdict churn ──
+def test_churn_uses_raw_verdict_not_persistence_demotion():
+    cell = _labeled_cell(verdict="WEAK", raw_verdict="CANDIDATE")
+    prev = {cell_key(cell): "CANDIDATE"}
+    churn = compute_verdict_churn([[cell]], prev)
+    assert churn["n_tracked"] == 1 and churn["n_flipped"] == 0
+    changed = _labeled_cell(verdict="PROVEN_T2", raw_verdict="PROVEN_T2")
+    churn2 = compute_verdict_churn([[changed]], {cell_key(changed): "CANDIDATE"})
+    assert churn2["n_flipped"] == 1
+    assert churn2["flips"][0]["from"] == "CANDIDATE"
+    assert churn2["flips"][0]["to"] == "PROVEN_T2"
+
+
+def test_churn_alert_requires_min_tracked():
+    cells = [_labeled_cell(strategy=f"s{i}", raw_verdict="PROVEN_T2") for i in range(19)]
+    prev = {cell_key(c): "CANDIDATE" for c in cells}
+    churn = compute_verdict_churn([cells], prev)
+    assert churn["n_flipped"] == 19 and churn["alert"] is False
+    cells.append(_labeled_cell(strategy="s19", raw_verdict="PROVEN_T2"))
+    prev[cell_key(cells[-1])] = "CANDIDATE"
+    churn2 = compute_verdict_churn([cells], prev)
+    assert churn2["n_tracked"] == 20 and churn2["alert"] is True
+
+
+def test_churn_unavailable_without_prev_ledger():
+    churn = compute_verdict_churn([[_labeled_cell()]], {})
+    assert churn["available"] is False and churn["alert"] is False
+
+
+def test_load_prev_verdicts_reads_raw_first(tmp_path):
+    path = tmp_path / "prev.json"
+    path.write_text(json.dumps({
+        "cells": [{"asset_class": "CRYPTO", "strategy": "s", "direction": "LONG",
+                   "namespace": "discovery", "verdict": "WEAK",
+                   "raw_verdict": "CANDIDATE"}],
+        "classes": [{"asset_class": "EQUITY", "verdict": "PROVEN_T2"}],
+    }))
+    prev = load_prev_verdicts(str(path))
+    assert prev[cell_key(_labeled_cell(strategy="s"))] == "CANDIDATE"
+    assert len(prev) == 2
+    assert load_prev_verdicts(str(tmp_path / "missing.json")) == {}
+
+
+def test_main_max_churn_exits_3(tmp_path, monkeypatch):
+    import alpha_engine.audit3_tribunal as mod
+    monkeypatch.setattr(mod, "CHURN_MIN_TRACKED", 0)
+    picks = tmp_path / "picks.json"
+    picks.write_text(json.dumps({"generated_at": "2026-11-19T00:00:00Z",
+                                 "picks": {"recent_closed": _rows(30, 1.0)}}))
+    prev = tmp_path / "prev.json"
+    prev.write_text(json.dumps({
+        "cells": [{"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
+                   "namespace": "discovery", "verdict": "WEAK"}]}))
+    rc = mod.main(["--picks", str(picks), "--out", str(tmp_path / "out.json"),
+                   "--prev-ledger", str(prev), "--max-churn", "0.0"])
+    assert rc == 3
+
+
+# ─────────────────────────────────────────────── N3 recency gate ──
+def _timed_rows(nets, cost=0.15, ac="CRYPTO"):
+    rows = []
+    for i, net in enumerate(nets):
+        rows.append({
+            "id": f"r{i}",
+            "asset_class": ac,
+            "strategy": "s1",
+            "direction": "LONG",
+            "symbol": "AAAUSDT" if i % 2 == 0 else "BBBUSDT",
+            "source_system": "src1" if i % 2 == 0 else "src2",
+            "status": "WON" if net > 0 else "LOST",
+            "pnl_pct": net + cost,
+            "closed_at": (f"2026-{(i // 28) + 1:02d}-{(i % 28) + 1:02d}"
+                          "T00:00:00+00:00"),
+        })
+    return rows
+
+
+def test_recency_orders_by_close_time():
+    rows = _timed_rows([1.0] * 4)
+    nets = [1.0] * 4
+    ok, info = recency_ok(rows, nets, fraction=0.5, min_trades=2)
+    assert ok and info["window_trades"] == 2
+    shuffled = [rows[2], rows[0], rows[3], rows[1]]
+    shuffled_nets = [nets[2], nets[0], nets[3], nets[1]]
+    ok2, info2 = recency_ok(shuffled, shuffled_nets, fraction=0.5, min_trades=2)
+    assert ok2 == ok and info2 == info
+
+
+def test_recency_caps_stale_regime_at_candidate():
+    nets = [1.0] * 75 + [-0.5] * 25
+    rows = _timed_rows(nets)
+    cell = evaluate_cell(rows, 1, {"asset_class": "CRYPTO", "strategy": "s1",
+                                   "direction": "LONG", "namespace": "discovery"})
+    assert cell["recency"]["window_trades"] == 25
+    assert cell["recency"]["window_net_mean"] < 0
+    assert cell["verdict"] == "CANDIDATE"
+    assert any("recency" in r for r in cell["reasons"])
+
+
+def test_recency_passes_when_trailing_window_positive():
+    nets = [1.0] * 75 + [0.2] * 25
+    rows = _timed_rows(nets)
+    cell = evaluate_cell(rows, 1, {"asset_class": "CRYPTO", "strategy": "s1",
+                                   "direction": "LONG", "namespace": "discovery"})
+    assert cell["recent_ok"] is True
+    assert cell["verdict"] == "PROVEN_T2"
+
+
+# ─────────────────────────────────────────────── N4 cost-scaled floor ──
+def test_materiality_floor_scales_with_cost():
+    assert materiality_floor(0.05) == 0.05
+    assert materiality_floor(0.15) == 0.075
+    assert materiality_floor(0.30) == 0.15
+
+
+def test_high_cost_class_needs_larger_edge():
+    crypto = evaluate_cell(_timed_rows([0.06] * 100, cost=0.15), 1,
+                           {"asset_class": "CRYPTO", "strategy": "s1",
+                            "direction": "LONG", "namespace": "discovery"})
+    assert crypto["materiality_floor_pct"] == 0.075
+    assert crypto["verdict"] != "PROVEN_T2"
+    equity = evaluate_cell(_timed_rows([0.06] * 100, cost=0.10, ac="EQUITY"), 1,
+                           {"asset_class": "EQUITY", "strategy": "s1",
+                            "direction": "LONG", "namespace": "discovery"})
+    assert equity["materiality_floor_pct"] == 0.05
+    # Equity clears the N4 materiality floor (0.06 >= 0.05) but its 0.06% edge
+    # is wiped at 2x cost (0.10), so the G9 cost-stress gate caps it one tier.
+    assert equity["verdict"] == "CANDIDATE"
