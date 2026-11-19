@@ -330,6 +330,11 @@ def slot_guardrails(slot: str, closed: list[dict],
 
 
 # --------------------------------------------------------------- main loop
+def completed_bars(bars: list[dict], now_ms: int) -> list[dict]:
+    """Only bars whose interval has fully elapsed; the forming bar is excluded."""
+    return [b for b in bars if int(b.get("timestamp") or 0) + BAR_MS <= now_ms]
+
+
 def run_one_shot(bars_by_symbol: dict[str, list[dict]] | None = None) -> dict:
     """One tick: evaluate exits, then entries, then refresh guardrails.
 
@@ -346,8 +351,13 @@ def run_one_shot(bars_by_symbol: dict[str, list[dict]] | None = None) -> dict:
 
         end_ms = int(now.timestamp() * 1000)
         start_ms = end_ms - LOOKBACK_BARS * BAR_MS
+        # Drop the FORMING bar: its close mutates until the bar completes, so
+        # trading on it is intra-bar lookahead (self-caught in the 2026-11-19
+        # design debate while defending element 8). Injected test bars bypass
+        # this on purpose — tests construct completed bars only.
         bars_by_symbol = {
-            sym: fetch_klines(sym, INTERVAL, start_ms, end_ms)
+            sym: completed_bars(
+                fetch_klines(sym, INTERVAL, start_ms, end_ms), end_ms)
             for sym in UNIVERSE
         }
 
