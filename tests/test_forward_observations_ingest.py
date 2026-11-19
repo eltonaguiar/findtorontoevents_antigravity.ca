@@ -206,3 +206,24 @@ def test_feature_keyed_pod_still_needs_its_stamp():
     # ...and a strategy-keyed pod no longer needs features to classify.
     assert ING.classify(None, "EQUITY", strategy="rs-breakout-scout",
                         direction="LONG") == "H-BABY-EQUITY-VT-PATTERN-SWEEP-001"
+
+
+def test_unmatched_strategies_are_reported_not_hidden():
+    """3,334 cohort rows vanish into one opaque skip; the report must name them."""
+    from collections import Counter
+    unmatched = Counter()
+    entries = [({"asset_class": "EQUITY", "strategy": "mystery_strategy",
+                 "direction": "LONG"}, None, [])]
+    rows, rejects, counts = ING.build_rows(entries, unmatched_out=unmatched)
+    assert rows == [] and counts["not_in_any_condition"] == 1
+    assert unmatched[("EQUITY", "mystery_strategy")] == 1
+
+
+def test_registered_breakout_pod_claims_its_strategies():
+    """POD-EQUITY-BREAKOUT must keep matching its four registered strategies."""
+    for strat in ("donchian-stock-breakout", "rs-breakout-scout",
+                  "vol-contraction-scout", "adx-trend-scout"):
+        assert (ING.classify(None, "EQUITY", strategy=strat, direction="LONG")
+                == "H-BABY-EQUITY-VT-PATTERN-SWEEP-001")
+        assert (ING.classify(None, "ETF", strategy=strat, direction="LONG")
+                == "H-BABY-EQUITY-VT-PATTERN-SWEEP-001")

@@ -44,6 +44,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import hashlib
+from collections import Counter
 import json
 import sys
 from datetime import datetime, timezone
@@ -283,7 +284,8 @@ def row_from_cohort(p: dict, feats: dict | None, bars_for_symbol: Any,
     return row, None
 
 
-def build_rows(entries: Iterable[tuple[dict, dict | None, Any]], now: datetime | None = None
+def build_rows(entries: Iterable[tuple[dict, dict | None, Any]], now: datetime | None = None,
+               unmatched_out: Counter | None = None
                ) -> tuple[list[dict], list[dict], dict[str, int]]:
     """Turn (cohort_row, features, bars) triples into ledger rows + rejection counts."""
     rows: list[dict] = []
@@ -296,6 +298,11 @@ def build_rows(entries: Iterable[tuple[dict, dict | None, Any]], now: datetime |
                        timeframe=p.get("trade_timeframe") or p.get("timeframe"))
         if hid is None:
             counts["not_in_any_condition"] = counts.get("not_in_any_condition", 0) + 1
+            if unmatched_out is not None:
+                # A pod can be registered and still never accrue: if its strategies
+                # are absent from the honest cohort, 3,000+ rows vanish into one
+                # opaque "not_in_any_condition" number. Record which strategies.
+                unmatched_out[(asset_class, str(p.get("strategy") or "(none)"))] += 1
             continue
         row, reason = row_from_cohort(p, feats, bars, hid, now=now)
         if row is None:
@@ -397,8 +404,11 @@ def collect(limit: int = DEFAULT_LIMIT) -> tuple[list[dict], list[dict], dict[st
             entries.append((p, feats, series))
         chunk_marks.append(marks)
 
-    rows, rejects, counts = build_rows(entries)
+    unmatched: Counter = Counter()
+    rows, rejects, counts = build_rows(entries, unmatched_out=unmatched)
     meta = {"cohort_n": len(cohort), "chunk_size": CHUNK,
+            "unmatched_top": [{"asset_class": k[0], "strategy": k[1], "n": v}
+                              for k, v in unmatched.most_common(20)],
             "stamped_rows_by_chunk": chunk_marks, "stamper_skips": skips}
     return rows, rejects, counts, meta
 
