@@ -47,6 +47,20 @@ def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
     return picks
 
 
+@pytest.fixture(autouse=True)
+def _no_live_intrabar_overlay(monkeypatch):
+    """Judge fixtures on their own rows (2026-11-19).
+
+    Without this, money_ready_verdict() overlays the LIVE intrabar artifact, so a
+    synthetic 47%-WR fixture was reported as wr=0.4052 and could never reach the
+    verdict its own numbers imply. The overlay itself is covered by
+    tests/test_money_ready_intrabar_sizing_p1a.py and
+    tests/test_money_ready_wr_semantics.py.
+    """
+    import alpha_engine.money_ready_verdict as mrv
+    monkeypatch.setattr(mrv, "_INTRABAR_TRUTH_ENABLED", False)
+
+
 class TestMoneyReadyVerdict:
     def test_insufficient_data_below_min_n(self):
         from alpha_engine.money_ready_verdict import money_ready_verdict, MIN_N_CLASS
