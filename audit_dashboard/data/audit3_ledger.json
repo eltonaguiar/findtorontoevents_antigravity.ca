@@ -1,6 +1,6 @@
 {
  "schema": "audit3.v1",
- "generated_at": "2026-11-19T08:51:15.733132+00:00",
+ "generated_at": "2026-11-19T09:04:03.006172+00:00",
  "source": "/tmp/audit3/dashboard_data.json",
  "source_generated_at": "2026-11-19T07:10:23.399542+00:00",
  "not_money_ready_disclaimer": "audit3 is an evidence ledger, not a signal service. PROVEN_T2 means the realized closed-pick ledger survives the listed gates; it does not guarantee future returns. No position sizing is emitted here.",
@@ -52,8 +52,8 @@
   "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni alpha/m = 0.000746",
   "stability": "chronological split-half, both halves net mean > 0",
   "recency_rule": "PROVEN_T2 requires the trailing 25% of closes (min 5) to have a non-negative net mean; otherwise the verdict is capped at CANDIDATE",
-  "persistence_runs": null,
-  "persistence_rule": "disabled: no verdict-history sidecar supplied",
+  "persistence_runs": 2,
+  "persistence_rule": "a CANDIDATE/PROVEN_T2 verdict must persist across 2 consecutive runs; BH is per-run, so a single cross is not enough",
   "max_symbol_share": 0.6,
   "max_source_share": 0.9,
   "random_entry_mc": "not run here (needs per-symbol price series); see alpha_engine/benchmark_closed_ledger.py for the timing-null companion report."
@@ -207,16 +207,16 @@
  },
  "persistence": {
   "rule": "repeated-looks: a CANDIDATE/PROVEN_T2 verdict must persist across 2 consecutive runs before it is granted",
-  "runs_required": null,
-  "available": false,
-  "n_demoted_this_run": 0,
+  "runs_required": 2,
+  "available": true,
+  "n_demoted_this_run": 1,
   "n_promoted_this_run": 0,
-  "history_cells": 0,
+  "history_cells": 444,
   "first_pass_at_field": "cells that cleared the gate carry first_pass_at (the run that began the passing streak)"
  },
  "verdict_churn": {
-  "available": false,
-  "n_tracked": 0,
+  "available": true,
+  "n_tracked": 444,
   "n_flipped": 0,
   "churn_rate": 0.0,
   "alert_threshold": 0.3,
@@ -22871,8 +22871,10 @@
    "top_symbol_share": 1.0,
    "top_source_share": 0.6667,
    "single_source": false,
-   "verdict": "CANDIDATE",
-   "reasons": [],
+   "verdict": "WEAK",
+   "reasons": [
+    "repeated-looks: verdict persisted 1/2 consecutive runs (BH is per-run; a single cross is not enough)"
+   ],
    "sharpe": 1.2193,
    "sr0": 0.4377,
    "raw_verdict": "CANDIDATE"
@@ -24427,7 +24429,7 @@
   "source_file": "/tmp/audit3/dashboard_data.json",
   "source_generated_at": "2026-11-19T07:10:23.399542+00:00",
   "input_sha256": "a2c2f41f8d0eb6f7bc08d03c7d211368a5babee14d05779a79ae2b99b184e239",
-  "git_sha": "dc788e372b4b",
+  "git_sha": "39e1c265d11b",
   "n_cells_scored_with_dsr": 66,
   "registry_note": "one canonical multiplicity N: n_cells_tested feeds BH, Bonferroni and DSR; DSR is only reported for cells inside that family"
  }
