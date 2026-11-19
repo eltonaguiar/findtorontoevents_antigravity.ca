@@ -1374,7 +1374,9 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  history: dict[str, dict] | None = None,
                  run_at: str | None = None,
                  persistence_runs: int = PERSISTENCE_RUNS,
-                 prev_verdicts: dict[str, str] | None = None) -> dict[str, Any]:
+                 prev_verdicts: dict[str, str] | None = None,
+                 sleeves: list[dict] | None = None,
+                 benchmark: dict[str, Any] | None = None) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
@@ -1673,9 +1675,10 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                 "disabled: no verdict-history sidecar supplied"),
             "max_symbol_share": MAX_SYMBOL_SHARE,
             "max_source_share": MAX_SOURCE_SHARE,
-            "random_entry_mc": "not run here (needs per-symbol price series); "
-                               "see alpha_engine/benchmark_closed_ledger.py for the "
-                               "timing-null companion report.",
+            "random_entry_mc": "wired via --benchmark sidecar "
+                               "(alpha_engine/benchmark_closed_ledger.py); "
+                               "timing-null companion report merged into "
+                               "benchmark_closed_ledger field.",
         },
         "summary": summary,
         "coverage": coverage if coverage is not None else payload_coverage(None, rows),
@@ -1719,6 +1722,8 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "verdict_churn": churn,
         "classes": classes,
         "segments": segments,
+        "sleeves": sleeves if sleeves is not None else [],
+        "benchmark_closed_ledger": benchmark if benchmark is not None else None,
         "cells": cells,
         "symbols": symbols,
         "source_families": families,
@@ -1775,6 +1780,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
                     help="forward-observations ledger that gates PROVEN_T2 "
                          "(0 rows means no pod can promote)")
+    ap.add_argument("--sleeves", help="dashboard_data.json path to extract "
+                                      "top_sleeves for reconciliation (flags "
+                                      "sleeves not scored by the tribunal)")
+    ap.add_argument("--benchmark", help="benchmark_closed_ledger.py JSON output "
+                                       "for random-entry MC timing-null companion "
+                                       "(from --out of benchmark_closed_ledger)")
     args = ap.parse_args(argv)
     drops: dict[str, int] = {}
     try:
@@ -1803,12 +1814,58 @@ def main(argv: list[str] | None = None) -> int:
     history = load_history(args.history) if args.history else None
     prev_verdicts = load_prev_verdicts(args.prev_ledger)
     run_at = datetime.now(timezone.utc).isoformat()
+    # Sleeve reconciliation: extract top_sleeves from dashboard_data.json and
+    # flag any that are not scored by the tribunal (single-source / inflated).
+    # Benchmark closed-ledger sidecar (random-entry MC timing null).
+    benchmark = None
+    if args.benchmark:
+        try:
+            with open(args.benchmark, encoding="utf-8") as f:
+                benchmark = json.load(f)
+        except (OSError, ValueError) as exc:
+            print(f"WARNING: benchmark sidecar unreadable ({exc}); continuing without it",
+                  file=sys.stderr)
+            benchmark = None
+    sleeves = None
+    if args.sleeves:
+        try:
+            with open(args.sleeves, encoding="utf-8") as f:
+                _dash = json.load(f)
+            _mr = _dash.get("money_ready_verdicts", {})
+            _audit3_keys = {(c.get("asset_class"), c.get("strategy")) for c in []}
+            # We'll populate _audit3_keys after load_rows, but rows are already loaded.
+            _row_keys = {(str(r.get("asset_class") or "").upper(),
+                          str(r.get("strategy") or r.get("source_system") or "")) for r in rows}
+            sleeves = []
+            for cls, info in _mr.items():
+                for s in (info.get("top_sleeves") or []):
+                    key = (cls, s.get("strategy", ""))
+                    in_tribunal = key in _row_keys or any(
+                        ac == cls and strat.lower() == s.get("strategy", "").lower()
+                        for ac, strat in _row_keys)
+                    sleeves.append({
+                        "asset_class": cls,
+                        "strategy": s.get("strategy", "?"),
+                        "n": s.get("n", 0),
+                        "wr": s.get("wr", 0),
+                        "pf": s.get("pf", 0),
+                        "source": s.get("source", "?"),
+                        "is_single_source": s.get("is_single_source", False),
+                        "in_tribunal": in_tribunal,
+                        "verdict": "VERIFIED" if in_tribunal else "UNVERIFIED",
+                    })
+        except (OSError, ValueError, KeyError) as exc:
+            print(f"WARNING: sleeves unreadable ({exc}); continuing without",
+                  file=sys.stderr)
+            sleeves = None
     report = build_report(rows, args.picks, generated_at, coverage=coverage,
                           alpha=alpha, input_sha256=_sha256(args.picks),
                           confirmatory=manifest, history=history, run_at=run_at,
                           persistence_runs=args.persistence_runs,
                           prev_verdicts=prev_verdicts,
-                          forward=forward_gate_block(manifest, args.forward_ledger))
+                          forward=forward_gate_block(manifest, args.forward_ledger),
+                          sleeves=sleeves,
+                          benchmark=benchmark)
     churn = report["verdict_churn"]
     if (args.max_churn is not None and churn["available"]
             and churn["n_tracked"] >= CHURN_MIN_TRACKED
@@ -1820,6 +1877,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.history_write:
         save_history(args.history, history, run_at=run_at,
                      runs_required=args.persistence_runs)
+    # Sanitize inf/nan values (e.g. from pf_ci_lower when no losses) so the
+    # JSON is strictly compliant even when a cell has zero losing trades.
+    def _sanitize(obj):
+        if isinstance(obj, float):
+            if math.isinf(obj) or math.isnan(obj):
+                return None
+            return obj
+        if isinstance(obj, dict):
+            return {k: _sanitize(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [_sanitize(v) for v in obj]
+        return obj
+    import math
+    report = _sanitize(report)
     payload = json.dumps(report, indent=1, allow_nan=False)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:
