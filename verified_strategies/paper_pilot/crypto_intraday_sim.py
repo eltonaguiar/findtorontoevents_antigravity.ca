@@ -380,10 +380,14 @@ def run_one_shot(bars_by_symbol: dict[str, list[dict]] | None = None) -> dict:
             "exit_price": exit_px,
             "exit_ts": _iso(exit_ms),
             "exit_reason": reason,
+            "intrabar_first_touch": reason in ("TP", "SL"),
             "stop_loss": pos.get("stop_loss"),
             "take_profit": pos.get("take_profit"),
-            "pnl_pct": pnl_pct,
-            "outcome": "WIN" if pnl_pct > 0 else "LOSS",
+            "gross_pct": pnl_pct,
+            "cost_pct": ROUND_TRIP_COST_PCT,
+            "net_pct": round(pnl_pct - ROUND_TRIP_COST_PCT, 4),
+            "pnl_pct": round(pnl_pct - ROUND_TRIP_COST_PCT, 4),
+            "outcome": "WIN" if (pnl_pct - ROUND_TRIP_COST_PCT) > 0 else "LOSS",
         }
         _append_log(close_row)
         closed.append(close_row)
@@ -416,6 +420,9 @@ def run_one_shot(bars_by_symbol: dict[str, list[dict]] | None = None) -> dict:
                 "entry_price": entry_px,
                 "entry_ts_ms": int(last_bar["timestamp"]),
                 "take_profit": sig.get("take_profit"),
+                "expected_move_pct": sig.get("expected_move_pct"),
+                "cost_floor_pct": COST_FLOOR_MULT * ROUND_TRIP_COST_PCT,
+                "assumed_round_trip_pct": ROUND_TRIP_COST_PCT,
                 "stop_loss": sig.get("stop_loss"),
                 "reason": sig.get("reason"),
                 "status": "OPEN",
@@ -428,6 +435,9 @@ def run_one_shot(bars_by_symbol: dict[str, list[dict]] | None = None) -> dict:
                 "symbol": sym, "direction": "LONG", "entry_price": entry_px,
                 "entry_ts": _iso(int(last_bar["timestamp"])),
                 "take_profit": sig.get("take_profit"),
+                "expected_move_pct": sig.get("expected_move_pct"),
+                "cost_floor_pct": COST_FLOOR_MULT * ROUND_TRIP_COST_PCT,
+                "assumed_round_trip_pct": ROUND_TRIP_COST_PCT,
                 "stop_loss": sig.get("stop_loss"), "reason": sig.get("reason"),
             })
 
