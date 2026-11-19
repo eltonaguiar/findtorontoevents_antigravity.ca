@@ -110,6 +110,19 @@ def test_only_the_registered_condition_gets_rows():
     assert ING.classify(None, "CRYPTO") is None                     # unstamped
 
 
+def test_equity_breakout_pod_is_classified_by_strategy_and_direction():
+    # POD-EQUITY-BREAKOUT (pre-registered) is strategy-keyed, not feature-keyed:
+    # its `requires` is empty and it must match on emitter strategy + LONG direction
+    # so forward rows accrue to H-BABY-EQUITY-VT-PATTERN-SWEEP-001.
+    feats = _feats()
+    hid = "H-BABY-EQUITY-VT-PATTERN-SWEEP-001"
+    assert ING.classify(feats, "EQUITY", strategy="rs-breakout-scout", direction="LONG") == hid
+    assert ING.classify(feats, "ETF", strategy="donchian-stock-breakout", direction="LONG") == hid
+    assert ING.classify(feats, "EQUITY", strategy="rs-breakout-scout", direction="SHORT") is None
+    assert ING.classify(feats, "EQUITY", strategy="unrelated-momentum", direction="LONG") is None
+    assert ING.classify(feats, "CRYPTO", strategy="rs-breakout-scout", direction="LONG") == "H-119"
+
+
 def test_rows_outside_every_condition_are_skipped_not_rejected():
     rows, rejects, counts = ING.build_rows(
         [(_cohort(), _feats(F5="ASIA"), _bars())], now=NOW)
@@ -173,3 +186,23 @@ def test_cohort_datetime_fields_are_converted_not_stringified_into_nothing():
     assert reason is None
     assert row["opened_at"].startswith("2026-11-01T14:00")   # ISO, not "2026-11-01 14:00:00"
     assert FO.validate(row, {"H-119"}) == []
+
+
+def test_position_pod_is_classified_by_timeframe():
+    # H-144 is the CRYPTO POSITION-horizon pod; it has no entry-condition stamp.
+    assert ING.classify(None, "CRYPTO", timeframe="POSITION") == "H-144"
+    # precedence: a POSITION row that also carries H-119's RSI/session stamp stays
+    # with H-119, so this pod cannot rewrite an existing attribution
+    assert ING.classify(_feats(), "CRYPTO", timeframe="POSITION") == "H-119"
+    # other horizons and other classes must not be captured
+    assert ING.classify(None, "CRYPTO", timeframe="INTRADAY") is None
+    assert ING.classify(None, "ETF", timeframe="POSITION") is None
+
+
+def test_feature_keyed_pod_still_needs_its_stamp():
+    # The guard change must not let a feature-keyed pod match unstamped rows.
+    assert ING.classify(None, "CRYPTO") is None
+    assert ING.classify(_feats(), "CRYPTO") == "H-119"
+    # ...and a strategy-keyed pod no longer needs features to classify.
+    assert ING.classify(None, "EQUITY", strategy="rs-breakout-scout",
+                        direction="LONG") == "H-BABY-EQUITY-VT-PATTERN-SWEEP-001"
