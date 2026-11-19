@@ -167,6 +167,22 @@ Five facts a peer (buffy/review-main) raised, each re-derived from the 18:32:40Z
 
 ---
 
+### 3.4 Denominator and coverage — the number changed between runs
+
+The live 18:32:40Z ledger reports `coverage.denominator.mode="canonical"`,
+`loaded_from_sidecar=true`, **8,613 of 14,637 closed rows (58.84%)** with the note
+"scores the published canonical view; /audit counts the same rows". The repo's committed
+copy from 04:04Z reports `mode="payload_slice"`, `loaded_from_sidecar=false`,
+`fallback_reason="no_canonical_block"`, **3,500 of 16,330 (21.43%)** and explicitly says
+"NOT the same denominator as /audit".
+
+Both are "the audit3 ledger", and they disagree by 5,113 scored rows and 1,693 total rows.
+Even in canonical mode `scored_share_of_valid_pct` is `null` because the ratio would exceed
+100% — canonical rows and the payload summary are still different sources. Until one
+denominator is pinned and published with the ledger, no cross-surface tile comparison is
+auditable. This supersedes my earlier payload-slice claim: the live ledger has moved to
+canonical, and the movement itself is the finding.
+
 ## 4. Cross-surface contradictions (fix before adding features)
 
 | Claim | Where | Contradiction |
