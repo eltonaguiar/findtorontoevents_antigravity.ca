@@ -1,29 +1,16 @@
 {
-  "generated_at": "2026-11-19T06:54:20.825421+00:00",
+  "generated_at": "2026-11-19T09:47:03.719914+00:00",
   "host": "mysql.50webs.com",
   "database": "ejaguiar1_stocks",
   "engine": "MySQL 8.4.7",
   "checks": {
-    "status_standardization": {
-      "name": "status_standardization",
-      "ok": true,
-      "elapsed_s": 0.47,
-      "attempts": 1,
-      "data": {
-        "non_canonical": {},
-        "n_non_canonical": 0,
-        "tier": "green",
-        "threshold_pass": true
-      },
-      "tier_label": "Tier 1"
-    },
     "open_bloat": {
       "name": "open_bloat",
       "ok": true,
-      "elapsed_s": 31.08,
+      "elapsed_s": 31.44,
       "attempts": 1,
       "data": {
-        "open_count": 94219,
+        "open_count": 94315,
         "info_schema_estimate": 46179,
         "bt_backtest_trades": {
           "open_count": 29247197,
@@ -32,17 +19,17 @@
           "count_suspect": false
         },
         "trading_picks": {
-          "open_count": 94219,
+          "open_count": 94315,
           "active_count": 21,
-          "total_count": 147169,
+          "total_count": 147273,
           "info_schema_estimate": 46179,
           "count_suspect": false
         },
-        "last_terminal_write": "2026-11-19 05:11:30",
-        "hours_since_last_close": 1,
+        "last_terminal_write": "2026-11-19 06:50:29",
+        "hours_since_last_close": 2,
         "validator_frozen": false,
         "open_bloat": {
-          "open": 94219,
+          "open": 94315,
           "active": 21,
           "fail": true
         },
@@ -51,10 +38,32 @@
       },
       "tier_label": "Tier 1"
     },
+    "pnl_integrity": {
+      "name": "pnl_integrity",
+      "ok": true,
+      "elapsed_s": 1.19,
+      "attempts": 1,
+      "data": {
+        "sampled": 24158,
+        "id_range": [
+          16262086,
+          16462086
+        ],
+        "metric": "sign_consistency (direction-aware, leverage-agnostic)",
+        "gt1pct_mismatch": 130,
+        "sign_mismatch": 130,
+        "mismatch_pct": 0.54,
+        "naive_magnitude_mismatch": 6535,
+        "naive_magnitude_mismatch_pct": 27.05,
+        "tier": "green",
+        "threshold_pass": true
+      },
+      "tier_label": "Tier 1"
+    },
     "ghost_rows": {
       "name": "ghost_rows",
       "ok": true,
-      "elapsed_s": 503.61,
+      "elapsed_s": 502.3,
       "attempts": 1,
       "data": {
         "total_ghost_rows": 22947,
@@ -181,7 +190,7 @@
     "won_pnl_contradiction": {
       "name": "won_pnl_contradiction",
       "ok": true,
-      "elapsed_s": 0.46,
+      "elapsed_s": 0.54,
       "attempts": 1,
       "data": {
         "by_status": [
@@ -193,15 +202,15 @@
           },
           {
             "status": "SL_HIT",
-            "n": 3886,
-            "avg_pnl": -3.196108,
-            "negative_pnl_count": 3884
+            "n": 3885,
+            "avg_pnl": -3.1964132,
+            "negative_pnl_count": 3883
           },
           {
             "status": "LOST",
-            "n": 5636,
-            "avg_pnl": -1.77041746,
-            "negative_pnl_count": 5609
+            "n": 5638,
+            "avg_pnl": -1.77000227,
+            "negative_pnl_count": 5611
           }
         ],
         "contradiction_detected": false,
@@ -210,23 +219,14 @@
       },
       "tier_label": "Tier 3"
     },
-    "pnl_integrity": {
-      "name": "pnl_integrity",
+    "status_standardization": {
+      "name": "status_standardization",
       "ok": true,
-      "elapsed_s": 0.96,
+      "elapsed_s": 0.41,
       "attempts": 1,
       "data": {
-        "sampled": 24158,
-        "id_range": [
-          16262086,
-          16462086
-        ],
-        "metric": "sign_consistency (direction-aware, leverage-agnostic)",
-        "gt1pct_mismatch": 130,
-        "sign_mismatch": 130,
-        "mismatch_pct": 0.54,
-        "naive_magnitude_mismatch": 6535,
-        "naive_magnitude_mismatch_pct": 27.05,
+        "non_canonical": {},
+        "n_non_canonical": 0,
         "tier": "green",
         "threshold_pass": true
       },
@@ -234,7 +234,7 @@
     }
   },
   "overall": {
-    "elapsed_s": 536.58,
+    "elapsed_s": 535.88,
     "checks_run": 5,
     "checks_passed": 3,
     "checks_failed": 2,
