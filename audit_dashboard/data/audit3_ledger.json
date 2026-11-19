@@ -1,6 +1,6 @@
 {
  "schema": "audit3.v1",
- "generated_at": "2026-11-19T16:53:50.651880+00:00",
+ "generated_at": "2026-11-19T17:39:15.747376+00:00",
  "source": "/tmp/audit3/dashboard_data.json",
  "source_generated_at": "2026-11-19T16:05:18.497265+00:00",
  "not_money_ready_disclaimer": "audit3 is an evidence ledger, not a signal service. PROVEN_T2 means the realized closed-pick ledger survives the listed gates; it does not guarantee future returns. No position sizing is emitted here.",
@@ -135,10 +135,124 @@
   "statement": "audit3 scores 8,613 of 14,637 closed picks (58.8%). The other 6,024 are not in this ledger: the publishing dashboard reports 5,933 integrity-excluded and 9,257 auto-expired rows, and no surface scores any of them. Those cohorts overlap, so they do not sum to the gap \u2014 read them as reasons rows are missing, not as a partition. This run scores the canonical resolved view (sha256 e2bc4aed7df1\u2026)."
  },
  "selection_alpha": {
-  "available": false,
+  "available": true,
   "definition": "alpha = pick net return - direction-adjusted buy & hold over the same entry..exit window (M1b)",
   "source": "alpha_engine/audit3_selection_alpha.py (needs the price tables)",
-  "why_it_matters": "A +40% pick on a symbol that returned +60% is a selection failure; a win-rate or PF table cannot see that."
+  "why_it_matters": "A +40% pick on a symbol that returned +60% is a selection failure; a win-rate or PF table cannot see that.",
+  "generated_at": "2026-11-19T17:39:15.045135+00:00",
+  "covered": 2228,
+  "n_universe": 3500,
+  "missing": {
+   "no_price:BOND": 35,
+   "no_bar:FOREX": 159,
+   "no_price:EQUITY": 88,
+   "no_bar:COMMODITY": 50,
+   "no_price:FOREX": 40,
+   "no_bar:EQUITY": 437,
+   "no_bar:ETF": 225,
+   "no_price:FUTURES": 4,
+   "no_timestamp": 129,
+   "no_price:ETF": 98,
+   "no_bar:CRYPTO": 6,
+   "no_price:COMMODITY": 1
+  },
+  "overall": {
+   "n": 2228,
+   "pick_net_pct": -0.1923,
+   "hold_net_pct": 0.1172,
+   "alpha_pct": -0.3095,
+   "alpha_ci": [
+    -0.628,
+    0.022
+   ],
+   "alpha_wr": 0.4439,
+   "hold_days_mean": 5.7944,
+   "hold_days_median": 0.6257,
+   "alpha_per_day_pct": -2.2676,
+   "alpha_annualized_pct": -827.6803,
+   "min_hold_days": 1.0,
+   "n_min_hold": 908,
+   "min_hold_participation": 0.4075,
+   "alpha_pct_min_hold": -0.3361
+  },
+  "by_slice": {
+   "CRYPTO/LONG": {
+    "n": 1156,
+    "pick_net_pct": -0.9776,
+    "hold_net_pct": -0.5195,
+    "alpha_pct": -0.4581,
+    "alpha_ci": [
+     -0.9335,
+     -0.1092
+    ],
+    "alpha_wr": 0.4498,
+    "hold_days_mean": 4.1585,
+    "hold_days_median": 0.5,
+    "alpha_per_day_pct": -3.262,
+    "alpha_annualized_pct": -1190.6157,
+    "min_hold_days": 1.0,
+    "n_min_hold": 341,
+    "min_hold_participation": 0.295,
+    "alpha_pct_min_hold": -0.9005
+   },
+   "CRYPTO/SHORT": {
+    "n": 571,
+    "pick_net_pct": 0.8509,
+    "hold_net_pct": 1.0545,
+    "alpha_pct": -0.2037,
+    "alpha_ci": [
+     -0.964,
+     0.7182
+    ],
+    "alpha_wr": 0.4028,
+    "hold_days_mean": 10.2195,
+    "hold_days_median": 0.375,
+    "alpha_per_day_pct": -1.676,
+    "alpha_annualized_pct": -611.7557,
+    "min_hold_days": 1.0,
+    "n_min_hold": 117,
+    "min_hold_participation": 0.2049,
+    "alpha_pct_min_hold": 0.0726
+   },
+   "EQUITY/LONG": {
+    "n": 239,
+    "pick_net_pct": 0.912,
+    "hold_net_pct": 0.7972,
+    "alpha_pct": 0.1149,
+    "alpha_ci": [
+     -0.3794,
+     0.5892
+    ],
+    "alpha_wr": 0.5021,
+    "hold_days_mean": 4.7582,
+    "hold_days_median": 5.0144,
+    "alpha_per_day_pct": 0.2627,
+    "alpha_annualized_pct": 95.896,
+    "min_hold_days": 1.0,
+    "n_min_hold": 219,
+    "min_hold_participation": 0.9163,
+    "alpha_pct_min_hold": 0.0715
+   },
+   "ETF/LONG": {
+    "n": 261,
+    "pick_net_pct": -0.0083,
+    "hold_net_pct": 0.2641,
+    "alpha_pct": -0.2724,
+    "alpha_ci": [
+     -0.5035,
+     -0.0372
+    ],
+    "alpha_wr": 0.4559,
+    "hold_days_mean": 4.3267,
+    "hold_days_median": 4.0893,
+    "alpha_per_day_pct": -1.483,
+    "alpha_annualized_pct": -541.3088,
+    "min_hold_days": 1.0,
+    "n_min_hold": 231,
+    "min_hold_participation": 0.8851,
+    "alpha_pct_min_hold": -0.0963
+   }
+  }
  },
  "forward_gate": {
   "enforced": true,
@@ -314,30 +428,13 @@
  },
  "verdict_churn": {
   "available": true,
-  "n_tracked": 438,
-  "n_flipped": 2,
-  "churn_rate": 0.0046,
+  "n_tracked": 440,
+  "n_flipped": 0,
+  "churn_rate": 0.0,
   "alert_threshold": 0.3,
   "min_tracked": 20,
   "alert": false,
-  "flips": [
-   {
-    "asset_class": "BOND",
-    "strategy": null,
-    "direction": null,
-    "from": "KILL",
-    "to": "WEAK",
-    "n": 35
-   },
-   {
-    "asset_class": "BOND",
-    "strategy": null,
-    "direction": null,
-    "from": "KILL",
-    "to": "WEAK",
-    "n": 35
-   }
-  ]
+  "flips": []
  },
  "classes": [
   {
@@ -391,7 +488,20 @@
    ],
    "sharpe": -0.0689,
    "sr0": 0.0169,
-   "raw_verdict": "KILL"
+   "alpha_pct": -0.374,
+   "alpha_ci": [
+    -0.7437,
+    0.0175
+   ],
+   "alpha_n": 1727,
+   "alpha_wr": 0.4343,
+   "hold_net_pct": 0.0009,
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.7437,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -445,7 +555,20 @@
    ],
    "sharpe": 0.0326,
    "sr0": 0.0453,
-   "raw_verdict": "WEAK"
+   "alpha_pct": 0.114,
+   "alpha_ci": [
+    -0.4072,
+    0.5931
+   ],
+   "alpha_n": 240,
+   "alpha_wr": 0.5,
+   "hold_net_pct": 0.7938,
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.4072,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -500,7 +623,20 @@
    ],
    "sharpe": 0.0021,
    "sr0": 0.0573,
-   "raw_verdict": "WEAK"
+   "alpha_pct": -0.2724,
+   "alpha_ci": [
+    -0.5035,
+    -0.0372
+   ],
+   "alpha_n": 261,
+   "alpha_wr": 0.4559,
+   "hold_net_pct": 0.2641,
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -554,7 +690,12 @@
    ],
    "sharpe": -0.03,
    "sr0": 0.0863,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "COMMODITY",
@@ -609,7 +750,12 @@
    ],
    "sharpe": -0.7242,
    "sr0": 0.1942,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -665,7 +811,12 @@
    ],
    "sharpe": -0.1942,
    "sr0": 0.2344,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FUTURES",
@@ -712,7 +863,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   }
  ],
  "segments": [
@@ -1123,7 +1279,12 @@
    "sharpe": -0.0439,
    "sr0": 0.0649,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1181,7 +1342,12 @@
    "sharpe": -0.027,
    "sr0": 0.0673,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1238,7 +1404,12 @@
    "sharpe": -0.1479,
    "sr0": 0.1463,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1295,7 +1466,12 @@
    "sharpe": -0.174,
    "sr0": 0.183,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1353,7 +1529,12 @@
    "sharpe": -0.0152,
    "sr0": 0.2386,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1410,7 +1591,12 @@
    "sharpe": -0.1216,
    "sr0": 0.2522,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1467,7 +1653,12 @@
    "sharpe": -0.0988,
    "sr0": 0.255,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1525,7 +1716,12 @@
    "sharpe": 0.0815,
    "sr0": 0.2599,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1583,7 +1779,12 @@
    "sharpe": -0.0781,
    "sr0": 0.2619,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -1641,7 +1842,12 @@
    "sharpe": -0.0066,
    "sr0": 0.2867,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1699,7 +1905,12 @@
    "sharpe": -0.0847,
    "sr0": 0.3044,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -1755,7 +1966,12 @@
    "sharpe": 0.1992,
    "sr0": 0.33,
    "bh_family_n": 6,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -1814,7 +2030,12 @@
    "sharpe": -1.4481,
    "sr0": 0.3454,
    "bh_family_n": 61,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -1872,7 +2093,12 @@
    "sharpe": 0.0005,
    "sr0": 0.3454,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -1929,7 +2155,12 @@
    "sharpe": -0.1838,
    "sr0": 0.3689,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "EQUITY",
@@ -1988,7 +2219,12 @@
    "sharpe": 0.1092,
    "sr0": 0.3748,
    "bh_family_n": 6,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2046,7 +2282,12 @@
    "sharpe": 0.1272,
    "sr0": 0.3909,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2103,7 +2344,12 @@
    "sharpe": -0.1678,
    "sr0": 0.4016,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -2161,7 +2407,12 @@
    "sharpe": -0.0272,
    "sr0": 0.4054,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2220,7 +2471,12 @@
    "sharpe": -0.0752,
    "sr0": 0.4093,
    "bh_family_n": 6,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2279,7 +2535,12 @@
    "sharpe": 0.1651,
    "sr0": 0.4093,
    "bh_family_n": 6,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -2337,7 +2598,12 @@
    "sharpe": 0.0327,
    "sr0": 0.4174,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -2395,7 +2661,12 @@
    "sharpe": -0.0505,
    "sr0": 0.4174,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -2454,7 +2725,12 @@
    "sharpe": -0.7221,
    "sr0": 0.426,
    "bh_family_n": 61,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2512,7 +2788,12 @@
    "sharpe": -0.0643,
    "sr0": 0.4352,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2568,7 +2849,12 @@
    "sharpe": 0.2226,
    "sr0": 0.44,
    "bh_family_n": 6,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2626,7 +2912,12 @@
    "sharpe": -0.1999,
    "sr0": 0.44,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -2682,7 +2973,12 @@
    "sharpe": 0.2386,
    "sr0": 0.4501,
    "bh_family_n": 6,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2740,7 +3036,12 @@
    "sharpe": 0.0044,
    "sr0": 0.4554,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2798,7 +3099,12 @@
    "sharpe": -0.104,
    "sr0": 0.4554,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -2856,7 +3162,12 @@
    "sharpe": -0.098,
    "sr0": 0.4554,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -2915,7 +3226,12 @@
    "sharpe": -0.3327,
    "sr0": 0.4788,
    "bh_family_n": 61,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -2972,7 +3288,12 @@
    "sharpe": 0.3067,
    "sr0": 0.4788,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -3030,7 +3351,12 @@
    "sharpe": -0.3758,
    "sr0": 0.4852,
    "bh_family_n": 61,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -3085,7 +3411,12 @@
    "sharpe": 0.3295,
    "sr0": 0.4989,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -3143,7 +3474,12 @@
    "sharpe": -0.2272,
    "sr0": 0.4989,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -3201,7 +3537,12 @@
    "sharpe": -0.3352,
    "sr0": 0.5062,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -3259,7 +3600,12 @@
    "sharpe": -0.0041,
    "sr0": 0.5062,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "COMMODITY",
@@ -3318,7 +3664,12 @@
    "sharpe": -3.997,
    "sr0": 0.5218,
    "bh_family_n": 61,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -3376,7 +3727,12 @@
    "sharpe": 0.0606,
    "sr0": 0.5218,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -3434,7 +3790,12 @@
    "sharpe": -0.0011,
    "sr0": 0.5389,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -3492,7 +3853,12 @@
    "sharpe": -0.1491,
    "sr0": 0.5481,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -3550,7 +3916,12 @@
    "sharpe": -0.0216,
    "sr0": 0.5481,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -3607,7 +3978,12 @@
     "win rate 0.0% below 40%"
    ],
    "bh_family_n": 61,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FOREX",
@@ -3665,7 +4041,12 @@
    "sharpe": -0.0325,
    "sr0": 0.5578,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -3723,7 +4104,12 @@
    "sharpe": 0.0523,
    "sr0": 0.568,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -3782,7 +4168,12 @@
    "sharpe": -0.1638,
    "sr0": 0.568,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -3840,7 +4231,12 @@
    "sharpe": 0.0757,
    "sr0": 0.5788,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -3898,7 +4294,12 @@
    "sharpe": -0.1923,
    "sr0": 0.5788,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -3956,7 +4357,12 @@
    "sharpe": -0.127,
    "sr0": 0.5903,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -4011,7 +4417,12 @@
    "sharpe": 0.2735,
    "sr0": 0.5903,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -4066,7 +4477,12 @@
    "sharpe": 0.497,
    "sr0": 0.6025,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -4121,7 +4537,12 @@
    "sharpe": 1.8385,
    "sr0": 0.6025,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -4178,7 +4599,12 @@
    "sharpe": 1.4919,
    "sr0": 0.6025,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -4236,7 +4662,12 @@
    "sharpe": -0.0837,
    "sr0": 0.6154,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -4294,7 +4725,12 @@
    "sharpe": -0.0718,
    "sr0": 0.6154,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -4353,7 +4789,12 @@
    "sharpe": -0.6845,
    "sr0": 0.6293,
    "bh_family_n": 61,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -4408,7 +4849,12 @@
    "sharpe": 0.2884,
    "sr0": 0.6293,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -4465,7 +4911,12 @@
    "sharpe": 0.0632,
    "sr0": 0.6293,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -4523,7 +4974,12 @@
    "sharpe": -0.1148,
    "sr0": 0.6293,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -4581,7 +5037,12 @@
    "sharpe": -0.1845,
    "sr0": 0.6293,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -4636,7 +5097,12 @@
    "sharpe": 0.2133,
    "sr0": 0.6293,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -4694,7 +5160,12 @@
    "sharpe": 0.18,
    "sr0": 0.6441,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -4752,7 +5223,12 @@
    "sharpe": -0.0089,
    "sr0": 0.6441,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -4807,7 +5283,12 @@
    "sharpe": 0.2478,
    "sr0": 0.6441,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -4866,7 +5347,12 @@
    "sharpe": -0.4155,
    "sr0": 0.66,
    "bh_family_n": 61,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -4921,7 +5407,12 @@
    "sharpe": 0.3389,
    "sr0": 0.66,
    "bh_family_n": 61,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -4975,7 +5466,12 @@
    "reasons": [
     "n=19 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5029,7 +5525,12 @@
    "reasons": [
     "n=19 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -5083,7 +5584,12 @@
    "reasons": [
     "n=19 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -5138,7 +5644,12 @@
    "reasons": [
     "n=19 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5192,7 +5703,12 @@
    "reasons": [
     "n=18 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -5246,7 +5762,12 @@
    "reasons": [
     "n=18 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5300,7 +5821,12 @@
    "reasons": [
     "n=17 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5354,7 +5880,12 @@
    "reasons": [
     "n=17 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5408,7 +5939,12 @@
    "reasons": [
     "n=16 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5462,7 +5998,12 @@
    "reasons": [
     "n=16 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -5516,7 +6057,12 @@
    "reasons": [
     "n=16 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "EQUITY",
@@ -5570,7 +6116,12 @@
    "reasons": [
     "n=15 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -5624,7 +6175,12 @@
    "reasons": [
     "n=15 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5678,7 +6234,12 @@
    "reasons": [
     "n=14 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5732,7 +6293,12 @@
    "reasons": [
     "n=14 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5786,7 +6352,12 @@
    "reasons": [
     "n=14 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -5840,7 +6411,12 @@
    "reasons": [
     "n=14 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5894,7 +6470,12 @@
    "reasons": [
     "n=13 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -5948,7 +6529,12 @@
    "reasons": [
     "n=13 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6002,7 +6588,12 @@
    "reasons": [
     "n=13 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6056,7 +6647,12 @@
    "reasons": [
     "n=12 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -6110,7 +6706,12 @@
    "reasons": [
     "n=12 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -6164,7 +6765,12 @@
    "reasons": [
     "n=12 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6218,7 +6824,12 @@
    "reasons": [
     "n=10 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6268,7 +6879,12 @@
    "reasons": [
     "n=9 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6318,7 +6934,12 @@
    "reasons": [
     "n=9 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6368,7 +6989,12 @@
    "reasons": [
     "n=9 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -6418,7 +7044,12 @@
    "reasons": [
     "n=9 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -6468,7 +7099,12 @@
    "reasons": [
     "n=9 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -6518,7 +7154,12 @@
    "reasons": [
     "n=9 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -6568,7 +7209,12 @@
    "reasons": [
     "n=9 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -6618,7 +7264,12 @@
    "reasons": [
     "n=9 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -6668,7 +7319,12 @@
    "reasons": [
     "n=8 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6718,7 +7374,12 @@
    "reasons": [
     "n=8 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6768,7 +7429,12 @@
    "reasons": [
     "n=8 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6818,7 +7484,12 @@
    "reasons": [
     "n=8 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -6868,7 +7539,12 @@
    "reasons": [
     "n=8 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -6918,7 +7594,12 @@
    "reasons": [
     "n=8 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -6968,7 +7649,12 @@
    "reasons": [
     "n=8 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "BOND",
@@ -7018,7 +7704,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -7068,7 +7759,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -7118,7 +7814,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -7168,7 +7869,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -7218,7 +7924,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -7268,7 +7979,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -7318,7 +8034,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -7368,7 +8089,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -7418,7 +8144,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -7468,7 +8199,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -7518,7 +8254,12 @@
    "reasons": [
     "n=7 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "COMMODITY",
@@ -7568,7 +8309,12 @@
    "reasons": [
     "n=6 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -7618,7 +8364,12 @@
    "reasons": [
     "n=6 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -7668,7 +8419,12 @@
    "reasons": [
     "n=6 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -7718,7 +8474,12 @@
    "reasons": [
     "n=6 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -7768,7 +8529,12 @@
    "reasons": [
     "n=6 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -7818,7 +8584,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -7868,7 +8639,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -7918,7 +8694,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -7968,7 +8749,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8018,7 +8804,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8068,7 +8859,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8118,7 +8914,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -8168,7 +8969,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -8218,7 +9024,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -8268,7 +9079,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -8318,7 +9134,12 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "BOND",
@@ -8368,7 +9189,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -8418,7 +9244,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "COMMODITY",
@@ -8468,7 +9299,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -8518,7 +9354,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8568,7 +9409,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8618,7 +9464,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8668,7 +9519,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8718,7 +9574,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8768,7 +9629,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8818,7 +9684,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8868,7 +9739,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8918,7 +9794,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -8968,7 +9849,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -9018,7 +9904,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -9068,7 +9959,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -9118,7 +10014,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -9168,7 +10069,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -9218,7 +10124,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -9268,7 +10179,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FOREX",
@@ -9318,7 +10234,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FOREX",
@@ -9368,7 +10289,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FUTURES",
@@ -9418,7 +10344,12 @@
    "reasons": [
     "n=4 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -9468,7 +10399,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "COMMODITY",
@@ -9518,7 +10454,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -9568,7 +10509,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -9618,7 +10564,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -9668,7 +10619,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -9718,7 +10674,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -9768,7 +10729,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -9818,7 +10784,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -9868,7 +10839,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -9918,7 +10894,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -9968,7 +10949,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -10018,7 +11004,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -10068,7 +11059,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -10118,7 +11114,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -10168,7 +11169,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -10218,7 +11224,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -10269,7 +11280,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -10319,7 +11335,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -10369,7 +11390,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -10419,7 +11445,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -10469,7 +11500,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -10519,7 +11555,12 @@
    "reasons": [
     "n=3 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -10569,7 +11610,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "COMMODITY",
@@ -10619,7 +11665,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "COMMODITY",
@@ -10669,7 +11720,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -10719,7 +11775,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -10769,7 +11830,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -10819,7 +11885,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -10869,7 +11940,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -10919,7 +11995,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -10969,7 +12050,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11019,7 +12105,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11069,7 +12160,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11119,7 +12215,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11169,7 +12270,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11219,7 +12325,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11269,7 +12380,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11319,7 +12435,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11369,7 +12490,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11419,7 +12545,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11469,7 +12600,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11519,7 +12655,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11569,7 +12710,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11619,7 +12765,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11669,7 +12820,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11719,7 +12875,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11769,7 +12930,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11819,7 +12985,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11869,7 +13040,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11919,7 +13095,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -11969,7 +13150,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -12019,7 +13205,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -12069,7 +13260,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -12119,7 +13315,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -12169,7 +13370,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -12219,7 +13425,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -12269,7 +13480,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -12319,7 +13535,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -12369,7 +13590,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.4072,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -12419,7 +13645,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -12469,7 +13700,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -12519,7 +13755,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -12569,7 +13810,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -12619,7 +13865,12 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -12669,7 +13920,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -12719,7 +13975,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -12769,7 +14030,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -12819,7 +14085,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -12869,7 +14140,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "COMMODITY",
@@ -12919,7 +14195,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "COMMODITY",
@@ -12969,7 +14250,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -13019,7 +14305,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13069,7 +14360,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13119,7 +14415,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13169,7 +14470,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13219,7 +14525,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13269,7 +14580,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13319,7 +14635,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13369,7 +14690,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13419,7 +14745,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13469,7 +14800,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13519,7 +14855,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13569,7 +14910,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13619,7 +14965,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13669,7 +15020,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13719,7 +15075,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13769,7 +15130,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13819,7 +15185,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13869,7 +15240,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13919,7 +15295,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -13969,7 +15350,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14019,7 +15405,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14069,7 +15460,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14119,7 +15515,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14169,7 +15570,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14219,7 +15625,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14269,7 +15680,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14319,7 +15735,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14369,7 +15790,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14419,7 +15845,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14469,7 +15900,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14519,7 +15955,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14569,7 +16010,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14619,7 +16065,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14669,7 +16120,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14719,7 +16175,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14769,7 +16230,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14819,7 +16285,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14869,7 +16340,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14919,7 +16395,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -14969,7 +16450,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15019,7 +16505,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15069,7 +16560,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15119,7 +16615,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15169,7 +16670,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15219,7 +16725,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15269,7 +16780,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15319,7 +16835,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15369,7 +16890,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15419,7 +16945,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15469,7 +17000,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15519,7 +17055,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15569,7 +17110,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15619,7 +17165,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15669,7 +17220,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15719,7 +17275,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15769,7 +17330,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15819,7 +17385,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15869,7 +17440,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15919,7 +17495,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -15969,7 +17550,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16019,7 +17605,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16069,7 +17660,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16119,7 +17715,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16169,7 +17770,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16219,7 +17825,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16269,7 +17880,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16319,7 +17935,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16369,7 +17990,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16419,7 +18045,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16469,7 +18100,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16519,7 +18155,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16569,7 +18210,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16619,7 +18265,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16669,7 +18320,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16719,7 +18375,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16769,7 +18430,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16819,7 +18485,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16869,7 +18540,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16919,7 +18595,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -16969,7 +18650,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17019,7 +18705,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17069,7 +18760,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17119,7 +18815,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17169,7 +18870,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17219,7 +18925,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17269,7 +18980,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17319,7 +19035,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17369,7 +19090,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17419,7 +19145,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17469,7 +19200,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17519,7 +19255,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17569,7 +19310,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17619,7 +19365,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17669,7 +19420,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17719,7 +19475,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17769,7 +19530,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17819,7 +19585,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17869,7 +19640,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17919,7 +19695,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -17969,7 +19750,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18019,7 +19805,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18069,7 +19860,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18119,7 +19915,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18169,7 +19970,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18219,7 +20025,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18269,7 +20080,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18319,7 +20135,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18369,7 +20190,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18419,7 +20245,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -18469,7 +20300,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18519,7 +20355,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18569,7 +20410,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18619,7 +20465,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18669,7 +20520,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.4072,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18719,7 +20575,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18769,7 +20630,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18819,7 +20685,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18869,7 +20740,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.4072,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18919,7 +20795,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -18969,7 +20850,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -19019,7 +20905,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -19069,7 +20960,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -19119,7 +21015,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -19169,7 +21070,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -19219,7 +21125,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -19269,7 +21180,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -19319,7 +21235,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -19369,7 +21290,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FOREX",
@@ -19419,7 +21345,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FOREX",
@@ -19469,7 +21400,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FOREX",
@@ -19519,7 +21455,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FOREX",
@@ -19569,7 +21510,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "FOREX",
@@ -19619,7 +21565,12 @@
    "reasons": [
     "n=1 < 20: no statistical claim"
    ],
-   "raw_verdict": "INSUFFICIENT_N"
+   "raw_verdict": "INSUFFICIENT_N",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   }
  ],
  "symbols": [
@@ -19679,7 +21630,12 @@
    ],
    "sharpe": -0.1449,
    "sr0": 0.1186,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -19735,7 +21691,12 @@
    ],
    "sharpe": -0.1116,
    "sr0": 0.1207,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -19791,7 +21752,12 @@
    ],
    "sharpe": -0.0954,
    "sr0": 0.1309,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -19847,7 +21813,12 @@
    ],
    "sharpe": -0.138,
    "sr0": 0.1311,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -19905,7 +21876,12 @@
    ],
    "sharpe": -0.0679,
    "sr0": 0.1321,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -19963,7 +21939,12 @@
    ],
    "sharpe": -0.1405,
    "sr0": 0.1331,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20021,7 +22002,12 @@
    ],
    "sharpe": -0.0923,
    "sr0": 0.1352,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20079,7 +22065,12 @@
    ],
    "sharpe": -0.0626,
    "sr0": 0.1381,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20136,7 +22127,12 @@
    ],
    "sharpe": 0.0664,
    "sr0": 0.162,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20193,7 +22189,12 @@
    ],
    "sharpe": 0.0939,
    "sr0": 0.1803,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20250,7 +22251,12 @@
    ],
    "sharpe": 0.0428,
    "sr0": 0.1813,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20308,7 +22314,12 @@
    ],
    "sharpe": -0.0488,
    "sr0": 0.1834,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20366,7 +22377,12 @@
    ],
    "sharpe": 0.0135,
    "sr0": 0.1845,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20424,7 +22440,12 @@
    ],
    "sharpe": -0.0555,
    "sr0": 0.1868,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20481,7 +22502,12 @@
    ],
    "sharpe": 0.0997,
    "sr0": 0.1885,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20539,7 +22565,12 @@
    ],
    "sharpe": -0.0842,
    "sr0": 0.1897,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20597,7 +22628,12 @@
    ],
    "sharpe": -0.0036,
    "sr0": 0.1903,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20655,7 +22691,12 @@
    ],
    "sharpe": -0.0665,
    "sr0": 0.1921,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20711,7 +22752,12 @@
    ],
    "sharpe": 0.1291,
    "sr0": 0.1921,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20769,7 +22815,12 @@
    ],
    "sharpe": -0.0004,
    "sr0": 0.1934,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20825,7 +22876,12 @@
    ],
    "sharpe": -0.0987,
    "sr0": 0.1979,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20883,7 +22939,12 @@
    ],
    "sharpe": 0.0682,
    "sr0": 0.1979,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20941,7 +23002,12 @@
    ],
    "sharpe": -0.0503,
    "sr0": 0.1979,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -20997,7 +23063,12 @@
    ],
    "sharpe": 0.1335,
    "sr0": 0.1986,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -21055,7 +23126,12 @@
    ],
    "sharpe": -0.0645,
    "sr0": 0.1993,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -21113,7 +23189,12 @@
    ],
    "sharpe": -0.0206,
    "sr0": 0.2007,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -21171,7 +23252,12 @@
    ],
    "sharpe": 0.0607,
    "sr0": 0.2021,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -21229,7 +23315,12 @@
    ],
    "sharpe": -0.0877,
    "sr0": 0.2029,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -21287,7 +23378,12 @@
    ],
    "sharpe": -0.0998,
    "sr0": 0.2066,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -21345,7 +23441,12 @@
    ],
    "sharpe": 0.0236,
    "sr0": 0.2074,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.964,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -21403,7 +23504,12 @@
    ],
    "sharpe": 0.1605,
    "sr0": 0.2641,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -21459,7 +23565,12 @@
    ],
    "sharpe": 0.207,
    "sr0": 0.2658,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -21517,7 +23628,12 @@
    ],
    "sharpe": 0.0406,
    "sr0": 0.2658,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -21575,7 +23691,12 @@
    ],
    "sharpe": -0.0256,
    "sr0": 0.2674,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -21633,7 +23754,12 @@
    ],
    "sharpe": 0.0344,
    "sr0": 0.2819,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -21691,7 +23817,12 @@
    ],
    "sharpe": -0.0159,
    "sr0": 0.29,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -21748,7 +23879,12 @@
    ],
    "sharpe": 0.0507,
    "sr0": 0.2944,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -21806,7 +23942,12 @@
    ],
    "sharpe": -0.2762,
    "sr0": 0.2944,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -21864,7 +24005,12 @@
    ],
    "sharpe": 0.0376,
    "sr0": 0.299,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -21921,7 +24067,12 @@
    ],
    "sharpe": 0.0848,
    "sr0": 0.3062,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -21979,7 +24130,12 @@
    ],
    "sharpe": -0.0221,
    "sr0": 0.3141,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -22037,7 +24193,12 @@
    ],
    "sharpe": -0.0932,
    "sr0": 0.3168,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -22095,7 +24256,12 @@
    ],
    "sharpe": -0.3046,
    "sr0": 0.3383,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -22153,7 +24319,12 @@
    ],
    "sharpe": 0.0531,
    "sr0": 0.3383,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -22211,7 +24382,12 @@
    ],
    "sharpe": -0.0374,
    "sr0": 0.3417,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -22269,7 +24445,12 @@
    ],
    "sharpe": 0.0103,
    "sr0": 0.3452,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -22326,7 +24507,12 @@
    ],
    "sharpe": 0.1461,
    "sr0": 0.3489,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -22384,7 +24570,12 @@
    ],
    "sharpe": -0.163,
    "sr0": 0.3647,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -22442,7 +24633,12 @@
    ],
    "sharpe": 0.022,
    "sr0": 0.3647,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -22500,7 +24696,12 @@
    ],
    "sharpe": -0.3134,
    "sr0": 0.3782,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -22558,7 +24759,12 @@
    ],
    "sharpe": 0.0672,
    "sr0": 0.3932,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -22612,7 +24818,12 @@
    "reasons": [],
    "sharpe": 0.4494,
    "sr0": 0.4043,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "FOREX",
@@ -22667,7 +24878,12 @@
    "sharpe": 0.843,
    "sr0": 0.4164,
    "first_pass_at": "2026-11-19T09:04:03.006172+00:00",
-   "raw_verdict": "CANDIDATE"
+   "raw_verdict": "CANDIDATE",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "BOND",
@@ -22725,7 +24941,12 @@
    ],
    "sharpe": -0.1665,
    "sr0": 0.4296,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": null,
+    "passed": null,
+    "status": "unmeasured"
+   }
   },
   {
    "asset_class": "CRYPTO",
@@ -22783,7 +25004,12 @@
    ],
    "sharpe": -0.2004,
    "sr0": 0.4367,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -22840,7 +25066,12 @@
    ],
    "sharpe": 0.1498,
    "sr0": 0.4367,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -22898,7 +25129,12 @@
    ],
    "sharpe": -0.2999,
    "sr0": 0.452,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "ETF",
@@ -22956,7 +25192,12 @@
    ],
    "sharpe": -0.0656,
    "sr0": 0.452,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.5035,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -23014,7 +25255,12 @@
    ],
    "sharpe": -0.6462,
    "sr0": 0.4603,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -23072,7 +25318,12 @@
    ],
    "sharpe": -0.4008,
    "sr0": 0.4691,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -23129,7 +25380,12 @@
    ],
    "sharpe": 0.2034,
    "sr0": 0.4784,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -23187,7 +25443,12 @@
    ],
    "sharpe": -0.5305,
    "sr0": 0.4882,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -23245,7 +25506,12 @@
    ],
    "sharpe": -0.2576,
    "sr0": 0.4882,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -23303,7 +25569,12 @@
    ],
    "sharpe": -0.1494,
    "sr0": 0.4882,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -23360,7 +25631,12 @@
    ],
    "sharpe": 0.0662,
    "sr0": 0.4987,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -23417,7 +25693,12 @@
    ],
    "sharpe": 0.094,
    "sr0": 0.4987,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "EQUITY",
@@ -23474,7 +25755,12 @@
    ],
    "sharpe": 0.0746,
    "sr0": 0.5099,
-   "raw_verdict": "WEAK"
+   "raw_verdict": "WEAK",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.3794,
+    "passed": false
+   },
+   "beta_dominant": true
   },
   {
    "asset_class": "CRYPTO",
@@ -23532,7 +25818,12 @@
    ],
    "sharpe": -0.6687,
    "sr0": 0.5219,
-   "raw_verdict": "KILL"
+   "raw_verdict": "KILL",
+   "alpha_gate": {
+    "alpha_ci_lo": -0.9335,
+    "passed": false
+   },
+   "beta_dominant": true
   }
  ],
  "source_families": [
@@ -24292,7 +26583,7 @@
   "source_file": "/tmp/audit3/dashboard_data.json",
   "source_generated_at": "2026-11-19T16:05:18.497265+00:00",
   "input_sha256": "d01070551e0cddb470d06667c089411dfdfdba4713730575ea5c2887ec55ef3e",
-  "git_sha": "23659ecdc825",
+  "git_sha": "181920f93825",
   "n_cells_scored_with_dsr": 66,
   "n_trials_dsr": 359,
   "registry_note": "multiplicity is counted two ways on purpose: BH/Bonferroni operate on tested cells (n >= sample floor); DSR uses the global trial count, every distinct cell scored."
