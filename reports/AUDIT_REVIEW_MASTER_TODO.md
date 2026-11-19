@@ -7,6 +7,8 @@
 
 ## P0 — Blocks money-readiness (Sprint 1)
 
+| 36 | Sleeve reconciliation (P0 from Copilot plan) | §2.6, new | OPEN | /audit top_sleeves (AuditEnsemble_LONG PF 155.85, CorrKama PF 111.81, non_crypto_consensus PF 9.68) are NOT in audit3 cells. Single-source, policy_clean/resolver_grade sources. Need: flag as UNVERIFIED on /audit, add sleeve ingestion to audit3 tribunal |
+
 | # | Item | Section | Status | Notes |
 |---|---|---|---|---|
 | 1 | Implement selection alpha (`audit3_selection_alpha.py`) — needs price tables | §4.3, §6.2 #1 | OPEN | P0: without this, beta-only profitable cells can't be distinguished from selection failures |
