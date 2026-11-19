@@ -117,3 +117,19 @@ def test_report_stays_json_safe():
     rows = [_row(pnl_pct=p) for p in (1.0, -1.0, 0.5, 2.0, -0.2) * 5]
     rep = build_report(rows, "x", None)
     json.dumps(rep, allow_nan=False)
+
+def test_share_of_valid_is_nulled_when_it_exceeds_100():
+    # Canonical scored rows (120) vs a narrower payload "valid" figure (100):
+    # publishing 120% invites misreading, so the share is dropped with a note.
+    rows = [_row() for _ in range(120)]
+    cov = payload_coverage(
+        _payload(rows, total_closed_picks=1000, valid_closed_picks=100), rows)
+    assert cov["scored_rows"] == 120
+    assert cov["scored_share_of_valid_pct"] is None
+    assert "exceeded 100%" in cov["scored_share_of_valid_note"]
+    # Normal ratios are untouched.
+    rows2 = [_row() for _ in range(50)]
+    cov2 = payload_coverage(
+        _payload(rows2, total_closed_picks=1000, valid_closed_picks=100), rows2)
+    assert cov2["scored_share_of_valid_pct"] == 50.0
+    assert cov2["scored_share_of_valid_note"] is None

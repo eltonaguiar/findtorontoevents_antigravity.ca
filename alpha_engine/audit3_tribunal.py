@@ -644,6 +644,18 @@ def payload_coverage(data: Any, scored_rows: list[dict],
                  "stale, or hashed differently, so this is NOT the same denominator "
                  "as /audit"),
     }
+    # A "share of valid" above 100% is not a rounding artefact: `scored` can be
+    # the canonical view while `valid_closed_picks` comes from a narrower payload
+    # summary. Publishing 105% invites misreading, so null it with the reason.
+    share_of_valid = (round(100.0 * scored / valid, 2) if valid else None)
+    share_of_valid_note = None
+    if share_of_valid is not None and share_of_valid > 100.0:
+        share_of_valid_note = (
+            "not comparable: the scored rows come from the canonical view while "
+            "valid_closed_picks comes from the payload summary, so the ratio "
+            f"exceeded 100% ({share_of_valid}%)")
+        share_of_valid = None
+
     cov_statement = _coverage_statement(scored, total, integrity, expired, overlap)
     if canonical_mode:
         cov_statement = (f"{cov_statement} This run scores the canonical resolved "
@@ -658,8 +670,8 @@ def payload_coverage(data: Any, scored_rows: list[dict],
         "zero_pnl_count": zero_pnl,
         "scored_share_of_total_pct": (round(100.0 * scored / total, 2)
                                       if total else None),
-        "scored_share_of_valid_pct": (round(100.0 * scored / valid, 2)
-                                      if valid else None),
+        "scored_share_of_valid_pct": share_of_valid,
+        "scored_share_of_valid_note": share_of_valid_note,
         "unscored_rows": (max(0, total - scored) if total else None),
         "cohorts_overlap": overlap,
         "excluded_cohorts": excluded,
