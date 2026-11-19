@@ -231,3 +231,25 @@ python3 alpha_engine/audit3_selection_alpha.py --picks audit_dashboard/data/dash
   --out /tmp/sa.json --rows-out /tmp/alpha_rows.jsonl
 python3 tools/alpha_slice_scan.py --rows /tmp/alpha_rows.jsonl --out /tmp/scan.json
 ```
+
+## 9. Correction log — the scanner's test shipped red twice
+
+Recorded because it is the kind of thing that should not be discovered later:
+
+* #912 and #913 merged `tests/test_alpha_slice_scan.py` with one failing test
+  (`test_noise_does_not_survive_but_a_real_edge_does`). `gh pr merge` does not run
+  tests, and I chained the merge behind the test command instead of gating on its
+  exit status, so a red test reached `main` twice.
+* **The tool was correct both times; the fixture was wrong.** It planted the real
+  +2%/pick POSITION edge inside CRYPTO and then asserted that `class:CRYPTO` must
+  *not* survive. A class that contains a genuine edge is supposed to read positive —
+  the assertion was testing the opposite of the tool's contract.
+* Fix: the "noise must not survive" assertion now uses a class made only of
+  symmetric zero-mean noise (ETF), and the per-class expectations are stated
+  explicitly. Production code unchanged; **no number in this document changes.**
+* Process fix taken from it: gate a merge on the test command's exit status, never
+  on the PR having been created.
+* Residual cause after the fixture move: `class:CRYPTO` and `class_tf:CRYPTO/POSITION`
+  both sat at +2.000 with n=40, so which one "wins" depends on sort order. The
+  assertion now checks the surviving alpha value (and that the slice is
+  class-scoped) rather than a tied slice name.

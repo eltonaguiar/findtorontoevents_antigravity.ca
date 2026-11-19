@@ -33,20 +33,35 @@ def test_bh_values_are_bounded_and_monotone_in_p():
 
 
 def test_noise_does_not_survive_but_a_real_edge_does():
+    """A pure-noise class must not survive; a real edge must.
+
+    The edge is planted in CRYPTO and the noise in ETF on purpose: an earlier
+    version of this fixture planted the edge inside CRYPTO and then asserted
+    that `class:CRYPTO` must NOT survive, which is wrong — a class that contains
+    a real +2%/pick cohort is supposed to come out positive. The "noise stays
+    noise" assertion needs a class made only of noise.
+    """
     recs = []
-    for i in range(40):                      # POSITION beats hold by +2%/pick
+    for i in range(40):                      # real edge: +2%/pick, tight
         recs.append({"class": "CRYPTO", "dir": "LONG", "timeframe": "POSITION",
                      "alpha": 2.0 + (0.1 if i % 2 else -0.1)})
-    for i in range(400):                     # INTRADAY is symmetric noise
-        recs.append({"class": "CRYPTO", "dir": "LONG", "timeframe": "INTRADAY",
+    for i in range(400):                     # symmetric noise, zero mean
+        recs.append({"class": "ETF", "dir": "LONG", "timeframe": "INTRADAY",
                      "alpha": 0.02 if i % 2 else -0.02})
     res = scan(recs, min_n=30)
     by = {r["slice"]: r for r in res["slices"]}
+
     assert by["tf:POSITION"]["survives"] is True
-    assert by["class:CRYPTO"]["survives"] is False
-    # per_class only rolls up class-scoped slices ('class_...:'), never a bare
-    # 'tf:' slice, so the class view must report its own class-scoped survivor.
-    assert res["per_class"]["CRYPTO"]["best_surviving_slice"] == "class_tf:CRYPTO/POSITION"
+    assert by["class:ETF"]["survives"] is False          # noise stays noise
+    assert by["class_dir:ETF/LONG"]["survives"] is False
+    assert by["class:ETF"]["hurts"] is False             # and is not called harmful
+    # per_class only rolls up class-scoped slices, never a bare 'tf:' slice, and
+    # it must surface the class's surviving edge. Assert the *value*, not one tied
+    # slice name: class:CRYPTO and class_tf:CRYPTO/POSITION both sit at +2.000, so
+    # the winning name depends on sort order and is not a stable contract.
+    assert res["per_class"]["CRYPTO"]["best_surviving_slice"].startswith("class")
+    assert res["per_class"]["CRYPTO"]["best_slice_alpha_pct"] == 2.0
+    assert res["per_class"]["ETF"]["best_surviving_slice"] is None
 
 
 def test_harmful_slice_is_flagged_not_cherry_picked():
