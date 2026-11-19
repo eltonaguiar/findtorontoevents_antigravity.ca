@@ -63,9 +63,15 @@ CHUNK = 400
 #: Crypto round-trip cost convention, same constant the H-119 tracker charges, so a
 #: ledger-derived net PF is comparable with the tracker's number.
 CRYPTO_RT_BP = 16.0
-#: Non-crypto round-trip slippage, in bps, from the tribunal's per-class constants.
-OTHER_BP = {"EQUITY": 8.0, "ETF": 8.0, "FOREX": 4.0, "COMMODITY": 12.0,
-            "FUTURES": 12.0, "BOND": 2.0}
+#: Non-crypto round-trip slippage, in bps. Sourced from alpha_engine/cost_model.py
+#: (get_total_bps) so there is a single source of truth for execution cost.
+try:
+    from alpha_engine.cost_model import get_total_bps as _cost_bps
+    OTHER_BP = {k: _cost_bps(k) for k in ("EQUITY", "ETF", "FOREX", "COMMODITY",
+                                            "FUTURES", "BOND")}
+except Exception:  # pragma: no cover - fallback if cost_model unavailable
+    OTHER_BP = {"EQUITY": 7.0, "ETF": 3.0, "FOREX": 2.0, "COMMODITY": 7.0,
+                "FUTURES": 5.5, "BOND": 4.5}
 
 #: Condition -> hypothesis. Only registered hypotheses may receive forward rows.
 #: A condition may match on asset class, an optional feature vector (`requires`),
@@ -81,8 +87,13 @@ CONDITIONS = {
         "name": "equity_breakout_family",
         "asset_classes": {"EQUITY", "ETF"},
         "strategies": {
-            "donchian-stock-breakout", "rs-breakout-scout",
-            "vol-contraction-scout", "adx-trend-scout",
+            "vt_equity_two_day_rsi_reversal", "etf_faber_tactical",
+            "etf_sector_momentum", "smart_money_accumulation",
+            "etf_risk_parity_rotation", "etf_sector_dual_momentum",
+            "ag_vt_pattern_sweep", "etf_cross_sectional_momentum",
+            "etf_sector_momentum_rotation", "etf_dual_momentum",
+            "stocks_rsi2_pullback", "etf_rsi2_pullback",
+            "momentum_rider_base",
         },
         "directions": {"LONG"},
         "requires": {},
