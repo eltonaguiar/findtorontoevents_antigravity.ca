@@ -623,14 +623,18 @@ def test_proven_tier_pays_the_global_dsr_correction():
     assert cell["verdict"] == "CANDIDATE"
 
 
-def test_candidate_tier_uses_local_breadth_not_the_global_registry():
+def test_candidate_tier_falls_back_to_global_dsr_when_local_is_uncomputable():
     from alpha_engine.audit3_tribunal import _promote
-    # Single-cell bucket: no within-family multiplicity, so the CANDIDATE floor
-    # must not be applied against the 658-trial registry.
+    # Single-cell bucket: dsr_local is None (not computable). The gate must NOT
+    # be skipped — it falls back to the global DSR. A global DSR of 0.10 fails.
     cell = {"verdict": "CANDIDATE", "n": 120, "q_value": 0.01, "dsr": 0.10,
             "dsr_local": None, "reasons": []}
     _promote(cell)
-    assert cell["verdict"] == "CANDIDATE"
+    assert cell["verdict"] == "WEAK", "a 1-local-trial cell escaped the DSR floor"
+    ok = {"verdict": "CANDIDATE", "n": 120, "q_value": 0.01, "dsr": 0.90,
+          "dsr_local": None, "reasons": []}
+    _promote(ok)
+    assert ok["verdict"] == "CANDIDATE"
     # A real local breadth with a poor local DSR still demotes.
     cell2 = {"verdict": "CANDIDATE", "n": 120, "q_value": 0.01, "dsr": 0.90,
              "dsr_local": 0.30, "reasons": []}

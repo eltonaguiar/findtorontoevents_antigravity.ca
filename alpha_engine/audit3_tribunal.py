@@ -1106,8 +1106,13 @@ def _promote(cell: dict, forward: dict[str, Any] | None = None) -> None:
             cell["verdict"] = "WEAK"
         else:
             # CANDIDATE is the forward-paper tier: judge it against the breadth
-            # actually observed, not the whole 658-trial registry.
-            d_c = cell["dsr_local"] if "dsr_local" in cell else cell.get("dsr")
+            # actually observed, not the whole 658-trial registry. When the local
+            # DSR is not computable (bucket < 2 cells) fall back to the global,
+            # multiplicity-corrected DSR — skipping the floor let a 1-local-trial
+            # candidate escape the gate entirely.
+            d_c = cell.get("dsr_local")
+            if d_c is None:
+                d_c = cell.get("dsr")
             if d_c is not None and d_c < 0.50:
                 cell["verdict"] = "WEAK"
                 cell["reasons"].append(f"DSR {d_c:.3f} < 0.50")
