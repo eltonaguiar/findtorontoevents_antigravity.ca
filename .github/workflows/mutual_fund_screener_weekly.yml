@@ -1,0 +1,47 @@
+name: Mutual Fund Screener Weekly
+
+'on':
+  schedule:
+    - cron: '30 6 * * 1'  # Monday 06:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mutual-fund-screener-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+jobs:
+  run-mf-screener:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance
+
+      - name: Run mutual fund screener
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m alpha_engine.mutual_fund_screener_runner
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/mutual_fund_screener_runs/ 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "chore: mutual fund screener weekly run [skip ci]"
+          git push || true
