@@ -1,0 +1,415 @@
+# Finance / Investment Database Schema Specification
+
+**Scope:** All MySQL databases on `mysql.50webs.com` that are finance/investment or
+backtesting related. Non-finance databases (`events`, `favcreators`, `news`,
+`tvmoviestrailers`) are documented only at the inventory level and are **not**
+detailed here.
+
+**Generated:** 2026-11-19 (schema pulled live from the server via
+`information_schema` + sample rows). Row counts are approximate for very large
+tables (`TABLE_ROWS`), exact for the rest.
+
+---
+
+## 1. Connection / Host Layout
+
+- **Host:** `mysql.50webs.com:3306`
+- **Model:** per-database users — user `ejaguiar1_<db>` accesses only database
+  `ejaguiar1_<db>`. A single connection cannot do cross-DB operations; the
+  backup tool uses a two-connection copy pattern.
+- **10 total databases.** Finance-relevant: `stocks`, `backtests`, `backups`
+  (archive), `deals` (empty), `memecoin`, `sportsbet`. Non-finance (inventory
+  only): `events`, `favcreators`, `news`, `tvmoviestrailers`.
+
+| Database | Tables | Purpose | Finance? |
+|---|---|---|---|
+| `ejaguiar1_stocks` | 409 | Primary trading-pick engine, performance, portfolios | ✅ |
+| `ejaguiar1_backtests` | 10 | Backtest runs + trade-level results | ✅ |
+| `ejaguiar1_backups` | 414 | Archive / point-in-time backups of prod tables | ✅ (archive) |
+| `ejaguiar1_memecoin` | 58 | Memecoin / crypto scans, signals, paper trades | ✅ |
+| `ejaguiar1_sportsbet` | 49 | Sports betting bankroll, bets, value bets | ✅ |
+| `ejaguiar1_deals` | 0 | Empty (no tables) | ✅ (empty) |
+| `ejaguiar1_events` | — | Event site | ❌ |
+| `ejaguiar1_favcreators` | — | FavCreators | ❌ |
+| `ejaguiar1_news` | — | News | ❌ |
+| `ejaguiar1_tvmoviestrailers` | — | TV/movie trailers | ❌ |
+
+---
+
+## 2. Primary Database: `ejaguiar1_stocks` (409 tables)
+
+This is the core finance database. It stores the full pick pipeline, backtest
+imports, performance accounting, and portfolio snapshots.
+
+### 2.1 Core pick-pipeline tables
+
+#### `trading_picks` (~147k rows) — canonical live/closed pick ledger
+| Column | Type | Notes |
+|---|---|---|
+| `id` | varchar(100) | PK (e.g. `ZW=F_commodity_term_cot_2026-08-13T12:34`) |
+| `symbol` | varchar(20) | MUL |
+| `direction` | varchar(10) | LONG/SHORT/BUY |
+| `strategy` | varchar(100) | MUL |
+| `entry_price` | decimal(20,8) | |
+| `take_profit` / `stop_loss` | decimal(20,8) | |
+| `confidence` | decimal(5,4) | |
+| `elite_score` / `trust_score` | int | |
+| `category` | varchar(20) | MUL |
+| `source_system` | varchar(50) | |
+| `status` | varchar(20) | OPEN/ACTIVE/WON/LOST... |
+| `pnl_pct` | decimal(10,4) | |
+| `exit_price`, `closed_at`, `exit_reason` | | |
+| `created_at`, `updated_at`, `market_regime_id`, `sector`, `volatility_atr`, `execution_slippage_pct` | | regime/context |
+- **Freshness:** max `created_at` = **2026-11-19 04:48** → active.
+
+#### `at_raw_picks` (~113k rows) — pre-aggregation raw picks
+| Column | Type | Notes |
+|---|---|---|
+| `id` | char(36) | PK |
+| `aggregation_run_id` | char(36) | MUL |
+| `source_system` | varchar(100) | MUL (AlphaEngine, incubator_gainer, ...) |
+| `symbol` | varchar(50) | MUL |
+| `asset_class` | enum | CRYPTO/FOREX/EQUITY/PENNY_STOCK/MEMECOIN/SPORTS/FUTURES/ETF/COMMODITY/BOND/UNKNOWN |
+| `direction` | enum(LONG,SHORT) | |
+| `entry_price`, `take_profit`, `stop_loss`, `risk_reward`, `confidence`, `strategy` | | |
+| `raw_payload` | json | |
+| `signal_timestamp`, `recorded_at` | datetime | |
+| `dedup_hash` | char(64) | UNI |
+| `was_stale`, `was_banned`, `was_demoted`, `was_wr_suppressed` | tinyint | flags |
+| `status`, `exit_price`, `exit_reason`, `pnl_pct`, `closed_at` | | resolution |
+| `reverse_split_affected` | tinyint | |
+- **Freshness:** max `recorded_at` = **2026-11-19 05:12** → active.
+
+#### `at_pick_outcomes` (~63k rows) — resolved outcomes for picks
+`pick_id` PK, `symbol`, `strategy`, `asset_class`, `status`
+(enum OPEN/WON/LOST/EXPIRED/FLAT), `resolution_method` (enum TP_HIT/SL_HIT/
+TIME_EXPIRED/MANUAL), `pnl_pct`, `resolved_at`, `resolver_version`,
+`forward_test_only`, `forward_validated`, `market_regime_id`, `sector`,
+`volatility_atr`, `execution_slippage_pct`.
+- **Freshness:** max `resolved_at` = **2026-11-19 03:24** → active.
+
+#### `at_signal_outcomes` (~51k rows) — resolved signal-level outcomes
+`id` int PK, `symbol`, `direction`, `entry_price`, `take_profit`, `stop_loss`,
+`exit_price`, `outcome`, `pnl_pct`, `source_system`, `strategy`,
+`asset_class`, `opened_at`, `closed_at`, `created_at`,
+`reverse_split_affected`, `intrabar_status`, `intrabar_pnl_pct`,
+`intrabar_ambiguous`, `intrabar_horizon_bars`, `intrabar_resolved_at`.
+- **Freshness:** max `closed_at` = **2026-11-19 04:49** → active.
+
+#### `now_history` (~86k rows) — "now" scan history
+`run_id`, `scan_time`, `symbol`, `direction`, `strategy`, `entry_price`,
+`sl_price`, `tp_price_1_5`, `tp_price_2_0`, `sl_pct`, `confidence`, `reason`,
+`outcome_1_5`, `outcome_2_0`, `peak_price`, `trough_price`, `resolved_at`,
+`actual_pnl_pct`.
+- **Freshness:** max `scan_time` = **2026-11-19 04:38** → active.
+
+#### `at_local_picks` (~76M rows) — largest table, local pick dumps
+- **Freshness:** large archive of local picks; populated through 2026-03.
+
+### 2.2 Performance / portfolio tables
+
+#### `portfolio_snapshots` (26 rows)
+`portfolio_id`, `portfolio_name`, `methodology`, `category`, `status`,
+`equity`, `initial_capital`, `pnl_pct`, `pnl_usd`, `win_rate`,
+`total_trades`, `open_positions`, `max_drawdown_pct`, `sharpe_ratio`,
+`profit_factor`, `total_commission`, `resets`, `snapshot_at`.
+- **Freshness:** max `snapshot_at` = **2026-03-10** → **STALE** (last snapshot
+  ~8 months old; portfolios exist but snapshots have not been updated).
+
+#### `consensus_tracked` (318 rows) — tracked consensus picks
+`ticker`, `company_name`, `entry_date`, `entry_price`, `consensus_count`,
+`consensus_score`, `direction`, `source_algos`, `target_tp_pct`,
+`target_sl_pct`, `max_hold_days`, `current_price`, `current_return_pct`,
+`peak_price`, `trough_price`, `status`, `exit_date`, `exit_price`,
+`exit_reason`, `final_return_pct`, `hold_days`, `discord_*`, `created_at`,
+`updated_at`.
+- **Freshness:** max `updated_at` = **2026-04-27** → **STALE** (no updates since
+  late April; consensus tracking appears inactive).
+
+#### `daily_prices` (~66k rows)
+`ticker`, `trade_date`, `open_price`, `high_price`, `low_price`,
+`close_price`, `adj_close`, `volume`.
+- **Freshness:** max `trade_date` = **2026-11-17** → active (equities).
+
+#### `strategy_registry` (~1962 rows)
+`strategy_id`, `strategy_name`, `system_name`, `section_name`, `module_file`,
+`asset_class`, `strategy_type`, `win_rate`, `sharpe`, `source_ref`,
+`is_banned`, `is_active`, `notes`, `created_at`, `updated_at`,
+`total_picks`, `resolved_picks`, `profit_factor`, `source_type`,
+`first_seen`, `last_seen`.
+- **Freshness:** max `updated_at` = **2026-06-01** → stale-ish (registry last
+  updated June; may be static by design).
+
+#### `algorithms` (142 rows) — algorithm reference catalog
+`name`, `family`, `description`, `algo_type`, `ideal_timeframe`, `pros`, `cons`.
+- **Freshness:** created 2026-05-17 (import). Catalog only.
+
+### 2.3 Backtest-import tables (mirrored from `backtests` DB)
+`backtest_results`, `backtest_trades`, `bt_backtest_runs`,
+`bt_backtest_trades` (~27M rows), `at_large_backtest_results`,
+`at_incubator_backtest_results`, `at_permutation_picks`,
+`at_permutation_snapshots`, `at_strategy_symbol_performance`.
+
+### 2.4 Status of the stocks DB overall
+- **Active core:** `trading_picks`, `at_raw_picks`, `at_pick_outcomes`,
+  `at_signal_outcomes`, `now_history`, `daily_prices`, `at_local_picks`.
+- **Stale / inactive:** `portfolio_snapshots` (Mar 2026),
+  `consensus_tracked` (Apr 2026), `strategy_registry` (Jun 2026, static).
+- **110 of 409 tables are empty** (0 rows) — mostly scaffold/placeholder
+  tables (see §5).
+
+---
+
+## 3. `ejaguiar1_backtests` (10 tables)
+
+Backtesting output DB. Holds both run-level metadata and the massive
+trade-level backtest ledger.
+
+| Table | Rows | Notes |
+|---|---|---|
+| `bt_backtest_trades` | ~32.7M | Trade-level backtest rows. Columns: `backtest_run_id`, `source_db`, `source_table`, `symbol`, `asset_class` (enum incl. CRYPTO/FOREX/EQUITY/PENNY_STOCK/MEMECOIN/SPORTS/FUTURES/ETF/COMMODITY/UNKNOWN), `direction`, `strategy`, `entry_price`, `exit_price`, `take_profit`, `stop_loss`, `entry_time`, `exit_time`, `pnl_pct`, `status`, `confidence`, `raw_data` (json), `imported_at` |
+| `bt_backtest_runs` | 285 | `id` char(36) PK, `source_db`, `source_table`, `strategy`, `symbol`, `asset_class`, `total_trades`, `wins`, `losses`, `win_rate`, `profit_factor`, `total_return`, `sharpe`, `max_drawdown`, `imported_at` — **freshness: max imported_at = 2026-03-06** (STALE; no backtests imported since March) |
+| `at_incubator_backtest_results` | 1285 | `perm_id`, `archetype`, `symbol`, `params_json` (json), `total_trades`, `wins`, `losses`, `win_rate`, `sharpe`, `sortino`, `max_drawdown`, `profit_factor`, `total_return`, `avg_trade_pnl`, `avg_hold_bars`, `slippage_pct`, `commission_pct`, `backtest_type` enum(fast,full), `created_at` |
+| `at_large_backtest_results` | 1105 | Same + `equity_curve_json`, `trade_log_json` |
+| `backtest_results` / `backtest_trades` | 2 / 50 | small legacy copies |
+| `eagle2_consensus_picks` | 15 | `ticker`, `tier`, `conviction`, `cycle`, `status`, `method`, `run_date`, `created_utc` — last run 2026-06-02 |
+| `eagle2_methodology` | 10 | methodology reference |
+| `stocks_backup_runs` / `stocks_backup_table_log` | 1 / 323 | backup-housekeeping logs |
+
+- **Note:** `bt_backtest_trades` is the single largest finance table (~32.7M
+  rows). `bt_backtest_runs` has not received imports since **2026-03-06** →
+  the backtest pipeline's live import appears stale, though the data volume
+  remains huge.
+
+---
+
+## 4. `ejaguiar1_memecoin` (58 tables)
+
+Memecoin / crypto scanning, signal generation, and paper-trading DB.
+
+### Key tables
+| Table | Rows | Notes |
+|---|---|---|
+| `mc_scan_log` | 2255 | memecoin scan log: `scan_id`, `pair`, `price`, `score`, `factors_json`(text), `verdict`, `chg_24h`, `vol_usd_24h`, `tier`, `created_at`, `on_kraken` — **freshness: max created_at = 2026-05-04** (STALE) |
+| `mc_winners` | 476 | resolved scan outcomes: `scan_id`, `pair`, `price_at_signal`, `price_at_resolve`, `score`, `factors_json`, `verdict`, `target_pct`, `risk_pct`, `pnl_pct`, `outcome`, `vol_usd_24h`, `chg_24h`, `tier`, `created_at`, `resolved_at` — **freshness: max resolved_at = 2026-05-04** (STALE) |
+| `mc_daily_snapshots` | 84 | daily perf: `snapshot_date` UNI, signals/wins/losses/win_rate/avg_pnl/total_pnl/best_trade/worst_trade/unique_coins/updated_at — last 2026-05-04 |
+| `psi_signals` | 12 | `sig_type`, `pair`, `direction`, `entry_price`, `tp_price`, `sl_price`, `tp_pct`, `sl_pct`, `confidence`, `confluence`, `strats_agreed`, `reasoning`, `status`, `current_price`, `pnl_pct`, `peak_pnl`, `trough_pnl`, `exit_price`, `exit_reason`, `checks`, `created_at`, `resolved_at` — last 2026-04-16 |
+| `kraken_paper_trades` | 0 | empty (paper trading scaffold) |
+| `psi_ohlcv_cache` | 17715 | OHLCV cache |
+| `psi_results` | 2400 | strategy results |
+| `psi_tournament` | 3616 | tournament results |
+| `crypto_assets` | 14 | asset reference |
+| `pump_forensics_scans` / `pump_forensics_audit` | 3471 / 380 | pump forensics |
+
+### Freshness summary (memecoin)
+- Most active tables last wrote **2026-05-04** (scans, winners, snapshots) →
+  the memecoin scanner has been **dormant since May 2026**.
+- `psi_signals` last updated 2026-04-16.
+- Many ML/model tables are empty (0 rows): `meme_ml_models`,
+  `meme_ml_predictions`, `ml_models`, `ml_model_performance`, `crypto_*`
+  indicator/signal/pattern tables.
+
+---
+
+## 5. `ejaguiar1_sportsbet` (49 tables)
+
+Sports betting bankroll, bets, odds, and value-bet DB.
+
+### Key tables
+| Table | Rows | Notes |
+|---|---|---|
+| `lm_sports_odds` | 54965 | odds snapshot history — last 2026-05-24 |
+| `lm_sports_value_bets` | 4153 | value bets: `event_id`, `sport`, `home_team`, `away_team`, `commence_time`, `market`, `bet_type`, `outcome_name`, `best_book`, `best_book_key`, `best_odds`, `consensus_implied_prob`, `true_prob`, `edge_pct`, `ev_pct`, `kelly_fraction`, `kelly_bet`, `all_odds`, `detected_at`, `status` — **freshness: max detected_at = 2026-05-16** (STALE) |
+| `lm_sports_clv` | 10101 | closing line value |
+| `lm_sports_daily_picks` | 128 | daily picks — last 2026-05-16 |
+| `lm_sports_bets` | 48 | placed bets: event/sport/teams/commence_time/game_date/bet_type/market/pick/pick_point/bookmaker/bookmaker_key/odds/implied_prob/bet_amount/potential_payout/algorithm/ev_pct/ml_* columns/status/result/pnl/settled_at/scores/placed_at/cohort — last placed 2026-05-13 |
+| `lm_sports_bankroll` | 7 | `snapshot_date` UNI, bankroll/bets/wins/losses/pushes/win_rate/total_wagered/total_pnl/roi_pct |
+| `lm_arena_bankrolls` / `lm_arena_bets` / `lm_arena_snapshots` | 25 / 344 / 75 | betting-arena side; last 2026-10-07 (bankrolls/snapshots) |
+| `lm_arena_strategies` | 25 | reference |
+| `lm_nba_stats_cache`, `lm_nfl_stats_cache`, `lm_nhl_stats_cache`, `lm_mlb_stats_cache` | 1 each | cache rows, last updated 2026-11-15 (active cache) |
+| `lm_schedule_intel_cache` | 4 | last 2026-11-15 |
+
+### Freshness summary (sportsbet)
+- Betting/odds pipeline (`lm_sports_*`) last wrote **2026-05-24** (odds) /
+  **2026-05-16** (value bets) → dormant since late May 2026.
+- Arena side (`lm_arena_*`) bankrolls/snapshots last updated **2026-10-07**,
+  and `_stats_cache` / `_intel_cache` tables are **active through 2026-11-15**
+  (cache keeps refreshing, but no new bets are placed).
+- 20 of 49 tables are empty (0 rows) — mostly odds/injury/referee scaffolds.
+
+---
+
+## 6. `ejaguiar1_backups` (414 tables) — archive DB
+
+Not a live data source — it is the **point-in-time archive** of production
+tables. Almost every table carries a dated or incident suffix:
+
+- `trading_picks_20260605T123115Z`, `trading_picks_20260609T181909Z`,
+  `trading_picks_20260610T055138Z`, `trading_picks_20260611T222306Z` → dated
+  pick backups.
+- `at_raw_picks_backup_2026-05-31T04:05:57Z`, etc. → raw-pick archive.
+- `INCIDENT_*` tables → incident-related snapshots (e.g. `INCIDENT_OVERALL_*`,
+  `INCIDENT_CRYPTO_bk_20260610T182348Z`).
+- `stocks__*` tables (hundreds) → the full stocks schema mirrored from the
+  2026-05-17 migration snapshot.
+- Housekeeping: `db_audit_log`, `audit_operations`, `stocks_backup_table_log`.
+
+**Design intent:** backup/audit ledger. Tables here are expected to be
+"stale" by design — they are frozen copies, not live state. The live tables
+live in `stocks` / `backtests` / `memecoin` / `sportsbet`.
+
+---
+
+## 7. Stale vs Active classification
+
+"Stale" here means the table's latest data write predates the live pipeline's
+expected cadence, or the table is empty/scaffold. Today = **2026-11-19**.
+
+### 7.1 Active (live, written recently)
+| DB | Table | Latest write |
+|---|---|---|
+| stocks | `trading_picks` | 2026-11-19 04:48 |
+| stocks | `at_raw_picks` | 2026-11-19 05:12 |
+| stocks | `at_pick_outcomes` | 2026-11-19 03:24 |
+| stocks | `at_signal_outcomes` | 2026-11-19 04:49 |
+| stocks | `now_history` | 2026-11-19 04:38 |
+| stocks | `daily_prices` | 2026-11-17 |
+| stocks | `at_local_picks` | large archive, live |
+| sportsbet | `lm_*_stats_cache` / `lm_*_intel_cache` | 2026-11-15 |
+
+### 7.2 Stale / dormant (pipeline stopped writing)
+| DB | Table | Last write | Note |
+|---|---|---|
+| stocks | `portfolio_snapshots` | 2026-03-10 | portfolios exist, snapshots frozen |
+| stocks | `consensus_tracked` | 2026-04-27 | consensus tracking inactive |
+| stocks | `strategy_registry` | 2026-06-01 | likely static reference |
+| backtests | `bt_backtest_runs` | 2026-03-06 | no backtest imports since March |
+| memecoin | `mc_scan_log` | 2026-05-04 | memecoin scanner dormant |
+| memecoin | `mc_winners` | 2026-05-04 | dormant |
+| memecoin | `mc_daily_snapshots` | 2026-05-04 | dormant |
+| memecoin | `psi_signals` | 2026-04-16 | dormant |
+| sportsbet | `lm_sports_odds` | 2026-05-24 | odds pipeline dormant |
+| sportsbet | `lm_sports_value_bets` | 2026-05-16 | value-bet pipeline dormant |
+| sportsbet | `lm_sports_bets` | 2026-05-13 | no new bets placed |
+| sportsbet | `lm_sports_daily_picks` | 2026-05-16 | dormant |
+| sportsbet | `lm_arena_*` | 2026-10-07 | arena bankrolls/snapshots (cache still active) |
+
+### 7.3 Empty / scaffold tables (0 rows)
+- **stocks:** 110 of 409 tables empty (e.g. `paper_trades`,
+  `paper_portfolio_daily`, `stock_signals`, `stock_ohlcv`, `stock_assets`,
+  `walk_forward_results`, `ml_model_registry`, `ml_models`, `saved_portfolios`,
+  `tracked_portfolios`, `sp_picks`, `sp_batches`, `crypto_*` indicator tables,
+  `goldmine_cursor_*` benchmark/regime/correlation tables, `lm_bridge_*`
+  several, `cr_backtest_*`, `fx_backtest_*`, etc.).
+- **sportsbet:** 20 of 49 tables empty (odds/injury/referee/travel/cache
+  scaffolds).
+- **memecoin:** 9 of 58 tables empty (`kraken_paper_trades`,
+  `meme_ml_models`, `meme_ml_predictions`, `ml_models`,
+  `ml_model_performance`, `crypto_indicators`, `crypto_patterns`,
+  `crypto_signals`, `crypto_market_data`).
+- **deals:** entire database empty (0 tables).
+
+---
+
+## 8. Sample records (illustrative)
+
+### `stocks.trading_picks`
+```
+id=ZW=F_commodity_term_cot_2026-08-13T12:34
+symbol=ZW=F  direction=LONG  strategy=commodity_term_cot
+entry=656.25  tp=669.375  sl=649.6875  confidence=0.5  elite_score=43
+```
+```
+id=ZROUSDT_15m_20260222_1338
+symbol=ZROUSDT  direction=BUY  strategy=''
+entry=1.709  tp=1.73214  sl=1.69743  elite=25  trust=2
+```
+
+### `stocks.at_raw_picks`
+```
+source_system=AlphaEngine  symbol=EURGBP=X  asset_class=FOREX  direction=LONG
+entry=0.84536  tp=0.85766  sl=0.84282  risk_reward=4.85
+source_system=incubator_gainer  symbol=LDOUSDT  asset_class=CRYPTO  direction=LONG
+entry=0.3131  tp=0.3253  sl=0.3086  risk_reward=2.69
+```
+
+### `stocks.at_pick_outcomes`
+```
+pick_id=ZROUSDT_15m_20260222_1338  asset_class=CRYPTO
+status=LOST  resolution_method=SL_HIT  pnl_pct=-6.73  resolved=2026-02-22 22:12
+pick_id=ZKUSDT_15m_20260222_1348
+status=WON  resolution_method=TP_HIT  pnl_pct=0.16  resolved=2026-02-22 22:12
+```
+
+### `stocks.portfolio_snapshots`
+```
+portfolio_id=multi_asset_diversified  methodology=sector  category=signal  status=ACTIVE
+equity=9997.01  initial=10000  pnl_pct=-0.0299  pnl_usd=-2.99
+portfolio_id=forex_carry  methodology=score  equity=9996.53  pnl_pct=-0.0347
+```
+
+### `stocks.consensus_tracked`
+```
+ticker=IBM  company=IBM Corp  entry=2026-04-27  price=241.81
+consensus_count=3  score=402  direction=LONG  source=Momentum Continuation, CDR Zero-Fee Prio
+ticker=WMT  company=Walmart Inc.  entry=2026-04-27  price=127.59
+consensus_count=3  score=688  direction=LONG
+```
+
+### `backtests.bt_backtest_runs`
+```
+source_db=alpha_engine/data/closed_picks.json  strategy=exchange_netflow_reversal
+symbol=BNBUSDT  asset_class=CRYPTO  trades=1  wins=0  losses=1  win_rate=0
+strategy=volume_profile_value_area  symbol=FILUSDT  trades=1  wins=1  losses=0  win_rate=1.0
+```
+
+### `memecoin.mc_winners`
+```
+scan_id=20260504144224  pair=TST_USDT  price=0.03189  score=70
+verdict=LEAN_BUY  target_pct=6.0  risk_pct=3.0
+```
+
+### `sportsbet.lm_sports_value_bets`
+```
+event_id=actionnet_290583  sport=basketball_nba
+home=Detroit Pistons  away=Cleveland Cavaliers
+market=h2h  bet_type=Cleveland Cavaliers ML  best_book=Bovada
+event_id=actionnet_290575  sport=icehockey_nhl
+home=Montreal Canadiens  away=Buffalo Sabres
+market=totals  bet_type=Under 6.50  best_book=DraftKings
+```
+
+---
+
+## 9. Notable observations / risks
+
+1. **Backtest data volume is enormous** — `bt_backtest_trades`
+   (~32.7M rows in `backtests`; ~27M mirrored in `stocks`) dominates storage.
+   Queries against it time out without tight indexes (confirmed during this
+   scan).
+2. **Two large copies of backtest trades** exist (`backtests` + `stocks`),
+   which doubles footprint. Consider whether the `stocks` mirror is still
+   needed.
+3. **`deals` database is completely empty** — candidate for decommission or
+   re-purpose.
+4. **Memecoin and sports-betting pipelines are dormant** (since ~May 2026);
+   their `_stats_cache` tables still refresh, so the surrounding code is
+   partially alive, but the signal/bet production stopped.
+5. **110 empty tables in `stocks`** inflate the schema and add surface area;
+   several are clearly legacy scaffolds (paper trading, ML registry, crypto
+   OHLCV/patterns, benchmark/regime matrices).
+6. **Cross-DB consistency risk** — the per-database user model prevents
+   cross-DB joins; any reconciliation must use the two-connection copy pattern
+   (see `tools/db_backup_to_backups.py`).
+
+---
+
+## 10. Source
+
+- Live schema pulled 2026-11-19 from `mysql.50webs.com` via
+  `information_schema.COLUMNS` / `.TABLES` / `.STATISTICS`, plus `SELECT`
+  sample rows. Credentials resolved via the repo's `tools/db_env.py` +
+  `~/dbpasses.txt` per-DB user mapping. No credentials are exposed in this
+  document.
+- Raw scan dump: `/tmp/db_schema_dump.json`, `/tmp/stocks_tables.json`
+  (local, not committed).
