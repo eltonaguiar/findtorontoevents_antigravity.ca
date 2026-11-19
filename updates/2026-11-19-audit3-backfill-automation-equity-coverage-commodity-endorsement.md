@@ -178,3 +178,48 @@ No class is money-ready today.**
   emits many spelling variants (`ADA`, `ADA-USD`, `ADAT`, `ADATUSD`, `ADAUSDT`), so
   "requested" counts variants, not instruments. The real fix is to count *instruments*.
 * Backfill depends on yfinance availability; a total outage leaves tables stale but warns.
+
+---
+
+## 5. Follow-up: the scheduled step was a no-op on its first CI run (fixed)
+
+The first dispatched run (`44583198861`) reported the new step as **success** while
+writing zero rows. The log:
+
+```
+ModuleNotFoundError: No module named 'pymysql'
+##[warning]equity/etf/futures backfill failed (see log)
+ERROR: cannot import DB deps (No module named 'pymysql'). Install pymysql ...
+```
+
+Cause: both `tools/backfill_daily_ohlcv.py` and `tools/fx_backfill.py` resolve
+credentials through `tools/db_env`, which imports `pymysql`; the step's `pip install`
+listed only `yfinance pandas`, and the alpha step's `pymysql` install runs *later*.
+`continue-on-error: true` plus `|| echo "::warning"` kept the run green — the same
+defect class as the alpha step fixed earlier in this series (missing driver swallowed
+by `|| true`), which is why it was worth checking the log rather than the green tick.
+
+**Fix** (`.github/workflows/audit3-ledger.yml`, PR #947 → main `03d5c8d2cac`):
+
+* install `pymysql` with the vendor libs;
+* hard-check `python3 -c "import pymysql, yfinance"` before doing any work;
+* escalate step failures from `::warning` to `::error` so a silent no-op is visible;
+* print `last_bar` and `age_days` for `equity_daily_ohlcv`, `etf_daily_ohlcv`,
+  `futures_daily_ohlcv`, `fx_prices`, warning when a table exceeds the 5-day tolerance.
+  That is the alarm that fires *before* a class becomes unmeasured again.
+
+**Verified** on run `44583654634` — the first run in which the scheduled backfill
+actually wrote data:
+
+```
+equity_daily_ohlcv     symbols=251 fetched=987 written=987 no_data=4
+etf_daily_ohlcv        symbols= 59 fetched=236 written=236 no_data=0
+futures_daily_ohlcv    symbols= 21 fetched= 68 written= 68 no_data=4
+equity_daily_ohlcv     last_bar=2026-11-19 age_days=0
+etf_daily_ohlcv        last_bar=2026-11-19 age_days=0
+futures_daily_ohlcv    last_bar=2026-11-19 age_days=0
+fx_prices              last_bar=2026-11-18 age_days=1
+```
+
+Lesson worth keeping: `continue-on-error` needs a matching loud signal. Otherwise
+"green" means "nothing happened", and the gate silently reverts to `unmeasured`.
