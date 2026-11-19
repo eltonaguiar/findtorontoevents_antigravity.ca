@@ -37,6 +37,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from alpha_engine.audit3_tribunal import bootstrap_mean_ci  # noqa: E402
+try:  # shared canonicaliser: BUY/L/S must not become "?"
+    from alpha_engine.symbol_identity import direction_key as _dir_key
+except ImportError:  # pragma: no cover
+    def _dir_key(direction):
+        d = str(direction or "").strip().upper()
+        if d.startswith(("B", "L")):
+            return "LONG"
+        if d.startswith("S"):
+            return "SHORT"
+        return d or "UNKNOWN"
 from alpha_engine.audit3_edge_hunt import net_pnl, issued_at, closed_at, _class, _dir  # noqa: E402
 
 TABLE_FOR = {
@@ -45,6 +55,11 @@ TABLE_FOR = {
     "ETF": ("etf_daily_ohlcv", "date"),
     "FOREX": ("fx_prices", "date"),
     "COMMODITY": ("futures_daily_ohlcv", "date"),
+    # FUTURES is its own class in the payload (futures_tsmom_winner on ES/NQ/GC/HG=F)
+    # and had no entry, so those picks were structurally unmeasurable for the same
+    # reason BOND was: no table mapping, not a data gap. The futures table is the
+    # right source, and its symbols are already the `ROOT=F` form the picks use.
+    "FUTURES": ("futures_daily_ohlcv", "date"),
     # BOND had no entry at all, so its gate could NEVER be measured however fresh
     # the tables were (2026-11-19 backfill exposed it). Bond ETFs price in the ETF
     # table — ETF_SYMBOLS|BOND_SYMBOLS is what the backfill widened it to.
@@ -52,7 +67,7 @@ TABLE_FOR = {
 }
 TOLERANCE_MS = {"CRYPTO": 3 * 3600_000, "EQUITY": 5 * 86400_000, "ETF": 5 * 86400_000,
                 "FOREX": 5 * 86400_000, "COMMODITY": 5 * 86400_000,
-                "BOND": 5 * 86400_000}
+                "BOND": 5 * 86400_000, "FUTURES": 5 * 86400_000}
 
 # N5 (2026-11-19): selection alpha is hold-time dependent. A 1-hour pick and a
 # 30-day pick are not the same claim, so the headline is reported per day and
@@ -111,6 +126,34 @@ def _ms_to_date(ts_ms: int) -> str:
     return datetime.fromtimestamp(ts_ms / 1000.0, tz=timezone.utc).strftime("%Y-%m-%d")
 
 
+def instrument_key(klass: str, sym: str) -> str:
+    """One identity per instrument, so spelling variants stop inflating coverage.
+
+    The candidate generator deliberately emits several spellings per instrument
+    (``BTC-USD`` / ``BTCUSDT`` / ``BTC``; ``AUDJPY=X`` / ``AUD/JPY`` / ``AUDJPY``)
+    because vendors disagree. ``bar_coverage`` counted every spelling as its own
+    requested symbol, so on 2026-11-19 the page read CRYPTO 36/173 and FOREX 12/44
+    even though most "missing" entries were variants of symbols already priced —
+    a ratio nobody can act on. Counting instruments is the number a reader can use,
+    and ``variants_considered`` keeps the old figure visible for comparison.
+    """
+    s = str(sym or "").strip().upper().replace("/", "")
+    if klass == "CRYPTO":
+        s = s.replace("-", "")
+        for suffix in ("USDT", "USDC", "BUSD", "USD", "PERP"):
+            if s.endswith(suffix) and len(s) > len(suffix):
+                return s[: -len(suffix)]
+        return s
+    return s.replace("=X", "").replace(".", "").replace("-", "")
+
+
+def _instrument_groups(wanted: list[str], klass: str) -> dict[str, list[str]]:
+    groups: dict[str, list[str]] = defaultdict(list)
+    for sym in wanted:
+        groups[instrument_key(klass, sym)].append(sym)
+    return groups
+
+
 def bar_coverage(bars: dict[str, list[tuple[int, float]]],
                  want: dict[str, set[str]] | None) -> dict:
     """Per-class freshness of the price tables, so ``unmeasured`` states a reason.
@@ -124,12 +167,23 @@ def bar_coverage(bars: dict[str, list[tuple[int, float]]],
     out: dict[str, dict] = {}
     for klass, syms in (want or {}).items():
         wanted = sorted(str(x) for x in syms)
-        found = [x for x in wanted if bars.get(f"{klass}:{x}")]
-        lasts = [max(b[0] for b in bars[f"{klass}:{x}"]) for x in found]
+        groups = _instrument_groups(wanted, klass)
+        # One instrument counts as priced if ANY of its spellings has bars — that
+        # is what the loader in alpha_for() will find, so it is what coverage must say.
+        priced = {k: v for k, v in groups.items()
+                  if any(bars.get(f"{klass}:{x}") for x in v)}
+        lasts = [max(b[0] for b in bars[f"{klass}:{x}"])
+                 for variants in priced.values() for x in variants if bars.get(f"{klass}:{x}")]
+        # Report the shortest spelling of a missing instrument ("ADA", not
+        # "ADAUSD"), because that is the name a human recognises in the picks.
+        def _label(variants: list[str]) -> str:
+            return min(variants, key=lambda v: (len(v), v))
         out[klass] = {
-            "symbols_requested": len(wanted),
-            "symbols_found": len(found),
-            "missing_symbols": [x for x in wanted if x not in found][:10],
+            "symbols_requested": len(groups),
+            "symbols_found": len(priced),
+            "variants_considered": len(wanted),
+            "missing_symbols": [_label(v) for key, v in sorted(groups.items())
+                                if key not in priced][:10],
             "last_bar": _ms_to_date(max(lasts)) if lasts else None,
         }
     return out
@@ -229,6 +283,13 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
         if t0 is None or t1 is None or pnl is None:
             missing["no_timestamp"] += 1
             continue
+        if t0 >= t1:
+            # issued_at falls back to closed_at when no entry stamp exists; that
+            # makes p0 == p1, move == 0 and alpha == pnl, i.e. a fabricated zero
+            # benchmark that a beta-only strategy could pass G9 on.
+            missing["degenerate_window"] += 1
+            continue
+        direction = _dir_key(r.get("direction"))
         series = None
         for cand in symbol_candidates(r.get("symbol"), klass):
             key = f"{klass}:{cand}"
@@ -245,16 +306,16 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
             missing[f"no_bar:{klass}"] += 1
             continue
         move = (p1 / p0 - 1.0) * 100.0
-        bench = move if _dir(r) == "LONG" else -move
+        bench = move if direction == "LONG" else -move
         hold_days = max((t1 - t0).total_seconds() / 86400.0, 0.0)
-        per.append({"row": r, "class": klass, "dir": _dir(r), "pnl": pnl,
+        per.append({"row": r, "class": klass, "dir": direction, "pnl": pnl,
                     "hold": bench, "alpha": pnl - bench, "hold_days": hold_days})
         if collect:
             # Per-pick rows exist so a *slice* can be tested, not just a class.
             # A class average hides the exit-geometry question (did TP cut
             # winners short?) and the score question (does the score sort?).
             records.append({
-                "class": klass, "dir": _dir(r),
+                "class": klass, "dir": direction,
                 "symbol": str(r.get("symbol") or ""),
                 "strategy": str(r.get("strategy") or ""),
                 "source": str(r.get("source_system") or ""),
@@ -309,8 +370,21 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
             items = [x for x in per if x["class"] == c and x["dir"] == d]
             if len(items) >= 20:
                 by_slice[f"{c}/{d}"] = agg(items)
+    # Strategy-level alpha, keyed exactly as the tribunal labels its cells
+    # (CLASS/STRATEGY/DIRECTION). G9 needs this: a class aggregate can look like
+    # skill while one strategy inside it is pure beta.
+    def _strat(r: dict) -> str:
+        return str(r.get("strategy") or r.get("source_system") or "(unattributed)")
+
+    strat_items: dict[tuple[str, str, str], list[dict]] = {}
+    for x in per:
+        strat_items.setdefault((x["class"], _strat(x["row"]), x["dir"]), []).append(x)
+    by_strategy = {f"{c}/{st}/{d}": agg(items)
+                   for (c, st, d), items in sorted(strat_items.items())
+                   if len(items) >= 20}
     out = {"covered": len(per), "missing": dict(missing), "overall": agg(per),
-           "by_class": by_cls, "by_slice": by_slice, "n_universe": len(rows)}
+           "by_class": by_cls, "by_slice": by_slice, "by_strategy": by_strategy,
+           "n_universe": len(rows)}
     if collect:
         out["records"] = records
     return out

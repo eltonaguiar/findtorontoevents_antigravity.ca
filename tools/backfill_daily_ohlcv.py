@@ -46,6 +46,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+# Index-futures roots the FUTURES asset class emits on but the commodity universe
+# does not cover (see _extra_symbols).
+FUTURES_CLASS_ROOTS = ("ES", "NQ")
+
 TABLE_ALIASES = {
     "equity": "equity_daily_ohlcv",
     "etf": "etf_daily_ohlcv",
@@ -85,15 +89,34 @@ def _extra_symbols(table: str) -> list[str]:
     if table == "equity_daily_ohlcv":
         return sorted(EQUITY_SYMBOLS)
     if table == "futures_daily_ohlcv":
-        return sorted(f"{c}=F" if "=" not in c else c for c in COMMODITY_SYMBOLS)
+        roots = {f"{c}=F" if "=" not in c else c for c in COMMODITY_SYMBOLS}
+        # The FUTURES asset class (asset_class=FUTURES, futures_tsmom_winner) trades
+        # index futures, which COMMODITY_SYMBOLS does not carry. Without these the
+        # class gate priced only its gold/copper picks and silently dropped the
+        # ES/NQ ones — a measurement bias, not just a gap.
+        roots |= {f"{r}=F" for r in FUTURES_CLASS_ROOTS}
+        return sorted(roots)
     return []
 
 
-def universe(table: str, cur, extra: bool = True) -> list[str]:
+def universe(table: str, cur, extra: bool = True,
+             force: list[str] | None = None) -> list[str]:
+    """Stored symbols | class universe | ``--symbols`` overrides.
+
+    ``--symbols`` exists because a symbol the table has never seen cannot be
+    advanced by a date-bounded backfill: the coverage report on /audit3 named
+    real liquid tickers (BBAI, CHPT, CLSK, NIO, SNAP, SPCE, JETS …) that were
+    simply absent from equity_daily_ohlcv, so EQUITY stayed at 23/37 priced even
+    with every stored series current.
+    """
     cur.execute(f"SELECT DISTINCT symbol FROM `{table}` WHERE symbol IS NOT NULL AND symbol <> ''")
     stored = {str(r[0]).upper().strip() for r in cur.fetchall()}
     if extra:
         stored |= {str(s).upper().strip() for s in _extra_symbols(table)}
+    for s in (force or []):
+        s = str(s).strip().upper()
+        if s:
+            stored.add(s)
     return sorted(s for s in stored if s)
 
 
@@ -117,13 +140,13 @@ def _frame_for(df, ticker: str):
 
 
 def backfill(table: str, since: date, batch_size: int, pause: float,
-             apply: bool, limit: int) -> dict:
+             apply: bool, limit: int, force: list[str] | None = None) -> dict:
     import pandas as pd
     import yfinance as yf
 
     conn = _db()
     cur = conn.cursor()
-    syms = universe(table, cur)
+    syms = universe(table, cur, force=force)
     if limit:
         syms = syms[:limit]
     print(f"\n[{table}] universe={len(syms)} since={since} apply={apply}")
@@ -193,16 +216,19 @@ def main(argv=None) -> int:
     ap.add_argument("--batch-size", type=int, default=20)
     ap.add_argument("--pause", type=float, default=1.0, help="seconds between yfinance batches")
     ap.add_argument("--limit", type=int, default=0, help="cap symbols per table (debug)")
+    ap.add_argument("--symbols", default="",
+                    help="extra comma-separated symbols to force into the universe")
     args = ap.parse_args(argv)
 
     since = date.fromisoformat(args.since)
+    force = [x.strip() for x in args.symbols.split(",") if x.strip()]
     tables = [TABLE_ALIASES.get(t.strip().lower(), t.strip()) for t in args.tables.split(",") if t.strip()]
 
     if not args.apply:
         conn = _db()
         cur = conn.cursor()
         for table in tables:
-            syms = universe(table, cur)
+            syms = universe(table, cur, force=force)
             if args.limit:
                 syms = syms[:args.limit]
             cur.execute(f"SELECT MAX(trade_date), COUNT(DISTINCT symbol) FROM `{table}`")
@@ -213,7 +239,8 @@ def main(argv=None) -> int:
         print("\ndry run: no network fetch, no database write (pass --apply)")
         return 0
 
-    results = [backfill(t, since, args.batch_size, args.pause, True, args.limit) for t in tables]
+    results = [backfill(t, since, args.batch_size, args.pause, True, args.limit,
+                        force=force) for t in tables]
     print("\n" + "=" * 68)
     for r in results:
         print(f"  {r['table']:22s} symbols={r['symbols']:4d} fetched={r['rows_fetched']:6d} "

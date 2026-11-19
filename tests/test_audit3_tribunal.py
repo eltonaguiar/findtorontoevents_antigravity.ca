@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from alpha_engine.audit3_tribunal import (  # noqa: E402
     apply_harm_gate,
+    apply_selection_alpha_gate,
     apply_persistence_gate,
     benjamini_hochberg,
     binom_sf,
@@ -18,6 +19,7 @@ from alpha_engine.audit3_tribunal import (  # noqa: E402
     compute_verdict_churn,
     deflated_sharpe,
     evaluate_cell,
+    global_trial_count,
     load_history,
     load_prev_verdicts,
     load_rows,
@@ -516,3 +518,145 @@ def test_high_cost_class_needs_larger_edge():
                             "direction": "LONG", "namespace": "discovery"})
     assert equity["materiality_floor_pct"] == 0.05
     assert equity["verdict"] == "PROVEN_T2"
+
+
+# ─────────────────────────────────────────────── G8 selection-alpha scope ──
+def _proven_cell(**kw):
+    cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
+            "verdict": "PROVEN_T2", "reasons": []}
+    cell.update(kw)
+    return cell
+
+
+def test_selection_alpha_gate_rejects_a_class_proxy_for_a_strategy_cell():
+    """A positive class alpha does not prove the strategy beat buy-and-hold."""
+    cell = _proven_cell()
+    alpha = {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [0.5, 1.0]}},
+             "by_strategy": {}}
+    summary = apply_selection_alpha_gate([cell], alpha)
+    assert summary["applied"] is True and summary["demoted"] == 1
+    assert cell["verdict"] == "CANDIDATE"
+    assert cell["alpha_gate"]["alpha_ci_lo"] == 0.5
+    assert cell["alpha_gate"]["scope"] == "class_proxy"
+    assert cell["alpha_gate"]["passed"] is False
+    assert cell["alpha_gate"]["status"] == "proxy"
+    assert "beta_dominant" not in cell  # positive class alpha is not proof of beta
+
+
+def test_selection_alpha_gate_accepts_strategy_level_proof():
+    cell = _proven_cell()
+    alpha = {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-1.0, 1.0]}},
+             "by_strategy": {"CRYPTO/s1/LONG": {"n": 120, "alpha_ci": [0.2, 0.9]}}}
+    summary = apply_selection_alpha_gate([cell], alpha)
+    assert summary["demoted"] == 0
+    assert cell["verdict"] == "PROVEN_T2"
+    assert cell["alpha_gate"]["alpha_ci_lo"] == 0.2
+    assert cell["alpha_gate"]["scope"] == "strategy"
+    assert cell["alpha_gate"]["alpha_n"] == 120
+    assert cell["alpha_gate"]["passed"] is True
+    assert "beta_dominant" not in cell
+
+
+def test_selection_alpha_gate_flags_measured_negative_alpha_as_beta_dominant():
+    cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
+            "verdict": "CANDIDATE", "reasons": []}
+    apply_selection_alpha_gate(
+        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.9, -0.2]}}})
+    assert cell["verdict"] == "CANDIDATE"
+    assert cell["beta_dominant"] is True
+    assert cell["alpha_gate"]["status"] == "beta_dominant"
+
+
+def test_a_null_alpha_interval_is_unproven_not_beta_dominant():
+    """CI straddling zero is absence of proof, not proof of beta."""
+    cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
+            "verdict": "PROVEN_T2", "reasons": []}
+    summary = apply_selection_alpha_gate(
+        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.2, 0.1]}}})
+    assert summary["demoted"] == 1
+    assert cell["verdict"] == "CANDIDATE"
+    assert cell["alpha_gate"]["status"] == "unproven"
+    assert "beta_dominant" not in cell
+
+
+def test_selection_alpha_gate_reports_when_it_did_not_run():
+    assert apply_selection_alpha_gate([], None)["applied"] is False
+    assert apply_selection_alpha_gate([], {})["applied"] is False
+
+
+def test_build_report_records_that_the_alpha_gate_ran():
+    rows = _rows(160, 1.2)
+    for i, r in enumerate(rows):  # keep the symbol share under 60%
+        r["symbol"] = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"][i % 4]
+    report = build_report(rows, "synthetic", None,
+                          alpha={"by_class": {"CRYPTO": {"n": 160,
+                                                         "alpha_ci": [0.4, 1.1]}}})
+    gate = report["selection_alpha"]["gate"]
+    assert gate["applied"] is True
+    assert gate["scopes"].get("class_proxy", 0) >= 1
+
+
+# ───────────────────────────────────────────── DSR multiplicity floor ──
+def test_dsr_trial_count_never_below_the_registry_space():
+    assert global_trial_count(3) == 658
+    assert global_trial_count(0) == 658
+    assert global_trial_count(2000) == 2000
+
+
+# ───────────────────────────────────────────── source families ──
+def test_source_families_pass_the_multiplicity_gates():
+    """They are verdict-bearing rows, so they cannot skip BH/DSR."""
+    rows = _rows(160, 1.2)
+    for i, r in enumerate(rows):
+        r["symbol"] = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"][i % 4]
+    report = build_report(rows, "synthetic", None)
+    fam = next(f for f in report["source_families"] if f["n"] == 160)
+    assert fam["q_value"] is not None
+    assert fam["verdict"] != "PROVEN_T2"  # discovery cannot be sizing-eligible
+
+
+def test_proven_tier_pays_the_global_dsr_correction():
+    from alpha_engine.audit3_tribunal import _promote
+    cell = {"verdict": "PROVEN_T2", "n": 120, "q_value": 0.01, "dsr": 0.40,
+            "dsr_local": 0.99, "reasons": [], "namespace": "confirmatory"}
+    _promote(cell)
+    assert cell["verdict"] == "CANDIDATE"
+
+
+def test_candidate_tier_uses_local_breadth_not_the_global_registry():
+    from alpha_engine.audit3_tribunal import _promote
+    # Single-cell bucket: no within-family multiplicity, so the CANDIDATE floor
+    # must not be applied against the 658-trial registry.
+    cell = {"verdict": "CANDIDATE", "n": 120, "q_value": 0.01, "dsr": 0.10,
+            "dsr_local": None, "reasons": []}
+    _promote(cell)
+    assert cell["verdict"] == "CANDIDATE"
+    # A real local breadth with a poor local DSR still demotes.
+    cell2 = {"verdict": "CANDIDATE", "n": 120, "q_value": 0.01, "dsr": 0.90,
+             "dsr_local": 0.30, "reasons": []}
+    _promote(cell2)
+    assert cell2["verdict"] == "WEAK"
+
+
+def test_require_alpha_demotes_proven_when_the_sidecar_is_missing():
+    from alpha_engine.audit3_tribunal import demote_proven_without_alpha
+    cell = _proven_cell()
+    # Library callers keep fail-open...
+    assert apply_selection_alpha_gate([cell], None)["applied"] is False
+    assert cell["verdict"] == "PROVEN_T2"
+    # ...but the published path must not call an unmeasured alpha "proven".
+    assert demote_proven_without_alpha(([cell],)) == 1
+    assert cell["verdict"] == "CANDIDATE"
+    assert any("alpha sidecar unavailable" in r for r in cell["reasons"])
+
+
+def test_alpha_must_cover_enough_of_the_cell_to_prove_it():
+    cell = _proven_cell(n=500)
+    alpha = {"by_class": {"CRYPTO": {"n": 500, "alpha_ci": [0.4, 1.0]}},
+             "by_strategy": {"CRYPTO/s1/LONG": {"n": 20, "alpha_ci": [0.3, 0.9]}}}
+    summary = apply_selection_alpha_gate([cell], alpha)
+    assert summary["demoted"] == 1
+    assert cell["alpha_gate"]["scope"] == "strategy"
+    assert cell["alpha_gate"]["alpha_coverage_ok"] is False
+    assert cell["verdict"] == "CANDIDATE"
+    assert "covers 20/500" in " ".join(cell["reasons"])

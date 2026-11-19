@@ -88,15 +88,78 @@ jobs:
           PY
           fi
 
-      # Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
+            # Bounded daily-bar backfill, immediately before the gate that consumes it.
+      # Measuring selection alpha needs a bar at or after each pick's exit, so
+      # freshness is a prerequisite of the gate. Without it the tables drift stale
+      # within days and whole asset classes silently revert to "unmeasured" — which
+      # is what happened when equity_daily_ohlcv stopped 2026-06-18 while equity
+      # picks kept closing (coverage sat at 2228/3500 picks until a manual backfill
+      # took it to 3173/3500). Bounded --since (4 days, inside the 5-day
+      # TOLERANCE_MS) plus upsert-only writes means it can never rewrite stored
+      # history; continue-on-error means a vendor outage warns instead of failing
+      # the run and losing the ledger.
+      - name: Backfill price tables (bounded, best-effort)
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret — skipping price backfill"
+            exit 0
+          fi
+          SINCE="$(date -u -d '4 days ago' +%F)"
+          echo "backfilling daily bars since $SINCE"
+          # pymysql is REQUIRED, not optional: both tools resolve credentials through
+          # tools/db_env and die with ModuleNotFoundError without it. The first
+          # version of this step installed only yfinance+pandas, so on run
+          # 44583198861 it printed "backfilling daily bars since ...", wrote ZERO
+          # rows, and still exited 0 — the alpha step's pymysql install happens
+          # later, so it could not help. Failures are ::error annotated (not
+          # ::warning) so a silent no-op is visible instead of blending in.
+          python3 -m pip install --quiet --disable-pip-version-check yfinance pandas pymysql \
+            || { echo "::error title=audit3 backfill::vendor install failed, gates may go stale"; exit 0; }
+          python3 -c "import pymysql, yfinance" \
+            || { echo "::error title=audit3 backfill::DB/vendor deps missing, gates may go stale"; exit 0; }
+          python3 tools/backfill_daily_ohlcv.py --tables equity,etf,futures \
+            --since "$SINCE" --apply --batch-size 25 --pause 0.5 \
+            || echo "::error title=audit3 backfill::equity/etf/futures backfill failed (see log)"
+          python3 tools/fx_backfill.py --since "$SINCE" --apply \
+            || echo "::error title=audit3 backfill::fx backfill failed (see log)"
+          # Staleness alarm: freshness is the whole point of this step, so print the
+          # last bar each gate will read. A table older than the 5-day TOLERANCE_MS
+          # means a class is about to go unmeasured again.
+          python3 - <<'CHECK'
+          import sys
+          sys.path.insert(0, ".")
+          from datetime import date
+          try:
+              from tools.db_env import get_stocks_creds
+              import pymysql
+              keep = ("host", "user", "password", "database", "port", "connect_timeout")
+              c = pymysql.connect(read_timeout=60, **{k: v for k, v in get_stocks_creds().items() if k in keep})
+              cur = c.cursor()
+              for t in ("equity_daily_ohlcv", "etf_daily_ohlcv", "futures_daily_ohlcv", "fx_prices"):
+                  cur.execute(f"SELECT MAX(trade_date) FROM `{t}`")
+                  last = cur.fetchone()[0]
+                  age = (date.today() - last).days if last else 9999
+                  flag = "::warning title=audit3 backfill::" + t + " STALE" if age > 5 else ""
+                  print(f"  {t:22s} last_bar={last} age_days={age} {flag}")
+              c.close()
+          except Exception as exc:
+              print(f"::warning title=audit3 backfill::freshness check failed {type(exc).__name__}: {exc}")
+          CHECK
+
+# Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
       # when DB credentials exist. A missing secret must never block the ledger.
       - name: Selection alpha (optional — needs the price tables)
         continue-on-error: true
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
         run: |
-          if [ -z "$DB_PASS_STOCKS" ]; then
-            echo "no DB_PASS_STOCKS secret — skipping selection alpha; the page states it is unavailable"
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret — skipping selection alpha; the page states it is unavailable"
             exit 0
           fi
           # 2026-11-19: the driver was never installed, so this step died with
@@ -109,7 +172,12 @@ jobs:
             --out /tmp/audit3/selection_alpha.json
           rc=$?
           if [ "$rc" -ne 0 ] || [ ! -s /tmp/audit3/selection_alpha.json ]; then
-            echo "::warning title=audit3::selection alpha unavailable (rc=$rc) — G9 will report unmeasured"
+            # require_alpha (main 6abfa22364e) makes the published path fail closed:
+            # an unavailable sidecar demotes EVERY PROVEN_T2 to CANDIDATE. That is the
+            # right policy, but it must not look like "nothing proven today", so the
+            # failure is an ::error annotation (still continue-on-error: the ledger
+            # publishes either way).
+            echo "::error title=audit3::selection alpha unavailable (rc=$rc) — every PROVEN_T2 will be demoted by require_alpha; see bar coverage on /audit3"
             exit 0
           fi
           echo "selection alpha written: $(wc -c < /tmp/audit3/selection_alpha.json) bytes"

@@ -22,7 +22,12 @@ from pathlib import Path
 from typing import Any, Mapping
 
 REPO = Path(__file__).resolve().parent.parent
-DEFAULT_PATH = REPO / "reports" / "audit3_denylist_hits.jsonl"
+# Written under alpha_engine/data/ on purpose: the scanner workflows
+# (alpha-engine-live.yml) already `git add alpha_engine/data/`, so the log is
+# committed without any new workflow step. Under reports/ it was written on the
+# CI runner and thrown away with the runner, which is why the weekly review had
+# no data.
+DEFAULT_PATH = REPO / "alpha_engine" / "data" / "audit3_denylist_hits.jsonl"
 MAX_BYTES = 5_000_000
 KEEP_LINES = 5_000
 

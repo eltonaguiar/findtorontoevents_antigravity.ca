@@ -122,6 +122,22 @@ BOOT_SEED = 42
 MAX_SYMBOL_SHARE = 0.60
 MAX_SOURCE_SHARE = 0.90
 
+# DSR multiplicity floor (2026-11-19). The 2026-11-14 pf_registry audit counted
+# 658 distinct strategies in the live search space. A payload slice sees far
+# fewer, so feeding the slice count into deflated_sharpe under-corrects. PROVEN
+# pays max(observed, this floor); CANDIDATE uses the observed bucket width so the
+# forward queue is not emptied.
+GLOBAL_TRIAL_FLOOR = 658
+# Selection-alpha coverage floor: a small price-covered sample may not prove a
+# much larger cell. alpha_n must reach max(ALPHA_MIN_N, ALPHA_MIN_COVERAGE*n).
+ALPHA_MIN_N = 20
+ALPHA_MIN_COVERAGE = 0.50
+
+
+def global_trial_count(*counts: int) -> int:
+    """Trial count for DSR: the whole search space, never just the loaded slice."""
+    return max([GLOBAL_TRIAL_FLOOR, *(int(c) for c in counts if c)])
+
 # N1 (2026-11-19): repeated-looks correction. BH FDR is computed per run, but the
 # ledger is re-scored every ~6h, so a cell that crosses q<=0.10 once will
 # eventually do so by chance. A CANDIDATE/PROVEN_T2 verdict must therefore persist
@@ -821,12 +837,16 @@ def _pod_for(asset_class: str, strategy: str, direction: str,
 
 
 def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
-                  *, apply_source_gate: bool = True) -> dict[str, Any]:
+                  *, apply_source_gate: bool = True,
+                  n_trials_local: int | None = None) -> dict[str, Any]:
     """Compute every gate for one cell. Never raises.
 
     apply_source_gate: a single strategy is normally emitted by one source
     system, so source concentration is only meaningful for aggregate cells
     (asset class, source family). Per-strategy/symbol cells pass False.
+
+    n_trials: global search-space size for the PROVEN DSR gate (G4).
+    n_trials_local: observed bucket width, used for the CANDIDATE tier only.
     """
     nets = [_net(r) for r in rows]
     n = len(nets)
@@ -996,6 +1016,13 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
             out["dsr"] = round(dsr["dsr"], 4)
             out["sharpe"] = round(dsr["sharpe"], 4)
             out["sr0"] = round(dsr["sr0"], 4)
+        if n_trials_local is not None and n_trials_local != n_trials:
+            if int(n_trials_local) >= 2:
+                dloc = deflated_sharpe(nets, int(n_trials_local))
+                if dloc:
+                    out["dsr_local"] = round(dloc["dsr"], 4)
+            else:
+                out["dsr_local"] = None
     return out
 
 
@@ -1062,9 +1089,13 @@ def _promote(cell: dict, forward: dict[str, Any] | None = None) -> None:
     elif cell["verdict"] == "CANDIDATE":
         if q > CANDIDATE_Q:
             cell["verdict"] = "WEAK"
-        elif cell.get("dsr") is not None and cell["dsr"] < 0.50:
-            cell["verdict"] = "WEAK"
-            cell["reasons"].append(f"DSR {cell['dsr']:.3f} < 0.50")
+        else:
+            # CANDIDATE is the forward-paper tier: judge it against the breadth
+            # actually observed, not the whole 658-trial registry.
+            d_c = cell["dsr_local"] if "dsr_local" in cell else cell.get("dsr")
+            if d_c is not None and d_c < 0.50:
+                cell["verdict"] = "WEAK"
+                cell["reasons"].append(f"DSR {d_c:.3f} < 0.50")
 
 
 def apply_harm_gate(bucket: list[dict]) -> None:
@@ -1257,70 +1288,131 @@ def compute_verdict_churn(buckets: list[list[dict]],
 # "unmeasured" verdict carries its cause (no table / no symbol / stale bars).
 ALPHA_PASSTHROUGH_KEYS: tuple[str, ...] = (
     "generated_at", "covered", "n_universe", "missing", "overall",
-    "by_class", "by_slice", "bar_coverage",
+    "by_class", "by_slice", "by_strategy", "bar_coverage",
 )
 
 
-def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
-    """G9 - selection alpha must be proven positive before promotion.
+def demote_proven_without_alpha(buckets: Iterable[list[dict]]) -> int:
+    """Fail-closed fallback for the published ledger when alpha is missing."""
+    demoted = 0
+    for bucket in buckets:
+        for c in bucket:
+            if c.get("verdict") != "PROVEN_T2":
+                continue
+            c["verdict"] = "CANDIDATE"
+            c["reasons"].append(
+                "G9 selection-alpha gate: alpha sidecar unavailable - PROVEN_T2 "
+                "requires a measured selection alpha")
+            demoted += 1
+    return demoted
 
-    A cell (or class) that is profitable purely because the underlying rose
-    (market beta) must not reach PROVEN_T2. This looks up the direction-adjusted
-    selection alpha measured by ``alpha_engine/audit3_selection_alpha.py`` and
-    requires its bootstrap 95% CI lower bound to be strictly positive.
 
-    * PROVEN_T2 without a positive-alpha proof is demoted to CANDIDATE and
-      flagged ``beta_dominant``.
-    * CANDIDATE keeps its verdict but is flagged ``beta_dominant``.
+def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[str, Any]:
+    """G9 - selection alpha must be proven at the same scope it proves.
 
-    Fail-open only when the alpha sidecar is absent or empty, so library callers
-    and unit tests that pass no alpha keep the pre-gate behaviour.
+    A cell profitable only because the underlying rose (market beta) must not
+    reach PROVEN_T2. Alpha is looked up in order of decreasing specificity:
+
+      * ``by_strategy[CLASS/STRATEGY/DIR]`` -> scope ``strategy`` (proves a cell)
+      * ``by_slice[CLASS/DIR]`` / ``by_class[CLASS]`` -> scope ``class_proxy``
+        for a strategy/symbol cell (informs, never proves)
+      * a class aggregate is proved by ``by_class[CLASS]`` -> scope ``class``
+
+    An unmeasured alpha demotes PROVEN_T2 but is not labelled beta-dominant
+    (that would claim knowledge we do not have). A measured non-positive alpha
+    is labelled beta-dominant. Coverage must reach max(20, 0.5*cell.n).
+
+    Fail-open only when the sidecar is absent or empty. The published CLI path
+    passes ``require_alpha=True`` to ``build_report``, which demotes instead.
     """
     if not isinstance(alpha, dict):
-        return
+        return {"applied": False, "reason": "no alpha sidecar"}
     by_class = alpha.get("by_class") or {}
     by_slice = alpha.get("by_slice") or {}
-    if not by_class and not by_slice:
-        return
+    by_strategy = alpha.get("by_strategy") or {}
+    if not by_class and not by_slice and not by_strategy:
+        return {"applied": False, "reason": "alpha sidecar empty"}
 
-    def _alpha_lo(ac: Any, direction: Any) -> float | None:
-        ac = str(ac or "").strip().upper()
-        d = str(direction or "").strip().upper()
-        slice_entry = by_slice.get(f"{ac}/{d}")
-        if slice_entry and slice_entry.get("n"):
-            lo = (slice_entry.get("alpha_ci") or [None, None])[0]
-            if lo is not None:
-                return lo
-        cls_entry = by_class.get(ac)
-        if cls_entry and cls_entry.get("n"):
-            lo = (cls_entry.get("alpha_ci") or [None, None])[0]
-            if lo is not None:
-                return lo
-        return None
+    def _entry(entry: Any) -> tuple[float | None, float | None, int]:
+        if not entry or not entry.get("n"):
+            return None, None, 0
+        ci = entry.get("alpha_ci") or [None, None]
+        return ci[0], ci[1], int(entry.get("n") or 0)
 
+    def _lookup(cell: dict) -> tuple[float | None, float | None, str, int]:
+        ac = str(cell.get("asset_class") or "").strip().upper()
+        d = str(cell.get("direction") or "").strip().upper()
+        strat = cell.get("strategy")
+        if strat:
+            lo, hi, n = _entry(by_strategy.get(f"{ac}/{strat}/{d}"))
+            if lo is not None:
+                return lo, hi, "strategy", n
+            lo, hi, n = _entry(by_slice.get(f"{ac}/{d}"))
+            if lo is not None:
+                return lo, hi, "class_proxy", n
+            lo, hi, n = _entry(by_class.get(ac))
+            return lo, hi, "class_proxy", n
+        if cell.get("symbol"):
+            lo, hi, n = _entry(by_slice.get(f"{ac}/{d}"))
+            if lo is not None:
+                return lo, hi, "class_proxy", n
+            lo, hi, n = _entry(by_class.get(ac))
+            return lo, hi, "class_proxy", n
+        lo, hi, n = _entry(by_class.get(ac))
+        return lo, hi, "class", n
+
+    summary: dict[str, Any] = {"applied": True, "tested": 0, "demoted": 0, "scopes": {}}
     for c in bucket:
-        lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
+        lo, hi, scope, alpha_n = _lookup(c)
+        cell_n = int(c.get("n") or 0)
+        need_n = max(ALPHA_MIN_N, int(ALPHA_MIN_COVERAGE * cell_n))
+        covered = alpha_n >= need_n
+        proven = lo is not None and lo > 0 and scope in ("strategy", "class") and covered
+        # "unproven" (CI straddles 0) is NOT "beta_dominant": the latter needs
+        # evidence that alpha is negative, i.e. the whole CI below zero. Labelling
+        # every null-alpha cell beta-dominant claimed knowledge we do not have and
+        # made ~97% of cells look like a measured market failure.
         if lo is None:
-            # No measured alpha for this class. Branding it beta-dominant would
-            # claim we know the alpha is non-positive when we do not, and it
-            # flagged every unmeasured cell. A PROVEN_T2 still cannot stand on
-            # unmeasured selection skill, so it drops to CANDIDATE unlabelled.
-            c["alpha_gate"] = {"alpha_ci_lo": None, "passed": None, "status": "unmeasured"}
-            if c["verdict"] == "PROVEN_T2":
-                c["verdict"] = "CANDIDATE"
-                c["reasons"].append(
-                    "G9 selection-alpha gate: selection alpha unmeasured for this "
-                    "class - promotion requires a positive CI lower bound")
+            status = "unmeasured"
+        elif lo > 0 and not covered:
+            status = "insufficient_coverage"
+        elif lo > 0 and scope not in ("strategy", "class"):
+            status = "proxy"
+        elif lo > 0:
+            status = "proven"
+        elif hi is not None and hi < 0:
+            status = "beta_dominant"
+        else:
+            status = "unproven"
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "alpha_ci_hi": hi, "scope": scope,
+                           "alpha_n": alpha_n, "need_n": need_n,
+                           "alpha_coverage_ok": bool(covered),
+                           "passed": bool(proven) if lo is not None else None,
+                           "status": status}
+        summary["tested"] += 1
+        summary["scopes"][scope] = summary["scopes"].get(scope, 0) + 1
+        if proven:
             continue
-        alpha_proven = lo > 0
-        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
-        if not alpha_proven:
-            c["beta_dominant"] = True
+        if lo is None:
             if c["verdict"] == "PROVEN_T2":
                 c["verdict"] = "CANDIDATE"
+                summary["demoted"] += 1
                 c["reasons"].append(
-                    f"G9 selection-alpha gate: selection alpha CI lower bound "
-                    f"{lo:+.4f} not > 0 - beta-dominant")
+                    "G9 selection-alpha gate: selection alpha unmeasured - "
+                    "promotion requires a positive CI lower bound")
+            continue
+        if status == "beta_dominant":
+            c["beta_dominant"] = True
+        if c["verdict"] == "PROVEN_T2":
+            c["verdict"] = "CANDIDATE"
+            summary["demoted"] += 1
+            if lo <= 0:
+                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0 "
+                       f"(status {status})")
+            else:
+                why = f"selection alpha covers {alpha_n}/{cell_n} rows (need {need_n})"
+            c["reasons"].append(f"G9 selection-alpha gate ({scope}): {why}")
+    return summary
 
 
 def segment_tags(r: dict) -> list[tuple[str, str]]:
@@ -1435,7 +1527,8 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  history: dict[str, dict] | None = None,
                  run_at: str | None = None,
                  persistence_runs: int = PERSISTENCE_RUNS,
-                 prev_verdicts: dict[str, str] | None = None) -> dict[str, Any]:
+                 prev_verdicts: dict[str, str] | None = None,
+                 require_alpha: bool = False) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
@@ -1464,7 +1557,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     # P0-5: DSR is a multiple-testing correction, so the trial count is every
     # configuration that was emitted and scored -- not only the ones that
     # cleared the WR floor. Counting tested-only cells understated SR0.
-    n_trials = len(strat_groups)
+    n_trials = global_trial_count(len(strat_groups))
 
     for (ac, strat, direction), group in strat_groups.items():
         pod = _pod_for(ac, strat, direction, confirmatory)
@@ -1472,7 +1565,8 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  "namespace": "confirmatory" if pod else "discovery"}
         if pod:
             label["pod"] = pod.get("id")
-        cell = evaluate_cell(group, max(1, n_trials), label, apply_source_gate=False)
+        cell = evaluate_cell(group, n_trials, label, apply_source_gate=False,
+                             n_trials_local=len(strat_groups))
         cells.append(cell)
     cells.sort(key=lambda c: (-c["n"], c["asset_class"], c["strategy"]))
 
@@ -1491,9 +1585,10 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
 
     # Class-level aggregate.
     class_groups = _group(rows, lambda r: str(r.get("asset_class") or "UNKNOWN").upper())
-    class_trials = len(class_groups)
+    class_trials = global_trial_count(len(class_groups))
     for ac, group in class_groups.items():
-        cls = evaluate_cell(group, max(1, class_trials), {"asset_class": ac})
+        cls = evaluate_cell(group, class_trials, {"asset_class": ac},
+                            n_trials_local=len(class_groups))
         # Class promotion needs the stricter charter floor (n>=100).
         if cls["verdict"] == "PROVEN_T2" and cls["n"] < PROVEN_MIN_N:
             cls["verdict"] = "WEAK"
@@ -1512,10 +1607,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                                          _direction(r)))
     sym_tested = {k: g for k, g in sym_groups.items() if len(g) >= WR_MIN_N}
     for (ac, sym, direction), group in sym_tested.items():
-        symbols.append(evaluate_cell(group, max(1, len(sym_tested)),
+        symbols.append(evaluate_cell(group, global_trial_count(len(sym_tested)),
                                      {"asset_class": ac, "symbol": sym,
                                       "direction": direction, "namespace": "discovery"},
-                                     apply_source_gate=False))
+                                     apply_source_gate=False,
+                                     n_trials_local=len(sym_tested)))
     for c, q in zip(symbols, benjamini_hochberg([c["p_value"] for c in symbols])):
         c["q_value"] = round(q, 6)
     for c in symbols:
@@ -1533,10 +1629,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             seg_groups.setdefault((seg, val, ac), []).append(r)
     seg_tested = {k: g for k, g in seg_groups.items() if len(g) >= WR_MIN_N}
     for (seg, val, ac), group in seg_tested.items():
-        seg_cell = evaluate_cell(group, max(1, len(seg_tested)),
+        seg_cell = evaluate_cell(group, global_trial_count(len(seg_tested)),
                                  {"segment": seg, "segment_value": val,
                                   "asset_class": ac, "namespace": "discovery"},
-                                 apply_source_gate=False)
+                                 apply_source_gate=False,
+                                 n_trials_local=len(seg_tested))
         seg_cell["reconstructed"] = True
         segments.append(seg_cell)
     for c, q in zip(segments, benjamini_hochberg([c["p_value"] for c in segments])):
@@ -1554,8 +1651,17 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     # Source families: copytrader / polymarket / kalshi / ml_enhanced / ...
     fam_groups = _group(rows, _family)
     for fam, group in sorted(fam_groups.items(), key=lambda kv: -len(kv[1])):
-        families.append(evaluate_cell(group, max(1, len(fam_groups)),
-                                      {"family": fam}))
+        families.append(evaluate_cell(group, global_trial_count(len(fam_groups)),
+                                      {"family": fam},
+                                      n_trials_local=len(fam_groups)))
+    # Families are verdict-bearing rows on the page, so they get the same gates
+    # as every other bucket. Previously they skipped BH/DSR/forward/harm.
+    fam_tested = [c for c in families if c["n"] >= WR_MIN_N]
+    for c, q in zip(fam_tested, benjamini_hochberg([c["p_value"] for c in fam_tested])):
+        c["q_value"] = round(q, 6)
+    for c in families:
+        _promote(c, forward)
+    apply_harm_gate(families)
 
     # Selection alpha (M1b) joined onto the class aggregates when a sidecar was
     # supplied. Kept optional: it needs per-symbol OHLC, so a job without DB
@@ -1620,8 +1726,24 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     # G9 - selection alpha is a promotion gate, not just a class display column.
     # Applied to the strategy, symbol and class buckets (all direction-aware);
     # segments and source families are reconstructed/aggregate proxies.
+    alpha_gate_report: dict[str, Any] = {"applied": False, "tested": 0,
+                                         "demoted": 0, "scopes": {}}
     for bucket in (cells, symbols, classes):
-        apply_selection_alpha_gate(bucket, alpha)
+        part = apply_selection_alpha_gate(bucket, alpha)
+        if not part.get("applied"):
+            alpha_gate_report.setdefault("reason", part.get("reason"))
+            continue
+        alpha_gate_report["applied"] = True
+        alpha_gate_report["tested"] += part.get("tested", 0)
+        alpha_gate_report["demoted"] += part.get("demoted", 0)
+        for scope, count in (part.get("scopes") or {}).items():
+            alpha_gate_report["scopes"][scope] = alpha_gate_report["scopes"].get(scope, 0) + count
+    if require_alpha and not alpha_gate_report.get("applied"):
+        # Published path: a missing sidecar must not read as "all cells passed".
+        alpha_gate_report["require_alpha"] = True
+        alpha_gate_report["demoted"] += demote_proven_without_alpha(
+            (cells, symbols, classes))
+    selection["gate"] = alpha_gate_report
 
     # Kill tribunal: everything KILL plus near-kill (WEAK with negative mean).
     kills = []
@@ -1890,6 +2012,7 @@ def main(argv: list[str] | None = None) -> int:
     prev_verdicts = load_prev_verdicts(args.prev_ledger)
     run_at = datetime.now(timezone.utc).isoformat()
     report = build_report(rows, args.picks, generated_at, coverage=coverage,
+                          require_alpha=True,
                           alpha=alpha, input_sha256=_sha256(args.picks),
                           confirmatory=manifest,
                           forward=forward_gate_block(manifest, args.forward_ledger),

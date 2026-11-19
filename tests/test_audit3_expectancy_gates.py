@@ -44,9 +44,10 @@ def _rows(n_wins: int, n_losses: int, win: float, loss: float,
 
 def test_expectancy_primary_promotes_low_win_rate_cell():
     # 33% win rate, 4.0/-0.6 payoff: positive expectancy that a WR>50% gate
-    # could never certify. The payoff is sized so the edge still survives the
-    # 2x-cost stress gate (a thin edge must not promote).
-    rows = _rows(40, 80, 4.0, -0.6)
+    # could never certify. n=210 because PROVEN now pays the global 658-trial
+    # DSR correction: the same cell at n=120 scores DSR 0.83 and caps at
+    # CANDIDATE, which is the intended tightening, not a test failure.
+    rows = _rows(70, 140, 4.0, -0.6)
     pod = {"path": "m.json", "available": True,
            "pods": [{"id": "POD-A", "status": "pre_registered",
                      "strategies": ["cellA"], "asset_classes": ["CRYPTO"]}]}
@@ -128,7 +129,7 @@ def test_cost_stress_2x_is_a_required_gate():
 
     # A payoff that survives 2x cost still promotes inside a pre-registered pod.
     robust = build_report(
-        _rows(40, 80, 4.0, -0.6), "x.json", None,
+        _rows(70, 140, 4.0, -0.6), "x.json", None,
         confirmatory={"path": "m.json", "available": True,
                       "pods": [{"id": "POD-A", "status": "pre_registered",
                                 "strategies": ["cellA"], "asset_classes": ["CRYPTO"]}]})

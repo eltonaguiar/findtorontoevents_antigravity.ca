@@ -68,6 +68,9 @@ verdict on an edge that was not real, plus one rule that existed only as prose:
 - `audit3_selection_alpha.py` now reports `hold_days_mean`, `hold_days_median`,
   `alpha_per_day_pct`, `alpha_annualized_pct`, `min_hold_days`, `n_min_hold`,
   `min_hold_participation`, `alpha_pct_min_hold`. `alpha_pct` is unchanged.
+- **Status: code-only, NOT published.** The live ledger currently has
+  `selection_alpha.available = false` and 0 of 7 class rows carry these fields.
+  Until the ledger generator emits them, do not cite them as live evidence.
 
 ### N7 freeze gate
 - `reports/strategy_freeze.json` (P0 = E11/E13/E14, with unfreeze conditions).
@@ -79,7 +82,11 @@ verdict on an edge that was not real, plus one rule that existed only as prose:
 - `tests/test_audit3_tribunal.py` — 34 passed (F1, F2, N1, N2, N3, N4).
 - `tests/test_audit3_selection_alpha.py` — 11 passed (N5).
 - `tests/test_strategy_freeze_gate.py` — 4 passed (N7).
-- Full audit3 + freeze set — **86 passed**.
+- **These three files: 49 passed** (`python3 -m pytest tests/test_audit3_tribunal.py
+  tests/test_audit3_selection_alpha.py tests/test_strategy_freeze_gate.py -q`).
+  An earlier draft said 86 by adding unrelated edge/coverage/evidence suites; the
+  49 figure is the number for the files changed here. Any broader set is a
+  separate claim and must name its files.
 - Two-run N1 smoke: run 1 demoted 7 cells (`n_candidate` 0, `n_weak` 1); run 2
   promoted 7 with `first_pass_at` = first-run timestamp; a no-history run left the
   gate off (`available: False`).
@@ -89,7 +96,14 @@ verdict on an edge that was not real, plus one rule that existed only as prose:
 
 ## Not done (still open)
 
-- N6 — excluded-cohort bias audit (46% integrity-excluded, 9,100 auto-expired).
+- N6 — excluded-cohort bias audit. **Corrected framing:** live coverage is
+  `scored_rows 8,605 / total_closed_picks 14,632 = 58.8% scored`, so **41.2% is
+  not scored**. Do not sum `integrity_excluded (5,935)` + `auto_expired (9,110)`:
+  those cohorts overlap and exceed the book. The canonical exclusion list sums to
+  6,027 (`invalid_row 5,802 + mirror_duplicate 92 + non_performance_exit 43 +
+  resolver_breakeven_fallback 90`). Auto-expired rows are not cleanly dropped:
+  the live payload has `zero_pnl_count 134` and canonical timeout/flat exits.
+  Start N6 from the reconciled denominator.
 - E11 (FX backfill + symbol mapping), E13 (PIT stamping), E14 (exit redesign).
 - E12 — 90-day hold-benchmark pilot.
 - Fund-manager beta-core sleeve config (Conservative) — see
