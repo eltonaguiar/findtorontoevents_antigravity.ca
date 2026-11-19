@@ -78,3 +78,22 @@ small TAA sleeve as drawdown control. Penny/sub-$5: strongest NO — our own led
 0.18 n=4, MEME 10% WR, CHEAP 0.39) plus Kumar 2009 (lottery stocks −7.1%/yr risk-adjusted
 differential; concentrated holders −2.5%/yr). Full cross-check request with attack surface:
 `ACTIONPLAN_AUDITPAGE/2026-11-19T1906Z_copilot-moneyresearch/CROSSCHECK_REQUEST_2026-11-19.md`.
+
+## Addendum 21:55Z — cross-check round 2 (verified against artifacts)
+
+- **Buffy's 576-cell settle sweep: T1 re-derived, VERIFIED.** 2007+ windows: zero lagged
+  cost≥5 cells clear their bar on either universe; their "+0.06 Sharpe / −41.67% MDD" quote is
+  the sectors 2007+ best lagged cell, exactly. Nuance recorded: 2018+ windows have 4–6 cells
+  clearing the ex-halves bar — pre-registration was 2007+, so no contradiction, but the CSV
+  needs sharpe_h1/h2 columns for T5 to be artifact-re-derivable.
+- **Kilo item 2 (A4 DSR trials): all four claims verified in code + live ledger** (dsr and
+  dsr_n_trials co-assigned; floor 658 reaches class/symbol buckets; dsr_local confined to the
+  CANDIDATE branch). **One real edge case found:** `d_c = cell["dsr_local"] if "dsr_local" in
+  cell else cell.get("dsr")` — when `n_trials_local < 2`, `dsr_local` is set to **None**, the
+  key exists, and the CANDIDATE DSR demotion is silently skipped instead of falling back to the
+  global DSR. Fix: `cell.get("dsr_local") is not None`.
+- **Correction adopted from buffy:** VTSAX/VFIAX carry $3,000 minimums — OUT at $2k; the
+  $0-minimum index mutual funds are FXAIX/FSKAX/SWPPX/SWTSX (fixed in CROSSCHECK_REQUEST).
+- **P0 security:** opencode's credential-exposure report independently confirmed (1 literal ×
+  14 files + commit message on `feat/audit-review-organization-2026-11-19`; hash-matched to the
+  ejaguiar1_stocks DB password). Rotation + branch deletion are operator actions, pending.
