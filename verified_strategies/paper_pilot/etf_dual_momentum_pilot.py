@@ -111,19 +111,30 @@ def run_one_shot() -> dict:
 
     if open_pos and open_pos.get("status") == "OPEN":
         held = open_pos.get("symbol")
-        if signal == "CASH" or symbol != held:
+        # Calendar-month segment close: the strategy's decision cadence is
+        # monthly, but winner-stays holds used to span months with zero closed
+        # trades (forward n=0 since June). Close the segment at the month
+        # boundary and re-open below if the symbol is still the pick, so the
+        # forward book accrues one closed row per held month.
+        seg_rollover = str(open_pos.get("entry_date") or "")[:7] != today[:7]
+        if signal == "CASH" or symbol != held or seg_rollover:
             entry = float(open_pos.get("entry_price") or 0.0)
             exit_px = _last_close(str(held))
             pnl_pct = (exit_px / entry - 1.0) if entry else 0.0
+            reason = ("cash" if signal == "CASH"
+                      else "rotation" if symbol != held else "month_segment")
             _append_log(
                 {
                     "date": today,
                     "event": "CLOSE",
                     "strategy": STRATEGY_ID,
+                    "asset_class": "ETF",
                     "symbol": held,
                     "direction": open_pos.get("direction", "BUY"),
                     "entry_price": entry,
+                    "entry_date": open_pos.get("entry_date"),
                     "exit_price": exit_px,
+                    "exit_reason": reason,
                     "pnl_pct": round(pnl_pct, 6),
                     "outcome": "WIN" if pnl_pct > 0 else "LOSS",
                     "r12_1m": returns.get(str(held)),

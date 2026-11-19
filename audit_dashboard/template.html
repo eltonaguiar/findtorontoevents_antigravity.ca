@@ -1195,7 +1195,16 @@ a:hover { text-decoration: underline; }
                 // Say so instead of headlining an artifact as "Top".
                 sleeveTxt = ' <span style="color:#fca5a5;font-size:11px" title="' + (s0.note || 'artifact') + '">No credible sleeve &mdash; top candidate flagged ' + (s0.note || 'artifact') + '</span>';
               } else {
-                sleeveTxt = ' <span style="color:#a5b4fc;font-size:11px">Top: <code>' + (s0.strategy || '?') + '</code> (n=' + s0.n + ', PF=' + s0.pf + (s0.is_single_source ? ', &#x26a0; single-src' : '') + ')</span>';
+                var a3v = s0.audit3_verdict || 'NOT_SCORED';
+                var a3Badge;
+                if (s0.tribunal_corroborated) {
+                  a3Badge = ' <span title="Independently scored by the /audit3 kill tribunal (DSR, FDR, cost stress)" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.4);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">AUDIT3 ' + a3v + '</span>';
+                } else if (a3v === 'NOT_SCORED') {
+                  a3Badge = ' <span title="This sleeve never reached the /audit3 tribunal payload — resolver-grade selection display (post-hoc WR/PF filter over ~277 strategies, no multiplicity correction). Do not size on it." style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.4);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">&#x26a0; UNVERIFIED (not in audit3)</span>';
+                } else {
+                  a3Badge = ' <span title="The /audit3 tribunal independently rates this sleeve ' + a3v + ' after DSR/FDR/cost-stress — the headline PF here is selection-biased" style="background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.35);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">AUDIT3 ' + a3v + '</span>';
+                }
+                sleeveTxt = ' <span style="color:#a5b4fc;font-size:11px">Top: <code>' + (s0.strategy || '?') + '</code> (n=' + s0.n + ', PF=' + s0.pf + (s0.is_single_source ? ', &#x26a0; single-src' : '') + ')</span>' + a3Badge;
               }
             }
             if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;

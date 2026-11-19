@@ -1,0 +1,92 @@
+name: crypto intraday sim
+
+# Live short-term PAPER simulation (plan 2026-11-19, money-maker research):
+# three pre-registered crypto slots (H-2026-11-19-01/-02/-07) tick on real 4h
+# bars every 30 minutes, then tools/pilot_forward_bridge.py re-resolves every
+# pilot CLOSE (crypto sim + ETF dual momentum + faber TAA) intrabar-honestly
+# into reports/forward_observations.jsonl so the audit3 forward gate and the
+# /audit2 forward clock consume them with zero extra plumbing.
+#
+# NOTHING here sizes real money. Promotion is only possible through the audit3
+# forward gate (n>=100, net PF CI-LB > 1.0, 100% intrabar first-touch).
+#
+# Offsets: audit-dashboard owns ':10', audit3-ledger ':23 */6', forward ingest
+# ':41 */6', denylist watchdog ':45'. This job owns ':07,:37' so it never
+# contends with any of them.
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crypto-intraday-sim
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main          # never push a feature branch's files to main
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps (yfinance for the ETF bridge legs)
+        run: python3 -m pip install --quiet yfinance pandas
+
+      - name: Tick the crypto intraday sim
+        run: python3 verified_strategies/paper_pilot/crypto_intraday_sim.py --one-shot
+
+      - name: Bridge pilot closes into the forward ledger
+        run: python3 tools/pilot_forward_bridge.py --apply --json | tee /tmp/bridge.json
+
+      - name: Summarise
+        run: |
+          python3 - <<'PY'
+          import json
+          rep = json.load(open("/tmp/bridge.json"))
+          state = json.load(open(
+              "verified_strategies/paper_pilot/crypto_intraday_sim_state.json"))
+          print(f"bridge: resolved={rep.get('resolved')} "
+                f"unresolved={rep.get('unresolved')} "
+                f"added={ (rep.get('write') or {}).get('added', 0) }")
+          for slot, g in (state.get("guardrails") or {}).items():
+              line = (f"{slot}: {g['status']} n={g['n_closed']} "
+                      f"cum={g['cum_pnl_pct']}% dd={g['max_dd_pct']}% "
+                      f"{g['judgment']}")
+              print(line)
+              if g["status"] != "ACTIVE":
+                  print(f"::warning title=crypto-intraday-sim::{slot} {g['status']}: {g.get('reason')}")
+          PY
+
+      - name: Commit sim state + forward ledger (data only, [skip ci])
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add verified_strategies/paper_pilot/crypto_intraday_sim_state.json \
+                  verified_strategies/paper_pilot/crypto_intraday_sim_paper_log.jsonl \
+                  reports/forward_observations.jsonl 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore(sim): crypto intraday paper tick + forward bridge [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*5))
+          done
+          echo "::error title=crypto-intraday-sim::tick could not be pushed"
+          exit 1

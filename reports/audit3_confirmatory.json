@@ -117,7 +117,8 @@
       "hypothesis_id": "H-2026-11-19-03",
       "strategies": [
         "faber_taa",
-        "etf_faber_tactical"
+        "etf_faber_tactical",
+        "faber_taa_paper_pilot"
       ],
       "asset_classes": [
         "EQUITY",
@@ -191,6 +192,49 @@
       "why_observe_not_pre_registered": "The slice was measured on the same closed ledger the tribunal judges, so it cannot confer confirmatory status. observe = shadow rows only, no promotion.",
       "acceptance_criteria": "Forward rows closed after 2026-11-19: n>=100, mean selection alpha CI-LB > 0, 2x-cost CI-LB > 0, split-half stable, IR>=0.5 vs a matched hold. Promote to pre_registered only on a fresh decision after those rows exist.",
       "evidence_at_registration": "reports/alpha_slice_scan_2026-11-19.json: class_tf:CRYPTO/POSITION +2.006%/pick, n=145, q=0.001 (post-hoc, disclosure recorded above)."
+    },
+    {
+      "id": "POD-ETF-DUAL-MOMENTUM",
+      "status": "observe",
+      "registered_at": "2026-11-19",
+      "hypothesis_id": "H-2026-11-19-06",
+      "strategies": [
+        "etf_verified_dual_momentum",
+        "etf_dual_momentum"
+      ],
+      "asset_classes": [
+        "ETF",
+        "EQUITY"
+      ],
+      "directions": [
+        "LONG"
+      ],
+      "thesis": "12-1 sector-vs-SPY dual momentum is the only ETF sleeve with a lab WF PASS (OOS PF 2.746) but the forward pilot accrued zero closes (winner-stays bug).",
+      "expression": "Monthly decision cadence; hold top sector beating SPY with positive 12-1 momentum, else cash; calendar-month segment closes.",
+      "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched SPY leg, split-half stable.",
+      "evidence_at_registration": "reports/edge_hunt_ETF_2026-06-05.md (lab WF PASS); verified_strategies/paper_pilot/etf_dual_momentum_pilot.py state shows open XLE position, 0 closes.",
+      "observe_reason": "forward n=0; lab-only evidence."
+    },
+    {
+      "id": "POD-CRYPTO-BTC4H-RSIMACD",
+      "status": "observe",
+      "registered_at": "2026-11-19",
+      "hypothesis_id": "H-2026-11-19-07",
+      "strategies": [
+        "btc_4h_rsi_macd",
+        "btc-4h-rsi-macd-scout"
+      ],
+      "asset_classes": [
+        "CRYPTO"
+      ],
+      "directions": [
+        "LONG"
+      ],
+      "thesis": "Best CRYPTO discovery cell by DSR (0.118) and net expectancy (+2.0%/trade, n=35) in the 2026-11-19 tribunal; still WEAK and fails 2x cost stress, so forward-only.",
+      "expression": "4h RSI+MACD confluence long on BTC/ETH/SOL with TP/SL and time exit, run as a live paper slot (crypto_intraday_sim).",
+      "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched BTC leg, split-half stable.",
+      "evidence_at_registration": "audit3_ledger 2026-11-19 cell btc-4h-rsi-macd-scout LONG n=35 WR 57% PF 2.15 DSR 0.118 verdict WEAK.",
+      "observe_reason": "discovery-namespace WEAK; n=35 lab rows only."
     }
   ]
 }
