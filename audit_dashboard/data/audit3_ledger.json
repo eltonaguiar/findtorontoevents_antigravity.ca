@@ -1,6 +1,6 @@
 {
  "schema": "audit3.v1",
- "generated_at": "2026-11-19T04:54:19.147481+00:00",
+ "generated_at": "2026-11-19T05:28:03.475729+00:00",
  "source": "/tmp/audit3/dashboard_data.json",
  "source_generated_at": "2026-11-19T04:04:16.807952+00:00",
  "not_money_ready_disclaimer": "audit3 is an evidence ledger, not a signal service. PROVEN_T2 means the realized closed-pick ledger survives the listed gates; it does not guarantee future returns. No position sizing is emitted here.",
@@ -51,6 +51,48 @@
   "n_harmful_segments": 23,
   "n_positive_segments": 3,
   "n_kill_classes": 2
+ },
+ "coverage": {
+  "scored_rows": 3500,
+  "total_closed_picks": 16330,
+  "valid_closed_picks": 7901,
+  "total_resolved": 8731,
+  "zero_pnl_count": 133,
+  "scored_share_of_total_pct": 21.43,
+  "scored_share_of_valid_pct": 44.3,
+  "unscored_rows": 12830,
+  "cohorts_overlap": true,
+  "excluded_cohorts": [
+   {
+    "cohort": "integrity_excluded",
+    "n": 7502,
+    "reason": "failed the publishing dashboard's own integrity checks (ghost rows, WON-vs-PnL sign contradictions, constant/zero pnl) and is removed before the export slice"
+   },
+   {
+    "cohort": "auto_expired",
+    "n": 9100,
+    "reason": "resolved by timeout instead of TP/SL; a timeout is neither a win nor a loss, so it is dropped before scoring and never counted against the strategy either"
+   }
+  ],
+  "row_drops": {},
+  "window": {
+   "first_closed_at": "2026-02-21T07:08:50Z",
+   "last_closed_at": "2026-11-19T03:24:28Z"
+  },
+  "resolver_anomalies": {
+   "rows_scanned": 25430,
+   "stale_exit_beyond_planned_stop": 44,
+   "clamped_loss_rows": 23,
+   "expired_zero_pnl_rows": 3467,
+   "closed_rows_missing_closed_at": 3
+  },
+  "statement": "audit3 scores 3,500 of 16,330 closed picks (21.4%). The other 12,830 are not in this ledger: the publishing dashboard reports 7,502 integrity-excluded and 9,100 auto-expired rows, and no surface scores any of them. Those cohorts overlap, so they do not sum to the gap \u2014 read them as reasons rows are missing, not as a partition."
+ },
+ "selection_alpha": {
+  "available": false,
+  "definition": "alpha = pick net return - direction-adjusted buy & hold over the same entry..exit window (M1b)",
+  "source": "alpha_engine/audit3_selection_alpha.py (needs the price tables)",
+  "why_it_matters": "A +40% pick on a symbol that returned +60% is a selection failure; a win-rate or PF table cannot see that."
  },
  "doctrine": {
   "name": "innocent-until-proven-guilty",
@@ -11511,7 +11553,7 @@
  },
  "provenance": {
   "module": "alpha_engine/audit3_tribunal.py",
-  "source_file": "/tmp/audit3/dashboard_data.json",
+  "source_file": "/tmp/eh/dd.json",
   "source_generated_at": "2026-11-19T04:04:16.807952+00:00",
   "n_cells_scored_with_dsr": 59
  }
