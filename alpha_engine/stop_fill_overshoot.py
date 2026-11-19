@@ -20,8 +20,9 @@ are skipped, and the skip count is reported so a silent denominator change is
 visible. The absolute value keeps the measure direction-agnostic (a short's
 stop sits above the entry), so only a zero or invalid risk is ever skipped.
 
-The caller supplies the stopped cohort; ``status`` is carried on the row but
-not filtered on. Every usable row counts as one stopped trade.
+By default only stopped trades are counted (see ``_is_stopped``); pass
+``stopped_only=False`` to include every row. ``status``/``exit_reason`` are
+carried on the row and used for that filter.
 
 Pure stdlib: no network, no DB.
 """
@@ -46,7 +47,24 @@ def _num(value: Any) -> float | None:
         return None
 
 
-def _summarize(rows: Iterable[dict]) -> dict[str, Any]:
+#: Statuses / exit reasons that identify a stopped trade. A winner is not a
+#: stopped trade, and counting it (realized "loss" = -pnl) would pollute the
+#: overshoot mean — which is exactly the mistake this filter prevents.
+_STOPPED_STATUS = {"LOST", "LOSS", "SL_HIT", "STOPPED", "STOPPED_OUT", "STOPPED_OUT_PARTIAL"}
+_STOPPED_REASONS = {"STOP", "STOP_LOSS", "STOPLOSS", "SL", "SL_HIT", "STOPPED"}
+
+
+def _is_stopped(r: dict) -> bool:
+    st = str(r.get("status") or "").strip().upper()
+    if st in _STOPPED_STATUS:
+        return True
+    er = str(r.get("exit_reason") or "").strip().upper().replace("-", "_")
+    if er in _STOPPED_REASONS:
+        return True
+    return "STOP_LOSS" in er or er.startswith("STOP")
+
+
+def _summarize(rows: Iterable[dict], stopped_only: bool = True) -> dict[str, Any]:
     planned: list[float] = []
     realized: list[float] = []
     overshoot: list[float] = []
@@ -54,6 +72,9 @@ def _summarize(rows: Iterable[dict]) -> dict[str, Any]:
     skipped = 0
     for r in rows:
         if not isinstance(r, dict):
+            skipped += 1
+            continue
+        if stopped_only and not _is_stopped(r):
             skipped += 1
             continue
         entry = _num(r.get("entry_price"))
@@ -98,7 +119,7 @@ def _summarize(rows: Iterable[dict]) -> dict[str, Any]:
     return out
 
 
-def overshoot_stats(rows: Iterable[dict]) -> dict[str, Any]:
+def overshoot_stats(rows: Iterable[dict], stopped_only: bool = True) -> dict[str, Any]:
     """Per-asset-class and overall stop-fill overshoot for a stopped cohort.
 
     rows: closed pick dicts carrying entry_price, stop_loss, exit_price,
@@ -115,8 +136,9 @@ def overshoot_stats(rows: Iterable[dict]) -> dict[str, Any]:
             key = str(r.get("asset_class") or "UNKNOWN").upper()
             by_class.setdefault(key, []).append(r)
     return {
-        "overall": _summarize(materialized),
-        "by_asset_class": {k: _summarize(v) for k, v in sorted(by_class.items())},
+        "overall": _summarize(materialized, stopped_only=stopped_only),
+        "by_asset_class": {k: _summarize(v, stopped_only=stopped_only)
+                           for k, v in sorted(by_class.items())},
     }
 
 
