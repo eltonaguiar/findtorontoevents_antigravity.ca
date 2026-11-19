@@ -52,6 +52,13 @@ TRAILING_DD_HALT_PCT = 10.0
 DAILY_LOSS_PAUSE_PCT = 3.0
 CONSISTENCY_SHARE = 0.40
 MIN_N_BEFORE_JUDGMENT = 20
+#: Cost floor (peer review 2026-11-19, buffy): refuse any entry whose expected
+#: move to target is under 4x the round-trip cost, so the forward clock cannot
+#: fill with predictably negative rows (measured elsewhere: gross edge 1.4bp
+#: vs 12bp cost = fees ate 757% of gross). 16bp matches the ledger's
+#: CRYPTO_RT_BP convention.
+ROUND_TRIP_COST_PCT = 0.16
+COST_FLOOR_MULT = 4.0
 
 SLOTS: dict[str, dict] = {
     "vwap_reversion": {
@@ -171,7 +178,8 @@ def _macd_hist(closes: list[float]) -> tuple[float, float] | None:
     return hist[-1], hist[-2]
 
 
-def _rolling_vwap_z(bars: list[dict], n: int = 30) -> float | None:
+def _rolling_vwap(bars: list[dict], n: int = 30) -> tuple[float, float] | None:
+    """(vwap, deviation_std) over the last n bars, or None."""
     if len(bars) < n:
         return None
     w = bars[-n:]
@@ -185,19 +193,37 @@ def _rolling_vwap_z(bars: list[dict], n: int = 30) -> float | None:
     dev = _std([c - vwap for c in closes], n)
     if not dev:
         return None
-    return (closes[-1] - vwap) / dev
+    return vwap, dev
+
+
+def _rolling_vwap_z(bars: list[dict], n: int = 30) -> float | None:
+    res = _rolling_vwap(bars, n)
+    if res is None:
+        return None
+    vwap, dev = res
+    return (bars[-1]["close"] - vwap) / dev
 
 
 # --------------------------------------------------------------- signals
 def entry_signal(slot: str, bars: list[dict]) -> dict | None:
-    """A LONG entry proposal {reason, take_profit?, stop_loss?} or None."""
+    """A LONG entry proposal {reason, expected_move_pct, take_profit?,
+    stop_loss?} or None. Entries whose expected move to target is below
+    COST_FLOOR_MULT x ROUND_TRIP_COST_PCT are refused outright."""
     cfg = SLOTS[slot]
     closes = [b["close"] for b in bars]
     last = closes[-1]
+    floor_pct = COST_FLOOR_MULT * ROUND_TRIP_COST_PCT
     if slot == "vwap_reversion":
-        z = _rolling_vwap_z(bars)
-        if z is not None and cfg["z_floor"] <= z <= cfg["z_entry"]:
-            return {"reason": f"vwap_z={z:.2f}"}
+        res = _rolling_vwap(bars)
+        if res is None:
+            return None
+        vwap, dev = res
+        z = (last - vwap) / dev
+        if cfg["z_floor"] <= z <= cfg["z_entry"]:
+            expected = (vwap - last) / last * 100.0
+            if expected < floor_pct:
+                return None
+            return {"reason": f"vwap_z={z:.2f}", "expected_move_pct": expected}
         return None
     if slot == "bollinger_mr":
         n, k = cfg["bb_window"], cfg["bb_k"]
@@ -206,7 +232,11 @@ def entry_signal(slot: str, bars: list[dict]) -> dict | None:
             return None
         lower = mid - k * sd
         if last < lower:
-            return {"reason": f"close<{lower:.2f} (lower BB)", "take_profit": mid}
+            expected = (mid - last) / last * 100.0
+            if expected < floor_pct:
+                return None
+            return {"reason": f"close<{lower:.2f} (lower BB)",
+                    "take_profit": mid, "expected_move_pct": expected}
         return None
     if slot == "btc_4h_rsi_macd":
         rsi = _rsi(closes)
@@ -215,8 +245,12 @@ def entry_signal(slot: str, bars: list[dict]) -> dict | None:
             return None
         hist_now, hist_prev = mh
         if 50.0 < rsi < 70.0 and hist_now > 0 and hist_now > hist_prev:
+            expected = cfg["take_profit_pct"]
+            if expected < floor_pct:
+                return None
             return {
                 "reason": f"rsi={rsi:.1f} macd_hist rising",
+                "expected_move_pct": expected,
                 "take_profit": last * (1.0 + cfg["take_profit_pct"] / 100.0),
                 "stop_loss": last * (1.0 + cfg["stop_pct"] / 100.0),
             }

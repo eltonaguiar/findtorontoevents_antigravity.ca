@@ -72,6 +72,22 @@ class TestEntrySignals:
         bars[-1]["close"] = 60.0
         assert sim.entry_signal("vwap_reversion", bars) is None
 
+    def test_cost_floor_refuses_sub_cost_targets(self, sim):
+        # a hair-below-band break on a tight tape: expected move to the
+        # mid-band is far under 4x the round-trip cost -> refused
+        bars = [_bar(T0 + i * BAR_MS, 100, 100.05, 99.95,
+                     100 + (0.02 if i % 2 else -0.02)) for i in range(60)]
+        bars[-1]["close"] = 99.90
+        assert sim.entry_signal("bollinger_mr", bars) is None
+
+    def test_entries_above_cost_floor_carry_expected_move(self, sim):
+        bars = _flat_bars(60)
+        bars[-1] = _bar(bars[-1]["timestamp"], 100, 100, 88, 88)
+        sig = sim.entry_signal("bollinger_mr", bars)
+        assert sig is not None
+        assert sig["expected_move_pct"] >= (
+            sim.COST_FLOOR_MULT * sim.ROUND_TRIP_COST_PCT)
+
 
 class TestExitsAndGuardrails:
     def test_tp_hits_intrabar_before_time_exit(self, sim):
