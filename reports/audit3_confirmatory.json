@@ -1,10 +1,73 @@
 {
   "schema": "audit3.confirmatory.v1",
-  "rule": "A cell may reach PROVEN_T2 only if it matches a pod declared here. Pods must be registered BEFORE their forward data is seen; adding one after looking at results is not pre-registration. Everything not listed is scored in the discovery namespace, which cannot promote.",
-  "how_to_register": [
-    "Add a pod with a stable id, the strategy names it covers, and the asset classes / directions it may trade.",
-    "Give it hypothesis_id pointing at reports/hypothesis_registry.json and a registered_at date.",
-    "Declare the acceptance criteria before the forward window opens."
-  ],
-  "pods": []
+  "rule": "A cell may reach PROVEN_T2 only if it matches a pod here whose status is pre_registered. Pods must be declared before the forward data they will be judged on exists; a pod extracted from the results being judged is post_hoc and cannot promote. Everything unmatched is discovery.",
+  "status_meaning": {
+    "pre_registered": "may confer confirmatory; judged on forward rows from registered_at",
+    "post_hoc": "recorded for the audit trail only; cannot confer confirmatory",
+    "declined": "evaluated and rejected; recorded so nobody re-proposes it blind"
+  },
+  "pods": [
+    {
+      "id": "POD-EQUITY-BREAKOUT",
+      "status": "pre_registered",
+      "registered_at": "2026-11-19",
+      "hypothesis_id": "H-BABY-EQUITY-VT-PATTERN-SWEEP-001",
+      "strategies": [
+        "donchian-stock-breakout",
+        "rs-breakout-scout",
+        "vol-contraction-scout",
+        "adx-trend-scout"
+      ],
+      "asset_classes": [
+        "EQUITY",
+        "ETF"
+      ],
+      "directions": [
+        "LONG"
+      ],
+      "thesis": "Breakout continuation on liquid US equities/ETFs is the one family where this system already shows positive out-of-sample statistics (EQUITY OOS Sharpe +0.61 on 33 folds, ETF +0.21 on 53).",
+      "expression": "Monthly/weekly cadence only. Exit on time or a 2-3 ATR trail, vol-scaled size, no fixed take-profit. ETF daily cadence is ruled out: measured slippage is 234% of per-trade PnL.",
+      "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched SPY leg, split-half stable. CI-LB<=0 at day 30 or 60 ends the pod.",
+      "evidence_at_registration": "EQUITY is the only class with positive walk-forward OOS Sharpe; individual breakout cells straddle zero."
+    },
+    {
+      "id": "POD-LUXALGO-SHORT",
+      "status": "post_hoc",
+      "registered_at": "2026-11-19",
+      "hypothesis_id": "H-20260612-luxalgo_confluence_v2_short",
+      "strategies": [
+        "luxalgo_confluence"
+      ],
+      "asset_classes": [
+        "CRYPTO"
+      ],
+      "directions": [
+        "SHORT"
+      ],
+      "thesis": "LuxAlgo confluence shorts carry positive expectancy after costs on n=476 (+0.67%/trade, CI [+0.35,+0.96], DSR 0.977).",
+      "why_not_promotable": "Registered after the rows were scored, so it cannot confer confirmatory status. Also 97.7% single-source, and the LONG side of the same strategy is a proven-harm cell (n=754, -0.33%/trade) - the sign flip points at short beta rather than an edge.",
+      "acceptance_criteria": "Observe only. Requires an independent second source, a BTC-beta regression, and 90 days of forward rows before re-registration."
+    },
+    {
+      "id": "POD-CRYPTO-ENSEMBLE-GRADE",
+      "status": "declined",
+      "registered_at": "2026-11-19",
+      "strategies": [
+        "clone_hl_bybit_copy_C_R_Y_P_T_O___K_I_N_",
+        "clone_hl_copy_PensionFund_24M",
+        "clone_hl_copy_lb_None",
+        "hs_ABC_41M",
+        "luxalgo_confluence",
+        "strong consensus (alpha_engine, luxalgo_filters)"
+      ],
+      "asset_classes": [
+        "CRYPTO"
+      ],
+      "directions": [
+        "LONG"
+      ],
+      "decline_reason": "The 'grade A / score>=60' cluster is a reconstructed segment proxy, not a strategy: 'grade A' and 'score>=60' are the same 33 rows to four decimals, and elite_grade B (n=72) is the superset. n=33 cannot carry a pod, and the CRYPTO class aggregate is a proven-harm cell.",
+      "revisit_if": "A named emitter (not a score attribute) accumulates n>=100 forward rows with positive net CI in a class that is not KILL."
+    }
+  ]
 }

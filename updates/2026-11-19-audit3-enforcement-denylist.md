@@ -31,6 +31,25 @@ gate `production_scanner` actually calls). The second one is what makes "the tri
 blocks emission" true for the production path rather than only for the scanner path —
 without it this change would have been enforcement theatre of a subtler kind.
 
+### Class-scope kills: a stronger bar, not a blanket ban
+
+Decided 2026-11-19. Two classes are KILL on the ledger — CRYPTO (n=1,851,
+−0.51%/trade) and COMMODITY (n=55, WR 14.5%, −3.17%/trade). Blanket-blocking them
+would also discard cells that separately cleared a positive gate (e.g. a CANDIDATE
+SHORT inside CRYPTO), and would permanently lock out every new hypothesis in those
+classes, which is the one-way ratchet the review warned about in the other direction.
+
+Default `AUDIT3_DENYLIST_CLASS_GATE=positive_cells`: inside a KILL class, a pick may
+emit only if its own cell is CANDIDATE or PROVEN_T2. Everything else is denied, and
+no ledger cell at all also counts as not-cleared. Paper picks stay exempt
+(`AUDIT3_CLASS_GATE_ALLOW_PAPER`, default on) so measurement never stops — the gate
+stops capital, not data. Modes: `positive_cells` (default), `all` (blanket), `off`.
+
+`tools/audit3_denylist_health.py` is the loud half of fail-open: it exits non-zero
+when the ledger is missing, older than `--max-age-days`, or carries zero kills, and
+the `audit3-ledger` workflow now runs it with `--max-age-days 2` before committing.
+Fail-open is right at runtime and wrong in CI; this is the split.
+
 `summary()` reports whether the gate is actually armed, its age, and how many
 strategy/symbol/class kills it loaded — so "is the denylist loaded?" is answerable
 without reading a log.

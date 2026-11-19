@@ -524,6 +524,12 @@ def _pod_for(asset_class: str, strategy: str, direction: str,
         return None
     name = str(strategy or "").strip().casefold()
     for pod in manifest.get("pods") or []:
+        # Only a pod declared as pre-registered may confer confirmatory status. A pod
+        # extracted from the results being judged (post_hoc), or one we have declined,
+        # would launder the same rows into a promotion.
+        if str(pod.get("status") or "").strip().lower() in {
+                "declined", "post_hoc", "withdrawn", "retired"}:
+            continue
         strategies = {str(s).strip().casefold() for s in (pod.get("strategies") or [])}
         classes = {str(c).strip().upper() for c in (pod.get("asset_classes") or [])}
         directions = {str(d).strip().upper() for d in (pod.get("directions") or [])}

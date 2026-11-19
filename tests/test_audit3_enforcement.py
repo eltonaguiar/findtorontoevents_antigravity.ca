@@ -104,6 +104,76 @@ def test_kill_switch_disables_denylist(tmp_path, monkeypatch):
                          path, now=NOW) == ""
 
 
+# ── class gate ─────────────────────────────────────────────────────────────
+def _class_ledger(path: Path, generated_at: datetime):
+    payload = {
+        "schema": "audit3.v1",
+        "generated_at": generated_at.isoformat(),
+        "cells": [
+            {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG", "n": 40,
+             "net_expectancy_pct": -0.5, "harm_q": 0.01, "verdict": "KILL"},
+            {"asset_class": "CRYPTO", "strategy": "s1", "direction": "SHORT", "n": 40,
+             "net_expectancy_pct": 0.4, "verdict": "CANDIDATE"},
+        ],
+        "kill_tribunal": {"kills": [
+            {"scope": "class", "asset_class": "CRYPTO", "direction": "-", "n": 1851,
+             "net_expectancy_pct": -0.51, "harm_q": 0.01},
+        ]},
+    }
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return str(path)
+
+
+def test_class_gate_admits_only_separately_cleared_cells(tmp_path, monkeypatch):
+    monkeypatch.delenv("AUDIT3_DENYLIST_CLASS_GATE", raising=False)
+    monkeypatch.delenv("AUDIT3_DENYLIST_DISABLED", raising=False)
+    path = _class_ledger(tmp_path / "cls.json", NOW)
+    unknown = {"strategy": "never_scored", "direction": "LONG",
+               "symbol": "ETHUSDT", "asset_class": "CRYPTO"}
+    survivor = {"strategy": "s1", "direction": "SHORT",
+                "symbol": "ETHUSDT", "asset_class": "CRYPTO"}
+    assert denied_reason(unknown, path, now=NOW), "unscored cell in a killed class must not emit"
+    # s1 SHORT is CANDIDATE: it separately cleared a positive gate, so the class
+    # aggregate cannot override it.
+    assert denied_reason(survivor, path, now=NOW) == ""
+    assert denied_reason(dict(unknown, paper_trade=True), path, now=NOW) == ""
+
+
+def test_class_gate_modes(tmp_path, monkeypatch):
+    path = _class_ledger(tmp_path / "cls2.json", NOW)
+    survivor = {"strategy": "s1", "direction": "SHORT", "symbol": "ETHUSDT",
+                "asset_class": "CRYPTO"}
+    weak = {"strategy": "never_scored", "direction": "LONG", "symbol": "ETHUSDT",
+            "asset_class": "CRYPTO"}
+    monkeypatch.setenv("AUDIT3_DENYLIST_CLASS_GATE", "off")
+    assert denied_reason(weak, path, now=NOW) == ""
+    monkeypatch.setenv("AUDIT3_DENYLIST_CLASS_GATE", "all")
+    assert denied_reason(weak, path, now=NOW)
+    assert denied_reason(survivor, path, now=NOW)
+
+
+def test_class_gate_ignores_un_killed_classes(tmp_path, monkeypatch):
+    monkeypatch.delenv("AUDIT3_DENYLIST_CLASS_GATE", raising=False)
+    path = _class_ledger(tmp_path / "cls3.json", NOW)
+    eq = {"strategy": "never_scored", "direction": "LONG", "symbol": "AAPL",
+          "asset_class": "EQUITY"}
+    assert denied_reason(eq, path, now=NOW) == ""
+
+
+def test_health_check_fails_loudly(tmp_path, monkeypatch):
+    import importlib.util
+    monkeypatch.delenv("AUDIT3_DENYLIST_DISABLED", raising=False)
+    spec = importlib.util.spec_from_file_location(
+        "a3_health", ROOT / "tools" / "audit3_denylist_health.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    stale = _ledger(tmp_path / "stale.json", NOW - timedelta(days=9))
+    assert mod.main(["--ledger", stale, "--max-age-days", "2"]) == 1
+    fresh = _ledger(tmp_path / "fresh.json", datetime.now(timezone.utc))
+    assert mod.main(["--ledger", fresh, "--max-age-days", "2"]) == 0
+    assert mod.main(["--ledger", str(tmp_path / "nope.json")]) == 1
+
+
 # ── namespaces ─────────────────────────────────────────────────────────────
 def _rows(n: int = 120) -> list[dict]:
     """Strong positive-expectancy cell spread over symbols and sources."""
@@ -142,6 +212,21 @@ def test_pre_registered_pod_can_promote():
     assert cell["pod"] == "POD-A"
     assert cell["verdict"] == "PROVEN_T2"
     assert rep["multiplicity"]["n_pods"] == 1
+
+
+def test_post_hoc_and_declined_pods_cannot_promote():
+    rows = _rows()
+    for status in ("post_hoc", "declined", "withdrawn"):
+        manifest = {"path": "m.json", "available": True,
+                    "pods": [{"id": "P", "status": status, "strategies": ["cellA"]}]}
+        rep = build_report(rows, "x.json", None, confirmatory=manifest)
+        assert rep["cells"][0]["namespace"] == "discovery", status
+        assert rep["summary"]["n_proven"] == 0, status
+    ok = {"path": "m.json", "available": True,
+          "pods": [{"id": "P", "status": "pre_registered", "strategies": ["cellA"]}]}
+    rep = build_report(rows, "x.json", None, confirmatory=ok)
+    assert rep["cells"][0]["namespace"] == "confirmatory"
+    assert rep["cells"][0]["verdict"] == "PROVEN_T2"
 
 
 def test_bh_families_are_separate():
