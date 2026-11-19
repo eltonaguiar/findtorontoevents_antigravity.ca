@@ -99,9 +99,20 @@ jobs:
             echo "no DB_PASS_STOCKS secret — skipping selection alpha; the page states it is unavailable"
             exit 0
           fi
+          # 2026-11-19: the driver was never installed, so this step died with
+          # ModuleNotFoundError and `|| true` swallowed it. G8 then always reported
+          # available=false and G9 always reported "unmeasured" on the live page.
+          python3 -m pip install --quiet --disable-pip-version-check pymysql
+          set +e
           python3 alpha_engine/audit3_selection_alpha.py \
             --picks /tmp/audit3/dashboard_data.json \
-            --out /tmp/audit3/selection_alpha.json || true
+            --out /tmp/audit3/selection_alpha.json
+          rc=$?
+          if [ "$rc" -ne 0 ] || [ ! -s /tmp/audit3/selection_alpha.json ]; then
+            echo "::warning title=audit3::selection alpha unavailable (rc=$rc) — G9 will report unmeasured"
+            exit 0
+          fi
+          echo "selection alpha written: $(wc -c < /tmp/audit3/selection_alpha.json) bytes"
 
       - name: Build audit2 forward summary
         run: python3 tools/audit2_forward_summary.py
