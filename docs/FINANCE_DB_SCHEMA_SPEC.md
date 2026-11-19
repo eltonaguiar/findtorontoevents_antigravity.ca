@@ -413,3 +413,67 @@ market=totals  bet_type=Under 6.50  best_book=DraftKings
   document.
 - Raw scan dump: `/tmp/db_schema_dump.json`, `/tmp/stocks_tables.json`
   (local, not committed).
+
+---
+
+## Appendix A — Verified corrections and gaps (audit3 review, 2026-11-19)
+
+Checked against the live server while merging this spec. Confirmed correct:
+`stocks` has **409** tables; `trading_picks` **147,127** rows with
+`max(created_at)=2026-11-19 04:48`; `at_pick_outcomes` **63,108** rows with
+`max(resolved_at)=2026-11-19 03:24`; `bt_backtest_runs` **285** rows. The
+freshness calls in §2.4 hold.
+
+Four gaps matter enough to fix before this spec is used as ground truth.
+
+### A.1 Price / market-data tables are absent from the spec
+
+These are the tables that make any return, benchmark or selection-alpha
+calculation possible, and none of them are documented above:
+
+| Table | Rows | Grain | Note |
+|---|---|---|---|
+| `crypto_ohlcv` | 1,708,142 | 333 symbols, `timeframe` column, **ms-epoch** `timestamp` | usable to 2026-11-19 |
+| `stock_ohlcv` | 459,467 | 1h bars | used by the equity/ETF backtests |
+| `equity_daily_ohlcv` | 288,522 | daily | `trade_date` (a `DATE`) |
+| `etf_daily_ohlcv` | 125,564 | daily | `trade_date` |
+| `fx_prices` | 3,855 | daily, 15 pairs | **stale — span ends 2026-02-09** |
+| `cp_prices` | 4,857 | daily crypto pairs | `pair` like `AAVE-USD` |
+| `daily_prices` | 66,027 | daily, includes `adj_close` | equities |
+
+A schema doc that omits these makes the audit look impossible: M1b selection
+alpha (pick vs same-symbol hold) is computable *only* because they exist.
+
+### A.2 `bt_backtest_runs.asset_class` is not trustworthy
+
+All **285** rows are tagged `CRYPTO`, including `NZDUSD=X`, `AUDJPY=X` and
+`GBPUSD=X`. Class must be derived from `symbol`; building class aggregates on the
+stored column produces silently wrong results. `alpha_engine/audit3_evidence.py`
+derives it and reports the disagreements (11 at the last run).
+
+### A.3 `bt_backtest_trades` cannot be scanned ad hoc
+
+~**32.7M** rows. Naive `COUNT(*)`/range scans time out from CI. Pre-aggregate by
+`(strategy, symbol, asset_class, month)` before any analysis touches it.
+
+### A.4 The forex pipeline is stale end-to-end
+
+`fx_prices` ends **2026-02-09** while the pick ledger runs to 2026-11-19, and its
+keys are `AUDCAD`-style while the ledger uses `AUDJPY=X` / `AUD-USD`. Result:
+**211 forex picks currently have no computable alpha** — not because the analysis
+is hard, but because the data and the naming disagree. Backfill and mapping are
+tracked as E11 in `docs/EDGE_IDEAS_BACKLOG_2026-11-19.md`.
+
+### A.5 Two symbol/class conventions worth writing down
+
+- `EURUSDT` appears as `FOREX` in the pick ledger though it is a crypto pair.
+  Anything quoting in `USDT`/`USDC` should classify as CRYPTO regardless of the
+  stored class.
+- Class is a property of the **exposure**, not the wrapper: a row that trades SPY
+  or TLT as a proxy should not be reclassified as ETF if it claims EQUITY/BOND.
+
+### A.6 Prefer freshness over row counts
+
+Counts in this spec change hourly (`at_pick_outcomes` and the `bt_*` tables are
+written continuously). For staleness detection, `MAX(timestamp_column)` per table
+is the durable field; `TABLE_ROWS` is an estimate that drifts.

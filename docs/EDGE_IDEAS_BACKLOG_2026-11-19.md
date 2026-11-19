@@ -18,15 +18,15 @@ real cost: four of the "new" ideas below are already implemented and untested.
 |---|---|---|
 | **Grok** | Implement Deflated Sharpe Ratio; statistical-arbitrage pairs; "we forgot forex" | this doc §4 (E1, E4, E11) |
 | **Gemini** | Meta-labelling ML for regime filtering; Polymarket/Kalshi arbitrage scanner; market-neutral cross-sectional crypto | this doc §4 (E5, E6, E3) |
-| **Mercury (Inception Labs)** | Full finance-DB schema inventory across 10 databases | §3 of this doc — **the file `docs/FINANCE_DB_SCHEMA_SPEC.md` was never committed**, so its findings are recorded here |
+| **Mercury (Inception Labs)** | Full finance-DB schema inventory across 10 databases | `docs/FINANCE_DB_SCHEMA_SPEC.md` (merged to main 2026-11-19, with a verified-corrections appendix); §3 here summarises it |
 | **Arena agent** | Long review: risk premia over prediction, TSMOM/FX-carry/PEAD pods, prune-then-test, barbell portfolio | §4 (E8, E9, E10, E15) |
 | **Arena external review (longer)** | Same thesis with citations (Moskowitz–Ooi–Pedersen, Bernard–Thomas, SPIVA), phase 0–3 plan | §4, §6 |
 | **Our own audit3 work** | Beta accounting, point-in-time gate replay, M1b selection alpha | §§1–2, anchors every claim below |
 
-Two artifacts the reviewers believe exist are **not in this repo**:
-`docs/FINANCE_DB_SCHEMA_SPEC.md` (Mercury) and `EDGE_REVIEW_2026-11-19.md`
-(Arena). Both were produced in a local session and never pushed. If they matter,
-they need to be re-created here, not referenced.
+Mercury's spec now lives at `docs/FINANCE_DB_SCHEMA_SPEC.md` (merged to main
+2026-11-19) and carries an Appendix A with the corrections this review made —
+chiefly that it omitted every price table. Arena's `EDGE_REVIEW_2026-11-19.md`
+is still **not in this repo**: its findings are summarised here instead.
 
 ---
 
