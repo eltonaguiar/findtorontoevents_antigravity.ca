@@ -206,3 +206,16 @@ def test_feature_keyed_pod_still_needs_its_stamp():
     # ...and a strategy-keyed pod no longer needs features to classify.
     assert ING.classify(None, "EQUITY", strategy="rs-breakout-scout",
                         direction="LONG") == "H-BABY-EQUITY-VT-PATTERN-SWEEP-001"
+
+
+def test_unmatched_strategies_are_recorded_so_dead_pods_are_visible():
+    # A registered pod whose strategy never appears in the honest cohort would
+    # otherwise vanish into one opaque "not_in_any_condition" counter.
+    from collections import Counter
+    unmatched: Counter = Counter()
+    rows, rejects, counts = ING.build_rows(
+        [(_cohort(), _feats(F5="ASIA"), _bars())], now=NOW, unmatched_out=unmatched)
+    assert counts["not_in_any_condition"] == 1
+    cls = str(_cohort().get("asset_class") or "?")
+    strat = str(_cohort().get("strategy") or "(none)")
+    assert unmatched[(cls, strat)] == 1
