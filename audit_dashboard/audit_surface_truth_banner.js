@@ -30,7 +30,7 @@
           '</td><td class="num">' +
           esc(c.wr_pct) +
           '%</td><td class="num">' +
-          esc(c.pf) +
+          esc(c.display_pf != null ? c.display_pf : c.pf) +
           '</td><td>' +
           tier2Badge(c.tier2_pass) +
           '</td><td style="font-size:11px;color:#94a3b8">' +
