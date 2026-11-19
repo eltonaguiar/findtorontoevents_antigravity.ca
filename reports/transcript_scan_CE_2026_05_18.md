@@ -474,7 +474,7 @@
 - [DONE] Add new providers/keys to swarm_v2: Gemini, HuggingFace, Kilo, Nous, Ollama Cloud, OpenCode, OpenRouter free
 - [DONE] Save to memory: "for mercury its supposed to be mercury-2 !"
 - [DONE] Save to memory: CEREBRAS_API_KEY_PAID = PAID, CEREBRAS_API_KEY_FREE = FREE
-- [DONE] Provide Cerebras paid key starting with `csk-ptx8n644y4ye3mywep9n3ttk2h9wn56mnktwd5f`
+- [DONE] Provide Cerebras paid key starting with `csk-<REDACTED>`
 - [DONE] Add Gemini provider to llm_client.py
 - [DONE] Probe Nous Research, Kilo, Ollama Cloud, Together AI endpoints
 - [DONE] Add Kilo, Ollama Cloud, Together AI providers to llm_client.py
