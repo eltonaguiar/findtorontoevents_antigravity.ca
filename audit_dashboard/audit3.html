@@ -337,6 +337,9 @@ function render(d){
        <span class="muted" style="font-size:10px">[${fmtPct(r.wr_ci[0])}, ${fmtPct(r.wr_ci[1])}]</span>`},
     {key:'alpha_pct', label:'Selection alpha vs hold', render:alphaCell},
     {key:'net_expectancy_pct', label:'Net/trade', render:r=>`<span class="num ${signCls(r.net_expectancy_pct)}">${fmtNum(r.net_expectancy_pct)}%</span>`},
+    {key:'stress_2x_ok', label:'2× cost', render:r=>r.stress_2x_ok==null
+        ? '<span class="muted">—</span>'
+        : `<span class="${r.stress_2x_ok?'pos':'neg'}">${r.stress_2x_ok?'holds':'breaks'}</span>`},
     {key:'pf', label:'PF (raw)', render:r=>`<span class="muted">${fmtNum(r.pf)}</span>`},
     {key:'gross_expectancy_pct', label:'Gross/trade', render:r=>`<span class="muted">${fmtNum(r.gross_expectancy_pct)}%</span>`},
     {key:'q_value', label:'BH q', render:r=>r.q_value==null?'—':Number(r.q_value).toFixed(3)},
@@ -403,7 +406,9 @@ function render(d){
 
   $('gates').innerHTML = [
     ['G0 sample floor', `n ≥ ${conv.wr_floor_n} for any verdict, n ≥ ${conv.proven_min_n} for PROVEN.`],
-    ['G1 edge direction', 'One-sided exact binomial test of WR > 50%.'],
+    ['G1 edge direction', 'Net-expectancy bootstrap CI (one-sided) must exclude 0. ' +
+      'Win rate is reported as a descriptor: a 35% WR cell with a 2.5 payoff can be ' +
+      'real edge, and a 60% WR cell with PF < 1 cannot.'],
     ['G2 net expectancy', `Bootstrap 95% CI (${conv.bootstrap_resamples.toLocaleString()} seeded resamples) must exclude zero after ${Object.entries(conv.slippage_pct_by_class).map(([k,v])=>k+' '+v+'%').join(', ')} slippage.`],
     ['G3 multiplicity', `Benjamini–Hochberg q ≤ ${conv.fdr_q} across every tested cell; ${conv.multiplicity}.`],
     ['G4 overfit', `Deflated Sharpe ≥ ${conv.dsr_threshold} using n_trials = tested cells.`],
@@ -511,6 +516,9 @@ function render(d){
     {k:'source generated_at', v:(d.provenance||{}).source_generated_at || '—'},
     {k:'ledger generated_at', v:d.generated_at},
     {k:'cells scored with DSR', v:(d.provenance||{}).n_cells_scored_with_dsr},
+    {k:'generator version', v:(d.provenance||{}).generator_version || '—'},
+    {k:'input sha256', v:(d.provenance||{}).input_sha256 || '—'},
+    {k:'git sha', v:(d.provenance||{}).git_sha || '—'},
     {k:'share of closed book judged', v: sharePct==null ? 'not recorded'
         : sharePct+'% ('+cov.scored_rows+' of '+cov.total_closed_picks+' closed picks)'},
     {k:'selection alpha', v:(d.selection_alpha||{}).available

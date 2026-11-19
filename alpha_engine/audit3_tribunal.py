@@ -66,10 +66,13 @@ Exit codes: 0 report written; 2 unusable input.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
+import os
 import random
 import statistics
+import subprocess
 import sys
 from datetime import datetime, timezone
 from typing import Any, Iterable
@@ -77,6 +80,11 @@ from typing import Any, Iterable
 WR_MIN_N = 20
 PROVEN_MIN_N = 100
 CANDIDATE_MIN_N = 30
+# Materiality floor for promotion, in net percent per trade (2026-11-19). A cell
+# whose net-CI lower bound is below this is statistically positive but not worth
+# risking capital on: 5bp/trade is inside the error of the cost model itself.
+PROVEN_MIN_NET_CI_LO_PCT = 0.05
+GENERATOR_VERSION = "audit3.v2"
 KILL_PF_N = 50          # n floor for the PF watch flag
 HARM_PF_WATCH = 0.80    # PF below this is a watch flag, never proof of harm
 FDR_Q = 0.10
@@ -499,8 +507,22 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     pf = profit_factor(nets)
     boot = bootstrap_mean_ci(nets) if n >= 2 else {"mean": 0.0, "ci_lo": None,
                                                    "ci_hi": None, "frac_positive": None}
+    # Cost-stress companion: the same net CI at twice the class slippage. Report
+    # only — it never changes a verdict, it shows how much of an edge is a cost
+    # assumption.
+    nets_2x = [float(r["pnl_pct"]) - 2.0 * SLIPPAGE_PCT.get(
+                   str(r.get("asset_class") or "UNKNOWN").upper(),
+                   DEFAULT_SLIPPAGE_PCT) for r in rows]
+    boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
     stable, halves = split_half_ok(nets)
-    p = binom_sf(wins, n) if n else 1.0
+    # Edge test (2026-11-19): expectancy, not P(win). A trend cell at WR 35% with
+    # a 2.5 payoff is positive expectancy and cannot be judged by "won more often
+    # than not"; a 60% WR cell with PF < 1 (EQUITY) is negative expectancy and
+    # must not be promoted. WR stays a reported descriptor.
+    p_wr = binom_sf(wins, n) if n else 1.0
+    frac_pos = boot.get("frac_positive")
+    p_exp = (1.0 - frac_pos) if frac_pos is not None else 1.0
+    p_harm = frac_pos if frac_pos is not None else 1.0
     symbols = [str(r.get("symbol") or "?") for r in rows]
     top_sym_share = (max(symbols.count(s) for s in set(symbols)) / n) if n else 0.0
     sources = [str(r.get("source_system") or r.get("system") or "?") for r in rows]
@@ -530,10 +552,20 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
             reasons.append(
                 f"profit factor {pf:.2f} < {HARM_PF_WATCH} at n={n} — watch only, "
                 f"harm not proven (net CI [{lo_s}, {hi_s}]) so it keeps observing")
-        elif (n >= PROVEN_MIN_N and lo > 0.5 and boot.get("mean", 0) > 0
-              and expect_ci_positive and stable and top_sym_share <= MAX_SYMBOL_SHARE
+        elif (n >= PROVEN_MIN_N
+              and expect_ci_positive
+              and (boot.get("ci_lo") if boot.get("ci_lo") is not None else -1.0)
+              >= PROVEN_MIN_NET_CI_LO_PCT
+              and boot.get("mean", 0) > 0
+              and stable and top_sym_share <= MAX_SYMBOL_SHARE
               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
             verdict = "PROVEN_T2"
+            if top_src_share > MAX_SOURCE_SHARE:
+                # A single emitter can be PROVEN on the ledger; it is not
+                # sizing-eligible until an independent source replicates it.
+                reasons.append(
+                    f"single source {top_src_share:.0%} of trades — proven on the "
+                    "ledger, not sizing-eligible until replicated independently")
         elif (n >= CANDIDATE_MIN_N and boot.get("mean", 0) > 0
               and expect_ci_positive
               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
@@ -562,23 +594,32 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         "net_expectancy_pct": round(boot.get("mean", 0.0), 4),
         "net_ci_pct": [round(boot["ci_lo"], 4) if boot.get("ci_lo") is not None else None,
                        round(boot["ci_hi"], 4) if boot.get("ci_hi") is not None else None],
-        "p_value": round(p, 6),
+        "p_value": round(p_exp, 6),        # expectancy test — the BH family
+        "p_wr": round(p_wr, 6),            # WR descriptor, not a promotion gate
         "q_value": None,  # filled after BH across the family
-        "p_harm": round(binom_sf(n - wins, n), 6) if n else 1.0,
+        "p_harm": round(p_harm, 6),        # bootstrap P(net mean >= 0)
         "harm_q": None,   # filled after BH across the killed cells
+        "net_ci_pct_2x": [round(boot_2x["ci_lo"], 4) if boot_2x.get("ci_lo") is not None else None,
+                          round(boot_2x["ci_hi"], 4) if boot_2x.get("ci_hi") is not None else None],
+        "stress_2x_ok": bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0),
         "dsr": None,
         "split_half": ({"stable": stable, **{k: round(v, 4) for k, v in halves.items()}}
                        if halves else None),
         "top_symbol_share": round(top_sym_share, 4),
         "top_source_share": round(top_src_share, 4),
+        "single_source": bool(top_src_share > MAX_SOURCE_SHARE),
         "verdict": verdict,
         "reasons": reasons,
     })
-    dsr = deflated_sharpe(nets, n_trials)
-    if dsr:
-        out["dsr"] = round(dsr["dsr"], 4)
-        out["sharpe"] = round(dsr["sharpe"], 4)
-        out["sr0"] = round(dsr["sr0"], 4)
+    # DSR is reported only inside the gated family (n >= WR_MIN_N). Showing a DSR
+    # on a cell that is excluded from BH/Bonferroni told a second, inconsistent
+    # multiplicity story (45 tested vs 59 DSR-scored).
+    if n >= WR_MIN_N:
+        dsr = deflated_sharpe(nets, n_trials)
+        if dsr:
+            out["dsr"] = round(dsr["dsr"], 4)
+            out["sharpe"] = round(dsr["sharpe"], 4)
+            out["sr0"] = round(dsr["sr0"], 4)
     return out
 
 
@@ -658,9 +699,30 @@ def segment_tags(r: dict) -> list[tuple[str, str]]:
     return tags
 
 
+def _sha256(path: str) -> str | None:
+    try:
+        with open(path, "rb") as f:
+            return hashlib.sha256(f.read()).hexdigest()
+    except OSError:
+        return None
+
+
+def _git_sha() -> str | None:
+    env = os.environ.get("GITHUB_SHA")
+    if env:
+        return env[:12]
+    try:
+        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                             capture_output=True, text=True, timeout=5)
+        return (out.stdout or "").strip() or None
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
 def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  coverage: dict[str, Any] | None = None,
-                 alpha: dict[str, Any] | None = None) -> dict[str, Any]:
+                 alpha: dict[str, Any] | None = None,
+                 input_sha256: str | None = None) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
@@ -746,6 +808,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         c["q_value"] = round(q, 6)
     for c in segments:
         _promote(c)
+        # Section membership is reconstructed from row fields, not the live gate
+        # decision, so a proxy may never carry the sizing-eligible verdict.
+        if c["verdict"] == "PROVEN_T2":
+            c["verdict"] = "CANDIDATE"
+            c["reasons"].append("reconstructed section proxy: CANDIDATE is the ceiling")
     apply_harm_gate(segments)
     segments.sort(key=lambda c: (-c["net_expectancy_pct"], -c["n"]))
 
@@ -845,6 +912,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "n_cells_tested": len(tested),
         "n_cells_total": len(cells),
         "n_symbol_cells": len(symbols),
+        "n_cells_dsr_scored": sum(1 for c in cells if c.get("dsr") is not None),
         "n_proven": count("PROVEN_T2", cells),
         "n_candidate": count("CANDIDATE", cells),
         "n_weak": count("WEAK", cells),
@@ -881,7 +949,15 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "bootstrap_seed": BOOT_SEED,
             "slippage_pct_by_class": SLIPPAGE_PCT,
             "win_definition": "net pnl_pct > 0 after per-class round-trip slippage",
-            "p_value": "one-sided exact binomial P(X>=wins) under p=0.5",
+            "edge_test": "net-expectancy bootstrap CI, one-sided; WR is a descriptor only",
+            "p_value": "one-sided bootstrap P(net mean <= 0), 2,000 seeded resamples",
+            "p_wr": "one-sided exact binomial P(X>=wins) under p=0.5 — reported, never gated",
+            "promotion_rule": "PROVEN_T2 = n>=100, net CI lower bound >= "
+                              f"{PROVEN_MIN_NET_CI_LO_PCT}%/trade, stable halves, no symbol > "
+                              f"{MAX_SYMBOL_SHARE:.0%}, source share <= {MAX_SOURCE_SHARE:.0%}, "
+                              f"BH q <= {FDR_Q}, DSR >= {DSR_THRESHOLD}",
+            "cost_stress": "net CI is also reported at 2x the class slippage constant "
+                           "(report-only; never changes a verdict)",
             "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni "
                             f"alpha/m = {0.05 / max(1, len(tested)):.6f}",
             "stability": "chronological split-half, both halves net mean > 0",
@@ -922,9 +998,15 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "hypotheses": hyp,
         "provenance": {
             "module": "alpha_engine/audit3_tribunal.py",
+            "generator_version": GENERATOR_VERSION,
             "source_file": source,
             "source_generated_at": source_generated_at,
+            "input_sha256": input_sha256,
+            "git_sha": _git_sha(),
             "n_cells_scored_with_dsr": sum(1 for c in cells if c.get("dsr") is not None),
+            "registry_note": "one canonical multiplicity N: n_cells_tested feeds "
+                             "BH, Bonferroni and DSR; DSR is only reported for "
+                             "cells inside that family",
         },
     }
 
@@ -956,7 +1038,8 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, ValueError) as exc:
             print(f"WARNING: alpha sidecar unreadable ({exc}); continuing without it",
                   file=sys.stderr)
-    report = build_report(rows, args.picks, generated_at, coverage=coverage, alpha=alpha)
+    report = build_report(rows, args.picks, generated_at, coverage=coverage,
+                          alpha=alpha, input_sha256=_sha256(args.picks))
     payload = json.dumps(report, indent=1, allow_nan=False)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:
