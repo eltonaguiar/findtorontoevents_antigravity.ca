@@ -462,6 +462,7 @@ def _load_picks(*, ci_mode: bool = False) -> list[dict]:
 
 
 PF_REGISTRY_PATH = REPO_ROOT / "audit_dashboard/data/pf_registry.json"
+AUDIT3_LEDGER_PATH = REPO_ROOT / "audit_dashboard/data/audit3_ledger.json"
 
 
 # Sleeve plausibility guard (2026-11-16 audit). A profit factor this high on a
@@ -650,6 +651,72 @@ def _merge_top_sleeves(
         ),
     )
     return merged[:5]
+
+
+_AUDIT3_CELL_INDEX: dict[str, dict[tuple[str, str], str]] | None = None
+
+
+def _audit3_cell_index(ledger_path: Path | None = None) -> dict[tuple[str, str], str]:
+    """(asset_class, strategy) -> tribunal verdict from the audit3 ledger.
+
+    The /audit3 tribunal is the only surface that scores sleeves with DSR,
+    FDR multiplicity, cost stress and split-half stability. Fail-open: a
+    missing/corrupt ledger returns {} and sleeves are marked NOT_SCORED.
+    """
+    global _AUDIT3_CELL_INDEX
+    path = ledger_path or AUDIT3_LEDGER_PATH
+    cache_key = str(path)
+    if _AUDIT3_CELL_INDEX is not None and cache_key in _AUDIT3_CELL_INDEX:
+        return _AUDIT3_CELL_INDEX[cache_key]
+    index: dict[tuple[str, str], str] = {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            ledger = json.load(f)
+        for cell in ledger.get("cells") or []:
+            ac = str(cell.get("asset_class") or "").upper()
+            strat = str(cell.get("strategy") or "")
+            verdict = str(cell.get("verdict") or "")
+            if not (ac and strat and verdict):
+                continue
+            prev = index.get((ac, strat))
+            # Keep the strongest claim per (class, strategy) across directions
+            # so a LONG CANDIDATE is not hidden by a SHORT INSUFFICIENT_N.
+            rank = {"PROVEN_T2": 5, "CANDIDATE": 4, "WEAK": 3, "KILL": 2,
+                    "INSUFFICIENT_N": 1}
+            if prev is None or rank.get(verdict, 0) > rank.get(prev, 0):
+                index[(ac, strat)] = verdict
+    except Exception:
+        index = {}
+    if _AUDIT3_CELL_INDEX is None:
+        _AUDIT3_CELL_INDEX = {}
+    _AUDIT3_CELL_INDEX[cache_key] = index
+    return index
+
+
+def _audit3_cross_mark(
+    sleeves: list[dict], asset_class: str, ledger_path: Path | None = None,
+) -> list[dict]:
+    """Stamp each sleeve with the audit3 tribunal's independent verdict.
+
+    Root cause this fixes (2026-11-19): resolver-grade sleeves are selected
+    post-hoc from MySQL at_pick_outcomes with a WR>=50 & PF>=1.5 filter over
+    ~277 strategies — survivorship display with no multiplicity correction.
+    Several headline sleeves (Multi-Timeframe Trend Alignment PF 11.8,
+    AuditEnsemble PF 10.1) never appear in the audit3 payload at all, so
+    nothing independent ever scored them. A sleeve is only
+    `tribunal_corroborated` when audit3 rates it PROVEN_T2 or CANDIDATE.
+    """
+    index = _audit3_cell_index(ledger_path)
+    ac = asset_class.upper()
+    for s in sleeves:
+        verdict = index.get((ac, str(s.get("strategy") or ""))) or "NOT_SCORED"
+        s["audit3_verdict"] = verdict
+        s["tribunal_corroborated"] = verdict in ("PROVEN_T2", "CANDIDATE")
+        note = s.get("note") or ""
+        tag = f"audit3:{verdict}"
+        if tag not in note:
+            s["note"] = f"{note}; {tag}" if note else tag
+    return sleeves
 
 
 def _load_dashboard_health() -> dict[str, dict]:
@@ -1661,7 +1728,9 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         wf_oos = _simple_wf_oos_ratio(ac_picks) if not _CI_MODE else {"ratio": None, "ok": None, "note": "skipped in CI mode"}
         reg_sleeves = _top_money_ready_sleeves(full_reg, ac) if full_reg else []
         outcome_sleeves = _top_sleeves_from_outcomes(ac) if not ci_mode else []
-        top_sleeves = _merge_top_sleeves(reg_sleeves, outcome_sleeves)
+        top_sleeves = _audit3_cross_mark(
+            _merge_top_sleeves(reg_sleeves, outcome_sleeves), ac,
+        )
 
         # OVERALL/110 transparency: machine-readable daily-vs-honest-intrabar divergence.
         # The verdict already GATES on honest intrabar via _sizing_metrics_from_intrabar

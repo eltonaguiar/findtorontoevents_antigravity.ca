@@ -847,3 +847,69 @@ class TestSleevePlausibilityGuard:
         merged = _merge_top_sleeves(reg, out)
         assert merged[0]["strategy"] == "clean_high_pf"
         assert merged[1]["strategy"] == "resolver_artifact"
+
+
+class TestAudit3CrossMark:
+    """Sleeves must carry the audit3 tribunal's independent verdict
+    (2026-11-19: headline sleeves with PF>10 were absent from audit3 cells)."""
+
+    def _ledger(self, tmp_path, cells):
+        import json
+        p = tmp_path / "audit3_ledger.json"
+        p.write_text(json.dumps({"cells": cells}), encoding="utf-8")
+        return p
+
+    def _fresh(self):
+        import alpha_engine.money_ready_verdict as mrv
+        mrv._AUDIT3_CELL_INDEX = None
+        return mrv
+
+    def test_sleeve_absent_from_ledger_is_not_scored(self, tmp_path):
+        mrv = self._fresh()
+        path = self._ledger(tmp_path, [
+            {"asset_class": "CRYPTO", "strategy": "other", "verdict": "WEAK"},
+        ])
+        sleeves = mrv._audit3_cross_mark(
+            [{"strategy": "Multi-Timeframe Trend Alignment", "pf": 11.77,
+              "note": "resolver_grade"}],
+            "CRYPTO", ledger_path=path,
+        )
+        assert sleeves[0]["audit3_verdict"] == "NOT_SCORED"
+        assert sleeves[0]["tribunal_corroborated"] is False
+        assert "audit3:NOT_SCORED" in sleeves[0]["note"]
+
+    def test_candidate_cell_corroborates(self, tmp_path):
+        mrv = self._fresh()
+        path = self._ledger(tmp_path, [
+            {"asset_class": "ETF", "strategy": "rs-breakout-scout",
+             "direction": "LONG", "verdict": "CANDIDATE"},
+        ])
+        sleeves = mrv._audit3_cross_mark(
+            [{"strategy": "rs-breakout-scout", "pf": 1.59}],
+            "ETF", ledger_path=path,
+        )
+        assert sleeves[0]["audit3_verdict"] == "CANDIDATE"
+        assert sleeves[0]["tribunal_corroborated"] is True
+
+    def test_strongest_verdict_wins_across_directions(self, tmp_path):
+        mrv = self._fresh()
+        path = self._ledger(tmp_path, [
+            {"asset_class": "EQUITY", "strategy": "donchian-stock-breakout",
+             "direction": "SHORT", "verdict": "INSUFFICIENT_N"},
+            {"asset_class": "EQUITY", "strategy": "donchian-stock-breakout",
+             "direction": "LONG", "verdict": "WEAK"},
+        ])
+        sleeves = mrv._audit3_cross_mark(
+            [{"strategy": "donchian-stock-breakout", "pf": 1.69}],
+            "EQUITY", ledger_path=path,
+        )
+        assert sleeves[0]["audit3_verdict"] == "WEAK"
+        assert sleeves[0]["tribunal_corroborated"] is False
+
+    def test_missing_ledger_fails_open(self, tmp_path):
+        mrv = self._fresh()
+        sleeves = mrv._audit3_cross_mark(
+            [{"strategy": "x", "pf": 2.0}],
+            "CRYPTO", ledger_path=tmp_path / "nope.json",
+        )
+        assert sleeves[0]["audit3_verdict"] == "NOT_SCORED"
