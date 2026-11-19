@@ -80,6 +80,59 @@ def _append_log(row: dict) -> None:
         fh.write(json.dumps(row, default=str) + "\n")
 
 
+def _append_forward_observation(rec: dict, sym: str, entry: float, exit_px: float,
+                                today: str) -> None:
+    """Append a closed Faber TAA trade to reports/forward_observations.jsonl.
+
+    Uses the contract defined in alpha_engine/forward_observations.py.  Faber TAA
+    is daily-resolution (not intrabar), so intrabar_first_touch=False — this
+    means it can accrue forward rows for observation but cannot promote to
+    PROVEN_T2 (which requires 100% intrabar first-touch).
+    """
+    import hashlib
+    from datetime import datetime, timezone
+
+    ledger = ROOT / "reports" / "forward_observations.jsonl"
+    entry_date = rec.get("entry_date") or today
+    # Convert dates to ISO-8601
+    opened_at = f"{entry_date}T00:00:00+00:00" if "T" not in str(entry_date) else str(entry_date)
+    closed_at = f"{today}T00:00:00+00:00"
+    side = "LONG"
+    # Direction-adjusted buy-and-hold benchmark leg (same window)
+    # Approximate: use the price ratio as a proxy for the benchmark leg
+    bench = (exit_px / entry - 1.0) if entry > 0 else None
+    # Generate deterministic id
+    basis = f"POD-FABER-TAA|{sym.upper()}|{side}|{opened_at}"
+    row_id = "fwd_" + hashlib.sha256(basis.encode("utf-8")).hexdigest()[:20]
+    row = {
+        "id": row_id,
+        "hypothesis_id": "H-2026-11-19-03",
+        "opened_at": opened_at,
+        "closed_at": closed_at,
+        "symbol": sym.upper(),
+        "asset_class": "ETF",
+        "side": side,
+        "entry_px": round(entry, 4),
+        "exit_px": round(exit_px, 4),
+        "qty": 1.0,
+        "fees": 0.0,
+        "funding": 0.0,
+        "slippage_bps": 3.0,
+        "resolver_version": "faber_taa_pilot.daily.v1",
+        "intrabar_first_touch": False,
+        "benchmark_leg_ret": round(bench, 6) if bench is not None else None,
+        "regime_ok": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        with ledger.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row, default=str) + "\n")
+    except Exception as exc:
+        # Fail open — don't break the pilot
+        pass
+
+
 def _fetch_data() -> dict:
     """Daily closes for the GTAA-5 universe. auto_adjust handles dividends/splits."""
     import pandas as pd
@@ -176,6 +229,9 @@ def run_one_shot() -> dict:
             }
             pos["closed"].append(rec)
             _append_log({"date": today, "event": "CLOSE", "strategy": STRATEGY_ID, **rec})
+            # Also write to the forward_observations ledger (contract format) so
+            # POD-FABER-TAA accrues forward rows against the hold benchmark.
+            _append_forward_observation(rec, sym, entry, price, today)
             del pos["open"][sym]
 
     # 2) Evaluate live Faber signals; open new virtual positions.
