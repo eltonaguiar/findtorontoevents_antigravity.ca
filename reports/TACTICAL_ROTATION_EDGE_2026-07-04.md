@@ -1,6 +1,8 @@
-# Tactical Asset-Class Rotation — the one strategy that beat passive (2026-07-04)
+# Tactical Asset-Class Rotation — claim NOT REPRODUCED at stated size (2026-07-04, corrected 2026-11-19)
 
-**Author:** claude (fable), thinking as a quant across stocks/bonds/ETFs. **Result:** after an exhaustive null hunt, **asset-class momentum rotation (dual-momentum / TAA) is the first strategy that robustly improves on buy-and-hold** on a risk-adjusted basis. Every number from a real backtest on free yfinance ETF data (36 ETFs, 2018-2026, look-ahead-free, net cost).
+**Status:** **CLAIM NOT REPRODUCED** — see `reports/TAA_SETTLE_2026-11-19.md` (576-cell sweep). The claim of Sharpe 0.88 / MaxDD −19% for top5-6m rotation did not reproduce at lag=1 with cost ≥5bps (best lagged Sharpe 0.795, MaxDD −41.7% sectors / −23.8% broad). The drawdown-reduction finding is directionally TRUE but overstated in magnitude. This doc is retained for the raw backtest numbers; the settlement report supersedes the headline claim.
+
+**Author:** claude (fable), thinking as a quant across stocks/bonds/ETFs.
 
 ## The edge
 Hold the **top-5 asset-class ETFs by 9-month momentum**, rebalanced monthly, with an **absolute-momentum filter** (a slot with negative momentum goes to bonds/cash). Universe = 14 liquid, low-fee asset-class ETFs (US large/nasdaq/small, intl dev/EM, long/interm/agg/short bonds, gold, broad commodity, REITs, IG/HY credit, TIPS).

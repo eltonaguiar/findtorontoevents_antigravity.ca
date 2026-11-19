@@ -115,7 +115,6 @@
     <button data-t="families">Source Families</button>
     <button data-t="evidence">Evidence Registry</button>
     <button data-t="hyp">Hypotheses</button>
-    <button data-t="forward">Forward Evidence</button>
     <button data-t="method">Method &amp; Limits</button>
   </nav>
 
@@ -123,8 +122,6 @@
     <div class="card"><h3>Asset classes — selection alpha first, then cost, then multiplicity</h3>
       <div class="tblwrap"><table id="classTbl"></table></div>
       <div class="note" id="alphaNote"></div>
-      <div class="tblwrap" style="margin-top:10px"><table id="alphaCovTbl"></table></div>
-      <div class="note" id="alphaCovNote"></div>
       <div class="legend" id="verdictLegend"></div>
     </div>
     <div class="card"><h3>What this ledger does <em>not</em> score</h3>
@@ -229,25 +226,6 @@
       <h4>Open / registered hypotheses</h4>
       <div class="tblwrap"><table id="hypTbl"></table></div>
       <p class="muted" id="hypUntested" style="font-size:12px"></p>
-    </div>
-  </section>
-
-  <section id="forward">
-    <div class="card">
-      <h3>Forward evidence — the only rows that can promote a pod</h3>
-      <p class="muted" id="fwdSub"></p>
-      <div class="grid" id="fwdKpis"></div>
-      <h4>Pods — forward rows closed on or after registration</h4>
-      <div class="tblwrap"><table id="fwdPodTbl"></table></div>
-      <h4>Hypothesis clocks</h4>
-      <div class="tblwrap" style="max-height:340px"><table id="fwdHypTbl"></table></div>
-      <div class="note" id="fwdRule"></div>
-      <p class="muted" style="margin:10px 0 0;font-size:12px">
-        Row count and fingerprint come from <code>reports/forward_observations.jsonl</code>
-        as read by the tribunal's <code>forward_gate_block()</code>. A pod at zero rows
-        cannot promote anything, no matter how good its backtest looks — that is the
-        point of the gate, not a bug in it.
-      </p>
     </div>
   </section>
 
@@ -372,8 +350,6 @@ function render(d){
     {key:'verdict', label:'Verdict', render:r=>pill(r.verdict)},
   ], d.classes, 'n', -1);
 
-  const fg = d.forward_gate || {};
-  renderForward(d);
   const sa = d.selection_alpha || {};
   $('alphaNote').innerHTML = sa.available
     ? `<b>Selection alpha</b> = pick net return minus the direction-adjusted return of
@@ -386,54 +362,6 @@ function render(d){
        (crypto_ohlcv / equity_daily_ohlcv / etf_daily_ohlcv), which this job can only read
        with DB credentials. Without it the class verdicts below answer “did this beat zero”
        — the weaker question — not “did this beat just holding the same thing”.`;
-
-  // G8 bar coverage — WHY a class gate reads "unmeasured". Without this the page
-  // reported a missing measurement with no cause; on 2026-11-19 the cause was
-  // stale tables (equity_daily_ohlcv ended 2026-06-18, fx_prices 2026-02-09).
-  const alphaCovRows = Object.keys(sa.bar_coverage || {}).sort().map(k => {
-    const v = sa.bar_coverage[k] || {};
-    const cls = (d.classes || []).find(c => c.asset_class === k) || {};
-    const gate = cls.alpha_gate || {};
-    const measured = Object.keys(gate).length > 0 && gate.status !== 'unmeasured';
-    return {
-      asset_class: k,
-      priced: (v.symbols_found == null ? '—' : v.symbols_found) + '/' +
-              (v.symbols_requested == null ? '—' : v.symbols_requested),
-      last_bar: v.last_bar || null,
-      gate: measured ? 'measured' : 'unmeasured',
-      missing: (v.missing_symbols || []).join(', '),
-    };
-  });
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const staleDays = (s) => {
-    if (!s) return null;
-    const ms = Date.parse(s + 'T00:00:00Z');
-    if (isNaN(ms)) return null;
-    return Math.round((Date.parse(todayStr + 'T00:00:00Z') - ms) / 86400000);
-  };
-  table('alphaCovTbl', [
-    {key:'asset_class', label:'Class'},
-    {key:'priced', label:'Instruments priced', render:r=>`<span class="num">${r.priced}</span>`},
-    {key:'last_bar', label:'Last bar', render:r=>{
-        if (r.last_bar == null) return '<span class="neg">no bars</span>';
-        const age = staleDays(r.last_bar);
-        const cls2 = (age != null && age > 7) ? 'neg' : 'muted';
-        const ageTxt = (age != null && age > 7)
-          ? ` <span class="muted" style="font-size:10px">${age}d stale</span>` : '';
-        return `<span class="num ${cls2}">${r.last_bar}</span>${ageTxt}`;
-      }},
-    {key:'gate', label:'G8 gate', render:r=>r.gate === 'measured'
-        ? '<span class="pos">measured</span>'
-        : '<span class="neg">unmeasured</span>'},
-    {key:'missing', label:'Symbols with no bars', render:r=>r.missing
-        ? `<span class="muted" style="font-size:11px">${r.missing}</span>`
-        : '<span class="muted">—</span>'},
-  ], alphaCovRows, 'asset_class', 1);
-  $('alphaCovNote').innerHTML = alphaCovRows.length
-    ? `<b>Bar coverage</b> explains an <i>unmeasured</i> class gate. The gate needs a bar at or
-       after each pick's exit, so a pick closing after its table's last bar cannot be priced —
-       the count below shows instruments actually priced (spelling variants such as BTC-USD / BTCUSDT collapse to one), and red dates are more than 7 days stale.`
-    : '';
 
   // Coverage — the denominator. Without it every verdict above reads as if it
   // covered the whole closed book.
@@ -467,12 +395,6 @@ function render(d){
   $('covNote').textContent = [
     (cov.window && cov.window.first_closed_at)
       ? `Scored window: ${stamp(cov.window.first_closed_at)} → ${stamp(cov.window.last_closed_at)}.` : '',
-    (cov.denominator && cov.denominator.mode)
-      ? `Denominator: ${cov.denominator.mode}${cov.denominator.loaded_from_sidecar ? ' (canonical sidecar)' : ''}.` : '',
-    (d.persistence && d.persistence.available)
-      ? `Verdict persistence is on: a promotion must persist ${d.persistence.runs_required} runs; ${d.persistence.history_cells} cells tracked.` : '',
-    (d.verdict_churn && d.verdict_churn.available)
-      ? `Verdict churn: ${d.verdict_churn.n_flipped}/${d.verdict_churn.n_tracked} cells flipped since the previous build (${(100*(d.verdict_churn.churn_rate||0)).toFixed(1)}%${d.verdict_churn.alert ? ' — ALERT' : ''}). High churn means the judge is noisy, not that the market changed.` : '',
     cov.cohorts_overlap
       ? 'The excluded cohorts overlap each other, so their counts do not add up to the unscored gap.' : '',
     'These cohorts are reported by the publishing dashboard, not re-derived here; this ledger cannot vouch for how they were classified.'
@@ -496,11 +418,6 @@ function render(d){
     ['G5 stability', conv.stability + '.'],
     ['G6 concentration', `No symbol > ${conv.max_symbol_share*100}% of a cell; no source > ${conv.max_source_share*100}% of an aggregate.`],
     ['G7 cost realism', conv.win_definition + '.'],
-    ['G8 forward evidence', fg.enforced
-        ? `${(fg.n_rows||0).toLocaleString()} forward rows, fingerprint ` +
-          `${esc(fg.fingerprint||'—')}; a pod reaches PROVEN_T2 only on its own rows ` +
-          `closed after registration (${Object.keys(fg.pods||{}).length} pods tracked).`
-        : 'NOT ENFORCED in this build — forward evidence is not gating promotion.'],
     ['Doctrine', (d.doctrine && d.doctrine.default_state) ? d.doctrine.default_state + ' Kill requires: ' + d.doctrine.kill_requires + '.' : 'innocent until proven guilty'],
   ].map(([a,b])=>`<div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)">
       <div style="min-width:150px;font:11px/1.6 var(--mono);color:var(--blue)">${esc(a)}</div>
@@ -583,11 +500,11 @@ function render(d){
     <details><summary>Why one-sided tests?</summary><p>The product only acts on positive edge.
       A cell with WR below 50% is caught by the net-expectancy and PF gates, not by a two-sided
       WR test. This avoids spending multiplicity budget on the wrong tail.</p></details>
-    <details><summary>Why subtract slippage before counting wins?</summary><p>A gross “win”
-      smaller than the class’s measured round-trip slippage is a net loss. Counting gross wins inflates WR and PF
+    <details><summary>Why subtract slippage before counting wins?</summary><p>A 7bp gross “win”
+      on COMMODITY is a net loss after a 12bp round trip. Counting gross wins inflates WR and PF
       and is the single easiest way to fake money-readiness.</p></details>
     <details><summary>What DSR adds</summary><p>Deflated Sharpe (Bailey &amp; López de Prado)
-      asks how impressive the observed Sharpe is given how many cells were tested. With the number of cells tested (see the multiplicity panel),
+      asks how impressive the observed Sharpe is given how many cells were tested. With 45 tests,
       the expected best null Sharpe is already positive; DSR discounts that.</p></details>
     <details><summary>What this ledger cannot tell you</summary><p>It cannot detect look-ahead
       leakage, mislabeled resolutions, or a feed that silently stopped emitting. It measures the
@@ -597,7 +514,7 @@ function render(d){
       runs within two separate families. <b>Confirmatory</b> cells match a pod declared in
       <code>reports/audit3_confirmatory.json</code> before its forward data existed;
       <b>discovery</b> cells are everything else and top out at CANDIDATE. A pre-registered
-      pod must not share a multiplicity budget with the exploratory cells, and looking at a
+      pod must not share a multiplicity budget with 40+ exploratory cells, and looking at a
       result before registering the pod means it was never pre-registered.</p></details>
     <details><summary>Random-entry timing null</summary><p>${esc(conv.random_entry_mc)}</p></details>`;
   table('provTbl', [
@@ -615,58 +532,11 @@ function render(d){
         : sharePct+'% ('+cov.scored_rows+' of '+cov.total_closed_picks+' closed picks)'},
     {k:'selection alpha', v:(d.selection_alpha||{}).available
         ? 'joined from ' + ((d.selection_alpha||{}).source||'sidecar')
-        : 'not computed in this build (needs DB price tables)'},
+        : 'not evaluated — G8 selection-alpha gate unavailable (selection_alpha.available=false; needs DB price tables)'},
     {k:'bootstrap', v:`${conv.bootstrap_resamples} resamples, seed ${conv.bootstrap_seed}`},
     {k:'BH q', v:conv.fdr_q},
     {k:'DSR threshold', v:conv.dsr_threshold},
   ], null, 1);
-}
-
-function renderForward(d){
-  if(!$('fwdPodTbl')) return;
-  const fg = d.forward_gate || {};
-  const pods = fg.pods || {}, hyps = fg.hypotheses || {};
-  const podRows = Object.entries(pods).map(([k,v]) => ({
-    pod: k, hypothesis: v.hypothesis_id || (v.pod||''), n_forward: v.n_forward,
-    min_n: v.min_n, pct: v.min_n ? Math.round(100*(v.n_forward||0)/v.min_n) : null,
-    eligible: v.eligible, since: v.since,
-    reason: (v.reasons||[]).join('; ') || (v.reason||''),
-  }));
-  const hypRows = Object.entries(hyps).map(([k,v]) => ({
-    pod: k, hypothesis: k, n_forward: v.n_forward, min_n: v.min_n,
-    pct: v.min_n ? Math.round(100*(v.n_forward||0)/v.min_n) : null,
-    eligible: v.eligible, since: v.since,
-    reason: (v.reasons||[]).join('; ') || (v.reason||''),
-  }));
-  const eligible = podRows.filter(p=>p.eligible).length;
-  $('fwdSub').textContent = fg.enforced
-    ? `${(fg.n_rows||0).toLocaleString()} forward rows in the ledger` +
-      `${fg.fingerprint?` (fingerprint ${fg.fingerprint})`:''} · ` +
-      `${Object.keys(pods).length} pods · ${eligible} eligible to promote · ` +
-      `${(fg.read_errors||[]).length} read errors. Rows are counted only from each pod's ` +
-      `registration date, so a pod cannot inherit pre-registration history.`
-    : 'Forward gating is not enforced in this ledger build.';
-  $('fwdKpis').innerHTML = [
-    ['Forward rows', (fg.n_rows||0).toLocaleString(), 'blue'],
-    ['Fingerprint', fg.fingerprint || '—', ''],
-    ['Enforced', fg.enforced ? 'yes' : 'NO', fg.enforced ? 'green' : 'red'],
-    ['Pods tracked', Object.keys(pods).length, ''],
-    ['Eligible', eligible, eligible ? 'green' : 'amber'],
-    ['Read errors', (fg.read_errors||[]).length, (fg.read_errors||[]).length ? 'red' : ''],
-  ].map(([k,v,c])=>`<div class="kpi ${c}"><div class="v">${esc(v)}</div><div class="k">${k}</div></div>`).join('');
-  const cols = [
-    {key:'pod', label:'Pod'},
-    {key:'hypothesis', label:'Hypothesis'},
-    {key:'n_forward', label:'Forward n', render:r=>`<span class="num">${r.n_forward==null?'—':r.n_forward}</span>`},
-    {key:'min_n', label:'min n'},
-    {key:'pct', label:'Progress', render:r=>r.pct==null?'—':`<span class="num">${r.pct}%</span>`},
-    {key:'eligible', label:'Eligible', render:r=>`<span class="${r.eligible?'pos':'muted'}">${r.eligible?'yes':'no'}</span>`},
-    {key:'since', label:'Since'},
-    {key:'reason', label:'Why', render:r=>`<span class="muted" style="white-space:normal;font-size:11.5px">${esc(r.reason)}</span>`},
-  ];
-  table('fwdPodTbl', cols, podRows, 'n_forward', -1);
-  table('fwdHypTbl', cols, hypRows, 'n_forward', -1);
-  $('fwdRule').textContent = fg.rule || 'No forward-gate rule recorded in this build.';
 }
 
 function renderCells(){

@@ -17125,6 +17125,20 @@ def generate():
             # geomean_annualized = ((1 + mu_d/100)^252 - 1) * 100 from daily means.
             "total_pnl_pct_compounded_rolling_100": total_pnl_pct_compounded_rolling_100,
             "total_pnl_pct_geomean_annualized": total_pnl_pct_geomean_annualized,
+            # T5 (2026-11-19): reconciliation note for the three-way PnL contradiction.
+            # total_pnl_pct (headline) = rolling-100 compound, bounded at +/-10% per trade.
+            # total_pnl_pct_sum_raw = additive Σ of per-trade pnl_pct% (deprecated, debugging only).
+            # total_pnl_pct_compounded_ew = full-ledger equal-weight compound (deprecated, back-compat).
+            # These answer different questions and legitimately disagree — the headline is total_pnl_pct.
+            "pnl_methodology_note": (
+                "Three PnL figures are reported because they answer different questions. "
+                "total_pnl_pct (headline) is the rolling-100 equal-weight compound of capped per-trade pnl_pct% — "
+                "the bounded headline metric for recent performance. "
+                "total_pnl_pct_sum_raw is the additive sum of per-trade pnl_pct% (deprecated, debugging only — "
+                "it is NOT a portfolio return and can exceed +/-100% on large cohorts). "
+                "total_pnl_pct_compounded_ew is the full-ledger equal-weight compound (deprecated, back-compat). "
+                "They legitimately disagree on the same data; use total_pnl_pct as the headline."
+            ),
             "profit_factor": overall_pf,
             "avg_win": overall_avg_win,
             "avg_loss": overall_avg_loss,
@@ -18497,21 +18511,6 @@ def generate():
             log.info("  [sports-filter] dropped %d SPORTS picks from active feed", _before - _after)
     except Exception as _e:  # noqa: BLE001
         log.warning("sports filter failed (non-fatal): %s", _e)
-
-    # -- Intraday stop (measured 2026-11-19) ----------------------------------
-    # CRYPTO/ETF INTRADAY rows lose to simply holding the same instrument after
-    # costs (reports/alpha_slice_scan_2026-11-19.json, BH-corrected q<=0.10), so
-    # they stay in the payload as shadow rows and leave the money path. Nothing
-    # is deleted: each pick carries money_path / shadow / shadow_reason.
-    try:
-        from alpha_engine.intraday_stop import annotate_buckets as _annotate_buckets
-    except ImportError:  # direct script execution
-        from intraday_stop import annotate_buckets as _annotate_buckets
-    payload["intraday_stop"] = _annotate_buckets(payload.get("picks") or {})
-    _stop = payload["intraday_stop"]
-    if _stop["shadow"]:
-        log.info("  [intraday-stop] %d shadow rows kept, %d on the money path",
-                 _stop["shadow"], _stop["money_path"])
 
     # ── ML feature persistence + edge analytics (optional, soft-fail) ──
     # Persists ML/technical fields needed for post-hoc edge validation and
