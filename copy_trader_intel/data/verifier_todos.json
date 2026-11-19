@@ -1,0 +1,56 @@
+{
+  "owner": "copytrader-source-verification",
+  "objective": "Verify free copytrader/public-trade sources per asset class, prove no future bias, backtest, discover GitHub pick repos (incl. eltonaguiar), integrate into pipeline, document.",
+  "created": "2026-11-18T04:36:00Z",
+  "last_heartbeat": "2026-11-18T08:20:33Z",
+  "todos": [
+    {
+      "id": "fix-flags",
+      "status": "completed",
+      "desc": "Fix verifier false FLAGs: per-source stale tolerance, date_granularity, censored entry/exit pairs, SEC bounded window, Polymarket resolution-date handling",
+      "evidence": "2026-11-18T05:07Z: probe integrity=CLEAN for all 8 reachable sources (was 6/8 FLAGGED)"
+    },
+    {
+      "id": "okx-audit",
+      "status": "completed",
+      "desc": "OKX artifact found & fixed: subposition-history is ticket-level (partial scale-outs inflate WR). Added aggregate_round_trips; raw WR 73.0% collapses to 52.2%, matching OKX's own reported winRatio ~52%. Added apply_artifact_guards + selection-bias cap.",
+      "evidence": "CchrisBbtc 74.3%->50.0% vs winRatio 0.5222; Adored-PoW 75.0%->50.0% vs 0.5778; probe verdict WATCH (was TRUSTED)"
+    },
+    {
+      "id": "probe-rerun",
+      "status": "completed",
+      "desc": "Final probe verdicts: okx WATCH(n=69), hyperliquid_whales WATCH(n=2884), polymarket REJECT_ARTIFACT (endpoint excludes losers), cftc/ark/sec/treasury/dexscreener DATA_OK_NO_TRADE_PNL, myfxbook UNREACHABLE (auth required)",
+      "evidence": "copy_trader_intel/data/source_truth_report.json"
+    },
+    {
+      "id": "backtest",
+      "status": "completed",
+      "desc": "Run backtest subcommand and review IS/OOS splits (uses collapsed round trips). HL DECAYS (PF 2.0\u21920.74), OKX SURVIVES_OOS (PF 12.7\u21922.1, WR ~52% stable), Polymarket ARTIFACT_NOT_BACKTESTABLE",
+      "evidence": "copy_trader_intel/data/source_truth_backtest.json"
+    },
+    {
+      "id": "github",
+      "status": "completed",
+      "desc": "Run github subcommand; add non-crypto queries (forex, COT/commodity, bond/ETF, penny, value screens, prediction markets) and scan eltonaguiar repos for published picks + ML methodology",
+      "evidence": "2026-11-18T08:20Z: 104 candidates, 0 usable. 82 eltonaguiar repos scanned (all NO_PICK_FILE). Concurrency added (ThreadPool 16-24 workers)."
+    },
+    {
+      "id": "integrate",
+      "status": "completed",
+      "desc": "Wire accepted sources into audit_trail/dashboard_generator.py JSON_PICK_SOURCES with correct active/closed tuple shape",
+      "evidence": "2026-11-18T08:35Z: tools/build_audit_surface_truth.py emits verified_copytrader_sources (7 accepted, MONITOR_ONLY); audit_surface_truth_banner.js renders the block. No sizing path touched."
+    },
+    {
+      "id": "docs",
+      "status": "completed",
+      "desc": "Rewrite updates/2026-11-18-copytrader-source-verification-summary.md with real probe/backtest numbers",
+      "evidence": "2026-11-18T08:30Z: rewrote updates/2026-11-18-copytrader-source-verification-summary.md with real probe/backtest numbers; corrected the draft false REJECT claims."
+    },
+    {
+      "id": "verify",
+      "status": "completed",
+      "desc": "py_compile + run all subcommands end-to-end; confirm outputs written",
+      "evidence": "2026-11-18T08:40Z: py_compile OK on 3 files; node --check OK; pytest -k \"surface_truth or copytrader\" 17 passed, 8 skipped; probe/backtest/github/registry/build_truth all run clean."
+    }
+  ]
+}

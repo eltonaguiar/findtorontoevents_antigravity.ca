@@ -41,6 +41,52 @@
       .join('');
     const t = data.tournament || {};
     const lb = data.ai_leaderboard || {};
+    const vs = data.verified_copytrader_sources || {};
+    const vsRows = (vs.sources || [])
+      .map(function (s) {
+        const oos = s.oos_verdict ? String(s.oos_verdict) : 'n/a';
+        const wr = s.oos_wr_pct != null ? s.oos_wr_pct + '%' : '—';
+        const pf = s.oos_pf != null ? s.oos_pf : '—';
+        return (
+          '<tr><td>' +
+          esc(s.id) +
+          '</td><td>' +
+          esc((s.asset_classes || []).join(', ')) +
+          '</td><td>' +
+          esc(s.verdict) +
+          '</td><td>' +
+          esc(oos) +
+          '</td><td class="num">' +
+          esc(wr) +
+          '</td><td class="num">' +
+          esc(pf) +
+          '</td></tr>'
+        );
+      })
+      .join('');
+    const vsBlock = vs.sources
+      ? '<div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(148,163,184,0.25)">' +
+        '<div style="font-weight:700;font-size:12px;color:#fcd34d;margin-bottom:6px">Copytrader sources — MONITOR ONLY (not money-ready)</div>' +
+        '<p style="color:#cbd5e1;margin:0 0 6px;font-size:11px">' +
+        esc(vs.policy || '') +
+        '</p>' +
+        '<table style="width:100%;border-collapse:collapse;font-size:11px">' +
+        '<thead><tr style="color:#94a3b8"><th>Source</th><th>Classes</th><th>Probe</th><th>OOS</th><th class="num">WR%</th><th class="num">PF</th></tr></thead><tbody>' +
+        vsRows +
+        '</tbody></table>' +
+        ((vs.rejected_artifacts || []).length
+          ? '<p style="color:#fca5a5;margin:6px 0 0;font-size:11px">Rejected: ' +
+            esc(
+              vs.rejected_artifacts
+                .map(function (r) {
+                  return r.id + ' (' + r.verdict + ')';
+                })
+                .join(', ')
+            ) +
+            '</p>'
+          : '') +
+        '</div>'
+      : '';
     el.innerHTML =
       '<div style="padding:14px 16px;background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(15,23,42,0.9));border:2px solid rgba(239,68,68,0.45);border-radius:10px;margin:12px 0;font-size:12px;line-height:1.55">' +
       '<div style="font-weight:800;font-size:14px;color:#fecaca;margin-bottom:8px">🎯 Money-ready bridge — policy-clean truth (mutual-fund bar: n≥100, WR≥50%, PF≥1.5)</div>' +
@@ -56,6 +102,7 @@
       '<thead><tr style="color:#94a3b8"><th>Class</th><th class="num">n</th><th class="num">WR%</th><th class="num">PF</th><th>Status</th><th>Bridge</th></tr></thead><tbody>' +
       rows +
       '</tbody></table>' +
+      vsBlock +
       '<p style="margin:10px 0 0;font-size:10px;color:#64748b">Source: <code>audit_surface_truth.json</code> · generated ' +
       esc((data.generated_at || '').slice(0, 19)) +
       'Z · Trust: ' +

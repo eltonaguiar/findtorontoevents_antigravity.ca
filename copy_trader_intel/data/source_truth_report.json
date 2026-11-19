@@ -1,0 +1,579 @@
+{
+  "generated_at": "2026-11-18T05:20:58.989494+00:00",
+  "definition": {
+    "future_bias": "no source timestamp may exceed now+5min; entries must precede exits",
+    "lookahead": "signal/report timestamp must precede the price bar used to score it",
+    "reliability": "Wilson lower-bound WR >= 50%, PF >= 1.2, binomial p<0.05 vs coin flip",
+    "trust_gate": "n >= 100 and split-half WR gap < 15pp"
+  },
+  "sources": [
+    {
+      "id": "okx_copytrading",
+      "asset_classes": [
+        "CRYPTO"
+      ],
+      "license": "free/public",
+      "what": "OKX lead-trader leaderboard + closed subposition history (real trader PnLs)",
+      "pick_role": "trader_follow",
+      "reachable": true,
+      "latency_ms": 3594,
+      "records": 69,
+      "ts_note": "epoch ms \u2014 unambiguous UTC",
+      "kind": "trade_level",
+      "integrity": {
+        "n_ts": 695,
+        "verdict": "CLEAN",
+        "flags": [],
+        "future_count": 0,
+        "future_samples": [],
+        "oldest": "2026-08-17T23:46:57.509000+00:00",
+        "newest": "2026-11-17T17:08:57.463000+00:00",
+        "stale_days": 0.51,
+        "dup_ts_ratio": 0.482,
+        "median_gap_hours": 0.0,
+        "entry_after_exit": 0,
+        "zero_hold": 0
+      },
+      "reliability": {
+        "n": 69,
+        "wins": 36,
+        "wr_pct": 52.17,
+        "wilson_lb_pct": 40.59,
+        "pf": 4.895,
+        "expectancy": 9597.0122,
+        "total_pnl": 662193.84,
+        "t_stat_mean_pnl": 2.055,
+        "split_half_wr_pct": [
+          52.94,
+          51.43
+        ],
+        "split_half_gap": 0.015,
+        "p_vs_coinflip": 0.359
+      },
+      "verdict": "WATCH",
+      "reasons": [
+        "expectancy>0",
+        "pf>=1.2",
+        "significant",
+        "selection_bias:top_leaderboard_pnl_ratio"
+      ],
+      "selection": "top_leaderboard_pnl_ratio",
+      "samples": {
+        "traders": [
+          {
+            "trader": "CchrisBbtc",
+            "unique_code": "CB312175A85C9B68",
+            "lead_days": "102",
+            "pnl_ratio": "3.4394",
+            "aum": "368091.6462332761439349",
+            "reported_win_ratio": "0.5222",
+            "closed_positions": 70,
+            "raw_wr_pct": 74.29,
+            "round_trips": 16,
+            "round_trip_wr_pct": 50.0,
+            "partial_tickets_collapsed": 54
+          },
+          {
+            "trader": "huge77788",
+            "unique_code": "37D18BE54F98F099",
+            "lead_days": "205",
+            "pnl_ratio": "0.2577",
+            "aum": "29840.3783501500000099",
+            "reported_win_ratio": "0.5341",
+            "closed_positions": 6,
+            "raw_wr_pct": 100.0,
+            "round_trips": 1,
+            "round_trip_wr_pct": 100.0,
+            "partial_tickets_collapsed": 5
+          },
+          {
+            "trader": "mhquant",
+            "unique_code": "744584888019747661",
+            "lead_days": "153",
+            "pnl_ratio": "0.7732",
+            "aum": "1416.9588775201594262",
+            "reported_win_ratio": "0.5333",
+            "closed_positions": 5,
+            "raw_wr_pct": 80.0,
+            "round_trips": 3,
+            "round_trip_wr_pct": 66.67,
+            "partial_tickets_collapsed": 2
+          },
+          {
+            "trader": "Adored-PoW",
+            "unique_code": "D89A246530D24C6E",
+            "lead_days": "752",
+            "pnl_ratio": "0.8375",
+            "aum": "8704.2016473242439713",
+            "reported_win_ratio": "0.5778",
+            "closed_positions": 200,
+            "raw_wr_pct": 75.0,
+            "round_trips": 22,
+            "round_trip_wr_pct": 50.0,
+            "partial_tickets_collapsed": 178
+          },
+          {
+            "trader": "0xleek.eth",
+            "unique_code": "B74FC756C8EE894B",
+            "lead_days": "363",
+            "pnl_ratio": "0.2494",
+            "aum": "49633.7030459822076409",
+            "reported_win_ratio": "0.5254",
+            "closed_positions": 47,
+            "raw_wr_pct": 63.83,
+            "round_trips": 19,
+            "round_trip_wr_pct": 52.63,
+            "partial_tickets_collapsed": 28
+          },
+          {
+            "trader": "Fixed-Explorer-Auto",
+            "unique_code": "CEB867A1A00B6682",
+            "lead_days": "33",
+            "pnl_ratio": "3.724",
+            "aum": "12998.2111741527382947",
+            "reported_win_ratio": "0.5161",
+            "closed_positions": 20,
+            "raw_wr_pct": 70.0,
+            "round_trips": 8,
+            "round_trip_wr_pct": 50.0,
+            "partial_tickets_collapsed": 12
+          },
+          {
+            "trader": "Thaisky",
+            "unique_code": "B1CED679464945F4",
+            "lead_days": "316",
+            "pnl_ratio": "0.2055",
+            "aum": "50",
+            "reported_win_ratio": "0.5111",
+            "closed_positions": 0,
+            "raw_wr_pct": 0.0,
+            "round_trips": 0,
+            "round_trip_wr_pct": 0.0,
+            "partial_tickets_collapsed": 0
+          },
+          {
+            "trader": "PlymouthUltra",
+            "unique_code": "A8AF8AFFAB6051B3",
+            "lead_days": "1257",
+            "pnl_ratio": "0.2432",
+            "aum": "131275.8419557852663199",
+            "reported_win_ratio": "0.7636",
+            "closed_positions": 0,
+            "raw_wr_pct": 0.0,
+            "round_trips": 0,
+            "round_trip_wr_pct": 0.0,
+            "partial_tickets_collapsed": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "hyperliquid_whales",
+      "asset_classes": [
+        "CRYPTO",
+        "FUTURES"
+      ],
+      "license": "free/public",
+      "what": "Hyperliquid on-chain whale leaderboard + fill-level round trips",
+      "pick_role": "trader_follow",
+      "reachable": true,
+      "latency_ms": 5561,
+      "records": 2884,
+      "ts_note": "epoch ms fill time \u2014 unambiguous UTC; sub-second-rounded exchange timestamps can share an ms, so same-ms round trips are not literal zero-hold trades",
+      "kind": "trade_level",
+      "integrity": {
+        "n_ts": 16000,
+        "verdict": "CLEAN",
+        "flags": [],
+        "future_count": 0,
+        "future_samples": [],
+        "oldest": "2026-10-12T13:55:46.307000+00:00",
+        "newest": "2026-11-18T01:57:11.956000+00:00",
+        "stale_days": 0.14,
+        "dup_ts_ratio": 0.59,
+        "median_gap_hours": 0.0,
+        "entry_after_exit": 0,
+        "zero_hold": 292
+      },
+      "reliability": {
+        "n": 2884,
+        "wins": 1229,
+        "wr_pct": 42.61,
+        "wilson_lb_pct": 40.82,
+        "pf": 1.263,
+        "expectancy": 0.9199,
+        "total_pnl": 2652.93,
+        "t_stat_mean_pnl": 2.322,
+        "split_half_wr_pct": [
+          46.05,
+          39.18
+        ],
+        "split_half_gap": 0.069,
+        "p_vs_coinflip": 1.0
+      },
+      "verdict": "WATCH",
+      "reasons": [
+        "expectancy>0",
+        "pf>=1.2",
+        "significant",
+        "selection_bias:top_leaderboard_month_pnl"
+      ],
+      "selection": "top_leaderboard_month_pnl",
+      "samples": {
+        "wallets": [
+          {
+            "address": "0x5b5d51203a0f9079f8aeb098a6523a13f298c060",
+            "fills": 2000,
+            "round_trips": 0,
+            "month_pnl": 120782190.5
+          },
+          {
+            "address": "0xb83de012dba672c76a7dbbbf3e459cb59d7d6e36",
+            "fills": 2000,
+            "round_trips": 0,
+            "month_pnl": 103850683.68
+          },
+          {
+            "address": "0xb695651daa495f59dd2725c6fe98322d8b51a92d",
+            "fills": 2000,
+            "round_trips": 28,
+            "month_pnl": 32683868.73
+          },
+          {
+            "address": "0x45d26f28196d226497130c4bac709d808fed4029",
+            "fills": 2000,
+            "round_trips": 8,
+            "month_pnl": 30870326.5
+          },
+          {
+            "address": "0xdf954bbe619273a56e0cfa90dad8382195dc7d72",
+            "fills": 2000,
+            "round_trips": 105,
+            "month_pnl": 30654454.64
+          },
+          {
+            "address": "0x7fdafde5cfb5465924316eced2d3715494c517d1",
+            "fills": 2000,
+            "round_trips": 94,
+            "month_pnl": 29843378.42
+          },
+          {
+            "address": "0xfc27136e42af1732ddc9ce2605ea9bff1b959d9d",
+            "fills": 2000,
+            "round_trips": 852,
+            "month_pnl": 27473765.62
+          },
+          {
+            "address": "0xf5d81a135f756ca16544e53c20fc20643ec3ad53",
+            "fills": 2000,
+            "round_trips": 1797,
+            "month_pnl": 26994972.07
+          }
+        ]
+      }
+    },
+    {
+      "id": "polymarket_v2",
+      "asset_classes": [
+        "CRYPTO",
+        "EVENT"
+      ],
+      "license": "free/public",
+      "what": "Polymarket data-api v2 leaderboard + closed positions",
+      "pick_role": "trader_follow",
+      "reachable": true,
+      "latency_ms": 2694,
+      "records": 927,
+      "ts_note": "first_entry_at epoch = entry; end_date = scheduled market resolution (censored)",
+      "kind": "trade_level",
+      "integrity": {
+        "n_ts": 927,
+        "verdict": "CLEAN",
+        "flags": [],
+        "future_count": 0,
+        "future_samples": [],
+        "oldest": "2025-11-06T16:40:45+00:00",
+        "newest": "2026-11-18T02:16:08+00:00",
+        "stale_days": 0.13,
+        "dup_ts_ratio": 0.006,
+        "median_gap_hours": 1.69,
+        "entry_after_exit": 517,
+        "zero_hold": 0
+      },
+      "reliability": {
+        "n": 927,
+        "wins": 919,
+        "wr_pct": 99.14,
+        "wilson_lb_pct": 98.31,
+        "pf": 1686.322,
+        "expectancy": 116614.9859,
+        "total_pnl": 108102091.9,
+        "t_stat_mean_pnl": 18.512,
+        "split_half_wr_pct": [
+          100.0,
+          98.28
+        ],
+        "split_half_gap": 0.017,
+        "p_vs_coinflip": 0.0
+      },
+      "verdict": "REJECT_ARTIFACT",
+      "reasons": [
+        "IMPOSSIBLE_PF_1686:near_no_realised_losses",
+        "expectancy>0",
+        "pf>=1.2",
+        "significant",
+        "selection_bias:top_leaderboard_all_time_pnl"
+      ],
+      "selection": "top_leaderboard_all_time_pnl",
+      "samples": {
+        "traders": [
+          {
+            "user": "surfandturf",
+            "closed": 100
+          },
+          {
+            "user": "chubbytoro",
+            "closed": 100
+          },
+          {
+            "user": "HomeRunHazard",
+            "closed": 100
+          },
+          {
+            "user": "keeptheblueflagflyin",
+            "closed": 100
+          },
+          {
+            "user": "justwins",
+            "closed": 100
+          },
+          {
+            "user": "Donkey14",
+            "closed": 100
+          },
+          {
+            "user": "taylorsversion",
+            "closed": 100
+          },
+          {
+            "user": "Porygon224",
+            "closed": 27
+          },
+          {
+            "user": "BreakTheBank",
+            "closed": 100
+          },
+          {
+            "user": "0xheavy888",
+            "closed": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": "cftc_cot",
+      "asset_classes": [
+        "COMMODITY",
+        "FUTURES",
+        "INDEX",
+        "BOND"
+      ],
+      "license": "public domain",
+      "what": "CFTC Commitments of Traders weekly positioning by market",
+      "pick_role": "positioning_signal",
+      "reachable": true,
+      "latency_ms": 440,
+      "records": 200,
+      "ts_note": "weekly Tuesday report date; published Friday 15:30 ET \u2014 no future bias if used >= publication",
+      "kind": "positioning_not_trades",
+      "integrity": {
+        "n_ts": 1,
+        "verdict": "CLEAN",
+        "flags": [],
+        "future_count": 0,
+        "future_samples": [],
+        "oldest": "2026-11-10T00:00:00+00:00",
+        "newest": "2026-11-10T00:00:00+00:00",
+        "stale_days": 8.22,
+        "dup_ts_ratio": 0.0,
+        "median_gap_hours": null,
+        "entry_after_exit": 0,
+        "zero_hold": 0
+      },
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "selection": "none",
+      "samples": {
+        "markets": 200
+      }
+    },
+    {
+      "id": "ark_daily_trades",
+      "asset_classes": [
+        "ETF",
+        "EQUITY"
+      ],
+      "license": "free/public",
+      "what": "ARK Invest daily ETF trade/holdings disclosure",
+      "pick_role": "institutional_flow",
+      "reachable": true,
+      "latency_ms": 137,
+      "records": 44,
+      "ts_note": "date-only (MM/DD/YYYY ET) \u2014 treated as UTC midnight; daily snapshot, not per-trade",
+      "kind": "holdings_snapshot",
+      "integrity": {
+        "n_ts": 43,
+        "verdict": "CLEAN",
+        "flags": [],
+        "future_count": 0,
+        "future_samples": [],
+        "oldest": "2026-11-17T00:00:00+00:00",
+        "newest": "2026-11-17T00:00:00+00:00",
+        "stale_days": 1.22,
+        "dup_ts_ratio": 0.977,
+        "median_gap_hours": 0.0,
+        "entry_after_exit": 0,
+        "zero_hold": 0
+      },
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "selection": "none",
+      "samples": {}
+    },
+    {
+      "id": "sec_form4_insider",
+      "asset_classes": [
+        "EQUITY",
+        "PENNY_STOCK"
+      ],
+      "license": "public domain",
+      "what": "SEC EDGAR Form 4 insider filing stream",
+      "pick_role": "insider_flow",
+      "reachable": true,
+      "latency_ms": 66,
+      "records": 100,
+      "ts_note": "filing date (UTC, day-level) from a bounded live window; trade_date <= file_date by law",
+      "kind": "disclosure_events",
+      "integrity": {
+        "n_ts": 100,
+        "verdict": "CLEAN",
+        "flags": [],
+        "future_count": 0,
+        "future_samples": [],
+        "oldest": "2026-11-09T00:00:00+00:00",
+        "newest": "2026-11-17T00:00:00+00:00",
+        "stale_days": 1.22,
+        "dup_ts_ratio": 0.94,
+        "median_gap_hours": 0.0,
+        "entry_after_exit": 0,
+        "zero_hold": 0
+      },
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "selection": "none",
+      "samples": {}
+    },
+    {
+      "id": "treasury_yields",
+      "asset_classes": [
+        "BOND",
+        "FOREX"
+      ],
+      "license": "public domain",
+      "what": "US Treasury official par yield curve",
+      "pick_role": "macro_input",
+      "reachable": true,
+      "latency_ms": 18265,
+      "records": 220,
+      "ts_note": "official daily publication date \u2014 safe as-of date, no future bias",
+      "kind": "macro_curve",
+      "integrity": {
+        "n_ts": 220,
+        "verdict": "CLEAN",
+        "flags": [],
+        "future_count": 0,
+        "future_samples": [],
+        "oldest": "2026-01-02T00:00:00+00:00",
+        "newest": "2026-11-17T00:00:00+00:00",
+        "stale_days": 1.22,
+        "dup_ts_ratio": 0.0,
+        "median_gap_hours": 24.0,
+        "entry_after_exit": 0,
+        "zero_hold": 0
+      },
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "selection": "none",
+      "samples": {}
+    },
+    {
+      "id": "dexscreener_meme",
+      "asset_classes": [
+        "MEME"
+      ],
+      "license": "free/public",
+      "what": "Dexscreener new-pair discovery feed",
+      "pick_role": "discovery",
+      "reachable": true,
+      "latency_ms": 33,
+      "records": 30,
+      "ts_note": "pairCreatedAt epoch ms \u2014 discovery only, no trade-level PnL",
+      "kind": "discovery_not_trades",
+      "integrity": {
+        "n_ts": 26,
+        "verdict": "CLEAN",
+        "flags": [],
+        "future_count": 0,
+        "future_samples": [],
+        "oldest": "2023-09-03T08:20:11+00:00",
+        "newest": "2026-10-23T05:46:04+00:00",
+        "stale_days": 25.98,
+        "dup_ts_ratio": 0.0,
+        "median_gap_hours": 214.59,
+        "entry_after_exit": 0,
+        "zero_hold": 0
+      },
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "selection": "none",
+      "samples": {}
+    },
+    {
+      "id": "myfxbook_outlook",
+      "asset_classes": [
+        "FOREX"
+      ],
+      "license": "free tier (auth for history)",
+      "what": "Myfxbook community outlook / verified systems",
+      "pick_role": "sentiment_gated",
+      "reachable": false,
+      "latency_ms": 49,
+      "records": 0,
+      "ts_note": "requires session/login for trade history \u2014 outlook only without auth",
+      "kind": "gated",
+      "verdict": "UNREACHABLE",
+      "error": "Required fields missing."
+    }
+  ],
+  "summary": {
+    "probed": 9,
+    "reachable": 8,
+    "clean_timestamps": 8,
+    "trade_level_verified": 2
+  }
+}

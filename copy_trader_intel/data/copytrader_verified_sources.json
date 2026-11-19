@@ -1,0 +1,193 @@
+{
+  "generated_at": "2026-11-18T08:27:48.868742+00:00",
+  "policy": "Only sources with CLEAN timestamps and non-REJECT verdict are listed. TRUSTED requires n>=100, Wilson LB WR>=50%, PF>=1.2, split-half gap<15pp.",
+  "accepted_count": 7,
+  "accepted": [
+    {
+      "id": "okx_copytrading",
+      "asset_classes": [
+        "CRYPTO"
+      ],
+      "role": "trader_follow",
+      "verdict": "WATCH",
+      "license": "free/public",
+      "ts_integrity": "CLEAN",
+      "stale_days": 0.51,
+      "reliability": {
+        "n": 69,
+        "wins": 36,
+        "wr_pct": 52.17,
+        "wilson_lb_pct": 40.59,
+        "pf": 4.895,
+        "expectancy": 9597.0122,
+        "total_pnl": 662193.84,
+        "t_stat_mean_pnl": 2.055,
+        "split_half_wr_pct": [
+          52.94,
+          51.43
+        ],
+        "split_half_gap": 0.015,
+        "p_vs_coinflip": 0.359
+      },
+      "what": "OKX lead-trader leaderboard + closed subposition history (real trader PnLs)",
+      "adapter": "copy_trader_intel/source_truth_verifier.py"
+    },
+    {
+      "id": "hyperliquid_whales",
+      "asset_classes": [
+        "CRYPTO",
+        "FUTURES"
+      ],
+      "role": "trader_follow",
+      "verdict": "WATCH",
+      "license": "free/public",
+      "ts_integrity": "CLEAN",
+      "stale_days": 0.14,
+      "reliability": {
+        "n": 2884,
+        "wins": 1229,
+        "wr_pct": 42.61,
+        "wilson_lb_pct": 40.82,
+        "pf": 1.263,
+        "expectancy": 0.9199,
+        "total_pnl": 2652.93,
+        "t_stat_mean_pnl": 2.322,
+        "split_half_wr_pct": [
+          46.05,
+          39.18
+        ],
+        "split_half_gap": 0.069,
+        "p_vs_coinflip": 1.0
+      },
+      "what": "Hyperliquid on-chain whale leaderboard + fill-level round trips",
+      "adapter": "copy_trader_intel/source_truth_verifier.py"
+    },
+    {
+      "id": "cftc_cot",
+      "asset_classes": [
+        "COMMODITY",
+        "FUTURES",
+        "INDEX",
+        "BOND"
+      ],
+      "role": "positioning_signal",
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "license": "public domain",
+      "ts_integrity": "CLEAN",
+      "stale_days": 8.22,
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "what": "CFTC Commitments of Traders weekly positioning by market",
+      "adapter": "copy_trader_intel/source_truth_verifier.py"
+    },
+    {
+      "id": "ark_daily_trades",
+      "asset_classes": [
+        "ETF",
+        "EQUITY"
+      ],
+      "role": "institutional_flow",
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "license": "free/public",
+      "ts_integrity": "CLEAN",
+      "stale_days": 1.22,
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "what": "ARK Invest daily ETF trade/holdings disclosure",
+      "adapter": "copy_trader_intel/source_truth_verifier.py"
+    },
+    {
+      "id": "sec_form4_insider",
+      "asset_classes": [
+        "EQUITY",
+        "PENNY_STOCK"
+      ],
+      "role": "insider_flow",
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "license": "public domain",
+      "ts_integrity": "CLEAN",
+      "stale_days": 1.22,
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "what": "SEC EDGAR Form 4 insider filing stream",
+      "adapter": "copy_trader_intel/source_truth_verifier.py"
+    },
+    {
+      "id": "treasury_yields",
+      "asset_classes": [
+        "BOND",
+        "FOREX"
+      ],
+      "role": "macro_input",
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "license": "public domain",
+      "ts_integrity": "CLEAN",
+      "stale_days": 1.22,
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "what": "US Treasury official par yield curve",
+      "adapter": "copy_trader_intel/source_truth_verifier.py"
+    },
+    {
+      "id": "dexscreener_meme",
+      "asset_classes": [
+        "MEME"
+      ],
+      "role": "discovery",
+      "verdict": "DATA_OK_NO_TRADE_PNL",
+      "license": "free/public",
+      "ts_integrity": "CLEAN",
+      "stale_days": 25.98,
+      "reliability": {
+        "n": 0,
+        "verdict": "NO_DATA"
+      },
+      "what": "Dexscreener new-pair discovery feed",
+      "adapter": "copy_trader_intel/source_truth_verifier.py"
+    }
+  ],
+  "by_asset_class": {
+    "BOND": [
+      "cftc_cot",
+      "treasury_yields"
+    ],
+    "COMMODITY": [
+      "cftc_cot"
+    ],
+    "CRYPTO": [
+      "okx_copytrading",
+      "hyperliquid_whales"
+    ],
+    "EQUITY": [
+      "ark_daily_trades",
+      "sec_form4_insider"
+    ],
+    "ETF": [
+      "ark_daily_trades"
+    ],
+    "FOREX": [
+      "treasury_yields"
+    ],
+    "FUTURES": [
+      "hyperliquid_whales",
+      "cftc_cot"
+    ],
+    "INDEX": [
+      "cftc_cot"
+    ],
+    "MEME": [
+      "dexscreener_meme"
+    ],
+    "PENNY_STOCK": [
+      "sec_form4_insider"
+    ]
+  }
+}

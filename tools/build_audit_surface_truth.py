@@ -270,6 +270,53 @@ def build_report() -> dict:
             "tournament headline model WR on n<30",
             "luxalgo bulk CRYPTO without dedupe (use isolated forward pilot)",
         ],
+        "verified_copytrader_sources": _verified_copytrader_sources(),
+    }
+
+
+def _verified_copytrader_sources() -> dict:
+    """Surface the copytrader source verification on /audit.
+
+    Monitoring-only: these sources are WATCH / DATA_OK at best and are
+    deliberately excluded from the money-ready sizing path. See
+    copy_trader_intel/source_truth_verifier.py and
+    updates/2026-11-18-copytrader-source-verification-summary.md.
+    """
+    reg_path = ROOT / "copy_trader_intel/data/copytrader_verified_sources.json"
+    bt_path = ROOT / "copy_trader_intel/data/source_truth_backtest.json"
+    reg = _load_json(reg_path)
+    bt = _load_json(bt_path)
+    accepted = reg.get("accepted") or []
+    backtests = bt.get("sources") or {}
+    rows = []
+    for a in accepted:
+        b = backtests.get(a["id"]) or {}
+        oos = b.get("out_of_sample") or {}
+        rows.append({
+            "id": a["id"],
+            "asset_classes": a.get("asset_classes") or [],
+            "role": a.get("role"),
+            "verdict": a.get("verdict"),
+            "ts_integrity": a.get("ts_integrity"),
+            "oos_verdict": b.get("verdict"),
+            "oos_wr_pct": oos.get("wr_pct"),
+            "oos_pf": oos.get("pf"),
+            "sizing": "MONITOR_ONLY",
+        })
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "policy": "MONITOR_ONLY — no verified copytrader source is money-ready; "
+                  "never size on leaderboard-selected or artifact series.",
+        "accepted_count": len(rows),
+        "sources": rows,
+        "by_asset_class": reg.get("by_asset_class") or {},
+        "rejected_artifacts": [
+            {"id": sid, "verdict": s.get("verdict"),
+             "reasons": s.get("artifact_reasons") or []}
+            for sid, s in backtests.items()
+            if s.get("verdict") in ("ARTIFACT_NOT_BACKTESTABLE", "DECAYS")
+        ],
+        "report": "updates/2026-11-18-copytrader-source-verification-summary.md",
     }
 
 
