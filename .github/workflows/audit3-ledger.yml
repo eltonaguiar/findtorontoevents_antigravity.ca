@@ -1,0 +1,121 @@
+name: audit3 ledger
+
+# audit3 is deliberately independent of audit-dashboard.yml and the audit2 work:
+#   * its own concurrency group, so it never queues behind the ~35min build
+#   * an off-minute 6-hourly cron (audit-dashboard owns :10 hourly)
+#   * no `push:` trigger, so it cannot create a commit/deploy loop
+#   * stdlib-only compute (~5 seconds on 3.5k closed picks)
+#   * reads the live snapshot over HTTP instead of re-running the scanner
+#
+# Outputs (committed + deployed):
+#   audit_dashboard/data/audit3_ledger.json   -> /audit3/audit3_ledger.json
+#   audit_dashboard/audit3.html               -> /audit3/index.html
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: audit3-ledger
+  cancel-in-progress: false
+
+jobs:
+  ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Fetch live closed-pick ledger
+        run: |
+          mkdir -p /tmp/audit3
+          url="https://findtorontoevents.ca/audit/data/dashboard_data.json"
+          ok=0
+          for i in 1 2 3 4; do
+            if curl -fsS --max-time 180 -o /tmp/audit3/dashboard_data.json "$url"; then ok=1; break; fi
+            echo "fetch attempt $i failed; sleeping $((i*10))s"
+            sleep $((i*10))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::error title=audit3::live dashboard_data.json unreachable"
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, os
+          p = "/tmp/audit3/dashboard_data.json"
+          d = json.load(open(p))
+          rows = (d.get("picks") or {}).get("recent_closed") or []
+          print(f"source generated_at={d.get('generated_at')} bytes={os.path.getsize(p)} closed={len(rows)}")
+          assert len(rows) >= 100, f"only {len(rows)} closed rows — refusing to publish a thin ledger"
+          PY
+
+      - name: Build audit3 ledger
+        run: |
+          python3 -m alpha_engine.audit3_tribunal \
+            --picks /tmp/audit3/dashboard_data.json \
+            --out audit_dashboard/data/audit3_ledger.json
+          python3 - <<'PY'
+          import json
+          d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
+          assert d["schema"] == "audit3.v1"
+          s = d["summary"]
+          assert s["n_rows"] >= 100, s
+          print("audit3 summary:", json.dumps(s))
+          PY
+
+      - name: Commit ledger (data only, [skip ci])
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/audit3_ledger.json
+          if git diff --cached --quiet; then
+            echo "ledger unchanged"
+            exit 0
+          fi
+          git commit -m "chore(audit3): refresh kill-tribunal ledger [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*5))
+          done
+          echo "::error title=audit3::could not push ledger after 3 attempts"
+          exit 1
+
+      - name: Deploy /audit3 to findtorontoevents.ca
+        env:
+          # 50webs secret names as they actually exist in this repo (2026-11-19 audit).
+          FTP_HOST: ${{ secrets.FTP_SERVER_50WEBS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
+        run: |
+          if [ -z "$FTP_HOST" ] || [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning title=audit3::FTP credentials absent — page committed but not deployed"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import ftplib, os, sys
+          host, user, pwd = os.environ["FTP_HOST"], os.environ["FTP_USER"], os.environ["FTP_PASS"]
+          ftp = ftplib.FTP(host, timeout=120)
+          ftp.login(user, pwd)
+          ftp.cwd("findtorontoevents.ca")
+          try:
+              ftp.mkd("audit3")
+          except ftplib.error_perm:
+              pass  # already exists
+          ftp.cwd("audit3")
+          for local, remote in [
+              ("audit_dashboard/audit3.html", "index.html"),
+              ("audit_dashboard/data/audit3_ledger.json", "audit3_ledger.json"),
+          ]:
+              with open(local, "rb") as f:
+                  ftp.storbinary(f"STOR {remote}", f)
+              print(f"uploaded {local} -> /findtorontoevents.ca/audit3/{remote}")
+          ftp.quit()
+          PY
