@@ -109,13 +109,45 @@ jobs:
           fi
           SINCE="$(date -u -d '4 days ago' +%F)"
           echo "backfilling daily bars since $SINCE"
-          python3 -m pip install --quiet --disable-pip-version-check yfinance pandas \
-            || { echo "::warning title=audit3 backfill::vendor install failed, gates may go stale"; exit 0; }
+          # pymysql is REQUIRED, not optional: both tools resolve credentials through
+          # tools/db_env and die with ModuleNotFoundError without it. The first
+          # version of this step installed only yfinance+pandas, so on run
+          # 44583198861 it printed "backfilling daily bars since ...", wrote ZERO
+          # rows, and still exited 0 — the alpha step's pymysql install happens
+          # later, so it could not help. Failures are ::error annotated (not
+          # ::warning) so a silent no-op is visible instead of blending in.
+          python3 -m pip install --quiet --disable-pip-version-check yfinance pandas pymysql \
+            || { echo "::error title=audit3 backfill::vendor install failed, gates may go stale"; exit 0; }
+          python3 -c "import pymysql, yfinance" \
+            || { echo "::error title=audit3 backfill::DB/vendor deps missing, gates may go stale"; exit 0; }
           python3 tools/backfill_daily_ohlcv.py --tables equity,etf,futures \
             --since "$SINCE" --apply --batch-size 25 --pause 0.5 \
-            || echo "::warning title=audit3 backfill::equity/etf/futures backfill failed (see log)"
+            || echo "::error title=audit3 backfill::equity/etf/futures backfill failed (see log)"
           python3 tools/fx_backfill.py --since "$SINCE" --apply \
-            || echo "::warning title=audit3 backfill::fx backfill failed (see log)"
+            || echo "::error title=audit3 backfill::fx backfill failed (see log)"
+          # Staleness alarm: freshness is the whole point of this step, so print the
+          # last bar each gate will read. A table older than the 5-day TOLERANCE_MS
+          # means a class is about to go unmeasured again.
+          python3 - <<'CHECK'
+          import sys
+          sys.path.insert(0, ".")
+          from datetime import date
+          try:
+              from tools.db_env import get_stocks_creds
+              import pymysql
+              keep = ("host", "user", "password", "database", "port", "connect_timeout")
+              c = pymysql.connect(read_timeout=60, **{k: v for k, v in get_stocks_creds().items() if k in keep})
+              cur = c.cursor()
+              for t in ("equity_daily_ohlcv", "etf_daily_ohlcv", "futures_daily_ohlcv", "fx_prices"):
+                  cur.execute(f"SELECT MAX(trade_date) FROM `{t}`")
+                  last = cur.fetchone()[0]
+                  age = (date.today() - last).days if last else 9999
+                  flag = "::warning title=audit3 backfill::" + t + " STALE" if age > 5 else ""
+                  print(f"  {t:22s} last_bar={last} age_days={age} {flag}")
+              c.close()
+          except Exception as exc:
+              print(f"::warning title=audit3 backfill::freshness check failed {type(exc).__name__}: {exc}")
+          CHECK
 
 # Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
       # when DB credentials exist. A missing secret must never block the ledger.
