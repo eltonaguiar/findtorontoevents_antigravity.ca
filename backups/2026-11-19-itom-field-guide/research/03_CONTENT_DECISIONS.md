@@ -120,4 +120,37 @@ exist and IDs are unique.
 
 ---
 
+
+## 15. Adopt the ServiceNow three-pillar model
+
+**Decision:** Structure the guide around the ServiceNow-specific three pillars — Visibility,
+Health/AIOps, and Cloud Accelerate — plus the shared CMDB foundation, rather than a generic
+industry pillar list.
+
+**Why:** The user's earlier broad pillar list was generic industry framing. The ServiceNow
+model is the accurate scope for this repository.
+
+**Trade-off:** Some generic industry topics (automation, resilience, compliance) are still real,
+so they are covered as cross-cutting guides rather than ignored.
+
+## 16. Correct Cloud Migration Assessment
+
+**Decision:** State that Cloud Migration Assessment is no longer deployed, enhanced, or
+supported, and tell readers not to plan new work on it.
+
+**Why:** The input described migration tooling as current. The official Australia documentation
+says it is retired; repeating it as current would be wrong.
+
+## 17. Peer review: reject unverified roles and tables
+
+**Decision:** Review the peer build in `/home/eaguiar2015/ServiceNowLearning_ITOM`, reuse its
+valuable structure (Orchestration, MID Server, CMDB, Now Assist), but **not** its unverified
+facts: roles such as `sn_itom.*` and table names without an official source.
+
+**Why:** A plausible-looking role/table is worse than "verify in the dictionary". Facts that
+cannot be pinned to an official page are marked or omitted.
+
+See `06_PEER_REVIEW.md` for the record.
+
+---
 **Agent:** Kilo (deepseek-flash) · **Updated:** 2026-11-19

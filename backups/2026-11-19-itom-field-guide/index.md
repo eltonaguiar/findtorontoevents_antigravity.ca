@@ -52,6 +52,21 @@ from *what you can verify in your own instance*. The current content is pinned t
     <p>Understand the Australia-era shift: Now Assist for ITOM preparing for deprecation, ServiceNow Otto for ITOM, MCP Server Console, AI-assisted mapping, and the governance you need before trusting any of it.</p>
     <p class="meta"><a href="./docs/modules/itom-ai/itom-ai-guide.md">AI in ITOM</a> · <a href="./docs/getting-started/itom-ai.md">AI start</a></p>
   </div>
+  <div class="card">
+    <h3>CMDB foundation</h3>
+    <p>The shared data foundation all three pillars trust: the tables ITOM reads and writes, CSDM and the service instance, identification/reconciliation, and Service Graph Connectors.</p>
+    <p class="meta"><a href="./docs/modules/cmdb/cmdb-guide.md">CMDB foundation</a> · <a href="./docs/04-roles-tables.md">Roles &amp; tables</a></p>
+  </div>
+  <div class="card">
+    <h3>Automation &amp; remediation</h3>
+    <p>How ITOM turns detection into action: SOW alert automation, alert/CI remediation, cloud and tag remediation, LEAP playbooks, and Ansible execution — with guardrails.</p>
+    <p class="meta"><a href="./docs/modules/automation-remediation/automation-remediation-guide.md">Automation &amp; remediation</a></p>
+  </div>
+  <div class="card">
+    <h3>Resilience · security · compliance</h3>
+    <p>The assurance layer: backup-resource visibility, change/configuration control, certificate and firewall audits, cryptographic asset compliance, and audit evidence.</p>
+    <p class="meta"><a href="./docs/modules/resilience-security/resilience-security-guide.md">Resilience &amp; compliance</a></p>
+  </div>
 </div>
 
 ## The family, in one picture
@@ -121,6 +136,7 @@ Full rationale, timeboxes, and anti-patterns: [methodology](./docs/00-methodolog
 | Guide | What it answers | Primary records |
 |---|---|---|
 | [ITOM overview](./docs/modules/itom-overview/itom-overview-guide.md) | What is in the family, and how does it fit together? | product map, licensing |
+| [CMDB foundation](./docs/modules/cmdb/cmdb-guide.md) | What is the shared data foundation, and how does ITOM use it? | `cmdb_ci`, `cmdb_rel_ci`, service tables |
 | [Discovery](./docs/modules/discovery/discovery-guide.md) | How does ServiceNow find infrastructure and populate the CMDB? | `cmdb_ci_*`, `ecc_queue` |
 | [Service Mapping](./docs/modules/service-mapping/service-mapping-guide.md) | How do CIs become service instances and impact maps? | `cmdb_ci_service_*`, `cmdb_ci_endpoint` |
 | [Event Management](./docs/modules/event-management/event-management-guide.md) | How does an event become a prioritised, CI-bound alert? | `em_event`, `em_alert` |
@@ -131,6 +147,8 @@ Full rationale, timeboxes, and anti-patterns: [methodology](./docs/00-methodolog
 | [Metric Intelligence](./docs/modules/metric-intelligence/metric-intelligence-guide.md) | How do metric anomalies become alerts? | metric definitions, alerts |
 | [AI in ITOM](./docs/modules/itom-ai/itom-ai-guide.md) | What is actually available, and what must I govern? | AI skills, MCP, models |
 | [Visibility suite](./docs/modules/visibility-suite/visibility-suite-guide.md) | What are the specialist Visibility apps? | certificates, tags, firewalls, AI topology |
+| [Automation &amp; remediation](./docs/modules/automation-remediation/automation-remediation-guide.md) | How does ITOM turn detection into action safely? | alert automations, remediation tasks, change requests |
+| [Resilience · security · compliance](./docs/modules/resilience-security/resilience-security-guide.md) | How does ITOM supply resilience, security, and audit evidence? | backup CIs, certificate/firewall records, policy scans |
 
 ## What this guide will not do
 

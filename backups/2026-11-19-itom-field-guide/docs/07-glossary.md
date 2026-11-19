@@ -264,6 +264,45 @@ being migrated to Workflow Studio flows and subflows.
 
 ---
 
+## Automation, containers, and assurance
+
+**Alert automation** — The SOW sequence Ignore → Enrich → Group → Respond. Each type runs only on
+new incoming alerts.
+
+**Alert analysis** — An AI-generated, human-readable brief of an alert plus technical context,
+available in the Express List via ServiceNow Otto.
+
+**Backup plan / backup vault / backup item** — Cloud resources (AWS Backup Plan/Vault, Azure
+Recovery Services Vault Backup Item) that Discovery patterns can find and represent in the CMDB.
+They are evidence of configuration, not proof of restore.
+
+**Capacity limit** — A restriction on cloud request attributes such as VM count, vCPUs, or
+aggregate storage, set per logical datacenter.
+
+**CMDB 360** — The application providing a multi-source view of CI data and change over time;
+one of the data providers to ITOM Visibility.
+
+**Container / Kubernetes discovery** — Pattern-based discovery (and the Kubernetes Visibility
+Agent) that finds Kubernetes/OpenShift components, events, service mesh, and container images,
+updating the CMDB.
+
+**Cost center / resource pool** — A way to restrict the cost center a requester can select in the
+cloud catalog request form (for example, the `UserCostCenter` resource pool).
+
+**Probable RCA** — A ranked list of probable root causes for an alert, using alerts, CI topology,
+and change requests.
+
+**Remediation** — Automatically correcting a problem: alert/CI remediation workflows, cloud
+remediation actions, tag remediation, and LEAP playbooks.
+
+**Service Graph Connector** — A Store app that ingests third-party data into the CMDB;
+complements Discovery and is subject to reconciliation.
+
+**Service instance** — The CSDM v5 label for `cmdb_ci_service_discovered` (formerly Application
+Service); the anchor for impact and alert context.
+
+---
+
 ## Official sources
 
 - ITOM overview — <https://www.servicenow.com/docs/r/australia/it-operations-management/r_ITOMApplications.html>

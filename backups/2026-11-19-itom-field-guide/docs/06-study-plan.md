@@ -97,6 +97,26 @@ compliance problem without mixing them.
 **You are done when:** you can state what the AI may do, what it may not do, and how a human
 verifies the result.
 
+### CMDB / platform architect
+
+1. CMDB foundation guide: tables, CSDM, identification/reconciliation, Service Graph Connectors.
+2. Discovery and Service Mapping: how they write the CMDB.
+3. Event Management impact: how alerts consume the CMDB.
+4. Coverage map: find the gaps in your environment.
+
+**You are done when:** you can explain which table holds a service instance, how a duplicate CI
+breaks every pillar, and how a connector is governed.
+
+### Automation / compliance lead
+
+1. Automation and remediation guide: SOW automation, remediation, guardrails.
+2. Resilience, security, and compliance guide: backups, change, certificates, audit evidence.
+3. Event Management + Cloud Accelerate: where the automations live.
+4. Pick one automation and define its approval and audit path.
+
+**You are done when:** you can name a record for every automation, a guardrail for every
+destructive action, and the owner of the audit evidence.
+
 ---
 
 ## 5. Session checklist

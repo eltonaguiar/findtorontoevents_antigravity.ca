@@ -20,6 +20,7 @@ governance questions will not.
 - [Model providers and controls](#model-providers-and-controls)
 - [ServiceNow Otto for ITOM](#servicenow-otto-for-itom)
 - [ITOM MCP Server Console](#itom-mcp-server-console)
+- [Now Assist and Otto inside the Service Operations Workspace](#now-assist-and-otto-inside-the-service-operations-workspace)
 - [Where AI appears in ITOM](#where-ai-appears-in-itom)
 - [LEAP](#leap)
 - [Governance checklist](#governance-checklist)
@@ -116,6 +117,69 @@ If you cannot answer those five, do not connect the agent to production.
 
 ---
 
+## Now Assist and Otto inside the Service Operations Workspace
+
+The most visible AI in ITOM lives in the Service Operations Workspace (SOW) and the Express
+List. These are **existing-customer capabilities** under the Now Assist for ITOM packaging, and
+the same functions are the forward path under ServiceNow Otto for ITOM. Verify the current app
+version and entitlement on your instance.
+
+### Alert analysis by ServiceNow Otto
+
+In the Express List, a user can open an alert and select **Analyze** in **Alert analysis by
+ServiceNow Otto**. The result:
+
+- a **human-readable brief** of the alert,
+- **technical information** to help investigate it,
+- copy/refresh actions (refreshing regenerates and deletes past results).
+
+Prerequisites: the ServiceNow Otto for ITOM application and the `evt_mgmt_operator` role.
+
+### Past related incidents summary
+
+With the **Alert investigation skill** active, a user can request an investigation of past
+incidents related to the current alert. The ServiceNow Otto panel returns a summary of the most
+relevant related incidents and the strategies used to resolve them.
+
+Role: `evt_mgmt_operator`.
+
+### Save an analysis as an alert group description
+
+The AI-generated alert analysis can be saved as the description of an alert group. This keeps a
+concise, AI-written summary visible to the whole team.
+
+Roles: `evt_mgmt_operator`, `evt_mgmt_admin`.
+
+### Probable Root Cause Analysis (RCA)
+
+Probable RCA reduces mean time to repair by listing the likely root causes of an alert. It uses:
+
+1. **Alerts** and alert groups,
+2. **CI topology** in the CMDB,
+3. **Change requests** on the relevant CIs.
+
+It filters relevant change requests, calculates a root cause score, and shows the top five
+probable root causes with an explanation of how the alert correlates to the change. For alert
+groups it identifies upstream topology-origin CIs to explain cascading failures.
+
+- The score prioritises changes on topology-originating CIs, then related CIs, then direct CIs.
+- It can be disabled with the system property `sa_analytics.disable_prc` set to `true`.
+- It is not a verdict. It is a ranked hypothesis list: verify the change and the CI topology
+  before declaring a root cause.
+
+### Human control
+
+Every AI output in this section is **assistive**:
+
+- The alert analysis is a brief; the alert record is the source of truth.
+- The past-incident summary is context; the incidents are the evidence.
+- The saved alert group description is editable.
+- RCA is a hypothesis; the change record and the relationship map are the proof.
+
+If you cannot verify an AI statement against a record, do not teach it.
+
+---
+
 ## Where AI appears in ITOM
 
 | Area | AI capability (examples) | Human control |
@@ -123,7 +187,7 @@ If you cannot answer those five, do not connect the agent to production.
 | Discovery | AI-assisted content and process classification (ITOM Content Service) | Review suggestions before promoting |
 | Service Mapping | Automated Service Suggestions / Predictive Intelligence | Review connections; tune rules |
 | Health Log Analytics | AI-assisted log mapping; anomaly detection | Test mapping; mark significant/mute |
-| Event Management | Alert summaries and investigation assistance (where available) | Verify the alert and CI |
+| Event Management | Alert analysis, past-incident summary, alert group description, probable RCA | Verify the alert, CI, and change records |
 | SLO Management | AI-generated SLO suggestions | Agree the target and owner |
 | Certificate Inventory | AI-assisted renewal | Approve or reject the renewal |
 | Firewall Audits | AI in firewall audit reporting | Verify the finding |
@@ -213,6 +277,12 @@ These are contractual and compliance decisions. Do not let a lab shortcut them.
 5. **What is the rule of thumb for AI output in ITOM?**
    <details><summary>Answer</summary>AI proposes, the record disposes: verify against the actual record before acting or teaching.</details>
 
+6. **What three inputs does Probable RCA use?**
+   <details><summary>Answer</summary>Alerts/alert groups, CI topology in the CMDB, and change requests on the relevant CIs.</details>
+
+7. **Where in the UI do you find alert analysis by ServiceNow Otto?**
+   <details><summary>Answer</summary>The Express List in the Service Operations Workspace: open an alert and select Analyze in Alert analysis by ServiceNow Otto.</details>
+
 ---
 
 ## Official sources
@@ -224,6 +294,10 @@ These are contractual and compliance decisions. Do not let a lab shortcut them.
 - AI in ITOM — <https://www.servicenow.com/docs/r/australia/it-operations-management/ai-in-it-operations-management.html>
 - LEAP — <https://www.servicenow.com/docs/r/australia/it-operations-management/aiops-leap-learning-enhanced-automation-playbooks/aiops-leap.html>
 - HLA AI-assisted mapping — <https://www.servicenow.com/docs/r/australia/it-operations-management/health-log-analytics/hla-data-input-automapping.html>
+- Alert analysis by ServiceNow Otto — <https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/alert-summary-now-assist-express-list.html>
+- Generate a past related incidents summary — <https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/nai-analyze-past-incidents.html>
+- Save alert analysis as alert group description — <https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/alert-group-descr-now-assist-el.html>
+- Probable Root Cause Analysis — <https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/probable-rca.html>
 
 ---
 

@@ -30,6 +30,9 @@ Use the table and role names as a map, then confirm them in **System Definition 
 | `cmdb_ci_netgear` | Network gear CI | Routers, switches, firewalls |
 | `cmdb_ci_ip_network` | IP network | Populated by network discovery |
 
+> Service Graph Connectors, CMDB 360, the CSDM service-instance model, and identification/
+> reconciliation are covered in the [CMDB foundation](modules/cmdb/cmdb-guide.md) guide.
+
 ### Discovery internals
 
 | Table | What it is | When you use it |
@@ -102,6 +105,28 @@ Read it as:
 | `evt_mgmt_user` | View and acknowledge alerts | Basic alert lifecycle |
 | `sn_itom_license.reader` | View ITOM licence usage | Read-only licensing dashboard |
 | `admin` | Everything | Bypasses ACLs and UI policies; never use it as the only test |
+
+### Automation and assurance roles
+
+| Role | Scope | Notes |
+|---|---|---|
+| `evt_mgmt_admin` / `evt_team_operator` | SOW alert automations (ignore/respond) | Also `flow_designer` for alert remediation |
+| `sn_itom_ccg.ccg_operator` | Cloud Configuration Governance remediation | Approval-gated remediation creates a change request |
+| `sn_itom_tag.tag_governance_admin` | Tag Governance policy and remediation | Manage tag policies, audits, and auto-remediation |
+| `sn_change_write` | Analyze potential impact agentic workflow | Also the configured AI access controls |
+| `LEAP admin` | LEAP configuration and playbooks | Verify the exact role name in your Store app version |
+| `sn_itom_leap.leap_ansible_agent_worker` | LEAP Ansible execution agent | Launches mapped Ansible playbooks |
+| `sn_cmp.cloud_admin` | Cloud Admin portal, capacity limits, resource pools | Documented under the CPG-era Cloud Admin portal |
+| `sn_cmp_cloud_admin` | Blueprint/resource-pool configuration | Used in the cost-center resource pool example |
+
+Least-privilege also applies here:
+
+1. **Never give auto-remediation to a read-only user.** Remediation can change production
+   resources and create change requests.
+2. **Separate who writes policies from who can remediate.** Policy authorship is not an operator
+   task.
+3. **Approve destructive actions.** CCG remediation and some alert remediation paths can be
+   approval-gated.
 
 ### Least-privilege rules
 

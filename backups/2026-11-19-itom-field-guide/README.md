@@ -31,10 +31,11 @@ Then pick one module, run one loop, and produce one artifact.
 
 | Area | Guides |
 |---|---|
-| **ITOM Visibility** | [Overview](docs/modules/itom-overview/itom-overview-guide.md) · [Discovery](docs/modules/discovery/discovery-guide.md) · [Service Mapping](docs/modules/service-mapping/service-mapping-guide.md) · [Visibility suite](docs/modules/visibility-suite/visibility-suite-guide.md) |
+| **ITOM Visibility** | [Overview](docs/modules/itom-overview/itom-overview-guide.md) · [CMDB foundation](docs/modules/cmdb/cmdb-guide.md) · [Discovery](docs/modules/discovery/discovery-guide.md) · [Service Mapping](docs/modules/service-mapping/service-mapping-guide.md) · [Visibility suite](docs/modules/visibility-suite/visibility-suite-guide.md) |
 | **ITOM AIOps** | [Event Management](docs/modules/event-management/event-management-guide.md) · [Health Log Analytics](docs/modules/health-log-analytics/health-log-analytics-guide.md) · [Reliability stack](docs/modules/reliability-stack/reliability-stack-guide.md) · [Metric Intelligence](docs/modules/metric-intelligence/metric-intelligence-guide.md) |
 | **ITOM Cloud Accelerate** | [Cloud Accelerate](docs/modules/cloud-accelerate/cloud-accelerate-guide.md) |
 | **Agents & AI** | [Agent Client Collector](docs/modules/agent-client-collector/acc-guide.md) · [AI in ITOM](docs/modules/itom-ai/itom-ai-guide.md) |
+| **Automation & assurance** | [Automation & remediation](docs/modules/automation-remediation/automation-remediation-guide.md) · [Resilience · security · compliance](docs/modules/resilience-security/resilience-security-guide.md) |
 | **Reference** | [Licensing](docs/03-licensing-prerequisites.md) · [Roles & tables](docs/04-roles-tables.md) · [Common mistakes](docs/05-common-mistakes.md) · [Glossary](docs/07-glossary.md) · [Source ladder](docs/08-source-ladder.md) |
 | **Labs** | [00 Orientation](labs/LAB-00-ORIENTATION.md) · [01 Discovery](labs/LAB-01-DISCOVERY.md) · [02 Event → incident](labs/LAB-02-EVENT-TO-INCIDENT.md) · [03 Service Mapping](labs/LAB-03-SERVICE-MAPPING.md) · [04 HLA](labs/LAB-04-HLA-LOG-ANOMALY.md) |
 

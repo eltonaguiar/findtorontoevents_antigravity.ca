@@ -19,7 +19,9 @@ If you solve all three with one app, you usually solve none of them well.
 - [Cloud Services Catalog](#cloud-services-catalog)
 - [Cloud Account Management](#cloud-account-management)
 - [Cloud Configuration Governance](#cloud-configuration-governance)
+- [Cost and capacity controls](#cost-and-capacity-controls)
 - [Cloud Action Library](#cloud-action-library)
+- [Cloud Migration Assessment is retired](#cloud-migration-assessment-is-retired)
 - [Cloud Provisioning and Governance (legacy)](#cloud-provisioning-and-governance-legacy)
 - [Entitlements](#entitlements)
 - [Common mistakes](#common-mistakes)
@@ -140,6 +142,49 @@ violations. You then run remediation actions to fix non-compliant configuration.
 
 ---
 
+## Cost and capacity controls
+
+Cloud is also a budget and a capacity problem.
+
+### Resource pools and cost centers
+
+With the **Cost Management** plugin (`com.snc.cost_management`), you can limit the choices a
+requester sees in the cloud catalog request form. The base-system `UserCostCenter` resource pool
+limits users to the cost center associated with their user record. This is a JavaScript filter on
+the resource pool, tied to a blueprint's Cloud variable.
+
+The pattern to learn:
+
+1. Activate Cost Management.
+2. Define cost centers and associate users.
+3. Create a resource pool with an `All` query filter and a `UserCostCenter` script filter.
+4. Point the blueprint's CostCenter variable at the pool and filter.
+5. Publish the blueprint.
+
+Role: `sn_cmp_cloud_admin` (records the guide under the CPG-era Cloud Admin portal). Verify the
+equivalent controls in your current Cloud Services Catalog version.
+
+### Capacity limits on requests
+
+Capacity limits restrict attributes such as the number of virtual machines, vCPUs, or aggregate
+storage, and can be set per logical datacenter in a cloud account:
+
+- **Discovered** — the value discovered for all resources in the service account.
+- **Provisioned** — the value provisioned for the service account.
+- **Capacity Limit** — the maximum allowed value.
+- **Unit** — for example, storage in GB.
+
+Configure on the Cloud Admin portal (`Manage > Cloud Accounts > Datacenters > Capacity Limits`),
+set the state to **Draft**, update, then **Publish**. These pages are documented under the CPG
+era; confirm the equivalent controls in the current Cloud Services Catalog for new deployments.
+
+Role: `sn_cmp.cloud_admin`.
+
+The lesson: cost and capacity are governance, not just reporting. If everyone can request
+anything, the dashboard is a post-hoc regret report.
+
+---
+
 ## Cloud Action Library
 
 Cloud Action Library provides actions and workflows that interact with cloud resources. The
@@ -149,7 +194,26 @@ official workflow is:
 2. Set it up for AWS and/or Azure.
 3. Use the actions and workflows against cloud resources.
 
-It is a building block for automation, not a governance product by itself.
+It is a building block for **day-2 automation**: patching, lifecycle operations, and remediation
+against cloud resources. It is not a governance product by itself; pair it with a clear approval
+and audit path.
+
+---
+
+## Cloud Migration Assessment is retired
+
+The earlier description of this pillar included "tools to plan cloud migrations". The current
+Australia documentation is explicit: **Cloud Migration Assessment is no longer deployed, enhanced,
+or supported.** Do not plan new work on it.
+
+Use instead:
+
+- current Cloud Services Catalog / Cloud Account Management guidance for the target environment,
+- the official migration and adoption guidance for your release,
+- your own migration plan records in ServiceNow (for example, portfolio and change records).
+
+If you see an old reference to Cloud Migration Assessment, treat it as historical, not a
+recommendation.
 
 ---
 
@@ -225,6 +289,12 @@ More: [Common mistakes](../../05-common-mistakes.md).
 5. **What happened to CPG workflows?**
    <details><summary>Answer</summary>They are being migrated to Workflow Studio flows/subflows; uncustomised defaults migrate automatically, customised ones do not.</details>
 
+6. **What is the status of Cloud Migration Assessment?**
+   <details><summary>Answer</summary>It is no longer deployed, enhanced, or supported. Do not plan new work on it.</details>
+
+7. **What does the UserCostCenter resource pool do?**
+   <details><summary>Answer</summary>It limits a requester to the cost center associated with their user record, using a script filter on the resource pool.</details>
+
 ---
 
 ## Official sources
@@ -236,6 +306,9 @@ More: [Common mistakes](../../05-common-mistakes.md).
 - Exploring Cloud Configuration Governance — <https://www.servicenow.com/docs/r/australia/it-operations-management/itom-cloud-accelerate/exploring-cloud-configuration-governance.html>
 - Exploring Cloud Action Library — <https://www.servicenow.com/docs/r/australia/it-operations-management/itom-cloud-accelerate/exploring-cloud-actions-library.html>
 - Cloud Migration Assessment (retired) — <https://www.servicenow.com/docs/r/australia/it-operations-management/itom-cloud-accelerate/cloud-migration-landing-page.html>
+- Set capacity limits on requests — <https://www.servicenow.com/docs/r/australia/it-operations-management/cloud-configuration-governance/set-capacity-limits-cloud-mgt.html>
+- Example resource pool limited to cost center — <https://www.servicenow.com/docs/r/australia/it-operations-management/cloud-configuration-governance/use-case-resource-pool.html>
+- Cloud Action Library — <https://www.servicenow.com/docs/r/australia/it-operations-management/itom-cloud-accelerate/exploring-cloud-actions-library.html>
 
 ---
 

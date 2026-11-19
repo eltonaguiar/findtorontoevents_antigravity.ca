@@ -65,6 +65,34 @@ paraphrase of the fact set, not a copy of the page.
 | Licensing | [SRM prerequisites](https://www.servicenow.com/docs/r/australia/it-operations-management/service-reliability-management/sr-landing-page.html) | ITSM Standard + ITOM Operator Professional |
 | Licensing | [CAM entitlements](https://www.servicenow.com/docs/r/australia/it-operations-management/cloud-account-management/exploring-cam.html) | CGS/CAM layering |
 
+| CMDB foundation | [ITOM Visibility and CMDB tables](https://www.servicenow.com/docs/r/australia/it-operations-management/itom-visibility/itom-visibility-use-case.html) | Service tables, CI tables, SGC/CMDB 360 data providers |
+| CMDB foundation | [ITOM Visibility and CSDM](https://www.servicenow.com/docs/r/australia/it-operations-management/itom-visibility/itom-visibility-use-case-product-view.html) | Discovery/Service Mapping in the CSDM |
+| CMDB foundation | [CMDB tables used by ITOM AIOps](https://www.servicenow.com/docs/r/australia/it-operations-management/itom-health-use-case.html) | AIOps CI, service instance, dynamic CI group |
+| CMDB foundation | [Applying CSDM to ITOM AIOps](https://www.servicenow.com/docs/r/australia/it-operations-management/itom-health-use-case-product-view.html) | Event Management + metric anomaly detection |
+| Discovery (containers) | [Discovery for containerized resources](https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/container-discovery.html) | Container management resources |
+| Discovery (containers) | [Kubernetes discovery using patterns](https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/kubernetes-discovery.html) | Pattern, OpenShift, service mesh, LP pattern, credentials, RBAC |
+| Discovery (containers) | [Kubernetes Visibility Agent](https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/acc-kubernetes-visibility-landing-page.html) | Continuous discovery and CMDB updates |
+| Discovery (containers) | [Kubernetes explorer dashboard](https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/kubernetes-explorer-dash.html) | Dashboard views and roles |
+| Automation | [Alert automation in SOW](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/sow-itom-alert-automation.html) | Ignore/Enrich/Group/Respond |
+| Automation | [Run remediation actions](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/run-remediation-actions.html) | Reduce MTTR configuration |
+| Automation | [Configure alert remediation actions](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/configure-alert-remediation-subflows.html) | Action list, prerequisites, Additional info |
+| Automation | [CI remediation](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/ci-remediation.html) | Remediation tasks and approval |
+| Automation | [CCG remediation](https://www.servicenow.com/docs/r/australia/it-operations-management/itom-cloud-accelerate/ccg-remediation.html) | Base/custom actions, change request |
+| Automation | [Tag policies and remediation](https://www.servicenow.com/docs/r/australia/it-operations-management/tag-governance/tag-governance-policies-remediate.html) | AWS auto-remediation, AssumeRole |
+| Automation | [LEAP features](https://www.servicenow.com/docs/r/australia/it-operations-management/aiops-leap-learning-enhanced-automation-playbooks/aiops-leap-features.html) | Opportunities, projects, playbooks, Ansible |
+| Resilience/security | [AWS Backup Plan](https://www.servicenow.com/docs/r/australia/it-operations-management/discovery-and-service-mapping-patterns/aws-backup-plan.html) | Pattern, tables, relationships |
+| Resilience/security | [Azure Recovery Services Vault Backup Item](https://www.servicenow.com/docs/r/australia/it-operations-management/discovery-and-service-mapping-patterns/azure-recovery-services-vault-backup.html) | Pattern, CMDB/non-CMDB data |
+| Resilience/security | [Alert impact calculation](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/c_EMImpactCalculation.html) | Impact factors and service maps |
+| Resilience/security | [Probable RCA](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/probable-rca.html) | Alerts, CI topology, change requests |
+| Resilience/security | [Analyze potential impact](https://www.servicenow.com/docs/r/australia/it-operations-management/service-mapping/use-now-assist-analyze-impact-agentic-workflow.html) | Agentic change impact assessment |
+| Resilience/security | [Cryptographic Asset Compliance](https://www.servicenow.com/docs/r/australia/it-operations-management/itom-visibility/CAC-landing-page.html) | PQC readiness and risk indicators |
+| Cloud | [Set capacity limits](https://www.servicenow.com/docs/r/australia/it-operations-management/cloud-configuration-governance/set-capacity-limits-cloud-mgt.html) | Capacity limit fields and workflow |
+| Cloud | [Resource pool cost center](https://www.servicenow.com/docs/r/australia/it-operations-management/cloud-configuration-governance/use-case-resource-pool.html) | Cost center filter and blueprint |
+| Cloud | [Cloud Action Library](https://www.servicenow.com/docs/r/australia/it-operations-management/itom-cloud-accelerate/exploring-cloud-actions-library.html) | Install/setup/use |
+| AI | [Alert analysis by Otto](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/alert-summary-now-assist-express-list.html) | Express List analysis |
+| AI | [Past incidents summary](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/nai-analyze-past-incidents.html) | Alert investigation skill |
+| AI | [Probable RCA](https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/probable-rca.html) | Ranked root causes |
+
 ---
 
 **Agent:** Kilo (deepseek-flash) · **Updated:** 2026-11-19

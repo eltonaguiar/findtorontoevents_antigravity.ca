@@ -1,7 +1,7 @@
 {
   "_meta": {
     "title": "ServiceNow ITOM knowledge base",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "agent": "Kilo (deepseek-flash)",
     "created": "2026-11-19",
     "docs_release": "Australia",
@@ -822,6 +822,235 @@
         "What does Tag Governance do?",
         "What does AI Agent Topology Mapping discover?",
         "What is ITOM Content Service?"
+      ]
+    },
+    {
+      "id": "cmdb",
+      "name": "CMDB foundation (ITOM shared data)",
+      "app": "CMDB / ITOM Visibility",
+      "confidence": "high",
+      "why": "The shared data foundation all ITOM pillars trust: CI classes, relationships, service instances, CSDM, identification/reconciliation, and Service Graph Connectors.",
+      "primary_table": "cmdb_ci",
+      "tables": [
+        "cmdb_ci",
+        "cmdb_rel_ci",
+        "cmdb_ci_service_discovered",
+        "cmdb_ci_service_by_tags",
+        "cmdb_ci_service_manual",
+        "cmdb_ci_query_based_service",
+        "cmdb_ci_endpoint"
+      ],
+      "roles": [
+        "discovery_admin",
+        "sm_admin",
+        "evt_mgmt_admin",
+        "admin"
+      ],
+      "breadcrumbs": [
+        "All > CMDB",
+        "All > Service Mapping > Service Instances",
+        "System Definition > Tables"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "cmdb_ci.sys_class_name",
+            "why": "Defines CI identity and behavior"
+          },
+          {
+            "field": "cmdb_rel_ci.type",
+            "why": "The relationship type for maps and impact"
+          },
+          {
+            "field": "cmdb_ci_service_discovered.name",
+            "why": "The service instance identity"
+          }
+        ]
+      },
+      "must_know": [
+        "Every pillar relies on the CMDB",
+        "CSDM v5 labels the top-down table as service instance",
+        "Service Graph Connectors are Store-app integrations, subject to reconciliation",
+        "Identification beats scanning"
+      ],
+      "mistakes": [
+        "Connector without an owner",
+        "Wrong service table",
+        "CSDM ignored",
+        "Manual relationships without governance"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 30,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/itom-visibility/itom-visibility-use-case.html"
+      ],
+      "quiz": [
+        "Which table is the service instance for top-down mapping?",
+        "What do Service Graph Connectors do?",
+        "Which two CMDB tables does AIOps rely on?"
+      ]
+    },
+    {
+      "id": "automation-remediation",
+      "name": "Automation and remediation",
+      "app": "ITOM AIOps / Cloud Accelerate / LEAP",
+      "confidence": "high",
+      "why": "Turns detection into action across all pillars: alert automation, remediation, cloud remedies, tags, LEAP, and Ansible, with guardrails.",
+      "primary_table": "em_alert",
+      "tables": [
+        "em_alert",
+        "remediation task records",
+        "change_request",
+        "sa_rem_* (varies)"
+      ],
+      "roles": [
+        "evt_mgmt_admin",
+        "evt_team_operator",
+        "flow_designer",
+        "sn_itom_ccg.ccg_operator",
+        "sn_itom_tag.tag_governance_admin",
+        "LEAP admin",
+        "sn_itom_leap.leap_ansible_agent_worker"
+      ],
+      "breadcrumbs": [
+        "All > Service Operations Workspace > Express List",
+        "All > Event Management > Rules > Alert Management Rules",
+        "All > Tag Governance > Remediation",
+        "Workspaces > LEAP"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "automation type",
+            "why": "Ignore/Enrich/Group/Respond"
+          },
+          {
+            "field": "Response subflow",
+            "why": "What the respond automation executes"
+          },
+          {
+            "field": "remediation approval",
+            "why": "Creates a change request"
+          }
+        ]
+      },
+      "must_know": [
+        "Order: Ignore \u2192 Enrich \u2192 Group \u2192 Respond",
+        "Group before respond to avoid duplicates",
+        "Alert/CI remediation create remediation tasks",
+        "CCG and tag remediation can write to cloud",
+        "LEAP automates recurring incident patterns"
+      ],
+      "mistakes": [
+        "No approval gate",
+        "Non-idempotent responses",
+        "Auto-remediation too broad",
+        "No audit trail",
+        "No owner"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 35,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [
+        "labs/LAB-02-EVENT-TO-INCIDENT.md"
+      ],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/event-management/sow-itom-alert-automation.html"
+      ],
+      "quiz": [
+        "What is the alert automation order?",
+        "Why group before respond?",
+        "What record does a remediation workflow create?",
+        "What does approval-gated CCG remediation create?"
+      ]
+    },
+    {
+      "id": "resilience-security",
+      "name": "Resilience, security, and compliance",
+      "app": "ITOM cross-cutting",
+      "confidence": "high",
+      "why": "Supplies evidence for recovery, change control, security, and audits: backup-resource visibility, certificates, firewalls, cryptographic assets, cloud policy, and change-correlated RCA.",
+      "primary_table": "varies by app",
+      "tables": [
+        "cmdb_aws_backup_backup_plan (pattern)",
+        "cmdb_aws_backup_backup_vault (pattern)",
+        "cmdb_azure_recovery_services_vault_backup_item (pattern)",
+        "certificate records (app-specific)",
+        "firewall records (app-specific)",
+        "ccg violation/remediation records"
+      ],
+      "roles": [
+        "discovery_admin",
+        "evt_mgmt_admin",
+        "sn_change_write",
+        "sn_itom_ccg.ccg_operator",
+        "sn_itom_tag.tag_governance_admin"
+      ],
+      "breadcrumbs": [
+        "All > Certificate Inventory and Management",
+        "All > Firewall Audits and Reporting",
+        "All > Cryptographic Asset Compliance",
+        "All > Cloud Configuration Governance"
+      ],
+      "fields": {
+        "critical": [
+          {
+            "field": "certificate expiry",
+            "why": "Prevents predictable outages"
+          },
+          {
+            "field": "attestation status",
+            "why": "Ownership evidence"
+          },
+          {
+            "field": "un violation/scan",
+            "why": "Compliance evidence"
+          },
+          {
+            "field": "backup CI relationship",
+            "why": "Recovery visibility"
+          }
+        ]
+      },
+      "must_know": [
+        "ITOM does not replace backup/SecOps/compliance",
+        "Backup patterns show configuration, not restore",
+        "Probable RCA correlates alerts with change requests",
+        "Certificate/firewall/cryptographic apps produce audit evidence"
+      ],
+      "mistakes": [
+        "Treating ITOM as the backup platform",
+        "Assuming backup evidence proves restore",
+        "Certificate inventory without attestation",
+        "Firewall inventory without rule owners",
+        "No audit retention"
+      ],
+      "timebox_min": {
+        "orient": 10,
+        "model": 20,
+        "practice": 30,
+        "prove": 10,
+        "teach": 5
+      },
+      "labs": [],
+      "official_docs": [
+        "https://www.servicenow.com/docs/r/australia/it-operations-management/discovery-and-service-mapping-patterns/aws-backup-plan.html"
+      ],
+      "quiz": [
+        "Does ITOM back up the platform?",
+        "What three factors does Probable RCA use?",
+        "What does Cryptographic Asset Compliance add?",
+        "What record does approval-gated CCG remediation create?"
       ]
     }
   ]

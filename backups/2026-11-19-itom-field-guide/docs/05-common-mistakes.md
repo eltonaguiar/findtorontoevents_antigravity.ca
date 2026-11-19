@@ -86,6 +86,24 @@ fix is usually smaller than the cleanup.
 
 ---
 
+## Containers and cross-cutting
+
+| # | Mistake | Symptom | Fix |
+|---|---|---|---|
+| 38 | Running the Kubernetes pattern as CI discovery, not Serverless | Kubernetes resources are missed | Use a serverless discovery schedule for the Kubernetes pattern |
+| 39 | Configuring two Kubernetes authentication methods | Credential rejected | Use user/password **or** a Bearer token, not both |
+| 40 | MID Server cannot reach the API server | Empty Kubernetes discovery | Check reachability, RBAC, and pattern version |
+| 41 | No per-namespace RBAC binding | Incomplete large-cluster discovery | Ensure a RoleBinding exists in every namespace the LP pattern enumerates |
+| 42 | Installing a Service Graph Connector without an owner | Data conflicts and duplicates | Assign ownership, precedence, and refresh cadence |
+| 43 | Using the wrong service table | Alerts/SLOs cannot find the service | Match the table to the mapping method (top-down/tag/manual) |
+| 44 | Automation without an approval gate | An automation makes an outage worse | Gate destructive actions; require a change record where relevant |
+| 45 | Non-idempotent responses | Duplicate incidents | Make the response idempotent; group before respond |
+| 46 | Auto-remediation set too broad | Non-compliant but safe resources are changed | Scope remediation; review violation types first |
+| 47 | Planning new cloud work on Cloud Migration Assessment | A retired app | It is no longer deployed/enhanced/supported; use current Cloud Services Catalog guidance |
+| 48 | Assuming a backup CI proves recovery | Failed restore surprises everyone | Backup CI is evidence of configuration; test restores |
+
+---
+
 ## The meta-mistake
 
 **Treating ITOM as a product you install instead of a data pipeline you operate.**

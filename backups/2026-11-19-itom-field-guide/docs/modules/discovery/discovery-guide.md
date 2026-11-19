@@ -19,6 +19,7 @@ engine that makes the rest of ITOM possible.
 - [Probes, sensors, and patterns](#probes-sensors-and-patterns)
 - [MID Server](#mid-server)
 - [Types of discovery](#types-of-discovery)
+- [Containers and Kubernetes](#containers-and-kubernetes)
 - [Credentials](#credentials)
 - [Schedules and run options](#schedules-and-run-options)
 - [Proving a run: status, ECC queue, logs](#proving-a-run-status-ecc-queue-logs)
@@ -188,6 +189,86 @@ or a MID Server cluster for scale and failover, is common.
 | **Service** | Service instances for Service Mapping | Top-down; see Service Mapping |
 | **Certificates** | TLS certificates by URL | Certificate Inventory and Management |
 | **IP address scan** | Live IPs without credentials | Creates device history but does not update the CMDB |
+
+---
+
+## Containers and Kubernetes
+
+Containerised estates are not optional in a modern ITOM design. Discovery finds container
+management resources, and ServiceNow provides two complementary Kubernetes paths plus a
+workspace for exploring the result.
+
+### Pattern-based Kubernetes discovery
+
+The Kubernetes pattern discovers Kubernetes and OpenShift components and creates application
+services containing them. Discovery also finds Kubernetes events and updates the CMDB frequently
+because the environment is dynamic.
+
+Key points from the official documentation:
+
+- **OpenShift** support is delivered by an extension section of the Kubernetes pattern.
+- **Service mesh** discovery uses an Istio/Prometheus extension and can create service-to-service
+  relationships.
+- **Container registries and images** are found by the container repository extension.
+- **Large clusters** can use the `Kubernetes Cluster - Per-Namespace LP` pattern (Discovery and
+  Service Mapping Patterns 1.35.1+), which discovers each namespace separately to improve
+  reliability.
+- **Kubernetes Event** pattern discovers events for Kubernetes components.
+- **Service Mapping** can use CI relationships to add Kubernetes components to application
+  services during tag-based discovery (Store 1.0.68+).
+
+### Prerequisites in practice
+
+| Requirement | Why it matters |
+|---|---|
+| Latest Discovery and Service Mapping Patterns app | The Kubernetes patterns and extensions ship in the Store app |
+| Kubernetes API server URL | From `kubectl cluster-info`; must be reachable from the MID Server |
+| Namespaces | From `kubectl get namespaces` |
+| Kubernetes credential | User/password **or** a Bearer token, not both |
+| GET permissions on the required API endpoints | Namespaces, services, pods, nodes, deployments, statefulsets, daemonsets, replicasets, cronjobs, jobs, ingresses |
+| Serverless discovery schedule | The Kubernetes pattern is run as a serverless schedule |
+| RBAC check for per-namespace discovery | A namespace-scoped RoleBinding must exist in each namespace the LP pattern enumerates |
+
+### Kubernetes Visibility Agent
+
+The Kubernetes Visibility Agent is the continuous-discovery option. It detects changes on
+resources in a Kubernetes cluster, performs continuous discovery, reports changes back to the
+instance, and updates the CMDB with the latest data.
+
+Use it when the cluster changes faster than a scheduled pattern run can keep up with. Use the
+pattern when you need the pattern-based inventory and Service Mapping integration.
+
+### Kubernetes Explorer
+
+The Discovery Admin Workspace includes a **Kubernetes Explorer** dashboard (Discovery Admin
+Workspace 1.20.0+, `discovery_admin` role). It provides:
+
+- Overview counts and trends for clusters, nodes, namespaces, services, and pods.
+- Cluster, service, node, workload, pod, and Docker image tabs.
+- Dependency Views and key values for each resource.
+- Pod state counts (running, pending, creating, crashloop backoff) and workload replica
+  mismatches.
+
+The dashboard is a view over discovered data. If the cluster was never discovered, the dashboard
+is empty.
+
+### Container image scanning and SBOM
+
+Discovery also supports container image scanning and software decomposition, including
+software bill of materials (SBOM) generation. That data is useful for software asset management
+and vulnerability workflows, but it is a separate content area from Kubernetes topology.
+
+### What to verify
+
+- Does the credential use exactly one authentication method?
+- Can the MID Server reach the API server?
+- Did the schedule run as **Serverless**?
+- Are namespaces and workloads appearing in the CMDB?
+- Do Service Mapping tag-based maps include the Kubernetes components?
+- Is the Kubernetes Explorer showing the same clusters the platform team sees?
+
+If any answer is no, check the pattern version, credentials, RBAC, and MID Server reachability
+before changing the schedule.
 
 ---
 
@@ -405,6 +486,9 @@ draw the phases, the records, and the exact evidence you would collect.
 6. **What does horizontal discovery not do?**
    <details><summary>Answer</summary>It does not map business services or build service instances; that is Service Mapping (top-down).</details>
 
+7. **How does Discovery discover Kubernetes?**
+   <details><summary>Answer</summary>With the Kubernetes pattern in a serverless discovery schedule (credentials + API server reachability + GET permissions), or continuously with the Kubernetes Visibility Agent. The Kubernetes Explorer dashboard shows the discovered resources.</details>
+
 ---
 
 ## Official sources
@@ -415,6 +499,10 @@ draw the phases, the records, and the exact evidence you would collect.
 - ECC queue for Discovery — <https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/r_DiscoveryStatusECCQueue.html>
 - Create IP credentials — <https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/create-ip-credentials.html>
 - Discovery Configuration Console — <https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/c_DiscoveryConfigurationConsole.html>
+- Discovery for containerized resources — <https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/container-discovery.html>
+- Kubernetes discovery using patterns — <https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/kubernetes-discovery.html>
+- Kubernetes Visibility Agent — <https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/acc-kubernetes-visibility-landing-page.html>
+- Kubernetes Explorer dashboard — <https://www.servicenow.com/docs/r/australia/it-operations-management/discovery/kubernetes-explorer-dash.html>
 - ITOM Visibility and CMDB tables — <https://www.servicenow.com/docs/r/australia/it-operations-management/itom-visibility/itom-visibility-use-case.html>
 - ITOM Visibility — <https://www.servicenow.com/docs/r/australia/it-operations-management/itom-visibility/itom-visibility-landing-page.html>
 

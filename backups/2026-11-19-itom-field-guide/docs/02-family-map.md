@@ -127,6 +127,20 @@ that AIOps, Optimization, and other products consume.
 
 ---
 
+## Cross-cutting guides
+
+Three concerns run through every pillar and are covered as dedicated guides:
+
+| Guide | What it covers |
+|---|---|
+| [CMDB foundation](modules/cmdb/cmdb-guide.md) | The shared data foundation: tables, CSDM, identification/reconciliation, Service Graph Connectors, impact |
+| [Automation & remediation](modules/automation-remediation/automation-remediation-guide.md) | Alert, cloud, and tag automation; CI remediation; LEAP; Ansible; guardrails |
+| [Resilience · security · compliance](modules/resilience-security/resilience-security-guide.md) | Backup-resource visibility, change/configuration control, security alignment, audit evidence |
+
+The [coverage map](09-coverage-map.md) maps every pillar and subtopic to the guide that covers it.
+
+---
+
 ## Which product should I learn first?
 
 | Your job | First product | Second product | Why |

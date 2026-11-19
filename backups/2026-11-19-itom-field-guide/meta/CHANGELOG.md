@@ -2,6 +2,30 @@
 
 **Agent:** Kilo (deepseek-flash) · **Repository:** ServiceNowLearning_ITOM
 
+## v1.2.0 — 2026-11-19
+
+### Added
+
+- CMDB foundation guide.
+- Automation and remediation guide.
+- Resilience, security, and compliance guide.
+- Coverage map page (pillars + subtopics).
+- Containers/Kubernetes discovery section.
+- Now Assist/Otto alert analysis, past incidents, alert group description, and Probable RCA in the AI guide.
+- Cloud cost/capacity, Cloud Action Library, and Cloud Migration Assessment retirement correction.
+- Peer review record (research/06_PEER_REVIEW.md).
+
+### Changed
+
+- Navigation, index, family map, README, study plan, roles/tables, common mistakes, glossary.
+- Extended data/modules.json (14 modules) and data/sources.json.
+- Extended research source matrix, decisions, and merge handoff.
+
+### Verified
+
+- `python3 scripts/sn_lint.py` passes (0 errors).
+
+
 ---
 
 ## v1.0.0 — 2026-11-19

@@ -34,6 +34,7 @@ Those pages are not empty. Do not overwrite them blindly. Merge by topic.
 | This repo | Target in the main site | Action |
 |---|---|---|
 | `docs/modules/itom-overview/itom-overview-guide.md` | `docs/modules/itom/itom-overview.md` | Add as the new family overview |
+| `docs/modules/cmdb/cmdb-guide.md` | `docs/modules/itom/cmdb-foundation.md` | Add as the shared data foundation |
 | `docs/modules/discovery/discovery-guide.md` | `docs/modules/itom/discovery.md` | Add as the ITOM Discovery guide; keep the existing FBD deep dive as a sibling |
 | `docs/modules/service-mapping/service-mapping-guide.md` | `docs/modules/itom/service-mapping.md` | Add |
 | `docs/modules/event-management/event-management-guide.md` | `docs/modules/itom/event-management.md` | Add |
@@ -44,6 +45,9 @@ Those pages are not empty. Do not overwrite them blindly. Merge by topic.
 | `docs/modules/metric-intelligence/metric-intelligence-guide.md` | `docs/modules/itom/metric-intelligence.md` | Add |
 | `docs/modules/itom-ai/itom-ai-guide.md` | `docs/modules/itom/ai-in-itom.md` | Add |
 | `docs/modules/visibility-suite/visibility-suite-guide.md` | `docs/modules/itom/visibility-suite.md` | Add |
+| `docs/modules/automation-remediation/automation-remediation-guide.md` | `docs/modules/itom/automation-remediation.md` | Add |
+| `docs/modules/resilience-security/resilience-security-guide.md` | `docs/modules/itom/resilience-security-compliance.md` | Add |
+| `docs/09-coverage-map.md` | `docs/itom/coverage-map.md` | Add |
 | `docs/00-methodology.md` .. `docs/08-source-ladder.md` | `docs/itom/...` or shared reference | Add under a shared ITOM reference folder |
 | `labs/LAB-*.md` | `labs/itom/...` | Add |
 | `docs/getting-started/*.md` | `getting-started/itom/...` | Add |
