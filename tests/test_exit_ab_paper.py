@@ -13,7 +13,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.exit_ab_paper import (  # noqa: E402
-    DEFAULT_COST_PCT, _close_before, _ms, ab_report, time_exit_pnl,
+    DEFAULT_COST_PCT, MAX_HOLD_DAYS, MIN_HOLD_DAYS, _close_before, _ms, ab_report,
+    daily_vol_pct, time_exit_pnl, vol_scaled_days,
 )
 
 H = 86400_000
@@ -111,6 +112,53 @@ def test_cli_fails_closed_without_rows(tmp_path):
     proc = subprocess.run([sys.executable, str(ROOT / "tools" / "exit_ab_paper.py"),
                            "--rows", str(empty)], capture_output=True, text=True)
     assert proc.returncode == 2, proc.stderr
+
+
+def _calm_history(days=40, step=0.1):
+    """Bars BEFORE the entry signal, ~0.1%/bar drift so vol is small but non-zero."""
+    return [(T0 - (days - i) * H, 100.0 + i * step) for i in range(days)]
+
+
+def test_daily_vol_uses_only_pre_entry_bars():
+    # A violent rally *after* the entry must not change the volatility we size on.
+    calm = _calm_history()
+    after = [(T0 + i * H, 100.0 + i * 40.0) for i in range(1, 6)]
+    with_history = daily_vol_pct(calm + [(T0, 100.1)], T0)
+    with_prices_after = daily_vol_pct(calm + [(T0, 100.1)] + after, T0)
+    assert with_history is not None and with_history < 1.0
+    assert with_prices_after == pytest.approx(with_history)
+
+
+def test_vol_scaled_days_clips_to_the_band():
+    assert vol_scaled_days(None) is None
+    assert vol_scaled_days(0.0) is None
+    assert vol_scaled_days(0.1) == MAX_HOLD_DAYS      # 3/0.1 = 30d -> clipped
+    assert vol_scaled_days(60.0) == MIN_HOLD_DAYS     # 3/60 = 0.05d -> clipped
+    assert vol_scaled_days(1.5) == pytest.approx(2.0)  # 3/1.5 = 2d, inside the band
+
+
+def test_vol_arm_counts_short_history_as_skipped():
+    series = [(T0, 100.0), (T0 + H, 103.0)]  # nothing before the entry
+    res = ab_report([_row(pnl=1.0)], _bars(series), horizons=(1.0,))
+    assert res["vol_scaled"]["overall"]["n"] == 0
+    assert res["skipped"]["no_pre_entry_bars"] == 1
+
+
+def test_vol_arm_prices_a_per_pick_horizon():
+    series = _calm_history() + [(T0, 100.1), (T0 + H, 101.0), (T0 + 2 * H, 102.0)]
+    res = ab_report([_row(pnl=1.0, closed=T0 + 2 * H)], _bars(series), horizons=(1.0,))
+    v = res["vol_scaled"]
+    assert v["overall"]["n"] == 1
+    assert MIN_HOLD_DAYS <= v["horizon_days"]["median"] <= MAX_HOLD_DAYS
+    # delta is paired against the actual leg, never against the fixed horizons
+    assert v["overall"]["mean_delta_pct"] == pytest.approx(
+        v["overall"]["mean_alt_pct"] - v["overall"]["mean_actual_pct"], abs=1e-6)
+
+
+def test_vol_arm_can_be_disabled():
+    series = _calm_history() + [(T0, 100.1), (T0 + H, 101.0)]
+    res = ab_report([_row(pnl=1.0)], _bars(series), horizons=(1.0,), vol_target=None)
+    assert res["vol_scaled"] is None
 
 
 def test_schema_and_cost_are_reported(tmp_path):
