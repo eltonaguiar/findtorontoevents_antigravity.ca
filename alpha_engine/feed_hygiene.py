@@ -194,8 +194,17 @@ def is_valid_active_pick(pick: dict) -> bool:
         from alpha_engine.audit3_denylist import denied_reason as _audit3_denied
     except ImportError:  # pragma: no cover
         _audit3_denied = None
-    if _audit3_denied is not None and _audit3_denied(pick):
-        return False
+    if _audit3_denied is not None:
+        _reason = _audit3_denied(pick)
+        if _reason:
+            # Persist *why* the gate dropped the pick so the weekly shadow
+            # review can count real denials. Never blocks emission.
+            try:
+                from alpha_engine.audit3_denylist_hits import record as _record_hit
+                _record_hit(pick, _reason)
+            except Exception:
+                pass
+            return False
 
     # 4a. Must have a non-anonymous strategy name (2026-04-20 additional-fixes
     # audit: 211 closed picks had strategy == "", "unknown", or mirrored the

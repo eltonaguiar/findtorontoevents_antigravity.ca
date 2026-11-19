@@ -115,6 +115,7 @@
     <button data-t="families">Source Families</button>
     <button data-t="evidence">Evidence Registry</button>
     <button data-t="hyp">Hypotheses</button>
+    <button data-t="forward">Forward Evidence</button>
     <button data-t="method">Method &amp; Limits</button>
   </nav>
 
@@ -226,6 +227,25 @@
       <h4>Open / registered hypotheses</h4>
       <div class="tblwrap"><table id="hypTbl"></table></div>
       <p class="muted" id="hypUntested" style="font-size:12px"></p>
+    </div>
+  </section>
+
+  <section id="forward">
+    <div class="card">
+      <h3>Forward evidence — the only rows that can promote a pod</h3>
+      <p class="muted" id="fwdSub"></p>
+      <div class="grid" id="fwdKpis"></div>
+      <h4>Pods — forward rows closed on or after registration</h4>
+      <div class="tblwrap"><table id="fwdPodTbl"></table></div>
+      <h4>Hypothesis clocks</h4>
+      <div class="tblwrap" style="max-height:340px"><table id="fwdHypTbl"></table></div>
+      <div class="note" id="fwdRule"></div>
+      <p class="muted" style="margin:10px 0 0;font-size:12px">
+        Row count and fingerprint come from <code>reports/forward_observations.jsonl</code>
+        as read by the tribunal's <code>forward_gate_block()</code>. A pod at zero rows
+        cannot promote anything, no matter how good its backtest looks — that is the
+        point of the gate, not a bug in it.
+      </p>
     </div>
   </section>
 
@@ -350,6 +370,8 @@ function render(d){
     {key:'verdict', label:'Verdict', render:r=>pill(r.verdict)},
   ], d.classes, 'n', -1);
 
+  const fg = d.forward_gate || {};
+  renderForward(d);
   const sa = d.selection_alpha || {};
   $('alphaNote').innerHTML = sa.available
     ? `<b>Selection alpha</b> = pick net return minus the direction-adjusted return of
@@ -418,6 +440,11 @@ function render(d){
     ['G5 stability', conv.stability + '.'],
     ['G6 concentration', `No symbol > ${conv.max_symbol_share*100}% of a cell; no source > ${conv.max_source_share*100}% of an aggregate.`],
     ['G7 cost realism', conv.win_definition + '.'],
+    ['G8 forward evidence', fg.enforced
+        ? `${(fg.n_rows||0).toLocaleString()} forward rows, fingerprint ` +
+          `${esc(fg.fingerprint||'—')}; a pod reaches PROVEN_T2 only on its own rows ` +
+          `closed after registration (${Object.keys(fg.pods||{}).length} pods tracked).`
+        : 'NOT ENFORCED in this build — forward evidence is not gating promotion.'],
     ['Doctrine', (d.doctrine && d.doctrine.default_state) ? d.doctrine.default_state + ' Kill requires: ' + d.doctrine.kill_requires + '.' : 'innocent until proven guilty'],
   ].map(([a,b])=>`<div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)">
       <div style="min-width:150px;font:11px/1.6 var(--mono);color:var(--blue)">${esc(a)}</div>
@@ -537,6 +564,53 @@ function render(d){
     {k:'BH q', v:conv.fdr_q},
     {k:'DSR threshold', v:conv.dsr_threshold},
   ], null, 1);
+}
+
+function renderForward(d){
+  if(!$('fwdPodTbl')) return;
+  const fg = d.forward_gate || {};
+  const pods = fg.pods || {}, hyps = fg.hypotheses || {};
+  const podRows = Object.entries(pods).map(([k,v]) => ({
+    pod: k, hypothesis: v.hypothesis_id || (v.pod||''), n_forward: v.n_forward,
+    min_n: v.min_n, pct: v.min_n ? Math.round(100*(v.n_forward||0)/v.min_n) : null,
+    eligible: v.eligible, since: v.since,
+    reason: (v.reasons||[]).join('; ') || (v.reason||''),
+  }));
+  const hypRows = Object.entries(hyps).map(([k,v]) => ({
+    pod: k, hypothesis: k, n_forward: v.n_forward, min_n: v.min_n,
+    pct: v.min_n ? Math.round(100*(v.n_forward||0)/v.min_n) : null,
+    eligible: v.eligible, since: v.since,
+    reason: (v.reasons||[]).join('; ') || (v.reason||''),
+  }));
+  const eligible = podRows.filter(p=>p.eligible).length;
+  $('fwdSub').textContent = fg.enforced
+    ? `${(fg.n_rows||0).toLocaleString()} forward rows in the ledger` +
+      `${fg.fingerprint?` (fingerprint ${fg.fingerprint})`:''} · ` +
+      `${Object.keys(pods).length} pods · ${eligible} eligible to promote · ` +
+      `${(fg.read_errors||[]).length} read errors. Rows are counted only from each pod's ` +
+      `registration date, so a pod cannot inherit pre-registration history.`
+    : 'Forward gating is not enforced in this ledger build.';
+  $('fwdKpis').innerHTML = [
+    ['Forward rows', (fg.n_rows||0).toLocaleString(), 'blue'],
+    ['Fingerprint', fg.fingerprint || '—', ''],
+    ['Enforced', fg.enforced ? 'yes' : 'NO', fg.enforced ? 'green' : 'red'],
+    ['Pods tracked', Object.keys(pods).length, ''],
+    ['Eligible', eligible, eligible ? 'green' : 'amber'],
+    ['Read errors', (fg.read_errors||[]).length, (fg.read_errors||[]).length ? 'red' : ''],
+  ].map(([k,v,c])=>`<div class="kpi ${c}"><div class="v">${esc(v)}</div><div class="k">${k}</div></div>`).join('');
+  const cols = [
+    {key:'pod', label:'Pod'},
+    {key:'hypothesis', label:'Hypothesis'},
+    {key:'n_forward', label:'Forward n', render:r=>`<span class="num">${r.n_forward==null?'—':r.n_forward}</span>`},
+    {key:'min_n', label:'min n'},
+    {key:'pct', label:'Progress', render:r=>r.pct==null?'—':`<span class="num">${r.pct}%</span>`},
+    {key:'eligible', label:'Eligible', render:r=>`<span class="${r.eligible?'pos':'muted'}">${r.eligible?'yes':'no'}</span>`},
+    {key:'since', label:'Since'},
+    {key:'reason', label:'Why', render:r=>`<span class="muted" style="white-space:normal;font-size:11.5px">${esc(r.reason)}</span>`},
+  ];
+  table('fwdPodTbl', cols, podRows, 'n_forward', -1);
+  table('fwdHypTbl', cols, hypRows, 'n_forward', -1);
+  $('fwdRule').textContent = fg.rule || 'No forward-gate rule recorded in this build.';
 }
 
 function renderCells(){

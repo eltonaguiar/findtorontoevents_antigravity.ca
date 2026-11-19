@@ -829,6 +829,8 @@ a:hover { text-decoration: underline; }
   <a href="#" id="jump-to-active" onclick="event.preventDefault(); document.querySelector('[data-tab=active]').click(); document.getElementById('tab-active').scrollIntoView({behavior:'smooth',block:'start'});" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(245,158,11,0.1));border:1px solid rgba(251,191,36,0.4);border-radius:20px;color:#fbbf24;font-weight:700;font-size:13px;text-decoration:none;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px" onmouseover="this.style.background='linear-gradient(135deg,rgba(251,191,36,0.35),rgba(245,158,11,0.1))';this.style.boxShadow='0 0 16px rgba(251,191,36,0.2)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(251,191,36,0.2),rgba(245,158,11,0.1))';this.style.boxShadow='none'">&#x2728; Jump to Active Picks</a>
   <a href="research_index.html" id="research-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(96,165,250,0.2),rgba(59,130,246,0.1));border:1px solid rgba(96,165,250,0.4);border-radius:20px;color:#60a5fa;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="Per-asset-class research runs (sourced + backtested + multi-AI consensus picks)">&#x1F4D6; Research</a>
   <a href="edge_stability.html" id="edge-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(16,185,129,0.1));border:1px solid rgba(34,197,94,0.4);border-radius:20px;color:#22c55e;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="Per-asset-class edge stability across 7d/30d/90d/all-time windows">&#x1F4CA; Edge Stability</a>
+  <a href="/audit3/" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(248,113,113,0.18),rgba(220,38,38,0.10));border:1px solid rgba(248,113,113,0.45);border-radius:20px;color:#fca5a5;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="audit3 — the strict kill tribunal: what is PROVEN, CANDIDATE, WEAK or KILL, with coverage and cost gates">&#x2696;&#xFE0F; Kill Tribunal</a>
+  <a href="/audit2/" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(76,194,255,0.18),rgba(14,116,144,0.10));border:1px solid rgba(76,194,255,0.45);border-radius:20px;color:#7dd3fc;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="audit2 — candidate pods, the forward-evidence clock, and the measurement methodology">&#x1F4DA; Candidates &amp; Method</a>
   <a href="ai_leaderboard.html" id="ai-leaderboard-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(124,58,237,0.1));border:1px solid rgba(167,139,250,0.4);border-radius:20px;color:#a78bfa;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="Per-AI pick attribution: which AI engine picks best, per asset class and horizon">&#x1F3C6; AI Leaderboard</a>
   <a href="pick_funnel.html" id="pick-funnel-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(244,114,182,0.2),rgba(217,70,239,0.1));border:1px solid rgba(244,114,182,0.4);border-radius:20px;color:#f472b6;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="Pick funnel: how raw signals get filtered into Smart Picks / High Conviction / Money Ready per asset class (with leakage flags)">&#x1F50D; Pick Funnel</a>
 </div>
@@ -4659,27 +4661,9 @@ async function fetchStockPrices(picks) {
     }
   }
 
-  // Tier 6: FMP - capped at 5 to avoid 429
-  {
-    const missing6 = uniqueSymbols.filter(s => !priceMap[symbolMap[s] || s]).slice(0, 5);
-    if (missing6.length > 0) {
-      try {
-        const FMP_KEY = 'iF4K10WedJZINDhUWGXlGAiA57rn4sRD';
-        for (const sym of missing6) {
-          try {
-            const r = await fetch(`https://financialmodelingprep.com/stable/profile?symbol=${sym}&apikey=${FMP_KEY}`, {signal: AbortSignal.timeout(8000)});
-            if (r.ok) {
-              const data = await r.json();
-              const entry = Array.isArray(data) ? data[0] : data;
-              if (entry?.price) { priceMap[symbolMap[entry.symbol || sym] || sym] = entry.price; }
-            }
-          } catch(e) { /* skip individual */ }
-          await new Promise(r => setTimeout(r, 200));
-        }
-        if (Object.keys(priceMap).length > 0) console.log(`[STOCKS] FMP: ${Object.keys(priceMap).length}/${uniqueSymbols.length} prices`);
-      } catch(e) { console.warn('[STOCKS] FMP failed:', e.message); }
-    }
-  }
+  // Tier 6 (FMP) removed 2026-11-19: it shipped a hardcoded API key in the
+  // public HTML, readable by every visitor. FMP needs a server-side proxy;
+  // the remaining tiers (1-5, 7) cover the fallback chain without a secret.
 
   // Tier 7: Google Finance scrape via allorigins proxy (last resort, up to 3)
   {

@@ -147,18 +147,24 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add audit_dashboard/data/audit3_ledger.json audit_dashboard/data/audit3_verdict_history.json
+          # Include every generated data file so the tree is clean; otherwise
+          # `git pull --rebase` refuses ("unstaged changes") and the push loop
+          # can never succeed (this broke the 2026-11-19T12:32 run).
+          git add audit_dashboard/data/audit3_ledger.json \
+                  audit_dashboard/data/audit3_verdict_history.json \
+                  audit_dashboard/data/audit2_forward.json
           if git diff --cached --quiet; then
             echo "ledger unchanged"
             exit 0
           fi
           git commit -m "chore(audit3): refresh kill-tribunal ledger [skip ci]"
-          for i in 1 2 3; do
-            git pull --rebase --no-recurse-submodules origin main || true
+          for i in 1 2 3 4 5; do
+            # autostash keeps rebase legal even if a later step wrote files.
+            git -c rebase.autoStash=true pull --rebase --no-recurse-submodules origin main || true
             if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
-            sleep $((i*5))
+            sleep $((i*10))
           done
-          echo "::error title=audit3::could not push ledger after 3 attempts"
+          echo "::error title=audit3::could not push ledger after 5 attempts"
           exit 1
 
       - name: Deploy /audit3 to findtorontoevents.ca

@@ -1,12 +1,12 @@
 {
   "schema": "audit3.confirmatory.v1",
   "rule": "A cell may reach PROVEN_T2 only if it matches a pod here whose status is pre_registered. Pods must be declared before the forward data they will be judged on exists; a pod extracted from the results being judged is post_hoc and cannot promote. Everything unmatched is discovery.",
-    "status_meaning": {
-      "pre_registered": "may confer confirmatory; judged on forward rows from registered_at",
-      "post_hoc": "recorded for the audit trail only; cannot confer confirmatory",
-      "declined": "evaluated and rejected; recorded so nobody re-proposes it blind",
-      "observe": "registered before forward data but not yet evidencing n>=100 forward; emits shadow/paper rows only and cannot confer confirmatory until it is promoted to pre_registered"
-    },
+  "status_meaning": {
+    "pre_registered": "may confer confirmatory; judged on forward rows from registered_at",
+    "post_hoc": "recorded for the audit trail only; cannot confer confirmatory",
+    "declined": "evaluated and rejected; recorded so nobody re-proposes it blind",
+    "observe": "registered before forward data but not yet evidencing n>=100 forward; emits shadow/paper rows only and cannot confer confirmatory until it is promoted to pre_registered"
+  },
   "pods": [
     {
       "id": "POD-EQUITY-BREAKOUT",
@@ -75,9 +75,15 @@
       "status": "observe",
       "registered_at": "2026-11-19",
       "hypothesis_id": "H-2026-11-19-01",
-      "strategies": ["vwap_reversion"],
-      "asset_classes": ["CRYPTO"],
-      "directions": ["LONG"],
+      "strategies": [
+        "vwap_reversion"
+      ],
+      "asset_classes": [
+        "CRYPTO"
+      ],
+      "directions": [
+        "LONG"
+      ],
       "thesis": "4h VWAP mean-reversion is the strongest lab result in the repo (OOS n=516, Sharpe 3.102, DSR 21.4, PBO 0.18) but it is contested: a 1-bar execution lag drops PF to 0.957 and CSCV PBO to 0.84-0.97.",
       "expression": "4h bars; z-entry 1.5-2.5; close-only stops; no intrabar fill model.",
       "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched BTC/ETH benchmark, split-half stable. CI-LB<=0 at day 30 or 60 ends the pod.",
@@ -89,9 +95,15 @@
       "status": "observe",
       "registered_at": "2026-11-19",
       "hypothesis_id": "H-2026-11-19-02",
-      "strategies": ["bollinger_mr"],
-      "asset_classes": ["CRYPTO"],
-      "directions": ["LONG"],
+      "strategies": [
+        "bollinger_mr"
+      ],
+      "asset_classes": [
+        "CRYPTO"
+      ],
+      "directions": [
+        "LONG"
+      ],
       "thesis": "Bollinger mean-reversion passed walk-forward (OOS n=38, WR 52.6%, PF 1.673, Sharpe 1.376) but n<100 and it has never been merged to production.",
       "expression": "4h/1d Bollinger reversion; close-only stops.",
       "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched BTC/ETH benchmark, split-half stable.",
@@ -103,9 +115,17 @@
       "status": "observe",
       "registered_at": "2026-11-19",
       "hypothesis_id": "H-2026-11-19-03",
-      "strategies": ["faber_taa", "etf_faber_tactical"],
-      "asset_classes": ["EQUITY", "ETF"],
-      "directions": ["LONG"],
+      "strategies": [
+        "faber_taa",
+        "etf_faber_tactical"
+      ],
+      "asset_classes": [
+        "EQUITY",
+        "ETF"
+      ],
+      "directions": [
+        "LONG"
+      ],
       "thesis": "Faber 10-month/200d tactical allocation on SPY/QQQ is B-tier (Sharpe 1.74/1.65) but n=11/7 and the forward pilot has 0 ETF closes.",
       "expression": "Monthly rebalance; long SPY/QQQ when close > 10-month SMA, else cash; no leverage.",
       "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched SPY leg, split-half stable.",
@@ -117,9 +137,15 @@
       "status": "observe",
       "registered_at": "2026-11-19",
       "hypothesis_id": "H-2026-11-19-04",
-      "strategies": ["FXMom"],
-      "asset_classes": ["FOREX"],
-      "directions": ["LONG"],
+      "strategies": [
+        "FXMom"
+      ],
+      "asset_classes": [
+        "FOREX"
+      ],
+      "directions": [
+        "LONG"
+      ],
       "thesis": "FXMom USDJPY is the top FX lab result (Sharpe 2.02, PF 2.03, n=42) but n<100, the FX class is honest-exhausted (H-121 REFUTED) and the data layer cannot measure it yet.",
       "expression": "Daily FX momentum on USDJPY; no production emitter string exists yet.",
       "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched UUP/DXY benchmark, split-half stable.",
@@ -131,14 +157,40 @@
       "status": "observe",
       "registered_at": "2026-11-19",
       "hypothesis_id": "H-2026-11-19-05",
-      "strategies": ["contango_roll_yield", "commodity_basis_carry"],
-      "asset_classes": ["COMMODITY"],
-      "directions": ["LONG", "SHORT"],
+      "strategies": [
+        "contango_roll_yield",
+        "commodity_basis_carry"
+      ],
+      "asset_classes": [
+        "COMMODITY"
+      ],
+      "directions": [
+        "LONG",
+        "SHORT"
+      ],
       "thesis": "Commodity basis/roll-yield carry is the best-documented commodity factor, but the in-repo emitters are dormant (commodity_basis_carry has zero rows; contango_roll_yield misclassified) and the claimed class stats are untraceable.",
       "expression": "Long backwardation / short contango; monthly roll; needs a second-nearby contract feed.",
       "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched DBC/GSG benchmark, split-half stable.",
       "evidence_at_registration": "reports/2026-06-06-per-asset-class-edge-reality-and-academic-roadmap.md (commodity_basis_carry coded, zero rows).",
       "observe_reason": "No emitted rows; needs data plumbing; COMMODITY class aggregate is negative-expectancy."
+    },
+    {
+      "id": "POD-CRYPTO-POSITION",
+      "status": "observe",
+      "registered_at": "2026-11-19",
+      "hypothesis_id": "H-144",
+      "strategies": [],
+      "asset_classes": [
+        "CRYPTO"
+      ],
+      "directions": [],
+      "timeframes": [
+        "POSITION"
+      ],
+      "thesis": "CRYPTO picks on a POSITION holding horizon are the only pre-committable slice in the 2026-11-19 slice scan that survives BH: +2.006%/pick [+0.969,+3.077] n=145 q=0.001.",
+      "why_observe_not_pre_registered": "The slice was measured on the same closed ledger the tribunal judges, so it cannot confer confirmatory status. observe = shadow rows only, no promotion.",
+      "acceptance_criteria": "Forward rows closed after 2026-11-19: n>=100, mean selection alpha CI-LB > 0, 2x-cost CI-LB > 0, split-half stable, IR>=0.5 vs a matched hold. Promote to pre_registered only on a fresh decision after those rows exist.",
+      "evidence_at_registration": "reports/alpha_slice_scan_2026-11-19.json: class_tf:CRYPTO/POSITION +2.006%/pick, n=145, q=0.001 (post-hoc, disclosure recorded above)."
     }
   ]
 }

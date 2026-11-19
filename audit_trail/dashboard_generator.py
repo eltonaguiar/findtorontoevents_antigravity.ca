@@ -18498,6 +18498,21 @@ def generate():
     except Exception as _e:  # noqa: BLE001
         log.warning("sports filter failed (non-fatal): %s", _e)
 
+    # -- Intraday stop (measured 2026-11-19) ----------------------------------
+    # CRYPTO/ETF INTRADAY rows lose to simply holding the same instrument after
+    # costs (reports/alpha_slice_scan_2026-11-19.json, BH-corrected q<=0.10), so
+    # they stay in the payload as shadow rows and leave the money path. Nothing
+    # is deleted: each pick carries money_path / shadow / shadow_reason.
+    try:
+        from alpha_engine.intraday_stop import annotate_buckets as _annotate_buckets
+    except ImportError:  # direct script execution
+        from intraday_stop import annotate_buckets as _annotate_buckets
+    payload["intraday_stop"] = _annotate_buckets(payload.get("picks") or {})
+    _stop = payload["intraday_stop"]
+    if _stop["shadow"]:
+        log.info("  [intraday-stop] %d shadow rows kept, %d on the money path",
+                 _stop["shadow"], _stop["money_path"])
+
     # ── ML feature persistence + edge analytics (optional, soft-fail) ──
     # Persists ML/technical fields needed for post-hoc edge validation and
     # optionally refreshes feature-bucket and symbol-strategy edge summaries.

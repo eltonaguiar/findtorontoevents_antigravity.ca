@@ -22,7 +22,7 @@ G2  Net expectancy   per-trade net return (gross minus per-class slippage)
 G3  Multiplicity     Benjamini-Hochberg FDR q <= 0.10 across all tested cells;
                      Bonferroni threshold reported alongside.
 G4  Overfit          Deflated Sharpe Ratio >= 0.95 (Bailey & Lopez de Prado
-                     approximation; n_trials = tested cells).
+                     approximation; n_trials = every emitted strategy).
 G5  Stability        chronological split-half: both halves net expectancy > 0.
 G6  Concentration    no single symbol > 60% of a cell's trades, no single
                      source system > 90% (report-only at 60%).
@@ -1419,6 +1419,9 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     strat_groups = _group(rows, lambda r: (str(r.get("asset_class") or "UNKNOWN").upper(),
                                            str(r.get("strategy") or r.get("source_system") or "(unattributed)"),
                                            _direction(r)))
+    # P0-5: DSR is a multiple-testing correction, so the trial count is every
+    # configuration that was emitted and scored -- not only the ones that
+    # cleared the WR floor. Counting tested-only cells understated SR0.
     n_trials = len(strat_groups)
 
     for (ac, strat, direction), group in strat_groups.items():
