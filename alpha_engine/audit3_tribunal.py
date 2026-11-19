@@ -1277,16 +1277,27 @@ def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
 
     for c in bucket:
         lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
-        alpha_proven = lo is not None and lo > 0
+        if lo is None:
+            # No measured alpha for this class. Branding it beta-dominant would
+            # claim we know the alpha is non-positive when we do not, and it
+            # flagged every unmeasured cell. A PROVEN_T2 still cannot stand on
+            # unmeasured selection skill, so it drops to CANDIDATE unlabelled.
+            c["alpha_gate"] = {"alpha_ci_lo": None, "passed": None, "status": "unmeasured"}
+            if c["verdict"] == "PROVEN_T2":
+                c["verdict"] = "CANDIDATE"
+                c["reasons"].append(
+                    "G9 selection-alpha gate: selection alpha unmeasured for this "
+                    "class - promotion requires a positive CI lower bound")
+            continue
+        alpha_proven = lo > 0
         c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
         if not alpha_proven:
             c["beta_dominant"] = True
             if c["verdict"] == "PROVEN_T2":
                 c["verdict"] = "CANDIDATE"
-                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
-                       if lo is not None else
-                       "selection alpha unavailable for this class")
-                c["reasons"].append(f"G9 selection-alpha gate: {why} - beta-dominant")
+                c["reasons"].append(
+                    f"G9 selection-alpha gate: selection alpha CI lower bound "
+                    f"{lo:+.4f} not > 0 - beta-dominant")
 
 
 def segment_tags(r: dict) -> list[tuple[str, str]]:
@@ -1365,7 +1376,11 @@ def forward_gate_block(manifest: dict[str, Any] | None,
         "hypotheses": {},
     }
     for pod in (manifest or {}).get("pods") or []:
-        if str(pod.get("status") or "").lower() != "pre_registered":
+        status = str(pod.get("status") or "").strip().lower()
+        # `observe` pods are shown so their forward clock is visible on /audit3,
+        # but only pre_registered pods may promote a cell: an observe pod's rows
+        # are informational by construction. Declined/post-hoc/retired are hidden.
+        if status not in {"pre_registered", "observe"}:
             continue
         hid = str(pod.get("hypothesis_id") or "").strip().upper()
         since = str(pod.get("registered_at") or "").strip()
@@ -1373,8 +1388,12 @@ def forward_gate_block(manifest: dict[str, Any] | None,
                   if str(r.get("hypothesis_id") or "").strip().upper() == hid
                   and not (since and str(r.get("closed_at") or "")[:10] < since[:10])]
         res = dict(FO.promotion(subset))
+        if status != "pre_registered":
+            res["eligible"] = False
+            res["reasons"] = [f"pod is {status} - registered for observation only"]
+            res["promotion_blocked_by_status"] = status
         res.update({"pod": pod.get("id"), "hypothesis_id": hid or None,
-                    "since": since or None})
+                    "status": status, "since": since or None})
         block["pods"][pod.get("id")] = res
     seen = sorted({str(r.get("hypothesis_id") or "").upper()
                    for r in rows if r.get("hypothesis_id")})

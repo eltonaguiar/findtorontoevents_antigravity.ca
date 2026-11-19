@@ -140,3 +140,27 @@ def test_post_hoc_pods_get_no_gate_entry(tmp_path):
                           "hypothesis_id": "H-TEST-1", "registered_at": "2026-11-20"}]}
     block = forward_gate_block(manifest, _write_ledger(tmp_path, [_fwd_row(0)]))
     assert block["pods"] == {}
+
+
+# ───────────────────────────────────── observe pods: visible but inert ──
+def test_observe_pod_is_shown_but_cannot_promote(tmp_path):
+    ledger = tmp_path / "fwd.jsonl"
+    ledger.write_text("\n".join(json.dumps(_fwd_row(i)) for i in range(120)) + "\n",
+                      encoding="utf-8")
+    blk = forward_gate_block({"available": True, "pods": [
+        {"id": "POD-OBS", "status": "observe", "hypothesis_id": "H-TEST-1",
+         "registered_at": "2026-11-20"}]}, ledger=str(ledger))
+    pod = blk["pods"]["POD-OBS"]
+    assert pod["status"] == "observe"
+    assert pod["eligible"] is False
+    assert pod["n_forward"] >= 100
+    assert any("observe" in r for r in pod["reasons"])
+
+
+def test_declined_pods_stay_hidden(tmp_path):
+    ledger = tmp_path / "fwd.jsonl"
+    ledger.write_text("", encoding="utf-8")
+    blk = forward_gate_block({"available": True, "pods": [
+        {"id": "POD-X", "status": "declined", "hypothesis_id": "H-TEST-1"}]},
+        ledger=str(ledger))
+    assert "POD-X" not in blk["pods"]
