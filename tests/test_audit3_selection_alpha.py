@@ -47,6 +47,16 @@ def test_crypto_symbol_candidates_cover_the_vendor_variants():
     assert "BRK-B" in eq
 
 
+def test_fx_symbol_candidates_strip_the_vendor_suffixes():
+    # fx_prices stores the bare pair (AUDJPY); the ledger carries =X / - / /
+    # forms. Before this, none of them produced the bare pair, so forex
+    # selection alpha was silently 0.
+    for raw in ("AUDJPY=X", "AUD-USD", "AUD/JPY"):
+        c = symbol_candidates(raw, "FOREX")
+        bare = raw.replace("=X", "").replace("-", "").replace("/", "")
+        assert bare in c, f"{raw} -> {c}"
+
+
 # ─────────────────────────────────────────────────────────── alignment ──
 def test_close_at_takes_the_first_bar_at_or_after_the_signal():
     series = [(0, 10.0), (H, 11.0), (2 * H, 12.0)]

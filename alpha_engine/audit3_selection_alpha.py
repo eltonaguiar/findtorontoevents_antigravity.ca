@@ -67,7 +67,11 @@ def symbol_candidates(sym: str, klass: str) -> list[str]:
         base = s.replace("-USD", "").replace("USD", "").replace("/", "")
         out += [f"{base}USDT", f"{base}USD", base]
     else:
-        out += [s.replace(".", "-"), s.replace("-", ".")]
+        # FX and index symbols arrive as AUDJPY=X, AUD-USD or AUD/JPY while the
+        # price tables store the bare AUDJPY. The old code only swapped '.' and
+        # '-', so '=X' and '-' forms never matched (forex selection alpha was 0).
+        bare = s.replace("=X", "").replace("-", "").replace("/", "").replace(".", "")
+        out += [s.replace(".", "-"), s.replace("-", "."), bare]
     seen, uniq = set(), []
     for c in out:
         if c and c not in seen:

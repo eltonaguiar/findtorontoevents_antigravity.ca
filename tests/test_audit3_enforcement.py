@@ -204,8 +204,9 @@ def test_discovery_cell_cannot_be_promoted():
 
 def test_pre_registered_pod_can_promote():
     manifest = {"path": "m.json", "available": True,
-                "pods": [{"id": "POD-A", "strategies": ["cellA"],
-                          "asset_classes": ["CRYPTO"], "directions": ["LONG"]}]}
+                "pods": [{"id": "POD-A", "status": "pre_registered",
+                          "strategies": ["cellA"], "asset_classes": ["CRYPTO"],
+                          "directions": ["LONG"]}]}
     rep = build_report(_rows(), "x.json", None, confirmatory=manifest)
     cell = rep["cells"][0]
     assert cell["namespace"] == "confirmatory"
@@ -216,7 +217,7 @@ def test_pre_registered_pod_can_promote():
 
 def test_post_hoc_and_declined_pods_cannot_promote():
     rows = _rows()
-    for status in ("post_hoc", "declined", "withdrawn"):
+    for status in ("post_hoc", "declined", "withdrawn", "observe"):
         manifest = {"path": "m.json", "available": True,
                     "pods": [{"id": "P", "status": status, "strategies": ["cellA"]}]}
         rep = build_report(rows, "x.json", None, confirmatory=manifest)
@@ -236,7 +237,7 @@ def test_bh_families_are_separate():
         r2 = dict(r, id=f"w{i}", strategy="cellB", pnl_pct=0.1 if i % 2 else -0.2)
         rows.append(r2)
     manifest = {"path": "m.json", "available": True,
-                "pods": [{"id": "POD-A", "strategies": ["cellA"]}]}
+                "pods": [{"id": "POD-A", "status": "pre_registered", "strategies": ["cellA"]}]}
     rep = build_report(rows, "x.json", None, confirmatory=manifest)
     sizes = {ns: v["n_tested"] for ns, v in rep["multiplicity"]["families"].items()}
     assert sizes.get("confirmatory") == 1

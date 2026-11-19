@@ -2330,6 +2330,125 @@
       "status": "REFUTED",
       "kill_reason": "beta-neutral LOSING (regime + survivorship)",
       "result": "REFUTED: long-only PF 1.16 (beta) but MARKET-HEDGED 0.76 (losing) + LONG-SHORT 0.85 (losing) -- betting-against-beta LOST in the 2021-26 high-beta regime (high-vol/growth won). n_eff=56. Completes the big-three equity price-only factor suite (momentum H-133 alpha 0.98, reversal H-126 0.98, low-vol H-140 beta-neutral 0.76) -- NONE has beta-neutral alpha on our data. Equity price-only avenue definitively closed. Run 2026-06-22."
+    },
+    {
+      "id": "H-2026-11-19-01",
+      "asset_class": "CRYPTO",
+      "family": "vwap_mean_reversion",
+      "description": "4h VWAP mean-reversion on crypto: enter on a 1.5-2.5 z deviation from VWAP, exit on time or reversion, close-only stops.",
+      "test_statistic": "net expectancy per trade (net of per-class slippage), bootstrap CI",
+      "acceptance_criteria": {
+        "min_n_forward": 100,
+        "net_ci_lb_gt": 0,
+        "cost_stress": "2x measured slippage",
+        "ir_min": 0.5,
+        "benchmark": "matched BTC/ETH hold",
+        "stability": "split-half stable"
+      },
+      "economic_prior": "Short-horizon reversion to a volume-weighted fair value in a 24/7 market with retail mean-reversion flow.",
+      "status": "PRE_REGISTERED",
+      "registered_at": "2026-11-19",
+      "data_sample_lock": "forward rows closed on/after 2026-11-19",
+      "result": {
+        "verdict": "CONTESTED - do not promote on the lab result alone.",
+        "lab_evidence": "verified_strategies/HEDGE_FUND_EDGE_REPORT.md: OOS 516/953, WR 45.7%, PF 1.323, Sharpe 3.102, DSR 21.4, PBO 0.18.",
+        "contested_by": "research/profitability/validation/VWAP_VERDICT.md and VWAP_STATS_REVIEW.md: 1-bar execution lag drops PF to 0.957; CSCV PBO 0.84-0.97; t=0.91 (p=0.18). The lab entry is same-bar close with no execution lag.",
+        "operator_note": "Register as OBSERVE. Promote only after a lagged-entry + intrabar-stop replay clears the acceptance criteria."
+      }
+    },
+    {
+      "id": "H-2026-11-19-02",
+      "asset_class": "CRYPTO",
+      "family": "bollinger_mean_reversion",
+      "description": "Bollinger-band mean-reversion on crypto (4h/1d), close-only stops.",
+      "test_statistic": "net expectancy per trade, bootstrap CI",
+      "acceptance_criteria": {
+        "min_n_forward": 100,
+        "net_ci_lb_gt": 0,
+        "cost_stress": "2x measured slippage",
+        "ir_min": 0.5,
+        "benchmark": "matched BTC/ETH hold"
+      },
+      "economic_prior": "Volatility-normalized overextension reverts in liquid 24/7 markets.",
+      "status": "PRE_REGISTERED",
+      "registered_at": "2026-11-19",
+      "data_sample_lock": "forward rows closed on/after 2026-11-19",
+      "result": {
+        "verdict": "OBSERVE - n below the 100-trade floor.",
+        "lab_evidence": "verified_strategies/HEDGE_FUND_EDGE_REPORT.md: OOS 38 trades, WR 52.6%, PF 1.673, Sharpe 1.376.",
+        "operator_note": "n=38 < 100; accumulate forward rows before any promotion."
+      }
+    },
+    {
+      "id": "H-2026-11-19-03",
+      "asset_class": "EQUITY",
+      "family": "faber_tactical_allocation",
+      "description": "Faber 10-month/200d tactical allocation on SPY/QQQ: long when close > 10-month SMA, else cash; monthly rebalance, no leverage.",
+      "test_statistic": "net expectancy per trade, bootstrap CI",
+      "acceptance_criteria": {
+        "min_n_forward": 100,
+        "net_ci_lb_gt": 0,
+        "cost_stress": "2x measured slippage",
+        "ir_min": 0.5,
+        "benchmark": "matched SPY leg"
+      },
+      "economic_prior": "Long-horizon trend following is one of the oldest documented premia; the 200d filter cuts drawdowns versus buy-and-hold.",
+      "status": "PRE_REGISTERED",
+      "registered_at": "2026-11-19",
+      "data_sample_lock": "forward rows closed on/after 2026-11-19",
+      "result": {
+        "verdict": "OBSERVE - n far below the floor and no forward closes yet.",
+        "lab_evidence": "verified_strategies/VERIFICATION_REPORT.json: FaberTAA_SPY n=11 Sharpe 1.743 mc_p 0.507; FaberTAA_QQQ n=7 Sharpe 1.652. tools/faber_forward_stats.py reports 0 ETF closes.",
+        "operator_note": "n=11/7; the forward pilot has not produced closes. Observe."
+      }
+    },
+    {
+      "id": "H-2026-11-19-04",
+      "asset_class": "FOREX",
+      "family": "fx_time_series_momentum",
+      "description": "Daily time-series momentum on USDJPY (FXMom).",
+      "test_statistic": "net expectancy per trade, bootstrap CI",
+      "acceptance_criteria": {
+        "min_n_forward": 100,
+        "net_ci_lb_gt": 0,
+        "cost_stress": "2x measured slippage",
+        "ir_min": 0.5,
+        "benchmark": "matched UUP/DXY leg"
+      },
+      "economic_prior": "Currency momentum is a documented premium; USDJPY is the most liquid pair.",
+      "status": "PRE_REGISTERED",
+      "registered_at": "2026-11-19",
+      "data_sample_lock": "forward rows closed on/after 2026-11-19",
+      "result": {
+        "verdict": "OBSERVE - n<100, FX class honest-exhausted, no production emitter.",
+        "lab_evidence": "verified_strategies/VERIFICATION_REPORT.json: FXMom_USDJPY n=42 Sharpe 2.018 mc_p 0.48. Nearest registry entries H-128 (time_series_momentum) and F-ANON-001-JPY (carry) are different mechanisms.",
+        "blocker": "fx_prices ends 2026-02-09 and the symbol mapper never produced the bare pair (fixed 2026-11-19 in audit3_selection_alpha.symbol_candidates). Backfill required before forward rows are meaningful.",
+        "operator_note": "Observe only; do not trade until the FX data blocker is cleared and n>=100 forward."
+      }
+    },
+    {
+      "id": "H-2026-11-19-05",
+      "asset_class": "COMMODITY",
+      "family": "commodity_roll_yield",
+      "description": "Commodity basis / roll-yield carry: long backwardation, short contango, monthly roll.",
+      "test_statistic": "net expectancy per trade, bootstrap CI",
+      "acceptance_criteria": {
+        "min_n_forward": 100,
+        "net_ci_lb_gt": 0,
+        "cost_stress": "2x measured slippage",
+        "ir_min": 0.5,
+        "benchmark": "matched DBC/GSG leg"
+      },
+      "economic_prior": "Roll yield / basis is the best-documented commodity factor (Erb-Harvey; Gorton-Rouwenhorst).",
+      "status": "PRE_REGISTERED",
+      "registered_at": "2026-11-19",
+      "data_sample_lock": "forward rows closed on/after 2026-11-19",
+      "result": {
+        "verdict": "OBSERVE - no emitted rows; claimed class stats untraceable.",
+        "lab_evidence": "reports/2026-06-06-per-asset-class-edge-reality-and-academic-roadmap.md: commodity_basis_carry coded, zero rows; contango_roll_yield dormant/misclassified. The 'class WR 55.6% PF 1.06' claim could not be traced to a roll-yield source.",
+        "blocker": "Needs a second-nearby contract feed (NEEDS_DATA). COMMODITY class aggregate is negative-expectancy.",
+        "operator_note": "Observe only; needs data plumbing before it can emit."
+      }
     }
   ],
   "fork2_new_signals": [

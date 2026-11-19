@@ -48,8 +48,8 @@ def test_expectancy_primary_promotes_low_win_rate_cell():
     # 2x-cost stress gate (a thin edge must not promote).
     rows = _rows(40, 80, 4.0, -0.6)
     pod = {"path": "m.json", "available": True,
-           "pods": [{"id": "POD-A", "strategies": ["cellA"],
-                     "asset_classes": ["CRYPTO"]}]}
+           "pods": [{"id": "POD-A", "status": "pre_registered",
+                     "strategies": ["cellA"], "asset_classes": ["CRYPTO"]}]}
     rep = build_report(rows, "x.json", None, confirmatory=pod)
     cell = rep["cells"][0]
     assert cell["wr"] < 0.40
@@ -125,10 +125,22 @@ def test_cost_stress_2x_is_a_required_gate():
     robust = build_report(
         _rows(40, 80, 4.0, -0.6), "x.json", None,
         confirmatory={"path": "m.json", "available": True,
-                      "pods": [{"id": "POD-A", "strategies": ["cellA"],
-                                "asset_classes": ["CRYPTO"]}]})
+                      "pods": [{"id": "POD-A", "status": "pre_registered",
+                                "strategies": ["cellA"], "asset_classes": ["CRYPTO"]}]})
     assert robust["cells"][0]["stress_2x_ok"] is True
     assert robust["cells"][0]["verdict"] == "PROVEN_T2"
+
+
+def test_observe_pod_does_not_confer_confirmatory():
+    # A pod registered as observe (below the forward floor) must not launder
+    # rows into a promotion; only pre_registered confers confirmatory status.
+    rows = _rows(40, 80, 4.0, -0.6)
+    rep = build_report(
+        rows, "x.json", None,
+        confirmatory={"path": "m.json", "available": True,
+                      "pods": [{"id": "POD-OBS", "status": "observe",
+                                "strategies": ["cellA"], "asset_classes": ["CRYPTO"]}]})
+    assert rep["cells"][0]["verdict"] != "PROVEN_T2"
 
 
 def test_provenance_carries_hash_and_version():
