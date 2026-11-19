@@ -29,6 +29,18 @@ sys.path.insert(0, str(REPO))
 DEFAULT_WINDOW = 20
 DEFAULT_TIMEFRAME = "1h"
 
+SIDECAR_DDL = """
+CREATE TABLE IF NOT EXISTS at_signal_volume_context (
+  outcome_id INT PRIMARY KEY,
+  symbol VARCHAR(50) NOT NULL,
+  volume_ratio_at_entry DECIMAL(12,4) NOT NULL,
+  window_bars TINYINT NOT NULL DEFAULT 20,
+  timeframe VARCHAR(10) NOT NULL DEFAULT '1h',
+  computed_at DATETIME NOT NULL,
+  KEY idx_symbol (symbol)
+) ENGINE=InnoDB
+"""
+
 
 def volume_ratio(volumes: list[float], idx: int, window: int = DEFAULT_WINDOW) -> float | None:
     """Vol[idx] / median(prior `window` bars). None when there is not enough history."""
@@ -117,15 +129,21 @@ def plan(conn, limit: int = 500, timeframe: str = DEFAULT_TIMEFRAME) -> dict:
                      if not has_col else "dry run only")}
 
 
-def apply(conn, limit: int = 500, timeframe: str = DEFAULT_TIMEFRAME) -> dict:
-    """Add the column if absent, then fill NULL rows in this batch."""
+def apply(conn, limit: int = 500, timeframe: str = DEFAULT_TIMEFRAME,
+          mode: str = "sidecar") -> dict:
+    """Write the values. mode='sidecar' (default) never touches at_signal_outcomes."""
     cur = conn.cursor()
-    if not _has_column(conn):
-        cur.execute("ALTER TABLE at_signal_outcomes ADD COLUMN volume_ratio_at_entry "
-                    "DECIMAL(12,4) NULL COMMENT 'entry-bar volume / prior-20-bar median' "
-                    "AFTER asset_class")
+    if mode == "sidecar":
+        cur.execute(SIDECAR_DDL)
         conn.commit()
-    rows = _batches(conn, limit, True)
+        rows = _batches(conn, limit, False)
+    else:
+        if not _has_column(conn):
+            cur.execute("ALTER TABLE at_signal_outcomes ADD COLUMN volume_ratio_at_entry "
+                        "DECIMAL(12,4) NULL COMMENT 'entry-bar volume / prior-20-bar median' "
+                        "AFTER asset_class")
+            conn.commit()
+        rows = _batches(conn, limit, True)
     updated, skipped = 0, 0
     cache: dict[tuple, list] = {}
     for r in rows:
@@ -140,11 +158,24 @@ def apply(conn, limit: int = 500, timeframe: str = DEFAULT_TIMEFRAME) -> dict:
         if ratio is None:
             skipped += 1
             continue
-        cur.execute("UPDATE at_signal_outcomes SET volume_ratio_at_entry=%s WHERE id=%s",
-                    (ratio, r["id"]))
+        if mode == "sidecar":
+            cur.execute(
+                "INSERT INTO at_signal_volume_context "
+                "(outcome_id, symbol, volume_ratio_at_entry, window_bars, timeframe, computed_at) "
+                "VALUES (%s, %s, %s, %s, %s, %s) "
+                "ON DUPLICATE KEY UPDATE volume_ratio_at_entry=VALUES(volume_ratio_at_entry), "
+                "computed_at=VALUES(computed_at)",
+                (r["id"], r["symbol"], ratio, DEFAULT_WINDOW, timeframe,
+                 datetime.now(timezone.utc).replace(tzinfo=None)))
+        else:
+            cur.execute("UPDATE at_signal_outcomes SET volume_ratio_at_entry=%s WHERE id=%s",
+                        (ratio, r["id"]))
         updated += 1
     conn.commit()
-    return {"candidates": len(rows), "updated": updated, "skipped": skipped, "applied": True}
+    return {"mode": mode, "candidates": len(rows), "updated": updated,
+            "skipped": skipped, "applied": True,
+            "rolled_back_by": ("DROP TABLE at_signal_volume_context" if mode == "sidecar"
+                               else "ALTER TABLE ... DROP COLUMN (backup is forensic only)")}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -152,12 +183,14 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--limit", type=int, default=500)
     ap.add_argument("--timeframe", default=DEFAULT_TIMEFRAME)
+    ap.add_argument("--mode", choices=("sidecar", "column"), default="sidecar",
+                    help="sidecar (default, no ALTER) or column (ALTER + backup needed)")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
     conn = _conn()
     try:
-        rep = apply(conn, args.limit, args.timeframe) if args.apply \
-            else plan(conn, args.limit, args.timeframe)
+        rep = apply(conn, args.limit, args.timeframe, args.mode) if args.apply \
+            else {**plan(conn, args.limit, args.timeframe), "mode": args.mode}
     finally:
         conn.close()
     print(json.dumps(rep, indent=1) if args.json else rep)
