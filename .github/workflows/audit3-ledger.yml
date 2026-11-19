@@ -88,7 +88,36 @@ jobs:
           PY
           fi
 
-      # Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
+            # Bounded daily-bar backfill, immediately before the gate that consumes it.
+      # Measuring selection alpha needs a bar at or after each pick's exit, so
+      # freshness is a prerequisite of the gate. Without it the tables drift stale
+      # within days and whole asset classes silently revert to "unmeasured" — which
+      # is what happened when equity_daily_ohlcv stopped 2026-06-18 while equity
+      # picks kept closing (coverage sat at 2228/3500 picks until a manual backfill
+      # took it to 3173/3500). Bounded --since (4 days, inside the 5-day
+      # TOLERANCE_MS) plus upsert-only writes means it can never rewrite stored
+      # history; continue-on-error means a vendor outage warns instead of failing
+      # the run and losing the ledger.
+      - name: Backfill price tables (bounded, best-effort)
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ]; then
+            echo "no DB_PASS_STOCKS secret — skipping price backfill"
+            exit 0
+          fi
+          SINCE="$(date -u -d '4 days ago' +%F)"
+          echo "backfilling daily bars since $SINCE"
+          python3 -m pip install --quiet --disable-pip-version-check yfinance pandas \
+            || { echo "::warning title=audit3 backfill::vendor install failed, gates may go stale"; exit 0; }
+          python3 tools/backfill_daily_ohlcv.py --tables equity,etf,futures \
+            --since "$SINCE" --apply --batch-size 25 --pause 0.5 \
+            || echo "::warning title=audit3 backfill::equity/etf/futures backfill failed (see log)"
+          python3 tools/fx_backfill.py --since "$SINCE" --apply \
+            || echo "::warning title=audit3 backfill::fx backfill failed (see log)"
+
+# Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
       # when DB credentials exist. A missing secret must never block the ledger.
       - name: Selection alpha (optional — needs the price tables)
         continue-on-error: true
