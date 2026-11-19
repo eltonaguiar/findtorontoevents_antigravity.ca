@@ -920,8 +920,7 @@ a:hover { text-decoration: underline; }
       <div><strong style="color:#22c55e">Survivors:</strong> <span id="ks-survivors">-</span> strategies</div>
       <div><strong style="color:#fbbf24">Kill Rate:</strong> <span id="ks-kill-rate">-</span>%</div>
       <div><strong style="color:#60a5fa">Evaluated:</strong> <span id="ks-evaluated">-</span> / <span id="ks-total">-</span></div>
-      <div><strong style="color:#34d399">WR Lift:</strong> +<span id="ks-wr-lift">-</span> pp</div>
-      <div><strong style="color:#34d399">PF Lift:</strong> +<span id="ks-pf-lift">-</span></div>
+      <div><strong style="color:#34d399">WR Lift (descriptive):</strong> +<span id="ks-wr-lift">-</span> pp</div>
       <div><strong style="color:#a78bfa">PnL Saved:</strong> <span id="ks-pnl-saved">-</span>%</div>
       <div><strong style="color:#94a3b8">Verdict:</strong> <span id="ks-verdict">-</span></div>
     </div>
@@ -940,9 +939,15 @@ a:hover { text-decoration: underline; }
     document.getElementById('ks-total').textContent = ks.total_strategies || 0;
     var imp = ks.impact || {};
     document.getElementById('ks-wr-lift').textContent = (imp.wr_lift_pp || 0).toFixed(2);
-    document.getElementById('ks-pf-lift').textContent = (imp.pf_lift || 0).toFixed(4);
+    // The PF-lift tile was removed 2026-11-19 (external review A6b): it read
+    // "PF Lift: +-0.0220" next to a POSITIVE verdict, because the verdict keyed
+    // off the win-rate lift alone. Removing 42 "losers" is not an improvement if
+    // profit factor falls — so the verdict now has to survive that check.
     document.getElementById('ks-pnl-saved').textContent = (imp.pnl_damage_removed || 0).toFixed(0);
-    document.getElementById('ks-verdict').textContent = imp.verdict || 'N/A';
+    var _pf = (imp.pf_lift === undefined || imp.pf_lift === null) ? null : Number(imp.pf_lift);
+    document.getElementById('ks-verdict').textContent = (_pf !== null && _pf <= 0)
+      ? 'NOT MEASURED (PF lift <= 0)'
+      : (imp.verdict || 'N/A');
     var strats = ks.killed_strategies || [];
     if (strats.length > 0) {
       document.getElementById('ks-strategies').innerHTML = '<strong>Killed strategies (' + strats.length + '):</strong> ' + strats.join(', ');
@@ -1107,7 +1112,7 @@ a:hover { text-decoration: underline; }
     function tier(pf, wr, n){
       pf = Number(pf || 0); wr = Number(wr || 0); n = Number(n || 0);
       if (n < 100) return { label: 'Building', color: '#94a3b8' };
-      if (pf >= 2.0 && wr >= 55) return { label: 'T1 (Renaissance)', color: '#22c55e' };
+      if (pf >= 2.0 && wr >= 55) return { label: 'T1', color: '#22c55e' };
       if (pf >= 1.5 && wr >= 50) return { label: 'T2 (Institutional)', color: '#22c55e' };
       if (pf >= 1.2 && wr >= 45) return { label: 'T3 (Retail)', color: '#06b6d4' };
       if (pf < 1.0) return { label: 'Sub-floor', color: '#ef4444' };
@@ -1241,7 +1246,7 @@ a:hover { text-decoration: underline; }
   })();
   </script>
   <div style="font-size:0.74em;color:#94a3b8;margin-top:6px;border-top:1px solid rgba(148,163,184,0.2);padding-top:6px">
-    <strong>Tier definitions:</strong> T1 PF&gt;2/WR&gt;55/MDD&lt;10 (Renaissance). T2 PF&gt;1.5/WR&gt;50/MDD&lt;20 (Institutional). T3 PF&gt;1.2/WR&gt;48/MDD&lt;30 (Retail-OK). Source: <code>asset_class_health</code> in <code>audit_dashboard/data/dashboard_data.json</code> (post-resolver-v2 noise filter, generated 2026-05-05T01:37Z). Resolver v2 shipped 2026-04-28; v2.1 bug bundle 2026-05-02. Historical re-resolve (<code>re_resolve_historical_v2.py</code>) pending — pre-fix labels still in closed_picks for picks closed before 2026-04-28.
+    <strong>Tier definitions:</strong> T1 PF&gt;2/WR&gt;55/MDD&lt;10. T2 PF&gt;1.5/WR&gt;50/MDD&lt;20 (Institutional). T3 PF&gt;1.2/WR&gt;48/MDD&lt;30 (Retail-OK). Source: <code>asset_class_health</code> in <code>audit_dashboard/data/dashboard_data.json</code> (post-resolver-v2 noise filter, generated 2026-05-05T01:37Z). Resolver v2 shipped 2026-04-28; v2.1 bug bundle 2026-05-02. Historical re-resolve (<code>re_resolve_historical_v2.py</code>) pending — pre-fix labels still in closed_picks for picks closed before 2026-04-28.
   </div>
   <!-- PF contradiction disclosure (Tier-A #2, 2026-05-04) — resolves AHF-05 from
        audit hyperfocus swarm: hf_stats vs asset_class_health show different PF
@@ -1457,22 +1462,13 @@ a:hover { text-decoration: underline; }
 })();
 </script>
 
-<!-- TIER-2 PROVEN HERO CARDS — promotes 4 buried high-edge strategies from
-     the alphabetical systems[] grid into a featured panel above the fold.
-     Data source: window.DASHBOARD_DATA.tier2_proven_strategies (computed in
-     audit_trail/dashboard_generator.py via _compute_tier2_proven_strategies).
-     Tier badges follow docs/PERFORMANCE_CHARTER.md s2 — strategies that
-     drop out of Tier-2 at recompute time get an honest "Building" / "Tier 3"
-     / "Below Tier 3" badge instead of a fake Tier-2 stamp. -->
-<div id="tier2-hero-section" style="max-width:1180px;margin:8px auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.10),rgba(34,211,238,0.06));border:1px solid rgba(167,139,250,0.4);border-radius:12px;color:#e0e7ff;display:none">
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-    <span style="font-size:1.05em;font-weight:700;color:#a78bfa;letter-spacing:0.4px">&#x1F3C6; TIER-2 PROVEN</span>
-    <span style="color:#cbd5e1;font-size:0.92em;font-weight:500">Buried high-edge strategies promoted from the alphabetical systems grid. Tier badges per <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/PERFORMANCE_CHARTER.md" target="_blank" rel="noopener" style="color:#a5b4fc">CHARTER &sect;2</a>.</span>
-    <span id="tier2-hero-meta" style="margin-left:auto;font-size:0.78em;color:#94a3b8"></span>
-  </div>
-  <div id="tier2-hero-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px"></div>
-  <div id="tier2-hero-flagged" style="margin-top:10px;font-size:0.78em;color:#fbbf24;display:none"></div>
-</div>
+<!-- TIER-2 "PROVEN" HERO PANEL RETIRED 2026-11-19 (external review v2/v3, A6).
+     It shipped three cards under the word PROVEN while the header read "0/3 clear
+     strict Tier-2": signal_validation was dead (WR 4.9% / PF 0.08 / MDD 127% /
+     n=102), mega_mutation was a Tier-3 paper floor and rl_agent had n=0. Nothing
+     is rendered here until a card can actually clear the bar; the payload keeps
+     tier2_proven_strategies with cards=[] and retired=true so downstream code
+     sees the retirement instead of four empty slots. -->
 
 <!-- Opt A: TA-baseline panel (TradingView 6-strategy benchmark vs our Tier-2 systems).
      Data source: window.DASHBOARD_DATA.ta_baseline (computed in
@@ -3371,7 +3367,10 @@ function getEmbeddedSmartSnapshotSummary() {
 // floor or fail other thresholds get an honest "Building" / "Below Tier 3"
 // badge so we never fake-promote.
 function getTier2ProvenStrategies() {
-  return (window.DASHBOARD_DATA || {}).tier2_proven_strategies || (D || {}).tier2_proven_strategies || null;
+  // Panel RETIRED 2026-11-19 (external review A6): see the comment where the
+  // #tier2-hero-section markup used to be. Returning null keeps the renderer's
+  // data guard authoritative, so no card can be re-promoted from a stale payload.
+  return null;
 }
 
 function _tier2BadgeStyle(tier) {
@@ -10990,7 +10989,7 @@ function renderPicks() {
     consensusTierHtml += `</div>`;
     consensusTierHtml += `<table style="width:100%;border-collapse:collapse;font-size:12px">`;
     consensusTierHtml += `<thead><tr style="border-bottom:1px solid var(--border)">`;
-    consensusTierHtml += `<th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Tier<span class="metric-tip" tabindex="0" role="img" aria-label="Tier definition" data-metric-tooltip="Performance tier per docs/PERFORMANCE_CHARTER.md s2. T1=Renaissance: PF>2 / WR>55 / MDD<10 / n>=200. T2=Institutional: PF>1.5 / WR>50 / MDD<20 / n>=100. T3=Retail-OK: PF>1.2 / WR>48 / MDD<30. Strategies dropping below T2 at recompute show honest 'Building' or 'Below T3' badges, not stale T2 stamps.">&#9432;</span></th>`;
+    consensusTierHtml += `<th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Tier<span class="metric-tip" tabindex="0" role="img" aria-label="Tier definition" data-metric-tooltip="Performance tier per docs/PERFORMANCE_CHARTER.md s2. T1: PF>2 / WR>55 / MDD<10 / n>=200. T2=Institutional: PF>1.5 / WR>50 / MDD<20 / n>=100. T3=Retail-OK: PF>1.2 / WR>48 / MDD<30. Strategies dropping below T2 at recompute show honest 'Building' or 'Below T3' badges, not stale T2 stamps.">&#9432;</span></th>`;
     consensusTierHtml += `<th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Symbol</th>`;
     consensusTierHtml += `<th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Direction</th>`;
     consensusTierHtml += `<th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Systems</th>`;
@@ -13102,7 +13101,7 @@ function renderVerifiedAlpha() {
     '<th style="padding:8px 10px">Score<span class="metric-tip" tabindex="0" role="img" aria-label="Dashboard Score definition" data-metric-tooltip="Dashboard Score 0-100. Composite of regime match (25%), quality (35%), freshness (15%), TP-upside (15%), HTF alignment (10%), plus Proven-Winner Boost (+8 to +15). Computed in browser from window.DASHBOARD_DATA. Score >=50 + Trust>=PROBATION is the HIGH CONVICTION baseline.">&#9432;</span></th>' +
     '<th style="padding:8px 10px">Trust<span class="metric-tip" tabindex="0" role="img" aria-label="Trust score definition" data-metric-tooltip="Trust score 0-10 from permutation_stats. Tiers: ELITE >=8 (institutional), TRUSTED >=7 (high conviction), PROBATION 5-6 (watch), WATCH <5 (low confidence). Inputs: tier_weight + freshness bonus + strategy edge bonus + regime alignment.">&#9432;</span></th>' +
     '<th style="padding:8px 10px">Source</th><th style="padding:8px 10px">Strategy</th>' +
-    '<th style="padding:8px 10px">Audited WR<span class="metric-tip" tabindex="0" role="img" aria-label="Audited WR definition" data-metric-tooltip="Audited Win Rate from closed-trade ledger (post-resolver-v2 noise filter, 5bp threshold for non-CRYPTO / 0.1bp for CRYPTO). Charter T2 floor is WR>50%; T1 (Renaissance) WR>55%. Differs from headline asset_class_health PF/WR which may include open mark-to-market.">&#9432;</span></th>' +
+    '<th style="padding:8px 10px">Audited WR<span class="metric-tip" tabindex="0" role="img" aria-label="Audited WR definition" data-metric-tooltip="Audited Win Rate from closed-trade ledger (post-resolver-v2 noise filter, 5bp threshold for non-CRYPTO / 0.1bp for CRYPTO). Charter T2 floor is WR>50%; T1 WR>55%. Differs from headline asset_class_health PF/WR which may include open mark-to-market.">&#9432;</span></th>' +
     '<th style="padding:8px 10px">Live PnL</th><th style="padding:8px 10px">Entry</th><th style="padding:8px 10px">TP</th><th style="padding:8px 10px">SL</th><th style="padding:8px 10px">Picked (EST)</th></tr></thead><tbody>';
 
   rows.forEach(function(p, idx) {

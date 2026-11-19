@@ -14849,19 +14849,68 @@ def generate():
     except Exception as _spr_exc:
         log.warning("  Sidecar promotion status computation failed (non-fatal): %s", _spr_exc)
         sidecar_promotion_status = {}
-    # Tier-2 hero-card promotion surface — surfaces 4 buried-but-high-edge
-    # strategies (signal_validation, mega_mutation, rl_agent, claude_gainer)
-    # as hero cards above the alphabetical /audit systems grid.
-    # See `_compute_tier2_proven_strategies` for honest CHARTER §2 tiering.
+    # Tier-2 "PROVEN" hero panel RETIRED 2026-11-19 (external review v2/v3, A6).
+    # Of the four cards, one was dead (signal_validation WR 4.9% / PF 0.08 / n=102),
+    # one was a Tier-3 paper floor (mega_mutation, and audit3 scores it
+    # INSUFFICIENT_N at n=19), one had n=0 (rl_agent), and the header read
+    # "0/3 clear strict Tier-2". A panel labelled PROVEN that contains no proven
+    # strategy teaches readers to trust the word, so the payload now says so
+    # explicitly instead of shipping empty cards. `_compute_tier2_proven_strategies`
+    # is kept for its CHARTER tiering helpers but is no longer called.
+    tier2_proven_strategies = {
+        "cards": [],
+        "flagged_dropouts": [],
+        "promotion_targets": list(_TIER2_PROMOTION_TARGETS),
+        "retired": True,
+        "retired_on": "2026-11-19",
+        "retired_reason": (
+            "0/3 cards cleared strict Tier-2; the panel was labelled PROVEN "
+            "while containing a dead strategy, a paper floor and an empty card"
+        ),
+    }
+
+    # ── Canonical resolved view (review action A2) ──────────────────────────
+    # /audit and audit3 were reporting the same class two different ways (ETF:
+    # n=52/WR 1.9% vs n=584/WR 43.1%) because neither published its denominator.
+    # Build the resolved book once, attribute every exclusion, apply realised
+    # per-class cost, and publish it both inside the payload (counts + hash) and
+    # as a rows sidecar that audit3 scores directly. The validity predicate is
+    # THIS module's own — the view never re-implements the rules.
     try:
-        tier2_proven_strategies = _compute_tier2_proven_strategies(systems, closed)
-    except Exception as _t2_exc:
-        log.warning("  Tier-2 hero card computation failed (non-fatal): %s", _t2_exc)
-        tier2_proven_strategies = {
-            "cards": [],
-            "flagged_dropouts": [],
-            "promotion_targets": list(_TIER2_PROMOTION_TARGETS),
-            "error": str(_t2_exc),
+        from alpha_engine.resolved_closed_view import (
+            build_view as _build_canonical_view,
+            payload_block as _canonical_payload_block,
+            write_view as _write_canonical_view,
+        )
+        _canonical_view = _build_canonical_view(
+            closed,
+            generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            validity=_is_valid_resolved_pick,
+            source="audit_trail/dashboard_generator.py",
+        )
+        resolved_closed_picks_net = _canonical_payload_block(_canonical_view)
+        _canonical_path = (
+            ROOT / "audit_dashboard" / "data" / resolved_closed_picks_net["rows_file"]
+        )
+        try:
+            _write_canonical_view(_canonical_path, _canonical_view)
+        except Exception as _cw_exc:
+            log.warning("  canonical view sidecar not written (non-fatal): %s", _cw_exc)
+        log.info(
+            "  canonical resolved view: %d kept / %d input rows, sha=%s",
+            resolved_closed_picks_net["counts"]["kept_rows"],
+            resolved_closed_picks_net["counts"]["input_rows"],
+            str(resolved_closed_picks_net.get("rows_sha256"))[:12],
+        )
+    except Exception as _cv_exc:
+        log.warning("  canonical resolved view failed (non-fatal): %s", _cv_exc)
+        resolved_closed_picks_net = {
+            "schema": None,
+            "error": str(_cv_exc),
+            "note": (
+                "no canonical denominator this run — audit3 will report "
+                "mode=payload_slice instead of pretending the books match"
+            ),
         }
     bundles = collect_bundles()
     leaderboard = collect_strategy_leaderboard(active, closed)
@@ -17170,6 +17219,10 @@ def generate():
         "cross_asset_correlation": cross_asset_correlation,
         "sidecar_promotion_status": sidecar_promotion_status,
         "tier2_proven_strategies": tier2_proven_strategies,
+        # A2: one published denominator. Counts + row hash here; the rows live in
+        # audit_dashboard/data/resolved_closed_picks_net.json (fetched by the
+        # audit3 workflow so both surfaces score the identical book).
+        "resolved_closed_picks_net": resolved_closed_picks_net,
 
         # ── Opt A: TA-baseline panel (TradingView 6-strategy benchmark) ──
         # Per reports/tradingview_backtest_benchmark_2026-05-11.md.

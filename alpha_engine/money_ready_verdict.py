@@ -173,11 +173,14 @@ MIN_N_STRATEGY = 20       # minimum per-strategy picks for SPA inclusion
 # and applies Benjamini-Hochberg FDR (+ reports Bonferroni) across the
 # strategy family. If ZERO strategies survive FDR, the class edge is not
 # multiplicity-robust and cannot be MONEY_READY.
-# Shadow-first (default OFF, mirrors the MDD/ML gates): when off it only
-# stamps `_fdr_recommend`; set MONEY_READY_FDR_GATE=1 to hard-enforce.
+# ENFORCED BY DEFAULT (2026-11-19): the gate was shadow-only, so a MONEY_READY
+# verdict could be issued with zero multiplicity control while the docstring said
+# otherwise. Set MONEY_READY_FDR_GATE=0 to go back to shadow mode (stamps
+# `_fdr_recommend` only). Every existing consumer already reads the stamped
+# recommendation, so turning it on can only downgrade, never promote.
 FDR_Q = 0.10              # Benjamini-Hochberg false-discovery-rate level
 _FDR_GATE_ENFORCE: bool = (
-    os.environ.get("MONEY_READY_FDR_GATE", "0").strip().lower()
+    os.environ.get("MONEY_READY_FDR_GATE", "1").strip().lower()
     in ("1", "true", "yes", "on")
 )
 
@@ -187,12 +190,13 @@ _FDR_GATE_ENFORCE: bool = (
 # is_single_source_artifact). A class whose ENTIRE profitable edge rests on
 # single-source strategies is a feed idiosyncrasy, not a class-level edge.
 # This gate checks whether any *profitable* strategy (mean pnl>0, n>=
-# MIN_N_STRATEGY) draws from >=2 source_systems. Shadow-first (default OFF):
-# stamps `_single_source_recommend`; set MONEY_READY_SINGLE_SOURCE_GATE=1 to
-# hard-downgrade MONEY_READY -> NOT_READY when every profitable sleeve is
-# single-source.
+# MIN_N_STRATEGY) draws from >=2 source_systems. ENFORCED BY DEFAULT
+# (2026-11-19): hard-downgrades MONEY_READY -> NOT_READY when every profitable
+# sleeve is single-source. Set MONEY_READY_SINGLE_SOURCE_GATE=0 for shadow mode.
+# The default flipped because the two sleeves that carried the CRYPTO "edge"
+# were 100% single-source, i.e. the shipped default promoted feed idiosyncrasies.
 _SINGLE_SOURCE_GATE_ENFORCE: bool = (
-    os.environ.get("MONEY_READY_SINGLE_SOURCE_GATE", "0").strip().lower()
+    os.environ.get("MONEY_READY_SINGLE_SOURCE_GATE", "1").strip().lower()
     in ("1", "true", "yes", "on")
 )
 # M-070: a class whose resolved picks are dominated by ONE symbol is not a

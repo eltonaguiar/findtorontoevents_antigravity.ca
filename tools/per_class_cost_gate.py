@@ -26,9 +26,19 @@ The rule (pre-registered in the audit, stated before this was built):
 Costs come from ``tools/data/transaction_costs.json`` (the same file
 ``tools/forward_edge_audit.py`` uses) — no new cost model invented here.
 
-Fail-open policy: an unknown class, a class with n < min_n, or a missing/stale
-index all PASS. The gate removes evidence-backed losers; it must never silence
-a class merely because bookkeeping is absent.
+Policy (changed 2026-11-19 — external review v2/v3): this gate used to fail OPEN,
+so a missing index, a stale index, or an unmeasured class all emitted freely. The
+review's complaint is that a gate whose off-switch is "the bookkeeping broke" is
+not a gate. Strict mode is now the DEFAULT:
+
+  * missing / stale / empty index        -> BLOCK (reason `gate_index_missing_strict`)
+  * class present in no index row        -> BLOCK (reason `no_class_evidence_strict`)
+  * class measured but n < min_n         -> BLOCK (reason `insufficient_sample`)
+
+Set PER_CLASS_COST_GATE_STRICT=0 to restore the old fail-open behaviour (for a
+backfill run whose index has not been rebuilt yet). The escape hatch is explicit
+and logged by callers via the returned `strict` field, because the failure mode
+we are avoiding is a gate that is quietly off.
 
 Usage:
     python3 tools/per_class_cost_gate.py --build --input audit_dashboard/data/dashboard_data.json
@@ -40,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,6 +65,16 @@ DEFAULT_OUT = REPO_ROOT / "config" / "per_class_cost_gate.json"
 
 #: A class must earn at least this multiple of its round-trip cost on average.
 REQUIRED_COST_MULTIPLE = 3.0
+#: Fail-closed by default (2026-11-19). See the policy note in the module docstring.
+STRICT_DEFAULT = True
+
+
+def _strict() -> bool:
+    """Strict (fail-closed) mode; env override for backfill runs."""
+    raw = os.environ.get("PER_CLASS_COST_GATE_STRICT")
+    if raw is None:
+        return STRICT_DEFAULT
+    return raw.strip().lower() in ("1", "true", "yes", "on")
 #: Below this many closed trades a class mean is not usable — fail open.
 MIN_SAMPLE = 30
 #: Index older than this is not trusted for a blocking decision.
@@ -192,11 +213,21 @@ def gate_pick(pick: Dict[str, Any], index: Optional[Dict[str, Any]] = None) -> D
     idx = index if index is not None else load_index()
     ac = str((pick or {}).get("asset_class") or "UNKNOWN").upper()
     classes = (idx or {}).get("classes") or {}
+    strict = _strict()
     row = classes.get(ac)
     if not row:
-        return {"allowed": True, "class": ac, "reason": "no_class_evidence"}
+        if strict:
+            # No evidence is not permission. A missing index means the gate never
+            # ran; allowing the pick would make the gate's absence undetectable.
+            reason = ("gate_index_missing_strict" if not classes
+                      else "no_class_evidence_strict")
+            return {"allowed": False, "class": ac, "reason": reason,
+                    "strict": True}
+        return {"allowed": True, "class": ac, "reason": "no_class_evidence",
+                "strict": False}
     return {
         "allowed": bool(row.get("allowed")),
+        "strict": strict,
         "class": ac,
         "reason": row.get("reason"),
         "mean_pnl_pct": row.get("mean_pnl_pct"),

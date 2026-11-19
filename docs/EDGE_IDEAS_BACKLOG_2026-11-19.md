@@ -251,12 +251,13 @@ not re-derive it from a chat transcript.
 
 | v3 item | Status |
 |---|---|
-| canonical `resolved_closed_picks_net` view both pages query | **open** — the root fix for the ETF 1.9% vs 43.1% contradiction |
+| canonical `resolved_closed_picks_net` view both pages query | **done** — sidecar + payload block + declared denominator; audit3 reports `mode=canonical\|payload_slice` |
 | excluded-cohort panel ("judging 21.4% of the book") | **done** (#893) |
 | selection-alpha-vs-hold as the per-class headline | **done** (#893, `--alpha` sidecar + demoted PF) |
 | one smart-picks definition, one number | **open** |
-| kill the dead tier2 panel, the "Renaissance T1/T2/T3" labels, the PF-lift "POSITIVE" card | **open** |
-| gates ON by default, fail-open paths closed, rehab children inherit trial counts | **open** |
+| kill the dead tier2 panel, the "Renaissance T1/T2/T3" labels, the PF-lift "POSITIVE" card | **done** — panel markup retired, branding stripped, PF-lift tile removed |
+| gates ON by default, fail-open paths closed | **done** — FDR + single-source default on, cost gate strict |
+| rehab children inherit the parent's cumulative trial count | **open** — TESTING_PROTOCOL §6–§8 still resets multiplicity |
 | audit3 expectancy-CI as G1 | **done** (#895) |
 | confirmatory vs discovery multiplicity families | **done** (#898, pods in #901) |
 | KILL → denylist wiring | **done** (#898 ingest, #900 writer, #901 class gate) |

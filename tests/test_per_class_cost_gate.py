@@ -60,13 +60,30 @@ def test_index_records_the_rule_it_was_built_with():
 
 
 # --- gate decisions --------------------------------------------------------
-def test_gate_allows_unknown_class_fail_open():
-    v = g.gate_pick({"asset_class": "MYSTERY"}, {"classes": {}})
+# The gate's contract changed 2026-11-19 (external review v2/v3): it used to fail
+# OPEN, so a missing index or an unmeasured class emitted freely — which makes the
+# gate's absence undetectable. Strict is now the default and these tests pin the
+# new contract plus the explicit escape hatch.
+def test_gate_blocks_unknown_class_by_default():
+    idx = g.build_index(_rows("EQUITY", [0.40] * 40), COSTS)
+    v = g.gate_pick({"asset_class": "MYSTERY"}, idx)
+    assert v["allowed"] is False
+    assert v["reason"] == "no_class_evidence_strict"
+    assert v["strict"] is True
+
+
+def test_gate_blocks_when_index_missing():
+    v = g.gate_pick({"asset_class": "CRYPTO"}, {})
+    assert v["allowed"] is False
+    assert v["reason"] == "gate_index_missing_strict"
+
+
+def test_strict_escape_hatch_restores_fail_open(monkeypatch):
+    monkeypatch.setenv("PER_CLASS_COST_GATE_STRICT", "0")
+    v = g.gate_pick({"asset_class": "MYSTERY"}, {"classes": {"EQUITY": {}}})
     assert v["allowed"] is True
     assert v["reason"] == "no_class_evidence"
-
-
-def test_gate_allows_when_index_empty():
+    assert v["strict"] is False
     assert g.gate_pick({"asset_class": "CRYPTO"}, {})["allowed"] is True
 
 
@@ -103,13 +120,20 @@ def test_load_index_missing_file_fails_open(tmp_path):
     assert g.load_index(str(tmp_path / "nope.json")) == {}
 
 
-def test_load_index_stale_file_fails_open(tmp_path):
+def test_load_index_stale_file_returns_empty_so_the_gate_blocks(tmp_path):
+    """A stale index loads as {} — which now means BLOCK, not permission.
+
+    The file layer still refuses to hand back numbers it does not trust; the
+    decision moved to `gate_pick`, where an empty index is treated as "the gate
+    never ran" rather than "no evidence against the pick".
+    """
     p = tmp_path / "idx.json"
     p.write_text(json.dumps({
         "generated_at": "2020-01-01T00:00:00Z",
         "classes": {"CRYPTO": {"allowed": False}},
     }), encoding="utf-8")
-    assert g.load_index(str(p)) == {}, "a stale index must not block anything"
+    assert g.load_index(str(p)) == {}
+    assert g.gate_pick({"asset_class": "CRYPTO"}, g.load_index(str(p)))["allowed"] is False
 
 
 def test_build_then_load_round_trip(tmp_path):

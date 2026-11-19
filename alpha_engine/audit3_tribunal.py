@@ -300,6 +300,11 @@ def split_half_ok(values: list[float]) -> tuple[bool, dict[str, float]]:
 
 
 # ────────────────────────────────────────────────────────────────── loading ──
+#: Set by :func:`load_rows` — which denominator this process actually loaded, and
+#: why (hash-verified sidecar vs fallback). Read by :func:`payload_coverage`.
+LAST_DENOMINATOR: dict[str, Any] = {}
+
+
 def _to_dt(value: Any) -> datetime | None:
     if not isinstance(value, str) or not value:
         return None
@@ -323,6 +328,7 @@ def load_rows(path: str, drops: dict[str, int] | None = None
     row. The export slice is already filtered upstream, so a page that only
     reports ``len(rows)`` silently hides both those filters and these ones.
     """
+    LAST_DENOMINATOR.clear()
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
     generated_at = None
@@ -341,6 +347,44 @@ def load_rows(path: str, drops: dict[str, int] | None = None
             if isinstance(cur, list):
                 rows = cur
                 break
+    # Canonical view (review action A2). The publishing dashboard writes
+    # resolved_closed_picks_net.json next to the payload; when its row hash matches
+    # the block embedded in the payload, score THOSE rows. /audit counts the same
+    # book, so the two surfaces cannot disagree about n without one of them being
+    # visibly wrong. Absent or hash-mismatched sidecar → fall back to the export
+    # slice below, and `payload_coverage` records which denominator was used.
+    if isinstance(data, dict):
+        _block = data.get("resolved_closed_picks_net")
+        if isinstance(_block, dict):
+            try:
+                from alpha_engine.resolved_closed_view import load_sidecar
+                _view = load_sidecar(path, _block)
+            except Exception:
+                _view = None
+            if _view and isinstance(_view.get("rows"), list) and len(_view["rows"]) >= 100:
+                rows = _view["rows"]
+                LAST_DENOMINATOR.update({
+                    "mode": "canonical",
+                    "rows_sha256": _view.get("rows_sha256"),
+                    "kept_rows": len(_view["rows"]),
+                    "reason": "sidecar_loaded_and_hashed",
+                })
+            else:
+                # The block exists but the rows behind it do not match (absent,
+                # unreadable, or a different hash). Record the FACT; do not infer
+                # it from row counts, because a 3,500-row export slice and a
+                # 3,500-row canonical book are indistinguishable by size.
+                LAST_DENOMINATOR.update({
+                    "mode": "payload_slice",
+                    "rows_sha256": None,
+                    "kept_rows": ((_block.get("counts") or {}).get("kept_rows")),
+                    "reason": "sidecar_missing_or_hash_mismatch",
+                })
+        else:
+            LAST_DENOMINATOR.update({"mode": "payload_slice", "rows_sha256": None,
+                                     "kept_rows": None,
+                                     "reason": "no_canonical_block"})
+
     if not rows:
         raise ValueError(f"no closed-pick list found in {path}")
 
@@ -447,7 +491,42 @@ def payload_coverage(data: Any, scored_rows: list[dict],
         })
     overlap = bool(total and integrity and expired and integrity + expired > total)
 
+    # A2: which denominator did this run actually score? 'canonical' means the
+    # row count equals the published resolved_closed_picks_net view, so a reader
+    # can compare this page against /audit without guessing.
+    canon = data.get("resolved_closed_picks_net") if isinstance(data, dict) else None
+    canon = canon if isinstance(canon, dict) else {}
+    canon_counts = canon.get("counts") if isinstance(canon.get("counts"), dict) else {}
+    canon_kept = canon_counts.get("kept_rows")
+    # Authoritative only when the load stage recorded a hash-verified sidecar for
+    # THIS book (same kept_rows), so a stale module-level record cannot leak in.
+    den_state = LAST_DENOMINATOR if LAST_DENOMINATOR.get("kept_rows") == canon_kept else {}
+    loaded_from_sidecar = den_state.get("mode") == "canonical"
+    canonical_mode = bool(loaded_from_sidecar and canon_kept and scored == canon_kept)
+    denominator = {
+        "mode": "canonical" if canonical_mode else "payload_slice",
+        "loaded_from_sidecar": loaded_from_sidecar,
+        "fallback_reason": (None if canonical_mode
+                            else den_state.get("reason") or "no_canonical_block"),
+        "canonical_schema": canon.get("schema"),
+        "canonical_rows_sha256": canon.get("rows_sha256"),
+        "canonical_kept_rows": canon_kept,
+        "canonical_excluded_by_reason": canon_counts.get("excluded_by_reason"),
+        "share_of_canonical_pct": (round(100.0 * scored / canon_kept, 2)
+                                   if canonical_mode and canon_kept else None),
+        "note": ("scores the published canonical view; /audit counts the same rows"
+                 if canonical_mode else
+                 "scores the payload export slice — the canonical view was absent, "
+                 "stale, or hashed differently, so this is NOT the same denominator "
+                 "as /audit"),
+    }
+    cov_statement = _coverage_statement(scored, total, integrity, expired, overlap)
+    if canonical_mode:
+        cov_statement = (f"{cov_statement} This run scores the canonical resolved "
+                         f"view (sha256 {str(canon.get('rows_sha256'))[:12]}…).")
+
     return {
+        "denominator": denominator,
         "scored_rows": scored,
         "total_closed_picks": total,
         "valid_closed_picks": valid,
@@ -465,7 +544,7 @@ def payload_coverage(data: Any, scored_rows: list[dict],
                    "last_closed_at": stamps[-1] if stamps else None},
         "resolver_anomalies": {k: v for k, v in anomalies.items()
                                if isinstance(v, (int, float))},
-        "statement": _coverage_statement(scored, total, integrity, expired, overlap),
+        "statement": cov_statement,
     }
 
 
