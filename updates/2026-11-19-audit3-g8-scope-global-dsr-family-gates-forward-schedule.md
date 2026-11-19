@@ -95,3 +95,18 @@ Manual checks:
    the equity-breakout pod has a condition but no rows yet. The new workflow
    prints the promotion-eligible cells that have no forward path, rather than
    inventing shadow trades for them.
+
+## Follow-up round — defects found by adversarial review of the fix
+
+A second agent reviewed commit `b9dd4378e65` and found five issues; all are fixed.
+
+| # | Defect | Fix |
+|---|---|---|
+| 1 | G8 still fail-open on the **published** path: `audit3-ledger.yml` runs alpha with `continue-on-error`/`|| true`, and `audit3_selection_alpha.py` exits 3 without writing `--out` on zero price coverage — so a ledger could mint `PROVEN_T2` with no alpha proof | `build_report(..., require_alpha=True)` on the CLI path; `demote_proven_without_alpha()` demotes every `PROVEN_T2` to `CANDIDATE` and records `gate.applied=false`. Library/tests keep fail-open. |
+| 2 | `edge_hunt._dir` mapped `BUY → "?"` while the tribunal maps `BUY → LONG`, so BUY rows got an **inverted** benchmark and a `CLASS/STRAT/?` key that could never match a cell | `audit3_selection_alpha.py` now normalises with `symbol_identity.direction_key` |
+| 3 | `issued_at` falls back to `closed_at`, giving `p0 == p1`, `move == 0`, `alpha == pnl` — a fabricated zero benchmark that could pass G8 | rows with `t0 >= t1` are skipped and counted as `missing["degenerate_window"]` |
+| 4 | **Coverage hole**: a 20-row alpha sample could prove a 500-row cell, invisibly | `alpha_gate` now publishes `alpha_n` / `alpha_coverage_ok`; proof requires `alpha_n >= max(20, 0.5 × cell.n)` |
+| 5 | Workflow could push a feature branch's files to `main` (no `ref` pin) and went green when the ingest produced **0 admissible rows** | checkout pins `ref: main`; commit step requires `github.ref == refs/heads/main`; `n_admissible == 0` is a hard error |
+
+New tests: `require_alpha` demotion, coverage floor, BUY→LONG normalisation,
+degenerate-window rejection, plus the earlier 9. Focused suite: **79 passed**.

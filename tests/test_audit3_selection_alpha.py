@@ -111,3 +111,28 @@ def test_small_slices_are_not_aggregated():
     res = alpha_for(rows, bars)
     assert "CRYPTO/LONG" not in res["by_slice"]
     assert res["by_class"]["CRYPTO"]["alpha_ci"] == [None, None]
+
+
+def test_buy_direction_is_long_and_never_lands_in_a_question_mark_bucket():
+    rows = []
+    for _ in range(20):
+        r = _row(direction="BUY", pnl=1.0)
+        r["strategy"] = "s1"
+        rows.append(r)
+    out = alpha_for(rows, {"CRYPTO:BTCUSDT": _bars_for(rows[0])})
+    assert out["covered"] == 20
+    assert "CRYPTO/LONG" in out["by_slice"]
+    assert "CRYPTO/s1/LONG" in out["by_strategy"]
+    assert "?" not in "".join(out["by_strategy"])
+    # The benchmark must be real: a BUY row held a rising series, so alpha is
+    # strictly below the gross pick return.
+    assert out["by_strategy"]["CRYPTO/s1/LONG"]["hold_net_pct"] > 0
+
+
+def test_rows_without_an_entry_stamp_get_no_zero_benchmark():
+    r = _row()
+    r.pop("timestamp")
+    r["created_at"] = r["closed_at"]
+    out = alpha_for([r], {"CRYPTO:BTCUSDT": _bars_for(_row())})
+    assert out["covered"] == 0
+    assert out["missing"].get("degenerate_window") == 1

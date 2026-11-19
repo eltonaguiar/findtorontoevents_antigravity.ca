@@ -244,8 +244,9 @@ def test_selection_alpha_gate_rejects_a_class_proxy_for_a_strategy_cell():
     summary = apply_selection_alpha_gate([cell], alpha)
     assert summary["applied"] is True and summary["demoted"] == 1
     assert cell["verdict"] == "CANDIDATE"
-    assert cell["alpha_gate"] == {"alpha_ci_lo": 0.5, "scope": "class_proxy",
-                                  "passed": False}
+    assert cell["alpha_gate"]["alpha_ci_lo"] == 0.5
+    assert cell["alpha_gate"]["scope"] == "class_proxy"
+    assert cell["alpha_gate"]["passed"] is False
     assert cell["beta_dominant"] is True
 
 
@@ -256,8 +257,10 @@ def test_selection_alpha_gate_accepts_strategy_level_proof():
     summary = apply_selection_alpha_gate([cell], alpha)
     assert summary["demoted"] == 0
     assert cell["verdict"] == "PROVEN_T2"
-    assert cell["alpha_gate"] == {"alpha_ci_lo": 0.2, "scope": "strategy",
-                                  "passed": True}
+    assert cell["alpha_gate"]["alpha_ci_lo"] == 0.2
+    assert cell["alpha_gate"]["scope"] == "strategy"
+    assert cell["alpha_gate"]["alpha_n"] == 120
+    assert cell["alpha_gate"]["passed"] is True
     assert "beta_dominant" not in cell
 
 
@@ -327,3 +330,27 @@ def test_candidate_tier_uses_local_breadth_not_the_global_registry():
              "dsr_local": 0.30, "reasons": []}
     _promote(cell2)
     assert cell2["verdict"] == "WEAK"
+
+
+def test_require_alpha_demotes_proven_when_the_sidecar_is_missing():
+    from alpha_engine.audit3_tribunal import demote_proven_without_alpha
+    cell = _proven_cell()
+    # Library callers keep fail-open...
+    assert apply_selection_alpha_gate([cell], None)["applied"] is False
+    assert cell["verdict"] == "PROVEN_T2"
+    # ...but the published path must not call an unmeasured alpha "proven".
+    assert demote_proven_without_alpha(([cell],)) == 1
+    assert cell["verdict"] == "CANDIDATE"
+    assert cell["beta_dominant"] is True
+
+
+def test_alpha_must_cover_enough_of_the_cell_to_prove_it():
+    cell = _proven_cell(n=500)
+    alpha = {"by_class": {"CRYPTO": {"n": 500, "alpha_ci": [0.4, 1.0]}},
+             "by_strategy": {"CRYPTO/s1/LONG": {"n": 20, "alpha_ci": [0.3, 0.9]}}}
+    summary = apply_selection_alpha_gate([cell], alpha)
+    assert summary["demoted"] == 1
+    assert cell["alpha_gate"]["scope"] == "strategy"
+    assert cell["alpha_gate"]["alpha_coverage_ok"] is False
+    assert cell["verdict"] == "CANDIDATE"
+    assert "covers 20/500" in " ".join(cell["reasons"])

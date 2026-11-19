@@ -37,6 +37,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from alpha_engine.audit3_tribunal import bootstrap_mean_ci  # noqa: E402
+try:  # shared canonicaliser: BUY/L/S must not become "?"
+    from alpha_engine.symbol_identity import direction_key as _dir_key
+except ImportError:  # pragma: no cover
+    def _dir_key(direction):
+        d = str(direction or "").strip().upper()
+        if d.startswith(("B", "L")):
+            return "LONG"
+        if d.startswith("S"):
+            return "SHORT"
+        return d or "UNKNOWN"
 from alpha_engine.audit3_edge_hunt import net_pnl, issued_at, closed_at, _class, _dir  # noqa: E402
 
 TABLE_FOR = {
@@ -164,6 +174,13 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dic
         if t0 is None or t1 is None or pnl is None:
             missing["no_timestamp"] += 1
             continue
+        if t0 >= t1:
+            # issued_at falls back to closed_at when no entry stamp exists. That
+            # makes p0 == p1, move == 0 and alpha == pnl — which would let a
+            # beta-only strategy "pass" G8 with an invented zero benchmark.
+            missing["degenerate_window"] += 1
+            continue
+        direction = _dir_key(r.get("direction"))
         series = None
         for cand in symbol_candidates(r.get("symbol"), klass):
             key = f"{klass}:{cand}"
@@ -180,8 +197,8 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dic
             missing[f"no_bar:{klass}"] += 1
             continue
         move = (p1 / p0 - 1.0) * 100.0
-        bench = move if _dir(r) == "LONG" else -move
-        per.append({"row": r, "class": klass, "dir": _dir(r), "pnl": pnl,
+        bench = move if direction == "LONG" else -move
+        per.append({"row": r, "class": klass, "dir": direction, "pnl": pnl,
                     "hold": bench, "alpha": pnl - bench})
 
     def agg(items):

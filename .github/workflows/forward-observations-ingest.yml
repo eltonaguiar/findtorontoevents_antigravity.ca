@@ -38,6 +38,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: main          # never push a feature branch's files to main
           fetch-depth: 1
 
       - name: Setup Python
@@ -74,6 +75,11 @@ jobs:
           # Every registered pod with no forward rows is a coverage hole the page
           # must show; fail only when the ledger is empty (writer is broken).
           assert rows, "forward ledger is empty after an --apply run"
+          if not rep.get("n_admissible"):
+              # The writer produced nothing from a non-empty cohort. That is the
+              # silent-stall failure this job exists to catch, not a no-op.
+              raise SystemExit("::error title=forward-observations::ingest "
+                               "produced 0 admissible rows")
           # A verdict-bearing PROVEN/CANDIDATE cell with no forward instrument can
           # never be confirmed. Say so loudly instead of letting the ledger look
           # complete because it is non-empty.
@@ -94,7 +100,7 @@ jobs:
           PY
 
       - name: Commit ledger (data only, [skip ci])
-        if: env.DB_PASS_STOCKS != '' || env.DB_PASSWORDS_JSON != ''
+        if: github.ref == 'refs/heads/main' && (env.DB_PASS_STOCKS != '' || env.DB_PASSWORDS_JSON != '')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

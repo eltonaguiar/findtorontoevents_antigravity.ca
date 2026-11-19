@@ -125,6 +125,12 @@ MAX_SOURCE_SHARE = 0.90
 # claim that 658 is exact — when the registry grows, raise it.
 GLOBAL_TRIAL_FLOOR = 658
 
+# G8 coverage floor: alpha measured on a small, price-covered subset must not
+# prove a much larger cell. A 20-row alpha sample cannot certify a 500-row cell
+# even if its interval is positive.
+ALPHA_MIN_N = 20
+ALPHA_MIN_COVERAGE = 0.50
+
 
 def global_trial_count(*counts: int) -> int:
     """Trial count for DSR: the whole search space, never just the loaded slice."""
@@ -976,6 +982,22 @@ def apply_harm_gate(bucket: list[dict]) -> None:
                 f"negative but harm q={q:.3f} > {FDR_Q}: not proven, keep observing")
 
 
+def demote_proven_without_alpha(buckets: Iterable[list[dict]]) -> int:
+    """Fail-closed fallback for the published ledger when alpha is missing."""
+    demoted = 0
+    for bucket in buckets:
+        for c in bucket:
+            if c.get("verdict") != "PROVEN_T2":
+                continue
+            c["verdict"] = "CANDIDATE"
+            c["beta_dominant"] = True
+            c["reasons"].append(
+                "G8 selection-alpha gate: alpha sidecar unavailable — PROVEN_T2 "
+                "requires a measured selection alpha")
+            demoted += 1
+    return demoted
+
+
 def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[str, Any]:
     """G8 — selection alpha must be proven positive before promotion.
 
@@ -1005,36 +1027,45 @@ def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[s
     if not by_class and not by_slice and not by_strategy:
         return {"applied": False, "reason": "alpha sidecar empty"}
 
-    def _ci_lo(entry: Any) -> float | None:
+    def _entry_lo_n(entry: Any) -> tuple[float | None, int]:
         if not entry or not entry.get("n"):
-            return None
-        return (entry.get("alpha_ci") or [None, None])[0]
+            return None, 0
+        return (entry.get("alpha_ci") or [None, None])[0], int(entry.get("n") or 0)
 
-    def _lookup(cell: dict) -> tuple[float | None, str]:
+    def _lookup(cell: dict) -> tuple[float | None, str, int]:
         ac = str(cell.get("asset_class") or "").strip().upper()
         d = str(cell.get("direction") or "").strip().upper()
         strat = cell.get("strategy")
         if strat:
-            lo = _ci_lo(by_strategy.get(f"{ac}/{strat}/{d}"))
+            lo, n = _entry_lo_n(by_strategy.get(f"{ac}/{strat}/{d}"))
             if lo is not None:
-                return lo, "strategy"
-            lo = _ci_lo(by_slice.get(f"{ac}/{d}"))
+                return lo, "strategy", n
+            lo, n = _entry_lo_n(by_slice.get(f"{ac}/{d}"))
             if lo is not None:
-                return lo, "class_proxy"
-            return _ci_lo(by_class.get(ac)), "class_proxy"
+                return lo, "class_proxy", n
+            lo, n = _entry_lo_n(by_class.get(ac))
+            return lo, "class_proxy", n
         if cell.get("symbol"):
-            lo = _ci_lo(by_slice.get(f"{ac}/{d}"))
+            lo, n = _entry_lo_n(by_slice.get(f"{ac}/{d}"))
             if lo is not None:
-                return lo, "class_proxy"
-            return _ci_lo(by_class.get(ac)), "class_proxy"
+                return lo, "class_proxy", n
+            lo, n = _entry_lo_n(by_class.get(ac))
+            return lo, "class_proxy", n
         # Class aggregate: the class number IS the same-scope measurement.
-        return _ci_lo(by_class.get(ac)), "class"
+        lo, n = _entry_lo_n(by_class.get(ac))
+        return lo, "class", n
 
     summary: dict[str, Any] = {"applied": True, "tested": 0, "demoted": 0, "scopes": {}}
     for c in bucket:
-        lo, scope = _lookup(c)
-        proven = lo is not None and lo > 0 and scope in ("strategy", "class")
-        c["alpha_gate"] = {"alpha_ci_lo": lo, "scope": scope, "passed": bool(proven)}
+        lo, scope, alpha_n = _lookup(c)
+        cell_n = int(c.get("n") or 0)
+        need_n = max(ALPHA_MIN_N, int(ALPHA_MIN_COVERAGE * cell_n))
+        covered = alpha_n >= need_n
+        proven = (lo is not None and lo > 0 and scope in ("strategy", "class")
+                  and covered)
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "scope": scope, "alpha_n": alpha_n,
+                           "alpha_coverage_ok": bool(covered),
+                           "passed": bool(proven)}
         summary["tested"] += 1
         summary["scopes"][scope] = summary["scopes"].get(scope, 0) + 1
         if not proven:
@@ -1042,8 +1073,13 @@ def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[s
             if c["verdict"] == "PROVEN_T2":
                 c["verdict"] = "CANDIDATE"
                 summary["demoted"] += 1
-                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
-                       if lo is not None else "selection alpha unavailable")
+                if lo is None:
+                    why = "selection alpha unavailable"
+                elif lo <= 0:
+                    why = f"selection alpha CI lower bound {lo:+.4f} not > 0"
+                else:
+                    why = (f"selection alpha covers {alpha_n}/{cell_n} rows "
+                           f"(need {need_n})")
                 c["reasons"].append(
                     f"G8 selection-alpha gate ({scope}): {why} — beta-dominant")
     return summary
@@ -1149,7 +1185,8 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  alpha: dict[str, Any] | None = None,
                  input_sha256: str | None = None,
                  confirmatory: dict[str, Any] | None = None,
-                 forward: dict[str, Any] | None = None) -> dict[str, Any]:
+                 forward: dict[str, Any] | None = None,
+                 require_alpha: bool = False) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
@@ -1326,6 +1363,13 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         for scope, count in (part.get("scopes") or {}).items():
             alpha_gate_report["scopes"][scope] = (
                 alpha_gate_report["scopes"].get(scope, 0) + count)
+    if require_alpha and not alpha_gate_report.get("applied"):
+        # Published path: the ledger workflow tolerates a missing alpha sidecar so
+        # a DB outage cannot block publishing, but a cell may not be PROVEN on an
+        # unmeasured alpha. Demote rather than fail open silently.
+        alpha_gate_report["require_alpha"] = True
+        alpha_gate_report["demoted"] += demote_proven_without_alpha(
+            (cells, symbols, classes))
     selection["gate"] = alpha_gate_report
 
     # Kill tribunal: everything KILL plus near-kill (WEAK with negative mean).
@@ -1512,9 +1556,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "n_trials_dsr": n_trials,
             "registry_note": "multiplicity is counted two ways on purpose: "
                              "BH/Bonferroni operate on tested cells (n >= sample "
-                             "floor); DSR uses the global trial count (every "
-                             "distinct cell, so G4 corrects for the full search "
-                             "space).",
+                             "floor); the PROVEN DSR uses the global trial count "
+                             f"floored at {GLOBAL_TRIAL_FLOOR} (the registry is "
+                             "larger than any payload slice); CANDIDATE uses the "
+                             "observed bucket width so the forward queue is not "
+                             "emptied.",
         },
     }
 
@@ -1554,6 +1600,7 @@ def main(argv: list[str] | None = None) -> int:
                   file=sys.stderr)
     manifest = load_confirmatory(args.confirmatory)
     report = build_report(rows, args.picks, generated_at, coverage=coverage,
+                          require_alpha=True,
                           alpha=alpha, input_sha256=_sha256(args.picks),
                           confirmatory=manifest,
                           forward=forward_gate_block(manifest, args.forward_ledger))
