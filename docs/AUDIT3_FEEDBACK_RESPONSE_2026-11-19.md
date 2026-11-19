@@ -228,16 +228,17 @@ on main is still v1. Part 4 of v3.1 was checked line by line against `main`:
 | ETF needs the canonical view before any conclusion | view + declared denominator shipped | **addressed** |
 | H-119 two vintages | still open | **done** — fallback is now a labelled dated snapshot, the card names its vintage, and `gate_eta ~2026-06-25` is retired at source (n≥150 was already met at n=431; only `net_ci_lb_gt_1.15` fails) |
 | kill lists share exactly one name | still open | **done** — kept separate on purpose (name-only policy vs direction-aware expectancy; `luxalgo_confluence` is KILL LONG and CANDIDATE SHORT), with `tools/kill_list_reconcile.py` publishing the union and provenance |
-| `forward_observations` ledger | still open | **open** |
+| `forward_observations` ledger | still open | **contract shipped** — schema + registry FK + one net-return definition + per-hypothesis clock + promotion rule + 24 tests in `alpha_engine/forward_observations.py`, contract in `docs/FORWARD_LEDGER_CONTRACT_2026-11-19.md`; ledger is honestly empty (0 rows) because ingestion is not wired |
 
 `docs/FINANCE_DB_SCHEMA_SPEC.md` note: the remaining `ejaguiar1_*` mentions were left
 in place. The review flags them "only if this repo is ever made public"; removing the
 DB names would strip the inventory of the one thing that makes it navigable, and they
 are not credentials. If that judgement should change, it is a one-line sed.
 
-Net: the v3.1 P0 list stands at 9 of 10 closed. The one still open is the
-`forward_observations` ledger — the only item that can change a verdict rather than
-describe one. Its closing recommendation
+Net: all 10 v3.1 P0 rows are now closed at the contract level. What remains is not a
+missing table but a missing **writer**: the forward ledger has 0 rows because no
+ingestion adapter fills it, so `PROVEN_T2` is defined and unreachable at the same
+time — which is the honest state until forward evidence actually exists. Its closing recommendation
 ("the fastest high-value action is registering Pod 1") was already done before the
 review landed.
 
