@@ -44,6 +44,31 @@ import os
 import time
 import re
 from datetime import datetime, timezone, timedelta
+try:
+    from zoneinfo import ZoneInfo
+except Exception:  # pragma: no cover
+    ZoneInfo = None  # type: ignore[assignment]
+
+
+def _to_est_iso(dt: datetime) -> str | None:
+    """Best-effort EST/EDT ISO timestamp for audit display."""
+    if ZoneInfo is None:
+        return None
+    try:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(ZoneInfo("America/Toronto")).isoformat()
+    except Exception:
+        return None
+
+
+def _parse_iso_maybe(value):
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except Exception:
+        return None
 from pathlib import Path
 from collections import defaultdict
 from typing import Optional
@@ -439,8 +464,19 @@ def _make_pick(strategy, symbol, category, asset_class, direction,
         adj_conf = min(adj_conf, _EQUITY_UNVALIDATED_CONF_CAP)
 
     adj_conf = round(adj_conf, 3)
+    extra = dict(extra or {})
 
-    return {
+    # Timestamp/audit metadata (forward-test/bias controls).
+    # `timestamp` is ingest/generation time; strategy-specific `signal_timestamp`
+    # (if provided in extra by caller) is preferred as the signal bar/event time.
+    ingest_dt = now
+    signal_dt = _parse_iso_maybe(extra.get("signal_timestamp")) or _parse_iso_maybe(extra.get("source_open_time")) or ingest_dt
+    if signal_dt.tzinfo is None:
+        signal_dt = signal_dt.replace(tzinfo=timezone.utc)
+    ingest_iso = ingest_dt.isoformat()
+    signal_iso = signal_dt.astimezone(timezone.utc).isoformat()
+
+    pick = {
         "id": f"multi_asset_{strategy}::{symbol}::{now.strftime('%Y-%m-%d_%H%M')}",
         "strategy": strategy,
         "symbol": symbol,
@@ -466,11 +502,29 @@ def _make_pick(strategy, symbol, category, asset_class, direction,
         "forward_wr": 0.0,
         "forward_validated": False,
         "forward_test_only": True,
+        "verification_state": "forward_test_only",
         "source_system": source_system,
         "source_strategy_type": "reverse_engineered_multi_asset",
-        "timestamp": now.isoformat(),
-        "extra": extra or {},
+        "timestamp": ingest_iso,
+        "signal_time_utc": signal_iso,
+        "signal_time_est": _to_est_iso(signal_dt),
+        "ingest_time_utc": ingest_iso,
+        "ingest_time_est": _to_est_iso(ingest_dt),
+        "bias_controls": {
+            "forward_only": True,
+            "no_hindsight_fill": True,
+            "evaluate_after_signal_time": True,
+            "prefer_next_bar_or_copy_delay": True,
+            "publication_lag_required_for_macro_filings": True,
+        },
+        "extra": extra,
     }
+    # Preserve explicit signal timestamp if caller provided it (e.g. daily bars/COT/macro).
+    if extra.get("signal_timestamp") and "signal_timestamp" not in pick:
+        pick["signal_timestamp"] = extra.get("signal_timestamp")
+    elif extra.get("signal_timestamp"):
+        pick["signal_timestamp"] = extra.get("signal_timestamp")
+    return pick
 
 
 # ============================================================
@@ -2674,12 +2728,23 @@ def save_results(results):
     # Count summary
     by_class_count = {k: len(v) for k, v in by_class.items()}
 
+    generated_dt = _parse_iso_maybe(now_iso) or datetime.now(timezone.utc)
     output = {
         "generated_at": now_iso,
+        "generated_at_utc": now_iso,
+        "generated_at_est": _to_est_iso(generated_dt),
         "source": "multi_asset_copytrader_scanner",
         "total_picks": len(all_picks),
         "by_asset_class": by_class_count,
         "by_strategy": {k: len(v) for k, v in results.items()},
+        "verification_state": "forward_test_only",
+        "bias_controls": {
+            "forward_only": True,
+            "no_hindsight_fill": True,
+            "evaluate_after_signal_time": True,
+            "prefer_next_bar_or_copy_delay": True,
+            "publication_lag_required_for_macro_filings": True,
+        },
         "picks": all_picks,
     }
 
@@ -2715,11 +2780,14 @@ def save_results(results):
     # Build metadata
     metadata = {
         "generated_at": now_iso,
+        "generated_at_utc": now_iso,
+        "generated_at_est": _to_est_iso(generated_dt),
         "total_picks": len(all_picks),
         "by_asset_class": by_class_count,
         "by_strategy": {k: len(v) for k, v in results.items()},
         "scanner_version": "3.1.0",
         "strategies_run": len(results),
+        "verification_state": "forward_test_only",
     }
 
     return path, all_picks, metadata, results
