@@ -197,13 +197,13 @@ jobs:
           if [ -f audit_dashboard/data/audit3_verdict_history.json ]; then
             history_arg="--history audit_dashboard/data/audit3_verdict_history.json --history-write --persistence-runs 2 --prev-ledger audit_dashboard/data/audit3_ledger.json --max-churn 0.30"
           fi
+          # $history_arg already carries --history/--history-write/
+          # --prev-ledger/--max-churn. They were duplicated here by a merge,
+          # and argparse rejects a repeated option string ("conflicting option
+          # string: --history"), which broke the 2026-11-19T23:45 build.
           python3 -m alpha_engine.audit3_tribunal \
             --picks /tmp/audit3/dashboard_data.json \
-            --out audit_dashboard/data/audit3_ledger.json $alpha_arg \
-            --history audit_dashboard/data/audit3_verdict_history.json \
-            --history-write \
-            --prev-ledger audit_dashboard/data/audit3_ledger.json \
-            --max-churn 0.30
+            --out audit_dashboard/data/audit3_ledger.json $alpha_arg $history_arg
           python3 - <<'PY'
           import json
           d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
