@@ -61,7 +61,7 @@ Base rates every short-term plan must beat: Brazil futures day traders — 97% o
 
 ## 4. The $2,000 question
 
-**Verdict: ETF — tactical dual-momentum rotation — for real capital. CRYPTO for the live *paper* sim. $0 real into short-term trading in any class today.**
+**Verdict: ETF — tactical dual-momentum rotation — for real capital (now *contingent*, see §6.1). CRYPTO for the live *paper* sim. $0 real into short-term trading in any class today.**
 
 1. ETF TAA is the only edge with 20-year robust in-repo evidence AND deep external replication. On $2k: 4–5 commission-free ETFs, fractional shares, monthly rebalance, ~2–5bp cost. Expected: market-like return at roughly half the drawdown (≈$100–200/yr — the value is capital preservation + a provable process, not income).
 2. Every short-term class we measure has **negative selection alpha** (−0.28%/trade ≈ −$5.5 expected per $2k trade), before the brutal day-trading base rates.
@@ -81,3 +81,10 @@ Base rates every short-term plan must beat: Brazil futures day traders — 97% o
 **Monitoring / trial-and-error loop:** the workflow warns on every non-ACTIVE slot; mutate per `docs/MUTATION_THREE_AXIS_PROTOCOL.md` only after n≥20; a halted slot's replacement must be a new pre-registered hypothesis (parallel new strategies, never silent parameter edits). First live tick 2026-11-19 opened `vwap_reversion` LONG BTCUSDT @ 62,757 (z=−1.96), paper-only.
 
 **What success looks like:** a pod reaching n=100 forward rows with net PF CI-LB > 1.0. At ~30-min ticks with 3 slots × 3 symbols, expect months, not days — that is the honest cost of evidence. Forward tests verify *execution honesty* (slippage, fills, rule drift), not alpha; a few months of live data cannot statistically confirm a modest edge (SR 1.0 needs ~9 years for t=3), which is exactly why nothing promotes without the gate.
+
+## 6. Peer review (2026-11-19, buffy via COMS) — status of the blocking items
+
+1. **"ETF TAA does not reproduce under a one-month lag"** — CONTESTED, materially. Buffy's harness: 11-sector top-5 6m with 5bp lagged costs gives Sharpe 0.66 vs SPY 0.73 (2007–2026), and the family prints Sharpe 2.00 *unlagged* (a look-ahead red flag). The original report used a 1-day lag, not 1-month; the two specs differ. **Consequence adopted here:** the $2k ETF recommendation is downgraded to *contingent* — real sizing waits for a written spec that reproduces Sharpe ≥ 0.88 at MaxDD ≤ −19% with the lag applied, or for the POD-FABER-TAA / POD-ETF-DUAL-MOMENTUM forward clocks (now accruing after this PR) to settle it with live rows. The drawdown-control claim (dodging 2008) is not in dispute; the Sharpe-advantage claim is.
+2. **"Selection alpha −0.276% is in no committed artifact"** — REFUTED against current origin/main: `audit_dashboard/data/audit3_ledger.json` (commit `3840d888270`, generated 2026-11-19T18:32Z) ships `selection_alpha.available=true`, overall `alpha_pct=-0.2763`, CI [−0.506, −0.043], n=3,192. The reviewer's branch was stale.
+3. **"Class aggregates disagree up to 3.2× between surfaces"** — ACKNOWLEDGED. CRYPTO PF 0.26 (money_ready policy-clean/intrabar cohort) vs 0.84 (audit3 payload-net cohort) are different denominators and cost conventions; this report quotes each table under its own source and never mixes them. The structural fix is kilo-general's P0 backlog item "one canonical ledger per class" (`ACTIONPLAN_AUDITPAGE/2026-11-16T2210Z_kilo_auditpage-v3/BACKLOG_2026-11-16.md`), which needs an owner/design call.
+4. **"Add a cost floor before the forward clock starts"** — ADOPTED immediately: `crypto_intraday_sim.py` now refuses any entry whose expected move to target is below 4× the 16bp round-trip cost (`COST_FLOOR_MULT × ROUND_TRIP_COST_PCT`), with tests. The btc-4h slot stays observe-only (all slots are; n=35 / DSR 0.12 was registered as a *hypothesis*, not evidence).
