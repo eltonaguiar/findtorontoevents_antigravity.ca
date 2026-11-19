@@ -102,9 +102,10 @@ jobs:
         continue-on-error: true
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
         run: |
-          if [ -z "$DB_PASS_STOCKS" ]; then
-            echo "no DB_PASS_STOCKS secret — skipping price backfill"
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret — skipping price backfill"
             exit 0
           fi
           SINCE="$(date -u -d '4 days ago' +%F)"
@@ -155,9 +156,10 @@ jobs:
         continue-on-error: true
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
         run: |
-          if [ -z "$DB_PASS_STOCKS" ]; then
-            echo "no DB_PASS_STOCKS secret — skipping selection alpha; the page states it is unavailable"
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret — skipping selection alpha; the page states it is unavailable"
             exit 0
           fi
           # 2026-11-19: the driver was never installed, so this step died with
@@ -170,7 +172,12 @@ jobs:
             --out /tmp/audit3/selection_alpha.json
           rc=$?
           if [ "$rc" -ne 0 ] || [ ! -s /tmp/audit3/selection_alpha.json ]; then
-            echo "::warning title=audit3::selection alpha unavailable (rc=$rc) — G9 will report unmeasured"
+            # require_alpha (main 6abfa22364e) makes the published path fail closed:
+            # an unavailable sidecar demotes EVERY PROVEN_T2 to CANDIDATE. That is the
+            # right policy, but it must not look like "nothing proven today", so the
+            # failure is an ::error annotation (still continue-on-error: the ledger
+            # publishes either way).
+            echo "::error title=audit3::selection alpha unavailable (rc=$rc) — every PROVEN_T2 will be demoted by require_alpha; see bar coverage on /audit3"
             exit 0
           fi
           echo "selection alpha written: $(wc -c < /tmp/audit3/selection_alpha.json) bytes"

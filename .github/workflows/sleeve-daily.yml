@@ -1,0 +1,72 @@
+name: sleeve daily marks
+
+# Daily marks for the $2k paper plan. Records only; it never trades and never
+# promotes anything. Promotion stays with audit3's forward gate.
+#
+# 22:17 UTC = after the US close (17:17 ET), so stock_ohlcv has the day's bars.
+# The monthly rebalance happens automatically on the first run of a new month;
+# every other run is a mark-only update.
+
+on:
+  schedule:
+    - cron: '17 22 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sleeve-daily
+  cancel-in-progress: false
+
+jobs:
+  marks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+      DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install DB driver
+        run: python3 -m pip install --quiet 'pymysql>=1.1'
+
+      - name: Mark sleeves and summarise
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "::warning title=sleeve-daily::no DB secret — marks skipped"
+            exit 0
+          fi
+          DAY=$(date -u +%F)
+          python3 -m paper_trading.sleeves --mark --report --date "$DAY" \
+            --out audit_dashboard/data/sleeve_daily.json
+          python3 tools/sleeve_daily_summary.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit marks (data only, [skip ci])
+        if: github.ref == 'refs/heads/main' && (env.DB_PASS_STOCKS != '' || env.DB_PASSWORDS_JSON != '')
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/sleeve_daily.json \
+                  audit_dashboard/data/sleeve_summary.json \
+                  paper_trading/data/sleeves_state.json
+          if git diff --cached --quiet; then
+            echo "sleeves unchanged"
+            exit 0
+          fi
+          git commit -m "chore(sleeves): daily marks [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*5))
+          done
+          echo "::error title=sleeve-daily::marks could not be pushed"
+          exit 1

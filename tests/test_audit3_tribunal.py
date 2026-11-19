@@ -557,14 +557,26 @@ def test_selection_alpha_gate_accepts_strategy_level_proof():
     assert "beta_dominant" not in cell
 
 
-def test_selection_alpha_gate_keeps_candidate_but_flags_it():
+def test_selection_alpha_gate_flags_measured_negative_alpha_as_beta_dominant():
     cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
             "verdict": "CANDIDATE", "reasons": []}
     apply_selection_alpha_gate(
-        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.2, 0.1]}}})
+        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.9, -0.2]}}})
     assert cell["verdict"] == "CANDIDATE"
     assert cell["beta_dominant"] is True
     assert cell["alpha_gate"]["status"] == "beta_dominant"
+
+
+def test_a_null_alpha_interval_is_unproven_not_beta_dominant():
+    """CI straddling zero is absence of proof, not proof of beta."""
+    cell = {"asset_class": "CRYPTO", "strategy": "s1", "direction": "LONG",
+            "verdict": "PROVEN_T2", "reasons": []}
+    summary = apply_selection_alpha_gate(
+        [cell], {"by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-0.2, 0.1]}}})
+    assert summary["demoted"] == 1
+    assert cell["verdict"] == "CANDIDATE"
+    assert cell["alpha_gate"]["status"] == "unproven"
+    assert "beta_dominant" not in cell
 
 
 def test_selection_alpha_gate_reports_when_it_did_not_run():
@@ -648,3 +660,25 @@ def test_alpha_must_cover_enough_of_the_cell_to_prove_it():
     assert cell["alpha_gate"]["alpha_coverage_ok"] is False
     assert cell["verdict"] == "CANDIDATE"
     assert "covers 20/500" in " ".join(cell["reasons"])
+
+
+# ─────────────────────────────── WEAK cells must always state their blocker ──
+def test_every_weak_cell_explains_why():
+    """A WEAK verdict with reasons==[] silently hides the blocking condition."""
+    # 50% WR, flat mean, stable halves, spread symbols: the only blocker is the
+    # net-expectancy CI straddling zero.
+    rows = _rows(30, 30, 0.2, -0.1)
+    report = build_report(rows, "x.json", None)
+    cell = report["cells"][0]
+    assert cell["verdict"] in ("WEAK", "CANDIDATE", "INSUFFICIENT_N")
+    if cell["verdict"] == "WEAK":
+        assert cell["reasons"], "WEAK with no reason"
+        assert any("distinguishable from zero" in r for r in cell["reasons"])
+
+
+def test_summary_declares_its_scope_and_counts_symbols_separately():
+    rows = _rows(30, 30, 0.2, -0.1)
+    s = build_report(rows, "x.json", None)["summary"]
+    assert "cell-level" in s["summary_scope"]
+    assert "n_candidate_symbols" in s
+    assert "n_proven_symbols" in s

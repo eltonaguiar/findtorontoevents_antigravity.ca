@@ -165,11 +165,22 @@ def test_g9_does_not_brand_cells_without_measured_alpha():
 
 def test_g9_flags_beta_only_cells_and_demotes_proven():
     from alpha_engine.audit3_tribunal import apply_selection_alpha_gate
+    # Beta-only needs evidence: the whole CI below zero.
     cells = [{"asset_class": "ETF", "direction": "LONG", "verdict": "PROVEN_T2", "reasons": []}]
-    apply_selection_alpha_gate(cells, {"by_class": {"ETF": {"n": 50, "alpha_ci": [-0.4, 0.1]}}})
+    apply_selection_alpha_gate(cells, {"by_class": {"ETF": {"n": 50, "alpha_ci": [-0.4, -0.1]}}})
     assert cells[0]["beta_dominant"] is True
     assert cells[0]["verdict"] == "CANDIDATE"
+    assert cells[0]["alpha_gate"]["status"] == "beta_dominant"
     assert any("G9" in r for r in cells[0]["reasons"])
+
+
+def test_g9_null_alpha_interval_is_unproven_not_beta_only():
+    from alpha_engine.audit3_tribunal import apply_selection_alpha_gate
+    cells = [{"asset_class": "ETF", "direction": "LONG", "verdict": "PROVEN_T2", "reasons": []}]
+    apply_selection_alpha_gate(cells, {"by_class": {"ETF": {"n": 50, "alpha_ci": [-0.4, 0.1]}}})
+    assert cells[0]["verdict"] == "CANDIDATE"
+    assert cells[0]["alpha_gate"]["status"] == "unproven"
+    assert "beta_dominant" not in cells[0]
 
 
 def test_g9_keeps_proven_when_alpha_ci_lower_bound_is_positive():

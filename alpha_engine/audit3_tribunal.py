@@ -938,6 +938,14 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
             verdict = "CANDIDATE"
         else:
             verdict = "WEAK"
+            if not expect_ci_positive:
+                # The primary blocker: the edge is not distinguishable from zero.
+                # Without this line a cell with a high WR, stable halves and no
+                # concentration ended up WEAK with reasons==[] (11 live cells).
+                lo_s = "n/a" if ci_lo is None else f"{ci_lo:+.3f}"
+                reasons.append(
+                    f"net-expectancy CI lower bound {lo_s} <= 0 — edge not "
+                    "distinguishable from zero")
             if wr < 0.5:
                 reasons.append(f"win rate {wr:.1%} <= 50%")
             if not stable:
@@ -1333,50 +1341,60 @@ def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[s
     if not by_class and not by_slice and not by_strategy:
         return {"applied": False, "reason": "alpha sidecar empty"}
 
-    def _entry_lo_n(entry: Any) -> tuple[float | None, int]:
+    def _entry(entry: Any) -> tuple[float | None, float | None, int]:
         if not entry or not entry.get("n"):
-            return None, 0
-        return (entry.get("alpha_ci") or [None, None])[0], int(entry.get("n") or 0)
+            return None, None, 0
+        ci = entry.get("alpha_ci") or [None, None]
+        return ci[0], ci[1], int(entry.get("n") or 0)
 
-    def _lookup(cell: dict) -> tuple[float | None, str, int]:
+    def _lookup(cell: dict) -> tuple[float | None, float | None, str, int]:
         ac = str(cell.get("asset_class") or "").strip().upper()
         d = str(cell.get("direction") or "").strip().upper()
         strat = cell.get("strategy")
         if strat:
-            lo, n = _entry_lo_n(by_strategy.get(f"{ac}/{strat}/{d}"))
+            lo, hi, n = _entry(by_strategy.get(f"{ac}/{strat}/{d}"))
             if lo is not None:
-                return lo, "strategy", n
-            lo, n = _entry_lo_n(by_slice.get(f"{ac}/{d}"))
+                return lo, hi, "strategy", n
+            lo, hi, n = _entry(by_slice.get(f"{ac}/{d}"))
             if lo is not None:
-                return lo, "class_proxy", n
-            lo, n = _entry_lo_n(by_class.get(ac))
-            return lo, "class_proxy", n
+                return lo, hi, "class_proxy", n
+            lo, hi, n = _entry(by_class.get(ac))
+            return lo, hi, "class_proxy", n
         if cell.get("symbol"):
-            lo, n = _entry_lo_n(by_slice.get(f"{ac}/{d}"))
+            lo, hi, n = _entry(by_slice.get(f"{ac}/{d}"))
             if lo is not None:
-                return lo, "class_proxy", n
-            lo, n = _entry_lo_n(by_class.get(ac))
-            return lo, "class_proxy", n
-        lo, n = _entry_lo_n(by_class.get(ac))
-        return lo, "class", n
+                return lo, hi, "class_proxy", n
+            lo, hi, n = _entry(by_class.get(ac))
+            return lo, hi, "class_proxy", n
+        lo, hi, n = _entry(by_class.get(ac))
+        return lo, hi, "class", n
 
     summary: dict[str, Any] = {"applied": True, "tested": 0, "demoted": 0, "scopes": {}}
     for c in bucket:
-        lo, scope, alpha_n = _lookup(c)
+        lo, hi, scope, alpha_n = _lookup(c)
         cell_n = int(c.get("n") or 0)
         need_n = max(ALPHA_MIN_N, int(ALPHA_MIN_COVERAGE * cell_n))
         covered = alpha_n >= need_n
         proven = lo is not None and lo > 0 and scope in ("strategy", "class") and covered
+        # "unproven" (CI straddles 0) is NOT "beta_dominant": the latter needs
+        # evidence that alpha is negative, i.e. the whole CI below zero. Labelling
+        # every null-alpha cell beta-dominant claimed knowledge we do not have and
+        # made ~97% of cells look like a measured market failure.
         if lo is None:
             status = "unmeasured"
-        elif lo <= 0:
-            status = "beta_dominant"
-        elif not covered:
+        elif lo > 0 and not covered:
             status = "insufficient_coverage"
+        elif lo > 0 and scope not in ("strategy", "class"):
+            status = "proxy"
+        elif lo > 0:
+            status = "proven"
+        elif hi is not None and hi < 0:
+            status = "beta_dominant"
         else:
-            status = "proven" if proven else "proxy"
-        c["alpha_gate"] = {"alpha_ci_lo": lo, "scope": scope, "alpha_n": alpha_n,
-                           "need_n": need_n, "alpha_coverage_ok": bool(covered),
+            status = "unproven"
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "alpha_ci_hi": hi, "scope": scope,
+                           "alpha_n": alpha_n, "need_n": need_n,
+                           "alpha_coverage_ok": bool(covered),
                            "passed": bool(proven) if lo is not None else None,
                            "status": status}
         summary["tested"] += 1
@@ -1391,13 +1409,14 @@ def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[s
                     "G9 selection-alpha gate: selection alpha unmeasured - "
                     "promotion requires a positive CI lower bound")
             continue
-        if lo <= 0:
+        if status == "beta_dominant":
             c["beta_dominant"] = True
         if c["verdict"] == "PROVEN_T2":
             c["verdict"] = "CANDIDATE"
             summary["demoted"] += 1
             if lo <= 0:
-                why = f"selection alpha CI lower bound {lo:+.4f} not > 0"
+                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0 "
+                       f"(status {status})")
             else:
                 why = f"selection alpha covers {alpha_n}/{cell_n} rows (need {need_n})"
             c["reasons"].append(f"G9 selection-alpha gate ({scope}): {why}")
@@ -1808,6 +1827,10 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "n_insufficient": count("INSUFFICIENT_N", cells),
         "kill_rate_pct": round(100.0 * count("KILL", cells) / len(tested), 2) if tested else 0.0,
         "n_proven_symbols": count("PROVEN_T2", symbols),
+        "n_candidate_symbols": count("CANDIDATE", symbols),
+        "n_weak_symbols": count("WEAK", symbols),
+        "summary_scope": "cell-level: n_proven/n_candidate count strategy cells only; "
+                         "symbol and class buckets are counted separately",
         "n_proven_classes": count("PROVEN_T2", classes),
         "n_kill_symbols": count("KILL", symbols),
         "n_segment_cells": len(segments),

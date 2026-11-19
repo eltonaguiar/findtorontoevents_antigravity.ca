@@ -7,6 +7,14 @@ fresh branch off main, `require_alpha` default-off.
 branch exists to add, in a stricter form, and copying the branch over regresses the
 suite. What the request asked to be true is true and is now pinned by tests.
 
+**Attribution correction (2026-11-19T18:2x, after reading COMS).** Main did not
+arrive at these mechanisms independently: kilo landed them as its own hand-port in
+`6abfa22364e` (verified `git merge-base --is-ancestor` = YES) plus the explainer
+`77718be66922`. So the branch `fix/audit3-alpha-scope` is superseded by *its own
+author's port*, not by unrelated work, and the praise for the design belongs there.
+This does not change the conclusion — nothing to port — but the earlier wording
+("main independently arrived") was wrong and is corrected here.
+
 ## Evidence that main already has the gates
 
 Branch: 4 commits, 1,176 insertions across 14 files
@@ -83,7 +91,29 @@ or expectancy"` remains 196 passed / 8 skipped plus these 4.
 
 ## How to proceed with the branch
 
-Do not merge or cherry-pick `fix/audit3-alpha-scope`. Its gate work is superseded by
+Do not merge or cherry-pick `fix/audit3-alpha-scope` — kilo's own port at
+`6abfa22364e` is the canonical version and is already on main. Peer review answered
+on COMS (Q1 scope, Q2 the 658 floor, Q3 require_alpha signalling, Q4 ingest race).
+
+### Q2 addendum — the DSR floor, measured (supersedes an earlier draft of this file)
+
+An intermediate version of this doc claimed the "n=120 → DSR 0.83" figure did not
+reproduce. That was wrong: it reproduces once the row set matches. Reproduced with
+kilo's own `_rows` helper against main's `deflated_sharpe` (`DSR_THRESHOLD = 0.95`):
+
+| row set | n | mean net % | `dsr(658)` | `dsr(bucket=3)` | PROVEN? |
+|---|---|---|---|---|---|
+| `_rows(40, 80, 3.0, -0.6)` | 120 | +0.600 | **0.800** | 1.000 | no |
+| `_rows(50, 100, 3.0, -0.6)` | 150 | +0.600 | 0.994 | 1.000 | yes |
+| `_rows(70, 140, 4.0, -0.6)` | 210 | +0.933 | 1.000 | 1.000 | yes |
+| 4.0/−0.6 at 1/3 win | 120 | +0.933 | **0.968** | 1.000 | yes |
+
+So the floor is doing exactly what it should — the *same* n can pass or fail
+depending on the payoff shape — and "a 4.0/−0.6 cell needs n≥200" is true only for
+the specific mean/SD of the tested rows. The implication for the tests is the
+useful part: assert `deflated_sharpe(...)` directly at a known row set instead of
+only resizing 120→210, because a resize silently changes what a verdict test is
+about. The 658 floor itself and the PROVEN/CANDIDATE tier split are both correct. Its gate work is superseded by
 main; the two additive helpers above are the only salvageable parts. If its author
 wants the DSR/alpha work reviewed, the useful comparison is branch *tests* vs main
 *behaviour*, which is what the table above records.

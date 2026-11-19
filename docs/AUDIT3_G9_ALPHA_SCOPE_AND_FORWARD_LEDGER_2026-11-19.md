@@ -67,6 +67,14 @@ n≥200 to reach `PROVEN_T2` (n=120 → DSR 0.83 → CANDIDATE; n=210 → DSR 0.
 That is the intended tightening, and it is why two pre-existing tests were re-sized rather
 than re-asserted.
 
+### Live reason mix (corrected 2026-11-19T18:32Z)
+
+Zero `CANDIDATE` on the live ledger is **not** caused by DSR. Counted across all 359 cells:
+`n<20` 292 · split-half unstable 41 · win-rate floor 43 · profit-factor floor 14 ·
+single-symbol share 5 · KILL 8 — and **zero** DSR, BH-q, selection-alpha or forward-gate
+reasons. The queue is empty at the early sample floors, so the 658-trial question remains
+an open policy decision and should not be closed as "DSR-caused".
+
 ## 4. A missing alpha sidecar meant "all cells passed"
 
 **Defect.** `audit3-ledger.yml` runs the alpha sidecar with `continue-on-error`/`|| true`,

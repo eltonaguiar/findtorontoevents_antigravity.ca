@@ -107,6 +107,27 @@ jobs:
               print("::warning title=audit3-health::forward ledger is empty")
           PY
 
+      # Warning-only: the weekly denylist review, reported automatically. The
+      # scanner persists alpha_engine/data/audit3_denylist_hits.jsonl; if it is
+      # absent the scan simply has not run since the logger moved there.
+      - name: Denylist denial summary
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("alpha_engine/data/audit3_denylist_hits.jsonl")
+          if not p.exists():
+              print("::warning title=audit3-health::no denylist hits committed yet")
+              raise SystemExit(0)
+          rows = [json.loads(l) for l in p.read_text().splitlines() if l.strip()]
+          from collections import Counter
+          by_s = Counter(r.get("strategy") or "?" for r in rows)
+          by_c = Counter(r.get("asset_class") or "?" for r in rows)
+          print(f"denial rows: {len(rows)} | first {rows[0].get('ts')} | last {rows[-1].get('ts')}")
+          print("top strategies:", by_s.most_common(5))
+          print("by class:", dict(by_c))
+          PY
+
       # Warning-only: freeze is intentional, but it should be visible.
       - name: Strategy freeze status
         continue-on-error: true
