@@ -222,6 +222,25 @@ def mark_rotation(state: dict[str, Any], cfg: dict[str, Any],
     return equity
 
 
+def hold_init(state: dict[str, Any], cfg: dict[str, Any],
+              prices: dict[str, float], day: str) -> dict[str, Any]:
+    """Buy the whole universe equal-weight once. Never rebalances (the beta control)."""
+    sid = cfg["id"]
+    capital = float(cfg.get("capital", 0))
+    universe = [s for s in (cfg.get("universe") or []) if prices.get(s)]
+    if not universe:
+        raise ValueError(f"{sid}: hold sleeve needs at least one priced symbol")
+    per = capital / len(universe)
+    state["sleeves"][sid] = {
+        "kind": "hold", "capital": capital, "cash": 0.0,
+        "positions": {s: per / float(prices[s]) for s in universe},
+        "entry_date": day, "last_rebalance": None,
+        "history": [{"date": day, "equity": round(capital, 2)}],
+        "picks": universe,
+    }
+    return state["sleeves"][sid]
+
+
 def rotation_report(state: dict[str, Any], cfg: dict[str, Any],
                     prices: dict[str, float], day: str) -> dict[str, Any]:
     sid = cfg["id"]
@@ -232,7 +251,7 @@ def rotation_report(state: dict[str, Any], cfg: dict[str, Any],
         float(q) * float(prices.get(sym, 0) or 0) for sym, q in s["positions"].items())
     capital = float(s["capital"])
     peak = max([h["equity"] for h in s["history"]] + [equity])
-    return {"id": sid, "status": "live_paper", "kind": "rotation",
+    return {"id": sid, "status": "live_paper", "kind": s.get("kind", "rotation"),
             "capital": capital, "equity": round(equity, 2),
             "cash": round(float(s["cash"]), 2),
             "positions": {k: round(v, 6) for k, v in s["positions"].items()},
@@ -290,6 +309,20 @@ def main(argv: list[str] | None = None) -> int:
     rows = []
     series_cache: dict[str, list[tuple[str, float]]] = {}
     for sleeve in cfg["sleeves"]:
+        if sleeve.get("kind") == "hold":
+            universe = sleeve.get("universe") or []
+            missing = [x for x in universe if x not in series_cache]
+            if missing:
+                series_cache.update(_db_daily(missing, args.date))
+            prices = {s: float(overrides[s]) if s in overrides
+                      else (series_cache[s][-1][1] if series_cache.get(s) else None)
+                      for s in universe}
+            if args.init and sleeve["id"] not in state["sleeves"]:
+                hold_init(state, sleeve, prices, args.date)
+            elif args.mark and sleeve["id"] in state["sleeves"]:
+                mark_rotation(state, sleeve, prices, args.date)
+            rows.append(rotation_report(state, sleeve, prices, args.date))
+            continue
         if sleeve.get("kind", "buy_hold") in ("rotation", "rotation_random"):
             universe = sleeve.get("universe") or []
             missing = [s for s in universe if s not in series_cache]

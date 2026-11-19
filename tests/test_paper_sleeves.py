@@ -145,3 +145,36 @@ def test_rotation_sleeve_matches_the_validated_spec():
     assert "9-month (189d)" in rot["thesis"] and "0.81" in rot["thesis"]
     assert "0.82" not in rot["thesis"], "thesis must not quote the 6m result for a 9m rule"
     assert "0.89" not in rot["thesis"].split("unlagged")[0]
+
+
+# ───────────────────────────────────── beta-matched hold control (B7) ──
+def test_hold_init_is_equal_weight_and_never_rebalances():
+    cfg = {"id": "h", "kind": "hold", "capital": 300,
+           "universe": ["A", "B", "C"]}
+    prices = {"A": 10.0, "B": 20.0, "C": 30.0}
+    st = {"schema": S.SCHEMA, "sleeves": {}}
+    sv = S.hold_init(st, cfg, prices, "2026-11-19")
+    assert sv["positions"]["A"] == 10.0 and sv["positions"]["B"] == 5.0
+    assert abs(sv["positions"]["C"] - 100.0 / 30.0) < 1e-9
+    assert sv["cash"] == 0.0 and sv["last_rebalance"] is None
+    assert sv["picks"] == ["A", "B", "C"]
+    assert sv["history"] == [{"date": "2026-11-19", "equity": 300.0}]
+
+
+def test_hold_marks_accrue_without_trading():
+    cfg = {"id": "h", "kind": "hold", "capital": 300, "universe": ["A", "B"]}
+    st = {"schema": S.SCHEMA, "sleeves": {}}
+    S.hold_init(st, cfg, {"A": 10.0, "B": 10.0}, "2026-11-19")   # 15 sh each
+    S.mark_rotation(st, cfg, {"A": 12.0, "B": 8.0}, "2026-11-20")
+    assert st["sleeves"]["h"]["positions"] == {"A": 15.0, "B": 15.0}
+    assert st["sleeves"]["h"]["history"][-1]["equity"] == 300.0
+
+
+def test_hold_config_matches_the_rotation_universe():
+    import json
+    from pathlib import Path
+    cfg = json.loads((Path(__file__).resolve().parents[1] / "paper_trading" / "sleeves.json").read_text())
+    rot = next(s for s in cfg["sleeves"] if s["id"] == "etf-rotation")
+    hold = next(s for s in cfg["sleeves"] if s["id"] == "etf-hold")
+    assert hold["universe"] == rot["universe"], "control must hold the SAME universe"
+    assert hold["kind"] == "hold" and rot["kind"] == "rotation"
