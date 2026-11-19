@@ -48,3 +48,26 @@ The gate can only **demote**, never promote. On the current ledger the only
 positive cells are thin (the single CANDIDATE is a single-source 98% discovery
 cell), so the expected live effect is: no new PROVEN, and any cell whose edge
 is a cost assumption is visibly demoted to WEAK rather than promoted.
+
+## Live rebuild verification (2026-11-19, payload fetched from the live site)
+
+Rebuilt the ledger from the live `dashboard_data.json` (16,341 closed picks,
+3,500 scored) with the new gates and diffed against the committed ledger:
+
+- **0 cell verdicts changed.** The one CANDIDATE (`luxalgo_confluence` SHORT,
+  n=476, net +0.688%/trade) **passes** the 2× gate (2× CI [+0.280, +0.896]),
+  so it correctly stays CANDIDATE. The gate can only demote; today it demotes
+  nothing because no promotable cell is a cost artefact.
+- Two verdict differences (a FOREX `rr_gate` segment KILL→WEAK, a FOREX AUDJPY
+  symbol WEAK→CANDIDATE) are **data drift** from 11 additional closed rows in
+  the newer payload, not gate effects.
+- `n_confirmatory_cells` unchanged at 8: the new `observe` pods correctly do
+  not confer confirmatory status.
+- The new per-cell power fields are populated: the candidate reports
+  `required_n=196` and `mde_pct=0.441` — i.e. it needs ~196 trades to confirm
+  its observed effect at 80% power, which is the honest number behind "n>=100".
+
+Also landed with this work: the selection-alpha gate (a confirmatory cell whose
+class alpha CI includes zero is demoted to CANDIDATE; no effect while the alpha
+sidecar is absent) — see `updates/2026-11-19-observe-pods-fx-mapping-stop-fill.md`
+and the commit log.
