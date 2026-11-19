@@ -112,9 +112,13 @@ jobs:
           if [ -f /tmp/audit3/selection_alpha.json ]; then
             alpha_arg="--alpha /tmp/audit3/selection_alpha.json"
           fi
+          history_arg=""
+          if [ -f audit_dashboard/data/audit3_verdict_history.json ]; then
+            history_arg="--history audit_dashboard/data/audit3_verdict_history.json --history-write --persistence-runs 2 --prev-ledger audit_dashboard/data/audit3_ledger.json --max-churn 0.30"
+          fi
           python3 -m alpha_engine.audit3_tribunal \
             --picks /tmp/audit3/dashboard_data.json \
-            --out audit_dashboard/data/audit3_ledger.json $alpha_arg
+            --out audit_dashboard/data/audit3_ledger.json $alpha_arg $history_arg
           python3 - <<'PY'
           import json
           d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
@@ -143,7 +147,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add audit_dashboard/data/audit3_ledger.json
+          git add audit_dashboard/data/audit3_ledger.json audit_dashboard/data/audit3_verdict_history.json
           if git diff --cached --quiet; then
             echo "ledger unchanged"
             exit 0
