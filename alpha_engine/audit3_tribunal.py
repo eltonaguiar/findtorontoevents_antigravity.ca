@@ -712,9 +712,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     pf = profit_factor(nets)
     boot = bootstrap_mean_ci(nets) if n >= 2 else {"mean": 0.0, "ci_lo": None,
                                                    "ci_hi": None, "frac_positive": None}
-    # Cost-stress companion: the same net CI at twice the class slippage. Report
-    # only — it never changes a verdict, it shows how much of an edge is a cost
-    # assumption.
+    # Cost-stress companion: the same net CI at twice the class slippage. It is
+    # a required gate for PROVEN_T2 and CANDIDATE (an edge that dies at 2x cost
+    # is a cost assumption, not skill); it is still reported on every cell.
     nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
     boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
     stable, halves = split_half_ok(nets)
@@ -771,7 +771,8 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
               >= PROVEN_MIN_NET_CI_LO_PCT
               and boot.get("mean", 0) > 0
               and stable and top_sym_share <= MAX_SYMBOL_SHARE
-              and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
+              and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)
+              and boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0):
             verdict = "PROVEN_T2"
             if top_src_share > MAX_SOURCE_SHARE:
                 # A single emitter can be PROVEN on the ledger; it is not
@@ -781,7 +782,8 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
                     "ledger, not sizing-eligible until replicated independently")
         elif (n >= CANDIDATE_MIN_N and boot.get("mean", 0) > 0
               and expect_ci_positive
-              and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
+              and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)
+              and boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0):
             verdict = "CANDIDATE"
         else:
             verdict = "WEAK"
@@ -793,6 +795,10 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
                 reasons.append(f"single symbol {top_sym_share:.0%} of trades")
             if apply_source_gate and top_src_share > MAX_SOURCE_SHARE:
                 reasons.append(f"single source {top_src_share:.0%} of trades")
+            if (n >= CANDIDATE_MIN_N and expect_ci_positive
+                    and boot.get("mean", 0) > 0
+                    and not (boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0)):
+                reasons.append("fails 2x-cost stress gate (net CI at 2x slippage crosses zero)")
     else:
         reasons.append(f"n={n} < {WR_MIN_N}: no statistical claim")
 

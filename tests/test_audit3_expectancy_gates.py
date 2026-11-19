@@ -43,9 +43,10 @@ def _rows(n_wins: int, n_losses: int, win: float, loss: float,
 
 
 def test_expectancy_primary_promotes_low_win_rate_cell():
-    # 33% win rate, 3.0/-0.6 payoff: positive expectancy that a WR>50% gate
-    # could never certify.
-    rows = _rows(40, 80, 3.0, -0.6)
+    # 33% win rate, 4.0/-0.6 payoff: positive expectancy that a WR>50% gate
+    # could never certify. The payoff is sized so the edge still survives the
+    # 2x-cost stress gate (a thin edge must not promote).
+    rows = _rows(40, 80, 4.0, -0.6)
     pod = {"path": "m.json", "available": True,
            "pods": [{"id": "POD-A", "strategies": ["cellA"],
                      "asset_classes": ["CRYPTO"]}]}
@@ -108,6 +109,26 @@ def test_cost_stress_2x_is_reported_and_stricter():
     assert cell["net_ci_pct_2x"][0] is not None
     assert cell["net_ci_pct_2x"][0] < cell["net_ci_pct"][0]
     assert cell["stress_2x_ok"] == (cell["net_ci_pct_2x"][0] > 0)
+
+
+def test_cost_stress_2x_is_a_required_gate():
+    # 3.0/-0.6: positive expectancy, but the edge dies at 2x slippage -> the
+    # cell must be demoted to WEAK with the stress clause named in its reasons.
+    rows = _rows(40, 80, 3.0, -0.6)
+    cell = build_report(rows, "x.json", None)["cells"][0]
+    assert cell["net_expectancy_pct"] > 0
+    assert cell["stress_2x_ok"] is False
+    assert cell["verdict"] == "WEAK"
+    assert any("2x-cost" in r for r in cell["reasons"])
+
+    # A payoff that survives 2x cost still promotes inside a pre-registered pod.
+    robust = build_report(
+        _rows(40, 80, 4.0, -0.6), "x.json", None,
+        confirmatory={"path": "m.json", "available": True,
+                      "pods": [{"id": "POD-A", "strategies": ["cellA"],
+                                "asset_classes": ["CRYPTO"]}]})
+    assert robust["cells"][0]["stress_2x_ok"] is True
+    assert robust["cells"][0]["verdict"] == "PROVEN_T2"
 
 
 def test_provenance_carries_hash_and_version():
