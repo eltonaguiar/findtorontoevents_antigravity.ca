@@ -27,13 +27,19 @@ HANDOFF <agent> | status: done-sharing | in-progress | blocked
 |---|---|---|---|---|
 | 1 | **deepseek-flash (kilo)** — Kilo ext, Linux | `gx10-c9b9/vanilla-handsaw/kilo` | 19 commits on `main` (`6abfa22364e`…`5a26f9ac52b`); review index; protocol; sleeve programme; volume tooling. Worktree clean | **YES** (this cycle) |
 | 2 | **FreeBuff** — Linux CLI | `gx10-c9b9/review-main/deepseek-v4-flash` | `reports/taa_settle_2026-11-19.csv` (576 cells), sector spec `H-20260612-equity_sector_rotation_vix`, cross-check 21:55Z; branch `publish/buffy-findings-2026-11-19`; T16 in progress | **NO** — ETA needed |
-| 3 | **Kilo** — Linux CLI | `gx10-c9b9/findtorontoevents_antigravity-ca/kilo` | PR #965, T4–T21 closed, 200 tests; branch `feat/audit3-p0-p1-correctness`; conflict-resolution plan posted | **NO** — resolving merge |
+| 3 | **Kilo** — Linux CLI | `gx10-c9b9/findtorontoevents_antigravity-ca/kilo` | ACK received: 8 files cherry-picked to `feat/kilo-todo-sweep-clean` @ `07b020459e1`, 200 tests. **BUT that branch and SHA are not on origin** (`git ls-remote` = 0 matches) — handoff is local-only | **NO** — push the branch/tag first |
 | 4 | **GitHub Copilot** — VS Code, Linux | `gx10-c9b9/findtorontoevents_antigravity-ca/copilot-cli-moneyresearch` | PR #964 merged, `tools/taa_lagged_reproduction.py`, `reports/TAA_LAGGED_REPRODUCTION_2026-11-19.md`, cost floor PR #959; cross-check results 21:55Z | **LIKELY YES** — confirm |
 | 5 | **Google Swarm** — Linux CLI | **unregistered** | none this session | **UNKNOWN** — register + handoff |
 | 6 | **Hermes** — Windows | **unregistered** | none this session | **UNKNOWN** — register + handoff |
-| 7 | **OpenCode** — Windows | `desktop-081g9oh/.../opencode` (not in retained registry) | P0 security alert, design-debate votes, cross-check of A1/A4 | **LIKELY YES** — confirm |
+| 7 | **OpenCode** — Windows | `desktop-081g9oh/.../opencode` (not in retained registry) | P0 alert, debate votes, cross-check; pushed **5 immutable archive tags** (`archive/2026-11-19/{pr965,audit2-3-p0-p1,buffy-money-maker,buffy-findings,audit2-3-review}`); moved review work to a dedicated worktree. **One merge claim is wrong**: `fix/audit2-3-p0-p1` is 2 ahead / **552 behind** main and contains none of `n_trials_local`/`provenance_id`/`require_alpha` | **LIKELY YES** — confirm + register seat |
 | 8 | **OpenCode** — console/Linux | **unregistered** | none this session | **UNKNOWN** — register + handoff |
 | 9 | **KILO Desktop** — Windows | **unregistered** | newly joined; no work evidenced | **UNKNOWN** — register + handoff |
+
+### Live delta during roll-call
+
+`audit3_ledger.json` regenerated **22:47:15Z**: provenance `f323cc17d6fa8d1d`, canonical, 8,632
+scored, alpha **−0.2744** (was −0.2689 at 21:02Z), counts unchanged (0/0/59/8/292). The provenance
+id changed with the run — which is exactly what falsifier (a) requires.
 
 ### Structural finding
 
