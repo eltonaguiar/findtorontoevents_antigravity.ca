@@ -170,5 +170,20 @@ jobs:
               with open(local, "rb") as f:
                   ftp.storbinary(f"STOR {remote}", f)
               print(f"uploaded {local} -> /findtorontoevents.ca/audit3/{remote}")
+          # audit2: the candidate/methodology library. Reads ../audit3/audit3_ledger.json,
+          # so no data upload is needed here.
+          ftp.cwd("..")
+          try:
+              ftp.mkd("audit2")
+          except ftplib.error_perm:
+              pass  # already exists
+          ftp.cwd("audit2")
+          for local, remote in [
+              ("audit_dashboard/audit2.html", "index.html"),
+              ("audit_dashboard/audit2.js", "audit2.js"),
+          ]:
+              with open(local, "rb") as f:
+                  ftp.storbinary(f"STOR {remote}", f)
+              print(f"uploaded {local} -> /findtorontoevents.ca/audit2/{remote}")
           ftp.quit()
           PY
