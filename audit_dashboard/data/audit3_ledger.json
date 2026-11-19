@@ -1,8 +1,8 @@
 {
  "schema": "audit3.v1",
- "generated_at": "2026-11-19T13:02:16.293539+00:00",
+ "generated_at": "2026-11-19T16:53:50.651880+00:00",
  "source": "/tmp/audit3/dashboard_data.json",
- "source_generated_at": "2026-11-19T10:03:39.821503+00:00",
+ "source_generated_at": "2026-11-19T16:05:18.497265+00:00",
  "not_money_ready_disclaimer": "audit3 is an evidence ledger, not a signal service. PROVEN_T2 means the realized closed-pick ledger survives the listed gates; it does not guarantee future returns. No position sizing is emitted here.",
  "conventions": {
   "wr_floor_n": 20,
@@ -38,7 +38,7 @@
     "MUTUAL_FUND": 0.08,
     "PENNY_STOCK": 0.3
    },
-   "n_strategy_costs": 80,
+   "n_strategy_costs": 78,
    "min_cost_sample": 30,
    "source": "payload.slippage_validation",
    "note": "per-strategy measured where available, measured class otherwise"
@@ -47,8 +47,9 @@
   "edge_test": "net-expectancy bootstrap CI, one-sided; WR is a descriptor only",
   "p_value": "one-sided bootstrap P(net mean <= 0), 2,000 seeded resamples",
   "p_wr": "one-sided exact binomial P(X>=wins) under p=0.5 \u2014 reported, never gated",
-  "promotion_rule": "PROVEN_T2 = n>=100, net CI lower bound >= max(0.05%/trade, 50% of the cell's mean round-trip cost), stable halves, no symbol > 60%, source share <= 90%, BH q <= 0.1, DSR >= 0.95",
-  "cost_stress": "net CI lower bound at 2x the class slippage must stay positive to reach PROVEN_T2 or CANDIDATE (G9); otherwise the cell demotes one tier",
+  "promotion_rule": "PROVEN_T2 = n>=100, net CI lower bound >= max(0.05%/trade, 50% of the cell's mean round-trip cost), stable halves, no symbol > 60%, source share <= 90%, BH q <= 0.1, DSR >= 0.95, selection alpha CI lower bound > 0 (G9)",
+  "cost_stress": "net CI lower bound at 2x the class slippage must stay positive to reach PROVEN_T2 or CANDIDATE (G10); otherwise the cell is WEAK",
+  "selection_alpha_gate": "G9: PROVEN_T2 requires direction-adjusted selection alpha (pick net - hold) bootstrap CI lower bound > 0; a beta-only profitable cell is demoted to CANDIDATE and flagged beta_dominant",
   "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni alpha/m = 0.000746",
   "stability": "chronological split-half, both halves net mean > 0",
   "recency_rule": "PROVEN_T2 requires the trailing 25% of closes (min 5) to have a non-negative net mean; otherwise the verdict is capped at CANDIDATE",
@@ -59,7 +60,7 @@
   "random_entry_mc": "not run here (needs per-symbol price series); see alpha_engine/benchmark_closed_ledger.py for the timing-null companion report."
  },
  "summary": {
-  "n_rows": 8605,
+  "n_rows": 8613,
   "n_cells_tested": 67,
   "n_cells_total": 359,
   "n_symbol_cells": 68,
@@ -77,9 +78,9 @@
   "n_kill_symbols": 10,
   "n_segment_cells": 6,
   "n_proven_segments": 0,
-  "n_harmful_segments": 3,
+  "n_harmful_segments": 2,
   "n_positive_segments": 0,
-  "n_kill_classes": 3
+  "n_kill_classes": 2
  },
  "coverage": {
   "denominator": {
@@ -87,51 +88,51 @@
    "loaded_from_sidecar": true,
    "fallback_reason": null,
    "canonical_schema": "audit.canonical.v1",
-   "canonical_rows_sha256": "4f63555049cdc786a7da7937a7ff66b9bcd92423e64eebbe292a6f0ad2eab960",
-   "canonical_kept_rows": 8605,
+   "canonical_rows_sha256": "e2bc4aed7df18145bc0de405b90c83ef26d762e31c11840872932aebcbd8f028",
+   "canonical_kept_rows": 8613,
    "canonical_excluded_by_reason": {
-    "invalid_row": 5802,
-    "mirror_duplicate": 92,
+    "invalid_row": 5823,
+    "mirror_duplicate": 91,
     "non_performance_exit": 43,
-    "resolver_breakeven_fallback": 90
+    "resolver_breakeven_fallback": 67
    },
    "share_of_canonical_pct": 100.0,
    "note": "scores the published canonical view; /audit counts the same rows"
   },
-  "scored_rows": 8605,
-  "total_closed_picks": 14632,
-  "valid_closed_picks": 8175,
-  "total_resolved": 8605,
-  "zero_pnl_count": 134,
-  "scored_share_of_total_pct": 58.81,
-  "scored_share_of_valid_pct": 105.26,
-  "unscored_rows": 6027,
+  "scored_rows": 8613,
+  "total_closed_picks": 14637,
+  "valid_closed_picks": 8200,
+  "total_resolved": 8613,
+  "zero_pnl_count": 133,
+  "scored_share_of_total_pct": 58.84,
+  "scored_share_of_valid_pct": 105.04,
+  "unscored_rows": 6024,
   "cohorts_overlap": true,
   "excluded_cohorts": [
    {
     "cohort": "integrity_excluded",
-    "n": 5935,
+    "n": 5933,
     "reason": "failed the publishing dashboard's own integrity checks (ghost rows, WON-vs-PnL sign contradictions, constant/zero pnl) and is removed before the export slice"
    },
    {
     "cohort": "auto_expired",
-    "n": 9110,
+    "n": 9257,
     "reason": "resolved by timeout instead of TP/SL; a timeout is neither a win nor a loss, so it is dropped before scoring and never counted against the strategy either"
    }
   ],
   "row_drops": {},
   "window": {
    "first_closed_at": "2026-02-17 15:13:13 EST",
-   "last_closed_at": "2026-11-19T09:23:47Z"
+   "last_closed_at": "2026-11-19T15:33:26Z"
   },
   "resolver_anomalies": {
-   "rows_scanned": 23742,
+   "rows_scanned": 23894,
    "stale_exit_beyond_planned_stop": 44,
    "clamped_loss_rows": 23,
-   "expired_zero_pnl_rows": 3481,
+   "expired_zero_pnl_rows": 3624,
    "closed_rows_missing_closed_at": 3
   },
-  "statement": "audit3 scores 8,605 of 14,632 closed picks (58.8%). The other 6,027 are not in this ledger: the publishing dashboard reports 5,935 integrity-excluded and 9,110 auto-expired rows, and no surface scores any of them. Those cohorts overlap, so they do not sum to the gap \u2014 read them as reasons rows are missing, not as a partition. This run scores the canonical resolved view (sha256 4f63555049cd\u2026)."
+  "statement": "audit3 scores 8,613 of 14,637 closed picks (58.8%). The other 6,024 are not in this ledger: the publishing dashboard reports 5,933 integrity-excluded and 9,257 auto-expired rows, and no surface scores any of them. Those cohorts overlap, so they do not sum to the gap \u2014 read them as reasons rows are missing, not as a partition. This run scores the canonical resolved view (sha256 e2bc4aed7df1\u2026)."
  },
  "selection_alpha": {
   "available": false,
@@ -159,6 +160,103 @@
     "ir": null,
     "pod": "POD-EQUITY-BREAKOUT",
     "hypothesis_id": "H-BABY-EQUITY-VT-PATTERN-SWEEP-001",
+    "status": "pre_registered",
+    "since": "2026-11-19"
+   },
+   "POD-CRYPTO-VWAP-REVERSION": {
+    "n_forward": 0,
+    "min_n": 100,
+    "eligible": false,
+    "reason": "no forward rows \u2014 nothing can promote",
+    "reasons": [
+     "pod is observe - registered for observation only"
+    ],
+    "pf_ci_lb": null,
+    "ir": null,
+    "promotion_blocked_by_status": "observe",
+    "pod": "POD-CRYPTO-VWAP-REVERSION",
+    "hypothesis_id": "H-2026-11-19-01",
+    "status": "observe",
+    "since": "2026-11-19"
+   },
+   "POD-CRYPTO-BOLLINGER-MR": {
+    "n_forward": 0,
+    "min_n": 100,
+    "eligible": false,
+    "reason": "no forward rows \u2014 nothing can promote",
+    "reasons": [
+     "pod is observe - registered for observation only"
+    ],
+    "pf_ci_lb": null,
+    "ir": null,
+    "promotion_blocked_by_status": "observe",
+    "pod": "POD-CRYPTO-BOLLINGER-MR",
+    "hypothesis_id": "H-2026-11-19-02",
+    "status": "observe",
+    "since": "2026-11-19"
+   },
+   "POD-FABER-TAA": {
+    "n_forward": 0,
+    "min_n": 100,
+    "eligible": false,
+    "reason": "no forward rows \u2014 nothing can promote",
+    "reasons": [
+     "pod is observe - registered for observation only"
+    ],
+    "pf_ci_lb": null,
+    "ir": null,
+    "promotion_blocked_by_status": "observe",
+    "pod": "POD-FABER-TAA",
+    "hypothesis_id": "H-2026-11-19-03",
+    "status": "observe",
+    "since": "2026-11-19"
+   },
+   "POD-FOREX-USDJPY-MOMENTUM": {
+    "n_forward": 0,
+    "min_n": 100,
+    "eligible": false,
+    "reason": "no forward rows \u2014 nothing can promote",
+    "reasons": [
+     "pod is observe - registered for observation only"
+    ],
+    "pf_ci_lb": null,
+    "ir": null,
+    "promotion_blocked_by_status": "observe",
+    "pod": "POD-FOREX-USDJPY-MOMENTUM",
+    "hypothesis_id": "H-2026-11-19-04",
+    "status": "observe",
+    "since": "2026-11-19"
+   },
+   "POD-COMMODITY-ROLL-YIELD": {
+    "n_forward": 0,
+    "min_n": 100,
+    "eligible": false,
+    "reason": "no forward rows \u2014 nothing can promote",
+    "reasons": [
+     "pod is observe - registered for observation only"
+    ],
+    "pf_ci_lb": null,
+    "ir": null,
+    "promotion_blocked_by_status": "observe",
+    "pod": "POD-COMMODITY-ROLL-YIELD",
+    "hypothesis_id": "H-2026-11-19-05",
+    "status": "observe",
+    "since": "2026-11-19"
+   },
+   "POD-CRYPTO-POSITION": {
+    "n_forward": 0,
+    "min_n": 100,
+    "eligible": false,
+    "reason": "no forward rows \u2014 nothing can promote",
+    "reasons": [
+     "pod is observe - registered for observation only"
+    ],
+    "pf_ci_lb": null,
+    "ir": null,
+    "promotion_blocked_by_status": "observe",
+    "pod": "POD-CRYPTO-POSITION",
+    "hypothesis_id": "H-144",
+    "status": "observe",
     "since": "2026-11-19"
    }
   },
@@ -211,124 +309,141 @@
   "available": true,
   "n_demoted_this_run": 0,
   "n_promoted_this_run": 1,
-  "history_cells": 446,
+  "history_cells": 448,
   "first_pass_at_field": "cells that cleared the gate carry first_pass_at (the run that began the passing streak)"
  },
  "verdict_churn": {
   "available": true,
   "n_tracked": 438,
-  "n_flipped": 0,
-  "churn_rate": 0.0,
+  "n_flipped": 2,
+  "churn_rate": 0.0046,
   "alert_threshold": 0.3,
   "min_tracked": 20,
   "alert": false,
-  "flips": []
+  "flips": [
+   {
+    "asset_class": "BOND",
+    "strategy": null,
+    "direction": null,
+    "from": "KILL",
+    "to": "WEAK",
+    "n": 35
+   },
+   {
+    "asset_class": "BOND",
+    "strategy": null,
+    "direction": null,
+    "from": "KILL",
+    "to": "WEAK",
+    "n": 35
+   }
+  ]
  },
  "classes": [
   {
    "asset_class": "CRYPTO",
    "n": 6740,
-   "required_n": 1638,
+   "required_n": 1652,
    "mde_pct": 0.1529,
-   "wins": 2720,
-   "wr": 0.4036,
+   "wins": 2724,
+   "wr": 0.4042,
    "wr_ci": [
-    0.3919,
-    0.4153
+    0.3925,
+    0.4159
    ],
-   "pf": 0.8377,
-   "gross_expectancy_pct": -0.2109,
-   "net_expectancy_pct": -0.3103,
+   "pf": 0.8383,
+   "gross_expectancy_pct": -0.2096,
+   "net_expectancy_pct": -0.3089,
    "net_ci_pct": [
-    -0.573,
-    -0.0485
+    -0.5697,
+    -0.0464
    ],
-   "p_value": 0.990005,
+   "p_value": 0.990505,
    "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 0.010495,
+   "p_harm": 0.009995,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.6724,
-    -0.1479
+    -0.6691,
+    -0.1461
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.2638,
-    "second_half_mean": -0.3567
+    "second_half_mean": -0.354
    },
    "recency": {
     "window_trades": 1685,
     "window_frac": 0.25,
-    "window_net_mean": -0.7402
+    "window_net_mean": -0.735
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0993,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 0.0856,
-   "top_source_share": 0.5898,
+   "top_source_share": 0.5905,
    "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero"
    ],
-   "sharpe": -0.0692,
+   "sharpe": -0.0689,
    "sr0": 0.0169,
    "raw_verdict": "KILL"
   },
   {
    "asset_class": "EQUITY",
-   "n": 936,
-   "required_n": 4824,
-   "mde_pct": 0.5107,
+   "n": 939,
+   "required_n": 7389,
+   "mde_pct": 0.5174,
    "wins": 425,
-   "wr": 0.4541,
+   "wr": 0.4526,
    "wr_ci": [
-    0.4224,
-    0.4861
+    0.421,
+    0.4846
    ],
-   "pf": 1.1104,
-   "gross_expectancy_pct": 0.2765,
-   "net_expectancy_pct": 0.225,
+   "pf": 1.089,
+   "gross_expectancy_pct": 0.236,
+   "net_expectancy_pct": 0.1844,
    "net_ci_pct": [
-    -0.3679,
-    0.818
+    -0.3951,
+    0.747
    ],
-   "p_value": 0.226387,
-   "p_wr": 0.997783,
-   "q_value": 0.969015,
-   "p_harm": 0.774113,
+   "p_value": 0.274363,
+   "p_wr": 0.998354,
+   "q_value": 1.0,
+   "p_harm": 0.726137,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.4197,
-    0.7662
+    -0.4464,
+    0.6953
    ],
    "stress_2x_ok": false,
-   "dsr": 0.4387,
+   "dsr": 0.3482,
    "split_half": {
     "stable": false,
-    "first_half_mean": 0.6572,
-    "second_half_mean": -0.2073
+    "first_half_mean": 0.6668,
+    "second_half_mean": -0.2969
    },
    "recency": {
-    "window_trades": 234,
-    "window_frac": 0.25,
-    "window_net_mean": -0.6067
+    "window_trades": 235,
+    "window_frac": 0.2503,
+    "window_net_mean": -0.7424
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0515,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.0887,
-   "top_source_share": 0.797,
+   "top_symbol_share": 0.0895,
+   "top_source_share": 0.7955,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 45.4% <= 50%",
+    "win rate 45.3% <= 50%",
     "split-half unstable (one half mean <= 0)"
    ],
-   "sharpe": 0.0403,
+   "sharpe": 0.0326,
    "sr0": 0.0453,
    "raw_verdict": "WEAK"
   },
@@ -352,7 +467,7 @@
    ],
    "p_value": 0.505247,
    "p_wr": 0.999597,
-   "q_value": 0.969015,
+   "q_value": 1.0,
    "p_harm": 0.495252,
    "harm_q": null,
    "net_ci_pct_2x": [
@@ -389,75 +504,75 @@
   },
   {
    "asset_class": "FOREX",
-   "n": 251,
-   "required_n": 25756,
-   "mde_pct": 0.1419,
+   "n": 258,
+   "required_n": 8734,
+   "mde_pct": 0.1384,
    "wins": 100,
-   "wr": 0.3984,
+   "wr": 0.3876,
    "wr_ci": [
-    0.3398,
-    0.4601
+    0.3302,
+    0.4483
    ],
-   "pf": 0.9526,
-   "gross_expectancy_pct": 0.0151,
-   "net_expectancy_pct": -0.014,
+   "pf": 0.9199,
+   "gross_expectancy_pct": 0.0051,
+   "net_expectancy_pct": -0.0238,
    "net_ci_pct": [
-    -0.1612,
-    0.1355
+    -0.1644,
+    0.1194
    ],
-   "p_value": 0.553723,
-   "p_wr": 0.999504,
-   "q_value": 0.969015,
-   "p_harm": 0.446777,
+   "p_value": 0.636182,
+   "p_wr": 0.999887,
+   "q_value": 1.0,
+   "p_harm": 0.364318,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.1901,
-    0.1069
+    -0.1918,
+    0.0898
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0483,
+   "dsr": 0.0311,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.1596,
-    "second_half_mean": 0.1304
+    "first_half_mean": -0.1512,
+    "second_half_mean": 0.1036
    },
    "recency": {
-    "window_trades": 63,
-    "window_frac": 0.251,
-    "window_net_mean": 0.2533
+    "window_trades": 64,
+    "window_frac": 0.2481,
+    "window_net_mean": 0.0858
    },
    "recent_ok": true,
-   "mean_cost_pct": 0.0291,
+   "mean_cost_pct": 0.0289,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.1235,
-   "top_source_share": 0.4542,
+   "top_symbol_share": 0.1279,
+   "top_source_share": 0.4419,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 39.8% <= 50%",
+    "win rate 38.8% <= 50%",
     "split-half unstable (one half mean <= 0)"
    ],
-   "sharpe": -0.0175,
-   "sr0": 0.0875,
+   "sharpe": -0.03,
+   "sr0": 0.0863,
    "raw_verdict": "WEAK"
   },
   {
    "asset_class": "COMMODITY",
-   "n": 54,
-   "required_n": 17,
-   "mde_pct": 1.8027,
-   "wins": 7,
-   "wr": 0.1296,
+   "n": 51,
+   "required_n": 16,
+   "mde_pct": 1.9172,
+   "wins": 6,
+   "wr": 0.1176,
    "wr_ci": [
-    0.0642,
-    0.2442
+    0.0551,
+    0.2338
    ],
-   "pf": 0.1047,
-   "gross_expectancy_pct": -3.1612,
-   "net_expectancy_pct": -3.3112,
+   "pf": 0.0963,
+   "gross_expectancy_pct": -3.3566,
+   "net_expectancy_pct": -3.5066,
    "net_ci_pct": [
-    -5.1448,
-    -2.0287
+    -5.3628,
+    -2.1908
    ],
    "p_value": 1.0,
    "p_wr": 1.0,
@@ -465,91 +580,92 @@
    "p_harm": 0.0005,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -5.2948,
-    -2.1787
+    -5.5128,
+    -2.3408
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
-    "first_half_mean": -2.2068,
-    "second_half_mean": -4.4157
+    "first_half_mean": -2.0914,
+    "second_half_mean": -4.8674
    },
    "recency": {
-    "window_trades": 14,
-    "window_frac": 0.2593,
-    "window_net_mean": -6.8834
+    "window_trades": 13,
+    "window_frac": 0.2549,
+    "window_net_mean": -3.553
    },
    "recent_ok": false,
    "mean_cost_pct": 0.15,
    "materiality_floor_pct": 0.075,
-   "top_symbol_share": 0.3148,
-   "top_source_share": 0.6481,
+   "top_symbol_share": 0.3137,
+   "top_source_share": 0.6275,
    "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
     "profit factor 0.10 < 0.8",
-    "win rate 13.0% below 40%"
+    "win rate 11.8% below 40%"
    ],
-   "sharpe": -0.7065,
-   "sr0": 0.1887,
+   "sharpe": -0.7242,
+   "sr0": 0.1942,
    "raw_verdict": "KILL"
   },
   {
    "asset_class": "BOND",
-   "n": 34,
-   "required_n": 105,
-   "mde_pct": 0.4334,
-   "wins": 13,
-   "wr": 0.3824,
+   "n": 35,
+   "required_n": 214,
+   "mde_pct": 0.456,
+   "wins": 14,
+   "wr": 0.4,
    "wr_ci": [
-    0.239,
-    0.5496
+    0.2555,
+    0.5643
    ],
-   "pf": 0.5492,
-   "gross_expectancy_pct": -0.1949,
-   "net_expectancy_pct": -0.2473,
+   "pf": 0.6538,
+   "gross_expectancy_pct": -0.1322,
+   "net_expectancy_pct": -0.1845,
    "net_ci_pct": [
-    -0.4555,
-    -0.0154
+    -0.3837,
+    0.0351
    ],
-   "p_value": 0.981009,
-   "p_wr": 0.939275,
+   "p_value": 0.954523,
+   "p_wr": 0.912267,
    "q_value": 1.0,
-   "p_harm": 0.01949,
+   "p_harm": 0.045977,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.5068,
-    -0.0672
+    -0.435,
+    -0.0181
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0029,
+   "dsr": 0.009,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.174,
-    "second_half_mean": -0.3205
+    "second_half_mean": -0.1944
    },
    "recency": {
-    "window_trades": 8,
-    "window_frac": 0.2353,
-    "window_net_mean": -0.2216
+    "window_trades": 9,
+    "window_frac": 0.2571,
+    "window_net_mean": 0.0197
    },
-   "recent_ok": false,
-   "mean_cost_pct": 0.0524,
+   "recent_ok": true,
+   "mean_cost_pct": 0.0523,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.8824,
-   "top_source_share": 0.9412,
+   "top_symbol_share": 0.8857,
+   "top_source_share": 0.9143,
    "single_source": true,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "net expectancy 95% CI entirely below zero",
-    "profit factor 0.55 < 0.8",
-    "win rate 38.2% below 40%"
+    "win rate 40.0% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 89% of trades",
+    "single source 91% of trades"
    ],
-   "sharpe": -0.2781,
-   "sr0": 0.2378,
-   "raw_verdict": "KILL"
+   "sharpe": -0.1942,
+   "sr0": 0.2344,
+   "raw_verdict": "WEAK"
   },
   {
    "asset_class": "FUTURES",
@@ -571,7 +687,7 @@
    ],
    "p_value": 0.321839,
    "p_wr": 0.6875,
-   "q_value": 0.969015,
+   "q_value": 1.0,
    "p_harm": 0.678661,
    "harm_q": null,
    "net_ci_pct_2x": [
@@ -605,56 +721,56 @@
    "segment_value": "live",
    "asset_class": "EQUITY",
    "namespace": "discovery",
-   "n": 936,
-   "required_n": 4824,
-   "mde_pct": 0.5107,
+   "n": 939,
+   "required_n": 7389,
+   "mde_pct": 0.5174,
    "wins": 425,
-   "wr": 0.4541,
+   "wr": 0.4526,
    "wr_ci": [
-    0.4224,
-    0.4861
+    0.421,
+    0.4846
    ],
-   "pf": 1.1104,
-   "gross_expectancy_pct": 0.2765,
-   "net_expectancy_pct": 0.225,
+   "pf": 1.089,
+   "gross_expectancy_pct": 0.236,
+   "net_expectancy_pct": 0.1844,
    "net_ci_pct": [
-    -0.3679,
-    0.818
+    -0.3951,
+    0.747
    ],
-   "p_value": 0.226387,
-   "p_wr": 0.997783,
+   "p_value": 0.274363,
+   "p_wr": 0.998354,
    "q_value": 1.0,
-   "p_harm": 0.774113,
+   "p_harm": 0.726137,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.4197,
-    0.7662
+    -0.4464,
+    0.6953
    ],
    "stress_2x_ok": false,
-   "dsr": 0.4734,
+   "dsr": 0.3809,
    "split_half": {
     "stable": false,
-    "first_half_mean": 0.6572,
-    "second_half_mean": -0.2073
+    "first_half_mean": 0.6668,
+    "second_half_mean": -0.2969
    },
    "recency": {
-    "window_trades": 234,
-    "window_frac": 0.25,
-    "window_net_mean": -0.6067
+    "window_trades": 235,
+    "window_frac": 0.2503,
+    "window_net_mean": -0.7424
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0515,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.0887,
-   "top_source_share": 0.797,
+   "top_symbol_share": 0.0895,
+   "top_source_share": 0.7955,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 45.4% <= 50%",
+    "win rate 45.3% <= 50%",
     "split-half unstable (one half mean <= 0)"
    ],
-   "sharpe": 0.0403,
-   "sr0": 0.0425,
+   "sharpe": 0.0326,
+   "sr0": 0.0424,
    "reconstructed": true,
    "raw_verdict": "WEAK"
   },
@@ -721,56 +837,56 @@
    "segment_value": "live",
    "asset_class": "FOREX",
    "namespace": "discovery",
-   "n": 251,
-   "required_n": 25756,
-   "mde_pct": 0.1419,
+   "n": 258,
+   "required_n": 8734,
+   "mde_pct": 0.1384,
    "wins": 100,
-   "wr": 0.3984,
+   "wr": 0.3876,
    "wr_ci": [
-    0.3398,
-    0.4601
+    0.3302,
+    0.4483
    ],
-   "pf": 0.9526,
-   "gross_expectancy_pct": 0.0151,
-   "net_expectancy_pct": -0.014,
+   "pf": 0.9199,
+   "gross_expectancy_pct": 0.0051,
+   "net_expectancy_pct": -0.0238,
    "net_ci_pct": [
-    -0.1612,
-    0.1355
+    -0.1644,
+    0.1194
    ],
-   "p_value": 0.553723,
-   "p_wr": 0.999504,
+   "p_value": 0.636182,
+   "p_wr": 0.999887,
    "q_value": 1.0,
-   "p_harm": 0.446777,
+   "p_harm": 0.364318,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.1901,
-    0.1069
+    -0.1918,
+    0.0898
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0577,
+   "dsr": 0.0376,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.1596,
-    "second_half_mean": 0.1304
+    "first_half_mean": -0.1512,
+    "second_half_mean": 0.1036
    },
    "recency": {
-    "window_trades": 63,
-    "window_frac": 0.251,
-    "window_net_mean": 0.2533
+    "window_trades": 64,
+    "window_frac": 0.2481,
+    "window_net_mean": 0.0858
    },
    "recent_ok": true,
-   "mean_cost_pct": 0.0291,
+   "mean_cost_pct": 0.0289,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.1235,
-   "top_source_share": 0.4542,
+   "top_symbol_share": 0.1279,
+   "top_source_share": 0.4419,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 39.8% <= 50%",
+    "win rate 38.8% <= 50%",
     "split-half unstable (one half mean <= 0)"
    ],
-   "sharpe": -0.0175,
-   "sr0": 0.0821,
+   "sharpe": -0.03,
+   "sr0": 0.0809,
    "reconstructed": true,
    "raw_verdict": "WEAK"
   },
@@ -779,59 +895,59 @@
    "segment_value": "live",
    "asset_class": "BOND",
    "namespace": "discovery",
-   "n": 34,
-   "required_n": 105,
-   "mde_pct": 0.4334,
-   "wins": 13,
-   "wr": 0.3824,
+   "n": 35,
+   "required_n": 214,
+   "mde_pct": 0.456,
+   "wins": 14,
+   "wr": 0.4,
    "wr_ci": [
-    0.239,
-    0.5496
+    0.2555,
+    0.5643
    ],
-   "pf": 0.5492,
-   "gross_expectancy_pct": -0.1949,
-   "net_expectancy_pct": -0.2473,
+   "pf": 0.6538,
+   "gross_expectancy_pct": -0.1322,
+   "net_expectancy_pct": -0.1845,
    "net_ci_pct": [
-    -0.4555,
-    -0.0154
+    -0.3837,
+    0.0351
    ],
-   "p_value": 0.981009,
-   "p_wr": 0.939275,
+   "p_value": 0.954523,
+   "p_wr": 0.912267,
    "q_value": 1.0,
-   "p_harm": 0.01949,
-   "harm_q": 0.01949,
+   "p_harm": 0.045977,
+   "harm_q": null,
    "net_ci_pct_2x": [
-    -0.5068,
-    -0.0672
+    -0.435,
+    -0.0181
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0036,
+   "dsr": 0.0111,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.174,
-    "second_half_mean": -0.3205
+    "second_half_mean": -0.1944
    },
    "recency": {
-    "window_trades": 8,
-    "window_frac": 0.2353,
-    "window_net_mean": -0.2216
+    "window_trades": 9,
+    "window_frac": 0.2571,
+    "window_net_mean": 0.0197
    },
-   "recent_ok": false,
-   "mean_cost_pct": 0.0524,
+   "recent_ok": true,
+   "mean_cost_pct": 0.0523,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.8824,
-   "top_source_share": 0.9412,
+   "top_symbol_share": 0.8857,
+   "top_source_share": 0.9143,
    "single_source": true,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "net expectancy 95% CI entirely below zero",
-    "profit factor 0.55 < 0.8",
-    "win rate 38.2% below 40%"
+    "win rate 40.0% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 89% of trades"
    ],
-   "sharpe": -0.2781,
-   "sr0": 0.223,
+   "sharpe": -0.1942,
+   "sr0": 0.2198,
    "reconstructed": true,
-   "raw_verdict": "KILL"
+   "raw_verdict": "WEAK"
   },
   {
    "segment": "origin",
@@ -839,53 +955,53 @@
    "asset_class": "CRYPTO",
    "namespace": "discovery",
    "n": 6740,
-   "required_n": 1638,
+   "required_n": 1652,
    "mde_pct": 0.1529,
-   "wins": 2720,
-   "wr": 0.4036,
+   "wins": 2724,
+   "wr": 0.4042,
    "wr_ci": [
-    0.3919,
-    0.4153
+    0.3925,
+    0.4159
    ],
-   "pf": 0.8377,
-   "gross_expectancy_pct": -0.2109,
-   "net_expectancy_pct": -0.3103,
+   "pf": 0.8383,
+   "gross_expectancy_pct": -0.2096,
+   "net_expectancy_pct": -0.3089,
    "net_ci_pct": [
-    -0.573,
-    -0.0485
+    -0.5697,
+    -0.0464
    ],
-   "p_value": 0.990005,
+   "p_value": 0.990505,
    "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 0.010495,
-   "harm_q": 0.015742,
+   "p_harm": 0.009995,
+   "harm_q": 0.009995,
    "net_ci_pct_2x": [
-    -0.6724,
-    -0.1479
+    -0.6691,
+    -0.1461
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.2638,
-    "second_half_mean": -0.3567
+    "second_half_mean": -0.354
    },
    "recency": {
     "window_trades": 1685,
     "window_frac": 0.25,
-    "window_net_mean": -0.7402
+    "window_net_mean": -0.735
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0993,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 0.0856,
-   "top_source_share": 0.5898,
+   "top_source_share": 0.5905,
    "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero"
    ],
-   "sharpe": -0.0692,
+   "sharpe": -0.0689,
    "sr0": 0.0158,
    "reconstructed": true,
    "raw_verdict": "KILL"
@@ -895,57 +1011,57 @@
    "segment_value": "live",
    "asset_class": "COMMODITY",
    "namespace": "discovery",
-   "n": 54,
-   "required_n": 17,
-   "mde_pct": 1.8027,
-   "wins": 7,
-   "wr": 0.1296,
+   "n": 51,
+   "required_n": 16,
+   "mde_pct": 1.9172,
+   "wins": 6,
+   "wr": 0.1176,
    "wr_ci": [
-    0.0642,
-    0.2442
+    0.0551,
+    0.2338
    ],
-   "pf": 0.1047,
-   "gross_expectancy_pct": -3.1612,
-   "net_expectancy_pct": -3.3112,
+   "pf": 0.0963,
+   "gross_expectancy_pct": -3.3566,
+   "net_expectancy_pct": -3.5066,
    "net_ci_pct": [
-    -5.1448,
-    -2.0287
+    -5.3628,
+    -2.1908
    ],
    "p_value": 1.0,
    "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0005,
-   "harm_q": 0.0015,
+   "harm_q": 0.001,
    "net_ci_pct_2x": [
-    -5.2948,
-    -2.1787
+    -5.5128,
+    -2.3408
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
-    "first_half_mean": -2.2068,
-    "second_half_mean": -4.4157
+    "first_half_mean": -2.0914,
+    "second_half_mean": -4.8674
    },
    "recency": {
-    "window_trades": 14,
-    "window_frac": 0.2593,
-    "window_net_mean": -6.8834
+    "window_trades": 13,
+    "window_frac": 0.2549,
+    "window_net_mean": -3.553
    },
    "recent_ok": false,
    "mean_cost_pct": 0.15,
    "materiality_floor_pct": 0.075,
-   "top_symbol_share": 0.3148,
-   "top_source_share": 0.6481,
+   "top_symbol_share": 0.3137,
+   "top_source_share": 0.6275,
    "single_source": false,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
     "profit factor 0.10 < 0.8",
-    "win rate 13.0% below 40%"
+    "win rate 11.8% below 40%"
    ],
-   "sharpe": -0.7065,
-   "sr0": 0.1769,
+   "sharpe": -0.7242,
+   "sr0": 0.1821,
    "reconstructed": true,
    "raw_verdict": "KILL"
   }
@@ -956,56 +1072,56 @@
    "strategy": "luxalgo_confluence",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 2063,
-   "required_n": 3872,
-   "mde_pct": 0.1934,
-   "wins": 821,
-   "wr": 0.398,
+   "n": 2066,
+   "required_n": 4069,
+   "mde_pct": 0.1932,
+   "wins": 824,
+   "wr": 0.3988,
    "wr_ci": [
-    0.3771,
-    0.4193
+    0.3779,
+    0.4201
    ],
-   "pf": 0.9017,
-   "gross_expectancy_pct": -0.0412,
-   "net_expectancy_pct": -0.1412,
+   "pf": 0.904,
+   "gross_expectancy_pct": -0.0377,
+   "net_expectancy_pct": -0.1377,
    "net_ci_pct": [
-    -0.4723,
-    0.1808
+    -0.473,
+    0.1797
    ],
-   "p_value": 0.808596,
+   "p_value": 0.8006,
    "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 0.191904,
+   "p_harm": 0.1999,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.5723,
-    0.0808
+    -0.573,
+    0.0797
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.2601,
-    "second_half_mean": -0.0224
+    "first_half_mean": -0.2533,
+    "second_half_mean": -0.022
    },
    "recency": {
     "window_trades": 516,
-    "window_frac": 0.2501,
-    "window_net_mean": -0.2762
+    "window_frac": 0.2498,
+    "window_net_mean": -0.2709
    },
    "recent_ok": false,
    "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.0746,
+   "top_symbol_share": 0.0745,
    "top_source_share": 1.0,
    "single_source": true,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 39.8% <= 50%",
+    "win rate 39.9% <= 50%",
     "split-half unstable (one half mean <= 0)"
    ],
-   "sharpe": -0.045,
-   "sr0": 0.065,
+   "sharpe": -0.0439,
+   "sr0": 0.0649,
    "bh_family_n": 61,
    "raw_verdict": "WEAK"
   },
@@ -1014,47 +1130,47 @@
    "strategy": "luxalgo_confluence",
    "direction": "SHORT",
    "namespace": "discovery",
-   "n": 1923,
-   "required_n": 11492,
-   "mde_pct": 0.2153,
+   "n": 1925,
+   "required_n": 10759,
+   "mde_pct": 0.2151,
    "wins": 848,
-   "wr": 0.441,
+   "wr": 0.4405,
    "wr_ci": [
-    0.4189,
-    0.4633
+    0.4185,
+    0.4628
    ],
-   "pf": 0.9408,
-   "gross_expectancy_pct": 0.0119,
-   "net_expectancy_pct": -0.0881,
+   "pf": 0.9389,
+   "gross_expectancy_pct": 0.009,
+   "net_expectancy_pct": -0.091,
    "net_ci_pct": [
-    -0.5116,
-    0.2849
+    -0.51,
+    0.2748
    ],
-   "p_value": 0.666667,
+   "p_value": 0.677661,
    "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 0.333833,
+   "p_harm": 0.322839,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.6116,
-    0.1849
+    -0.61,
+    0.1748
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.15,
-    "second_half_mean": -0.0262
+    "first_half_mean": -0.1555,
+    "second_half_mean": -0.0266
    },
    "recency": {
     "window_trades": 481,
-    "window_frac": 0.2501,
-    "window_net_mean": 0.7511
+    "window_frac": 0.2499,
+    "window_net_mean": 0.7147
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.0837,
+   "top_symbol_share": 0.0842,
    "top_source_share": 0.9943,
    "single_source": true,
    "verdict": "WEAK",
@@ -1062,7 +1178,7 @@
     "win rate 44.1% <= 50%",
     "split-half unstable (one half mean <= 0)"
    ],
-   "sharpe": -0.0261,
+   "sharpe": -0.027,
    "sr0": 0.0673,
    "bh_family_n": 61,
    "raw_verdict": "WEAK"
@@ -1129,55 +1245,55 @@
    "strategy": "unknown",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 261,
-   "required_n": 255,
-   "mde_pct": 0.948,
+   "n": 260,
+   "required_n": 261,
+   "mde_pct": 0.9521,
    "wins": 73,
-   "wr": 0.2797,
+   "wr": 0.2808,
    "wr_ci": [
-    0.2287,
-    0.337
+    0.2296,
+    0.3383
    ],
-   "pf": 0.607,
-   "gross_expectancy_pct": -0.8684,
-   "net_expectancy_pct": -0.9608,
+   "pf": 0.6114,
+   "gross_expectancy_pct": -0.8596,
+   "net_expectancy_pct": -0.952,
    "net_ci_pct": [
-    -1.9967,
-    0.0813
+    -2.013,
+    0.1004
    ],
-   "p_value": 0.961519,
+   "p_value": 0.961019,
    "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 0.038981,
+   "p_harm": 0.03948,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -2.0891,
-    -0.0111
+    -2.1054,
+    0.008
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.8111,
-    "second_half_mean": -1.1093
+    "second_half_mean": -1.0929
    },
    "recency": {
     "window_trades": 65,
-    "window_frac": 0.249,
-    "window_net_mean": -0.9844
+    "window_frac": 0.25,
+    "window_net_mean": -0.9635
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0924,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.0766,
-   "top_source_share": 0.4981,
+   "top_symbol_share": 0.0769,
+   "top_source_share": 0.4962,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "profit factor 0.61 < 0.8 at n=261 \u2014 watch only, harm not proven (net CI [-2.00, +0.08]) so it keeps observing"
+    "profit factor 0.61 < 0.8 at n=260 \u2014 watch only, harm not proven (net CI [-2.01, +0.10]) so it keeps observing"
    ],
-   "sharpe": -0.176,
-   "sr0": 0.1827,
+   "sharpe": -0.174,
+   "sr0": 0.183,
    "bh_family_n": 61,
    "raw_verdict": "WEAK"
   },
@@ -1647,41 +1763,41 @@
    "direction": "LONG",
    "namespace": "discovery",
    "n": 73,
-   "required_n": 5,
-   "mde_pct": 0.4239,
-   "wins": 6,
-   "wr": 0.0822,
+   "required_n": 4,
+   "mde_pct": 0.4003,
+   "wins": 5,
+   "wr": 0.0685,
    "wr_ci": [
-    0.0382,
-    0.1679
+    0.0296,
+    0.1505
    ],
-   "pf": 0.1056,
-   "gross_expectancy_pct": -1.6216,
-   "net_expectancy_pct": -1.7212,
+   "pf": 0.0946,
+   "gross_expectancy_pct": -1.657,
+   "net_expectancy_pct": -1.7566,
    "net_ci_pct": [
-    -1.9978,
-    -1.3462
+    -2.0269,
+    -1.3803
    ],
    "p_value": 1.0,
    "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0005,
-   "harm_q": 0.0008,
+   "harm_q": 0.001,
    "net_ci_pct_2x": [
-    -2.0974,
-    -1.4458
+    -2.1265,
+    -1.4799
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
-    "first_half_mean": -1.8218,
-    "second_half_mean": -1.6234
+    "first_half_mean": -1.8452,
+    "second_half_mean": -1.6704
    },
    "recency": {
     "window_trades": 18,
     "window_frac": 0.2466,
-    "window_net_mean": -1.2663
+    "window_net_mean": -1.2813
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0996,
@@ -1692,10 +1808,10 @@
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
-    "profit factor 0.11 < 0.8",
-    "win rate 8.2% below 40%"
+    "profit factor 0.09 < 0.8",
+    "win rate 6.8% below 40%"
    ],
-   "sharpe": -1.3398,
+   "sharpe": -1.4481,
    "sr0": 0.3454,
    "bh_family_n": 61,
    "raw_verdict": "KILL"
@@ -2049,6 +2165,65 @@
   },
   {
    "asset_class": "EQUITY",
+   "strategy": "adx-trend-scout",
+   "direction": "LONG",
+   "namespace": "confirmatory",
+   "pod": "POD-EQUITY-BREAKOUT",
+   "n": 52,
+   "required_n": 1414,
+   "mde_pct": 2.1394,
+   "wins": 22,
+   "wr": 0.4231,
+   "wr_ci": [
+    0.2987,
+    0.5581
+   ],
+   "pf": 0.8385,
+   "gross_expectancy_pct": -0.357,
+   "net_expectancy_pct": -0.4104,
+   "net_ci_pct": [
+    -1.6703,
+    0.8901
+   ],
+   "p_value": 0.752124,
+   "p_wr": 0.894196,
+   "q_value": 0.752124,
+   "p_harm": 0.248376,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.7237,
+    0.8367
+   ],
+   "stress_2x_ok": false,
+   "dsr": 0.0003,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.7477,
+    "second_half_mean": -0.0731
+   },
+   "recency": {
+    "window_trades": 13,
+    "window_frac": 0.25,
+    "window_net_mean": -2.2008
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.0534,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.25,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 42.3% <= 50%",
+    "split-half unstable (one half mean <= 0)"
+   ],
+   "sharpe": -0.0752,
+   "sr0": 0.4093,
+   "bh_family_n": 6,
+   "raw_verdict": "WEAK"
+  },
+  {
+   "asset_class": "EQUITY",
    "strategy": "rs-breakout-scout",
    "direction": "LONG",
    "namespace": "confirmatory",
@@ -2103,65 +2278,6 @@
    ],
    "sharpe": 0.1651,
    "sr0": 0.4093,
-   "bh_family_n": 6,
-   "raw_verdict": "WEAK"
-  },
-  {
-   "asset_class": "EQUITY",
-   "strategy": "adx-trend-scout",
-   "direction": "LONG",
-   "namespace": "confirmatory",
-   "pod": "POD-EQUITY-BREAKOUT",
-   "n": 51,
-   "required_n": 1698,
-   "mde_pct": 2.1798,
-   "wins": 22,
-   "wr": 0.4314,
-   "wr_ci": [
-    0.305,
-    0.5673
-   ],
-   "pf": 0.8519,
-   "gross_expectancy_pct": -0.3244,
-   "net_expectancy_pct": -0.3778,
-   "net_ci_pct": [
-    -1.6929,
-    0.8925
-   ],
-   "p_value": 0.734133,
-   "p_wr": 0.868781,
-   "q_value": 0.734133,
-   "p_harm": 0.266367,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -1.7463,
-    0.8391
-   ],
-   "stress_2x_ok": false,
-   "dsr": 0.0004,
-   "split_half": {
-    "stable": false,
-    "first_half_mean": -0.6252,
-    "second_half_mean": -0.14
-   },
-   "recency": {
-    "window_trades": 13,
-    "window_frac": 0.2549,
-    "window_net_mean": -1.6566
-   },
-   "recent_ok": false,
-   "mean_cost_pct": 0.0534,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.2353,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "WEAK",
-   "reasons": [
-    "win rate 43.1% <= 50%",
-    "split-half unstable (one half mean <= 0)"
-   ],
-   "sharpe": -0.0686,
-   "sr0": 0.4133,
    "bh_family_n": 6,
    "raw_verdict": "WEAK"
   },
@@ -2306,7 +2422,7 @@
    "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0005,
-   "harm_q": 0.0008,
+   "harm_q": 0.001,
    "net_ci_pct_2x": [
     -1.4665,
     -0.7653
@@ -2747,57 +2863,57 @@
    "strategy": "stochrsi_macd_combo",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 39,
+   "n": 38,
    "required_n": 73,
-   "mde_pct": 2.2598,
+   "mde_pct": 2.3195,
    "wins": 11,
-   "wr": 0.2821,
+   "wr": 0.2895,
    "wr_ci": [
-    0.1654,
-    0.4378
+    0.17,
+    0.4476
    ],
-   "pf": 0.3274,
-   "gross_expectancy_pct": -1.558,
-   "net_expectancy_pct": -1.6576,
+   "pf": 0.3306,
+   "gross_expectancy_pct": -1.5769,
+   "net_expectancy_pct": -1.6765,
    "net_ci_pct": [
-    -3.2549,
-    -0.162
+    -3.333,
+    -0.0844
    ],
-   "p_value": 0.985007,
-   "p_wr": 0.998311,
+   "p_value": 0.98051,
+   "p_wr": 0.997451,
    "q_value": 1.0,
-   "p_harm": 0.015492,
-   "harm_q": 0.017705,
+   "p_harm": 0.01999,
+   "harm_q": 0.01999,
    "net_ci_pct_2x": [
-    -3.3545,
-    -0.2616
+    -3.4326,
+    -0.184
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
-    "first_half_mean": -2.2769,
-    "second_half_mean": -1.0693
+    "first_half_mean": -2.1669,
+    "second_half_mean": -1.1861
    },
    "recency": {
     "window_trades": 10,
-    "window_frac": 0.2564,
+    "window_frac": 0.2632,
     "window_net_mean": 0.2946
    },
    "recent_ok": true,
    "mean_cost_pct": 0.0996,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.1538,
+   "top_symbol_share": 0.1579,
    "top_source_share": 1.0,
    "single_source": true,
    "verdict": "KILL",
    "reasons": [
     "net expectancy 95% CI entirely below zero",
     "profit factor 0.33 < 0.8",
-    "win rate 28.2% below 40%"
+    "win rate 28.9% below 40%"
    ],
-   "sharpe": -0.3332,
-   "sr0": 0.4726,
+   "sharpe": -0.3327,
+   "sr0": 0.4788,
    "bh_family_n": 61,
    "raw_verdict": "KILL"
   },
@@ -2883,7 +2999,7 @@
    "p_wr": 0.906129,
    "q_value": 1.0,
    "p_harm": 0.01949,
-   "harm_q": 0.01949,
+   "harm_q": 0.01999,
    "net_ci_pct_2x": [
     -0.8776,
     -0.0432
@@ -2913,65 +3029,6 @@
    ],
    "sharpe": -0.3758,
    "sr0": 0.4852,
-   "bh_family_n": 61,
-   "raw_verdict": "KILL"
-  },
-  {
-   "asset_class": "COMMODITY",
-   "strategy": "futures_momentum",
-   "direction": "SHORT",
-   "namespace": "discovery",
-   "n": 35,
-   "required_n": 1,
-   "mde_pct": 0.4929,
-   "wins": 0,
-   "wr": 0.0,
-   "wr_ci": [
-    0.0,
-    0.0989
-   ],
-   "pf": 0.0,
-   "gross_expectancy_pct": -3.8994,
-   "net_expectancy_pct": -4.0494,
-   "net_ci_pct": [
-    -4.7605,
-    -3.4287
-   ],
-   "p_value": 1.0,
-   "p_wr": 1.0,
-   "q_value": 1.0,
-   "p_harm": 0.0005,
-   "harm_q": 0.0008,
-   "net_ci_pct_2x": [
-    -4.9105,
-    -3.5787
-   ],
-   "stress_2x_ok": false,
-   "dsr": 0.0,
-   "split_half": {
-    "stable": false,
-    "first_half_mean": -3.2171,
-    "second_half_mean": -4.8355
-   },
-   "recency": {
-    "window_trades": 9,
-    "window_frac": 0.2571,
-    "window_net_mean": -5.3879
-   },
-   "recent_ok": false,
-   "mean_cost_pct": 0.15,
-   "materiality_floor_pct": 0.075,
-   "top_symbol_share": 0.4571,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "KILL",
-   "reasons": [
-    "net expectancy 95% CI entirely below zero",
-    "profit factor 0.00 < 0.8",
-    "win rate 0.0% below 40%"
-   ],
-   "sharpe": -3.9448,
-   "sr0": 0.4989,
    "bh_family_n": 61,
    "raw_verdict": "KILL"
   },
@@ -3203,6 +3260,65 @@
    "sr0": 0.5062,
    "bh_family_n": 61,
    "raw_verdict": "WEAK"
+  },
+  {
+   "asset_class": "COMMODITY",
+   "strategy": "futures_momentum",
+   "direction": "SHORT",
+   "namespace": "discovery",
+   "n": 32,
+   "required_n": 1,
+   "mde_pct": 0.5201,
+   "wins": 0,
+   "wr": 0.0,
+   "wr_ci": [
+    0.0,
+    0.1072
+   ],
+   "pf": 0.0,
+   "gross_expectancy_pct": -3.9838,
+   "net_expectancy_pct": -4.1338,
+   "net_ci_pct": [
+    -4.8047,
+    -3.4779
+   ],
+   "p_value": 1.0,
+   "p_wr": 1.0,
+   "q_value": 1.0,
+   "p_harm": 0.0005,
+   "harm_q": 0.001,
+   "net_ci_pct_2x": [
+    -4.9547,
+    -3.6279
+   ],
+   "stress_2x_ok": false,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -3.2506,
+    "second_half_mean": -5.017
+   },
+   "recency": {
+    "window_trades": 8,
+    "window_frac": 0.25,
+    "window_net_mean": -5.2708
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.15,
+   "materiality_floor_pct": 0.075,
+   "top_symbol_share": 0.4688,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.00 < 0.8",
+    "win rate 0.0% below 40%"
+   ],
+   "sharpe": -3.997,
+   "sr0": 0.5218,
+   "bh_family_n": 61,
+   "raw_verdict": "KILL"
   },
   {
    "asset_class": "CRYPTO",
@@ -3461,7 +3577,7 @@
    "p_wr": 1.0,
    "q_value": 1.0,
    "p_harm": 0.0005,
-   "harm_q": 0.0008,
+   "harm_q": 0.001,
    "net_ci_pct_2x": [
     -0.04,
     -0.04
@@ -3843,61 +3959,6 @@
    "raw_verdict": "WEAK"
   },
   {
-   "asset_class": "CRYPTO",
-   "strategy": "strong consensus (alpha_engine, luxalgo_filters)",
-   "direction": "SHORT",
-   "namespace": "discovery",
-   "n": 25,
-   "required_n": 3,
-   "mde_pct": 1.0149,
-   "wins": 23,
-   "wr": 0.92,
-   "wr_ci": [
-    0.7503,
-    0.9778
-   ],
-   "pf": 1140.7184,
-   "gross_expectancy_pct": 3.4185,
-   "net_expectancy_pct": 3.3189,
-   "net_ci_pct": [
-    2.3461,
-    4.1878
-   ],
-   "p_value": 0.0005,
-   "p_wr": 1e-05,
-   "q_value": 0.01525,
-   "p_harm": 1.0,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    2.2465,
-    4.0882
-   ],
-   "stress_2x_ok": true,
-   "dsr": 0.9999,
-   "split_half": {
-    "stable": true,
-    "first_half_mean": 3.8854,
-    "second_half_mean": 2.7959
-   },
-   "recency": {
-    "window_trades": 6,
-    "window_frac": 0.24,
-    "window_net_mean": 1.8663
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.0996,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.12,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "WEAK",
-   "reasons": [],
-   "sharpe": 1.8691,
-   "sr0": 0.5903,
-   "bh_family_n": 61,
-   "raw_verdict": "WEAK"
-  },
-  {
    "asset_class": "EQUITY",
    "strategy": "vwap-reversion-scout",
    "direction": "LONG",
@@ -3953,63 +4014,6 @@
    "raw_verdict": "WEAK"
   },
   {
-   "asset_class": "FOREX",
-   "strategy": "forex_rsi2_mean_reversion",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 25,
-   "required_n": 5,
-   "mde_pct": 0.372,
-   "wins": 21,
-   "wr": 0.84,
-   "wr_ci": [
-    0.6535,
-    0.936
-   ],
-   "pf": 10.9132,
-   "gross_expectancy_pct": 0.8583,
-   "net_expectancy_pct": 0.8383,
-   "net_ci_pct": [
-    0.6105,
-    1.0694
-   ],
-   "p_value": 0.0005,
-   "p_wr": 0.000455,
-   "q_value": 0.01525,
-   "p_harm": 1.0,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    0.5905,
-    1.0494
-   ],
-   "stress_2x_ok": true,
-   "dsr": 0.9653,
-   "split_half": {
-    "stable": true,
-    "first_half_mean": 0.5696,
-    "second_half_mean": 1.0863
-   },
-   "recency": {
-    "window_trades": 6,
-    "window_frac": 0.24,
-    "window_net_mean": 1.1395
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.02,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.96,
-   "top_source_share": 0.8,
-   "single_source": false,
-   "verdict": "WEAK",
-   "reasons": [
-    "single symbol 96% of trades"
-   ],
-   "sharpe": 1.2881,
-   "sr0": 0.5903,
-   "bh_family_n": 61,
-   "raw_verdict": "WEAK"
-  },
-  {
    "asset_class": "CRYPTO",
    "strategy": "macd_rsi_m048",
    "direction": "SHORT",
@@ -4060,6 +4064,118 @@
    "verdict": "WEAK",
    "reasons": [],
    "sharpe": 0.497,
+   "sr0": 0.6025,
+   "bh_family_n": 61,
+   "raw_verdict": "WEAK"
+  },
+  {
+   "asset_class": "CRYPTO",
+   "strategy": "strong consensus (alpha_engine, luxalgo_filters)",
+   "direction": "SHORT",
+   "namespace": "discovery",
+   "n": 24,
+   "required_n": 3,
+   "mde_pct": 1.0575,
+   "wins": 22,
+   "wr": 0.9167,
+   "wr_ci": [
+    0.7415,
+    0.9768
+   ],
+   "pf": 1098.8819,
+   "gross_expectancy_pct": 3.4298,
+   "net_expectancy_pct": 3.3302,
+   "net_ci_pct": [
+    2.3182,
+    4.2101
+   ],
+   "p_value": 0.0005,
+   "p_wr": 1.8e-05,
+   "q_value": 0.01525,
+   "p_harm": 1.0,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    2.2186,
+    4.1105
+   ],
+   "stress_2x_ok": true,
+   "dsr": 0.9999,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 4.2586,
+    "second_half_mean": 2.4019
+   },
+   "recency": {
+    "window_trades": 6,
+    "window_frac": 0.25,
+    "window_net_mean": 1.8663
+   },
+   "recent_ok": true,
+   "mean_cost_pct": 0.0996,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.125,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "WEAK",
+   "reasons": [],
+   "sharpe": 1.8385,
+   "sr0": 0.6025,
+   "bh_family_n": 61,
+   "raw_verdict": "WEAK"
+  },
+  {
+   "asset_class": "FOREX",
+   "strategy": "forex_rsi2_mean_reversion",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 24,
+   "required_n": 4,
+   "mde_pct": 0.3503,
+   "wins": 21,
+   "wr": 0.875,
+   "wr_ci": [
+    0.69,
+    0.9566
+   ],
+   "pf": 14.5498,
+   "gross_expectancy_pct": 0.9152,
+   "net_expectancy_pct": 0.8952,
+   "net_ci_pct": [
+    0.7009,
+    1.0883
+   ],
+   "p_value": 0.0005,
+   "p_wr": 0.000139,
+   "q_value": 0.01525,
+   "p_harm": 1.0,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    0.6809,
+    1.0683
+   ],
+   "stress_2x_ok": true,
+   "dsr": 0.9732,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 0.8088,
+    "second_half_mean": 0.9817
+   },
+   "recency": {
+    "window_trades": 6,
+    "window_frac": 0.25,
+    "window_net_mean": 0.8417
+   },
+   "recent_ok": true,
+   "mean_cost_pct": 0.02,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.9583,
+   "top_source_share": 0.7917,
+   "single_source": false,
+   "verdict": "WEAK",
+   "reasons": [
+    "single symbol 96% of trades"
+   ],
+   "sharpe": 1.4919,
    "sr0": 0.6025,
    "bh_family_n": 61,
    "raw_verdict": "WEAK"
@@ -4179,6 +4295,65 @@
    "sr0": 0.6154,
    "bh_family_n": 61,
    "raw_verdict": "WEAK"
+  },
+  {
+   "asset_class": "CRYPTO",
+   "strategy": "strong consensus (alpha_engine, kimi)",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 22,
+   "required_n": 18,
+   "mde_pct": 2.3258,
+   "wins": 6,
+   "wr": 0.2727,
+   "wr_ci": [
+    0.1315,
+    0.4815
+   ],
+   "pf": 0.1824,
+   "gross_expectancy_pct": -2.5059,
+   "net_expectancy_pct": -2.6055,
+   "net_ci_pct": [
+    -4.0794,
+    -1.1781
+   ],
+   "p_value": 0.9995,
+   "p_wr": 0.99155,
+   "q_value": 1.0,
+   "p_harm": 0.001,
+   "harm_q": 0.0016,
+   "net_ci_pct_2x": [
+    -4.179,
+    -1.2777
+   ],
+   "stress_2x_ok": false,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -3.4756,
+    "second_half_mean": -1.7354
+   },
+   "recency": {
+    "window_trades": 6,
+    "window_frac": 0.2727,
+    "window_net_mean": -0.9769
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.0996,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.1818,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "KILL",
+   "reasons": [
+    "net expectancy 95% CI entirely below zero",
+    "profit factor 0.18 < 0.8",
+    "win rate 27.3% below 40%"
+   ],
+   "sharpe": -0.6845,
+   "sr0": 0.6293,
+   "bh_family_n": 61,
+   "raw_verdict": "KILL"
   },
   {
    "asset_class": "EQUITY",
@@ -4578,65 +4753,6 @@
    "sr0": 0.6441,
    "bh_family_n": 61,
    "raw_verdict": "WEAK"
-  },
-  {
-   "asset_class": "CRYPTO",
-   "strategy": "strong consensus (alpha_engine, kimi)",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 21,
-   "required_n": 18,
-   "mde_pct": 2.4279,
-   "wins": 6,
-   "wr": 0.2857,
-   "wr_ci": [
-    0.1381,
-    0.4996
-   ],
-   "pf": 0.1848,
-   "gross_expectancy_pct": -2.586,
-   "net_expectancy_pct": -2.6856,
-   "net_ci_pct": [
-    -4.1241,
-    -1.1856
-   ],
-   "p_value": 1.0,
-   "p_wr": 0.986698,
-   "q_value": 1.0,
-   "p_harm": 0.0005,
-   "harm_q": 0.0008,
-   "net_ci_pct_2x": [
-    -4.2237,
-    -1.2852
-   ],
-   "stress_2x_ok": false,
-   "dsr": 0.0,
-   "split_half": {
-    "stable": false,
-    "first_half_mean": -3.7934,
-    "second_half_mean": -1.6785
-   },
-   "recency": {
-    "window_trades": 5,
-    "window_frac": 0.2381,
-    "window_net_mean": -0.9878
-   },
-   "recent_ok": false,
-   "mean_cost_pct": 0.0996,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.1905,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "KILL",
-   "reasons": [
-    "net expectancy 95% CI entirely below zero",
-    "profit factor 0.18 < 0.8",
-    "win rate 28.6% below 40%"
-   ],
-   "sharpe": -0.6926,
-   "sr0": 0.6441,
-   "bh_family_n": 61,
-   "raw_verdict": "KILL"
   },
   {
    "asset_class": "EQUITY",
@@ -5516,44 +5632,44 @@
    "direction": "SHORT",
    "namespace": "discovery",
    "n": 14,
-   "required_n": 45,
-   "mde_pct": 1.4532,
-   "wins": 9,
-   "wr": 0.6429,
+   "required_n": 34,
+   "mde_pct": 1.3976,
+   "wins": 10,
+   "wr": 0.7143,
    "wr_ci": [
-    0.3876,
-    0.8366
+    0.4535,
+    0.8828
    ],
-   "pf": 2.3589,
-   "gross_expectancy_pct": 0.9114,
-   "net_expectancy_pct": 0.8114,
+   "pf": 2.7715,
+   "gross_expectancy_pct": 1.0029,
+   "net_expectancy_pct": 0.9033,
    "net_ci_pct": [
-    -0.0586,
-    1.68
+    0.0925,
+    1.7133
    ],
-   "p_value": 0.046477,
-   "p_wr": 0.211975,
+   "p_value": 0.010995,
+   "p_wr": 0.089783,
    "q_value": null,
-   "p_harm": 0.954023,
+   "p_harm": 0.989505,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.1586,
-    1.58
+    -0.0071,
+    1.6137
    ],
    "stress_2x_ok": false,
    "dsr": null,
    "split_half": {
     "stable": true,
-    "first_half_mean": 1.0671,
-    "second_half_mean": 0.5557
+    "first_half_mean": 1.2504,
+    "second_half_mean": 0.5561
    },
    "recency": {
     "window_trades": 5,
     "window_frac": 0.3571,
-    "window_net_mean": 0.734
+    "window_net_mean": 0.7344
    },
    "recent_ok": true,
-   "mean_cost_pct": 0.1,
+   "mean_cost_pct": 0.0996,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 0.0714,
    "top_source_share": 1.0,
@@ -6455,52 +6571,52 @@
    "raw_verdict": "INSUFFICIENT_N"
   },
   {
-   "asset_class": "COMMODITY",
-   "strategy": "commodity_rsi_divergence",
+   "asset_class": "FOREX",
+   "strategy": "forex_zscore_200d_fade",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 8,
-   "required_n": 198,
-   "mde_pct": 1.5807,
-   "wins": 4,
-   "wr": 0.5,
+   "n": 9,
+   "required_n": 6,
+   "mde_pct": 0.3272,
+   "wins": 1,
+   "wr": 0.1111,
    "wr_ci": [
-    0.2152,
-    0.7848
+    0.0199,
+    0.435
    ],
-   "pf": 1.5422,
-   "gross_expectancy_pct": 0.4685,
-   "net_expectancy_pct": 0.3185,
+   "pf": 0.1122,
+   "gross_expectancy_pct": -0.4019,
+   "net_expectancy_pct": -0.4219,
    "net_ci_pct": [
-    -0.7937,
-    1.4303
+    -0.5663,
+    -0.1664
    ],
-   "p_value": 0.349825,
-   "p_wr": 0.636719,
+   "p_value": 1.0,
+   "p_wr": 0.998047,
    "q_value": null,
-   "p_harm": 0.650675,
+   "p_harm": 0.0005,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.9438,
-    1.2803
+    -0.5863,
+    -0.1864
    ],
    "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "recency": {
     "window_trades": 5,
-    "window_frac": 0.625,
-    "window_net_mean": 0.5996
+    "window_frac": 0.5556,
+    "window_net_mean": -0.5436
    },
-   "recent_ok": true,
-   "mean_cost_pct": 0.15,
-   "materiality_floor_pct": 0.075,
-   "top_symbol_share": 0.25,
-   "top_source_share": 1.0,
-   "single_source": true,
+   "recent_ok": false,
+   "mean_cost_pct": 0.02,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.8889,
+   "top_source_share": 0.5556,
+   "single_source": false,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
-    "n=8 < 20: no statistical claim"
+    "n=9 < 20: no statistical claim"
    ],
    "raw_verdict": "INSUFFICIENT_N"
   },
@@ -7405,6 +7521,56 @@
    "raw_verdict": "INSUFFICIENT_N"
   },
   {
+   "asset_class": "COMMODITY",
+   "strategy": "commodity_rsi_divergence",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 6,
+   "required_n": 145,
+   "mde_pct": 1.8013,
+   "wins": 3,
+   "wr": 0.5,
+   "wr_ci": [
+    0.1876,
+    0.8124
+   ],
+   "pf": 1.6893,
+   "gross_expectancy_pct": 0.517,
+   "net_expectancy_pct": 0.367,
+   "net_ci_pct": [
+    -1.0484,
+    1.799
+   ],
+   "p_value": 0.356322,
+   "p_wr": 0.65625,
+   "q_value": null,
+   "p_harm": 0.644178,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.1984,
+    1.649
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 5,
+    "window_frac": 0.8333,
+    "window_net_mean": 0.6704
+   },
+   "recent_ok": true,
+   "mean_cost_pct": 0.15,
+   "materiality_floor_pct": 0.075,
+   "top_symbol_share": 0.3333,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=6 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
    "asset_class": "CRYPTO",
    "strategy": "clone_hl_copy_PensionFund_24M",
    "direction": "LONG",
@@ -7598,56 +7764,6 @@
    "top_symbol_share": 0.3333,
    "top_source_share": 1.0,
    "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=6 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "FOREX",
-   "strategy": "forex_zscore_200d_fade",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 6,
-   "required_n": 63,
-   "mde_pct": 0.6032,
-   "wins": 2,
-   "wr": 0.3333,
-   "wr_ci": [
-    0.0968,
-    0.7
-   ],
-   "pf": 0.4618,
-   "gross_expectancy_pct": -0.1665,
-   "net_expectancy_pct": -0.1865,
-   "net_ci_pct": [
-    -0.5863,
-    0.3133
-   ],
-   "p_value": 0.804598,
-   "p_wr": 0.890625,
-   "q_value": null,
-   "p_harm": 0.195902,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -0.6063,
-    0.2933
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 5,
-    "window_frac": 0.8333,
-    "window_net_mean": -0.3198
-   },
-   "recent_ok": false,
-   "mean_cost_pct": 0.02,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.8333,
-   "top_source_share": 0.8333,
-   "single_source": false,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=6 < 20: no statistical claim"
@@ -8305,6 +8421,56 @@
    "raw_verdict": "INSUFFICIENT_N"
   },
   {
+   "asset_class": "COMMODITY",
+   "strategy": "commodity_momentum",
+   "direction": "SHORT",
+   "namespace": "discovery",
+   "n": 4,
+   "required_n": 7628,
+   "mde_pct": 3.1571,
+   "wins": 1,
+   "wr": 0.25,
+   "wr_ci": [
+    0.0456,
+    0.6994
+   ],
+   "pf": 0.9196,
+   "gross_expectancy_pct": 0.0777,
+   "net_expectancy_pct": -0.0723,
+   "net_ci_pct": [
+    -1.2239,
+    1.0794
+   ],
+   "p_value": 0.754623,
+   "p_wr": 0.9375,
+   "q_value": null,
+   "p_harm": 0.245877,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.374,
+    0.9294
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 4,
+    "window_frac": 1.0,
+    "window_net_mean": -0.0723
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.15,
+   "materiality_floor_pct": 0.075,
+   "top_symbol_share": 1.0,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=4 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
    "asset_class": "CRYPTO",
    "strategy": "clone_hl_bybit_copy_C_R_Y_P_T_O___K_I_N_",
    "direction": "SHORT",
@@ -8460,19 +8626,19 @@
    "direction": "SHORT",
    "namespace": "discovery",
    "n": 4,
-   "required_n": 17,
-   "mde_pct": 2.849,
+   "required_n": 10,
+   "mde_pct": 2.408,
    "wins": 3,
    "wr": 0.75,
    "wr_ci": [
     0.3006,
     0.9544
    ],
-   "pf": 4.3131,
-   "gross_expectancy_pct": 1.4825,
-   "net_expectancy_pct": 1.3829,
+   "pf": 6.9269,
+   "gross_expectancy_pct": 1.64,
+   "net_expectancy_pct": 1.5404,
    "net_ci_pct": [
-    0.3654,
+    0.6804,
     2.4004
    ],
    "p_value": 0.0005,
@@ -8481,7 +8647,7 @@
    "p_harm": 1.0,
    "harm_q": null,
    "net_ci_pct_2x": [
-    0.2658,
+    0.5808,
     2.3008
    ],
    "stress_2x_ok": true,
@@ -8490,7 +8656,7 @@
    "recency": {
     "window_trades": 4,
     "window_frac": 1.0,
-    "window_net_mean": 1.3829
+    "window_net_mean": 1.5404
    },
    "recent_ok": true,
    "mean_cost_pct": 0.0996,
@@ -8510,29 +8676,29 @@
    "direction": "LONG",
    "namespace": "discovery",
    "n": 4,
-   "required_n": 4,
-   "mde_pct": 1.422,
-   "wins": 0,
-   "wr": 0.0,
+   "required_n": 17,
+   "mde_pct": 1.5696,
+   "wins": 1,
+   "wr": 0.25,
    "wr_ci": [
-    0.0,
-    0.4899
+    0.0456,
+    0.6994
    ],
-   "pf": 0.0,
-   "gross_expectancy_pct": -1.35,
-   "net_expectancy_pct": -1.4496,
+   "pf": 0.1101,
+   "gross_expectancy_pct": -0.6675,
+   "net_expectancy_pct": -0.7675,
    "net_ci_pct": [
-    -1.7996,
-    -1.0996
+    -1.675,
+    0.14
    ],
-   "p_value": 1.0,
-   "p_wr": 1.0,
+   "p_value": 0.93953,
+   "p_wr": 0.9375,
    "q_value": null,
-   "p_harm": 0.0005,
+   "p_harm": 0.06097,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -1.8992,
-    -1.1992
+    -1.775,
+    0.04
    ],
    "stress_2x_ok": false,
    "dsr": null,
@@ -8540,10 +8706,10 @@
    "recency": {
     "window_trades": 4,
     "window_frac": 1.0,
-    "window_net_mean": -1.4496
+    "window_net_mean": -0.7675
    },
    "recent_ok": false,
-   "mean_cost_pct": 0.0996,
+   "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 0.25,
    "top_source_share": 1.0,
@@ -9105,6 +9271,106 @@
    "raw_verdict": "INSUFFICIENT_N"
   },
   {
+   "asset_class": "FOREX",
+   "strategy": "fx_cot_extremes",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 4,
+   "required_n": 4,
+   "mde_pct": 0.1192,
+   "wins": 1,
+   "wr": 0.25,
+   "wr_ci": [
+    0.0456,
+    0.6994
+   ],
+   "pf": 0.0131,
+   "gross_expectancy_pct": -0.1004,
+   "net_expectancy_pct": -0.1204,
+   "net_ci_pct": [
+    -0.1696,
+    -0.0713
+   ],
+   "p_value": 1.0,
+   "p_wr": 0.9375,
+   "q_value": null,
+   "p_harm": 0.0005,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.1896,
+    -0.0913
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 4,
+    "window_frac": 1.0,
+    "window_net_mean": -0.1204
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.02,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.5,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=4 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
+   "asset_class": "FOREX",
+   "strategy": "fx_cot_extremes",
+   "direction": "SHORT",
+   "namespace": "discovery",
+   "n": 4,
+   "required_n": 1,
+   "mde_pct": 0.0718,
+   "wins": 0,
+   "wr": 0.0,
+   "wr_ci": [
+    0.0,
+    0.4899
+   ],
+   "pf": 0.0,
+   "gross_expectancy_pct": -0.1432,
+   "net_expectancy_pct": -0.1632,
+   "net_ci_pct": [
+    -0.2059,
+    -0.1205
+   ],
+   "p_value": 1.0,
+   "p_wr": 1.0,
+   "q_value": null,
+   "p_harm": 0.0005,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.2259,
+    -0.1406
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 4,
+    "window_frac": 1.0,
+    "window_net_mean": -0.1632
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.02,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.5,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=4 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
    "asset_class": "FUTURES",
    "strategy": "futures_tsmom_winner",
    "direction": "LONG",
@@ -9210,108 +9476,8 @@
    "direction": "LONG",
    "namespace": "discovery",
    "n": 3,
-   "required_n": 2,
-   "mde_pct": 0.9717,
-   "wins": 0,
-   "wr": 0.0,
-   "wr_ci": [
-    0.0,
-    0.5615
-   ],
-   "pf": 0.0,
-   "gross_expectancy_pct": -1.3645,
-   "net_expectancy_pct": -1.5145,
-   "net_ci_pct": [
-    -2.2083,
-    -1.151
-   ],
-   "p_value": 1.0,
-   "p_wr": 1.0,
-   "q_value": null,
-   "p_harm": 0.0005,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -2.3583,
-    -1.301
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 3,
-    "window_frac": 1.0,
-    "window_net_mean": -1.5145
-   },
-   "recent_ok": false,
-   "mean_cost_pct": 0.15,
-   "materiality_floor_pct": 0.075,
-   "top_symbol_share": 1.0,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=3 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "COMMODITY",
-   "strategy": "commodity_momentum",
-   "direction": "SHORT",
-   "namespace": "discovery",
-   "n": 3,
-   "required_n": 653,
-   "mde_pct": 4.2322,
-   "wins": 1,
-   "wr": 0.3333,
-   "wr_ci": [
-    0.0615,
-    0.7923
-   ],
-   "pf": 1.3516,
-   "gross_expectancy_pct": 0.4369,
-   "net_expectancy_pct": 0.2869,
-   "net_ci_pct": [
-    -1.2979,
-    3.3087
-   ],
-   "p_value": 0.291354,
-   "p_wr": 0.875,
-   "q_value": null,
-   "p_harm": 0.709145,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -1.4479,
-    3.1587
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 3,
-    "window_frac": 1.0,
-    "window_net_mean": 0.2869
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.15,
-   "materiality_floor_pct": 0.075,
-   "top_symbol_share": 1.0,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=3 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "CRYPTO",
-   "strategy": "B_flip_PriceRocMeanReversion",
-   "direction": "SHORT",
-   "namespace": "discovery",
-   "n": 3,
    "required_n": 1,
-   "mde_pct": 0.0097,
+   "mde_pct": 0.0315,
    "wins": 0,
    "wr": 0.0,
    "wr_ci": [
@@ -9319,11 +9485,11 @@
     0.5615
    ],
    "pf": 0.0,
-   "gross_expectancy_pct": -2.0035,
-   "net_expectancy_pct": -2.1035,
+   "gross_expectancy_pct": -1.0117,
+   "net_expectancy_pct": -1.1617,
    "net_ci_pct": [
-    -2.1104,
-    -2.1
+    -1.1842,
+    -1.15
    ],
    "p_value": 1.0,
    "p_wr": 1.0,
@@ -9331,8 +9497,8 @@
    "p_harm": 0.0005,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -2.2104,
-    -2.2
+    -1.3342,
+    -1.3
    ],
    "stress_2x_ok": false,
    "dsr": null,
@@ -9340,14 +9506,14 @@
    "recency": {
     "window_trades": 3,
     "window_frac": 1.0,
-    "window_net_mean": -2.1035
+    "window_net_mean": -1.1617
    },
    "recent_ok": false,
-   "mean_cost_pct": 0.1,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.6667,
-   "top_source_share": 0.6667,
-   "single_source": false,
+   "mean_cost_pct": 0.15,
+   "materiality_floor_pct": 0.075,
+   "top_symbol_share": 1.0,
+   "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=3 < 20: no statistical claim"
@@ -9955,6 +10121,56 @@
    "raw_verdict": "INSUFFICIENT_N"
   },
   {
+   "asset_class": "EQUITY",
+   "strategy": "equity_sector_rotation_winner",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 3,
+   "required_n": 1,
+   "mde_pct": 0.1158,
+   "wins": 0,
+   "wr": 0.0,
+   "wr_ci": [
+    0.0,
+    0.5615
+   ],
+   "pf": 0.0,
+   "gross_expectancy_pct": -5.0599,
+   "net_expectancy_pct": -5.1099,
+   "net_ci_pct": [
+    -5.1893,
+    -5.05
+   ],
+   "p_value": 1.0,
+   "p_wr": 1.0,
+   "q_value": null,
+   "p_harm": 0.0005,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -5.2393,
+    -5.1
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 3,
+    "window_frac": 1.0,
+    "window_net_mean": -5.1099
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.05,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.3333,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=3 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
    "asset_class": "ETF",
    "strategy": "call-surge-scout",
    "direction": "LONG",
@@ -10347,6 +10563,56 @@
    "mean_cost_pct": 0.05,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=2 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
+   "asset_class": "COMMODITY",
+   "strategy": "commodity_cross_momentum_winner",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 2,
+   "required_n": 612,
+   "mde_pct": 21.8245,
+   "wins": 1,
+   "wr": 0.5,
+   "wr_ci": [
+    0.0945,
+    0.9055
+   ],
+   "pf": 0.724,
+   "gross_expectancy_pct": -1.0978,
+   "net_expectancy_pct": -1.2478,
+   "net_ci_pct": [
+    -9.0422,
+    6.5467
+   ],
+   "p_value": 0.752624,
+   "p_wr": 0.75,
+   "q_value": null,
+   "p_harm": 0.247876,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -9.1922,
+    6.3967
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 2,
+    "window_frac": 1.0,
+    "window_net_mean": -1.2478
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.15,
+   "materiality_floor_pct": 0.075,
+   "top_symbol_share": 0.5,
    "top_source_share": 1.0,
    "single_source": true,
    "verdict": "INSUFFICIENT_N",
@@ -11457,6 +11723,56 @@
   },
   {
    "asset_class": "CRYPTO",
+   "strategy": "prediction_market_consensus",
+   "direction": "SHORT",
+   "namespace": "discovery",
+   "n": 2,
+   "required_n": 1,
+   "mde_pct": 0.0001,
+   "wins": 2,
+   "wr": 1.0,
+   "wr_ci": [
+    0.3424,
+    1.0
+   ],
+   "pf": null,
+   "gross_expectancy_pct": 2.4512,
+   "net_expectancy_pct": 2.3512,
+   "net_ci_pct": [
+    2.3512,
+    2.3513
+   ],
+   "p_value": 0.0005,
+   "p_wr": 0.25,
+   "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    2.2512,
+    2.2513
+   ],
+   "stress_2x_ok": true,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 2,
+    "window_frac": 1.0,
+    "window_net_mean": 2.3512
+   },
+   "recent_ok": true,
+   "mean_cost_pct": 0.1,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.5,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=2 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
+   "asset_class": "CRYPTO",
    "strategy": "regime_aware_independent",
    "direction": "SHORT",
    "namespace": "discovery",
@@ -11857,6 +12173,56 @@
   },
   {
    "asset_class": "EQUITY",
+   "strategy": "cheap_stock_cross_momentum_winner",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 2,
+   "required_n": 84,
+   "mde_pct": 59.0932,
+   "wins": 1,
+   "wr": 0.5,
+   "wr_ci": [
+    0.0945,
+    0.9055
+   ],
+   "pf": 0.3949,
+   "gross_expectancy_pct": -9.1047,
+   "net_expectancy_pct": -9.1547,
+   "net_ci_pct": [
+    -30.2594,
+    11.95
+   ],
+   "p_value": 0.752624,
+   "p_wr": 0.75,
+   "q_value": null,
+   "p_harm": 0.247876,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -30.3094,
+    11.9
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 2,
+    "window_frac": 1.0,
+    "window_net_mean": -9.1547
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.05,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.5,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=2 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
+   "asset_class": "EQUITY",
    "strategy": "cmf-accumulation-scout",
    "direction": "LONG",
    "namespace": "discovery",
@@ -11942,56 +12308,6 @@
     "window_trades": 2,
     "window_frac": 1.0,
     "window_net_mean": -2.5116
-   },
-   "recent_ok": false,
-   "mean_cost_pct": 0.05,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.5,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=2 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "EQUITY",
-   "strategy": "equity_sector_rotation_winner",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 2,
-   "required_n": 1,
-   "mde_pct": 0.1383,
-   "wins": 0,
-   "wr": 0.0,
-   "wr_ci": [
-    0.0,
-    0.6576
-   ],
-   "pf": 0.0,
-   "gross_expectancy_pct": -5.0899,
-   "net_expectancy_pct": -5.1399,
-   "net_ci_pct": [
-    -5.1893,
-    -5.0905
-   ],
-   "p_value": 1.0,
-   "p_wr": 1.0,
-   "q_value": null,
-   "p_harm": 0.0005,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -5.2393,
-    -5.1405
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 2,
-    "window_frac": 1.0,
-    "window_net_mean": -5.1399
    },
    "recent_ok": false,
    "mean_cost_pct": 0.05,
@@ -12306,102 +12622,52 @@
    "raw_verdict": "INSUFFICIENT_N"
   },
   {
-   "asset_class": "FOREX",
-   "strategy": "fx_cot_extremes",
+   "asset_class": "BOND",
+   "strategy": "bond_tips_breakeven",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 2,
-   "required_n": 19,
-   "mde_pct": 0.2176,
+   "n": 1,
+   "required_n": null,
+   "mde_pct": null,
    "wins": 1,
-   "wr": 0.5,
+   "wr": 1.0,
    "wr_ci": [
-    0.0945,
-    0.9055
+    0.2065,
+    1.0
    ],
-   "pf": 0.043,
-   "gross_expectancy_pct": -0.0513,
-   "net_expectancy_pct": -0.0713,
+   "pf": null,
+   "gross_expectancy_pct": 2.0,
+   "net_expectancy_pct": 0.0,
    "net_ci_pct": [
-    -0.149,
-    0.0064
-   ],
-   "p_value": 0.752624,
-   "p_wr": 0.75,
-   "q_value": null,
-   "p_harm": 0.247876,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -0.169,
-    -0.0136
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 2,
-    "window_frac": 1.0,
-    "window_net_mean": -0.0713
-   },
-   "recent_ok": false,
-   "mean_cost_pct": 0.02,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.5,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=2 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "FOREX",
-   "strategy": "fx_cot_extremes",
-   "direction": "SHORT",
-   "namespace": "discovery",
-   "n": 2,
-   "required_n": 1,
-   "mde_pct": 0.0486,
-   "wins": 0,
-   "wr": 0.0,
-   "wr_ci": [
-    0.0,
-    0.6576
-   ],
-   "pf": 0.0,
-   "gross_expectancy_pct": -0.1006,
-   "net_expectancy_pct": -0.1205,
-   "net_ci_pct": [
-    -0.1379,
-    -0.1032
+    null,
+    null
    ],
    "p_value": 1.0,
-   "p_wr": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
-   "p_harm": 0.0005,
+   "p_harm": 1.0,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.1579,
-    -0.1232
+    null,
+    null
    ],
    "stress_2x_ok": false,
    "dsr": null,
    "split_half": null,
    "recency": {
-    "window_trades": 2,
+    "window_trades": 1,
     "window_frac": 1.0,
-    "window_net_mean": -0.1205
+    "window_net_mean": 1.95
    },
-   "recent_ok": false,
-   "mean_cost_pct": 0.02,
+   "recent_ok": true,
+   "mean_cost_pct": 0.05,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.5,
+   "top_symbol_share": 1.0,
    "top_source_share": 1.0,
    "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
-    "n=2 < 20: no statistical claim"
+    "n=1 < 20: no statistical claim"
    ],
    "raw_verdict": "INSUFFICIENT_N"
   },
@@ -12657,56 +12923,6 @@
   },
   {
    "asset_class": "COMMODITY",
-   "strategy": "commodity_cross_momentum_winner",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 1,
-   "required_n": null,
-   "mde_pct": null,
-   "wins": 1,
-   "wr": 1.0,
-   "wr_ci": [
-    0.2065,
-    1.0
-   ],
-   "pf": null,
-   "gross_expectancy_pct": 6.6967,
-   "net_expectancy_pct": 0.0,
-   "net_ci_pct": [
-    null,
-    null
-   ],
-   "p_value": 1.0,
-   "p_wr": 0.5,
-   "q_value": null,
-   "p_harm": 1.0,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    null,
-    null
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 1,
-    "window_frac": 1.0,
-    "window_net_mean": 6.5467
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.15,
-   "materiality_floor_pct": 0.075,
-   "top_symbol_share": 1.0,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=1 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "COMMODITY",
    "strategy": "commodity_term_cot",
    "direction": "SHORT",
    "namespace": "discovery",
@@ -12757,8 +12973,8 @@
   },
   {
    "asset_class": "CRYPTO",
-   "strategy": "Crypto Funding Confluence (RSI+BB)",
-   "direction": "LONG",
+   "strategy": "B_flip_PriceRocMeanReversion",
+   "direction": "SHORT",
    "namespace": "discovery",
    "n": 1,
    "required_n": null,
@@ -12770,7 +12986,7 @@
     0.7935
    ],
    "pf": 0.0,
-   "gross_expectancy_pct": -2.0,
+   "gross_expectancy_pct": -2.0104,
    "net_expectancy_pct": 0.0,
    "net_ci_pct": [
     null,
@@ -12791,10 +13007,10 @@
    "recency": {
     "window_trades": 1,
     "window_frac": 1.0,
-    "window_net_mean": -2.0996
+    "window_net_mean": -2.1104
    },
    "recent_ok": false,
-   "mean_cost_pct": 0.0996,
+   "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
@@ -14607,56 +14823,6 @@
   },
   {
    "asset_class": "CRYPTO",
-   "strategy": "claude_ml_moderate_mut",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 1,
-   "required_n": null,
-   "mde_pct": null,
-   "wins": 1,
-   "wr": 1.0,
-   "wr_ci": [
-    0.2065,
-    1.0
-   ],
-   "pf": null,
-   "gross_expectancy_pct": 3.5,
-   "net_expectancy_pct": 0.0,
-   "net_ci_pct": [
-    null,
-    null
-   ],
-   "p_value": 1.0,
-   "p_wr": 0.5,
-   "q_value": null,
-   "p_harm": 1.0,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    null,
-    null
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 1,
-    "window_frac": 1.0,
-    "window_net_mean": 3.4004
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.0996,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 1.0,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=1 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "CRYPTO",
    "strategy": "clone_hl_copy_ABC_41M",
    "direction": "LONG",
    "namespace": "discovery",
@@ -15213,21 +15379,21 @@
    "n": 1,
    "required_n": null,
    "mde_pct": null,
-   "wins": 0,
-   "wr": 0.0,
+   "wins": 1,
+   "wr": 1.0,
    "wr_ci": [
-    0.0,
-    0.7935
+    0.2065,
+    1.0
    ],
-   "pf": 0.0,
-   "gross_expectancy_pct": -1.5127,
+   "pf": null,
+   "gross_expectancy_pct": 1.54,
    "net_expectancy_pct": 0.0,
    "net_ci_pct": [
     null,
     null
    ],
    "p_value": 1.0,
-   "p_wr": 1.0,
+   "p_wr": 0.5,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
@@ -15241,9 +15407,9 @@
    "recency": {
     "window_trades": 1,
     "window_frac": 1.0,
-    "window_net_mean": -1.6123
+    "window_net_mean": 1.4404
    },
-   "recent_ok": false,
+   "recent_ok": true,
    "mean_cost_pct": 0.0996,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
@@ -15920,7 +16086,7 @@
     1.0
    ],
    "pf": null,
-   "gross_expectancy_pct": 2.61,
+   "gross_expectancy_pct": 2.21,
    "net_expectancy_pct": 0.0,
    "net_ci_pct": [
     null,
@@ -15941,7 +16107,7 @@
    "recency": {
     "window_trades": 1,
     "window_frac": 1.0,
-    "window_net_mean": 2.5104
+    "window_net_mean": 2.1104
    },
    "recent_ok": true,
    "mean_cost_pct": 0.0996,
@@ -16020,7 +16186,7 @@
     0.7935
    ],
    "pf": 0.0,
-   "gross_expectancy_pct": 0.02,
+   "gross_expectancy_pct": -2.28,
    "net_expectancy_pct": 0.0,
    "net_ci_pct": [
     null,
@@ -16041,7 +16207,7 @@
    "recency": {
     "window_trades": 1,
     "window_frac": 1.0,
-    "window_net_mean": -0.0796
+    "window_net_mean": -2.3796
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0996,
@@ -16395,56 +16561,6 @@
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0996,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 1.0,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=1 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "CRYPTO",
-   "strategy": "prediction_market_consensus",
-   "direction": "SHORT",
-   "namespace": "discovery",
-   "n": 1,
-   "required_n": null,
-   "mde_pct": null,
-   "wins": 1,
-   "wr": 1.0,
-   "wr_ci": [
-    0.2065,
-    1.0
-   ],
-   "pf": null,
-   "gross_expectancy_pct": 2.4513,
-   "net_expectancy_pct": 0.0,
-   "net_ci_pct": [
-    null,
-    null
-   ],
-   "p_value": 1.0,
-   "p_wr": 0.5,
-   "q_value": null,
-   "p_harm": 1.0,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    null,
-    null
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 1,
-    "window_frac": 1.0,
-    "window_net_mean": 2.3513
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
    "top_source_share": 1.0,
@@ -18507,56 +18623,6 @@
   },
   {
    "asset_class": "EQUITY",
-   "strategy": "cheap_stock_cross_momentum_winner",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 1,
-   "required_n": null,
-   "mde_pct": null,
-   "wins": 1,
-   "wr": 1.0,
-   "wr_ci": [
-    0.2065,
-    1.0
-   ],
-   "pf": null,
-   "gross_expectancy_pct": 12.0,
-   "net_expectancy_pct": 0.0,
-   "net_ci_pct": [
-    null,
-    null
-   ],
-   "p_value": 1.0,
-   "p_wr": 0.5,
-   "q_value": null,
-   "p_harm": 1.0,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    null,
-    null
-   ],
-   "stress_2x_ok": false,
-   "dsr": null,
-   "split_half": null,
-   "recency": {
-    "window_trades": 1,
-    "window_frac": 1.0,
-    "window_net_mean": 11.95
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.05,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 1.0,
-   "top_source_share": 1.0,
-   "single_source": true,
-   "verdict": "INSUFFICIENT_N",
-   "reasons": [
-    "n=1 < 20: no statistical claim"
-   ],
-   "raw_verdict": "INSUFFICIENT_N"
-  },
-  {
-   "asset_class": "EQUITY",
    "strategy": "ema_stack_momentum",
    "direction": "SHORT",
    "namespace": "discovery",
@@ -19457,6 +19523,56 @@
   },
   {
    "asset_class": "FOREX",
+   "strategy": "fx_overnight_reversal",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 1,
+   "required_n": null,
+   "mde_pct": null,
+   "wins": 1,
+   "wr": 1.0,
+   "wr_ci": [
+    0.2065,
+    1.0
+   ],
+   "pf": null,
+   "gross_expectancy_pct": 0.3003,
+   "net_expectancy_pct": 0.0,
+   "net_ci_pct": [
+    null,
+    null
+   ],
+   "p_value": 1.0,
+   "p_wr": 0.5,
+   "q_value": null,
+   "p_harm": 1.0,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    null,
+    null
+   ],
+   "stress_2x_ok": false,
+   "dsr": null,
+   "split_half": null,
+   "recency": {
+    "window_trades": 1,
+    "window_frac": 1.0,
+    "window_net_mean": 0.2803
+   },
+   "recent_ok": true,
+   "mean_cost_pct": 0.02,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 1.0,
+   "top_source_share": 1.0,
+   "single_source": true,
+   "verdict": "INSUFFICIENT_N",
+   "reasons": [
+    "n=1 < 20: no statistical claim"
+   ],
+   "raw_verdict": "INSUFFICIENT_N"
+  },
+  {
+   "asset_class": "FOREX",
    "strategy": "hyperopt_bollinger_mr",
    "direction": "LONG",
    "namespace": "discovery",
@@ -19513,7 +19629,7 @@
    "direction": "LONG",
    "namespace": "discovery",
    "n": 407,
-   "required_n": 376,
+   "required_n": 375,
    "mde_pct": 0.806,
    "wins": 150,
    "wr": 0.3686,
@@ -19521,12 +19637,12 @@
     0.3231,
     0.4164
    ],
-   "pf": 0.5059,
-   "gross_expectancy_pct": -0.7417,
-   "net_expectancy_pct": -0.8397,
+   "pf": 0.5055,
+   "gross_expectancy_pct": -0.7423,
+   "net_expectancy_pct": -0.8403,
    "net_ci_pct": [
     -1.7975,
-    -0.1458
+    -0.1461
    ],
    "p_value": 0.995502,
    "p_wr": 1.0,
@@ -19542,12 +19658,12 @@
    "split_half": {
     "stable": false,
     "first_half_mean": -1.0483,
-    "second_half_mean": -0.6321
+    "second_half_mean": -0.6335
    },
    "recency": {
     "window_trades": 102,
     "window_frac": 0.2506,
-    "window_net_mean": -1.5628
+    "window_net_mean": -1.5655
    },
    "recent_ok": false,
    "mean_cost_pct": 0.098,
@@ -19561,7 +19677,7 @@
     "profit factor 0.51 < 0.8",
     "win rate 36.9% below 40%"
    ],
-   "sharpe": -0.1448,
+   "sharpe": -0.1449,
    "sr0": 0.1186,
    "raw_verdict": "KILL"
   },
@@ -19623,62 +19739,6 @@
   },
   {
    "asset_class": "CRYPTO",
-   "symbol": "AVAX",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 334,
-   "required_n": 399,
-   "mde_pct": 0.7465,
-   "wins": 130,
-   "wr": 0.3892,
-   "wr_ci": [
-    0.3385,
-    0.4425
-   ],
-   "pf": 0.7229,
-   "gross_expectancy_pct": -0.5843,
-   "net_expectancy_pct": -0.6838,
-   "net_ci_pct": [
-    -1.4396,
-    0.003
-   ],
-   "p_value": 0.974513,
-   "p_wr": 0.999981,
-   "q_value": 1.0,
-   "p_harm": 0.025987,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -1.5392,
-    -0.0967
-   ],
-   "stress_2x_ok": false,
-   "dsr": 0.0,
-   "split_half": {
-    "stable": false,
-    "first_half_mean": -0.6533,
-    "second_half_mean": -0.7143
-   },
-   "recency": {
-    "window_trades": 84,
-    "window_frac": 0.2515,
-    "window_net_mean": -1.8955
-   },
-   "recent_ok": false,
-   "mean_cost_pct": 0.0995,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 1.0,
-   "top_source_share": 0.4192,
-   "single_source": false,
-   "verdict": "WEAK",
-   "reasons": [
-    "profit factor 0.72 < 0.8 at n=334 \u2014 watch only, harm not proven (net CI [-1.44, +0.00]) so it keeps observing"
-   ],
-   "sharpe": -0.1405,
-   "sr0": 0.1309,
-   "raw_verdict": "WEAK"
-  },
-  {
-   "asset_class": "CRYPTO",
    "symbol": "SOL",
    "direction": "LONG",
    "namespace": "discovery",
@@ -19735,11 +19795,67 @@
   },
   {
    "asset_class": "CRYPTO",
+   "symbol": "AVAX",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 333,
+   "required_n": 414,
+   "mde_pct": 0.7491,
+   "wins": 131,
+   "wr": 0.3934,
+   "wr_ci": [
+    0.3424,
+    0.4468
+   ],
+   "pf": 0.7276,
+   "gross_expectancy_pct": -0.5729,
+   "net_expectancy_pct": -0.6725,
+   "net_ci_pct": [
+    -1.3963,
+    0.0354
+   ],
+   "p_value": 0.970515,
+   "p_wr": 0.999963,
+   "q_value": 1.0,
+   "p_harm": 0.029985,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -1.4961,
+    -0.0642
+   ],
+   "stress_2x_ok": false,
+   "dsr": 0.0,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.6746,
+    "second_half_mean": -0.6703
+   },
+   "recency": {
+    "window_trades": 83,
+    "window_frac": 0.2492,
+    "window_net_mean": -1.8646
+   },
+   "recent_ok": false,
+   "mean_cost_pct": 0.0996,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 1.0,
+   "top_source_share": 0.4234,
+   "single_source": false,
+   "verdict": "WEAK",
+   "reasons": [
+    "profit factor 0.73 < 0.8 at n=333 \u2014 watch only, harm not proven (net CI [-1.40, +0.04]) so it keeps observing"
+   ],
+   "sharpe": -0.138,
+   "sr0": 0.1311,
+   "raw_verdict": "WEAK"
+  },
+  {
+   "asset_class": "CRYPTO",
    "symbol": "ADA",
    "direction": "LONG",
    "namespace": "discovery",
    "n": 328,
-   "required_n": 1699,
+   "required_n": 1705,
    "mde_pct": 0.7788,
    "wins": 122,
    "wr": 0.372,
@@ -19747,33 +19863,33 @@
     0.3214,
     0.4255
    ],
-   "pf": 0.8546,
-   "gross_expectancy_pct": -0.2424,
-   "net_expectancy_pct": -0.3423,
+   "pf": 0.8548,
+   "gross_expectancy_pct": -0.2418,
+   "net_expectancy_pct": -0.3416,
    "net_ci_pct": [
-    -1.02,
-    0.3629
+    -1.0189,
+    0.3638
    ],
-   "p_value": 0.830585,
+   "p_value": 0.828086,
    "p_wr": 0.999999,
    "q_value": 1.0,
-   "p_harm": 0.169915,
+   "p_harm": 0.172414,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -1.1198,
-    0.263
+    -1.1187,
+    0.2639
    ],
    "stress_2x_ok": false,
    "dsr": 0.0002,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.7362,
-    "second_half_mean": 0.0517
+    "second_half_mean": 0.0529
    },
    "recency": {
     "window_trades": 82,
     "window_frac": 0.25,
-    "window_net_mean": -0.8472
+    "window_net_mean": -0.8447
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0998,
@@ -19787,7 +19903,7 @@
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.068,
+   "sharpe": -0.0679,
    "sr0": 0.1321,
    "raw_verdict": "WEAK"
   },
@@ -19854,57 +19970,57 @@
    "symbol": "DOT",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 312,
-   "required_n": 893,
-   "mde_pct": 0.7624,
-   "wins": 111,
-   "wr": 0.3558,
+   "n": 313,
+   "required_n": 923,
+   "mde_pct": 0.7602,
+   "wins": 112,
+   "wr": 0.3578,
    "wr_ci": [
-    0.3047,
-    0.4104
+    0.3067,
+    0.4124
    ],
-   "pf": 0.8012,
-   "gross_expectancy_pct": -0.3508,
-   "net_expectancy_pct": -0.4506,
+   "pf": 0.804,
+   "gross_expectancy_pct": -0.3429,
+   "net_expectancy_pct": -0.4427,
    "net_ci_pct": [
-    -0.9757,
-    0.1489
+    -0.9515,
+    0.144
    ],
-   "p_value": 0.933533,
+   "p_value": 0.931534,
    "p_wr": 1.0,
    "q_value": 1.0,
-   "p_harm": 0.066967,
+   "p_harm": 0.068966,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -1.0756,
-    0.0491
+    -1.0514,
+    0.0443
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0,
+   "dsr": 0.0001,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.464,
-    "second_half_mean": -0.4373
+    "second_half_mean": -0.4216
    },
    "recency": {
     "window_trades": 78,
-    "window_frac": 0.25,
-    "window_net_mean": -1.6945
+    "window_frac": 0.2492,
+    "window_net_mean": -1.5795
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0998,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.4744,
+   "top_source_share": 0.476,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 35.6% <= 50%",
+    "win rate 35.8% <= 50%",
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.0939,
-   "sr0": 0.1354,
+   "sharpe": -0.0923,
+   "sr0": 0.1352,
    "raw_verdict": "WEAK"
   },
   {
@@ -19912,57 +20028,57 @@
    "symbol": "LINK",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 299,
-   "required_n": 2000,
-   "mde_pct": 0.7377,
+   "n": 300,
+   "required_n": 2008,
+   "mde_pct": 0.7354,
    "wins": 120,
-   "wr": 0.4013,
+   "wr": 0.4,
    "wr_ci": [
-    0.3474,
-    0.4578
+    0.3462,
+    0.4564
    ],
-   "pf": 0.8628,
-   "gross_expectancy_pct": -0.1855,
-   "net_expectancy_pct": -0.2853,
+   "pf": 0.863,
+   "gross_expectancy_pct": -0.1845,
+   "net_expectancy_pct": -0.2843,
    "net_ci_pct": [
-    -0.8935,
-    0.3005
+    -0.8792,
+    0.3183
    ],
-   "p_value": 0.815592,
-   "p_wr": 0.99975,
+   "p_value": 0.825087,
+   "p_wr": 0.999795,
    "q_value": 1.0,
-   "p_harm": 0.184908,
+   "p_harm": 0.175412,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.9932,
-    0.2007
+    -0.9789,
+    0.2185
    ],
    "stress_2x_ok": false,
    "dsr": 0.0003,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.3658,
-    "second_half_mean": -0.2054
+    "first_half_mean": -0.3723,
+    "second_half_mean": -0.1964
    },
    "recency": {
     "window_trades": 75,
-    "window_frac": 0.2508,
-    "window_net_mean": -0.8886
+    "window_frac": 0.25,
+    "window_net_mean": -0.8077
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0998,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.4983,
+   "top_source_share": 0.5,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 40.1% <= 50%",
+    "win rate 40.0% <= 50%",
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.0627,
-   "sr0": 0.1383,
+   "sharpe": -0.0626,
+   "sr0": 0.1381,
    "raw_verdict": "WEAK"
   },
   {
@@ -19970,56 +20086,56 @@
    "symbol": "NEAR",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 217,
-   "required_n": 1740,
-   "mde_pct": 1.1888,
+   "n": 218,
+   "required_n": 1784,
+   "mde_pct": 1.1835,
    "wins": 94,
-   "wr": 0.4332,
+   "wr": 0.4312,
    "wr_ci": [
-    0.369,
-    0.4997
+    0.3672,
+    0.4976
    ],
-   "pf": 1.1792,
-   "gross_expectancy_pct": 0.5196,
-   "net_expectancy_pct": 0.4199,
+   "pf": 1.177,
+   "gross_expectancy_pct": 0.5134,
+   "net_expectancy_pct": 0.4137,
    "net_ci_pct": [
-    -0.6859,
-    1.6303
+    -0.674,
+    1.5278
    ],
-   "p_value": 0.271364,
-   "p_wr": 0.979275,
+   "p_value": 0.272364,
+   "p_wr": 0.982238,
    "q_value": 1.0,
-   "p_harm": 0.729135,
+   "p_harm": 0.728136,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.7858,
-    1.5305
+    -0.7739,
+    1.4283
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0774,
+   "dsr": 0.076,
    "split_half": {
     "stable": true,
-    "first_half_mean": 0.1833,
-    "second_half_mean": 0.6542
+    "first_half_mean": 0.1665,
+    "second_half_mean": 0.6609
    },
    "recency": {
     "window_trades": 54,
-    "window_frac": 0.2488,
-    "window_net_mean": -0.9138
+    "window_frac": 0.2477,
+    "window_net_mean": -1.0523
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0997,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.6682,
+   "top_source_share": 0.6651,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 43.3% <= 50%",
+    "win rate 43.1% <= 50%",
     "single symbol 100% of trades"
    ],
-   "sharpe": 0.0673,
-   "sr0": 0.1624,
+   "sharpe": 0.0664,
+   "sr0": 0.162,
    "raw_verdict": "WEAK"
   },
   {
@@ -20084,56 +20200,56 @@
    "symbol": "JUP",
    "direction": "SHORT",
    "namespace": "discovery",
-   "n": 173,
-   "required_n": 3374,
-   "mde_pct": 0.9004,
+   "n": 174,
+   "required_n": 4303,
+   "mde_pct": 0.8976,
    "wins": 76,
-   "wr": 0.4393,
+   "wr": 0.4368,
    "wr_ci": [
-    0.3675,
-    0.5138
+    0.3652,
+    0.5111
    ],
-   "pf": 1.1133,
-   "gross_expectancy_pct": 0.3039,
-   "net_expectancy_pct": 0.2039,
+   "pf": 1.0997,
+   "gross_expectancy_pct": 0.2805,
+   "net_expectancy_pct": 0.1805,
    "net_ci_pct": [
-    -0.4761,
-    0.8733
+    -0.4794,
+    0.8211
    ],
-   "p_value": 0.269865,
-   "p_wr": 0.952943,
+   "p_value": 0.292854,
+   "p_wr": 0.959537,
    "q_value": 1.0,
-   "p_harm": 0.730635,
+   "p_harm": 0.707646,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.5761,
-    0.7734
+    -0.5794,
+    0.7211
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0388,
+   "dsr": 0.0332,
    "split_half": {
     "stable": true,
-    "first_half_mean": 0.0575,
-    "second_half_mean": 0.3486
+    "first_half_mean": 0.164,
+    "second_half_mean": 0.197
    },
    "recency": {
-    "window_trades": 43,
-    "window_frac": 0.2486,
-    "window_net_mean": 1.5316
+    "window_trades": 44,
+    "window_frac": 0.2529,
+    "window_net_mean": 1.4088
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.9191,
+   "top_source_share": 0.9195,
    "single_source": true,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 43.9% <= 50%",
+    "win rate 43.7% <= 50%",
     "single symbol 100% of trades"
    ],
-   "sharpe": 0.0484,
-   "sr0": 0.1818,
+   "sharpe": 0.0428,
+   "sr0": 0.1813,
    "raw_verdict": "WEAK"
   },
   {
@@ -20142,41 +20258,41 @@
    "direction": "SHORT",
    "namespace": "discovery",
    "n": 170,
-   "required_n": 2179,
-   "mde_pct": 0.3409,
-   "wins": 76,
-   "wr": 0.4471,
+   "required_n": 3309,
+   "mde_pct": 0.341,
+   "wins": 77,
+   "wr": 0.4529,
    "wr_ci": [
-    0.3743,
-    0.5221
+    0.38,
+    0.528
    ],
-   "pf": 0.8669,
-   "gross_expectancy_pct": 0.0047,
-   "net_expectancy_pct": -0.0952,
+   "pf": 0.8905,
+   "gross_expectancy_pct": 0.0227,
+   "net_expectancy_pct": -0.0773,
    "net_ci_pct": [
-    -0.4298,
-    0.2146
+    -0.4255,
+    0.2749
    ],
-   "p_value": 0.716142,
-   "p_wr": 0.927585,
+   "p_value": 0.667666,
+   "p_wr": 0.903932,
    "q_value": 1.0,
-   "p_harm": 0.284358,
+   "p_harm": 0.332834,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.5298,
-    0.1147
+    -0.5254,
+    0.1749
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0007,
+   "dsr": 0.0012,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.1806,
-    "second_half_mean": -0.0099
+    "second_half_mean": 0.026
    },
    "recency": {
     "window_trades": 42,
     "window_frac": 0.2471,
-    "window_net_mean": 0.564
+    "window_net_mean": 0.6367
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
@@ -20186,11 +20302,11 @@
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 44.7% <= 50%",
+    "win rate 45.3% <= 50%",
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.0602,
+   "sharpe": -0.0488,
    "sr0": 0.1834,
    "raw_verdict": "WEAK"
   },
@@ -20485,62 +20601,6 @@
   },
   {
    "asset_class": "CRYPTO",
-   "symbol": "ETH",
-   "direction": "SHORT",
-   "namespace": "discovery",
-   "n": 156,
-   "required_n": 529,
-   "mde_pct": 0.5065,
-   "wins": 79,
-   "wr": 0.5064,
-   "wr_ci": [
-    0.4287,
-    0.5838
-   ],
-   "pf": 1.3336,
-   "gross_expectancy_pct": 0.3752,
-   "net_expectancy_pct": 0.2752,
-   "net_ci_pct": [
-    -0.2209,
-    0.8
-   ],
-   "p_value": 0.143928,
-   "p_wr": 0.46811,
-   "q_value": 1.0,
-   "p_harm": 0.856572,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -0.3209,
-    0.7001
-   ],
-   "stress_2x_ok": false,
-   "dsr": 0.1934,
-   "split_half": {
-    "stable": true,
-    "first_half_mean": 0.3977,
-    "second_half_mean": 0.1527
-   },
-   "recency": {
-    "window_trades": 39,
-    "window_frac": 0.25,
-    "window_net_mean": 0.7584
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.1,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 1.0,
-   "top_source_share": 0.8974,
-   "single_source": false,
-   "verdict": "WEAK",
-   "reasons": [
-    "single symbol 100% of trades"
-   ],
-   "sharpe": 0.1222,
-   "sr0": 0.1915,
-   "raw_verdict": "WEAK"
-  },
-  {
-   "asset_class": "CRYPTO",
    "symbol": "ARB",
    "direction": "LONG",
    "namespace": "discovery",
@@ -20599,118 +20659,116 @@
   },
   {
    "asset_class": "CRYPTO",
-   "symbol": "XRP",
+   "symbol": "ETH",
    "direction": "SHORT",
    "namespace": "discovery",
-   "n": 152,
-   "required_n": 184597,
-   "mde_pct": 0.5721,
-   "wins": 73,
-   "wr": 0.4803,
+   "n": 155,
+   "required_n": 474,
+   "mde_pct": 0.5079,
+   "wins": 79,
+   "wr": 0.5097,
    "wr_ci": [
-    0.4023,
-    0.5592
+    0.4317,
+    0.5872
    ],
-   "pf": 0.9851,
-   "gross_expectancy_pct": 0.0835,
-   "net_expectancy_pct": -0.0164,
+   "pf": 1.3558,
+   "gross_expectancy_pct": 0.3905,
+   "net_expectancy_pct": 0.2905,
    "net_ci_pct": [
-    -0.6364,
-    0.5693
+    -0.2153,
+    0.8782
    ],
-   "p_value": 0.515742,
-   "p_wr": 0.714833,
+   "p_value": 0.141929,
+   "p_wr": 0.43622,
    "q_value": 1.0,
-   "p_harm": 0.484758,
+   "p_harm": 0.858571,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.7363,
-    0.4694
+    -0.3153,
+    0.7782
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0068,
+   "dsr": 0.2164,
    "split_half": {
-    "stable": false,
-    "first_half_mean": -0.1395,
-    "second_half_mean": 0.1067
+    "stable": true,
+    "first_half_mean": 0.3882,
+    "second_half_mean": 0.1941
    },
    "recency": {
-    "window_trades": 38,
-    "window_frac": 0.25,
-    "window_net_mean": 1.0819
+    "window_trades": 39,
+    "window_frac": 0.2516,
+    "window_net_mean": 0.7669
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.875,
-   "single_source": false,
+   "top_source_share": 0.9032,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 48.0% <= 50%",
-    "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.0065,
-   "sr0": 0.194,
+   "sharpe": 0.1291,
+   "sr0": 0.1921,
    "raw_verdict": "WEAK"
   },
   {
    "asset_class": "CRYPTO",
-   "symbol": "DOT",
+   "symbol": "XRP",
    "direction": "SHORT",
    "namespace": "discovery",
-   "n": 147,
-   "required_n": 1442,
-   "mde_pct": 0.7757,
-   "wins": 70,
-   "wr": 0.4762,
+   "n": 153,
+   "required_n": 56203627,
+   "mde_pct": 0.57,
+   "wins": 74,
+   "wr": 0.4837,
    "wr_ci": [
-    0.3971,
-    0.5565
+    0.4059,
+    0.5623
    ],
-   "pf": 1.1837,
-   "gross_expectancy_pct": 0.3477,
-   "net_expectancy_pct": 0.2477,
+   "pf": 0.9991,
+   "gross_expectancy_pct": 0.099,
+   "net_expectancy_pct": -0.0009,
    "net_ci_pct": [
-    -0.3741,
-    0.9417
+    -0.6524,
+    0.5865
    ],
-   "p_value": 0.230885,
-   "p_wr": 0.745249,
+   "p_value": 0.50025,
+   "p_wr": 0.686115,
    "q_value": 1.0,
-   "p_harm": 0.769615,
+   "p_harm": 0.50025,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.4741,
-    0.8418
+    -0.7524,
+    0.4866
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0652,
+   "dsr": 0.0085,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.1378,
-    "second_half_mean": 0.628
+    "first_half_mean": -0.1395,
+    "second_half_mean": 0.1358
    },
    "recency": {
-    "window_trades": 37,
-    "window_frac": 0.2517,
-    "window_net_mean": 1.5887
+    "window_trades": 38,
+    "window_frac": 0.2484,
+    "window_net_mean": 1.1665
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.8844,
+   "top_source_share": 0.8693,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 47.6% <= 50%",
+    "win rate 48.4% <= 50%",
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": 0.074,
-   "sr0": 0.1973,
+   "sharpe": -0.0004,
+   "sr0": 0.1934,
    "raw_verdict": "WEAK"
   },
   {
@@ -20729,7 +20787,7 @@
    ],
    "pf": 0.7937,
    "gross_expectancy_pct": -0.3384,
-   "net_expectancy_pct": -0.4386,
+   "net_expectancy_pct": -0.4385,
    "net_ci_pct": [
     -1.26,
     0.4397
@@ -20766,6 +20824,64 @@
     "profit factor 0.79 < 0.8 at n=146 \u2014 watch only, harm not proven (net CI [-1.26, +0.44]) so it keeps observing"
    ],
    "sharpe": -0.0987,
+   "sr0": 0.1979,
+   "raw_verdict": "WEAK"
+  },
+  {
+   "asset_class": "CRYPTO",
+   "symbol": "DOT",
+   "direction": "SHORT",
+   "namespace": "discovery",
+   "n": 146,
+   "required_n": 1697,
+   "mde_pct": 0.7791,
+   "wins": 69,
+   "wr": 0.4726,
+   "wr_ci": [
+    0.3934,
+    0.5532
+   ],
+   "pf": 1.1683,
+   "gross_expectancy_pct": 0.3286,
+   "net_expectancy_pct": 0.2286,
+   "net_ci_pct": [
+    -0.3701,
+    0.9303
+   ],
+   "p_value": 0.246377,
+   "p_wr": 0.771759,
+   "q_value": 1.0,
+   "p_harm": 0.754123,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.4701,
+    0.8303
+   ],
+   "stress_2x_ok": false,
+   "dsr": 0.0564,
+   "split_half": {
+    "stable": false,
+    "first_half_mean": -0.1378,
+    "second_half_mean": 0.5949
+   },
+   "recency": {
+    "window_trades": 36,
+    "window_frac": 0.2466,
+    "window_net_mean": 1.5482
+   },
+   "recent_ok": true,
+   "mean_cost_pct": 0.1,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 1.0,
+   "top_source_share": 0.8904,
+   "single_source": false,
+   "verdict": "WEAK",
+   "reasons": [
+    "win rate 47.3% <= 50%",
+    "split-half unstable (one half mean <= 0)",
+    "single symbol 100% of trades"
+   ],
+   "sharpe": 0.0682,
    "sr0": 0.1979,
    "raw_verdict": "WEAK"
   },
@@ -20889,41 +21005,41 @@
    "direction": "SHORT",
    "namespace": "discovery",
    "n": 144,
-   "required_n": 1638,
-   "mde_pct": 0.6165,
-   "wins": 55,
-   "wr": 0.3819,
+   "required_n": 1900,
+   "mde_pct": 0.6157,
+   "wins": 56,
+   "wr": 0.3889,
    "wr_ci": [
-    0.3066,
-    0.4634
+    0.3131,
+    0.4704
    ],
-   "pf": 0.8533,
-   "gross_expectancy_pct": -0.0828,
-   "net_expectancy_pct": -0.1828,
+   "pf": 0.8626,
+   "gross_expectancy_pct": -0.0696,
+   "net_expectancy_pct": -0.1695,
    "net_ci_pct": [
-    -0.7323,
-    0.4084
+    -0.7222,
+    0.4276
    ],
-   "p_value": 0.737631,
-   "p_wr": 0.998303,
+   "p_value": 0.72014,
+   "p_wr": 0.997116,
    "q_value": 1.0,
-   "p_harm": 0.262869,
+   "p_harm": 0.28036,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.8323,
-    0.3084
+    -0.8221,
+    0.3276
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0008,
+   "dsr": 0.0009,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.3774,
-    "second_half_mean": 0.0118
+    "second_half_mean": 0.0383
    },
    "recency": {
     "window_trades": 36,
     "window_frac": 0.25,
-    "window_net_mean": 1.0216
+    "window_net_mean": 1.0747
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
@@ -20933,11 +21049,11 @@
    "single_source": true,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 38.2% <= 50%",
+    "win rate 38.9% <= 50%",
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.0694,
+   "sharpe": -0.0645,
    "sr0": 0.1993,
    "raw_verdict": "WEAK"
   },
@@ -21005,47 +21121,47 @@
    "direction": "SHORT",
    "namespace": "discovery",
    "n": 140,
-   "required_n": 2173,
-   "mde_pct": 0.5757,
+   "required_n": 2143,
+   "mde_pct": 0.5755,
    "wins": 66,
    "wr": 0.4714,
    "wr_ci": [
     0.3906,
     0.5538
    ],
-   "pf": 1.1477,
-   "gross_expectancy_pct": 0.2461,
-   "net_expectancy_pct": 0.1461,
+   "pf": 1.1488,
+   "gross_expectancy_pct": 0.2471,
+   "net_expectancy_pct": 0.1471,
    "net_ci_pct": [
-    -0.3401,
-    0.6368
+    -0.3391,
+    0.6455
    ],
-   "p_value": 0.288856,
+   "p_value": 0.285857,
    "p_wr": 0.776505,
    "q_value": 1.0,
-   "p_harm": 0.711644,
+   "p_harm": 0.714643,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.44,
-    0.5368
+    -0.4391,
+    0.5456
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0468,
+   "dsr": 0.0473,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.185,
-    "second_half_mean": 0.4773
+    "second_half_mean": 0.4792
    },
    "recency": {
     "window_trades": 35,
     "window_frac": 0.25,
-    "window_net_mean": 1.2467
+    "window_net_mean": 1.2506
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.8929,
+   "top_source_share": 0.9,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
@@ -21053,7 +21169,7 @@
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": 0.0603,
+   "sharpe": 0.0607,
    "sr0": 0.2021,
    "raw_verdict": "WEAK"
   },
@@ -21063,41 +21179,41 @@
    "direction": "LONG",
    "namespace": "discovery",
    "n": 139,
-   "required_n": 1047,
-   "mde_pct": 0.8969,
+   "required_n": 1028,
+   "mde_pct": 0.8964,
    "wins": 57,
    "wr": 0.4101,
    "wr_ci": [
     0.3318,
     0.4932
    ],
-   "pf": 0.8137,
-   "gross_expectancy_pct": -0.2274,
-   "net_expectancy_pct": -0.3268,
+   "pf": 0.812,
+   "gross_expectancy_pct": -0.2303,
+   "net_expectancy_pct": -0.3297,
    "net_ci_pct": [
-    -1.1053,
-    0.4347
+    -1.1077,
+    0.4307
    ],
-   "p_value": 0.795102,
+   "p_value": 0.796602,
    "p_wr": 0.986463,
    "q_value": 1.0,
-   "p_harm": 0.205397,
+   "p_harm": 0.203898,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -1.2048,
-    0.3351
+    -1.207,
+    0.3311
    ],
    "stress_2x_ok": false,
    "dsr": 0.0004,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.2195,
-    "second_half_mean": -0.4326
+    "second_half_mean": -0.4383
    },
    "recency": {
     "window_trades": 35,
     "window_frac": 0.2518,
-    "window_net_mean": -1.3216
+    "window_net_mean": -1.333
    },
    "recent_ok": false,
    "mean_cost_pct": 0.0994,
@@ -21111,7 +21227,7 @@
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.0869,
+   "sharpe": -0.0877,
    "sr0": 0.2029,
    "raw_verdict": "WEAK"
   },
@@ -21179,7 +21295,7 @@
    "direction": "SHORT",
    "namespace": "discovery",
    "n": 133,
-   "required_n": 14218,
+   "required_n": 14217,
    "mde_pct": 0.8425,
    "wins": 62,
    "wr": 0.4662,
@@ -21201,7 +21317,7 @@
    "harm_q": null,
    "net_ci_pct_2x": [
     -0.8312,
-    0.7949
+    0.795
    ],
    "stress_2x_ok": false,
    "dsr": 0.017,
@@ -21290,6 +21406,62 @@
    "raw_verdict": "WEAK"
   },
   {
+   "asset_class": "EQUITY",
+   "symbol": "AAPL",
+   "direction": "LONG",
+   "namespace": "discovery",
+   "n": 81,
+   "required_n": 186,
+   "mde_pct": 0.8467,
+   "wins": 43,
+   "wr": 0.5309,
+   "wr_ci": [
+    0.4233,
+    0.6357
+   ],
+   "pf": 1.5897,
+   "gross_expectancy_pct": 0.6113,
+   "net_expectancy_pct": 0.5599,
+   "net_ci_pct": [
+    -0.0312,
+    1.1928
+   ],
+   "p_value": 0.032984,
+   "p_wr": 0.328496,
+   "q_value": 0.747637,
+   "p_harm": 0.967516,
+   "harm_q": null,
+   "net_ci_pct_2x": [
+    -0.0823,
+    1.1414
+   ],
+   "stress_2x_ok": false,
+   "dsr": 0.3017,
+   "split_half": {
+    "stable": true,
+    "first_half_mean": 0.4359,
+    "second_half_mean": 0.6809
+   },
+   "recency": {
+    "window_trades": 20,
+    "window_frac": 0.2469,
+    "window_net_mean": 0.5343
+   },
+   "recent_ok": true,
+   "mean_cost_pct": 0.0515,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 1.0,
+   "top_source_share": 0.963,
+   "single_source": true,
+   "verdict": "WEAK",
+   "reasons": [
+    "single symbol 100% of trades"
+   ],
+   "sharpe": 0.207,
+   "sr0": 0.2658,
+   "raw_verdict": "WEAK"
+  },
+  {
    "asset_class": "ETF",
    "symbol": "QQQ",
    "direction": "LONG",
@@ -21345,62 +21517,6 @@
    ],
    "sharpe": 0.0406,
    "sr0": 0.2658,
-   "raw_verdict": "WEAK"
-  },
-  {
-   "asset_class": "EQUITY",
-   "symbol": "AAPL",
-   "direction": "LONG",
-   "namespace": "discovery",
-   "n": 80,
-   "required_n": 166,
-   "mde_pct": 0.8523,
-   "wins": 43,
-   "wr": 0.5375,
-   "wr_ci": [
-    0.429,
-    0.6425
-   ],
-   "pf": 1.6337,
-   "gross_expectancy_pct": 0.6442,
-   "net_expectancy_pct": 0.5927,
-   "net_ci_pct": [
-    -0.0136,
-    1.1673
-   ],
-   "p_value": 0.026987,
-   "p_wr": 0.288215,
-   "q_value": 0.611705,
-   "p_harm": 0.973513,
-   "harm_q": null,
-   "net_ci_pct_2x": [
-    -0.0645,
-    1.1163
-   ],
-   "stress_2x_ok": false,
-   "dsr": 0.3362,
-   "split_half": {
-    "stable": true,
-    "first_half_mean": 0.4359,
-    "second_half_mean": 0.7496
-   },
-   "recency": {
-    "window_trades": 20,
-    "window_frac": 0.25,
-    "window_net_mean": 0.6286
-   },
-   "recent_ok": true,
-   "mean_cost_pct": 0.0514,
-   "materiality_floor_pct": 0.05,
-   "top_symbol_share": 1.0,
-   "top_source_share": 0.9625,
-   "single_source": true,
-   "verdict": "WEAK",
-   "reasons": [
-    "single symbol 100% of trades"
-   ],
-   "sharpe": 0.2191,
-   "sr0": 0.2674,
    "raw_verdict": "WEAK"
   },
   {
@@ -21812,57 +21928,57 @@
    "symbol": "INJ",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 60,
-   "required_n": 28343,
-   "mde_pct": 3.0363,
-   "wins": 26,
-   "wr": 0.4333,
+   "n": 58,
+   "required_n": 16329,
+   "mde_pct": 3.1369,
+   "wins": 25,
+   "wr": 0.431,
    "wr_ci": [
-    0.3157,
-    0.559
+    0.3118,
+    0.5588
    ],
-   "pf": 0.962,
-   "gross_expectancy_pct": -0.0411,
-   "net_expectancy_pct": -0.1397,
+   "pf": 0.9506,
+   "gross_expectancy_pct": -0.0883,
+   "net_expectancy_pct": -0.187,
    "net_ci_pct": [
-    -2.7824,
-    2.6677
+    -2.829,
+    2.6637
    ],
-   "p_value": 0.575712,
-   "p_wr": 0.87747,
+   "p_value": 0.581209,
+   "p_wr": 0.881476,
    "q_value": 1.0,
-   "p_harm": 0.424788,
+   "p_harm": 0.41929,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -2.8816,
-    2.5692
+    -2.9281,
+    2.5653
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0064,
+   "dsr": 0.0058,
    "split_half": {
     "stable": false,
-    "first_half_mean": 1.6447,
-    "second_half_mean": -1.9241
+    "first_half_mean": 1.8935,
+    "second_half_mean": -2.2674
    },
    "recency": {
-    "window_trades": 15,
-    "window_frac": 0.25,
-    "window_net_mean": -2.5884
+    "window_trades": 14,
+    "window_frac": 0.2414,
+    "window_net_mean": -3.6925
    },
    "recent_ok": false,
-   "mean_cost_pct": 0.0987,
+   "mean_cost_pct": 0.0986,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.8833,
-   "single_source": false,
+   "top_source_share": 0.9138,
+   "single_source": true,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 43.3% <= 50%",
+    "win rate 43.1% <= 50%",
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.0168,
-   "sr0": 0.3088,
+   "sharpe": -0.0221,
+   "sr0": 0.3141,
    "raw_verdict": "WEAK"
   },
   {
@@ -22103,41 +22219,41 @@
    "direction": "LONG",
    "namespace": "discovery",
    "n": 48,
-   "required_n": 657997,
-   "mde_pct": 3.4005,
-   "wins": 20,
-   "wr": 0.4167,
+   "required_n": 75075,
+   "mde_pct": 3.3976,
+   "wins": 21,
+   "wr": 0.4375,
    "wr_ci": [
-    0.2885,
-    0.5572
+    0.307,
+    0.5772
    ],
-   "pf": 1.0082,
-   "gross_expectancy_pct": 0.1282,
-   "net_expectancy_pct": 0.029,
+   "pf": 1.0245,
+   "gross_expectancy_pct": 0.185,
+   "net_expectancy_pct": 0.0859,
    "net_ci_pct": [
-    -1.7955,
-    1.7781
+    -1.7351,
+    1.7986
    ],
-   "p_value": 0.529235,
-   "p_wr": 0.903294,
+   "p_value": 0.49975,
+   "p_wr": 0.843837,
    "q_value": 1.0,
-   "p_harm": 0.471264,
+   "p_harm": 0.50075,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -1.8949,
-    1.6791
+    -1.8337,
+    1.6996
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0095,
+   "dsr": 0.0107,
    "split_half": {
     "stable": false,
     "first_half_mean": 0.4591,
-    "second_half_mean": -0.401
+    "second_half_mean": -0.2873
    },
    "recency": {
     "window_trades": 12,
     "window_frac": 0.25,
-    "window_net_mean": 0.3768
+    "window_net_mean": 0.6042
    },
    "recent_ok": true,
    "mean_cost_pct": 0.0991,
@@ -22147,11 +22263,11 @@
    "single_source": true,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 41.7% <= 50%",
+    "win rate 43.8% <= 50%",
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": 0.0035,
+   "sharpe": 0.0103,
    "sr0": 0.3452,
    "raw_verdict": "WEAK"
   },
@@ -22467,7 +22583,7 @@
    ],
    "p_value": 0.01949,
    "p_wr": 0.02048,
-   "q_value": 0.611705,
+   "q_value": 0.66266,
    "p_harm": 0.981009,
    "harm_q": null,
    "net_ci_pct_2x": [
@@ -22503,53 +22619,53 @@
    "symbol": "AUDJPY",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 31,
-   "required_n": 7,
-   "mde_pct": 0.3477,
-   "wins": 25,
-   "wr": 0.8065,
+   "n": 33,
+   "required_n": 12,
+   "mde_pct": 0.3755,
+   "wins": 24,
+   "wr": 0.7273,
    "wr_ci": [
-    0.6372,
-    0.9081
+    0.5578,
+    0.8493
    ],
-   "pf": 8.6353,
-   "gross_expectancy_pct": 0.7702,
-   "net_expectancy_pct": 0.7502,
+   "pf": 5.4758,
+   "gross_expectancy_pct": 0.6595,
+   "net_expectancy_pct": 0.6395,
    "net_ci_pct": [
-    0.5044,
-    1.0009
+    0.242,
+    0.9415
    ],
-   "p_value": 0.0005,
-   "p_wr": 0.000439,
-   "q_value": 0.034,
-   "p_harm": 1.0,
+   "p_value": 0.001999,
+   "p_wr": 0.006765,
+   "q_value": 0.135932,
+   "p_harm": 0.998501,
    "harm_q": null,
    "net_ci_pct_2x": [
-    0.4844,
-    0.9809
+    0.222,
+    0.9215
    ],
    "stress_2x_ok": true,
-   "dsr": 0.9898,
+   "dsr": 0.9676,
    "split_half": {
     "stable": true,
-    "first_half_mean": 0.6281,
-    "second_half_mean": 0.8646
+    "first_half_mean": 0.7584,
+    "second_half_mean": 0.5277
    },
    "recency": {
     "window_trades": 8,
-    "window_frac": 0.2581,
-    "window_net_mean": 0.9463
+    "window_frac": 0.2424,
+    "window_net_mean": 0.0181
    },
    "recent_ok": true,
    "mean_cost_pct": 0.02,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.6774,
+   "top_source_share": 0.697,
    "single_source": false,
    "verdict": "CANDIDATE",
    "reasons": [],
-   "sharpe": 1.1029,
-   "sr0": 0.4296,
+   "sharpe": 0.843,
+   "sr0": 0.4164,
    "first_pass_at": "2026-11-19T09:04:03.006172+00:00",
    "raw_verdict": "CANDIDATE"
   },
@@ -22558,57 +22674,57 @@
    "symbol": "TLT",
    "direction": "LONG",
    "namespace": "discovery",
-   "n": 30,
-   "required_n": 125,
-   "mde_pct": 0.4738,
-   "wins": 12,
-   "wr": 0.4,
+   "n": 31,
+   "required_n": 293,
+   "mde_pct": 0.4989,
+   "wins": 13,
+   "wr": 0.4194,
    "wr_ci": [
-    0.2459,
-    0.5768
+    0.2642,
+    0.5923
    ],
-   "pf": 0.5773,
-   "gross_expectancy_pct": -0.1802,
-   "net_expectancy_pct": -0.2329,
+   "pf": 0.6953,
+   "gross_expectancy_pct": -0.1098,
+   "net_expectancy_pct": -0.1624,
    "net_ci_pct": [
-    -0.4572,
-    0.0078
+    -0.3739,
+    0.0618
    ],
-   "p_value": 0.969515,
-   "p_wr": 0.899756,
+   "p_value": 0.933033,
+   "p_wr": 0.859479,
    "q_value": 1.0,
-   "p_harm": 0.030985,
+   "p_harm": 0.067466,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.5093,
-    -0.0455
+    -0.426,
+    0.0081
    ],
    "stress_2x_ok": false,
-   "dsr": 0.0002,
+   "dsr": 0.0009,
    "split_half": {
     "stable": false,
     "first_half_mean": -0.2138,
-    "second_half_mean": -0.2519
+    "second_half_mean": -0.1143
    },
    "recency": {
     "window_trades": 8,
-    "window_frac": 0.2667,
-    "window_net_mean": -0.1735
+    "window_frac": 0.2581,
+    "window_net_mean": 0.1771
    },
-   "recent_ok": false,
-   "mean_cost_pct": 0.0527,
+   "recent_ok": true,
+   "mean_cost_pct": 0.0526,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 1.0,
-   "top_source_share": 0.9333,
+   "top_source_share": 0.9032,
    "single_source": true,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 40.0% <= 50%",
+    "win rate 41.9% <= 50%",
     "split-half unstable (one half mean <= 0)",
     "single symbol 100% of trades"
    ],
-   "sharpe": -0.2555,
-   "sr0": 0.4367,
+   "sharpe": -0.1665,
+   "sr0": 0.4296,
    "raw_verdict": "WEAK"
   },
   {
@@ -23422,242 +23538,241 @@
  "source_families": [
   {
    "family": "other",
-   "n": 4321,
-   "required_n": 1509,
-   "mde_pct": 0.2286,
+   "n": 4327,
+   "required_n": 1448,
+   "mde_pct": 0.2292,
    "wins": 1698,
-   "wr": 0.393,
+   "wr": 0.3924,
    "wr_ci": [
-    0.3785,
-    0.4076
+    0.378,
+    0.4071
    ],
-   "pf": 0.8237,
-   "gross_expectancy_pct": -0.3089,
-   "net_expectancy_pct": -0.387,
+   "pf": 0.82,
+   "gross_expectancy_pct": -0.3184,
+   "net_expectancy_pct": -0.3964,
    "net_ci_pct": [
-    -0.8348,
-    0.0894
+    -0.8579,
+    0.0695
    ],
-   "p_value": 0.947526,
+   "p_value": 0.956022,
    "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.052974,
+   "p_harm": 0.044478,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.9136,
-    0.0115
+    -0.9377,
+    -0.0076
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.2295,
-    "second_half_mean": -0.5443
+    "first_half_mean": -0.2451,
+    "second_half_mean": -0.5475
    },
    "recency": {
-    "window_trades": 1080,
-    "window_frac": 0.2499,
-    "window_net_mean": -1.5012
+    "window_trades": 1082,
+    "window_frac": 0.2501,
+    "window_net_mean": -1.5383
    },
    "recent_ok": false,
-   "mean_cost_pct": 0.078,
+   "mean_cost_pct": 0.0779,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.0669,
-   "top_source_share": 0.6144,
+   "top_symbol_share": 0.0668,
+   "top_source_share": 0.6138,
    "single_source": false,
    "verdict": "WEAK",
    "reasons": [
-    "win rate 39.3% <= 50%",
+    "win rate 39.2% <= 50%",
     "split-half unstable (one half mean <= 0)"
    ],
-   "sharpe": -0.0721,
+   "sharpe": -0.0736,
    "sr0": 0.0198
   },
   {
    "family": "luxalgo",
-   "n": 4077,
-   "required_n": 6893,
-   "mde_pct": 0.143,
-   "wins": 1715,
+   "n": 4081,
+   "required_n": 6840,
+   "mde_pct": 0.1429,
+   "wins": 1717,
    "wr": 0.4207,
    "wr_ci": [
-    0.4056,
+    0.4057,
     0.4359
    ],
-   "pf": 0.9247,
-   "gross_expectancy_pct": -0.01,
-   "net_expectancy_pct": -0.11,
+   "pf": 0.9244,
+   "gross_expectancy_pct": -0.0104,
+   "net_expectancy_pct": -0.1104,
    "net_ci_pct": [
-    -0.3467,
-    0.1155
+    -0.3326,
+    0.1185
    ],
-   "p_value": 0.826587,
+   "p_value": 0.82009,
    "p_wr": 1.0,
    "q_value": null,
-   "p_harm": 0.173913,
+   "p_harm": 0.18041,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.4467,
-    0.0156
+    -0.4326,
+    0.0185
    ],
    "stress_2x_ok": false,
    "dsr": 0.0003,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.2067,
-    "second_half_mean": -0.0132
+    "first_half_mean": -0.2037,
+    "second_half_mean": -0.0171
    },
    "recency": {
-    "window_trades": 1019,
+    "window_trades": 1020,
     "window_frac": 0.2499,
-    "window_net_mean": 0.0377
+    "window_net_mean": 0.0368
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.0768,
-   "top_source_share": 0.975,
+   "top_symbol_share": 0.0769,
+   "top_source_share": 0.9753,
    "single_source": true,
    "verdict": "WEAK",
    "reasons": [
     "win rate 42.1% <= 50%",
     "split-half unstable (one half mean <= 0)",
-    "single source 97% of trades"
+    "single source 98% of trades"
    ],
-   "sharpe": -0.0337,
+   "sharpe": -0.0339,
    "sr0": 0.0204
   },
   {
    "family": "mega_mutation",
-   "n": 114,
-   "required_n": 101,
-   "mde_pct": 1.2413,
+   "n": 112,
+   "required_n": 93,
+   "mde_pct": 1.2568,
    "wins": 67,
-   "wr": 0.5877,
+   "wr": 0.5982,
    "wr_ci": [
-    0.4959,
-    0.6738
+    0.5056,
+    0.6843
    ],
-   "pf": 1.8868,
-   "gross_expectancy_pct": 1.4192,
-   "net_expectancy_pct": 1.3195,
+   "pf": 1.9421,
+   "gross_expectancy_pct": 1.4859,
+   "net_expectancy_pct": 1.3862,
    "net_ci_pct": [
-    0.4778,
-    2.2664
+    0.5708,
+    2.2724
    ],
    "p_value": 0.0005,
-   "p_wr": 0.037346,
+   "p_wr": 0.023368,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
    "net_ci_pct_2x": [
-    0.3781,
-    2.1667
+    0.4711,
+    2.1726
    ],
    "stress_2x_ok": true,
-   "dsr": 0.9547,
+   "dsr": 0.9637,
    "split_half": {
     "stable": true,
-    "first_half_mean": 0.8362,
-    "second_half_mean": 1.8029
+    "first_half_mean": 0.7584,
+    "second_half_mean": 2.014
    },
    "recency": {
     "window_trades": 28,
-    "window_frac": 0.2456,
-    "window_net_mean": 2.6661
+    "window_frac": 0.25,
+    "window_net_mean": 2.9731
    },
    "recent_ok": true,
    "mean_cost_pct": 0.0997,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 0.2105,
-   "top_source_share": 0.9211,
+   "top_symbol_share": 0.2143,
+   "top_source_share": 0.9375,
    "single_source": true,
    "verdict": "WEAK",
    "reasons": [
-    "single source 92% of trades"
+    "single source 94% of trades"
    ],
-   "sharpe": 0.28,
-   "sr0": 0.1218
+   "sharpe": 0.2931,
+   "sr0": 0.1229
   },
   {
    "family": "copytrader",
-   "n": 87,
-   "required_n": 47,
-   "mde_pct": 0.8549,
+   "n": 86,
+   "required_n": 54,
+   "mde_pct": 0.8577,
    "wins": 36,
-   "wr": 0.4138,
+   "wr": 0.4186,
    "wr_ci": [
-    0.3161,
-    0.5188
+    0.32,
+    0.5242
    ],
-   "pf": 0.3664,
-   "gross_expectancy_pct": -1.0677,
-   "net_expectancy_pct": -1.1685,
+   "pf": 0.3864,
+   "gross_expectancy_pct": -0.9883,
+   "net_expectancy_pct": -1.0854,
    "net_ci_pct": [
-    -2.3295,
-    -0.016
+    -2.2675,
+    0.0271
    ],
-   "p_value": 0.976512,
-   "p_wr": 0.957156,
+   "p_value": 0.972014,
+   "p_wr": 0.947387,
    "q_value": null,
-   "p_harm": 0.023988,
+   "p_harm": 0.028486,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -2.4435,
-    -0.098
+    -2.3808,
+    -0.0596
    ],
    "stress_2x_ok": false,
    "dsr": 0.0,
    "split_half": {
     "stable": false,
-    "first_half_mean": -0.2392,
-    "second_half_mean": -2.0766
+    "first_half_mean": -0.1193,
+    "second_half_mean": -2.0516
    },
    "recency": {
     "window_trades": 22,
-    "window_frac": 0.2529,
-    "window_net_mean": -3.3327
+    "window_frac": 0.2558,
+    "window_net_mean": -2.8397
    },
    "recent_ok": false,
-   "mean_cost_pct": 0.1008,
-   "materiality_floor_pct": 0.0504,
-   "top_symbol_share": 0.2414,
-   "top_source_share": 0.6437,
+   "mean_cost_pct": 0.0972,
+   "materiality_floor_pct": 0.05,
+   "top_symbol_share": 0.2674,
+   "top_source_share": 0.6395,
    "single_source": false,
-   "verdict": "KILL",
+   "verdict": "WEAK",
    "reasons": [
-    "net expectancy 95% CI entirely below zero",
-    "profit factor 0.37 < 0.8"
+    "profit factor 0.39 < 0.8 at n=86 \u2014 watch only, harm not proven (net CI [-2.27, +0.03]) so it keeps observing"
    ],
-   "sharpe": -0.4127,
-   "sr0": 0.1394
+   "sharpe": -0.3843,
+   "sr0": 0.1402
   },
   {
    "family": "ml_enhanced",
    "n": 5,
    "required_n": 20,
-   "mde_pct": 2.6169,
-   "wins": 3,
-   "wr": 0.6,
+   "mde_pct": 2.7855,
+   "wins": 4,
+   "wr": 0.8,
    "wr_ci": [
-    0.2307,
-    0.8824
+    0.3755,
+    0.9638
    ],
-   "pf": 4.9123,
-   "gross_expectancy_pct": 1.4235,
-   "net_expectancy_pct": 1.3239,
+   "pf": 3.9299,
+   "gross_expectancy_pct": 1.494,
+   "net_expectancy_pct": 1.3944,
    "net_ci_pct": [
-    -0.4812,
-    3.0004
+    -0.6596,
+    2.8844
    ],
-   "p_value": 0.078461,
-   "p_wr": 0.5,
+   "p_value": 0.043978,
+   "p_wr": 0.1875,
    "q_value": null,
-   "p_harm": 0.922039,
+   "p_harm": 0.956522,
    "harm_q": null,
    "net_ci_pct_2x": [
-    -0.5808,
-    2.9008
+    -0.7592,
+    2.7848
    ],
    "stress_2x_ok": false,
    "dsr": null,
@@ -23665,14 +23780,14 @@
    "recency": {
     "window_trades": 5,
     "window_frac": 1.0,
-    "window_net_mean": 1.3239
+    "window_net_mean": 1.3944
    },
    "recent_ok": true,
    "mean_cost_pct": 0.0996,
    "materiality_floor_pct": 0.05,
    "top_symbol_share": 0.2,
-   "top_source_share": 0.8,
-   "single_source": false,
+   "top_source_share": 1.0,
+   "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
     "n=5 < 20: no statistical claim"
@@ -23680,48 +23795,48 @@
   },
   {
    "family": "prediction_market",
-   "n": 1,
-   "required_n": null,
-   "mde_pct": null,
-   "wins": 1,
+   "n": 2,
+   "required_n": 1,
+   "mde_pct": 0.0001,
+   "wins": 2,
    "wr": 1.0,
    "wr_ci": [
-    0.2065,
+    0.3424,
     1.0
    ],
    "pf": null,
-   "gross_expectancy_pct": 2.4513,
-   "net_expectancy_pct": 0.0,
+   "gross_expectancy_pct": 2.4512,
+   "net_expectancy_pct": 2.3512,
    "net_ci_pct": [
-    null,
-    null
+    2.3512,
+    2.3513
    ],
-   "p_value": 1.0,
-   "p_wr": 0.5,
+   "p_value": 0.0005,
+   "p_wr": 0.25,
    "q_value": null,
    "p_harm": 1.0,
    "harm_q": null,
    "net_ci_pct_2x": [
-    null,
-    null
+    2.2512,
+    2.2513
    ],
-   "stress_2x_ok": false,
+   "stress_2x_ok": true,
    "dsr": null,
    "split_half": null,
    "recency": {
-    "window_trades": 1,
+    "window_trades": 2,
     "window_frac": 1.0,
-    "window_net_mean": 2.3513
+    "window_net_mean": 2.3512
    },
    "recent_ok": true,
    "mean_cost_pct": 0.1,
    "materiality_floor_pct": 0.05,
-   "top_symbol_share": 1.0,
+   "top_symbol_share": 0.5,
    "top_source_share": 1.0,
    "single_source": true,
    "verdict": "INSUFFICIENT_N",
    "reasons": [
-    "n=1 < 20: no statistical claim"
+    "n=2 < 20: no statistical claim"
    ]
   }
  ],
@@ -23739,14 +23854,14 @@
     "strategy": "MomentumEMA",
     "direction": "LONG",
     "n": 73,
-    "wr": 0.0822,
-    "pf": 0.1056,
-    "net_expectancy_pct": -1.7212,
+    "wr": 0.0685,
+    "pf": 0.0946,
+    "net_expectancy_pct": -1.7566,
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
-     "profit factor 0.11 < 0.8",
-     "win rate 8.2% below 40%"
+     "profit factor 0.09 < 0.8",
+     "win rate 6.8% below 40%"
     ],
     "mutation": [
      "invert or heavily filter: WR<40% often means the emitter is a fade signal",
@@ -23778,15 +23893,15 @@
     "asset_class": "CRYPTO",
     "strategy": "stochrsi_macd_combo",
     "direction": "LONG",
-    "n": 39,
-    "wr": 0.2821,
-    "pf": 0.3274,
-    "net_expectancy_pct": -1.6576,
+    "n": 38,
+    "wr": 0.2895,
+    "pf": 0.3306,
+    "net_expectancy_pct": -1.6765,
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.33 < 0.8",
-     "win rate 28.2% below 40%"
+     "win rate 28.9% below 40%"
     ],
     "mutation": [
      "invert or heavily filter: WR<40% often means the emitter is a fade signal",
@@ -23816,10 +23931,10 @@
     "asset_class": "COMMODITY",
     "strategy": "futures_momentum",
     "direction": "SHORT",
-    "n": 35,
+    "n": 32,
     "wr": 0.0,
     "pf": 0.0,
-    "net_expectancy_pct": -4.0494,
+    "net_expectancy_pct": -4.1338,
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
@@ -23856,15 +23971,15 @@
     "asset_class": "CRYPTO",
     "strategy": "strong consensus (alpha_engine, kimi)",
     "direction": "LONG",
-    "n": 21,
-    "wr": 0.2857,
-    "pf": 0.1848,
-    "net_expectancy_pct": -2.6856,
+    "n": 22,
+    "wr": 0.2727,
+    "pf": 0.1824,
+    "net_expectancy_pct": -2.6055,
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.18 < 0.8",
-     "win rate 28.6% below 40%"
+     "win rate 27.3% below 40%"
     ],
     "mutation": [
      "invert or heavily filter: WR<40% often means the emitter is a fade signal",
@@ -23898,8 +24013,8 @@
     "direction": "LONG",
     "n": 407,
     "wr": 0.3686,
-    "pf": 0.5059,
-    "net_expectancy_pct": -0.8397,
+    "pf": 0.5055,
+    "net_expectancy_pct": -0.8403,
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
@@ -24101,9 +24216,9 @@
     "strategy": "(class aggregate)",
     "direction": "-",
     "n": 6740,
-    "wr": 0.4036,
-    "pf": 0.8377,
-    "net_expectancy_pct": -0.3103,
+    "wr": 0.4042,
+    "pf": 0.8383,
+    "net_expectancy_pct": -0.3089,
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero"
@@ -24117,39 +24232,18 @@
     "asset_class": "COMMODITY",
     "strategy": "(class aggregate)",
     "direction": "-",
-    "n": 54,
-    "wr": 0.1296,
-    "pf": 0.1047,
-    "net_expectancy_pct": -3.3112,
+    "n": 51,
+    "wr": 0.1176,
+    "pf": 0.0963,
+    "net_expectancy_pct": -3.5066,
     "q_value": 1.0,
     "reasons": [
      "net expectancy 95% CI entirely below zero",
      "profit factor 0.10 < 0.8",
-     "win rate 13.0% below 40%"
+     "win rate 11.8% below 40%"
     ],
     "mutation": [
      "invert or heavily filter: WR<40% often means the emitter is a fade signal"
-    ]
-   },
-   {
-    "scope": "class",
-    "asset_class": "BOND",
-    "strategy": "(class aggregate)",
-    "direction": "-",
-    "n": 34,
-    "wr": 0.3824,
-    "pf": 0.5492,
-    "net_expectancy_pct": -0.2473,
-    "q_value": 1.0,
-    "reasons": [
-     "net expectancy 95% CI entirely below zero",
-     "profit factor 0.55 < 0.8",
-     "win rate 38.2% below 40%"
-    ],
-    "mutation": [
-     "invert or heavily filter: WR<40% often means the emitter is a fade signal",
-     "drop the dominant symbol and re-measure; edge is a single-name bet",
-     "require a second source before emitting"
     ]
    }
   ]
@@ -24157,7 +24251,7 @@
  "hypotheses": {
   "registry_path": "reports/hypothesis_registry.json",
   "available": true,
-  "total": 105,
+  "total": 106,
   "by_status": {
    "REJECTED": 1,
    "SHADOW_IMPLEMENTATION": 1,
@@ -24172,7 +24266,7 @@
    "DATA_GAP": 1,
    "TESTED_WEAK": 2,
    "TESTED_PASS": 1,
-   "PRE_REGISTERED": 19,
+   "PRE_REGISTERED": 20,
    "PRE-REGISTERED": 2,
    "PAPER_PILOT": 7,
    "TESTED_PASS_BACKTEST_FORWARD_PENDING": 1,
@@ -24196,10 +24290,11 @@
   "module": "alpha_engine/audit3_tribunal.py",
   "generator_version": "audit3.v2",
   "source_file": "/tmp/audit3/dashboard_data.json",
-  "source_generated_at": "2026-11-19T10:03:39.821503+00:00",
-  "input_sha256": "eba1b290b5d82cd90473eff30cf55d1095cc80106b41b723a86ec1d103280907",
-  "git_sha": "e40231f4bfe4",
+  "source_generated_at": "2026-11-19T16:05:18.497265+00:00",
+  "input_sha256": "d01070551e0cddb470d06667c089411dfdfdba4713730575ea5c2887ec55ef3e",
+  "git_sha": "23659ecdc825",
   "n_cells_scored_with_dsr": 66,
-  "registry_note": "one canonical multiplicity N: n_cells_tested feeds BH, Bonferroni and DSR; DSR is only reported for cells inside that family"
+  "n_trials_dsr": 359,
+  "registry_note": "multiplicity is counted two ways on purpose: BH/Bonferroni operate on tested cells (n >= sample floor); DSR uses the global trial count, every distinct cell scored."
  }
 }
