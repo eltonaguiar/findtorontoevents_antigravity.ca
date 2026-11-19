@@ -44,7 +44,9 @@ def test_noise_does_not_survive_but_a_real_edge_does():
     by = {r["slice"]: r for r in res["slices"]}
     assert by["tf:POSITION"]["survives"] is True
     assert by["class:CRYPTO"]["survives"] is False
-    assert res["per_class"]["CRYPTO"]["best_surviving_slice"] == "tf:POSITION"
+    # per_class only rolls up class-scoped slices ('class_...:'), never a bare
+    # 'tf:' slice, so the class view must report its own class-scoped survivor.
+    assert res["per_class"]["CRYPTO"]["best_surviving_slice"] == "class_tf:CRYPTO/POSITION"
 
 
 def test_harmful_slice_is_flagged_not_cherry_picked():
