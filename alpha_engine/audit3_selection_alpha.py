@@ -55,6 +55,11 @@ TABLE_FOR = {
     "ETF": ("etf_daily_ohlcv", "date"),
     "FOREX": ("fx_prices", "date"),
     "COMMODITY": ("futures_daily_ohlcv", "date"),
+    # FUTURES is its own class in the payload (futures_tsmom_winner on ES/NQ/GC/HG=F)
+    # and had no entry, so those picks were structurally unmeasurable for the same
+    # reason BOND was: no table mapping, not a data gap. The futures table is the
+    # right source, and its symbols are already the `ROOT=F` form the picks use.
+    "FUTURES": ("futures_daily_ohlcv", "date"),
     # BOND had no entry at all, so its gate could NEVER be measured however fresh
     # the tables were (2026-11-19 backfill exposed it). Bond ETFs price in the ETF
     # table — ETF_SYMBOLS|BOND_SYMBOLS is what the backfill widened it to.
@@ -62,7 +67,7 @@ TABLE_FOR = {
 }
 TOLERANCE_MS = {"CRYPTO": 3 * 3600_000, "EQUITY": 5 * 86400_000, "ETF": 5 * 86400_000,
                 "FOREX": 5 * 86400_000, "COMMODITY": 5 * 86400_000,
-                "BOND": 5 * 86400_000}
+                "BOND": 5 * 86400_000, "FUTURES": 5 * 86400_000}
 
 # N5 (2026-11-19): selection alpha is hold-time dependent. A 1-hour pick and a
 # 30-day pick are not the same claim, so the headline is reported per day and
