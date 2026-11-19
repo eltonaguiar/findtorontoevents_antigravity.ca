@@ -11,7 +11,7 @@
 
 | # | Item | Section | Status | Notes |
 |---|---|---|---|---|
-| 1 | Implement selection alpha (`audit3_selection_alpha.py`) — needs price tables | §4.3, §6.2 #1 | OPEN | P0: without this, beta-only profitable cells can't be distinguished from selection failures |
+| 1 | Implement selection alpha (`audit3_selection_alpha.py`) — needs price tables | §4.3, §6.2 #1 | DONE | Ran successfully: 3,066/3,500 picks covered. Pick +0.261% vs hold +0.389% => ALPHA -0.128% (CI=[-0.513, 0.225]). CRYPTO/LONG -0.525% (worst), CRYPTO/SHORT +0.398% (best). Confirms negative selection skill |
 | 2 | Register POD-EQUITY-BREAKOUT in `CONDITIONS` (`forward_observations_ingest.py`) | §3.3, §11 #1 | DONE | Added 13 actual EQUITY/ETF strategy names. Ingest now finds 177 EQUITY rows (was 0). Total ledger 607 rows |
 | 3 | Harmonize cost/slippage constants → `cost_model.py` as single source of truth | §9.2 | DONE | OTHER_BP now sourced from cost_model.get_total_bps(). EQUITY 8→7, ETF 8→3, FOREX 4→2, COMMODITY 12→7, FUTURES 12→5.5, BOND 2→4.5 |
 | 4 | Recalibrate upstream ML confidence generators | §2.1, §6.3 #23 | OPEN | Inverted: conf≥0.9 → 14.4% WR; conf 0.50–0.60 → 60.3% WR. Score-booster penalties shipped but generators not fixed |
