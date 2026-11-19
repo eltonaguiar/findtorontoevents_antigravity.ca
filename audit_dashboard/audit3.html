@@ -471,6 +471,8 @@ function render(d){
       ? `Denominator: ${cov.denominator.mode}${cov.denominator.loaded_from_sidecar ? ' (canonical sidecar)' : ''}.` : '',
     (d.persistence && d.persistence.available)
       ? `Verdict persistence is on: a promotion must persist ${d.persistence.runs_required} runs; ${d.persistence.history_cells} cells tracked.` : '',
+    (d.verdict_churn && d.verdict_churn.available)
+      ? `Verdict churn: ${d.verdict_churn.n_flipped}/${d.verdict_churn.n_tracked} cells flipped since the previous build (${(100*(d.verdict_churn.churn_rate||0)).toFixed(1)}%${d.verdict_churn.alert ? ' — ALERT' : ''}). High churn means the judge is noisy, not that the market changed.` : '',
     cov.cohorts_overlap
       ? 'The excluded cohorts overlap each other, so their counts do not add up to the unscored gap.' : '',
     'These cohorts are reported by the publishing dashboard, not re-derived here; this ledger cannot vouch for how they were classified.'
