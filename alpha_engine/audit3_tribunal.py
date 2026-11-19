@@ -521,8 +521,17 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     # must not be promoted. WR stays a reported descriptor.
     p_wr = binom_sf(wins, n) if n else 1.0
     frac_pos = boot.get("frac_positive")
-    p_exp = (1.0 - frac_pos) if frac_pos is not None else 1.0
-    p_harm = frac_pos if frac_pos is not None else 1.0
+    if frac_pos is not None:
+        # Bootstrap p with the +1 resolution correction: 2,000 resamples cannot
+        # support "p = 0", and a zero p would hand the top-ranked cell a BH
+        # q of exactly 0 — infinite certainty from a finite simulation.
+        n_boot = int(boot.get("n_boot") or BOOT_N)
+        n_le = int(round((1.0 - frac_pos) * n_boot))
+        n_ge = int(round(frac_pos * n_boot))
+        p_exp = (n_le + 1.0) / (n_boot + 1.0)
+        p_harm = (n_ge + 1.0) / (n_boot + 1.0)
+    else:
+        p_exp = p_harm = 1.0
     symbols = [str(r.get("symbol") or "?") for r in rows]
     top_sym_share = (max(symbols.count(s) for s in set(symbols)) / n) if n else 0.0
     sources = [str(r.get("source_system") or r.get("system") or "?") for r in rows]

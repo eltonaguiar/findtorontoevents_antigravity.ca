@@ -25,9 +25,11 @@ Response to `AUDIT3_FEEDBACK_2026-11-19.md` (arena.ai). Full grading in
 
 ## What changed
 
-- **`evaluate_cell`**: `p_value` = one-sided bootstrap **P(net mean ≤ 0)**;
-  `p_wr` reported as a descriptor; `p_harm` = bootstrap `frac_positive`. BH and the
-  kill gate now operate on expectancy, not on win rate.
+- **`evaluate_cell`**: `p_value` = one-sided bootstrap **P(net mean ≤ 0)** with the
+  standard **+1 resolution correction**, so a 2,000-resample run reports a floor of
+  1/2001 rather than 0 (a zero p gave the top cell a BH q of exactly 0 — infinite
+  certainty from a finite simulation); `p_wr` reported as a descriptor; `p_harm` =
+  bootstrap `P(net mean ≥ 0)`. BH and the kill gate now operate on expectancy.
 - **PROVEN_T2** requires n ≥ 100, net-CI lower bound ≥ **0.05%/trade**
   (`PROVEN_MIN_NET_CI_LO_PCT`),  stable halves, symbol share ≤ 60%, source share ≤ 90% (aggregates), BH q ≤ 0.10,
   DSR ≥ 0.95. Single-emitter cells can be PROVEN but carry `single_source: true`
