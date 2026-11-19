@@ -72,3 +72,14 @@ def test_rotation_keeps_tail(monkeypatch, tmp_path):
         hits.record(PICK, REASON)
     lines = target.read_text().splitlines()
     assert len(lines) <= 3
+
+def test_cli_summarizes_and_exits_nonzero_when_empty(tmp_path, monkeypatch, capsys):
+    monkeypatch.delenv("AUDIT3_DENYLIST_DISABLED", raising=False)
+    monkeypatch.setenv("AUDIT3_DENYLIST_HIT_LOG", str(tmp_path / "hits.jsonl"))
+    assert hits.main([]) == 1
+    assert "no denials recorded yet" in capsys.readouterr().out
+    hits.record(PICK, REASON)
+    capsys.readouterr()
+    assert hits.main([]) == 0
+    out = capsys.readouterr().out
+    assert "1 denials" in out and "CRYPTO" in out
