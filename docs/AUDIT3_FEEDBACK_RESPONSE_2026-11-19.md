@@ -224,10 +224,10 @@ on main is still v1. Part 4 of v3.1 was checked line by line against `main`:
 | expectancy gate fixed; `p_wr` demoted to descriptor | confirmed in code | **confirmed** |
 | spec redaction done, ~4 DB names remain | 0 host / 0 credential-path hits; DB names left on purpose (they are not credentials and the inventory is the document) | **confirmed** |
 | tier2 panel, "Renaissance" labels, PF-lift card still open | retired / stripped / removed | **done** |
-| one smart-picks definition | still open (feed says 0 scored, snapshot says 95 at 68.4%) | **open** |
+| one smart-picks definition | still open (feed says 0 scored, snapshot says 95 at 68.4%) | **done** — one `smart_picks` object in the payload; the 0-vs-95 gap is live-vs-history, labelled `history.comparable_to_live_feed=false` rather than presented as a contradiction |
 | ETF needs the canonical view before any conclusion | view + declared denominator shipped | **addressed** |
-| H-119 two vintages | still open | **open** |
-| kill lists share exactly one name | still open | **open** |
+| H-119 two vintages | still open | **done** — fallback is now a labelled dated snapshot, the card names its vintage, and `gate_eta ~2026-06-25` is retired at source (n≥150 was already met at n=431; only `net_ci_lb_gt_1.15` fails) |
+| kill lists share exactly one name | still open | **done** — kept separate on purpose (name-only policy vs direction-aware expectancy; `luxalgo_confluence` is KILL LONG and CANDIDATE SHORT), with `tools/kill_list_reconcile.py` publishing the union and provenance |
 | `forward_observations` ledger | still open | **open** |
 
 `docs/FINANCE_DB_SCHEMA_SPEC.md` note: the remaining `ejaguiar1_*` mentions were left
@@ -235,7 +235,9 @@ in place. The review flags them "only if this repo is ever made public"; removin
 DB names would strip the inventory of the one thing that makes it navigable, and they
 are not credentials. If that judgement should change, it is a one-line sed.
 
-Net: the v3.1 P0 list stands at 6 of 10 shipped. Its closing recommendation
+Net: the v3.1 P0 list stands at 9 of 10 closed. The one still open is the
+`forward_observations` ledger — the only item that can change a verdict rather than
+describe one. Its closing recommendation
 ("the fastest high-value action is registering Pod 1") was already done before the
 review landed.
 

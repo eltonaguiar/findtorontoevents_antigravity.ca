@@ -261,7 +261,8 @@ not re-derive it from a chat transcript.
 | audit3 expectancy-CI as G1 | **done** (#895) |
 | confirmatory vs discovery multiplicity families | **done** (#898, pods in #901) |
 | KILL → denylist wiring | **done** (#898 ingest, #900 writer, #901 class gate) |
-| reconcile the H-119 two-vintage tiles | **open** |
+| reconcile the H-119 two-vintage tiles | **done** — fallback labelled as a dated snapshot and the vintage named in the card header; `gate_eta: ~2026-06-25` retired at source (that date passed with no promotion, n≥150 was already met at n=431, and only `net_ci_lb_gt_1.15` still fails) |
+| one vocabulary for the two kill lists | **done** (deliberately *not* merged) — `tools/kill_list_reconcile.py` publishes the union with provenance per name: 10 audit3 KILL cells vs 64 legacy names, 1 shared (`futures_momentum`) |
 
 Three notes where v3 is right in a way that changes work order:
 
