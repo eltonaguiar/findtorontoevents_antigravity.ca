@@ -1,0 +1,47 @@
+name: Bond Screener Weekly
+
+'on':
+  schedule:
+    - cron: '35 6 * * 1'  # Monday 06:35 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bond-screener-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+jobs:
+  run-bond-screener:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance
+
+      - name: Run bond screener
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m alpha_engine.bond_screener
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/bond_screener_runs/ 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "chore: bond screener weekly run [skip ci]"
+          git push || true
