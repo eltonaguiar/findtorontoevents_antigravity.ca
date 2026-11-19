@@ -644,7 +644,33 @@ def payload_coverage(data: Any, scored_rows: list[dict],
                  "stale, or hashed differently, so this is NOT the same denominator "
                  "as /audit"),
     }
+    # The tribunal scores the canonical view, whose row count is independent of
+    # the dashboard's `valid_closed_picks`. When scored > valid the two
+    # denominators disagree (live: 8,605 vs 8,175), so a ratio above 100 is not a
+    # measurement. Withhold the headline percentage, keep the raw value for
+    # auditors, and publish the reconciliation bucket instead of hiding it.
+    raw_share_of_valid = (round(100.0 * scored / valid, 2) if valid else None)
+    valid_inconsistent = bool(valid and scored > valid)
+    denominator_reconciliation = {
+        "canonical_rows": scored,
+        "dashboard_valid_closed_picks": valid,
+        "delta": (scored - valid) if valid is not None else None,
+        "scored_but_not_dashboard_valid": (scored - valid) if valid_inconsistent else 0,
+        "consistent": (not valid_inconsistent) if valid is not None else None,
+        "note": ("scored rows exceed the dashboard's valid_closed_picks; the two "
+                 "populations differ, so no share-of-valid percentage is published"
+                 if valid_inconsistent else
+                 "no valid_closed_picks in the payload; share-of-valid cannot be computed"
+                 if valid is None else
+                 "canonical rows do not exceed the dashboard's valid_closed_picks"),
+    }
+
     cov_statement = _coverage_statement(scored, total, integrity, expired, overlap)
+    if valid_inconsistent:
+        cov_statement = (f"{cov_statement} The canonical row count ({scored:,}) "
+                         f"exceeds the dashboard's valid_closed_picks ({valid:,}) "
+                         f"by {scored - valid:,}; the two denominators disagree, so "
+                         "no share-of-valid percentage is published.")
     if canonical_mode:
         cov_statement = (f"{cov_statement} This run scores the canonical resolved "
                          f"view (sha256 {str(canon.get('rows_sha256'))[:12]}…).")
@@ -658,8 +684,11 @@ def payload_coverage(data: Any, scored_rows: list[dict],
         "zero_pnl_count": zero_pnl,
         "scored_share_of_total_pct": (round(100.0 * scored / total, 2)
                                       if total else None),
-        "scored_share_of_valid_pct": (round(100.0 * scored / valid, 2)
-                                      if valid else None),
+        "scored_share_of_valid_pct": (None if valid_inconsistent
+                                      else raw_share_of_valid),
+        "scored_share_of_valid_pct_raw": raw_share_of_valid,
+        "valid_denominator_inconsistent": valid_inconsistent,
+        "denominator_reconciliation": denominator_reconciliation,
         "unscored_rows": (max(0, total - scored) if total else None),
         "cohorts_overlap": overlap,
         "excluded_cohorts": excluded,
@@ -1685,10 +1714,12 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "n_insufficient": count("INSUFFICIENT_N", cells),
         "kill_rate_pct": round(100.0 * count("KILL", cells) / len(tested), 2) if tested else 0.0,
         "n_proven_symbols": count("PROVEN_T2", symbols),
+        "n_candidate_symbols": count("CANDIDATE", symbols),
         "n_proven_classes": count("PROVEN_T2", classes),
         "n_kill_symbols": count("KILL", symbols),
         "n_segment_cells": len(segments),
         "n_proven_segments": count("PROVEN_T2", segments),
+        "n_candidate_segments": count("CANDIDATE", segments),
         "n_harmful_segments": count("KILL", segments),
         "n_positive_segments": sum(1 for c in segments
                                   if (c["net_ci_pct"][0] or 0) > 0),

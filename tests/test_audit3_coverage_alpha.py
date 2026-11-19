@@ -117,3 +117,47 @@ def test_report_stays_json_safe():
     rows = [_row(pnl_pct=p) for p in (1.0, -1.0, 0.5, 2.0, -0.2) * 5]
     rep = build_report(rows, "x", None)
     json.dumps(rep, allow_nan=False)
+
+
+# ───────────────────────── 2026-11-19: denominator reconciliation + counters ──
+def test_scored_rows_above_valid_never_publish_over_100_pct():
+    """Live: 8,605 canonical rows vs 8,175 valid → 105.26% is not a measurement."""
+    rows = [_row() for _ in range(100)]
+    cov = payload_coverage(
+        _payload(rows, total_closed_picks=200, valid_closed_picks=80), rows)
+    # 100 scored / 80 valid would be 125%; withhold the headline, keep the raw.
+    assert cov["scored_share_of_valid_pct"] is None
+    assert cov["scored_share_of_valid_pct_raw"] == 125.0
+    assert cov["valid_denominator_inconsistent"] is True
+    rec = cov["denominator_reconciliation"]
+    assert rec["canonical_rows"] == 100
+    assert rec["dashboard_valid_closed_picks"] == 80
+    assert rec["delta"] == 20
+    assert rec["scored_but_not_dashboard_valid"] == 20
+    assert rec["consistent"] is False
+    assert "two denominators disagree" in cov["statement"]
+    assert "125.0%" not in cov["statement"]
+
+
+def test_valid_denominator_consistent_still_publishes_share():
+    rows = [_row() for _ in range(50)]
+    cov = payload_coverage(
+        _payload(rows, total_closed_picks=100, valid_closed_picks=100), rows)
+    assert cov["scored_share_of_valid_pct"] == 50.0
+    assert cov["scored_share_of_valid_pct_raw"] == 50.0
+    assert cov["valid_denominator_inconsistent"] is False
+    assert cov["denominator_reconciliation"]["consistent"] is True
+
+
+def test_candidate_counters_match_their_own_tables():
+    """summary.n_candidate counts strategy cells only; symbols/segments need their
+    own counters so the KPI cannot contradict the tables it sits above."""
+    rows = [_row(pnl_pct=p) for p in (1.0, -1.0, 0.5, 2.0, -0.2) * 6]
+    rep = build_report(rows, "x.json", None)
+    s = rep["summary"]
+    assert s["n_candidate_symbols"] == sum(
+        1 for x in rep["symbols"] if x.get("verdict") == "CANDIDATE")
+    assert s["n_candidate_segments"] == sum(
+        1 for x in rep["segments"] if x.get("verdict") == "CANDIDATE")
+    assert s["n_proven_symbols"] == sum(
+        1 for x in rep["symbols"] if x.get("verdict") == "PROVEN_T2")

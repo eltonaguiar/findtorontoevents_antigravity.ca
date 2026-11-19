@@ -114,6 +114,19 @@ jobs:
           fi
           echo "selection alpha written: $(wc -c < /tmp/audit3/selection_alpha.json) bytes"
 
+      - name: Ingest forward observations (padded benchmark window)
+        env:
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS }}
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS }}
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ]; then
+            echo "::warning title=audit3::DB credentials absent — forward ingest skipped (pods accrue only when this runs)"
+            exit 0
+          fi
+          python3 -m alpha_engine.forward_observations_ingest --apply
+
       - name: Build audit2 forward summary
         run: python3 tools/audit2_forward_summary.py
 
@@ -163,7 +176,8 @@ jobs:
           # can never succeed (this broke the 2026-11-19T12:32 run).
           git add audit_dashboard/data/audit3_ledger.json \
                   audit_dashboard/data/audit3_verdict_history.json \
-                  audit_dashboard/data/audit2_forward.json
+                  audit_dashboard/data/audit2_forward.json \
+                  reports/forward_observations.jsonl
           if git diff --cached --quiet; then
             echo "ledger unchanged"
             exit 0

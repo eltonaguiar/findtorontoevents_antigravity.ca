@@ -60,6 +60,11 @@ RESOLVER_VERSION = "at_signal_outcomes.intrabar.v1"
 DEFAULT_LIMIT = 4000
 #: Cohort rows per fetch_bars call — see collect() for why this cannot be the limit.
 CHUNK = 400
+#: How far past an exit the benchmark leg may look for the settling bar. Kept in
+#: one constant so the fetch window pad and close_at()'s tolerance cannot drift:
+#: when they did, the settling bar sat just after the fetched range and every
+#: latest-exit row got a null benchmark_leg_ret (live coverage 79.8% < 90% gate).
+BENCHMARK_LOOKAHEAD_MS = 6 * 3600_000
 #: Crypto round-trip cost convention, same constant the H-119 tracker charges, so a
 #: ledger-derived net PF is comparable with the tracker's number.
 CRYPTO_RT_BP = 16.0
@@ -144,7 +149,7 @@ def _pairs(series: Iterable[Any]) -> list[tuple[int, float]]:
 
 
 def close_at(series: list[tuple[int, float]], ts_ms: int,
-             tol_ms: int = 6 * 3600_000) -> float | None:
+             tol_ms: int = BENCHMARK_LOOKAHEAD_MS) -> float | None:
     """Close of the first bar at or after ``ts`` (a fill happens after the signal)."""
     if not series:
         return None
@@ -384,7 +389,11 @@ def collect(limit: int = DEFAULT_LIMIT) -> tuple[list[dict], list[dict], dict[st
             exit_ms = _ms(p.get("intrabar_resolved_at")) or entry_ms
             for sym in p["_barsyms"]:
                 lo, hi = window[p["_table"]].get(sym, (entry_ms, exit_ms))
-                window[p["_table"]][sym] = (min(lo, entry_ms), max(hi, exit_ms))
+                # Pad past the exit by the same tolerance close_at() allows: exits
+                # carry seconds, so the settling bar can sit just after `exit_ms`
+                # and was never fetched (63/87 live null benchmark legs).
+                window[p["_table"]][sym] = (
+                    min(lo, entry_ms), max(hi, exit_ms + BENCHMARK_LOOKAHEAD_MS))
         # fetch_bars returns a FLAT {symbol: [(ts_ms, close), ...]} mapping.
         fetched = S.fetch_bars(window) or {}
         for sym, series in fetched.items():

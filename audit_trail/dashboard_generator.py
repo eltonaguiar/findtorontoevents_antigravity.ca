@@ -5024,6 +5024,83 @@ def _filter_valid_resolved_picks(picks):
     return [pick for pick in picks if _is_valid_resolved_pick(pick)]
 
 
+def _excluded_cohort_audit(closed, kept):
+    """N6: describe the rows removed before export, so exclusion bias is visible.
+
+    Prior evidence is never deleted, but the export slice drops rows before
+    audit3 can see them. This records *what* was excluded and how it performed,
+    per diagnostic reason, so N6 can tell a random exclusion from a biased one.
+    Buckets are diagnostic, not a re-implementation of the validity rules;
+    anything not named here lands in "other".
+    """
+    kept_ids = {id(p) for p in kept}
+    buckets: dict[str, dict] = {}
+
+    def _reason(p: dict) -> str:
+        if p.get("_auto_expired") or _is_auto_expired_pick(p):
+            return "auto_expired"
+        if p.get("paper_trade"):
+            return "paper_trade"
+        if p.get("expired_no_pnl"):
+            return "expired_no_pnl"
+        if p.get("pnl_pct") is None:
+            return "missing_pnl"
+        try:
+            if _pnl_pct_looks_corrupt(p):
+                return "corrupt_pnl"
+        except Exception:
+            pass
+        return "other"
+
+    for p in closed or []:
+        if not isinstance(p, dict) or id(p) in kept_ids:
+            continue
+        b = buckets.setdefault(_reason(p), {
+            "n": 0, "wins": 0, "gross_win": 0.0, "gross_loss": 0.0,
+            "pnl_sum": 0.0, "pnl_n": 0, "long": 0, "short": 0, "samples": [],
+        })
+        b["n"] += 1
+        direction = str(p.get("direction") or p.get("signal_type") or "").upper()[:1]
+        if direction == "L":
+            b["long"] += 1
+        elif direction == "S":
+            b["short"] += 1
+        try:
+            pnl = float(p.get("pnl_pct"))
+        except (TypeError, ValueError):
+            pnl = None
+        if pnl is not None:
+            b["pnl_n"] += 1
+            b["pnl_sum"] += pnl
+            if pnl > 0:
+                b["wins"] += 1
+                b["gross_win"] += pnl
+            elif pnl < 0:
+                b["gross_loss"] += -pnl
+        if len(b["samples"]) < 3:
+            b["samples"].append({
+                "symbol": p.get("symbol"), "pnl_pct": pnl,
+                "exit_reason": p.get("exit_reason") or p.get("status"),
+            })
+
+    out = {"n_excluded": 0, "by_reason": {}}
+    for reason, b in sorted(buckets.items()):
+        n_pnl = b["pnl_n"]
+        out["by_reason"][reason] = {
+            "n": b["n"],
+            "n_with_pnl": n_pnl,
+            "wr": round(b["wins"] / n_pnl, 4) if n_pnl else None,
+            "pf": round(b["gross_win"] / b["gross_loss"], 4) if b["gross_loss"] > 0 else None,
+            "mean_pnl_pct": round(b["pnl_sum"] / n_pnl, 4) if n_pnl else None,
+            "long": b["long"], "short": b["short"],
+            "samples": b["samples"],
+        }
+        out["n_excluded"] += b["n"]
+    out["note"] = ("diagnostic buckets for the N6 excluded-cohort audit; 'other' "
+                   "covers validity failures not named here")
+    return out
+
+
 def _compound_equal_weight_capped_sequence(
     picks: list[dict], max_pnl_pct: float = 500.0
 ) -> float:
@@ -14964,6 +15041,10 @@ def generate():
     total_closed = len(closed)
     resolved_closed = _filter_valid_resolved_picks(closed)
     invalid_closed_count = total_closed - len(resolved_closed)
+    try:
+        _excluded_cohort_audit_block = _excluded_cohort_audit(closed, resolved_closed)
+    except Exception as _excluded_exc:  # never let a diagnostic break the payload
+        _excluded_cohort_audit_block = {"error": str(_excluded_exc)}
 
     # DEDUPLICATE mirrored trades for headline metrics (critical fix for inflated WR/PnL)
     seen = set()
@@ -17111,6 +17192,7 @@ def generate():
                 "examples": _PROVEN_DEMOTIONS[:10],
             },
             "auto_expired_excluded": len(all_closed_including_expired) - total_closed,
+            "excluded_cohort_audit": _excluded_cohort_audit_block,
             "overall_win_rate": overall_wr,
             # total_pnl_pct is now compounded equal-weight (replaces raw additive sum).
             # Kimi audit §1.1 (2026-04-05): raw sum produced misleading -17,657% / -18,126%

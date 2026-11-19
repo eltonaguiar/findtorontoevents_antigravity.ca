@@ -206,3 +206,66 @@ def test_feature_keyed_pod_still_needs_its_stamp():
     # ...and a strategy-keyed pod no longer needs features to classify.
     assert ING.classify(None, "EQUITY", strategy="rs-breakout-scout",
                         direction="LONG") == "H-BABY-EQUITY-VT-PATTERN-SWEEP-001"
+
+
+# ─────────────────────────── 2026-11-19: padded benchmark fetch window ────────
+def _fake_stampers(rows, captured):
+    """Minimal stand-in for tools.stamp_entry_conditions (no DB)."""
+    class _S:
+        @staticmethod
+        def fetch_cohort(limit):
+            return [dict(r) for r in rows]
+
+        @staticmethod
+        def fetch_bars(window):
+            captured.setdefault("windows", []).append(window)
+            return {}
+
+        @staticmethod
+        def features(*_a, **_k):
+            return None  # no rows built; the test only inspects the window
+    return _S
+
+
+def _exit_ms(row):
+    return int(row["intrabar_resolved_at"].replace(
+        tzinfo=timezone.utc).timestamp() * 1000)
+
+
+def _entry_ms(row):
+    return int(row["opened_at"].replace(tzinfo=timezone.utc).timestamp() * 1000)
+
+
+def test_fetch_window_is_padded_past_the_exit(monkeypatch):
+    import sys as _sys
+    row = _cohort()
+    captured: dict = {}
+    monkeypatch.setitem(_sys.modules, "tools.stamp_entry_conditions",
+                        _fake_stampers([row], captured))
+    monkeypatch.setattr(ING, "_hydrate", lambda ids: {})
+    ING.collect(limit=10)
+    lo, hi = captured["windows"][0]["crypto_ohlcv"]["BTCUSDT"]
+    assert lo == _entry_ms(row)
+    assert hi >= _exit_ms(row) + ING.BENCHMARK_LOOKAHEAD_MS
+
+
+def test_consecutive_exits_merge_the_padded_window(monkeypatch):
+    import sys as _sys
+    a = _cohort(id=1, intrabar_resolved_at=datetime(2026, 11, 1, 18, 0))
+    b = _cohort(id=2, intrabar_resolved_at=datetime(2026, 11, 2, 6, 0))
+    captured: dict = {}
+    monkeypatch.setitem(_sys.modules, "tools.stamp_entry_conditions",
+                        _fake_stampers([a, b], captured))
+    monkeypatch.setattr(ING, "_hydrate", lambda ids: {})
+    ING.collect(limit=10)
+    lo, hi = captured["windows"][0]["crypto_ohlcv"]["BTCUSDT"]
+    assert lo == min(_entry_ms(a), _entry_ms(b))
+    assert hi >= _exit_ms(b) + ING.BENCHMARK_LOOKAHEAD_MS
+
+
+def test_close_at_tolerance_uses_the_shared_lookahead_constant():
+    ts = 0
+    just_inside = [(ING.BENCHMARK_LOOKAHEAD_MS - 1, 7.0)]
+    just_outside = [(ING.BENCHMARK_LOOKAHEAD_MS + 1, 7.0)]
+    assert ING.close_at(just_inside, ts) == 7.0
+    assert ING.close_at(just_outside, ts) is None
