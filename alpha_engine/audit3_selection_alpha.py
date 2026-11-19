@@ -92,6 +92,43 @@ def symbol_candidates(sym: str, klass: str) -> list[str]:
     return uniq
 
 
+def _wanted_symbols(rows: list[dict]) -> dict[str, set[str]]:
+    """Map class -> candidate symbols the picks need (same rule load_bars uses)."""
+    want: dict[str, set[str]] = defaultdict(set)
+    for r in rows:
+        k = _class(r)
+        if k in TABLE_FOR:
+            want[k].update(symbol_candidates(r.get("symbol"), k))
+    return want
+
+
+def _ms_to_date(ts_ms: int) -> str:
+    return datetime.fromtimestamp(ts_ms / 1000.0, tz=timezone.utc).strftime("%Y-%m-%d")
+
+
+def bar_coverage(bars: dict[str, list[tuple[int, float]]],
+                 want: dict[str, set[str]] | None) -> dict:
+    """Per-class freshness of the price tables, so ``unmeasured`` states a reason.
+
+    "unmeasured" was ambiguous: no table for the class, the symbol absent from it,
+    or the table stopping before the picks close. On 2026-11-19 it was the third
+    case — equity_daily_ohlcv ended 2026-06-18 while 486 of 765 EQUITY picks closed
+    after it, fx_prices ended 2026-02-09, futures_daily_ohlcv ended 2026-06-21 —
+    and nothing in the sidecar said so. Only crypto_ohlcv was current.
+    """
+    out: dict[str, dict] = {}
+    for klass, syms in (want or {}).items():
+        wanted = sorted(str(x) for x in syms)
+        found = [x for x in wanted if bars.get(f"{klass}:{x}")]
+        lasts = [max(b[0] for b in bars[f"{klass}:{x}"]) for x in found]
+        out[klass] = {
+            "symbols_requested": len(wanted),
+            "symbols_found": len(found),
+            "missing_symbols": [x for x in wanted if x not in found][:10],
+            "last_bar": _ms_to_date(max(lasts)) if lasts else None,
+        }
+    return out
+
 def load_bars(rows: list[dict]) -> dict[str, list[tuple[int, float]]]:
     """Fetch closes for every (class, symbol) the picks need, one query per table."""
     want: dict[str, set[str]] = defaultdict(set)
@@ -288,6 +325,8 @@ def main(argv=None) -> int:
         print("ERROR: no usable picks", file=sys.stderr); return 2
     bars = load_bars(rows)
     res = alpha_for(rows, bars, collect=bool(args.rows_out))
+    # Diagnose "unmeasured": no table, missing symbol, or stale bars.
+    res["bar_coverage"] = bar_coverage(bars, _wanted_symbols(rows))
     recs = res.pop("records", [])
     res["schema"] = "audit3.selection_alpha.v1"
     res["generated_at"] = datetime.now(timezone.utc).isoformat()

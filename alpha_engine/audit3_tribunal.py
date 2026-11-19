@@ -1238,6 +1238,17 @@ def compute_verdict_churn(buckets: list[list[dict]],
         "flips": flips[:50],
     }
 
+# Which sidecar fields reach the published ledger. `by_class` was missing until
+# 2026-11-19: per-class alpha was measured, used by the G8 gate, and then dropped
+# by this whitelist, so the page could show a class gate "measured" with no number
+# and no way to see why. `bar_coverage` was added at the same time so an
+# "unmeasured" verdict carries its cause (no table / no symbol / stale bars).
+ALPHA_PASSTHROUGH_KEYS: tuple[str, ...] = (
+    "generated_at", "covered", "n_universe", "missing", "overall",
+    "by_class", "by_slice", "bar_coverage",
+)
+
+
 def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
     """G9 - selection alpha must be proven positive before promotion.
 
@@ -1590,8 +1601,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                           "failure; a win-rate or PF table cannot see that.",
     }
     if isinstance(alpha, dict):
-        for key in ("generated_at", "covered", "n_universe", "missing", "overall",
-                    "by_slice"):
+        for key in ALPHA_PASSTHROUGH_KEYS:
             if alpha.get(key) is not None:
                 selection[key] = alpha[key]
 
