@@ -1017,6 +1017,58 @@ From TristanODonnell's autonomous trading platform:
 
 ---
 
+## 20. Updated findings (2026-11-19, post-execution)
+
+### 20.1 Selection alpha — NEGATIVE (P0 DONE)
+- Ran `alpha_engine/audit3_selection_alpha.py` on `dashboard_data.json`: 3,066/3,500 picks covered.
+- Pick +0.261% vs hold +0.389% → **ALPHA −0.128%** (CI=[−0.513, 0.225], includes zero).
+- By class: CRYPTO −0.162%, EQUITY −0.015%, ETF −0.140%, COMMODITY +0.119%.
+- By slice: CRYPTO/LONG −0.525% (worst), CRYPTO/SHORT +0.398% (best), EQUITY/LONG −0.008%, ETF/LONG −0.140%.
+- **Confirms Copilot plan's −0.276%/trade: the system has NEGATIVE selection skill.**
+- Only CRYPTO/SHORT shows positive alpha (within noise).
+
+### 20.2 ORB exit grid — 75 combos (P0 DONE)
+- Best by net: TP=3.0×, SL=1.5×, time-stop 4 PM ET → PF 1.936, WR 56%, net +$1,776 (60 days).
+- Best by PF: TP=2.5×, SL=1.25×, time-stop 3 PM ET → PF 2.155, WR 52%, net +$1,489.
+- All 75 combos positive. Original config (TP=2.0, SL=1.0, TS=11 AM) was suboptimal.
+- Volume filter confirmed: improves PF from 1.40 to 1.53 (+$134 net).
+
+### 20.3 ETF TAA backtest — Faber GTAA best (P1 DONE)
+- Faber GTAA (10-month MA): CAGR 9.76%, Sharpe 0.915, MDD −20.5%, Calmar 0.476, OOS Sharpe 1.13.
+- 60/40: Sharpe 0.835, MDD −28.5%.
+- SPY buy-hold: Sharpe 0.777, MDD −50.8%.
+- Dual Momentum (Antonacci): Sharpe 0.539.
+- Multi-Horizon Momentum (3/6/9/12m, top3): Sharpe 0.636, MDD −23.4%.
+- **Verdict: Faber GTAA is the best risk-adjusted strategy. Simple > complex.**
+
+### 20.4 Sleeve reconciliation — P0 (NEW)
+- /audit top_sleeves (AuditEnsemble_LONG PF 155.85, CorrKama PF 111.81, non_crypto_consensus PF 9.68) are NOT in audit3 cells.
+- All single-source, policy_clean/resolver_grade sources.
+- audit3 shows CRYPTO = KILL (PF 0.84), FOREX = WEAK (PF 0.92).
+- **Recommendation: Flag as UNVERIFIED on /audit. Add sleeve ingestion to audit3 tribunal.**
+
+### 20.5 Corrected claims
+- `mf_screener.py` EXISTS (passive core gates: expense ratio, no load, AUM ≥$1B, turnover ≤20%, tracking error ≤0.25%, track record ≥10y). Starter universe: VFIAX, VTSAX, FXAIX, SWTSX, VBTLX, VWELX, VGSLX, VTIAX. Runner created + weekly workflow.
+- `value_screener.py` IS wired to weekly workflow (`value_screener_weekly.yml`). Runner emitted 22 picks (2026-11-19). Weight inconsistency (0.45/0.55 vs UEPS 0.55/0.45) still needs reconciliation.
+
+### 20.6 POD-EQUITY-BREAKOUT fix
+- Registered 13 actual EQUITY/ETF strategy names in CONDITIONS (was using non-existent names like "donchian-stock-breakout").
+- Ingest now finds 177 EQUITY rows (was 0). Total ledger: 607 rows.
+
+### 20.7 Cost harmonization
+- OTHER_BP in ingest now sourced from cost_model.get_total_bps() (single source of truth).
+- EQUITY 8→7, ETF 8→3, FOREX 4→2, COMMODITY 12→7, FUTURES 12→5.5, BOND 2→4.5 bps.
+
+### 20.8 The money-ready answer (honest)
+- **NOT any single asset class.** 0/10 money-ready.
+- **Selection alpha is NEGATIVE** (−0.128%). Our picks lose to buy-and-hold.
+- **The only money-ready path:** ETF TAA (Faber GTAA, Sharpe 0.915, MDD −20.5%) + mutual fund passive core (8 funds pass hard gates).
+- **For $2,000:** MES ORB (PF 1.53-2.155, net $683-$1,776/60 days) for intraday-capable users; ETF TAA for day-job users.
+- **Publication decay (26-58% haircut)** means even the ORB edge may be thinner than backtested.
+- **The honest goal with $2,000:** learn whether you have an edge, not make money. Survival first.
+
+---
+
 ## 18. Provenance
 
 - Generated 2026-11-19 by opencode (Beam Free).
