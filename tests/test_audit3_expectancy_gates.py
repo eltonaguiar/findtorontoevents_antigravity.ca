@@ -124,7 +124,9 @@ def test_cost_stress_2x_is_a_required_gate():
     cell = build_report(rows, "x.json", None)["cells"][0]
     assert cell["net_expectancy_pct"] > 0
     assert cell["stress_2x_ok"] is False
-    assert cell["verdict"] == "WEAK"
+    # 2x cost is required for PROVEN_T2; failing it caps the cell at CANDIDATE
+    # (observable/paper), it does not erase the observation.
+    assert cell["verdict"] == "CANDIDATE"
     assert any("2x-cost" in r for r in cell["reasons"])
 
     # A payoff that survives 2x cost still promotes inside a pre-registered pod.
