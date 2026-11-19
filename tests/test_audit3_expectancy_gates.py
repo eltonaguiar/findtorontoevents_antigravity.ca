@@ -114,7 +114,9 @@ def test_cost_stress_2x_is_reported_and_stricter():
 def test_cost_stress_2x_is_a_required_gate():
     # 3.0/-0.6: positive expectancy, but the edge dies at 2x slippage -> the
     # cell must be demoted to WEAK with the stress clause named in its reasons.
-    rows = _rows(40, 80, 3.0, -0.6)
+    # 3.0/-1.0: net positive (+0.18%) but the 2x-cost CI lower bound is <= 0,
+    # so the edge is a cost assumption and must be demoted.
+    rows = _rows(40, 80, 3.0, -1.0)
     cell = build_report(rows, "x.json", None)["cells"][0]
     assert cell["net_expectancy_pct"] > 0
     assert cell["stress_2x_ok"] is False
