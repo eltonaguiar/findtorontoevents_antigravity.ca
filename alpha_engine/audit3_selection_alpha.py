@@ -199,6 +199,9 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dic
             "alpha_wr": round(sum(1 for v in a if v > 0) / len(a), 4),
         }
 
+    def _strat(r: dict) -> str:
+        return str(r.get("strategy") or r.get("source_system") or "(unattributed)")
+
     by_cls = {k: agg([x for x in per if x["class"] == k]) for k in sorted({x["class"] for x in per})}
     # Only aggregate slices with enough rows to mean anything (a 1-row slice has
     # no interval and would otherwise produce a None comparison downstream).
@@ -208,8 +211,19 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dic
             items = [x for x in per if x["class"] == c and x["dir"] == d]
             if len(items) >= 20:
                 by_slice[f"{c}/{d}"] = agg(items)
+    # Strategy-level alpha, keyed exactly as the tribunal labels its cells
+    # (CLASS/STRATEGY/DIRECTION). G8 needs this: a class aggregate can look like
+    # skill while one strategy inside it is pure beta, and a class-only lookup
+    # would let that strategy through. Same 20-row floor as by_slice — below it
+    # there is no interval to compare against.
+    strat_items: dict[tuple[str, str, str], list[dict]] = {}
+    for x in per:
+        strat_items.setdefault((x["class"], _strat(x["row"]), x["dir"]), []).append(x)
+    by_strategy = {f"{c}/{s}/{d}": agg(items)
+                   for (c, s, d), items in sorted(strat_items.items())
+                   if len(items) >= 20}
     return {"covered": len(per), "missing": dict(missing), "overall": agg(per),
-            "by_class": by_cls, "by_slice": by_slice,
+            "by_class": by_cls, "by_slice": by_slice, "by_strategy": by_strategy,
             "n_universe": len(rows)}
 
 

@@ -22,9 +22,12 @@ G2  Net expectancy   per-trade net return (gross minus per-class slippage)
 G3  Multiplicity     Benjamini-Hochberg FDR q <= 0.10 across all tested cells;
                      Bonferroni threshold reported alongside.
 G4  Overfit          Deflated Sharpe Ratio >= 0.95 (Bailey & Lopez de Prado
-                     approximation; n_trials = global trial count — every
-                     distinct (asset_class, strategy, direction) cell scored,
-                     not only the n >= sample-floor survivors).
+                     approximation; n_trials = global trial count, floored at
+                     GLOBAL_TRIAL_FLOOR=658 because the payload slice is only a
+                     subset of the registry — never just the survivors). The
+                     CANDIDATE tier uses the observed bucket width instead:
+                     CANDIDATE means "worth forward paper", and judging it
+                     against the full 658-trial null empties the forward queue.
 G5  Stability        chronological split-half: both halves net expectancy > 0.
 G6  Concentration    no single symbol > 60% of a cell's trades, no single
                      source system > 90% (report-only at 60%).
@@ -112,6 +115,20 @@ BOOT_N = 2000
 BOOT_SEED = 42
 MAX_SYMBOL_SHARE = 0.60
 MAX_SOURCE_SHARE = 0.90
+
+# DSR multiplicity floor. The 2026-11-14 pf_registry audit counted 658 distinct
+# strategies in the live search space (682 asset x strategy pairs, 2,218
+# strategy x symbol cells). A dashboard payload slice sees far fewer, so feeding
+# the slice count into deflated_sharpe under-corrects and lets overfits clear G4:
+# 45 tested cells implies z ~ 2.2 while the real search space implies z ~ 3.3.
+# The correction therefore uses max(observed, this floor). It is a floor, not a
+# claim that 658 is exact — when the registry grows, raise it.
+GLOBAL_TRIAL_FLOOR = 658
+
+
+def global_trial_count(*counts: int) -> int:
+    """Trial count for DSR: the whole search space, never just the loaded slice."""
+    return max([GLOBAL_TRIAL_FLOOR, *(int(c) for c in counts if c)])
 
 # Round-trip execution cost, in percent (pnl_pct is a percent).
 #
@@ -705,12 +722,19 @@ def _pod_for(asset_class: str, strategy: str, direction: str,
 
 
 def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
-                  *, apply_source_gate: bool = True) -> dict[str, Any]:
+                  *, apply_source_gate: bool = True,
+                  n_trials_local: int | None = None) -> dict[str, Any]:
     """Compute every gate for one cell. Never raises.
 
     apply_source_gate: a single strategy is normally emitted by one source
     system, so source concentration is only meaningful for aggregate cells
     (asset class, source family). Per-strategy/symbol cells pass False.
+
+    n_trials: the global search-space size for the PROVEN DSR gate (G4).
+    n_trials_local: the observed bucket width, kept for the CANDIDATE tier.
+    CANDIDATE means "worth forward paper", not "a discovery": gating it on the
+    full 658-trial null would empty the forward pipeline (the ratchet-to-zero
+    failure). PROVEN still pays the global correction.
     """
     nets = [_net(r) for r in rows]
     n = len(nets)
@@ -720,9 +744,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     pf = profit_factor(nets)
     boot = bootstrap_mean_ci(nets) if n >= 2 else {"mean": 0.0, "ci_lo": None,
                                                    "ci_hi": None, "frac_positive": None}
-    # Cost-stress companion: the same net CI at twice the class slippage. Report
-    # only — it never changes a verdict, it shows how much of an edge is a cost
-    # assumption.
+    # Cost-stress companion: the same net CI at twice the class slippage. G9
+    # (2026-11-19): this is a gate, not a report column — PROVEN_T2 demotes to
+    # CANDIDATE and CANDIDATE to WEAK when the 2x-cost CI lower bound is <= 0.
     nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
     boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
     stress_2x_ok = bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0)
@@ -848,6 +872,15 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
             out["dsr"] = round(dsr["dsr"], 4)
             out["sharpe"] = round(dsr["sharpe"], 4)
             out["sr0"] = round(dsr["sr0"], 4)
+        if n_trials_local is not None and n_trials_local != n_trials:
+            if int(n_trials_local) >= 2:
+                dloc = deflated_sharpe(nets, int(n_trials_local))
+                if dloc:
+                    out["dsr_local"] = round(dloc["dsr"], 4)
+            else:
+                # One cell in the bucket: there is no within-family multiplicity
+                # to correct, so the CANDIDATE floor has nothing to test.
+                out["dsr_local"] = None
     return out
 
 
@@ -914,9 +947,15 @@ def _promote(cell: dict, forward: dict[str, Any] | None = None) -> None:
     elif cell["verdict"] == "CANDIDATE":
         if q > CANDIDATE_Q:
             cell["verdict"] = "WEAK"
-        elif cell.get("dsr") is not None and cell["dsr"] < 0.50:
-            cell["verdict"] = "WEAK"
-            cell["reasons"].append(f"DSR {cell['dsr']:.3f} < 0.50")
+        else:
+            # CANDIDATE is the forward-paper tier, so it is judged against the
+            # breadth actually observed, not the whole 658-trial registry.
+            # Explicit None means the bucket had no within-family multiplicity;
+            # a missing key means this caller never supplied a local count.
+            d_c = cell["dsr_local"] if "dsr_local" in cell else cell.get("dsr")
+            if d_c is not None and d_c < 0.50:
+                cell["verdict"] = "WEAK"
+                cell["reasons"].append(f"DSR {d_c:.3f} < 0.50")
 
 
 def apply_harm_gate(bucket: list[dict]) -> None:
@@ -937,61 +976,77 @@ def apply_harm_gate(bucket: list[dict]) -> None:
                 f"negative but harm q={q:.3f} > {FDR_Q}: not proven, keep observing")
 
 
-def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
+def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[str, Any]:
     """G8 — selection alpha must be proven positive before promotion.
 
-    A cell (or class) that is profitable purely because the underlying rose
-    (market beta) must not reach PROVEN_T2. This gate looks up the
-    direction-adjusted selection alpha measured by
-    ``alpha_engine/audit3_selection_alpha.py`` and requires its bootstrap 95% CI
-    lower bound to be strictly positive.
+    A cell that is profitable purely because the underlying rose (market beta)
+    must not reach PROVEN_T2. This gate looks up the direction-adjusted selection
+    alpha measured by ``alpha_engine/audit3_selection_alpha.py`` and requires its
+    bootstrap 95% CI lower bound to be strictly positive.
 
-    * PROVEN_T2 without a positive-alpha proof is demoted to CANDIDATE and
-      flagged ``beta_dominant``.
-    * CANDIDATE without a positive-alpha proof keeps its verdict but is flagged
-      ``beta_dominant`` (it still needs forward paper to prove the edge is skill).
+    Scope matters. A strategy cell may only be proven by alpha measured on that
+    same (class, strategy, direction) cohort. A class-level number is a *proxy*
+    for a strategy or symbol cell: it can say the class beat buy-and-hold without
+    saying that this strategy did, so it demotes rather than proves.
 
-    Fail-open only when the alpha sidecar is absent or empty — library callers
-    and unit tests that pass no alpha keep the pre-gate behaviour. The published
-    ledger always passes alpha (``audit3-ledger.yml`` runs the alpha sidecar).
+    * PROVEN_T2 without positive alpha at the same scope is demoted to CANDIDATE
+      and flagged ``beta_dominant``, recording the scope actually available.
+    * CANDIDATE keeps its verdict (it is not sizing-eligible) but is flagged.
+
+    Fail-open only when the alpha sidecar is absent or empty — library callers and
+    unit tests that pass no alpha keep pre-gate behaviour. When the sidecar *is*
+    present, a missing strategy measurement is not a pass: it demotes.
     """
     if not isinstance(alpha, dict):
-        return
+        return {"applied": False, "reason": "no alpha sidecar"}
     by_class = alpha.get("by_class") or {}
     by_slice = alpha.get("by_slice") or {}
-    if not by_class and not by_slice:
-        return
+    by_strategy = alpha.get("by_strategy") or {}
+    if not by_class and not by_slice and not by_strategy:
+        return {"applied": False, "reason": "alpha sidecar empty"}
 
-    def _alpha_lo(ac: Any, direction: Any) -> float | None:
-        ac = str(ac or "").strip().upper()
-        d = str(direction or "").strip().upper()
-        # Finest measurement first (class x direction slice), then the class
-        # aggregate, then "no measurement". by_class/by_slice are keyed uppercase
-        # by audit3_selection_alpha (via _class -> .upper()).
-        slice_entry = by_slice.get(f"{ac}/{d}")
-        if slice_entry and slice_entry.get("n"):
-            lo = (slice_entry.get("alpha_ci") or [None, None])[0]
-            if lo is not None:
-                return lo
-        cls_entry = by_class.get(ac)
-        if cls_entry and cls_entry.get("n"):
-            lo = (cls_entry.get("alpha_ci") or [None, None])[0]
-            if lo is not None:
-                return lo
-        return None
+    def _ci_lo(entry: Any) -> float | None:
+        if not entry or not entry.get("n"):
+            return None
+        return (entry.get("alpha_ci") or [None, None])[0]
 
+    def _lookup(cell: dict) -> tuple[float | None, str]:
+        ac = str(cell.get("asset_class") or "").strip().upper()
+        d = str(cell.get("direction") or "").strip().upper()
+        strat = cell.get("strategy")
+        if strat:
+            lo = _ci_lo(by_strategy.get(f"{ac}/{strat}/{d}"))
+            if lo is not None:
+                return lo, "strategy"
+            lo = _ci_lo(by_slice.get(f"{ac}/{d}"))
+            if lo is not None:
+                return lo, "class_proxy"
+            return _ci_lo(by_class.get(ac)), "class_proxy"
+        if cell.get("symbol"):
+            lo = _ci_lo(by_slice.get(f"{ac}/{d}"))
+            if lo is not None:
+                return lo, "class_proxy"
+            return _ci_lo(by_class.get(ac)), "class_proxy"
+        # Class aggregate: the class number IS the same-scope measurement.
+        return _ci_lo(by_class.get(ac)), "class"
+
+    summary: dict[str, Any] = {"applied": True, "tested": 0, "demoted": 0, "scopes": {}}
     for c in bucket:
-        lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
-        alpha_proven = lo is not None and lo > 0
-        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
-        if not alpha_proven:
+        lo, scope = _lookup(c)
+        proven = lo is not None and lo > 0 and scope in ("strategy", "class")
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "scope": scope, "passed": bool(proven)}
+        summary["tested"] += 1
+        summary["scopes"][scope] = summary["scopes"].get(scope, 0) + 1
+        if not proven:
             c["beta_dominant"] = True
             if c["verdict"] == "PROVEN_T2":
                 c["verdict"] = "CANDIDATE"
+                summary["demoted"] += 1
                 why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
-                       if lo is not None else
-                       "selection alpha unavailable for this class")
-                c["reasons"].append(f"G8 selection-alpha gate: {why} — beta-dominant")
+                       if lo is not None else "selection alpha unavailable")
+                c["reasons"].append(
+                    f"G8 selection-alpha gate ({scope}): {why} — beta-dominant")
+    return summary
 
 
 def segment_tags(r: dict) -> list[tuple[str, str]]:
@@ -1113,10 +1168,12 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     # Deflated Sharpe Ratio corrects for the number of hypotheses tried, so it
     # must see the whole search space, not just the n >= WR_MIN_N survivors —
     # filtering to "tested cells" under-corrects and lets overfit cells clear G4.
+    # The payload slice is itself a subset of the live registry, so the count is
+    # floored at GLOBAL_TRIAL_FLOOR (see global_trial_count).
     strat_groups = _group(rows, lambda r: (str(r.get("asset_class") or "UNKNOWN").upper(),
                                            str(r.get("strategy") or r.get("source_system") or "(unattributed)"),
                                            _direction(r)))
-    n_trials = len(strat_groups)
+    n_trials = global_trial_count(len(strat_groups))
 
     for (ac, strat, direction), group in strat_groups.items():
         pod = _pod_for(ac, strat, direction, confirmatory)
@@ -1124,7 +1181,8 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  "namespace": "confirmatory" if pod else "discovery"}
         if pod:
             label["pod"] = pod.get("id")
-        cell = evaluate_cell(group, max(1, n_trials), label, apply_source_gate=False)
+        cell = evaluate_cell(group, n_trials, label, apply_source_gate=False,
+                             n_trials_local=len(strat_groups))
         cells.append(cell)
     cells.sort(key=lambda c: (-c["n"], c["asset_class"], c["strategy"]))
 
@@ -1143,9 +1201,10 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
 
     # Class-level aggregate.
     class_groups = _group(rows, lambda r: str(r.get("asset_class") or "UNKNOWN").upper())
-    class_trials = len(class_groups)
+    class_trials = global_trial_count(len(class_groups))
     for ac, group in class_groups.items():
-        cls = evaluate_cell(group, max(1, class_trials), {"asset_class": ac})
+        cls = evaluate_cell(group, class_trials, {"asset_class": ac},
+                            n_trials_local=len(class_groups))
         # Class promotion needs the stricter charter floor (n>=100).
         if cls["verdict"] == "PROVEN_T2" and cls["n"] < PROVEN_MIN_N:
             cls["verdict"] = "WEAK"
@@ -1164,10 +1223,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                                          _direction(r)))
     sym_tested = {k: g for k, g in sym_groups.items() if len(g) >= WR_MIN_N}
     for (ac, sym, direction), group in sym_tested.items():
-        symbols.append(evaluate_cell(group, max(1, len(sym_tested)),
+        symbols.append(evaluate_cell(group, global_trial_count(len(sym_tested)),
                                      {"asset_class": ac, "symbol": sym,
                                       "direction": direction, "namespace": "discovery"},
-                                     apply_source_gate=False))
+                                     apply_source_gate=False,
+                                     n_trials_local=len(sym_tested)))
     for c, q in zip(symbols, benjamini_hochberg([c["p_value"] for c in symbols])):
         c["q_value"] = round(q, 6)
     for c in symbols:
@@ -1185,10 +1245,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             seg_groups.setdefault((seg, val, ac), []).append(r)
     seg_tested = {k: g for k, g in seg_groups.items() if len(g) >= WR_MIN_N}
     for (seg, val, ac), group in seg_tested.items():
-        seg_cell = evaluate_cell(group, max(1, len(seg_tested)),
+        seg_cell = evaluate_cell(group, global_trial_count(len(seg_tested)),
                                  {"segment": seg, "segment_value": val,
                                   "asset_class": ac, "namespace": "discovery"},
-                                 apply_source_gate=False)
+                                 apply_source_gate=False,
+                                 n_trials_local=len(seg_tested))
         seg_cell["reconstructed"] = True
         segments.append(seg_cell)
     for c, q in zip(segments, benjamini_hochberg([c["p_value"] for c in segments])):
@@ -1204,10 +1265,21 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     segments.sort(key=lambda c: (-c["net_expectancy_pct"], -c["n"]))
 
     # Source families: copytrader / polymarket / kalshi / ml_enhanced / ...
+    # These are verdict-bearing rows on the page, so they must pass the same
+    # gates as every other bucket. They were previously emitted straight from
+    # evaluate_cell with no BH, DSR, forward or harm gate — the only bucket that
+    # could reach PROVEN_T2 on raw statistics alone.
     fam_groups = _group(rows, _family)
     for fam, group in sorted(fam_groups.items(), key=lambda kv: -len(kv[1])):
-        families.append(evaluate_cell(group, max(1, len(fam_groups)),
-                                      {"family": fam}))
+        families.append(evaluate_cell(group, global_trial_count(len(fam_groups)),
+                                      {"family": fam},
+                                      n_trials_local=len(fam_groups)))
+    fam_tested = [c for c in families if c["n"] >= WR_MIN_N]
+    for c, q in zip(fam_tested, benjamini_hochberg([c["p_value"] for c in fam_tested])):
+        c["q_value"] = round(q, 6)
+    for c in families:
+        _promote(c, forward)
+    apply_harm_gate(families)
 
     # Selection alpha (M1b) joined onto the class aggregates when a sidecar was
     # supplied. Kept optional: it needs per-symbol OHLC, so a job without DB
@@ -1239,8 +1311,22 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     # A cell profitable on beta alone must not reach PROVEN_T2. Applied to the
     # strategy, symbol and class buckets (all direction-aware); segments and
     # source families are reconstructed/aggregate proxies and are left out.
+    # The gate reports whether it actually ran: an absent sidecar must not read
+    # as "all cells passed".
+    alpha_gate_report: dict[str, Any] = {"applied": False, "tested": 0,
+                                         "demoted": 0, "scopes": {}}
     for bucket in (cells, symbols, classes):
-        apply_selection_alpha_gate(bucket, alpha)
+        part = apply_selection_alpha_gate(bucket, alpha)
+        if not part.get("applied"):
+            alpha_gate_report.setdefault("reason", part.get("reason"))
+            continue
+        alpha_gate_report["applied"] = True
+        alpha_gate_report["tested"] += part.get("tested", 0)
+        alpha_gate_report["demoted"] += part.get("demoted", 0)
+        for scope, count in (part.get("scopes") or {}).items():
+            alpha_gate_report["scopes"][scope] = (
+                alpha_gate_report["scopes"].get(scope, 0) + count)
+    selection["gate"] = alpha_gate_report
 
     # Kill tribunal: everything KILL plus near-kill (WEAK with negative mean).
     kills = []
@@ -1341,6 +1427,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "candidate_min_n": CANDIDATE_MIN_N,
             "fdr_q": FDR_Q,
             "dsr_threshold": DSR_THRESHOLD,
+            "dsr_trials_global_floor": GLOBAL_TRIAL_FLOOR,
             "bootstrap_resamples": BOOT_N,
             "bootstrap_seed": BOOT_SEED,
             "slippage_pct_by_class": SLIPPAGE_PCT,
