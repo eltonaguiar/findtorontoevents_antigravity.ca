@@ -56,8 +56,15 @@ at brokers that have implemented it — but the friction table above and the bas
 | Sleeve | Capital | Instrument | Why | Kill rule |
 |---|---:|---|---|---|
 | **Core beta** | $1,400 (70%) | One broad, low-cost index ETF (e.g. total US market) | Removes the need to be right; the only guaranteed-positive-expectancy exposure after fees | none (rebalance only) |
-| **Rotation** | $400 (20%) | Top-5 long-only asset-class ETFs, 9-month momentum, monthly, absolute filter (14-ETF universe) | The only in-house backtest with a plausible edge and low turnover; lag-corrected evidence is drawdown control, not excess return | −15% or 3 negative months |
+| **Rotation (paper only until graduation)** | $400 paper, **$0 real** | Top-5 long-only asset-class ETFs, 9-month momentum, monthly, absolute filter (14-ETF universe) | The only in-house backtest with a plausible edge and low turnover; lag-corrected evidence is drawdown control, not excess return | −15% or 3 negative months |
 | **Sandbox** | $200 (10%) | **Paper only** — crypto/forex intraday | Learn and measure without paying the 9%/month friction | never funded until gates pass |
+
+**Revised 2026-11-19 (buffy's critique, accepted):** the real allocation is **90% core beta /
+0% rotation / 10% sandbox**. The rotation sleeve keeps running at $400 *paper* so it can accrue
+the forward rows that would justify funding it, but no real money moves until it clears
+n≥200 forward with net CI>0 at 2× cost. Rationale: the ETF class net expectancy is +0.006%/trade
+with a CI spanning zero — about 0.6 bp against a ~5 bp cost, i.e. an edge ~8× smaller than the
+friction.
 
 **Hard rules:** ≤2% account risk per position; no leverage; no averaging down; every change
 logged before it is made; a sleeve that hits its kill rule is frozen, not "adjusted".

@@ -135,8 +135,13 @@ def test_rotation_sleeve_matches_the_validated_spec():
     from pathlib import Path
     cfg = json.loads((Path(__file__).resolve().parents[1] / "paper_trading" / "sleeves.json").read_text())
     rot = next(s for s in cfg["sleeves"] if s["id"] == "etf-rotation")
-    assert len(rot["universe"]) == 14
+    assert rot["universe"] == ["SPY", "QQQ", "IWM", "EFA", "EEM", "TLT", "IEF", "SHY",
+                               "GLD", "DBC", "VNQ", "LQD", "HYG", "TIP"], "universe drifted"
     assert rot["rules"]["top_n"] == 5
     assert rot["rules"]["lookback_days"] == 189          # ~9 months, the regime-robust default
     assert rot["rules"]["absolute_filter"] is True
     assert "LAG-CORRECTED" in rot["thesis"]
+    # thesis and rules must describe the SAME configuration
+    assert "9-month (189d)" in rot["thesis"] and "0.81" in rot["thesis"]
+    assert "0.82" not in rot["thesis"], "thesis must not quote the 6m result for a 9m rule"
+    assert "0.89" not in rot["thesis"].split("unlagged")[0]
