@@ -1,0 +1,18 @@
+diff --git a/tools/deploy_audit_files.py b/tools/deploy_audit_files.py
+index b68eb2baa2d..4d18618d404 100644
+--- a/tools/deploy_audit_files.py
++++ b/tools/deploy_audit_files.py
+@@ -88,6 +88,13 @@ UPLOADS = [
+     ("audit_dashboard/benchmark_proof.html",                 "/findtorontoevents.ca/audit2/benchmark_proof.html",                  "healthchecks"),
+     ("audit_dashboard/data/benchmark_ledger_proof.json",     "/findtorontoevents.ca/audit/data/benchmark_ledger_proof.json",      "healthchecks"),
+     ("audit_dashboard/data/benchmark_ledger_proof.json",     "/findtorontoevents.ca/audit2/data/benchmark_ledger_proof.json",      "healthchecks"),
++    # 2026-11-19: ONE ledger build -> every surface. /audit, /audit2 and /audit3 were
++    # published by different steps, so /audit served a build 109 minutes older and the
++    # two payloads disagreed by 11 rows (CRYPTO +8, EQUITY +1, ETF +2). Copying the same
++    # committed artifact to all three destinations means they cannot diverge in content.
++    ("audit_dashboard/data/audit3_ledger.json", "/findtorontoevents.ca/audit/data/audit3_ledger.json", "audit3"),
++    ("audit_dashboard/data/audit3_ledger.json", "/findtorontoevents.ca/audit2/data/audit3_ledger.json", "audit3"),
++    ("audit_dashboard/data/audit3_ledger.json", "/findtorontoevents.ca/audit3/audit3_ledger.json", "audit3"),
+     ("audit_dashboard/ai_postmortem_helper.js",              "/findtorontoevents.ca/audit/ai_postmortem_helper.js",               "ai_tournament"),
+     ("audit_dashboard/ai_postmortem_helper.js",              "/findtorontoevents.ca/audit2/ai_postmortem_helper.js",               "ai_tournament"),
+     ("audit_dashboard/data/ai_tournament_picks_latest.json", "/findtorontoevents.ca/audit/data/ai_tournament_picks_latest.json",  "ai_tournament"),

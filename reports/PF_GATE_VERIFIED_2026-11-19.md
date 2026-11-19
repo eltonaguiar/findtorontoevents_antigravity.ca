@@ -65,20 +65,18 @@ Land them in that order, and D4/D5 need a decision only the owner can make: is t
 gate supposed to be enforced (`require_alpha` restored to the signature), and what is the
 real `global_trial_count` implementation? I will not invent either.
 
-## A gap in my own gate
+## CORRECTION — the persistence gap is now closed
 
-The sleeves are **computed and warned about, but never persisted** into the report JSON —
-the output carries `classes`, `cells`, `symbols` and so on, with no `sleeves` key. So the
-`rankable` flags exist only as stderr warnings; no dashboard can read them. That is a
-defect in my patch, not in main. It needs a `sleeves` block written into the ledger before
-this gate is useful downstream.
+Earlier in this report I recorded a defect in my own patch: the gate computed `rankable`
+but only warned on stderr, so no dashboard could read it. **That is fixed and verified.**
+The ledger now carries a `sleeves` block:
 
-## Reproduce
-
-```bash
-git worktree add --detach /tmp/main origin/main
-cd /tmp/main && python3 -m alpha_engine.audit3_tribunal --help   # D1 fires here
-# after the repair patch:
-python3 -m alpha_engine.audit3_tribunal --picks picks.json --sleeves dash.json --out out.json
-# look for "WARNING: sleeve not rankable" on stderr
 ```
+FANTASY    rankable=False  implausible=True   pf 155.85 exceeds absolute ceiling 25; pf is 155.8x the class aggregate
+REAL_ONE   rankable=True   implausible=False  None
+TINY       rankable=False  implausible=False  n 5 < floor 30
+```
+
+Three assertions, all PASS, read from the emitted JSON rather than from stderr. The
+canonical patch is now `2026-11-19-sleeve-implausible-pf.patch` (197 lines), which includes
+the persistence step before the report is serialised.
