@@ -14,8 +14,10 @@ Safety:
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
+import sys
 import time
 from collections import Counter
 from pathlib import Path
@@ -111,3 +113,28 @@ def summarize(path: Path | str | None = None) -> dict[str, Any]:
                by_class=dict(by_c.most_common()),
                first_ts=first, last_ts=last)
     return out
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Print the weekly review: what the denylist blocked, by reason/class."""
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--path", help="hit log (default: AUDIT3_DENYLIST_HIT_LOG or "
+                                   "alpha_engine/data/audit3_denylist_hits.jsonl)")
+    ap.add_argument("--json", action="store_true", help="emit JSON")
+    args = ap.parse_args(argv)
+    out = summarize(args.path)
+    if args.json:
+        print(json.dumps(out, indent=1))
+        return 0 if out["n"] else 1
+    if not out["n"]:
+        print(f"no denials recorded yet ({out['path']})")
+        return 1
+    print(f"{out['n']} denials  {out['first_ts']} → {out['last_ts']}")
+    print("by class   :", out["by_class"])
+    print("by strategy:", list(out["by_strategy"].items())[:10])
+    print("by symbol  :", list(out["by_symbol"].items())[:10])
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
