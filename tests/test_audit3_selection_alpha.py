@@ -47,6 +47,16 @@ def test_crypto_symbol_candidates_cover_the_vendor_variants():
     assert "BRK-B" in eq
 
 
+def test_fx_symbol_candidates_strip_the_vendor_suffixes():
+    # fx_prices stores the bare pair (AUDJPY); the ledger carries =X / - / /
+    # forms. Before this, none of them produced the bare pair, so forex
+    # selection alpha was silently 0.
+    for raw in ("AUDJPY=X", "AUD-USD", "AUD/JPY"):
+        c = symbol_candidates(raw, "FOREX")
+        bare = raw.replace("=X", "").replace("-", "").replace("/", "")
+        assert bare in c, f"{raw} -> {c}"
+
+
 # ─────────────────────────────────────────────────────────── alignment ──
 def test_close_at_takes_the_first_bar_at_or_after_the_signal():
     series = [(0, 10.0), (H, 11.0), (2 * H, 12.0)]
@@ -111,3 +121,30 @@ def test_small_slices_are_not_aggregated():
     res = alpha_for(rows, bars)
     assert "CRYPTO/LONG" not in res["by_slice"]
     assert res["by_class"]["CRYPTO"]["alpha_ci"] == [None, None]
+
+
+# ─────────────────────────────────────────── N5 hold-time normalisation ──
+def test_alpha_is_normalised_by_hold_time():
+    short = _row(pnl=8.0, closed="2026-05-01T06:00:00+00:00")   # 6h hold
+    long = _row(pnl=8.0, closed="2026-05-02T00:00:00+00:00")    # 24h hold
+    bars = {"CRYPTO:BTCUSDT": _bars_for(long, 100.0, 105.0)}
+    res = alpha_for([short, long], bars)
+    o = res["overall"]
+    assert o["alpha_pct"] > 0                    # unchanged headline
+    assert o["hold_days_mean"] > 0.5
+    assert o["alpha_per_day_pct"] > o["alpha_pct"]
+    # annualized is computed from the unrounded per-day mean, so comparing it to
+    # the rounded 4dp field needs a tolerance (double-rounding differs by <0.05).
+    assert abs(o["alpha_annualized_pct"] - o["alpha_per_day_pct"] * 365.0) < 0.1
+    assert o["min_hold_participation"] == 0.5
+    assert o["n_min_hold"] == 1
+    assert o["alpha_pct_min_hold"] == 2.85
+
+
+def test_min_hold_fields_present_even_when_nothing_qualifies():
+    row = _row(pnl=8.0, closed="2026-05-01T01:00:00+00:00")     # 1h hold
+    bars = {"CRYPTO:BTCUSDT": _bars_for(row, 100.0, 105.0)}
+    o = alpha_for([row], bars)["overall"]
+    assert o["n_min_hold"] == 0
+    assert o["min_hold_participation"] == 0.0
+    assert o["alpha_pct_min_hold"] is None

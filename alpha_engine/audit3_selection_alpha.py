@@ -49,6 +49,14 @@ TABLE_FOR = {
 TOLERANCE_MS = {"CRYPTO": 3 * 3600_000, "EQUITY": 5 * 86400_000, "ETF": 5 * 86400_000,
                 "FOREX": 5 * 86400_000, "COMMODITY": 5 * 86400_000}
 
+# N5 (2026-11-19): selection alpha is hold-time dependent. A 1-hour pick and a
+# 30-day pick are not the same claim, so the headline is reported per day and
+# annualised, and a minimum-hold participation figure shows how much of the book
+# actually held long enough to be comparable.
+MIN_HOLD_DAYS_FOR_HEADLINE = 1.0
+ANNUALIZATION_DAYS = 365.0
+MIN_HOLD_DAYS_FLOOR = 1.0 / 24.0
+
 
 def _conn():
     """Resolve credentials through tools/db_env.py, never raw env vars.
@@ -72,7 +80,11 @@ def symbol_candidates(sym: str, klass: str) -> list[str]:
         base = s.replace("-USD", "").replace("USD", "").replace("/", "")
         out += [f"{base}USDT", f"{base}USD", base]
     else:
-        out += [s.replace(".", "-"), s.replace("-", ".")]
+        # FX and index symbols arrive as AUDJPY=X, AUD-USD or AUD/JPY while the
+        # price tables store the bare AUDJPY. The old code only swapped '.' and
+        # '-', so '=X' and '-' forms never matched (forex selection alpha was 0).
+        bare = s.replace("=X", "").replace("-", "").replace("/", "").replace(".", "")
+        out += [s.replace(".", "-"), s.replace("-", "."), bare]
     seen, uniq = set(), []
     for c in out:
         if c and c not in seen:
@@ -181,14 +193,22 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dic
             continue
         move = (p1 / p0 - 1.0) * 100.0
         bench = move if _dir(r) == "LONG" else -move
+        hold_days = max((t1 - t0).total_seconds() / 86400.0, 0.0)
         per.append({"row": r, "class": klass, "dir": _dir(r), "pnl": pnl,
-                    "hold": bench, "alpha": pnl - bench})
+                    "hold": bench, "alpha": pnl - bench, "hold_days": hold_days})
 
     def agg(items):
         if not items:
             return {"n": 0}
         a = [x["alpha"] for x in items]
         ci = bootstrap_mean_ci(a) if len(a) >= 5 else {"ci_lo": None, "ci_hi": None}
+        holds = [x["hold_days"] for x in items]
+        per_day = [x["alpha"] / max(x["hold_days"], MIN_HOLD_DAYS_FLOOR)
+                   for x in items]
+        long_items = [x for x in items
+                      if x["hold_days"] >= MIN_HOLD_DAYS_FOR_HEADLINE]
+        long_alpha = (round(statistics.mean(x["alpha"] for x in long_items), 4)
+                      if long_items else None)
         return {
             "n": len(items),
             "pick_net_pct": round(statistics.mean(x["pnl"] for x in items), 4),
@@ -197,6 +217,14 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]]) -> dic
             "alpha_ci": [round(ci["ci_lo"], 4) if ci["ci_lo"] is not None else None,
                          round(ci["ci_hi"], 4) if ci["ci_hi"] is not None else None],
             "alpha_wr": round(sum(1 for v in a if v > 0) / len(a), 4),
+            "hold_days_mean": round(statistics.mean(holds), 4),
+            "hold_days_median": round(statistics.median(holds), 4),
+            "alpha_per_day_pct": round(statistics.mean(per_day), 4),
+            "alpha_annualized_pct": round(statistics.mean(per_day) * ANNUALIZATION_DAYS, 4),
+            "min_hold_days": MIN_HOLD_DAYS_FOR_HEADLINE,
+            "n_min_hold": len(long_items),
+            "min_hold_participation": round(len(long_items) / len(items), 4),
+            "alpha_pct_min_hold": long_alpha,
         }
 
     by_cls = {k: agg([x for x in per if x["class"] == k]) for k in sorted({x["class"] for x in per})}
@@ -228,7 +256,10 @@ def main(argv=None) -> int:
     res["schema"] = "audit3.selection_alpha.v1"
     res["generated_at"] = datetime.now(timezone.utc).isoformat()
     res["definition"] = ("alpha = pick net return - direction-adjusted buy & hold "
-                         "over the same entry..exit window (M1b)")
+                         "over the same entry..exit window (M1b); alpha_per_day_pct "
+                         "and alpha_annualized_pct normalise by hold time, and "
+                         "min_hold_participation reports the share of trades held "
+                         f">= {MIN_HOLD_DAYS_FOR_HEADLINE:.0f} day(s)")
     if not res["covered"]:
         print(json.dumps(res, indent=1)); print("no price coverage", file=sys.stderr); return 3
     if args.out:

@@ -125,3 +125,34 @@ os.environ.setdefault("ETF_VIX_GATE_ENABLED", "0")
 # EQUITY_VIX_FILTER check inside it remains reachable.
 os.environ.setdefault("VIX_REGIME_GATE_ENABLED", "0")
 os.environ.setdefault("YC_REGIME_GATE_ENABLED", "0")
+
+
+# ---------------------------------------------------------------------------
+# audit3 cost-table isolation (2026-11-19)
+# `load_rows` -> `_apply_measured_costs` updates the module-global
+# SLIPPAGE_PCT / STRATEGY_SLIPPAGE_PCT from whatever payload it loads. That is
+# correct for one ledger build per process, but it leaks across tests: a test
+# that loads a measured-cost payload changes the cost every later test sees,
+# which flipped `test_alpha_is_normalised_by_hold_time` (2.85 alone, 2.9003 in
+# the suite). Snapshot and restore around every test so order cannot matter.
+import pytest as _pytest
+
+
+@_pytest.fixture(autouse=True)
+def _restore_audit3_cost_tables():
+    try:
+        from alpha_engine import audit3_tribunal as _t
+    except Exception:
+        yield
+        return
+    class_snapshot = dict(getattr(_t, "SLIPPAGE_PCT", {}) or {})
+    strat_snapshot = dict(getattr(_t, "STRATEGY_SLIPPAGE_PCT", {}) or {})
+    try:
+        yield
+    finally:
+        if hasattr(_t, "SLIPPAGE_PCT"):
+            _t.SLIPPAGE_PCT.clear()
+            _t.SLIPPAGE_PCT.update(class_snapshot)
+        if hasattr(_t, "STRATEGY_SLIPPAGE_PCT"):
+            _t.STRATEGY_SLIPPAGE_PCT.clear()
+            _t.STRATEGY_SLIPPAGE_PCT.update(strat_snapshot)
