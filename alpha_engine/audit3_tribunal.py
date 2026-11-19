@@ -32,6 +32,13 @@ G8  Repeated looks    a CANDIDATE/PROVEN_T2 verdict must persist across K
                      consecutive runs (verdict-history sidecar); the run that
                      began the streak is recorded as first_pass_at. BH is
                      per-run, so without this a cell eventually crosses by chance.
+G9  Selection alpha   direction-adjusted selection alpha (pick net - hold) 95%
+                     CI lower bound must be > 0 to reach PROVEN_T2; otherwise
+                     the cell is beta-dominant, not skill-proven.
+G10 Cost stress      the net-expectancy bootstrap CI at 2x the class slippage
+                     must keep a positive lower bound to reach PROVEN_T2 or
+                     CANDIDATE; an edge that dies at 2x cost is a cost
+                     assumption, so the cell is WEAK regardless of any pod.
 
 Verdicts
 --------
@@ -1231,6 +1238,56 @@ def compute_verdict_churn(buckets: list[list[dict]],
         "flips": flips[:50],
     }
 
+def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
+    """G9 - selection alpha must be proven positive before promotion.
+
+    A cell (or class) that is profitable purely because the underlying rose
+    (market beta) must not reach PROVEN_T2. This looks up the direction-adjusted
+    selection alpha measured by ``alpha_engine/audit3_selection_alpha.py`` and
+    requires its bootstrap 95% CI lower bound to be strictly positive.
+
+    * PROVEN_T2 without a positive-alpha proof is demoted to CANDIDATE and
+      flagged ``beta_dominant``.
+    * CANDIDATE keeps its verdict but is flagged ``beta_dominant``.
+
+    Fail-open only when the alpha sidecar is absent or empty, so library callers
+    and unit tests that pass no alpha keep the pre-gate behaviour.
+    """
+    if not isinstance(alpha, dict):
+        return
+    by_class = alpha.get("by_class") or {}
+    by_slice = alpha.get("by_slice") or {}
+    if not by_class and not by_slice:
+        return
+
+    def _alpha_lo(ac: Any, direction: Any) -> float | None:
+        ac = str(ac or "").strip().upper()
+        d = str(direction or "").strip().upper()
+        slice_entry = by_slice.get(f"{ac}/{d}")
+        if slice_entry and slice_entry.get("n"):
+            lo = (slice_entry.get("alpha_ci") or [None, None])[0]
+            if lo is not None:
+                return lo
+        cls_entry = by_class.get(ac)
+        if cls_entry and cls_entry.get("n"):
+            lo = (cls_entry.get("alpha_ci") or [None, None])[0]
+            if lo is not None:
+                return lo
+        return None
+
+    for c in bucket:
+        lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
+        alpha_proven = lo is not None and lo > 0
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
+        if not alpha_proven:
+            c["beta_dominant"] = True
+            if c["verdict"] == "PROVEN_T2":
+                c["verdict"] = "CANDIDATE"
+                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
+                       if lo is not None else
+                       "selection alpha unavailable for this class")
+                c["reasons"].append(f"G9 selection-alpha gate: {why} - beta-dominant")
+
 
 def segment_tags(r: dict) -> list[tuple[str, str]]:
     """Reconstruct the published /audit section gates from fields the row carries.
@@ -1355,7 +1412,10 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     families: list[dict] = []
     segments: list[dict] = []
 
-    # PASS 1: count tested cells so DSR knows the multiplicity.
+    # PASS 1: count every distinct cell so DSR knows the FULL multiplicity. DSR
+    # corrects for the number of hypotheses tried, so it must see the whole search
+    # space, not only the n >= WR_MIN_N survivors; filtering first under-corrects
+    # G4 and lets overfit cells clear the bar.
     strat_groups = _group(rows, lambda r: (str(r.get("asset_class") or "UNKNOWN").upper(),
                                            str(r.get("strategy") or r.get("source_system") or "(unattributed)"),
                                            _direction(r)))
@@ -1516,6 +1576,12 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             if alpha.get(key) is not None:
                 selection[key] = alpha[key]
 
+    # G9 - selection alpha is a promotion gate, not just a class display column.
+    # Applied to the strategy, symbol and class buckets (all direction-aware);
+    # segments and source families are reconstructed/aggregate proxies.
+    for bucket in (cells, symbols, classes):
+        apply_selection_alpha_gate(bucket, alpha)
+
     # Kill tribunal: everything KILL plus near-kill (WEAK with negative mean).
     kills = []
     for scope, bucket in (("strategy", cells), ("symbol", symbols), ("class", classes)):
@@ -1628,10 +1694,15 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                               f"{MATERIALITY_COST_FRACTION:.0%} of the cell's mean "
                               "round-trip cost), stable halves, no symbol > "
                               f"{MAX_SYMBOL_SHARE:.0%}, source share <= {MAX_SOURCE_SHARE:.0%}, "
-                              f"BH q <= {FDR_Q}, DSR >= {DSR_THRESHOLD}",
+                              f"BH q <= {FDR_Q}, DSR >= {DSR_THRESHOLD}, "
+                              "selection alpha CI lower bound > 0 (G9)",
             "cost_stress": "net CI lower bound at 2x the class slippage must stay "
-                           "positive to reach PROVEN_T2 or CANDIDATE (G9); otherwise "
-                           "the cell demotes one tier",
+                           "positive to reach PROVEN_T2 or CANDIDATE (G10); "
+                           "otherwise the cell is WEAK",
+            "selection_alpha_gate": "G9: PROVEN_T2 requires direction-adjusted "
+                                    "selection alpha (pick net - hold) bootstrap CI "
+                                    "lower bound > 0; a beta-only profitable cell is "
+                                    "demoted to CANDIDATE and flagged beta_dominant",
             "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni "
                             f"alpha/m = {0.05 / max(1, len(tested)):.6f}",
             "stability": "chronological split-half, both halves net mean > 0",
@@ -1716,9 +1787,11 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "input_sha256": input_sha256,
             "git_sha": _git_sha(),
             "n_cells_scored_with_dsr": sum(1 for c in cells if c.get("dsr") is not None),
-            "registry_note": "one canonical multiplicity N: n_cells_tested feeds "
-                             "BH, Bonferroni and DSR; DSR is only reported for "
-                             "cells inside that family",
+            "n_trials_dsr": n_trials,
+            "registry_note": "multiplicity is counted two ways on purpose: "
+                             "BH/Bonferroni operate on tested cells (n >= sample "
+                             "floor); DSR uses the global trial count, every "
+                             "distinct cell scored.",
         },
     }
 

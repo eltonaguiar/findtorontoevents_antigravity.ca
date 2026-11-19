@@ -2665,6 +2665,32 @@ def save_results(results):
             if strategy_name not in _PERMANENTLY_KILLED
         }
 
+    # Canonical retired/paper-only blocklist (2026-11-19). PERMANENTLY_KILLED is a
+    # subset; the retired-strategy blocklist (e.g. forex_rsi2_mean_reversion,
+    # futures_momentum) must also be enforced here, otherwise this scraper keeps
+    # writing rows for strategies the kill protocol already retired.
+    try:
+        import sys
+        from pathlib import Path
+
+        _alpha_dir = Path(__file__).resolve().parent.parent / "alpha_engine"
+        if str(_alpha_dir) not in sys.path:
+            sys.path.insert(0, str(_alpha_dir))
+        from strategy_blocklist import is_blocked_pick as _is_blocked_pick
+    except Exception:
+        _is_blocked_pick = None
+
+    if _is_blocked_pick is not None:
+        _before = len(all_picks)
+        all_picks = [p for p in all_picks if not _is_blocked_pick(p)]
+        _blocked = _before - len(all_picks)
+        if _blocked:
+            print(f"  [BLOCKLIST] dropped {_blocked} retired/blocked-strategy pick(s)")
+        results = {
+            strategy_name: [p for p in picks if not _is_blocked_pick(p)]
+            for strategy_name, picks in results.items()
+        }
+
     # Summary by asset class
     by_class = defaultdict(list)
     for p in all_picks:

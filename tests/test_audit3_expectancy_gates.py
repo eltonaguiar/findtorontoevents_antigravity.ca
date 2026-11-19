@@ -61,7 +61,10 @@ def test_expectancy_primary_promotes_low_win_rate_cell():
     # strictly positive (never 0) and small; this synthetic cell still has a few
     # non-positive resamples, so the floor is the bound, not the value.
     assert 0 < cell["p_value"] < 0.01
+    # 4.0/-0.6 still clears 2x slippage, so the pre-registered pod promotes it;
+    # the 2x-cost gate is pinned separately (test_cost_stress_2x_is_a_required_gate).
     assert cell["verdict"] == "PROVEN_T2"
+    assert cell["stress_2x_ok"] is True
     # Same evidence without a pre-registered pod: forward paper, not sizing.
     bare = build_report(rows, "x.json", None, confirmatory={"pods": []})
     assert bare["cells"][0]["verdict"] == "CANDIDATE"
@@ -150,5 +153,6 @@ def test_provenance_carries_hash_and_version():
     prov = rep["provenance"]
     assert prov["input_sha256"] == "deadbeef"
     assert prov["generator_version"].startswith("audit3.v")
-    assert "one canonical multiplicity N" in prov["registry_note"]
+    assert "DSR uses the global trial count" in prov["registry_note"]
+    assert prov["n_trials_dsr"] >= 1
     json.dumps(rep, allow_nan=False)

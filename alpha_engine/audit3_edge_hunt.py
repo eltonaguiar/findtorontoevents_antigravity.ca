@@ -438,6 +438,42 @@ def gate_provenance(rows: list[dict]) -> dict[str, Any]:
     }
 
 
+def power_analysis(rows: list[dict], mde_pct: float = PROVEN_MIN_NET_CI_LO_PCT,
+                   z: float = POWER_Z) -> dict[str, Any]:
+    """Per-class realized net-pnl SD and the pre-declared-MDE sample size.
+
+    For each asset class with >= 5 net-pnl observations, report the population
+    standard deviation (statistics.pstdev) of net pnl and the sample size that
+    80% power would need to detect `mde_pct` against that SD. The MDE is fixed
+    up front (the tribunal's PROVEN net-CI lower bound), so `required_n_mde`
+    never sees an observed cell mean -- it is non-circular by construction.
+    """
+    classes: dict[str, list[float]] = defaultdict(list)
+    for r in rows:
+        v = net_pnl(r)
+        if v is not None:
+            classes[_class(r)].append(v)
+    per_class = {}
+    for klass in sorted(classes):
+        vals = classes[klass]
+        if len(vals) < 5:
+            continue
+        sd = statistics.pstdev(vals)
+        per_class[klass] = {
+            "n": len(vals),
+            "net_pnl_sd_pct": round(sd, 4),
+            "required_n": required_n_mde(mde_pct, sd, z=z),
+        }
+    return {
+        "mde_pct": mde_pct,
+        "z": z,
+        "note": ("mde_pct is pre-declared (the tribunal's PROVEN net-CI lower "
+                 "bound), never the observed cell mean, to avoid the circular "
+                 "observed-mean trap in required_n"),
+        "by_asset_class": per_class,
+    }
+
+
 # ────────────────────────────────────────────────────────────────── report ──
 def power_analysis(rows: list[dict], mde_pct: float = PROVEN_MIN_NET_CI_LO_PCT,
                    z: float = POWER_Z) -> dict[str, Any]:
@@ -482,6 +518,7 @@ def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
     pit = pit_replay(rows)
     bat = battery(rows)
     prov = gate_provenance(rows)
+    power = power_analysis(rows)
 
     # Does the ledger's headline edge survive the PIT replay? That is the only
     # claim this module is willing to call "found".
