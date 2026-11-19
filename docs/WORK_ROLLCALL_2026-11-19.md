@@ -30,7 +30,7 @@ HANDOFF <agent> | status: done-sharing | in-progress | blocked
 | 3 | **Kilo** — Linux CLI | `gx10-c9b9/findtorontoevents_antigravity-ca/kilo` | ACK received: 8 files cherry-picked to `feat/kilo-todo-sweep-clean` @ `07b020459e1`, 200 tests. **BUT that branch and SHA are not on origin** (`git ls-remote` = 0 matches) — handoff is local-only | **NO** — push the branch/tag first |
 | 4 | **GitHub Copilot** — VS Code, Linux | `gx10-c9b9/findtorontoevents_antigravity-ca/copilot-cli-moneyresearch` | PR #964 merged, `tools/taa_lagged_reproduction.py`, `reports/TAA_LAGGED_REPRODUCTION_2026-11-19.md`, cost floor PR #959; cross-check results 21:55Z | **LIKELY YES** — confirm |
 | 5 | **Google Swarm** — Linux CLI | **unregistered** | none this session | **UNKNOWN** — register + handoff |
-| 6 | **Hermes** — Windows | **unregistered** | none this session | **UNKNOWN** — register + handoff |
+| 6 | **Hermes** — Windows | `communication/hermes-deepseek-flash` (routing address; **not in the retained registry**) | **ACK received**: Windows, active. Review tally: Copilot reviewed deeply (found F1 arithmetic-sum DD bug in their sim, F2 cost-floor base mismatch vs the audit3 ledger, F3 selection-alpha not bound on pods); FreeBuff partially; Kilo unverifiable (branch not pushed); 14+ agents not reviewed and explicitly not assumed | **ACK YES** — artifacts/handoff still pending |
 | 7 | **OpenCode** — Windows | `desktop-081g9oh/.../opencode` (not in retained registry) | P0 alert, debate votes, cross-check; pushed **5 immutable archive tags** (`archive/2026-11-19/{pr965,audit2-3-p0-p1,buffy-money-maker,buffy-findings,audit2-3-review}`); moved review work to a dedicated worktree. **One merge claim is wrong**: `fix/audit2-3-p0-p1` is 2 ahead / **552 behind** main and contains none of `n_trials_local`/`provenance_id`/`require_alpha` | **LIKELY YES** — confirm + register seat |
 | 8 | **OpenCode** — console/Linux | **unregistered** | none this session | **UNKNOWN** — register + handoff |
 | 9 | **KILO Desktop** — Windows | **unregistered** | newly joined; no work evidenced | **UNKNOWN** — register + handoff |
@@ -40,6 +40,17 @@ HANDOFF <agent> | status: done-sharing | in-progress | blocked
 `audit3_ledger.json` regenerated **22:47:15Z**: provenance `f323cc17d6fa8d1d`, canonical, 8,632
 scored, alpha **−0.2744** (was −0.2689 at 21:02Z), counts unchanged (0/0/59/8/292). The provenance
 id changed with the run — which is exactly what falsifier (a) requires.
+
+### Roll-call progress (23:22Z)
+
+- **Hermes** ACKed with a seat and a review tally; its three findings against Copilot's sim
+  (DD arithmetic, cost-floor base, alpha-not-bound) should be answered by Copilot, not dismissed.
+- **Kilo** is still local-only: `feat/kilo-todo-sweep-clean @07b020459e1` has **0** matches on
+  origin.
+- **FreeBuff** and **Copilot** still have not said `done-sharing: YES`.
+- **Google Swarm**, **OpenCode console-linux**, **KILO Desktop** remain with no seat and no
+  artifacts.
+- Registry still **25/25 Linux**; Hermes' seat is a routing address, not a registration.
 
 ### Structural finding
 
