@@ -237,3 +237,29 @@ def test_cell_reports_required_n_and_mde():
                                              "strategy": "s2", "direction": "LONG"})
     assert flat["required_n"] is None
     assert flat["mde_pct"] is None
+
+
+def test_selection_alpha_gate_demotes_a_beta_cell():
+    # A confirmatory cell can be PROVEN_T2 on its own expectancy CI and still be
+    # beta: if the picks do not beat holding the same instrument, it is not skill.
+    rows = _rows(150, 1.2, strategy="cellA")
+    for i, r in enumerate(rows):
+        r["symbol"] = f"SYM{i % 5}"
+        r["source_system"] = "src_a" if i % 2 else "src_b"
+    for r in rows[:5]:
+        r["pnl_pct"] = -0.8
+    manifest = {"path": "m.json", "available": True,
+                "pods": [{"id": "POD-A", "status": "pre_registered",
+                          "strategies": ["cellA"], "asset_classes": ["CRYPTO"],
+                          "directions": ["LONG"]}]}
+    alpha = {"by_class": {"CRYPTO": {"n": 120, "alpha_pct": -0.3,
+                                     "alpha_ci": [-0.6, 0.1], "alpha_wr": 0.45,
+                                     "hold_net_pct": 0.5}}}
+    rep = build_report(rows, "x.json", None, alpha=alpha, confirmatory=manifest)
+    cell = [c for c in rep["cells"] if c["strategy"] == "cellA"][0]
+    assert cell["verdict"] != "PROVEN_T2"
+    assert any("selection alpha" in r for r in cell["reasons"])
+    # Without the alpha sidecar the same rows are not demoted by this gate.
+    bare = build_report(rows, "x.json", None, confirmatory=manifest)
+    bare_cell = [c for c in bare["cells"] if c["strategy"] == "cellA"][0]
+    assert bare_cell["verdict"] == "PROVEN_T2"

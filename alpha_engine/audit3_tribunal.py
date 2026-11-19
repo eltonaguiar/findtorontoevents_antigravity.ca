@@ -1092,6 +1092,25 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             c["alpha_n"] = a.get("n")
             c["alpha_wr"] = a.get("alpha_wr")
             c["hold_net_pct"] = a.get("hold_net_pct")
+    # Selection-alpha gate: a cell whose picks do not beat holding the same
+    # instrument over the same window is beta, not skill. It cannot be PROVEN_T2
+    # even when its own net-expectancy CI is positive. Alpha is supplied per
+    # asset class, so a class-level alpha governs every cell in that class. Only
+    # applied when the sidecar supplied alpha for the class; absent data changes
+    # nothing.
+    for c in cells:
+        if c.get("verdict") != "PROVEN_T2":
+            continue
+        a = alpha_by_class.get(c.get("asset_class")) or {}
+        ci = a.get("alpha_ci")
+        if not ci or ci[0] is None:
+            continue
+        if ci[0] <= 0:
+            c["verdict"] = "CANDIDATE"
+            c["reasons"].append(
+                f"selection alpha CI includes zero (alpha {a.get('alpha_pct')}%/pick, "
+                f"CI-LB {ci[0]}) - expectancy is beta, not skill")
+
     selection: dict[str, Any] = {
         "available": bool(alpha_by_class),
         "definition": "alpha = pick net return - direction-adjusted buy & hold over "
