@@ -121,6 +121,34 @@ def _ms_to_date(ts_ms: int) -> str:
     return datetime.fromtimestamp(ts_ms / 1000.0, tz=timezone.utc).strftime("%Y-%m-%d")
 
 
+def instrument_key(klass: str, sym: str) -> str:
+    """One identity per instrument, so spelling variants stop inflating coverage.
+
+    The candidate generator deliberately emits several spellings per instrument
+    (``BTC-USD`` / ``BTCUSDT`` / ``BTC``; ``AUDJPY=X`` / ``AUD/JPY`` / ``AUDJPY``)
+    because vendors disagree. ``bar_coverage`` counted every spelling as its own
+    requested symbol, so on 2026-11-19 the page read CRYPTO 36/173 and FOREX 12/44
+    even though most "missing" entries were variants of symbols already priced —
+    a ratio nobody can act on. Counting instruments is the number a reader can use,
+    and ``variants_considered`` keeps the old figure visible for comparison.
+    """
+    s = str(sym or "").strip().upper().replace("/", "")
+    if klass == "CRYPTO":
+        s = s.replace("-", "")
+        for suffix in ("USDT", "USDC", "BUSD", "USD", "PERP"):
+            if s.endswith(suffix) and len(s) > len(suffix):
+                return s[: -len(suffix)]
+        return s
+    return s.replace("=X", "").replace(".", "").replace("-", "")
+
+
+def _instrument_groups(wanted: list[str], klass: str) -> dict[str, list[str]]:
+    groups: dict[str, list[str]] = defaultdict(list)
+    for sym in wanted:
+        groups[instrument_key(klass, sym)].append(sym)
+    return groups
+
+
 def bar_coverage(bars: dict[str, list[tuple[int, float]]],
                  want: dict[str, set[str]] | None) -> dict:
     """Per-class freshness of the price tables, so ``unmeasured`` states a reason.
@@ -134,12 +162,23 @@ def bar_coverage(bars: dict[str, list[tuple[int, float]]],
     out: dict[str, dict] = {}
     for klass, syms in (want or {}).items():
         wanted = sorted(str(x) for x in syms)
-        found = [x for x in wanted if bars.get(f"{klass}:{x}")]
-        lasts = [max(b[0] for b in bars[f"{klass}:{x}"]) for x in found]
+        groups = _instrument_groups(wanted, klass)
+        # One instrument counts as priced if ANY of its spellings has bars — that
+        # is what the loader in alpha_for() will find, so it is what coverage must say.
+        priced = {k: v for k, v in groups.items()
+                  if any(bars.get(f"{klass}:{x}") for x in v)}
+        lasts = [max(b[0] for b in bars[f"{klass}:{x}"])
+                 for variants in priced.values() for x in variants if bars.get(f"{klass}:{x}")]
+        # Report the shortest spelling of a missing instrument ("ADA", not
+        # "ADAUSD"), because that is the name a human recognises in the picks.
+        def _label(variants: list[str]) -> str:
+            return min(variants, key=lambda v: (len(v), v))
         out[klass] = {
-            "symbols_requested": len(wanted),
-            "symbols_found": len(found),
-            "missing_symbols": [x for x in wanted if x not in found][:10],
+            "symbols_requested": len(groups),
+            "symbols_found": len(priced),
+            "variants_considered": len(wanted),
+            "missing_symbols": [_label(v) for key, v in sorted(groups.items())
+                                if key not in priced][:10],
             "last_bar": _ms_to_date(max(lasts)) if lasts else None,
         }
     return out

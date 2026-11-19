@@ -74,3 +74,39 @@ def test_every_backfilled_class_has_a_table():
     from alpha_engine.audit3_selection_alpha import TABLE_FOR
     for klass in ("CRYPTO", "EQUITY", "ETF", "FOREX", "COMMODITY", "BOND"):
         assert klass in TABLE_FOR, klass
+
+
+# --- instrument-level counting (2026-11-19) -------------------------------
+# Coverage used to count spelling variants as separate symbols: CRYPTO read
+# 36/173 and FOREX 12/44 even though most "missing" entries were variants of
+# instruments already priced. These lock the instrument-level ratio.
+
+def test_crypto_spelling_variants_collapse_to_one_instrument():
+    bars = {"CRYPTO:BTCUSDT": [(_ms(2026, 11, 19), 60000.0)]}
+    cov = bar_coverage(bars, {"CRYPTO": {"BTC-USD", "BTCUSDT", "BTC"}})
+    assert cov["CRYPTO"]["symbols_requested"] == 1
+    assert cov["CRYPTO"]["symbols_found"] == 1
+    assert cov["CRYPTO"]["variants_considered"] == 3
+    assert cov["CRYPTO"]["missing_symbols"] == []
+
+
+def test_missing_instrument_is_reported_once_by_short_name():
+    cov = bar_coverage({}, {"CRYPTO": {"ADA-USD", "ADAUSDT", "ADAUSD", "ADA"}})
+    assert cov["CRYPTO"]["symbols_requested"] == 1
+    assert cov["CRYPTO"]["symbols_found"] == 0
+    assert cov["CRYPTO"]["missing_symbols"] == ["ADA"]
+
+
+def test_forex_vendor_spellings_collapse():
+    bars = {"FOREX:AUDJPY": [(_ms(2026, 11, 18), 97.0)]}
+    cov = bar_coverage(bars, {"FOREX": {"AUDJPY=X", "AUD/JPY", "AUDJPY"}})
+    assert cov["FOREX"]["symbols_requested"] == 1
+    assert cov["FOREX"]["symbols_found"] == 1
+
+
+def test_distinct_instruments_are_still_counted_separately():
+    bars = {"EQUITY:AAPL": [(_ms(2026, 11, 19), 1.0)]}
+    cov = bar_coverage(bars, {"EQUITY": {"AAPL", "MSFT", "BRK.B", "BRK-B"}})
+    assert cov["EQUITY"]["symbols_requested"] == 3   # AAPL, MSFT, BRK.B/BRK-B
+    assert cov["EQUITY"]["symbols_found"] == 1
+    assert cov["EQUITY"]["missing_symbols"] == ["BRK-B", "MSFT"]
