@@ -37,6 +37,8 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 SCHEMA = "audit.canonical.v1"
+
+from alpha_engine.symbol_identity import pick_id_join_key  # noqa: E402
 ROWS_FILENAME = "resolved_closed_picks_net.json"
 
 #: Realised round-trip cost per class, in basis points, taken from the dashboard's
@@ -152,6 +154,11 @@ def canonical_row(pick: dict, *, strategy_cost_bps: dict | None = None) -> dict 
         # end-to-end check, which is exactly the kind of silent denominator drift
         # this module exists to remove.
         "id": pick.get("id"),
+        # Cross-system join key: the DB writes ids as v1::<writer>::<id> while this
+        # view keeps the bare id, so an unnormalised join silently matches nothing
+        # (2026-11-19: 0 of 230 MeanReversionBB rows joined). Consumers joining to
+        # at_pick_outcomes.pick_id must key on this field.
+        "join_key": pick_id_join_key(pick.get("id")),
         "entry_price": _f(pick.get("entry_price")),
         "symbol": str(pick.get("symbol") or ""),
         "asset_class": asset_class,
