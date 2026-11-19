@@ -26,14 +26,14 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Publish bestiejob/ into gh-pages (rebase-safe)
         run: |
           set -euo pipefail
           git config user.name "bestiejob-bot"
           git config user.email "actions@users.noreply.github.com"
-          git fetch origin gh-pages
+          git fetch --depth=1 origin gh-pages
           git worktree add --detach /tmp/ghp origin/gh-pages
           cd /tmp/ghp
           rm -rf bestiejob

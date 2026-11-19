@@ -29,6 +29,7 @@ jobs:
             shared
             alpha_engine
             copy_trader_intel
+            tools
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -50,6 +51,18 @@ jobs:
           echo "============================================"
           python -m prediction_market_agents.orchestrator
 
+      - name: Run Kalshi + Polymarket macro expansion emitter
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        # Binary-contract picks (Fed/GDP/CPI/indices/yields). A PM API hiccup must
+        # not fail the agent run, but it must be LOUD — an explicit ::warning that
+        # names the possibly-stale artifact — not a silent continue-on-error masker.
+        run: |
+          python tools/pm_macro_expansion.py || {
+            echo "::warning::pm_macro_expansion emitter failed — alpha_engine/data/pm_macro_expansion_picks.json may be stale"
+            exit 0
+          }
+
       - name: Commit results
         run: |
           git config user.name "github-actions[bot]"
@@ -57,6 +70,7 @@ jobs:
 
           git add prediction_market_agents/data/*.json 2>/dev/null || true
           git add alpha_engine/data/active_picks.json 2>/dev/null || true
+          git add alpha_engine/data/pm_macro_expansion_picks.json 2>/dev/null || true
           git add copy_trader_intel/data/polymarket_trader_profiles.json 2>/dev/null || true
           git add copy_trader_intel/data/polymarket_picks.json 2>/dev/null || true
 

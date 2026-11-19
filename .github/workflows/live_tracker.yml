@@ -71,6 +71,17 @@ jobs:
           sleep 5
         done
         
+    - name: Include BESTIEJOB page in Pages publish
+      run: |
+        # peaceiris publishes ./dashboard (keep_files=false), which wipes other
+        # gh-pages paths. Include the rights-gated BESTIEJOB page so it persists.
+        if [ -d docs/bestiejob ]; then
+          mkdir -p dashboard/bestiejob
+          cp -r docs/bestiejob/. dashboard/bestiejob/
+          touch dashboard/bestiejob/.nojekyll
+          echo "Included docs/bestiejob in Pages publish"
+        fi
+
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v4
       with:
