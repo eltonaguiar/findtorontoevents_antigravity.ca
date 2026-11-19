@@ -11,6 +11,7 @@
 ## Contents
 
 - [Purpose](#purpose)
+- [The Blueprint vs. The Actual: Model vs. CI Instance](#the-blueprint-vs-the-actual-model-vs-ci-instance)
 - [CMDB in ITOM Architecture](#cmdb-in-itom-architecture)
 - [Key Plugins & Licensing](#key-plugins--licensing)
 - [CI Class Hierarchy](#ci-class-hierarchy)
@@ -41,6 +42,40 @@
 The **Configuration Management Database (CMDB)** is the **single source of truth** for all ITOM modules. Discovery populates it, Event Management correlates alerts to it, Service Mapping builds service topologies from it, Orchestration targets it, and Cloud Management extends it to cloud resources.
 
 **Key value:** Without an accurate CMDB, ITOM cannot provide service-aware operations, change impact analysis, or automated remediation.
+
+---
+
+## The Blueprint vs. The Actual: Model vs. CI Instance
+
+In a CMDB, the "base" configuration and its maximum capacity are separated across two different layers: the **Model / Catalog Level** and the **CI Instance Level**. This prevents "template" data from being confused with "live" asset data.
+
+### 1. Model / Product Catalog Level (The Blueprint)
+*   **What it stores:** The theoretical capabilities and maximum limits of the hardware or software.
+*   **ELI5 Example:** Think of a LEGO set instruction manual. It tells you that the set *can* build a castle with 10 towers. It doesn't matter if you've only built 2 towers so far; the manual says 10 are possible.
+*   **CMDB Example:** The "Server Model X" record specifies that the chassis has **6 total physical slots** available.
+*   **Purpose:** Used for purchasing and capacity planning. It tells you the maximum expansion potential.
+
+### 2. CI Instance Level (The Actual "Base" Setup)
+*   **What it stores:** The real-world, live state of the specific asset currently in your environment.
+*   **ELI5 Example:** This is the actual LEGO castle sitting on your table. Right now, it only has **4 towers** built. This is its "current baseline."
+*   **CMDB Example:** The specific server CI (`SRV-001`) shows **4 slots currently populated** as its active baseline.
+*   **Purpose:** Used for incident management and daily operations. It tracks what is actually deployed *now*.
+
+### 3. Component / Child CI Level (The Granular Parts)
+*   **What it stores:** Individual CIs for the items occupying those slots, linked to the parent via relationships (e.g., `Contains :: Contained by`).
+*   **ELI5 Example:** These are the individual LEGO bricks used to build those 4 towers. Each brick is its own piece you can track.
+*   **CMDB Example:** 4 separate child CIs (e.g., RAM sticks) exist and are linked to `SRV-001`, leaving 2 slots empty.
+*   **Purpose:** Granular tracking for replacement and failure analysis.
+
+### Summary Comparison
+
+| CMDB Layer | Represents | Your Example (Slots) | ELI5 Analogy |
+| :--- | :--- | :--- | :--- |
+| **Product Model** | Maximum potential / Specs | 6 slots (Max capacity) | The Instruction Manual |
+| **Parent CI** | Actual active configuration | 4 slots (Current baseline) | The Built Model |
+| **Child CIs** | Individual installed parts | 4 individual component records | The Individual Bricks |
+
+> **Note on Baselines:** In ITIL, a "Configuration Baseline" is a snapshot of a CI at a specific point in time. When you expand from 4 to 6 slots, you update the Parent CI, add 2 Child CIs, and capture a new Baseline.
 
 ---
 
