@@ -70,8 +70,13 @@ for name in "${WORKTREES[@]}"; do
 
   # Handoff / COMS notes, if any.
   grep -rIl -E 'COMS|AGENT_BUS|handoff|taking over|next steps' \
-    "$wt"/docs "$wt"/updates "$wt"/*.md 2>/dev/null \
+    "$wt"/docs "$wt"/updates "$wt"/COMS "$wt"/*.md 2>/dev/null \
     | head -20 > "$OUT/$name/handoff_candidates.txt" || true
+  # Preserve COMS handover notes verbatim (a common agent handoff location).
+  if [ -d "$wt/COMS" ]; then
+    mkdir -p "$OUT/$name/untracked/COMS"
+    cp -r "$wt/COMS/." "$OUT/$name/untracked/COMS/" 2>/dev/null || true
+  fi
 
   printf -- '- %s: branch=%s head=%s ahead=%s dirty=%s\n' \
     "$name" "$branch" "$head" "$ahead" "$dirty" >> "$OUT/INDEX.md"
