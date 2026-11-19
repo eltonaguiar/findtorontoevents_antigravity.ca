@@ -94,6 +94,16 @@ jobs:
           print("selection alpha:", d["selection_alpha"]["available"])
           PY
 
+      # Fail-open is the right runtime behaviour and the wrong CI behaviour: if the
+      # ledger stops loading or goes stale, enforcement silently disappears. This
+      # step turns that into a red build.
+      - name: Assert the denylist is armed and recent
+        run: |
+          python3 tools/audit3_denylist_health.py \
+            --ledger audit_dashboard/data/audit3_ledger.json \
+            --max-age-days 2 \
+            --min-strategy-kills 1
+
       - name: Commit ledger (data only, [skip ci])
         run: |
           git config user.name "github-actions[bot]"
