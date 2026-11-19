@@ -1,5 +1,9 @@
 # audit3 P0/P1 correctness — three gate gaps and the unscheduled forward ledger
 
+> **Landed:** these changes were ported onto `main`'s audit3 implementation and pushed as
+> `6abfa22364e`. The feature-branch SHAs below (`b9dd4378e65`, `3844a4e34e2`) are kept as
+> provenance; the gate is labelled **G9** on main (main reserves G8 for repeated looks).
+
 **Date:** 2026-11-19
 **Branch:** `fix/audit3-alpha-scope`
 **Base:** `3dfa66e` ("feat(audit3): P0/P1 correctness …")
