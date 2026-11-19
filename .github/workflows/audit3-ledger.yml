@@ -105,7 +105,7 @@ jobs:
           DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
         run: |
           if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
-            echo "no DB_PASS_STOCKS secret — skipping price backfill"
+            echo "no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret — skipping price backfill"
             exit 0
           fi
           SINCE="$(date -u -d '4 days ago' +%F)"
@@ -159,7 +159,7 @@ jobs:
           DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
         run: |
           if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
-            echo "no DB_PASS_STOCKS secret — skipping selection alpha; the page states it is unavailable"
+            echo "no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret — skipping selection alpha; the page states it is unavailable"
             exit 0
           fi
           # 2026-11-19: the driver was never installed, so this step died with
