@@ -732,3 +732,20 @@ def test_share_of_valid_is_machine_readable_not_silently_null():
         assert cov["scored_share_of_valid_pct_status"] == "not_comparable"
     else:
         assert cov["scored_share_of_valid_pct_status"] == "ok"
+
+def test_report_carries_denylist_hit_summary(tmp_path, monkeypatch):
+    import json as _json
+    log = tmp_path / "hits.jsonl"
+    log.write_text("\n".join(_json.dumps(r) for r in [
+        {"ts": "2026-11-19T21:00:00Z", "strategy": "s1", "symbol": "BTCUSDT",
+         "asset_class": "CRYPTO", "reason": "audit3 KILL: CRYPTO"},
+        {"ts": "2026-11-19T21:01:00Z", "strategy": "s1", "symbol": "ETHUSDT",
+         "asset_class": "CRYPTO", "reason": "audit3 KILL: CRYPTO"},
+    ]) + "\n")
+    monkeypatch.delenv("AUDIT3_DENYLIST_DISABLED", raising=False)
+    monkeypatch.setenv("AUDIT3_DENYLIST_HIT_LOG", str(log))
+    rep = build_report(_rows(60, 1.0), "x.json", None)
+    hits = rep["denylist_hits"]
+    assert hits["available"] is True and hits["n"] == 2
+    assert hits["by_class"] == {"CRYPTO": 2}
+    assert hits["top_strategies"]["s1"] == 2

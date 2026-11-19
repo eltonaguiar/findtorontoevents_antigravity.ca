@@ -1538,6 +1538,27 @@ def forward_gate_block(manifest: dict[str, Any] | None,
     return block
 
 
+def _denylist_hit_summary() -> dict[str, Any]:
+    """What the emission gate blocked, from the CI-persisted hit log.
+
+    Best-effort: a missing or unreadable log must never fail the ledger build.
+    """
+    try:
+        from alpha_engine.audit3_denylist_hits import summarize
+        s = summarize()
+        return {
+            "available": True,
+            "n": s.get("n", 0),
+            "first_ts": s.get("first_ts"),
+            "last_ts": s.get("last_ts"),
+            "by_class": s.get("by_class") or {},
+            "top_strategies": dict(list((s.get("by_strategy") or {}).items())[:10]),
+            "path": s.get("path"),
+        }
+    except Exception:
+        return {"available": False, "n": 0}
+
+
 def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  coverage: dict[str, Any] | None = None,
                  alpha: dict[str, Any] | None = None,
@@ -1965,6 +1986,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                                    "(the run that began the passing streak)",
         },
         "verdict_churn": churn,
+        "denylist_hits": _denylist_hit_summary(),
         "classes": classes,
         "segments": segments,
         "cells": cells,
