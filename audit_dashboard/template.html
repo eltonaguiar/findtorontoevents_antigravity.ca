@@ -963,26 +963,32 @@ a:hover { text-decoration: underline; }
      crypto_rsi5070_us is the project's strongest HONEST money-ready lead — honest
      intrabar first-touch (NOT a daily-resolution artifact, cf. FOREX consensus which
      collapsed 2.88->1.02 under honest first-touch). It does NOT pass the promotion gate
-     (net CI-LB 0.95 < 1.15 at n=108); it is tracked forward ONLY, never sized, and is
-     auto-eligible for probation when net CI-LB>1.15 at n>=150 (~Jun-25). Live values are
-     fetched from data/crypto_rsi5070_us_forward_status.json (refreshed hourly by the
-     audit-dashboard workflow). Static text below is the 2026-06-13 fallback. -->
+     (net CI-LB 0.95 < 1.15 at n=108); it is tracked forward ONLY, never sized.
+     2026-11-19 reconciliation (external review v3, "H-119 two vintages"): the
+     "auto-eligible for probation when net CI-LB>1.15 at n>=150 (~Jun-25)" note is
+     RETIRED. n is now 431, so the n>=150 gate was met long ago; ~Jun-25 passed without
+     a promotion, and the ONLY failing gate left is net_ci_lb_gt_1.15 (0.9158). The
+     card used to show the June numbers unlabelled next to live overlays, so a reader
+     could not tell which vintage was current. Fallback text below is now the
+     2026-11-19 snapshot, labelled as such, and the sidecar overwrites it on load.
+     Live values come from data/crypto_rsi5070_us_forward_status.json. -->
 <div id="rsi5070-forward-card" style="max-width:1180px;margin:0 auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(251,191,36,0.10),rgba(96,165,250,0.06));border:1px solid rgba(251,191,36,0.4);border-radius:12px;color:#fde68a;font-size:0.85em">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span style="font-size:1.0em;font-weight:700;color:#fbbf24;letter-spacing:0.3px">&#x1F52C; FORWARD-TRACKING CANDIDATE</span>
     <span id="rsi5070-status-badge" style="background:rgba(251,191,36,0.18);color:#fde68a;border:1px solid rgba(251,191,36,0.45);padding:1px 8px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:0.4px">SHADOW TRACKING</span>
     <span style="color:#94a3b8;font-size:0.85em">conditional exception &mdash; <strong>NOT a live signal, NOT sized</strong></span>
+    <span id="rsi5070-vintage" style="color:#94a3b8;font-size:0.78em;font-style:italic">figures: 2026-11-19 snapshot (sidecar overlay pending)</span>
   </div>
   <div id="rsi5070-body" style="margin-top:8px;line-height:1.55;color:#e0f2fe">
     <strong style="color:#a5b4fc"><code>crypto_rsi5070_us</code></strong> &mdash; CRYPTO &and; Wilder RSI(14,1h)&isin;[50,70] &and; US session. The project's strongest <em>honest</em> money-ready lead: honest intrabar first-touch (<strong>not</strong> a daily-resolution artifact).
     <div style="margin-top:6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 14px;font-size:0.92em;color:#cbd5e1">
-      <span>net PF <strong id="rsi5070-netpf" style="color:#fde68a">1.36</strong> @16bp</span>
-      <span>net CI-LB <strong id="rsi5070-cilb" style="color:#fca5a5">0.95</strong> <span style="color:#94a3b8">(bar 1.15)</span></span>
-      <span>n <strong id="rsi5070-n">108</strong> <span style="color:#94a3b8">(gate 150)</span></span>
-      <span>IS/OOS net <strong id="rsi5070-isoos" style="color:#86efac">1.44 / 1.30</strong></span>
-      <span>top-sym <strong id="rsi5070-conc">RENDERUSDT 5.6%</strong></span>
+      <span>net PF <strong id="rsi5070-netpf" style="color:#fde68a">1.12</strong> @16bp</span>
+      <span>net CI-LB <strong id="rsi5070-cilb" style="color:#fca5a5">0.92</strong> <span style="color:#94a3b8">(bar 1.15)</span></span>
+      <span>n <strong id="rsi5070-n">431</strong> <span style="color:#94a3b8">(gate 150 &mdash; met)</span></span>
+      <span>IS/OOS net <strong id="rsi5070-isoos" style="color:#86efac">1.08 / 1.16</strong></span>
+      <span>top-sym <strong id="rsi5070-conc">JUPUSDT 5.1%</strong></span>
     </div>
-    <div id="rsi5070-verdict" style="margin-top:6px;font-size:0.9em;color:#fbbf24">Below the promotion bar (net CI-LB 0.95 &lt; 1.15, n 108 &lt; 150) but survives cost + holds the time-split + diversified &mdash; the only candidate to pass all three robustness axes. Re-evaluated at the n&ge;150 gate (~2026-06-25). Refs: <code>reports/CRYPTO_RSI5070_US_LEAD_CANDIDATE_2026-06-13.md</code>, hypothesis <code>H-119</code>.</div>
+    <div id="rsi5070-verdict" style="margin-top:6px;font-size:0.9em;color:#fbbf24">Below the promotion bar on <strong>one</strong> gate: net CI-LB 0.92 &lt; 1.15. It survives cost, holds the time-split (IS 1.08 / OOS 1.16) and is diversified (top symbol 5.1%). The n&ge;150 gate is <strong>already met</strong> (431 &ge; 150) &mdash; the earlier "re-evaluate at the n&ge;150 gate (~2026-06-25)" note is retired, since that date passed without a promotion. Forward-shadow only, never sized. Refs: <code>reports/CRYPTO_RSI5070_US_LEAD_CANDIDATE_2026-06-13.md</code>, hypothesis <code>H-119</code>.</div>
   </div>
 </div>
 <script>
@@ -1007,13 +1013,22 @@ a:hover { text-decoration: underline; }
         cilb.textContent = Number(d.net_ci_lb).toFixed(2);
         cilb.style.color = (d.net_ci_lb > 1.15) ? '#86efac' : '#fca5a5';
       }
-      set('rsi5070-n', d.n + (d.n_gate ? '' : ''));
+      set('rsi5070-n', d.n_gate ? d.n + ' / gate ' + d.n_gate : d.n);
       if (d.is_net_pf != null && d.oos_net_pf != null) set('rsi5070-isoos', Number(d.is_net_pf).toFixed(2) + ' / ' + Number(d.oos_net_pf).toFixed(2));
       if (d.top_symbol) set('rsi5070-conc', d.top_symbol + ' ' + (d.top_symbol_pct != null ? d.top_symbol_pct + '%' : ''));
       var v = document.getElementById('rsi5070-verdict');
-      if (v && d.verdict) v.textContent = d.verdict + (d.generated_at ? '  [live ' + String(d.generated_at).slice(0,16).replace('T',' ') + 'Z]' : '');
+      if (v && d.verdict) v.textContent = d.verdict;
+      // Name the vintage so the static fallback and the live sidecar can never be
+      // mistaken for each other again (external review v3, "H-119 two vintages").
+      var vt = document.getElementById('rsi5070-vintage');
+      if (vt) vt.textContent = d.generated_at
+        ? 'live \u00b7 sidecar ' + String(d.generated_at).slice(0,16).replace('T',' ') + 'Z'
+        : 'live \u00b7 sidecar (undated)';
     })
-    .catch(function(){ /* leave static 2026-06-13 fallback intact */ });
+    .catch(function(){
+      var vt = document.getElementById('rsi5070-vintage');
+      if (vt) vt.textContent = '2026-11-19 snapshot \u2014 sidecar unreachable, values may be stale';
+    });
 })();
 </script>
 <div id="audit-surface-truth-mount" style="margin:8px 0"></div>

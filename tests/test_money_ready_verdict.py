@@ -1,5 +1,7 @@
 """Tests for M-061: money_ready_verdict() unified edge verdict."""
 import random
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from unittest.mock import patch
 from alpha_engine.money_ready_verdict import _rolling_mdd, _mdd_cvar_gate
@@ -20,24 +22,34 @@ def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
     that arises when all wins precede all losses in a sequential list.
     """
     syms = symbols or ["AAA", "BBB", "CCC", "DDD", "EEE"]
+    # 2026-11-19: fixtures must carry the two things the verdict legitimately needs,
+    # or every verdict test is really testing those two instead of its own gate.
+    #   (a) One source system caps a class at WATCH/NOT_READY by design (a single
+    #       feed is not a class-level edge), so the default sample spreads over three.
+    #   (b) Recency `None` is treated as NOT_READY, so every row gets a timestamp
+    #       inside the recency window.
+    srcs = source_system or [
+        strategy + "_src_a", strategy + "_src_b", strategy + "_src_c",
+    ]
+    now = datetime.now(timezone.utc)
+
+    def _stamp(i):
+        return (now - timedelta(days=i % 10, hours=i % 24)).isoformat()
+
     picks = []
     for i in range(n_won):
-        src = source_system or strategy
-        if isinstance(src, list):
-            src = src[i % len(src)]
+        src = srcs[i % len(srcs)] if isinstance(srcs, list) else srcs
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "WON", "pnl_pct": win_pnl, "symbol": syms[i % len(syms)],
-            "source_system": src,
+            "source_system": src, "closed_at": _stamp(i),
         })
     for i in range(n_lost):
-        src = source_system or strategy
-        if isinstance(src, list):
-            src = src[i % len(src)]
+        src = srcs[i % len(srcs)] if isinstance(srcs, list) else srcs
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "LOST", "pnl_pct": loss_pnl, "symbol": syms[i % len(syms)],
-            "source_system": src,
+            "source_system": src, "closed_at": _stamp(i),
         })
     rng = random.Random(42)
     rng.shuffle(picks)
@@ -48,17 +60,27 @@ def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
 
 
 @pytest.fixture(autouse=True)
-def _no_live_intrabar_overlay(monkeypatch):
-    """Judge fixtures on their own rows (2026-11-19).
+def _isolate_from_live_state_and_unrelated_gates(monkeypatch):
+    """Judge fixtures on their own rows, with unrelated gates held in shadow.
 
-    Without this, money_ready_verdict() overlays the LIVE intrabar artifact, so a
-    synthetic 47%-WR fixture was reported as wr=0.4052 and could never reach the
-    verdict its own numbers imply. The overlay itself is covered by
-    tests/test_money_ready_intrabar_sizing_p1a.py and
-    tests/test_money_ready_wr_semantics.py.
+    Three separate leaks made these tests report the wrong thing (2026-11-19):
+
+    1. money_ready_verdict() overlaid the LIVE intrabar artifact, so a 47%-WR
+       fixture was reported as wr=0.4052 and could never reach the verdict its own
+       numbers imply. Covered for real in test_money_ready_wr_semantics.py.
+    2. MONEY_READY_FDR_GATE and MONEY_READY_SINGLE_SOURCE_GATE now default to ON.
+       Every fixture here is one strategy from one source, so the single-source
+       gate correctly forces NOT_READY — which is not what these tests are about
+       (symbol/source concentration, WR floors, ML quarantine). Those two gates
+       and their defaults are tested in test_money_ready_fdr_gate.py.
+
+    Holding them in shadow here is isolation, not a weakened assertion: each test
+    still asserts the verdict its own mechanism produces.
     """
     import alpha_engine.money_ready_verdict as mrv
     monkeypatch.setattr(mrv, "_INTRABAR_TRUTH_ENABLED", False)
+    monkeypatch.setattr(mrv, "_FDR_GATE_ENFORCE", False)
+    monkeypatch.setattr(mrv, "_SINGLE_SOURCE_GATE_ENFORCE", False)
 
 
 class TestMoneyReadyVerdict:
