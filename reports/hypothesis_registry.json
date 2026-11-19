@@ -2473,6 +2473,41 @@
     "reason": "Registered before any forward row exists. Cannot confer confirmatory status while the pod is observe."
    },
    "banned_check": "Not a re-test of killed families H-032 (intraday orderbook imbalance reversion) or H-033 (residualised overnight reversal): this is a holding-horizon selection effect on the emitted book, not an intraday signal, and it is judged only on post-registration rows."
+  },
+{
+    "id": "H-145",
+    "asset_class": "ETF",
+    "family": "exit_geometry_time_exit",
+    "description": "ETF picks: a fixed 7-day time exit (no TP, no SL) versus the exit the emitter actually took, measured on the same entry fill and direction. The counterfactual fills at the last bar at or before entry+7d and pays 0.10% round-trip; the actual leg already carries its own cost.",
+    "test_statistic": "mean paired per-pick delta (time exit minus actual exit, pct) with a bootstrap 95% CI, judged at a Bonferroni-corrected alpha for the 3 asset classes x 3 horizons tested in one pass",
+    "acceptance_criteria": {
+      "min_n": 100,
+      "min_delta_pct": 0.2,
+      "min_ci_lb_pct": 0.0,
+      "bonferroni": {
+        "family_k": 9,
+        "family_alpha": 0.05,
+        "alpha_corrected": 0.005556,
+        "min_abs_z": 2.773
+      },
+      "multiplicity_note": "9 = 3 asset classes x 3 horizons (1d, 3d, 7d) evaluated in one run; the ETF/7d cell was identified by looking at all 9, so it is post-hoc and only forward rows may judge it.",
+      "rule": "ETF rows closed after 2026-11-19 only: n>=100, mean paired delta > 0 with CI-LB > 0 at alpha 0.005556 (two-sided |z| >= 2.773), split-half stable, and reproduced at 2x the cost assumption. Judged on forward rows only; a result on the selecting sample, however significant, does not count."
+    },
+    "economic_prior": "An index ETF that has already begun to trend may keep drifting, and a fixed TAKE_PROFIT realises the move before the drift is exhausted. The prior is weak and ETF-specific: a blanket time exit is worse for CRYPTO and EQUITY at every horizon tested, and the vol-scaled arm does not reproduce the ETF effect.",
+    "status": "PRE_REGISTERED",
+    "registered_at": "2026-11-19",
+    "data_sample_lock": "The motivating +0.460%/pick (n=261, CI [+0.154, +0.766]) was measured on the same closed-pick ledger the tribunal judges and was selected as the best of 9 class x horizon cells: POST-HOC. Only ETF rows closed after 2026-11-19 may judge this hypothesis.",
+    "result": {
+      "verdict": "UNTESTED",
+      "reason": "Pre-registered after a post-hoc 1-of-9 selection; the selecting sample cannot promote it."
+    },
+    "banned_check": "Not a re-test of H-032/H-033 (intraday reversion): no signal or universe change, only exit geometry on ETF picks the emitter already produced.",
+    "evidence": [
+      "reports/exit_ab_paper_2026-11-19.json",
+      "updates/2026-11-19-exit-ab-paper.md",
+      "tools/exit_ab_paper.py"
+    ],
+    "notes": "Counter-evidence recorded at registration: the vol-scaled arm (3% target, median hold 0.75d) puts ETF at +0.019%/pick (n=261, CI [-0.275, +0.313]), so the effect is not stable under a re-timed exit. Both arms are reproducible with tools/exit_ab_paper.py (--vol-target 0 disables the vol arm)."
   }
  ],
  "fork2_new_signals": [

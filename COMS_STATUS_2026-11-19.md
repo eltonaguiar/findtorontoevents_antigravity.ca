@@ -152,6 +152,6 @@ worktree, because it is the checked-out copy that gets destroyed, not the commit
 exit on the same 2,475 picks: delta is **−0.460%/pick at 1 day** (CI [−0.729, −0.191]),
 −0.291% at 3 days, −0.485% at 7 days. The blanket exit redesign is **rejected**. The only
 cell above zero is ETF at 7 days (+0.460%, n=261) — 1 of 9 class×horizon tests, so it
-needs pre-registration and a Bonferroni gate, not a deployment. Details:
+needs pre-registration (H-145, alpha 0.00556 after Bonferroni k=9) and a forward clock, not a deployment. The vol-scaled arm does not reproduce it (ETF +0.019%, CI [-0.275, 0.313]), so the candidate is forward-only by construction. Details:
 `updates/2026-11-19-exit-ab-paper.md`, `reports/exit_ab_paper_2026-11-19.json`.
 

@@ -51,14 +51,33 @@ pre-registered before it is believed: it is 1 of 9 class×horizon tests, so a Bo
 gate (α = 0.05/9 ≈ 0.0056) is required, and its CI's lower bound would not survive it.
 It is a candidate to register, not an edge to trade.
 
-## Limits
+## The vol-scaled arm (follow-up, same day)
 
-- No vol-scaled exit was tested: sizing a horizon by pre-entry realised volatility needs
-  bars *before* the entry, and the shared loader fetches the symbol's stored series as
-  fetched. That remains the open half of E14.
+The first pass skipped vol scaling on the assumption that the shared loader only fetched
+picks' own windows. It does not — `load_bars` returns each symbol's whole stored series,
+so pre-entry bars were available all along. `daily_vol_pct` now measures realised
+volatility on the **30 days before the entry** (per-bar stdev scaled by √bars-per-day,
+which makes 1h crypto and daily equity comparable), and the horizon is
+`clip(3% / daily_vol, 0.25d, 14d)`.
+
+| arm | n | delta/pick | 95% CI | hold |
+|---|---|---|---|---|
+| vol-scaled, 3% target | 2,463 | **−0.517%** | [−0.772, −0.263] | median 0.75d, p10 0.48d, p90 2.02d |
+
+It is **worse than every fixed horizon** and worse than the actual exits, so vol scaling
+does not rescue the time-exit idea. It also matters for the ETF candidate: under the
+vol-scaled arm ETF is **+0.019%** (n=261, CI [−0.275, +0.313]) — the +0.460%/pick effect
+does not survive re-timing the exit to the instrument's own volatility, which is evidence
+against a stable ETF time-exit edge rather than for one.
+
+Both arms are reproducible with `--vol-target 0` to disable the vol arm.
+
+## Limits
 - Horizon pricing uses the last bar at/before the target, so a 7-day horizon on daily
   bars can fill up to one bar early; the direction of that bias is not constant.
 - Cost is a flat 0.10% round-trip assumption, not per-class slippage.
+- The vol-scaled horizon is capped at 14 days, so a genuinely low-vol ETF can be timed
+  out before its target move is reached; the cap binds for part of the book.
 - 2,475 rows in, 2,463 had a usable entry bar; the 12 exclusions are all degenerate.
 - Paper only: no orders, no ledger verdict, no `money_ready` change.
 

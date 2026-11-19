@@ -51,6 +51,14 @@ from alpha_engine.audit3_selection_alpha import (  # noqa: E402
 DEFAULT_COST_PCT = 0.10
 DEFAULT_HORIZONS = (1.0, 3.0, 7.0)
 
+# Volatility-scaled horizon: hold until the instrument's own expected move reaches
+# the target, so a quiet ETF and a 6%-a-day crypto get different clocks instead of
+# the same fixed 3-day guess. Vol is measured only on bars BEFORE the entry.
+VOL_TARGET_PCT = 3.0
+RETURN_LOOKBACK_DAYS = 30.0
+MIN_HOLD_DAYS = 0.25
+MAX_HOLD_DAYS = 14.0
+
 
 def _ms(iso: str) -> int | None:
     """ISO timestamp -> epoch ms. Naive stamps are read as UTC."""
@@ -97,6 +105,49 @@ def time_exit_pnl(series: list[tuple[int, float]], entry_ms: int, horizon_days: 
     return (px / entry_px - 1.0) * 100.0 * dir_sign - cost
 
 
+def daily_vol_pct(series: list[tuple[int, float]], entry_ms: int,
+                  keys: list[int] | None = None,
+                  lookback_days: float = RETURN_LOOKBACK_DAYS) -> float | None:
+    """Realised daily volatility (%) from bars strictly before the entry signal.
+
+    Only pre-entry bars are used, so the sizing is knowable at decision time. The
+    per-bar stdev is scaled by the square root of bars-per-day (inferred from the
+    median bar spacing), which makes 1h crypto and daily equity comparable.
+    """
+    if not series:
+        return None
+    idx = keys if keys is not None else [k for k, _ in series]
+    start = entry_ms - int(lookback_days * 86400_000)
+    lo = bisect.bisect_left(idx, start)
+    hi = bisect.bisect_left(idx, entry_ms)
+    window = series[lo:hi]
+    if len(window) < 8:
+        return None
+    rets = []
+    for (_, c0), (_, c1) in zip(window, window[1:]):
+        if c0 and c0 > 0 and c1:
+            rets.append(c1 / c0 - 1.0)
+    if len(rets) < 7:
+        return None
+    gaps = [k1 - k0 for (k0, _), (k1, _) in zip(window, window[1:]) if k1 > k0]
+    if not gaps:
+        return None
+    med_gap = statistics.median(gaps)
+    if med_gap <= 0:
+        return None
+    per_day = 86400_000 / med_gap
+    vol = statistics.stdev(rets) * (per_day ** 0.5) * 100.0
+    return vol if vol > 0 else None
+
+
+def vol_scaled_days(vol_pct: float | None, target: float = VOL_TARGET_PCT,
+                    lo: float = MIN_HOLD_DAYS, hi: float = MAX_HOLD_DAYS) -> float | None:
+    """Hold horizon whose expected move equals `target`, clipped to a sane band."""
+    if vol_pct is None or vol_pct <= 0:
+        return None
+    return max(lo, min(hi, target / vol_pct))
+
+
 def _series_for(bars: dict[str, list[tuple[int, float]]], klass: str, symbol: str):
     for cand in symbol_candidates(symbol, klass):
         s = bars.get(f"{klass}:{cand}")
@@ -139,11 +190,16 @@ def _agg(deltas: list[float], alts: list[float], actuals: list[float]) -> dict:
 
 
 def ab_report(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
-              horizons=DEFAULT_HORIZONS, cost: float = DEFAULT_COST_PCT) -> dict:
-    """Paired comparison, per horizon and per class, over the same picks."""
+              horizons=DEFAULT_HORIZONS, cost: float = DEFAULT_COST_PCT,
+              vol_target: float | None = VOL_TARGET_PCT) -> dict:
+    """Paired comparison, per horizon, per class, and vol-scaled, on the same picks."""
     per_h: dict[float, dict[str, dict[str, list[float]]]] = {
         h: defaultdict(lambda: {"delta": [], "alt": [], "actual": []}) for h in horizons
     }
+    vol_buckets: dict[str, dict[str, list[float]]] = defaultdict(
+        lambda: {"delta": [], "alt": [], "actual": []})
+    vol_horizons: list[float] = []
+    keys_cache: dict[int, list[int]] = {}
     skipped: dict[str, int] = defaultdict(int)
     usable_rows = 0
 
@@ -183,6 +239,23 @@ def ab_report(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
             bucket["delta"].append(alt - float(actual))
             bucket["alt"].append(alt)
             bucket["actual"].append(float(actual))
+        if vol_target is not None:
+            tol = TOLERANCE_MS.get(klass, 5 * 86400_000)
+            keys = keys_cache.setdefault(id(series), [k for k, _ in series])
+            vol = daily_vol_pct(series, entry_ms, keys=keys)
+            if vol is None:
+                skipped["no_pre_entry_bars"] += 1
+                continue
+            hd = vol_scaled_days(vol, vol_target)
+            alt = time_exit_pnl(series, entry_ms, hd, d, cost=cost, tol_ms=tol)
+            if alt is None:
+                skipped["no_bar_within_vol_horizon"] += 1
+                continue
+            vol_horizons.append(hd)
+            vb = vol_buckets[klass]
+            vb["delta"].append(alt - float(actual))
+            vb["alt"].append(alt)
+            vb["actual"].append(float(actual))
 
     out = {"schema": "audit3.exit_ab_paper.v1", "mode": "paper",
            "generated_at": datetime.now().astimezone().isoformat(),
@@ -204,6 +277,26 @@ def ab_report(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
             "by_class": {k: _agg(v["delta"], v["alt"], v["actual"])
                          for k, v in sorted(buckets.items())},
         })
+
+    if vol_target is not None:
+        all_d = [x for b in vol_buckets.values() for x in b["delta"]]
+        all_a = [x for b in vol_buckets.values() for x in b["alt"]]
+        all_act = [x for b in vol_buckets.values() for x in b["actual"]]
+        hs = sorted(vol_horizons)
+        out["vol_scaled"] = {
+            "vol_target_pct": vol_target,
+            "lookback_days": RETURN_LOOKBACK_DAYS,
+            "hold_band_days": [MIN_HOLD_DAYS, MAX_HOLD_DAYS],
+            "overall": _agg(all_d, all_a, all_act),
+            "by_class": {k: _agg(v["delta"], v["alt"], v["actual"])
+                         for k, v in sorted(vol_buckets.items())},
+            "horizon_days": ({"min": round(hs[0], 4), "p10": round(hs[len(hs) // 10], 4),
+                              "median": round(statistics.median(hs), 4),
+                              "p90": round(hs[9 * len(hs) // 10], 4),
+                              "max": round(hs[-1], 4)} if hs else None),
+        }
+    else:
+        out["vol_scaled"] = None
     return out
 
 
@@ -222,6 +315,8 @@ def main(argv=None) -> int:
                     help="selection-alpha rows jsonl (or a JSON array)")
     ap.add_argument("--horizons", default=",".join(f"{h:g}" for h in DEFAULT_HORIZONS))
     ap.add_argument("--cost", type=float, default=DEFAULT_COST_PCT)
+    ap.add_argument("--vol-target", dest="vol_target", type=float, default=VOL_TARGET_PCT,
+                    help="%% expected move per vol-scaled hold; 0 disables the arm")
     ap.add_argument("--out", help="human-readable text report")
     ap.add_argument("--json-out", dest="json_out")
     args = ap.parse_args(argv)
@@ -242,7 +337,8 @@ def main(argv=None) -> int:
     # load_bars keys off the payload's class field, so hand it what it expects.
     bars = load_bars([{"asset_class": r.get("class"), "symbol": r.get("symbol")}
                       for r in rows])
-    res = ab_report(rows, bars, horizons, args.cost)
+    res = ab_report(rows, bars, horizons, args.cost,
+                    vol_target=args.vol_target or None)
     if not any(h["overall"]["n"] for h in res["horizons"]):
         print(json.dumps(res, indent=1))
         print("no reproducible pairs", file=sys.stderr)
@@ -259,6 +355,19 @@ def main(argv=None) -> int:
                      f"| time={o['mean_alt_pct']:+.3f}% vs actual={o['mean_actual_pct']:+.3f}%"
                      f" | better on {o['better_share']*100:.0f}% of picks")
         for k, c in h["by_class"].items():
+            if c["n"] >= 20:
+                lines.append(f"     {k:<9} n={c['n']:<5} delta={c['mean_delta_pct']:+.3f}%  "
+                             f"CI=[{c['ci']['lo']}, {c['ci']['hi']}]")
+    v = res.get("vol_scaled")
+    if v and v["overall"]["n"]:
+        o = v["overall"]
+        hd = v["horizon_days"] or {}
+        lines.append(f"-- vol-scaled ({v['vol_target_pct']:g}% target): n={o['n']:,} "
+                     f"delta={o['mean_delta_pct']:+.3f}%/pick "
+                     f"CI=[{o['ci']['lo']}, {o['ci']['hi']}] "
+                     f"| time={o['mean_alt_pct']:+.3f}% vs actual={o['mean_actual_pct']:+.3f}%"
+                     f" | hold median={hd.get('median')}d p10={hd.get('p10')} p90={hd.get('p90')}")
+        for k, c in v["by_class"].items():
             if c["n"] >= 20:
                 lines.append(f"     {k:<9} n={c['n']:<5} delta={c['mean_delta_pct']:+.3f}%  "
                              f"CI=[{c['ci']['lo']}, {c['ci']['hi']}]")
