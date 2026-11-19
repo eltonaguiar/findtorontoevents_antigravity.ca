@@ -56,6 +56,25 @@ jobs:
           assert len(rows) >= 100, f"only {len(rows)} closed rows — refusing to publish a thin ledger"
           PY
 
+      # A2: fetch the canonical resolved view so audit3 scores the SAME rows /audit
+      # counts. Optional by design — when it is absent or hashes differently the
+      # tribunal falls back to the export slice and says so (mode=payload_slice)
+      # instead of implying the two denominators match.
+      - name: Fetch canonical resolved view (optional)
+        continue-on-error: true
+        run: |
+          url="https://findtorontoevents.ca/audit/data/resolved_closed_picks_net.json"
+          if curl -fsS --max-time 180 -o /tmp/audit3/resolved_closed_picks_net.json "$url"; then
+            python3 - <<'PY'
+          import json
+          v = json.load(open("/tmp/audit3/resolved_closed_picks_net.json"))
+          print("canonical view:", v.get("schema"), "rows:", len(v.get("rows") or []),
+                "sha:", str(v.get("rows_sha256"))[:12])
+          PY
+          else
+            echo "::warning title=audit3::canonical view unreachable — this run scores the payload slice"
+          fi
+
       # Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
       # when DB credentials exist. A missing secret must never block the ledger.
       - name: Selection alpha (optional — needs the price tables)

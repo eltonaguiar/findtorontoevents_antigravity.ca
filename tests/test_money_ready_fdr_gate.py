@@ -36,13 +36,30 @@ def test_fdr_gate_fail_open_with_single_strategy():
     assert g["n_tested"] == 1
 
 
-def test_verdict_shadow_default_does_not_downgrade():
-    # flag OFF: a failing FDR gate must NOT change the verdict
-    assert m._FDR_GATE_ENFORCE is False
+def test_verdict_enforced_by_default_downgrades():
+    # Defaults flipped 2026-11-19 (external review v2/v3): the gate used to ship
+    # OFF, so a MONEY_READY verdict could be issued with zero multiplicity control
+    # while the comment above it said "shadow-first". Enforcement is now the
+    # default, and a failing FDR gate must downgrade.
+    assert m._FDR_GATE_ENFORCE is True
+    v = m._verdict(200, 0.60, 2.0, {"ok": True}, {"ok": True}, {"ok": True},
+                   asset_class="CRYPTO", top_symbol_share=0.1, top_source_share=0.1,
+                   mdd_cvar_gate_ok=None, fdr_gate_ok=False)
+    assert v == "NOT_READY"
+
+
+def test_verdict_shadow_mode_still_available_as_an_escape_hatch(monkeypatch):
+    # MONEY_READY_FDR_GATE=0 must still restore the old behaviour, otherwise the
+    # only way to run a shadow comparison would be to edit the source.
+    monkeypatch.setattr(m, "_FDR_GATE_ENFORCE", False)
     v = m._verdict(200, 0.60, 2.0, {"ok": True}, {"ok": True}, {"ok": True},
                    asset_class="CRYPTO", top_symbol_share=0.1, top_source_share=0.1,
                    mdd_cvar_gate_ok=None, fdr_gate_ok=False)
     assert v == "MONEY_READY"
+
+
+def test_single_source_gate_is_enforced_by_default():
+    assert m._SINGLE_SOURCE_GATE_ENFORCE is True
 
 
 def test_verdict_enforced_downgrades_only_on_explicit_false(monkeypatch):

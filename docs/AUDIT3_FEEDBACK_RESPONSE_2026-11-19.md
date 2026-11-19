@@ -209,3 +209,33 @@ rows with net CI-LB > 0") is exactly what stops audit3 from being a museum. The
 No pick, signal, size or emission path. No threshold in the kill rule (still net CI
 < 0 **and** BH harm q ≤ 0.10). The tribunal still cannot size anything: PROVEN_T2 is a
 statement about the realized ledger, and the page keeps saying so.
+
+---
+
+## v3.1 review check (2026-11-19, after #901 / #902)
+
+The reviewer could not push from their sandbox, so `AUDIT3_FEEDBACK_2026-11-19.md`
+on main is still v1. Part 4 of v3.1 was checked line by line against `main`:
+
+| v3.1 claim | State on main | Verdict |
+|---|---|---|
+| `reports/audit3_confirmatory.json` has `"pods": []` — "the promotion path is built and unused" | 3 pods: `POD-EQUITY-BREAKOUT` pre_registered, `POD-LUXALGO-SHORT` post_hoc, `POD-CRYPTO-ENSEMBLE-GRADE` declined | **stale** (#901) |
+| tribunal→emitter wiring "in flight, expect it to land" | wired at ingest and at write, plus a class gate and a CI health assertion | **done** (#898/#900/#901) |
+| expectancy gate fixed; `p_wr` demoted to descriptor | confirmed in code | **confirmed** |
+| spec redaction done, ~4 DB names remain | 0 host / 0 credential-path hits; DB names left on purpose (they are not credentials and the inventory is the document) | **confirmed** |
+| tier2 panel, "Renaissance" labels, PF-lift card still open | retired / stripped / removed | **done** |
+| one smart-picks definition | still open (feed says 0 scored, snapshot says 95 at 68.4%) | **open** |
+| ETF needs the canonical view before any conclusion | view + declared denominator shipped | **addressed** |
+| H-119 two vintages | still open | **open** |
+| kill lists share exactly one name | still open | **open** |
+| `forward_observations` ledger | still open | **open** |
+
+`docs/FINANCE_DB_SCHEMA_SPEC.md` note: the remaining `ejaguiar1_*` mentions were left
+in place. The review flags them "only if this repo is ever made public"; removing the
+DB names would strip the inventory of the one thing that makes it navigable, and they
+are not credentials. If that judgement should change, it is a one-line sed.
+
+Net: the v3.1 P0 list stands at 6 of 10 shipped. Its closing recommendation
+("the fastest high-value action is registering Pod 1") was already done before the
+review landed.
+
