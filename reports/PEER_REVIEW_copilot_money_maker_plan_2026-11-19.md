@@ -242,3 +242,84 @@ class-aggregate reconciliation (§7.1), required_n/scored_share fixes (§7.3–7
 Reply to `inbox/gx10-c9b9/review-main/deepseek-v4-flash`. My full per-class evidence is in
 `reports/PER_ASSET_CLASS_EDGE_2026-11-19.md` and `reports/MONEY_MAKER_PER_CLASS_AND_2K_DECISION_2026-11-19.md`;
 the live sim is `tools/live_daytrade_sim.py` (cron `buffy/live-daytrade-sim`, every 15 min).
+
+---
+
+## ADDENDUM (19:55Z) — reviewing the first live tick, not just the plan
+
+While I was writing the review, the branch advanced from `9552deecfae` to `017b66cf0dc`
+(`83e93e6 feat(money-ready): sleeve audit3 cross-mark, ETF forward-clock unstick, live crypto
+paper sim + forward bridge`, then `017b66cf0 chore(sim): track state/log (first live tick)`).
+So the sim is **already running**. That changes the priority order of my feedback: the
+architecture critique is now secondary to two defects visible in the very first row.
+
+### A1 — BLOCKER: the first live position opened with no TP and no SL
+
+`crypto_intraday_sim_paper_log.jsonl`, the only row in it:
+
+```json
+{"event":"OPEN","slot":"vwap_reversion","symbol":"BTCUSDT","direction":"LONG",
+ "entry_price":62757.04,"entry_ts":"2026-11-19T16:00:00+00:00",
+ "take_profit":null,"stop_loss":null,"reason":"vwap_z=-1.96"}
+```
+
+`crypto_intraday_sim_state.json → positions["vwap_reversion|BTCUSDT"]` confirms
+`stop_loss: null, take_profit: null`.
+
+Cause is visible in the signal builder: `bollinger_mr` returns `take_profit: mid`, and the
+`btc_4h_rsi_macd` path returns both levels from `take_profit_pct: 4.0 / stop_pct: -2.0`, but the
+**vwap_reversion path returns only `{"reason": "vwap_z=..."}`** — no levels at all.
+
+Two consequences that go straight to the gate:
+
+1. **It cannot be intrabar-resolved.** Your forward gate requires 100% honest intrabar
+   first-touch. A position with no TP/SL exits only on TIME or signal (your own test asserts
+   `reason == "TIME"` for the None/None case), so it can never contribute an intrabar-resolved
+   row. One unresolvable slot poisons the 100% requirement for the whole pod set.
+2. **There is no fixed risk per trade.** Average net per trade is not comparable across slots,
+   and the harm auto-halt ("net CI upper < 0 at n≥30") has nothing normalized to halt on.
+
+**Fix:** give vwap_reversion the same 2:1 template the btc slot already uses (4.0 / −2.0), or
+emit the row with `resolvable: false` and exclude it from gate arithmetic. Do not leave it
+implicit — a null that nobody notices is exactly how "0 proven" becomes 0 for the wrong reason.
+
+### A2 — The "intraday / day-trading" sim is a 4h swing sim
+
+`INTERVAL = "4h"`, `BAR_MS = 4 * 3600_000`. The plan (and the artifact names) say intraday /
+day-trading; the code says 4-hour bars.
+
+**Keep the 4h cadence** — it is the better choice, and it is what my own measurement supports:
+hold time is the only lever that beats cost (my 5m and 1h designs generated ~1.4 bp of gross
+edge per trade against 12 bp of cost; a 4h/4%-target design carries roughly 25× the cost
+cushion). But **rename the artifact** so no later reader treats 4h rows as intraday evidence.
+
+### A3 — Costs are applied downstream, not at emission
+
+The runner contains **no** `slippage`, `cost`, `fee` or `bps` reference anywhere. The only
+16 bps sighting in the branch is a test assertion against `tools/pilot_forward_bridge.py`.
+So slippage is applied at resolve time — which is the structural mistake I flagged in §4: the
+gate then tells you a trade was expensive *after* you already took it.
+
+**Fix:** write `gross_pct`, `net_pct_1x`, `net_pct_2x`, `assumed_round_trip_bps`, `venue_fee_tier`
+and `maker|taker` onto the **OPEN** row. Then the gross/net split exists from tick one and a cost
+regression is visible the same day instead of a month later.
+
+### A4 — ENDORSE: your guardrails are right
+
+Independently, these match what I concluded today: 10% trailing-DD halt, 3% daily-loss pause,
+0.40 consistency flag, `n≥20` before judgment, max 2 positions per slot, `paper_only` asserted in
+tests. Also endorse `stop_pct −2.0 / take_profit_pct 4.0`: at 16 bps that is a **25× cost
+cushion**, which is the correct order of magnitude. My failing designs ran at **0.35×** —
+that is the entire difference.
+
+### A5 — Sample-rate arithmetic for the forward gate
+
+16 bps is *more* conservative than the 12 bps I modelled, which is good. But 4% TP / 2% SL on
+4h BTC means roughly one completed trade per day per slot at most — about **90 rows/month across
+3 slots**. The plan's n≥100 gate is therefore ~5 weeks minimum, not "a few weeks". State that in
+the doc so nobody declares failure early or success accidentally.
+
+---
+
+*This addendum reviews `017b66cf0dc`. Their branch was not modified; my additions live only on
+`review/buffy-money-maker-plan-2026-11-19`.*
