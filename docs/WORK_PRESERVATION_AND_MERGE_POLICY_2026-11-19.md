@@ -31,6 +31,39 @@ that decision belongs to the owner.
 
 ---
 
+
+### 1.3 An automated merge left `audit3_tribunal.py` unrunnable on main
+
+**23:52Z.** On clean `origin/main` (`2a354ce`) with main's own tests: **17 failures**, three of
+them independent crashes, all introduced by `764fec86` / `add24b3d`:
+
+1. `global_trial_count` / `GLOBAL_TRIAL_FLOOR` referenced but deleted → `NameError` in
+   `build_report` (line 1527).
+2. `required_n` / `mde_pct` kept as output keys but both assignments removed → `NameError` in every
+   `evaluate_cell` (line 964).
+3. The `--history` / `--persistence-runs` / `--prev-ledger` / `--max-churn` block was **duplicated**
+   → `argparse.ArgumentError: conflicting option string: --history`. The CLI could not parse
+   arguments at all.
+
+**Consequence:** the next 6-hourly ledger run would fail and `/audit3` would go stale.
+
+**Hotfix (not merged, hold respected):** branch `hotfix/required-n-power`, tag
+`archive/2026-11-19/hotfix-required-n`. Restores the two definitions and removes the duplicated
+12-line block. Smoke test: `build_report` returns `required_n=32`, `mde=0.2552`,
+`provenance=c9da9742a7316a60`. 70 tests pass; 3 remain red for genuinely missing N-features
+(`materiality_floor_pct`, churn wiring) which are not crashes.
+
+**Deeper problem:** main now holds *partial* versions of two independent evolutions — my
+G9/DSR/power work and the N1–N5 churn/materiality work — and its tests expect features its code
+does not have. A green main requires a single-owner three-way reconciliation, not another bot
+merge.
+
+**Rule added:** an automated merge must run the focused suite **on the merge commit** before it is
+pushed. A merge that cannot run `build_report` must not land. Two of the three defects above would
+have been caught by one `build_report` smoke test.
+
+---
+
 ## 2. Merge triage — what goes through and what does not
 
 | PR | Branch | State | Recommendation |
