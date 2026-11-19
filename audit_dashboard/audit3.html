@@ -111,6 +111,7 @@
     <button data-t="tribunal">Kill Tribunal</button>
     <button data-t="cells">Strategy Cells</button>
     <button data-t="symbols">Symbols</button>
+    <button data-t="sections">Sections × Class</button>
     <button data-t="families">Source Families</button>
     <button data-t="hyp">Hypotheses</button>
     <button data-t="method">Method &amp; Limits</button>
@@ -155,6 +156,20 @@
         <span class="muted num" id="symCount"></span>
       </div>
       <div class="tblwrap"><table id="symTbl"></table></div>
+    </div>
+  </section>
+
+  <section id="sections">
+    <div class="card"><h3>Section × asset class — where a “bad” section still wins</h3>
+      <p class="muted" id="segSub"></p>
+      <div class="tblwrap"><table id="segTbl"></table></div>
+      <p class="muted" style="margin:10px 0 0;font-size:12px">
+        Section membership is rebuilt from fields on the closed row
+        (trust_tier, grade, score, R:R, paper flag, forward sample), so it is a
+        proxy for the live gate — not the gate’s own decision. A class inside a
+        section can carry edge even when the section aggregate does not, which is
+        exactly why nothing here is deleted for being unproven.
+      </p>
     </div>
   </section>
 
@@ -250,6 +265,7 @@ function render(d){
     `${s.n_rows.toLocaleString()} closed picks · ${s.n_cells_total} strategy cells ` +
     `(${tested} with n ≥ ${conv.wr_floor_n}) · ${s.n_symbol_cells} symbol cells · ` +
     `${s.n_kill} strategies and ${s.n_kill_symbols} symbol cells killed. ` +
+    `${s.n_weak} keep observing (no claim either way). ` +
     `Win is defined net of per-class slippage; every p-value is one-sided and ` +
     `BH-corrected across all ${tested} tests.`;
   $('disclaimer').textContent = d.not_money_ready_disclaimer;
@@ -259,7 +275,7 @@ function render(d){
     ['Tested cells', tested, ''],
     ['Proven T2', s.n_proven, s.n_proven? 'green':'red'],
     ['Candidate', s.n_candidate, s.n_candidate? 'amber':'' ],
-    ['Killed', s.n_kill, 'red'],
+    ['Proven harmful', s.n_kill, 'red'],
     ['Kill rate', (s.kill_rate_pct||0)+'%', 'red'],
     ['Symbol kills', s.n_kill_symbols, 'red'],
     ['Proven symbols', s.n_proven_symbols, s.n_proven_symbols? 'green':''],
@@ -280,7 +296,11 @@ function render(d){
   ], d.classes, 'n', -1);
 
   $('verdictLegend').innerHTML = ['PROVEN_T2','CANDIDATE','WEAK','KILL','INSUFFICIENT_N']
-    .map(v=>pill(v)).join('');
+    .map(v=>pill(v)).join('') +
+    '<span class="muted" style="font-size:11.5px;margin-left:10px;white-space:normal">' +
+    'Innocent until proven guilty: <b>WEAK</b> means “no claim yet — keep observing”, not failed. ' +
+    '<b>KILL</b> now needs a net-expectancy CI entirely below zero <em>and</em> BH harm q ≤ ' +
+    conv.fdr_q + '.</span>';
 
   $('gates').innerHTML = [
     ['G0 sample floor', `n ≥ ${conv.wr_floor_n} for any verdict, n ≥ ${conv.proven_min_n} for PROVEN.`],
@@ -291,13 +311,14 @@ function render(d){
     ['G5 stability', conv.stability + '.'],
     ['G6 concentration', `No symbol > ${conv.max_symbol_share*100}% of a cell; no source > ${conv.max_source_share*100}% of an aggregate.`],
     ['G7 cost realism', conv.win_definition + '.'],
+    ['Doctrine', (d.doctrine && d.doctrine.default_state) ? d.doctrine.default_state + ' Kill requires: ' + d.doctrine.kill_requires + '.' : 'innocent until proven guilty'],
   ].map(([a,b])=>`<div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)">
       <div style="min-width:150px;font:11px/1.6 var(--mono);color:var(--blue)">${esc(a)}</div>
       <div style="color:var(--dim);font-size:12.5px">${esc(b)}</div></div>`).join('');
 
   // Tribunal
   const kills = (d.kill_tribunal && d.kill_tribunal.kills) || [];
-  $('tribunalSub').textContent = `${kills.length} entries: strategies, symbols and class aggregates that failed the net-expectancy or PF gate. Each carries a mutation instruction, not just a verdict.`;
+  $('tribunalSub').textContent = `${kills.length} entries: strategies, symbols, segments and class aggregates with a net-expectancy CI entirely below zero that also survived BH harm correction. Each carries a mutation instruction, not just a verdict.`;
   $('kills').innerHTML = kills.length ? kills.map(k=>`
     <div class="kill">
       <div class="top">
@@ -329,6 +350,25 @@ function render(d){
     {key:'dsr', label:'DSR', render:r=>r.dsr==null?'—':Number(r.dsr).toFixed(3)},
     {key:'verdict', label:'Verdict', render:r=>pill(r.verdict)},
   ], d.source_families||[], 'n', -1);
+
+  // Section x class matrix
+  const segs = d.segments || [];
+  $('segSub').textContent = segs.length
+    ? `${segs.length} reconstructed section cells, positive net expectancy first. ${(s.n_positive_segments||0)} have a net 95% CI entirely above zero.`
+    : 'No section cell reached the sample floor on this run.';
+  table('segTbl', [
+    {key:'segment', label:'Section gate'},
+    {key:'segment_value', label:'Value'},
+    {key:'asset_class', label:'Class'},
+    {key:'n', label:'n', render:r=>`<span class="num">${r.n}</span>`},
+    {key:'wr', label:'WR', render:r=>`<span class="num">${fmtPct(r.wr)}</span>`},
+    {key:'pf', label:'PF', render:r=>fmtNum(r.pf)},
+    {key:'net_expectancy_pct', label:'Net/trade', render:r=>`<span class="num ${signCls(r.net_expectancy_pct)}">${fmtNum(r.net_expectancy_pct)}%</span>`},
+    {key:'net_ci_pct', label:'Net 95% CI', render:r=>{const ci=r.net_ci_pct||[];
+      return `<span class="muted num" style="font-size:10.5px">${ci[0]==null?'—':`[${fmtNum(ci[0])}, ${fmtNum(ci[1])}]`}</span>`;}},
+    {key:'verdict', label:'Verdict', render:r=>pill(r.verdict)},
+    {key:'q_value', label:'BH q', render:r=>r.q_value==null?'—':Number(r.q_value).toFixed(3)},
+  ], segs, 'net_expectancy_pct', -1);
 
   // Hypotheses
   const h = d.hypotheses || {};

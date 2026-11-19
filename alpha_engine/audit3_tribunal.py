@@ -33,9 +33,24 @@ Verdicts
 --------
 PROVEN_T2    all gates pass (n>=100)                -> eligible for real risk
 CANDIDATE    n>=30, net CI>0, q<=0.20               -> forward paper, n->100
-WEAK         n>=20, not proven, not clearly losing  -> keep observing
-KILL         net CI entirely <0, or PF<0.8 at n>=50 -> stop emitting
+WEAK         n>=20, no claim either way             -> KEEP collecting (default)
+KILL         proven harm only                      -> stop emitting
 INSUFFICIENT n<20                                   -> no claim either way
+
+Doctrine: innocent until proven guilty (2026-11-19)
+---------------------------------------------------
+A cell that has not proven edge is NOT a failed cell. The default state of every
+strategy, symbol, section and asset class is "not proven yet -- keep it", because
+the thing worth finding is usually a small sub-population (e.g. one asset class
+inside a section that looks bad in aggregate). Therefore:
+
+  * KILL requires affirmative evidence of harm: the bootstrap 95% CI of net
+    expectancy is entirely below zero AND the one-sided harm p-value survives
+    Benjamini-Hochberg at q <= 0.10 across the killed cells.
+  * A low profit factor (PF < 0.80) is a WATCH flag, never a kill on its own.
+  * WEAK carries no negative connotation: it means "no claim", and the cell
+    stays in the ledger, the section matrix and the hypothesis queue.
+  * Nothing is removed from the closed-pick ledger by this module.
 
 Why one-sided: the product only acts on positive edge. Losing cells are caught
 by the expectancy/PF tests, not by a two-sided WR test.
@@ -62,7 +77,8 @@ from typing import Any, Iterable
 WR_MIN_N = 20
 PROVEN_MIN_N = 100
 CANDIDATE_MIN_N = 30
-KILL_PF_N = 50
+KILL_PF_N = 50          # n floor for the PF watch flag
+HARM_PF_WATCH = 0.80    # PF below this is a watch flag, never proof of harm
 FDR_Q = 0.10
 CANDIDATE_Q = 0.20
 DSR_THRESHOLD = 0.95
@@ -332,6 +348,15 @@ def load_rows(path: str) -> tuple[list[dict], str | None]:
 
 
 # ─────────────────────────────────────────────────────────────────── cells ──
+def _num(value: Any) -> float | None:
+    try:
+        if value is None or value == "":
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _net(r: dict) -> float:
     ac = str(r.get("asset_class") or "UNKNOWN").upper()
     return float(r["pnl_pct"]) - SLIPPAGE_PCT.get(ac, DEFAULT_SLIPPAGE_PCT)
@@ -383,14 +408,24 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         ci_lo, ci_hi = boot.get("ci_lo"), boot.get("ci_hi")
         expect_ci_negative = ci_hi is not None and ci_hi < 0
         expect_ci_positive = ci_lo is not None and ci_lo > 0
-        if expect_ci_negative or (pf is not None and pf < 0.8 and n >= KILL_PF_N):
+        if expect_ci_negative:
             verdict = "KILL"
-            if expect_ci_negative:
-                reasons.append("net expectancy 95% CI entirely below zero")
-            if pf is not None and pf < 0.8:
-                reasons.append(f"profit factor {pf:.2f} < 0.80 at n={n}")
+            reasons.append("net expectancy 95% CI entirely below zero")
+            if pf is not None and pf < HARM_PF_WATCH:
+                reasons.append(f"profit factor {pf:.2f} < {HARM_PF_WATCH}")
             if wr < 0.40:
                 reasons.append(f"win rate {wr:.1%} below 40%")
+        elif pf is not None and pf < HARM_PF_WATCH and n >= KILL_PF_N:
+            # Innocent until proven guilty: PF alone is a watch flag. Killing on
+            # it would discard cells whose net CI still includes zero -- exactly
+            # the "one asset class keeps winning inside a bad-looking section"
+            # case the section matrix exists to surface.
+            lo_s = "n/a" if boot.get("ci_lo") is None else f"{boot['ci_lo']:+.2f}"
+            hi_s = "n/a" if boot.get("ci_hi") is None else f"{boot['ci_hi']:+.2f}"
+            verdict = "WEAK"
+            reasons.append(
+                f"profit factor {pf:.2f} < {HARM_PF_WATCH} at n={n} — watch only, "
+                f"harm not proven (net CI [{lo_s}, {hi_s}]) so it keeps observing")
         elif (n >= PROVEN_MIN_N and lo > 0.5 and boot.get("mean", 0) > 0
               and expect_ci_positive and stable and top_sym_share <= MAX_SYMBOL_SHARE
               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
@@ -425,6 +460,8 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
                        round(boot["ci_hi"], 4) if boot.get("ci_hi") is not None else None],
         "p_value": round(p, 6),
         "q_value": None,  # filled after BH across the family
+        "p_harm": round(binom_sf(n - wins, n), 6) if n else 1.0,
+        "harm_q": None,   # filled after BH across the killed cells
         "dsr": None,
         "split_half": ({"stable": stable, **{k: round(v, 4) for k, v in halves.items()}}
                        if halves else None),
@@ -470,12 +507,60 @@ def _promote(cell: dict) -> None:
             cell["reasons"].append(f"DSR {cell['dsr']:.3f} < 0.50")
 
 
+def apply_harm_gate(bucket: list[dict]) -> None:
+    """Confirm KILL only when the negative result survives multiplicity.
+
+    A raw 95% CI below zero is one test; with dozens of cells some will cross by
+    chance. Killing is a destructive verdict, so it carries the same BH burden as
+    promotion -- otherwise the tribunal throws away cells that are merely noisy.
+    """
+    negatives = [c for c in bucket if c["verdict"] == "KILL"]
+    if not negatives:
+        return
+    for c, q in zip(negatives, benjamini_hochberg([c["p_harm"] for c in negatives])):
+        c["harm_q"] = round(q, 6)
+        if q > FDR_Q:
+            c["verdict"] = "WEAK"
+            c["reasons"].append(
+                f"negative but harm q={q:.3f} > {FDR_Q}: not proven, keep observing")
+
+
+def segment_tags(r: dict) -> list[tuple[str, str]]:
+    """Reconstruct the published /audit section gates from fields the row carries.
+
+    These are proxies, not the live gate decisions (the generator does not stamp
+    the section name onto closed rows), so every segment cell is marked
+    ``reconstructed: true``. The point is to see whether a section that looks bad
+    in aggregate contains an asset class that wins again and again.
+    """
+    tags: list[tuple[str, str]] = []
+    for field in ("trust_tier", "grade", "elite_grade"):
+        val = str(r.get(field) or "").strip().upper()
+        if val and val != "NONE":
+            tags.append((field, val))
+    score = _num(r.get("score"))
+    if score is not None:
+        tags.append(("score_gate", "score>=60" if score >= 60 else "score<60"))
+    rr = _num(r.get("rr_ratio"))
+    if rr is not None:
+        tags.append(("rr_gate", "rr>=1.5" if rr >= 1.5 else "rr<1.5"))
+    tags.append(("origin", "paper" if r.get("paper_trade") else "live"))
+    if r.get("is_ac_survivor") is not None:
+        tags.append(("survivor", "ac_survivor" if r.get("is_ac_survivor")
+                     else "not_survivor"))
+    fwd = _num(r.get("strat_fwd_trades"))
+    if fwd is not None:
+        tags.append(("forward_gate", "fwd_n>=20" if fwd >= 20 else "fwd_n<20"))
+    return tags
+
+
 def build_report(rows: list[dict], source: str, source_generated_at: str | None) -> dict[str, Any]:
     n_cells = 0
     cells: list[dict] = []
     classes: list[dict] = []
     symbols: list[dict] = []
     families: list[dict] = []
+    segments: list[dict] = []
 
     # PASS 1: count tested cells so DSR knows the multiplicity.
     strat_groups = _group(rows, lambda r: (str(r.get("asset_class") or "UNKNOWN").upper(),
@@ -496,6 +581,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None)
         c["q_value"] = round(q, 6)
     for c in tested:
         _promote(c)
+    apply_harm_gate(cells)
 
     # Class-level aggregate.
     class_groups = _group(rows, lambda r: str(r.get("asset_class") or "UNKNOWN").upper())
@@ -524,7 +610,31 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None)
         c["q_value"] = round(q, 6)
     for c in symbols:
         _promote(c)
+    apply_harm_gate(symbols)
     symbols.sort(key=lambda c: (-c["n"], c["asset_class"], c["symbol"]))
+
+    # Section x asset-class matrix. Answers "smart picks look bad overall, but
+    # does one class inside them win again and again?" without trusting the
+    # aggregate. Reconstruction proxies are declared on every cell.
+    seg_groups: dict[tuple[str, str, str], list[dict]] = {}
+    for r in rows:
+        ac = str(r.get("asset_class") or "UNKNOWN").upper()
+        for seg, val in segment_tags(r):
+            seg_groups.setdefault((seg, val, ac), []).append(r)
+    seg_tested = {k: g for k, g in seg_groups.items() if len(g) >= WR_MIN_N}
+    for (seg, val, ac), group in seg_tested.items():
+        seg_cell = evaluate_cell(group, max(1, len(seg_tested)),
+                                 {"segment": seg, "segment_value": val,
+                                  "asset_class": ac},
+                                 apply_source_gate=False)
+        seg_cell["reconstructed"] = True
+        segments.append(seg_cell)
+    for c, q in zip(segments, benjamini_hochberg([c["p_value"] for c in segments])):
+        c["q_value"] = round(q, 6)
+    for c in segments:
+        _promote(c)
+    apply_harm_gate(segments)
+    segments.sort(key=lambda c: (-c["net_expectancy_pct"], -c["n"]))
 
     # Source families: copytrader / polymarket / kalshi / ml_enhanced / ...
     fam_groups = _group(rows, _family)
@@ -605,6 +715,12 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None)
         "n_proven_symbols": count("PROVEN_T2", symbols),
         "n_proven_classes": count("PROVEN_T2", classes),
         "n_kill_symbols": count("KILL", symbols),
+        "n_segment_cells": len(segments),
+        "n_proven_segments": count("PROVEN_T2", segments),
+        "n_harmful_segments": count("KILL", segments),
+        "n_positive_segments": sum(1 for c in segments
+                                  if (c["net_ci_pct"][0] or 0) > 0),
+        "n_kill_classes": count("KILL", classes),
     }
 
     return {
@@ -637,14 +753,27 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None)
                                "timing-null companion report.",
         },
         "summary": summary,
+        "doctrine": {
+            "name": "innocent-until-proven-guilty",
+            "default_state": "not proven -- keep observing; absence of proof of "
+                            "edge is not evidence of harm",
+            "kill_requires": "net-expectancy bootstrap 95% CI entirely < 0 AND "
+                             "Benjamini-Hochberg harm q <= 0.10",
+            "pf_rule": f"PF < {HARM_PF_WATCH} is a watch flag only",
+            "nothing_deleted": "no closed pick, strategy or section is removed "
+                               "from the ledger by this module",
+        },
         "classes": classes,
+        "segments": segments,
         "cells": cells,
         "symbols": symbols,
         "source_families": families,
         "kill_tribunal": {
             "criteria": [
                 "net expectancy 95% CI entirely < 0",
-                f"PF < 0.80 at n >= {KILL_PF_N}",
+                f"BH harm q <= {FDR_Q} across killed cells",
+                f"PF < {HARM_PF_WATCH} at n >= {KILL_PF_N} is a WATCH flag, "
+                "never a kill on its own",
                 "WR < 40% (diagnostic, not sufficient alone)",
             ],
             "kills": kills,

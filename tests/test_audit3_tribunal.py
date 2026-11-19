@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from alpha_engine.audit3_tribunal import (  # noqa: E402
+    apply_harm_gate,
     benjamini_hochberg,
     binom_sf,
     bootstrap_mean_ci,
@@ -126,6 +127,35 @@ def test_strong_large_sample_reaches_proven_then_fdr_can_demote():
     assert cell["verdict"] == "CANDIDATE"
 
 
+def test_low_pf_without_significant_harm_is_not_killed():
+    """Innocent until proven guilty: PF < 0.80 alone must not kill a cell.
+
+    20 winners at +3.15% gross and 40 losers at -2.00% gross gives PF ~0.70,
+    but the sampled net mean has a CI that still contains zero -- the cell is
+    unproven, not proven harmful, so it must stay in the ledger as WEAK.
+    """
+    rows = _rows(60, -2.0)
+    for r in rows[:20]:
+        r["pnl_pct"] = 3.15
+        r["status"] = "WON"
+    cell = evaluate_cell(rows, 10, {"asset_class": "CRYPTO"})
+    assert cell["pf"] is not None and cell["pf"] < 0.80, cell
+    assert cell["net_ci_pct"][1] is not None and cell["net_ci_pct"][1] > 0, cell
+    assert cell["verdict"] == "WEAK", cell
+    assert any("watch only" in x for x in cell["reasons"])
+
+
+def test_harm_gate_requires_multiplicity_survival():
+    noisy = {"verdict": "KILL", "p_harm": 0.9, "reasons": []}
+    apply_harm_gate([noisy])
+    assert noisy["verdict"] == "WEAK"
+    assert noisy["harm_q"] == 0.9
+    real = {"verdict": "KILL", "p_harm": 0.001, "reasons": []}
+    apply_harm_gate([real])
+    assert real["verdict"] == "KILL"
+    assert real["harm_q"] < 0.01
+
+
 def test_net_expectancy_deducts_slippage():
     rows = _rows(30, 0.10)  # 0.10% gross < 0.15% CRYPTO round trip
     cell = evaluate_cell(rows, 5, {"asset_class": "CRYPTO"})
@@ -156,6 +186,27 @@ def test_build_report_shapes_and_hypothesis_join(tmp_path, monkeypatch):
     assert report["classes"][0]["asset_class"] == "CRYPTO"
     assert "conventions" in report and report["conventions"]["fdr_q"] == 0.10
     json.dumps(report, allow_nan=False)  # must be valid strict JSON
+
+
+def test_report_has_section_by_class_matrix():
+    good = _rows(60, 1.5, strategy="s1")
+    for r in good:
+        r.update({"trust_tier": "PROVEN", "score": 70, "rr_ratio": 2.0,
+                  "paper_trade": False, "is_ac_survivor": False,
+                  "strat_fwd_trades": 25})
+    bad = _rows(40, -1.5, strategy="s2", symbol="ETHUSDT")
+    for r in bad:
+        r.update({"trust_tier": "WATCH", "score": 40, "rr_ratio": 1.0,
+                  "paper_trade": False, "is_ac_survivor": False,
+                  "strat_fwd_trades": 5})
+    report = build_report(good + bad, "synthetic", None)
+    assert report["doctrine"]["name"] == "innocent-until-proven-guilty"
+    assert report["segments"], "expected reconstructed segment cells"
+    seg = report["segments"][0]
+    assert seg["reconstructed"] is True
+    assert "segment" in seg and "asset_class" in seg
+    assert report["summary"]["n_segment_cells"] == len(report["segments"])
+    json.dumps(report, allow_nan=False)
 
 
 def test_load_rows_dedupes_and_drops_open(tmp_path):
