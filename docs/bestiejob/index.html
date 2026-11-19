@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BestieJob — ServiceNow / Salesforce Developer Leads (Toronto + Canada Remote)</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --fg:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; --ok:#22c55e; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:28px 20px 12px; }
+  h1 { margin:0 0 4px; font-size:1.4rem; }
+  .sub { color:var(--muted); font-size:.9rem; }
+  .controls { display:flex; gap:10px; flex-wrap:wrap; padding:12px 20px; }
+  select, input { background:var(--card); color:var(--fg); border:1px solid #334155; border-radius:8px; padding:8px 10px; font-size:.9rem; }
+  .wrap { padding:0 20px 40px; overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; font-size:.86rem; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #1e293b; vertical-align:top; }
+  th { position:sticky; top:0; background:#111827; color:var(--muted); font-weight:600; }
+  tr:hover td { background:#172033; }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:.72rem; font-weight:600; }
+  .sn { background:#0b3b5c; color:#7dd3fc; }
+  .sf { background:#3b0764; color:#e9d5ff; }
+  .live { color:var(--ok); font-weight:700; }
+  .count { color:var(--muted); font-size:.85rem; padding:0 20px 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>BestieJob — SN/SF Developer Leads</h1>
+  <div class="sub">ServiceNow &amp; Salesforce developer roles · Toronto/GTA + Canada (fully remote) · verified reachable</div>
+</header>
+<div class="controls">
+  <select id="track">
+    <option value="">All tracks</option>
+    <option value="servicenow">ServiceNow</option>
+    <option value="salesforce">Salesforce</option>
+  </select>
+  <input id="q" placeholder="Filter title / company / location…" />
+</div>
+<div class="count" id="count"></div>
+<div class="wrap">
+  <table>
+    <thead><tr><th>#</th><th>Role</th><th>Company</th><th>Location</th><th>Track</th><th>Score</th><th>Source</th><th>Posted</th><th>Link</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+<script>
+let DATA = [];
+const rows = document.getElementById('rows');
+const countEl = document.getElementById('count');
+function esc(s){ return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function render(){
+  const t = document.getElementById('track').value;
+  const q = document.getElementById('q').value.toLowerCase().trim();
+  const list = DATA.filter(d =>
+    (!t || d.track === t) &&
+    (!q || `${d.title} ${d.company} ${d.location}`.toLowerCase().includes(q)));
+  countEl.textContent = `${list.length} of ${DATA.length} roles`;
+  rows.innerHTML = list.map((d,i)=>{
+    const badge = d.track === 'servicenow' ? '<span class="badge sn">ServiceNow</span>' : '<span class="badge sf">Salesforce</span>';
+    const posted = (d.postedDate||'').slice(0,10);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${esc(d.title)}</td>
+      <td>${esc(d.company)}</td>
+      <td>${esc(d.location)}</td>
+      <td>${badge}</td>
+      <td>${esc(d.score)}</td>
+      <td>${esc(d.source)}</td>
+      <td>${esc(posted)}</td>
+      <td>${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener">open</a>`:''}</td>
+    </tr>`;
+  }).join('');
+}
+fetch('data/verified_leads.json').then(r=>r.json()).then(d=>{ DATA=d; render(); })
+  .catch(e=>{ rows.innerHTML=`<tr><td colspan="9">No data yet: ${esc(e)}</td></tr>`; });
+document.getElementById('track').addEventListener('change', render);
+document.getElementById('q').addEventListener('input', render);
+</script>
+</body>
+</html>
