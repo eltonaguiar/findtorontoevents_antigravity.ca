@@ -13,6 +13,8 @@ differences so grouping, scoring and denylisting all see one key.
 """
 from __future__ import annotations
 
+import re
+
 # Quote assets that turn a base symbol into a pair. Ordered longest-first so
 # "USDT" wins over "USD".
 _CRYPTO_QUOTES = ("FDUSD", "USDT", "USDC", "BUSD", "TUSD", "USD")
@@ -65,3 +67,30 @@ def direction_key(direction: str | None) -> str:
     if d.startswith("S"):
         return "SHORT"
     return d or "UNKNOWN"
+
+
+# ── Pick-id join keys ────────────────────────────────────────────────────────
+# The DB and the canonical view spell the SAME pick differently:
+#   at_pick_outcomes.pick_id : v1::signal_validation::sig_20260220_084510_AVAX-USD
+#   canonical row .id        : sig_20260220_084510_AVAX-USD
+# A naive split("::")[-1] "fixes" that one case and destroys every other id
+# family, because `pt_funding_rate_carry::BARDUSDT::2026-03-05T13:30:16` is a
+# legitimate (writer, symbol, timestamp) key whose tail alone is NOT unique —
+# that mistake produced 85 false "collisions" in a 2026-11-19 review.
+#
+# Rule: strip ONLY a leading version + writer prefix (`v<n>::<writer>::`).
+# Verified on the live canonical view: 8,613 rows -> 8,613 distinct keys, i.e.
+# zero collisions, and the 30 seeded `v1::fallback::...` ids all still match.
+_VERSION_WRITER_RE = re.compile(r"^v\d+::[^:]+::(.+)$")
+
+
+def pick_id_join_key(pick_id: object) -> str:
+    """Return the cross-system join key for a pick id.
+
+    ``v1::signal_validation::sig_x`` -> ``sig_x``
+    ``pt_funding_rate_carry::BARDUSDT::2026-03-05T13:30:16`` -> unchanged
+    ``None`` -> ``""``
+    """
+    s = str(pick_id or "").strip()
+    match = _VERSION_WRITER_RE.match(s)
+    return match.group(1) if match else s

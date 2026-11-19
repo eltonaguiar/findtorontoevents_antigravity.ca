@@ -15,6 +15,7 @@ Usage:
 """
 from __future__ import annotations
 
+import re
 from typing import Any
 
 # ── Constants ────────────────────────────────────────────────────────────────
@@ -104,6 +105,17 @@ FOREX_STRATEGY_HINTS: tuple[str, ...] = (
 # Stablecoin suffixes that unambiguously indicate crypto pairs
 _CRYPTO_SUFFIXES: tuple[str, ...] = ("USDT", "BUSD", "USDC", "DAI", "TUSD", "USDP")
 
+# Explicit quote-currency pairs written as BASE[-/]USD (2026-11-19).
+# ``normalize_symbol`` strips the separator, so ADA-USD becomes ADAUSD and none of
+# ``_CRYPTO_SUFFIXES`` match — bare ``USD`` is a fiat quote, not a stablecoin
+# ticker. Such a symbol fell through every branch to the ``return "equity"``
+# fallback at the end of normalize_asset_class(), which is how 209 crypto
+# MeanReversionBB picks (ADA-USD, AVAX-USD, BTC-USD, DOGE-USD, DOT-USD, ETH-USD,
+# LINK-USD, SOL-USD, XRP-USD) were written to at_pick_outcomes with
+# asset_class='equity' and inflated the EQUITY book with a +3%/-2% crypto grid.
+# A fiat base (EUR-USD, GBP-USD) is still FOREX and is excluded below.
+_PAIR_USD_RE = re.compile(r"^([A-Z0-9]+)[-/]USD$")
+
 _UNKNOWN_CATEGORY_TOKENS: frozenset[str] = frozenset({
     "", "unknown", "none", "null", "nan",
 })
@@ -146,6 +158,14 @@ def asset_class_from_symbol(symbol: str | None) -> str:
     Returns one of: crypto, forex, futures, bond, etf, equity, unknown.
     """
     sym = normalize_symbol(symbol)
+    raw = (symbol or "").upper().strip()
+
+    # ── Explicit crypto quote pair, e.g. ADA-USD ──
+    # Checked on the RAW symbol because normalize_symbol() removes the separator
+    # that makes the quote unambiguous. Fiat bases stay forex.
+    _pair = _PAIR_USD_RE.match(raw)
+    if _pair and _pair.group(1) not in FOREX_CODES:
+        return "crypto"
 
     # ── Futures suffix (=F) ──
     if sym.endswith("=F"):
@@ -235,6 +255,14 @@ def normalize_asset_class(pick: dict[str, Any]) -> str:
 
     # Strip suffix for further checks
     sym_core = sym[:-2] if sym.endswith(("=X", "=F")) else sym
+
+    # ── Explicit crypto quote pair (BASE-USD / BASE/USD) ──
+    # Must beat the category/asset_class field: upstream labels have been
+    # observed corrupt (see incident #48 in alpha_engine/outcome_resolver.py),
+    # and a separator + USD quote cannot be an equity ticker.
+    _pair = _PAIR_USD_RE.match(str(pick.get("symbol") or "").upper().strip())
+    if _pair and _pair.group(1) not in FOREX_CODES:
+        return "crypto"
 
     # ── Stablecoin suffixes → crypto (unambiguous) ──
     if sym_core.endswith(_CRYPTO_SUFFIXES):
