@@ -123,6 +123,8 @@
     <div class="card"><h3>Asset classes — selection alpha first, then cost, then multiplicity</h3>
       <div class="tblwrap"><table id="classTbl"></table></div>
       <div class="note" id="alphaNote"></div>
+      <div class="tblwrap" style="margin-top:10px"><table id="alphaCovTbl"></table></div>
+      <div class="note" id="alphaCovNote"></div>
       <div class="legend" id="verdictLegend"></div>
     </div>
     <div class="card"><h3>What this ledger does <em>not</em> score</h3>
@@ -384,6 +386,54 @@ function render(d){
        (crypto_ohlcv / equity_daily_ohlcv / etf_daily_ohlcv), which this job can only read
        with DB credentials. Without it the class verdicts below answer “did this beat zero”
        — the weaker question — not “did this beat just holding the same thing”.`;
+
+  // G8 bar coverage — WHY a class gate reads "unmeasured". Without this the page
+  // reported a missing measurement with no cause; on 2026-11-19 the cause was
+  // stale tables (equity_daily_ohlcv ended 2026-06-18, fx_prices 2026-02-09).
+  const alphaCovRows = Object.keys(sa.bar_coverage || {}).sort().map(k => {
+    const v = sa.bar_coverage[k] || {};
+    const cls = (d.classes || []).find(c => c.asset_class === k) || {};
+    const gate = cls.alpha_gate || {};
+    const measured = Object.keys(gate).length > 0 && gate.status !== 'unmeasured';
+    return {
+      asset_class: k,
+      priced: (v.symbols_found == null ? '—' : v.symbols_found) + '/' +
+              (v.symbols_requested == null ? '—' : v.symbols_requested),
+      last_bar: v.last_bar || null,
+      gate: measured ? 'measured' : 'unmeasured',
+      missing: (v.missing_symbols || []).join(', '),
+    };
+  });
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const staleDays = (s) => {
+    if (!s) return null;
+    const ms = Date.parse(s + 'T00:00:00Z');
+    if (isNaN(ms)) return null;
+    return Math.round((Date.parse(todayStr + 'T00:00:00Z') - ms) / 86400000);
+  };
+  table('alphaCovTbl', [
+    {key:'asset_class', label:'Class'},
+    {key:'priced', label:'Symbols priced', render:r=>`<span class="num">${r.priced}</span>`},
+    {key:'last_bar', label:'Last bar', render:r=>{
+        if (r.last_bar == null) return '<span class="neg">no bars</span>';
+        const age = staleDays(r.last_bar);
+        const cls2 = (age != null && age > 7) ? 'neg' : 'muted';
+        const ageTxt = (age != null && age > 7)
+          ? ` <span class="muted" style="font-size:10px">${age}d stale</span>` : '';
+        return `<span class="num ${cls2}">${r.last_bar}</span>${ageTxt}`;
+      }},
+    {key:'gate', label:'G8 gate', render:r=>r.gate === 'measured'
+        ? '<span class="pos">measured</span>'
+        : '<span class="neg">unmeasured</span>'},
+    {key:'missing', label:'Symbols with no bars', render:r=>r.missing
+        ? `<span class="muted" style="font-size:11px">${r.missing}</span>`
+        : '<span class="muted">—</span>'},
+  ], alphaCovRows, 'asset_class', 1);
+  $('alphaCovNote').innerHTML = alphaCovRows.length
+    ? `<b>Bar coverage</b> explains an <i>unmeasured</i> class gate. The gate needs a bar at or
+       after each pick's exit, so a pick closing after its table's last bar cannot be priced —
+       the count below shows symbols actually priced, and red dates are more than 7 days stale.`
+    : '';
 
   // Coverage — the denominator. Without it every verdict above reads as if it
   // covered the whole closed book.
