@@ -77,6 +77,16 @@ import sys
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
+try:  # shared canonicaliser; inline fallback keeps this module standalone
+    from alpha_engine.symbol_identity import canonical_symbol as _canon_symbol
+    from alpha_engine.symbol_identity import direction_key as _dir_key
+except ImportError:  # pragma: no cover
+    def _canon_symbol(symbol, asset_class=None):
+        return str(symbol or "").strip().upper()
+
+    def _dir_key(direction):
+        return str(direction or "").strip().upper()
+
 WR_MIN_N = 20
 PROVEN_MIN_N = 100
 CANDIDATE_MIN_N = 30
@@ -475,12 +485,8 @@ def _net(r: dict) -> float:
 
 
 def _direction(r: dict) -> str:
-    d = str(r.get("direction") or "").upper()
-    if d.startswith("L"):
-        return "LONG"
-    if d.startswith("S"):
-        return "SHORT"
-    return d or "UNKNOWN"
+    """BUY/SELL/L/S all normalise onto LONG/SHORT so the denylist can match."""
+    return _dir_key(r.get("direction")) or "UNKNOWN"
 
 
 def _family(r: dict) -> str:
@@ -489,6 +495,48 @@ def _family(r: dict) -> str:
         if any(p in hay for p in pats):
             return name
     return "other"
+
+
+DEFAULT_CONFIRMATORY = "reports/audit3_confirmatory.json"
+
+
+def load_confirmatory(path: str | None = None) -> dict[str, Any]:
+    """Load the pre-registered pod manifest (``reports/audit3_confirmatory.json``).
+
+    An empty or missing manifest is not an error: it means nothing has been
+    pre-registered, so every cell is discovery and nothing may be promoted.
+    """
+    target = path or DEFAULT_CONFIRMATORY
+    try:
+        with open(target, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError) as exc:
+        return {"available": False, "path": target, "pods": [], "error": str(exc)}
+    pods = [p for p in (data.get("pods") or []) if isinstance(p, dict)]
+    return {"available": True, "path": target, "pods": pods,
+            "rule": data.get("rule")}
+
+
+def _pod_for(asset_class: str, strategy: str, direction: str,
+             manifest: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Return the pod that pre-registered this cell, else None."""
+    if not manifest:
+        return None
+    name = str(strategy or "").strip().casefold()
+    for pod in manifest.get("pods") or []:
+        strategies = {str(s).strip().casefold() for s in (pod.get("strategies") or [])}
+        classes = {str(c).strip().upper() for c in (pod.get("asset_classes") or [])}
+        directions = {str(d).strip().upper() for d in (pod.get("directions") or [])}
+        if not (strategies or classes or directions):
+            continue  # a pod with no matcher would capture everything
+        if strategies and name not in strategies:
+            continue
+        if classes and str(asset_class).upper() not in classes:
+            continue
+        if directions and str(direction).upper() not in directions:
+            continue
+        return pod
+    return None
 
 
 def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
@@ -532,7 +580,8 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         p_harm = (n_ge + 1.0) / (n_boot + 1.0)
     else:
         p_exp = p_harm = 1.0
-    symbols = [str(r.get("symbol") or "?") for r in rows]
+    symbols = [_canon_symbol(r.get("symbol"), r.get("asset_class")) or "?"
+               for r in rows]
     top_sym_share = (max(symbols.count(s) for s in set(symbols)) / n) if n else 0.0
     sources = [str(r.get("source_system") or r.get("system") or "?") for r in rows]
     top_src_share = (max(sources.count(s) for s in set(sources)) / n) if n else 0.0
@@ -643,6 +692,18 @@ def _promote(cell: dict) -> None:
     """Apply the FDR and DSR gates that need the full tested family."""
     if cell["n"] < WR_MIN_N:
         return
+    # Multiplicity families are separate (2026-11-19): a pre-registered pod must
+    # not share a BH budget with 40+ exploratory cells, and only a pod may be
+    # sizing-eligible. Discovery can reach CANDIDATE (forward paper), never PROVEN.
+    if cell["verdict"] == "PROVEN_T2" and cell.get("namespace") != "confirmatory":
+        cell["verdict"] = "CANDIDATE"
+        cell["reasons"].append(
+            "discovery namespace: promotion requires a pod in "
+            "reports/audit3_confirmatory.json")
+        # Stop here. Falling through would re-judge the demoted cell in the
+        # CANDIDATE branch and demote it again on a q-value it never faced as a
+        # candidate (the discovery family is the larger one).
+        return
     q = cell.get("q_value")
     if q is None:
         return
@@ -731,7 +792,8 @@ def _git_sha() -> str | None:
 def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  coverage: dict[str, Any] | None = None,
                  alpha: dict[str, Any] | None = None,
-                 input_sha256: str | None = None) -> dict[str, Any]:
+                 input_sha256: str | None = None,
+                 confirmatory: dict[str, Any] | None = None) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
@@ -753,16 +815,24 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     n_trials = sum(1 for g in strat_groups.values() if len(g) >= WR_MIN_N)
 
     for (ac, strat, direction), group in strat_groups.items():
-        cell = evaluate_cell(group, max(1, n_trials),
-                             {"asset_class": ac, "strategy": strat, "direction": direction},
-                             apply_source_gate=False)
+        pod = _pod_for(ac, strat, direction, confirmatory)
+        label = {"asset_class": ac, "strategy": strat, "direction": direction,
+                 "namespace": "confirmatory" if pod else "discovery"}
+        if pod:
+            label["pod"] = pod.get("id")
+        cell = evaluate_cell(group, max(1, n_trials), label, apply_source_gate=False)
         cells.append(cell)
     cells.sort(key=lambda c: (-c["n"], c["asset_class"], c["strategy"]))
 
-    # BH across the tested cells only.
+    # BH within each namespace separately, across tested cells only.
     tested = [c for c in cells if c["n"] >= WR_MIN_N]
-    for c, q in zip(tested, benjamini_hochberg([c["p_value"] for c in tested])):
-        c["q_value"] = round(q, 6)
+    bh_families: dict[str, list[dict]] = {}
+    for c in tested:
+        bh_families.setdefault(c.get("namespace") or "discovery", []).append(c)
+    for fam in bh_families.values():
+        for c, q in zip(fam, benjamini_hochberg([c["p_value"] for c in fam])):
+            c["q_value"] = round(q, 6)
+            c["bh_family_n"] = len(fam)
     for c in tested:
         _promote(c)
     apply_harm_gate(cells)
@@ -783,12 +853,16 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     classes.sort(key=lambda c: (-c["n"], c["asset_class"]))
 
     # Symbol x direction cells (n>=20 only — the rest is noise by construction).
+    # One instrument, one cell: BTC-USD and BTCUSDT are the same coin. Without
+    # this the ledger split it into two verdicts (KILL at n=25 vs WEAK at n=120).
     sym_groups = _group(rows, lambda r: (str(r.get("asset_class") or "UNKNOWN").upper(),
-                                         str(r.get("symbol") or "?"), _direction(r)))
+                                         _canon_symbol(r.get("symbol"), r.get("asset_class")) or "?",
+                                         _direction(r)))
     sym_tested = {k: g for k, g in sym_groups.items() if len(g) >= WR_MIN_N}
     for (ac, sym, direction), group in sym_tested.items():
         symbols.append(evaluate_cell(group, max(1, len(sym_tested)),
-                                     {"asset_class": ac, "symbol": sym, "direction": direction},
+                                     {"asset_class": ac, "symbol": sym,
+                                      "direction": direction, "namespace": "discovery"},
                                      apply_source_gate=False))
     for c, q in zip(symbols, benjamini_hochberg([c["p_value"] for c in symbols])):
         c["q_value"] = round(q, 6)
@@ -809,7 +883,7 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     for (seg, val, ac), group in seg_tested.items():
         seg_cell = evaluate_cell(group, max(1, len(seg_tested)),
                                  {"segment": seg, "segment_value": val,
-                                  "asset_class": ac},
+                                  "asset_class": ac, "namespace": "discovery"},
                                  apply_source_gate=False)
         seg_cell["reconstructed"] = True
         segments.append(seg_cell)
@@ -922,6 +996,8 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         "n_cells_total": len(cells),
         "n_symbol_cells": len(symbols),
         "n_cells_dsr_scored": sum(1 for c in cells if c.get("dsr") is not None),
+        "n_confirmatory_cells": sum(1 for c in cells if c.get("namespace") == "confirmatory"),
+        "n_discovery_cells": sum(1 for c in cells if c.get("namespace") == "discovery"),
         "n_proven": count("PROVEN_T2", cells),
         "n_candidate": count("CANDIDATE", cells),
         "n_weak": count("WEAK", cells),
@@ -989,6 +1065,16 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "nothing_deleted": "no closed pick, strategy or section is removed "
                                "from the ledger by this module",
         },
+        "multiplicity": {
+            "rule": "BH is computed within each namespace; only confirmatory cells "
+                    "(pre-registered pods) may reach PROVEN_T2",
+            "manifest_path": (confirmatory or {}).get("path"),
+            "manifest_available": bool((confirmatory or {}).get("available")),
+            "n_pods": len((confirmatory or {}).get("pods") or []),
+            "families": {ns: {"n_tested": len(f),
+                              "n_proven": sum(1 for c in f if c["verdict"] == "PROVEN_T2")}
+                         for ns, f in bh_families.items()},
+        },
         "classes": classes,
         "segments": segments,
         "cells": cells,
@@ -1026,6 +1112,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", help="write ledger JSON here (else stdout)")
     ap.add_argument("--alpha", help="selection-alpha sidecar from "
                                      "alpha_engine/audit3_selection_alpha.py")
+    ap.add_argument("--confirmatory", help="pre-registered pod manifest "
+                                            f"(default {DEFAULT_CONFIRMATORY})")
     args = ap.parse_args(argv)
     drops: dict[str, int] = {}
     try:
@@ -1047,8 +1135,10 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, ValueError) as exc:
             print(f"WARNING: alpha sidecar unreadable ({exc}); continuing without it",
                   file=sys.stderr)
+    manifest = load_confirmatory(args.confirmatory)
     report = build_report(rows, args.picks, generated_at, coverage=coverage,
-                          alpha=alpha, input_sha256=_sha256(args.picks))
+                          alpha=alpha, input_sha256=_sha256(args.picks),
+                          confirmatory=manifest)
     payload = json.dumps(report, indent=1, allow_nan=False)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:

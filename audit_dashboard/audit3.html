@@ -276,6 +276,9 @@ const CELL_COLS = (sym=false) => [
   {key: sym?'symbol':'strategy', label: sym?'Symbol':'Strategy',
    render:r=>`<span class="num">${esc(sym?r.symbol:r.strategy)}</span>`},
   {key:'direction', label:'Dir'},
+  {key:'namespace', label:'Namespace', render:r=>r.namespace==='confirmatory'
+      ? '<span class="pos" style="font-size:11px">confirmatory</span>'
+      : '<span class="muted" style="font-size:11px">discovery</span>'},
   {key:'n', label:'n', render:r=>`<span class="num">${r.n}</span>`},
   {key:'wr', label:'WR', render:r=>`<span class="num">${fmtPct(r.wr)}</span>
       <span class="muted" style="font-size:10px"> [${fmtPct(r.wr_ci[0])}, ${fmtPct(r.wr_ci[1])}]</span>`},
@@ -507,6 +510,12 @@ function render(d){
       leakage, mislabeled resolutions, or a feed that silently stopped emitting. It measures the
       realized closed-pick ledger as delivered. Those data-integrity questions remain with
       <code>audit_trail/</code> and the pick resolver.</p></details>
+    <details><summary>Why only some cells can be promoted</summary><p>Benjamini–Hochberg
+      runs within two separate families. <b>Confirmatory</b> cells match a pod declared in
+      <code>reports/audit3_confirmatory.json</code> before its forward data existed;
+      <b>discovery</b> cells are everything else and top out at CANDIDATE. A pre-registered
+      pod must not share a multiplicity budget with 40+ exploratory cells, and looking at a
+      result before registering the pod means it was never pre-registered.</p></details>
     <details><summary>Random-entry timing null</summary><p>${esc(conv.random_entry_mc)}</p></details>`;
   table('provTbl', [
     {key:'k', label:'Field'}, {key:'v', label:'Value', render:r=>`<span style="white-space:normal">${esc(r.v)}</span>`},

@@ -187,6 +187,16 @@ def is_valid_active_pick(pick: dict) -> bool:
     if not pick.get("symbol"):
         return False
 
+    # 4b. audit3 kill tribunal (2026-11-19): a KILL cell is a denylist entry,
+    # not a dashboard row. Direction-aware, strategy+symbol scope, fail-open on a
+    # missing/stale ledger. Bypass with AUDIT3_DENYLIST_DISABLED=1.
+    try:
+        from alpha_engine.audit3_denylist import denied_reason as _audit3_denied
+    except ImportError:  # pragma: no cover
+        _audit3_denied = None
+    if _audit3_denied is not None and _audit3_denied(pick):
+        return False
+
     # 4a. Must have a non-anonymous strategy name (2026-04-20 additional-fixes
     # audit: 211 closed picks had strategy == "", "unknown", or mirrored the
     # source_system, which breaks per-strategy attribution, blocklist checks,
