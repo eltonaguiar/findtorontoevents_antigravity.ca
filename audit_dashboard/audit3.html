@@ -417,6 +417,10 @@ function render(d){
   $('covNote').textContent = [
     (cov.window && cov.window.first_closed_at)
       ? `Scored window: ${stamp(cov.window.first_closed_at)} → ${stamp(cov.window.last_closed_at)}.` : '',
+    (cov.denominator && cov.denominator.mode)
+      ? `Denominator: ${cov.denominator.mode}${cov.denominator.loaded_from_sidecar ? ' (canonical sidecar)' : ''}.` : '',
+    (d.persistence && d.persistence.available)
+      ? `Verdict persistence is on: a promotion must persist ${d.persistence.runs_required} runs; ${d.persistence.history_cells} cells tracked.` : '',
     cov.cohorts_overlap
       ? 'The excluded cohorts overlap each other, so their counts do not add up to the unscored gap.' : '',
     'These cohorts are reported by the publishing dashboard, not re-derived here; this ledger cannot vouch for how they were classified.'
@@ -527,11 +531,11 @@ function render(d){
     <details><summary>Why one-sided tests?</summary><p>The product only acts on positive edge.
       A cell with WR below 50% is caught by the net-expectancy and PF gates, not by a two-sided
       WR test. This avoids spending multiplicity budget on the wrong tail.</p></details>
-    <details><summary>Why subtract slippage before counting wins?</summary><p>A 7bp gross “win”
-      on COMMODITY is a net loss after a 12bp round trip. Counting gross wins inflates WR and PF
+    <details><summary>Why subtract slippage before counting wins?</summary><p>A gross “win”
+      smaller than the class’s measured round-trip slippage is a net loss. Counting gross wins inflates WR and PF
       and is the single easiest way to fake money-readiness.</p></details>
     <details><summary>What DSR adds</summary><p>Deflated Sharpe (Bailey &amp; López de Prado)
-      asks how impressive the observed Sharpe is given how many cells were tested. With 45 tests,
+      asks how impressive the observed Sharpe is given how many cells were tested. With the number of cells tested (see the multiplicity panel),
       the expected best null Sharpe is already positive; DSR discounts that.</p></details>
     <details><summary>What this ledger cannot tell you</summary><p>It cannot detect look-ahead
       leakage, mislabeled resolutions, or a feed that silently stopped emitting. It measures the
@@ -541,7 +545,7 @@ function render(d){
       runs within two separate families. <b>Confirmatory</b> cells match a pod declared in
       <code>reports/audit3_confirmatory.json</code> before its forward data existed;
       <b>discovery</b> cells are everything else and top out at CANDIDATE. A pre-registered
-      pod must not share a multiplicity budget with 40+ exploratory cells, and looking at a
+      pod must not share a multiplicity budget with the exploratory cells, and looking at a
       result before registering the pod means it was never pre-registered.</p></details>
     <details><summary>Random-entry timing null</summary><p>${esc(conv.random_entry_mc)}</p></details>`;
   table('provTbl', [

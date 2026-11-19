@@ -156,7 +156,9 @@ function renderLedger(d){
 }
 
 renderStatic();
-var LEDGER_PATHS = ["audit3_ledger.json", "../audit3/audit3_ledger.json",
+// ../audit3/ is the deployed path; the others are fallbacks. Trying the
+// same-directory copy first cost a 404 on every page load.
+var LEDGER_PATHS = ["../audit3/audit3_ledger.json", "audit3_ledger.json",
                     "../audit/data/audit3_ledger.json", "data/audit3_ledger.json"];
 
 function loadLedger(i){
