@@ -10,7 +10,7 @@ from datetime import datetime
 
 os.environ['AUDIT_DB_HOST']='mysql.50webs.com'
 os.environ['AUDIT_DB_USER']='ejaguiar1_stocks'
-os.environ['AUDIT_DB_PASS']='stocks'
+os.environ['AUDIT_DB_PASS = 'stocks1234560'
 os.environ['AUDIT_DB_NAME']='ejaguiar1_stocks'
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
