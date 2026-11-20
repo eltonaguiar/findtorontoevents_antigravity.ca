@@ -1,0 +1,62 @@
+{
+  "schema": "audit2.pods.v1",
+  "generated_at": "2026-11-19T21:00:00Z",
+  "source": "audit_dashboard/audit2.js (extracted from JS literal)",
+  "note": "Static pod registry for audit2 candidate/methodology library. Not evidence-grade; audit3 is the decision surface.",
+  "pods": [
+    {
+      "id": "POD-EQUITY-BREAKOUT",
+      "status": "pre_registered",
+      "hypothesis": "H-BABY-EQUITY-VT-PATTERN-SWEEP-001",
+      "klass": "EQUITY / ETF",
+      "dir": "LONG",
+      "evidence": "EQUITY OOS Sharpe +0.61 (33 folds), ETF +0.21 (53 folds); ~364 resolved trades net +0.46%.",
+      "gate": "n>=100 forward, net CI-LB>0 at 2x slippage, IR>=0.5 vs a matched SPY leg, split-half stable."
+    },
+    {
+      "id": "POD-CRYPTO-VWAP-REVERSION",
+      "status": "observe",
+      "hypothesis": "H-2026-11-19-01",
+      "klass": "CRYPTO",
+      "dir": "LONG",
+      "evidence": "Lab OOS 516/953, Sharpe 3.10, DSR 21.4, PBO 0.18 \u2014 CONTESTED: a 1-bar execution lag drops PF to 0.957 and CSCV PBO to 0.84-0.97.",
+      "gate": "Promote only after a lagged-entry + intrabar-stop replay clears the acceptance criteria."
+    },
+    {
+      "id": "POD-CRYPTO-BOLLINGER-MR",
+      "status": "observe",
+      "hypothesis": "H-2026-11-19-02",
+      "klass": "CRYPTO",
+      "dir": "LONG",
+      "evidence": "OOS 38 trades, PF 1.673, Sharpe 1.376; n below the 100 floor.",
+      "gate": "n>=100 forward rows."
+    },
+    {
+      "id": "POD-FABER-TAA",
+      "status": "observe",
+      "hypothesis": "H-2026-11-19-03",
+      "klass": "EQUITY / ETF",
+      "dir": "LONG",
+      "evidence": "FaberTAA SPY n=11 Sharpe 1.743; QQQ n=7 Sharpe 1.652; the forward pilot has 0 ETF closes.",
+      "gate": "n>=100 forward rows."
+    },
+    {
+      "id": "POD-FOREX-USDJPY-MOMENTUM",
+      "status": "observe",
+      "hypothesis": "H-2026-11-19-04",
+      "klass": "FOREX",
+      "dir": "LONG",
+      "evidence": "FXMom USDJPY n=42, Sharpe 2.018, MC p=0.48; FX data blocker (fx_prices stale to 2026-02-09).",
+      "gate": "Backfill the FX price history, then n>=100 forward rows."
+    },
+    {
+      "id": "POD-COMMODITY-ROLL-YIELD",
+      "status": "observe",
+      "hypothesis": "H-2026-11-19-05",
+      "klass": "COMMODITY",
+      "dir": "LONG / SHORT",
+      "evidence": "Academic factor (Erb-Harvey / Gorton-Rouwenhorst); the in-repo emitter is dormant (0 rows).",
+      "gate": "Needs a second-nearby contract feed before it can emit."
+    }
+  ]
+}
