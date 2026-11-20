@@ -22,6 +22,7 @@ from alpha_engine.audit3_tribunal import (  # noqa: E402
     load_rows,
     payload_coverage,
 )
+from alpha_engine import audit3_tribunal as T  # noqa: E402
 
 
 def _row(**kw):
@@ -133,3 +134,22 @@ def test_share_of_valid_is_nulled_when_it_exceeds_100():
         _payload(rows2, total_closed_picks=1000, valid_closed_picks=100), rows2)
     assert cov2["scored_share_of_valid_pct"] == 50.0
     assert cov2["scored_share_of_valid_note"] is None
+
+def test_canonical_view_reconciles_the_valid_denominator(monkeypatch):
+    """Scoring the canonical view must not report >100% of the payload's valid."""
+    rows = [_row() for _ in range(120)]
+    payload = _payload(rows, total_closed_picks=1000, valid_closed_picks=100)
+    payload["resolved_closed_picks_net"] = {
+        "schema": "audit.canonical.v1", "rows_sha256": "abc",
+        "rows_count": 120, "counts": {"kept_rows": 120, "input_rows": 1000},
+    }
+    # Simulate the load stage's hash-verified record.
+    T.LAST_DENOMINATOR.update({"mode": "canonical", "kept_rows": 120})
+    try:
+        cov = T.payload_coverage(payload, rows)
+    finally:
+        T.LAST_DENOMINATOR.clear()
+    assert cov["denominator"]["mode"] == "canonical"
+    assert cov["valid_closed_picks"] == 120
+    assert cov["valid_closed_picks_basis"] == "canonical_kept_rows"
+    assert cov["scored_share_of_valid_pct"] == 100.0
