@@ -653,9 +653,19 @@ def payload_coverage(data: Any, scored_rows: list[dict],
                  "stale, or hashed differently, so this is NOT the same denominator "
                  "as /audit"),
     }
-    # A "share of valid" above 100% is not a rounding artefact: `scored` can be
-    # the canonical view while `valid_closed_picks` comes from a narrower payload
-    # summary. Publishing 105% invites misreading, so null it with the reason.
+    # Reconcile the denominator BEFORE dividing. `valid_closed_picks` comes from
+    # the publishing payload's summary, which can be narrower than the canonical
+    # view being scored — dividing one by the other produced 110.4% on
+    # 2026-11-20. When the canonical view is authoritative, `valid` must be at
+    # least the kept rows it supplies, and the basis is recorded.
+    valid_basis = "payload_summary"
+    if canonical_mode and canon_kept:
+        if valid is None or int(valid) < int(canon_kept):
+            valid = int(canon_kept)
+        valid_basis = "canonical_kept_rows"
+
+    # A "share of valid" above 100% is still possible when the two populations
+    # genuinely disagree; never publish it as if it were a coverage figure.
     share_of_valid = (round(100.0 * scored / valid, 2) if valid else None)
     share_of_valid_note = None
     if share_of_valid is not None and share_of_valid > 100.0:
@@ -683,6 +693,7 @@ def payload_coverage(data: Any, scored_rows: list[dict],
         "scored_share_of_valid_pct_status": ("ok" if share_of_valid is not None
                                             else "not_comparable"),
         "scored_share_of_valid_note": share_of_valid_note,
+        "valid_closed_picks_basis": valid_basis,
         "unscored_rows": (max(0, total - scored) if total else None),
         "cohorts_overlap": overlap,
         "excluded_cohorts": excluded,
