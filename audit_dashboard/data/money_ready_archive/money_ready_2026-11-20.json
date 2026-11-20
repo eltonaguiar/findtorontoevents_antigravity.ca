@@ -17,8 +17,8 @@
         "honest_pf": 0.9167,
         "honest_wr": 0.3578,
         "honest_n": 3726,
-        "pf_inflation_x": 0.29,
-        "wr_inflation_pp": 5.7,
+        "pf_inflation_x": 1.06,
+        "wr_inflation_pp": 18.0,
         "gate_source": "intrabar_truth",
         "flag": false
       },
@@ -32,8 +32,8 @@
       "pf": 0.2613,
       "n": 21907,
       "n_ok": true,
-      "wr_ok": false,
-      "policy_wr_ok": false,
+      "wr_ok": true,
+      "policy_wr_ok": true,
       "sizing_wr": 0.3578,
       "sizing_pf": 0.9167,
       "sizing_wr_ok": false,
@@ -51,7 +51,7 @@
       "_slippage_gate_enabled": true,
       "_slippage_recommend": null,
       "_ml_enhanced_quarantine_enabled": true,
-      "_ml_enhanced_quarantine_n": 518,
+      "_ml_enhanced_quarantine_n": 0,
       "_ml_enhanced_quarantine_recommend": null,
       "_mdd_gate_enforce": true,
       "mdd": 1.0009,
@@ -61,15 +61,15 @@
       "_mdd_cvar_gate_ok": false,
       "_mdd_cvar_recommend": null,
       "_fdr_gate_enforce": true,
-      "fdr_ok": true,
-      "n_fdr_pass": 23,
-      "n_bonferroni_pass": 21,
-      "n_fdr_tested": 82,
+      "fdr_ok": false,
+      "n_fdr_pass": 0,
+      "n_bonferroni_pass": 0,
+      "n_fdr_tested": 3,
       "_fdr_recommend": null,
       "_single_source_gate_enforce": true,
-      "single_source_ok": true,
-      "n_profitable_multi_source": 1,
-      "n_profitable_single_source": 32,
+      "single_source_ok": false,
+      "n_profitable_multi_source": 0,
+      "n_profitable_single_source": 2,
       "_single_source_recommend": null,
       "recency_ok": true,
       "recency_gate_48h": true,
@@ -155,30 +155,30 @@
       "policy_frozen": false,
       "data_source": "closed_picks",
       "top_symbol": "BTCUSDT",
-      "top_symbol_share": 0.1078,
+      "top_symbol_share": 0.3244,
       "concentration_capped": false,
       "top_source": "UNKNOWN",
-      "top_source_share": 0.9973,
+      "top_source_share": 0.7378,
       "source_concentration_capped": true,
       "high_conviction_rate": 1.0,
       "long_term_stability_rate": 1.0,
       "details": {
         "dsr": {
           "ok": false,
-          "dsr_score": 0.0,
+          "dsr_score": 0.0153,
           "note": ""
         },
         "pbo": {
-          "ok": true,
-          "pbo": 0.0,
-          "n_strategies": 82,
-          "note": ""
+          "ok": null,
+          "note": "n_strategies=3 < 5 \u2014 PBO statistically unreliable (N/A)",
+          "pbo": null,
+          "n_strategies": 3
         },
         "spa": {
-          "ok": true,
-          "spa_p": 0.0,
-          "n_spa_pass": 32,
-          "n_strategies_tested": 82,
+          "ok": false,
+          "spa_p": 0.176,
+          "n_spa_pass": 0,
+          "n_strategies_tested": 3,
           "note": ""
         },
         "expectancy": {
@@ -198,33 +198,25 @@
           "mdd_source": "registry"
         },
         "fdr": {
-          "ok": true,
-          "n_tested": 82,
-          "n_fdr_pass": 23,
-          "n_bonferroni_pass": 21,
-          "min_p": 0.0,
+          "ok": false,
+          "n_tested": 3,
+          "n_fdr_pass": 0,
+          "n_bonferroni_pass": 0,
+          "min_p": 0.14745,
           "fdr_q": 0.1,
-          "bonferroni_threshold": 0.00122,
+          "bonferroni_threshold": 0.033333,
           "note": ""
         },
         "single_source": {
-          "ok": true,
-          "n_profitable": 33,
-          "n_profitable_single_source": 32,
-          "n_profitable_multi_source": 1,
+          "ok": false,
+          "n_profitable": 2,
+          "n_profitable_single_source": 2,
+          "n_profitable_multi_source": 0,
           "single_source_strategies": [
-            "ADX Trend Confirmation",
-            "BTCSPXCorrBreakdownStrategy",
-            "Bollinger Band Squeeze Breakout",
-            "Bollinger Squeeze Breakout",
-            "CCI Reversal Scout",
-            "Calendar Effect Crypto",
-            "CorrKamaAdaptiveStrategy",
-            "CorrVwapZscoreReversionStrategy",
-            "EMA Ribbon Momentum Pullback",
-            "EchoForecastStrategy"
+            "atr_percentile_gate",
+            "crypto_liquidity_wick_reversal_v1"
           ],
-          "note": ""
+          "note": "all profitable sleeves are single-source (artifact edge)"
         },
         "recency": {
           "ok": true,
@@ -244,25 +236,25 @@
       },
       "sizing_source": "intrabar_truth",
       "intrabar_daily_divergence": {
-        "daily_pf": 0.6085,
-        "daily_wr": 0.3276,
+        "daily_pf": 0.5107,
+        "daily_wr": 0.3756,
         "honest_pf": 0.975,
         "honest_wr": 0.6031,
         "honest_n": 257,
-        "pf_inflation_x": 0.62,
-        "wr_inflation_pp": -27.5,
+        "pf_inflation_x": 0.52,
+        "wr_inflation_pp": -22.8,
         "gate_source": "intrabar_truth",
         "flag": false
       },
-      "policy_clean_n": 116,
-      "policy_clean_wr": 0.3276,
-      "policy_clean_wr_pct": 32.76,
-      "policy_clean_pf": 0.6085,
+      "policy_clean_n": 213,
+      "policy_clean_wr": 0.3756,
+      "policy_clean_wr_pct": 37.56,
+      "policy_clean_pf": 0.5107,
       "n_resolved": 257,
-      "wr": 0.3276,
-      "wr_pct": 32.76,
-      "pf": 0.6085,
-      "n": 116,
+      "wr": 0.3756,
+      "wr_pct": 37.56,
+      "pf": 0.5107,
+      "n": 213,
       "n_ok": true,
       "wr_ok": false,
       "policy_wr_ok": false,
@@ -275,11 +267,11 @@
       "dsr_score": 0.0,
       "pbo_ok": null,
       "pbo": null,
-      "spa_ok": false,
-      "spa_p": 0.502,
+      "spa_ok": null,
+      "spa_p": null,
       "n_spa_pass": 0,
-      "expectancy": 0.00762,
-      "expectancy_ok": true,
+      "expectancy": -0.002815,
+      "expectancy_ok": false,
       "_slippage_gate_enabled": true,
       "_slippage_recommend": null,
       "_ml_enhanced_quarantine_enabled": true,
@@ -288,7 +280,7 @@
       "_mdd_gate_enforce": true,
       "mdd": 0.9999,
       "mdd_ok": false,
-      "cvar_95": -7.554,
+      "cvar_95": -7.6102,
       "cvar_ok": true,
       "_mdd_cvar_gate_ok": false,
       "_mdd_cvar_recommend": null,
@@ -296,7 +288,7 @@
       "fdr_ok": null,
       "n_fdr_pass": 0,
       "n_bonferroni_pass": 0,
-      "n_fdr_tested": 1,
+      "n_fdr_tested": 0,
       "_fdr_recommend": null,
       "_single_source_gate_enforce": true,
       "single_source_ok": null,
@@ -319,15 +311,15 @@
       "_recency_warn": false,
       "verdict": "NOT_READY",
       "policy_frozen": false,
-      "data_source": "closed_picks",
-      "top_symbol": "COIN",
-      "top_symbol_share": 0.1638,
+      "data_source": "dashboard_fallback",
+      "top_symbol": "AAPL",
+      "top_symbol_share": 0.3158,
       "concentration_capped": false,
       "top_source": "UNKNOWN",
-      "top_source_share": 0.9052,
+      "top_source_share": 0.4211,
       "source_concentration_capped": true,
-      "high_conviction_rate": 1.0,
-      "long_term_stability_rate": 1.0,
+      "high_conviction_rate": 0.0892,
+      "long_term_stability_rate": 0.0892,
       "details": {
         "dsr": {
           "ok": false,
@@ -336,40 +328,39 @@
         },
         "pbo": {
           "ok": null,
-          "note": "need \u22652 strategies with n\u226520, got 1",
+          "note": "need \u22652 strategies with n\u226520, got 0",
           "pbo": null
         },
         "spa": {
-          "ok": false,
-          "spa_p": 0.502,
-          "n_spa_pass": 0,
-          "n_strategies_tested": 1,
-          "note": ""
+          "ok": null,
+          "note": "no strategies with n\u226520",
+          "spa_p": null,
+          "n_spa_pass": 0
         },
         "expectancy": {
-          "expectancy": 0.00762,
-          "expectancy_ok": true,
-          "adj_win": 0.029211,
-          "adj_loss": 0.025189,
+          "expectancy": -0.002815,
+          "expectancy_ok": false,
+          "adj_win": 0.022805,
+          "adj_loss": 0.041745,
           "slippage_bps": 10.0,
           "note": ""
         },
         "mdd_cvar": {
           "mdd": 0.9999,
           "mdd_ok": false,
-          "cvar_95": -7.554,
+          "cvar_95": -7.6102,
           "cvar_ok": true,
           "gate_ok": false,
           "mdd_source": "registry"
         },
         "fdr": {
           "ok": null,
-          "n_tested": 1,
+          "n_tested": 0,
           "n_fdr_pass": 0,
           "n_bonferroni_pass": 0,
           "min_p": null,
           "fdr_q": 0.1,
-          "note": "need >=2 testable strategies (n>=20), got 1"
+          "note": "need >=2 testable strategies (n>=20), got 0"
         },
         "single_source": {
           "ok": null,
@@ -427,10 +418,10 @@
       "dsr_score": 0.0,
       "pbo_ok": null,
       "pbo": null,
-      "spa_ok": false,
-      "spa_p": 0.104,
-      "n_spa_pass": 0,
-      "expectancy": -0.020595,
+      "spa_ok": true,
+      "spa_p": 0.0,
+      "n_spa_pass": 1,
+      "expectancy": -0.117508,
       "expectancy_ok": false,
       "_slippage_gate_enabled": true,
       "_slippage_recommend": null,
@@ -440,14 +431,14 @@
       "_mdd_gate_enforce": true,
       "mdd": 1.0,
       "mdd_ok": false,
-      "cvar_95": -44.4718,
+      "cvar_95": -67.35,
       "cvar_ok": false,
       "_mdd_cvar_gate_ok": false,
       "_mdd_cvar_recommend": null,
       "_fdr_gate_enforce": true,
-      "fdr_ok": false,
-      "n_fdr_pass": 0,
-      "n_bonferroni_pass": 0,
+      "fdr_ok": true,
+      "n_fdr_pass": 1,
+      "n_bonferroni_pass": 1,
       "n_fdr_tested": 2,
       "_fdr_recommend": null,
       "_single_source_gate_enforce": true,
@@ -463,9 +454,9 @@
       "bootstrap_ci_lower": -0.029598,
       "bootstrap_ci_upper": -0.00839,
       "bootstrap_ci_ok": false,
-      "wf_oos_ratio": 0.3199,
-      "wf_oos_is_pf": 0.5704,
-      "wf_oos_oos_pf": 0.1825,
+      "wf_oos_ratio": 2.0609,
+      "wf_oos_is_pf": 0.0877,
+      "wf_oos_oos_pf": 0.1807,
       "wf_oos_ok": false,
       "top_sleeves": [
         {
@@ -485,15 +476,15 @@
       "_recency_warn": false,
       "verdict": "NOT_READY",
       "policy_frozen": true,
-      "data_source": "closed_picks",
+      "data_source": "dashboard_fallback",
       "top_symbol": "AUDJPY=X",
-      "top_symbol_share": 0.2249,
-      "concentration_capped": false,
-      "top_source": "UNKNOWN",
-      "top_source_share": 0.8865,
-      "source_concentration_capped": true,
-      "high_conviction_rate": 1.0,
-      "long_term_stability_rate": 1.0,
+      "top_symbol_share": 0.7042,
+      "concentration_capped": true,
+      "top_source": "multi_asset_copytrader",
+      "top_source_share": 0.3662,
+      "source_concentration_capped": false,
+      "high_conviction_rate": 0.155,
+      "long_term_stability_rate": 0.155,
       "details": {
         "dsr": {
           "ok": false,
@@ -507,34 +498,34 @@
           "n_strategies": 2
         },
         "spa": {
-          "ok": false,
-          "spa_p": 0.104,
-          "n_spa_pass": 0,
+          "ok": true,
+          "spa_p": 0.0,
+          "n_spa_pass": 1,
           "n_strategies_tested": 2,
           "note": ""
         },
         "expectancy": {
-          "expectancy": -0.020595,
+          "expectancy": -0.117508,
           "expectancy_ok": false,
-          "adj_win": 0.01709,
-          "adj_loss": 0.037965,
+          "adj_win": 0.055965,
+          "adj_loss": 0.197465,
           "slippage_bps": 5.0,
           "note": ""
         },
         "mdd_cvar": {
           "mdd": 1.0,
           "mdd_ok": false,
-          "cvar_95": -44.4718,
+          "cvar_95": -67.35,
           "cvar_ok": false,
           "gate_ok": false,
           "mdd_source": "registry"
         },
         "fdr": {
-          "ok": false,
+          "ok": true,
           "n_tested": 2,
-          "n_fdr_pass": 0,
-          "n_bonferroni_pass": 0,
-          "min_p": 0.12072,
+          "n_fdr_pass": 1,
+          "n_bonferroni_pass": 1,
+          "min_p": 0.0,
           "fdr_q": 0.1,
           "bonferroni_threshold": 0.05,
           "note": ""
@@ -798,8 +789,8 @@
       "top_source": "UNKNOWN",
       "top_source_share": 0.5556,
       "source_concentration_capped": false,
-      "high_conviction_rate": 1.0,
-      "long_term_stability_rate": 1.0,
+      "high_conviction_rate": 0.7407,
+      "long_term_stability_rate": 0.7407,
       "details": {
         "dsr": {
           "ok": false,
@@ -894,8 +885,8 @@
       "sizing_wr_ok": false,
       "verdict_basis": "intrabar_truth",
       "pf_ok": false,
-      "dsr_ok": null,
-      "dsr_score": null,
+      "dsr_ok": false,
+      "dsr_score": 0.1148,
       "pbo_ok": null,
       "pbo": null,
       "spa_ok": null,
@@ -942,20 +933,20 @@
       "_recency_warn": false,
       "verdict": "INSUFFICIENT_DATA",
       "policy_frozen": true,
-      "data_source": "closed_picks",
-      "top_symbol": "GC=F",
-      "top_symbol_share": 0.2941,
+      "data_source": "dashboard_fallback",
+      "top_symbol": "CL=F",
+      "top_symbol_share": 0.2667,
       "concentration_capped": false,
       "top_source": "multi_asset_scanner",
-      "top_source_share": 0.6471,
+      "top_source_share": 0.7333,
       "source_concentration_capped": true,
-      "high_conviction_rate": 1.0,
-      "long_term_stability_rate": 1.0,
+      "high_conviction_rate": 0.8824,
+      "long_term_stability_rate": 0.8824,
       "details": {
         "dsr": {
-          "ok": null,
-          "note": "deflated_sharpe non-finite (degenerate sr_variance/moments inputs)",
-          "dsr_score": null
+          "ok": false,
+          "dsr_score": 0.1148,
+          "note": ""
         },
         "pbo": {
           "ok": null,
@@ -971,7 +962,7 @@
         "expectancy": {
           "expectancy": 0.003392,
           "expectancy_ok": true,
-          "adj_win": 0.042493,
+          "adj_win": 0.04714,
           "adj_loss": 0.019671,
           "slippage_bps": 10.0,
           "note": ""
@@ -1339,19 +1330,19 @@
       "spa_ok": null,
       "spa_p": null,
       "n_spa_pass": 0,
-      "expectancy": -0.065758,
-      "expectancy_ok": false,
+      "expectancy": null,
+      "expectancy_ok": null,
       "_slippage_gate_enabled": true,
       "_slippage_recommend": null,
       "_ml_enhanced_quarantine_enabled": true,
       "_ml_enhanced_quarantine_n": 0,
       "_ml_enhanced_quarantine_recommend": null,
       "_mdd_gate_enforce": true,
-      "mdd": 0.4936,
-      "mdd_ok": false,
-      "cvar_95": -13.8523,
-      "cvar_ok": false,
-      "_mdd_cvar_gate_ok": false,
+      "mdd": null,
+      "mdd_ok": null,
+      "cvar_95": null,
+      "cvar_ok": null,
+      "_mdd_cvar_gate_ok": null,
       "_mdd_cvar_recommend": null,
       "_fdr_gate_enforce": true,
       "fdr_ok": null,
@@ -1380,19 +1371,19 @@
       "_recency_warn": false,
       "verdict": "INSUFFICIENT_DATA",
       "policy_frozen": false,
-      "data_source": "closed_picks",
-      "top_symbol": "DOGE-USD",
-      "top_symbol_share": 0.4,
+      "data_source": "dashboard_fallback",
+      "top_symbol": "",
+      "top_symbol_share": 0.0,
       "concentration_capped": false,
-      "top_source": "UNKNOWN",
-      "top_source_share": 1.0,
-      "source_concentration_capped": true,
-      "high_conviction_rate": 1.0,
-      "long_term_stability_rate": 1.0,
+      "top_source": "",
+      "top_source_share": 0.0,
+      "source_concentration_capped": false,
+      "high_conviction_rate": 0.0,
+      "long_term_stability_rate": 0.0,
       "details": {
         "dsr": {
           "ok": null,
-          "note": "deflated_sharpe non-finite (degenerate sr_variance/moments inputs)",
+          "note": "n=0 too small for DSR",
           "dsr_score": null
         },
         "pbo": {
@@ -1407,20 +1398,17 @@
           "n_spa_pass": 0
         },
         "expectancy": {
-          "expectancy": -0.065758,
-          "expectancy_ok": false,
-          "adj_win": 0.014543,
-          "adj_loss": 0.07468,
-          "slippage_bps": 10.0,
-          "note": ""
+          "expectancy": null,
+          "expectancy_ok": null,
+          "note": "avg_win or avg_loss unavailable (no pick data)"
         },
         "mdd_cvar": {
-          "mdd": 0.4936,
-          "mdd_ok": false,
-          "cvar_95": -13.8523,
-          "cvar_ok": false,
-          "gate_ok": false,
-          "mdd_source": "registry"
+          "mdd": null,
+          "mdd_ok": null,
+          "cvar_95": null,
+          "cvar_ok": null,
+          "gate_ok": null,
+          "mdd_source": null
         },
         "fdr": {
           "ok": null,
@@ -1741,16 +1729,30 @@
         "wr_delta": -0.0003,
         "pf_delta": -0.0002,
         "n_delta": 0,
-        "gate_flips": {}
+        "gate_flips": {
+          "pbo_ok": [
+            true,
+            null
+          ],
+          "spa_ok": [
+            true,
+            false
+          ]
+        }
       },
       "EQUITY": {
         "verdict_from": "NOT_READY",
         "verdict_to": "NOT_READY",
         "verdict_changed": false,
-        "wr_delta": 0.0059,
-        "pf_delta": 0.0069,
+        "wr_delta": 0.0539,
+        "pf_delta": -0.0909,
         "n_delta": 0,
-        "gate_flips": {}
+        "gate_flips": {
+          "spa_ok": [
+            false,
+            null
+          ]
+        }
       },
       "FOREX": {
         "verdict_from": "NOT_READY",
@@ -1759,7 +1761,12 @@
         "wr_delta": -0.0015,
         "pf_delta": -0.0071,
         "n_delta": 0,
-        "gate_flips": {}
+        "gate_flips": {
+          "spa_ok": [
+            false,
+            true
+          ]
+        }
       },
       "ETF": {
         "verdict_from": "INSUFFICIENT_DATA",
