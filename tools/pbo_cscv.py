@@ -28,6 +28,28 @@ from typing import Any
 
 import numpy as np
 
+# ---------------------------------------------------------------------------
+# Canonical threshold (single source of truth).
+#
+# Bailey & Lopez de Prado define PBO in [0, 1] and interpret PBO >= 0.5 as
+# "the in-sample winner's out-of-sample rank is below the median more often
+# than not", i.e. the selection process is statistically indistinguishable
+# from picking at random. 0.5 is therefore the canonical decision point, and
+# is what the rest of this repo already uses (eagle_gates._EAGLE6_MAX_PBO_GLOBAL,
+# admissibility_pipeline, build_cpcv_pbo_results, anti_overfit_audit_sidecar).
+#
+# Do NOT invent a stricter number locally. A gate set to e.g. 0.05 is 10x
+# stricter than the definition, cannot be passed by any real strategy set, and
+# gets deleted or wrapped in `continue-on-error` within a week -- the exact
+# failure mode we are trying to avoid.
+PBO_CANONICAL_THRESHOLD: float = 0.50
+
+# Sentinel for "PBO could not be estimated" (no peer matrix / nan / too few
+# splits). Distinct from a genuine 0.0, which is a real measurement meaning
+# "no overfitting detected". Conflating the two via truthiness is a bug class:
+# `if not pbo` silently treats perfect selection as unmeasured.
+PBO_NOT_COMPUTED: str = "NOT_COMPUTED"
+
 
 def _sharpe_cols(mat: np.ndarray) -> np.ndarray:
     """Per-column Sharpe; columns with std==0 get -inf so they cannot be argmax."""
