@@ -138,6 +138,45 @@ PROVEN or CANDIDATE; (b) a DSR ≥0.95 attainable with `n_trials=1`; (c) a strat
 "buy and hold the same instrument" passing the selection-alpha gate. All three must fail. If any
 passes, the gate is decoration.
 
+
+## 4c. V1 RESULT — what survives (compiled 2026-11-20T00:22Z)
+
+Votes in: **deepseek-flash/kilo (all), Opencode Windows (all 16 + ADD), GitHub Copilot (7/8/9 + ADD),
+Hermes (final verdict + push plan)**. Partial: FreeBuff (critique + specs). Missing: Google Swarm,
+Opencode console-linux, KILO Desktop.
+
+| # | Element | Disposition | Consensus |
+|---|---|---|---|
+| 1 | Canonical ledger + provenance triple | **KEEP** | unanimous |
+| 2 | Gate stack (BH, DSR, 2× cost, split-half, concentration) | **KEEP-WITH-CHANGE**: per-class/tier thresholds; publish `dsr_n_trials` beside DSR | unanimous |
+| 3 | Selection alpha at strategy scope | **KEEP**: required gate, does NOT replace WR/PF; publish min-hold subset + per-class alpha | unanimous |
+| 4 | Forward ledger + growth watchdog | **KEEP**: per-hypothesis staleness; pre_registered pod 0 rows past grace = FAIL | unanimous |
+| 5 | Pre-registered pods + manifest | **KEEP** + written falsification criterion per pod | unanimous |
+| 6 | Paper sleeves + controls | **KEEP**: random arm for timing; **beta-matched hold arm** for selection/beta (added as B7) | unanimous |
+| 7 | ETF TAA rotation | **KEEP AS CONTINGENT**: lag-1d primary; approval bar = paired Sharpe >0, MDD cut ≥30% relative, CAGR ≥ SPY−1.5%/yr, PBO<0.2, forward n≥30 | FreeBuff + Copilot + Opencode + kilo |
+| 8 | Crypto intraday sim | **KEEP AS PAPER ONLY**: prop guardrails; forming-bar lookahead already fixed | Copilot + Opencode + kilo |
+| 9 | Cost floor | **KEEP-WITH-CHANGE**: per-class all-in cost (fees+spread+funding+borrow); 4× per-class base | Copilot + Opencode |
+| 10 | Denylist | **KEEP-WITH-CHANGE**: only if the scanner loads it; CI test that it blocks a known-dead strategy | Opencode + kilo |
+| 11 | COMS | **KEEP-WITH-CHANGE**: notification, not truth; retained direct-inbox; cross-OS selftest | Opencode + Hermes |
+| 12 | Verification-before-completion | **KEEP-WITH-CHANGE**: committed artifact + reproduce command + test exit code + machine-readable VERIFICATION block | Opencode + Hermes + kilo |
+| 13 | Cross-surface reconciliation | **KEEP-WITH-CHANGE**: CI invariant, not prose | Opencode + kilo |
+| 14 | Value screener | **PARK**: real factors, 3–5y horizon, no survivorship-free study | Opencode + kilo |
+| 15 | Mutation / trial budget | **KEEP-WITH-CHANGE**: ≤5 pre-registered configs; log every trial; DSR uses full search | Opencode + Copilot |
+| 16 | 96-config TP/SL grid | **CUT** | unanimous |
+| 17 | audit2 zero-pod clock (PR #960) | **KEEP** | kilo |
+| 18 | Verdict-churn alarm (#961) | **KEEP** | kilo |
+| 19 | Denylist review CLI (#963) | **KEEP as review**, not enforcement | kilo |
+| 20 | Execution-convention gate (lag0/lag1d/lag1m + forming-bar) + point-in-time data registry | **KEEP** as element 20a (Copilot) / **P2 research** as 20b (Opencode) | Copilot + Opencode |
+
+**Unresolved disagreements, with the test that settles each:**
+1. *TAA as suitability vs edge* — settled by the lag-1d forward clock reaching n≥30 with the §7 bar.
+2. *CANDIDATE DSR strictness (658 vs bucket width)* — settled by the first ledger run where a cell would
+   otherwise promote; record both counts.
+3. *Should selection alpha replace WR/PF?* — my answer: no. Settled empirically if a high-alpha /
+   catastrophic-tail cell appears; until then both gates stay.
+4. *Cash vs IEF for negative-momentum slots* — settled by a paired run on identical dates.
+
+
 ## 5. Output of this debate
 
 I will compile a v1 "final design" with: the keep/cut table, the disagreements that remain
