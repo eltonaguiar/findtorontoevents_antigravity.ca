@@ -37,6 +37,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from tools.pbo_cscv import PBO_CANONICAL_THRESHOLD  # noqa: E402
 from tools.run_anti_overfit_audit import (  # noqa: E402
     _audit_one,
     _autopick_top,
@@ -45,7 +46,11 @@ from tools.run_anti_overfit_audit import (  # noqa: E402
 
 # Promotion thresholds ("north star" gates).
 DSR_MIN = 0.95
-PBO_MAX = 0.05
+# Canonical Bailey & Lopez de Prado decision point, imported rather than
+# re-declared. This gate previously hard-coded 0.05, which is 10x stricter than
+# the definition and inconsistent with the five other PBO consumers in this
+# repo -- it would have been unpassable and disabled. See tools/pbo_cscv.py.
+PBO_MAX = PBO_CANONICAL_THRESHOLD
 MIN_PICKS = 100          # below this the gate is not evaluable, so it fails
 MIN_STRATEGIES_FOR_PBO = 2
 
