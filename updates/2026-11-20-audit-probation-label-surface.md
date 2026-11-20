@@ -32,9 +32,12 @@ disappearing.
 - `node --check` on the extracted `<script>`: **SYNTAX_OK**.
 - Payload read back at commit time: `publication_label_counts = {PUBLISHABLE: 6, PROBATION: 74}`,
   and every row carries `publication_label`.
-- `publication_dsr_threshold` is absent from this snapshot, so the page falls back to `0.95` —
-  the same constant the label was computed with. When the sidecar emits the field the page uses
-  it, so the two cannot disagree.
+- **Correction to the line above as first written:** it claimed `publication_dsr_threshold` was
+  absent from the snapshot. It is not absent — every row carries it (`0.95`). What is absent is a
+  *payload-level* threshold, which is why the page's note falls back to `0.95` for the sentence it
+  prints, while each row's badge is computed from that row's own value. The two agree at 0.95 in
+  this snapshot; should a future row be labelled at a different floor, the badge follows the row and
+  the note's constant is the only thing that would need attention.
 
 ## Deployment
 
