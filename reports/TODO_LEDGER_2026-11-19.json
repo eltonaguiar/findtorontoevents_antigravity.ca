@@ -1,0 +1,174 @@
+{
+  "generated_at": "2026-11-19T19:15:00Z",
+  "owner": "buffy/review-main",
+  "note": "Machine-verifiable todo ledger. 'verify' is a shell command whose exit 0 means DONE. The watcher (tools/coms_cycle_watch.py) re-runs these every 30 minutes and flips status to done when they pass. Items without a verify command stay open until a human/agent confirms.",
+  "items": [
+    {
+      "id": "T1",
+      "title": "COMS check + reply every 30 min for 3 cycles",
+      "status": "done",
+      "verify": "python3 -c \"import json;d=json.load(open('.coms_cycle_state.json'));raise SystemExit(0 if d.get('cycle',0)>=3 else 1)\"",
+      "note": "cycle reached 3 (.coms_cycle_state.json cycle=3, last_run 2026-11-19T19:30:11Z); user asked for 3 sessions, so this is complete. Extended COMS monitoring continues under a standing cron."
+    },
+    {
+      "id": "T2",
+      "title": "Reply to copilot-cli-moneyresearch PLAN review request",
+      "status": "done",
+      "verify": "grep -q 'copilot-cli-moneyresearch' reports/coms_cycle_actions.log"
+    },
+    {
+      "id": "T3",
+      "title": "Drop consolidated findings .MD to COMS",
+      "status": "done",
+      "verify": "test -f reports/COMS_DROP_2026-11-19_FINDINGS.md"
+    },
+    {
+      "id": "T4",
+      "title": "Persist volume_ratio_at_entry into closed-pick rows (blocks all volume research)",
+      "status": "open",
+      "verify": "python3 -c \"import json;d=json.load(open('audit_dashboard/data/dashboard_data.json'));rc=d['picks']['recent_closed'];n=sum(1 for r in rc if r.get('volume_ratio') not in (None,'',0));raise SystemExit(0 if n>0 else 1)\"",
+      "note": "weak proxy corrected: grepping the resolver proves the name exists, not that closed rows carry the value (currently 0/3500)"
+    },
+    {
+      "id": "T5",
+      "title": "Fix /audit three-way PnL contradiction (-11.96 vs +1653.11 vs +2643.01)",
+      "status": "open",
+      "verify": "python3 -c \"import json;d=json.load(open('audit_dashboard/data/dashboard_data.json'));s=d['summary'];raise SystemExit(0 if s.get('total_pnl_pct') is None or abs(float(s.get('total_pnl_pct'))-float(s.get('total_pnl_pct_sum_raw')))<1e-6 else 1)\""
+    },
+    {
+      "id": "T6",
+      "title": "Surface required_n on all 7 class rows in audit3 ledger",
+      "status": "open",
+      "verify": "python3 -c \"import json;d=json.load(open('audit_dashboard/data/audit3_ledger.json'));raise SystemExit(0 if all(c.get('required_n') is not None for c in d['classes']) else 1)\""
+    },
+    {
+      "id": "T7",
+      "title": "Render G8 selection-alpha as 'not evaluated' when unavailable",
+      "status": "open",
+      "verify": "grep -qi 'not evaluated' audit_dashboard/audit3.html"
+    },
+    {
+      "id": "T8",
+      "title": "Record a reasons[] entry for every non-promotion (n<30 and CI-includes-zero)",
+      "status": "open",
+      "verify": "python3 -c \"import json;d=json.load(open('audit_dashboard/data/audit3_ledger.json'));raise SystemExit(0 if not [c for c in d['cells'] if c.get('verdict') in ('WEAK','INSUFFICIENT_N') and not c.get('reasons')] else 1)\""
+    },
+    {
+      "id": "T9",
+      "title": "Classify FORCE_CLOSED into TP/SL/time buckets (597 rows, mean +0.33% vs median -2.17%)",
+      "status": "open",
+      "verify": null
+    },
+    {
+      "id": "T10",
+      "title": "Ship value_screener_picks.json (methodology built, zero rows emitted)",
+      "status": "open",
+      "verify": "test -f audit_dashboard/data/value_screener_picks.json"
+    },
+    {
+      "id": "T11",
+      "title": "Fix scored_share_of_valid_pct > 100% (105.04%)",
+      "status": "open",
+      "verify": "python3 -c \"import json;d=json.load(open('audit_dashboard/data/audit3_ledger.json'));v=float(d['coverage']['scored_share_of_valid_pct']);raise SystemExit(0 if v<=100.0 else 1)\""
+    },
+    {
+      "id": "T12",
+      "title": "Emit audit2_pods.json so audit2 stops being a JS-literal snapshot",
+      "status": "open",
+      "verify": "test -f audit_dashboard/data/audit2_pods.json"
+    },
+    {
+      "id": "T13",
+      "title": "Restore or de-cite reports/backtesting_methodology_audit_2026-06-02.md (M-108 references it)",
+      "status": "open",
+      "verify": "test -f reports/backtesting_methodology_audit_2026-06-02.md"
+    },
+    {
+      "id": "T14",
+      "title": "Confirm a sector-rotation hypothesis is registered (found: H-20260612-equity_sector_rotation_vix_v2, FORWARD_OBSERVATION)",
+      "status": "done",
+      "verify": "python3 -c \"import json;d=json.load(open('reports/hypothesis_registry.json'));hs=d if isinstance(d,list) else d.get('hypotheses',[]);hits=[h for h in hs if 'sector' in json.dumps(h).lower() and 'rotat' in json.dumps(h).lower()];raise SystemExit(0 if hits else 1)\"",
+      "note": "real pass: 5 registry entries mention sector+rotation; this is a vix-filtered variant, NOT the 12m top-3 spec I measured -> see T16"
+    },
+    {
+      "id": "T15",
+      "title": "Register risk-parity pod with explicit OOS-decay gate (0.87 full vs 0.68 OOS)",
+      "status": "open",
+      "verify": "grep -qi 'risk_parity\\|risk-parity' reports/hypothesis_registry.json"
+    },
+    {
+      "id": "T16",
+      "title": "Register the measured 12m top-3 sector-rotation spec (11 sectors, 5bp, monthly) as its own pod",
+      "status": "open",
+      "verify": "python3 -c \"import json;d=json.load(open('reports/hypothesis_registry.json'));hs=d if isinstance(d,list) else d.get('hypotheses',[]);hits=[h for h in hs if 'top3' in json.dumps(h).lower() and 'sector' in json.dumps(h).lower()];raise SystemExit(0 if hits else 1)\"",
+      "note": "OOS Sharpe 1.16 is the only >1.0 result in the harness; existing vix variant is a different spec"
+    },
+    {
+      "id": "T17",
+      "title": "Correct or retire the TACTICAL_ROTATION_EDGE_2026-07-04 claim (measured 2018-2026: Sharpe 0.80 vs SPY 0.86; MDD -22.5% not -12..-17%)",
+      "status": "open",
+      "verify": "python3 -c \"import io;t=io.open('reports/TACTICAL_ROTATION_EDGE_2026-07-04.md').read().lower();raise SystemExit(0 if ('corrected' in t or 'retracted' in t or 'superseded' in t) else 1)\""
+    },
+    {
+      "id": "T18",
+      "title": "Publish the measured permanent-portfolio config (Sharpe 0.94, MDD -17.2%) as the best risk-adjusted baseline in reports/",
+      "status": "done",
+      "verify": "grep -rqi 'permanent portfolio' reports/TODO_LEDGER_2026-11-19.md reports/PER_ASSET_CLASS_EDGE_2026-11-19.md"
+    },
+    {
+      "id": "T19",
+      "title": "Re-derive or source the 'ETF slippage = 234% of per-trade PnL' figure before it is quoted again",
+      "status": "open",
+      "verify": null
+    },
+    {
+      "id": "T20",
+      "title": "Adopt the 4x round-trip cost gate in every pick emitter (measured: fees ate 757% of gross edge over 6,611 sim trades)",
+      "verify": null,
+      "status": "open"
+    },
+    {
+      "id": "T21",
+      "title": "Stop routing picks to CRYPTO and COMMODITY: audit3 net CI lies entirely below zero on n=6740 and n=51",
+      "verify": null,
+      "status": "open"
+    },
+    {
+      "id": "T22",
+      "title": "Live day-trade sim built, run 3x, and armed on a 15-min cron (7 strategies, idempotent ledger)",
+      "verify": null,
+      "status": "done"
+    },
+    {
+      "id": "T23",
+      "title": "Follow up with copilot: their live vwap_reversion slot opened with take_profit/stop_loss = null (not intrabar-resolvable, no fixed risk) and costs are applied downstream not at emission",
+      "verify": "fix/crypto-sim-net-grading-2026-11-19 pushed; 17 tests pass",
+      "status": "done"
+    },
+    {
+      "id": "T24",
+      "title": "Settle the ETF TAA claim with a pre-registered sweep",
+      "verify": "NOT_REPRODUCED 0/576; best lagged Sharpe 0.795 vs claim 0.88",
+      "status": "done"
+    },
+    {
+      "id": "T25",
+      "title": "Trace money_ready_verdict vs audit3 class divergence",
+      "verify": "reports/CLASS_DIVERGENCE_2026-11-19.md \u2014 row-set + gross/net + policy_clean bug",
+      "status": "done"
+    },
+    {
+      "id": "T26",
+      "title": "Correct the peer-review addendum A1/A3 error",
+      "verify": "review branch 01cee645bdd",
+      "status": "done"
+    },
+    {
+      "id": "T27",
+      "title": "Add net-of-cost grading to the crypto intraday sim",
+      "verify": "fix/crypto-sim-net-grading-2026-11-19; 17 tests pass",
+      "status": "done"
+    }
+  ],
+  "updated_at": "2026-11-19T19:44:00Z"
+}
