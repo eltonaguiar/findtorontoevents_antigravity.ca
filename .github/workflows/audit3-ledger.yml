@@ -187,9 +187,6 @@ jobs:
       - name: Build audit2 pods sidecar
         run: python3 tools/build_audit2_pods.py
 
-      - name: Build public status contract
-        run: python3 tools/write_public_status.py
-
       - name: Build audit2 forward summary
         run: python3 tools/audit2_forward_summary.py
 
@@ -252,6 +249,12 @@ jobs:
           done
           echo "::error title=audit3::could not push ledger after 5 attempts"
           exit 1
+
+      # After the ledger and the forward sidecar exist: this contract reports
+      # both, so building it earlier published the previous ledger (age 1.03h
+      # on the first deployed copy).
+      - name: Build public status contract
+        run: python3 tools/write_public_status.py
 
       - name: Deploy /audit3 to findtorontoevents.ca
         env:
