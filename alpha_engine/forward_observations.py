@@ -376,6 +376,28 @@ def clock(hypothesis_id: str | None = None, rows: list[dict] | None = None,
     }
 
 
+def _finite_pf(v, ceiling: float = 99.0):
+    """JSON-safe profit factor.
+
+    A pod with **no losing trades** produces ``inf``. ``json.dumps(...,
+    allow_nan=False)`` then refuses the whole ledger ("Out of range float
+    values"), which is how the first Faber forward rows took the build down on
+    2026-11-20. A perfect record is genuinely excellent, so cap it at a finite
+    ceiling instead of turning it into None (which would fail the gate).
+    """
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    if math.isnan(f):
+        return None
+    if f == float("inf"):
+        return ceiling
+    if f == float("-inf"):
+        return 0.0
+    return f
+
+
 def promotion(rows: list[dict], min_n: int = PROMOTION_MIN_N) -> dict:
     """Apply the forward promotion rule to rows already filtered to one hypothesis."""
     # Pair each row with its own net return so the bootstrap clusters can never
@@ -402,7 +424,7 @@ def promotion(rows: list[dict], min_n: int = PROMOTION_MIN_N) -> dict:
     excess_mean = (sum(net_returns(excess)) / len(excess)) if excess else None
     bench_mean = (sum(_num(r.get("benchmark_leg_ret")) or 0.0 for r in excess) / len(excess)) if excess else None
 
-    pf_lb = ci.get("pf_ci_lower")
+    pf_lb = _finite_pf(ci.get("pf_ci_lower"))
     reasons: list[str] = []
     if n < min_n:
         reasons.append(f"n_forward {n} < {min_n}")
@@ -417,7 +439,7 @@ def promotion(rows: list[dict], min_n: int = PROMOTION_MIN_N) -> dict:
         "eligible": not reasons,
         "reasons": reasons,
         "net_mean_pct": round(mean * 100, 4),
-        "net_pf": ci.get("pf"),
+        "net_pf": _finite_pf(ci.get("pf")),
         "pf_ci_lb": pf_lb,
         "ir": None if ir is None else round(ir, 4),
         "intrabar_first_touch_all": intrabar_all,
