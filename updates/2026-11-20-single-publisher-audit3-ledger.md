@@ -9,13 +9,11 @@
 Two workflows published the same artifact to the same URL.
 
 `audit3-ledger.yml` (6-hourly, `23 */6`) generates `audit_dashboard/data/audit3_ledger.json`,
-commits it, and deploys `/audit3/` immediately. `audit-dashboard.yml` (hourly `:10`, ~35 min
-wall time) never names the file -- its FTP deploy globs `audit_dashboard/data/*.json` straight
+commits it, and deploys `/audit3/` immediately. `audit-dashboard.yml` (3-hourly `10 */3`, ~35 min wall time) never names the file -- its FTP deploy globs `audit_dashboard/data/*.json` straight
 to `/{SITE_ROOT}/audit/data` -- so the ledger rode along on a **stale checkout**.
 
 Measured 2026-11-20: `/audit/data/audit3_ledger.json` trailed `/audit3/audit3_ledger.json` by
-**222.6 minutes** (8,632 vs 8,769 rows, parity gap 72.3 min). The hourly producer overwrote the
-6-hourly producer's fresh bytes with an older copy, about six stale writes per fresh one.
+**222.6 minutes** (8,632 vs 8,769 rows, parity gap 72.3 min). The every-3-hours producer overwrote the 6-hourly producer's fresh bytes with an older copy.
 
 Same root cause as `updates/2026-11-20-audit-publish-stall-and-sleeve-gate-wiring.md` §2, where
 this was left as open item 2.
@@ -82,3 +80,10 @@ opposite of the intent.
 3. `/audit2` remains unpinned and outside `tools/assert_surface_parity.py`.
 4. Not deployed and not observed post-merge. The parity gap can only be re-measured after both
    PRs merge and the next 6-hourly run completes.
+
+## 7. Correction (2026-11-20T07:31Z) -- cadence was stated wrong
+
+§1 called this workflow "hourly `:10`". It is **`10 */3 * * *`** -- every 3 hours at :10. The
+fix, its scope and all verification results are unaffected: the defect is that two workflows
+publish one artifact, which is independent of how often each runs. Corrected there and in
+`.github/workflows/audit-dashboard.yml`'s comment, which said a "full 6-hour cycle behind".

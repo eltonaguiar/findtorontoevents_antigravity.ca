@@ -1,4 +1,4 @@
-# 2026-11-20 — /audit publish stall + sleeve gate wired into the hourly pipeline
+# 2026-11-20 — /audit publish stall + sleeve gate wired into the 3-hourly pipeline
 
 **Agent:** linux-deepseek-v4-flash
 **Branch basis:** `origin/main` @ `b62624b39d5`
@@ -34,13 +34,13 @@ SURFACE PARITY: RED (exit 2) at 2026-11-20T02:05:19Z
 ```
 
 The writer exists: `audit-dashboard.yml` uploads its checkout of
-`audit_dashboard/data/*.json` to `/audit/data` on the hourly `:10` cron, and that job
+`audit_dashboard/data/*.json` to `/audit/data` on the `10 */3` cron (every 3 hours, at :10), and that job
 takes ~35 minutes. The actual defect is a **publish-ordering split**:
 
 | Artifact | Produced by | Cadence | Publishes to |
 |---|---|---|---|
 | `audit3_ledger.json` | `audit3-ledger.yml` | 6-hourly `23 */6` | `/audit3/` — fresh, immediately |
-| same file | `audit-dashboard.yml` | hourly `:10`, ~35 min job | `/audit/data/` — one generation later |
+| same file | `audit-dashboard.yml` | 3-hourly `10 */3`, ~35 min job | `/audit/data/` — whatever its mid-run `git pull` happened to hold |
 
 `/audit` is therefore fed by a slower consumer of the *same* file, so it always renders
 the **previous** ledger, and the 70-minute parity tolerance is **unsatisfiable** against a
@@ -73,7 +73,7 @@ everything else is additive, so it cannot revert another agent's landed work.
 **(a) Publish to every surface in the same step.** The deploy step ended after uploading
 `/audit3/` and `/audit2/`. It now continues to `/audit/data/` and uploads the ledger it
 *just generated*, so one generation produces one identical artifact on all three
-surfaces instead of waiting for the hourly dashboard job:
+surfaces instead of waiting for the 3-hourly dashboard job:
 
 ```python
 ftp.cwd("..")
@@ -212,3 +212,23 @@ run can be ranked, so no implausible PF can reach a surface.
    workflow owns that artifact (owner: Kilo Linux CLI).
 3. Pin `/audit2` to a single ledger path and add it to `assert_surface_parity.py`.
 4. Run `python3 tools/assert_tribunal_runs.py --ref <branch>` before any future GO.
+
+## Correction (2026-11-20T07:31Z) -- the dashboard is 3-hourly, not hourly
+
+This doc described `audit-dashboard.yml` as "hourly `:10`". That was wrong. The cron on main is
+`10 */3 * * *` -- every **3 hours** at :10, with a ~35 min job. Verified by reading
+`origin/main:.github/workflows/audit-dashboard.yml`, not inferred.
+
+What this changes: the two publishers meet at most **twice** per fresh 6-hourly ledger, not six
+times, so the stale-overwrite pressure is half what was described.
+
+What it does not change: there are still **two** publishers on one artifact, and the 70-minute
+parity tolerance is still unsatisfiable whenever the dashboard's checkout is behind. The
+measured **222.6 min** lag stands as a measurement.
+
+It also explains a **0.0 min** lag observed at 07:10Z: that run's mid-run
+`git pull --no-rebase -X ours origin main` landed *after* the 06:37 ledger commit, so it
+republished identical bytes. Zero lag there was luck, not a guarantee -- which is exactly why
+one publisher beats two.
+
+See `updates/2026-11-20-correction-dashboard-cadence-and-lazy-lag.md`.
