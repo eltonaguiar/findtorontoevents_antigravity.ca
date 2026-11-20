@@ -1,0 +1,123 @@
+diff --git a/alpha_engine/audit3_tribunal.py b/alpha_engine/audit3_tribunal.py
+index 4b51d79a5cf..931b46e2494 100644
+--- a/alpha_engine/audit3_tribunal.py
++++ b/alpha_engine/audit3_tribunal.py
+@@ -1970,6 +1970,8 @@ def main(argv: list[str] | None = None) -> int:
+     ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
+                     help="forward-observations ledger that gates PROVEN_T2 "
+                          "(0 rows means no pod can promote)")
++    ap.add_argument("--sleeves", help="dashboard_data.json: flag top sleeves the "
++                    "tribunal does not score, or whose PF is implausible")
+     args = ap.parse_args(argv)
+     drops: dict[str, int] = {}
+     try:
+@@ -1998,6 +2000,98 @@ def main(argv: list[str] | None = None) -> int:
+     history = load_history(args.history) if args.history else None
+     prev_verdicts = load_prev_verdicts(args.prev_ledger)
+     run_at = datetime.now(timezone.utc).isoformat()
++    # ── Sleeve reconciliation (design element 5) ─────────────────────────────
++    # A sleeve PF of 155 means the average win is 155x the average loss. No
++    # 1.67:1 template produces that; it is a grading artefact (near-zero or
++    # resolver-fallback losses inside a self-graded single source). Such a
++    # sleeve must not be rankable or displayable as a "top sleeve".
++    sleeves: list[dict] | None = None
++    if args.sleeves:
++        IMPLAUSIBLE_PF_ABS = 25.0
++        IMPLAUSIBLE_PF_MULT = 5.0
++        SLEEVE_MIN_N = 30
++        try:
++            with open(args.sleeves, encoding="utf-8") as f:
++                _dash = json.load(f)
++            _mr = _dash.get("money_ready_verdicts") or {}
++            _row_keys = {(str(r.get("asset_class") or "").upper(),
++                          str(r.get("strategy") or r.get("source_system") or ""))
++                         for r in rows}
++            _row_keys_ci = {(ac, strat.lower()) for ac, strat in _row_keys}
++            # Class-relative PF baseline: a sleeve an order of magnitude above
++            # its own class aggregate is a grading artefact, not an edge.
++            _win: dict[str, float] = {}
++            _loss: dict[str, float] = {}
++            for _r in rows:
++                _c = str(_r.get("asset_class") or "").upper()
++                try:
++                    _pnl = float(_r.get("pnl_pct"))
++                except (TypeError, ValueError):
++                    continue
++                if _pnl > 0:
++                    _win[_c] = _win.get(_c, 0.0) + _pnl
++                elif _pnl < 0:
++                    _loss[_c] = _loss.get(_c, 0.0) + abs(_pnl)
++            _class_pf = {c: (w / _loss[c]) for c, w in _win.items()
++                         if _loss.get(c, 0.0) > 0}
++            sleeves = []
++            for cls, info in _mr.items():
++                for s in (info.get("top_sleeves") or []):
++                    strat = s.get("strategy", "?")
++                    in_tribunal = ((cls, strat) in _row_keys
++                                   or (cls, strat.lower()) in _row_keys_ci)
++                    _p = {
++                        "asset_class": cls,
++                        "strategy": strat,
++                        "n": s.get("n", 0),
++                        "wr": s.get("wr", 0),
++                        "pf": s.get("pf", 0),
++                        "source": s.get("source", "?"),
++                        "is_single_source": s.get("is_single_source", False),
++                        "in_tribunal": in_tribunal,
++                        "verdict": "VERIFIED" if in_tribunal else "UNVERIFIED",
++                    }
++                    sleeves.append(_p)
++                    _pf = float(_p.get("pf") or 0.0)
++                    _cls_pf = _class_pf.get(cls)
++                    _reasons = []
++                    if _pf > IMPLAUSIBLE_PF_ABS:
++                        _reasons.append(f"pf {_pf:.2f} exceeds absolute ceiling "
++                                        f"{IMPLAUSIBLE_PF_ABS:.0f}")
++                    if _cls_pf and _cls_pf > 0 and (_pf / _cls_pf) > IMPLAUSIBLE_PF_MULT:
++                        _reasons.append(f"pf is {_pf / _cls_pf:.1f}x the class aggregate "
++                                        f"({_pf:.2f} vs {_cls_pf:.2f}), ceiling "
++                                        f"{IMPLAUSIBLE_PF_MULT:.0f}x")
++                    if _p["n"] < SLEEVE_MIN_N:
++                        _reasons.append(f"n {_p['n']} < floor {SLEEVE_MIN_N}")
++                    _p["class_pf"] = round(_cls_pf, 4) if _cls_pf else None
++                    _p["pf_vs_class"] = (round(_pf / _cls_pf, 2)
++                                         if (_cls_pf and _cls_pf > 0) else None)
++                    _p["implausible_pf"] = bool(_pf > IMPLAUSIBLE_PF_ABS or any(
++                        "class aggregate" in r for r in _reasons))
++                    _p["rankable"] = bool(
++                        not _p["implausible_pf"]
++                        and _p["verdict"] == "VERIFIED"
++                        and not _p["is_single_source"]
++                        and _p["n"] >= SLEEVE_MIN_N
++                    )
++                    _p["rank_exclusion_reason"] = None if _p["rankable"] else (
++                        "; ".join(_reasons) if _reasons else "; ".join(filter(None, [
++                            None if _p["verdict"] == "VERIFIED"
++                            else "not scored by the tribunal (UNVERIFIED)",
++                            "single-source grading" if _p["is_single_source"] else None,
++                            f"n {_p['n']} < floor {SLEEVE_MIN_N}"
++                            if _p["n"] < SLEEVE_MIN_N else None,
++                        ])))
++                    if not _p["rankable"]:
++                        print(f"WARNING: sleeve not rankable: {cls}/{strat} "
++                              f"pf={_pf:.2f} :: {_p['rank_exclusion_reason']}",
++                              file=sys.stderr)
++        except (OSError, ValueError, KeyError) as exc:
++            print(f"WARNING: sleeves unreadable ({exc}); continuing without",
++                  file=sys.stderr)
++            sleeves = None
++
+     report = build_report(rows, args.picks, generated_at, coverage=coverage,
+                           require_alpha=True,
+                           alpha=alpha, input_sha256=_sha256(args.picks),
+@@ -2016,6 +2110,10 @@ def main(argv: list[str] | None = None) -> int:
+     if args.history_write:
+         save_history(args.history, history, run_at=run_at,
+                      runs_required=args.persistence_runs)
++    # Persist the reconciliation so downstream surfaces can read the rankable
++    # flags. Without this the gate only warns on stderr.
++    if sleeves is not None:
++        report["sleeves"] = sleeves
+     payload = json.dumps(report, indent=1, allow_nan=False)
+     if args.out:
+         with open(args.out, "w", encoding="utf-8") as f:

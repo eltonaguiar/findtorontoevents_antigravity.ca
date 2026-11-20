@@ -1,0 +1,393 @@
+diff --git a/.github/workflows/audit3-ledger.yml b/.github/workflows/audit3-ledger.yml
+index a928dd424fe..3845e6bd65c 100644
+--- a/.github/workflows/audit3-ledger.yml
++++ b/.github/workflows/audit3-ledger.yml
+@@ -204,9 +204,19 @@ jobs:
+           # --prev-ledger/--max-churn. They were duplicated here by a merge,
+           # and argparse rejects a repeated option string ("conflicting option
+           # string: --history"), which broke the 2026-11-19T23:45 build.
++          # 2026-11-20: the sleeve gate ran only when invoked by hand, so an
++          # implausible PF could sit on the page indefinitely. Probe the CLI for
++          # the flag rather than assuming it: this file and audit3_tribunal.py
++          # are owned separately, and an unreachable option would abort the build.
++          sleeves_arg=""
++          if python3 -m alpha_engine.audit3_tribunal --help 2>&1 | grep -q -- "--sleeves"; then
++            sleeves_arg="--sleeves /tmp/audit3/dashboard_data.json"
++          else
++            echo "::warning title=audit3::sleeve gate NOT wired — audit3_tribunal has no --sleeves; apply reports/patches/2026-11-20-sleeve-gate-on-main.patch"
++          fi
+           python3 -m alpha_engine.audit3_tribunal \
+             --picks /tmp/audit3/dashboard_data.json \
+-            --out audit_dashboard/data/audit3_ledger.json $alpha_arg $history_arg
++            --out audit_dashboard/data/audit3_ledger.json $alpha_arg $history_arg $sleeves_arg
+           python3 - <<'PY'
+           import json
+           d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
+@@ -219,6 +229,15 @@ jobs:
+           print("audit3 summary:", json.dumps(s))
+           print("audit3 coverage:", cov["statement"])
+           print("selection alpha:", d["selection_alpha"]["available"])
++          sl = d.get("sleeves")
++          if sl is None:
++              print("::warning title=audit3::no 'sleeves' block — implausible-PF gate is inert")
++          else:
++              rankable = [x for x in sl if x.get("rankable")]
++              bad = [x for x in rankable if float(x.get("pf") or 0) > 25.0]
++              assert not bad, f"implausible-PF sleeve published as rankable: {bad}"
++              print(f"sleeves: {len(sl)} | rankable: {len(rankable)} | "
++                    f"flagged: {len(sl) - len(rankable)}")
+           PY
+ 
+       # Fail-open is the right runtime behaviour and the wrong CI behaviour: if the
+@@ -296,5 +315,20 @@ jobs:
+               with open(local, "rb") as f:
+                   ftp.storbinary(f"STOR {remote}", f)
+               print(f"uploaded {local} -> /findtorontoevents.ca/audit2/{remote}")
++          # 2026-11-20: /audit/data/audit3_ledger.json was written by NO workflow in
++          # this file. /audit rendered a ledger frozen at 2026-11-19T21:02:25 while
++          # /audit3 kept rebuilding every 6h, so /audit drifted to a 223-minute build
++          # gap and assert_surface_parity.py exited 2 (RED). Uploading the same bytes
++          # here is what makes all surfaces agree on ONE ledger.
++          ftp.cwd("..")
++          ftp.cwd("audit")
++          try:
++              ftp.mkd("data")
++          except ftplib.error_perm:
++              pass  # already exists
++          ftp.cwd("data")
++          with open("audit_dashboard/data/audit3_ledger.json", "rb") as f:
++              ftp.storbinary("STOR audit3_ledger.json", f)
++          print("uploaded audit_dashboard/data/audit3_ledger.json -> /findtorontoevents.ca/audit/data/audit3_ledger.json")
+           ftp.quit()
+           PY
+diff --git a/alpha_engine/audit3_tribunal.py b/alpha_engine/audit3_tribunal.py
+index 4b51d79a5cf..931b46e2494 100644
+--- a/alpha_engine/audit3_tribunal.py
++++ b/alpha_engine/audit3_tribunal.py
+@@ -1970,6 +1970,8 @@ def main(argv: list[str] | None = None) -> int:
+     ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
+                     help="forward-observations ledger that gates PROVEN_T2 "
+                          "(0 rows means no pod can promote)")
++    ap.add_argument("--sleeves", help="dashboard_data.json: flag top sleeves the "
++                    "tribunal does not score, or whose PF is implausible")
+     args = ap.parse_args(argv)
+     drops: dict[str, int] = {}
+     try:
+@@ -1998,6 +2000,98 @@ def main(argv: list[str] | None = None) -> int:
+     history = load_history(args.history) if args.history else None
+     prev_verdicts = load_prev_verdicts(args.prev_ledger)
+     run_at = datetime.now(timezone.utc).isoformat()
++    # ── Sleeve reconciliation (design element 5) ─────────────────────────────
++    # A sleeve PF of 155 means the average win is 155x the average loss. No
++    # 1.67:1 template produces that; it is a grading artefact (near-zero or
++    # resolver-fallback losses inside a self-graded single source). Such a
++    # sleeve must not be rankable or displayable as a "top sleeve".
++    sleeves: list[dict] | None = None
++    if args.sleeves:
++        IMPLAUSIBLE_PF_ABS = 25.0
++        IMPLAUSIBLE_PF_MULT = 5.0
++        SLEEVE_MIN_N = 30
++        try:
++            with open(args.sleeves, encoding="utf-8") as f:
++                _dash = json.load(f)
++            _mr = _dash.get("money_ready_verdicts") or {}
++            _row_keys = {(str(r.get("asset_class") or "").upper(),
++                          str(r.get("strategy") or r.get("source_system") or ""))
++                         for r in rows}
++            _row_keys_ci = {(ac, strat.lower()) for ac, strat in _row_keys}
++            # Class-relative PF baseline: a sleeve an order of magnitude above
++            # its own class aggregate is a grading artefact, not an edge.
++            _win: dict[str, float] = {}
++            _loss: dict[str, float] = {}
++            for _r in rows:
++                _c = str(_r.get("asset_class") or "").upper()
++                try:
++                    _pnl = float(_r.get("pnl_pct"))
++                except (TypeError, ValueError):
++                    continue
++                if _pnl > 0:
++                    _win[_c] = _win.get(_c, 0.0) + _pnl
++                elif _pnl < 0:
++                    _loss[_c] = _loss.get(_c, 0.0) + abs(_pnl)
++            _class_pf = {c: (w / _loss[c]) for c, w in _win.items()
++                         if _loss.get(c, 0.0) > 0}
++            sleeves = []
++            for cls, info in _mr.items():
++                for s in (info.get("top_sleeves") or []):
++                    strat = s.get("strategy", "?")
++                    in_tribunal = ((cls, strat) in _row_keys
++                                   or (cls, strat.lower()) in _row_keys_ci)
++                    _p = {
++                        "asset_class": cls,
++                        "strategy": strat,
++                        "n": s.get("n", 0),
++                        "wr": s.get("wr", 0),
++                        "pf": s.get("pf", 0),
++                        "source": s.get("source", "?"),
++                        "is_single_source": s.get("is_single_source", False),
++                        "in_tribunal": in_tribunal,
++                        "verdict": "VERIFIED" if in_tribunal else "UNVERIFIED",
++                    }
++                    sleeves.append(_p)
++                    _pf = float(_p.get("pf") or 0.0)
++                    _cls_pf = _class_pf.get(cls)
++                    _reasons = []
++                    if _pf > IMPLAUSIBLE_PF_ABS:
++                        _reasons.append(f"pf {_pf:.2f} exceeds absolute ceiling "
++                                        f"{IMPLAUSIBLE_PF_ABS:.0f}")
++                    if _cls_pf and _cls_pf > 0 and (_pf / _cls_pf) > IMPLAUSIBLE_PF_MULT:
++                        _reasons.append(f"pf is {_pf / _cls_pf:.1f}x the class aggregate "
++                                        f"({_pf:.2f} vs {_cls_pf:.2f}), ceiling "
++                                        f"{IMPLAUSIBLE_PF_MULT:.0f}x")
++                    if _p["n"] < SLEEVE_MIN_N:
++                        _reasons.append(f"n {_p['n']} < floor {SLEEVE_MIN_N}")
++                    _p["class_pf"] = round(_cls_pf, 4) if _cls_pf else None
++                    _p["pf_vs_class"] = (round(_pf / _cls_pf, 2)
++                                         if (_cls_pf and _cls_pf > 0) else None)
++                    _p["implausible_pf"] = bool(_pf > IMPLAUSIBLE_PF_ABS or any(
++                        "class aggregate" in r for r in _reasons))
++                    _p["rankable"] = bool(
++                        not _p["implausible_pf"]
++                        and _p["verdict"] == "VERIFIED"
++                        and not _p["is_single_source"]
++                        and _p["n"] >= SLEEVE_MIN_N
++                    )
++                    _p["rank_exclusion_reason"] = None if _p["rankable"] else (
++                        "; ".join(_reasons) if _reasons else "; ".join(filter(None, [
++                            None if _p["verdict"] == "VERIFIED"
++                            else "not scored by the tribunal (UNVERIFIED)",
++                            "single-source grading" if _p["is_single_source"] else None,
++                            f"n {_p['n']} < floor {SLEEVE_MIN_N}"
++                            if _p["n"] < SLEEVE_MIN_N else None,
++                        ])))
++                    if not _p["rankable"]:
++                        print(f"WARNING: sleeve not rankable: {cls}/{strat} "
++                              f"pf={_pf:.2f} :: {_p['rank_exclusion_reason']}",
++                              file=sys.stderr)
++        except (OSError, ValueError, KeyError) as exc:
++            print(f"WARNING: sleeves unreadable ({exc}); continuing without",
++                  file=sys.stderr)
++            sleeves = None
++
+     report = build_report(rows, args.picks, generated_at, coverage=coverage,
+                           require_alpha=True,
+                           alpha=alpha, input_sha256=_sha256(args.picks),
+@@ -2016,6 +2110,10 @@ def main(argv: list[str] | None = None) -> int:
+     if args.history_write:
+         save_history(args.history, history, run_at=run_at,
+                      runs_required=args.persistence_runs)
++    # Persist the reconciliation so downstream surfaces can read the rankable
++    # flags. Without this the gate only warns on stderr.
++    if sleeves is not None:
++        report["sleeves"] = sleeves
+     payload = json.dumps(report, indent=1, allow_nan=False)
+     if args.out:
+         with open(args.out, "w", encoding="utf-8") as f:
+diff --git a/tools/assert_tribunal_runs.py b/tools/assert_tribunal_runs.py
+new file mode 100644
+index 00000000000..4387c51c88f
+--- /dev/null
++++ b/tools/assert_tribunal_runs.py
+@@ -0,0 +1,202 @@
++#!/usr/bin/env python3
++"""assert_tribunal_runs.py — a branch is not "verified" until a real ledger run exits 0.
++
++WHY THIS EXISTS
++---------------
++On 2026-11-20 `hotfix/required-n-power` was recommended for merge on the strength of
++`py_compile` (OK) and `--help` (exit 0). On the first real invocation it died:
++
++    TypeError: build_report() got an unexpected keyword argument 'require_alpha'
++
++`--help` exits *inside* `argparse`, before `main()` ever builds a report, so it cannot
++detect a signature/contract mismatch, a missing kwarg, or a producer/consumer skew —
++which is exactly the class of bug that reached a merge recommendation. `py_compile`
++only proves the file is syntactically valid Python.
++
++This tool runs the thing. It is the pre-push gate that must pass before any branch or
++patch is called verified.
++
++USAGE
++-----
++    # the tree you are standing in
++    python3 tools/assert_tribunal_runs.py
++
++    # any git ref, in a throwaway worktree (removed afterwards)
++    python3 tools/assert_tribunal_runs.py --ref origin/main
++    python3 tools/assert_tribunal_runs.py --ref hotfix/required-n-power --expect-fail
++
++    # also demand the sleeve gate actually produced output
++    python3 tools/assert_tribunal_runs.py --ref origin/main --require-sleeves
++
++EXIT CODES
++----------
++0 = help parses AND a real run on real picks exits 0 AND the required keys are present
++1 = any of the above fails (never call such a branch verified)
++2 = could not run at all (missing picks file, no git repo, worktree refused)
++
++`--expect-fail` inverts the verdict: it passes when the ref *does* fail, so a bug can
++be pinned as a regression test instead of being argued about in prose.
++"""
++from __future__ import annotations
++
++import argparse
++import json
++import shutil
++import subprocess
++import sys
++import tempfile
++from pathlib import Path
++
++REPO_ROOT = Path(__file__).resolve().parent.parent
++if str(REPO_ROOT) not in sys.path:  # direct `python3 tools/assert_tribunal_runs.py`
++    sys.path.insert(0, str(REPO_ROOT))
++
++MODULE = "alpha_engine.audit3_tribunal"
++# Keys a published audit3 ledger must carry. Not a schema test — a "did the producer
++# actually reach the point of writing a report" test. Keep this list small; every key
++# here is one whose silent disappearance would mislead a reader of the page.
++REQUIRED_KEYS = ("schema", "generated_at", "summary", "coverage", "denylist_hits")
++DEFAULT_PICKS = "audit_dashboard/data/dashboard_data.json"
++PF_CEILING = 25.0
++
++
++def _run(cmd: list[str], cwd: Path, timeout: int = 900) -> tuple[int, str]:
++    try:
++        p = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, timeout=timeout)
++        return p.returncode, (p.stdout or "") + (p.stderr or "")
++    except subprocess.TimeoutExpired:
++        return 124, f"::timeout after {timeout}s:: {' '.join(cmd)}"
++
++
++def check_tree(tree: Path, picks: Path, out: Path, require_sleeves: bool) -> tuple[bool, list[str]]:
++    """Return (ok, log lines). Every line is stated as a fact, never a guess."""
++    log: list[str] = []
++    ok = True
++
++    # 1. Cheap signal only. Explicitly NOT authoritative — this is the check that
++    #    fooled me on 2026-11-20, so it is recorded but never decides the verdict.
++    rc, txt = _run([sys.executable, "-m", MODULE, "--help"], tree, timeout=180)
++    log.append(f"help            exit={rc}  (informational — argparse exits before main())")
++    if rc != 0:
++        log.append("  " + (txt.strip().splitlines() or ["<no output>"])[-1][:300])
++        ok = False
++
++    # 2. The check that actually matters: run it on real picks.
++    cmd = [sys.executable, "-m", MODULE, "--picks", str(picks), "--out", str(out)]
++    if require_sleeves:
++        cmd += ["--sleeves", str(picks)]
++    rc, txt = _run(cmd, tree)
++    log.append(f"real run        exit={rc}  (authoritative)")
++    if rc != 0:
++        tail = [ln for ln in txt.strip().splitlines() if ln.strip()][-6:]
++        for ln in tail:
++            log.append("  " + ln[:300])
++        return False, log
++
++    # 3. Output must exist and be parseable.
++    if not out.exists() or out.stat().st_size == 0:
++        log.append(f"  FAIL no ledger written to {out}")
++        return False, log
++    try:
++        doc = json.loads(out.read_text())
++    except Exception as exc:  # noqa: BLE001 - any parse failure is a failure
++        log.append(f"  FAIL ledger is not valid JSON: {type(exc).__name__}: {exc}")
++        return False, log
++
++    # 4. Keys that prove the producer reached the report, not just the entrypoint.
++    missing = [k for k in REQUIRED_KEYS if k not in doc]
++    if missing:
++        log.append(f"  FAIL missing required keys: {missing}")
++        ok = False
++    summary = doc.get("summary") or {}
++    log.append(
++        f"ledger          schema={doc.get('schema')} n_rows={summary.get('n_rows')} "
++        f"denylist_hits={doc.get('denylist_hits')} "
++        f"verdict_churn={'yes' if 'verdict_churn' in doc else 'no'}"
++    )
++    if int(summary.get("n_rows") or 0) < 100:
++        log.append(f"  FAIL n_rows={summary.get('n_rows')} — a thin ledger means the run did not see real input")
++        ok = False
++
++    # 5. Optional: the sleeve gate must have produced output and must not publish an
++    #    implausible PF as rankable. A gate that runs but never fires is decoration.
++    if require_sleeves:
++        sleeves = doc.get("sleeves")
++        if not isinstance(sleeves, list):
++            log.append("  FAIL --require-sleeves: ledger has no 'sleeves' list")
++            return False, log
++        rankable = [s for s in sleeves if s.get("rankable")]
++        bad = [s for s in rankable if float(s.get("pf") or 0) > PF_CEILING]
++        log.append(
++            f"sleeves         count={len(sleeves)} rankable={len(rankable)} "
++            f"flagged={len(sleeves) - len(rankable)}"
++        )
++        if bad:
++            names = ", ".join(str(s.get("strategy_name") or s.get("strategy"))[:40] for s in bad)
++            log.append(f"  FAIL implausible PF published as rankable (>{PF_CEILING}): {names}")
++            ok = False
++
++    return ok, log
++
++
++def main() -> int:
++    ap = argparse.ArgumentParser(description="Run the audit3 tribunal for real before trusting a branch")
++    ap.add_argument("--ref", help="git ref to test in a throwaway worktree (default: this tree)")
++    ap.add_argument("--picks", default=None,
++                    help=f"closed-pick payload (default: <tree>/{DEFAULT_PICKS})")
++    ap.add_argument("--require-sleeves", action="store_true",
++                    help="also require a 'sleeves' list with no implausible-PF rankable sleeve")
++    ap.add_argument("--expect-fail", action="store_true",
++                    help="invert: pass when the ref fails (pin a known-broken branch)")
++    args = ap.parse_args()
++
++    wt: Path | None = None
++    try:
++        if args.ref:
++            tmpdir = Path(tempfile.mkdtemp(prefix="tribunal_gate_"))
++            wt = tmpdir / "wt"
++            rc, txt = _run(["git", "worktree", "add", "--detach", "-f", str(wt), args.ref],
++                           REPO_ROOT, timeout=300)
++            if rc != 0:
++                print(f"::error::could not create a worktree at {args.ref}\n{txt[-500:]}")
++                return 2
++            tree = wt
++        else:
++            tree = REPO_ROOT
++
++        picks = Path(args.picks) if args.picks else (tree / DEFAULT_PICKS)
++        if not picks.is_absolute():
++            picks = (tree / picks).resolve()
++        if not picks.exists():
++            print(f"::error::picks payload not found: {picks}")
++            print("  The gate must run on real input — a synthetic fixture cannot catch a "
++                  "producer/consumer contract mismatch.")
++            return 2
++
++        out = Path(tempfile.mkdtemp(prefix="tribunal_out_")) / "ledger.json"
++        label = args.ref or str(tree)
++        print(f"assert_tribunal_runs: target={label}")
++        print(f"                      picks={picks}")
++        ok, log = check_tree(tree, picks, out, args.require_sleeves)
++        for line in log:
++            print("  " + line if not line.startswith("  ") else line)
++
++        verdict = "PASS" if ok else "FAIL"
++        want = "FAIL" if args.expect_fail else "PASS"
++        print(f"verdict: {verdict} (expected {want})")
++        if verdict != want:
++            if args.expect_fail:
++                print("::error::expected this ref to fail, but it ran clean — update the pin")
++            else:
++                print("::error::do NOT call this branch verified; it does not run")
++            return 1
++        return 0
++    finally:
++        if wt is not None:
++            _run(["git", "worktree", "remove", "--force", str(wt)], REPO_ROOT, timeout=300)
++            _run(["git", "worktree", "prune"], REPO_ROOT, timeout=120)
++            shutil.rmtree(wt.parent, ignore_errors=True)
++
++
++if __name__ == "__main__":
++    sys.exit(main())
