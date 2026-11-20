@@ -16,6 +16,8 @@ The June edition's structural bet: "converge toward 2-3 profitable asset classes
 ## 3. What the next edition changes (ONE structural change max)
 **The primary money-making track moves from crypto-ledger directional-edge-mining (dead/broken) to ETF TACTICAL ASSET ALLOCATION (the one validated find).** ACT's default focus is now the TAA/ETF track + data-integrity fixes; crypto replay-variant batches are gated behind ledger re-resolution. Rationale: TAA is the only thing that robustly beats passive risk-adjusted (Sharpe 0.88-0.89, MaxDD −16/−19% vs SPY −51%, 2007-2026 incl the 2008 GFC, both-halves + all-thirds+), it's honest (smart-beta, not alpha), deployable on free ETF data, and has a live measurable POC.
 
+> **⚠️ CORRECTION 2026-11-20 — the Sharpe figures above are RETRACTED.** They reproduce only at same-close execution. Honest 1-day lag: Sharpe **0.82** vs SPY 0.69, MaxDD −20.9% vs −52.9%, CAGR 8.94% vs SPY 10.79%. A pre-registered 576-cell grid found **0/576** cells meeting Sharpe ≥0.88 with MaxDD ≥−19% over 2007-2026; the apparent edge is a **window artefact** (2018-2026 excludes 2008), not look-ahead. The **drawdown-control** conclusion stands (MaxDD −50.78% → −31.61%). See `reports/money_maker_per_asset_class_2026-11-19.md` §0 and `reports/TAA_SETTLE_2026-11-19.md`.
+
 ## 4. Deliverables this edition
 - New skill `money-maker-ready-July112026edition/SKILL.md` (supersedes June; carries the mandatory all-asset breadth block, the P0 gate + 3 controls, and NEW the no-fabricated-WR rule).
 - TAA stack: `tools/tactical_rotation_tracker.py` (6m default), `tools/tactical_blend_tracker.py` (v2 POC), `reports/TACTICAL_ROTATION_EDGE_2026-07-04.md`.
