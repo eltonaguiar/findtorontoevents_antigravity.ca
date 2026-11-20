@@ -932,11 +932,13 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
                     "ledger, not sizing-eligible until replicated independently")
         elif (n >= CANDIDATE_MIN_N and boot.get("mean", 0) > 0
               and expect_ci_positive
-              and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)
-              and boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0):
+              and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
+            # A cell whose edge does not survive 2x cost is still an observation
+            # worth paper-tracking, but it is not sizing-eligible: PROVEN_T2
+            # requires the 2x stress above, CANDIDATE does not.
             verdict = "CANDIDATE"
-            if not stress_2x_ok:
-                verdict = "WEAK"
+            if not (boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0):
+                reasons.append("fails 2x-cost stress gate; capped at CANDIDATE")
                 reasons.append("2x-cost stress: net CI lower bound <= 0 at 2x slippage")
         else:
             verdict = "WEAK"
@@ -1473,6 +1475,11 @@ def _denylist_hit_summary() -> dict[str, Any]:
         return {"available": False, "n": 0}
 
 
+#: Sidecar fields passed straight through into report["selection_alpha"].
+ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "generated_at",
+                          "schema", "source", "note")
+
+
 def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  coverage: dict[str, Any] | None = None,
                  alpha: dict[str, Any] | None = None,
@@ -1482,7 +1489,8 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                  history: dict[str, dict] | None = None,
                  run_at: str | None = None,
                  persistence_runs: int = PERSISTENCE_RUNS,
-                 prev_verdicts: dict[str, str] | None = None) -> dict[str, Any]:
+                 prev_verdicts: dict[str, str] | None = None,
+                 require_alpha: bool = False) -> dict[str, Any]:
     """Score every cell, then attach what the verdicts do NOT cover.
 
     coverage: from payload_coverage() — the share of the closed book being judged.
@@ -1614,15 +1622,6 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         _promote(c, forward)
     apply_harm_gate(families)
 
-    # N1 repeated-looks gate. Applied after every per-run gate (BH, DSR, harm) so
-    # it is the last word on a claim, and only when a history sidecar is present.
-    persistence_counters = {"demoted": 0, "promoted": 0}
-    if history is not None:
-        persistence_counters = apply_persistence_gate(
-            [cells, symbols, classes, segments], history,
-            run_at=run_at, runs_required=persistence_runs)
-    churn = compute_verdict_churn([cells, symbols, classes, segments],
-                                  prev_verdicts or {})
 
     # Selection alpha (M1b) joined onto the class aggregates when a sidecar was
     # supplied. Kept optional: it needs per-symbol OHLC, so a job without DB
@@ -1670,6 +1669,16 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
     churn = compute_verdict_churn([cells, symbols, classes, segments],
                                   prev_verdicts or {})
 
+
+    # G8: when the build requires alpha (the scheduled ledger passes
+    # require_alpha=True), a cell cannot be PROVEN_T2 without it.
+    if require_alpha and not alpha_by_class:
+        for c in cells:
+            if c.get("verdict") == "PROVEN_T2":
+                c["verdict"] = "CANDIDATE"
+                c["reasons"].append(
+                    "selection alpha required for this build but not computed "
+                    "(G8); capped at CANDIDATE")
 
     selection: dict[str, Any] = {
         "available": bool(alpha_by_class),
