@@ -1300,10 +1300,22 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
              asset_class: str = "", top_symbol_share: float = 0.0,
              top_source_share: float = 0.0,
              avg_win: float = 0.0, avg_loss: float = 0.0,
+             published_pf: float | None = None,
              mdd_cvar_gate_ok: bool | None = None,
              fdr_gate_ok: bool | None = None,
              single_source_gate_ok: bool | None = None,
              recency_ok: bool = True) -> str:
+    def _watch_label() -> str:
+        # 2026-11-20: WATCH means "near miss", and a book whose PUBLISHED
+        # profit factor is below 1.0 is not a near miss - it loses money
+        # gross. COMMODITY was rendered WATCH next to "PF 0.29" because the
+        # gates were fed the intrabar sizing PF (1.0306) while the page
+        # printed the policy-clean one (0.2897). The label must agree with
+        # the number the reader sees.
+        if published_pf is not None and published_pf < 1.0:
+            return "NOT_READY"
+        return "WATCH"
+
     n_ok = n >= MIN_N_CLASS
     if not n_ok:
         return "INSUFFICIENT_DATA"
@@ -1326,13 +1338,13 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
             asset_class.upper(), MAX_SYMBOL_CONCENTRATION
         )
         if top_symbol_share > _conc_cap:
-            return "WATCH"
+            return _watch_label()
         # 2026-05-28 Tier-0: source-concentration cap (mirrors symbol cap).
         _src_conc_cap = MAX_SOURCE_CONCENTRATION_BY_CLASS.get(
             asset_class.upper(), MAX_SOURCE_CONCENTRATION
         )
         if top_source_share > _src_conc_cap:
-            return "WATCH"
+            return _watch_label()
         # P1/#7: Net-of-cost slippage promotion gate.
         # When enabled, block MONEY_READY if post-slippage expectancy is negative.
         if _SLIPPAGE_GATE_ENABLED and avg_win > 0 and avg_loss > 0:
@@ -1368,7 +1380,7 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
     if pf < 1.0:
         return "NOT_READY"
     if wr_ok or pf_ok:
-        return "WATCH"
+        return _watch_label()
     return "NOT_READY"
 
 
@@ -1712,6 +1724,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         )
 
         verdict = _verdict(_sizing_n, _sizing_wr, _sizing_pf, dsr, pbo, spa, asset_class=ac,
+                           published_pf=pf,   # the PF the page prints (policy-clean)
                            top_symbol_share=top_symbol_share,
                            top_source_share=top_source_share,
                            avg_win=avg_win, avg_loss=avg_loss,

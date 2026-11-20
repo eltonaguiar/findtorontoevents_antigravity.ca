@@ -913,3 +913,39 @@ class TestAudit3CrossMark:
             "CRYPTO", ledger_path=tmp_path / "nope.json",
         )
         assert sleeves[0]["audit3_verdict"] == "NOT_SCORED"
+
+
+class TestWatchRequiresPublishedPfAtLeastOne:
+    """WATCH must never be shown next to a losing headline PF.
+
+    2026-11-20: COMMODITY rendered as WATCH with policy_clean_pf 0.2897 because
+    _verdict() was handed the intrabar sizing PF (1.0306) while the published
+    field was the policy-clean one. The two must agree.
+    """
+
+    def _v(self, **kw):
+        from alpha_engine.money_ready_verdict import _verdict
+        base = dict(n=120, wr=0.62, pf=1.03,                      # wr_ok, pf_ok False
+                    dsr={"ok": False}, pbo={"ok": None}, spa={"ok": None},
+                    asset_class="")
+        base.update(kw)
+        return _verdict(**base)
+
+    def test_commodity_shaped_case_is_not_watch(self):
+        # sizing pf above 1.0 passes the internal guard, published pf does not
+        assert self._v(pf=1.0306, published_pf=0.2897) == "NOT_READY"
+
+    def test_watch_survives_when_published_pf_is_healthy(self):
+        assert self._v(pf=1.03, published_pf=1.21) == "WATCH"
+
+    def test_absent_published_pf_keeps_old_behaviour(self):
+        assert self._v(pf=1.03) == "WATCH"
+
+    def test_exactly_one_point_zero_is_still_watch(self):
+        # < 1.0 loses money; == 1.0 is break-even and stays a near miss
+        assert self._v(pf=1.03, published_pf=1.0) == "WATCH"
+
+    def test_money_ready_branch_is_untouched(self):
+        v = self._v(wr=0.62, pf=1.9, published_pf=1.9,
+                    dsr={"ok": True}, pbo={"ok": True}, spa={"ok": True})
+        assert v == "MONEY_READY"
