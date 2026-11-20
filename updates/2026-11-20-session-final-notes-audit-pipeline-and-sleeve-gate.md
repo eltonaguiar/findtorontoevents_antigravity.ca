@@ -8,6 +8,12 @@
 
 ---
 
+> **Tip churn caveat.** `origin/main` advanced four times during and after this session
+> (`3af1336` → `94466c0` → `ec387e4` → `1d2468a4ffe` → `fd1c9f0cb68`). The patch was
+> re-verified against each new tip it was checked at. The short SHA recorded in this file
+> is the tip the last `git apply --check` and real ledger run were performed against —
+> **not** a promise it still is. Re-run the commands in §13 rather than trusting the SHA.
+
 ## 1. What this session set out to do
 
 Four queued tasks, all on the `/audit` · `/audit2` · `/audit3` pipeline:
