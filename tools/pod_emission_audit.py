@@ -29,8 +29,16 @@ DEFAULT_OUT = REPO / "reports" / "pod_emission_audit.json"
 
 
 def audit(manifest: dict, counts: dict[str, dict]) -> dict:
-    """Pure: manifest + {strategy: {picks, intrabar}} -> per-strategy verdicts."""
-    rows, phantom = [], []
+    """Pure: manifest + {strategy: {picks, intrabar, classes}} -> verdicts.
+
+    Two independent failures are caught:
+      * PHANTOM  — the strategy emits nothing (never existed);
+      * MISMATCH — the strategy emits, but only in asset classes the pod does not
+        declare. This is the 2026-11-20 trap: three "breakout" names that look
+        like the equity thesis emit CRYPTO/FUTURES/COMMODITY only, so amending the
+        pod to them would accrue wrong forward evidence.
+    """
+    rows, phantom, mismatch = [], [], []
     for pod in (manifest or {}).get("pods") or []:
         approved = str(pod.get("status") or "").lower() == "unemitted_approved"
         for strat in pod.get("strategies") or []:
@@ -39,14 +47,24 @@ def audit(manifest: dict, counts: dict[str, dict]) -> dict:
             intr = int(c.get("intrabar") or 0)
             emitted = (picks + intr) > 0
             ok = emitted or approved
+            declared = {str(c).upper() for c in (pod.get("asset_classes") or [])}
+            emitted_in = {str(c).upper() for c in (c.get("classes") or [])}
+            class_ok = (not emitted) or (not declared) or (not emitted_in) \
+                or bool(declared & emitted_in)
             row = {"pod": pod.get("id"), "strategy": strat,
                    "picks": picks, "intrabar": intr,
-                   "emitted": emitted, "approved_unemitted": approved, "ok": ok}
+                   "declared_classes": sorted(declared),
+                   "emitted_classes": sorted(emitted_in),
+                   "emitted": emitted, "approved_unemitted": approved,
+                   "class_ok": class_ok, "ok": ok and class_ok}
             rows.append(row)
             if not ok:
                 phantom.append(row)
-    return {"ok": not phantom, "n_strategies": len(rows),
-            "n_phantom": len(phantom), "strategies": rows, "phantom": phantom}
+            if not class_ok:
+                mismatch.append(row)
+    return {"ok": not phantom and not mismatch, "n_strategies": len(rows),
+            "n_phantom": len(phantom), "n_class_mismatch": len(mismatch),
+            "strategies": rows, "phantom": phantom, "class_mismatch": mismatch}
 
 
 def counts_from_db(strategies: list[str]) -> dict[str, dict]:
@@ -63,7 +81,10 @@ def counts_from_db(strategies: list[str]) -> dict[str, dict]:
             p = cur.fetchone()["n"]
             cur.execute("SELECT COUNT(*) n FROM at_signal_outcomes WHERE strategy=%s", (s,))
             i = cur.fetchone()["n"]
-            out[s] = {"picks": int(p), "intrabar": int(i)}
+            cur.execute("SELECT DISTINCT asset_class FROM at_signal_outcomes "
+                        "WHERE strategy=%s AND asset_class IS NOT NULL AND asset_class<>''", (s,))
+            classes = sorted({r["asset_class"] for r in cur.fetchall()})
+            out[s] = {"picks": int(p), "intrabar": int(i), "classes": classes}
     finally:
         conn.close()
     return out
@@ -88,9 +109,12 @@ def main(argv: list[str] | None = None) -> int:
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(rep, indent=1) + "\n")
     print(f"pod emission audit: {rep['n_strategies']} strategies, "
-          f"{rep['n_phantom']} phantom")
+          f"{rep['n_phantom']} phantom, {rep['n_class_mismatch']} class-mismatch")
     for r in rep["phantom"]:
         print(f"  PHANTOM {r['pod']}: {r['strategy']} (0 picks, 0 intrabar)")
+    for r in rep["class_mismatch"]:
+        print(f"  MISMATCH {r['pod']}: {r['strategy']} declares {r['declared_classes']} "
+              f"but emits {r['emitted_classes']}")
     return 0 if (rep["ok"] or not args.strict) else 1
 
 
