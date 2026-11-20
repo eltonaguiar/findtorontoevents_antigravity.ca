@@ -43,7 +43,10 @@ jobs:
           if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
             echo "::warning title=pod-emission::no DB secret — audit skipped"; exit 0
           fi
-          python3 tools/pod_emission_audit.py --out reports/pod_emission_audit.json || true
+          # Strict on NEW phantoms only: the 15 known ones live in
+          # reports/pod_emission_baseline.json, so this can fail the job from
+          # day one without blocking on existing debt.
+          python3 tools/pod_emission_audit.py --out reports/pod_emission_audit.json --strict
           python3 - <<'PY'
           import json
           d = json.load(open("reports/pod_emission_audit.json"))

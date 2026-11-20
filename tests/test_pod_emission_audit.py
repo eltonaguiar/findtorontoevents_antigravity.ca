@@ -54,3 +54,27 @@ def test_matching_class_is_not_flagged_and_unknown_class_is_not_assumed():
     r = audit(m, {"a": {"picks": 5, "intrabar": 2, "classes": ["ETF"]},
                   "b": {"picks": 5, "intrabar": 2, "classes": []}})
     assert r["ok"] is True and r["n_class_mismatch"] == 0
+
+def test_baseline_makes_known_phantoms_non_fatal():
+    from tools.pod_emission_audit import audit, baseline_from, new_phantoms
+    man = {"pods": [
+        {"id": "POD-A", "strategies": ["ghost_known"]},
+        {"id": "POD-B", "strategies": ["ghost_new"]},
+    ]}
+    rep = audit(man, {"ghost_known": {"picks": 0, "intrabar": 0},
+                      "ghost_new": {"picks": 0, "intrabar": 0}})
+    assert rep["n_phantom"] == 2
+    base = {"known": [["POD-A", "ghost_known"]]}
+    new = new_phantoms(rep, base)
+    assert [r["strategy"] for r in new] == ["ghost_new"]
+    # writing a baseline from a run records every current phantom
+    b = baseline_from(rep)
+    assert ["POD-A", "ghost_known"] in b["known"]
+    assert new_phantoms(rep, b) == []
+
+
+def test_empty_baseline_means_every_phantom_is_new():
+    from tools.pod_emission_audit import audit, new_phantoms
+    man = {"pods": [{"id": "POD-A", "strategies": ["ghost"]}]}
+    rep = audit(man, {"ghost": {"picks": 0, "intrabar": 0}})
+    assert len(new_phantoms(rep, None)) == 1

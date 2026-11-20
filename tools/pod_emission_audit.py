@@ -90,12 +90,39 @@ def counts_from_db(strategies: list[str]) -> dict[str, dict]:
     return out
 
 
+DEFAULT_BASELINE = REPO / "reports" / "pod_emission_baseline.json"
+
+
+def new_phantoms(rep: dict, baseline: dict | None) -> list[dict]:
+    """Phantoms that are NOT in the known baseline.
+
+    The manifest already has 15 known phantom strategies (see
+    docs/POD_EMISSION_AUDIT_2026-11-20.md). A guard that fails on those can never
+    be enabled; one that fails only on *new* phantoms can be strict from day one.
+    """
+    known = {(str(x[0]), str(x[1])) for x in ((baseline or {}).get("known") or [])
+             if isinstance(x, (list, tuple)) and len(x) == 2}
+    return [r for r in rep.get("phantom") or []
+            if (str(r.get("pod")), str(r.get("strategy"))) not in known]
+
+
+def baseline_from(rep: dict) -> dict:
+    return {"schema": "pod_emission_baseline.v1",
+            "note": "known phantom (pod, strategy) pairs accepted as research-only",
+            "known": sorted([r["pod"], r["strategy"]] for r in rep.get("phantom") or [])}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="pod manifest emission audit")
     ap.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
     ap.add_argument("--counts-json", help="offline {strategy: {picks,intrabar}} override")
     ap.add_argument("--out", default=str(DEFAULT_OUT))
-    ap.add_argument("--strict", action="store_true", help="exit 1 on phantom strategies")
+    ap.add_argument("--strict", action="store_true",
+                    help="exit 1 when a NEW phantom appears (see --baseline)")
+    ap.add_argument("--baseline", default=str(DEFAULT_BASELINE),
+                    help="known phantom pairs; empty/missing means every phantom is new")
+    ap.add_argument("--write-baseline", action="store_true",
+                    help="rewrite the baseline from this run and exit 0")
     args = ap.parse_args(argv)
 
     man = json.loads(Path(args.manifest).read_text())
@@ -115,7 +142,26 @@ def main(argv: list[str] | None = None) -> int:
     for r in rep["class_mismatch"]:
         print(f"  MISMATCH {r['pod']}: {r['strategy']} declares {r['declared_classes']} "
               f"but emits {r['emitted_classes']}")
-    return 0 if (rep["ok"] or not args.strict) else 1
+    if args.write_baseline:
+        Path(args.baseline).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.baseline).write_text(json.dumps(baseline_from(rep), indent=1) + "\n")
+        print(f"wrote baseline {args.baseline} ({rep['n_phantom']} known phantoms)")
+        return 0
+
+    baseline = None
+    bp = Path(args.baseline)
+    if bp.exists():
+        try:
+            baseline = json.loads(bp.read_text())
+        except ValueError:
+            baseline = None
+    new = new_phantoms(rep, baseline)
+    for r in new:
+        print(f"  NEW PHANTOM {r['pod']}: {r['strategy']} "
+              f"(not in {bp.name if baseline else 'any baseline'})")
+    if not args.strict:
+        return 0
+    return 1 if (new or rep["n_class_mismatch"]) else 0
 
 
 if __name__ == "__main__":
