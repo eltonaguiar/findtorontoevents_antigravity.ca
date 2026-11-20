@@ -87,6 +87,31 @@ CONDITIONS = {
     # NOTE: order matters. Feature-keyed pods are matched first, so a POSITION row
     # that also satisfies H-119's RSI/session stamp stays with H-119 and H-144 only
     # receives rows no entry-condition pod claims.
+    # Emitting pods that were registered but never wired: without a condition
+    # their rows fall through to "not_in_any_condition" and the forward clock can
+    # never start. Names verified against trading_picks/at_signal_outcomes in
+    # docs/POD_EMISSION_AUDIT_2026-11-20.md.
+    "H-2026-11-19-03": {
+        "name": "faber_taa",
+        "asset_classes": {"EQUITY", "ETF"},
+        "strategies": {"etf_faber_tactical", "faber_taa", "faber_taa_paper_pilot"},
+        "directions": {"LONG"},
+        "requires": {},
+    },
+    "H-2026-11-19-06": {
+        "name": "etf_dual_momentum",
+        "asset_classes": {"EQUITY", "ETF"},
+        "strategies": {"etf_dual_momentum", "etf_verified_dual_momentum"},
+        "directions": {"LONG"},
+        "requires": {},
+    },
+    "H-2026-11-19-05": {
+        "name": "commodity_roll_yield",
+        "asset_classes": {"COMMODITY"},
+        "strategies": {"contango_roll_yield", "commodity_basis_carry"},
+        "directions": {"LONG", "SHORT"},
+        "requires": {},
+    },
     "H-BABY-EQUITY-VT-PATTERN-SWEEP-001": {
         "name": "equity_breakout_family",
         "asset_classes": {"EQUITY", "ETF"},
