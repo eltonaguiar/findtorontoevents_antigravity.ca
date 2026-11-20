@@ -127,16 +127,34 @@ function renderLedger(d){
   var prov = d.provenance || {};
   var src = String(prov.source || d.source || "");
   var tmpWarn = /\/tmp\//.test(src) ? ' <strong style="color:var(--warn)">Warning: source is a /tmp build path, not a committed file.</strong>' : "";
+  // Disclose which copy rendered. Two copies of this ledger can be live at once;
+  // provenance fields alone cannot tell them apart because each copy is
+  // internally consistent. The path can.
+  var copyWarn = (LEDGER_SERVED_FROM && LEDGER_SERVED_FROM !== LEDGER_PATHS[0])
+    ? ' <strong style="color:var(--warn)">Served from fallback copy <code>'+esc(LEDGER_SERVED_FROM)+'</code>, not the canonical copy.</strong>'
+    : "";
   el("provenance").innerHTML =
+    "ledger <code>"+esc(LEDGER_SERVED_FROM||"—")+"</code> · "+
     "generator <code>"+esc(prov.generator_version||"—")+"</code> · "+
     "input sha <code>"+esc(prov.input_sha256||"—")+"</code> · "+
     "git <code>"+esc(prov.git_sha||"—")+"</code> · "+
-    "generated <code>"+esc(d.generated_at||"—")+"</code>"+tmpWarn;
+    "generated <code>"+esc(d.generated_at||"—")+"</code>"+tmpWarn+copyWarn;
 }
 
 renderStatic();
-var LEDGER_PATHS = ["audit3_ledger.json", "../audit3/audit3_ledger.json",
-                    "../audit/data/audit3_ledger.json", "data/audit3_ledger.json"];
+// Canonical copy first. /audit3/audit3_ledger.json is the copy the publish
+// pipeline treats as authoritative; the other entries exist only because this
+// page is mounted under both /audit/ and /audit2/, so a relative path has more
+// than one place to resolve. Previously the order was reversed, which meant
+// every page load burned a round trip on the one path that 404s AND let the
+// client silently ride whichever copy answered first. Whichever copy wins is
+// recorded in LEDGER_SERVED_FROM and disclosed in the provenance line below, so
+// a render can never hide which population it is showing.
+var LEDGER_PATHS = ["../audit3/audit3_ledger.json",   // canonical
+                    "../audit/data/audit3_ledger.json",
+                    "audit3_ledger.json",
+                    "data/audit3_ledger.json"];
+var LEDGER_SERVED_FROM = null;
 
 function loadLedger(i){
   if(i >= LEDGER_PATHS.length){
@@ -144,6 +162,7 @@ function loadLedger(i){
   }
   return fetch(LEDGER_PATHS[i], {cache:"no-store"}).then(function(r){
     if(!r.ok) throw new Error("HTTP "+r.status+" at "+LEDGER_PATHS[i]);
+    LEDGER_SERVED_FROM = LEDGER_PATHS[i];
     return r.json();
   }).catch(function(err){
     if(err && /HTTP 404/.test(err.message)) return loadLedger(i+1);
