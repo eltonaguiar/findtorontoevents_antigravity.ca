@@ -243,3 +243,22 @@ def test_registered_emitting_pods_are_wired_to_their_hypotheses():
     # Direction still gates: the Faber sleeve is long-only.
     assert ING.classify(None, "ETF", strategy="etf_faber_tactical",
                         direction="SHORT") is None
+
+
+def test_close_at_accepts_a_bar_within_tolerance_and_rejects_beyond_it():
+    """Time-expiry exits have no bar AT the exit; the next bar within the 6h
+    tolerance must supply the benchmark, and a bar beyond it must not."""
+    H = 3600_000
+    series = [(0, 10.0), (H, 11.0), (2 * H, 12.0)]
+    assert ING.close_at(series, H + 1) == 12.0            # 1h later, inside tol
+    far = [(0, 10.0), (10 * H, 99.0)]
+    assert ING.close_at(far, H) is None                   # 9h later, outside tol
+
+
+def test_benchmark_leg_is_measurable_when_a_later_bar_is_fetched():
+    H = 3600_000
+    series = [(0, 100.0), (H, 110.0)]
+    # exit at 1h30 (between bars) -> next bar at the tolerance edge is used
+    assert ING.benchmark_leg(series, 0, H + H // 2, "LONG") is None  # no later bar
+    series2 = [(0, 100.0), (H, 110.0), (2 * H, 121.0)]
+    assert abs(ING.benchmark_leg(series2, 0, H + H // 2, "LONG") - 0.21) < 1e-9

@@ -169,8 +169,11 @@ def _pairs(series: Iterable[Any]) -> list[tuple[int, float]]:
     return sorted(out)
 
 
+CLOSE_AT_TOL_MS = 6 * 3600_000
+
+
 def close_at(series: list[tuple[int, float]], ts_ms: int,
-             tol_ms: int = 6 * 3600_000) -> float | None:
+             tol_ms: int = CLOSE_AT_TOL_MS) -> float | None:
     """Close of the first bar at or after ``ts`` (a fill happens after the signal)."""
     if not series:
         return None
@@ -414,9 +417,16 @@ def collect(limit: int = DEFAULT_LIMIT) -> tuple[list[dict], list[dict], dict[st
             # benchmark leg is measured over entry..exit. Stopping at entry is why
             # benchmark coverage came out at 64%.
             exit_ms = _ms(p.get("intrabar_resolved_at")) or entry_ms
+            # close_at() looks for the first bar AT OR AFTER the timestamp, with a
+            # 6h tolerance. If the fetch window ends exactly at the exit, that bar
+            # is outside the series and a time-expiry exit gets a permanently NULL
+            # benchmark (5 of the first 13 forward rows). Fetch one tolerance past
+            # the exit so the hold leg is measurable; close_at still rejects a bar
+            # more than 6h later.
             for sym in p["_barsyms"]:
                 lo, hi = window[p["_table"]].get(sym, (entry_ms, exit_ms))
-                window[p["_table"]][sym] = (min(lo, entry_ms), max(hi, exit_ms))
+                window[p["_table"]][sym] = (min(lo, entry_ms),
+                                            max(hi, exit_ms + CLOSE_AT_TOL_MS))
         # fetch_bars returns a FLAT {symbol: [(ts_ms, close), ...]} mapping.
         fetched = S.fetch_bars(window) or {}
         for sym, series in fetched.items():
