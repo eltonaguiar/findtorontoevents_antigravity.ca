@@ -176,6 +176,15 @@ python3 tools/assert_tribunal_runs.py --ref hotfix/required-n-power \
 That last block is the point of the whole change: the exact branch I wrongly approved is
 now rejected by an automated check, on the exact line, without a human remembering why.
 
+**Reading the sleeve counts precisely** — they differ, and every number is true:
+the gate prints `flagged: 10` because **all 10 of 10** sleeves carry a
+`rank_exclusion_reason`, so none is rankable (`rankable=0`). Breaking that down:
+**7** carry `implausible_pf: true`, **5** exceed the absolute 25.0 PF ceiling
+outright (155.85, 111.81, 56.73, 49.37, 33.09 — each 25–119x its CRYPTO class aggregate
+of 1.31), and **3** are excluded as `UNVERIFIED` / single-source rather than for
+implausible PF. The conclusion does not depend on which count you use: nothing from this
+run can be ranked, so no implausible PF can reach a surface.
+
 ## 5. Limitations — stated, not hidden
 
 - **The patch is not applied to any tracked file.** It exists as a diff against
