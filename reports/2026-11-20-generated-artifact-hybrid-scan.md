@@ -9,7 +9,7 @@ generated JSON -- not any Python emitter.
 
 The hourly job commits a fixed list of generated artifacts (`for f in ...; do git
 add "$f"; done` in `audit-dashboard.yml`). Expanded against `origin/main` that list
-is **262 JSON files**. 251 were inspected; 1 were skipped for exceeding the 4 MB read
+is **262 JSON files**. 251 were inspected; 1 was skipped for exceeding the 4 MB read
 cap of this scan.
 
 ## Method
