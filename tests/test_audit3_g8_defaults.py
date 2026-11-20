@@ -53,3 +53,35 @@ def test_g8_accepts_same_scope_strategy_alpha():
     assert summary["demoted"] == 0
     assert cell["verdict"] == "PROVEN_T2"
     assert cell["alpha_gate"]["scope"] == "strategy"
+
+def _alpha_rows(n: int):
+    return [{
+        "id": f"s1-{i}",
+        "asset_class": "CRYPTO",
+        "strategy": "s1",
+        "direction": "LONG",
+        "symbol": "BTCUSDT",
+        "source_system": "alpha_engine",
+        "status": "WON" if i % 2 == 0 else "LOST",
+        "pnl_pct": 0.5 if i % 2 == 0 else -0.2,
+        "closed_at": f"2026-11-{1 + i % 18:02d}T00:00:00+00:00",
+    } for i in range(n)]
+
+
+def test_build_report_publishes_alpha_gate_and_by_strategy():
+    """The published ledger must expose both the gate report and strategy alpha.
+
+    Regression: the gate was called but its summary discarded, and by_strategy
+    was dropped from the passthrough keys, so /audit3 could not show whether G8
+    ran or at what scope.
+    """
+    alpha = {
+        "by_class": {"CRYPTO": {"n": 200, "alpha_ci": [-1.0, 1.0]}},
+        "by_strategy": {"CRYPTO/s1/LONG": {"n": 60, "alpha_ci": [0.2, 0.9]}},
+    }
+    report = build_report(_alpha_rows(60), "synthetic", None, alpha=alpha)
+    sa = report["selection_alpha"]
+    assert sa["gate"]["applied"] is True
+    assert sa["gate"]["tested"] >= 1
+    assert "by_strategy" in sa
+    assert "CRYPTO/s1/LONG" in sa["by_strategy"]

@@ -1539,8 +1539,8 @@ def _denylist_hit_summary() -> dict[str, Any]:
 
 #: Sidecar fields passed straight through into report["selection_alpha"].
 ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "by_class",
-                          "by_slice", "bar_coverage", "missing", "generated_at",
-                          "schema", "source", "note")
+                           "by_slice", "by_strategy", "bar_coverage", "missing",
+                           "generated_at", "schema", "source", "note")
 
 
 def build_report(rows: list[dict], source: str, source_generated_at: str | None,
@@ -1756,12 +1756,29 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             if alpha.get(key) is not None:
                 selection[key] = alpha[key]
 
-    # G8 — selection alpha is a promotion gate, not just a class display column.
+    # G8/G9 - selection alpha is a promotion gate, not just a class display column.
     # A cell profitable on beta alone must not reach PROVEN_T2. Applied to the
     # strategy, symbol and class buckets (all direction-aware); segments and
     # source families are reconstructed/aggregate proxies and are left out.
+    # Publish the gate report so a reader can tell whether it ran; the previous
+    # code called the gate but discarded its summary.
+    alpha_gate_report: dict[str, Any] = {"applied": False, "tested": 0,
+                                         "demoted": 0, "scopes": {}}
     for bucket in (cells, symbols, classes):
-        apply_selection_alpha_gate(bucket, alpha)
+        part = apply_selection_alpha_gate(bucket, alpha)
+        if not part.get("applied"):
+            alpha_gate_report.setdefault("reason", part.get("reason"))
+            continue
+        alpha_gate_report["applied"] = True
+        alpha_gate_report["tested"] += part.get("tested", 0)
+        alpha_gate_report["demoted"] += part.get("demoted", 0)
+        for scope, count in (part.get("scopes") or {}).items():
+            alpha_gate_report["scopes"][scope] = alpha_gate_report["scopes"].get(scope, 0) + count
+    if require_alpha and not alpha_gate_report.get("applied"):
+        alpha_gate_report["require_alpha"] = True
+        alpha_gate_report["demoted"] += demote_proven_without_alpha(
+            (cells, symbols, classes))
+    selection["gate"] = alpha_gate_report
 
     # Kill tribunal: everything KILL plus near-kill (WEAK with negative mean).
     kills = []
@@ -2093,3 +2110,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
