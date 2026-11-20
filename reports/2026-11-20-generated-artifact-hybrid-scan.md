@@ -68,6 +68,34 @@ The rule now: a count is only compared with an array whose name it carries, and 
 repeated name only fails when a count problem exists too or the copies are verbatim.
 That took clean HEAD to 0 findings while still catching the merge.
 
+## Verified against the artifacts the last run actually produced
+
+`--rev-range` run over the refresh commit the 21:14Z job pushed
+(`8d8ffa8f`, 48 files changed): **42 JSON artifacts inspected, 0 hybridised**. One
+(`audit_dashboard/data/pf_registry.json`, 15.9 MB) was skipped by the tool's 12 MB
+cap. So the gate has been checked against real hourly output, not only a HEAD
+snapshot.
+
+## Why HTML and JSONL are deliberately out of scope
+
+The commit loop also stages `audit_dashboard/index.html`,
+`audit_dashboard/trading_blueprint.html` and `ml_gatekeeper/data/ab_history.jsonl`.
+A duplicate-row rule does not survive contact with them -- measured on the clean
+files at HEAD:
+
+* `audit_dashboard/index.html` (1,438,559 bytes, 443 rows): 5 distinct duplicated
+  rows, including a `<th>Quarter</th>...` header repeated **22 times** (once per
+  table) and `<tr class="pass">...AltmanZDoublePrime...` repeated 22 times.
+* `audit_dashboard/trading_blueprint.html` (119,642 bytes, 199 rows): 9 duplicated
+  rows, including identical `SHORT` rows for SOL, BTC and ETH repeated **4 times**
+  across per-portfolio tables.
+* `ab_history.jsonl` is append-only: a repeated record is the log working as designed.
+
+Duplicated markup is how these pages are built, so gating on it would be red on
+every healthy run -- the same trap as the subset tallies in the JSON rule. Conflict
+markers in staged HTML are already covered by
+`.github/scripts/assert_no_conflict_markers.sh`, which runs in the same step.
+
 ## What this means
 
 * No other generated artifact was hybridised by this merge or is inconsistent at HEAD.
