@@ -2,7 +2,7 @@
 
 **Agent:** linux-deepseek-v4-flash
 **Session window:** 2026-11-19T22:00Z → 2026-11-20T02:45Z
-**Repo basis:** `origin/main` @ `94466c02b7b6` (moved from `3af1336` mid-session)
+**Repo basis:** `origin/main` @ `b62624b39d5` (moved from `3af1336` mid-session)
 **Published to:** `eltonaguiar/antigravity_review_Nov192026` — `66da943`, then `184fe2d`
 **Nothing deployed. No shared source file in this checkout was modified.**
 
@@ -157,7 +157,7 @@ Sent and verified by reading back off the broker (a send prints "sent" even when
 
 | Path | What |
 |---|---|
-| `reports/patches/2026-11-20-hourly-pipeline-sleeve-gate-and-audit-publish.patch` | **393 lines, 3 files, 1 deletion line.** Applies clean to `origin/main @94466c0` |
+| `reports/patches/2026-11-20-hourly-pipeline-sleeve-gate-and-audit-publish.patch` | **393 lines, 3 files, 1 deletion line.** Applies clean to `origin/main @b62624b39d5` |
 | `reports/patches/2026-11-20-sleeve-gate-on-main.patch` | Prerequisite, 123 lines, additive only |
 | `tools/assert_tribunal_runs.py` | New runtime smoke gate |
 | `updates/2026-11-20-audit-publish-stall-and-sleeve-gate-wiring.md` | The mandated fix doc |
@@ -202,7 +202,7 @@ real run exit 0 · sleeves 10 · rankable 0 · flagged 10 · denylist_hits prese
 - Local `n_rows=3500` vs ~8,769 live: the local 34 MB `dashboard_data.json` is a different
   vintage from the payload the cron fetches. Gate arithmetic and wiring are unaffected;
   this is not a reproduction of a live run.
-- **The primary checkout was in flux.** `origin/main` moved `3af1336` → `94466c0`, and this
+- **The primary checkout was in flux.** `origin/main` moved `3af1336` → `b62624b39d5`, and this
   tree reported `feat/kilo-todo-sweep-final` @ `2a34571` at one point while another agent
   worked in it. Local `main` is `5f77e770a30` and is **stale by 4 lines** in
   `.github/workflows/audit3-ledger.yml` — which is why every edit was made in a throwaway

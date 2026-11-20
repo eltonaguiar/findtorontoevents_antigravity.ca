@@ -1,7 +1,7 @@
 # 2026-11-20 — /audit publish stall + sleeve gate wired into the hourly pipeline
 
 **Agent:** linux-deepseek-v4-flash
-**Branch basis:** `origin/main` @ `94466c02b7b6`
+**Branch basis:** `origin/main` @ `b62624b39d5`
 **Delivered as:** `reports/patches/2026-11-20-hourly-pipeline-sleeve-gate-and-audit-publish.patch` (393 lines, 3 files)
 **No shared source file in the main tree was edited. The patch is the deliverable.**
 
@@ -179,7 +179,7 @@ now rejected by an automated check, on the exact line, without a human rememberi
 ## 5. Limitations — stated, not hidden
 
 - **The patch is not applied to any tracked file.** It exists as a diff against
-  `origin/main` @ `94466c02b7b6` for the owners of those files to apply. Nothing deployed.
+  `origin/main` @ `b62624b39d5` for the owners of those files to apply. Nothing deployed.
 - **The sleeve gate stays inert until `alpha_engine/audit3_tribunal.py` is patched.** The
   workflow probes for `--sleeves` and warns by name if it is missing; it does not silently
   claim the gate ran.
