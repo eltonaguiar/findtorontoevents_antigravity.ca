@@ -219,6 +219,13 @@ def _log_binom_pmf(k: int, n: int) -> float:
             - n * math.log(2.0))
 
 
+try:
+    from alpha_engine.pf_basis import format_pf as _pf_label  # noqa: E402
+except Exception:  # pragma: no cover - optional import
+    def _pf_label(value, n=None, **_kw):
+        return f"PF {value} (n={n})" if value is not None else f"PF n/a (n={n})"
+
+
 def binom_sf(k: int, n: int) -> float:
     """One-sided exact p-value P(X >= k) under Binomial(n, 0.5).
 
@@ -1004,6 +1011,12 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         "wr": round(wr, 4),
         "wr_ci": [round(lo, 4), round(hi, 4)],
         "pf": round(pf, 4) if pf is not None else None,
+        # PF travels with the denominator and the cost it was charged: a bare
+        # 0.83 invited comparison against a 0.26 computed on 3x the picks.
+        "pf_n": n,
+        "pf_basis": "net",
+        "pf_cost_pct": round(mean_cost, 4),
+        "pf_label": _pf_label(pf, n, cost_bps=mean_cost * 100.0),
         "gross_expectancy_pct": round(sum(float(r["pnl_pct"]) for r in rows) / n, 4) if n else 0.0,
         "net_expectancy_pct": round(boot.get("mean", 0.0), 4),
         "net_ci_pct": [round(boot["ci_lo"], 4) if boot.get("ci_lo") is not None else None,

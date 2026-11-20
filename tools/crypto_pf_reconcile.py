@@ -12,10 +12,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 D = REPO_ROOT / "audit_dashboard" / "data"
+
+sys.path.insert(0, str(REPO_ROOT))
+from alpha_engine.pf_basis import format_pf  # noqa: E402
 
 
 def pf(vals):
@@ -44,18 +48,22 @@ def main() -> int:
         {"name": "dashboard book (recent_closed, gross desired)",
          "n": len(gv), "pf": round(pf(gv), 4) if pf(gv) else None,
          "wr_pct": round(100 * sum(v > 0 for v in gv) / len(gv), 2),
-         "mean_pct": round(sum(gv) / len(gv), 4), "cost": 0.0},
+         "mean_pct": round(sum(gv) / len(gv), 4), "cost": 0.0, "basis": "gross"},
         {"name": "dashboard book, net 40bp",
          "n": len(gv), "pf": round(pf([v - 0.4 for v in gv]), 4),
          "wr_pct": round(100 * sum(v - 0.4 > 0 for v in gv) / len(gv), 2),
-         "mean_pct": round(sum(v - 0.4 for v in gv) / len(gv), 4), "cost": 0.4},
+         "mean_pct": round(sum(v - 0.4 for v in gv) / len(gv), 4), "cost": 0.4, "basis": None},
         {"name": "audit3 ledger class node", "n": a3.get("n"), "pf": a3.get("pf"),
          "wr_pct": round(100 * (a3.get("wins") or 0) / (a3.get("n") or 1), 2),
-         "mean_pct": a3.get("net_expectancy_pct"), "cost": a3.get("mean_cost_pct")},
+         "mean_pct": a3.get("net_expectancy_pct"), "cost": a3.get("mean_cost_pct"),
+         "basis": None},
         {"name": "money_ready policy-clean", "n": mr.get("policy_clean_n"),
          "pf": mr.get("policy_clean_pf"),
          "wr_pct": round(100 * (mr.get("policy_clean_wr") or 0), 2),
-         "mean_pct": mr.get("expectancy"), "cost": None},
+         "mean_pct": mr.get("expectancy"), "cost": None,
+         # net: _class_stats nets every pick through _net_pnl; the per-pick cost
+         # is applied by the policy registry, not exposed as a bp figure here.
+         "basis": "net"},
     ]
 
     ordered = [c for c in cohorts if c["n"]]
@@ -75,10 +83,13 @@ def main() -> int:
          "`tools/anti_overfit_audit_sidecar.py`. There is no competing convention in the repo, "
          "so no arithmetic can reconcile the two numbers. Only the population can.", "",
          "## Measured", "",
-         "| cohort | n | PF | WR | mean net/pick | cost charged |",
-         "|---|---|---|---|---|---|"]
+         "| cohort | n | PF | PF (labelled) | WR | mean net/pick | cost charged |",
+         "|---|---|---|---|---|---|---|"]
     for c in cohorts:
-        L.append(f"| {c['name']} | {c['n']} | {c['pf']} | {c['wr_pct']}% | {c['mean_pct']}% | "
+        _cost_bps = (c["cost"] * 100.0) if c["cost"] else None
+        L.append(f"| {c['name']} | {c['n']} | {c['pf']} | "
+                 f"{format_pf(c['pf'], c['n'], cost_bps=_cost_bps, basis=c.get('basis'))} | "
+                 f"{c['wr_pct']}% | {c['mean_pct']}% | "
                  f"{c['cost'] if c['cost'] is not None else 'via registry'} |")
 
     L += ["", "## The attribution", "",

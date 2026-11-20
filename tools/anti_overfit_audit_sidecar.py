@@ -55,10 +55,12 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from alpha_engine.anti_overfit_validator import (  # noqa: E402
+    align_returns_by_period,
     cpcv_pbo,
     deflated_sharpe,
     reality_check_pvalue,
 )
+from alpha_engine.pf_basis import format_pf as _pf_label  # noqa: E402
 
 # Effective-N reporter (master-plan Action #2 — autocorrelation correction)
 try:
@@ -82,27 +84,42 @@ def connect():
     )
 
 
-def fetch_strategy_returns(cur, min_n: int) -> dict:
-    """Return {strategy: [pnl_pct, ...]} for strategies with n>=min_n closed picks."""
+def fetch_strategy_series(cur, min_n: int) -> dict:
+    """Return {strategy: [(closed_at, pnl_pct), ...]} for n>=min_n strategies.
+
+    ``closed_at`` is the EXIT timestamp and it is the only honest key for putting
+    two strategies on the same clock: the old PBO path stacked each strategy's
+    trailing picks and compared different calendar windows (2026-11-20).
+    """
     cur.execute(f"""
-        SELECT strategy, pnl_pct
+        SELECT strategy, pnl_pct, closed_at
         FROM trading_picks
         WHERE status IN ('WON','LOST','WIN','LOSS','TP_HIT','SL_HIT')
           AND pnl_pct IS NOT NULL
           AND strategy IS NOT NULL
           AND strategy <> ''
-        ORDER BY strategy
+        ORDER BY strategy, closed_at
     """)
-    by_strat: dict[str, list[float]] = {}
+    by_strat: dict[str, list[tuple[object, float]]] = {}
     for row in cur.fetchall():
         s = row["strategy"]
         try:
             pnl = float(row["pnl_pct"])
         except (TypeError, ValueError):
             continue
-        by_strat.setdefault(s, []).append(pnl)
+        by_strat.setdefault(s, []).append((row.get("closed_at"), pnl))
     # Filter to min_n
     return {s: r for s, r in by_strat.items() if len(r) >= min_n}
+
+
+def fetch_strategy_returns(cur, min_n: int) -> dict:
+    """Return {strategy: [pnl_pct, ...]} for strategies with n>=min_n closed picks.
+
+    Kept for callers that only want the return column; timestamps live in
+    :func:`fetch_strategy_series` and are required for any aligned PBO.
+    """
+    return {s: [v for _, v in rows]
+            for s, rows in fetch_strategy_series(cur, min_n).items()}
 
 
 def audit_strategy(name: str, returns: list[float], n_trials: int) -> dict:
@@ -120,6 +137,10 @@ def audit_strategy(name: str, returns: list[float], n_trials: int) -> dict:
         "n": n,
         "wr_pct": round(wr, 2),
         "pf": round(float(pf), 3) if pf is not None else None,
+        # A per-strategy PF is compared across strategies, so it carries its own n.
+        "pf_n": n,
+        "pf_basis": "gross",
+        "pf_label": _pf_label(pf, n, basis="gross"),
         "avg_pnl_pct": round(mu, 4),
         "std_pnl_pct": round(sd, 4),
         "sharpe": round(sharpe, 4),
@@ -204,19 +225,25 @@ def main():
         payload = json.loads(src.read_text(encoding="utf-8"))
         bad = gate_failures(payload, args.dsr_threshold)
         n = len(payload.get("strategies") or [])
+        scored = payload.get("dsr_scored_count")
+        rate = payload.get("dsr_pass_rate")
+        rate_str = (
+            f" ({payload.get('dsr_pass_count')}/{scored} scored, {100 * rate:.1f}%)"
+            if isinstance(rate, (int, float)) and scored else ""
+        )
         if bad and not args.gate:
             print(f"# {len(bad)}/{n} strategies below DSR {args.dsr_threshold} "
                   f"(advisory: pass --gate to fail)", file=sys.stderr)
             return 0
         if bad:
             print(f"ANTI-OVERFIT GATE: FAIL -- {len(bad)}/{n} strategies below "
-                  f"DSR {args.dsr_threshold}", file=sys.stderr)
+                  f"DSR {args.dsr_threshold}{rate_str}", file=sys.stderr)
             for b in bad[:25]:
                 print(f"  - {b}", file=sys.stderr)
             if len(bad) > 25:
                 print(f"  ... and {len(bad) - 25} more", file=sys.stderr)
             return 2
-        print(f"ANTI-OVERFIT GATE: PASS -- {n} strategies at DSR >= {args.dsr_threshold}",
+        print(f"ANTI-OVERFIT GATE: PASS -- {n} strategies at DSR >= {args.dsr_threshold}{rate_str}",
               file=sys.stderr)
         return 0
 
@@ -229,7 +256,8 @@ def main():
     cur = conn.cursor(pymysql.cursors.DictCursor)
     print(f"# Anti-overfit sidecar audit — n>={args.min_n}", file=sys.stderr)
 
-    strat_returns = fetch_strategy_returns(cur, args.min_n)
+    strat_series = fetch_strategy_series(cur, args.min_n)
+    strat_returns = {s: [v for _, v in rows] for s, rows in strat_series.items()}
     cur.close()
     conn.close()
 
@@ -258,56 +286,65 @@ def main():
     # one number for the whole strategy universe, NOT per-strategy).
     portfolio_diagnostics: dict = {}
     audited_strats = sorted(strat_returns.keys())
+    M = None
+    periods: list = []
+    align_info: dict = {}
     if len(audited_strats) >= 2:
-        # Align returns: pad each strategy's series to common length M (the
-        # min across all strategies). PBO requires equal-length columns.
-        min_len = min(len(strat_returns[s]) for s in audited_strats)
-        if min_len >= 8:
-            # Use trailing min_len entries per strategy. This is a coarse
-            # alignment — chronological ordering is best-effort given that
-            # closed_picks rows lack a guaranteed per-strategy index.
-            cols = []
-            for s in audited_strats:
-                cols.append(np.asarray(strat_returns[s][-min_len:],
-                                       dtype=np.float64))
-            M = np.column_stack(cols)
-            n_folds = min(10, max(2, min_len // 4))
-            try:
-                pbo = cpcv_pbo(M, n_folds=n_folds, n_test_groups=2)
-                portfolio_diagnostics["pbo"] = {
-                    "value": round(float(pbo), 4),
-                    "n_candidates": int(M.shape[1]),
-                    "n_observations": int(M.shape[0]),
-                    "n_folds": n_folds,
-                    "threshold_overfit": 0.5,
-                    "verdict": "OVERFIT_LIKELY" if pbo >= 0.5 else "SELECTION_EDGE_SURVIVES",
-                    "interpretation": (
-                        "Probability the IS-best strategy underperforms OOS median. "
-                        ">= 0.5 means selection is indistinguishable from chance."
-                    ),
-                }
-            except Exception as e:
-                portfolio_diagnostics["pbo"] = {"error": str(e)[:200]}
-            # White's Reality Check on the IS-best strategy: H0 = no
-            # outperformance vs zero-return benchmark.
-            try:
-                best_idx = int(np.argmax(M.mean(axis=0) / np.where(M.std(axis=0, ddof=1) < 1e-12, 1e-12, M.std(axis=0, ddof=1))))
-                rc_p = reality_check_pvalue(M[:, best_idx], benchmark=0.0,
-                                             B=1000, block_size=10)
-                portfolio_diagnostics["reality_check"] = {
-                    "p_value": round(float(rc_p), 4),
-                    "best_strategy": audited_strats[best_idx],
-                    "B_bootstraps": 1000,
-                    "block_size": 10,
-                    "interpretation": "H0: best-strategy mean return <= 0. p<0.05 rejects H0.",
-                }
-            except Exception as e:
-                portfolio_diagnostics["reality_check"] = {"error": str(e)[:200]}
-        else:
-            portfolio_diagnostics["note"] = (
-                f"min_strategy_n={min_len} below floor 8; PBO/RC skipped"
-            )
+        # Row-align by EXIT TIMESTAMP (2026-11-20). The old code stacked each
+        # strategy's trailing min_len picks onto the same rows, so columns
+        # compared different calendar windows and the PBO logit measured the
+        # calendar rather than the selection process.
+        M, periods, align_info = align_returns_by_period(
+            strat_series, min_obs=min(8, args.min_n), min_rows=16
+        )
+        portfolio_diagnostics["alignment"] = align_info
+    if M is not None:
+        names = align_info.get("strategies") or audited_strats
+        n_folds = min(10, max(2, M.shape[0] // 4))
+        try:
+            pbo = cpcv_pbo(M, n_folds=n_folds, n_test_groups=2,
+                           period_index=periods)
+            portfolio_diagnostics["pbo"] = {
+                "value": round(float(pbo), 4),
+                "n_candidates": int(M.shape[1]),
+                "n_observations": int(M.shape[0]),
+                "n_folds": n_folds,
+                "period": align_info.get("period"),
+                "threshold_overfit": 0.5,
+                "verdict": "OVERFIT_LIKELY" if pbo >= 0.5 else "SELECTION_EDGE_SURVIVES",
+                "interpretation": (
+                    "Probability the IS-best strategy underperforms OOS median. "
+                    ">= 0.5 means selection is indistinguishable from chance."
+                ),
+            }
+        except Exception as e:
+            portfolio_diagnostics["pbo"] = {"error": str(e)[:200]}
+        # White's Reality Check on the IS-best strategy: H0 = no
+        # outperformance vs zero-return benchmark.
+        try:
+            best_idx = int(np.argmax(M.mean(axis=0) / np.where(M.std(axis=0, ddof=1) < 1e-12, 1e-12, M.std(axis=0, ddof=1))))
+            rc_p = reality_check_pvalue(M[:, best_idx], benchmark=0.0,
+                                         B=1000, block_size=10)
+            portfolio_diagnostics["reality_check"] = {
+                "p_value": round(float(rc_p), 4),
+                "best_strategy": names[best_idx],
+                "B_bootstraps": 1000,
+                "block_size": 10,
+                "interpretation": "H0: best-strategy mean return <= 0. p<0.05 rejects H0.",
+            }
+        except Exception as e:
+            portfolio_diagnostics["reality_check"] = {"error": str(e)[:200]}
+    else:
+        portfolio_diagnostics.setdefault(
+            "note",
+            "PBO/RC skipped: " + str(
+                align_info.get("note")
+                or "fewer than 2 strategies with timestamped closed picks"
+            ),
+        )
 
+    dsr_vals = [float(r["dsr"]) for r in rows if r.get("dsr") is not None]
+    pass_count = sum(1 for v in dsr_vals if v >= 0.95)
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "n_strategies_audited": n_trials,
@@ -315,6 +352,10 @@ def main():
         "verdict_counts": by_verdict,
         "dsr_threshold_real_edge": 0.95,
         "dsr_threshold_undetermined": 0.50,
+        # A pass count without a denominator is not a measurement (2026-11-20).
+        "dsr_pass_count": pass_count,
+        "dsr_scored_count": len(dsr_vals),
+        "dsr_pass_rate": round(pass_count / len(dsr_vals), 4) if dsr_vals else None,
         "source": "ejaguiar1_stocks::trading_picks closed picks",
         "validator": "alpha_engine.anti_overfit_validator (DSR Lopez de Prado AFML 14.5; PBO Bailey-Borwein-Lopez de Prado-Zhu 2017; Reality Check White 2000)",
         "portfolio_diagnostics": portfolio_diagnostics,
