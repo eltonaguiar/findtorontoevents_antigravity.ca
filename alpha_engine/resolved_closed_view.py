@@ -60,6 +60,36 @@ DEFAULT_COST_BPS: float = 10.0
 #: |pnl| at or below this is flat, not a win or a loss (matches the dashboard).
 FLAT_EPSILON_PCT: float = 0.01
 
+# ── Provenance triple (A1) ────────────────────────────────────────────────────
+# Every published number must be able to name the three choices that produced it.
+# These are DECLARATIONS of what the code already does, not new behaviour — the
+# point is that a reader (or a tile on /audit) can state them without guessing.
+POPULATION = "resolved_closed_picks_net"
+COST_MODEL = "measured_class_slippage_bps"
+
+#: Win is defined on GROSS pnl, not net: `won = pnl_gross_pct > FLAT_EPSILON_PCT`.
+#: That is deliberate (it matches the dashboard) but it is a trap worth naming —
+#: a pick can be a "win" and still lose money after cost. The net figure is
+#: published alongside as `pnl_net_pct`, never folded into `won`.
+WIN_DEFINITION = "gross_pnl_pct > flat_epsilon_pct"
+
+
+def provenance() -> dict[str, Any]:
+    """The (population, cost_model, win_definition) triple, with its parameters.
+
+    A number without this is not wrong, it is unattributable — which is how
+    /audit and /audit3 disagreed by 3x on the same class while both being
+    arithmetically correct.
+    """
+    return {
+        "population": POPULATION,
+        "cost_model": COST_MODEL,
+        "win_definition": WIN_DEFINITION,
+        "flat_epsilon_pct": FLAT_EPSILON_PCT,
+        "default_cost_bps": DEFAULT_COST_BPS,
+        "schema": SCHEMA,
+    }
+
 _NON_PERFORMANCE_EXITS = {
     "",
     "UNKNOWN",
@@ -70,6 +100,73 @@ _NON_PERFORMANCE_EXITS = {
     "NO_FILL",
     "NOT_FILLED",
 }
+
+#: Statuses that mean "not a resolved outcome". OPEN/PENDING are unresolved by
+#: definition; CANCELLED/CANCELED/INVALID never produced a realised fill.
+_NON_PERFORMANCE_STATUSES = ("OPEN", "PENDING", "CANCELLED", "CANCELED", "INVALID")
+
+#: Statuses only written after a position resolved — used to accept a row whose
+#: exit_reason is absent, since the status itself is evidence of closure.
+_TERMINAL_STATUSES = frozenset({"WON", "LOST", "EXPIRED", "CLOSED"})
+
+#: Exit reasons that carry no information rather than a negative statement —
+#: judged by closure evidence (close marker or terminal status), not denied.
+_NO_EXIT_INFO = ("", "UNKNOWN")
+
+
+def is_performance_scored_row(row: dict) -> bool:
+    """Single definition of 'this closed row counts toward performance'.
+
+    Both the canonical view and the audit3 tribunal MUST call this, so the two
+    can never drift apart again. They did: the tribunal used a 3-value status
+    deny-list and never read ``exit_reason``, while this view also dropped on
+    exit reason — a measured ~4.9k-row disagreement (4,868 null exits, 100
+    ``STALE*``) that was dormant only while the sidecar happened to be present
+    and the tribunal ran in ``mode: canonical``.
+
+    Encodes the CANONICAL semantics — status deny-list AND exit-reason
+    exclusion — because this view is the stricter, already-published definition.
+
+    Scope is deliberately narrow: identity, numeric pnl, status and exit reason.
+    Row-content integrity checks (corrupt prices, blocked symbols, placeholder
+    exits) belong to the caller's ``validity`` predicate, which keeps exactly
+    one copy of those rules.
+    """
+    if not isinstance(row, dict):
+        return False
+    if row.get("paper_trade") or row.get("expired_no_pnl") or row.get("_auto_expired"):
+        return False
+    if _f(row.get("pnl_pct")) is None:
+        return False
+    exit_reason = str(row.get("exit_reason", "") or "").upper().strip()
+    # "" and UNKNOWN are ABSENT INFORMATION, not a stated non-performance exit:
+    # they are judged by the closure-evidence clause below. Every other denied
+    # reason is an affirmative statement that the row is not a realised
+    # outcome, and is a hard deny.
+    if exit_reason not in _NO_EXIT_INFO and exit_reason in _NON_PERFORMANCE_EXITS:
+        return False
+    if exit_reason.startswith("STALE"):
+        return False
+    if exit_reason.startswith("RESOLVE_FAILED"):
+        return False
+    status = str(row.get("status", "") or "").upper().strip()
+    if status in _NON_PERFORMANCE_STATUSES:
+        return False
+    # With no exit reason, the row must still be demonstrably closed: a close
+    # marker, or a terminal status that can only be written after resolution.
+    # Otherwise a numeric pnl with no exit information is a snapshot, not an
+    # outcome — and counting it is how a "closed" book silently gains rows
+    # that never closed.
+    if exit_reason in _NO_EXIT_INFO:
+        close_markers = (
+            row.get("closed_at")
+            or row.get("exit_timestamp")
+            or row.get("exit_time_est")
+            or row.get("exit_date")
+        )
+        if not close_markers and status not in _TERMINAL_STATUSES:
+            return False
+    return True
 
 
 def cost_bps(asset_class: str | None, override: float | None = None) -> float:
@@ -114,6 +211,11 @@ def default_exclusion_reason(pick: Any) -> str | None:
     """
     if not isinstance(pick, dict):
         return "not_a_record"
+    # One decision, one place: the predicate below is the same function the
+    # audit3 tribunal calls, so an exclusion reason can never describe a
+    # different rule than the one that kept or dropped the row.
+    if is_performance_scored_row(pick):
+        return None
     if pick.get("paper_trade"):
         return "paper_trade"
     if pick.get("expired_no_pnl") or pick.get("_auto_expired"):
@@ -125,9 +227,7 @@ def default_exclusion_reason(pick: Any) -> str | None:
         return "non_performance_exit"
     if exit_reason.startswith("RESOLVE_FAILED"):
         return "resolver_breakeven_fallback"
-    status = str(pick.get("status", "") or "").upper().strip()
-    if status in ("OPEN", "PENDING", "CANCELLED", "CANCELED", "INVALID"):
-        return "not_resolved"
+    return "not_resolved"
     # None means "nothing visibly wrong with this row" — the caller's predicate may
     # still have rejected it for a reason this coarse classifier does not model
     # (corrupt prices, micro-hold, blocked symbol), and build_view attributes those
@@ -216,6 +316,9 @@ def build_view(
         "schema": SCHEMA,
         "generated_at": generated_at,
         "source": source,
+        # A1: the triple travels with the payload, so every tile derived from it
+        # can name its population, cost model, and win definition.
+        "provenance": provenance(),
         "counts": {
             "input_rows": n_input,
             "kept_rows": len(rows),

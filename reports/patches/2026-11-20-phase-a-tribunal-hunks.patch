@@ -1,0 +1,81 @@
+diff --git a/alpha_engine/audit3_tribunal.py b/alpha_engine/audit3_tribunal.py
+--- a/alpha_engine/audit3_tribunal.py
++++ b/alpha_engine/audit3_tribunal.py
+@@ -95,6 +95,63 @@ except ImportError:  # pragma: no cover
+     def _dir_key(direction):
+         return str(direction or "").strip().upper()
+ 
++# One definition of "this closed row counts toward performance", shared with the
++# canonical view (Phase A, 2026-11-20). This module used to carry its own 3-value
++# status deny-list that never read exit_reason, while resolved_closed_view also
++# dropped on exit reason — a measured ~4.9k-row disagreement that was dormant
++# only while the sidecar happened to be present. Two filters, one question, two
++# answers: that is the bug this import removes.
++try:
++    from alpha_engine.resolved_closed_view import (
++        is_performance_scored_row as _is_scored_row,
++    )
++except ImportError:  # pragma: no cover
++    # Standalone fallback. It WARNS rather than silently differing: a silent
++    # difference between two copies of this rule is exactly what Phase A fixed.
++    # The logic below must stay identical to resolved_closed_view's; if it ever
++    # cannot, this branch should raise instead of guessing.
++    import warnings
++
++    warnings.warn(
++        "audit3_tribunal: alpha_engine.resolved_closed_view unavailable; using a "
++        "local copy of is_performance_scored_row. This copy can drift from the "
++        "canonical definition — install the package properly if you see this.",
++        RuntimeWarning,
++        stacklevel=2,
++    )
++    _NON_PERF_EXITS = {"", "UNKNOWN", "MANUAL", "CANCELLED", "CANCELED",
++                      "INVALID_ENTRY", "NO_FILL", "NOT_FILLED"}
++    _NON_PERF_STATUSES = ("OPEN", "PENDING", "CANCELLED", "CANCELED", "INVALID")
++    _TERMINAL_STATUSES = frozenset({"WON", "LOST", "EXPIRED", "CLOSED"})
++    _NO_EXIT_INFO = ("", "UNKNOWN")
++
++    def _is_scored_row(row):  # type: ignore[misc]
++        if not isinstance(row, dict):
++            return False
++        if (row.get("paper_trade") or row.get("expired_no_pnl")
++                or row.get("_auto_expired")):
++            return False
++        pnl = row.get("pnl_pct")
++        if isinstance(pnl, bool) or not isinstance(pnl, (int, float)):
++            return False
++        exit_reason = str(row.get("exit_reason", "") or "").upper().strip()
++        if (exit_reason not in _NO_EXIT_INFO
++                and exit_reason in _NON_PERF_EXITS):
++            return False
++        if exit_reason.startswith("STALE"):
++            return False
++        if exit_reason.startswith("RESOLVE_FAILED"):
++            return False
++        status = str(row.get("status", "") or "").upper().strip()
++        if status in _NON_PERF_STATUSES:
++            return False
++        if exit_reason in _NO_EXIT_INFO:
++            close_markers = (row.get("closed_at") or row.get("exit_timestamp")
++                             or row.get("exit_time_est") or row.get("exit_date"))
++            if not close_markers and status not in _TERMINAL_STATUSES:
++                return False
++        return True
++
+ WR_MIN_N = 20
+ PROVEN_MIN_N = 100
+ CANDIDATE_MIN_N = 30
+@@ -532,8 +591,11 @@ def load_rows(path: str, drops: dict[str, int] | None = None
+         if not isinstance(pnl, (int, float)):
+             drop["no_numeric_pnl"] = drop.get("no_numeric_pnl", 0) + 1
+             continue
+-        status = str(r.get("status") or "").upper()
+-        if status in ("OPEN", "PENDING", ""):
++        # Same predicate the canonical view uses — in BOTH modes. The old
++        # 3-value status deny-list here never read exit_reason, so the
++        # payload_slice fallback admitted rows the canonical view dropped.
++        # Keeping the "not_closed" bucket name preserves the drops contract.
++        if not _is_scored_row(r):
+             drop["not_closed"] = drop.get("not_closed", 0) + 1
+             continue
+         key = str(r.get("id") or "") or (

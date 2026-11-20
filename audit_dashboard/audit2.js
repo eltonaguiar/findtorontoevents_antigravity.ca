@@ -119,6 +119,8 @@ function renderLedger(d){
   }).join("");
   el("classRows").innerHTML = rows || '<tr><td colspan="8" class="muted">no class rows</td></tr>';
 
+  renderPerClass(d);
+
   var sum = d.summary || {};
   el("trialBudget").innerHTML = "Rolls used: <strong>"+fmt(sum.n_cells_tested,0)+"</strong> tested cells / <strong>"+fmt(sum.n_cells_total,0)+"</strong> total &middot; "+
     "verdicts: proven "+fmt(sum.n_proven,0)+", candidate "+fmt(sum.n_candidate,0)+", weak "+fmt(sum.n_weak,0)+", kill "+fmt(sum.n_kill,0)+". "+
@@ -132,6 +134,65 @@ function renderLedger(d){
     "input sha <code>"+esc(prov.input_sha256||"—")+"</code> · "+
     "git <code>"+esc(prov.git_sha||"—")+"</code> · "+
     "generated <code>"+esc(d.generated_at||"—")+"</code>"+tmpWarn;
+}
+
+/* Per-class verdict panel.
+   Every number here is COPIED from the payload (tools/build_audit2_per_class_panel.py
+   joined class_rollup() to the tribunal's classes/cells). Nothing is recomputed in
+   the browser — the reconcile test asserts the panel equals class_rollup() exactly,
+   so a statistic computed here would be a second implementation waiting to disagree. */
+function verdictClass(word){
+  var w = String(word||"").toUpperCase();
+  if (w==="INCONCLUSIVE" || w==="NO VERDICT") return "v-INSUFFICIENT_N";
+  return "v-"+(w||"INSUFFICIENT_N");
+}
+
+function pfText(pf, wins, losses){
+  if (pf != null) return fmt(pf, 4);
+  // class_rollup returns null when there is no loss mass: PF is undefined.
+  if (losses === 0 && wins > 0) return "∞";
+  return "n/a";
+}
+
+function renderPerClass(d){
+  var pc = d.per_class_verdicts;
+  if (!pc || !Array.isArray(pc.classes)) {
+    el("pcRows").innerHTML = '<tr><td colspan="8" class="muted">per-class panel not in this payload — the ledger was built without tools/build_audit2_per_class_panel.py</td></tr>';
+    el("pcCaption").textContent = "no per_class_verdicts block";
+    el("pcProvenance").textContent = "—";
+    return;
+  }
+  var mode = pc.mode || "unknown";
+  el("pcCaption").innerHTML = "Ledger <code>"+esc(pc.generated_at||"—")+"</code> · denominator mode <code>"+esc(mode)+"</code> · "+
+    "rows counted <strong>"+fmt(pc.rows_counted,0)+"</strong> from <code>"+esc(pc.rows_source||"—")+"</code>. "+
+    "Net mean is <strong>percent per trade, net of round-trip cost</strong>; win rate counts decided trades on gross PnL."+
+    (mode!=="canonical" ? ' <strong style="color:var(--warn)">This build did not use the canonical full book — compare with care.</strong>' : "");
+
+  if (!pc.classes.length) {
+    el("pcRows").innerHTML = '<tr><td colspan="8" class="muted">per-class panel is empty — no scored rows in the payload</td></tr>';
+  } else {
+    el("pcRows").innerHTML = pc.classes.map(function(c){
+      var gaps = [];
+      if (!c.in_rollup) gaps.push("not in rollup");
+      if (!c.in_tribunal) gaps.push("no tribunal verdict");
+      var marker = gaps.length ? ' <span class="badge b-declined">'+esc(gaps.join(" / "))+'</span>' : "";
+      var note = c.verdict_note ? ' <span class="small muted">'+esc(c.verdict_note)+'</span>' : "";
+      return "<tr><td><strong>"+esc(c.asset_class)+"</strong></td>"+
+        '<td class="'+verdictClass(c.verdict_word)+'">'+esc(c.verdict_word)+marker+note+"</td>"+
+        '<td class="num">'+fmt(c.n,0)+"</td>"+
+        '<td class="num">'+fmt(c.mean_net_pct,4)+"</td>"+
+        '<td class="num">'+ci(c.net_ci_pct)+"</td>"+
+        '<td class="num">'+pfText(c.profit_factor, c.wins, c.losses)+"</td>"+
+        '<td class="num">'+(c.win_rate_pct==null?"—":fmt(c.win_rate_pct,2)+"%")+"</td>"+
+        '<td class="num">'+fmt(c.n_cells,0)+" ("+fmt(c.n_cells_tested,0)+")</td></tr>";
+    }).join("");
+  }
+
+  var src = (pc.classes[0] && pc.classes[0].field_sources) || {};
+  el("pcProvenance").innerHTML = Object.keys(src).map(function(k){
+    return "<div><code>"+esc(k)+"</code> — "+esc(src[k])+"</div>";
+  }).join("") +
+    "<div><code>generated_at / mode</code> — audit3_ledger.json top level and coverage.denominator</div>";
 }
 
 renderStatic();
