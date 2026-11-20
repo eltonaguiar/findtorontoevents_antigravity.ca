@@ -1001,32 +1001,50 @@ def _json_safe(obj):
 # DSR gate (per-class aggregate — treat all class picks as one strategy)
 # ---------------------------------------------------------------------------
 
-def _dsr_gate(returns: list[float]) -> dict[str, Any]:
+def _dsr_gate(returns: list[float], asset_class: str = "") -> dict[str, Any]:
+    # M-061a / P0.5 (2026-11-20): the class aggregate is not one trial. It is the
+    # best of NB_TRIALS_BY_CLASS evaluated systems, and that count can only grow.
+    _cls = str(asset_class or "").upper()
+    _local_trials = NB_TRIALS_BY_CLASS.get(_cls, 1)
+    try:
+        from alpha_engine.trial_counter import effective_n_trials
+    except ImportError:
+        try:
+            sys.path.insert(0, str(REPO_ROOT / "alpha_engine"))
+            from trial_counter import effective_n_trials
+        except ImportError:
+            def effective_n_trials(local, family="GLOBAL"):
+                return max(int(local or 0), 1)
+    nb_trials = effective_n_trials(_local_trials, family=_cls or "GLOBAL")
+
     try:
         try:
             from alpha_engine.deflated_sharpe import returns_stats, sharpe_variance, deflated_sharpe_ratio
         except ImportError:
             from deflated_sharpe import returns_stats, sharpe_variance, deflated_sharpe_ratio
     except ImportError:
-        return {"ok": None, "note": "deflated_sharpe not importable", "dsr_score": None}
+        return {"ok": None, "note": "deflated_sharpe not importable", "dsr_score": None,
+                "nb_trials": nb_trials}
 
     arr = np.array(returns, dtype=float)
     if len(arr) < 10:
-        return {"ok": None, "note": f"n={len(arr)} too small for DSR", "dsr_score": None}
+        return {"ok": None, "note": f"n={len(arr)} too small for DSR", "dsr_score": None,
+                "nb_trials": nb_trials}
 
     mu, sd = arr.mean(), arr.std()
     if sd == 0:
-        return {"ok": False, "note": "zero variance returns", "dsr_score": 0.0}
+        return {"ok": False, "note": "zero variance returns", "dsr_score": 0.0,
+                "nb_trials": nb_trials}
 
     sr = mu / sd * np.sqrt(252)  # annualised daily SR approximation
     stats = returns_stats(list(returns))
     horizon = len(arr)
     sr_var = sharpe_variance(sr, horizon, stats["skewness"], stats["kurtosis"])
-    # nb_trials=1 — we're testing the class aggregate, not a selected-best strategy
+    # nb_trials was hoisted above; the old code passed nb_trials=1 (zero correction).
     dsr = deflated_sharpe_ratio(
         estimated_sharpe=sr,
         sr_variance=sr_var,
-        nb_trials=1,
+        nb_trials=nb_trials,
         backtest_horizon=horizon,
         skew=stats["skewness"],
         kurtosis=stats["kurtosis"],
@@ -1042,8 +1060,10 @@ def _dsr_gate(returns: list[float]) -> dict[str, Any]:
             "ok": None,
             "note": "deflated_sharpe non-finite (degenerate sr_variance/moments inputs)",
             "dsr_score": None,
+            "nb_trials": nb_trials,
         }
-    return {"ok": dsr_f >= DSR_THRESHOLD, "dsr_score": round(dsr_f, 4), "note": ""}
+    return {"ok": dsr_f >= DSR_THRESHOLD, "dsr_score": round(dsr_f, 4), "note": "",
+            "nb_trials": nb_trials}
 
 
 # ---------------------------------------------------------------------------
@@ -1686,7 +1706,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
                 pf = float(h.get("pf") or h.get("profit_factor") or 0)
                 data_source = "dashboard_fallback"
 
-        dsr = _dsr_gate(returns)
+        dsr = _dsr_gate(returns, asset_class=ac)
         pbo = _pbo_gate(ac_picks) if not _CI_MODE else {"ok": None, "note": "skipped in CI mode", "pbo": None}
         spa = _spa_gate(ac_picks) if not _CI_MODE else {"ok": None, "note": "skipped in CI mode", "spa_p": None, "n_spa_pass": 0}
         fdr = _fdr_gate(ac_picks) if not _CI_MODE else {"ok": None, "n_tested": 0, "n_fdr_pass": 0, "n_bonferroni_pass": 0, "min_p": None, "fdr_q": FDR_Q, "note": "skipped in CI mode"}
