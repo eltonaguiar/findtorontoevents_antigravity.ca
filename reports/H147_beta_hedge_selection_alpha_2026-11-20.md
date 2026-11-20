@@ -87,3 +87,43 @@ and is statistically indistinguishable from zero. CRYPTO alone (n=308):
 ```
 python3 tools/h147_beta_hedge_picks.py --out reports/h147_beta_hedge_2026-11-20.json
 ```
+
+---
+
+## Portfolio-level follow-up (same day) — this is the decisive test
+
+Per-trade β was not estimable. The portfolio series is. `tools/portfolio_beta_regression.py`
+builds the equal-weight book: each open pick is one unit, the book's daily return is
+the mean of picks open that day, regressed on SPY over the days the book held anything.
+Convention: each pick's total return is accrued evenly across its business-day hold.
+That preserves totals but smooths the path, which **understates β and overstates t-stats** —
+so treat the β here as a lower bound in magnitude and the alpha t-stat as generous.
+
+Sample: **1,792 picks** (vs 331 for the per-trade test — this uses every pick with
+timestamps, not just those with a usable price bar), 168 active days. 1,595 picks
+mapped to a non-trading day or a same-day close and were dropped.
+
+| quantity | value |
+|---|---|
+| beta to SPY | **0.046** (t = 2.91) |
+| alpha, annualised | **+4.92%/yr** (t = **1.49**) |
+| correlation | 0.220 |
+| mean daily book return | +0.02296% |
+| mean daily SPY return | +0.07433% |
+| cumulative book (active days) | +3.86% |
+| cumulative SPY (same days) | +12.49% |
+
+**Verdict, both directions fail.** The book is essentially market-neutral (β ≈ 0.05,
+statistically distinguishable from zero but economically nothing), so *the edge is not
+beta* — H-147's strong form is refuted, now on 5× the sample and without the per-trade
+estimator's instability. But the positive alpha is **not significant** (t = 1.49 < 1.96),
+and on the days it was active the book returned a third of what simply holding SPY did.
+
+So the honest statement is: **the book is not directional exposure, and it is not yet
+demonstrated selection alpha either.** It is a small positive number inside its own
+noise. That is a KILL for promotion, not a PROMOTE, and it is the same conclusion the
+per-trade test hinted at with less power.
+
+Residual uncertainty: accrual smoothing, and 1,595 dropped picks (crypto positions that
+open and close between two bars have no business-day span). A path-accurate version needs
+intraday prices — which is why the entry-contract fix in this same change matters.

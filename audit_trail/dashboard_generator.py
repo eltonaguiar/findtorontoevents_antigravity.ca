@@ -8433,7 +8433,11 @@ def _normalize_pick(raw, source_system: str, status: str = "OPEN") -> dict:
         "exit_reason": str(exit_reason) if exit_reason else "",
         "timestamp": ts,
         "signal_time": entry_ts or ts,
-        "entry_time": entry_ts,
+        # 2026-11-20: entry_time must never be blank when the pick carries ANY
+        # creation timestamp. 45.5% of resolved picks had it empty, which made
+        # regime / hedge / path analysis impossible for half the book. Prefer the
+        # entry-specific fields (derived above), else fall back to the pick ts.
+        "entry_time": entry_ts or ts or "",
         # 2026-05-20: resolved_at fallback chain — fixes quan_engine_scalp + similar emitters
         # that write only closed_at/exit_time. Harness reads resolved_at; without this fallback,
         # 5,293 quan_engine_scalp closed picks invisible to edge_stability_harness. (peer freebuff
