@@ -1,0 +1,140 @@
+name: anti-overfit-gate
+
+# BLOCKING statistical gate.
+#
+# Every other statistical gate in this repo runs with `continue-on-error: true`,
+# so a strategy can fail DSR/PBO and still be promoted. This workflow is the
+# enforcement point: `tools/anti_overfit_gate.py` exits non-zero on a failed
+# gate, and this job does NOT set `continue-on-error`.
+#
+# Contracts (see the script's docstring):
+#   * DSR >= 0.95 (multiple-testing-corrected, per-period Sharpe input)
+#   * PBO <  0.05 (requires >= 2 competing strategies -- a single series cannot
+#                   produce a PBO, so a missing peer matrix FAILS, not skips)
+#   * n    >= 100 closed picks
+#   * nan / None  -> FAIL. An unmeasurable gate is not a passed gate.
+#
+# Why blocking-on-PR but advisory-on-cron: a PR that touches the validation or
+# promotion path must not merge while the promotion cohort fails. Nightly cron
+# still reports, but a pre-existing red cohort should not wedge unrelated work.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "alpha_engine/anti_overfit_validator.py"
+      - "alpha_engine/money_ready_verdict.py"
+      - "alpha_engine/audit3_tribunal.py"
+      - "tools/anti_overfit_gate.py"
+      - "tools/run_anti_overfit_audit.py"
+      - "tools/pbo.py"
+      - "tools/wfe.py"
+      - "tools/h037_forward_verification.py"
+      - "tests/test_anti_overfit_validator.py"
+      - "tests/test_pbo_contract_and_gate.py"
+      - "tests/test_wfe.py"
+      - ".github/workflows/anti-overfit-gate.yml"
+  schedule:
+    - cron: "41 5 * * *"
+  workflow_dispatch:
+    inputs:
+      top:
+        description: "Number of highest-volume source systems to gate"
+        required: false
+        default: "5"
+      blocking:
+        description: "Fail the job on a failed gate (1) or report only (0)"
+        required: false
+        default: "1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          filter: blob:none
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet numpy pandas scipy pytest
+
+      - name: Syntax check
+        run: |
+          python -m py_compile \
+            tools/anti_overfit_gate.py \
+            tools/run_anti_overfit_audit.py \
+            tools/pbo.py \
+            tools/wfe.py \
+            tools/h037_forward_verification.py \
+            alpha_engine/anti_overfit_validator.py
+
+      - name: Unit tests (the gate logic itself must be correct)
+        run: |
+          pytest -q \
+            tests/test_anti_overfit_validator.py \
+            tests/test_pbo_contract_and_gate.py \
+            tests/test_wfe.py
+
+      - name: Fetch closed-pick ledger from production
+        # audit_dashboard/data/dashboard_data.json is gitignored (.gitignore:222)
+        # so it is NOT present in a fresh checkout. Without this step the gate
+        # would exit 2 on every single PR for a missing file -- a false blocker
+        # that would get `continue-on-error` re-added within a week. Same fetch
+        # pattern as pick-funnel-nightly.yml. A fetch failure is deliberately
+        # NOT swallowed: it leaves the file absent so the gate fails loudly and
+        # honestly ("data unavailable") rather than silently gating nothing.
+        run: |
+          mkdir -p audit_dashboard/data
+          curl -fsS --max-time 180 \
+            "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
+            -o audit_dashboard/data/dashboard_data.json
+          python - <<'PY'
+          import json, os, sys
+          p = "audit_dashboard/data/dashboard_data.json"
+          size = os.path.getsize(p)
+          d = json.load(open(p))
+          picks = d.get("picks") or d.get("closed_picks") or []
+          print(f"ledger: {size/1e6:.1f} MB, generated_at={d.get('generated_at')}, "
+                f"top-level picks={len(picks)}")
+          if size < 1000:
+              sys.exit("fetched ledger is suspiciously small")
+          PY
+
+      - name: Run anti-overfit gate (blocking)
+        # Blocking on PRs and on any workflow_dispatch requesting blocking=1.
+        if: >-
+          github.event_name == 'pull_request'
+          || github.event.inputs.blocking == '1'
+        run: |
+          python tools/anti_overfit_gate.py \
+            --top "${{ github.event.inputs.top || '5' }}"
+
+      - name: Run anti-overfit gate (report only)
+        # Cron runs report but do not fail the workflow, so a pre-existing red
+        # cohort cannot wedge unrelated nightly work. The PR path above is the
+        # blocking enforcement.
+        if: >-
+          github.event_name == 'schedule'
+          || github.event.inputs.blocking == '0'
+        continue-on-error: true
+        run: |
+          python tools/anti_overfit_gate.py \
+            --top "${{ github.event.inputs.top || '5' }}" \
+            --allow-empty

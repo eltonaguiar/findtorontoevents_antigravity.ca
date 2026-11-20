@@ -15,8 +15,19 @@ Usage::
 Notes
 -----
 - Returns are pulled from ``audit_dashboard/data/dashboard_data.json``,
-  ``picks.recent_closed[]``, filtered to ``status in {WIN, LOST}`` so that
-  pending/active rows are excluded.
+  ``picks.recent_closed[]``, filtered to resolved rows only so that
+  pending/active rows are excluded. The resolved-status vocabulary is
+  ``RESOLVED_STATUSES`` below.
+
+  .. warning::
+     **Do not narrow this to ``{"WIN", "LOST"}``.** The live ledger writes
+     ``WON`` (not ``WIN``). On 2026-11-20 the set ``{"WIN", "LOST"}`` matched
+     2,026 of 3,455 resolved rows and the 1,429 rows it silently dropped were
+     *exclusively winners* -- every subsequent DSR / PBO / Sharpe / WFE figure
+     computed here was a property of a loss-only subsample, not of the
+     strategy. ``_assert_status_vocabulary_is_covered`` now fails loudly if the
+     ledger introduces a resolved status this module does not know about, so the
+     next vocabulary drift is a red build instead of silent bias.
 - Per-pick return = ``pnl_pct / 100`` (each pick treated as one observation).
 - For PBO we rebuild a (T x S) returns matrix where columns are *strategies*
   inside the chosen source_system. If the system has < 2 strategies the PBO
@@ -47,6 +58,46 @@ from alpha_engine.anti_overfit_validator import (  # noqa: E402
     reality_check_pvalue,
 )
 
+# Every status the live ledger uses for a pick whose P&L is final. Aligns with
+# the vocabularies already used elsewhere in the repo -- audit_trail/
+# dashboard_generator.py, alpha_engine/reconciliation_report.py and
+# tools/edge/edge_stability.py all recognise this same family. "WON" is the one
+# the audit ledger actually emits; "WIN" is kept for older exports.
+RESOLVED_STATUSES: frozenset[str] = frozenset({
+    "WIN", "WON",
+    "LOST", "LOSS",
+    "CLOSED", "CLOSED_TP", "CLOSED_SL", "CLOSED_FLAT",
+    "TP_HIT", "SL_HIT", "TAKE_PROFIT", "TIME_EXIT",
+})
+
+# Statuses that are legitimately NOT final -- excluded, never a vocabulary error.
+UNRESOLVED_STATUSES: frozenset[str] = frozenset({
+    "OPEN", "ACTIVE", "PENDING", "NEW", "EXPIRED", "CANCELLED", "CANCELED",
+    "FLAT", "SKIPPED", "VOID", "UNKNOWN", "WATCHING", "",
+})
+
+
+def _assert_status_vocabulary_is_covered(picks: list[dict[str, Any]]) -> None:
+    """Fail loudly if the ledger emits a resolved status we would silently drop.
+
+    The 2026-11-20 WIN/WON defect survived every test because an unrecognised
+    status is not an error -- it is simply a row that never appears. This guard
+    converts that silent absence into a hard failure with the offending values
+    named, so the next vocabulary drift breaks the build instead of biasing
+    every statistic downstream.
+    """
+    seen = {str(p.get("status", "")).upper() for p in picks}
+    unknown = seen - RESOLVED_STATUSES - UNRESOLVED_STATUSES
+    if unknown:
+        raise ValueError(
+            "Closed-pick ledger contains statuses this module does not "
+            f"classify: {sorted(unknown)}. Add each to either "
+            "RESOLVED_STATUSES or UNRESOLVED_STATUSES in "
+            "tools/run_anti_overfit_audit.py -- do not let them fall through, "
+            "because an unclassified row is silently excluded and biases "
+            "every DSR/PBO/Sharpe figure computed from this ledger."
+        )
+
 
 def _load_closed_picks() -> list[dict[str, Any]]:
     if not DATA_PATH.exists():
@@ -54,9 +105,10 @@ def _load_closed_picks() -> list[dict[str, Any]]:
     with DATA_PATH.open("r", encoding="utf-8") as fh:
         d = json.load(fh)
     rc = d.get("picks", {}).get("recent_closed", [])
+    _assert_status_vocabulary_is_covered(rc)
     return [
         p for p in rc
-        if str(p.get("status", "")).upper() in {"WIN", "LOST"}
+        if str(p.get("status", "")).upper() in RESOLVED_STATUSES
         and isinstance(p.get("pnl_pct"), (int, float))
     ]
 
@@ -102,6 +154,23 @@ def _annualized_sharpe(returns: np.ndarray, periods_per_year: int = 252) -> floa
     return float(mu / sd * math.sqrt(periods_per_year))
 
 
+def _per_period_sharpe(returns: np.ndarray) -> float:
+    """Per-period (un-annualized) Sharpe.
+
+    ``deflated_sharpe`` requires per-period units -- its Lo (2002) estimator
+    variance scales with ``SR**2``, so an annualized input silently pushes the
+    result toward 1.0 (a PASS) regardless of true edge. Fixed 2026-11-20;
+    see ``reports/VALIDATION_LAYER_AUDIT_2026-11-20.md`` Defect A.
+    """
+    if returns.size < 2:
+        return float("nan")
+    mu = returns.mean()
+    sd = returns.std(ddof=1)
+    if sd < 1e-12:
+        return float("nan")
+    return float(mu / sd)
+
+
 def _audit_one(source_system: str, picks: list[dict[str, Any]],
                n_trials: int, B: int) -> dict[str, Any]:
     info = _system_returns(picks, source_system)
@@ -113,7 +182,9 @@ def _audit_one(source_system: str, picks: list[dict[str, Any]],
             "skipped": "insufficient sample (< 30 closed picks)",
         }
 
+    # `sr` is ANNUALIZED -- for reporting only. DSR needs per-period units.
     sr = _annualized_sharpe(flat)
+    sr_pp = _per_period_sharpe(flat)
 
     try:
         rc_p = reality_check_pvalue(flat, benchmark=0.0, B=B, block_size=10)
@@ -124,7 +195,7 @@ def _audit_one(source_system: str, picks: list[dict[str, Any]],
         rc_err = None
 
     try:
-        dsr = deflated_sharpe(sr, n_trials=n_trials, returns_array=flat)
+        dsr = deflated_sharpe(sr_pp, n_trials=n_trials, returns_array=flat)
     except Exception as exc:  # pragma: no cover
         dsr = float("nan")
         dsr_err: str | None = f"{type(exc).__name__}: {exc}"
@@ -150,6 +221,7 @@ def _audit_one(source_system: str, picks: list[dict[str, Any]],
         "n_picks": int(flat.size),
         "n_strategies": len(info["by_strategy"]),
         "annualized_sharpe": sr,
+        "per_period_sharpe": sr_pp,
         "pbo": pbo,
         "pbo_note": pbo_note,
         "reality_check_p": rc_p,

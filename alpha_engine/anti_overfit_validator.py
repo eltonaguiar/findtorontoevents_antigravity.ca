@@ -224,10 +224,114 @@ def reality_check_pvalue(
 # ---------------------------------------------------------------------------
 # 3. Deflated Sharpe Ratio (Bailey & Lopez de Prado 2014, AFML eq. 14.5)
 # ---------------------------------------------------------------------------
+#: Guard rail for per-period Sharpe. A per-bar Sharpe of 1.0 (mean == one
+#: standard deviation per bar) is already an implausible ~15.9 annualized on
+#: daily data; anything above it is almost certainly an annualized value that
+#: the caller forgot to de-annualize.
+#:
+#: Why this exists (2026-11-20): passing an annualized Sharpe did not raise --
+#: it returned DSR = 1.0000 (a PASS) on a series with provably zero edge,
+#: because ``sr_var`` in Lo (2002) scales with ``SR**2`` and the variance term
+#: dominates the numerator. See
+#: ``reports/VALIDATION_LAYER_AUDIT_2026-11-20.md`` Defect A.
+MAX_PER_PERIOD_SHARPE = 1.0
+
+#: Annualization factors that ``strategy_sharpe`` is most likely to have been
+#: multiplied by if the caller forgot to de-annualize.
+_ANNUALIZATION_PROBES: tuple[tuple[float, str], ...] = (
+    (252.0, "daily"),
+    (52.0, "weekly"),
+    (12.0, "monthly"),
+    (4.0, "quarterly"),
+)
+
+
+def _reject_annualized_sharpe(
+    strategy_sharpe: float,
+    mu: float,
+    sd: float,
+) -> None:
+    """Raise if ``strategy_sharpe`` is manifestly annualized.
+
+    ``returns_array`` is already an argument, so the true per-period Sharpe is
+    *implied* by the data: ``mu / sd``. Comparing the supplied value against
+    that implied value detects the unit error far more reliably than any
+    absolute threshold -- a zero-edge daily series has an annualized Sharpe of
+    only ~0.5, which slips under a ``|SR| > 1.0`` guard yet still makes
+    ``deflated_sharpe`` return 1.0000.
+
+    The test is deliberately narrow: it fires when the ratio of the supplied
+    Sharpe to the implied one lands on a known annualization factor
+    (sqrt(4|12|52|252)). A coincidental match is unlikely, so false positives
+    stay near zero while the actual bug -- multiplying by sqrt(periods_per_year)
+    -- is caught deterministically.
+    """
+    if sd < 1e-12 or mu == 0.0:
+        # Degenerate/zero-edge series: fall back to the absolute backstop.
+        if abs(strategy_sharpe) > MAX_PER_PERIOD_SHARPE:
+            raise ValueError(
+                f"strategy_sharpe={strategy_sharpe:.4f} exceeds "
+                f"|SR| <= {MAX_PER_PERIOD_SHARPE} for a per-period Sharpe."
+            )
+        return
+
+    implied = mu / sd
+    ratio = strategy_sharpe / implied
+
+    # If the supplied Sharpe IS the value implied by the data, it is per-period
+    # by construction -- no unit error is possible -- so return immediately.
+    #
+    # This exists because a per-period Sharpe is NOT bounded by 1.0. Lumpy
+    # per-trade returns (many exact zeros, a few large losses) can legitimately
+    # give |SR| > 1, and an absolute-magnitude reject would misreport those as
+    # unit errors and blank out DSR for the systems most in need of a DSR.
+    #
+    # .. warning::
+    #    The original comment here justified the early return with observed
+    #    per-period Sharpes of -1.20 / -1.65 / -1.97 / -3.68 on the live
+    #    closed-pick ledger. Those values were NOT a property of the strategies:
+    #    they came from a loader defect (``tools/run_anti_overfit_audit.py``
+    #    filtered ``status in {"WIN","LOST"}`` while the ledger writes ``WON``,
+    #    discarding 1,429 of 2,026 resolved rows -- exclusively winners). With
+    #    that defect fixed the same three systems show per-period Sharpe of
+    #    -0.08 / +0.04 / -0.03. The structural argument for this early return
+    #    stands on its own (a per-period Sharpe has no upper bound); it should
+    #    not be argued from those numbers again. See
+    #    tests/test_closed_pick_loader.py.
+    if implied != 0.0 and abs(strategy_sharpe - implied) <= 0.02 * abs(implied):
+        return
+
+    for periods_per_year, freq_name in _ANNUALIZATION_PROBES:
+        factor = math.sqrt(periods_per_year)
+        if abs(ratio - factor) <= 0.15 * factor or abs(ratio + factor) <= 0.15 * factor:
+            raise ValueError(
+                f"strategy_sharpe={strategy_sharpe:.4f} looks ANNUALIZED, not "
+                f"per-period: it is {abs(ratio):.2f}x the per-period Sharpe "
+                f"implied by returns_array ({implied:.4f}), and "
+                f"sqrt({periods_per_year:.0f}) = {factor:.2f} ({freq_name} "
+                f"data). deflated_sharpe needs the per-period value, because "
+                f"the Lo (2002) estimator variance scales with SR**2 and an "
+                f"annualized input silently returns ~1.0. Pass "
+                f"{implied:.4f} directly, or pass annualised=True."
+            )
+
+    if abs(strategy_sharpe) > MAX_PER_PERIOD_SHARPE:
+        raise ValueError(
+            f"strategy_sharpe={strategy_sharpe:.4f} looks annualized: it is "
+            f"{strategy_sharpe / implied:.2f}x the per-period Sharpe implied by "
+            f"returns_array ({implied:.4f}) and above the |SR| <= "
+            f"{MAX_PER_PERIOD_SHARPE} backstop. deflated_sharpe requires a "
+            f"PER-PERIOD Sharpe. Either pass {implied:.4f} directly, or pass "
+            f"annualised=True."
+        )
+
+
 def deflated_sharpe(
     strategy_sharpe: float,
     n_trials: int,
     returns_array: Sequence[float] | np.ndarray,
+    annualised: bool = False,
+    periods_per_year: int = 252,
 ) -> float:
     """Deflated Sharpe -- probability that observed Sharpe is genuine.
 
@@ -235,15 +339,32 @@ def deflated_sharpe(
     that all candidates have zero true Sharpe. Values >= 0.95 mean the
     headline Sharpe survives the multiple-testing correction.
 
+    .. warning::
+       ``strategy_sharpe`` **must be per-period** (same frequency as
+       ``returns_array``), not annualized. This is a hard requirement of the
+       Lo (2002) estimator variance; an annualized input silently *raises* the
+       score. Pass ``annualised=True`` (and set ``periods_per_year``) to have
+       an annualized value converted for you.
+
     Args:
-        strategy_sharpe: observed (un-annualized OR annualized -- consistent
-            with the returns_array sampling rate) Sharpe of the candidate.
-        n_trials: number of independent strategy backtests considered.
+        strategy_sharpe: observed **per-period** Sharpe of the candidate.
+        n_trials: number of independent strategy backtests considered. Must
+            exceed 1 for the multiple-testing correction to bite; ``n_trials=1``
+            sets ``E[max SR] = 0``, which disables the correction entirely.
         returns_array: 1-D series of periodic returns from the candidate
             (used to estimate skew, kurtosis, and the SR estimator variance).
+        annualised: set ``True`` if ``strategy_sharpe`` is annualized; it will
+            be de-annualized with ``periods_per_year`` before use.
+        periods_per_year: only consulted when ``annualised=True``.
 
     Returns:
         DSR probability in ``[0, 1]``.
+
+    Raises:
+        ValueError: if ``returns_array`` has < 4 observations, ``n_trials`` is
+            not positive, ``strategy_sharpe`` is manifestly annualized relative
+            to the supplied ``returns_array``, or a per-period Sharpe with
+            ``|SR| > 1.0`` is supplied (see ``MAX_PER_PERIOD_SHARPE``).
     """
     r = np.asarray(returns_array, dtype=np.float64)
     if r.size < 4:
@@ -254,6 +375,15 @@ def deflated_sharpe(
     n = r.size
     mu = r.mean()
     sd = r.std(ddof=1)
+
+    if annualised:
+        if periods_per_year <= 0:
+            raise ValueError("periods_per_year must be positive")
+        strategy_sharpe = float(strategy_sharpe) / math.sqrt(periods_per_year)
+    else:
+        strategy_sharpe = float(strategy_sharpe)
+        _reject_annualized_sharpe(strategy_sharpe, mu, sd)
+
     if sd < 1e-12:
         return 1.0 if strategy_sharpe > 0 else 0.0
 
@@ -340,12 +470,21 @@ def evaluate_strategy(
         history: 1-D iterable of per-period returns for the candidate.
         n_trials: number of strategies considered during selection (for DSR
             multiple-testing correction). Defaults to 1 (no correction).
-        n_candidates: number of synthetic peer columns used for the PBO
-            estimate. Defaults to 2 (CPCV minimum); callers with a real peer
-            matrix should call ``cpcv_pbo`` directly.
+        n_candidates: ignored. Retained only for backward compatibility.
 
     Returns:
         ``{"dsr": float, "pbo": float, "sharpe": float, "n": int}``
+
+    .. warning::
+       ``pbo`` is **always nan** here. PBO is the probability that the
+       in-sample-best configuration underperforms out-of-sample *across a real
+       candidate set*; it cannot be estimated from a single return history.
+       Earlier versions fabricated zero-mean random "peer" columns and ran
+       :func:`cpcv_pbo` against them, which measures only "does this beat
+       random noise" -- an unrelated quantity that nonetheless returned a
+       plausible-looking number and was easy to mistake for PBO. Call
+       :func:`cpcv_pbo` directly with a genuine ``(T x N)`` matrix of candidate
+       returns when you have one.
     """
     r = np.asarray(list(history), dtype=np.float64)
     out: dict = {"dsr": float("nan"), "pbo": float("nan"),
@@ -362,19 +501,8 @@ def evaluate_strategy(
         out["dsr"] = float(deflated_sharpe(sharpe, max(int(n_trials), 1), r))
     except Exception:
         out["dsr"] = float("nan")
-    # PBO needs >= 2 candidate columns; synthesize a zero-mean peer so the
-    # estimator has something to compare against. Degraded mode -- for real
-    # peer evaluation pass a proper matrix to cpcv_pbo() directly.
-    try:
-        peers = max(int(n_candidates), 2)
-        rng = np.random.default_rng(0)
-        synthetic = rng.normal(loc=0.0, scale=max(sd, 1e-6),
-                               size=(r.size, peers - 1))
-        M = np.column_stack([r, synthetic])
-        n_folds = min(10, max(2, r.size // 4))
-        out["pbo"] = float(cpcv_pbo(M, n_folds=n_folds, n_test_groups=2))
-    except Exception:
-        out["pbo"] = float("nan")
+    # `pbo` intentionally left as nan -- see the warning above. Do NOT
+    # reintroduce a synthetic peer matrix to "make the number appear".
     return out
 
 
