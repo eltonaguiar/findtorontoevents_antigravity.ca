@@ -1,4 +1,4 @@
-# Correction: the dashboard cron is 3-hourly, and a 0-that-min lag is luck
+# Correction: the dashboard cron is 3-hourly, and a 0.0-min lag is luck
 
 **Date:** 2026-11-20T07:31Z
 **Area:** documentation for `.github/workflows/audit-dashboard.yml` (no behaviour change)
