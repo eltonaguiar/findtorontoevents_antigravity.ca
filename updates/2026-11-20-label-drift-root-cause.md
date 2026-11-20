@@ -67,6 +67,12 @@ So the labels were correct, then a merge damaged them, and the damaged file was 
    - `--apply` collapses only *byte-identical* copies, leaving the surviving row and its `n` untouched, and **refuses** when two same-name rows disagree, because choosing between two contradictory claims is a human decision.
 3. The artifact is healed in this commit: 81 rows → 80, all labelled, `n_strategies_audited` matching the row count.
 
+Labelling runs before the collapse for exactly that reason: in the measured
+hybrid the two `regime_mild_bear` copies differed *only* by label, so a
+dedupe-first order saw two contradictory claims and refused. Labelling both
+first makes them identical, the duplicate collapses, and the payload heals
+itself instead of failing the hour. Counts are re-tallied over the survivors.
+
 Deduplication is not the demotion this pipeline forbids. A PROBATION strategy keeps its row, its `n` and its place; the collapse only removes a second *copy of the same row* that the merge duplicated, so the payload stops counting that strategy twice.
 
 ## Verification

@@ -188,6 +188,12 @@ def main() -> int:
               % (rows_before, payload.get("publication_label_counts")))
         return 0
 
+    # Label first, then collapse. In the measured hybrid (2026-11-20T20:46) the
+    # two copies of regime_mild_bear differed *only* by label -- one carried it,
+    # one had been stripped. Deduping first therefore saw two contradictory rows
+    # and refused; labelling both first makes them identical, and the duplicate
+    # collapses. Same rows, same n, self-healed instead of failing the hour.
+    payload = apply_labels(payload, args.dsr_threshold)
     try:
         kept, dropped = dedupe_exact(payload.get("strategies") or [])
     except ValueError as exc:
@@ -197,8 +203,8 @@ def main() -> int:
         payload["strategies"] = kept
         print("collapsed %d exact duplicate row(s): %s"
               % (len(dropped), ", ".join(sorted(set(dropped)))))
-
-    payload = apply_labels(payload, args.dsr_threshold)
+        # Counts were tallied over the copies; re-tally over what survives.
+        payload = apply_labels(payload, args.dsr_threshold)
 
     rows_after = len(payload.get("strategies") or [])
 
