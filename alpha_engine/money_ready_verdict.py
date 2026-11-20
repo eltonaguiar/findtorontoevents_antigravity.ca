@@ -49,6 +49,15 @@ except ImportError:
     np = None  # type: ignore[assignment]
     print("WARN: numpy unavailable; statistical gates degraded", file=sys.stderr)
 
+# Every PF this module publishes carries its denominator and cost treatment
+# (2026-11-20): CRYPTO was quoted as 0.26 / 0.83 / 1.31 from three populations
+# and no reader could tell which was the class figure.
+try:
+    from alpha_engine.pf_basis import format_pf as _pf_label
+except Exception:  # pragma: no cover - optional import
+    def _pf_label(value, n=None, **_kw):
+        return f"PF {value} (n={n})" if value is not None else f"PF n/a (n={n})"
+
 # Lazy imports to avoid ModuleNotFoundError when ci_gate scripts import this
 # module from a different sys.path context (e.g. GHA runners).
 def _get_eagle_gates():
@@ -897,6 +906,9 @@ def _class_stats(picks: list[dict]) -> dict[str, dict]:
             # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
             "wr_pct": round(wr * 100, 2),
             "pf": round(pf, 4),
+            "pf_n": n,
+            "pf_basis": "net",
+            "pf_label": _pf_label(pf, n, basis="net"),
             "returns": returns,
             "picks": ps,
             "top_symbol": top_symbol,
@@ -1807,6 +1819,13 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
             "wr_pct": round(wr * 100, 2),
             "pf": round(pf, 4) if pf != float("inf") else None,
+            # PF alone cannot be compared across surfaces; these can.
+            "pf_label": _pf_label(pf, n, basis="net"),
+            "policy_clean_pf_label": _pf_label(
+                _policy_pf if _policy_pf != float("inf") else None,
+                _policy_n,
+                basis="net",
+            ),
             "n": n,
             "n_ok": _sizing_n >= MIN_N_CLASS,
             # Descriptive, matches `wr` above. The gate uses `sizing_wr_ok`.

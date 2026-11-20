@@ -12,24 +12,24 @@ PF is `sum(wins) / |sum(losses)|` at every implementation: `alpha_engine/audit3_
 
 ## Measured
 
-| cohort | n | PF | WR | mean net/pick | cost charged |
-|---|---|---|---|---|---|
-| dashboard book (recent_closed, gross desired) | 2070 | 1.3131 | 46.14% | 0.5355% | 0.0 |
-| dashboard book, net 40bp | 2070 | 1.0702 | 44.15% | 0.1355% | 0.4 |
-| audit3 ledger class node | 6874 | 0.8339 | 40.18% | -0.3159% | 0.0985 |
-| money_ready policy-clean | 22148 | 0.2628 | 41.38% | -0.056536% | via registry |
+| cohort | n | PF | PF (labelled) | WR | mean net/pick | cost charged |
+|---|---|---|---|---|---|---|
+| dashboard book (recent_closed, gross desired) | 2070 | 1.3131 | PF 1.31 (n=2,070, gross) | 46.14% | 0.5355% | 0.0 |
+| dashboard book, net 40bp | 2070 | 1.0702 | PF 1.07 (n=2,070, net 40.0bp) | 44.15% | 0.1355% | 0.4 |
+| audit3 ledger class node | 6788 | 0.8323 | PF 0.83 (n=6,788, net 10.0bp) | 40.31% | -0.3213% | 0.0996 |
+| money_ready policy-clean | 21989 | 0.2611 | PF 0.26 (n=21,989, net) | 41.35% | -0.056966% | via registry |
 
 ## The attribution
 
-- Widest population: **22,148** picks (money_ready policy-clean), PF **0.2628**.
-- audit3's 6,874 is a **subset**: 69.0% of the class is missing from it.
-- The population ratio is **3.22x** and the PF ratio is **3.17x**. Those are the same number. The two figures are not contradicting each other; they are describing different sets, and the gap in PF tracks the gap in n almost exactly.
+- Widest population: **21,989** picks (money_ready policy-clean), PF **0.2611**.
+- audit3's 6,788 is a **subset**: 69.1% of the class is missing from it.
+- The population ratio is **3.24x** and the PF ratio is **3.19x**. Those are the same number. The two figures are not contradicting each other; they are describing different sets, and the gap in PF tracks the gap in n almost exactly.
 
 ## Which denominator is right
 
 **money_ready policy-clean's, i.e. the 0.26** — as a statement about CRYPTO. A class-level PF must cover the class's resolved population, and that is the only one of the three that does. It is also the only one whose cohort is defined by policy rather than by what happened to make it through a pipeline stage.
 
-That does **not** make audit3's 0.83 wrong — it is correct for its 6,874-pick cohort, and it charges cost per pick (`mean_cost_pct=0.0985`). It is wrong only if quoted with the word "CRYPTO" and no n. Same for the dashboard's 1.3131 on 2,070 rows: a recent-window figure, gross, not the class.
+That does **not** make audit3's 0.83 wrong — it is correct for its 6,788-pick cohort, and it charges cost per pick (`mean_cost_pct=0.0996`). It is wrong only if quoted with the word "CRYPTO" and no n. Same for the dashboard's 1.3131 on 2,070 rows: a recent-window figure, gross, not the class.
 
 ## What does not change
 

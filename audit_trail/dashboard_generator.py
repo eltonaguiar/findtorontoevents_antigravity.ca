@@ -44,6 +44,13 @@ except Exception:  # pragma: no cover - optional import
     def load_risk_policy(*args, **kwargs):
         return {}
 
+# A PF without its denominator is not a measurement (2026-11-20).
+try:
+    from alpha_engine.pf_basis import format_pf as _pf_label
+except Exception:  # pragma: no cover - optional import
+    def _pf_label(value, n=None, **_kw):
+        return f"PF {value} (n={n})" if value is not None else f"PF n/a (n={n})"
+
 try:
     from alpha_engine.money_ready_verdict import money_ready_verdict as _money_ready_verdict
     _HAS_MONEY_READY = True
@@ -6081,6 +6088,8 @@ def compute_asset_class_health(ac_breakdown: dict) -> dict:
             # Aliases expected by template.html and hc_filter.js (contract fix 2026-05-16)
             "wr_pct": wr,
             "pf": pf,
+            "pf_n": n,
+            "pf_label": _pf_label(pf, n),
             "pnl_pct": round(pnl, 2),
             # Q2 (2026-05-19): class-level max drawdown as a fraction
             # (0.20 = 20%). Third tier-certification leg alongside pf/wr.
@@ -6103,6 +6112,8 @@ def compute_asset_class_health(ac_breakdown: dict) -> dict:
         "profit_factor": None,
         "wr_pct": 0.0,
         "pf": None,
+        "pf_n": 0,
+        "pf_label": _pf_label(None, 0),
         "pnl_pct": 0.0,
         "max_drawdown_pct": None,
         "min_display_n": min_display_n,
@@ -6444,6 +6455,8 @@ def _build_readiness_payload(asset_class_health: dict, generated_at: str) -> dic
             by_class[ac_upper] = {
                 "n": n,
                 "pf": round(pf, 2) if pf is not None else None,
+                "pf_n": n,
+                "pf_label": _pf_label(pf, n),
                 "wr": round(wr, 1),
                 "gate_state": gate_state,
                 "sizing_allowed": sizing_allowed,
