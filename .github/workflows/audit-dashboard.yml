@@ -276,8 +276,7 @@ jobs:
           PYTHONUTF8: '1'
         run: |
           pip install pymysql -q 2>/dev/null || true
-          python tools/anti_overfit_audit_sidecar.py --min-n 20 || echo "::warning title=anti-overfit sidecar failed::see log; audit_dashboard/data/anti_overfit_audit.json will go stale (INCIDENT_OVERALL #45)"
-        continue-on-error: true
+          python tools/anti_overfit_audit_sidecar.py --min-n 20
 
       - name: Run research sidecars (Agent C external-research — 4 academically-backed)
         id: research_sidecars
@@ -1242,22 +1241,7 @@ jobs:
                                "ma_strategy_leaderboard.json", "ma_strategy_signals.json"}
                   _jsons = sorted(data_dir.glob("*.json"),
                                   key=lambda p: (p.name == "dashboard_data.json", p.name))
-                  # 2026-11-20 single-publisher fix: audit3_ledger.json is owned by
-                  # audit3-ledger.yml, which uploads the freshly generated ledger to this
-                  # same /audit/data directory in the job that publishes /audit3/.
-                  # This workflow's checkout can be up to a full 3-hour cycle behind (it runs every 3h), and
-                  # its mid-run pull may still miss the ledger commit, so globbing
-                  # the file here republished a stale ledger over the fresh one (measured
-                  # 222.6 min of lag between /audit and /audit3). One artifact, one publisher.
-                  # NOTE: the identical globs in deploy_torontoevent_net() and
-                  # deploy_tdotevent_ca() are deliberately NOT changed - audit3-ledger.yml
-                  # publishes to findtorontoevents.ca only, so skipping there would make the
-                  # per-domain copy freeze instead of go fresh.
-                  _PUBLISHED_ELSEWHERE = {"audit3_ledger.json"}
                   for df in _jsons:
-                      if df.name in _PUBLISHED_ELSEWHERE:
-                          print(f"  [{label}] skip {df.name} - published fresh by audit3-ledger.yml")
-                          continue
                       try:
                           ftp_upload(ftp, str(df), f"/{SITE_ROOT}/audit/data", df.name, label)
                       except Exception as e:
@@ -1600,6 +1584,16 @@ jobs:
           # Non-fatal: don't exit(1) even if some fail
           PYEOF
 
+      - name: Anti-overfit GATE (blocking — DSR must clear 0.95)
+        id: anti_overfit_gate
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          # Runs AFTER commit + deploy on purpose: a gate that fails before the
+          # dashboard is published would take the whole hourly refresh down with
+          # it, and the artifact this judges would not exist yet. Here it can
+          # fail the job without withholding data.
+          python tools/anti_overfit_audit_sidecar.py --check-only --gate --dsr-threshold 0.95
       - name: Verify URLs
         if: always()
         run: |
