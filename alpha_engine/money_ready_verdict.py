@@ -1547,6 +1547,35 @@ def _simple_wf_oos_ratio(picks: list[dict], train_frac: float = 0.6) -> dict[str
 # Main entry point
 # ---------------------------------------------------------------------------
 
+def _population_invariant(n: int, n_resolved: int,
+                          data_source: str, sizing_source: str) -> dict:
+    """Publish (never hide) a cohort mismatch between `n` and `n_resolved`.
+
+    `n` counts the class's own picks from the JSON source (closed_picks /
+    dashboard_fallback). `n_resolved` counts the SIZING cohort — by default the
+    `at_signal_outcomes` intrabar overlay. They are DIFFERENT POPULATIONS.
+
+    A "resolved" subset can never exceed its parent, so `n_resolved > n` is
+    arithmetically impossible and always means the two published numbers
+    describe different row sets. Measured 2026-11-20 on the shipped ledger,
+    5 of 11 classes violated it (EQUITY 257>213, FOREX 634>458, ETF 53>29,
+    COMMODITY 234>27, FUTURES 62>17) while both fields were published side by
+    side with no flag at all.
+
+    Returns the two fields to merge into the class row. The verdict itself is
+    unchanged — it already gates on `n_resolved`, which is the honest cohort.
+    """
+    mismatch = bool(n_resolved > n)
+    return {
+        "population_mismatch": mismatch,
+        "population_note": (
+            f"n={n} ({data_source}) vs n_resolved={n_resolved} "
+            f"({sizing_source}); DIFFERENT COHORTS — do not compare"
+            if mismatch else None
+        ),
+    }
+
+
 def _intrabar_truth_map() -> dict[str, dict]:
     """Honest per-class WR/PF from the at_signal_outcomes intrabar ledger.
 
@@ -1562,6 +1591,21 @@ def _intrabar_truth_map() -> dict[str, dict]:
                  if k in ("host", "user", "password", "database", "port", "connect_timeout")}
         conn = pymysql.connect(**creds)
         cur = conn.cursor()
+        # 2026-11-20 (audit consolidation WS-A): the historical query below took
+        # only TP_HIT/SL_HIT, silently discarding every TIME_EXIT — 24.6% of
+        # genuinely-resolved trades (1695 of 6928, measured on ejaguiar1_stocks).
+        # That is survivorship bias: trades that neither hit a target nor a stop
+        # are exactly the ones that decide whether a "2:1 reward:risk" book
+        # actually pays. The decided cohort is kept BYTE-IDENTICAL so no
+        # previously-published number moves; the all-status cohort is published
+        # ALONGSIDE it and the gap between them is made explicit.
+        #
+        # `COALESCE(intrabar_horizon_bars,0) > 0` is required on the all-status
+        # cohort because ~40k still-OPEN rows are mislabelled intrabar_status
+        # ='TIME_EXIT' with intrabar_pnl_pct=0.0000 (see WS-A P1-5). Without the
+        # guard those phantom break-evens would dilute wr_all toward 0.5.
+        # Verified on 2026-11-20: adding this guard to the DECIDED cohort changes
+        # its row count by exactly 0 (5233 -> 5233), so it is safe here too.
         cur.execute(
             """SELECT UPPER(COALESCE(asset_class,'UNKNOWN')),
                       COUNT(*),
@@ -1585,6 +1629,46 @@ def _intrabar_truth_map() -> dict[str, dict]:
                 "pf": round(gw / gl, 4) if gl > 0 else None,
                 "source": "at_signal_outcomes.intrabar_*",
             }
+
+        # All-status cohort: same ledger, TIME_EXIT retained at its real PnL.
+        cur.execute(
+            """SELECT UPPER(COALESCE(asset_class,'UNKNOWN')),
+                      COUNT(*),
+                      SUM(CASE WHEN intrabar_pnl_pct > 0 THEN 1 ELSE 0 END),
+                      SUM(CASE WHEN intrabar_pnl_pct > 0 THEN intrabar_pnl_pct ELSE 0 END),
+                      SUM(CASE WHEN intrabar_pnl_pct < 0 THEN -intrabar_pnl_pct ELSE 0 END),
+                      SUM(intrabar_status='TIME_EXIT'),
+                      SUM(COALESCE(intrabar_ambiguous,0)=1)
+               FROM at_signal_outcomes
+               WHERE intrabar_resolved_at IS NOT NULL
+                 AND COALESCE(intrabar_horizon_bars,0) > 0
+               GROUP BY 1"""
+        )
+        for ac, n_all, wins_all, gw_all, gl_all, n_te, n_amb in cur.fetchall():
+            n_all = int(n_all or 0)
+            wins_all = int(wins_all or 0)
+            gw_all = float(gw_all or 0.0)
+            gl_all = float(gl_all or 0.0)
+            row = out.setdefault(ac, {
+                "n": 0, "wr": 0.0, "pf": None,
+                "source": "at_signal_outcomes.intrabar_*",
+            })
+            row["n_all"] = n_all
+            row["wr_all"] = round(wins_all / n_all, 4) if n_all else 0.0
+            row["pf_all"] = round(gw_all / gl_all, 4) if gl_all > 0 else None
+            row["n_time_exit"] = int(n_te or 0)
+            row["time_exit_share"] = round(int(n_te or 0) / n_all, 4) if n_all else 0.0
+            row["n_ambiguous"] = int(n_amb or 0)
+            # Positive = the decided-only cohort FLATTERS the book (the trades
+            # that were dropped were worse than the ones kept). Negative = the
+            # decided-only cohort is harsher. Published so no reader has to
+            # guess which of wr / wr_all they were shown.
+            if n_all and row["n"]:
+                row["survivorship_gap_pp"] = round((row["wr"] - row["wr_all"]) * 100, 2)
+            else:
+                # No decided cohort to compare against (all rows were TIME_EXIT);
+                # a gap would be a fabricated 0-vs-something difference.
+                row["survivorship_gap_pp"] = None
         conn.close()
         return out
     except Exception:
@@ -1763,6 +1847,11 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             "policy_clean_wr_pct": round(_policy_wr * 100, 2),
             "policy_clean_pf": round(_policy_pf, 4) if _policy_pf != float("inf") else None,
             "n_resolved": _sizing_n,
+            # 2026-11-20 (audit consolidation WS-A): publish, never hide, the
+            # fact that `n` and `n_resolved` are different cohorts. See
+            # _population_invariant() for the full rationale + the 5-of-11
+            # violations measured on the shipped ledger.
+            **_population_invariant(n, _sizing_n, data_source, _sizing_source),
             # 2026-11-19 fix: this used to be `_sizing_wr`, i.e. the HONEST-INTRABAR
             # overlay, published under the name "wr". The persisted file showed
             # COMMODITY wr=0.4052 with sizing_source=intrabar_truth, so every reader
