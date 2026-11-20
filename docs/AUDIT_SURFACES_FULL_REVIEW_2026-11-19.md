@@ -169,6 +169,12 @@ Five facts a peer (buffy/review-main) raised, each re-derived from the 18:32:40Z
 
 ### 3.4 Denominator and coverage — the number changed between runs
 
+> **RESOLVED 2026-11-20.** PR #984 reconciled the denominator: the live ledger now reports
+> `scored_rows` 8,769 = `valid_closed_picks` 8,769, `scored_share_of_valid_pct` **100.0** with
+> status **ok** (it was `null`/`not_comparable`), and `scored_share_of_total_pct` 53.56 % of 16,372
+> closed rows. The finding below is kept as the record of why the reconciliation was needed.
+
+
 The live 18:32:40Z ledger reports `coverage.denominator.mode="canonical"`,
 `loaded_from_sidecar=true`, **8,613 of 14,637 closed rows (58.84%)** with the note
 "scores the published canonical view; /audit counts the same rows". The repo's committed

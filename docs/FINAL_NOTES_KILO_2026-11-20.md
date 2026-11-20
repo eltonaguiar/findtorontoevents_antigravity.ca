@@ -136,3 +136,38 @@ print(p['id'],p['population'],c.get('dsr_n_trials'),c.get('provenance_id')==p['i
 
 *Not investment advice. No strategy, threshold value, or honest-verdict policy was relaxed; every
 change made it harder to call something profitable.*
+
+---
+
+## 9. Addendum — 2026-11-20T04:00Z
+
+**Main state:** `origin/main` passes **100 audit3/ingest/pod tests** (PR #983 cleared the last reds).
+
+**Checks that came back clean or resolved:**
+- **Coverage denominator — RESOLVED** (PR #984): live ledger reports `scored_rows` 8,769 =
+  `valid_closed_picks` 8,769, `scored_share_of_valid_pct` **100.0**, status **ok** (was null),
+  share_of_total 53.56 % of 16,372.
+- **Retracted-claim sweep of the live pages — CLEAN.** `/audit`, `/audit2`, `/audit3` were grepped
+  for the retracted TAA figures ("0.88", "MaxDD −19%"). `/audit` returned 5 matches, all unrelated:
+  a `+0.88 %` row in a returns table and CSS colour thresholds. `/audit2` and `/audit3` returned 0.
+  No page still cites the retracted claim.
+
+**Changes after the original notes:**
+- **TAA retraction applied to my own sleeve** (`a68aaad1a8c`): PR #986 retracted "Sharpe 0.88 /
+  MaxDD −19 %" — 0/576 cells meet both bars at lag ≥ 1. The `etf-rotation` thesis now carries the
+  honest lag-1d numbers (Sharpe 0.82 vs SPY 0.69, MaxDD −20.9 % vs −52.9 %, CAGR 8.94 % vs 10.79 %)
+  and states it survives only as **drawdown control**. A test pins that no retracted number is
+  presented as evidence.
+- **Asset-class guard** (`1ffa3e393ea`): the pod emission audit now flags a strategy that emits only
+  in asset classes its pod does not declare — the trap that three "breakout" names (CRYPTO/FUTURES/
+  COMMODITY) would have sprung on the equity pod.
+- **Equity signal core** (`1e2a93c2d18`): `tools/equity_breakout_candidates.py`, daily Donchian 20/10,
+  2R target, **dry run only**, 5 tests. Live result: **0 candidates of 14 ETFs** — every one is
+  2.6–11.2 % below its 20-day high (SPY −6.93 %, QQQ −10.25 %, GLD −11.18 %). A wired equity sleeve
+  would be in cash today.
+- **PR #987**: audit2 now shows the ledger's forward-gate reason per hypothesis.
+
+**Live ledger at this addendum:** `03:56:27Z`, provenance `e9d53b2e6d0b0259`, 0 PROVEN / 0
+CANDIDATE, alpha −0.2681; forward rows faber_taa 12, etf_dual_momentum 1, H-119 430.
+
+**Unchanged conclusion:** repair and measurement, not signal. Nothing is money-ready.
