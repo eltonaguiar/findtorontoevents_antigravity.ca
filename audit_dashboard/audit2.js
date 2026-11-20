@@ -158,7 +158,16 @@ function loadForward(){
     var rows = Object.keys(f.by_hypothesis||{}).map(function(h){
       var v=f.by_hypothesis[h];
       var ok = v.n>=100 && v.intrabar===v.n && v.benchmark_leg>=0.9*v.n;
-      var status = v.n===0 ? "0 rows — clock not accruing" : (ok ? "gate-ready" : "accruing");
+      var status;
+      if (v.gate && v.gate.eligible) {
+        status = "gate-ready";
+      } else if (v.gate && (v.gate.reasons||[]).length) {
+        // The ledger already computes exactly why this cannot promote; show it
+        // instead of a vague "accruing".
+        status = v.gate.reasons[0];
+      } else {
+        status = v.n===0 ? "0 rows — clock not accruing" : (ok ? "gate-ready" : "accruing");
+      }
       return "<tr><td><strong>"+esc(h)+"</strong></td><td class=\"num\">"+fmt(v.n,0)+"</td><td class=\"num\">"+
         fmt(v.benchmark_leg,0)+"/"+fmt(v.n,0)+"</td><td class=\"num\">"+fmt(v.intrabar,0)+"/"+fmt(v.n,0)+"</td><td>"+esc(status)+"</td></tr>";
     }).join("");
