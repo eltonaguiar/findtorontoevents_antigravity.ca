@@ -140,11 +140,13 @@ def test_rotation_sleeve_matches_the_validated_spec():
     assert rot["rules"]["top_n"] == 5
     assert rot["rules"]["lookback_days"] == 189          # ~9 months, the regime-robust default
     assert rot["rules"]["absolute_filter"] is True
-    assert "LAG-CORRECTED" in rot["thesis"]
+    assert "RETRACTED" in rot["thesis"]
     # thesis and rules must describe the SAME configuration
-    assert "9-month (189d)" in rot["thesis"] and "0.81" in rot["thesis"]
-    assert "0.82" not in rot["thesis"], "thesis must not quote the 6m result for a 9m rule"
-    assert "0.89" not in rot["thesis"].split("unlagged")[0]
+    assert "9-month (189d)" in rot["thesis"] and "0.82" in rot["thesis"]
+    # the retracted headline may only appear BEFORE the word RETRACTED; nothing
+    # presented as evidence may quote it
+    evidence = rot["thesis"].split("RETRACTED")[-1]
+    assert "0.88" not in evidence and "0.81" not in evidence
 
 
 # ───────────────────────────────────── beta-matched hold control (B7) ──
