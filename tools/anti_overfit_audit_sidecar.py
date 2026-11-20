@@ -122,6 +122,24 @@ def fetch_strategy_returns(cur, min_n: int) -> dict:
             for s, rows in fetch_strategy_series(cur, min_n).items()}
 
 
+def publication_label(dsr, threshold: float = 0.95) -> tuple[str, str]:
+    """(label, reason) for one DSR. A label, never a filter.
+
+    74 of 80 strategies sit below 0.95, and hiding them would make the gate's own
+    output unauditable. Demotion is a publication label: the row stays, with its n
+    (2026-11-20).
+    """
+    if dsr is None:
+        return "UNRATED", "DSR unavailable"
+    try:
+        value = float(dsr)
+    except (TypeError, ValueError):
+        return "UNRATED", "DSR not numeric"
+    if value >= threshold:
+        return "PUBLISHABLE", "DSR %.4f >= %.2f" % (value, threshold)
+    return "PROBATION", "DSR %.4f < %.2f" % (value, threshold)
+
+
 def audit_strategy(name: str, returns: list[float], n_trials: int) -> dict:
     arr = np.asarray(returns, dtype=np.float64)
     n = arr.size
@@ -175,6 +193,11 @@ def audit_strategy(name: str, returns: list[float], n_trials: int) -> dict:
         out["dsr"] = None
         out["verdict"] = "DSR_ERR"
         out["dsr_error"] = str(exc)[:120]
+
+    # Publication label, computed here so a regeneration never loses the demotion.
+    label, reason = publication_label(out.get("dsr"))
+    out["publication_label"] = label
+    out["publication_reason"] = reason
 
     return out
 
@@ -345,6 +368,10 @@ def main():
 
     dsr_vals = [float(r["dsr"]) for r in rows if r.get("dsr") is not None]
     pass_count = sum(1 for v in dsr_vals if v >= 0.95)
+    label_counts: dict[str, int] = {}
+    for r in rows:
+        lab = r.get("publication_label", "UNRATED")
+        label_counts[lab] = label_counts.get(lab, 0) + 1
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "n_strategies_audited": n_trials,
@@ -356,6 +383,11 @@ def main():
         "dsr_pass_count": pass_count,
         "dsr_scored_count": len(dsr_vals),
         "dsr_pass_rate": round(pass_count / len(dsr_vals), 4) if dsr_vals else None,
+        "publication_label_counts": label_counts,
+        "publication_label_rule": (
+            "label only -- a PROBATION strategy keeps its row and its n in this "
+            "payload; nothing is deleted or filtered, so the demotion stays auditable"
+        ),
         "source": "ejaguiar1_stocks::trading_picks closed picks",
         "validator": "alpha_engine.anti_overfit_validator (DSR Lopez de Prado AFML 14.5; PBO Bailey-Borwein-Lopez de Prado-Zhu 2017; Reality Check White 2000)",
         "portfolio_diagnostics": portfolio_diagnostics,

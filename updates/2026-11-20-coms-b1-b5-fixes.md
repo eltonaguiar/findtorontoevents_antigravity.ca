@@ -42,3 +42,26 @@ Rosters repaired: Linux 104 -> 36, Windows 30 -> 12, both with `.bak` copies.
 - No CI exists in `AGENT_FOLDERFRAMEWORK`; these checks are a recorded transcript, not a gate.
 - The branch was pushed but **no PR could be opened**: the `gh` token is invalid on both hosts.
   Merge is pending a re-auth or a human click.
+
+## Correction, same day: B3 was not Windows-only
+
+The table above says the retain guard was missing from the Windows client and implies Linux had
+one. That was wrong, and `coms.ps1`'s own comment said the same thing. Measured directly by
+retaining into a seat nobody owns:
+
+```
+$ COMS send --retain inbox/ci-probe-host/ci-probe-wt/ci-probe-agent 'guard probe'
+sent inbox/ci-probe-host/ci-probe-wt/ci-probe-agent (qos1, retained)   # exit 0
+$ mosquitto_sub -t that-topic --retained-only
+guard probe                                                           # it landed
+```
+
+So **neither** client had the guard; the Windows port had been written against a false premise.
+Both now refuse, with `--force` as the explicit override, and the Linux acceptance suite asserts
+that a refused retain publishes 0 bytes while the worktree-wide `all` broadcast still passes.
+
+Second correction in the same area: `send -m` cannot carry a large payload on either platform.
+Linux caps one argv element at 128 KiB (`MAX_ARG_STRLEN`), the Win32 command line at 32767
+characters. Both clients gained a file-based send (`--file` / `-File`), and the 500 KB path is now
+tested end to end on Windows (500,000 of 500,000 bytes) instead of being skipped.
+
