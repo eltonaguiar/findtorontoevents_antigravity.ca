@@ -184,6 +184,9 @@ jobs:
           fi
           echo "selection alpha written: $(wc -c < /tmp/audit3/selection_alpha.json) bytes"
 
+      - name: Build audit2 pods sidecar
+        run: python3 tools/build_audit2_pods.py
+
       - name: Build audit2 forward summary
         run: python3 tools/audit2_forward_summary.py
 
@@ -288,6 +291,7 @@ jobs:
               ("audit_dashboard/audit2.html", "index.html"),
               ("audit_dashboard/audit2.js", "audit2.js"),
               ("audit_dashboard/data/audit2_forward.json", "audit2_forward.json"),
+              ("audit_dashboard/data/audit2_pods.json", "audit2_pods.json"),
           ]:
               with open(local, "rb") as f:
                   ftp.storbinary(f"STOR {remote}", f)

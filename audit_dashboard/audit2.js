@@ -168,8 +168,29 @@ function loadForward(){
   });
 }
 
-loadForward();
-loadLedger(0)
+// The pod registry is a projection of reports/audit3_confirmatory.json
+// (tools/build_audit2_pods.py). When the sidecar is present it replaces the
+// bundled copy, so a manifest change no longer needs a JavaScript edit.
+function adoptPods(d){
+  if (!d || !Array.isArray(d.pods) || !d.pods.length) return false;
+  PODS = d.pods.map(function(p){
+    return {id:p.id, status:p.status, hypothesis:p.hypothesis,
+            klass:p.klass, dir:p.dir,
+            evidence:p.thesis || p.evidence || "",
+            gate:p.gate || ""};
+  });
+  return true;
+}
+
+fetch("audit2_pods.json", {cache:"no-store"})
+  .then(function(r){ return r.ok ? r.json() : null; })
+  .then(adoptPods)
+  .catch(function(){})
+  .then(function(){
+    renderStatic();
+    loadForward();
+    return loadLedger(0);
+  })
   .then(function(d){
     renderLedger(d);
     el("ledgerStatus").className = "banner";
