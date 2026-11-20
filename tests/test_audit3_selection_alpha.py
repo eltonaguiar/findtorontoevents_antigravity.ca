@@ -146,3 +146,17 @@ def test_min_hold_fields_present_even_when_nothing_qualifies():
     assert o["n_min_hold"] == 0
     assert o["min_hold_participation"] == 0.0
     assert o["alpha_pct_min_hold"] is None
+
+def test_crypto_quote_suffix_is_stripped_not_the_usd_substring():
+    """ADAUSDT must yield ADAUSDT/ADAUSD/ADA -- never the mangled ADAT.
+
+    The old code did s.replace("USD",""), which turns ADAUSDT into ADAT, so the
+    real series never matched (21 of 57 crypto symbols were "missing").
+    """
+    for raw, base in (("ADAUSDT", "ADA"), ("BTCUSDT", "BTC"),
+                      ("ARBUSD", "ARB"), ("ETH-USD", "ETH"),
+                      ("SOL/USD", "SOL")):
+        c = symbol_candidates(raw, "CRYPTO")
+        assert f"{base}USDT" in c, (raw, c)
+        assert base in c, (raw, c)
+        assert not any(x.endswith(base + "T") and x != f"{base}USDT" for x in c), (raw, c)
