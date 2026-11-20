@@ -4,6 +4,25 @@
 **Scope:** `/audit`, `/audit2`, `/audit3`, their ledgers, their workflows, and the DB views feeding them.
 **Governing rule:** no new strategy work until the measurement layer can be audited.
 
+## ELI5 — the short version
+
+Imagine three scoreboards for the same team, each keeping score differently: one says
+the team scored 10, one says 9, one just repeats whatever the first one said. Nobody is
+lying, but you cannot tell if you are winning. On top of that, the same player shows a
+different stat on each board — a 1.9% hit rate on one, 43.2% on another.
+
+That is the audit problem: `/audit`, `/audit2` and `/audit3` are three scoreboards fed by
+the same games, and they disagree. The fix is boring and cheap: one scoreboard (one
+population of trades), one set of rules for counting (one cost model, one win
+definition), and every number stamped with where it came from. Then, when a number looks
+good, we can check whether it is real skill or just the market going up — that check is
+called *selection alpha*, and right now it is negative: our picks do worse than simply
+holding the same coins and stocks.
+
+Only once the scoreboard is trustworthy is it worth asking "which plays actually work?"
+That is the discovery arm below — look at the winners we already have, find what they
+share, and check whether that pattern could have happened by luck.
+
 ---
 
 ## 0. What the evidence says today
@@ -170,7 +189,29 @@ have identical sha256 and `generated_at`; provenance carries `generator_version`
 4. **Consolidate the pages** — P2, after the numbers agree, so we are not merging three ledgers into one confusing page.
 5. **Feed the forward clock** — P1-3, P1-4, then re-evaluate whether any class deserves a pod.
 
-## 5. Explicit non-goals
+## 5. Discovery arm — reverse engineering what actually works
+
+Falsification is already well covered (gates, DSR, forward clock). What is missing is a
+*discovery* arm held to the same standard, for reverse engineering skyrocketing moves in
+stocks, crypto, forex, bonds, ETFs, commodities, futures and mutual funds:
+
+| # | Item | Why it is required |
+|---|---|---|
+| D1 | **Survivorship-free universe** — point-in-time symbol lists, delisted names included | Winners-only data manufactures any edge you want |
+| D2 | **Pre-commit the event definition** — "skyrocket = +X% within N days", written before looking | Otherwise the threshold is chosen after seeing which one is significant |
+| D3 | **Label-leakage audit** — every feature must be knowable at entry time | The classic failure: a feature computed after the fact predicts perfectly |
+| D4 | **Base rate first** — what share of all names/picks skyrocketed anyway? | Lift is meaningless without the denominator |
+| D5 | **Matched controls** — same asset class, regime, hold window | A class-wide effect looks like a feature otherwise |
+| D6 | **Multiplicity across features** — BH over everything tried; pre-register the surviving family | Trying 200 features guarantees 10 hits at p<0.05 |
+| D7 | **Forward test the survivors** through the audit3 forward gate | A backtest is a hypothesis, not evidence |
+| D8 | **Cost check** — daily/weekly events need fill + slippage at 2× measured | Many "edges" vanish at realistic costs |
+
+Tooling: `tools/skyrocket_reverse_eng.py` — computes the event base rate (Wilson CI),
+per-feature decile lift, a permutation p-value for rank association, and matched-control
+feature differences with bootstrap CIs. It is a discovery instrument: it proposes
+candidates and deliberately refuses to declare an edge.
+
+## 6. Explicit non-goals
 
 - No new strategy hunting until steps 1–3 are green.
 - No promotion to real money; the audit3 forward gate decides that (n≥100 forward rows,
