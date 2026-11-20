@@ -1,58 +1,133 @@
 {
-  "generated_at": "2026-11-19T18:44:55.178112+00:00",
+  "generated_at": "2026-11-20T00:52:12.203575+00:00",
   "rolling_window_days": 30,
   "correlation_matrix": {
     "BTCUSDT": {
       "BTCUSDT": 1.0,
-      "ETHUSDT": 0.9373
+      "ETHUSDT": 0.9362,
+      "BNBUSDT": 0.9033,
+      "SOLUSDT": 0.8691,
+      "XRPUSDT": 0.8314
     },
     "ETHUSDT": {
-      "BTCUSDT": 0.9373,
-      "ETHUSDT": 1.0
+      "BTCUSDT": 0.9362,
+      "ETHUSDT": 1.0,
+      "BNBUSDT": 0.8539,
+      "SOLUSDT": 0.8955,
+      "XRPUSDT": 0.8872
+    },
+    "BNBUSDT": {
+      "BTCUSDT": 0.9033,
+      "ETHUSDT": 0.8539,
+      "BNBUSDT": 1.0,
+      "SOLUSDT": 0.9042,
+      "XRPUSDT": 0.8243
+    },
+    "SOLUSDT": {
+      "BTCUSDT": 0.8691,
+      "ETHUSDT": 0.8955,
+      "BNBUSDT": 0.9042,
+      "SOLUSDT": 1.0,
+      "XRPUSDT": 0.9156
+    },
+    "XRPUSDT": {
+      "BTCUSDT": 0.8314,
+      "ETHUSDT": 0.8872,
+      "BNBUSDT": 0.8243,
+      "SOLUSDT": 0.9156,
+      "XRPUSDT": 1.0
     }
   },
   "symbols": [
     "BTCUSDT",
-    "ETHUSDT"
+    "ETHUSDT",
+    "BNBUSDT",
+    "SOLUSDT",
+    "XRPUSDT"
   ],
   "diversification": {
-    "avg_pairwise_correlation": 0.9373,
+    "avg_pairwise_correlation": 0.8821,
     "diversification_score": 0.0,
     "risk_level": "HIGH_RISK",
-    "crypto_symbol_count": 2,
-    "pair_count": 1
+    "crypto_symbol_count": 5,
+    "pair_count": 10
   },
   "cross_asset_correlations": {
     "btc_vs_spy": null,
     "btc_vs_dxy": null,
-    "btc_vs_eth": 0.9373
+    "btc_vs_eth": 0.9362
   },
   "alerts": [
     {
-      "type": "ASSET_CLASS_CONCENTRATION",
-      "severity": "MEDIUM",
-      "asset_class": "forex",
-      "pick_pct": 71.4,
-      "threshold_pct": 60.0,
-      "message": "forex is 71.4% of picks (threshold: 60%)"
+      "type": "HIGH_CORRELATION_CLUSTER",
+      "severity": "HIGH",
+      "pair_count": 10,
+      "threshold": 5,
+      "top_pairs": [
+        {
+          "a": "BTCUSDT",
+          "b": "ETHUSDT",
+          "corr": 0.9362
+        },
+        {
+          "a": "SOLUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.9156
+        },
+        {
+          "a": "BNBUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.9042
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "BNBUSDT",
+          "corr": 0.9033
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.8955
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.8872
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "SOLUSDT",
+          "corr": 0.8691
+        },
+        {
+          "a": "ETHUSDT",
+          "b": "BNBUSDT",
+          "corr": 0.8539
+        },
+        {
+          "a": "BTCUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.8314
+        },
+        {
+          "a": "BNBUSDT",
+          "b": "XRPUSDT",
+          "corr": 0.8243
+        }
+      ],
+      "message": "10 pairs with correlation > 0.8 (threshold: 5)"
     },
     {
       "type": "BTC_PORTFOLIO_CORRELATION",
       "severity": "HIGH",
-      "avg_btc_correlation": 0.9373,
+      "avg_btc_correlation": 0.885,
       "threshold": 0.85,
-      "message": "Portfolio avg BTC correlation 0.94 > 0.85 \u2014 effectively a BTC bet"
+      "message": "Portfolio avg BTC correlation 0.89 > 0.85 \u2014 effectively a BTC bet"
     }
   ],
   "alert_count": 2,
-  "high_severity_alerts": 1,
+  "high_severity_alerts": 2,
   "diversification_history": [
-    {
-      "timestamp": "2026-11-12T12:23:33.519969+00:00",
-      "score": 1.4,
-      "avg_corr": 0.6943,
-      "risk_level": "MODERATE"
-    },
     {
       "timestamp": "2026-11-12T18:19:39.565064+00:00",
       "score": 1.7,
@@ -225,6 +300,12 @@
       "timestamp": "2026-11-19T18:44:55.178112+00:00",
       "score": 0.0,
       "avg_corr": 0.9373,
+      "risk_level": "HIGH_RISK"
+    },
+    {
+      "timestamp": "2026-11-20T00:52:12.203575+00:00",
+      "score": 0.0,
+      "avg_corr": 0.8821,
       "risk_level": "HIGH_RISK"
     }
   ]
