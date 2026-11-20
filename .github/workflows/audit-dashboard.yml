@@ -1026,6 +1026,22 @@ jobs:
               bash .github/scripts/assert_no_conflict_markers.sh || exit 1
               git commit --amend --no-edit
             fi
+            # The pull above is a LINE-BASED three-way merge of generated JSON
+            # (-X ours, resolved hunk by hunk), so it can hybridise this payload:
+            # 2026-11-20T20:46 produced 81 rows / 77 labelled from two 80-row
+            # sides, one strategy emitted twice, four rows stripped of labels
+            # they already carried on main. The sidecar step far above verified
+            # the labels *before* this commit and pull, so nothing caught it and
+            # the hybrid was pushed. Verify again here, then commit the repair
+            # as part of this same push.
+            if [ -f audit_dashboard/data/anti_overfit_audit.json ]; then
+              python3 tools/apply_dsr_probation_labels.py --apply || exit 1
+              python3 tools/apply_dsr_probation_labels.py --check || exit 1
+              if ! git diff --quiet -- audit_dashboard/data/anti_overfit_audit.json; then
+                git add audit_dashboard/data/anti_overfit_audit.json
+                git commit -m "chore(audit-dashboard): re-stamp publication labels after merge [skip ci]" || true
+              fi
+            fi
             # Verify publish consistency (advisory check — non-fatal by design)
             python3 .github/scripts/verify_dashboard_publish_consistency.py || true
             # Push attempt (sanitize output to avoid leaking PAT in error messages).
