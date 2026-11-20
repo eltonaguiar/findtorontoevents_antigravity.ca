@@ -1,0 +1,79 @@
+name: Tribunal Runtime Gate
+
+# A branch is not "verified" because it compiles.
+#
+# On 2026-11-20 `hotfix/required-n-power` was recommended for merge on the strength of
+# `py_compile` (OK) and `--help` (exit 0). `--help` exits *inside argparse*, before
+# main() ever builds a report, so it cannot see a signature skew. The first real run died:
+#
+#     TypeError: build_report() got an unexpected keyword argument 'require_alpha'
+#
+# This job runs the tribunal for real on every pull request, so that class of
+# producer/consumer mismatch can never reach an approval. See
+# updates/2026-11-20-tribunal-runtime-pr-gate.md.
+
+'on':
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Storm-commit repo: a newer push to the same PR supersedes the in-flight run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runs-for-real:
+    runs-on: ubuntu-latest
+    # One real tribunal run measured at ~10s locally. The 26MB payload download
+    # dominates; 20 minutes is network headroom, not a budget the job should use.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Fetch a real closed-pick payload
+        # audit_dashboard/data/dashboard_data.json is gitignored (34MB), so a clean
+        # checkout has no input, and tools/assert_tribunal_runs.py exits 2 without one
+        # -- by design, because a synthetic fixture cannot catch a producer/consumer
+        # skew. So this fails closed instead of skipping: no input means no verdict.
+        env:
+          LIVE_PAYLOAD: https://findtorontoevents.ca/audit/data/dashboard_data.json
+          FALLBACK_PAYLOAD: https://findtorontoevents.ca/audit/data/dashboard_payload.json
+        run: |
+          set -euo pipefail
+          mkdir -p audit_dashboard/data
+          out=audit_dashboard/data/dashboard_data.json
+          for url in "$LIVE_PAYLOAD" "$FALLBACK_PAYLOAD"; do
+            for attempt in 1 2 3; do
+              echo "fetch attempt $attempt: $url"
+              if curl -fsS --max-time 240 "$url" -o "$out.part"; then
+                mv "$out.part" "$out"
+                break 2
+              fi
+              sleep $((attempt * 10))
+            done
+          done
+          rm -f "$out.part"
+          [ -s "$out" ] || {
+            echo "::error::no closed-pick payload could be fetched -- the gate cannot run, and a skipped gate is not a passed gate"
+            exit 1
+          }
+          echo "payload bytes: $(wc -c < "$out")"
+          python3 -c "import json,sys;d=json.load(open('$out'));k=[x for x in ('picks','candidates','records','closed_picks') if x in d];sys.exit('::error::payload has none of picks/candidates/records/closed_picks -- refusing to gate on the wrong document') if not k else print('payload ok:',k[0],len(d[k[0]]),'entries')"
+
+      - name: Assert the tribunal runs for real (authoritative)
+        # --require-sleeves also proves the sleeve gate still produces output and never
+        # publishes a >25 PF sleeve as rankable. A branch that dropped the sleeves list
+        # would otherwise look healthy while removing the thing main now depends on.
+        run: |
+          set -euo pipefail
+          python3 tools/assert_tribunal_runs.py             --picks audit_dashboard/data/dashboard_data.json             --require-sleeves
