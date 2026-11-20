@@ -86,8 +86,14 @@ def deflated_sharpe_ratio(
     freq: str = "daily",
 ) -> float:
     """
-    Deflated Sharpe Ratio (DSR) = Sharpe / SE(Sharpe).
+    Sharpe / SE(Sharpe) — a t-statistic, NOT a multiplicity-corrected DSR.
+
+    Despite the name this takes no trial count, so it answers "is this Sharpe
+    different from zero", not "is it different from the best of N tries".
     DSR > 1.64 implies ~95% confidence that true Sharpe > 0.
+
+    For a real deflation across trials use
+    ``alpha_engine.deflated_sharpe.deflated_sharpe_ratio(nb_trials=...)``.
     """
     n_per_year = annualise_factor(freq)
     rf_per_period = (1 + risk_free_rate) ** (1 / n_per_year) - 1
