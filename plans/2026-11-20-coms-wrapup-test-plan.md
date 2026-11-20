@@ -137,3 +137,29 @@ Tiers are gates: a lower tier failing blocks the next.
 No broker auth/TLS work today (needs a maintenance window and the human's call). No change to the
 four topic shapes. No deletion of a peer's retained topic. No financial-surface changes — those
 stay behind the deploy lease.
+
+## 8. Results (measured 2026-11-20T20:10Z)
+
+Branch `coms-b1-b5-fixes-20261120` @ `bad7a54` in `eltonaguiar/AGENT_FOLDERFRAMEWORK`, validated on
+both hosts. Client installed at `~/.local/bin/COMS`; Windows checkout pulled to the same tip.
+
+| Defect | Fix | Verified by |
+|---|---|---|
+| B1 | `cat <<'EOF'` in `cmd_learn` | `notacommand` exits 2, **0** "command not found", literal backticks still in the help |
+| B5 | `*` rejected with a hint | `topics 'notes/*'` exits 2 and names `+`/`#`; `notes/+` still lists (84 notes at test time) |
+| B4 | upsert by `swarmbus_id` | double register leaves **1** row on Linux (isolated HOME) and **1** occurrence on Windows; in-place `goal` update confirmed |
+| B2 | registry-first seat resolution + `-WorktreeName` | from `E:\AGENT_FOLDERFRAMEWORK\COMMUNICATION` **and** `C:\Users\zerou` both resolve to `inbox/desktop-081g9oh/agent_folderframework/kilo` `[seat source: registry-newest]` |
+| B3 | retain guard, `-Force` override | foreign-inbox `--retain` refused with a non-zero exit (`B3=REFUSED_NONZERO`) |
+
+Existing roster damage repaired with the new `COMMUNICATION/dedupe_roster.py` (timestamped `.bak` kept):
+Linux 104 rows -> 36, Windows 30 rows -> 12.
+
+Windows verify suite: **PASS 7 / INFO 3 / SKIP 3 / FAIL 0** (was PASS 5 / FAIL 1).
+
+**Exit criteria: partially met.** `FAIL 0` is met. `SKIP <= 1` is **not** met — the three skips are
+all "mosquitto binaries absent from Windows PATH" (independently confirmed by kilo), so the 500 KB
+payload path on Windows still has never run. That is R1, not a passing test.
+
+Still open: no CI in this repo (copilot asked for one), 500 KB path on Windows, notes GC policy,
+broker-restart test (needs a maintenance window).
+
