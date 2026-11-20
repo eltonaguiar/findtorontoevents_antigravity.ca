@@ -187,6 +187,26 @@ def _print_report(result: dict[str, Any]) -> None:
     print(f"  -> {' | '.join(verdict)}")
 
 
+def _gate_failures(results: list[dict[str, Any]], dsr_threshold: float) -> list[str]:
+    """Systems whose DSR failed the threshold, as human-readable lines.
+
+    A skipped system is a failure too: "insufficient sample" is not a pass.
+    """
+    bad: list[str] = []
+    for r in results:
+        name = r.get("source_system")
+        if "skipped" in r:
+            bad.append(f"{name}: SKIPPED ({r['skipped']}) -- cannot certify")
+            continue
+        dsr = r.get("deflated_sharpe")
+        if dsr is None or (isinstance(dsr, float) and math.isnan(dsr)):
+            bad.append(f"{name}: DSR unavailable ({r.get('deflated_sharpe_err') or 'nan'})")
+            continue
+        if float(dsr) < dsr_threshold:
+            bad.append(f"{name}: DSR {float(dsr):.4f} < {dsr_threshold:.2f}")
+    return bad
+
+
 def _autopick_top(picks: list[dict[str, Any]], k: int) -> list[str]:
     counts: dict[str, int] = defaultdict(int)
     for p in picks:
@@ -206,6 +226,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="bootstrap replications for Reality Check (default 1000)")
     ap.add_argument("--json", action="store_true",
                     help="emit machine-readable JSON instead of the text report")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 2 when any audited system fails the DSR threshold")
+    ap.add_argument("--dsr-threshold", type=float, default=0.95,
+                    help="DSR floor for --gate (default 0.95, Lopez de Prado AFML)")
     args = ap.parse_args(argv)
 
     picks = _load_closed_picks()
@@ -235,6 +259,14 @@ def main(argv: list[str] | None = None) -> int:
         for r in results:
             _print_report(r)
             print()
+    if args.gate:
+        failures = _gate_failures(results, args.dsr_threshold)
+        if failures:
+            print("\nANTI-OVERFIT GATE: FAIL", file=sys.stderr)
+            for f in failures:
+                print(f"  - {f}", file=sys.stderr)
+            return 2
+        print("\nANTI-OVERFIT GATE: PASS", file=sys.stderr)
     return 0
 
 

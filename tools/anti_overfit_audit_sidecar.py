@@ -158,6 +158,26 @@ def audit_strategy(name: str, returns: list[float], n_trials: int) -> dict:
     return out
 
 
+def gate_failures(payload: dict, dsr_threshold: float = 0.95,
+                  min_n: int = 0) -> list[str]:
+    """Strategies in a written audit payload whose DSR fails the threshold.
+
+    Pure function so CI logic is testable without a database: the gate reads the
+    artifact the sidecar just wrote and judges it.
+    """
+    bad: list[str] = []
+    for row in payload.get("strategies") or []:
+        if min_n and int(row.get("n") or 0) < min_n:
+            continue
+        name = row.get("strategy", "?")
+        dsr = row.get("dsr")
+        if dsr is None:
+            bad.append(f"{name}: DSR unavailable ({row.get('dsr_error') or 'nan'})")
+        elif float(dsr) < dsr_threshold:
+            bad.append(f"{name}: DSR {float(dsr):.4f} < {dsr_threshold:.2f}")
+    return bad
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--min-n", type=int, default=10,
@@ -166,7 +186,39 @@ def main():
                    help="Print results, don't write JSON")
     p.add_argument("--out", default="audit_dashboard/data/anti_overfit_audit.json",
                    help="Output JSON path (relative to repo root)")
+    p.add_argument("--check-only", action="store_true",
+                   help="do not touch the DB; judge the existing payload and exit 2 on failure")
+    p.add_argument("--in", dest="in_path", default=None,
+                   help="payload to read with --check-only (defaults to --out)")
+    p.add_argument("--gate", action="store_true",
+                   help="exit 2 when any strategy's DSR is below --dsr-threshold")
+    p.add_argument("--dsr-threshold", type=float, default=0.95,
+                   help="DSR floor for --gate (default 0.95)")
     args = p.parse_args()
+
+    if args.check_only:
+        src = Path(args.in_path) if args.in_path else ROOT / args.out
+        if not src.exists():
+            print(f"GATE ERROR: payload not found at {src}", file=sys.stderr)
+            return 3
+        payload = json.loads(src.read_text(encoding="utf-8"))
+        bad = gate_failures(payload, args.dsr_threshold)
+        n = len(payload.get("strategies") or [])
+        if bad and not args.gate:
+            print(f"# {len(bad)}/{n} strategies below DSR {args.dsr_threshold} "
+                  f"(advisory: pass --gate to fail)", file=sys.stderr)
+            return 0
+        if bad:
+            print(f"ANTI-OVERFIT GATE: FAIL -- {len(bad)}/{n} strategies below "
+                  f"DSR {args.dsr_threshold}", file=sys.stderr)
+            for b in bad[:25]:
+                print(f"  - {b}", file=sys.stderr)
+            if len(bad) > 25:
+                print(f"  ... and {len(bad) - 25} more", file=sys.stderr)
+            return 2
+        print(f"ANTI-OVERFIT GATE: PASS -- {n} strategies at DSR >= {args.dsr_threshold}",
+              file=sys.stderr)
+        return 0
 
     try:
         conn = connect()
@@ -302,13 +354,23 @@ def main():
 
     if args.dry_run:
         print("\n# dry-run: not writing JSON", file=sys.stderr)
-        return
+        return 0
 
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"# wrote {out_path}  ({out_path.stat().st_size:,} bytes)", file=sys.stderr)
 
+    if args.gate:
+        bad = gate_failures(payload, args.dsr_threshold)
+        if bad:
+            print(f"ANTI-OVERFIT GATE: FAIL -- {len(bad)}/{n_trials} strategies below "
+                  f"DSR {args.dsr_threshold}", file=sys.stderr)
+            for b in bad[:25]:
+                print(f"  - {b}", file=sys.stderr)
+            return 2
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
