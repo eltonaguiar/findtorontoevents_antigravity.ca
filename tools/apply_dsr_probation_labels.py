@@ -70,6 +70,31 @@ def apply_labels(payload: dict, threshold: float = 0.95) -> dict:
     return payload
 
 
+def check_payload(payload: dict, threshold: float = 0.95) -> list[str]:
+    """Problems that mean the labels no longer describe the rows."""
+    issues: list[str] = []
+    rows = payload.get("strategies") or []
+    if not rows:
+        return ["payload has no strategies"]
+    counts: collections.Counter[str] = collections.Counter()
+    for row in rows:
+        label = row.get("publication_label")
+        name = row.get("strategy", "?")
+        if label not in ("PUBLISHABLE", "PROBATION", "UNRATED"):
+            issues.append("%s: no publication label (row is unlabelled)" % name)
+            continue
+        counts[label] += 1
+        want, _ = label_for(row.get("dsr"), row.get("publication_dsr_threshold", threshold))
+        if label != want:
+            issues.append("%s: labelled %s but dsr=%s implies %s"
+                          % (name, label, row.get("dsr"), want))
+    stated = {k: v for k, v in (payload.get("publication_label_counts") or {}).items() if v}
+    actual = {k: v for k, v in counts.items() if v}
+    if stated != actual:
+        issues.append("published counts %r != actual %r" % (stated, actual))
+    return issues
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -77,6 +102,8 @@ def main() -> int:
     ap.add_argument("--dsr-threshold", type=float, default=0.95,
                     help="DSR floor for PUBLISHABLE (default 0.95)")
     ap.add_argument("--apply", action="store_true", help="write the labels")
+    ap.add_argument("--check", action="store_true",
+                    help="exit 1 if any row lacks a label or the stated counts disagree")
     args = ap.parse_args()
 
     path = pathlib.Path(args.path)
@@ -89,6 +116,17 @@ def main() -> int:
     payload = json.loads(path.read_text(encoding="utf-8"))
     rows_before = len(payload.get("strategies") or [])
     ns_before = [r.get("n") for r in payload.get("strategies") or []]
+
+    if args.check:
+        problems = check_payload(payload, args.dsr_threshold)
+        for line in problems:
+            print(line, file=sys.stderr)
+        if problems:
+            print("LABEL DRIFT: %d problem(s) in %s" % (len(problems), path), file=sys.stderr)
+            return 1
+        print("labels consistent: %d rows, %s"
+              % (rows_before, payload.get("publication_label_counts")))
+        return 0
 
     payload = apply_labels(payload, args.dsr_threshold)
 

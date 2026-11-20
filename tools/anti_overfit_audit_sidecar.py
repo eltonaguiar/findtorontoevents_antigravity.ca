@@ -372,6 +372,18 @@ def main():
     for r in rows:
         lab = r.get("publication_label", "UNRATED")
         label_counts[lab] = label_counts.get(lab, 0) + 1
+    # Label the rows HERE, once, after every row source has run. A label added
+    # only at construction is lost the moment anything appends a row by another
+    # path -- measured 2026-11-20, when a refresh left 4 of 81 rows unlabelled
+    # while the payload still claimed 74 PROBATION.
+    pub_counts: dict[str, int] = {}
+    for _row in rows:
+        _label, _reason = publication_label(_row.get("dsr"))
+        _row["publication_label"] = _label
+        _row["publication_reason"] = _reason
+        _row["publication_dsr_threshold"] = 0.95
+        pub_counts[_label] = pub_counts.get(_label, 0) + 1
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "n_strategies_audited": n_trials,
@@ -392,6 +404,14 @@ def main():
         "validator": "alpha_engine.anti_overfit_validator (DSR Lopez de Prado AFML 14.5; PBO Bailey-Borwein-Lopez de Prado-Zhu 2017; Reality Check White 2000)",
         "portfolio_diagnostics": portfolio_diagnostics,
         "strategies": rows,
+        "publication_label_counts": pub_counts,
+        "publication_label_rule": (
+            "label only -- a PROBATION strategy keeps its row and its n in this "
+            "payload; nothing is deleted or filtered, so the demotion stays "
+            "auditable"
+        ),
+        "publication_labelled_at": datetime.now(timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"),
     }
 
     summary_lines = []

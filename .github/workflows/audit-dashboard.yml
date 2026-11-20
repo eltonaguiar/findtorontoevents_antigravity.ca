@@ -277,6 +277,11 @@ jobs:
         run: |
           pip install pymysql -q 2>/dev/null || true
           python tools/anti_overfit_audit_sidecar.py --min-n 20
+          # A later writer can re-emit rows without labels (measured 2026-11-20:
+          # 4 of 81 rows, while the counts still said 74). Re-stamp after the
+          # sidecar so a refresh can never publish an unlabelled row.
+          python tools/apply_dsr_probation_labels.py --apply
+          python tools/apply_dsr_probation_labels.py --check
 
       - name: Run research sidecars (Agent C external-research — 4 academically-backed)
         id: research_sidecars
