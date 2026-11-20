@@ -136,3 +136,25 @@ def test_dedupe_refuses_same_name_with_different_metrics():
     tool = _tool()
     with pytest.raises(ValueError):
         tool.dedupe_exact([_row("x", 0.1, 10), _row("x", 0.9, 99)])
+
+
+def test_apply_self_heals_a_duplicate_that_differs_only_by_label(tmp_path):
+    """The exact shape of the measured hybrid: one copy labelled, one stripped."""
+    import json
+    import pathlib
+    import subprocess
+    import sys
+    root = pathlib.Path(__file__).resolve().parents[1]
+    payload = {"n_strategies_audited": 1,
+               "strategies": [_row("regime_mild_bear", 0.0356, 283),
+                              {"strategy": "regime_mild_bear", "dsr": 0.0356, "n": 283}]}
+    path = tmp_path / "hybrid.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    subprocess.run([sys.executable, str(root / "tools" / "apply_dsr_probation_labels.py"),
+                    "--path", str(path), "--apply"], check=True, capture_output=True)
+    healed = json.loads(path.read_text(encoding="utf-8"))
+    assert len(healed["strategies"]) == 1, healed["strategies"]
+    assert healed["strategies"][0]["n"] == 283
+    assert healed["publication_label_counts"] == {"PROBATION": 1}
+    subprocess.run([sys.executable, str(root / "tools" / "apply_dsr_probation_labels.py"),
+                    "--path", str(path), "--check"], check=True, capture_output=True)
