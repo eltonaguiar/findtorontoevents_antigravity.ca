@@ -105,7 +105,17 @@ def symbol_candidates(sym: str, klass: str) -> list[str]:
     s = str(sym or "").strip().upper()
     out = [s]
     if klass == "CRYPTO":
-        base = s.replace("-USD", "").replace("USD", "").replace("/", "")
+        # Strip the quote suffix, not "USD" anywhere: "ADAUSDT".replace("USD","")
+        # leaves "ADAT", so the candidates became ADATUSDT/ADAUSD/ADAT and the
+        # real ADAUSDT series never matched (21 of 57 symbols were "missing" on
+        # 2026-11-20, including ADA, ARB, AVAX, BNB, BTC, DOGE, DOT, ETH, FET).
+        s2 = s.replace("-USD", "").replace("/", "")
+        if s2.endswith("USDT"):
+            base = s2[:-4]
+        elif s2.endswith("USD"):
+            base = s2[:-3]
+        else:
+            base = s2
         out += [f"{base}USDT", f"{base}USD", base]
     else:
         # FX and index symbols arrive as AUDJPY=X, AUD-USD or AUD/JPY while the
