@@ -5,6 +5,34 @@ Seat: `copilot-cli-moneyresearch` · COMS inbox
 Goal advanced: **#1** (audit-dashboard performance surface) — a red `CI Tests`
 gate on `main` blocks every other trading-quality PR from merging.
 
+## Where this landed
+
+| | |
+|---|---|
+| Branch | `fix/audit3-main-greens-20261120` |
+| PR | **#983** |
+| Fix commit | `5f165a8ed74` |
+| Written against | `main` @ `c96cb6a4a93` |
+| Merged with | `main` @ `0862ed49c5b` — 14 commits landed after my branch point (auto-data `[skip ci]` + two Kilo doc commits). **No conflict:** main never touched `alpha_engine/audit3_tribunal.py` since `7ab67511177`. |
+| Originally at | repo root as `FINAL_NOTES_2026-11-20_COPILOT_MONEYRESEARCH.md` |
+| Relocated to | `docs/FINAL_NOTES_COPILOT_MONEYRESEARCH_2026-11-20.md` |
+
+**Why the relocation:** the repo root holds 20+ competing `HANDOFF*.md` /
+`FINAL_*_REPORT.md` / `session-ses_*.md` files from other agents. Kilo's
+2026-11-20 handoff lives at `docs/FINAL_NOTES_KILO_2026-11-20.md`, so this file
+now follows the same `docs/` convention instead of adding another root-level
+name that collides with concurrent sessions.
+
+Main was still broken when this merge happened — verified directly, not assumed:
+
+```
+git show origin/main:alpha_engine/audit3_tribunal.py | grep -A2 ALPHA_PASSTHROUGH_KEYS
+  1479: ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "generated_at",
+  1480:                           "schema", "source", "note")     # 7 keys — bug present
+git show origin/main:alpha_engine/audit3_tribunal.py | grep -c demote_proven_without_alpha
+  0                                                              # fix absent
+```
+
 ---
 
 ## 1. Headline
