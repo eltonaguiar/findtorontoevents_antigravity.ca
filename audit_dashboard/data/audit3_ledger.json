@@ -1,6 +1,6 @@
 {
  "schema": "audit3.v1",
- "generated_at": "2026-11-20T00:03:20.616637+00:00",
+ "generated_at": "2026-11-20T00:11:31.866732+00:00",
  "source": "/tmp/audit3/dashboard_data.json",
  "source_generated_at": "2026-11-19T21:55:00.971213+00:00",
  "not_money_ready_disclaimer": "audit3 is an evidence ledger, not a signal service. PROVEN_T2 means the realized closed-pick ledger survives the listed gates; it does not guarantee future returns. No position sizing is emitted here.",
@@ -144,28 +144,28 @@
   "definition": "alpha = pick net return - direction-adjusted buy & hold over the same entry..exit window (M1b)",
   "source": "alpha_engine/audit3_selection_alpha.py (needs the price tables)",
   "why_it_matters": "A +40% pick on a symbol that returned +60% is a selection failure; a win-rate or PF table cannot see that.",
-  "covered": 3170,
+  "covered": 3177,
   "n_universe": 3500,
   "overall": {
-   "n": 3170,
-   "pick_net_pct": -0.245,
+   "n": 3177,
+   "pick_net_pct": -0.2456,
    "hold_net_pct": 0.0294,
-   "alpha_pct": -0.2744,
+   "alpha_pct": -0.275,
    "alpha_ci": [
-    -0.5161,
-    -0.0356
+    -0.5131,
+    -0.0376
    ],
-   "alpha_wr": 0.4473,
-   "hold_days_mean": 5.3115,
-   "hold_days_median": 1.029,
-   "alpha_per_day_pct": -2.5321,
-   "alpha_annualized_pct": -924.2068,
+   "alpha_wr": 0.4466,
+   "hold_days_mean": 5.2999,
+   "hold_days_median": 1.0264,
+   "alpha_per_day_pct": -2.5538,
+   "alpha_annualized_pct": -932.1487,
    "min_hold_days": 1.0,
    "n_min_hold": 1641,
-   "min_hold_participation": 0.5177,
+   "min_hold_participation": 0.5165,
    "alpha_pct_min_hold": -0.1093
   },
-  "generated_at": "2026-11-20T00:03:19.914259+00:00",
+  "generated_at": "2026-11-20T00:11:31.156909+00:00",
   "schema": "audit3.selection_alpha.v1"
  },
  "forward_gate": {
@@ -374,94 +374,33 @@
  },
  "verdict_churn": {
   "available": true,
-  "n_tracked": 438,
-  "n_flipped": 10,
-  "churn_rate": 0.0228,
+  "n_tracked": 440,
+  "n_flipped": 0,
+  "churn_rate": 0.0,
   "alert_threshold": 0.3,
   "min_tracked": 20,
   "alert": false,
-  "flips": [
-   {
-    "asset_class": "CRYPTO",
-    "strategy": "extreme_fear",
-    "direction": "LONG",
-    "from": "KILL",
-    "to": "WEAK",
-    "n": 407
-   },
-   {
-    "asset_class": "CRYPTO",
-    "strategy": "unknown",
-    "direction": "LONG",
-    "from": "KILL",
-    "to": "WEAK",
-    "n": 260
-   },
-   {
-    "asset_class": "CRYPTO",
-    "strategy": "crypto-funding-confluence",
-    "direction": "LONG",
-    "from": "KILL",
-    "to": "WEAK",
-    "n": 34
-   },
-   {
-    "asset_class": "CRYPTO",
-    "strategy": "altseason-rotation-scout",
-    "direction": "LONG",
-    "from": "WEAK",
-    "to": "KILL",
-    "n": 20
-   },
-   {
-    "asset_class": "CRYPTO",
-    "strategy": "ETH",
-    "direction": "LONG",
-    "from": "KILL",
-    "to": "WEAK",
-    "n": 394
-   },
-   {
-    "asset_class": "CRYPTO",
-    "strategy": "AVAX",
-    "direction": "LONG",
-    "from": "KILL",
-    "to": "WEAK",
-    "n": 333
-   },
-   {
-    "asset_class": "EQUITY",
-    "strategy": "CVX",
-    "direction": "LONG",
-    "from": "CANDIDATE",
-    "to": "WEAK",
-    "n": 35
-   },
-   {
-    "asset_class": "FOREX",
-    "strategy": "AUDJPY",
-    "direction": "LONG",
-    "from": "CANDIDATE",
-    "to": "WEAK",
-    "n": 33
-   },
-   {
-    "asset_class": "EQUITY",
-    "strategy": "UBER",
-    "direction": "LONG",
-    "from": "WEAK",
-    "to": "KILL",
-    "n": 28
-   },
-   {
-    "asset_class": "CRYPTO",
-    "strategy": "HBAR",
-    "direction": "LONG",
-    "from": "WEAK",
-    "to": "KILL",
-    "n": 26
-   }
-  ]
+  "flips": []
+ },
+ "denylist_hits": {
+  "available": true,
+  "n": 41,
+  "first_ts": "2026-11-19T21:04:52Z",
+  "last_ts": "2026-11-19T23:06:19Z",
+  "by_class": {
+   "CRYPTO": 33,
+   "COMMODITY": 8
+  },
+  "top_strategies": {
+   "atr_percentile_gate_scanner": 11,
+   "prediction_market_consensus": 11,
+   "luxalgo_confluence": 8,
+   "commodity_momentum": 4,
+   "B_flip_PriceRocMeanReversion": 3,
+   "commodity_rsi_divergence": 2,
+   "commodity_term_cot": 2
+  },
+  "path": "/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/alpha_engine/data/audit3_denylist_hits.jsonl"
  },
  "classes": [
   {
@@ -532,7 +471,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -604,7 +543,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -677,7 +616,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -735,21 +674,21 @@
    "sr0": 0.1951,
    "dsr_local": 0.0372,
    "dsr_local_n_trials": 7,
-   "alpha_pct": -0.0368,
+   "alpha_pct": -0.0641,
    "alpha_ci": [
-    -0.1086,
-    0.0408
+    -0.1442,
+    0.0147
    ],
-   "alpha_n": 116,
-   "alpha_wr": 0.3534,
-   "hold_net_pct": -0.0741,
+   "alpha_n": 123,
+   "alpha_wr": 0.3415,
+   "hold_net_pct": -0.0699,
    "raw_verdict": "WEAK",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1442,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -821,7 +760,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -895,7 +834,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FUTURES",
@@ -956,7 +895,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   }
  ],
  "segments": [
@@ -1021,7 +960,7 @@
    "dsr_local_n_trials": 6,
    "reconstructed": true,
    "raw_verdict": "WEAK",
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "segment": "origin",
@@ -1084,7 +1023,7 @@
    "dsr_local_n_trials": 6,
    "reconstructed": true,
    "raw_verdict": "WEAK",
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "segment": "origin",
@@ -1147,7 +1086,7 @@
    "dsr_local_n_trials": 6,
    "reconstructed": true,
    "raw_verdict": "WEAK",
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "segment": "origin",
@@ -1211,7 +1150,7 @@
    "dsr_local_n_trials": 6,
    "reconstructed": true,
    "raw_verdict": "WEAK",
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "segment": "origin",
@@ -1272,7 +1211,7 @@
    "dsr_local_n_trials": 6,
    "reconstructed": true,
    "raw_verdict": "KILL",
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "segment": "origin",
@@ -1335,7 +1274,7 @@
    "dsr_local_n_trials": 6,
    "reconstructed": true,
    "raw_verdict": "KILL",
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   }
  ],
  "cells": [
@@ -1403,7 +1342,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -1469,7 +1408,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -1533,7 +1472,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -1597,7 +1536,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -1663,7 +1602,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -1727,7 +1666,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -1791,7 +1730,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -1857,7 +1796,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -1923,7 +1862,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -1989,7 +1928,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -2055,7 +1994,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -2120,7 +2059,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -2186,7 +2125,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -2252,7 +2191,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -2312,11 +2251,11 @@
    "bh_family_n": 61,
    "raw_verdict": "WEAK",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -2383,7 +2322,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -2449,7 +2388,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -2515,7 +2454,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -2579,7 +2518,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -2646,7 +2585,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -2713,7 +2652,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -2779,7 +2718,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -2845,7 +2784,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -2911,7 +2850,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -2977,7 +2916,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -3042,7 +2981,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -3108,7 +3047,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -3173,7 +3112,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -3239,7 +3178,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -3305,7 +3244,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -3371,7 +3310,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -3437,7 +3376,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -3502,7 +3441,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -3563,11 +3502,11 @@
    "bh_family_n": 61,
    "raw_verdict": "KILL",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -3631,7 +3570,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -3697,7 +3636,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -3763,7 +3702,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -3829,7 +3768,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -3895,7 +3834,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -3961,7 +3900,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -4027,7 +3966,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -4093,7 +4032,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -4152,11 +4091,11 @@
    "bh_family_n": 61,
    "raw_verdict": "KILL",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1442,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -4222,7 +4161,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -4284,11 +4223,11 @@
    "bh_family_n": 61,
    "raw_verdict": "WEAK",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -4354,7 +4293,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -4421,7 +4360,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -4487,7 +4426,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -4551,7 +4490,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -4617,7 +4556,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -4683,7 +4622,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -4745,7 +4684,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -4811,7 +4750,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -4871,11 +4810,11 @@
    "bh_family_n": 61,
    "raw_verdict": "WEAK",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -4941,7 +4880,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -5007,7 +4946,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -5069,7 +5008,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -5133,7 +5072,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -5198,7 +5137,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -5264,7 +5203,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -5330,7 +5269,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -5390,11 +5329,11 @@
    "bh_family_n": 61,
    "raw_verdict": "WEAK",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -5460,7 +5399,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -5526,7 +5465,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -5590,7 +5529,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -5656,7 +5595,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -5720,7 +5659,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -5780,7 +5719,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -5840,7 +5779,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -5900,7 +5839,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -5961,7 +5900,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6021,7 +5960,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -6081,7 +6020,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6141,7 +6080,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6201,7 +6140,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6261,7 +6200,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6321,7 +6260,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -6377,11 +6316,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -6441,7 +6380,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -6501,7 +6440,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6561,7 +6500,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6621,7 +6560,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6681,7 +6620,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -6741,7 +6680,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6801,7 +6740,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6861,7 +6800,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6921,7 +6860,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -6981,7 +6920,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -7041,7 +6980,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -7101,7 +7040,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7161,7 +7100,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7217,7 +7156,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7273,7 +7212,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7329,7 +7268,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -7385,7 +7324,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -7441,7 +7380,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -7497,7 +7436,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -7553,7 +7492,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -7605,11 +7544,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7665,7 +7604,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7721,7 +7660,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7777,7 +7716,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7833,7 +7772,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -7889,7 +7828,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -7945,7 +7884,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -8001,7 +7940,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -8057,7 +7996,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -8113,7 +8052,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -8169,7 +8108,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -8225,7 +8164,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -8281,7 +8220,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -8337,7 +8276,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -8393,7 +8332,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -8449,7 +8388,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -8505,7 +8444,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -8561,7 +8500,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -8617,7 +8556,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -8673,7 +8612,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -8729,7 +8668,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -8785,7 +8724,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -8837,11 +8776,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -8897,7 +8836,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -8953,7 +8892,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9009,7 +8948,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9065,7 +9004,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9121,7 +9060,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9177,7 +9116,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9233,7 +9172,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9289,7 +9228,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -9345,7 +9284,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -9401,7 +9340,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -9457,7 +9396,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -9513,7 +9452,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -9569,7 +9508,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -9625,7 +9564,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -9681,7 +9620,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9737,7 +9676,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9793,7 +9732,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9849,7 +9788,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9905,7 +9844,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -9961,7 +9900,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -10017,7 +9956,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -10073,7 +10012,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -10129,7 +10068,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -10185,7 +10124,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -10241,7 +10180,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -10297,7 +10236,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -10353,7 +10292,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -10409,7 +10348,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -10465,7 +10404,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -10517,11 +10456,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -10573,11 +10512,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -10629,11 +10568,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1442,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FUTURES",
@@ -10689,7 +10628,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -10745,7 +10684,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -10801,7 +10740,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -10857,7 +10796,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -10913,7 +10852,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -10969,7 +10908,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11025,7 +10964,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11081,7 +11020,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11137,7 +11076,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11193,7 +11132,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11249,7 +11188,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11305,7 +11244,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11361,7 +11300,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11417,7 +11356,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11473,7 +11412,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -11529,7 +11468,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -11585,7 +11524,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -11641,7 +11580,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -11697,7 +11636,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -11754,7 +11693,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -11810,7 +11749,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -11866,7 +11805,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -11922,7 +11861,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -11978,7 +11917,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -12030,11 +11969,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -12090,7 +12029,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -12146,7 +12085,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -12202,7 +12141,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12258,7 +12197,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12314,7 +12253,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12370,7 +12309,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12426,7 +12365,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12482,7 +12421,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12538,7 +12477,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12594,7 +12533,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12650,7 +12589,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12706,7 +12645,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12762,7 +12701,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12818,7 +12757,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12874,7 +12813,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12930,7 +12869,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -12986,7 +12925,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13042,7 +12981,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13098,7 +13037,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13154,7 +13093,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13210,7 +13149,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13266,7 +13205,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13322,7 +13261,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13378,7 +13317,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13434,7 +13373,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13490,7 +13429,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13546,7 +13485,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13602,7 +13541,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13658,7 +13597,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13714,7 +13653,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -13770,7 +13709,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -13826,7 +13765,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -13882,7 +13821,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -13938,7 +13877,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -13994,7 +13933,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -14050,7 +13989,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -14106,7 +14045,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -14162,7 +14101,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -14218,7 +14157,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -14274,7 +14213,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -14326,11 +14265,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -14386,7 +14325,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -14442,7 +14381,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -14498,7 +14437,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -14554,7 +14493,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -14610,7 +14549,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -14666,7 +14605,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "COMMODITY",
@@ -14722,7 +14661,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -14778,7 +14717,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -14834,7 +14773,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -14890,7 +14829,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -14946,7 +14885,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15002,7 +14941,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15058,7 +14997,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15114,7 +15053,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15170,7 +15109,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15226,7 +15165,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15282,7 +15221,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15338,7 +15277,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15394,7 +15333,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15450,7 +15389,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15506,7 +15445,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15562,7 +15501,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15618,7 +15557,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15674,7 +15613,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15730,7 +15669,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15786,7 +15725,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15842,7 +15781,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15898,7 +15837,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -15954,7 +15893,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16010,7 +15949,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16066,7 +16005,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16122,7 +16061,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16178,7 +16117,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16234,7 +16173,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16290,7 +16229,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16346,7 +16285,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16402,7 +16341,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16458,7 +16397,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16514,7 +16453,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16570,7 +16509,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16626,7 +16565,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16682,7 +16621,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16738,7 +16677,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16794,7 +16733,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16850,7 +16789,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16906,7 +16845,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -16962,7 +16901,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17018,7 +16957,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17074,7 +17013,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17130,7 +17069,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17186,7 +17125,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17242,7 +17181,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17298,7 +17237,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17354,7 +17293,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17410,7 +17349,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17466,7 +17405,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17522,7 +17461,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17578,7 +17517,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17634,7 +17573,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17690,7 +17629,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17746,7 +17685,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17802,7 +17741,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17858,7 +17797,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17914,7 +17853,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -17970,7 +17909,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18026,7 +17965,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18082,7 +18021,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18138,7 +18077,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18194,7 +18133,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18250,7 +18189,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18306,7 +18245,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18362,7 +18301,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18418,7 +18357,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18474,7 +18413,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18530,7 +18469,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18586,7 +18525,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18642,7 +18581,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18698,7 +18637,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18754,7 +18693,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18810,7 +18749,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18866,7 +18805,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18922,7 +18861,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -18978,7 +18917,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19034,7 +18973,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19090,7 +19029,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19146,7 +19085,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19202,7 +19141,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19258,7 +19197,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19314,7 +19253,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19370,7 +19309,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19426,7 +19365,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19482,7 +19421,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19538,7 +19477,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19594,7 +19533,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19650,7 +19589,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19706,7 +19645,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19762,7 +19701,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19818,7 +19757,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19874,7 +19813,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19930,7 +19869,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -19986,7 +19925,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20042,7 +19981,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20098,7 +20037,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20154,7 +20093,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20210,7 +20149,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20266,7 +20205,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20322,7 +20261,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20378,7 +20317,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20434,7 +20373,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20490,7 +20429,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20546,7 +20485,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20602,7 +20541,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20658,7 +20597,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20714,7 +20653,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20770,7 +20709,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20826,7 +20765,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20882,7 +20821,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -20938,7 +20877,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -20994,7 +20933,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21050,7 +20989,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21106,7 +21045,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21162,7 +21101,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21218,7 +21157,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21274,7 +21213,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21330,7 +21269,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21386,7 +21325,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21442,7 +21381,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -21498,7 +21437,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -21554,7 +21493,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -21610,7 +21549,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -21666,7 +21605,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -21722,7 +21661,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -21778,7 +21717,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -21834,7 +21773,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -21886,11 +21825,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1442,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -21942,11 +21881,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -21998,11 +21937,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -22054,11 +21993,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1442,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -22110,11 +22049,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -22166,11 +22105,11 @@
    ],
    "raw_verdict": "INSUFFICIENT_N",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   }
  ],
  "symbols": [
@@ -22239,7 +22178,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22304,7 +22243,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22369,7 +22308,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22434,7 +22373,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22502,7 +22441,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22569,7 +22508,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22637,7 +22576,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22705,7 +22644,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22772,7 +22711,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22839,7 +22778,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22906,7 +22845,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -22974,7 +22913,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23042,7 +22981,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23110,7 +23049,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23177,7 +23116,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23245,7 +23184,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23313,7 +23252,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23381,7 +23320,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23447,7 +23386,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23515,7 +23454,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23583,7 +23522,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23648,7 +23587,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23716,7 +23655,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23782,7 +23721,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23850,7 +23789,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23918,7 +23857,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -23986,7 +23925,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -24054,7 +23993,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -24122,7 +24061,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -24190,7 +24129,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -24258,7 +24197,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -24326,7 +24265,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -24392,7 +24331,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -24460,7 +24399,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -24528,7 +24467,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -24596,7 +24535,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -24663,7 +24602,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -24730,7 +24669,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -24798,7 +24737,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -24865,7 +24804,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -24933,7 +24872,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -25001,7 +24940,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -25068,7 +25007,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -25136,7 +25075,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -25204,7 +25143,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -25272,7 +25211,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -25339,7 +25278,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -25407,7 +25346,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -25475,7 +25414,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -25542,7 +25481,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -25610,7 +25549,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -25673,7 +25612,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "FOREX",
@@ -25732,11 +25671,11 @@
    "dsr_local_n_trials": 68,
    "raw_verdict": "WEAK",
    "alpha_gate": {
-    "alpha_ci_lo": -0.1086,
+    "alpha_ci_lo": -0.1467,
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "BOND",
@@ -25804,7 +25743,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -25872,7 +25811,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -25939,7 +25878,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -26006,7 +25945,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "ETF",
@@ -26074,7 +26013,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -26141,7 +26080,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -26208,7 +26147,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -26275,7 +26214,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -26342,7 +26281,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -26410,7 +26349,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -26478,7 +26417,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -26545,7 +26484,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -26612,7 +26551,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "EQUITY",
@@ -26679,7 +26618,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "asset_class": "CRYPTO",
@@ -26746,7 +26685,7 @@
     "passed": false
    },
    "beta_dominant": true,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   }
  ],
  "source_families": [
@@ -26806,7 +26745,7 @@
    "sr0": 0.0476,
    "dsr_local": 0.0,
    "dsr_local_n_trials": 6,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "family": "luxalgo",
@@ -26865,7 +26804,7 @@
    "sr0": 0.049,
    "dsr_local": 0.0003,
    "dsr_local_n_trials": 6,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "family": "mega_mutation",
@@ -26921,7 +26860,7 @@
    "sr0": 0.2948,
    "dsr_local": 0.9638,
    "dsr_local_n_trials": 6,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "family": "copytrader",
@@ -26977,7 +26916,7 @@
    "sr0": 0.344,
    "dsr_local": 0.0,
    "dsr_local_n_trials": 6,
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "family": "ml_enhanced",
@@ -27024,7 +26963,7 @@
    "reasons": [
     "n=5 < 20: no statistical claim"
    ],
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   },
   {
    "family": "prediction_market",
@@ -27071,7 +27010,7 @@
    "reasons": [
     "n=2 < 20: no statistical claim"
    ],
-   "provenance_id": "a9b08ebc1dd6bef1"
+   "provenance_id": "d48a4ec18552e999"
   }
  ],
  "kill_tribunal": {
@@ -27523,7 +27462,7 @@
  "provenance": {
   "module": "alpha_engine/audit3_tribunal.py",
   "generator_version": "audit3.v2",
-  "id": "a9b08ebc1dd6bef1",
+  "id": "d48a4ec18552e999",
   "population": "canonical",
   "population_rows": 8632,
   "population_total": 14679,
@@ -27532,7 +27471,7 @@
   "source_file": "/tmp/audit3/dashboard_data.json",
   "source_generated_at": "2026-11-19T21:55:00.971213+00:00",
   "input_sha256": "468a94490ae2a417ed0d9bc924cbb2a81ee5210f937c40ce84977a950540238c",
-  "git_sha": "29d3252467d5",
+  "git_sha": "5623b6e17460",
   "n_cells_scored_with_dsr": 66,
   "n_trials_dsr": 359,
   "registry_note": "multiplicity is counted two ways on purpose: BH/Bonferroni operate on tested cells (n >= sample floor); DSR uses the global trial count (every distinct cell, so G4 corrects for the full search space)."
