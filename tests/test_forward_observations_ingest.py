@@ -227,3 +227,19 @@ def test_registered_breakout_pod_claims_its_strategies():
                 == "H-BABY-EQUITY-VT-PATTERN-SWEEP-001")
         assert (ING.classify(None, "ETF", strategy=strat, direction="LONG")
                 == "H-BABY-EQUITY-VT-PATTERN-SWEEP-001")
+
+def test_registered_emitting_pods_are_wired_to_their_hypotheses():
+    """Pods whose strategies emit but had no condition never accrued forward rows."""
+    assert ING.classify(None, "ETF", strategy="etf_faber_tactical",
+                        direction="LONG") == "H-2026-11-19-03"
+    assert ING.classify(None, "EQUITY", strategy="faber_taa",
+                        direction="LONG") == "H-2026-11-19-03"
+    assert ING.classify(None, "ETF", strategy="etf_dual_momentum",
+                        direction="LONG") == "H-2026-11-19-06"
+    assert ING.classify(None, "COMMODITY", strategy="contango_roll_yield",
+                        direction="SHORT") == "H-2026-11-19-05"
+    assert ING.classify(None, "COMMODITY", strategy="contango_roll_yield",
+                        direction="LONG") == "H-2026-11-19-05"
+    # Direction still gates: the Faber sleeve is long-only.
+    assert ING.classify(None, "ETF", strategy="etf_faber_tactical",
+                        direction="SHORT") is None
