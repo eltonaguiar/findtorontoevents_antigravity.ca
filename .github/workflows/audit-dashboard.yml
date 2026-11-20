@@ -966,6 +966,10 @@ jobs:
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           # Block conflict-marker commits on staged payload files (issue #141)
           bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          # A generated payload that contradicts itself is a hybrid, not fresh
+          # output: a declared row count that no longer matches its own rows, or a
+          # row repeated verbatim. Catch it before it becomes a commit.
+          python3 tools/detect_merge_hybrid.py --staged || exit 1
           git commit -m "chore(audit-dashboard): refresh payload [skip ci]"
           # ---------------------------------------------------------------------------
           # PHASE 2: Push with merge — commit-first-then-merge (replaces rebase)
@@ -1026,6 +1030,29 @@ jobs:
               bash .github/scripts/assert_no_conflict_markers.sh || exit 1
               git commit --amend --no-edit
             fi
+            # The pull above is a LINE-BASED three-way merge of generated JSON
+            # (-X ours, resolved hunk by hunk), so it can hybridise this payload:
+            # 2026-11-20T20:46 produced 81 rows / 77 labelled from two 80-row
+            # sides, one strategy emitted twice, four rows stripped of labels
+            # they already carried on main. The sidecar step far above verified
+            # the labels *before* this commit and pull, so nothing caught it and
+            # the hybrid was pushed. Verify again here, then commit the repair
+            # as part of this same push.
+            if [ -f audit_dashboard/data/anti_overfit_audit.json ]; then
+              python3 tools/apply_dsr_probation_labels.py --apply || exit 1
+              python3 tools/apply_dsr_probation_labels.py --check || exit 1
+              if ! git diff --quiet -- audit_dashboard/data/anti_overfit_audit.json; then
+                git add audit_dashboard/data/anti_overfit_audit.json
+                git commit -m "chore(audit-dashboard): re-stamp publication labels after merge [skip ci]" || true
+              fi
+            fi
+            # A line-based merge can hybridise ANY generated artifact, not just the
+            # labelled one above. Bound the check to the directories this job
+            # commits, so another bot's payload can never block a clean run.
+            python3 tools/detect_merge_hybrid.py --rev-range HEAD^..HEAD \
+              --under audit_dashboard/data alpha_engine/data audit_trail/data \
+                      copy_trader_intel/data prediction_market_agents/data \
+                      ml_gatekeeper/data reports || exit 1
             # Verify publish consistency (advisory check — non-fatal by design)
             python3 .github/scripts/verify_dashboard_publish_consistency.py || true
             # Push attempt (sanitize output to avoid leaking PAT in error messages).
