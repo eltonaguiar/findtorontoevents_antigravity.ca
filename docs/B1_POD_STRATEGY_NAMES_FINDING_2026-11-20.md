@@ -74,3 +74,33 @@ WHERE strategy IN ('donchian-stock-breakout','rs-breakout-scout',
                    'vol-contraction-scout','adx-trend-scout') GROUP BY strategy;
 -- returns 0 rows
 ```
+
+---
+
+## 2b. FOLLOW-UP (02:35Z): the obvious amendment is a trap
+
+Before proposing "amend the pod to the real emitters", I checked what those emitters actually emit:
+
+| Strategy | Asset classes in `at_signal_outcomes` |
+|---|---|
+| `adx_momentum` | CRYPTO 25 |
+| `donchian_breakout_scalp` | CRYPTO 26, MEMECOIN 1 |
+| `proven_donchian_adx_trend` | CRYPTO 6, COMMODITY 3, FUTURES 2 |
+
+**Zero EQUITY or ETF rows.** `trading_picks` shows 95 / 81 / 55 rows for the three names, but the
+same picture: they are crypto/futures/commodity strategies that happen to share a name family.
+
+So amending `POD-EQUITY-BREAKOUT` to those three would attach **crypto rows to an equity pod** —
+a worse error than the current phantom registration, because it would accrue *wrong* forward
+evidence rather than none.
+
+**Revised conclusion:** `POD-EQUITY-BREAKOUT` has **no live equity/ETF emitter at all**. The only
+honest options are:
+
+1. **Park the pod** (`status: parked_unemitted`) and stop citing it as the EQUITY path. The
+   $2k plan's EQUITY sleeve then has no executable strategy and the 90/0/10 split stands on
+   core beta alone.
+2. **Implement an equity breakout emitter** (donchian/ADX/vol-contraction on EQUITY+ETF) as a
+   real code change, register it, and restart the clock at the implementation date.
+
+Do **not** amend the pod to `donchian_breakout_scalp` / `proven_donchian_adx_trend` / `adx_momentum`.
