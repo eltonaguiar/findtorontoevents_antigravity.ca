@@ -28,9 +28,11 @@ jobs:
       DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
       DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
     steps:
-      - uses: actions/checkout@v4
+      # No `ref: main` here: on pull_request that checked out main's tree, where
+      # this tool does not exist yet, so the audit failed on its own PR run
+      # (2026-11-20T01:40). Default checkout uses the PR head / triggering ref.
+      - uses: actions/checkout@v6
         with:
-          ref: main
           fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
