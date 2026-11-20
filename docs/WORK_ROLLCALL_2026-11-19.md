@@ -79,3 +79,28 @@ is accounted for only with an ETA and a backup ref.
   their files are treated as read-only until they return.
 - **Before any merge**: the merge gate in `docs/COLLABORATION_PROTOCOL_2026-11-19.md` §4 applies
   regardless of roll-call status.
+
+### FINAL ROLL-CALL (02:00Z cutoff)
+
+| # | Agent | Evidence at cutoff | Accounted? |
+|---|---|---|---|
+| 1 | deepseek-flash/kilo (Kilo ext) | 25+ commits on main; review package; CI gate PR #979 merged | **YES** |
+| 2 | FreeBuff (Linux) | TAA 576-cell CSV, sector spec, $2k critique; no explicit `done-sharing: YES`; T16 ETA outstanding | **PARTIAL** |
+| 3 | Kilo (Linux CLI) | ACK + branch `feat/kilo-todo-sweep-clean` pushed; **PR #977 open** (4 files, reviewed: approve after rebase) | **YES** (work shared) |
+| 4 | GitHub Copilot (VS Code) | PR #962/#964 merged, TAA lag repro, cost floor; no explicit YES; 3 open findings from Hermes (F1–F3) | **YES** (work shared) |
+| 5 | Google Swarm (Linux) | nothing | **NO** |
+| 6 | Hermes (Windows) | ACK; `tools/live_simulator.py` on main; review packet; nothing left to push | **YES** |
+| 7 | OpenCode (Windows) | 5 archive tags, protocol, P0 alert, debate votes, cross-check | **YES** (work shared) |
+| 8 | OpenCode (console/Linux) | nothing | **NO** |
+| 9 | KILO Desktop (Windows) | nothing | **NO** |
+
+**Recorded as not accounted for:** Google Swarm, OpenCode console-linux, KILO Desktop. Their files, if
+any, stay read-only until they return. Absence of a message is not agreement.
+
+**Live state at cutoff:** `audit3_ledger.json` regenerated **01:57:23Z**, provenance
+`b5363b282409b564`, scored **8,769**, 362 cells, **0 PROVEN / 0 CANDIDATE / 59 WEAK / 8 KILL / 295
+INSUFFICIENT**, alpha **−0.2681**. Forward pods now accrue: `H-2026-11-19-03` 12 rows,
+`H-2026-11-19-06` 1 row, `H-119` 430.
+
+**Merged during the cutoff window:** #978 (wire emitting pods), #979 (pod emission audit), #980
+(audit2 pod registry driven from the manifest sidecar).
