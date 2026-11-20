@@ -204,9 +204,19 @@ jobs:
           # --prev-ledger/--max-churn. They were duplicated here by a merge,
           # and argparse rejects a repeated option string ("conflicting option
           # string: --history"), which broke the 2026-11-19T23:45 build.
+          # 2026-11-20: the sleeve gate ran only when invoked by hand, so an
+          # implausible PF could sit on the page indefinitely. Probe the CLI for
+          # the flag rather than assuming it: this file and audit3_tribunal.py
+          # are owned separately, and an unreachable option would abort the build.
+          sleeves_arg=""
+          if python3 -m alpha_engine.audit3_tribunal --help 2>&1 | grep -q -- "--sleeves"; then
+            sleeves_arg="--sleeves /tmp/audit3/dashboard_data.json"
+          else
+            echo "::warning title=audit3::sleeve gate NOT wired — audit3_tribunal has no --sleeves; apply reports/patches/2026-11-20-sleeve-gate-on-main.patch"
+          fi
           python3 -m alpha_engine.audit3_tribunal \
             --picks /tmp/audit3/dashboard_data.json \
-            --out audit_dashboard/data/audit3_ledger.json $alpha_arg $history_arg
+            --out audit_dashboard/data/audit3_ledger.json $alpha_arg $history_arg $sleeves_arg
           python3 - <<'PY'
           import json
           d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
@@ -219,6 +229,15 @@ jobs:
           print("audit3 summary:", json.dumps(s))
           print("audit3 coverage:", cov["statement"])
           print("selection alpha:", d["selection_alpha"]["available"])
+          sl = d.get("sleeves")
+          if sl is None:
+              print("::warning title=audit3::no 'sleeves' block — implausible-PF gate is inert")
+          else:
+              rankable = [x for x in sl if x.get("rankable")]
+              bad = [x for x in rankable if float(x.get("pf") or 0) > 25.0]
+              assert not bad, f"implausible-PF sleeve published as rankable: {bad}"
+              print(f"sleeves: {len(sl)} | rankable: {len(rankable)} | "
+                    f"flagged: {len(sl) - len(rankable)}")
           PY
 
       # Fail-open is the right runtime behaviour and the wrong CI behaviour: if the
@@ -296,5 +315,20 @@ jobs:
               with open(local, "rb") as f:
                   ftp.storbinary(f"STOR {remote}", f)
               print(f"uploaded {local} -> /findtorontoevents.ca/audit2/{remote}")
+          # 2026-11-20: /audit/data/audit3_ledger.json was written by NO workflow in
+          # this file. /audit rendered a ledger frozen at 2026-11-19T21:02:25 while
+          # /audit3 kept rebuilding every 6h, so /audit drifted to a 223-minute build
+          # gap and assert_surface_parity.py exited 2 (RED). Uploading the same bytes
+          # here is what makes all surfaces agree on ONE ledger.
+          ftp.cwd("..")
+          ftp.cwd("audit")
+          try:
+              ftp.mkd("data")
+          except ftplib.error_perm:
+              pass  # already exists
+          ftp.cwd("data")
+          with open("audit_dashboard/data/audit3_ledger.json", "rb") as f:
+              ftp.storbinary("STOR audit3_ledger.json", f)
+          print("uploaded audit_dashboard/data/audit3_ledger.json -> /findtorontoevents.ca/audit/data/audit3_ledger.json")
           ftp.quit()
           PY
