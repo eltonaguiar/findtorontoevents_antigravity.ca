@@ -172,7 +172,7 @@ classic small-n mirage, correctly blocked by the n-floor. FOREX n=547 but PF col
 | Draft claim | Verdict | Source |
 |---|---|---|
 | `reports/TACTICAL_ROTATION_EDGE_2026-07-04.md` exists | ✅ verified | glob |
-| Sharpe 0.88 / MaxDD −19% (6m TAA) | ✅ verified | report L48 (top5-6m row) |
+| Sharpe 0.88 / MaxDD −19% (6m TAA) | ❌ **RETRACTED 2026-11-20** | This "verification" only confirmed the number *appeared* in the source report — it never re-derived it. It reproduces only at same-close execution; honest 1-day lag gives Sharpe 0.82 / MaxDD −20.9%, and a pre-registered 576-cell grid found **0/576** cells meeting Sharpe ≥0.88 with MaxDD ≥−19% (`reports/TAA_SETTLE_2026-11-19.md`). **Do not cite this row as a verified figure.** |
 | "12-ETF universe" | ❌ → 14 ETFs | `tactical_rotation_tracker.py::UNIVERSE` |
 | "hold top-3, else SHY/TLT" | ❌ → top-5, else AGG | same file `TOP_N`/`CASH_ASSET` |
 | Tier gates PF≥1.5/WR≥50/MDD≤20/n≥100 | ✅ verified | `value_backtest.py::classify_tier` (Tier 2) |
@@ -194,7 +194,7 @@ classic small-n mirage, correctly blocked by the n-floor. FOREX n=547 but PF col
 - **0/9 asset classes pass the Tier-2 / money-ready gates today** (both on the frozen June
   ledger and the 2026-10-19 live verdicts).
 - The only defensible "money-ready track" remains the **ETF TAA rotation backtest**
-  (Sharpe 0.88–1.21 region, MaxDD −12/−19% vs SPY −24%) — deploy at modest size,
+  (Sharpe 0.88–1.21 region, MaxDD −12/−19% vs SPY −24% — **⚠️ the Sharpe leg is RETRACTED, see §4 above**; honest lagged Sharpe 0.82 vs SPY 0.69, MaxDD control survives) — deploy at modest size,
   forward-track monthly; it is risk-adjusted smart-beta, not alpha.
 - **Equity quality/dividend** is the closest pick-ledger candidate: n and WR gates now pass
   (n=229, WR 55.9%); it needs PF ≥ 1.5 (currently 0.8365) on a clean cohort before promotion.

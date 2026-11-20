@@ -6,6 +6,52 @@
 
 ---
 
+## 0. CORRECTION 2026-11-20 — the ETF TAA claim in §2 is RETRACTED
+
+§2 rated the ETF tactical-rotation / dual-momentum edge **CORROBORATED** on the
+strength of "Sharpe 0.88 vs SPY 0.74, MaxDD −19% vs −51%, look-ahead-free".
+**That is wrong as stated, and the label is withdrawn.** Those figures reproduce
+only at *same-close* (lag-0) execution — the "look-ahead-free / 1-day entry"
+description does not match what produced them. On a pre-registered grid that was
+written *before* the run, **0 of 576 cells met the bar** (`NOT_REPRODUCED`).
+Evidence: `reports/TAA_SETTLE_2026-11-19.md` (+ `.json` / `.csv`),
+`reports/TAA_LAGGED_REPRODUCTION_2026-11-19.md`, `tools/taa_settle_sweep.py`.
+
+| Question asked | Measured | Verdict vs the claim |
+|---|---|---|
+| Same 14-ETF universe, honest **1-day** lag, 5bps/leg, total return | Sharpe **0.82** vs SPY 0.69 · MaxDD **−20.9%** vs −52.9% · CAGR **8.94%** vs SPY 10.79% | Sharpe edge **+0.13** (not +0.14); MaxDD roughly right; **return trails SPY** |
+| Pre-registered criterion: ≥1 cell with lag=1, cost ≥5bps, Sharpe ≥0.88 **and** MaxDD ≥−19%, 2007–2026 | **0 / 576 cells** | **criterion failed** |
+| Literal-claim reconstruction, `sectors_11spdr`, top5/lb6, lag=1, 5bps | Sharpe **0.727** · MaxDD **−44.55%** · CAGR 9.83% | ≈0.15 worse Sharpe, ≈25pts worse drawdown |
+| Best lagged cell, 2007–2026, ≥5bps | Sharpe **0.795** · MaxDD **−41.67%** · CAGR 10.78% (`sectors_11spdr` top5 lb12) | still short on both legs |
+| Best drawdown-control cell | MaxDD **−31.61%** at CAGR 10.02% (SPY 10.57% / −50.78%) | DD cut **−50.78% → −31.61% = 38% reduction**, for **−0.54%/yr** CAGR give-up |
+
+**Diagnosis: a window artefact, not primarily look-ahead.** All **85** cells that
+clear both bars live in the **2018–2026** window, which excludes 2008; in
+**2007–2026** **zero** do — not even at lag-0 with zero cost (best such cell:
+Sharpe 0.933 / MaxDD −24.01%; 0 of 288 cells pair Sharpe ≥0.88 with MDD ≥−19%).
+Unlagged-vs-lagged maximum Sharpe is 1.127 vs 1.045, i.e. ~7% inflation — mild.
+
+**What survives, and it is worth having:** a real, cost-robust **drawdown
+reduction** — MaxDD −50.78% → −31.61% (a 38% cut, not 63%) for ~0.54%/yr of CAGR
+sacrificed. That is a **risk-control** result, not an alpha result, and it is what
+§4 already says. What does **not** survive is "Sharpe 0.88 vs 0.74" over 2007–2026,
+or the word CORROBORATED.
+
+*One overreach in `TAA_SETTLE`'s own prose, corrected here:* it states the claimed
+Sharpe is "0.085 above the entire grid's maximum". That holds only for the
+lagged/cost-bearing grid — over all 576 cells the 2007–2026 maximum is **0.933**
+(lag-0, 0bps). The claim still fails, because no 2007–2026 cell pairs Sharpe ≥0.88
+with MaxDD ≥−19%.
+
+*Scope of this correction:* the four verdict-grade docs that presented the number
+as verified are fixed (§2 here, `docs/CROSS_AGENT_PLAN_money_maker_2026-11-19.md`,
+`reports/QUICKWIN_STRATEGY_TEMPLATES_2026-10-19.md`,
+`reports/edition_review_2026-07.md`). Historical session dumps that repeat it
+(`2026-11-14/`, `2026-11-15_*`, `ACTIONPLAN_AUDITPAGE/`, `AUDIT_ENSEMBLE_*`) are
+left untouched — they are records of what was said at the time, not live verdicts.
+
+---
+
 ## 1. Ground truth, fetched live 2026-11-19
 
 ### /audit — `money_ready_verdict.json` (18:47Z)
@@ -39,7 +85,7 @@ Doctrine: remaining public edges are risk premia + microstructure/flow; the *exp
 | `/audit` sleeve **"Multi-Timeframe Trend Alignment"** 87% WR / PF 11.8 (n=394); **"AuditEnsemble_LONG"** PF 10.1; **"Price Acceleration Detector"** PF 5.9 | **UNCORROBORATED** | None of these names exist among audit3's 277 scored strategies, and none appear in the 3,500-row dashboard payload (`picks.recent_closed`) audit3 ingests. They live only in MySQL `at_pick_outcomes` and are *selected post-hoc* by `_top_sleeves_from_outcomes` (hard filter WR≥50 & PF≥1.5 across ~277+ strategies, no multiplicity correction) — survivorship display, not scored edge. **Fix shipped:** sleeves are now cross-marked with the tribunal verdict (`audit3_verdict` / `tribunal_corroborated`) in `money_ready_verdict.py`, and `/audit` renders an "UNVERIFIED (not in audit3)" badge. |
 | FOREX sleeve `non_crypto_consensus` PF 9.68 / WR 52.9% (n=223) vs class PF 0.26 | **SUSPECT** | Same mechanism: a sleeve PF ~37× its own class PF, from a resolver-grade query the tribunal never scored. Now carries the same badge. |
 | "78.9% CRYPTO Smart-Picks" (pick_funnel) | **CORROBORATED AS DISPUTED** | Already flagged on-page; audit3 independently rates CRYPTO = KILL at 40.4% WR / PF 0.84 on n=6,740. |
-| ETF tactical rotation / dual momentum edge | **CORROBORATED** | `reports/TACTICAL_ROTATION_EDGE_2026-07-04.md`: top5-6m rotation, 2007–2026 incl. GFC/COVID/2022: Sharpe 0.88 vs SPY 0.74, MaxDD −19% vs −51%, positive in all 3 time-thirds; VAA-G4 independent corroboration; matches the Faber/Antonacci literature and Hurst-Ooi-Pedersen's century of trend evidence. Caveat: smart-beta (risk control), not alpha; **forward n=0**. |
+| ETF tactical rotation / dual momentum edge | **RETRACTED 2026-11-20** (was CORROBORATED) | **See §0.** The cited "Sharpe 0.88 vs SPY 0.74, MaxDD −19% vs −51%, look-ahead-free" reproduces **only at same-close execution**. Honest 1-day lag, same 14-ETF universe: Sharpe 0.82 vs SPY 0.69, MaxDD −20.9% vs −52.9%, **CAGR 8.94% vs SPY 10.79%**. Pre-registered 576-cell grid: **0/576 cells** clear Sharpe ≥0.88 *and* MaxDD ≥−19% at lag=1/≥5bps; best lagged 2007–2026 cell 0.795 / −41.67%; literal reconstruction 0.727 / −44.55%. All 85 cells that clear both bars sit in 2018–2026 (no 2008) → **window artefact, not look-ahead**. What survives is **drawdown control** (−50.78% → −31.61%, a 38% cut, for ~0.54%/yr CAGR) — smart-beta risk control, **not alpha**; **forward n=0**. Evidence: `reports/TAA_SETTLE_2026-11-19.md`, `reports/TAA_LAGGED_REPRODUCTION_2026-11-19.md`. |
 | Best "worth forward-testing" cells | Plausible, unproven | ETF `rs-breakout-scout` (n=80, WR 56%, net +0.58%/trade, q=0.167); ETF `adx-trend-scout` (n=43, q=0.167); EQUITY `donchian-stock-breakout` (n=45, net +1.89%); CRYPTO `btc-4h-rsi-macd-scout` (n=35, net +2.0%, DSR 0.118 — highest in class). All fail the 2×-cost stress; none promotable. |
 
 ## 3. What works per asset class (local evidence × external research)
@@ -63,7 +109,7 @@ Base rates every short-term plan must beat: Brazil futures day traders — 97% o
 
 **Verdict: ETF — tactical dual-momentum rotation — for real capital, held strictly as a *drawdown-control* allocation (lagged reproduction §6.1: Sharpe edge narrows to +0.13 at 1-day lag and CAGR trails SPY; the crash protection is what survives). CRYPTO for the live *paper* sim. $0 real into short-term trading in any class today. A holder comfortable with −50% drawdowns should simply hold SPY/VOO.**
 
-1. ETF TAA is the only edge with 20-year robust in-repo evidence AND deep external replication. On $2k: 4–5 commission-free ETFs, fractional shares, monthly rebalance, ~2–5bp cost. Expected: market-like return at roughly half the drawdown (≈$100–200/yr — the value is capital preservation + a provable process, not income).
+1. ETF TAA is the only candidate with 20-year in-repo evidence that survives an honest lag — but only in **reduced** form (§0: Sharpe edge +0.06 at settled cost / +0.13 at 1-day lag, not +0.14, and CAGR trails SPY). On $2k: 4–5 commission-free ETFs, fractional shares, monthly rebalance, ~2–5bp cost. Expected: a slightly-below-market return (CAGR 8.94% vs SPY 10.79% at 1-day lag) with a 38% smaller drawdown (MaxDD −31.6% vs −50.8%; ≈$100–200/yr of avoided pain) — the value is capital preservation + a provable process, not income.
 2. Every short-term class we measure has **negative selection alpha** (−0.28%/trade ≈ −$5.5 expected per $2k trade), before the brutal day-trading base rates.
 3. CRYPTO remains the right short-term *sandbox*: 24/7, fine-grained sizing, our richest data/resolver infra, documented short-horizon momentum. Real sizing only after a pod clears the audit3 forward gate (n≥100, net PF CI-LB > 1.0, 100% intrabar honesty, ≥90% benchmark coverage).
 4. External ranking agrees: ETF (slow) > crypto spot momentum (experimental, maker orders only) > prediction-market maker > everything else; FX/futures/commodity day trading worst.
