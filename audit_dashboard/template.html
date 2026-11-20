@@ -5569,6 +5569,14 @@ function renderSummary() {
   const usingInstitutionalPnl = !statsFiltered && purgedPnl != null;
   const displayPnl = statsFiltered ? totalPnl : (usingInstitutionalPnl ? purgedPnl : rawTotalPnl);
   const displayPF = statsFiltered ? profitFactor : (s.profit_factor || 0);
+  // P0.11 (2026-11-20): publish the denominator with the headline.
+  const _headlineDenom = (s.headline_denominator != null) ? s.headline_denominator : resolved;
+  const _headlineExcluded = (s.closed_excluded_from_headline != null) ? s.closed_excluded_from_headline : null;
+  const _headlineZeroShare = (s.zero_pnl_share_pct != null) ? s.zero_pnl_share_pct : null;
+  const _headlineWrTip = cardTips.winRate + ' - Scored: ' + fmt(_headlineDenom) + ' picks'
+    + (_headlineExcluded != null ? '; excluded from headline: ' + fmt(_headlineExcluded) : '')
+    + (_headlineZeroShare != null ? '; flat share: ' + fmt(_headlineZeroShare) + '%' : '')
+    + '. Click for drill-down by system, month, and score tier.';
   const displayExpectancy = statsFiltered ? expectancy : (s.expectancy || 0);
   const displayAvgWin = statsFiltered ? avgWin : (s.avg_win || 0);
   const displayAvgLoss = statsFiltered ? avgLoss : (s.avg_loss || 0);
@@ -5677,7 +5685,7 @@ function renderSummary() {
     { label: 'Active Picks', value: _activePicksValue, tip: cardTips.active + (_hasRawPool ? ('\n\nFull candidate pool: ' + _rawPoolCount + ' picks. ' + (_rawPoolCount - totalActive) + ' filtered out by backend quality gates (BANNED trust, blocked systems, staleness, GC=F band, etc). Click Show All Picks on Active tab to view full pool.') : ''),
       sub: _activePicksSub },
     { label: 'Closed Picks', value: statsFiltered ? totalClosed : (s.total_closed_picks || 0), tip: cardTips.closed },
-    { label: 'Win Rate', value: fmt(Math.min(displayWinRate, 100)) + '%', cls: displayWinRate >= 50 ? 'positive' : 'negative', tip: cardTips.winRate + ' - Click for drill-down by system, month, and score tier.', clickable: true, clickFn: 'showWrDrillDown' },
+    { label: 'Win Rate', value: fmt(Math.min(displayWinRate, 100)) + '%' + (_headlineExcluded ? ' <span class="muted">(' + fmt(_headlineDenom) + ' scored, ' + fmt(_headlineExcluded) + ' excluded)</span>' : ''), cls: displayWinRate >= 50 ? 'positive' : 'negative', tip: _headlineWrTip, clickable: true, clickFn: 'showWrDrillDown' },
     // Smart Picks WR - embedded from dashboard_payload.json so /audit stays on one runtime artifact
     (function() {
       var spSummary = getEmbeddedSmartSnapshotSummary();

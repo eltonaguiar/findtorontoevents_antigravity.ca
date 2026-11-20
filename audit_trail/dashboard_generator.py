@@ -13,6 +13,11 @@ Sources:
   - Audit events and filter logs
 """
 
+try:
+    from audit_trail.headline_basis import headline_basis as _headline_basis
+except ImportError:  # direct-script invocation
+    from headline_basis import headline_basis as _headline_basis
+
 import glob
 import json
 import logging
@@ -17098,6 +17103,9 @@ def generate():
             "total_resolved": total_resolved,
             "zero_pnl_count": zero_pnl_count,
             "flat_count": zero_pnl_count,
+            # P0.11 (2026-11-20): the headline WR/PF denominator was previously
+            # unstated while ~59% of closed picks sat outside it.
+            **_headline_basis(total_closed, total_resolved, zero_pnl_count),
             # 2026-11-16 audit: labelled P&L basis + resolver anomaly counts.
             # total_pnl_pct (rolling-100) is the headline; the other three were
             # previously unlabelled, which made -77.67 / -1356.44 / -99.0 / -99.9
