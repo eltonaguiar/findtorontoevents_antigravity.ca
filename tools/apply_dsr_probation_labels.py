@@ -18,6 +18,14 @@ So this tool only writes labels:
 Rows, n, PF, WR and every other field are left byte-identical. Dry run by
 default; --apply writes and keeps a timestamped .bak.
 
+One exception, added 2026-11-20: a *repeat copy* of a row is not a second
+strategy. The hourly refresh merges this generated JSON line by line
+(``git pull -X ours``), and on 2026-11-20T20:46 that produced 81 rows for 80
+names -- one strategy emitted twice, four rows stripped of their label. --apply
+collapses byte-identical copies (the surviving row keeps its n); --check
+refuses a payload that still carries one, or whose row count disagrees with
+``n_strategies_audited``.
+
 Usage:
     python3 tools/apply_dsr_probation_labels.py
     python3 tools/apply_dsr_probation_labels.py --apply
@@ -48,6 +56,45 @@ def label_for(dsr, threshold: float) -> tuple[str, str]:
     if value >= threshold:
         return "PUBLISHABLE", "DSR %.4f >= %.2f" % (value, threshold)
     return "PROBATION", "DSR %.4f < %.2f" % (value, threshold)
+
+
+def find_duplicate_names(rows: list) -> list[str]:
+    """Strategy names that appear more than once, in first-seen order."""
+    seen: set = set()
+    dups: list[str] = []
+    for row in rows:
+        name = row.get("strategy")
+        if name in seen:
+            if name not in dups:
+                dups.append(name)
+        else:
+            seen.add(name)
+    return dups
+
+
+def dedupe_exact(rows: list) -> tuple[list, list[str]]:
+    """Collapse byte-identical repeat copies of a row; keep everything else.
+
+    A repeated name whose two rows *disagree* is not a duplicate -- it is two
+    contradictory claims, and silently dropping one would rewrite what the
+    payload says without saying so. That case raises, so a human decides.
+    """
+    first: dict = {}
+    kept: list = []
+    dropped: list[str] = []
+    for row in rows:
+        name = row.get("strategy")
+        if name in first:
+            if row != first[name]:
+                raise ValueError(
+                    "%r appears twice with different metrics -- not a duplicate"
+                    % (name,)
+                )
+            dropped.append(name)
+            continue
+        first[name] = row
+        kept.append(row)
+    return kept, dropped
 
 
 def apply_labels(payload: dict, threshold: float = 0.95) -> dict:
@@ -88,6 +135,19 @@ def check_payload(payload: dict, threshold: float = 0.95) -> list[str]:
         if label != want:
             issues.append("%s: labelled %s but dsr=%s implies %s"
                           % (name, label, row.get("dsr"), want))
+    for name in find_duplicate_names(rows):
+        copies = [r for r in rows if r.get("strategy") == name]
+        same = all(r == copies[0] for r in copies)
+        issues.append(
+            "%s: appears %d times (%s)"
+            % (name, len(copies),
+               "identical copy -- merge artefact, run --apply to collapse"
+               if same else "DIFFERING copies -- not a duplicate, two claims")
+        )
+    stated_n = payload.get("n_strategies_audited")
+    if isinstance(stated_n, int) and stated_n != len(rows):
+        issues.append("n_strategies_audited=%d but the payload has %d rows"
+                      % (stated_n, len(rows)))
     stated = {k: v for k, v in (payload.get("publication_label_counts") or {}).items() if v}
     actual = {k: v for k, v in counts.items() if v}
     if stated != actual:
@@ -114,8 +174,8 @@ def main() -> int:
         return 2
 
     payload = json.loads(path.read_text(encoding="utf-8"))
-    rows_before = len(payload.get("strategies") or [])
-    ns_before = [r.get("n") for r in payload.get("strategies") or []]
+    original_rows = list(payload.get("strategies") or [])
+    rows_before = len(original_rows)
 
     if args.check:
         problems = check_payload(payload, args.dsr_threshold)
@@ -128,17 +188,31 @@ def main() -> int:
               % (rows_before, payload.get("publication_label_counts")))
         return 0
 
+    try:
+        kept, dropped = dedupe_exact(payload.get("strategies") or [])
+    except ValueError as exc:
+        print("REFUSING: %s" % exc, file=sys.stderr)
+        return 3
+    if dropped:
+        payload["strategies"] = kept
+        print("collapsed %d exact duplicate row(s): %s"
+              % (len(dropped), ", ".join(sorted(set(dropped)))))
+
     payload = apply_labels(payload, args.dsr_threshold)
 
     rows_after = len(payload.get("strategies") or [])
-    ns_after = [r.get("n") for r in payload.get("strategies") or []]
-    if rows_after != rows_before or ns_after != ns_before:
-        print("REFUSING: labelling changed the row set or the n column "
-              "(%d -> %d rows)" % (rows_before, rows_after), file=sys.stderr)
+
+    def _name_n(rows):
+        return sorted({(str(r.get("strategy")), r.get("n")) for r in rows})
+
+    if _name_n(payload.get("strategies") or []) != _name_n(original_rows):
+        print("REFUSING: labelling changed which strategy rows or n values "
+              "are present (%d -> %d rows)" % (rows_before, rows_after),
+              file=sys.stderr)
         return 3
 
     counts = payload["publication_label_counts"]
-    print("rows=%d (unchanged)  threshold=%.2f" % (rows_after, args.dsr_threshold))
+    print("rows=%d  threshold=%.2f" % (rows_after, args.dsr_threshold))
     for label in ("PUBLISHABLE", "PROBATION", "UNRATED"):
         if counts.get(label):
             print("  %-12s %3d" % (label, counts[label]))
