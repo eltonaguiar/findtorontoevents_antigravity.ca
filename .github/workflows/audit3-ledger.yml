@@ -128,29 +128,22 @@ jobs:
             || echo "::error title=audit3 backfill::equity/etf/futures backfill failed (see log)"
           python3 tools/fx_backfill.py --since "$SINCE" --apply \
             || echo "::error title=audit3 backfill::fx backfill failed (see log)"
-          # Staleness alarm: freshness is the whole point of this step, so print the
-          # last bar each gate will read. A table older than the 5-day TOLERANCE_MS
-          # means a class is about to go unmeasured again.
-          python3 - <<'CHECK'
-          import sys
-          sys.path.insert(0, ".")
-          from datetime import date
-          try:
-              from tools.db_env import get_stocks_creds
-              import pymysql
-              keep = ("host", "user", "password", "database", "port", "connect_timeout")
-              c = pymysql.connect(read_timeout=60, **{k: v for k, v in get_stocks_creds().items() if k in keep})
-              cur = c.cursor()
-              for t in ("equity_daily_ohlcv", "etf_daily_ohlcv", "futures_daily_ohlcv", "fx_prices"):
-                  cur.execute(f"SELECT MAX(trade_date) FROM `{t}`")
-                  last = cur.fetchone()[0]
-                  age = (date.today() - last).days if last else 9999
-                  flag = "::warning title=audit3 backfill::" + t + " STALE" if age > 5 else ""
-                  print(f"  {t:22s} last_bar={last} age_days={age} {flag}")
-              c.close()
-          except Exception as exc:
-              print(f"::warning title=audit3 backfill::freshness check failed {type(exc).__name__}: {exc}")
-          CHECK
+          # Freshness SLA, per class — ENFORCING (2026-11-20). This used to be an
+          # inline block that only printed a warning at a hardcoded 5-day threshold,
+          # so a stale equity table left the job green while the class silently
+          # reverted to "unmeasured". It now reads the tolerances from the gate
+          # itself (audit3_selection_alpha.TOLERANCE_MS) so the alarm and the gate
+          # can never disagree, and a breach fails the run.
+          #   rc=0 fresh · rc=1 stale (fail) · rc=2 could not check (warn, never pass)
+          python3 tools/price_freshness_sla.py || rc=$?
+          rc=${rc:-0}
+          if [ "$rc" -eq 1 ]; then
+            echo "::error title=price_freshness::a class is stale — its selection-alpha gate cannot be measured until the price table is refreshed"
+            exit 1
+          fi
+          if [ "$rc" -eq 2 ]; then
+            echo "::warning title=price_freshness::could not check (no DB creds or driver) — freshness is UNKNOWN, not assumed fresh"
+          fi
 
 # Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
       # when DB credentials exist. A missing secret must never block the ledger.
@@ -221,9 +214,58 @@ jobs:
           print("selection alpha:", d["selection_alpha"]["available"])
           PY
 
+      # audit3_edge_hunt.py does real work (alpha-vs-beta separation, point-in-time
+      # gate replay, power analysis) but was referenced by ZERO workflow files, so it
+      # enforced nothing. This step runs it — ADVISORY ONLY.
+      #   * continue-on-error: its outputs do not exist yet, and gating on something
+      #     that has never run is how a pipeline goes red for no reason.
+      #   * Ordering: it reads /tmp/audit3/dashboard_data.json (the live fetch at the
+      #     top), NOT the ledger — so it would work earlier too. It sits after the
+      #     ledger build so it reads exactly the snapshot the ledger was scored from,
+      #     and so a ledger failure still gets an edge-hunt report for that run.
+      #   * Output: /tmp/audit3/edge_hunt.json, uploaded as an artifact. Deliberately
+      #     not committed to audit_dashboard/data/ — nothing consumes it yet, and
+      #     adding an unconsumed file to the [skip ci] commit would widen the loop
+      #     surface for no reader.
+      - name: Edge hunt (alpha vs beta, PIT replay) — advisory
+        continue-on-error: true
+        run: |
+          set +e
+          python3 alpha_engine/audit3_edge_hunt.py \
+            --picks /tmp/audit3/dashboard_data.json \
+            --out /tmp/audit3/edge_hunt.json
+          rc=$?
+          if [ "$rc" -ne 0 ] || [ ! -s /tmp/audit3/edge_hunt.json ]; then
+            echo "::error title=audit3::edge hunt unavailable (rc=$rc) — advisory only, no gate consumes it"
+            exit 0
+          fi
+          echo "edge hunt written: $(wc -c < /tmp/audit3/edge_hunt.json) bytes"
+
+      - name: Upload edge hunt report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit3-edge-hunt
+          path: /tmp/audit3/edge_hunt.json
+          if-no-files-found: warn
+
       # Fail-open is the right runtime behaviour and the wrong CI behaviour: if the
       # ledger stops loading or goes stale, enforcement silently disappears. This
       # step turns that into a red build.
+      # audit2 Phase B: the per-class verdict panel renders client-side, so its
+      # numbers must already be in the payload. This step joins class_rollup()
+      # (canonical per-class rollup) to the ledger's classes/cells and adds ONE
+      # top-level key — per_class_verdicts. Additive: nothing existing is moved.
+      - name: Build audit2 per-class verdict panel (additive payload block)
+        run: |
+          rows_arg=""
+          if [ -f /tmp/audit3/resolved_closed_picks_net.json ]; then
+            rows_arg="--rows /tmp/audit3/resolved_closed_picks_net.json"
+          fi
+          python3 tools/build_audit2_per_class_panel.py \
+            --ledger audit_dashboard/data/audit3_ledger.json \
+            --payload /tmp/audit3/dashboard_data.json $rows_arg
+
       - name: Assert the denylist is armed and recent
         run: |
           python3 tools/audit3_denylist_health.py \
