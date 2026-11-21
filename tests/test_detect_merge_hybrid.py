@@ -80,3 +80,35 @@ def test_cli_exit_codes(tmp_path):
     good.write_text(json.dumps({"n_strategies_audited": 2, "strategies": _rows(2)}), encoding="utf-8")
     proc = subprocess.run([sys.executable, str(gate_path), str(good)], capture_output=True, text=True)
     assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def test_rows_missing_the_identity_key_do_not_crash():
+    """The shape that crashed: 9 of 10 rows carry `symbol`, one does not."""
+    rows = [{"symbol": "A", "n": 7}, {"symbol": "A", "n": 7}]
+    rows += [{"symbol": "S%d" % i, "n": i} for i in range(7)]
+    rows += [{"n": 99}]
+    found = _gate().inspect({"picks": rows})
+    assert any("byte-identical" in f for f in found), found
+def test_default_cap_covers_the_largest_generated_artifact():
+    assert _gate().MAX_BYTES >= 64 * 1024 * 1024
+
+
+def test_oversize_artifact_is_reported_as_ungated(tmp_path):
+    p = tmp_path / "big.json"
+    p.write_text(json.dumps({"n_strategies_audited": 1,
+                             "strategies": [{"strategy": "a"}]}))
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "detect_merge_hybrid.py"),
+                        "--max-mb", "0.000001", str(p)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "NOT gated" in r.stdout
+    assert "WARNING" in r.stderr and "NOT gated" in r.stderr
+
+
+def test_artifact_under_the_cap_is_inspected(tmp_path):
+    p = tmp_path / "small.json"
+    p.write_text(json.dumps({"n_strategies_audited": 1,
+                             "strategies": [{"strategy": "a"}]}))
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "detect_merge_hybrid.py"), str(p)],
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "1 inspected" in r.stdout

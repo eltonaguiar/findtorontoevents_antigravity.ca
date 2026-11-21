@@ -96,6 +96,15 @@ every healthy run -- the same trap as the subset tallies in the JSON rule. Confl
 markers in staged HTML are already covered by
 `.github/scripts/assert_no_conflict_markers.sh`, which runs in the same step.
 
+## Update (2026-11-21): the skipped artifact is now gated
+
+The 12 MB cap in this scan skipped `audit_dashboard/data/pf_registry.json`
+(15.9 MB) and `alpha_engine/data/expired_picks_archive.json` (32.1 MB). The cap is
+now 64 MB, both are inspected (0 findings each), and any future skip prints
+`NOT gated` plus a stderr warning. Raising it also exposed a `KeyError` on rows
+missing the identity field, now fixed. See
+`updates/2026-11-21-hybrid-gate-cap-and-heterogeneous-rows.md`.
+
 ## What this means
 
 * No other generated artifact was hybridised by this merge or is inconsistent at HEAD.
