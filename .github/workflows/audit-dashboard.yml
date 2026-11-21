@@ -969,7 +969,11 @@ jobs:
           # A generated payload that contradicts itself is a hybrid, not fresh
           # output: a declared row count that no longer matches its own rows, or a
           # row repeated verbatim. Catch it before it becomes a commit.
-          python3 tools/detect_merge_hybrid.py --staged || exit 1
+          python3 tools/detect_merge_hybrid.py --staged \
+            --report audit_dashboard/data/hybrid_gate_report.json || exit 1
+          # Commit the audit trail with the payload it describes.
+          [ -f audit_dashboard/data/hybrid_gate_report.json ] && \
+            git add audit_dashboard/data/hybrid_gate_report.json || true
           git commit -m "chore(audit-dashboard): refresh payload [skip ci]"
           # ---------------------------------------------------------------------------
           # PHASE 2: Push with merge — commit-first-then-merge (replaces rebase)
@@ -1052,7 +1056,16 @@ jobs:
             python3 tools/detect_merge_hybrid.py --rev-range HEAD^..HEAD \
               --under audit_dashboard/data alpha_engine/data audit_trail/data \
                       copy_trader_intel/data prediction_market_agents/data \
-                      ml_gatekeeper/data reports || exit 1
+                      ml_gatekeeper/data reports \
+              --report audit_dashboard/data/hybrid_gate_report.json || exit 1
+            # Commit the post-merge entry before the push, so the trail describes
+            # THIS run. The entry carries no timestamp: a retry that sees the same
+            # numbers writes identical bytes and this guard creates no commit.
+            if [ -f audit_dashboard/data/hybrid_gate_report.json ] \
+               && ! git diff --quiet -- audit_dashboard/data/hybrid_gate_report.json; then
+              git add audit_dashboard/data/hybrid_gate_report.json
+              git commit -m "chore(audit-dashboard): hybrid gate report [skip ci]" || true
+            fi
             # Verify publish consistency (advisory check — non-fatal by design)
             python3 .github/scripts/verify_dashboard_publish_consistency.py || true
             # Push attempt (sanitize output to avoid leaking PAT in error messages).
