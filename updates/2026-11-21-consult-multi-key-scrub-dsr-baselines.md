@@ -75,10 +75,10 @@ ETF      12 12  ok        FOREX    18  18 ok      COMMODITY 9 9 ok
 FUTURES   3  3  ok        exit=0
 ```
 
-## 3. H-146 registered (EQUITY mid-cap gross profitability)
+## 3. H-149 registered (renumbered from H-146) -- EQUITY mid-cap gross profitability
 
 The multi-model panel's only convergent experiment is now pre-registered before
-any data is touched, per M-107: `reports/hypothesis_registry.json`, id `H-146`,
+any data is touched, per M-107: `reports/hypothesis_registry.json`, id `H-149`,
 status `UNTESTED`, benchmark factors declared up front (MKT/SMB/HML/RMW),
 20–60 day hold band fixed, and the EQUITY aggregate baseline (n=955, +0.098%,
 CI [−0.516, +0.720]) recorded so the subset is compared against the diluted

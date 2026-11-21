@@ -1,0 +1,89 @@
+{
+  "hypothesis": "H-149",
+  "formerly": "H-146 (renumbered 2026-11-21: id collision with ETF execution_cost_gate)",
+  "asset_class": "EQUITY",
+  "family": "mid_cap_gross_profitability",
+  "generated_at": "2026-11-21T21:24:31.552213+00:00",
+  "spec": {
+    "signal": "GP/A = latest 10-K GrossProfit / latest 10-K Assets",
+    "universe": "US SEC filers with PIT market cap in $2B-$10B at rebalance",
+    "hold_trading_days": 40,
+    "rebalance": "month end",
+    "look_ahead_guard": "fundamental fact usable only if filed < rebalance date (strict)",
+    "cost_round_trip_bp": 20.0,
+    "cost_source": "declared fallback 20bp round-trip (slippage model not importable)",
+    "stress_cost_bp": 40.0,
+    "window_days": 14,
+    "sample_n": 150,
+    "seed": 149
+  },
+  "harness": {
+    "module": "tools/edge_stability_harness.py (imported unmodified)",
+    "constants": {
+      "EFF_MIN": 0.3,
+      "MIN_WINDOW_N": 80,
+      "MIN_STABLE_WINDOWS": 3
+    },
+    "constants_unmodified": true
+  },
+  "data": {
+    "sec_filers_in_pool": 10399,
+    "sampled_ciks": 150,
+    "names_usable_fundamentals": 47,
+    "rebalances_total": 120,
+    "rebalances_used": 93,
+    "rebalances_skipped_sparse": 27,
+    "in_band_observations": 567,
+    "records": 556
+  },
+  "result": {
+    "windows_with_min_n": 0,
+    "windows_scored": 0,
+    "windows_strong": 0,
+    "strong_positive": 0,
+    "strong_negative": 0,
+    "same_sign_stable": false,
+    "sign": "mixed",
+    "per_window_eff": [],
+    "gross_edge_pct": 1.6472,
+    "net_edge_pct": 1.4472,
+    "cost_survival": 0.879,
+    "admissible": false,
+    "verdict": "UNTESTED"
+  },
+  "stress_result": {
+    "verdict": "UNTESTED",
+    "admissible": false,
+    "windows_scored": 0,
+    "net_edge_pct": 1.2472,
+    "gross_edge_pct": 1.6472,
+    "cost_survival": 0.757,
+    "sign": "mixed"
+  },
+  "top_decile_book": {
+    "rule": "long every in-band name with gpa_zscore >= 1.2816",
+    "n_top": 90,
+    "net_mean_pct_top": 1.4218,
+    "wr_top": 62.22,
+    "n_bottom": 14,
+    "net_mean_pct_bottom": 1.2506,
+    "wr_bottom": 35.71,
+    "long_short_net_pct": 0.1712
+  },
+  "density_gap": {
+    "records": 556,
+    "rebalances_contributing": 91,
+    "records_per_rebalance": 6.11,
+    "windows_at_window_days": 91,
+    "records_needed_for_min_n_per_window": 7280,
+    "records_per_rebalance_needed": 80.0,
+    "names_needed_to_reach_density": 13.1,
+    "shortfall_records": 6724
+  },
+  "limits": [
+    "Universe is a random sample of CURRENTLY REGISTERED SEC filers. Firms that delisted and stopped filing entirely are under-represented, so survivorship bias is reduced but not eliminated.",
+    "Cross-section includes financials and REITs, for which GP/A is not meaningful; per-name noise dilution is not corrected.",
+    "MKT/SMB/HML/RMW are declared as the benchmark but are NOT regressed out here, so a strong factor tilt could masquerade as a signal.",
+    "GP/A is built from annual 10-K only; intra-year filing updates are not used, which lags the signal by up to a year."
+  ]
+}
