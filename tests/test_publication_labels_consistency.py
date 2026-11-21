@@ -68,10 +68,93 @@ def test_demotion_is_a_label_not_a_filter(payload):
     assert any(r["publication_label"] == "PROBATION" for r in rows) or True
 
 
-def test_duplicate_strategy_rows_are_reported(payload):
+def test_no_strategy_appears_twice(payload):
+    """A repeated row is a merge artefact, not a second strategy.
+
+    2026-11-20T20:46: `git pull -X ours` merged the labelled artifact against a
+    freshly generated one line by line and emitted `regime_mild_bear` twice (81
+    rows for 80 names). Collapsing an *identical* copy keeps the surviving row
+    and its n, so this is deduplication, not the demotion-by-deletion the
+    pipeline forbids.
+    """
     names = [r["strategy"] for r in payload.get("strategies") or []]
     dups = sorted(n for n, c in Counter(names).items() if c > 1)
-    if dups:
-        print("NOTE: duplicate strategy rows still present (not deleted on purpose, "
-              "needs an owner decision): %r" % (dups,))
-    assert True
+    assert not dups, "strategy rows appear more than once: %r" % (dups,)
+    stated = payload.get("n_strategies_audited")
+    assert stated == len(names), "n_strategies_audited=%r but %d rows" % (stated, len(names))
+
+
+# ── duplicate-row handling (2026-11-20 merge-hybrid post-mortem) ───────────
+def _tool():
+    import importlib.util
+    import pathlib
+    path = (pathlib.Path(__file__).resolve().parents[1]
+            / "tools" / "apply_dsr_probation_labels.py")
+    spec = importlib.util.spec_from_file_location("_dsr_labels_dup_test", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _row(name, dsr, n):
+    return {"strategy": name, "dsr": dsr, "n": n,
+            "publication_label": "PROBATION",
+            "publication_reason": "DSR %.4f < 0.95" % dsr,
+            "publication_dsr_threshold": 0.95}
+
+
+def test_check_reports_a_duplicated_strategy_row():
+    tool = _tool()
+    rows = [_row("regime_mild_bear", 0.0356, 283),
+            _row("regime_mild_bear", 0.0356, 283)]
+    payload = {"n_strategies_audited": 1, "strategies": rows,
+               "publication_label_counts": {"PROBATION": 2}}
+    issues = tool.check_payload(payload)
+    assert any("appears 2 times" in i for i in issues), issues
+
+
+def test_check_flags_row_count_disagreeing_with_n_strategies():
+    tool = _tool()
+    payload = {"n_strategies_audited": 80,
+               "strategies": [_row("a", 0.1, 10), _row("b", 0.2, 20)],
+               "publication_label_counts": {"PROBATION": 2}}
+    issues = tool.check_payload(payload)
+    assert any("n_strategies_audited=80" in i for i in issues), issues
+
+
+def test_dedupe_collapses_an_exact_copy_and_keeps_its_n():
+    tool = _tool()
+    row = _row("regime_mild_bear", 0.0356, 283)
+    kept, dropped = tool.dedupe_exact([row, dict(row)])
+    assert len(kept) == 1
+    assert dropped == ["regime_mild_bear"]
+    assert kept[0]["n"] == 283
+
+
+def test_dedupe_refuses_same_name_with_different_metrics():
+    import pytest
+    tool = _tool()
+    with pytest.raises(ValueError):
+        tool.dedupe_exact([_row("x", 0.1, 10), _row("x", 0.9, 99)])
+
+
+def test_apply_self_heals_a_duplicate_that_differs_only_by_label(tmp_path):
+    """The exact shape of the measured hybrid: one copy labelled, one stripped."""
+    import json
+    import pathlib
+    import subprocess
+    import sys
+    root = pathlib.Path(__file__).resolve().parents[1]
+    payload = {"n_strategies_audited": 1,
+               "strategies": [_row("regime_mild_bear", 0.0356, 283),
+                              {"strategy": "regime_mild_bear", "dsr": 0.0356, "n": 283}]}
+    path = tmp_path / "hybrid.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    subprocess.run([sys.executable, str(root / "tools" / "apply_dsr_probation_labels.py"),
+                    "--path", str(path), "--apply"], check=True, capture_output=True)
+    healed = json.loads(path.read_text(encoding="utf-8"))
+    assert len(healed["strategies"]) == 1, healed["strategies"]
+    assert healed["strategies"][0]["n"] == 283
+    assert healed["publication_label_counts"] == {"PROBATION": 1}
+    subprocess.run([sys.executable, str(root / "tools" / "apply_dsr_probation_labels.py"),
+                    "--path", str(path), "--check"], check=True, capture_output=True)
