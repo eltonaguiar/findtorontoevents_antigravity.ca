@@ -131,6 +131,41 @@ Two, both caught before commit:
 - The recount analysed 23,732 policy-clean rows vs the shipped 23,651 — the input
   advanced between 11:05Z and 22:52Z. The cell set is byte-identical, so counts
   are unaffected.
-- audit3's 205 absent strategies are not individually attributed (policy
-  exclusion vs never-closed). Under the cell-grain definition this no longer
-  affects `N`, but it remains an open question about what audit3 scores.
+- The attribution of audit3's 205 absent strategies is now broken down (see
+  below), but the residual "not in inputs" group is resolved only by spot-check,
+  not exhaustively.
+
+## Follow-up: why the 205 are absent
+
+The tool now splits ABSENT into three causes, because "absent" hid three
+different facts with three different consequences:
+
+| cause | count | meaning |
+|---|---|---|
+| `policy_excluded` | 2 | ingested and closed, then dropped by `_is_policy_excluded` |
+| `dropped_pre_aggregation` | 18 | reached the loader, failed dedup / spot-flicker |
+| `not_in_inputs` | **185** | no loaded input row carries this strategy |
+
+185/205 is the dominant cause, so the interesting question is what audit3 is
+scoring that the registry never loaded.
+
+**DB corroboration** (`at_raw_picks`, 59 distinct labels sampled from
+`not_in_inputs`):
+
+- **27 of 59** exist in `at_raw_picks` — 705 rows total, of which only **167**
+  are closed. So even where the pick exists, its resolution does not reach this
+  registry build; the strategies are mostly unresolved inventory.
+- The other **32 of 59** are not stable keys at all. The sample contains
+  per-pick free-text descriptions, e.g.
+  `"EMA 9/21 bullish crossover, MACD bullish (histogram positive, MACD above signal)"`
+  and `"EMA 9/21 momentum widening, BB squeeze breakout (width expanding, price above upper band)"`,
+  alongside short labels like `"Bollinger MR"` and `"Mercury2 Fast"`.
+
+That second group matters for the bracket specifically: audit3's `strategy`
+column mixes stable strategy ids with descriptions regenerated per pick, so a
+distinct-pair count over it is not a count of distinct strategies. The union of
+913 was therefore partly assembled from values that are not identities, which is
+a second, independent reason it could not have been the trial count. It does not
+change `N` — the cell count remains the defensible figure — but it does mean any
+future artifact that counts trials from audit3's labels needs a
+description-vs-id filter first.

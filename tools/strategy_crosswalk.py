@@ -193,6 +193,36 @@ def analyse() -> dict:
         a3_pairs, engine_grain, strategies_by_class
     )
 
+    # ABSENT is the only bucket that is genuinely outside the book, and the word
+    # alone hides three different causes with three different meanings:
+    #
+    #   policy_excluded       the strategy WAS ingested and closed, then dropped
+    #                         by _is_policy_excluded. Re-admitting it is a policy
+    #                         decision, not a data gap.
+    #   dropped_pre_aggregate it reached the loader but never survived dedup /
+    #                         spot-flicker filtering, so it never got a cell.
+    #   not_in_inputs         no loaded input row carries this strategy at all --
+    #                         audit3 is scoring something this build never saw.
+    kept_pairs: set = set()
+    for row in kept:
+        strat = _clean(row.get("strategy"))
+        if not _is_unknown(strat):
+            kept_pairs.add((bpr._asset_class(row), strat))
+
+    input_pairs: set = set()
+    for row in raw_rows:
+        if not isinstance(row, dict):
+            continue
+        strat = _clean(row.get("strategy"))
+        if not _is_unknown(strat):
+            input_pairs.add((bpr._asset_class(row), strat))
+
+    absent_policy_excluded = {p for p in absent if p in kept_pairs}
+    absent_dropped = {
+        p for p in absent if p not in kept_pairs and p in input_pairs
+    }
+    absent_unseen = absent - absent_policy_excluded - absent_dropped
+
     union_strategy = strategy_grain | a3_pairs
 
     # REPRODUCTION GUARD. This tool exists to explain a shipped artifact, so it
@@ -265,6 +295,9 @@ def analyse() -> dict:
             "audit3_direct": len(direct),
             "audit3_collapsed": len(collapsed),
             "audit3_absent": len(absent),
+            "absent_policy_excluded": len(absent_policy_excluded),
+            "absent_dropped_pre_aggregation": len(absent_dropped),
+            "absent_not_in_inputs": len(absent_unseen),
         },
         "per_class": {
             cls: {
@@ -278,6 +311,15 @@ def analyse() -> dict:
         },
         "umbrella_labels": umbrellas[:20],
         "umbrella_label_count": len(umbrellas),
+        "absent_attribution": {
+            "policy_excluded": sorted(
+                f"{c} / {s}" for c, s in absent_policy_excluded
+            )[:60],
+            "dropped_pre_aggregation": sorted(
+                f"{c} / {s}" for c, s in absent_dropped
+            )[:60],
+            "not_in_inputs": sorted(f"{c} / {s}" for c, s in absent_unseen)[:60],
+        },
         "collapsed_pairs": sorted(f"{c} / {s}" for c, s in collapsed),
         "absent_pairs": sorted(f"{c} / {s}" for c, s in absent)[:400],
         "source_files": source_meta,
@@ -338,6 +380,14 @@ def render_md(result: dict) -> str:
         f"| DIRECT | {c['audit3_direct']} | registry cell under its own name |",
         f"| COLLAPSED | {c['audit3_collapsed']} | in the book, filed under another label |",
         f"| ABSENT | {c['audit3_absent']} | nowhere in the policy-clean book |",
+        "",
+        "### Why the absent pairs are absent",
+        "",
+        "| cause | count | meaning |",
+        "|---|---|---|",
+        f"| policy_excluded | {c['absent_policy_excluded']} | ingested and closed, then dropped by `_is_policy_excluded` |",
+        f"| dropped_pre_aggregation | {c['absent_dropped_pre_aggregation']} | reached the loader, failed dedup / spot-flicker |",
+        f"| not_in_inputs | {c['absent_not_in_inputs']} | no loaded input row carries this strategy |",
         "",
         "## Per class",
         "",

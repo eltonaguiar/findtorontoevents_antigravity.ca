@@ -1,6 +1,6 @@
 # Strategy crosswalk — closing the trial-count bracket
 
-- crosswalk generated: `2026-11-21T22:54:48.426961Z`
+- crosswalk generated: `2026-11-21T22:57:43.575373Z`
 - pf_registry generated: `2026-11-21T11:05:48Z`
 - policy-clean rows analysed: 23732
 
@@ -36,6 +36,14 @@ label sets 1:1 manufactures drift that is really collapsing.
 | DIRECT | 124 | registry cell under its own name |
 | COLLAPSED | 13 | in the book, filed under another label |
 | ABSENT | 205 | nowhere in the policy-clean book |
+
+### Why the absent pairs are absent
+
+| cause | count | meaning |
+|---|---|---|
+| policy_excluded | 2 | ingested and closed, then dropped by `_is_policy_excluded` |
+| dropped_pre_aggregation | 18 | reached the loader, failed dedup / spot-flicker |
+| not_in_inputs | 185 | no loaded input row carries this strategy |
 
 ## Per class
 
