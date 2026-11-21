@@ -46,10 +46,13 @@ from __future__ import annotations
 import argparse
 import gzip
 import importlib.util
+import io
 import json
 import os
 import random
+import re
 import sys
+import zipfile
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -72,6 +75,8 @@ MIN_IN_BAND = 5          # a rebalance with fewer names has no usable cross-sect
 TOP_DECILE_Z = 1.2816    # 90th percentile of the standard normal
 STRESS_COST_MULT = 2.0
 COST_SURVIVAL_MIN = 0.60
+TOP_QUINTILE_Z = 0.8416   # 80th percentile: the book the pre-registered spec holds
+MIN_BOOK_N = 5            # a formation with fewer top-quintile names is not a portfolio
 
 
 # ──────────────────────────────────────────────────────────────── prices ──
@@ -345,6 +350,141 @@ def build_records(names: list[dict], closes, idx, rebal_dates: list,
     return records, stats
 
 
+
+# ───────────────────────────────────────────────────── factor regression ──
+FF5_URL = ("https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/"
+           "F-F_Research_Data_5_Factors_2x3_CSV.zip")
+FF_CACHE = ROOT / "tools" / "cache" / "ff5_monthly.csv"
+FACTOR_COLS = ("Mkt-RF", "SMB", "HML", "RMW")
+
+
+def _ff_monthly(refresh: bool = False) -> dict:
+    """Monthly Fama-French 5-factor returns as {"YYYYMM": {factor: float}}."""
+    if FF_CACHE.exists() and not refresh:
+        text = FF_CACHE.read_text(encoding="utf-8")
+    else:
+        raw = urllib.request.urlopen(
+            urllib.request.Request(FF5_URL, headers={"User-Agent": SEC_UA}),
+            timeout=60).read()
+        with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+            name = [n for n in zf.namelist() if n.lower().endswith(".csv")][0]
+            text = zf.read(name).decode("latin-1")
+        FF_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        FF_CACHE.write_text(text, encoding="utf-8")
+        print(f"  .. fetched FF5 monthly factors -> {FF_CACHE.name}", file=sys.stderr)
+    out = {}
+    for line in text.splitlines():
+        parts = [p.strip() for p in line.split(",")]
+        if not parts or not re.fullmatch(r"\d{6}", parts[0]):
+            continue                      # header, copyright lines and annual rows
+        try:
+            out[parts[0]] = {c: float(parts[1 + i]) / 100.0
+                             for i, c in enumerate(FACTOR_COLS)}
+            out[parts[0]]["RF"] = float(parts[5]) / 100.0
+        except (ValueError, IndexError):
+            continue
+    return out
+
+
+def _ols(rows: list) -> dict | None:
+    """Excess return on [1, MKT, SMB, HML, RMW]: plain OLS, classical t-stats.
+
+    Twelve observations is the floor for a five-parameter fit to mean anything.
+    """
+    import numpy as np
+    if len(rows) < 12:
+        return None
+    y = np.array([r["y"] for r in rows])
+    X = np.array([[1.0] + [r[c] for c in FACTOR_COLS] for r in rows])
+    beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+    resid = y - X @ beta
+    dof = len(y) - X.shape[1]
+    if dof <= 1:
+        return None
+    try:
+        cov = (float(resid @ resid) / dof) * np.linalg.inv(X.T @ X)
+    except np.linalg.LinAlgError:
+        return None
+    se = np.sqrt(np.diag(cov))
+    ss_tot = float(((y - y.mean()) ** 2).sum())
+    names = ("const",) + FACTOR_COLS
+    return {
+        "n_months": len(rows),
+        "alpha_pct_monthly": round(100.0 * float(beta[0]), 4),
+        "alpha_t": round(float(beta[0] / se[0]), 2) if se[0] > 0 else None,
+        "alpha_pct_annualised": round(100.0 * ((1.0 + float(beta[0])) ** 12 - 1.0), 2),
+        "betas": {c: round(float(beta[1 + i]), 3) for i, c in enumerate(FACTOR_COLS)},
+        "t_stats": {n: (round(float(beta[k] / se[k]), 2) if se[k] > 0 else None)
+                    for k, n in enumerate(names)},
+        "r_squared": round(1.0 - float(resid @ resid) / ss_tot, 3) if ss_tot > 0 else None,
+    }
+
+
+def factor_regression(records: list, cost_note: str = "") -> dict:
+    """Is the quality book alpha, or MKT/SMB/HML/RMW exposure in disguise?
+
+    The pre-registered benchmark is the FF 4-factor set, so the honest question
+    is whether the intercept survives those four. Returns are already net of the
+    round-trip cost charged in build_records().
+    """
+    try:
+        ff = _ff_monthly()
+    except Exception as exc:                      # noqa: BLE001 - network shape varies
+        return {"available": False, "reason": f"{type(exc).__name__}: {exc}"}
+    if not ff:
+        return {"available": False, "reason": "FF5 file parsed to zero rows"}
+
+    by_date = {}
+    for r in records:
+        by_date.setdefault(r["entry_date"], []).append(r)
+
+    obs = []
+    for d in sorted(by_date):
+        sel = [r for r in by_date[d] if r["gpa_score"] >= TOP_QUINTILE_Z]
+        if len(sel) < MIN_BOOK_N:
+            continue
+        book_pct = sum(r["pnl_pct"] for r in sel) / len(sel)
+        # a 40-trading-day return restated as a monthly equivalent
+        monthly = (1.0 + book_pct / 100.0) ** (21.0 / HOLD_DAYS) - 1.0
+        y, m = int(d[:4]), int(d[5:7]) + 1
+        if m == 13:
+            y, m = y + 1, 1
+        key = f"{y}{m:02d}"
+        fac = ff.get(key)
+        if fac is None:
+            continue                              # factor file does not reach this month
+        obs.append({"month": key, "y": monthly - fac["RF"], "book_n": len(sel),
+                    **{c: fac[c] for c in FACTOR_COLS}})
+
+    overlapping = _ols(obs)
+    if overlapping is None:
+        return {"available": False,
+                "reason": (f"only {len(obs)} usable monthly formation(s) with >={MIN_BOOK_N} "
+                           "top-quintile names and factor data; 12 needed"),
+                "usable_formations": len(obs)}
+    # 40 trading days is ~2 months, so every 2nd formation breaks the overlap
+    non_overlapping = _ols(obs[::2])
+    return {
+        "available": bool(overlapping),
+        "source": ("Fama-French 5 factors (2x3), monthly, Ken French data library; "
+                   f"cached at {FF_CACHE.relative_to(ROOT)}"),
+        "model": "r_book - RF = alpha + b*MKT + s*SMB + h*HML + r*RMW",
+        "book": f"equal-weight names with gpa_zscore >= {TOP_QUINTILE_Z} (top quintile)",
+        "return_conversion": (f"{HOLD_DAYS}-trading-day net return compounded to a monthly "
+                              f"equivalent at 21/{HOLD_DAYS}"),
+        "month_assignment": "factor month = month AFTER formation (the month held)",
+        "overlapping": overlapping,
+        "non_overlapping": non_overlapping,
+        "overlap_note": ("consecutive formations overlap by ~10 trading days, so the full series "
+                         "is autocorrelated; the every-2nd-month fit is the one to trust for "
+                         "significance and both are reported"),
+        "cost_note": cost_note,
+        "interpretation_rule": ("alpha_t >= 2 with the four factors partialled out means the tilt "
+                                "is not mere factor exposure; alpha_t near 0 with high R2 means "
+                                "it is"),
+    }
+
+
 # ─────────────────────────────────────────────────────────────── verdict ──
 def evaluate(records: list[dict], H, window_days: int = 14) -> dict:
     windows = [w for w in H._windows(records, window_days)
@@ -441,6 +581,8 @@ def main() -> int:
     ap.add_argument("--no-network", action="store_true")
     ap.add_argument("--self-check", action="store_true")
     ap.add_argument("--out", default=str(OUT_JSON))
+    ap.add_argument("--no-factors", action="store_true",
+                    help="skip the Fama-French regression instead of fetching factors")
     args = ap.parse_args()
 
     H = load_harness()
@@ -537,6 +679,12 @@ def main() -> int:
                                      cost_bp * STRESS_COST_MULT)
     stress = evaluate(stress_records, H, args.window_days)
 
+    if args.no_factors:
+        fr = {"available": False, "reason": "skipped by --no-factors"}
+    else:
+        print("# factor regression: excess return on MKT/SMB/HML/RMW", file=sys.stderr)
+        fr = factor_regression(records, cost_note=f"{cost_bp} bp round-trip")
+
     payload = {
         "hypothesis": "H-149",
         "formerly": "H-146 (renumbered 2026-11-21: id collision with ETF execution_cost_gate)",
@@ -577,6 +725,7 @@ def main() -> int:
                           ("verdict", "admissible", "windows_scored", "net_edge_pct",
                            "gross_edge_pct", "cost_survival", "sign")},
         "top_decile_book": book,
+        "factor_regression": fr,
         "density_gap": gap,
         "limits": [
             "Universe is a random sample of CURRENTLY REGISTERED SEC filers. Firms "
@@ -584,8 +733,10 @@ def main() -> int:
             "survivorship bias is reduced but not eliminated.",
             "Cross-section includes financials and REITs, for which GP/A is not "
             "meaningful; per-name noise dilution is not corrected.",
-            "MKT/SMB/HML/RMW are declared as the benchmark but are NOT regressed "
-            "out here, so a strong factor tilt could masquerade as a signal.",
+            "MKT/SMB/HML/RMW are now regressed out on a monthly series built from these "
+            "same records, but the fit inherits every other limitation listed here: it can "
+            "separate factor exposure from alpha, it cannot rescue a book whose per-window "
+            "eff flips sign.",
             "GP/A is built from annual 10-K only; intra-year filing updates are "
             "not used, which lags the signal by up to a year.",
         ],
@@ -605,6 +756,15 @@ def main() -> int:
     print(f"  top-decile net mean={book['net_mean_pct_top']}% "
           f"(n={book['n_top']}) vs bottom={book['net_mean_pct_bottom']}% "
           f"(n={book['n_bottom']})  L/S={book['long_short_net_pct']}%")
+    if fr.get("available"):
+        ov, nov = fr["overlapping"], fr["non_overlapping"]
+        print(f"  factor alpha={ov['alpha_pct_monthly']}%/mo (t={ov['alpha_t']}) "
+              f"betas={ov['betas']}  R2={ov['r_squared']}  n={ov['n_months']}")
+        if nov:
+            print(f"  non-overlapping alpha={nov['alpha_pct_monthly']}%/mo "
+                  f"(t={nov['alpha_t']}, n={nov['n_months']})")
+    else:
+        print(f"  factor regression unavailable: {fr.get('reason')}")
     if res["verdict"] == "UNTESTED":
         print(f"  DATA GAP: {gap.get('shortfall_records')} more records needed; "
               f"{gap.get('names_needed_to_reach_density')}x the current name count "

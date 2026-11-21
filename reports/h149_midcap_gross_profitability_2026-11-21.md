@@ -1,6 +1,6 @@
 # H-149 — EQUITY mid-cap gross profitability — verdict
 
-**Status: REJECTED (harness-admissible, negative and unstable).**
+**Status: REJECTED (harness-admissible, negative and unstable; factor alpha zero).**
 Supersedes the 2026-11-21 UNTESTED run at 47 names, which had no scorable window.
 Run: 2026-11-21 · tool `tools/h149_midcap_gross_profitability.py --sample-n 2600`
 Artifact `reports/h149_midcap_gross_profitability_2026-11-21.json`
@@ -122,6 +122,31 @@ The long-only top decile is +2.04%/40d at a **42% win rate** — the mean is
 carried by a few large winners, and the harness's per-window eff is negative in
 the majority of windows. Both readings point the same way: no stable edge.
 
+### 5b. Factor regression — the tilt is exposure, not alpha
+
+The pre-registered benchmark is MKT/SMB/HML/RMW, so the honest question is
+whether the book's return survives those four being partialled out. Regressed
+the top-quintile book's monthly excess return on the Fama-French 5-factor
+monthly file (Ken French data library, cached at
+`tools/cache/ff5_monthly.csv`), with the 40-day net return restated as a monthly
+equivalent at 21/40 and assigned to the month the position is held:
+
+| fit | n | alpha | alpha t | MKT | SMB | HML | RMW | R² |
+|---|---|---|---|---|---|---|---|---|
+| overlapping monthly | 77 | **+0.033%/mo** | **0.04** | 0.48 | **+1.33** | **−0.73** | −0.41 | 0.415 |
+| every 2nd month (no overlap) | 39 | **−0.901%/mo** | **−0.78** | — | — | — | — | — |
+
+**Alpha is zero.** t = 0.04 on the full series and −0.78 on the overlap-free
+series, so the 0.96% mean per 40-day hold is not compensation for a quality
+signal — it is a **small-cap (−HML, +SMB)** tilt riding in a $2B–$10B band. This
+is the honest reading of the +2.04% top-decile figure above, and it agrees with
+the harness rejecting 11 windows against 4.
+
+Caveats, stated rather than buried: consecutive formations overlap by ~10
+trading days (hence the every-second-month fit), the t-stats are classical OLS
+without Newey-West, and the regression is on the book the tool actually holds
+(top quintile), not on the decile reported in §5.
+
 ---
 
 ## 6. Verdict
@@ -134,11 +159,11 @@ artefact, now resolved.
 What would still be worth doing (none of it rescues this variant):
 
 1. **The literal spec** — quarterly statements, top quintile, 20–60 calendar-day
-   exits, next-open entry. That is a different hypothesis and must be
-   pre-registered as a new id.
-2. **Factor regression** — MKT/SMB/HML/RMW are declared as the benchmark but not
-   regressed out. A quality tilt that survives only through market beta is not
-   quality.
+   exits, next-open entry. Registered as **H-150** (`PRE-REGISTERED`, not yet
+   implemented): none of the four deviations above transfer to it, so H-149's
+   rejection does not speak for it.
+2. ~~Factor regression~~ — done in §5b. Alpha is zero; the return is a size and
+   value tilt. No further work here can rescue the annual-10-K variant.
 3. **Delisting returns** — supply a delisting-return series so the left tail is
    measured rather than truncated; it cannot make the long-only book positive,
    but it would firm up the bottom-bucket number.
@@ -157,6 +182,8 @@ What would still be worth doing (none of it rescues this variant):
   per-class slippage.
 - `data.fundamentals_yield_pct` (27.3%) is computed **after** the price filter,
   so it understates the fundamentals yield (759/2,600 = 29.2%).
+- The factor regression's overlapping fit carries autocorrelated residuals, and
+  the book it regresses is the top quintile rather than the decile in §5.
 
 ---
 

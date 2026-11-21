@@ -2593,7 +2593,13 @@
           "windows_with_min_n": 71, "windows_scored": 66,
           "strong_positive": 4, "strong_negative": 11, "sign": "mixed",
           "net_edge_pct": 0.9598, "cost_survival": 0.828,
-          "stress_net_edge_pct": 0.7598, "admissible": false
+          "stress_net_edge_pct": 0.7598, "admissible": false,
+          "stress_net_edge_pct": 0.7598, "factor_alpha_pct_monthly": 0.0334,
+          "stress_net_edge_pct": 0.7598, "factor_alpha_t": 0.04,
+          "stress_net_edge_pct": 0.7598, "factor_r_squared": 0.415,
+          "stress_net_edge_pct": 0.7598, "factor_betas": {"Mkt-RF": 0.479, "SMB": 1.334, "HML": -0.729, "RMW": -0.405},
+          "stress_net_edge_pct": 0.7598, "factor_nonoverlap_alpha_pct_monthly": -0.9006,
+          "stress_net_edge_pct": 0.7598, "factor_nonoverlap_alpha_t": -0.78
         },
         "verdict": "REJECTED",
         "reason": "Pre-registered per M-107 before any backtest. Source: multi-model asset-class panel 2026-11-21, where 4 of 4 round-2 critics independently converged on this as the single defensible next experiment (reports/2026-11-21-multimodel-asset-class-panel.md).",
@@ -2628,6 +2634,46 @@
         }
       },
       "banned_check": "Distinct from H-001 (CFTC COT positioning, killed for M-095 look-ahead), H-002 (PEAD earnings drift -- a different signal and event clock), H-003 (ETF 12-1 cross-sectional momentum), and the killed CRYPTO ml_enhanced_* stack. Also not a re-test of the EQUITY RSI(2) mean-reversion configuration the panel's round 1 proposed and round 2 rejected: different signal, different horizon, different benchmark."
+    },
+    {
+      "id": "H-150",
+      "asset_class": "EQUITY",
+      "family": "mid_cap_gross_profitability_literal",
+      "description": "Long-only US mid-cap quality, single signal, EXACTLY as filed for H-149. Universe: US common stocks with market cap $2B-$10B at formation (monthly market-cap snapshot; no index-membership list, so constituent churn cannot leak). Signal: gross profitability GP/A = (revenue - cost of revenue) / total assets, taken from the most recent QUARTERLY statement whose filing date is STRICTLY before the rebalance date. Each month-end rank the universe on GP/A and hold the TOP QUINTILE equal-weight. Entry at the NEXT SESSION OPEN after the month-end close. Exit at the first month-end at least 20 calendar days after entry, and no later than 60 calendar days. No leverage, no shorting, no sector hedge.",
+      "test_statistic": "walk_forward eff via edge_stability_harness.is_admissible(), plus net-of-cost information ratio against the pre-declared factor benchmark, plus the Fama-French 4-factor regression intercept",
+      "acceptance_criteria": {
+        "eff_floor": 0.3,
+        "min_windows_admissible": 3,
+        "same_sign": true,
+        "cost_survival_min": 0.6,
+        "min_forward_n": 100,
+        "min_information_ratio": 0.5,
+        "min_factor_alpha_t": 2.0,
+        "hold_days_min": 20,
+        "hold_days_max": 60,
+        "slippage": "2x the measured per-class mean_cost_pct, funding included",
+        "factor_benchmark": [
+          "MKT",
+          "SMB",
+          "HML",
+          "RMW"
+        ],
+        "factor_benchmark_note": "declared before the run; substituting the factor set after seeing results invalidates the test",
+        "falsification_window_days": 90,
+        "reject_if": "net IR < 0 over the forward window, or any admissible window flips sign"
+      },
+      "economic_prior": "Novy-Marx (2013): gross profitability is the cleanest accounting measure of quality because it is unaffected by R&D, advertising and interest-expense classification. H-149 established that the ANNUAL-10-K, 40-trading-day, close-entry rendering of this idea has no stable edge (4 strong positive vs 11 strong negative windows on 711 names). What H-149 did not test is the spec as filed: quarterly statements react to the signal up to a year sooner, next-open entry removes the close-to-open gap, and the 20-60 calendar-day exit is the horizon the premium is actually documented at.",
+      "status": "PRE-REGISTERED",
+      "registered_at": "2026-11-21",
+      "predecessor": "H-149 (annual 10-K / 40 trading days / month-end close entry / full cross-section) - REJECTED 2026-11-21 on 711 names and 66 scorable windows. That verdict does NOT transfer here: the four deviations that produced it are exactly the four things this entry specifies differently.",
+      "data_sample_lock": "Frozen at registration: CIK pool with seed 149, 2,600-name sample, month-end rebalances 2016-01-01..2025-12-31, $2B-$10B cap band, top quintile, next-session-open entry, 20-60 calendar-day exit, 20 bp fallback round-trip cost. None of these may be changed after the first run without a new id.",
+      "not_yet_implemented": [
+        "quarterly XBRL framing: 10-Q facts mix quarterly and year-to-date frames, so the trailing-twelve-month GP/A must be built from FY plus YTD deltas and validated against known 10-K values before any run counts",
+        "next-session-open entry price: the H-149 price path carried adjusted closes only",
+        "20-60 calendar-day exit at a month-end instead of a fixed 40 trading days",
+        "top-quintile book: H-149 scored the full cross-section and reported a decile"
+      ],
+      "banned_check": "Not a re-test of H-149 (different statement cadence, entry price, exit clock and book size), not H-001 (CFTC COT, killed for M-095 look-ahead), not H-002 (PEAD), not H-003 (ETF 12-1 momentum), and not the killed CRYPTO ml_enhanced_* stack."
     }
   ],
   "fork2_new_signals": [

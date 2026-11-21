@@ -3,7 +3,7 @@
   "formerly": "H-146 (renumbered 2026-11-21: id collision with ETF execution_cost_gate)",
   "asset_class": "EQUITY",
   "family": "mid_cap_gross_profitability",
-  "generated_at": "2026-11-21T23:19:12.834165+00:00",
+  "generated_at": "2026-11-21T23:47:16.447604+00:00",
   "spec": {
     "signal": "GP/A = latest 10-K GrossProfit / latest 10-K Assets",
     "universe": "US SEC filers with PIT market cap in $2B-$10B at rebalance",
@@ -427,6 +427,57 @@
     "wr_bottom": 18.37,
     "long_short_net_pct": 17.7797
   },
+  "factor_regression": {
+    "available": true,
+    "source": "Fama-French 5 factors (2x3), monthly, Ken French data library; cached at tools/cache/ff5_monthly.csv",
+    "model": "r_book - RF = alpha + b*MKT + s*SMB + h*HML + r*RMW",
+    "book": "equal-weight names with gpa_zscore >= 0.8416 (top quintile)",
+    "return_conversion": "40-trading-day net return compounded to a monthly equivalent at 21/40",
+    "month_assignment": "factor month = month AFTER formation (the month held)",
+    "overlapping": {
+      "n_months": 77,
+      "alpha_pct_monthly": 0.0334,
+      "alpha_t": 0.04,
+      "alpha_pct_annualised": 0.4,
+      "betas": {
+        "Mkt-RF": 0.479,
+        "SMB": 1.334,
+        "HML": -0.729,
+        "RMW": -0.405
+      },
+      "t_stats": {
+        "const": 0.04,
+        "Mkt-RF": 2.6,
+        "SMB": 4.06,
+        "HML": -3.3,
+        "RMW": -1.08
+      },
+      "r_squared": 0.415
+    },
+    "non_overlapping": {
+      "n_months": 39,
+      "alpha_pct_monthly": -0.9006,
+      "alpha_t": -0.78,
+      "alpha_pct_annualised": -10.29,
+      "betas": {
+        "Mkt-RF": 0.484,
+        "SMB": 1.374,
+        "HML": -0.659,
+        "RMW": -0.569
+      },
+      "t_stats": {
+        "const": -0.78,
+        "Mkt-RF": 1.88,
+        "SMB": 3.21,
+        "HML": -2.41,
+        "RMW": -1.21
+      },
+      "r_squared": 0.528
+    },
+    "overlap_note": "consecutive formations overlap by ~10 trading days, so the full series is autocorrelated; the every-2nd-month fit is the one to trust for significance and both are reported",
+    "cost_note": "20.0 bp round-trip",
+    "interpretation_rule": "alpha_t >= 2 with the four factors partialled out means the tilt is not mere factor exposure; alpha_t near 0 with high R2 means it is"
+  },
   "density_gap": {
     "records": 10230,
     "rebalances_contributing": 118,
@@ -440,7 +491,7 @@
   "limits": [
     "Universe is a random sample of CURRENTLY REGISTERED SEC filers. Firms that delisted and stopped filing entirely are under-represented, so survivorship bias is reduced but not eliminated.",
     "Cross-section includes financials and REITs, for which GP/A is not meaningful; per-name noise dilution is not corrected.",
-    "MKT/SMB/HML/RMW are declared as the benchmark but are NOT regressed out here, so a strong factor tilt could masquerade as a signal.",
+    "MKT/SMB/HML/RMW are now regressed out on a monthly series built from these same records, but the fit inherits every other limitation listed here: it can separate factor exposure from alpha, it cannot rescue a book whose per-window eff flips sign.",
     "GP/A is built from annual 10-K only; intra-year filing updates are not used, which lags the signal by up to a year."
   ]
 }
