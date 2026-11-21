@@ -1616,7 +1616,7 @@ jobs:
           # Non-fatal: don't exit(1) even if some fail
           PYEOF
 
-      - name: Anti-overfit GATE (blocking — DSR must clear 0.95)
+      - name: Anti-overfit GATE (blocking — fails only on regression vs the previous audit)
         id: anti_overfit_gate
         env:
           PYTHONUTF8: '1'
@@ -1625,7 +1625,16 @@ jobs:
           # dashboard is published would take the whole hourly refresh down with
           # it, and the artifact this judges would not exist yet. Here it can
           # fail the job without withholding data.
-          python tools/anti_overfit_audit_sidecar.py --check-only --gate --dsr-threshold 0.95
+          #
+          # 2026-11-21: this used to fail whenever ANY strategy sat below DSR
+          # 0.95. 74 of 80 always do, so the job was red every hour and a real
+          # failure was indistinguishable from the expected verdict (see
+          # updates/2026-11-20-anti-overfit-dsr-gate-never-passes.md). It now
+          # fails when the pass rate falls more than 1pp versus the previous
+          # audit, or the scored population shrinks by more than 25%. The
+          # absolute number is still printed on every run, pass or fail.
+          python tools/anti_overfit_audit_sidecar.py --check-only --gate \
+            --dsr-threshold 0.95 --regression-tolerance 1.0 --coverage-tolerance 0.25
       - name: Verify URLs
         if: always()
         run: |

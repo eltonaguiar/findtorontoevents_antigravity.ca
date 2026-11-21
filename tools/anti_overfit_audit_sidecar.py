@@ -222,6 +222,80 @@ def gate_failures(payload: dict, dsr_threshold: float = 0.95,
     return bad
 
 
+def absolute_state(payload: dict, dsr_threshold: float = 0.95) -> str:
+    """The standing count, printed on every run whatever the verdict is.
+
+    The gate below judges *change*, so the reader still needs the absolute
+    number to know what the change was measured from.
+    """
+    rows = payload.get("strategies") or []
+    pass_count = payload.get("dsr_pass_count")
+    scored = payload.get("dsr_scored_count")
+    if not isinstance(pass_count, int) or not isinstance(scored, int) or scored <= 0:
+        return (f"no pass counts in the payload ({len(rows)} strategy rows), so the "
+                f"share clearing DSR {dsr_threshold:.2f} is unknown")
+    below = max(scored - pass_count, 0)
+    return (f"{pass_count}/{scored} strategies clear DSR {dsr_threshold:.2f} "
+            f"({100.0 * pass_count / scored:.1f}%), {below} below the floor")
+
+
+def read_previous_audit(path: Path) -> dict:
+    """The baseline, taken from the payload this run is about to overwrite.
+
+    In CI that file is the last committed audit (the checkout is shallow, so git
+    history is not available). Missing or unreadable means "no baseline", which
+    passes: a first run has nothing to regress from.
+    """
+    try:
+        old = json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    if not isinstance(old.get("dsr_pass_count"), int):
+        return {}
+    return {
+        "generated_at": old.get("generated_at"),
+        "pass_count": old.get("dsr_pass_count"),
+        "scored_count": old.get("dsr_scored_count"),
+        "pass_rate": old.get("dsr_pass_rate"),
+    }
+
+
+def regression_reasons(payload: dict, tolerance_pp: float = 1.0,
+                       coverage_tolerance: float = 0.25) -> tuple[list[str], str]:
+    """Why this audit is worse than the previous one, plus what it was compared with.
+
+    The absolute state is deliberately NOT a failure. 6 of 80 strategies clearing
+    0.95 is the long-standing reality of this book; a gate that fails on it fails
+    every hour, which is indistinguishable from a gate that is broken. What this
+    returns non-empty for is what a gate is for: the number got worse.
+    """
+    prev = payload.get("dsr_prev_audit") or {}
+    pass_count = payload.get("dsr_pass_count")
+    scored = payload.get("dsr_scored_count")
+    if not isinstance(pass_count, int) or not isinstance(scored, int) or scored <= 0:
+        return (["this audit has no usable pass counts (dsr_pass_count / "
+                 "dsr_scored_count), so there is nothing to judge"], "no baseline")
+    prev_count = prev.get("pass_count")
+    prev_scored = prev.get("scored_count")
+    if not isinstance(prev_count, int) or not isinstance(prev_scored, int) or prev_scored <= 0:
+        return ([], "no previous audit recorded in this payload (first run), so nothing to regress from")
+    rate = 100.0 * pass_count / scored
+    prev_rate = 100.0 * prev_count / prev_scored
+    drop = prev_rate - rate
+    reasons: list[str] = []
+    if drop > tolerance_pp:
+        reasons.append(
+            f"pass rate fell {prev_rate:.1f}% ({prev_count}/{prev_scored}) -> "
+            f"{rate:.1f}% ({pass_count}/{scored}), -{drop:.1f}pp "
+            f"(tolerance {tolerance_pp:.1f}pp)")
+    if scored < prev_scored * (1.0 - coverage_tolerance):
+        reasons.append(
+            f"scored population shrank {prev_scored} -> {scored} "
+            f"(tolerance {coverage_tolerance:.0%})")
+    note = "" if reasons else f"previous audit {prev_count}/{prev_scored} ({prev_rate:.1f}%)"
+    return reasons, note
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--min-n", type=int, default=10,
@@ -238,6 +312,12 @@ def main():
                    help="exit 2 when any strategy's DSR is below --dsr-threshold")
     p.add_argument("--dsr-threshold", type=float, default=0.95,
                    help="DSR floor for --gate (default 0.95)")
+    p.add_argument("--regression-tolerance", type=float, default=1.0,
+                   help="percentage points the pass rate may fall before --gate "
+                        "fails (default 1.0)")
+    p.add_argument("--coverage-tolerance", type=float, default=0.25,
+                   help="fraction the scored population may shrink before --gate "
+                        "fails (default 0.25)")
     args = p.parse_args()
 
     if args.check_only:
@@ -246,30 +326,25 @@ def main():
             print(f"GATE ERROR: payload not found at {src}", file=sys.stderr)
             return 3
         payload = json.loads(src.read_text(encoding="utf-8"))
-        bad = gate_failures(payload, args.dsr_threshold)
-        n = len(payload.get("strategies") or [])
-        scored = payload.get("dsr_scored_count")
-        rate = payload.get("dsr_pass_rate")
-        rate_str = (
-            f" ({payload.get('dsr_pass_count')}/{scored} scored, {100 * rate:.1f}%)"
-            if isinstance(rate, (int, float)) and scored else ""
-        )
-        if bad and not args.gate:
-            print(f"# {len(bad)}/{n} strategies below DSR {args.dsr_threshold} "
-                  f"(advisory: pass --gate to fail)", file=sys.stderr)
+        state = absolute_state(payload, args.dsr_threshold)
+        reasons, note = regression_reasons(payload, args.regression_tolerance,
+                                           args.coverage_tolerance)
+        if not args.gate:
+            if reasons:
+                print(f"# {state}; REGRESSION vs the previous audit: {reasons[0]} "
+                      f"(advisory: pass --gate to fail)", file=sys.stderr)
+            else:
+                print(f"# {state}; {note} (advisory: pass --gate to fail)", file=sys.stderr)
             return 0
-        if bad:
-            print(f"ANTI-OVERFIT GATE: FAIL -- {len(bad)}/{n} strategies below "
-                  f"DSR {args.dsr_threshold}{rate_str}", file=sys.stderr)
-            for b in bad[:25]:
-                print(f"  - {b}", file=sys.stderr)
-            if len(bad) > 25:
-                print(f"  ... and {len(bad) - 25} more", file=sys.stderr)
+        if reasons:
+            print("ANTI-OVERFIT GATE: FAIL -- regression vs the previous audit",
+                  file=sys.stderr)
+            print(f"  now: {state}", file=sys.stderr)
+            for reason in reasons:
+                print(f"  - {reason}", file=sys.stderr)
             return 2
-        print(f"ANTI-OVERFIT GATE: PASS -- {n} strategies at DSR >= {args.dsr_threshold}{rate_str}",
-              file=sys.stderr)
+        print(f"ANTI-OVERFIT GATE: PASS -- {state}; {note}", file=sys.stderr)
         return 0
-
     try:
         conn = connect()
     except Exception as e:
@@ -451,17 +526,23 @@ def main():
 
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    # Read the baseline BEFORE overwriting: this file is the previous audit.
+    payload["dsr_prev_audit"] = read_previous_audit(out_path)
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"# wrote {out_path}  ({out_path.stat().st_size:,} bytes)", file=sys.stderr)
 
     if args.gate:
-        bad = gate_failures(payload, args.dsr_threshold)
-        if bad:
-            print(f"ANTI-OVERFIT GATE: FAIL -- {len(bad)}/{n_trials} strategies below "
-                  f"DSR {args.dsr_threshold}", file=sys.stderr)
-            for b in bad[:25]:
-                print(f"  - {b}", file=sys.stderr)
+        state = absolute_state(payload, args.dsr_threshold)
+        reasons, note = regression_reasons(payload, args.regression_tolerance,
+                                           args.coverage_tolerance)
+        if reasons:
+            print("ANTI-OVERFIT GATE: FAIL -- regression vs the previous audit",
+                  file=sys.stderr)
+            print(f"  now: {state}", file=sys.stderr)
+            for reason in reasons:
+                print(f"  - {reason}", file=sys.stderr)
             return 2
+        print(f"ANTI-OVERFIT GATE: PASS -- {state}; {note}", file=sys.stderr)
     return 0
 
 

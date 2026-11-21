@@ -62,3 +62,9 @@ red would then mean *something got worse*.
 * Payload census: 80 rows, 6 PUBLISHABLE / 74 PROBATION, labels consistent.
 * The hybrid gates upstream were re-run against the 21:14Z job's own refresh commit
   (`8d8ffa8f`, 42 artifacts): 0 hybridised -- so they are not implicated.
+
+## Outcome (2026-11-21)
+
+Option (b) was adopted: the gate now fails only when the audit gets worse than the
+previous one, and prints the absolute number on every run. See
+`updates/2026-11-21-anti-overfit-gate-fails-on-regression.md`.
