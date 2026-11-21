@@ -42,6 +42,7 @@ footer{padding:18px 26px;border-top:1px solid var(--line);color:var(--muted);fon
 </header>
 <main>
   <div id="ledgerStatus" class="banner warn">loading ledger…</div>
+  <div class="small muted" data-population style="margin:-6px 0 12px">population: —</div>
 
   <section>
     <h2>Doctrine</h2>
@@ -75,8 +76,9 @@ footer{padding:18px 26px;border-top:1px solid var(--line);color:var(--muted);fon
   <section>
     <h2>Forward evidence clock</h2>
     <div class="card">
-      <div class="small muted" style="margin-bottom:8px">A pod can only promote on forward rows dated after its registration. Rows here come from <code>reports/forward_observations.jsonl</code>.</div>
-      <table><thead><tr><th>Hypothesis</th><th>Forward rows</th><th>Benchmark leg</th><th>Intrabar first-touch</th><th>Status</th></tr></thead><tbody id="forwardRows"><tr><td colspan="5" class="muted">—</td></tr></tbody></table>
+      <div class="small muted" style="margin-bottom:8px">A pod can only promote on forward rows dated after its registration. Rows are aggregated per hypothesis from <code>reports/forward_observations.jsonl</code> into <code>audit2_forward.json</code>; the owning pod and the gate reasons are joined in from <code>audit2_pods.json</code> and the ledger's <code>forward_gate</code>.</div>
+      <table><thead><tr><th>Hypothesis</th><th>Owner pod</th><th>Forward rows</th><th>Benchmark leg (coverage)</th><th>Intrabar-resolved</th><th>Status</th></tr></thead><tbody id="forwardRows"><tr><td colspan="6" class="muted">—</td></tr></tbody></table>
+      <div id="forwardNote" class="small muted" style="margin-top:8px">—</div>
     </div>
   </section>
 
@@ -109,7 +111,7 @@ footer{padding:18px 26px;border-top:1px solid var(--line);color:var(--muted);fon
     <div class="card small" id="provenance">—</div>
   </section>
 </main>
-<footer>Not investment advice. Every live number on this page comes from <code>audit3_ledger.json</code>; the pod registry is a static snapshot dated 2026-11-19 because <code>reports/</code> is not web-served.</footer>
+<footer>Not investment advice. Live verdicts come from <code>audit3_ledger.json</code>; forward rows from <code>audit2_forward.json</code>; the pod registry is a static snapshot because <code>reports/</code> is not web-served. <span data-population>population: —</span></footer>
 <script src="audit2.js"></script>
 </body>
 </html>

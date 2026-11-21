@@ -213,6 +213,11 @@ UPLOADS = [
     ("audit_dashboard/audit2.html",                         "/findtorontoevents.ca/audit/audit2.html",                          "healthchecks"),
     ("audit_dashboard/audit2.js",                           "/findtorontoevents.ca/audit/audit2.js",                            "audit_js"),
     ("audit_dashboard/data/audit2_forward.json",            "/findtorontoevents.ca/audit/audit2_forward.json",                 "audit_data"),
+    # Shared population sidecar (2026-11-21): every rate must print what it
+    # divides by. Mirrored next to the page because audit2.js fetches it
+    # relatively.
+    ("audit_dashboard/data/denominator.json",               "/findtorontoevents.ca/audit/denominator.json",                    "audit_data"),
+    ("audit_dashboard/data/denominator.json",               "/findtorontoevents.ca/audit/data/denominator.json",               "audit_data"),
 ]
 
 
