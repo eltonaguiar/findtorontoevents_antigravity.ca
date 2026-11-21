@@ -1,9 +1,9 @@
-### Momentum Scalp Scanner (2026-11-21 00:52 UTC)
+### Momentum Scalp Scanner (2026-11-21 04:44 UTC)
 
-**New symbols scanned:** 4 gainers + 4 bounce candidates
+**New symbols scanned:** 5 gainers + 5 bounce candidates
 **Picks generated:** 2
 
 | # | Symbol | Dir | Entry | TP | SL | R:R | Conf | Strategy | 24h% | Reason |
 |---|--------|-----|-------|----|----|-----|------|----------|------|--------|
-| 1 | ADAUSDT | LONG | 0.14301 | 0.148041 | 0.139236 | 1.33 | 90% | `genesis_momentum_blend` | -5.9% | Genesis score 8/10: ST=bull ADX=2 RSI=31 mom5=2.4% |
-| 2 | ADAUSDT | LONG | 0.14301 | 0.148041 | 0.139236 | 1.33 | 90% | `genesis_momentum_blend` | -5.9% | Genesis score 8/10: ST=bull ADX=2 RSI=31 mom5=2.4% |
+| 1 | USDCUSDT | LONG | 1.0014 | 1.0028 | 1.0003 | 1.36 | 57% | `ema_momentum_volume` | +0.0% | EMA stack aligned (9>1.0017 > 21>1.0015 > 50) vol=0.4x RSI=6 |
+| 2 | USDCUSDT | LONG | 1.0014 | 1.0028 | 1.0003 | 1.36 | 57% | `ema_momentum_volume` | +0.0% | EMA stack aligned (9>1.0017 > 21>1.0015 > 50) vol=0.4x RSI=6 |
