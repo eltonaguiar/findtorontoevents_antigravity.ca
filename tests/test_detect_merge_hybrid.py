@@ -112,3 +112,71 @@ def test_artifact_under_the_cap_is_inspected(tmp_path):
                        capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
     assert "1 inspected" in r.stdout
+
+
+def _run_report(tmp_path, args, payload, name="p.json"):
+    f = tmp_path / name
+    f.write_text(json.dumps(payload), encoding="utf-8")
+    rep = tmp_path / "report.json"
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "detect_merge_hybrid.py"),
+                        *args, "--report", str(rep), str(f)],
+                       capture_output=True, text=True)
+    return r, json.loads(rep.read_text())
+
+
+def test_report_records_a_clean_entry(tmp_path):
+    r, rep = _run_report(tmp_path, [], {"n_strategies_audited": 1,
+                                        "strategies": [{"strategy": "a"}]})
+    assert r.returncode == 0, r.stdout + r.stderr
+    e = rep["entries"][-1]
+    assert e["inspected"] == 1 and e["findings"] == 0 and e["verdict"] == "clean"
+    assert e["phase"] == "paths" and e["skipped"] == []
+
+
+def test_report_records_the_skip_that_was_not_gated(tmp_path):
+    r, rep = _run_report(tmp_path, ["--max-mb", "0.000001"],
+                         {"n_strategies_audited": 1, "strategies": [{"strategy": "a"}]})
+    assert r.returncode == 0
+    e = rep["entries"][-1]
+    assert e["inspected"] == 0 and e["verdict"] == "clean"
+    assert e["skipped"] and e["skipped"][0]["path"].endswith("p.json")
+
+
+def test_report_flags_a_hybridised_payload(tmp_path):
+    r, rep = _run_report(tmp_path, [], {"n_strategies_audited": 1,
+                                        "strategies": [{"strategy": "a"}, {"strategy": "b"}]})
+    assert r.returncode == 1
+    e = rep["entries"][-1]
+    assert e["verdict"] == "hybridised" and e["findings"] == 1
+
+
+def test_report_updates_in_place_so_a_retry_is_byte_identical(tmp_path):
+    mod = _gate()
+    rep = tmp_path / "report.json"
+    kwargs = dict(phase="rev-range", rev_range="HEAD^..HEAD", inspected=47,
+                  skipped=[], findings=0, verdict="clean")
+    mod.record(rep, **kwargs)
+    first = rep.read_bytes()
+    mod.record(rep, **kwargs)
+    assert rep.read_bytes() == first
+    assert len(json.loads(first)["entries"]) == 1
+
+
+def test_report_keeps_staged_and_merge_phases_apart(tmp_path):
+    mod = _gate()
+    rep = tmp_path / "report.json"
+    mod.record(rep, phase="staged", rev_range=None, inspected=47, skipped=[],
+               findings=0, verdict="clean")
+    mod.record(rep, phase="rev-range", rev_range="HEAD^..HEAD", inspected=1,
+               skipped=[], findings=0, verdict="clean")
+    entries = json.loads(rep.read_text())["entries"]
+    assert [e["phase"] for e in entries] == ["staged", "rev-range"]
+
+
+def test_the_report_file_itself_does_not_trip_the_gate(tmp_path):
+    mod = _gate()
+    rep = tmp_path / "report.json"
+    mod.record(rep, phase="staged", rev_range=None, inspected=47,
+               skipped=[("audit_dashboard/data/pf_registry.json", 15.9)],
+               findings=0, verdict="clean")
+    assert mod.inspect(json.loads(rep.read_text())) == []
