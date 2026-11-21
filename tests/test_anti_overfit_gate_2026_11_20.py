@@ -1,8 +1,11 @@
 """The anti-overfit gate must be able to FAIL (2026-11-20).
 
 A gate that runs but cannot fail is not enforcement. These tests pin both
-directions: a passing payload returns 0, a failing payload returns non-zero,
-and the CLI exit codes are checked through the real entry points.
+directions: a steady audit returns 0, an audit that got worse than the previous
+one returns non-zero, and the CLI exit codes are checked through the real entry
+points. 2026-11-21: the failure condition moved from "any strategy below the
+floor" to "worse than the previous audit" -- see
+tests/test_anti_overfit_gate_regression.py for the policy's own tests.
 """
 import json
 import subprocess
@@ -23,29 +26,30 @@ def _payload(rows):
     return {"strategies": rows}
 
 
-def test_sidecar_gate_passes_on_clean_payload(tmp_path):
+def test_sidecar_gate_passes_on_a_steady_audit(tmp_path):
     pytest.importorskip("pymysql")
     f = tmp_path / "ok.json"
-    f.write_text(json.dumps(_payload([
-        {"strategy": "a", "n": 50, "dsr": 0.97},
-        {"strategy": "b", "n": 50, "dsr": 0.99},
-    ])))
+    f.write_text(json.dumps({
+        "strategies": [{"strategy": "a", "n": 50, "dsr": 0.60},
+                       {"strategy": "b", "n": 50, "dsr": 0.99}],
+        "dsr_pass_count": 6, "dsr_scored_count": 80, "dsr_pass_rate": 0.075,
+        "dsr_prev_audit": {"pass_count": 6, "scored_count": 80},
+    }))
     r = _run(["tools/anti_overfit_audit_sidecar.py", "--check-only", "--gate", "--in", str(f)])
     assert r.returncode == 0, r.stderr
-    assert "PASS" in r.stderr
+    assert "PASS" in r.stderr and "6/80" in r.stderr
 
-
-def test_sidecar_gate_fails_on_bad_dsr(tmp_path):
+def test_sidecar_gate_fails_on_regression(tmp_path):
     pytest.importorskip("pymysql")
-    f = tmp_path / "bad.json"
-    f.write_text(json.dumps(_payload([
-        {"strategy": "good", "n": 50, "dsr": 0.99},
-        {"strategy": "noise", "n": 50, "dsr": 0.31},
-    ])))
+    f = tmp_path / "worse.json"
+    f.write_text(json.dumps({
+        "strategies": [{"strategy": "noise", "n": 50, "dsr": 0.31}],
+        "dsr_pass_count": 2, "dsr_scored_count": 80, "dsr_pass_rate": 0.025,
+        "dsr_prev_audit": {"pass_count": 6, "scored_count": 80},
+    }))
     r = _run(["tools/anti_overfit_audit_sidecar.py", "--check-only", "--gate", "--in", str(f)])
     assert r.returncode == 2, (r.returncode, r.stderr)
-    assert "noise" in r.stderr and "good" not in r.stderr.split("FAIL")[1]
-
+    assert "regression" in r.stderr and "2/80" in r.stderr
 
 def test_sidecar_missing_payload_is_an_error_not_a_pass(tmp_path):
     pytest.importorskip("pymysql")
@@ -62,13 +66,13 @@ def test_sidecar_without_gate_is_advisory(tmp_path):
     assert r.returncode == 0 and "advisory" in r.stderr
 
 
-def test_null_dsr_is_a_failure_not_a_pass(tmp_path):
+def test_payload_without_pass_counts_is_an_error_not_a_pass(tmp_path):
     pytest.importorskip("pymysql")
     f = tmp_path / "null.json"
     f.write_text(json.dumps(_payload([{"strategy": "x", "n": 50, "dsr": None}])))
     r = _run(["tools/anti_overfit_audit_sidecar.py", "--check-only", "--gate", "--in", str(f)])
-    assert r.returncode == 2
-
+    assert r.returncode == 2, (r.returncode, r.stderr)
+    assert "no usable pass counts" in r.stderr
 
 def test_system_gate_treats_skip_as_failure():
     sys.path.insert(0, str(REPO / "tools"))
