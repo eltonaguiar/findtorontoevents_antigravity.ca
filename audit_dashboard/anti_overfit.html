@@ -72,6 +72,12 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
 <div class="meta" id="last-updated"></div>
 </div>
 
+<div class="section" id="gate-coverage-section">
+<h2>Merge-hybrid gate coverage</h2>
+<div class="meta">What the publish gate actually opened, from <span class="code">audit_dashboard/data/hybrid_gate_report.json</span> &mdash; written and committed by the gate itself, so a passing step stays auditable after the job log expires.</div>
+<div id="gate-coverage"><em>Loading...</em></div>
+</div>
+
 <div class="section" id="data-section">
 <h2>Per-strategy verdicts</h2>
 <div class="pub-note" id="pub-note"></div>
@@ -88,6 +94,59 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
   // Display rule only. The default is to show every row: a demoted strategy
   // that silently disappears is a deleted strategy wearing a filter.
   let hideProbation = false;
+
+  // Gate coverage: newest entry answers "how many artifacts were gated on the
+  // last publish?", the last clean entry answers "when was the least coverage
+  // sufficient?". Entries carry no timestamps by design (a retry rewrites
+  // identical bytes), so run ids stand in for time.
+  (async function() {
+    const box = document.getElementById('gate-coverage');
+    try {
+      const g = await fetch('/audit_dashboard/data/hybrid_gate_report.json?ts=' + Date.now());
+      if (!g.ok) throw new Error('HTTP ' + g.status);
+      const gr = await g.json();
+      const entries = gr.entries || [];
+      if (!entries.length) {
+        box.innerHTML = '<em>Report exists but holds no entries yet.</em>';
+        return;
+      }
+      const last = entries[entries.length - 1];
+      let lastClean = null;
+      for (let i = entries.length - 1; i >= 0; i--) {
+        if (entries[i].verdict === 'clean') { lastClean = entries[i]; break; }
+      }
+      const paths = last.inspected_paths || [];
+      const trunc = last.inspected_paths_truncated
+        ? ' <span class="meta">(+' + last.inspected_paths_truncated + ' more, counted but not listed)</span>' : '';
+      const skipped = last.skipped || [];
+      box.innerHTML =
+        '<div class="kpi-row">' +
+          '<div class="kpi"><div class="kpi-label">Last run gated</div><div class="kpi-value">' + (last.inspected || 0) + '</div>' +
+            '<div class="meta" style="margin:0">' + escapeHTML(last.phase || '?') + ' &middot; ' +
+            (last.verdict === 'clean' ? '<span class="verdict-real">clean</span>'
+                                      : '<span class="verdict-overfit">' + escapeHTML(last.verdict || '?') + '</span>') + '</div></div>' +
+          '<div class="kpi"><div class="kpi-label">Last clean run gated</div><div class="kpi-value kpi-real">' + (lastClean ? lastClean.inspected : '\u2014') + '</div>' +
+            '<div class="meta" style="margin:0">' + (lastClean ? escapeHTML((lastClean.phase || '?') + ' &middot; run ' + (lastClean.run_id || '?')) : 'none recorded') + '</div></div>' +
+          '<div class="kpi"><div class="kpi-label">Skipped (over cap)</div><div class="kpi-value ' + (skipped.length ? 'kpi-overfit' : '') + '">' + skipped.length + '</div>' +
+            '<div class="meta" style="margin:0">not gated</div></div>' +
+          '<div class="kpi"><div class="kpi-label">Findings</div><div class="kpi-value ' + ((last.findings || 0) ? 'kpi-overfit' : '') + '">' + (last.findings || 0) + '</div>' +
+            '<div class="meta" style="margin:0">contradictions</div></div>' +
+        '</div>' +
+        '<div class="meta">Newest entry: run <span class="code">' + escapeHTML(String(last.run_id || '?')) + '</span>' +
+          (last.rev_range ? ' &middot; <span class="code">' + escapeHTML(last.rev_range) + '</span>' : '') +
+          ' &middot; ' + (gr.entries || []).length + ' entries retained</div>' +
+        (skipped.length
+          ? '<div class="meta">Excluded from gating: ' + skipped.map(s => escapeHTML(s.path) + ' (' + s.mb + ' MB)').join(', ') + '</div>'
+          : '') +
+        (paths.length
+          ? '<details style="margin-top:8px"><summary style="cursor:pointer;color:#a78bfa;font-size:0.85em">' +
+            paths.length + ' inspected path(s)' + trunc + '</summary><div class="meta" style="font-family:Consolas,Menlo,monospace;font-size:0.78em;white-space:pre-wrap">' +
+            paths.map(escapeHTML).join('\n') + '</div></details>'
+          : '');
+    } catch (e) {
+      box.innerHTML = '<div class="meta">No committed gate report yet &mdash; the next hourly run that gates an artifact writes it.</div>';
+    }
+  })();
 
   function escapeHTML(s) {
     return String(s).replace(/[&<>"']/g, function(c) {
