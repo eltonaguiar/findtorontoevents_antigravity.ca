@@ -157,16 +157,26 @@ def targets(args):
 # 60-minute job log, and GitHub expires those. --report writes the counts into a
 # small JSON file the workflow commits, so "what was gated, and how much of it"
 # is answerable from the repository alone.
-REPORT_SCHEMA = 1
+REPORT_SCHEMA = 2
 REPORT_MAX_ENTRIES = 50
+# The newest entry carries the paths it actually opened; older entries keep only
+# the count. That answers "was this file gated?" without letting 50 entries of
+# paths grow without bound -- 500 paths is ~30 KB, and an excess is counted, not
+# silently dropped.
+REPORT_MAX_PATHS = 500
 
 
-def record(report_path, *, phase, rev_range, inspected, skipped, findings, verdict):
+def record(report_path, *, phase, rev_range, inspected, skipped, findings, verdict,
+           inspected_paths=None):
     """Append or update this run's entry in the committed gate report.
 
     Keyed by (GITHUB_RUN_ID, phase, rev_range) and deliberately carrying no
     timestamp: a retry that observes the same numbers rewrites identical bytes, so
     the workflow's `git diff --quiet` guard does not manufacture another commit.
+
+    Only the entry being written keeps its inspected paths; every older entry is
+    rotated down to its count. The rotation runs before the append, over *all*
+    entries, so writing the same entry twice still produces the same bytes.
     """
     path = Path(report_path)
     try:
@@ -174,19 +184,27 @@ def record(report_path, *, phase, rev_range, inspected, skipped, findings, verdi
     except Exception:
         doc = {}
     entries = [e for e in (doc.get("entries") or []) if isinstance(e, dict)]
+    for e in entries:
+        e.pop("inspected_paths", None)
+        e.pop("inspected_paths_truncated", None)
     run_id = os.environ.get("GITHUB_RUN_ID", "local")
     key = (run_id, phase, rev_range or "")
     entries = [e for e in entries
                if (e.get("run_id"), e.get("phase"), e.get("rev_range") or "") != key]
-    entries.append({
+    paths = list(inspected_paths or [])
+    entry = {
         "run_id": run_id,
         "phase": phase,
         "rev_range": rev_range,
         "inspected": inspected,
+        "inspected_paths": paths[:REPORT_MAX_PATHS],
         "skipped": [{"path": q, "mb": round(mb, 1)} for q, mb in skipped],
         "findings": findings,
         "verdict": verdict,
-    })
+    }
+    if len(paths) > REPORT_MAX_PATHS:
+        entry["inspected_paths_truncated"] = len(paths) - REPORT_MAX_PATHS
+    entries.append(entry)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"schema": REPORT_SCHEMA,
                                 "tool": "tools/detect_merge_hybrid.py",
@@ -216,6 +234,7 @@ def main(argv=None):
     max_bytes = int(args.max_mb * 1024 * 1024)
     bad = 0
     inspected = 0
+    inspected_paths = []
     skipped = []
     for p in files:
         f = Path(p)
@@ -233,6 +252,7 @@ def main(argv=None):
             bad += 1
             continue
         inspected += 1
+        inspected_paths.append(p)
         found = inspect(doc)
         if found:
             bad += 1
@@ -248,7 +268,8 @@ def main(argv=None):
         record(args.report,
                phase="staged" if args.staged else ("rev-range" if args.rev_range else "paths"),
                rev_range=args.rev_range,
-               inspected=inspected, skipped=skipped, findings=bad,
+               inspected=inspected, inspected_paths=inspected_paths,
+               skipped=skipped, findings=bad,
                verdict="hybridised" if bad else "clean")
     if bad:
         print("\nREFUSING: %d generated artifact(s) disagree with themselves. A textual "

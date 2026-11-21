@@ -180,3 +180,53 @@ def test_the_report_file_itself_does_not_trip_the_gate(tmp_path):
                skipped=[("audit_dashboard/data/pf_registry.json", 15.9)],
                findings=0, verdict="clean")
     assert mod.inspect(json.loads(rep.read_text())) == []
+
+
+def test_newest_entry_keeps_the_paths_it_inspected(tmp_path):
+    r, rep = _run_report(tmp_path, [], {"n_strategies_audited": 1,
+                                        "strategies": [{"strategy": "a"}]})
+    assert r.returncode == 0, r.stdout + r.stderr
+    e = rep["entries"][-1]
+    assert e["inspected_paths"] == [str(tmp_path / "p.json")]
+
+
+def test_older_entries_rotate_down_to_the_count(tmp_path):
+    mod = _gate()
+    rep = tmp_path / "report.json"
+    mod.record(rep, phase="staged", rev_range=None, inspected=2,
+               inspected_paths=["a.json", "b.json"], skipped=[], findings=0,
+               verdict="clean")
+    mod.record(rep, phase="rev-range", rev_range="HEAD^..HEAD", inspected=1,
+               inspected_paths=["c.json"], skipped=[], findings=0, verdict="clean")
+    first, last = json.loads(rep.read_text())["entries"]
+    assert "inspected_paths" not in first
+    assert first["inspected"] == 2
+    assert last["inspected_paths"] == ["c.json"]
+
+
+def test_rotation_is_idempotent_so_a_retry_stays_byte_identical(tmp_path):
+    mod = _gate()
+    rep = tmp_path / "report.json"
+    mod.record(rep, phase="staged", rev_range=None, inspected=2,
+               inspected_paths=["a.json", "b.json"], skipped=[], findings=0,
+               verdict="clean")
+    kwargs = dict(phase="rev-range", rev_range="HEAD^..HEAD", inspected=1,
+                  inspected_paths=["c.json"], skipped=[], findings=0,
+                  verdict="clean")
+    mod.record(rep, **kwargs)
+    first = rep.read_bytes()
+    mod.record(rep, **kwargs)
+    assert rep.read_bytes() == first
+    assert len(json.loads(first)["entries"]) == 2
+
+
+def test_path_list_is_capped_and_the_excess_is_counted(tmp_path):
+    mod = _gate()
+    rep = tmp_path / "report.json"
+    paths = ["f%d.json" % i for i in range(mod.REPORT_MAX_PATHS + 25)]
+    mod.record(rep, phase="staged", rev_range=None, inspected=len(paths),
+               inspected_paths=paths, skipped=[], findings=0, verdict="clean")
+    e = json.loads(rep.read_text())["entries"][-1]
+    assert len(e["inspected_paths"]) == mod.REPORT_MAX_PATHS
+    assert e["inspected_paths_truncated"] == 25
+    assert e["inspected"] == len(paths)
