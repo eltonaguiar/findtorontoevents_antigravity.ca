@@ -74,17 +74,30 @@ jobs:
       # should show.
       - name: Commit the QA artifact
         if: always()
+        env:
+          GIT_TERMINAL_PROMPT: "0"
         run: |
           A=audit_dashboard/data/qa_market_validation.json
           [ -f "$A" ] || { echo "no artifact"; exit 0; }
+          export GIT_AUTHOR_NAME="github-actions[bot]"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+          export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
           git add "$A"
-          if git diff --cached --quiet; then echo "unchanged"; exit 0; fi
-          git -c user.name="github-actions[bot]" \
-              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-              commit -m "chore(qa): market validation snapshot [skip ci]"
+          if git diff --cached --quiet; then echo "artifact unchanged"; exit 0; fi
+          git commit -q -m "chore(qa): market validation snapshot [skip ci]"
+          M="chore(qa): market validation snapshot [skip ci]"
+          # No rebase here: this checkout is depth-1 and main moves every few
+          # minutes, so `git rebase` walks past the shallow boundary and starts
+          # unshallowing a multi-GB history -- it sat 26 min and the run was
+          # cancelled. Re-point HEAD at the new tip with --soft (keeps the
+          # artifact in the worktree) and re-commit, which stays a fast-forward.
           for i in 1 2 3; do
-            if git push; then echo "pushed"; exit 0; fi
-            git pull --rebase --autostash origin main || true
-            sleep $((i * 3))
+            if timeout 120 git push -q origin HEAD:main; then echo "artifact pushed"; exit 0; fi
+            echo "push rejected (attempt $i); re-pointing at the new tip"
+            timeout 180 git fetch -q --depth=1 origin main || true
+            git reset --soft FETCH_HEAD || true
+            git add "$A"
+            git commit -q -m "$M" || { echo "remote already carries this artifact"; exit 0; }
           done
-          echo "::warning::qa artifact push failed; repo copy stays stale until the next run"
+          echo "::warning::could not push the QA artifact; repo copy stays stale until the next run"
