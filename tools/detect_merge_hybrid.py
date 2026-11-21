@@ -135,6 +135,20 @@ def inspect(doc):
     return findings
 
 
+def _norm_path(p):
+    """A repo path as git prints it: forward slashes, no './' prefix."""
+    p = str(p).replace("\\", "/")
+    while p.startswith("./"):
+        p = p[2:]
+    return p
+
+
+def _norm_prefix(u):
+    """An --under prefix as a comparable directory; '' means 'everything'."""
+    u = _norm_path(u).rstrip("/")
+    return "" if u in ("", ".") else u
+
+
 def targets(args):
     if args.staged:
         out = subprocess.run(["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR"],
@@ -144,10 +158,15 @@ def targets(args):
                              capture_output=True, text=True).stdout
     else:
         out = "\n".join(args.paths)
-    files = [p for p in out.split() if p.endswith(".json")]
+    files = [_norm_path(p) for p in out.split() if p.endswith(".json")]
     if args.under:
-        files = [p for p in files
-                 if any(p.startswith(u.rstrip("/") + "/") for u in args.under)]
+        # `--under .` used to match nothing: the prefix became './' while git's
+        # paths never carry it. Normalise both sides, and treat '.' (or an empty
+        # argument) as 'the whole tree' rather than a directory named '.'.
+        prefixes = [_norm_prefix(u) for u in args.under]
+        if all(prefixes):
+            files = [p for p in files
+                     if any(p == u or p.startswith(u + "/") for u in prefixes)]
     return files
 
 
@@ -177,11 +196,19 @@ def record(report_path, *, phase, rev_range, inspected, skipped, findings, verdi
     Only the entry being written keeps its inspected paths; every older entry is
     rotated down to its count. The rotation runs before the append, over *all*
     entries, so writing the same entry twice still produces the same bytes.
+
+    A retry replaces its entry *in place*. Appending the retry instead would move
+    an old entry to the end (making it look like the newest to the panel) and, at
+    the entry cap, evict one more historical entry per retry.
     """
     path = Path(report_path)
     try:
         doc = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-    except Exception:
+    except Exception as exc:            # noqa: BLE001
+        # Silently starting over would delete the committed history in the same
+        # commit that claims to be an audit trail, so say so.
+        print("WARNING: %s is unreadable (%s); rewriting it from scratch" % (path, exc),
+              file=sys.stderr)
         doc = {}
     entries = [e for e in (doc.get("entries") or []) if isinstance(e, dict)]
     for e in entries:
@@ -189,8 +216,6 @@ def record(report_path, *, phase, rev_range, inspected, skipped, findings, verdi
         e.pop("inspected_paths_truncated", None)
     run_id = os.environ.get("GITHUB_RUN_ID", "local")
     key = (run_id, phase, rev_range or "")
-    entries = [e for e in entries
-               if (e.get("run_id"), e.get("phase"), e.get("rev_range") or "") != key]
     paths = list(inspected_paths or [])
     entry = {
         "run_id": run_id,
@@ -204,7 +229,13 @@ def record(report_path, *, phase, rev_range, inspected, skipped, findings, verdi
     }
     if len(paths) > REPORT_MAX_PATHS:
         entry["inspected_paths_truncated"] = len(paths) - REPORT_MAX_PATHS
-    entries.append(entry)
+    for i, e in enumerate(entries):
+        if (e.get("run_id"), e.get("phase"), e.get("rev_range") or "") == key:
+            entries[i] = entry
+            break
+    else:
+        entries.append(entry)
+        del entries[:-REPORT_MAX_ENTRIES]   # no-op until the cap is reached
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"schema": REPORT_SCHEMA,
                                 "tool": "tools/detect_merge_hybrid.py",
@@ -245,14 +276,17 @@ def main(argv=None):
             print("skip %s (%.1f MB, over the %.0f MB cap) -- NOT gated"
                   % (p, f.stat().st_size / 1048576, max_bytes / 1048576))
             continue
+        # Counted before parsing: a file that was opened and found invalid is
+        # still inspected, and it is the one case where the report must name the
+        # path -- otherwise it says "hybridised, 1 finding" with no culprit.
+        inspected += 1
+        inspected_paths.append(p)
         try:
             doc = json.loads(f.read_text(encoding="utf-8", errors="replace"))
         except Exception as exc:
             print("%s: not valid JSON (%s) -- a merge may have cut it" % (p, exc))
             bad += 1
             continue
-        inspected += 1
-        inspected_paths.append(p)
         found = inspect(doc)
         if found:
             bad += 1

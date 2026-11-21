@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _run(monkeypatch, tmp_path, picks):
+def _run(monkeypatch, tmp_path, picks, external=(None, None)):
     spec = importlib.util.spec_from_file_location("qa_ledger", ROOT / "tools" / "qa_ledger.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -23,7 +23,7 @@ def _run(monkeypatch, tmp_path, picks):
     live.write_text(json.dumps({"picks": picks}), encoding="utf-8")
     monkeypatch.setattr(mod, "LIVE_JSON", live)
     monkeypatch.setattr(mod, "OUT_JSON", out)
-    monkeypatch.setattr(mod, "fetch_external", lambda sym, aclass: (None, None))
+    monkeypatch.setattr(mod, "fetch_external", lambda sym, aclass: external)
     rc = mod.run()
     return rc, json.loads(out.read_text())
 
@@ -85,3 +85,23 @@ def test_blank_tp_sl_is_a_flag_but_not_critical(monkeypatch, tmp_path):
     rc, rep = _run(monkeypatch, tmp_path, [_row(tp_pct=None, sl_pct=None)])
     assert rc == 0
     assert rep["flag_counts"] == {"total": 1, "critical": 0}
+
+
+def test_null_entry_price_with_a_live_quote_does_not_kill_the_run(monkeypatch, tmp_path):
+    """float(None) raised before OUT_JSON was written, so CI kept a stale artifact."""
+    rc, rep = _run(monkeypatch, tmp_path, [_row(entry_price=None, current_price=101.0)],
+                   external=(101.5, "ext"))
+    assert rep["n_picks"] == 1
+    assert rep["by_class"]["EQUITY"]["mismatch"] == 0
+
+
+def test_forex_priced_by_the_validation_feed_is_counted_not_flagged(monkeypatch, tmp_path):
+    """Same feed on both sides means diff 0 by construction: count, never claim verified."""
+    rc, rep = _run(monkeypatch, tmp_path, [
+        _row(symbol="EURUSD", asset_class="FOREX", entry_price=1.10,
+             current_price=1.101, pnl_pct=0.09, price_source="forex_failover")],
+        external=(1.20, "forex_failover"))
+    assert rc == 0
+    assert rep["by_class"]["FOREX"]["unverified_source"] == 1
+    assert rep["by_class"]["FOREX"]["mismatch"] == 0
+    assert rep["flag_counts"]["total"] == 0
