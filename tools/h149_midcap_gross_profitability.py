@@ -74,6 +74,50 @@ STRESS_COST_MULT = 2.0
 COST_SURVIVAL_MIN = 0.60
 
 
+# ──────────────────────────────────────────────────────────────── prices ──
+def _download_closes(tickers: list[str], start: str, end: str,
+                     chunk: int = 80, retries: int = 3):
+    """Download adjusted daily closes in chunks, keeping whatever survives.
+
+    One yf.download call for ~600 tickers is throttled or silently truncated by
+    Yahoo, which loses every name at once. Chunking with a pause and a retry
+    degrades to "some chunks fewer tickers" instead of "no price data".
+    """
+    import time
+
+    import pandas as pd
+    import yfinance as yf
+
+    tickers = list(dict.fromkeys(tickers))
+    frames = []
+    for i in range(0, len(tickers), chunk):
+        part = tickers[i:i + chunk]
+        for attempt in range(1, retries + 1):
+            try:
+                raw = yf.download(part, start=start, end=end, interval="1d",
+                                  progress=False, auto_adjust=True, threads=True)
+            except Exception as exc:  # noqa: BLE001 - network layer varies
+                print(f"  .. prices chunk {i//chunk+1} attempt {attempt} raised "
+                      f"{type(exc).__name__}: {exc}", file=sys.stderr)
+                raw = None
+            if raw is not None and not getattr(raw, "empty", True):
+                df = raw["Close"] if getattr(raw.columns, "nlevels", 1) > 1 else raw
+                frames.append(df)
+                print(f"  .. prices {min(i + chunk, len(tickers))}/{len(tickers)} "
+                      f"({df.shape[1]} tickers returned in chunk {i//chunk+1})",
+                      file=sys.stderr)
+                break
+            time.sleep(2 * attempt)
+        else:
+            print(f"  .. prices chunk {i//chunk+1}: no data after {retries} tries",
+                  file=sys.stderr)
+        time.sleep(1.0)
+    if not frames:
+        return None
+    out = pd.concat(frames, axis=1)
+    return out.loc[:, ~out.columns.duplicated()].dropna(axis=1, how="all")
+
+
 # ─────────────────────────────────────────────────────────── HTTP / cache ──
 def _http_json(url: str, timeout: int = 60) -> dict:
     req = urllib.request.Request(url, headers={
@@ -384,8 +428,11 @@ def density_gap(records: list[dict], H, window_days: int = 14) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--sample-n", type=int, default=150,
-                    help="CIKs drawn from the SEC ticker file")
+    ap.add_argument("--sample-n", type=int, default=1900,
+                    help="CIKs drawn from the SEC ticker file. ~33%% of random "
+                         "filers clear the annual-10-K GrossProfit+Assets filter, "
+                         "so 1900 is sized to land near 600 usable names and "
+                         "~80 records per 14-day harness window")
     ap.add_argument("--seed", type=int, default=149)
     ap.add_argument("--start", default="2016-01-01")
     ap.add_argument("--end", default="2025-12-31")
@@ -451,16 +498,12 @@ def main() -> int:
     import yfinance as yf
 
     tickers_list = [n["ticker"] for n in names]
-    print(f"# downloading daily prices for {len(tickers_list)} tickers",
+    print(f"# downloading daily prices for {len(tickers_list)} tickers in chunks",
           file=sys.stderr)
-    raw = yf.download(tickers_list, start=args.start, end=args.end,
-                      interval="1d", progress=False, auto_adjust=True,
-                      threads=True)
-    if raw is None or raw.empty:
+    closes = _download_closes(tickers_list, args.start, args.end)
+    if closes is None or closes.empty:
         print("FATAL: no price data returned", file=sys.stderr)
         return 2
-    closes = raw["Close"] if hasattr(raw.columns, "nlevels") and raw.columns.nlevels > 1 else raw
-    closes = closes.dropna(axis=1, how="all")
     idx = closes.index
     if len(idx) < HOLD_DAYS + 30:
         print("FATAL: price history too short", file=sys.stderr)
@@ -522,6 +565,7 @@ def main() -> int:
             "sec_filers_in_pool": len(pool),
             "sampled_ciks": len(sample),
             "names_usable_fundamentals": len(names),
+            "fundamentals_yield_pct": round(100.0 * len(names) / max(1, len(sample)), 1),
             "rebalances_total": stats["rebalances"],
             "rebalances_used": stats["rebalances_used"],
             "rebalances_skipped_sparse": stats["skipped_sparse"],
