@@ -107,9 +107,23 @@ def run() -> int:
         sl = p.get("sl_pct")
         aclass = aclass.upper()
         by_class.setdefault(aclass, {"n": 0, "unpriced": 0, "unverified_zero": 0,
-                                     "blank_tp_sl": 0, "mismatch": 0})
+                                     "blank_tp_sl": 0, "mismatch": 0,
+                                     "out_of_bounds": 0, "self_inconsistent": 0,
+                                     "quarantined": 0, "quarantine_leak": 0})
         c = by_class[aclass]
         c["n"] += 1
+
+        # 0) quarantine contract: a row the tracker refused to price must not
+        # publish a PnL. That is checkable, unlike "+602% is real".
+        if p.get("quarantined"):
+            if pnl is not None:
+                c["quarantine_leak"] += 1
+                flags.append({"symbol": sym, "asset_class": aclass,
+                              "verdict": "QUARANTINE_LEAK",
+                              "detail": f"marked quarantined but publishes pnl {pnl}%"})
+            else:
+                c["quarantined"] += 1
+            continue
 
         # 1) blank current_price / pnl_pct
         if cur is None or pnl is None:
@@ -140,8 +154,20 @@ def run() -> int:
             flags.append({"symbol": sym, "asset_class": aclass,
                           "verdict": "BLANK_TP_SL", "detail": "neither tp nor sl set"})
 
+        # 3b) published PnL must agree with the row's OWN entry/current prices.
+        # Zero rows today, but this is the corruption class the gate was blind
+        # to: a PnL that no pair of published prices implies.
+        if entry and cur:
+            own = compute_pnl(float(entry), float(cur), direction)
+            if own is not None and abs(pnl_f - own) > 0.05:
+                c["self_inconsistent"] += 1
+                flags.append({"symbol": sym, "asset_class": aclass,
+                              "verdict": "SELF_INCONSISTENT",
+                              "detail": f"published {pnl_f:.2f}% vs own prices {own:.2f}%"})
+
         # 4) PnL reasonability bound
         if abs(pnl_f) > 100.0:
+            c["out_of_bounds"] += 1
             flags.append({"symbol": sym, "asset_class": aclass,
                           "verdict": "PNL_OUT_OF_BOUNDS",
                           "detail": f"|pnl|={pnl_f:.1f}% > 100%"})
@@ -171,7 +197,8 @@ def run() -> int:
                                      f"(diff {diff:.2f}pp > tol {tol}pp), src={src}")})
 
     critical = [f for f in flags if f["verdict"] in
-                ("UNPRICED", "UNVERIFIED_ZERO", "MISMATCH", "PNL_OUT_OF_BOUNDS")]
+                ("UNPRICED", "UNVERIFIED_ZERO", "MISMATCH", "PNL_OUT_OF_BOUNDS",
+                 "SELF_INCONSISTENT", "QUARANTINE_LEAK")]
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "n_picks": len(picks),
@@ -185,7 +212,9 @@ def run() -> int:
     for k, v in sorted(by_class.items()):
         print(f"  {k:16} n={v['n']:5} unpriced={v['unpriced']} "
               f"zero={v['unverified_zero']} blank_tp/sl={v['blank_tp_sl']} "
-              f"mismatch={v['mismatch']}")
+              f"mismatch={v['mismatch']} bounds={v['out_of_bounds']} "
+              f"self={v['self_inconsistent']} quar={v['quarantined']}"
+              + (f" LEAK={v['quarantine_leak']}" if v["quarantine_leak"] else ""))
     return 1 if critical else 0
 
 

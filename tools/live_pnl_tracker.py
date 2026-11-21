@@ -110,28 +110,60 @@ def fetch_price(symbol: str, asset_class: str) -> tuple[float | None, str]:
 
         return (None, last_err)
 
+    # ── Forex: yfinance, cross-checked against the forex failover feed ──
+    # 2026-11-21: yfinance's fast_info served a stale JPY leg (USDJPY pinned at
+    # 159.707 for two hours while every non-JPY pair kept moving), putting 11 of 23
+    # crosses >0.5pp from the independent feed and keeping the hourly QA ledger
+    # red. When the two sources disagree beyond 0.25%, the failover feed wins and
+    # the disagreement is logged, so a frozen tick is never silently published.
+    failover_px = None
+    if ac == "FOREX":
+        try:
+            from alpha_engine.forex_price_failover import fetch_forex_rate
+            fx = fetch_forex_rate(sym, use_cache=False) or {}
+            raw = fx.get("price")
+            failover_px = float(raw) if raw and float(raw) > 0 else None
+        except Exception as exc:            # noqa: BLE001
+            log.warning("[live_pnl] forex failover failed for %s: %s", sym, exc)
+
     # ── Equities / ETFs / Commodities / Forex: yfinance ──
     yf_sym = sym
     if ac == "FOREX":
         yf_sym = f"{sym}=X" if not sym.endswith("=X") else sym
+    px = None
     try:
         tkr = yf.Ticker(yf_sym)
         # fast_info works when .history() returns NaN (common for today's date).
         px = (tkr.fast_info.get("lastPrice")
               or tkr.fast_info.get("regularMarketPrice")
               or tkr.fast_info.get("previousClose"))
-        if px and float(px) > 0:
-            return (float(px), "yfinance")
-        # Fallback: info dict (slower but more complete).
-        info = tkr.info or {}
-        px = (info.get("currentPrice")
-              or info.get("regularMarketPrice")
-              or info.get("previousClose")
-              or info.get("regularMarketPreviousClose"))
-        if px and float(px) > 0:
-            return (float(px), "yfinance")
+        if not (px and float(px) > 0):
+            # Fallback: info dict (slower but more complete).
+            info = tkr.info or {}
+            px = (info.get("currentPrice")
+                  or info.get("regularMarketPrice")
+                  or info.get("previousClose")
+                  or info.get("regularMarketPreviousClose"))
+        px = float(px) if px and float(px) > 0 else None
     except Exception:
-        pass
+        px = None
+
+    if ac == "FOREX":
+        if px and failover_px:
+            drift = abs(px - failover_px) / failover_px
+            if drift > 0.0025:
+                log.warning(
+                    "[live_pnl] %s: yfinance %.5f vs failover %.5f (%.2f%% apart) "
+                    "-- using failover", sym, px, failover_px, drift * 100.0)
+                return (failover_px, "forex_failover")
+            return (px, "yfinance")
+        if failover_px:
+            return (failover_px, "forex_failover")
+        if px:
+            return (px, "yfinance")
+        return (None, "yfinance failed")
+    if px:
+        return (px, "yfinance")
     return (None, "yfinance failed")
 
 
@@ -218,6 +250,33 @@ def build(apply_db: bool = False) -> dict:
 
         entry = float(p["entry_price"])
         pnl = round(compute_pnl(entry, price, p["direction"]), 2)
+
+        # A >100% live move on a BOND is a symbol-resolution collision, not a
+        # market move: `MBS` (the ~$58 MBS ETF) resolved to a different security at
+        # entry (8.295), publishing +602% on the dashboard and keeping the QA gate
+        # red every hour. Publish the quarantine, not the number -- QA verifies
+        # that a quarantined row carries no PnL instead of "validating" +602%.
+        if str(p["asset_class"]).upper() == "BOND" and abs(pnl) > 100.0:
+            log.warning("[live_pnl] quarantined %s: bond PnL %+.1f%% (entry %.4f -> %.4f)",
+                        p["symbol"], pnl, entry, price)
+            results.append({
+                "symbol": p["symbol"],
+                "asset_class": p["asset_class"],
+                "direction": p["direction"],
+                "entry_price": entry,
+                "generated_at": str(p["generated_at"]),
+                "current_price": None,
+                "pnl_pct": None,
+                "tp_pct": round((float(p["suggested_tp"]) / entry - 1) * 100, 1)
+                    if p["suggested_tp"] else None,
+                "sl_pct": round((float(p["suggested_sl"]) / entry - 1) * 100, 1)
+                    if p["suggested_sl"] else None,
+                "score": float(p["score"]) if p["score"] else None,
+                "price_source": "quarantined:implausible_move",
+                "quarantined": True,
+            })
+            continue
+
         priced += 1
 
         results.append({
