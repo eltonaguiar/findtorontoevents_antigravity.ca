@@ -69,6 +69,12 @@ var BENCHMARKS = [
   ["FOREX", "DXY", "trend/carry matched"]
 ];
 
+/* THE single cost multiplier for this surface. The ledger expresses the cost
+   stress as net_ci_pct_2x / stress_2x_ok, so 2 is the only multiple the payload
+   supports; the column header, the caption and the cost note all read this
+   constant instead of restating it. Change it only alongside those ledger fields. */
+var COST_STRESS_MULTIPLE = 2;
+
 function el(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
 function fmt(v,d){ if(v==null) return "—"; var n=Number(v); return isNaN(n)?esc(v):n.toFixed(d==null?3:d); }
@@ -107,6 +113,16 @@ function renderLedger(d){
     (mode!=="canonical" ? " <strong>The canonical full-book view was not used for this build.</strong>" : "");
   el("coverage").className = "banner" + (mode==="canonical" ? "" : " warn");
 
+  var mult = COST_STRESS_MULTIPLE;
+  var head = el("costColHead");
+  if (head) head.textContent = mult + "× cost OK";
+  var cap = el("costCaption");
+  if (cap) cap.textContent = mult + "× cost OK = the net-expectancy CI still excludes zero at " +
+    mult + "× the class slippage declared in this ledger (a required gate for PROVEN_T2 / CANDIDATE). " +
+    "required_n = trades needed to confirm the observed effect at 80% power.";
+
+  renderCost(d);
+
   var rows = (d.classes||[]).map(function(c){
     return "<tr><td><strong>"+esc(c.asset_class)+"</strong></td>"+
       '<td class="v-'+esc(c.verdict)+'">'+esc(c.verdict)+"</td>"+
@@ -139,6 +155,37 @@ function renderLedger(d){
     "input sha <code>"+esc(prov.input_sha256||"—")+"</code> · "+
     "git <code>"+esc(prov.git_sha||"—")+"</code> · "+
     "generated <code>"+esc(d.generated_at||"—")+"</code>"+tmpWarn+copyWarn;
+}
+
+/* Slippage is READ from the payload, never typed into the page: a hardcoded
+   percentage silently disagrees with the ledger the moment a class cost moves. */
+function renderCost(d){
+  var note = el("costNote");
+  if (!note) return;
+  var conv = (d && d.conventions) || {};
+  var cb = conv.cost_basis || {};
+  var byClass = (cb.class_cost_pct && Object.keys(cb.class_cost_pct).length)
+    ? cb.class_cost_pct : conv.slippage_pct_by_class;
+  if (!byClass || !Object.keys(byClass).length){
+    note.className = "small";
+    note.innerHTML = "Cost basis is not declared in this payload, so no slippage figure is shown " +
+      "rather than a hardcoded one.";
+    return;
+  }
+  var parts = Object.keys(byClass)
+    .filter(function(k){ return byClass[k] != null; })
+    .sort(function(a,b){ return byClass[b] - byClass[a]; })
+    .map(function(k){ return esc(k) + " " + fmt(100*byClass[k], 2) + " bp"; });
+  note.className = "small muted";
+  note.innerHTML =
+    "Cost gate on this page: the net-expectancy CI must still exclude zero at <strong>" +
+    COST_STRESS_MULTIPLE + "×</strong> the per-class round-trip cost. Measured round-trip cost by class " +
+    "(payload <code>conventions.cost_basis</code>" +
+    (cb.source ? ", source <code>" + esc(cb.source) + "</code>" : "") + "): " +
+    parts.join(" · ") + "." +
+    (cb.n_strategy_costs ? " Per-strategy measured where the sample allows (" +
+      fmt(cb.n_strategy_costs,0) + " strategies, min n=" + fmt(cb.min_cost_sample,0) +
+      "); class median otherwise." : "");
 }
 
 renderStatic();
