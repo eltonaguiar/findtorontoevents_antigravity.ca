@@ -66,8 +66,21 @@ jobs:
           set -euo pipefail
           mkdir -p reports
           OUTPATH="reports/sign_coherence_$(date -u +%Y-%m-%d).json"
+          # The checker exits 1 when it FINDS flips. That is evidence for the gate
+          # decision below, not a step failure; only exit 2 (DB unreachable) is
+          # fatal. Without the split the nightly run died here every night and the
+          # gate decision never ran, so a 1-flip night and a 400-flip night both
+          # produced the same red build.
+          set +e
           python3 -m audit_trail.sign_coherence_check --json "$OUTPATH" 2>&1 | tee /tmp/scan.log
+          SCAN_STATUS=${PIPESTATUS[0]}
+          set -e
           echo "json_path=$OUTPATH" >> "$GITHUB_OUTPUT"
+          if [ "$SCAN_STATUS" -gt 1 ]; then
+            echo "::error::Sign-coherence scan failed (exit $SCAN_STATUS; 2 = DB unreachable or malformed query). No gate decision was made."
+            exit "$SCAN_STATUS"
+          fi
+          echo "::notice::scan exit $SCAN_STATUS — 0=clean, 1=flips found; both feed the gate decision"
           # Extract just the flip count for the gate decision
           FLIPS=$(python3 -c "
           import json
@@ -83,6 +96,10 @@ jobs:
           BASELINE: ${{ github.event.inputs.baseline || vars.SIGN_FLIP_BASELINE || '367' }}
         run: |
           set -euo pipefail
+          if [ -z "${FLIPS:-}" ]; then
+            echo "::error::No flip count from the scan step — the report was not written, so the gate cannot be decided."
+            exit 1
+          fi
           echo "Sign-flips found: $FLIPS"
           echo "Baseline (max allowed): $BASELINE"
           if [ "$FLIPS" -gt "$BASELINE" ]; then
