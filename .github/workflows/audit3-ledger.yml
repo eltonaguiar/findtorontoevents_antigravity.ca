@@ -250,11 +250,19 @@ jobs:
             --max-age-days 2 \
             --min-strategy-kills 1
 
+      - name: Build shared denominator sidecar
+        continue-on-error: true
+        run: |
+          dash=audit_dashboard/data/dashboard_data.json
+          [ -f /tmp/audit3/dashboard_data.json ] && dash=/tmp/audit3/dashboard_data.json
+          python3 tools/build_denominator.py --dashboard "$dash" \
+            --ledger audit_dashboard/data/audit3_ledger.json
+
       - name: Commit ledger (data only, [skip ci])
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add audit_dashboard/data/audit3_ledger.json audit_dashboard/data/audit3_verdict_history.json
+          git add audit_dashboard/data/audit3_ledger.json audit_dashboard/data/audit3_verdict_history.json audit_dashboard/data/denominator.json
           if git diff --cached --quiet; then
             echo "ledger unchanged"
             exit 0
@@ -337,5 +345,8 @@ jobs:
           with open("audit_dashboard/data/audit3_ledger.json", "rb") as f:
               ftp.storbinary("STOR audit3_ledger.json", f)
           print("uploaded audit_dashboard/data/audit3_ledger.json -> /findtorontoevents.ca/audit/data/audit3_ledger.json")
+          with open("audit_dashboard/data/denominator.json", "rb") as f:
+              ftp.storbinary("STOR denominator.json", f)
+          print("uploaded denominator.json -> /findtorontoevents.ca/audit/data/denominator.json")
           ftp.quit()
           PY

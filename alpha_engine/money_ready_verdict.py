@@ -311,10 +311,27 @@ DEFAULT_WR_FLOOR: float = MIN_WR
 # tested per class.  nb_trials=1 applies zero correction and is statistically
 # meaningless for real-money readiness.
 # Values derived from live closed-picks source-system counts (2026-05-17).
+# 2026-11-21: EQUITY / ETF / BOND / FUTURES were absent, so their DSR was
+# SKIPPED (never passed) after the missing-baseline fix earlier the same day.
+# The values below are measured, not assumed: the number of distinct strategy
+# cells the class has been tested on in the canonical registry view
+# `by_asset_class_strategy_policy_clean_net` (refresh + drift report:
+# `python3 tools/dsr_trial_baseline_report.py --strict`). A baseline must be
+# >= 2 (1 applies no correction) and <= the number of tested cells (more trials
+# than were run over-deflates). MUTUAL_FUND has no tested cell, so it stays
+# absent and its DSR stays explicitly skipped.
+# The three original values predate that measurement and are LOWER bounds on the
+# current search space (the registry now shows COMMODITY 9, CRYPTO 629, FOREX 18
+# cells); they are left unchanged here because raising them would flip live
+# verdicts and needs its own sign-off. The report tool prints the gap.
 NB_TRIALS_BY_CLASS: dict[str, int] = {
-    "COMMODITY": 3,   # 3 eligible source systems with >=20 picks
-    "CRYPTO": 14,     # per verdict JSON n_strategies_tested: 14
-    "FOREX": 6,       # 6 eligible source systems with >=20 picks
+    "COMMODITY": 3,   # 3 eligible source systems with >=20 picks (legacy lower bound)
+    "CRYPTO": 14,     # per verdict JSON n_strategies_tested: 14 (legacy lower bound)
+    "FOREX": 6,       # 6 eligible source systems with >=20 picks (legacy lower bound)
+    "EQUITY": 19,     # measured 2026-11-21: 19 strategy cells
+    "ETF": 12,        # measured 2026-11-21: 12 strategy cells
+    "BOND": 2,        # measured 2026-11-21: 2 strategy cells
+    "FUTURES": 3,     # measured 2026-11-21: 3 strategy cells
 }
 
 

@@ -142,6 +142,7 @@ function renderLedger(d){
 }
 
 renderStatic();
+loadPopulation();
 // Canonical copy first. /audit3/audit3_ledger.json is the copy the publish
 // pipeline treats as authoritative; the other entries exist only because this
 // page is mounted under both /audit/ and /audit2/, so a relative path has more
@@ -174,25 +175,62 @@ function loadForward(){
   return fetch("audit2_forward.json", {cache:"no-store"}).then(function(r){
     if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
   }).then(function(f){
-    var rows = Object.keys(f.by_hypothesis||{}).map(function(h){
-      var v=f.by_hypothesis[h];
-      var ok = v.n>=100 && v.intrabar===v.n && v.benchmark_leg>=0.9*v.n;
-      var status;
-      if (v.gate && v.gate.eligible) {
-        status = "gate-ready";
-      } else if (v.gate && (v.gate.reasons||[]).length) {
-        // The ledger already computes exactly why this cannot promote; show it
-        // instead of a vague "accruing".
-        status = v.gate.reasons[0];
-      } else {
-        status = v.n===0 ? "0 rows — clock not accruing" : (ok ? "gate-ready" : "accruing");
-      }
-      return "<tr><td><strong>"+esc(h)+"</strong></td><td class=\"num\">"+fmt(v.n,0)+"</td><td class=\"num\">"+
-        fmt(v.benchmark_leg,0)+"/"+fmt(v.n,0)+"</td><td class=\"num\">"+fmt(v.intrabar,0)+"/"+fmt(v.n,0)+"</td><td>"+esc(status)+"</td></tr>";
+    var by = f.by_hypothesis||{};
+    var rows = Object.keys(by).map(function(h){
+      var v = by[h]||{};
+      // The owner column is the join that did not exist before 2026-11-21:
+      // H-119 had 430 rows and pods:[] while every registered pod had zero.
+      var owners = (v.registered_owner_pods&&v.registered_owner_pods.length)
+        ? v.registered_owner_pods
+        : (v.pods&&v.pods.length ? v.pods : []);
+      var owner = owners.length ? owners.join(", ") : "— none (orphan hypothesis)";
+      var cov = (v.benchmark_coverage_pct===null||v.benchmark_coverage_pct===undefined)
+        ? "n/a" : fmt(v.benchmark_coverage_pct,1)+"%";
+      var intra = v.intrabar_all ? ("all "+fmt(v.n,0)) : (fmt(v.intrabar,0)+" of "+fmt(v.n,0));
+      return "<tr><td><strong>"+esc(h)+"</strong></td><td>"+esc(owner)+"</td>"+
+        "<td class='num'>"+fmt(v.n,0)+"</td>"+
+        "<td class='num'>"+fmt(v.benchmark_leg,0)+" of "+fmt(v.n,0)+" ("+esc(cov)+")</td>"+
+        "<td class='num'>"+intra+"</td><td>"+esc(v.status||"")+"</td></tr>";
     }).join("");
-    el("forwardRows").innerHTML = rows || '<tr><td colspan="5" class="muted">no forward rows yet</td></tr>';
+    var t = el("forwardRows");
+    if(t) t.innerHTML = rows || "<tr><td colspan='6' class='muted'>no forward rows yet</td></tr>";
+    var note = [];
+    if((f.orphan_hypotheses||[]).length){
+      note.push("Orphan hypotheses (forward rows exist but no registered pod owns them): "+
+        f.orphan_hypotheses.join(", ")+" — these rows cannot promote anything.");
+    }
+    if((f.pods_without_rows||[]).length){
+      note.push("Registered pods with zero forward rows: "+f.pods_without_rows.join(", ")+".");
+    }
+    if(f.sources){
+      note.push("Rows: "+f.sources.rows+" (aggregated "+esc(f.generated_at||"undated")+
+        ") · pods: "+f.sources.pods+" ("+esc(f.sources.pods_generated_at||"undated")+
+        ") · gate: "+f.sources.gate+".");
+    }
+    var n = el("forwardNote");
+    if(n) n.textContent = note.join(" ");
   }).catch(function(){
-    el("forwardRows").innerHTML = '<tr><td colspan="5" class="muted">forward ledger unavailable</td></tr>';
+    var t = el("forwardRows");
+    if(t) t.innerHTML = "<tr><td colspan='6' class='muted'>forward ledger unavailable</td></tr>";
+  });
+}
+
+// The shared population sidecar. Until 2026-11-21 each surface quoted its own
+// "closed picks" total (4,618 / 8,769 / 16,372) with no scope; this prints the
+// one canonical population next to the rates that divide by it.
+function loadPopulation(){
+  var nodes = document.querySelectorAll("[data-population]");
+  function show(text){
+    for(var i=0;i<nodes.length;i++){ nodes[i].textContent = text; }
+  }
+  fetch("denominator.json", {cache:"no-store"}).then(function(r){
+    if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
+  }).then(function(d){
+    var t = "population: "+(d.population_label||"unknown");
+    if(!d.complete && d.notes && d.notes.length) t += " — incomplete: "+d.notes.join("; ");
+    show(t);
+  }).catch(function(err){
+    show("population unavailable ("+err.message+")");
   });
 }
 

@@ -27,7 +27,9 @@ RETURNS = [0.4, -0.2] * 40
 
 
 def test_class_without_baseline_is_skipped_not_passed():
-    r = _dsr_gate(RETURNS, "EQUITY")
+    # MUTUAL_FUND is the remaining class with no tested strategy cell; EQUITY
+    # gained a measured baseline on 2026-11-21 (tests/test_dsr_trial_baselines.py).
+    r = _dsr_gate(RETURNS, "MUTUAL_FUND")
     assert r["ok"] is None, "a class with no trial baseline must not report a pass"
     assert r.get("skipped") is True
     assert r["dsr_score"] is None, "no undeflated score may be published"

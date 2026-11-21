@@ -1536,8 +1536,9 @@ a:hover { text-decoration: underline; }
     <span style="color:var(--text-dim);font-weight:400">+</span>
     <span style="color:var(--blue)">Non-Crypto</span>
     <span style="color:var(--text);font-weight:600">Performance</span>
+    <span id="auditPopulationInline" class="small" style="color:#94a3b8;font-weight:400;margin-left:10px">population: —</span>
     <span id="perf-conviction-bar" style="display:flex;gap:4px;margin-left:auto;align-items:center"></span>
-    <button id="perf-help-btn" onclick="document.getElementById('perf-help-overlay').style.display='flex'" title="How to find edge: the exact filters, definitions, and what to avoid (based on 4,618 closed-pick analysis)" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;cursor:pointer;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;margin-left:6px;white-space:nowrap">? Guide</button>
+    <button id="perf-help-btn" onclick="document.getElementById('perf-help-overlay').style.display='flex'" title="How to find edge: the exact filters, definitions, and what to avoid (based on a historical analysis cohort of ~4,618 closed picks; the live population is printed next to the section title)" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;cursor:pointer;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;margin-left:6px;white-space:nowrap">? Guide</button>
   </h3>
 
   <!-- Help popup overlay -->
@@ -1572,7 +1573,21 @@ a:hover { text-decoration: underline; }
         <span style="color:#94a3b8;display:block;margin-top:8px"><strong>Real-money posture as of 2026-05-31:</strong> COMMODITY/EQUITY are <code>REHAB</code> (STABLE_EDGE per <a href="/audit/edge_stability.html">edge-stability</a> sidecar); CRYPTO has DSR-verified ML sleeves (see <a href="/audit/anti_overfit.html">anti-overfit audit</a>); FOREX is <code>BLOCKED</code> (PR #6 hard-gate, PF 0.29 / WR 46.1%); FUTURES remain <code>BLOCKED</code>; ETF/BOND/INDEX_STOCK are sample-size-thin. NFA.</span>
       </div>
 
-      <h4 style="color:#fbbf24;margin:0 0 8px">&#x1F3AF; Where Our Edge Actually Is (Closed-Pick Data, n=4,618)</h4>
+      <h4 style="color:#fbbf24;margin:0 0 8px">&#x1F3AF; Where Our Edge Actually Is (historical analysis cohort, n&asymp;4,618)</h4>
+      <div id="auditPopulation" class="small" style="color:#94a3b8;margin:-2px 0 10px 4px">population: —</div>
+      <script>
+      (function(){
+        var ids = ['auditPopulation','auditPopulationInline'];
+        function show(t){ for(var i=0;i<ids.length;i++){ var n=document.getElementById(ids[i]); if(n) n.textContent=t; } }
+        fetch('data/denominator.json',{cache:'no-store'}).then(function(r){
+          if(!r.ok) throw new Error('HTTP '+r.status); return r.json();
+        }).then(function(d){
+          var t='population: '+(d.population_label||'unknown');
+          if(!d.complete && d.notes && d.notes.length) t+=' — incomplete: '+d.notes.join('; ');
+          show(t);
+        }).catch(function(e){ show('population unavailable ('+e.message+')'); });
+      })();
+      </script>
       <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:12px;margin-bottom:18px;font-size:12px;line-height:1.6">
         <strong style="color:#fca5a5">&#x26A0;&#xFE0F; POST-HOC SEGMENT WARNING</strong> &mdash; the numbers below (82% WR / PF 11+ etc.) were surfaced by scanning ALL closed-pick confidence-band slices for the best-looking cell, after the fact. <strong>This is post-hoc segment-search and IS NOT an actionable forward signal.</strong> Multiple-testing correction (Bonferroni / Benjamini-Hochberg) is not applied; the implicit search-space &gt;50 cells means an 82% WR cell can arise from pure noise on a true null. Treat these as <em>historical pattern descriptors</em>, not predictive filters. The DSR-verified strategies above (Bailey-Lopez de Prado AFML eq 14.5) are the methodology-clean version. INC #1 (P0) — opencode/ring-2.6-1t + 3-engine swarm, codified 2026-05-26.<br><br>
         <strong style="color:#22c55e">Crypto Confidence 0.85&ndash;0.90</strong> &mdash; <em>(post-hoc cell)</em> <strong>82% WR</strong>, PF <strong>11.8</strong> (n from per-class audit). Crypto &gt;0.90 hits an overfit cliff (47% WR).<br>
