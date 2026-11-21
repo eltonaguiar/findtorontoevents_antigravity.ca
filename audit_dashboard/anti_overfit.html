@@ -111,9 +111,17 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
         return;
       }
       const last = entries[entries.length - 1];
+      // 'staged' counts the whole staged set before the merge; 'rev-range'
+      // counts only the JSON that merge touched. Different populations, so a
+      // clean run from the other phase is not comparable to the newest entry --
+      // a rev-range count of 1 beside a staged 46 reads as a regression when the
+      // gate is in fact clean.
       let lastClean = null;
       for (let i = entries.length - 1; i >= 0; i--) {
-        if (entries[i].verdict === 'clean') { lastClean = entries[i]; break; }
+        if (entries[i].verdict === 'clean' && entries[i].phase === last.phase) {
+          lastClean = entries[i];
+          break;
+        }
       }
       const paths = last.inspected_paths || [];
       const trunc = last.inspected_paths_truncated
@@ -125,8 +133,8 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
             '<div class="meta" style="margin:0">' + escapeHTML(last.phase || '?') + ' &middot; ' +
             (last.verdict === 'clean' ? '<span class="verdict-real">clean</span>'
                                       : '<span class="verdict-overfit">' + escapeHTML(last.verdict || '?') + '</span>') + '</div></div>' +
-          '<div class="kpi"><div class="kpi-label">Last clean run gated</div><div class="kpi-value kpi-real">' + (lastClean ? lastClean.inspected : '\u2014') + '</div>' +
-            '<div class="meta" style="margin:0">' + (lastClean ? escapeHTML((lastClean.phase || '?') + ' &middot; run ' + (lastClean.run_id || '?')) : 'none recorded') + '</div></div>' +
+          '<div class="kpi"><div class="kpi-label">Last clean ' + escapeHTML(last.phase || '?') + ' run gated</div><div class="kpi-value kpi-real">' + (lastClean ? lastClean.inspected : '\u2014') + '</div>' +
+            '<div class="meta" style="margin:0">' + (lastClean ? escapeHTML((lastClean.phase || '?') + ' &middot; run ' + (lastClean.run_id || '?')) : 'none in ' + entries.length + ' retained entries') + '</div></div>' +
           '<div class="kpi"><div class="kpi-label">Skipped (over cap)</div><div class="kpi-value ' + (skipped.length ? 'kpi-overfit' : '') + '">' + skipped.length + '</div>' +
             '<div class="meta" style="margin:0">not gated</div></div>' +
           '<div class="kpi"><div class="kpi-label">Findings</div><div class="kpi-value ' + ((last.findings || 0) ? 'kpi-overfit' : '') + '">' + (last.findings || 0) + '</div>' +
@@ -144,7 +152,7 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
             paths.map(escapeHTML).join('\n') + '</div></details>'
           : '');
     } catch (e) {
-      box.innerHTML = '<div class="meta">No committed gate report yet &mdash; the next hourly run that gates an artifact writes it.</div>';
+      box.innerHTML = '<div class="meta">Gate report unavailable (' + escapeHTML(e.message || e) + ') &mdash; either nothing is committed yet, or it failed to load.</div>';
     }
   })();
 

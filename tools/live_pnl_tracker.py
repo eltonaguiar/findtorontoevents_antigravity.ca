@@ -151,6 +151,17 @@ def fetch_price(symbol: str, asset_class: str) -> tuple[float | None, str]:
     if ac == "FOREX":
         if px and failover_px:
             drift = abs(px - failover_px) / failover_px
+            if drift > 0.05:
+                # A gap this wide is not a stale tick: an intraday FX move of
+                # >5% is implausible, while an inverted or differently-mapped
+                # failover quote produces exactly this. Publishing it would put a
+                # ~-99% PnL on the dashboard, so keep the primary and let the QA
+                # ledger's MISMATCH check report the disagreement.
+                log.warning(
+                    "[live_pnl] %s: yfinance %.5f vs failover %.5f (%.1f%% apart, "
+                    "ratio %.4f) -- too wide to be staleness; keeping yfinance",
+                    sym, px, failover_px, drift * 100.0, failover_px / px)
+                return (px, "yfinance")
             if drift > 0.0025:
                 log.warning(
                     "[live_pnl] %s: yfinance %.5f vs failover %.5f (%.2f%% apart) "

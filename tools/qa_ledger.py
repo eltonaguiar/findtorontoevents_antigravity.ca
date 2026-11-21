@@ -109,7 +109,8 @@ def run() -> int:
         by_class.setdefault(aclass, {"n": 0, "unpriced": 0, "unverified_zero": 0,
                                      "blank_tp_sl": 0, "mismatch": 0,
                                      "out_of_bounds": 0, "self_inconsistent": 0,
-                                     "quarantined": 0, "quarantine_leak": 0})
+                                     "quarantined": 0, "quarantine_leak": 0,
+                                     "unverified_source": 0})
         c = by_class[aclass]
         c["n"] += 1
 
@@ -172,6 +173,15 @@ def run() -> int:
                           "verdict": "PNL_OUT_OF_BOUNDS",
                           "detail": f"|pnl|={pnl_f:.1f}% > 100%"})
 
+        # 4b) a FOREX row published from the same feed this ledger validates
+        # against cannot be cross-checked: the diff is zero by construction, so
+        # counting it as verified would be a permanent false negative for the
+        # whole asset class. Counted, not flagged -- every FOREX row is currently
+        # priced this way, so a flag here would be red every run.
+        if aclass == "FOREX" and str(p.get("price_source") or "").startswith("forex_failover"):
+            c["unverified_source"] += 1
+            continue
+
         # 5) market-data cross-check (bounded sample + per-symbol cache)
         if ext_checks >= _MAX_EXT_CHECKS:
             continue
@@ -181,11 +191,18 @@ def run() -> int:
         ext, src = _EXT_CACHE[key]
         if ext is None:
             continue
+        # A null or free-text entry_price reaches here whenever the row is
+        # priced, and an unguarded float() would abort the run before OUT_JSON is
+        # written -- the dashboard would then keep a stale snapshot, silently.
+        try:
+            entry_f, ext_f = float(entry), float(ext)
+        except (TypeError, ValueError):
+            continue
         ext_checks += 1
         tol = TOL_PP.get(aclass, 1.0)
         if aclass == "CRYPTO" and sym.split("USDT")[0] in CRYPTO_MAJORS:
             tol = 0.5
-        recomputed = compute_pnl(float(entry), float(ext), direction)
+        recomputed = compute_pnl(entry_f, ext_f, direction)
         if recomputed is None:
             continue
         diff = abs(pnl_f - recomputed)
@@ -214,6 +231,7 @@ def run() -> int:
               f"zero={v['unverified_zero']} blank_tp/sl={v['blank_tp_sl']} "
               f"mismatch={v['mismatch']} bounds={v['out_of_bounds']} "
               f"self={v['self_inconsistent']} quar={v['quarantined']}"
+              + (f" samefeed={v['unverified_source']}" if v["unverified_source"] else "")
               + (f" LEAK={v['quarantine_leak']}" if v["quarantine_leak"] else ""))
     return 1 if critical else 0
 

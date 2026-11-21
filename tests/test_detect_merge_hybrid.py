@@ -10,6 +10,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -230,3 +231,61 @@ def test_path_list_is_capped_and_the_excess_is_counted(tmp_path):
     assert len(e["inspected_paths"]) == mod.REPORT_MAX_PATHS
     assert e["inspected_paths_truncated"] == 25
     assert e["inspected"] == len(paths)
+
+
+def _args(**kw):
+    base = {"staged": False, "rev_range": None, "paths": [], "under": None}
+    base.update(kw)
+    return types.SimpleNamespace(**base)
+
+
+def test_under_dot_covers_the_whole_tree():
+    """`--under .` built './x' and matched nothing, gating zero artifacts."""
+    mod = _gate()
+    paths = ["audit_dashboard/data/a.json", "c.json"]
+    assert mod.targets(_args(paths=paths, under=["."])) == paths
+    assert mod.targets(_args(paths=paths, under=["./"])) == paths
+
+
+def test_under_prefix_is_a_directory_not_a_stem():
+    mod = _gate()
+    paths = ["audit_dashboard/data/a.json", "audit_dashboard2/b.json"]
+    assert mod.targets(_args(paths=paths, under=["audit_dashboard"])) == paths[:1]
+    assert mod.targets(_args(paths=paths, under=["audit_dashboard/"])) == paths[:1]
+
+
+def test_no_under_still_means_everything():
+    mod = _gate()
+    paths = ["a.json", "b/c.json"]
+    assert mod.targets(_args(paths=paths, under=None)) == paths
+
+
+def test_retry_at_the_entry_cap_does_not_evict_history(tmp_path, monkeypatch):
+    """A retry used to drop one older entry per attempt once the cap was reached."""
+    mod = _gate()
+    rep = tmp_path / "report.json"
+    monkeypatch.setenv("GITHUB_RUN_ID", "1")
+    for i in range(mod.REPORT_MAX_ENTRIES):
+        mod.record(rep, phase="rev-range", rev_range="r%d" % i, inspected=1,
+                   inspected_paths=["x.json"], skipped=[], findings=0, verdict="clean")
+    before = [e["rev_range"] for e in json.loads(rep.read_text())["entries"]]
+    assert len(before) == mod.REPORT_MAX_ENTRIES
+    mod.record(rep, phase="rev-range", rev_range="r0", inspected=1,
+               inspected_paths=["x.json"], skipped=[], findings=0, verdict="clean")
+    after = json.loads(rep.read_text())["entries"]
+    # replaced in place: same order, same length, still the oldest position
+    assert [e["rev_range"] for e in after] == before
+    assert after[0]["rev_range"] == "r0"
+
+
+def test_unparseable_artifact_is_named_in_the_report(tmp_path, monkeypatch):
+    """The one case where the path matters most: a cut file was counted, not named."""
+    mod = _gate()
+    bad = tmp_path / "broken.json"
+    bad.write_text('{"n_strategies_audited": 2, "strateg', encoding="utf-8")
+    rep = tmp_path / "report.json"
+    monkeypatch.setenv("GITHUB_RUN_ID", "9")
+    assert mod.main(["--report", str(rep), str(bad)]) == 1
+    e = json.loads(rep.read_text())["entries"][-1]
+    assert e["inspected_paths"] == [str(bad)]
+    assert e["inspected"] == 1 and e["findings"] == 1
