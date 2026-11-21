@@ -66,3 +66,25 @@ jobs:
           TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
           ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+
+      # The artifact is the dashboard's only record of this gate, and the job that
+      # writes it otherwise dies with the runner: the committed copy was 6 days
+      # stale (n_picks 4390 vs 183 printed) while the panel looked fine. Commit it
+      # even when the gate is red -- a red gate's flags are exactly what the panel
+      # should show.
+      - name: Commit the QA artifact
+        if: always()
+        run: |
+          A=audit_dashboard/data/qa_market_validation.json
+          [ -f "$A" ] || { echo "no artifact"; exit 0; }
+          git add "$A"
+          if git diff --cached --quiet; then echo "unchanged"; exit 0; fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "chore(qa): market validation snapshot [skip ci]"
+          for i in 1 2 3; do
+            if git push; then echo "pushed"; exit 0; fi
+            git pull --rebase --autostash origin main || true
+            sleep $((i * 3))
+          done
+          echo "::warning::qa artifact push failed; repo copy stays stale until the next run"
