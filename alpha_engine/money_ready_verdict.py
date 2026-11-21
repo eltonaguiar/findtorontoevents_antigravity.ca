@@ -325,6 +325,24 @@ DEFAULT_WR_FLOOR: float = MIN_WR
 # cells); they are left unchanged here because raising them would flip live
 # verdicts and needs its own sign-off. The report tool prints the gap.
 NB_TRIALS_BY_CLASS: dict[str, int] = {
+    # Closed 2026-11-21 by tools/strategy_crosswalk.py (reports/
+    # strategy_crosswalk_2026-11-21.md), which rebuilds the shipped registry
+    # exactly (695/695 cells) and settles what the former [695, 913] bracket
+    # was asking.
+    #
+    # WHY THE CELL COUNT IS THE TRIAL COUNT: DSR deflates the best observed
+    # cell of by_asset_class_strategy_policy_clean_net, so the candidates
+    # available for selection are those cells. The crosswalk shows the two
+    # artifacts differ in GRAIN (build_pf_registry._strategy keys on
+    # source_system, so one cell can cover 7 strategies) but only 13 of
+    # audit3's 218 "extra" pairs were hidden that way -- 205 are absent from
+    # this book entirely and were never candidates. Deflating over them, as the
+    # union-913 bound did, corrects for selection that did not happen.
+    #
+    # The finer strategy grain (696) is reported as a diagnostic only: it
+    # counts sub-features inside a single candidate, so adopting it would
+    # exceed the tested search space (ETF 15 > 12 cells, FUTURES 6 > 3) --
+    # which tests/test_dsr_trial_baselines.py correctly rejects.
     "COMMODITY": 9,
     "CRYPTO": 629,
     "FOREX": 18,

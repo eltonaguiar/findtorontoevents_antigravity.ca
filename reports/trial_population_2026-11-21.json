@@ -3,7 +3,7 @@
   "primary_definition": "distinct (asset_class, strategy) in pf_registry.by_asset_class_strategy_policy_clean_net -- the book the class verdict reads",
   "upper_bound_definition": "distinct (asset_class, strategy) in audit3 cells U pf_registry policy-clean cells -- adopt if a crosswalk proves the audit3-only labels are distinct strategies",
   "subset_hypothesis_holds": false,
-  "finding": "NOT a filter: the artifacts use different strategy taxonomies and disagree in both directions, so neither is the trial count on its own and N is bracketed [primary, union]",
+  "finding": "NOT a filter: the artifacts use different strategy taxonomies and disagree in both directions, so neither is the trial count on its own; N is CLOSED by tools/strategy_crosswalk.py",
   "affected_subset": [
     [
       "BOND",
@@ -1270,5 +1270,5 @@
     "MEME": 1,
     "PENNY_STOCK": 1
   },
-  "open_fix": "Build a strategy-name crosswalk (at_raw_picks.source_system <-> pipeline `strategy` string). Until it exists the two artifacts cannot be compared and N stays bracketed."
+  "open_fix": "Superseded 2026-11-21 by tools/strategy_crosswalk.py (at_raw_picks.source_system <-> pipeline `strategy` string). Until it exists the two artifacts cannot be compared without that crosswalk."
 }

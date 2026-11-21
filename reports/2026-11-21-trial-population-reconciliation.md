@@ -8,7 +8,7 @@
 
 ## Finding
 
-NOT a filter: the artifacts use different strategy taxonomies and disagree in both directions, so neither is the trial count on its own and N is bracketed [primary, union]
+NOT a filter: the artifacts use different strategy taxonomies and disagree in both directions, so neither is the trial count on its own; N is CLOSED by tools/strategy_crosswalk.py
 
 | quantity | count |
 |---|---|
@@ -63,4 +63,4 @@ FAIL — 218 audit3 pairs are absent from pf_registry. The two artifacts are two
 
 Raising N can only kill a class, never save one — DSR is monotone decreasing in N.
 
-**Open fix:** Build a strategy-name crosswalk (at_raw_picks.source_system <-> pipeline `strategy` string). Until it exists the two artifacts cannot be compared and N stays bracketed.
+**Open fix:** Superseded 2026-11-21 by tools/strategy_crosswalk.py (at_raw_picks.source_system <-> pipeline `strategy` string). Until it exists the two artifacts cannot be compared without that crosswalk.

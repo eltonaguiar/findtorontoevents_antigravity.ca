@@ -185,7 +185,7 @@ def reconcile(ledger: dict, registry: dict) -> dict:
             if not (a3 - pf) else
             "NOT a filter: the artifacts use different strategy taxonomies and "
             "disagree in both directions, so neither is the trial count on its "
-            "own and N is bracketed [primary, union]"),
+            "own; N is CLOSED by tools/strategy_crosswalk.py"),
         "affected_subset": sorted(a3 - pf),
         "totals": {
             "audit3_cell_rows": a3_rows,
@@ -207,9 +207,9 @@ def reconcile(ledger: dict, registry: dict) -> dict:
         "n_trials_union_by_class": {
             c: v["n_trials_union_upper_bound"] for c, v in by_class.items()},
         "open_fix": (
-            "Build a strategy-name crosswalk (at_raw_picks.source_system <-> "
+            "Superseded 2026-11-21 by tools/strategy_crosswalk.py (at_raw_picks.source_system <-> "
             "pipeline `strategy` string). Until it exists the two artifacts "
-            "cannot be compared and N stays bracketed."),
+            "cannot be compared without that crosswalk."),
     }
 
 
@@ -333,7 +333,7 @@ def main() -> int:
     print(res["finding"])
     if not res["subset_hypothesis_holds"]:
         print(f"subset test FAILED: {t['audit3_only']} audit3 pairs absent from "
-              f"pf_registry -> N is bracketed [{t['pf_strategy_cells']}, "
+              f"pf_registry -> N bracket (superseded by the crosswalk) [{t['pf_strategy_cells']}, "
               f"{t['union_upper_bound']}].")
 
     if args.json_out:
