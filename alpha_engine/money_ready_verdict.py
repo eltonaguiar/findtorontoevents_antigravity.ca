@@ -1013,11 +1013,42 @@ def _json_safe(obj):
 # DSR gate (per-class aggregate — treat all class picks as one strategy)
 # ---------------------------------------------------------------------------
 
+# Classes already warned about a missing trial-count baseline (once per
+# process, so a per-class loop does not repeat the same line six times).
+_DSR_BASELINE_WARNED: set[str] = set()
+
+
 def _dsr_gate(returns: list[float], asset_class: str = "") -> dict[str, Any]:
     # M-061a / P0.5 (2026-11-20): the class aggregate is not one trial. It is the
     # best of NB_TRIALS_BY_CLASS evaluated systems, and that count can only grow.
     _cls = str(asset_class or "").upper()
-    _local_trials = NB_TRIALS_BY_CLASS.get(_cls, 1)
+    _local_trials = NB_TRIALS_BY_CLASS.get(_cls)
+    if _local_trials is None:
+        # No recorded trial count for this class means no baseline to deflate
+        # against. Before 2026-11-21 this lookup defaulted to 1, which applies
+        # ZERO multiple-testing correction -- so EQUITY/ETF/BOND (no entry in
+        # NB_TRIALS_BY_CLASS) published a confident-looking DSR that had never
+        # been deflated, and the classes with no trial accounting were the ones
+        # most likely to look clean. A missing baseline is not a pass.
+        if _cls not in _DSR_BASELINE_WARNED:
+            _DSR_BASELINE_WARNED.add(_cls)
+            print(
+                "[money_ready_verdict] WARNING: DSR gate SKIPPED for "
+                f"{_cls or '(no asset_class)'} -- no n_trials baseline in "
+                "NB_TRIALS_BY_CLASS. Add the class's real trial count to assess it.",
+                file=sys.stderr,
+            )
+        return {
+            "ok": None,
+            "skipped": True,
+            "note": (
+                f"no n_trials baseline for {_cls or '(no asset_class)'} in "
+                "NB_TRIALS_BY_CLASS -- DSR skipped (defaulting to nb_trials=1 "
+                "would report an undeflated number as a pass)"
+            ),
+            "dsr_score": None,
+            "nb_trials": None,
+        }
     try:
         from alpha_engine.trial_counter import effective_n_trials
     except ImportError:
@@ -1838,6 +1869,9 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             "pf_ok": _sizing_pf >= MIN_PF,
             "dsr_ok": dsr.get("ok"),
             "dsr_score": dsr.get("dsr_score"),
+            "dsr_nb_trials": dsr.get("nb_trials"),
+            "dsr_skipped": bool(dsr.get("skipped")),
+            "dsr_note": dsr.get("note"),
             "pbo_ok": pbo.get("ok"),
             "pbo": pbo.get("pbo"),
             "spa_ok": spa.get("ok"),
