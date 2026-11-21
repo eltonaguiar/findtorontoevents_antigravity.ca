@@ -2556,6 +2556,45 @@
     "lab_evidence": "audit3_ledger 2026-11-19: cell btc-4h-rsi-macd-scout LONG n=35 WR 57% PF 2.15 net +2.0%/trade net CI [-0.19, 4.72] DSR 0.118 verdict WEAK; fails 2x cost stress.",
     "operator_note": "Pre-registered before any forward data from the sim; nothing promotes without the audit3 forward gate."
    }
+  },
+  {
+   "id": "H-146",
+   "asset_class": "EQUITY",
+   "family": "mid_cap_gross_profitability",
+   "description": "Long-only US mid-cap quality, single signal. Universe: US common stocks with market cap $2B-$10B at formation (monthly market-cap snapshot; no index-membership list, so constituent churn cannot leak). Signal: gross profitability GP/A = (revenue - cost of revenue) / total assets, taken from the most recent quarterly statement whose filing date is STRICTLY before the rebalance date. Each month-end rank the universe on GP/A and hold the top quintile equal-weight. Entry at the next session open after the month-end close. Exit at the first month-end at least 20 calendar days after entry, and no later than 60 calendar days. No leverage, no shorting, no sector hedge.",
+   "test_statistic": "walk_forward eff via edge_stability_harness.is_admissible(), plus net-of-cost information ratio against the pre-declared benchmark",
+   "acceptance_criteria": {
+    "eff_floor": 0.3,
+    "min_windows_admissible": 3,
+    "same_sign": true,
+    "cost_survival_min": 0.6,
+    "min_forward_n": 100,
+    "min_information_ratio": 0.5,
+    "hold_days_min": 20,
+    "hold_days_max": 60,
+    "slippage": "2x the measured per-class mean_cost_pct, funding included",
+    "factor_benchmark": [
+     "MKT",
+     "SMB",
+     "HML",
+     "RMW"
+    ],
+    "factor_benchmark_note": "declared before the run; substituting the factor set after seeing results invalidates the test",
+    "falsification_window_days": 90,
+    "reject_if": "net IR < 0 over the forward window, or any admissible window flips sign"
+   },
+   "economic_prior": "Novy-Marx (2013): gross profitability is the cleanest accounting measure of quality because it is unaffected by R&D, advertising and interest-expense classification; profitable firms convert invested capital into gross profit and earn a premium. The $2B-$10B segment carries less analyst coverage and slower information diffusion than large caps, and the 20-60 day holding window matches the horizon where the premium is documented rather than intraday noise.",
+   "status": "UNTESTED",
+   "registered_at": "2026-11-21",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "UNTESTED",
+    "reason": "Pre-registered per M-107 before any backtest. Source: multi-model asset-class panel 2026-11-21, where 4 of 4 round-2 critics independently converged on this as the single defensible next experiment (reports/2026-11-21-multimodel-asset-class-panel.md).",
+    "panel_baseline": "EQUITY aggregate n=955, net +0.098% per trade, 95% CI [-0.516, +0.720] (audit3_ledger 2026-11-21) -- the subset must be compared against this diluted aggregate, not in isolation.",
+    "subq_p_defensible_forward_candidate": 0.054,
+    "subq_note": "SubQ scores 'any class is a defensible forward-test candidate on current numbers' at 0.054, i.e. no promotion is justified; this entry registers an experiment, not a promotion."
+   },
+   "banned_check": "Distinct from H-001 (CFTC COT positioning, killed for M-095 look-ahead), H-002 (PEAD earnings drift -- a different signal and event clock), H-003 (ETF 12-1 cross-sectional momentum), and the killed CRYPTO ml_enhanced_* stack. Also not a re-test of the EQUITY RSI(2) mean-reversion configuration the panel's round 1 proposed and round 2 rejected: different signal, different horizon, different benchmark."
   }
  ],
  "fork2_new_signals": [

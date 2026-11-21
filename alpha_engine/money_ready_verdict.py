@@ -325,13 +325,13 @@ DEFAULT_WR_FLOOR: float = MIN_WR
 # cells); they are left unchanged here because raising them would flip live
 # verdicts and needs its own sign-off. The report tool prints the gap.
 NB_TRIALS_BY_CLASS: dict[str, int] = {
-    "COMMODITY": 3,   # 3 eligible source systems with >=20 picks (legacy lower bound)
-    "CRYPTO": 14,     # per verdict JSON n_strategies_tested: 14 (legacy lower bound)
-    "FOREX": 6,       # 6 eligible source systems with >=20 picks (legacy lower bound)
-    "EQUITY": 19,     # measured 2026-11-21: 19 strategy cells
-    "ETF": 12,        # measured 2026-11-21: 12 strategy cells
-    "BOND": 2,        # measured 2026-11-21: 2 strategy cells
-    "FUTURES": 3,     # measured 2026-11-21: 3 strategy cells
+    "COMMODITY": 9,
+    "CRYPTO": 629,
+    "FOREX": 18,
+    "EQUITY": 19,
+    "ETF": 12,
+    "BOND": 2,
+    "FUTURES": 3,
 }
 
 

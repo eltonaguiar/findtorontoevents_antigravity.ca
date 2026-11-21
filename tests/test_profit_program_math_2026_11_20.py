@@ -78,8 +78,14 @@ def test_dsr_gate_uses_the_class_trial_count():
     gated = _dsr_gate(rets, asset_class="CRYPTO")
     assert gated["nb_trials"] >= NB_TRIALS_BY_CLASS["CRYPTO"]
     assert gated["nb_trials"] > 1
-    # an unknown class still gets at least one trial (no crash, no zero)
-    assert _dsr_gate(rets, asset_class="NOPE")["nb_trials"] >= 1
+    # 2026-11-21: an unmapped class is an explicit SKIP, not a silent 1. The old
+    # assertion (nb_trials >= 1) encoded the pre-P0.5 behaviour where an unknown
+    # class deflated by a single trial -- zero multiple-testing correction
+    # reported as a usable number. A missing baseline must fail closed instead.
+    unknown = _dsr_gate(rets, asset_class="NOPE")
+    assert unknown["ok"] is None
+    assert unknown["skipped"] is True
+    assert unknown["nb_trials"] is None
 
 
 def test_dsr_gate_correction_is_monotone_conservative():

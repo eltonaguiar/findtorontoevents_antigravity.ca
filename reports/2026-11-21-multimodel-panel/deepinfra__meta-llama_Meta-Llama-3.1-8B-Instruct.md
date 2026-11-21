@@ -1,0 +1,4 @@
+1. The single biggest leak or overfit risk in H-146 as written is the use of the most recent quarterly statement filed STRICTLY before the rebalance date, which may not be representative of the future. Closing this leak would require using a more forward-looking measure of profitability, such as a trailing 12-month average.
+2. No, the 20-60 day exit band does not create a look-ahead or survivorship bias because it is based on a calendar day count rather than a trading day count.
+3. The acceptance rule is too loose given a base rate of zero measured edge, as it does not account for the possibility of false positives.
+4. CRYPTO should stay open as a search space because its net CI excludes zero on the negative side, indicating a potential for real edge despite failing the Deflated Sharpe gate.
