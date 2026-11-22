@@ -62,7 +62,7 @@ count in both, count in neither, and per-asset-class breakdown; plus a written
 `updates/2026-*.md` explaining every category of divergence. Must not fail when
 either side is empty — report `NO DATA` instead.
 
-## [ ] T6 — Fix `tools/deflated_sharpe.py` (4 verified defects)
+## [x] T6 — Fix `tools/deflated_sharpe.py` (4 verified defects)
 Documented in `docs/STRATEGY_PROOF_REQUEST_2026-11-22.md` §2:
 1. `_deflated_sharpe` returns a z-score and never applies `Φ(·)`, so `dsr` ranges
    [−23.88, +15.08] instead of [0, 1].
