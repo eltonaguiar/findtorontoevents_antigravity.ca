@@ -50,6 +50,11 @@ STATUS = REPO / "reports/provenance/resolved_status.json"
 GENESIS = "0" * 64
 MAX_DAYS = 45
 
+# --- gate thresholds (see cmd_gate) ---
+PCT_FORWARD_MIN = 95.0     # resolved-after-creation share required to pass
+MIN_RESOLVED = 20          # below this pct_forward is too noisy to enforce
+STARVE_GRACE_DAYS = 7      # picks pending longer than MAX_DAYS + this = starved
+
 
 # ---------------------------------------------------------------- helpers
 def _canon(rec: dict) -> bytes:
@@ -269,7 +274,12 @@ def ret_bp(pick: dict, o: dict) -> float:
     return -r if pick["side"] == "SHORT" else r
 
 
-def append_resolutions(rows: list[dict], path: Path = RES) -> int:
+def append_resolutions(rows: list[dict], path: Path | None = None) -> int:
+    # NB: default must be resolved at CALL time, not bound at def time. A
+    # `path: Path = RES` signature captures the original Path object forever, so any
+    # later re-pointing of RES is silently ignored and the chain is written/verified
+    # against the wrong file. Same bug class in verify_resolutions() below.
+    path = path or RES
     prev = GENESIS
     existing = read_jsonl(path)
     if existing:
@@ -285,7 +295,8 @@ def append_resolutions(rows: list[dict], path: Path = RES) -> int:
     return len(rows)
 
 
-def verify_resolutions(path: Path = RES) -> dict:
+def verify_resolutions(path: Path | None = None) -> dict:
+    path = path or RES
     recs = read_jsonl(path)
     prev = GENESIS
     for i, r in enumerate(recs):
@@ -336,7 +347,7 @@ def compute_status() -> dict:
         "n_open": len(picks) - len(resolved),
         "n_forward": fwd,
         "pct_forward": (100 * fwd / len(resolved)) if resolved else None,
-        "resolution_chain_ok": verify_resolutions().get("ok"),
+        "resolution_chain_ok": verify_resolutions(RES).get("ok"),
     }
     if rets:
         st.update({
@@ -544,14 +555,80 @@ def selftest() -> int:
     return 0
 
 
+def cmd_gate() -> int:
+    """Hard CI gate. Exit 1 only on a condition that is genuinely actionable.
+
+    Deliberately tolerant of the two states that mean "not yet measurable", because
+    a gate that fires before there is data gets disabled within a week and then
+    protects nothing:
+
+      * n_emitted == 0            -> nothing has been emitted yet (pre-merge)
+      * n_resolved < MIN_RESOLVED -> too few outcomes to judge pct_forward
+
+    It DOES fail on:
+      * pct_forward < PCT_FORWARD_MIN once n_resolved >= MIN_RESOLVED
+      * a broken resolution chain (outcomes were edited)
+      * a starved resolver: picks exist, none resolved, and the oldest pending pick
+        is older than MAX_DAYS + grace. That is the exact no-op this whole ledger
+        exists to catch -- an instrument that measures nothing looks identical to a
+        measurement of nothing.
+    """
+    st = compute_status()
+    picks = read_jsonl(PICKS)
+    res = read_jsonl(RES)
+    problems: list[str] = []
+
+    if not st["resolution_chain_ok"]:
+        v = verify_resolutions(RES)
+        problems.append(f"resolution chain BROKEN at index {v.get('index')}: "
+                        f"{v.get('reason')}")
+
+    if st["n_emitted"] == 0:
+        print("GATE: PASS (no picks emitted yet -- nothing to measure)")
+        return 0
+
+    n_res = st["n_resolved"]
+    if n_res < MIN_RESOLVED:
+        print(f"GATE: PASS (only {n_res} resolved; need {MIN_RESOLVED} to judge "
+              f"pct_forward)")
+    elif st["pct_forward"] is not None and st["pct_forward"] < PCT_FORWARD_MIN:
+        problems.append(f"pct_forward {st['pct_forward']:.1f}% < {PCT_FORWARD_MIN}% "
+                        f"over {n_res} resolved picks -- picks are not resolving "
+                        f"after creation")
+
+    # starved resolver: picks exist and are old, but nothing has been resolved
+    done = {r["pick_seq"] for r in res}
+    pending = [p for p in picks if p["seq"] not in done]
+    if pending:
+        oldest = min(datetime.fromisoformat(p["created_at"]) for p in pending)
+        age_days = (datetime.now(timezone.utc) - oldest).days
+        if age_days > MAX_DAYS + STARVE_GRACE_DAYS:
+            problems.append(f"resolver starved: {len(pending)} pick(s) pending, "
+                            f"oldest {age_days}d (limit {MAX_DAYS}d + "
+                            f"{STARVE_GRACE_DAYS}d grace) -- no market data path "
+                            f"or a broken symbol map")
+
+    print(json.dumps(st, indent=1))
+    if problems:
+        for p in problems:
+            print(f"::error::provenance gate: {p}")
+        print(f"\nGATE: FAIL ({len(problems)} problem(s))")
+        return 1
+    print("\nGATE: PASS")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--resolve", action="store_true")
     ap.add_argument("--status", action="store_true")
+    ap.add_argument("--gate", action="store_true")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
     if a.selftest:
         return selftest()
+    if a.gate:
+        return cmd_gate()
     if a.resolve:
         return cmd_resolve()
     if a.status:
