@@ -7,7 +7,7 @@ a field the programme never measured is written `UNKNOWN`, never guessed.
 ## The one-line answer
 
 **No: this programme holds ZERO strategies with a positive net-of-cost result that
-survives the null/CI/hurdle bar.** TALLY: 0 INVESTABLE / 10 NOT_INVESTABLE / 4 UNKNOWN (14 rows) —
+survives the null/CI/hurdle bar.** TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows) —
 counted from doc 23's 14 row verdicts; the UNKNOWN list further below predates that count and still
 enumerates six, two of which doc 23 classes NOT_INVESTABLE. No `UNKNOWN` row is a "yes" either. **VALUE stocks and
 post-earnings-announcement drift (PEAD) were never reviewed as strategy families in this

@@ -128,7 +128,10 @@ def test_commodity_rows_are_counted_once_each():
 # whose ONLY figure is stale can never be excused by a cue word like "unchanged".
 # ---------------------------------------------------------------------------
 
-SETTLED = ("0", "10", "4")
+# 2026-11-22: funding carry moved UNKNOWN -> NOT_INVESTABLE on the measured
+# opportunity frequency (2.89% of episodes last >= 16.398 d), so 10/4 -> 11/3.
+# The row count is unchanged at 14.
+SETTLED = ("0", "11", "3")
 # Loose claim pattern for DISCOVERY - deliberately no "(N rows)" suffix, so a
 # stale figure is found even when it is not written in the canonical form.
 CLAIM_RE = re.compile(

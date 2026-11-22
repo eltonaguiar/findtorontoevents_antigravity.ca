@@ -208,7 +208,7 @@ Reported, not silently resolved:
 ## 9. M3 cost triage (2026-11-22) — which UNKNOWN rows cost can actually decide
 
 Full working: [`updates/2026-11-22-m3-cost-triage.md`](updates/2026-11-22-m3-cost-triage.md).
-TALLY: 0 INVESTABLE / 10 NOT_INVESTABLE / 4 UNKNOWN (14 rows)
+TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)
 
 This line supersedes an earlier `0 INVESTABLE / 8 NOT_INVESTABLE / 6 UNKNOWN`: counting the 14-row set one row per
 line (the convention in [doc 23](docs/edge_research/23_DEFINITIVE_ANSWER_2026-11-22.md) §The final accounting) gives

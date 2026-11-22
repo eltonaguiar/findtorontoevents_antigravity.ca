@@ -12,7 +12,7 @@
 
 # Part 1 — THE ONE-LINE ANSWER
 
-**Nothing in this programme is investable today: zero of fourteen strategy rows clears a 4.32% T-bill after cost with a positive CI on excess return; funding carry is the one item that is marginal and unresolved (it needs a 16.398-day hold to amortise a 45.524 bp round trip while a positive-funding episode typically lasts about two days); and the rest is either confidently dead or genuinely unknown.**
+**Nothing in this programme is investable today: zero of fourteen strategy rows clears a 4.32% T-bill after cost with a positive CI on excess return; funding carry, the last row that looked marginal, is now NOT_INVESTABLE because only 2.89% of funding episodes last the 16.398 days needed to amortise a 45.524 bp round trip (median episode under two days); and the rest is either confidently dead or genuinely unknown.**
 
 ---
 
@@ -115,7 +115,7 @@ No row has a positive CI on excess return with cost paid. The closest candidates
 2. **FX mean-reversion (row 2)** — missing: a *weekday* FX spread. Cost is now measured at the Sunday reopen (upper bound ~7.5–8 bp, ABOVE the 4.3038 bp break-even → KILL at measured cost), but a thin-book upper bound cannot close it; the clustered CI also includes zero at every cost tested. Only a weekday measurement below ~2.6 bp could.
 3. **Commodity momentum (row 8)** — missing: roll-adjusted, back-adjusted continuous futures series with commission charged.
 4. **Bond momentum (row 9)** — missing: measured ETF cost and a declared, reconciled dividend-adjustment method.
-5. **Funding carry (row 10)** — missing: a funding regime persisting ≥ 16.4 days (or maker fills at ≤ 5.4–6.5 bp pair round trip), 27–32× more capacity, and a survivorship-clean universe.
+5. **Funding carry (row 10)** — now NOT_INVESTABLE: only 82/2,838 (2.89%) of episodes last ≥ 16.4 days, and at $29,438 capacity the ceiling (~$699–1,837/yr) is below the $1,272 T-bill. Would need a regime where ≥16.4-day episodes are frequent (none measured), maker fills at ≤ 5.4–6.5 bp pair round trip, 27–32× more capacity, and a survivorship-clean universe.
 6. **Commodity term-structure carry (row 11)** — missing: a second-month contract series.
 
 ### How many verdicts moved, and why
@@ -124,11 +124,11 @@ No row has a positive CI on excess return with cost paid. The closest candidates
 - **Moved from KILL to UNKNOWN on the commodity data-integrity finding: 1 row covering 3 variants** — commodity momentum V1/V2/V3, because buffy's roll-artifact objection was substantiated and two independent witnesses closed it NO CANDIDATE.
 - **Moved from KILL to UNKNOWN on source provenance: 1** — FX momentum, whose decisive number exists only in Markdown.
 - **Not moved, and why:** equity breakout (killed on null and alpha, not cost), FX carry (break-even 468.5 bp, so cost cannot reverse it), 12-1 momentum (null-percentile kill), crypto intraday mean-rev (zero-cost kill at measured cost), cross-venue basis (cost-honest kill), and N1 R1/R2/R3 (null-percentile kills).
-- **Already not KILL, still UNKNOWN:** funding carry (was MARGINAL) and commodity term-structure carry (was BLOCKED_DATA).
+- **Already not KILL, still UNKNOWN:** commodity term-structure carry (was BLOCKED_DATA). Funding carry, previously here, is now NOT_INVESTABLE (measurement-driven, 2026-11-22).
 
 Total: 4 KILL verdicts moved to UNKNOWN, 4 rows are UNKNOWN, and 10 are NOT_INVESTABLE.
 
-TALLY: 0 INVESTABLE / 10 NOT_INVESTABLE / 4 UNKNOWN (14 rows)
+TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)
 
 > **Tally corrected 2026-11-22T23:20Z.** This document previously printed `0 INVESTABLE / 8 NOT_INVESTABLE / 6 UNKNOWN`
 > (and the `### UNKNOWN: 6` heading above listed six rows). Counting the 14-row table in Part 2 gives 10 NOT_INVESTABLE

@@ -37,9 +37,11 @@
 
 **No: nothing in this programme makes money net of cost, judged against a US 3-month T-bill paying
 4.32%** ([`07_HURDLE_RATES_2026-11-22.md`](docs/edge_research/07_HURDLE_RATES_2026-11-22.md:20)): 0 of 14 rows is
-investable, 10 are killed, and 4 are still open — 2 of them permanently blocked on data that is not on disk
-(the two commodity rows) and 2 open on facts cost measurement cannot supply (FX mean-reversion, funding carry).
-The open rows are open for reasons no further cost measurement can address.
+investable, 11 are killed, and 3 are still open — 2 of them permanently blocked on data that is not on disk
+(the two commodity rows) and 1 open on a fact cost measurement cannot supply (FX mean-reversion).
+The open rows are open for reasons no further cost measurement can address. Funding carry was moved to
+NOT_INVESTABLE this pass: the deciding number was never the 16.398-day break-even but the **frequency** of
+episodes that last that long (2.89%).
 
 ## 2. What was proven, with numbers
 
@@ -97,9 +99,10 @@ Four rows, none blocked on effort, all of them relabels of rows that were alread
 - **FX mean-reversion** (`ALREADY_SCHEDULED`), UNKNOWN: break-even 4.3038 bp; the window-clustered CI at 1 bp
   is [−4.32, +11.09] and includes zero, so cost is necessary but not sufficient. A weekday London/NY-overlap
   run is automated in [`.github/workflows/fx-cost-overlap.yml`](.github/workflows/fx-cost-overlap.yml) and pending.
-- **Funding carry** (`BLOCKED_OTHER`), UNKNOWN, cost already measured at 45.524 bp round trip: needs a funding
-  regime persisting ≥16.398 days (median episode 1.93–2.33 d), 27–32× more capacity, and a
-  survivorship-clean universe.
+- **Funding carry**, **NOT_INVESTABLE** (moved from UNKNOWN this pass; measurement-driven): cost was already
+  measured at 45.524 bp round trip, and the new episode-duration measurement shows only 82/2,838 (2.89%) of
+  funding episodes last ≥16.398 days (median episode 0.67–2.0 d), 11 (0.39%) reach 90 d. There are not enough
+  tradeable opportunities, and at $29,438 capacity the ceiling (~$699–1,837/yr) is below the $1,272 T-bill.
 - **Commodity momentum (V1/V2/V3)**, UNKNOWN (`BLOCKED_MISSING_DATA`): counted as ONE row for the family
   (convention below); §5.
 - **Commodity term-structure carry**, UNKNOWN (`BLOCKED_MISSING_DATA`): §5.
@@ -183,13 +186,19 @@ it removes no row from the UNKNOWN count.
 | 7 | Crypto intraday mean-rev | **NOT_INVESTABLE** | PF 0.815 @0 bp; break-even 0 bp; null 0.0 | none | — |
 | 8 | Commodity momentum V1/V2/V3 | **UNKNOWN** (`BLOCKED_MISSING_DATA`) | `reports/commodity_momentum_20261122.json` results V1/V2/V3 verdict KILL at break-even **0 bp/side** (V1 PF 0.757, V2 1.114, V3 1.074), but the 7 front-month series carry roll artifacts substantiated on disk (CL=F 17 moves >8%, ZC=F −13.1% on 07-15-2022 and −16.8% on 07-17-2023, NG=F 92 moves >8%); two independent witnesses NO CANDIDATE | UNKNOWN → UNKNOWN (relabelled with its block reason) | interpretation |
 | 9 | Bond momentum B1/B2/B3 | **NOT_INVESTABLE** | `reports/bond_momentum_20261122.json`: B1 PF 1.312 beside Sharpe −0.550, maxDD −5.81%, null 2.0; B2 PF 0.743, Sharpe −1.699; B3 PF 0.737, Sharpe −1.063, skew −1.452; break-even **0 bp/side** on all three (free trading still loses to 4.32%) | UNKNOWN → NOT_INVESTABLE | interpretation |
-| 10 | Funding carry | **UNKNOWN** | `reports/funding_carry_20261122.json`: break-even 16.398 d vs 1.93–2.33 d episode; pair RT 45.524 bp; +2.42% APR @30 d vs 4.32% | none | — |
+| 10 | Funding carry | **NOT_INVESTABLE** | `reports/funding_carry_opportunity_frequency_20261122.json`: only **82/2,838 (2.89%)** of funding episodes last ≥ break-even 16.398 d; 11 (0.39%) reach 90 d; pair RT 45.524 bp. At XRP capacity $29,438 the ceiling is ~$699–1,837/yr vs $1,272 T-bill | UNKNOWN → NOT_INVESTABLE | measurement |
 | 11 | Commodity term-structure carry | **UNKNOWN** (`BLOCKED_MISSING_DATA`) | `reports/commodity_carry_20261122.json`: zero second-month contract series on disk; roll yield needs two contracts | UNKNOWN → UNKNOWN (relabelled with its block reason) | interpretation |
 | 12 | N1 R1 multi-asset momentum | **NOT_INVESTABLE** | null 61.2; excess vs SPY +0.97 pp | none | — |
 | 13 | N1 R2 sector momentum | **NOT_INVESTABLE** | null 35.4; excess −11.3 pp | none | — |
 | 14 | N1 R3 SPY 200-day trend | **NOT_INVESTABLE** | null 53.4; excess −6.8 pp | none | — |
 
-TALLY: 0 INVESTABLE / 10 NOT_INVESTABLE / 4 UNKNOWN (14 rows)
+TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)
+
+> **Funding carry moved UNKNOWN → NOT_INVESTABLE, 2026-11-22 (measurement-driven).** New measurement:
+> only 82/2,838 (2.89%) of funding episodes last ≥16.398 d, 11 (0.39%) reach 90 d
+> (`reports/funding_carry_opportunity_frequency_20261122.json`, `updates/2026-11-22-funding-carry-opportunity-frequency.md`).
+> The break-even arithmetic was never the binding constraint; opportunity frequency was. Row count
+> unchanged at 14 (one row changed verdict, none appeared or disappeared).
 
 (The first version of this document printed `0 / 9 NOT_INVESTABLE / 2 BLOCKED_MISSING_DATA / 3 UNKNOWN`, which
 was a subtraction, not a count, and disagreed with its own table. `BLOCKED_MISSING_DATA` is a qualifier on
