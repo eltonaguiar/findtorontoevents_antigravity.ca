@@ -1,4 +1,5 @@
-# test
+# t
 
-## [~] T99 — write a proof file
-Acceptance: /tmp/wakeup_proof.txt exists containing PROOF_OK
+## [~] T99 — never-completes probe
+
+## [ ] T98 — second item
