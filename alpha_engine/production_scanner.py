@@ -5199,16 +5199,42 @@ def main():
         enrich_picks_with_elite_score(active, DATA_DIR)
     except Exception as e:
         print(f"  [ELITE] Scoring failed (non-fatal): {e}")
+        try:
+            from variant_certification import note_degraded
+
+            note_degraded("elite_scorer", f"{type(e).__name__}: {e}")
+        except Exception:
+            pass
 
     # 6d2. Model calibration -- add calibrated probability + uncertainty to picks
     try:
         from model_calibration import apply_calibration_to_picks
 
         active = apply_calibration_to_picks(active, DATA_DIR)
-    except ImportError:
-        pass
+    except ImportError as _cal_imp_err:
+        # NOT silent. Without calibration there is no prediction_uncertainty, so
+        # the ensemble agreement gate below passes EVERY pick through as
+        # "UNKNOWN" instead of blocking low-agreement ones. That is a skipped
+        # gate, not merely missing enrichment, and the picks must be labelled
+        # core_only so nobody computes a win rate across the mixed population.
+        print(
+            "  [CALIBRATION] module UNAVAILABLE -> picks will be core_only "
+            f"({_cal_imp_err}); ensemble_agreement_gate will NOT be enforced"
+        )
+        try:
+            from variant_certification import note_degraded
+
+            note_degraded("model_calibration", f"ImportError: {_cal_imp_err}")
+        except Exception:
+            pass
     except Exception as e:
         print(f"  [CALIBRATION] Pick enrichment failed (non-fatal): {e}")
+        try:
+            from variant_certification import note_degraded
+
+            note_degraded("model_calibration", f"{type(e).__name__}: {e}")
+        except Exception:
+            pass
 
     # 6d3. Ensemble Model Agreement Gate (hedge-fund roadmap: >=70% agreement)
     #   Uses prediction_uncertainty from model_calibration (step 6d2) as proxy
@@ -6770,6 +6796,20 @@ def main():
             )
     except Exception as _shadow_sz_err:
         print(f"  [SHADOW] Sizing override enforcement skipped (non-fatal): {_shadow_sz_err}")
+
+    # 6z. VARIANT CERTIFICATION — stamp every pick with HOW it was computed.
+    #   Runs immediately before the write so it reflects the final enrichment
+    #   state. A pick whose calibration module was missing carries
+    #   strategy_variant="core_only" and names the gates that never ran; without
+    #   this, degraded and full picks sit in the same file indistinguishably and
+    #   any aggregate statistic describes a population that does not exist.
+    try:
+        from variant_certification import annotate_picks, summary_line
+
+        _variant = annotate_picks(active)
+        print(f"  {summary_line(_variant)}")
+    except Exception as _var_err:
+        print(f"  [VARIANT] certification skipped (non-fatal): {_var_err}")
 
     # 7. Write premium_signals.json
     write_premium_signals(market_ctx, active, track)
