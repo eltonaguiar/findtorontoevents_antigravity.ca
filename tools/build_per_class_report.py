@@ -13,6 +13,7 @@ from pathlib import Path
 ORDER = ["EQUITY", "ETF", "FUTURES", "INDEX", "BOND",
          "COMMODITY", "FOREX", "MUTUAL_FUND", "PENNY_STOCK", "CRYPTO"]
 MEANING = {
+    "DATA_INTEGRITY_FAIL": "series is roll/pricing-contaminated — unmeasurable until repaired",
     "PASSES_ALL_BACKTEST_GATES": "backtest candidate — still needs a forward pod (G8), not money",
     "FAILS_MULTIPLICITY": "survives cost/stability but not the trial-count-adjusted Sharpe bar",
     "FAILS_BENCHMARK": "beats cash but not buy-and-hold of its own universe",
@@ -24,6 +25,8 @@ MEANING = {
 
 
 def verdict(c: dict) -> str:
+    if c.get("integrity_flag"):
+        return "DATA_INTEGRITY_FAIL"
     if (c.get("n_trades") or 0) < 30:
         return "INSUFFICIENT_N"
     if c["boot_ci_lb_bps"] <= 0:
@@ -75,7 +78,8 @@ def main() -> int:
     # Rank by strength of verdict, and never let an under-sampled cell decide the
     # class: NVDA tsmom (n=13) has the highest CI-LB in EQUITY but cannot speak.
     STRENGTH = ["PASSES_ALL_BACKTEST_GATES", "FAILS_MULTIPLICITY", "FAILS_BENCHMARK",
-                "FAILS_STABILITY", "FAILS_2X_COST", "REFUTED_OR_WEAK", "INSUFFICIENT_N"]
+                "FAILS_STABILITY", "FAILS_2X_COST", "REFUTED_OR_WEAK",
+                "INSUFFICIENT_N", "DATA_INTEGRITY_FAIL"]
     for cls in ORDER:
         cs = by.get(cls, [])
         if not cs:
@@ -107,6 +111,20 @@ def main() -> int:
           "reports/per_class_edge_2026-11-22.json --md reports/per_class_edge_2026-11-22.md "
           f"--n-trials {d['n_trials_declared']}` then `python3 tools/build_per_class_report.py`"]
     md_out.write_text("\n".join(L) + "\n")
+
+    integ = (d.get("data_integrity") or {}).get("commodity") or []
+    if integ:
+        L += ["", "## Data integrity (why COMMODITY is not merely 'weak')", "",
+              "| symbol | rows | negative prices | |ret|>8% | max |ret| | recurring month-day spikes | usable |",
+              "|---|---|---|---|---|---|---|"]
+        for r in integ:
+            L.append(f"| {r['symbol']} | {r['rows']} | {r['negative_prices']} | "
+                     f"{r['spikes_gt_threshold']} | {r['max_abs_ret_pct']}% | "
+                     f"{r['recurring_month_day_spikes'] or '—'} | {r['usable']} |")
+        L += ["", "A series with roll-gap spikes on the same calendar day in multiple years, "
+              "or a negative print, cannot confirm or refute a strategy. COMMODITY is "
+              "reported as `DATA_INTEGRITY_FAIL` until rebuilt on roll-adjusted contracts."]
+        md_out.write_text("\n".join(L) + "\n")
 
     card.write_text(
         "# Per-class edge sweep across all 10 asset classes\n\n"

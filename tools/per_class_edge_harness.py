@@ -215,12 +215,98 @@ def classify(c: dict) -> str:
     if c.get("n_trades") is not None and c["n_trades"] < 30:
         return "INSUFFICIENT_N"
     h = c["split_half_bps"]
+    ex = c.get("excess_vs_bench_bps")
     if (c["boot_ci_lb_bps"] > 0 and c["boot_ci_lb_2x_cost_bps"] > 0
-            and h[0] > 0 and h[1] > 0 and c["excess_vs_bench_bps"] > 0):
+            and h[0] > 0 and h[1] > 0 and (ex is None or ex > 0)):
         return "PASSES_G2_G3_G5"
     if c["boot_ci_lb_bps"] > 0:
         return "FAILS_COST_OR_STABILITY"
     return "REFUTED_OR_WEAK"
+
+
+def sue12_trades(sym: str, df: pd.DataFrame, cost_bps: float = 10,
+                 min_sue: float = 1.0, hold: int = 20, min_history: int = 8):
+    """PEAD scored on multi-quarter surprise history (SUE), not one print.
+
+    Kaczmarek & Zaremba (2025) find the drift revives when 12 quarters of
+    standardized unexpected earnings are used, with the largest gains in large
+    caps where the latest print is priced instantly and older ones are not.
+    yfinance exposes ~24 quarters, so each surprise is z-scored against all PRIOR
+    surprises (never future ones) and entries need sue >= min_sue.
+    """
+    try:
+        import yfinance as yf
+        ed = yf.Ticker(sym).earnings_dates
+    except Exception:
+        return []
+    if ed is None or len(ed) == 0:
+        return []
+    col = next((c for c in ed.columns if "Surprise" in str(c)), None)
+    if col is None:
+        return []
+    ser = ed[col].dropna()
+    if len(ser) == 0:
+        return []
+    ser = ser.sort_index()
+    px = df["close"].astype(float)
+    open_px = df["open"].astype(float) if "open" in df else px
+    idx = px.index
+    out = []
+    for i in range(min_history, len(ser)):
+        prior = ser.iloc[:i]
+        sd = float(prior.std(ddof=1))
+        if not sd or sd <= 0:
+            continue
+        sue = (float(ser.iloc[i]) - float(prior.mean())) / sd
+        if sue < min_sue:
+            continue
+        dt_ = pd.Timestamp(ser.index[i])
+        dt_ = dt_.tz_localize(None) if dt_.tzinfo else dt_
+        after = idx[idx > dt_]
+        if len(after) < hold + 2:
+            continue
+        entry_i = idx.get_loc(after[0])
+        exit_i = entry_i + hold
+        if exit_i >= len(idx):
+            continue
+        entry = float(open_px.iloc[entry_i])
+        if entry <= 0:
+            continue
+        ret = float(px.iloc[exit_i]) / entry - 1.0 - 2 * cost_bps / 1e4
+        out.append((ret, idx[entry_i], idx[exit_i], sue))
+    return out
+
+
+def record_trades(cell_id, cls, name, trades, trades_2x, bench,
+                  cells, event_returns):
+    """Stats for an event-driven cell: one observation per trade, T = n_trades."""
+    if len(trades) < 5:
+        print(f"  - {cell_id} {name}: only {len(trades)} events, skipped")
+        return
+    v = np.asarray(trades, dtype=float)
+    v2 = np.asarray(trades_2x, dtype=float)
+    lo, hi = block_bootstrap(v, block=1)
+    h = len(v) // 2
+    rec = {"id": cell_id, "asset_class": cls, "name": name,
+           "basis": "per_trade", "n_days": int(len(v)), "n_trades": int(len(v)),
+           "win_rate": round(100 * float((v > 0).mean()), 2),
+           "profit_factor": round(profit_factor(list(v)), 4),
+           "mean_trade_pct": round(float(v.mean()), 4),
+           "mean_daily_bps": round(1e4 * float(v.mean()), 3),
+           "ann_sharpe": None,
+           "boot_ci_lb_bps": round(1e4 * lo, 3),
+           "boot_ci_ub_bps": round(1e4 * hi, 3),
+           "boot_ci_lb_2x_cost_bps": round(1e4 * float(block_bootstrap(v2, block=1)[0]), 3),
+           "split_half_bps": [round(1e4 * float(v[:h].mean()), 3),
+                              round(1e4 * float(v[h:].mean()), 3)],
+           "bench_mean_bps": round(1e4 * float(np.mean(bench)), 3) if bench else None,
+           "excess_vs_bench_bps": round(1e4 * float(np.mean(v - np.asarray(bench))), 3) if bench else None,
+           "sr_daily": round(sharpe(v), 5)}
+    rec["status"] = classify(rec)
+    cells.append(rec)
+    event_returns[cell_id] = v   # NOT ret_series: event rows have no daily index
+    print(f"  + {cell_id} {cls:9s} {name:22s} events={rec['n_trades']:4d} "
+          f"PF={rec['profit_factor']} ci_lb={rec['boot_ci_lb_bps']}bps")
 
 
 def profit_factor(trades: list[float]) -> float:
@@ -304,6 +390,40 @@ def pbo_cscv(mat: np.ndarray, s_blocks: int = 16, trials: int = 200,
     return float(np.mean(np.array(lambdas) <= 0))
 
 
+def commodity_integrity(threshold: float = 0.08) -> list[dict]:
+    """Flag roll/pricing artefacts that make a commodity series unmeasurable.
+
+    Found on 2026-11-22: ZC=F prints -23.6/-17.4/-16.8/-13.1 % on July 15/17 of
+    four different years (contract roll), and CL=F carried a NEGATIVE close
+    (-37.63 on 2020-04-20) which makes pct_change meaningless. A series like that
+    cannot refute or confirm a strategy; it has to be repaired first.
+    """
+    out = []
+    for sym in UNIVERSES.get("COMMODITY", []):
+        safe = sym.replace("=", "_").replace("-", "_")
+        path = CACHE / f"{safe}.csv"
+        if not path.exists():
+            continue
+        df = pd.read_csv(path, index_col=0, parse_dates=True)
+        if "close" not in df:
+            continue
+        c = df["close"].astype(float)
+        r = c.pct_change(fill_method=None)
+        spikes = r[r.abs() > threshold]
+        by_md: dict[tuple[int, int], list[int]] = {}
+        for d in spikes.index:
+            by_md.setdefault((d.month, d.day), []).append(d.year)
+        recurring = {f"{m:02d}-{day:02d}": sorted({y for y in ys})
+                     for (m, day), ys in by_md.items() if len({y for y in ys}) > 1}
+        out.append({"symbol": sym, "rows": int(len(c)),
+                    "negative_prices": int((c <= 0).sum()),
+                    "spikes_gt_threshold": int(len(spikes)),
+                    "max_abs_ret_pct": round(float(r.abs().max() * 100), 1),
+                    "recurring_month_day_spikes": recurring,
+                    "usable": not ((c <= 0).any() or recurring)})
+    return out
+
+
 # ------------------------------------------------------------------------ run
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -324,6 +444,7 @@ def main() -> int:
 
     cells: list[dict] = []
     ret_series: dict[str, pd.Series] = {}
+    event_returns: dict[str, np.ndarray] = {}
 
     def record(cell_id, cls, name, net: pd.Series, net2x: pd.Series,
                trades: list[float], pos: pd.Series, px: pd.Series,
@@ -388,6 +509,19 @@ def main() -> int:
                 record(f"H-200:{s}", cls, f"tsmom_12_1 [{s}]", n2, n2x,
                        segment_trades(p2, data[cls][s]["close"], 10), p2,
                        data[cls][s]["close"], bench_ret)
+
+            pead, pead2, pead_bench = [], [], []
+            for s in syms:
+                for ret, d_in, d_out, _sue in sue12_trades(s, data[cls][s], cost_bps=10):
+                    pead.append(ret * 100.0)
+                    pead2.append(ret * 100.0 - 0.20)   # +10 bps each way
+                    try:
+                        seg = bench_ret.loc[(bench_ret.index > d_in) & (bench_ret.index <= d_out)]
+                        pead_bench.append(float((1.0 + seg).prod() - 1.0) * 100.0)
+                    except Exception:
+                        pead_bench.append(0.0)
+            record_trades("H-222", cls, "pead_sue12_20d", pead, pead2, pead_bench,
+                          cells, event_returns)
 
         if cls in ("EQUITY", "ETF"):
             net, w = xsmom(closes, 126, 3, 10)
@@ -481,21 +615,34 @@ def main() -> int:
     if not cells:
         print("no cells produced; nothing to score")
         return 1
-    srs = np.array([sharpe(ret_series[c["id"]].to_numpy(dtype=float)) for c in cells])
+    def series_for(c):
+        return (ret_series[c["id"]].to_numpy(dtype=float)
+                if c["id"] in ret_series else event_returns[c["id"]])
+
+    srs = np.array([sharpe(np.asarray(series_for(c), dtype=float)) for c in cells])
     sr0 = expected_max_sr(args.n_trials, float(np.var(srs, ddof=1)) if len(srs) > 1 else 0.0)
-    mat = pd.concat(ret_series.values(), axis=1).fillna(0.0).to_numpy(dtype=float)
+    # PBO is computed on the daily-return cells only; an event cell has no shared
+    # time axis, so including it would silently align unrelated observations.
+    mat = pd.concat(list(ret_series.values()), axis=1).fillna(0.0).to_numpy(dtype=float)
     pbo = pbo_cscv(mat)
 
     for c in cells:
-        x = ret_series[c["id"]].to_numpy(dtype=float)
+        x = np.asarray(series_for(c), dtype=float)
         x = x[~np.isnan(x)]
         d, sr, sk, ku = dsr(x, sr0)
         c.update({"dsr": round(d, 4), "sr_daily": round(sr, 5),
                   "min_trl_days": (None if math.isinf(min_trl(x, sr0))
                                    else round(min_trl(x, sr0), 1))})
 
+    integrity = commodity_integrity()
+    bad = {r["symbol"] for r in integrity if not r["usable"]}
+    for c in cells:
+        if c["asset_class"] == "COMMODITY" and bad:
+            c["integrity_flag"] = True
     out = {
         "generated_at": pd.Timestamp.utcnow().isoformat(),
+        "data_integrity": {"commodity": integrity,
+                           "unusable_symbols": sorted(bad)},
         "window": {"start": str(min(r.index.min() for r in ret_series.values()).date()),
                    "end": str(max(r.index.max() for r in ret_series.values()).date())},
         "n_trials_declared": args.n_trials,
