@@ -52,6 +52,8 @@ SOURCES = {
                   "carry execution cost"),
     "prereg": ("reports/prereg_outside/prereg_outside_tests.json",
                "pre-registered outside tests"),
+    "falsify": ("reports/mega_mutation/falsification.json",
+                "source falsification battery (max-stat null, median, duplicates)"),
     "lint": ("reports/integrity_lint/latest.json",
              "integrity lint (selection-on-DV, provenance, n_trials)"),
 }
@@ -253,6 +255,25 @@ def build():
             if isinstance(v, dict) and "verdict" in v:
                 rows.append((f"Prereg {k}", str(v["verdict"]),
                              str(v.get("reason", ""))[:60], "pre-registered"))
+
+    # ---- falsification of the last surviving source
+    fs = load("falsify")
+    if fs is not None:
+        npass = fs.get("n_tests_passed")
+        ntot = len(fs.get("tests") or {}) or None
+        label = "CANDIDATE" if (ntot and npass == ntot) else "QUARANTINE"
+        rows.append((f"Source: {fs.get('target', '?')}", label,
+                     f"{npass}/{ntot} tests; mean {fnum(fs.get('mean_bp'), 1, ' bp')} "
+                     f"median {fnum(fs.get('median_bp'), 1, ' bp')}; "
+                     f"failed {', '.join(fs.get('failed') or []) or 'none'}",
+                     "observed"))
+        if ntot and npass != ntot:
+            notes.append(f"{fs.get('target')} is QUARANTINED - no positive-"
+                         f"expectancy emitter is established anywhere in the "
+                         f"programme; the honest default is T-bills.")
+    else:
+        rows.append(("Source falsification", "NOT RUN",
+                     "run tools/mega_mutation_falsification.py", "-"))
 
     # ---- missing
     for m in missing:
