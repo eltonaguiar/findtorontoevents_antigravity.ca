@@ -1,0 +1,75 @@
+name: etf-spread-series
+
+# ETF effective-spread series (round 30).
+#
+# WHY: the breakout family is the only strategy in this programme with a real
+# gross edge (+22.43 bp at t = +7.32) and its breakeven sits between 20 and 24 bp
+# round trip. The realised ETF spread has therefore been the single decisive
+# unmeasured number. Three attempts to infer it from daily OHLC all failed and
+# were deleted (Corwin-Schultz degenerate, Roll volatility-driven, Abdi-Ranaldo
+# implementation could not be verified and was NOT shipped). This samples the
+# live NBBO instead.
+#
+# Design notes:
+#  * Cron is restricted to US regular trading hours on weekdays; outside RTH the
+#    IEX top-of-book is null and the tool records NOTHING. That is deliberate -
+#    a zero or a stale previous close would be a fabricated spread.
+#  * The sampler enforces a 20-minute minimum gap per ticker, so a retry storm
+#    cannot inflate n.
+#  * Own concurrency group; [skip ci] commit; no push trigger (AGENTS.md
+#    2026-05-19 precedent - long jobs must not trigger on push).
+#  * The job stays green when blocked. "No quote today" is a real state, not a
+#    failure, and failing on it would train everyone to ignore the workflow.
+
+on:
+  schedule:
+    # 13:35-19:55 UTC on weekdays -> inside 09:30-15:55 America/New_York.
+    # Every 30 min. Off the :00/:10/:17/:23/:41 marks used by other crons.
+    - cron: '35,05 13-19 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: etf-spread-series
+  cancel-in-progress: false
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Sample NBBO
+        env:
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+        run: |
+          if [ -z "${TIINGO_API_KEY}" ]; then
+            echo "::warning::TIINGO_API_KEY secret is not set - cannot sample."
+            exit 0
+          fi
+          python3 tools/etf_spread_sampler.py --record || \
+            echo "::notice::no live quote this run (market closed or feed stale)"
+
+      - name: Report series
+        run: python3 tools/etf_spread_sampler.py --series || true
+
+      - name: Commit series
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/etf_spread/ || true
+          if git diff --cached --quiet; then
+            echo "no new samples"
+          else
+            git commit -m "chore(etf-spread): NBBO sample [skip ci]"
+            git push
+          fi
