@@ -1,0 +1,65 @@
+{
+ "version": 1,
+ "note": "Low-turnover, low-cost portfolio options only. PART13 measured that 5-minute strategies have gross edge but 6-9x that in fees, so intraday is excluded by design. Every option here trades at most monthly.",
+ "cost_model": {"one_way_bp": 10, "applies_to": "every rebalance leg"},
+ "portfolios": [
+  {
+   "name": "P00_spy_bh",
+   "label": "Buy & hold SPY",
+   "weights": {"SPY": 1.0},
+   "rebalance": null
+  },
+  {
+   "name": "P01_60_40",
+   "label": "Static 60/40 (SPY/AGG)",
+   "weights": {"SPY": 0.6, "AGG": 0.4},
+   "rebalance": "monthly"
+  },
+  {
+   "name": "P02_spy_trend",
+   "label": "SPY + 10m SMA filter",
+   "weights": {"SPY": 1.0},
+   "filter_symbol": "SPY",
+   "sma_months": 10,
+   "rebalance": "monthly"
+  },
+  {
+   "name": "P03_60_40_trend",
+   "label": "60/40 + SPY 10m SMA legs",
+   "weights": {"SPY": 0.6, "AGG": 0.4},
+   "filter_symbol": "SPY",
+   "sma_months": 10,
+   "rebalance": "monthly"
+  },
+  {
+   "name": "P04_ew_etf_trend",
+   "label": "Equal-weight ETF basket + SPY filter",
+   "weights": {"SPY": 0.2, "EFA": 0.2, "EEM": 0.2, "GLD": 0.2, "DBC": 0.2},
+   "filter_symbol": "SPY",
+   "sma_months": 10,
+   "rebalance": "monthly"
+  },
+  {
+   "name": "P05_commodity_trend",
+   "label": "Commodity sleeve + DBC 10m SMA",
+   "weights": {"DBC": 0.5, "GLD": 0.3, "SLV": 0.2},
+   "filter_symbol": "DBC",
+   "sma_months": 10,
+   "rebalance": "monthly"
+  },
+  {
+   "name": "P06_bond_carry",
+   "label": "Bond carry (AGG/TLT/IEF)",
+   "weights": {"AGG": 0.4, "TLT": 0.3, "IEF": 0.3},
+   "rebalance": "monthly"
+  },
+  {
+   "name": "P07_gold_trend",
+   "label": "Gold + 10m SMA filter",
+   "weights": {"GLD": 1.0},
+   "filter_symbol": "GLD",
+   "sma_months": 10,
+   "rebalance": "monthly"
+  }
+ ]
+}
