@@ -1,0 +1,77 @@
+name: weekly-scorecard
+
+# TODO 48 -- one page every week stating every verdict and every unmeasured state.
+#
+# Design notes (deliberate, see docs/PROMOTION_GATE_2026-11-22.md):
+#  * There is NO push trigger. The AGENTS.md 2026-05-19 post-mortem removed push
+#    triggers from long jobs after cancel-cascades; this follows that precedent.
+#  * Own concurrency group so it never queues behind audit-dashboard.
+#  * The commit uses [skip ci] -- re-adding a push trigger here would loop.
+#  * --strict makes the job FAIL when an alert is raised (harness drift or a new
+#    integrity finding). A scorecard that can only ever be green is decoration.
+#  * The script itself never ranks strategies and never prints a number it could
+#    not measure. Keeping that property is the point of the workflow.
+
+on:
+  schedule:
+    # Mondays 06:17 UTC. Off the hour and off :10 (audit-dashboard) and :41
+    # (harness-certification) so three crons do not collide.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-scorecard
+  cancel-in-progress: false
+
+jobs:
+  scorecard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Generate scorecard
+        run: python3 tools/weekly_scorecard.py
+
+      - name: Show scorecard
+        run: cat reports/weekly_scorecard/scorecard.md
+
+      - name: Enforce alerts (strict)
+        run: python3 tools/weekly_scorecard.py --strict
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-scorecard
+          path: reports/weekly_scorecard/
+          retention-days: 90
+
+      - name: Commit scorecard
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/weekly_scorecard/ || true
+          if git diff --cached --quiet; then
+            echo "no scorecard change"
+          else
+            git commit -m "chore(scorecard): weekly verdicts [skip ci]"
+            git push
+          fi
