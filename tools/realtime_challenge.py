@@ -220,11 +220,24 @@ def evaluate(sym: str) -> dict | None:
 
 
 def simulate(bars: list[dict], i: int, side: str) -> dict | None:
-    """Enter at bar i close, walk forward. Pessimistic on intrabar ties."""
+    """Signal at bar i close, FILL AT BAR i+1 OPEN, walk forward.
+
+    FIXED 2026-11-22 (peer review): this used to fill at `bars[i]["c"]`, the same
+    close the signal was computed from. That is a lag-0 fill: it trades at a price
+    that only exists because we already know the bar closed above the breakout
+    level, and it flatters every breakout backtest that uses it. A signal computed
+    from a closed bar cannot be executed at that bar's close. Entry is now the next
+    bar's open, which is the first price actually available to a live trader.
+
+    Bars i+1.. still legitimately trigger TP/SL: we hold from the open of i+1.
+    Pessimistic on intrabar ties (stop checked before target).
+    """
+    if i + 1 >= len(bars):
+        return None                      # no bar left to fill on
     a = atr(bars[:i + 1])
     if a <= 0:
         return None
-    entry = bars[i]["c"]
+    entry = bars[i + 1]["o"]             # next-bar open = first executable price
     tp, sl = entry + TP_ATR * a, entry - SL_ATR * a
     for j in range(i + 1, min(i + 1 + MAX_HOLD_BARS, len(bars))):
         b = bars[j]
@@ -424,10 +437,79 @@ def do_resolve(s: dict) -> int:
     return 0
 
 
+def market_price(sym: str) -> tuple[float | None, str]:
+    """Best available current price for marking an open position to market."""
+    cons = live_price_consensus(sym)
+    if cons and cons.get("price"):
+        return cons["price"], "live_consensus"
+    bars, _ = bars_binance(sym)
+    if not bars:
+        bars, _ = bars_kucoin(sym)
+    if bars:
+        return bars[-1]["c"], "last_bar_close"
+    return None, "unavailable"
+
+
+def mark_open_positions(s: dict) -> dict:
+    """Mark open positions to market and append an equity point.
+
+    ADDED 2026-11-22 (peer review, second time owed). This harness used to report
+    REALISED PnL only, which means an open position bleeding toward its stop
+    contributed nothing to the equity series until the moment it closed. A
+    realised-only book shows a flat line then a cliff; it cannot express drawdown
+    while you are actually in the trade, and drawdown is exactly what a risk
+    decision is made on. Every observation here is now marked.
+
+    Exit fees are charged on the mark, not just entry, so an open position is
+    valued as if closed now -- the conservative direction.
+    """
+    marks, unreal_total = [], 0.0
+    for p in s["open"]:
+        px, how = market_price(p["symbol"])
+        if px is None:
+            marks.append({"id": p["id"], "symbol": p["symbol"],
+                          "marked": False, "how": how})
+            continue
+        gross = (px - p["entry"]) / p["entry"]
+        net = gross - 2 * p["fee_per_side"]   # as if closed now
+        unreal_total += net
+        marks.append({"id": p["id"], "symbol": p["symbol"], "marked": True,
+                      "mark_px": px, "how": how,
+                      "unreal_gross_pct": round(gross * 100, 4),
+                      "unreal_net_pct": round(net * 100, 4)})
+    realised = sum(c["net_pct"] for c in s["closed"]) / 100
+    point = {
+        "utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "realised_pct": round(realised * 100, 4),
+        "unrealised_pct": round(unreal_total * 100, 4),
+        "total_pct": round((realised + unreal_total) * 100, 4),
+        "n_closed": len(s["closed"]), "n_open_marked": len(marks),
+        "positions": marks,
+    }
+    s.setdefault("equity_marks", []).append(point)
+    return point
+
+
 def score(s: dict) -> None:
+    # MTM FIRST, and before any early return: the whole point of the fix is that
+    # a book with zero closed trades still has a value and a drawdown.
+    mtm = mark_open_positions(s) if s.get("open") else None
+    save_state(s)
+
     cl = s["closed"]
     if not cl:
         print("\nscore: no closed trades yet — nothing to conclude")
+        if mtm:
+            print(f"  BUT the book is not empty. Mark-to-market of "
+                  f"{mtm['n_open_marked']} open position(s):")
+            for m in mtm["positions"]:
+                if m["marked"]:
+                    print(f"    {m['symbol']:12s} mark {m['mark_px']:.6g} "
+                          f"unreal net {m['unreal_net_pct']:+.4f}%  ({m['how']})")
+            print(f"  REALISED {mtm['realised_pct']:+.4f}%  |  "
+                  f"UNREALISED {mtm['unrealised_pct']:+.4f}%  |  "
+                  f"TOTAL MTM {mtm['total_pct']:+.4f}%")
+            print("  Realised-only reporting would have shown a flat 0.00% here.")
         return
     nets = [c["net_pct"] / 100 for c in cl]
     wins = [x for x in nets if x > 0]
@@ -462,6 +544,27 @@ def score(s: dict) -> None:
     need = 0 if not sd else (2.8 * sd / abs(mean)) ** 2 if mean else float("inf")
     print(f"  trades needed for a 2.8-sigma result at this effect size: "
           f"{need:.0f}" if sd and mean else "  n/a")
+
+    # ---- mark-to-market block: realised alone cannot express an open drawdown ----
+    if mtm:
+        print(f"\n  MARK-TO-MARKET (the part realised-only reporting hid):")
+        print(f"    realised   {mtm['realised_pct']:+.4f}%")
+        print(f"    unrealised {mtm['unrealised_pct']:+.4f}%  "
+              f"({mtm['n_open_marked']} open)")
+        print(f"    TOTAL      {mtm['total_pct']:+.4f}%")
+    marks = s.get("equity_marks", [])
+    if len(marks) >= 2:
+        tot = [m["total_pct"] for m in marks]
+        peak, mdd = tot[0], 0.0
+        for v in tot:
+            peak = max(peak, v)
+            mdd = min(mdd, v - peak)
+        print(f"    MTM marks recorded {len(marks)}  |  max drawdown of the MTM "
+              f"path {mdd:+.4f}%")
+    else:
+        print(f"    MTM marks recorded {len(marks)} — need >=2 to report a "
+              f"drawdown of the MTM path.")
+
     if n < 30:
         print("  VERDICT: n is far too small. This is a prototype smoke test, "
               "NOT evidence of edge.")
