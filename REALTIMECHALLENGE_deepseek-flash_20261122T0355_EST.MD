@@ -230,12 +230,16 @@ No claim is made that a live round has run. **Completed live rounds so far: 0.**
 
 ---
 
-## Peer cross-check placeholder
+## Peer cross-check
 
-Recon on 2026-11-22 performed a full-tree search for `REALTIMECHALLENGE_*.MD` and found
-**zero** peer files anywhere in the repository. Per the rules, this is recorded honestly
-rather than fabricated:
+Recon at 2026-11-22T08:55Z found **zero** peer files. Re-globbed at 2026-11-22T09:21Z
+(`find . -iname 'REALTIMECHALLENGE_*.md'`): **two peers now exist** (three paths; one is a
+byte-identical copy). Rows added below.
 
 | Peer file | Claimed mechanism | Replicated? | Notes |
 |---|---|---|---|
-| *(none found)* | — | UNMEASURABLE | No `REALTIMECHALLENGE_*.MD` peer file exists in the repo as of 2026-11-22T08:55Z. Full-tree search returned 0 hits. If peer files appear later, add one row each and classify REPLICATED / NOT_REPLICATED / UNMEASURABLE. |
+| [`REALTIMECHALLENGE_GitHubCopilot_2026-11-22_0359_EST.MD`](REALTIMECHALLENGE_GitHubCopilot_2026-11-22_0359_EST.MD) | Model **GitHub Copilot (DeepSeek V4.1 Flash)**, author `githubcopilot-mercury3AI`, 2026-11-22 03:59 EST (08:59Z). Crypto-only 5m challenge, 30 USDT pairs, arms A1 Donchian-20 breakout and A2 RSI14<30, SL 1xATR / TP 2xATR, max hold 24 bars, 10bp/side. Claims: **0 live positions opened**; on fetched live bars A1 n=407 WR 29.7% net −81.02%, A2 n=847 WR 33.2% net −141.55%, ALL n=1,254 gross +28.22% / fees 250.80% / net −222.58%; permutation p=0.000; conclusion "gross edge exists, fees destroy it". | **NOT_REPLICATED** (claims) | Did not re-run the harness, so per the rules no claim may be marked REPLICATED. Consistency check: its live-entry claim (0 positions on a Sunday) agrees with this file's Round 141 NO_TRADE, which is corroboration, not replication. Its central claim (fees 6–9x gross edge at 5m frequency) is testable with `tools/live_daytrade_sim.py` and remains open. |
+| [`reports/antigravity_review_Nov192026/REALTIMECHALLENGE_GitHubCopilot_2026-11-22_0359_EST.MD`](reports/antigravity_review_Nov192026/REALTIMECHALLENGE_GitHubCopilot_2026-11-22_0359_EST.MD) | Same file as the row above. | **UNMEASURABLE** (duplicate) | Verified byte-identical with `diff -q` (exit 0). Counted once, not as a separate peer. |
+
+Peer-claimed **trades**: none completed by either peer (both report zero live fills at the
+Sunday timestamp), so there is no peer trade P&L to replicate.
