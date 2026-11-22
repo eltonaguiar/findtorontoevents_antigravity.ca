@@ -31,6 +31,7 @@ on:
       - 'reports/provenance/**'
       - 'tools/provenance_ledger.py'
       - 'tools/provenance_resolver.py'
+      - '.github/workflows/provenance-verify.yml'
   workflow_dispatch:
 
 permissions:
@@ -60,15 +61,19 @@ jobs:
         id: verify
         run: python3 tools/provenance_ledger.py --status
 
-      - name: Resolver selftest (pessimistic tie-break, no-mutation)
-        run: python3 tools/provenance_resolver.py --selftest
-
-      # Without this the resolver can never resolve anything in CI: yfinance and
-      # pandas are not on the runner, --resolve fails, and pct_forward stays null
-      # forever even once the ledger fills. That silent no-op is what --gate exists
-      # to catch, but it is cheaper to just install the two libraries.
+      # Must come BEFORE the resolver selftest: the selftest builds a DataFrame to
+      # prove the pessimistic tie-break, so it needs pandas. Verified in CI --
+      # run 45081996584 failed with ModuleNotFoundError: No module named 'pandas'
+      # when this step sat after the selftest instead of before it.
+      #
+      # It is also required for --resolve at all: without yfinance/pandas the
+      # resolver could never resolve anything on a runner, so pct_forward would
+      # have stayed null forever even once the ledger filled.
       - name: Install resolver deps
         run: pip install --quiet --disable-pip-version-check pandas yfinance
+
+      - name: Resolver selftest (pessimistic tie-break, no-mutation)
+        run: python3 tools/provenance_resolver.py --selftest
 
       - name: Resolve any new picks (never blocks)
         run: |
