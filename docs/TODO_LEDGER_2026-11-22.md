@@ -53,7 +53,7 @@ which paths emit and which do not, and a test proving a pick from the new path
 lands in the ledger with a valid chain. Add the new file to
 `provenance-verify.yml` push paths.
 
-## [ ] T5 — Ledger vs dashboard reconciliation report
+## [x] T5 — Ledger vs dashboard reconciliation report
 The ledger and `audit_dashboard/data/dashboard_data.json` are two populations of
 the same thing. Any divergence is a defect in one of them.
 **Acceptance:** `tools/provenance_reconcile.py` emitting
