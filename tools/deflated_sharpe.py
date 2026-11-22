@@ -58,7 +58,10 @@ from datetime import datetime, timezone
 # ---------------------------------------------------------------------------
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..",
                          "audit_dashboard", "data", "dashboard_data.json")
-OUT_PATH = os.path.join(os.path.dirname(__file__), "deflated_sharpe_results.json")
+# The artifact the LIVE gates read. NEVER written without --deploy.
+OUT_LIVE = os.path.join(os.path.dirname(__file__), "deflated_sharpe_results.json")
+# Where corrected results go by default, for review.
+OUT_REVIEW_DIR = os.path.join(os.path.dirname(__file__), "..", "reports")
 MIN_TRADES = 10
 CONFIDENCE = 0.95   # one-sided. DSR must reach this to count as surviving.
 GAMMA = 0.5772156649015329   # Euler-Mascheroni, for E[max] of N normal draws
@@ -270,7 +273,16 @@ def analyse_group(records_by_key, label="strategy"):
                      "degenerate_keys": [s["key"] for s in staged if s["degenerate"]]}
 
 
-def analyse():
+def analyse(out_path: str | None = None, deploy: bool = False):
+    """Compute DSR and write results.
+
+    Writes to a REVIEW path unless `deploy=True`. That default is deliberate: the
+    corrected maths changes the noise set the live pick gates read
+    (`alpha_engine/eagle_gates._load_dsr_noise`, `alpha_engine/dsr_pick_filter`)
+    from 16 to 55 strategies -- 21 previously-tradeable strategies become blocked.
+    That is a POLICY decision, not a tooling fix, and must not ride along silently
+    on a bug fix.
+    """
     # ------------------------------------------------------------------
     # Load data
     # ------------------------------------------------------------------
@@ -441,9 +453,16 @@ def analyse():
         "ensemble": ensemble,
     }
 
-    with open(OUT_PATH, "w", encoding="utf-8") as f:
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
-    print(f"\nResults written to {OUT_PATH}")
+    print(f"\nResults written to {os.path.relpath(out_path)}")
+    if not deploy:
+        print("\n::notice::WROTE TO A REVIEW PATH. tools/deflated_sharpe_results.json "
+              "(read by the live pick gates) was NOT touched. Deploying the "
+              "corrected artefact changes the DSR noise set from 16 to 55 "
+              "strategies -- a policy decision that needs review, not a side "
+              "effect of a bug fix. Use --deploy once that is agreed.")
+    return output
 
 
 # ---------------------------------------------------------------------------
@@ -519,10 +538,21 @@ def selftest() -> int:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--out", default=None,
+                    help="output path (default: reports/deflated_sharpe_corrected_<date>.json)")
+    ap.add_argument("--deploy", action="store_true",
+                    help="write tools/deflated_sharpe_results.json (the file the LIVE "
+                         "pick gates read). Changes the noise set from 16 to 55.")
     a = ap.parse_args()
     if a.selftest:
         return selftest()
-    analyse()
+    if a.deploy:
+        out = a.out or OUT_LIVE
+    else:
+        stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        out = a.out or os.path.join(
+            OUT_REVIEW_DIR, f"deflated_sharpe_corrected_{stamp}.json")
+    analyse(out_path=out, deploy=a.deploy)
     return 0
 
 
