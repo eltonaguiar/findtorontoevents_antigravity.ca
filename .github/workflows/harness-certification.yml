@@ -1,0 +1,89 @@
+name: harness-certification
+
+# WHY: this programme has ~9 measurement harnesses whose numbers are cited in
+# reports and on the bus. `tools/harness_certification.py` compares each artifact
+# against a recorded baseline and fails on deterministic drift. It caught a real
+# error on its first manual run — the cost-horizon ladder had been published as a
+# median over POSITIVE CELLS ONLY, which doubled the apparent edge at 3 of 4
+# horizons. Nothing else in CI would have found that.
+#
+# This is the recurring "wakeup" check: it re-verifies that every number we quote
+# still reproduces from the artifact that produced it.
+#
+# WHAT IT DOES NOT DO: re-run the harnesses. That takes minutes and would make the
+# check something people skip. It reads existing artifacts, so a stale artifact is
+# reported as unchanged — this certifies CONSISTENCY, not FRESHNESS. Freshness is
+# covered separately by db-freshness-guardian.yml and carry-cost-series.yml.
+
+on:
+  schedule:
+    # :41 every 6h, staggered off the other crons (:10 dashboard, :23 carry cost,
+    # :07/:37 crypto sim).
+    - cron: "41 */6 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "tools/harness_certification.py"
+      - "tools/cost_horizon_ladder.py"
+      - "tools/pod_equity_breakout_backtest.py"
+      - "tools/breakout_regime_test.py"
+      - "tools/funding_carry_measure.py"
+      - "tools/h119_ledger_audit.py"
+      - "reports/harness_certification/**"
+
+# Own concurrency group: a certification run must never cancel or be cancelled by
+# the dashboard or sim workflows.
+concurrency:
+  group: harness-certification
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The certifier itself is stdlib-only by design, so there is nothing to
+      # install. If that ever stops being true this step is where it surfaces.
+      - name: Self-check the certifier
+        run: python3 -c "import ast,sys; ast.parse(open('tools/harness_certification.py').read()); print('parse OK')"
+
+      - name: Certify artifacts against baseline
+        id: certify
+        run: |
+          set +e
+          python3 tools/harness_certification.py 2>&1 | tee /tmp/cert.txt
+          rc=${PIPESTATUS[0]}
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Summarise to the job page
+        run: |
+          {
+            echo "## Harness certification"
+            echo '```'
+            tail -40 /tmp/cert.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # A deterministic metric moving without a matching doc change is the exact
+      # failure mode this job exists to catch, so it must FAIL the run rather than
+      # warn. A warning nobody reads is how a ladder gets doubled.
+      - name: Fail on deterministic drift
+        if: steps.certify.outputs.rc != '0'
+        run: |
+          echo "::error::Deterministic evidence drifted from its recorded baseline."
+          echo "Either a harness changed or a document citing it is now wrong."
+          echo "Fix whichever is true, then run --accept ONLY if the new number is"
+          echo "the correct one and update every doc that cites the old one."
+          exit 1
