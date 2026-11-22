@@ -2603,6 +2603,13 @@
           "admissible": false
         },
         "verdict": "REJECTED",
+        "delisting_check": {
+          "rule": "price series ending inside the holding window exits at its last close with a -30% haircut (Shumway/Warther)",
+          "records_exiting_on_last_trade": 0,
+          "names_never_priceable": 48,
+          "bottom_bucket": {"n": 49, "net_mean_pct": -15.7378},
+          "conclusion": "the exit is not truncated by dropped records; 48 delisted/never-listed tickers are dropped at entry, so both legs remain survivor subsets and the L/S spread stays an artifact"
+        },
         "reason": "Pre-registered per M-107 before any backtest. Source: multi-model asset-class panel 2026-11-21, where 4 of 4 round-2 critics independently converged on this as the single defensible next experiment (reports/2026-11-21-multimodel-asset-class-panel.md).",
         "panel_baseline": "EQUITY aggregate n=955, net +0.098% per trade, 95% CI [-0.516, +0.720] (audit3_ledger 2026-11-21) -- the subset must be compared against this diluted aggregate, not in isolation.",
         "subq_p_defensible_forward_candidate": 0.054,
@@ -2664,7 +2671,16 @@
         "reject_if": "net IR < 0 over the forward window, or any admissible window flips sign"
       },
       "economic_prior": "Novy-Marx (2013): gross profitability is the cleanest accounting measure of quality because it is unaffected by R&D, advertising and interest-expense classification. H-149 established that the ANNUAL-10-K, 40-trading-day, close-entry rendering of this idea has no stable edge (4 strong positive vs 11 strong negative windows on 711 names). What H-149 did not test is the spec as filed: quarterly statements react to the signal up to a year sooner, next-open entry removes the close-to-open gap, and the 20-60 calendar-day exit is the horizon the premium is actually documented at.",
-      "status": "PRE-REGISTERED",
+            "signal_validation": {
+        "artifact": "reports/h150_ttm_validation.json",
+        "method": "each audited annual 10-K GrossProfit recomputed from the four quarterly facts filed on or before that 10-K, which must be non-overlapping and must tile the fiscal year",
+        "companies_checked": 95, "companies_with_comparable_pair": 30, "comparable_pairs": 225,
+        "pct_within_1pct": 91.11, "pct_within_5pct": 94.22,
+        "median_rel_err": 0.0, "p90_rel_err": 0.004913,
+        "loose_rule_baseline": {"comparable_pairs": 254, "pct_within_1pct": 82.28, "max_rel_err": 2.065078},
+        "conclusion": "the quarterly TTM framing reproduces the audited annual figure for 91% of pairs; the residual failures are restatement vintages. Signal construction is validated -- the backtest is still unrun."
+      },
+"status": "PRE-REGISTERED",
       "registered_at": "2026-11-21",
       "predecessor": "H-149 (annual 10-K / 40 trading days / month-end close entry / full cross-section) - REJECTED 2026-11-21 on 711 names and 66 scorable windows. That verdict does NOT transfer here: the four deviations that produced it are exactly the four things this entry specifies differently.",
       "data_sample_lock": "Frozen at registration: CIK pool with seed 149, 2,600-name sample, month-end rebalances 2016-01-01..2025-12-31, $2B-$10B cap band, top quintile, next-session-open entry, 20-60 calendar-day exit, 20 bp fallback round-trip cost. None of these may be changed after the first run without a new id.",

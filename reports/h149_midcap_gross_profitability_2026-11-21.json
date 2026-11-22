@@ -3,7 +3,7 @@
   "formerly": "H-146 (renumbered 2026-11-21: id collision with ETF execution_cost_gate)",
   "asset_class": "EQUITY",
   "family": "mid_cap_gross_profitability",
-  "generated_at": "2026-11-21T23:47:16.447604+00:00",
+  "generated_at": "2026-11-21T23:59:44.715076+00:00",
   "spec": {
     "signal": "GP/A = latest 10-K GrossProfit / latest 10-K Assets",
     "universe": "US SEC filers with PIT market cap in $2B-$10B at rebalance",
@@ -33,6 +33,7 @@
     "fundamentals_yield_pct": 27.3,
     "rebalances_total": 120,
     "rebalances_used": 120,
+    "records_exiting_on_last_trade": 0,
     "rebalances_skipped_sparse": 0,
     "in_band_observations": 10446,
     "records": 10230
@@ -477,6 +478,23 @@
     "overlap_note": "consecutive formations overlap by ~10 trading days, so the full series is autocorrelated; the every-2nd-month fit is the one to trust for significance and both are reported",
     "cost_note": "20.0 bp round-trip",
     "interpretation_rule": "alpha_t >= 2 with the four factors partialled out means the tilt is not mere factor exposure; alpha_t near 0 with high R2 means it is"
+  },
+  "delisting": {
+    "rule": "a name whose price series ends inside the holding window exits at its last available close and is charged a declared haircut; names with no price at the rebalance (never enterable) are still dropped and counted separately",
+    "haircut_pct": -30.0,
+    "records_exiting_on_last_trade": 0,
+    "pct_of_records": 0.0,
+    "mean_pnl_pct_delisted": null,
+    "bottom_bucket_with_haircut": {
+      "n": 49,
+      "net_mean_pct": -15.7378
+    },
+    "bottom_bucket_without_haircut": {
+      "n": 49,
+      "net_mean_pct": -15.7378
+    },
+    "names_never_priceable": 48,
+    "conclusion": "no record exits on its last trade, so the left tail is not truncated at exit. The 48 tickers that never priced at all are dropped at ENTRY, and they are the delisted/never-listed ones -- which means the bottom bucket is still a survivor subset and the long/short spread remains an artifact, not a tradable result."
   },
   "density_gap": {
     "records": 10230,

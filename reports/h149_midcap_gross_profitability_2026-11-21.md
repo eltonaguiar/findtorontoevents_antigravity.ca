@@ -147,6 +147,29 @@ trading days (hence the every-second-month fit), the t-stats are classical OLS
 without Newey-West, and the regression is on the book the tool actually holds
 (top quintile), not on the decile reported in §5.
 
+### 5c. Delisting returns — the left tail is not truncated at exit
+
+The bottom bucket's 49 observations looked like a truncation artifact, so the
+exit rule was changed: a name whose price series ends inside the holding window
+now exits at its **last available close** and is charged a declared **−30%**
+haircut (the Shumway/Warther convention for performance delistings) instead of
+being silently dropped. `build_records(..., delist_haircut_pct=)` carries the
+penalty, and the payload records the bottom bucket with and without it.
+
+**Nothing changed: 0 of 10,230 records exit on their last trade.** The full
+2,600-CIK re-run reproduces every number in §4 and §5 exactly, with
+`bottom_bucket_with_haircut == bottom_bucket_without_haircut` (n = 49, −15.74%).
+
+The truncation is one level earlier. 759 names clear the annual-10-K filter but
+only 711 have any usable price series, so **48 names are dropped at entry** — and
+the failures are warrants, units and delisted tickers (`XBPEW`, `NEOVW`, `NIVFW`,
+`AIDX`, `LIVG`). They never enter the book, so they cannot appear in the bottom
+bucket either. The consequence is the one that matters for §5: the +17.78%
+long/short spread is still a **survivor-subset artifact on both legs**, and the
+−15.74% bottom mean is a lower bound on distress rather than a measurement. Fixing
+it needs a delisted-ticker price source, which the free yfinance path does not
+have — no code change can recover it.
+
 ---
 
 ## 6. Verdict
@@ -164,9 +187,9 @@ What would still be worth doing (none of it rescues this variant):
    rejection does not speak for it.
 2. ~~Factor regression~~ — done in §5b. Alpha is zero; the return is a size and
    value tilt. No further work here can rescue the annual-10-K variant.
-3. **Delisting returns** — supply a delisting-return series so the left tail is
-   measured rather than truncated; it cannot make the long-only book positive,
-   but it would firm up the bottom-bucket number.
+3. ~~Delisting returns~~ — done in §5c. The exit is no longer truncated (0
+   records affected); what remains unrecoverable is the 48 names with no price
+   series at all, which need a delisted-ticker price source, not a code change.
 
 ---
 
@@ -184,6 +207,9 @@ What would still be worth doing (none of it rescues this variant):
   so it understates the fundamentals yield (759/2,600 = 29.2%).
 - The factor regression's overlapping fit carries autocorrelated residuals, and
   the book it regresses is the top quintile rather than the decile in §5.
+- 48 of the 759 fundamentals-usable names have no price series at all (warrants,
+  units, delisted tickers) and are excluded at entry, so both legs of the
+  long/short spread are survivor subsets.
 
 ---
 

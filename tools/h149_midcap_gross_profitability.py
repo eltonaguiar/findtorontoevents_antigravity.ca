@@ -77,6 +77,8 @@ STRESS_COST_MULT = 2.0
 COST_SURVIVAL_MIN = 0.60
 TOP_QUINTILE_Z = 0.8416   # 80th percentile: the book the pre-registered spec holds
 MIN_BOOK_N = 5            # a formation with fewer top-quintile names is not a portfolio
+DELIST_HAIRCUT_PCT = -30.0  # Shumway/Warther convention for a performance delisting:
+                           # exit at the last available close, then charge the penalty
 
 
 # ──────────────────────────────────────────────────────────────── prices ──
@@ -296,10 +298,11 @@ def harness_self_check(H) -> dict:
 
 # ─────────────────────────────────────────────────────────── record build ──
 def build_records(names: list[dict], closes, idx, rebal_dates: list,
-                  cost_bp: float) -> tuple[list[dict], dict]:
+                  cost_bp: float,
+                  delist_haircut_pct: float = DELIST_HAIRCUT_PCT) -> tuple[list[dict], dict]:
     records: list[dict] = []
     stats = {"rebalances": 0, "skipped_sparse": 0, "in_band_total": 0,
-             "rebalances_used": 0}
+             "rebalances_used": 0, "delisted": 0}
     n_idx = len(idx)
     for D in rebal_dates:
         asof = D.strftime("%Y-%m-%d")
@@ -331,11 +334,25 @@ def build_records(names: list[dict], closes, idx, rebal_dates: list,
             continue
         exit_date = idx[j].strftime("%Y-%m-%d")
         for (gpa, nm), z in zip(rows, zs):
-            p0 = closes[nm["ticker"]].iloc[i]
-            p1 = closes[nm["ticker"]].iloc[j]
-            if not (p0 == p0) or not (p1 == p1) or p0 <= 0:
+            series = closes[nm["ticker"]]
+            p0 = series.iloc[i]
+            if not (p0 == p0) or p0 <= 0:
                 continue
+            p1 = series.iloc[j]
+            delisted = False
+            if not (p1 == p1):
+                # the series ends inside the holding window: this is a delisting,
+                # not a missing observation. Skipping it truncates the left tail,
+                # which is exactly where the losers live.
+                traded = series.iloc[i + 1:j + 1].dropna()
+                if traded.empty:
+                    continue          # entered and never traded again: no exit price
+                p1 = traded.iloc[-1]
+                delisted = True
+                stats["delisted"] += 1
             gross_pct = (p1 / p0 - 1.0) * 100.0
+            if delisted:
+                gross_pct += delist_haircut_pct
             net_pct = gross_pct - cost_bp / 100.0
             records.append({
                 "ticker": nm["ticker"],
@@ -346,6 +363,7 @@ def build_records(names: list[dict], closes, idx, rebal_dates: list,
                 "gross_pct": gross_pct,
                 "gpa_score": z,
                 "gpa_raw": gpa,
+                "delisted": delisted,
             })
     return records, stats
 
@@ -629,6 +647,7 @@ def main() -> int:
         if k % 25 == 0:
             print(f"  .. {k}/{len(sample)} fetched, {len(names)} usable",
                   file=sys.stderr)
+    names_before_prices = len(names)
     print(f"# usable names with >=2 annual 10-K GP and Assets: {len(names)}",
           file=sys.stderr)
     if not names:
@@ -672,6 +691,31 @@ def main() -> int:
 
     res = evaluate(records, H, args.window_days)
     book = top_decile_book(records)
+
+    # what the declared delisting convention actually changes
+    delisted = [r for r in records if r.get("delisted")]
+    no_haircut, _ = build_records(names, closes, idx, rebal_dates, cost_bp,
+                                  delist_haircut_pct=0.0)
+    book_nh = top_decile_book(no_haircut)
+    delisting = {
+        "rule": ("a name whose price series ends inside the holding window exits at its last "
+                 "available close and is charged a declared haircut; names with no price at the "
+                 "rebalance (never enterable) are still dropped and counted separately"),
+        "haircut_pct": DELIST_HAIRCUT_PCT,
+        "records_exiting_on_last_trade": len(delisted),
+        "pct_of_records": round(100.0 * len(delisted) / max(1, len(records)), 2),
+        "mean_pnl_pct_delisted": (round(sum(r["pnl_pct"] for r in delisted) / len(delisted), 4)
+                                  if delisted else None),
+        "bottom_bucket_with_haircut": {"n": book["n_bottom"],
+                                       "net_mean_pct": book["net_mean_pct_bottom"]},
+        "bottom_bucket_without_haircut": {"n": book_nh["n_bottom"],
+                                          "net_mean_pct": book_nh["net_mean_pct_bottom"]},
+        "names_never_priceable": names_before_prices - len(names),
+    }
+    print(f"# delisting: {len(delisted)} record(s) exit on last trade "
+          f"({delisting['pct_of_records']}%); bottom bucket "
+          f"{book_nh['net_mean_pct_bottom']}% -> {book['net_mean_pct_bottom']}%",
+          file=sys.stderr)
     gap = density_gap(records, H, args.window_days)
 
     # stress cost
@@ -716,6 +760,7 @@ def main() -> int:
             "fundamentals_yield_pct": round(100.0 * len(names) / max(1, len(sample)), 1),
             "rebalances_total": stats["rebalances"],
             "rebalances_used": stats["rebalances_used"],
+            "records_exiting_on_last_trade": stats["delisted"],
             "rebalances_skipped_sparse": stats["skipped_sparse"],
             "in_band_observations": stats["in_band_total"],
             "records": len(records),
@@ -726,6 +771,7 @@ def main() -> int:
                            "gross_edge_pct", "cost_survival", "sign")},
         "top_decile_book": book,
         "factor_regression": fr,
+        "delisting": delisting,
         "density_gap": gap,
         "limits": [
             "Universe is a random sample of CURRENTLY REGISTERED SEC filers. Firms "
@@ -769,6 +815,11 @@ def main() -> int:
         print(f"  DATA GAP: {gap.get('shortfall_records')} more records needed; "
               f"{gap.get('names_needed_to_reach_density')}x the current name count "
               f"would reach {H.MIN_WINDOW_N}/window")
+    if delisted:
+        print(f"  delisting: {len(delisted)} exit(s) on last trade, mean "
+              f"{delisting['mean_pnl_pct_delisted']}%  bottom bucket "
+              f"{delisting['bottom_bucket_without_haircut']['net_mean_pct']}% -> "
+              f"{delisting['bottom_bucket_with_haircut']['net_mean_pct']}%")
     print(f"\nwrote {out}")
     return 0
 
