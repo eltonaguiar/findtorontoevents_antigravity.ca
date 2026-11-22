@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Multi-host local LLM consult: LM Studio + Ollama across PCs, in parallel.
+"""Multi-host local LLM consult: LM Studio + Ollama + local vLLM, in parallel.
 
 Engines are discovered, not configured: every (engine, host) pair in --target is
 probed, its model list read, and each request routed to the engine that owns the
@@ -35,7 +35,14 @@ DEFAULT_TARGETS = [
     ("lmstudio", "http://192.168.2.32:1234"),
     ("ollama", "http://192.168.2.32:11434"),
     ("ollama", "http://127.0.0.1:11434"),
+    # vLLM on this box: 35B MoE (Qwen3.6-35B-A3B-NVFP4), reasoning-parser on.
+    # Added 2026-11-22 — it is the fastest capable engine on the LAN, ~80 tok/s.
+    ("vllm", "http://127.0.0.1:8000"),
 ]
+
+# Below this many tokens a reasoning model spends the whole budget inside
+# reasoning_content and answers with content="". See call_model().
+THINK_MIN_TOKENS = 1500
 
 FINDING_RE = re.compile(
     r"^FINDING\s+(?P<sev>CRITICAL|MAJOR|MINOR)\s+(?P<file>[\w./-]+):(?P<line>\d+)\s*\|"
@@ -74,7 +81,7 @@ def discover(targets, timeout=10):
     found = {}
     report = []
     for engine, host in targets:
-        if engine == "lmstudio":
+        if engine in ("lmstudio", "vllm"):
             st, body = http_json(f"{host}/v1/models", timeout=timeout)
             ids = [m["id"] for m in json.loads(body).get("data", [])] if st == 200 else []
         else:
@@ -83,26 +90,32 @@ def discover(targets, timeout=10):
         report.append({"engine": engine, "host": host, "http": st, "n_models": len(ids)})
         for m in ids:
             # first engine that has a model owns it; ollama/ollama need host disambiguation
-            ref = f"{engine}:{m}" if engine == "lmstudio" else f"ollama:{m}@{host.split('//')[1]}"
+            if engine in ("lmstudio", "vllm"):
+                ref = f"{engine}:{m}"
+            else:
+                ref = f"ollama:{m}@{host.split('//')[1]}"
             found.setdefault(ref, (engine, host, m))
     return found, report
 
 
 def call_model(engine, host, model, messages, max_tokens, temperature, timeout):
     t0 = time.time()
-    if engine == "lmstudio":
-        st, body = http_json(
-            f"{host}/v1/chat/completions",
-            {
-                "model": model,
-                "messages": messages,
-                "max_tokens": max_tokens,
-                "temperature": temperature,
-                "stream": False,
-            },
-            timeout=timeout,
-        )
-        text, err = "", None
+    text, err, payload = "", None, {}
+    if engine in ("lmstudio", "vllm"):
+        payload = {
+            "model": model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "stream": False,
+        }
+        if engine == "vllm":
+            # 2026-11-22: Qwen3.6 on :8000 answers HTTP 200 with content="" when
+            # max_tokens is small — every token went to reasoning_content. Ask for
+            # thinking only when the budget can pay for it; never flip it silently
+            # for the caller, record it below.
+            payload["chat_template_kwargs"] = {"enable_thinking": max_tokens >= THINK_MIN_TOKENS}
+        st, body = http_json(f"{host}/v1/chat/completions", payload, timeout=timeout)
         if st == 200:
             try:
                 text = json.loads(body)["choices"][0]["message"].get("content") or ""
@@ -129,6 +142,19 @@ def call_model(engine, host, model, messages, max_tokens, temperature, timeout):
                 err = f"unparsable body: {e}: {body[:200]}"
         else:
             err = f"http {st}: {body[:300]}"
+    if (engine == "vllm" and not text.strip() and err is None
+            and payload.get("chat_template_kwargs", {}).get("enable_thinking")):
+        # Reasoning still ate the answer: retry once with thinking disabled rather
+        # than returning an empty reply the caller has to debug.
+        retry = dict(payload, chat_template_kwargs={"enable_thinking": False})
+        st2, body2 = http_json(f"{host}/v1/chat/completions", retry, timeout=timeout)
+        if st2 == 200:
+            try:
+                text = json.loads(body2)["choices"][0]["message"].get("content") or ""
+            except Exception as e:
+                err = f"unparsable body (retry, thinking off): {e}: {body2[:200]}"
+        else:
+            err = f"retry(thinking off) http {st2}: {body2[:300]}"
     if not text.strip() and err is None:
         err = "empty content (model probably spent the whole token budget on reasoning)"
     return {
@@ -240,7 +266,8 @@ def main():
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--self-check", action="store_true")
     ap.add_argument("--target", action="append", default=[],
-                    help="engine:base_url, e.g. ollama:http://127.0.0.1:11434")
+                    help="engine:base_url, e.g. ollama:http://127.0.0.1:11434 "
+                         "or vllm:http://127.0.0.1:8000")
     ap.add_argument("--model", action="append", default=[],
                     help="repeatable; 'engine:model' or a discovered ref")
     ap.add_argument("--fanout", type=int, default=0, help="call N discovered models")
