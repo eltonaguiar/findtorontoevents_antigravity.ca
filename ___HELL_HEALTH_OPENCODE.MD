@@ -48717,3 +48717,11 @@ Fast-forward
 **Impact:** TBD
 
 ---
+
+---
+
+## ⏭️ SKIPPED CHECK (2026-11-22 22:00 UTC)
+
+**Reason:** Complex failure in Audit Frontend Manifest (Run #45073397480) - requires deep investigation
+
+**Next Check:** Will resume at next interval
