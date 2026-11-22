@@ -224,3 +224,21 @@ named rather than assumed.
   not stored, and the family p-value cannot be computed from summary statistics.
 - **40–44** forward pods (carry pod state, H-201 pod, breakout pod, daily runner, pod report).
   The H-201 pod is the highest-value one: **77 trading days** is precisely what would settle it.
+
+---
+
+## Status log 3 — 2026-11-22 (seasonality, pod state, H-201 pod registration)
+
+| # | Item | Result |
+|---|---|---|
+| 13 | Equity turn-of-month seasonality | **REFUTED** (0/3 variants). Classic L→+3 window: gross **+0.345 bp/day (≈+0.87%/yr)**, cost drag **0.957 bp/day (2.8× the effect)**, net **−0.612 bp/day (−1.54%/yr)**, halves **[−0.841, −0.382]**, gross null percentile **23.2**. So the effect is both unpayable *and* indistinguishable from a random same-size window before cost. Family closed. |
+| 40 | H-229 carry pod state | **CONFIRMED GATED.** `POD-CRYPTO-CARRY-H229  n_days=0  gated=True  verdict=no_judgment: n=0`. The gate refuses a verdict before 20 days and a 60-day hold — deliberate, and it is working. |
+| 41 | Register forward pod for H-201 | **DONE** — `reports/pods/pod_h201_xsmom_2026-11-22.json`, status `pre_registered`, with a kill rule (CI-LB ≤ 0 at day 40+, hard stop if negative at n≥40), a success rule requiring **both** raw and vol-matched CI-LB > 0 at day ≥77, and an explicit ban on moving the bar. Left standalone rather than merged into the shared manifest, which this programme does not edit. |
+
+### Why the H-201 pod is the one that matters
+
+It is the only pod in the programme with an **arithmetic path to a verdict**: the DSR
+analysis priced the gap at **76.7 forward trading days**, and it also carries the fix for
+the survivorship hole (a point-in-time universe recorded at entry) and the beta objection
+(vol-matched CI-LB reported at every checkpoint). Everything else on the list is either
+blocked on data that does not exist here or already refuses to produce a verdict.

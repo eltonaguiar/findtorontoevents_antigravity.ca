@@ -1,0 +1,172 @@
+{
+  "generated_by": "tools/turn_of_month_check.py",
+  "rule": {
+    "universe": "SPY",
+    "signal": "calendar only, no price information",
+    "variants": {
+      "TOM_L_to_3": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "L_only": [
+        0
+      ],
+      "L_plus_1_to_3": [
+        1,
+        2,
+        3
+      ]
+    },
+    "cost_bp_per_unit_turnover": 5.0,
+    "gate": "CI-LB>0 AND both halves>0 AND null percentile>=95"
+  },
+  "window": {
+    "start": "1993-01-29",
+    "end": "2026-11-20"
+  },
+  "variants": {
+    "TOM_L_to_3": {
+      "cost5": {
+        "n_days": 8491,
+        "days_held": 1625,
+        "pct_held": 19.14,
+        "trades": 812,
+        "mean_excess_bps_day": -0.612,
+        "gross_excess_bps_day": 0.345,
+        "cost_drag_bps_day": 0.957,
+        "ann_excess_pct": -1.541,
+        "sharpe_excess": -0.194,
+        "ci_lb_bps_day": -1.492,
+        "ci_ub_bps_day": 0.287,
+        "halves_bps_day": [
+          -0.841,
+          -0.382
+        ],
+        "total_cost_bp": 8125.0
+      },
+      "cost10": {
+        "n_days": 8491,
+        "days_held": 1625,
+        "pct_held": 19.14,
+        "trades": 812,
+        "mean_excess_bps_day": -1.568,
+        "gross_excess_bps_day": 0.345,
+        "cost_drag_bps_day": 1.914,
+        "ann_excess_pct": -3.952,
+        "sharpe_excess": -0.497,
+        "ci_lb_bps_day": -2.448,
+        "ci_ub_bps_day": -0.671,
+        "halves_bps_day": [
+          -1.799,
+          -1.338
+        ],
+        "total_cost_bp": 16250.0
+      },
+      "null": {
+        "percentile": 23.2,
+        "null_mean_bps": 0.711,
+        "null_p95_bps": 1.561,
+        "n_shuffles": 1000
+      },
+      "passes_all_three_gates": false
+    },
+    "L_only": {
+      "cost5": {
+        "n_days": 8491,
+        "days_held": 407,
+        "pct_held": 4.79,
+        "trades": 406,
+        "mean_excess_bps_day": -0.784,
+        "gross_excess_bps_day": -0.305,
+        "cost_drag_bps_day": 0.479,
+        "ann_excess_pct": -1.975,
+        "sharpe_excess": -0.531,
+        "ci_lb_bps_day": -1.204,
+        "ci_ub_bps_day": -0.363,
+        "halves_bps_day": [
+          -0.74,
+          -0.828
+        ],
+        "total_cost_bp": 4065.0
+      },
+      "cost10": {
+        "n_days": 8491,
+        "days_held": 407,
+        "pct_held": 4.79,
+        "trades": 406,
+        "mean_excess_bps_day": -1.262,
+        "gross_excess_bps_day": -0.305,
+        "cost_drag_bps_day": 0.957,
+        "ann_excess_pct": -3.181,
+        "sharpe_excess": -0.849,
+        "ci_lb_bps_day": -1.685,
+        "ci_ub_bps_day": -0.84,
+        "halves_bps_day": [
+          -1.219,
+          -1.306
+        ],
+        "total_cost_bp": 8130.0
+      },
+      "null": {
+        "percentile": 3.1,
+        "null_mean_bps": 0.191,
+        "null_p95_bps": 0.614,
+        "n_shuffles": 1000
+      },
+      "passes_all_three_gates": false
+    },
+    "L_plus_1_to_3": {
+      "cost5": {
+        "n_days": 8491,
+        "days_held": 1218,
+        "pct_held": 14.34,
+        "trades": 406,
+        "mean_excess_bps_day": 0.172,
+        "gross_excess_bps_day": 0.65,
+        "cost_drag_bps_day": 0.478,
+        "ann_excess_pct": 0.434,
+        "sharpe_excess": 0.062,
+        "ci_lb_bps_day": -0.612,
+        "ci_ub_bps_day": 0.945,
+        "halves_bps_day": [
+          -0.102,
+          0.446
+        ],
+        "total_cost_bp": 4060.0
+      },
+      "cost10": {
+        "n_days": 8491,
+        "days_held": 1218,
+        "pct_held": 14.34,
+        "trades": 406,
+        "mean_excess_bps_day": -0.306,
+        "gross_excess_bps_day": 0.65,
+        "cost_drag_bps_day": 0.956,
+        "ann_excess_pct": -0.771,
+        "sharpe_excess": -0.11,
+        "ci_lb_bps_day": -1.082,
+        "ci_ub_bps_day": 0.468,
+        "halves_bps_day": [
+          -0.58,
+          -0.032
+        ],
+        "total_cost_bp": 8120.0
+      },
+      "null": {
+        "percentile": 62.5,
+        "null_mean_bps": 0.505,
+        "null_p95_bps": 1.259,
+        "n_shuffles": 1000
+      },
+      "passes_all_three_gates": false
+    }
+  },
+  "verdict": {
+    "variants_tested": 3,
+    "variants_passing": 0,
+    "family_status": "REFUTED",
+    "note": "three variants of one calendar rule are NOT three independent trials; the family is counted as ONE trial for multiplicity"
+  }
+}

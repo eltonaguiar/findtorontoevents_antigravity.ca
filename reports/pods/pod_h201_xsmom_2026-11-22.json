@@ -1,0 +1,76 @@
+{
+  "pod_id": "POD-EQUITY-H201-XSMOM-6M",
+  "registered": "2026-11-22",
+  "registered_by": "buffy",
+  "status": "pre_registered",
+  "paper_only": true,
+  "capital_sanctioned": 0,
+  "why_this_pod_exists": "H-201 xsmom_top3_6m is the closest thing the programme has to an equity edge: CI-LB +7.246 bp/day over 3,744 days, DSR 0.9469 against 0.95. The multiplicity analysis showed it fails by ONE TRIAL (DSR holds to N=28 vs 29 declared) and by 77 trading days of data at the observed effect size. 77 forward trading days is exactly what a pod produces, and it is the ONLY legitimate way to settle the cell: an independent replication adds observations without adding trials to this family. No other pod in the programme has a defined, arithmetic path to a verdict.",
+  "hypothesis": {
+    "id": "H-201",
+    "name": "xsmom_top3_6m",
+    "statement": "Ranking a broad equity universe on 6-month total return and holding the top 3 equal-weight beats a T-bill hurdle after cost",
+    "null": "daily excess return mean <= 0"
+  },
+  "prior_evidence": {
+    "backtest_ci_lb_bps_day": 7.246,
+    "backtest_ci_ub_bps_day": 16.071,
+    "n_days": 3744,
+    "n_trades": 179,
+    "dsr": 0.9469,
+    "fails_multiplicity_by": "one declared trial (holds 0.95 to N=28)",
+    "fails_by_data_margin": "0.000272 of daily Sharpe = 76.7 more trading days",
+    "vol_matched_ci_lb_bps_day": -0.533,
+    "vol_matched_warning": "when scaled to SPY's volatility the excess goes NEGATIVE (-0.533), so the raw CI-LB may be volatility, not selection. The pod must report the vol-matched figure beside the raw one at every checkpoint."
+  },
+  "universe": {
+    "rule": "point-in-time liquid US equities/ETFs, minimum 12-month history at entry, price >= $5, ADV >= $5M",
+    "minimum_names": 22,
+    "exclusions": "no survivorship-based selection: a name that delists while held is marked to its last trade and counted as a loss, and its slot is NOT refilled",
+    "selection_bias_control": "the universe must be recorded AT ENTRY with a timestamp so the choice can be audited later"
+  },
+  "signal": {
+    "formation": "6-month total return, month-end, computed ONLY from data available at that close",
+    "rank": "descending; long the top 3",
+    "rebalance": "monthly, at month-end close",
+    "look_ahead_ban": "if a signal would change under a one-day data delay, it is void for that month and the reason is logged"
+  },
+  "execution": {
+    "fill": "next session's opening price, never the signal close",
+    "slippage_bp_per_side": 10,
+    "commission_bp_per_side": 1,
+    "cost_basis": "ASSUMED. Equity cost is UNMEASURED in this repo (see reports/2026-11-22-data-bias-register.md). Every result must be labelled conditional on 11 bp/side until measured.",
+    "capacity": "position size <= 1% of the name's 20-day ADV"
+  },
+  "size_gate": {
+    "no_verdict_before_n_days": 20,
+    "no_verdict_before_n_trades": 10,
+    "reason": "a verdict on 3 trades is noise; the gate is deliberate and must not be lowered to produce a result"
+  },
+  "kill_rule": {
+    "trigger": "at day 40 or any checkpoint after: CI-LB of mean daily excess <= 0 on FORWARD rows only",
+    "hard_stop": "if forward n >= 40 days and the point estimate is negative, stop and record REFUTED",
+    "do_not_move": "the bar is not to be adjusted after seeing forward data; a change requires a new hypothesis id"
+  },
+  "success_rule": {
+    "trigger": "at day 77 or later: CI-LB of mean daily excess > 0 on forward rows only AND vol-matched excess > 0",
+    "then": "NOT an investable verdict. It promotes the cell to CANDIDATE and the next step is a second non-overlapping universe, not capital.",
+    "why_77": "76.7 days is the forward data margin the DSR analysis computed at the observed effect size"
+  },
+  "reporting": {
+    "cadence": "daily row append, weekly summary",
+    "must_report_every_time": [
+      "n days and n trades forward",
+      "raw CI-LB AND vol-matched CI-LB (both, always)",
+      "realised slippage vs the 11 bp assumption",
+      "whether any signal was voided for a data delay"
+    ],
+    "must_never_report": "a Sharpe or PF without its cost basis and its n"
+  },
+  "integration_note": "This file is a STANDALONE spec. It is deliberately NOT merged into the shared pod manifest (audit3_tribunal reads `status != pre_registered` and barring anything else), because that manifest is owned jointly and this programme does not stage other agents' files. Merging is a one-line addition by whoever owns the manifest.",
+  "known_limitations": [
+    "The backtest universe is a today's-constituents list: 0 series end early and 0 start late, which is the signature of survivorship flattering the result. The survivorship audit therefore marks H-201 UNSAFE, and the pod's point-in-time universe rule exists precisely to fix that.",
+    "The vol-matched CI-LB is negative, so a passing raw result may still be beta rather than selection.",
+    "Equity transaction cost is unmeasured; 11 bp/side is an assumption, not a measurement."
+  ]
+}
