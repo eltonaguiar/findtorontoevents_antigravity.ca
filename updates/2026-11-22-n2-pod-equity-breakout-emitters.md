@@ -161,7 +161,7 @@ what made measurement possible at all. Nothing here retracts that.
 | Evidence | Value |
 |---|---|
 | My 44 emitted `donchian-stock-breakout` rows (MySQL read-back) | **PF 0.247**, WR 15.9%, mean −2.367%, t −3.59 (closed-only PF 0.237; 31-date clustered PF 0.294) |
-| Independent backtest of the pod's cited rule (`tools/pod_equity_breakout_backtest.py`, 1,941 trades) | **PF 0.992** (t −0.15); 0.984 before 2021; 1.020 in the published window |
+| Independent backtest of the pod's cited rule (`tools/pod_equity_breakout_backtest.py`, 1,941 trades) | **PF 0.992** (t −0.15) — *at 25bp/side, see the cost-basis amendment below*; 0.984 before 2021; 1.020 in the published window |
 | Pod's published evidence `H-BABY-EQUITY-VT-PATTERN-SWEEP-001` | **PF 1.479 / WR 50.2%** at n=245 — **unreproducible**; peer measured PF 1.00 / WR 40.6% over 1,901 trades 1980-2026 |
 
 **And the pod tests one rule with another's evidence.** The peer tested
@@ -177,3 +177,44 @@ on a published PF that does not reproduce from the repo's own strategy code, whi
 rows measure at PF ≈ 0.25–0.99. It should read **UNREPRODUCED** until the validating entry/exit path
 and the n=245-vs-n=418 selectivity gap are published. Zero forward observations, zero capital
 sanctioned.
+
+## Amendment 2 (2026-11-22) — cost basis for every PF above, and what actually kills the rule
+
+Added after an audit of how the numbers in Amendment 1 were cited. **Nothing above is retracted;
+this annotates it.** The purpose is to stop a PF being read at the wrong cost.
+
+**Every PF quoted in this document, with its cost basis:**
+
+| PF | Cost basis | Source |
+|---|---|---|
+| **0.992** (t −0.15) | **25 bp/side** (50 bp round trip) | `COST_BP_PRIMARY = 25.0`, [`tools/pod_equity_breakout_backtest.py`](../tools/pod_equity_breakout_backtest.py:51); row in [`reports/pod_equity_breakout/pod_equity_breakout_backtest.json`](../reports/pod_equity_breakout/pod_equity_breakout_backtest.json:31) |
+| 0.984 (pre-2021) / 1.020 (2021+ window) | 25 bp/side | same file, rows 47 and 63 |
+| **1.2206** (t +3.52, net **+0.3919%**/trade) | **5 bp/side** (10 bp round trip) | [`reports/pod_equity_breakout/breakout_cost_sweep.json`](../reports/pod_equity_breakout/breakout_cost_sweep.json), `cost_bp_per_side: 5` row |
+| 1.2865 (gross, t +4.42) | 0 bp/side (gross) | same sweep, `cost_bp_per_side: 0` |
+| 0.247 (my 44 emitted rows) | 8 bp EQUITY round trip | MySQL read-back, §3 above |
+
+**The omission.** Amendment 1 cited "independent backtest PF 0.992" as evidence the pod's edge is
+absent, without saying it is the **25 bp/side** row. At 25 bp/side the per-trade net is
+−0.008%/trade — the rule is *exactly* at break-even cost (measured break-even is
+**24.59 bp/side** all-history, 23.91 bp/side pre-2021, from the same sweep). So PF 0.992 is
+largely a statement about *cost*, and quoting it unqualified implies the gross rule has no edge.
+It does have one: at 5 bp/side the same backtest is **PF 1.2206, net +0.3919%/trade, t = 3.52**.
+
+**What actually kills the rule is not cost.** The KILL rests on two gates that a lower cost does
+not move:
+
+1. **The random-entry null.** At 5 bp/side the observed Sharpe (0.452 at N=20, 0.509 at N=55) sits
+   at the **69.8th / 71.4th percentile** of a 500-shuffle random-entry null on the same symbols
+   with the same exit logic. A rule that cannot beat random long entries in a rising market is not
+   an edge, whatever its PF.
+2. **Negative selection alpha.** Against simply holding the same ETFs over the same windows, the
+   selection alpha is **−0.123% / −0.110%** point, with **95% CI lower bound −0.285% / −0.296%**.
+   The breakout rule does *worse* than buy-and-hold.
+
+Both from [`docs/edge_research/block3_d7_breakout.md`](../docs/edge_research/block3_d7_breakout.md:50)
+(5 bp/side; bootstrap seed 42, 2,000 resamples; 500 shuffles).
+
+**Precise statement.** The breakout rule has a genuinely positive *gross* edge (+0.49%/trade) that
+survives moderate cost; what kills it is that the *same* edge is matched or beaten by random entries
+and by simply holding the underlying. Cost is the reason PF 0.992 looks like "no edge"; the null and
+selection-alpha gates are the reason there is no edge to harvest even when cost is low.

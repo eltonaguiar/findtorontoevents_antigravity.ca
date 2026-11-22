@@ -1,0 +1,602 @@
+{
+  "item": 34,
+  "title": "Bond / rate momentum (tradeable instruments)",
+  "generated_utc": "2026-11-22T12:48:04.647711+00:00",
+  "data_inventory": {
+    "bond_etfs": [
+      "TLT",
+      "IEF",
+      "SHY",
+      "TLH",
+      "AGG",
+      "BND",
+      "LQD",
+      "TIP",
+      "JNK",
+      "HYG"
+    ],
+    "n_etfs": 10,
+    "etf_rows": 1254,
+    "etf_first_date": "2021-11-22",
+    "etf_last_date": "2026-11-19",
+    "yield_series": {
+      "DGS2": {
+        "file": "data/rates_cache/DGS2.csv",
+        "first": "1976-06-01",
+        "last": "2026-11-19",
+        "last_value_pct": 4.76
+      },
+      "DGS5": {
+        "file": "data/rates_cache/DGS5.csv",
+        "first": "1962-01-02",
+        "last": "2026-11-19",
+        "last_value_pct": 4.86
+      },
+      "DGS10": {
+        "file": "data/rates_cache/DGS10.csv",
+        "first": "1962-01-02",
+        "last": "2026-11-19",
+        "last_value_pct": 5.04
+      }
+    },
+    "etf_close_note": "Close behaves as dividend-adjusted (proven for SHY); adjustment method UNMEASURED"
+  },
+  "risk_free_annual": 0.0432,
+  "sample_check": {
+    "window": [
+      "2022-10-31",
+      "2026-11-19"
+    ],
+    "n_rebalances": 49,
+    "dgs10_start_pct": 4.1,
+    "dgs10_end_pct": 5.04,
+    "dgs10_min_pct": 3.3,
+    "dgs10_max_pct": 5.31,
+    "rising_rate_period_present": true,
+    "n_rate_cycles": "one dominant bear (2022-23); cannot separate skill from luck"
+  },
+  "spy_buy_hold": {
+    "cagr": 0.17801728576120945,
+    "sharpe_vs_rf": 0.9867463789797213,
+    "n_periods": 49
+  },
+  "bond_buy_hold": {
+    "TLT": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": -0.0037660261626565328,
+      "sharpe_vs_rf": -0.2590544852489844,
+      "maxdd": -0.20162492045935498,
+      "skew": 0.3297393938091773
+    },
+    "IEF": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.02562488700786192,
+      "sharpe_vs_rf": -0.21336376344851288,
+      "maxdd": -0.08821469094466794,
+      "skew": 0.08855050812063862
+    },
+    "SHY": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.03683248563323205,
+      "sharpe_vs_rf": -0.3810151427218441,
+      "maxdd": -0.008695598799610016,
+      "skew": 0.014900553626666065
+    },
+    "TLH": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.017152224335282185,
+      "sharpe_vs_rf": -0.16086780756286606,
+      "maxdd": -0.1622421662420901,
+      "skew": 0.28184919884204707
+    },
+    "AGG": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.03887468595539256,
+      "sharpe_vs_rf": -0.05348532812702581,
+      "maxdd": -0.06176314006578698,
+      "skew": 0.2554206711871357
+    },
+    "BND": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.03878301334988854,
+      "sharpe_vs_rf": -0.056972921792712114,
+      "maxdd": -0.060290252184858284,
+      "skew": 0.2582262197054953
+    },
+    "LQD": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.049053226679750095,
+      "sharpe_vs_rf": 0.09697962646910345,
+      "maxdd": -0.07895228333160997,
+      "skew": 0.5863026253605745
+    },
+    "TIP": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.028263911903809724,
+      "sharpe_vs_rf": -0.29972182474514375,
+      "maxdd": -0.048580077820914114,
+      "skew": 0.054601433512604595
+    },
+    "JNK": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.07381979505629266,
+      "sharpe_vs_rf": 0.5432477321423562,
+      "maxdd": -0.029080380652950932,
+      "skew": 0.30242591207441216
+    },
+    "HYG": {
+      "cost_basis": "zero (buy-and-hold benchmark)",
+      "cagr": 0.07141924951946965,
+      "sharpe_vs_rf": 0.5209093378797371,
+      "maxdd": -0.027275510803208225,
+      "skew": 0.35508165924152574
+    }
+  },
+  "tests": {
+    "B1_time_series_long_only": {
+      "description": "equal-weight every ETF with 12-1 return > 0, else cash at rf",
+      "n_rebalances": 49,
+      "cost_basis": "base 5 bp/side ASSUMED",
+      "metrics": {
+        "n": 49,
+        "cagr": 0.016306305342402627,
+        "vol": 0.047162610401285804,
+        "sharpe_vs_rf": -0.5496682726712775,
+        "maxdd": -0.05810632373267488,
+        "skew": -0.24127382566221292,
+        "worst_month": -0.03146676428863422,
+        "pct_positive": 0.6326530612244898,
+        "mean_month": 0.0014396841171714007,
+        "median_month": 0.0036000000000000003
+      },
+      "pf_base": 1.3121374730708668,
+      "cost_sweep": {
+        "2bp": {
+          "cost_basis": "2 bp/side ASSUMED",
+          "cagr": 0.017680803426393554,
+          "sharpe_vs_rf": -0.5216425506304401,
+          "maxdd": -0.05599222065386922,
+          "pf": 1.3409423796056357
+        },
+        "5bp": {
+          "cost_basis": "5 bp/side ASSUMED",
+          "cagr": 0.016306305342402627,
+          "sharpe_vs_rf": -0.5496682726712775,
+          "maxdd": -0.05810632373267488,
+          "pf": 1.3121374730708668
+        },
+        "10bp": {
+          "cost_basis": "10 bp/side ASSUMED",
+          "cagr": 0.014018668011988256,
+          "sharpe_vs_rf": -0.596075911997766,
+          "maxdd": -0.061621440342566336,
+          "pf": 1.265746155321357
+        },
+        "20bp": {
+          "cost_basis": "20 bp/side ASSUMED",
+          "cagr": 0.009455347586081686,
+          "sharpe_vs_rf": -0.6876126522104005,
+          "maxdd": -0.06862030056844681,
+          "pf": 1.17858584978333
+        }
+      },
+      "breakeven_bp_per_side_sharpe_zero": 0.0,
+      "null": {
+        "n_shuffles": 1000,
+        "real_sharpe": -0.5496682726712775,
+        "null_sharpe_mean": -0.3270143454138756,
+        "null_sharpe_p95": -0.15123214815555205,
+        "percentile": 2.0,
+        "beats_random_95": false
+      },
+      "bootstrap_excess_vs_spy": {
+        "excess_cagr": -0.16171098041880683,
+        "ci95": [
+          -0.2999720138163546,
+          -0.04136777445060845
+        ],
+        "ci_excludes_zero": true,
+        "n_boot": 10000,
+        "n_obs": 49
+      },
+      "avg_time_in_market": 0.8979591836734694,
+      "per_etf_exposure": {
+        "TLT": 0.03469,
+        "IEF": 0.05879,
+        "SHY": 0.16637,
+        "TLH": 0.04603,
+        "AGG": 0.08814,
+        "BND": 0.08405,
+        "LQD": 0.08644,
+        "TIP": 0.08235,
+        "JNK": 0.12555,
+        "HYG": 0.12555
+      },
+      "monthly_detail": [
+        {
+          "period": "2022-10-31",
+          "net": 0.0036,
+          "in_market": 0.0
+        },
+        {
+          "period": "2022-11-30",
+          "net": 0.0036,
+          "in_market": 0.0
+        },
+        {
+          "period": "2022-12-30",
+          "net": 0.0036,
+          "in_market": 0.0
+        },
+        {
+          "period": "2023-01-31",
+          "net": 0.0036,
+          "in_market": 0.0
+        },
+        {
+          "period": "2023-02-28",
+          "net": 0.0036,
+          "in_market": 0.0
+        },
+        {
+          "period": "2023-03-31",
+          "net": 0.00194,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-04-28",
+          "net": -0.012392,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-05-31",
+          "net": -0.005779,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-06-30",
+          "net": 0.006249,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-07-31",
+          "net": -0.00913,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-08-31",
+          "net": -0.031467,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-09-29",
+          "net": -0.00666,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-10-31",
+          "net": 0.035862,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-11-30",
+          "net": 0.025515,
+          "in_market": 1.0
+        },
+        {
+          "period": "2023-12-29",
+          "net": -0.003951,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-01-31",
+          "net": -0.008304,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-02-29",
+          "net": 0.0097,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-03-28",
+          "net": -0.018636,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-04-30",
+          "net": 0.015329,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-05-31",
+          "net": 0.006326,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-06-28",
+          "net": 0.023432,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-07-31",
+          "net": 0.014721,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-08-30",
+          "net": 0.015643,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-09-30",
+          "net": -0.026349,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-10-31",
+          "net": 0.011164,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-11-29",
+          "net": -0.022583,
+          "in_market": 1.0
+        },
+        {
+          "period": "2024-12-31",
+          "net": 0.008264,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-01-31",
+          "net": 0.017949,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-02-28",
+          "net": -0.003353,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-03-31",
+          "net": 0.000531,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-04-30",
+          "net": -0.005349,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-05-30",
+          "net": 0.014808,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-06-30",
+          "net": -0.001244,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-07-31",
+          "net": 0.011584,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-08-29",
+          "net": 0.010695,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-09-30",
+          "net": 0.00424,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-10-31",
+          "net": 0.006114,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-11-28",
+          "net": -0.005576,
+          "in_market": 1.0
+        },
+        {
+          "period": "2025-12-31",
+          "net": 0.002647,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-01-30",
+          "net": 0.013966,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-02-27",
+          "net": -0.019838,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-03-31",
+          "net": 0.00363,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-04-30",
+          "net": 0.003576,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-05-29",
+          "net": 0.002731,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-06-30",
+          "net": -0.014975,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-07-31",
+          "net": 0.004196,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-08-31",
+          "net": -0.023243,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-09-30",
+          "net": 0.007739,
+          "in_market": 1.0
+        },
+        {
+          "period": "2026-10-30",
+          "net": -0.007175,
+          "in_market": 1.0
+        }
+      ],
+      "verdict": "KILL",
+      "verdict_conditional_on": "ETF cost assumption (UNMEASURED); dividend adjustment method (UNMEASURED); single 5-year window containing one bond bear",
+      "verdict_note": "null percentile < 95: does not beat random selection -- stopping there"
+    },
+    "B2_cross_sectional_long_short": {
+      "description": "long top-3 / short bottom-3 by 12-1 return (diagnostic)",
+      "n_rebalances": 49,
+      "cost_basis": "base 5 bp/side ASSUMED",
+      "metrics": {
+        "n": 49,
+        "cagr": -0.012845686701175252,
+        "vol": 0.03273168104061986,
+        "sharpe_vs_rf": -1.6985056581084441,
+        "maxdd": -0.053129714554923435,
+        "skew": -0.5028324677266919,
+        "worst_month": -0.024386653220667298,
+        "pct_positive": 0.46938775510204084,
+        "mean_month": -0.0010329121205744766,
+        "median_month": -0.00024039629147163728
+      },
+      "pf_base": 0.7430981692792001,
+      "cost_sweep": {
+        "2bp": {
+          "cost_basis": "2 bp/side ASSUMED",
+          "cagr": -0.011128784456615137,
+          "sharpe_vs_rf": -1.64096868587975,
+          "maxdd": -0.04766105736211845
+        },
+        "5bp": {
+          "cost_basis": "5 bp/side ASSUMED",
+          "cagr": -0.012845686701175252,
+          "sharpe_vs_rf": -1.6985056581084441,
+          "maxdd": -0.053129714554923435
+        },
+        "10bp": {
+          "cost_basis": "10 bp/side ASSUMED",
+          "cagr": -0.015701453008097,
+          "sharpe_vs_rf": -1.7945376083058548,
+          "maxdd": -0.06395365431545419
+        },
+        "20bp": {
+          "cost_basis": "20 bp/side ASSUMED",
+          "cagr": -0.0213915254258934,
+          "sharpe_vs_rf": -1.9866853750927094,
+          "maxdd": -0.08524404736343272
+        }
+      },
+      "breakeven_bp_per_side_sharpe_zero": 0.0,
+      "bootstrap_excess_vs_spy": {
+        "excess_cagr": -0.1908629724623847,
+        "ci95": [
+          -0.3557142685743347,
+          -0.042519607858120534
+        ],
+        "ci_excludes_zero": true,
+        "n_boot": 10000,
+        "n_obs": 49
+      },
+      "per_etf_exposure": {
+        "TLT": -0.13265,
+        "IEF": -0.09524,
+        "SHY": 0.02721,
+        "TLH": -0.10544,
+        "AGG": 0.0,
+        "BND": -0.0034,
+        "LQD": 0.04082,
+        "TIP": -0.03742,
+        "JNK": 0.15306,
+        "HYG": 0.15306
+      },
+      "verdict": "KILL",
+      "verdict_conditional_on": "ETF cost assumption (UNMEASURED); dividend adjustment method (UNMEASURED); single 5-year window containing one bond bear"
+    },
+    "B3_duration_timing_mapped_to_TLT": {
+      "description": "long TLT when DGS10 month-end yield < its level 3 months earlier, else cash -- UNTRADEABLE yield signal mapped to TLT",
+      "n_rebalances": 49,
+      "cost_basis": "base 5 bp/side ASSUMED",
+      "metrics": {
+        "n": 49,
+        "cagr": -0.020528786553452028,
+        "vol": 0.05854042355814158,
+        "sharpe_vs_rf": -1.0627678078176168,
+        "maxdd": -0.11638057183084605,
+        "skew": -1.4522913627023166,
+        "worst_month": -0.05454891300067555,
+        "pct_positive": 0.8163265306122449,
+        "mean_month": -0.0015845731344667424,
+        "median_month": 0.0036000000000000003
+      },
+      "pf_base": 0.7366011582223563,
+      "cost_sweep": {
+        "2bp": {
+          "cost_basis": "2 bp/side ASSUMED",
+          "cagr": -0.019516992723624838,
+          "sharpe_vs_rf": -1.0457600551769188,
+          "maxdd": -0.11291275498538156
+        },
+        "5bp": {
+          "cost_basis": "5 bp/side ASSUMED",
+          "cagr": -0.020528786553452028,
+          "sharpe_vs_rf": -1.0627678078176168,
+          "maxdd": -0.11638057183084605
+        },
+        "10bp": {
+          "cost_basis": "10 bp/side ASSUMED",
+          "cagr": -0.02221346609572683,
+          "sharpe_vs_rf": -1.0909152691136597,
+          "maxdd": -0.12213247176159558
+        },
+        "20bp": {
+          "cost_basis": "20 bp/side ASSUMED",
+          "cagr": -0.025576667328336633,
+          "sharpe_vs_rf": -1.1464153645381039,
+          "maxdd": -0.13353272958779272
+        }
+      },
+      "breakeven_bp_per_side_sharpe_zero": 0.0,
+      "bootstrap_excess_vs_spy": {
+        "excess_cagr": -0.19854607231466148,
+        "ci95": [
+          -0.35475261593976676,
+          -0.060064669697789855
+        ],
+        "ci_excludes_zero": true,
+        "n_boot": 10000,
+        "n_obs": 49
+      },
+      "tlt_buy_hold": {
+        "cost_basis": "zero (buy-and-hold)",
+        "cagr": -0.0037660261626565328,
+        "sharpe_vs_rf": -0.2590544852489844,
+        "maxdd": -0.20162492045935498,
+        "n_periods": 49
+      },
+      "avg_time_in_market": 0.3469387755102041,
+      "mapping_caveat": "A yield cannot be traded. This is the yield rule's timing decision applied to TLT's price return: the P&L and the cost belong to TLT, not to the yield signal.",
+      "verdict": "KILL",
+      "verdict_conditional_on": "ETF cost assumption (UNMEASURED); dividend adjustment method (UNMEASURED); single 5-year window containing one bond bear"
+    }
+  }
+}

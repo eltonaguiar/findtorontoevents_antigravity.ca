@@ -1,0 +1,64 @@
+# digest-artifact-guard - read-only gate: every published digest must have retrievable bytes.
+#
+# A published rows_sha256 is only a reconciliation key if the exact rows it hashes
+# can be fetched back later. This gate reads reports/published_digests_manifest.json
+# and, for each published digest, resolves its artifact and recomputes the digest
+# (alpha_engine/resolved_closed_view.py contract: sorted by closed_at, sort_keys,
+# compact separators, SHA-256).
+#
+# Outcomes: PASS = artifact matches | FAIL = no artifact or hash mismatch |
+#           SKIP = no digests published (explicitly not a pass).
+#
+# Read-only by construction: no commit, no push, no MySQL, no secrets, no rebuild.
+# The manifest is the only input; url: refs are NOT fetched here (the live surface
+# is rewritten every few minutes, so an online check would be flaky). Use
+# `python tools/digest_artifact_guard.py --online` locally for the live surface.
+#
+# Tool: tools/digest_artifact_guard.py   Tests: tests/test_digest_artifact_guard.py
+
+name: digest-artifact-guard
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'reports/published_digests_manifest.json'
+      - 'tools/digest_artifact_guard.py'
+      - 'tests/test_digest_artifact_guard.py'
+      - '.github/workflows/digest-artifact-guard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'reports/published_digests_manifest.json'
+      - 'tools/digest_artifact_guard.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: digest-artifact-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install test deps
+        run: python -m pip install --quiet --disable-pip-version-check pytest
+
+      - name: Unit tests (four outcomes)
+        run: python -m pytest tests/test_digest_artifact_guard.py -q
+
+      - name: Guard the published digests (read-only)
+        # Non-zero on FAIL. Current state is expected to FAIL: most published
+        # digests have no retained artifact. That red is the finding, not noise.
+        run: python tools/digest_artifact_guard.py

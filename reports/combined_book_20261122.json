@@ -1,0 +1,29 @@
+{
+ "item": 37,
+ "n_non_negative_strategies": 1,
+ "n_killed": 12,
+ "n_marginal": 1,
+ "algebra": "Equal-weight blend of a risky sleeve (mean mu, sd s) with cash (rate rf) at weight w: mean_p = w*mu + (1-w)*rf, sd_p = w*s. Excess return = mean_p - rf = w*(mu - rf). Sharpe_excess_p = w*(mu-rf)/(w*s) = (mu-rf)/s = Sharpe_excess of the sleeve, INDEPENDENT of w. So blending with cash cannot raise the excess Sharpe of the book; for any w>0 it only scales the expected excess return by w. If the sleeve's expected excess return mu-rf <= 0, every w>0 has non-positive expected excess return and the optimum is w=0 (100% cash). Diversification lowers variance; it cannot lift a non-positive mean, and lower variance around a non-positive mean is not a benefit.",
+ "funding_carry": {
+  "net_apr_H30": 0.024162692981551694,
+  "net_apr_H90": 0.06243999198956661,
+  "raw_sharpe_H30": 0.5552666990399425,
+  "raw_sharpe_H90": 0.7399608966336542,
+  "excess_sharpe_vs_cash_H30": -0.4374836296109276,
+  "excess_sharpe_vs_cash_H90": 0.22800838485377978,
+  "note": "the reported raw Sharpe is return/vol, NOT excess over cash; against the 4.32% T-bill the excess Sharpe is negative because net APR < 4.32%"
+ },
+ "cash": {
+  "rate": 0.0432
+ },
+ "spy": {
+  "measured_sharpe": 0.351
+ },
+ "blend_funding_carry_cash": {
+  "best_allocation": "100% cash",
+  "reason": "funding-carry net APR (2.42% at H30, 6.24% at H90) only beats the 4.32% T-bill at the 90d tail, whose excess Sharpe over cash is still the sleeve's own and does not improve with blending; at the median hold it is below cash",
+  "beats_100pct_cash": false
+ },
+ "verdict": "NOT_APPLICABLE (multi-strategy) / no viable book: only one non-negative strategy",
+ "exploratory_pairs_searched": 0
+}

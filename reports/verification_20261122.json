@@ -1,0 +1,109 @@
+{
+  "schema": "verification.v1",
+  "generated_at": "2026-11-22T13:13:00Z",
+  "scope": "items 42-45 only",
+  "item42_pod_resolvability": {
+    "verdict": "STUCK",
+    "mechanism": "_write_outcomes_to_mysql (audit_trail/universal_pick_resolver.py:1180) writes only ejaguiar1_stocks.at_pick_outcomes. There is no INSERT/UPDATE of at_signal_outcomes anywhere in the resolver.",
+    "required_conditions_for_resolution": {
+      "source": "a JSON pick file in SYSTEM_SOURCES (universal_pick_resolver.py:138)",
+      "fields": ["symbol", "direction", "entry_price", "take_profit", "stop_loss", "timestamp"],
+      "status": "not in CLOSED_STATUSES and no closed_at/exit_price/_is_closed_like_raw_pick (line 1161)",
+      "price_path": "live snapshot price, yfinance 1h bars for non-crypto, or Binance klines for crypto (main line 1324-1408)",
+      "time_exit": "after per-class hold window (EQUITY/ETF 96h) at line 1724",
+      "write_target": "at_pick_outcomes, NOT at_signal_outcomes"
+    },
+    "per_strategy": {
+      "donchian-stock-breakout": {"verdict": "STUCK", "rows": 44, "active": 4, "closed": 40,
+        "missing_field": "take_profit is NULL on all 44 rows (queried: SUM(take_profit IS NULL) = 44)",
+        "reason": "emitter writes take_profit=None (emit_equity_breakout_pod.py:209); resolver then re-clamps SL to 2.5% and never writes at_signal_outcomes"},
+      "adx-trend-scout": {"verdict": "STUCK", "rows": 44, "active": 6, "closed": 38,
+        "missing_field": "take_profit is NULL on all 44 rows",
+        "reason": "same emitter / same write path"},
+      "vol-contraction-scout": {"verdict": "STUCK", "rows": 44, "active": 0, "closed": 44,
+        "missing_field": "take_profit is NULL on all 44 rows",
+        "reason": "same emitter / same write path"},
+      "rs-breakout-scout": {"verdict": "STUCK", "rows": 43, "active": 6, "closed": 37,
+        "missing_field": "take_profit is NULL on all 43 rows",
+        "reason": "same emitter / same write path"}
+    },
+    "earliest_resolution_date": "none while the write path is unchanged; if a closed-row mirror into at_signal_outcomes were enabled, the 159 CLOSED n2_ rows (latest closed_at 2026-11-19) would be eligible on the next run of that mirror. As-is: NEVER.",
+    "current_state": {
+      "n2_rows_in_trading_picks": 175,
+      "closed": 159,
+      "active": 16,
+      "active_past_96h_equity_hold": 16,
+      "resolved_into_at_signal_outcomes": 0,
+      "pod_rows_in_at_pick_outcomes": 0,
+      "query": "SELECT strategy,status,COUNT(*) n FROM trading_picks WHERE id LIKE 'n2\\_%' GROUP BY strategy,status; SELECT strategy,COUNT(*) FROM at_signal_outcomes WHERE strategy IN (4 names) GROUP BY strategy; SELECT ... FROM at_pick_outcomes WHERE strategy IN (4 names)",
+      "output": "trading_picks: adx 38 CLOSED/6 ACTIVE, donchian 40/4, rs 37/6, vol-contraction 44/0 -> 175 total. at_signal_outcomes: () (empty). at_pick_outcomes: () (empty)."
+    },
+    "what_would_have_to_change": [
+      "The emitter must write a real take_profit (it currently writes None), or the resolver's TP/SL auto-compute path must be trusted instead of the 2.5% SL clamp",
+      "A closed-row mirror from trading_picks into at_signal_outcomes must actually run (tools/repair_data_integrity.py:_repair_signal_outcomes has the correct SELECT but is referenced by ZERO workflow files)"
+    ]
+  },
+  "item43_reproducibility": {
+    "verdict": "NOT_REPRODUCIBLE_BY_DESIGN",
+    "artifact_status": "PROVISIONAL_PENDING_CI",
+    "artifact_evidence": {
+      "workflow_step": ".github/workflows/audit3-ledger.yml:252 (audit3-canonical-rows, 90d retention)",
+      "present_on_origin_main": false,
+      "present_on_branch": "push/n1-n8-research-integrity (commit bbc4510b66f, unmerged)",
+      "recent_runs_checked": ["45022690968 (2026-11-22T12:31Z)", "44996865303", "44994305292", "44968290977"],
+      "artifacts_found": "[] for every run — gh api .../actions/runs/<id>/artifacts returned total_count 0",
+      "conclusion": "the artifact step has never executed in CI; the claim 'digests are now retrievable' is unverified"
+    },
+    "contract": "alpha_engine/resolved_closed_view.py:323-344 sorts rows by closed_at and hashes the post-dedup, post-exclusion, post-cost-model row set. The row set is a function of (a) every local JSON source, (b) the exclusion rules, (c) the gitignored baby_strats_dashboard.json. Any rebuild changes it, so the digest is a snapshot id, not a dataset version.",
+    "existing_digests": {
+      "ledger": "63609da5... (8,769 rows, as_of 2026-11-20T01:57Z, no artifact)",
+      "dashboard_data": "ed25b59c... (8,827 rows, as_of 2026-11-22T04:03Z, no artifact)",
+      "live_audit": "e346e65f... full (8,816 rows, as_of 2026-11-22T09:58Z) -> by 13:01Z it was 5a6ff492... (8,792 rows) with no other change; the live URL is the only retrievable surface and it self-rewrites",
+      "local_regen": "c0942d9e... (10,968 rows, as_of 2026-11-22T10:57Z, artifact on disk but absent from origin/main)"
+    }
+  },
+  "item44_surfaces": {
+    "no_surface_authoritative": "P0 standing ruling restated and applied",
+    "surfaces": [
+      {"name": "ledger", "rows": 8769, "digest": "63609da549a7928d435cc16b4f834d61c9c86931b568c8f2f841a82acf502c08", "timestamp": "2026-11-20T01:57:23Z", "reachable": true},
+      {"name": "dashboard_data", "rows": 8827, "digest": "ed25b59c52a4486edeee9ed405b32406abc7c38d257c9bf10673f58a66127e01", "timestamp": "2026-11-22T04:03:30Z", "reachable": true},
+      {"name": "live_audit", "rows": 8816, "digest": "e346e65ffd4a735c8d98451f1ebb5d1501ae535a933ac70c74a0b8ddeb89e346", "timestamp": "2026-11-22T09:58:18Z", "reachable": true, "note": "re-fetched 13:09Z: 8,792 rows / 5a6ff492..."},
+      {"name": "local_regen", "rows": 10968, "digest": "c0942d9e8f62eb3bacb52be3b751d9a98bce92547782756300974697b3fc5dd8", "timestamp": "2026-11-22T10:57:17Z", "reachable": true, "note": "file on disk, not committed to origin/main"}
+    ],
+    "deltas": {
+      "ledger_vs_dashboard_data": 58,
+      "dashboard_data_vs_live": 11,
+      "live_vs_regen": 2152,
+      "same_population_keys": {"shared": 8033, "only_regen": 1990, "only_live": 289}
+    },
+    "causes": [
+      {"kind": "temporal_drift", "evidence": "each surface has a different generated_at; +58 was the 2-day gap between the ledger (11-20) and dashboard_data (11-22)", "applies": true},
+      {"kind": "gitignored_local_input", "evidence": "baby_strats_forward live=0 vs regen=1,595; source battleground/data/baby_strats_dashboard.json is gitignored (.gitignore:300) and CI does not have it", "applies": true, "delta": 1595},
+      {"kind": "overlapping_reasons", "evidence": "exclusion reasons are not a partition: live has resolver_breakeven_fallback=59, regen has zero_pnl_quarantined=567 and paper_trade=1; the 'swing' 7508 vs 5994 is the same field at two timestamps overlapping auto_expired", "applies": true},
+      {"kind": "different_populations", "evidence": "regen input_rows=21,008 vs live 14,905, i.e. more local JSON sources are visible on this machine", "applies": true}
+    ],
+    "new_cause_found": false
+  },
+  "item44_merge_status": {
+    "command": "for b in ...; do git merge-base --is-ancestor origin/$b origin/main; done; git rev-list --count origin/main..origin/$b",
+    "push/n1-n8-research-integrity": {"sha": "532413a292efc788597b7aaf885bb7f6383eddcb", "status": "PENDING", "commits_ahead": 1},
+    "push/edge-research-p0": {"sha": "68d887c864115a0de1d24aa7d7aebfe27e7726f9", "status": "PENDING", "commits_ahead": 1},
+    "push/h119-nonpromotable": {"sha": "78b9794ad77775d72847913a851f1b00c38faaf5", "status": "PENDING", "commits_ahead": 1},
+    "origin_main": "8dc0fe805b12d4906aaf4bd644b3a45502090f8e"
+  },
+  "item45_guard": {
+    "verdict": "FAIL",
+    "tool": "tools/digest_artifact_guard.py",
+    "tests": "tests/test_digest_artifact_guard.py",
+    "test_line": "13 passed in 0.16s",
+    "manifest": "reports/published_digests_manifest.json",
+    "workflow": ".github/workflows/digest-artifact-guard.yml",
+    "per_digest": [
+      {"surface": "audit3 ledger", "outcome": "FAIL", "reason": "no_artifact"},
+      {"surface": "dashboard_data.json", "outcome": "FAIL", "reason": "no_artifact"},
+      {"surface": "live /audit", "outcome": "FAIL", "reason": "hash_mismatch or artifact_unretrievable (the live surface rewrites every few minutes; at 13:01Z published == recomputed)", "published": "e346e65ffd4a", "actual": "5a6ff492f797"},
+      {"surface": "local regen", "outcome": "PASS", "reason": "match", "digest": "c0942d9e8f62"}
+    ],
+    "unretrievable_digests": ["63609da5... (ledger)", "ed25b59c... (dashboard_data)", "e346e65f... (live /audit, drifted)"]
+  }
+}

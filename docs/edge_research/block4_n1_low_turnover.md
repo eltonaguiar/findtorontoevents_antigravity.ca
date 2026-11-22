@@ -170,3 +170,17 @@ hold the index.** Low turnover does exactly what the hypothesis asked (cost drag
 rests on a single lucky year (2024) and a few concentrated winners, sits inside a CI spanning
 −36 pp to +72 pp, and lands at the 61st percentile of random selection. This is not a failure of
 the round; it is the round's answer.
+
+---
+
+## Method note (appended 2026-11-22) — point-in-time re-run
+
+A survivorship / point-in-time re-run of these N1 rules exists. The universe was
+rebuilt per rebalance date with the first-observation approximation in
+`tools/pit_universe.py` (`build_pit_universe`), and the rules were re-executed
+unchanged. Results are identical to the numbers above (the PIT universe equals
+the original at every date, so the survivorship contribution is 0.0 and the N1
+conclusion survives). Full write-up:
+`docs/edge_research/10_SURVIVORSHIP_AUDIT_2026-11-22.md`; machine-readable
+results: `reports/survivorship_audit_20261122.json`. The original numbers above
+were not changed.

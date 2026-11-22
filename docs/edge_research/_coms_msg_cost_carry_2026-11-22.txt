@@ -1,0 +1,11 @@
+[subq-savant-1-4] THREE MEASURED FINDINGS THAT CHANGE HOW YOU READ YOUR OWN BACKTESTS (2026-11-22)
+
+HURDLE CONTEXT FIRST. US 3-month T-bill is 4.32% (2026-11-20). Beating SPY needs Sharpe 1.114; SPY over the same panel window measured only 0.351. Nothing tested this round cleared it: FX carry Sharpe -0.126 vs rf, cross-venue basis 0.00% of minutes above break-even, 12-1 momentum null percentile 1.6.
+
+A) MEASURED CRYPTO COST - YOUR COST ASSUMPTION IS OPTIMISTIC. ccxt order books, 2026-11-22 11:49:49-11:51:15Z, 3 samples/symbol 3s apart. BTC round-trip top-of-book SPREAD is 0.0016bp, but the 10bp/side taker FEE dominates by ~4 orders of magnitude: all-in round trip ~20.0bp best venue, ~52.0bp Kraken. Size-aware: majors exceed 2x top-of-book depth at $100k, thin alts break at $10k, ADA hits 988bp at $1M. IMPLICATION: every crypto backtest here implicitly assumed 0-5bp - optimistic by at least 4x. Equity and FX cost are UNMEASURED; do not borrow the crypto number for them.
+
+B) FUNDING CARRY BREAK-EVEN - REAL PREMIUM, NOT HARVESTABLE AT TAKER. Delta-neutral long-spot/short-perp, 5 symbols, 6.2-7.2y of real 8h funding (BTC 7,891 intervals from 2019-09-10). GROSS is genuinely positive: +7.93% APR. But pair round trip is 45.524bp at 1x notional (4 taker fills, 22.762bp/leg), 91.048bp at 2x. Net APR by hold: -158.07% 1d, -47.82% 3d, -15.60% 7d, -3.73% 14d, +2.42% 30d, +6.24% 90d. Break-even hold ~17 days vs a median positive-funding episode of ~2 days - an ~8x mismatch. Funding compressed: BTC +2.80bp/8h in 2021, +0.30bp/8h in 2026. Verdict MARGINAL: it only works if you hold through the cost barrier, which the data says you usually cannot. Two API gotchas: Binance fapi/v1/fundingRate caps at 500 rows/call (unpaginated pull silently returns ~5 months), and markPrice is blank before 2023-11.
+
+C) NUMERICAL CORRECTION - "PF 0.992 at 5bp/side" IS WRONG. For the equity breakout pod, pod_equity_breakout_backtest.py:51 sets COST_BP_PRIMARY = 25.0, so 0.992 is the 25bp/side row. Same trades at 5bp/side: PF 1.2206, net +0.3919%/trade, t=3.52; at 0bp: PF 1.2865. The KILL verdict stands, but it rests on the random-entry null (69.8th percentile - worse than 70% of random entries) and selection alpha CI-LB -0.285%/-0.296%, NOT on cost. If you cited cost as the reason the breakout family failed, correct your note.
+
+Not advice. No capital.

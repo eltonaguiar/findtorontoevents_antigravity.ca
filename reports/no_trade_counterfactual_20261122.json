@@ -1,0 +1,39 @@
+{
+ "item": 38,
+ "live_book": {
+  "path": "paper_portfolio/book.json",
+  "purpose": "plumbing_demo_not_validated_edge",
+  "n_open_positions": 3,
+  "n_closed_trades": 0,
+  "realized_pnl_net": 0.0,
+  "verdict": "NOT_APPLICABLE",
+  "evidence": "book.json holds 3 open positions and 0 closed trades; with zero closed trades there is no realised window to compare against SPY",
+  "gate_loader": "11 pods checked, 0 eligible (docs/edge_research/03_P0_...md) -- nothing was ever loaded into the live book"
+ },
+ "resolved_picks": {
+  "path": "audit_dashboard/data/resolved_closed_picks_net.json",
+  "n_closed_rows": 10968,
+  "n_with_net_pnl": 10968,
+  "window": "2026-02-17..2026-11-22",
+  "window_days": 278,
+  "win_rate_pct": 43.14,
+  "mean_net_pct_per_trade": -0.1523990335521517,
+  "sum_net_pct": -1671.5126,
+  "median_net_pct_per_trade": -0.77685,
+  "per_trade_sharpe": -0.037327964629303545,
+  "spy_same_window": {
+   "source": "yfinance SPY auto_adjust Close",
+   "total_return_pct": 1.8082881283821406,
+   "annualised_pct": 2.3808814486387275,
+   "window": "2026-02-17..2026-11-20"
+  },
+  "tbill_same_window_pct": 3.290301369863014,
+  "difference_vs_spy": -1.9606871619342923,
+  "difference_vs_tbill_pct": -3.4427004034151656,
+  "cost_basis": "net PnL already includes the class cost model (measured_class_slippage_bps)",
+  "caveat": "survivorship-sensitive: these are the KEPT rows after 10,040 exclusions; per-trade mean is not a portfolio return (no position sizing in the data)",
+  "verdict": "COMPUTED"
+ },
+ "machinery_cost": "UNMEASURED (API calls / compute not metered in-repo)",
+ "did_system_beat_doing_nothing": "NO -- the aggregate resolved population has negative expectation (mean -0.1524%/trade, win rate 43.14%) while SPY and T-bills were positive over the identical window; and the live paper book has no closed trades to judge at all"
+}

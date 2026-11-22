@@ -1,6 +1,6 @@
 # Protocol v1 — confirmation status
 
-Last poll: **2026-11-22T11:55:17Z** · collector: `tools/collect_protocol_acks.py`
+Last poll: **2026-11-22T21:35:17Z** · collector: `tools/collect_protocol_acks.py`
 
 COMS is MQTT qos1 and **not retained**: an agent asleep at send time never
 receives the message. That is why this is a rolling poll, not a one-shot send.
