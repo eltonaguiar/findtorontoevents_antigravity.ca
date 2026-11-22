@@ -38,6 +38,13 @@ DESIGN RULES, each one a defect this programme has already been burned by
 Scope excluded and stated: no leverage beyond 1.0, no shorting, no options, no
 intraday, no factor data. This is a long-only monthly allocator.
 
+KNOWN BIAS THAT CANNOT BE REMOVED HERE: SURVIVORSHIP. The universe is a fixed list
+of 12 ETFs that exist in 2026 and are large enough to have been listed since 2006.
+Funds that closed or merged are absent, so every leg is a survivor. The bias is
+UPWARD and it applies to the benchmarks too, so strategy-vs-benchmark comparisons
+are more trustworthy than absolute levels. Removing it needs a point-in-time fund
+database, which is not available here.
+
 Usage:
   python3 tools/monthly_tactical_engine.py
   python3 tools/monthly_tactical_engine.py --start 2004-01 --costs 0,2,5,10,20
@@ -367,7 +374,20 @@ def main() -> int:
     print(f"  cash proxy    : {CASH_PROXY} at 0 when unavailable (conservative)")
     print(f"  NOTE: the common window starts where ALL tickers exist, which is why")
     print(f"  2000-02 is NOT testable here. 2008 IS. The gap is stated, not filled")
-    print(f"  with a shorter-history substitute.\n")
+    print(f"  with a shorter-history substitute.")
+
+    # SURVIVORSHIP, stated because it is the one bias this design cannot remove.
+    # The universe is a fixed list of ETFs that exist in 2026 and are large enough
+    # to have been listed since 2006. That conditions on survival: funds that were
+    # closed or merged (and there were many) are absent, so every equity/bond leg
+    # here is a survivor. The direction is UPWARD, and it applies to the BENCHMARKS
+    # too, which is why the comparison between strategies is more trustworthy than
+    # the absolute levels. It cannot be fixed without a point-in-time fund database.
+    n_nan = sum(1 for k, s in prices.items() for x in s[start:] if x != x)
+    print(f"  SURVIVORSHIP: fixed list of funds alive in 2026 -> results are")
+    print(f"  conditioned on survival (upward bias on levels; affects benchmarks too).")
+    print(f"  NaN cells after the common window: {n_nan} "
+          f"({'no silent zero-return gaps' if n_nan == 0 else 'GAPS -> 0.0 returns!'})\n")
 
     results: dict[str, dict] = {}
     for cost in costs:
