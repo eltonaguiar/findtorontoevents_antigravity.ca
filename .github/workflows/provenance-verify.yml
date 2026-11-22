@@ -119,5 +119,22 @@ jobs:
             # The head sha goes in the SUBJECT so a silent rewrite of history is
             # detectable by reading the log: the anchored value stops matching.
             git commit -m "chore(provenance): chain n=${N} head=${HEAD_SHA:0:16} [skip ci]"
-            git push
+            # A bare `git push` from a fetch-depth:1 checkout races with every other
+            # run and with human pushes to the same branch. Verified in CI: run
+            # 45082447638 failed exactly here with "Updates were rejected because the
+            # remote contains work that you do not have locally". Deepen, rebase and
+            # retry instead. (Not using .github/scripts/safe_push.sh: it defaults to
+            # "origin main", which is the wrong ref for a feature branch.)
+            ok=0
+            for i in 1 2 3 4 5; do
+              if git push; then ok=1; echo "pushed on attempt $i"; break; fi
+              echo "::warning::push attempt $i rejected; fetching deeper and rebasing"
+              git fetch --deepen=50 origin "${GITHUB_REF_NAME}" || true
+              git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+              sleep $((i * 3))
+            done
+            if [ "$ok" -ne 1 ]; then
+              echo "::error::could not push provenance status after 5 attempts"
+              exit 1
+            fi
           fi
