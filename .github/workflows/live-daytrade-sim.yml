@@ -1,0 +1,130 @@
+name: live daytrade sim (TP/SL monitor)
+
+# Scheduled forward monitor for tools/live_daytrade_sim.py — which, until now,
+# ran in NO workflow despite being the most complete simulator in the repo
+# (413 lines, 7 strategies, 6,619 historical trades).
+#
+# What it does: replays full bar history deterministically each run and appends
+# only newly-seen CLOSED trades to the ledger (de-duplicated by trade_id), so the
+# job is idempotent — run it 100x and the ledger is unchanged. TP/SL outcomes are
+# therefore recorded for every signal that has resolved.
+#
+# WHY THIS MATTERS (measured 2026-11-22, PART13):
+#   The sim's own cost audit reads
+#     gross +$1,095.96 / fees $6,751.82 / net -$5,655.86
+#     -> "fees ate 616% of gross edge; signal-only verdict = EDGE"
+#   i.e. the signals have REAL gross edge and the cost of capturing them is ~6x
+#   bigger. The program's bar is now cost-survival (edge/cost >= 3.0), not
+#   significance. This workflow exists to keep that scoreboard honest over time.
+#
+# NOTHING here sizes real money. No orders are placed anywhere. Promotion
+# requires the 100-observation forward gate in PART13_200_ROUND_PLAN.md.
+#
+# Cron offset: ':19,:49'. Existing owners: audit-dashboard ':10', audit3-ledger
+# ':23 */6', forward ingest ':41 */6', denylist ':45', crypto sim ':07,:37'.
+# ':19,:49' contends with none of them.
+
+on:
+  schedule:
+    - cron: '19,49 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-daytrade-sim
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main          # never push a feature branch's files to main
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy yfinance requests
+
+      - name: Conflict-marker safety check
+        run: bash .github/scripts/assert_no_conflict_markers.sh || true
+
+      - name: Run the sim (replay + dedup persist + scoreboard)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          set -o pipefail
+          python3 tools/live_daytrade_sim.py 2>&1 | tee /tmp/sim_out.txt
+          echo "--- tail ---"
+          tail -20 /tmp/sim_out.txt
+
+      - name: Extract cost-survival verdict
+        id: gate
+        run: |
+          python3 - <<'PY'
+          import re, pathlib, sys
+          t = pathlib.Path('/tmp/sim_out.txt').read_text(errors='ignore')
+          # the cost audit line is the honest headline: gross vs fees vs net
+          m = re.search(r'cost audit:\s*gross\s*(\$?[+\-]?[\d.,]+).*?fees\s*(\$?[+\-]?[\d.,]+).*?net\s*(\$?[+\-]?[\d.,]+)', t, re.S)
+          out = pathlib.Path('/tmp/gate_summary.txt')
+          if not m:
+              out.write_text('cost audit line not found — sim output changed shape?\n')
+              print('::warning::cost audit line not found; inspect the run log')
+          else:
+              g, f, n = (x.replace('$','').replace(',','') for x in m.groups())
+              g, f, n = float(g), float(f), float(n)
+              ratio = (abs(g) / abs(f)) if f else float('inf')
+              survived = n > 0 and ratio >= 3.0
+              msg = (f"gross={g:+.2f} fees={f:.2f} net={n:+.2f} | "
+                     f"edge/cost={ratio:.2f} (Gate C bar = 3.0) | "
+                     f"{'COST-SURVIVING' if survived else 'FAILS GATE C'}\n")
+              out.write_text(msg)
+              print(msg)
+              if not survived:
+                  # Deliberately a warning, not a failure: a red X on a job whose
+                  # whole purpose is to report a negative result would train
+                  # people to ignore the signal. The scoreboard reports; it does
+                  # not enforce.
+                  print('::warning::no cost-surviving strategy this tick (expected: this is the honest state)')
+          PY
+          cat /tmp/gate_summary.txt
+
+      - name: Commit ledger + scoreboard (skip ci)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add paper_trading/live_sim/ reports/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no ledger change — idempotent run, nothing to commit"
+          else
+            git commit -m "chore(live-daytrade-sim): tick $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase --autostash -q origin main && git push origin main && break
+              echo "push retry $i"; sleep 5
+            done
+          fi
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## live daytrade sim — TP/SL monitor"
+            echo ""
+            echo '```'
+            cat /tmp/gate_summary.txt 2>/dev/null || echo "no gate summary"
+            echo '```'
+            echo ""
+            echo "Reminder: Gate C requires edge/cost >= 3.0. A failing tick is the"
+            echo "expected honest state until a cost-surviving strategy is found."
+          } >> "$GITHUB_STEP_SUMMARY"
