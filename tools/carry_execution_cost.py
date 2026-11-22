@@ -56,6 +56,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "reports" / "carry_execution" / "carry_execution_cost.json"
+SERIES = ROOT / "reports" / "carry_execution" / "round_trip_series.jsonl"
 
 # symbol -> (spot symbol on binance, perp symbol on binanceusdm)
 PAIRS = {
@@ -141,6 +142,68 @@ def measure_one(ex, perp_ex, spot_sym: str, perp_sym: str,
     }
 
 
+def append_series(rec: dict, min_gap_min: float = 30.0) -> bool:
+    """Append one snapshot, unless the newest one is too recent (idempotent).
+
+    Why a series at all: a single snapshot is a FLOOR on the average cost, not an
+    estimate of it. Spreads widen in stress and stress is when you enter. One
+    number cannot tell you how often you would be on the wrong side of the 0.50
+    bp/day cliff; a distribution can. This appends to JSONL so the file is
+    append-only and every observation keeps its own timestamp -- a single
+    rewritten JSON would let a bad snapshot vanish.
+    """
+    SERIES.parent.mkdir(parents=True, exist_ok=True)
+    if SERIES.exists():
+        lines = [ln for ln in SERIES.read_text().splitlines() if ln.strip()]
+        if lines:
+            try:
+                last = json.loads(lines[-1])
+                age_min = (datetime.now(timezone.utc)
+                           - datetime.fromisoformat(last["utc"])).total_seconds() / 60
+                if age_min < min_gap_min:
+                    print(f"  (series: last snapshot {age_min:.0f}min old, "
+                          f"<{min_gap_min:.0f}min gap -> not appending)")
+                    return False
+            except (KeyError, ValueError):
+                pass  # malformed tail must not block a new observation
+    with SERIES.open("a") as fh:
+        fh.write(json.dumps(rec) + "\n")
+    return True
+
+
+def report_series() -> int:
+    if not SERIES.exists():
+        print("no series yet — run with --record first")
+        return 2
+    rows = [json.loads(ln) for ln in SERIES.read_text().splitlines() if ln.strip()]
+    if not rows:
+        print("series file exists but is empty"); return 2
+    meds = sorted(r["median_round_trip_bp"] for r in rows)
+    n = len(meds)
+
+    def pct(q: float) -> float:
+        return meds[min(n - 1, int(q * n))]
+
+    print(f"=== ROUND-TRIP COST SERIES — n={n} snapshots ===")
+    print(f"  first {rows[0]['utc'][:16]}   last {rows[-1]['utc'][:16]}")
+    print(f"  min {meds[0]:.2f}  p25 {pct(0.25):.2f}  median {pct(0.5):.2f}  "
+          f"p75 {pct(0.75):.2f}  p95 {pct(0.95):.2f}  max {meds[-1]:.2f} bp")
+
+    # The decision-relevant question is not the average cost, it is how often the
+    # cost is bad enough to flip the sleeve's verdict.
+    print(f"\n  AT A 90-DAY HOLD the cliff is 0.50 bp/day = 45.0 bp round trip.")
+    over = [m for m in meds if m / 90 >= 0.50]
+    print(f"  snapshots where carry FAILS the cliff at 90d: {len(over)}/{n} "
+          f"({len(over)/n*100:.0f}%)")
+    print(f"  snapshots where carry fails at 180d (90.0bp): "
+          f"{sum(1 for m in meds if m / 180 >= 0.50)}/{n}")
+    if n < 20:
+        print(f"\n  !! n={n}. This is not yet a distribution, it is a handful of")
+        print(f"     points. Do not quote a percentile off it. Target >=20 snapshots")
+        print(f"     spanning at least one weekend and one stressed session.")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--notional", type=float, default=25_000.0,
@@ -153,7 +216,14 @@ def main() -> int:
                     help="if you can rest passive on all 4 leg-sides")
     ap.add_argument("--hold-days", type=int, nargs="+",
                     default=[30, 60, 90, 180, 365])
+    ap.add_argument("--record", action="store_true",
+                    help="append this snapshot to round_trip_series.jsonl")
+    ap.add_argument("--series", action="store_true",
+                    help="report the accumulated cost distribution and exit")
     args = ap.parse_args()
+
+    if args.series:
+        return report_series()
 
     try:
         import ccxt
@@ -253,6 +323,22 @@ def main() -> int:
                            "time variation -- one snapshot"],
     }, indent=2))
     print(f"\nwrote {OUT}")
+
+    if args.record:
+        appended = append_series({
+            "utc": datetime.now(timezone.utc).isoformat(),
+            "notional_per_leg": args.notional,
+            "taker_fee_bp_per_leg_side": args.taker_fee_bp,
+            "n_pairs": len(rows),
+            "median_round_trip_bp": round(med, 4),
+            "worst_round_trip_bp": round(worst, 4),
+            "fee_bp": fees,
+            "slippage_bp": round(slip_med, 4),
+            "per_pair_bp": {r["pair"]: round(r["round_trip_bp"], 3) for r in rows},
+            "basis_bp": {r["pair"]: round(r["basis_bp"], 3) for r in rows},
+        })
+        print(f"series: {'appended' if appended else 'skipped'} -> {SERIES}")
+
     return 0
 
 

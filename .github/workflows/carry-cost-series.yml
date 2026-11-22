@@ -1,0 +1,97 @@
+name: carry-cost-series
+
+# WHY: carry's verdict is decided by ONE operational number — the spot+perp round
+# trip — and until 2026-11-22 every statement of it in this programme was an
+# assumption. tools/carry_execution_cost.py measures it from live order books.
+# A single snapshot is a FLOOR, not a mean: spreads widen in stress and stress is
+# when you enter or exit. This job converts the floor into a forward-measured
+# distribution so the 0.50 bp/day cliff can be quoted with a frequency instead of
+# a point estimate.
+#
+# SCOPE: records a cost observation. It does NOT place orders, hold positions,
+# touch a wallet or make a trading decision. Read-only order-book reads.
+
+on:
+  schedule:
+    # Every 6h at :23. Staggered off the other crons (:10 dashboard, :07/:37 sim).
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+# Own concurrency group so this can never cancel or be cancelled by the dashboard
+# or sim workflows. cancel-in-progress:false — a cost observation is cheap and
+# losing one is worse than waiting.
+concurrency:
+  group: carry-cost-series
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: python3 -m pip install --quiet ccxt==4.5.56
+
+      - name: Preflight — is the exchange reachable at all?
+        id: preflight
+        run: |
+          set +e
+          python3 - <<'PY'
+          import sys
+          try:
+              import ccxt
+              ex = ccxt.binance({"enableRateLimit": True})
+              ex.fetch_time()
+              print("REACHABLE")
+          except Exception as e:
+              print(f"UNREACHABLE: {type(e).__name__}: {e}")
+              sys.exit(9)
+          PY
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "reachable=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Exchange unreachable from this runner — recording NOTHING rather than a synthetic zero."
+          else
+            echo "reachable=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # A geo-blocked or rate-limited runner must produce NO record. Writing a
+      # zero or skipping silently would both corrupt the distribution; the whole
+      # point is that every row is a real measurement.
+      - name: Record snapshot
+        if: steps.preflight.outputs.reachable == 'true'
+        run: python3 tools/carry_execution_cost.py --record --notional 25000
+
+      - name: Report accumulated series
+        if: steps.preflight.outputs.reachable == 'true'
+        run: python3 tools/carry_execution_cost.py --series
+
+      - name: Commit observation
+        if: steps.preflight.outputs.reachable == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/carry_execution/
+          if git diff --cached --quiet; then
+            echo "no change (min-gap guard or identical reading) — nothing to commit"
+            exit 0
+          fi
+          # [skip ci] is mandatory — see AGENTS.md "Safety rules for updating paths".
+          git commit -m "chore(carry): cost series snapshot [skip ci]"
+          # Rebase-retry so a concurrent dashboard commit cannot fail the run.
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME:-main}" && break || sleep 5
+          done
+          git push
