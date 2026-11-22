@@ -1,6 +1,6 @@
 # Weekly scorecard
 
-_generated 2026-11-22 22:24 UTC by `tools/weekly_scorecard.py`_
+_generated 2026-11-22 22:29 UTC by `tools/weekly_scorecard.py`_
 
 T-bill hurdle used throughout: **3.50%/yr**
 
@@ -27,6 +27,7 @@ T-bill hurdle used throughout: **3.50%/yr**
 |   breakout gross edge | **UNMEASURED cost** | 0bp 22.43 bp (t 7.32) -> 24bp -1.57 bp | observed |
 |   fill-convention premium | **INFLATION** | lag-0 fill is worth 2.54 bp/trade | observed |
 |   turnover frequency | **cost dial** | best Sharpe 0.81 at monthly | observed |
+| Provenance ledger | **EMPTY** | 0 records; chain intact; forward-creditable 0 | deterministic |
 | Source: mega_mutation | **QUARANTINE** | 4/6 tests; mean 135.0 bp median 193.4 bp; failed median CI > 0, no duplicate re-emissions | observed |
 
 ## State notes
@@ -34,6 +35,7 @@ T-bill hurdle used throughout: **3.50%/yr**
 - L1 48 rows are WON on gross but LOSS on net (1.0% of gross wins). Any WR computed from the won flag overstates by this much.
 - L2 48 status-label conflicts (0.45% of rows).
 - L3 src 'luxalgo_filters' is 36.4% of the ledger; any ledger-wide stat is mostly that one emitter.
+- Provenance ledger is EMPTY - no pick has yet been recorded at emit time, so no result can be forward-credited.
 - mega_mutation is QUARANTINED - no positive-expectancy emitter is established anywhere in the programme; the honest default is T-bills.
 
 ## What this scorecard deliberately does not do

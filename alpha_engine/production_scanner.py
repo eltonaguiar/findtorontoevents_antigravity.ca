@@ -6811,6 +6811,53 @@ def main():
     except Exception as _var_err:
         print(f"  [VARIANT] certification skipped (non-fatal): {_var_err}")
 
+    # 6y. PROVENANCE — record the picks BEFORE their outcome can exist.
+    #   This is the gate the whole programme is blocked on. Every artifact we have
+    #   either lacks created_at (10,968 resolved picks -> the skill-vs-hindsight
+    #   test is impossible) or is 100% backfilled (430/430 H-119 rows). Without a
+    #   record written at emit time, no result -- positive or negative -- is
+    #   falsifiable in the one direction that counts.
+    #
+    #   Append-only hash chain: tools/provenance_ledger.py. A pick is written with
+    #   created_at stamped here (callers cannot supply it), TP/SL fixed now, and
+    #   prev_sha256 linking to the previous record.
+    #
+    #   Fail-safe: any error is logged and swallowed. A provenance write must never
+    #   be able to stop picks from being produced.
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+        from provenance_ledger import emit as _prov_emit
+
+        _prov_picks = []
+        for _p in active:
+            try:
+                _entry = float(_p.get("entry_price") or _p.get("entry") or 0)
+                _tp = float(_p.get("take_profit") or _p.get("tp") or 0)
+                _sl = float(_p.get("stop_loss") or _p.get("sl") or 0)
+            except (TypeError, ValueError):
+                continue
+            if _entry <= 0 or _tp <= 0 or _sl <= 0:
+                continue
+            _prov_picks.append({
+                "symbol": _p.get("symbol"),
+                "side": _p.get("direction") or _p.get("side"),
+                "entry_ref": _entry,
+                "tp": _tp,
+                "sl": _sl,
+                "strategy": _p.get("strategy") or _p.get("strategy_family") or "unknown",
+                "source_system": _p.get("source_system") or "alpha_engine",
+                "horizon_hours": _p.get("horizon_hours"),
+                "signal_ts": _p.get("signal_ts") or _p.get("as_of"),
+            })
+        _written, _rejected = _prov_emit(_prov_picks)
+        print(f"  [PROVENANCE] recorded {len(_written)} pick(s), "
+              f"rejected {len(_rejected)} (no usable TP/SL or entry)")
+        if _written:
+            print(f"  [PROVENANCE] chain head seq={_written[-1]['seq']} "
+                  f"sha={_written[-1]['sha256'][:16]}...")
+    except Exception as _prov_err:
+        print(f"  [PROVENANCE] skipped (non-fatal): {_prov_err}")
+
     # 7. Write premium_signals.json
     write_premium_signals(market_ctx, active, track)
 

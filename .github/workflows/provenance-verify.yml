@@ -1,0 +1,89 @@
+name: provenance-verify
+
+# Provenance ledger integrity gate (round 32).
+#
+# WHY: every refutation in this programme is robust and every promotion is blocked
+# by one thing -- no artifact records when a pick was created relative to when its
+# outcome became known. resolved_closed_picks_net.json has no created_at (10,968
+# picks, test impossible); forward_observations.jsonl has it and returns 430/430
+# BACKFILLED. tools/provenance_ledger.py now records picks at emit time in an
+# append-only hash chain, wired into alpha_engine/production_scanner.py section 6y.
+#
+# THIS JOB is the out-of-band anchor. A hash chain alone only proves internal
+# consistency: someone can edit a record, re-hash it, re-link the rest, and verify()
+# will pass. That limitation is proven in --selftest rather than asserted. Anchoring
+# the head sha to a git commit subject makes a later silent rewrite detectable,
+# because the anchored value no longer matches.
+#
+# Design notes:
+#  * Runs hourly and on demand. Cheap (no network, no keys).
+#  * FAILS the job on a broken chain -- this one must be able to go red.
+#  * Commits status.json + the ledger with [skip ci]; own concurrency group; no push
+#    trigger (AGENTS.md 2026-05-19 precedent).
+
+on:
+  schedule:
+    # :53 past each hour, clear of :10 :17 :23 :35 :41 and the etf 05/35 marks.
+    - cron: '53 * * * *'
+  # Run on pushes that touch the ledger so a bad emit is caught immediately.
+  push:
+    paths:
+      - 'reports/provenance/**'
+      - 'tools/provenance_ledger.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provenance-verify
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Selftest (proves tamper detection works)
+        run: python3 tools/provenance_ledger.py --selftest
+
+      - name: Verify chain and write status
+        id: verify
+        run: python3 tools/provenance_ledger.py --status
+
+      - name: Show head
+        if: always()
+        run: python3 tools/provenance_ledger.py --head
+
+      - name: Upload status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance-status
+          path: reports/provenance/
+          retention-days: 90
+
+      - name: Commit status + ANCHOR the head sha
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          HEAD_SHA=$(python3 -c "import json;print(json.load(open('reports/provenance/status.json')).get('head_sha256') or 'none')")
+          N=$(python3 -c "import json;print(json.load(open('reports/provenance/status.json')).get('n_records') or 0)")
+          git add reports/provenance/ || true
+          if git diff --cached --quiet; then
+            echo "no change to provenance status"
+          else
+            # The head sha goes in the SUBJECT so a silent rewrite of history is
+            # detectable by reading the log: the anchored value stops matching.
+            git commit -m "chore(provenance): chain n=${N} head=${HEAD_SHA:0:16} [skip ci]"
+            git push
+          fi

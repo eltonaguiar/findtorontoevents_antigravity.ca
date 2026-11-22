@@ -52,6 +52,8 @@ SOURCES = {
                   "carry execution cost"),
     "prereg": ("reports/prereg_outside/prereg_outside_tests.json",
                "pre-registered outside tests"),
+    "provenance": ("reports/provenance/status.json",
+                   "provenance ledger (created_at at emit time, hash-chained)"),
     "falsify": ("reports/mega_mutation/falsification.json",
                 "source falsification battery (max-stat null, median, duplicates)"),
     "lint": ("reports/integrity_lint/latest.json",
@@ -255,6 +257,27 @@ def build():
             if isinstance(v, dict) and "verdict" in v:
                 rows.append((f"Prereg {k}", str(v["verdict"]),
                              str(v.get("reason", ""))[:60], "pre-registered"))
+
+    # ---- provenance: THE binding constraint
+    pv = load("provenance")
+    if pv is not None:
+        chain_ok = pv.get("chain_ok")
+        n = pv.get("n_records", 0)
+        fwd = pv.get("n_forward")
+        rows.append(("Provenance ledger",
+                     "OK" if chain_ok and n else ("EMPTY" if chain_ok else "BROKEN"),
+                     f"{fnum(n, 0)} records; chain "
+                     f"{'intact' if chain_ok else 'BROKEN at index ' + str(pv.get('fail_index'))}; "
+                     f"forward-creditable {fnum(fwd, 0)}", "deterministic"))
+        if not chain_ok:
+            alerts.append(f"provenance chain BROKEN at index {pv.get('fail_index')}: "
+                          f"{pv.get('fail_reason')}")
+        elif n == 0:
+            notes.append("Provenance ledger is EMPTY - no pick has yet been recorded "
+                         "at emit time, so no result can be forward-credited.")
+    else:
+        rows.append(("Provenance ledger", "NOT RUN",
+                     "python3 tools/provenance_ledger.py --status", "-"))
 
     # ---- falsification of the last surviving source
     fs = load("falsify")
