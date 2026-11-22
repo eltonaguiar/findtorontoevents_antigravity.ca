@@ -133,3 +133,59 @@ carry's round trip; equity breakout flips sign between 4 and 10 bp/side).
 **One class with a forward-accruing pod at n ≥ 100 closed trades whose net CI-LB at 2× cost
 is above zero, plus a written promote / keep-paper / freeze verdict.** Anything short of that
 is reported as a negative result, not reframed as a "promising start".
+
+---
+
+## Status log — 2026-11-22 (append-only; earlier text above is not edited)
+
+### Peer land verified, not duplicated
+
+A separate phase-2 round landed on `origin/main` while this plan was being worked
+(`1c15c5d7d07`, `83703551f94`, `8abb6d8b6ca`). Its artifacts were read and checked before
+any item was re-run. Six items close on that evidence rather than on new work by this plan;
+each is cited, and where the peer's number differs in basis from ours that is stated.
+
+| # | Item | Closed by | Evidence read | Standing |
+|---|---|---|---|---|
+| 3 | Equity breakout with limit fills | **MOOTED** | `reports/pod_equity_breakout/breakout_cost_sweep.json` (1,935 trades, 13 symbols, 1993-2026) | Break-even **24.59 bp/side**; killed on random-entry null **69.8th pct** and selection-alpha CI-LB **−0.285%**, not on cost. Improving fills cannot rescue a rule indistinguishable from random entry, so a limit-fill variant would be precision on a dead cell. |
+| 8 | Pre-register FX carry (H-230) | **DONE** | `reports/fx_carry_20261122.json` | Rule and data documented in the artifact (11 currencies, 95 months, 30-day rate lag). Pre-registration intent satisfied at source. |
+| 9 | FX carry backtest | **DONE — REFUTED** | same | Sharpe **−0.126 vs 4.32% rf**, CAGR 3.38%, break-even **468.5 bp**, excess vs SPY **−3.04% [−8.28%, +2.29%]**. Note the interesting part: null percentile **98.2** — the ranking genuinely beats random assignment and still loses to cash. |
+| 10 | Pre-register bond carry/roll-down | **NOT RUN — BLOCKED_DATA** | `16_COMMODITY_AND_BOND_MOMENTUM` §2 | Roll yield needs two contracts; only one continuous front-month series exists. Synthesising one is forbidden (it invents the signal). |
+| 11 | Bond carry/roll-down backtest | **DONE (different mechanism)** | `reports/bond_momentum_20261122.json` | Momentum B1/B2/B3 all lose to a 4.32% T-bill with **break-even 0 bp/side**; B1 null at the **2nd percentile**. Carry proper remains blocked; the class's tested mechanism is refuted. |
+| 16 | Survivorship audit | **DONE** | `10_SURVIVORSHIP_AUDIT_2026-11-22.md` + `survivorship_audit_20261122.json` | **0 series end early, 0 start late** across the 79-symbol panel — the signature of a current-constituent universe. The measured 0.0 pp gap is a **zero lower bound by construction**, not proof of no bias. Direction: upward. Consequence: every KILL is conservative; any survivor is **UNSAFE**. |
+| 17/18 | Commodity rebuild + re-run | **DONE — NO CANDIDATE** | `commodity_basket_timing_2026-11-22.json` (mine) + peer rebuild | Ran Mercury3's **exact** basket-level binary (11 ETFs, monthly SMA10, lag 2, 20 bp, 181 months): excess **+7.21 bp/mo**, **CI-LB −24.18**, halves **[−20.28, +34.10]** — sign flips. My per-member variant: −15.10 bp/mo, CI-LB −86.98. Two independent witnesses, both negative, different constructions. |
+| 25 | Verify `n_trials = 29` | **DONE** | `reports/dsr_multiplicity_2026-11-22.json` | 29 declared, **26** produced a cell; **H-202/H-203/H-204 ran and yielded no admissible cell**. Counting them is correct and conservative — omitting them would let H-201 pass on a technicality. |
+| 28 | DSR sensitivity for H-201 | **DONE** | same | H-201 holds 0.95 up to **N=28** vs 29 declared — a **one-trial** margin — and needed **76.7 more trading days** at the observed effect size. Label changed `FAILS_MULTIPLICITY` → **`NOT_PROVEN`**. |
+| 46 | Top-3 register v3 if a measurement changes a pick | **NOT TRIGGERED** | — | No measurement this round changed a pick; `decision_readiness` stays `NOT_READY_FOR_3_PER_CLASS`. The condition was explicitly conditional, so not firing is the correct outcome. |
+
+### Item closed by this plan's own new work
+
+| # | Item | Evidence |
+|---|---|---|
+| 25 | Trial-count reconciliation | 29 declared vs 26 with cells; missing named, direction stated |
+| 28 | Multiplicity sensitivity | `tools/dsr_multiplicity_sensitivity.py`, 6 tests, residual 0.0014 on the focus cell |
+
+### Still open (highest value first)
+
+- **31** risk parity SPY/TLT/GLD/DBC vs 60/40 — no measurement exists.
+- **33** HRP on survivors + forward correlation matrix.
+- **34** combine best-per-class into one book — peer's `combined_book_20261122.json` concludes
+  100% cash is optimal, which supersedes the naive version; a *diversified* book that
+  includes the vol-targeted core has not been tested.
+- **35** publish what to actually hold — the vol-targeting result (60/40 VT: CE 8.87% vs
+  7.55% plain, MDD −22.37% vs −31.42%) is the one positive, risk-control finding and is not
+  in any published verdict doc.
+- **6** execution realism: stored fills vs modelled slippage (peer did capacity/maker-taker/
+  turnover/fill-convention; the stored-vs-modelled comparison per class is still absent).
+- **27** White's Reality Check across the 40-cell family — needs per-cell daily return
+  series, which the artifact does not store; requires a harness change before it can run.
+- **40–44** forward pods. The DSR finding makes the H-201 pod the single highest-value pod:
+  77 more trading days is exactly what it would produce.
+
+### H-201 correction, stated plainly
+
+`FAILS_MULTIPLICITY` was read as "the evidence is negative". It is not: the CI-LB is still
+**+7.246 bp/day** and the return series is unchanged. The cell fails by **one trial** and by
+**77 trading days**, and both margins are too thin to size a position on. It is
+`NOT_PROVEN` in both directions, and the only legitimate ways to settle it are more forward
+days or an independent replication on a non-overlapping universe.
