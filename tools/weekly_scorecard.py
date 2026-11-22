@@ -54,6 +54,8 @@ SOURCES = {
                "pre-registered outside tests"),
     "provenance": ("reports/provenance/status.json",
                    "provenance ledger (created_at at emit time, hash-chained)"),
+    "resolved": ("reports/provenance/resolved_status.json",
+                 "provenance resolution (pct_forward, hit rate, PF)"),
     "falsify": ("reports/mega_mutation/falsification.json",
                 "source falsification battery (max-stat null, median, duplicates)"),
     "lint": ("reports/integrity_lint/latest.json",
@@ -278,6 +280,30 @@ def build():
     else:
         rows.append(("Provenance ledger", "NOT RUN",
                      "python3 tools/provenance_ledger.py --status", "-"))
+
+    # ---- resolution: the number the programme has never been able to compute
+    rs = load("resolved")
+    if rs is not None:
+        pf_ = rs.get("pct_forward")
+        nres = rs.get("n_resolved") or 0
+        if nres == 0:
+            rows.append(("Provenance resolution", "NO DATA",
+                         "0 resolved picks yet - no statistic can be formed", "-"))
+        else:
+            rows.append(("Provenance resolution",
+                         "OK" if rs.get("resolution_chain_ok") else "CHAIN BROKEN",
+                         f"n_resolved {fnum(nres, 0)}, pct_forward "
+                         f"{fnum(pf_, 1, '%')}, hit {fnum(rs.get('hit_rate'), 1, '%')}, "
+                         f"mean {fnum(rs.get('mean_bp'), 1, ' bp')}, "
+                         f"PF {fnum(rs.get('profit_factor'), 3)}", "observed"))
+            if pf_ is not None and pf_ < 95:
+                alerts.append(f"pct_forward is {pf_:.1f}% - picks are not being "
+                              f"resolved after creation as they should be")
+        if rs.get("resolution_chain_ok") is False:
+            alerts.append("resolution chain BROKEN - outcomes were edited")
+    else:
+        rows.append(("Provenance resolution", "NOT RUN",
+                     "python3 tools/provenance_resolver.py --status", "-"))
 
     # ---- falsification of the last surviving source
     fs = load("falsify")

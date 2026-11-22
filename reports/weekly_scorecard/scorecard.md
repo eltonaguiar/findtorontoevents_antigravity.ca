@@ -1,6 +1,6 @@
 # Weekly scorecard
 
-_generated 2026-11-22 22:29 UTC by `tools/weekly_scorecard.py`_
+_generated 2026-11-22 23:03 UTC by `tools/weekly_scorecard.py`_
 
 T-bill hurdle used throughout: **3.50%/yr**
 
@@ -28,6 +28,7 @@ T-bill hurdle used throughout: **3.50%/yr**
 |   fill-convention premium | **INFLATION** | lag-0 fill is worth 2.54 bp/trade | observed |
 |   turnover frequency | **cost dial** | best Sharpe 0.81 at monthly | observed |
 | Provenance ledger | **EMPTY** | 0 records; chain intact; forward-creditable 0 | deterministic |
+| Provenance resolution | **NO DATA** | 0 resolved picks yet - no statistic can be formed | - |
 | Source: mega_mutation | **QUARANTINE** | 4/6 tests; mean 135.0 bp median 193.4 bp; failed median CI > 0, no duplicate re-emissions | observed |
 
 ## State notes
