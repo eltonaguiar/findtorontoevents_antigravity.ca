@@ -96,7 +96,15 @@ jobs:
             if timeout 120 git push -q origin HEAD:main; then echo "artifact pushed"; exit 0; fi
             echo "push rejected (attempt $i); re-pointing at the new tip"
             timeout 180 git fetch -q --depth=1 origin main || true
-            git reset --soft FETCH_HEAD || true
+            # MUST be a mixed reset. `--soft` moves HEAD but leaves this
+            # depth-1 checkout's STALE index in place, so the following commit
+            # republishes every file as it was when the run started -- on
+            # 2026-11-22 that silently reverted tools/audit2_forward_summary.py
+            # to its pre-#1048 content (deleting merge_gate) and broke CI
+            # collection, inside a commit labelled "market validation snapshot".
+            # Mixed resets the index to the new tip and keeps the artifact,
+            # which the `git add` below re-stages.
+            git reset FETCH_HEAD || true
             git add "$A"
             git commit -q -m "$M" || { echo "remote already carries this artifact"; exit 0; }
           done
