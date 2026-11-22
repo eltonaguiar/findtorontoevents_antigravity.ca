@@ -2875,6 +2875,17 @@
    "source": "reports/preregistration_2026-11-22_per_class.json",
    "frozen": true,
    "notes": "Registered before first run (M-107). Funding is the only crypto return stream here that is not beta. Archive covers ~9 months, which cannot contain a liquidation cascade: a pass is a candidate, never a proof."
+  },
+  {
+   "id": "H-229",
+   "status": "PRE_REGISTERED",
+   "asset_class": "CRYPTO",
+   "name": "funding_carry_holding_period_respec",
+   "spec": "Same delta-neutral 5-coin funding carry as H-228, re-specified with the cost model that H-228 could not justify: drag = measured round trip (42.64 bp) / holding days, with a 60-day holding floor, plus a measured re-hedge term of 0.072 bp/day (5% drift band, live Binance books). Holds at 0% allocation. Judged against a 3.5% T-bill, not BTC: the question is whether carry beats CASH.",
+   "registered_at": "2026-11-22T11:37:39.895438+00:00",
+   "source": "reports/forward_pod_carry_h229.json",
+   "frozen": true,
+   "notes": "Registered AFTER H-228's result, and that is declared rather than dressed up: this adds NO new evidence, because the motivating series is H-228's own. H-228 keeps its verdict under its pre-registered flat 1.0 bp/day drag. H-229 exists to accrue FORWARD observations under a cost model with a stated holding period, judged by tools/funding_carry_forward.py. Kill criteria are in the pod spec and were written before the first observation. Measured break-even: at 42.64 bp retail taker the sleeve beats a 3.5% T-bill only from a 180-day hold; at a 90-day hold it needs <=28.4 bp round trip (14.2 bp/side)."
   }
  ],
  "fork2_new_signals": [
