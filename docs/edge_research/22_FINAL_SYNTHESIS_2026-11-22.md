@@ -126,7 +126,16 @@ No row has a positive CI on excess return with cost paid. The closest candidates
 - **Not moved, and why:** equity breakout (killed on null and alpha, not cost), FX carry (break-even 468.5 bp, so cost cannot reverse it), 12-1 momentum (null-percentile kill), crypto intraday mean-rev (zero-cost kill at measured cost), cross-venue basis (cost-honest kill), and N1 R1/R2/R3 (null-percentile kills).
 - **Already not KILL, still UNKNOWN:** funding carry (was MARGINAL) and commodity term-structure carry (was BLOCKED_DATA).
 
-Total: 4 KILL verdicts moved to UNKNOWN, 6 rows are UNKNOWN, and 8 remain NOT_INVESTABLE.
+Total: 4 KILL verdicts moved to UNKNOWN, 4 rows are UNKNOWN, and 10 are NOT_INVESTABLE.
+
+TALLY: 0 INVESTABLE / 10 NOT_INVESTABLE / 4 UNKNOWN (14 rows)
+
+> **Tally corrected 2026-11-22T23:20Z.** This document previously printed `0 INVESTABLE / 8 NOT_INVESTABLE / 6 UNKNOWN`
+> (and the `### UNKNOWN: 6` heading above listed six rows). Counting the 14-row table in Part 2 gives 10 NOT_INVESTABLE
+> (rows 1, 3, 4, 5, 6, 7, 9, 12, 13, 14) and 4 UNKNOWN (rows 2, 8, 10, 11), not 8/6. The 8/6 figure was wrong:
+> two rows (commodity momentum, bond momentum) were already relabelled out of UNKNOWN in later notes without the
+> count being recounted. The `### NOT_INVESTABLE: 8` and `### UNKNOWN: 6` headings above are superseded by this line;
+> the per-row verdicts in Part 2 are unchanged. No row became investable.
 
 **M1 EQUITY cost note (2026-11-22, third asset class measured).** Equity cost is no longer `UNMEASURED`. From 1-minute bars over 2026-11-16..20 (Tiingo IEX quota exhausted, so the independent yfinance path was used), the round-trip spread **upper bound** is **12.07 bp** (median 1-min high-low, 13-name breakout universe; per-name 5.24 bp KO to 21.0 bp NVDA), with Corwin-Schultz at **1.50 bp** and Roll structurally invalid. Per-side cost used for re-costing is therefore **6.04 bp**, not 25 bp. Top-of-book NBBO is `BLOCKED_NO_LIVE_NBBO` (Sunday) and commission is `COMMISSION_UNKNOWN` - neither is set to zero. Borrow is zero for this family (long-only by construction). At a $100k book, order/ADV is 2e-7..9e-6, so no impact beyond spread. **Provenance repaired 2026-11-22T23:10Z:** the first committed artifact had `n_symbols_with_data: 0` / `SKIPPED_OFFLINE_OR_NO_KEY` (a yfinance spread loop key-gated on `TIINGO_API_KEY` overwrote the good run), so 12.07 bp was unquotable from its own artifact; the gate is fixed and the artifact regenerated (`n_symbols_with_data = 13`, median 12.0749 bp, per-side 6.0375 bp, `provenance_self_check = PASS`). The "measured 6.04 bp" proof-bar row was also a duplicate of the 5 bp row and is corrected: **null 10.2nd percentile, excess CAGR -14.25% [-46.32%, +32.31%], CAGR +5.33%, required 28.54%, NOT_INVESTABLE**. **No verdict moved:** the D7 rule was already killed on cost-independent grounds (null 69.8th/71.4th percentile, selection-alpha CI-LB -0.285%/-0.296%), and the pod's 5-year break-even (14.58 bp/side) is above measured cost but the pod still fails the null at measured cost (10.2nd percentile, excess CAGR CI spans zero, CAGR below the 28.54% hurdle). This is a **measurement-driven** change to the cost row only; the verdicts are unchanged because measured cost is *lower* than assumed and the kills did not rest on cost. Recompute of the tally from the row verdicts: 0 INVESTABLE / 8 NOT_INVESTABLE / 6 UNKNOWN - unchanged.
 

@@ -1,5 +1,22 @@
 # 23 — The definitive answer: nothing in this programme makes money net of cost
 
+> **CORRECTION NOTE (2026-11-22T23:20Z, superseding the first version of this document).** The first version
+> carried an **unresolved row count**: its tally line read
+> `0 INVESTABLE / 9 NOT_INVESTABLE / 2 BLOCKED_MISSING_DATA / 3 UNKNOWN = 14 rows`, but its own table below
+> contained **ten** NOT_INVESTABLE rows and **two** UNKNOWN rows, and its working text visibly failed to
+> identify the third UNKNOWN ("the third is… (recomputed: 14 − 9 − 2 = 3)"). That was a computed total
+> standing in for a counted list — the same defect class as a cost figure quoted without its artifact.
+> **The settled tally, counted one row per line in the table below, is
+> `0 INVESTABLE / 10 NOT_INVESTABLE / 4 UNKNOWN = 14 rows`.** The row count did not change (14 before, 14
+> after); two verdicts changed, and they changed *toward* KNOWN uncertainty, not away from it: commodity
+> momentum and commodity term-structure carry moved from UNKNOWN to a named, permanently-blocked UNKNOWN
+> (`BLOCKED_MISSING_DATA`). They are **relabels of rows that were already UNKNOWN, not removals** — the
+> uncertainty moved from "unknown verdict" to "known-but-unmeasurable", and nothing became investable.
+> The previous 14-row figure was **the right number of rows for the wrong reason**: 14 is correct, but
+> `9/2/3` was never counted, only subtracted, and the `2 BLOCKED` split contradicted the table.
+> Docs [15](docs/edge_research/15_PROGRAMME_SCOREBOARD_2026-11-22.md) and
+> [22](docs/edge_research/22_FINAL_SYNTHESIS_2026-11-22.md) are corrected to the same line in the same commit.
+
 **Date:** 2026-11-22 · **Programme item:** 51 (closing document) · **Row set:** the 14 rows fixed by
 [`22_FINAL_SYNTHESIS_2026-11-22.md`](docs/edge_research/22_FINAL_SYNTHESIS_2026-11-22.md:25)
 
@@ -20,8 +37,9 @@
 
 **No: nothing in this programme makes money net of cost, judged against a US 3-month T-bill paying
 4.32%** ([`07_HURDLE_RATES_2026-11-22.md`](docs/edge_research/07_HURDLE_RATES_2026-11-22.md:20)): 0 of 14 rows is
-investable, 9 are killed, 2 are permanently blocked on data that is not on disk, and the 3 still open are
-open on facts cost measurement cannot supply.
+investable, 10 are killed, and 4 are still open — 2 of them permanently blocked on data that is not on disk
+(the two commodity rows) and 2 open on facts cost measurement cannot supply (FX mean-reversion, funding carry).
+The open rows are open for reasons no further cost measurement can address.
 
 ## 2. What was proven, with numbers
 
@@ -32,10 +50,16 @@ FOREX: 7.533 bp round trip for the six USD majors (median of medians), 7.99 bp a
 the Sunday 22:00Z reopen, so an **upper bound** ([`FOREX_COST_20261122.md`](reports/cost_measurement_forex/FOREX_COST_20261122.md)).
 EQUITY: 12.0749 bp round trip upper bound, **6.0375 bp per side**, Corwin-Schultz 1.5033 bp,
 `provenance_self_check = PASS` over 13 names ([`equity_cost_20261122.json`](reports/equity_cost_measurement/equity_cost_20261122.json)).
-ETF 6.71 bp / INDEX 8.03 bp / MEME DOGE 6.79 bp are reported in
-[`2026-11-22-m3-cost-triage.md`](updates/2026-11-22-m3-cost-triage.md) but are **not supported by a committed
-artifact** (the committed [`class_cost_20261122.json`](reports/equity_cost_measurement/class_cost_20261122.json)
-has empty `classes`), so they are quoted here only as an M3 claim, not as a measurement.
+Class context: ETF median RT upper bound **6.7122 bp** over 14 names (SHY 0.6144 … SOXX 22.9049), INDEX
+(alias of ETF, 4 names) **8.0325 bp** (SPY 8.3139 / QQQ 12.0749 / IWM 7.7512 / DIA 5.5896), MEME only
+DOGE-USD quotable at **6.7938 bp** (SHIB 0.00 bp is tick-truncated, 84.3% zero-range bars, and PEPE-USD has
+no data; PENNY_STOCK has no instrument). These are **supported by the committed artifact**
+[`class_cost_20261122.json`](reports/equity_cost_measurement/class_cost_20261122.json) (commit `87a2e0cbe2f`,
+yfinance 1-min bars, 2026-11-16..20, fetched 2026-11-22T22:59Z) and are the same numbers recorded in
+[`2026-11-22-m3-cost-triage.md`](updates/2026-11-22-m3-cost-triage.md). They are a rigorous **upper bound**
+(median 1-min bar range), **not** the NBBO, and they are context, not a verdict: no row below is decided by them.
+An earlier version of this document said the artifact had empty `classes`; that was wrong, and the tripwire
+[`tests/test_m1_cost_provenance.py`](tests/test_m1_cost_provenance.py) now checks class figures against it.
 
 **The zero-cost kills.** These lose money with free trading, so no fill improvement can rescue them:
 crypto intraday mean-reversion (`breakeven_cost_bp = 0.0`, PF 0.815 at 0 bp); commodity momentum V1/V2/V3
@@ -68,15 +92,17 @@ nothing. Cost measurement is now exhausted as a lever: 0 of the 6 open rows is c
 
 ## 4. What remains genuinely unknown
 
-Three rows, and none is blocked on effort:
+Four rows, none blocked on effort, all of them relabels of rows that were already UNKNOWN:
 
-- **FX mean-reversion** (`ALREADY_SCHEDULED`): break-even 4.3038 bp; the window-clustered CI at 1 bp is
-  [−4.32, +11.09] and includes zero, so cost is necessary but not sufficient. A weekday London/NY-overlap
+- **FX mean-reversion** (`ALREADY_SCHEDULED`), UNKNOWN: break-even 4.3038 bp; the window-clustered CI at 1 bp
+  is [−4.32, +11.09] and includes zero, so cost is necessary but not sufficient. A weekday London/NY-overlap
   run is automated in [`.github/workflows/fx-cost-overlap.yml`](.github/workflows/fx-cost-overlap.yml) and pending.
-- **Funding carry** (`BLOCKED_OTHER`, cost already measured at 45.524 bp round trip): needs a funding
+- **Funding carry** (`BLOCKED_OTHER`), UNKNOWN, cost already measured at 45.524 bp round trip: needs a funding
   regime persisting ≥16.398 days (median episode 1.93–2.33 d), 27–32× more capacity, and a
   survivorship-clean universe.
-- **Commodity momentum (V1/V2/V3)** and **commodity term-structure carry**: `BLOCKED_MISSING_DATA` (§5).
+- **Commodity momentum (V1/V2/V3)**, UNKNOWN (`BLOCKED_MISSING_DATA`): counted as ONE row for the family
+  (convention below); §5.
+- **Commodity term-structure carry**, UNKNOWN (`BLOCKED_MISSING_DATA`): §5.
 
 ## 5. The two commodity rows: BLOCKED_MISSING_DATA, permanently
 
@@ -135,7 +161,16 @@ even the first condition** — the best null percentile on any surviving row is 
 
 ## The final accounting
 
-Recomputed from the row verdicts, not hand-edited. 14 rows.
+Counted from the row verdicts, one row per line, not hand-edited and not subtracted. 14 rows.
+
+**Commodity-row convention (adopted, and applied everywhere in this document, doc 15 and doc 22):** a
+*variant set* is **one row** when its members share one dataset, one artefact and one verdict and are only
+different parameterisations of the same strategy. So commodity momentum V1/V2/V3 is **one** row, bond
+momentum B1/B2/B3 is **one** row, and the N1 rules R1/R2/R3 are **three** rows because they are three
+different strategies on three different universes. This is why the commodity family cannot be counted once
+as "blocked" and once as "unknown": it is a single row whose verdict is `UNKNOWN` with the qualifier
+`BLOCKED_MISSING_DATA`. The qualifier explains *why* it is unknown; it is not a fourth verdict category and
+it removes no row from the UNKNOWN count.
 
 | # | Row | Final verdict | Basis | Change in this pass | Driven by |
 |---|---|---|---|---|---|
@@ -146,20 +181,27 @@ Recomputed from the row verdicts, not hand-edited. 14 rows.
 | 5 | Cross-venue basis | **NOT_INVESTABLE** | 0.00% of 720 minutes above the 40.48 bp measured threshold | none | — |
 | 6 | 12-1 momentum L/S | **NOT_INVESTABLE** | null 1.6; CAGR −25.45%; maxDD −82.3% | none | — |
 | 7 | Crypto intraday mean-rev | **NOT_INVESTABLE** | PF 0.815 @0 bp; break-even 0 bp; null 0.0 | none | — |
-| 8 | Commodity momentum V1/V2/V3 | **BLOCKED_MISSING_DATA** | roll-corrupted series; two witnesses NO CANDIDATE | UNKNOWN → BLOCKED_MISSING_DATA | interpretation |
-| 9 | Bond momentum B1/B2/B3 | **NOT_INVESTABLE** | B1 PF 1.312 beside Sharpe −0.550, maxDD −5.81%, null 2.0; B2 PF 0.743, Sharpe −1.699; B3 PF 0.737, Sharpe −1.063, skew −1.452; break-even 0 bp/side on all three | UNKNOWN → NOT_INVESTABLE | interpretation |
-| 10 | Funding carry | **UNKNOWN** | break-even 16.398 d vs 1.93–2.33 d episode; +2.42% APR @30 d vs 4.32% | none | — |
-| 11 | Commodity term-structure carry | **BLOCKED_MISSING_DATA** | zero second-month contract series on disk | UNKNOWN(BLOCKED_DATA) → BLOCKED_MISSING_DATA, relabel only | interpretation |
+| 8 | Commodity momentum V1/V2/V3 | **UNKNOWN** (`BLOCKED_MISSING_DATA`) | `reports/commodity_momentum_20261122.json` results V1/V2/V3 verdict KILL at break-even **0 bp/side** (V1 PF 0.757, V2 1.114, V3 1.074), but the 7 front-month series carry roll artifacts substantiated on disk (CL=F 17 moves >8%, ZC=F −13.1% on 07-15-2022 and −16.8% on 07-17-2023, NG=F 92 moves >8%); two independent witnesses NO CANDIDATE | UNKNOWN → UNKNOWN (relabelled with its block reason) | interpretation |
+| 9 | Bond momentum B1/B2/B3 | **NOT_INVESTABLE** | `reports/bond_momentum_20261122.json`: B1 PF 1.312 beside Sharpe −0.550, maxDD −5.81%, null 2.0; B2 PF 0.743, Sharpe −1.699; B3 PF 0.737, Sharpe −1.063, skew −1.452; break-even **0 bp/side** on all three (free trading still loses to 4.32%) | UNKNOWN → NOT_INVESTABLE | interpretation |
+| 10 | Funding carry | **UNKNOWN** | `reports/funding_carry_20261122.json`: break-even 16.398 d vs 1.93–2.33 d episode; pair RT 45.524 bp; +2.42% APR @30 d vs 4.32% | none | — |
+| 11 | Commodity term-structure carry | **UNKNOWN** (`BLOCKED_MISSING_DATA`) | `reports/commodity_carry_20261122.json`: zero second-month contract series on disk; roll yield needs two contracts | UNKNOWN → UNKNOWN (relabelled with its block reason) | interpretation |
 | 12 | N1 R1 multi-asset momentum | **NOT_INVESTABLE** | null 61.2; excess vs SPY +0.97 pp | none | — |
 | 13 | N1 R2 sector momentum | **NOT_INVESTABLE** | null 35.4; excess −11.3 pp | none | — |
 | 14 | N1 R3 SPY 200-day trend | **NOT_INVESTABLE** | null 53.4; excess −6.8 pp | none | — |
 
-**Final tally: 0 INVESTABLE / 9 NOT_INVESTABLE / 2 BLOCKED_MISSING_DATA / 3 UNKNOWN = 14 rows.**
-(The prior line, 0 / 8 / 6, folded the two blocked rows into UNKNOWN.)
+TALLY: 0 INVESTABLE / 10 NOT_INVESTABLE / 4 UNKNOWN (14 rows)
+
+(The first version of this document printed `0 / 9 NOT_INVESTABLE / 2 BLOCKED_MISSING_DATA / 3 UNKNOWN`, which
+was a subtraction, not a count, and disagreed with its own table. `BLOCKED_MISSING_DATA` is a qualifier on
+UNKNOWN, not a separate bucket, so the two commodity rows are inside the 4 UNKNOWN. Doc 15 and doc 22 carry
+the same line.)
 
 ### How many rows moved, and why
 
-**4 rows changed classification: 0 measurement-driven, 4 interpretation-driven.**
+**2 rows changed classification: 0 measurement-driven, 2 interpretation-driven** (commodity momentum and
+commodity term-structure carry, both UNKNOWN → UNKNOWN with a block qualifier). **0 rows became investable and
+0 rows left the UNKNOWN bucket** — the row count is unchanged at 14 and the UNKNOWN count is unchanged at 4.
+Bond momentum and FX momentum were already NOT_INVESTABLE in the table this document inherited.
 
 - **Bond momentum, UNKNOWN → NOT_INVESTABLE** is a *clarification*, not a new measurement: break-even is
   0 bp/side, so cost measurement was never capable of changing the answer, and the earlier UNKNOWN was
