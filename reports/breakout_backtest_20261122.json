@@ -1,0 +1,410 @@
+{
+  "generated_at": "2026-11-22T09:59:26.982871+00:00",
+  "data_source": "data/cache/asset_class_review/*_5y.csv",
+  "rule": {
+    "entry": "close > highest high of prior N days (N=20 and 55)",
+    "exit": "close < lowest low prior 10d OR 40 bar time stop OR 2*ATR14 stop",
+    "fill": "NEXT bar open (no look-ahead)",
+    "cost_per_side_1x": 0.0005,
+    "cost_per_side_2x": 0.001
+  },
+  "d7": {
+    "N=20": {
+      "1x": {
+        "n_trades": 390,
+        "mean_net": 0.01117,
+        "median_net": -0.014499,
+        "mean_gross": 0.01217,
+        "win_rate": 0.3846,
+        "ci95_mean": [
+          0.002506,
+          0.020349
+        ],
+        "sharpe_ann": 0.4522,
+        "sharpe_convention": "per-trade mean/std * sqrt(trades_per_year), 252 bars/yr",
+        "max_drawdown": -0.787441,
+        "ann_vol": 0.324442,
+        "avg_bars_held": 19.18,
+        "mean_selection_alpha": -0.001228,
+        "alpha_ci95": [
+          -0.002852,
+          0.000465
+        ]
+      },
+      "2x": {
+        "n_trades": 390,
+        "mean_net": 0.01017,
+        "median_net": -0.015499,
+        "mean_gross": 0.01217,
+        "win_rate": 0.3769,
+        "ci95_mean": [
+          0.001506,
+          0.019349
+        ],
+        "sharpe_ann": 0.4117,
+        "sharpe_convention": "per-trade mean/std * sqrt(trades_per_year), 252 bars/yr",
+        "max_drawdown": -0.803323,
+        "ann_vol": 0.324442,
+        "avg_bars_held": 19.18,
+        "mean_selection_alpha": -0.002228,
+        "alpha_ci95": [
+          -0.003852,
+          -0.000535
+        ]
+      },
+      "walk_forward": {
+        "folds": [
+          {
+            "fold": 1,
+            "n": 78,
+            "start": "2021-12-27",
+            "end": "2023-01-24",
+            "mean_net": -0.00856,
+            "sharpe_ann": -0.5318
+          },
+          {
+            "fold": 2,
+            "n": 78,
+            "start": "2023-01-27",
+            "end": "2024-03-04",
+            "mean_net": 0.042557,
+            "sharpe_ann": 1.1384
+          },
+          {
+            "fold": 3,
+            "n": 78,
+            "start": "2024-03-06",
+            "end": "2025-01-17",
+            "mean_net": -0.003524,
+            "sharpe_ann": -0.2072
+          },
+          {
+            "fold": 4,
+            "n": 78,
+            "start": "2025-01-17",
+            "end": "2025-12-04",
+            "mean_net": 0.017499,
+            "sharpe_ann": 0.7763
+          },
+          {
+            "fold": 5,
+            "n": 78,
+            "start": "2025-12-05",
+            "end": "2026-11-12",
+            "mean_net": 0.007877,
+            "sharpe_ann": 0.3047
+          }
+        ],
+        "n_positive": 3,
+        "n_folds": 5
+      },
+      "random_entry_null": {
+        "shuffles_effective": 500,
+        "null_sharpe_mean": 0.3589,
+        "null_sharpe_p95": 0.6251,
+        "null_sharpe_max": 0.8252,
+        "observed_sharpe": 0.4522,
+        "observed_percentile": 69.8,
+        "null_mean_net_mean": 0.007147
+      },
+      "gates": {
+        "G1_ci_mean_net_gt0_1x": true,
+        "G2_mean_net_gt0_2x": true,
+        "G3_three_of_five_folds_positive": true,
+        "G4_above_p95_random_entry": false,
+        "G5_selection_alpha_ci_lb_gt0": false,
+        "verdict": "KILL"
+      }
+    },
+    "N=55": {
+      "1x": {
+        "n_trades": 268,
+        "mean_net": 0.012714,
+        "median_net": -0.015311,
+        "mean_gross": 0.013714,
+        "win_rate": 0.3955,
+        "ci95_mean": [
+          0.002875,
+          0.024076
+        ],
+        "sharpe_ann": 0.5089,
+        "sharpe_convention": "per-trade mean/std * sqrt(trades_per_year), 252 bars/yr",
+        "max_drawdown": -0.594825,
+        "ann_vol": 0.316003,
+        "avg_bars_held": 19.93,
+        "mean_selection_alpha": -0.001103,
+        "alpha_ci95": [
+          -0.002955,
+          0.000824
+        ]
+      },
+      "2x": {
+        "n_trades": 268,
+        "mean_net": 0.011714,
+        "median_net": -0.016311,
+        "mean_gross": 0.013714,
+        "win_rate": 0.3881,
+        "ci95_mean": [
+          0.001875,
+          0.023076
+        ],
+        "sharpe_ann": 0.4688,
+        "sharpe_convention": "per-trade mean/std * sqrt(trades_per_year), 252 bars/yr",
+        "max_drawdown": -0.610699,
+        "ann_vol": 0.316003,
+        "avg_bars_held": 19.93,
+        "mean_selection_alpha": -0.002103,
+        "alpha_ci95": [
+          -0.003955,
+          -0.000176
+        ]
+      },
+      "walk_forward": {
+        "folds": [
+          {
+            "fold": 1,
+            "n": 53,
+            "start": "2022-02-14",
+            "end": "2023-05-11",
+            "mean_net": 0.006419,
+            "sharpe_ann": 0.2739
+          },
+          {
+            "fold": 2,
+            "n": 53,
+            "start": "2023-05-19",
+            "end": "2024-05-16",
+            "mean_net": 0.040556,
+            "sharpe_ann": 1.0412
+          },
+          {
+            "fold": 3,
+            "n": 53,
+            "start": "2024-05-16",
+            "end": "2025-02-19",
+            "mean_net": -0.009229,
+            "sharpe_ann": -0.9213
+          },
+          {
+            "fold": 4,
+            "n": 53,
+            "start": "2025-02-19",
+            "end": "2025-12-12",
+            "mean_net": 0.017878,
+            "sharpe_ann": 0.8982
+          },
+          {
+            "fold": 5,
+            "n": 56,
+            "start": "2025-12-12",
+            "end": "2026-11-12",
+            "mean_net": 0.008204,
+            "sharpe_ann": 0.3186
+          }
+        ],
+        "n_positive": 4,
+        "n_folds": 5
+      },
+      "random_entry_null": {
+        "shuffles_effective": 500,
+        "null_sharpe_mean": 0.4107,
+        "null_sharpe_p95": 0.6628,
+        "null_sharpe_max": 0.8486,
+        "observed_sharpe": 0.5089,
+        "observed_percentile": 71.4,
+        "null_mean_net_mean": 0.00815
+      },
+      "gates": {
+        "G1_ci_mean_net_gt0_1x": true,
+        "G2_mean_net_gt0_2x": true,
+        "G3_three_of_five_folds_positive": true,
+        "G4_above_p95_random_entry": false,
+        "G5_selection_alpha_ci_lb_gt0": false,
+        "verdict": "KILL"
+      }
+    }
+  },
+  "d6": {
+    "equities": {
+      "SPY": {
+        "symbol": "SPY",
+        "start": "2021-11-22",
+        "end": "2026-11-19",
+        "n_bars": 1254,
+        "total_return": 0.637,
+        "cagr": 0.1041,
+        "ann_vol": 0.1738,
+        "sharpe_ann": 0.657,
+        "max_drawdown": -0.245
+      },
+      "QQQ": {
+        "symbol": "QQQ",
+        "start": "2021-11-22",
+        "end": "2026-11-19",
+        "n_bars": 1254,
+        "total_return": 0.6644,
+        "cagr": 0.1078,
+        "ann_vol": 0.2341,
+        "sharpe_ann": 0.5547,
+        "max_drawdown": -0.3512
+      },
+      "IWM": {
+        "symbol": "IWM",
+        "start": "2021-11-22",
+        "end": "2026-11-19",
+        "n_bars": 1254,
+        "total_return": 0.2129,
+        "cagr": 0.0396,
+        "ann_vol": 0.2251,
+        "sharpe_ann": 0.2849,
+        "max_drawdown": -0.2873
+      },
+      "GLD": {
+        "symbol": "GLD",
+        "start": "2021-11-22",
+        "end": "2026-11-19",
+        "n_bars": 1254,
+        "total_return": 0.9864,
+        "cagr": 0.1479,
+        "ann_vol": 0.1926,
+        "sharpe_ann": 0.8138,
+        "max_drawdown": -0.3241
+      },
+      "TLT": {
+        "symbol": "TLT",
+        "start": "2021-11-22",
+        "end": "2026-11-19",
+        "n_bars": 1254,
+        "total_return": -0.3426,
+        "cagr": -0.0808,
+        "ann_vol": 0.156,
+        "sharpe_ann": -0.4627,
+        "max_drawdown": -0.437
+      }
+    },
+    "crypto": {
+      "BTC-USD": {
+        "symbol": "BTC-USD",
+        "start": "2021-11-20",
+        "end": "2026-11-20",
+        "n_bars": 1827,
+        "total_return": 0.0348,
+        "cagr": 0.0047,
+        "ann_vol": 0.4214,
+        "sharpe_ann": 0.2221,
+        "max_drawdown": -0.7355
+      }
+    },
+    "fx": {
+      "EURUSD": {
+        "pair": "EURUSD",
+        "start": "2018-12-31",
+        "end": "2026-11-20",
+        "n_bars": 2022,
+        "spot_change_total": -0.0402,
+        "ann_vol": 0.0713,
+        "is_investment_return": false,
+        "note": "Spot FX has no carry/interest. This is price change only, NOT an investment return. Positive only with a rate differential."
+      },
+      "USDJPY": {
+        "pair": "USDJPY",
+        "start": "2018-12-31",
+        "end": "2026-11-20",
+        "n_bars": 2022,
+        "spot_change_total": 0.4434,
+        "ann_vol": 0.0919,
+        "is_investment_return": false,
+        "note": "Spot FX has no carry/interest. This is price change only, NOT an investment return. Positive only with a rate differential."
+      }
+    },
+    "pods": {
+      "source": "audit_dashboard/data/dashboard_data.json::sidecar_promotion_status",
+      "pods": {
+        "sentiment_macro_contrarian": {
+          "n_forward_rows": 0,
+          "status": "PROMOTED",
+          "wr": 0.0,
+          "pf": 0.0
+        },
+        "crypto_pairs_arb": {
+          "n_forward_rows": 0,
+          "status": "PROMOTED",
+          "wr": 0.0,
+          "pf": 0.0
+        },
+        "regime_filtered_momentum": {
+          "n_forward_rows": 0,
+          "status": "PROMOTED",
+          "wr": 0.0,
+          "pf": 0.0
+        },
+        "commodity_cot_contrarian": {
+          "n_forward_rows": 0,
+          "status": "INCUBATING",
+          "wr": 0.0,
+          "pf": 0.0
+        },
+        "volume_weighted_candle_sequence": {
+          "n_forward_rows": 0,
+          "status": "INCUBATING",
+          "wr": 0.0,
+          "pf": 0.0
+        },
+        "market_structure_volume": {
+          "n_forward_rows": 0,
+          "status": "INCUBATING",
+          "wr": 0.0,
+          "pf": 0.0
+        },
+        "pm_consensus_overlay": {
+          "n_forward_rows": 0,
+          "status": "INCUBATING",
+          "wr": 0.0,
+          "pf": 0.0
+        }
+      },
+      "note": "POD-EQUITY-BREAKOUT is pre_registered but not in this map and emits zero rows; all pods here have n=0 forward rows => no measurable return. No return is invented for them."
+    },
+    "gic_breakeven": {
+      "description": "Required arithmetic annualized return a risky asset must earn to match a GIC of the given nominal rate, after annual cost drag and volatility drag (0.5*sigma^2).",
+      "grid": {
+        "gic=3%|cost=0.0%|vol=0%": 0.03,
+        "gic=3%|cost=0.0%|vol=15%": 0.0412,
+        "gic=3%|cost=0.0%|vol=30%": 0.075,
+        "gic=3%|cost=0.0%|vol=60%": 0.21,
+        "gic=3%|cost=0.5%|vol=0%": 0.035,
+        "gic=3%|cost=0.5%|vol=15%": 0.0462,
+        "gic=3%|cost=0.5%|vol=30%": 0.08,
+        "gic=3%|cost=0.5%|vol=60%": 0.215,
+        "gic=3%|cost=2.0%|vol=0%": 0.05,
+        "gic=3%|cost=2.0%|vol=15%": 0.0612,
+        "gic=3%|cost=2.0%|vol=30%": 0.095,
+        "gic=3%|cost=2.0%|vol=60%": 0.23,
+        "gic=4%|cost=0.0%|vol=0%": 0.04,
+        "gic=4%|cost=0.0%|vol=15%": 0.0513,
+        "gic=4%|cost=0.0%|vol=30%": 0.085,
+        "gic=4%|cost=0.0%|vol=60%": 0.22,
+        "gic=4%|cost=0.5%|vol=0%": 0.045,
+        "gic=4%|cost=0.5%|vol=15%": 0.0562,
+        "gic=4%|cost=0.5%|vol=30%": 0.09,
+        "gic=4%|cost=0.5%|vol=60%": 0.225,
+        "gic=4%|cost=2.0%|vol=0%": 0.06,
+        "gic=4%|cost=2.0%|vol=15%": 0.0712,
+        "gic=4%|cost=2.0%|vol=30%": 0.105,
+        "gic=4%|cost=2.0%|vol=60%": 0.24,
+        "gic=5%|cost=0.0%|vol=0%": 0.05,
+        "gic=5%|cost=0.0%|vol=15%": 0.0612,
+        "gic=5%|cost=0.0%|vol=30%": 0.095,
+        "gic=5%|cost=0.0%|vol=60%": 0.23,
+        "gic=5%|cost=0.5%|vol=0%": 0.055,
+        "gic=5%|cost=0.5%|vol=15%": 0.0663,
+        "gic=5%|cost=0.5%|vol=30%": 0.1,
+        "gic=5%|cost=0.5%|vol=60%": 0.235,
+        "gic=5%|cost=2.0%|vol=0%": 0.07,
+        "gic=5%|cost=2.0%|vol=15%": 0.0813,
+        "gic=5%|cost=2.0%|vol=30%": 0.115,
+        "gic=5%|cost=2.0%|vol=60%": 0.25
+      }
+    }
+  }
+}
