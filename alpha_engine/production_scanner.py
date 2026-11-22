@@ -6825,7 +6825,9 @@ def main():
     #   Fail-safe: any error is logged and swallowed. A provenance write must never
     #   be able to stop picks from being produced.
     try:
-        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
+        _prov_tools = str(Path(__file__).resolve().parent.parent / "tools")
+        if _prov_tools not in sys.path:          # guard: don't accumulate entries
+            sys.path.insert(0, _prov_tools)
         from provenance_ledger import emit as _prov_emit
 
         _prov_picks = []
