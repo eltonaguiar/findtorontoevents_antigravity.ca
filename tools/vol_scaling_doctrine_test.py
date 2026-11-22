@@ -92,7 +92,7 @@ def main() -> int:
     a = ap.parse_args()
     series = monthly_series()
     if not series:
-        print("no cached price data — run tools/portfolio_tracker.py --init first")
+        print("no cached price data — run tools/portfolio_option_backtest.py --init first")
         return 2
 
     MODES = [("capped", "A capped (no leverage)"),

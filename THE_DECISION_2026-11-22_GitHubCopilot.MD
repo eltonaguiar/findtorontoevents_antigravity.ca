@@ -260,3 +260,94 @@ arbitrage as a signal.**
 I told the fleet "SPY's edge is post-2010 only" and asked them for a non-US test
 to confirm it. The test I asked for **refutes my premise**. Correcting that on the
 bus is the first thing I do next turn.
+
+---
+
+## 8. REVISION R1 — 2026-11-22T11:15Z — I ZEROED THE CARRY SLEEVE
+
+The pick was 40% cash / 50% equity / 10% carry. **The carry sleeve is now 0% and
+cash is 50%.** This is a material change to my recommendation and it is recorded
+as revision R1 in `reports/recommended_portfolio/state.json` with the inception
+book preserved and still scored, because a revision you cannot audit is
+indistinguishable from moving the goalposts.
+
+### What changed: the cost stopped being a guess
+
+Every previous statement of the carry round trip in this programme was an
+assumption. `tools/carry_execution_cost.py` measures it from live order books by
+walking the book to a real notional, rather than assuming half the top-of-book
+spread (which is only correct if you trade smaller than the best quote):
+
+| pair | basis | spot sprd | perp sprd | walked slip | fees | **round trip** |
+|---|---:|---:|---:|---:|---:|---:|
+| BTC | −5.4 | 0.5 | 0.0 | 1.0 | 40 | **41.0 bp** |
+| ETH | −5.1 | 0.1 | 0.1 | 0.1 | 40 | **40.1 bp** |
+| BNB | −0.4 | 0.2 | 0.2 | 2.6 | 40 | **42.6 bp** |
+| SOL | −7.1 | 1.4 | 1.4 | 3.4 | 40 | **43.4 bp** |
+| XRP | −4.3 | 1.1 | 1.1 | 3.4 | 40 | **43.4 bp** |
+
+**Median 42.64 bp, n=5, of which 94% is pure fees.** Slippage is 2.64 bp — the
+book is deep; the fees are the whole story.
+
+### Why that kills the sleeve at my fee tier
+
+Two things multiply, and I had only ever looked at them separately:
+
+1. **Cost is amortised, not daily.** At a 90-day hold, 42.64 bp = 0.474 bp/day.
+   The published cliff is between 0.5 and 1.0 bp/day. So the *full-sample* carry
+   still passes — **by 0.026 bp/day.** My tracker's `0.44 bp/day` turns out to be
+   a 97-day hold at the measured cost, so that assumption was self-consistent.
+2. **But funding has decayed 46%.** The measured halves are +2.504 then
+   +1.346 bp/day. The 7.28%/yr headline is a full-sample number that includes the
+   2021 basis boom.
+
+Forward-honest: **1.346 − 0.474 = 0.872 bp/day = 3.18%/yr.**
+A 3.5% T-bill returns **3.50%/yr** with zero variance, no liquidation tail and no
+exchange counterparty risk.
+
+**At base VIP0 taker fees, delta-neutral carry is dominated by cash.** Holding it
+would have been a bet on my fee tier, not on the market.
+
+### The conditional part, which is the useful part
+
+| fee tier | round trip | net @90d hold | vs 3.5% cash |
+|---|---:|---:|---|
+| VIP0 taker (base) | 42.6 bp | **3.18%/yr** | loses |
+| BNB-discount taker | 32.6 bp | 3.59%/yr | beats |
+| VIP1 taker | 34.6 bp | 3.51%/yr | beats (barely) |
+| VIP2 taker | 26.6 bp | 3.83%/yr | beats |
+| all-maker | 10.6 bp | 4.48%/yr | beats clearly |
+
+So this is **not** a verdict against the strategy. H-228 reproduces (an
+independent desk got 1.9252 bp/day, 7.28%, Sharpe 3.423 — a three-significant-
+figure match), and the strategy is worth holding **if** you clear VIP1 or can
+rest passive. My recommendation is now conditional on an execution fact about you
+that I cannot observe from here.
+
+### And an entry-timing observation the backtest cannot make
+
+At the moment of measurement the perp was trading **below** spot on all five
+pairs (−5.4 BTC, −5.1 ETH, −0.4 BNB, −7.1 SOL, −4.3 XRP bp). Negative basis goes
+with negative funding, meaning **a short-perp carry book entered right now pays
+funding rather than receiving it.** The backtest mean is not the entry condition.
+This is one snapshot and proves nothing about tomorrow, but it is exactly the
+kind of thing a mean hides, and it is the second reason the sleeve is 0%.
+
+### What I owe and have not paid
+
+The measured 42.64 bp is **one snapshot**. Spreads widen in stress, and stress is
+when you are most likely to be entering or exiting. Treat 42.6 bp as a **floor,
+not a mean.** A 2× worse fill (85.3 bp) fails at 90 days and at every shorter
+hold. Until there is a time series of this measurement — not one measurement —
+the carry verdict is a coin standing on its edge, and the honest label on the
+sleeve is **NOT ESTABLISHED** rather than **REFUTED**.
+
+### Net effect on the pick
+
+- **Cash 40% → 50%. Equity 50% unchanged. Carry 10% → 0%.**
+- EQUITY #3 (daily breakout) restored conditionally per §7, still unallocated.
+- Frozen for now: commodity trend (§6), FX, futures, vol scaling, the pod.
+- Forward scorecard: 1 month, equity sleeve −8.72%. Still UNPROVEN.
+
+Back-test and a single execution snapshot only. Zero forward observations of the
+revised book. Zero capital sanctioned. Not investment advice.

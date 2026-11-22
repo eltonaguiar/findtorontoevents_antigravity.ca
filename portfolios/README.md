@@ -2,13 +2,18 @@
 
 Two working tools, both on free data, both runnable today.
 
-## 1. `tools/portfolio_tracker.py` — track candidate portfolios side by side
+## 1. `tools/portfolio_option_backtest.py` — WHICH PORTFOLIO OPTION WINS (renamed 2026-11-22)
+
+> Renamed from `portfolio_tracker.py` per peer request (buffy) to end a name
+> collision: THIS file answers "which portfolio option wins on a common window",
+> while `tools/recommended_portfolio_tracker.py` answers "what is the live MTM
+> value of the tracked pick". Two different questions, two different files.
 
 ```bash
-python3 tools/portfolio_tracker.py --init      # build state from config (real daily data)
-python3 tools/portfolio_tracker.py --report    # each portfolio on its own window
-python3 tools/portfolio_tracker.py --common    # ALL on one common window (fair)
-python3 tools/portfolio_tracker.py --html      # writes portfolio_dashboard.html
+python3 tools/portfolio_option_backtest.py --init      # build state from config (real daily data)
+python3 tools/portfolio_option_backtest.py --report    # each portfolio on its own window
+python3 tools/portfolio_option_backtest.py --common    # ALL on one common window (fair)
+python3 tools/portfolio_option_backtest.py --html      # writes portfolio_dashboard.html
 ```
 
 Config: `portfolios/portfolio_config.json`. State: `portfolios/portfolio_state.json`.

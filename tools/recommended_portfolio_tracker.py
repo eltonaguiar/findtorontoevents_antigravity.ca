@@ -25,6 +25,22 @@ directional crypto, commodity trend (conflict), FX (three desks negative),
 futures (unmeasurable), volatility scaling (refuted), the daily-breakout pod
 (unreproducible).
 
+REVISION R1 (2026-11-22T11:15Z) — CARRY 10% -> 0%, CASH 40% -> 50%.
+  The drag stopped being an assumption. tools/carry_execution_cost.py measured the
+  actual round trip from live order books: 42.64 bp median (n=5 pairs, 94% of it
+  pure fees). At a 90-day hold that is 0.474 bp/day against a published cliff of
+  0.50 — passing by 0.026. Combine that with the MEASURED decay in funding
+  (+2.504 bp/day first half, +1.346 second half) and the forward-honest carry
+  return is 1.346 - 0.474 = 0.872 bp/day = 3.18%/yr. A 3.5% T-bill returns more,
+  with zero variance, no liquidation tail and no exchange counterparty risk.
+  At base VIP0 fees the carry sleeve is DOMINATED BY CASH: holding it is a bet on
+  fee tier, not on the market. It clears cash at VIP1 (3.51%/yr) and clearly at
+  all-maker cost (4.48%/yr), so this is a CONDITIONAL exclusion, not a verdict
+  against the strategy — the strategy is fine, my fee tier is not.
+  This is a revision on a COST MEASUREMENT, not on forward data. The inception
+  book is kept intact and still scored, because a revision you cannot audit is
+  indistinguishable from moving the goalposts.
+
 WHAT THIS CAN AND CANNOT TELL YOU
   * The historical column is an IN-SAMPLE reconstruction using measured series.
     It is not evidence of future return.
@@ -57,6 +73,8 @@ FUNDING = ROOT / "reports" / "funding_carry" / "funding_carry_measure.json"
 # ---- THE PICK: fixed at inception, never edited after seeing forward data ----
 INCEPTION = "2026-11-22"
 WEIGHTS = {"cash": 0.40, "equity": 0.50, "carry": 0.10}
+# Revision R1 — see module docstring. Applied prospectively, inception book kept.
+WEIGHTS_R1 = {"cash": 0.50, "equity": 0.50, "carry": 0.00}
 CASH_RATE = 0.035          # annual, laddered GIC / T-bill assumption
 EQUITY_TICKER = "SPY"
 CARRY_ANNUAL = 0.0728      # measured mean funding, gross of drag
@@ -146,6 +164,12 @@ def blend(df: pd.DataFrame, w: dict) -> pd.Series:
     return sum(df[k] * wt for k, wt in w.items())
 
 
+def current_weights(st: dict) -> dict:
+    """Last revision if any, else the inception book. Never mutates history."""
+    revs = st.get("revisions") or []
+    return revs[-1]["weights"] if revs else st.get("weights", WEIGHTS)
+
+
 def cmd_init() -> int:
     st = {"inception": INCEPTION,
           "created_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -181,13 +205,40 @@ def cmd_mark() -> int:
     return 0
 
 
+def cmd_revise(note: str) -> int:
+    """Append a dated weight revision. Does NOT touch the inception book."""
+    st = load_state()
+    if not st:
+        print("run --init first"); return 2
+    st.setdefault("revisions", []).append({
+        "rev": len(st.get("revisions", [])) + 1,
+        "effective_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "from_weights": current_weights(st),
+        "weights": WEIGHTS_R1,
+        "basis": "COST MEASUREMENT, not forward data",
+        "note": note,
+    })
+    save_state(st)
+    print(f"revision {st['revisions'][-1]['rev']} recorded: "
+          f"{st['revisions'][-1]['from_weights']} -> {WEIGHTS_R1}")
+    print("inception book preserved and still scored.")
+    return 0
+
+
 def cmd_report() -> int:
     st = load_state()
     df = monthly_returns()
     mode = df.attrs.get("carry_mode", "unknown")
     pick = blend(df, WEIGHTS)
-    print("=== TRACKED PICK — 40% cash / 50% equity / 10% carry ===")
-    print(f"  inception {st.get('inception','?')}   weights {st.get('weights', WEIGHTS)}")
+    cur = current_weights(st)
+    pick_cur = blend(df, cur)
+    print("=== TRACKED PICK — inception 40/50/10, current as revised ===")
+    print(f"  inception {st.get('inception','?')}   inception weights "
+          f"{st.get('weights', WEIGHTS)}")
+    if cur != st.get("weights", WEIGHTS):
+        r = st["revisions"][-1]
+        print(f"  CURRENT weights {cur}  (rev {r['rev']}, {r['effective_utc']}, "
+              f"basis: {r['basis']})")
     print(f"  carry sleeve source: {mode}")
     if mode != "real_funding_series":
         print("  !! carry is a CONSTANT here => zero variance => blended Sharpe is inflated.")
@@ -195,7 +246,7 @@ def cmd_report() -> int:
     print()
     print(f"{'portfolio':<26} {'CAGR%':>8} {'Sharpe':>7} {'MDD%':>8} {'$10k->':>12}  window")
     print("-" * 78)
-    rows = [("MY PICK", pick)]
+    rows = [("INCEPTION book 40/50/10", pick), ("CURRENT book (post-R1)", pick_cur)]
     for name, w in BENCHMARKS.items():
         rows.append((name, blend(df, w)))
     for name, r in rows:
@@ -222,6 +273,12 @@ def cmd_report() -> int:
     print()
     print("  Honest caveats on the reconstruction:")
     print(f"   * cash is a flat {CASH_RATE*100:.1f}% assumption, not realised T-bill history")
+    print("   * THE CARRY FIGURE ABOVE IS AN OVERSTATEMENT. The in-sample sleeve uses")
+    print("     the FULL-SAMPLE funding mean (1.9252 bp/day), which includes the 2021")
+    print("     basis boom. The measured halves are +2.504 then +1.346 bp/day, a 46%")
+    print("     decay. Forward-honest (recent half minus the MEASURED 42.64bp round")
+    print("     trip at a 90d hold) is 0.872 bp/day = 3.18%/yr at VIP0 fees, not 5.53%.")
+    print("     See tools/carry_execution_cost.py. This is why R1 zeroed the sleeve.")
     print("   * carry uses REAL funding settlements, so its 26.8% negative-funding days")
     print("     and -10.5% carry-stream drawdown ARE in the series — but the window is")
     print("     limited to where funding history exists, so it is shorter than the equity one")
@@ -235,7 +292,11 @@ def main() -> int:
     ap.add_argument("--init", action="store_true")
     ap.add_argument("--mark", action="store_true")
     ap.add_argument("--report", action="store_true")
+    ap.add_argument("--revise", action="store_true")
+    ap.add_argument("--note", default="")
     a = ap.parse_args()
+    if a.revise:
+        return cmd_revise(a.note)
     if a.init:
         return cmd_init()
     if a.mark:
