@@ -267,3 +267,32 @@ harness to persist per-cell return matrices, which is one change that unblocks b
 The seven that remain are blocked on a **measured non-crypto cost** (11 of 12 classes) and a
 **point-in-time universe** (every class) — procurement problems, not analysis problems. No
 amount of further backtesting substitutes for either, which is the honest reason this stops here.
+
+---
+
+## Status log 5 — 2026-11-22 (matrix persistence, PBO sensitivity, family tests, sizing variant)
+
+| # | Item | Result |
+|---|---|---|
+| 26 | PBO / CSCV block-length sensitivity | **DONE — and the published number was optimistic.** The harness now persists the matrix; re-running the untouched PBO reproduces the frozen **0.345 exactly** (|diff| 0.0), and the block sweep `s ∈ {8,16,24}` gives 0.350 / 0.345 / 0.315 — so it is **not** an artefact of `s`. But the harness filled ragged NaN with 0.0, crediting late-starting cells with 0% returns and depressing their full-sample Sharpe. On the **common window** (1478 days, 2021-01-04 → 2026-11-20, no cell scored on a day it did not trade) PBO is **0.570 / 0.535 / 0.505**. The admissible value is ≈**0.53**: the in-sample winner lands below the out-of-sample median more often than not. |
+| 27 | White's Reality Check across the family | **DONE — reported as a range, not a verdict.** Registered statistic (raw RC): **p = 0.4794** (39 cells, common window) and **p = 0.1436** (34-cell full-history family, 2012-01-03 → 2026-11-20, 3735 days) → **no rejection**. Studentised RC and Hansen SPA on the full-history family: **p = 0.0156 / 0.0152** with **H-201** as the best cell (5.512 bp/day, uncorrected p 0.0008) → rejection. The gap is the RC-vs-SPA distinction: RC recentres every cell, so ~20 dead cells widen the null over the winner; our family is mostly dead cells. |
+| 15 | Vol-scaled cross-sectional momentum | **DONE — both claims measured, both negative.** Vol matching: no (matched CI-LB −0.533). Position-level inverse-vol sizing: **significantly worse**, paired **−1.826 bp/day**, CI **[−2.754, −0.922]**, t = −4.23. H-232 FAILS every gate (DSR 0.8491 at n = 30). Control: random top-3 with the same sizing sits below the observed cell at the 92.4th percentile, so **selection carries information and the sizing destroys it**. |
+
+### What item 27 does and does not settle
+
+It does **not** promote H-201, and the reason is item 16, not item 27: the full-history winner is
+drawn from a universe of today's ten largest companies, where **0 of 79 series end early**. The
+bootstrap resamples **time**, not the universe; survivorship is untouched by any p-value that runs
+on a contaminated panel. H-201 therefore stays **`NOT_PROVEN`**.
+
+It *does* put the multiplicity penalty in a range instead of a verdict, and it moves the
+conservative end. The DSR deflates using the scatter of Sharpe ratios under an **independence**
+assumption across 29 near-duplicate trials; SPA resamples the actual matrix and so preserves the
+cross-cell correlation, which makes its effective trial count far smaller. So the earlier reading —
+"multiplicity is fatal" — was the punitive end of the range, not the whole range.
+
+### State after this block
+
+**45 of 50 complete. 5 blocked** — 6 (realised fill prices), 12 and 14 (paid futures/options
+series), 19 (per-symbol ADV on a survivorship-contaminated universe), 20 (fund NAV source). Zero
+items are partial.
