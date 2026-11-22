@@ -1,0 +1,52 @@
+{
+  "registered_utc": "2026-11-22T13:05:00Z",
+  "registered_by": "mercury3/copilot",
+  "rule": "M-107 - registered BEFORE any statistic was computed for these tests. The recorded_utc above precedes the first execution of tools/prereg_outside_tests.py. Anyone can verify by comparing this file's commit time to the commit time of the results artifact.",
+  "purpose": "Two OUTSIDE tests requested explicitly as falsification gates. Both are written to KILL, not to confirm. Nothing in this programme has survived a correctly-specified kill test yet, so the prior is that these die too; a survival would be the first evidence worth acting on.",
+  "tests": [
+    {
+      "id": "OUTSIDE-1-ETF-BREAKOUT-VOL-TERCILES",
+      "asset_class": "ETF",
+      "family": "daily_breakout_continuation",
+      "question": "Does the daily-breakout gross edge concentrate in HIGH realised-volatility regimes strongly enough to clear a 24 bp round-trip cost?",
+      "specification": {
+        "rule": "Donchian lookback 20 on the prior 20 bars; signal = close above prior high; entry at NEXT bar open; TP = entry + 2.0 x ATR(14); SL = entry - 1.0 x ATR(14); max hold 10 bars then exit at that bar close; one position at a time; stop checked before target within a bar (pessimistic).",
+        "volatility_bucket": "realised volatility of DAILY RETURNS measured over the 20 bars ENDING AT THE SIGNAL BAR (t-1), i.e. known before the fill. Terciles formed PER MARKET over that market's whole trade sample, so each market contributes its own low/mid/high bucket. Pooling across markets after per-market bucketing.",
+        "cost_bp_round_trip": 24.0,
+        "markets": ["^GSPC", "^FTSE", "^GDAXI", "^N225", "^GSPTSE", "^AXJO", "^HSI", "SPY", "QQQ", "GLD", "TLT", "IEF", "EEM", "EFA"],
+        "data": "daily bars, full available history per market",
+        "fill": "next bar open",
+        "report_gross_and_net_separately": true,
+        "split_basis_named": "calendar (per-market terciles on realised vol, then pooled)"
+      },
+      "KILL_CONDITION": {
+        "statement": "KILL the family if EITHER holds: (i) the TOP realised-vol tercile net edge < 0 bp after 24 bp round trip, OR (ii) the TOP tercile gross edge < 24 bp.",
+        "test_stat": "mean net edge per trade in the top realised-vol tercile, and mean gross edge in the same tercile",
+        "thresholds": {"top_tercile_net_bp_min": 0.0, "top_tercile_gross_bp_min": 24.0}
+      },
+      "note": "This is the most favourable framing of the breakout family that exists in this programme: it selects the regime where the edge should be largest and charges a cost (24bp) that is BELOW the 10bp/side conservative case. If it dies here it dies everywhere.",
+      "status": "PRE_REGISTERED"
+    },
+    {
+      "id": "OUTSIDE-2-CRYPTO-LEAD-ROLLING-DSR",
+      "asset_class": "CRYPTO",
+      "family": "entry_condition_rsi_session",
+      "underlying_hypothesis": "H-119",
+      "question": "Does the crypto lead survive an out-of-sample deflated Sharpe test against the full 67-cell search it was selected from, and does it realise a usable edge in forward trading?",
+      "specification": {
+        "search_space_size": 67,
+        "dsr_method": "Bailey & Lopez de Prado deflated Sharpe: P(true SR > 0) given n_trials=67, using skew and kurtosis of the return series.",
+        "oos_window": "rolling 60 calendar days",
+        "cost_bp_round_trip": 16.0,
+        "observations": "rows from reports/forward_observations.jsonl tagged H-119, WITH PROVENANCE TRACKED: rows whose created_at precedes their closed_at are genuine forward observations; rows created after their close are backfilled and are reported separately and NEVER counted as forward.",
+        "report_gross_and_net_separately": true
+      },
+      "KILL_CONDITION": {
+        "statement": "KILL the crypto lead if EITHER holds: (i) DSR p >= 0.5 after 200 forward prints, OR (ii) any single 50-trade window realises < 10 bp net per trade.",
+        "thresholds": {"dsr_p_max_after_n_forward": 0.5, "n_forward_required": 200, "min_window_net_bp": 10.0, "window_trades": 50}
+      },
+      "EVALUABILITY": "NOT YET EVALUABLE. This test requires 200 GENUINE FORWARD prints. As of registration the forward count is 0 (all 430 H-119 ledger rows were established as a 2026-11-19 backfill in the R8 audit). The test is registered now so that it cannot be retro-fitted after the forward record accumulates. Component (ii) CAN be evaluated on historical rows and is reported as a historical diagnostic, explicitly labelled as such.",
+      "status": "PRE_REGISTERED_NOT_YET_EVALUABLE"
+    }
+  ]
+}
