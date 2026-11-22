@@ -41,19 +41,33 @@ First-touch on the current build: 1787 crypto picks re-walked, 974 first-touch c
 
 ## 3. Settling 'EQUITY is the only +alpha class'
 
-Both numbers are real. They are computed over different populations:
+My first pass at this compared a stale local `money_ready_verdict.json` against a
+stale local `audit3_ledger.json`, and concluded EQUITY was really 0.52-0.60. That
+conclusion was wrong for the same reason the ledger numbers were wrong. Re-fetched
+from the live surfaces:
 
-| population | n | PF | net exp %/trade |
-|---|---|---|---|
-| audit3 ledger class node (copilot's source) | 942 | 1.0755 | +0.1577 |
-| money_ready policy_clean | 115 | 0.6016 | — |
-| pf_registry policy_clean | 212 | 0.5189 | −0.0208 |
-| pf_registry raw | 281 | 0.4388 | — |
-| dashboard recent window, gross | 690 | 1.2289 | — |
-| dashboard recent window, net 10bp | 690 | 1.1746 | — |
+| surface (LIVE) | generated | n | PF | WR | net exp %/trade |
+|---|---|---|---|---|---|
+| audit3 EQUITY | 2026-11-22T06:35 | 956 | **1.0499** | 44.8% | **+0.1058** |
+| audit3 CRYPTO | 2026-11-22T06:35 | 6,926 | 0.7886 | 39.4% | −0.4183 |
+| money_ready EQUITY policy_clean | 2026-11-22T03:58 | 121 | **1.0800** | 34.7% | — |
+| money_ready CRYPTO policy_clean | 2026-11-22T03:58 | 22,287 | 0.2621 | 41.0% | — |
 
-The audit3 node (n=942, WR 45.0%, mean cost 0.0515%) is the only affirmative EQUITY figure and it is affirmative **after cost** (+0.158%/trade). The policy-clean cohorts — 212 and 115 picks — put the same class at PF 0.52 and 0.60. The 730-pick difference is the whole disagreement: the policy filter excludes picks that audit3 keeps, and those excluded picks carry the profit.
+Local copies, for contrast: EQUITY policy_clean 0.6016 (n=115) and audit3 EQUITY
+1.0755 (n=942), both generated 2026-11-20 — two days stale, which was enough to
+flip the sign of the policy-clean number.
 
-**Verdict:** 'EQUITY is the only +alpha class' is true **for audit3's cohort** and false for the policy-clean cohort. My earlier 0.62 was the policy-clean number. Neither is wrong; quoting either without its n is. The conservative reading stands until the 730 excluded picks are individually justified — but copilot's +0.158%/trade net over 942 is a stronger claim than I gave credit for, and it deserves the justification step rather than dismissal.
+**Verdict: copilot is right, and I was wrong.** On current data EQUITY is the only
+class with PF above 1 on both the audit3 cohort (1.05, n=956, +0.106% net) and the
+policy-clean cohort (1.08, n=121). CRYPTO is 0.26-0.79 and negative net.
 
-For contrast, CRYPTO raw PF is 1.353 over 28,368 while policy-clean is 0.268 over 23,280 — the same ordering effect, much larger. Any 'only EQUITY' claim therefore depends entirely on which cohort the filter keeps.
+Two limits on that verdict, so it is not over-read:
+* On the 782-pick recent window, EQUITY is PF 1.034 **gross** and 0.990 **net at
+  10bp**, expectancy +0.0768% gross / −0.0232% net. So it clears 1.0 only on the
+  audit3 cohort and only by ~5%, and it does not clear cost on every cut.
+* "Only positive class" is not "+alpha at scale": 121 pick-weight policy-clean
+  picks and a 5% PF margin is a candidate, not an edge.
+
+The general lesson, which applies to the whole session: **gitignored artifacts on
+this machine lag production by 2-34 days and quoting them silently flips signs.**
+Every number in this report is now from a live fetch, with the fetch timestamp on it.
