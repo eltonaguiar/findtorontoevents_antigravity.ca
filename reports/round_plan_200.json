@@ -1,0 +1,1637 @@
+{
+ "generated_at": "2026-11-22",
+ "n_rounds": 200,
+ "rule": "One round = one PR that adds or stress-tests exactly one pre-registered cell, or one operationally-verified live step. No round merges without its artifact and its gate result.",
+ "phases": [
+  {
+   "phase": "P0 data integrity",
+   "rounds": 10
+  },
+  {
+   "phase": "P1 mechanism hunt",
+   "rounds": 40
+  },
+  {
+   "phase": "P2 robustness",
+   "rounds": 35
+  },
+  {
+   "phase": "P3 live sprint",
+   "rounds": 45
+  },
+  {
+   "phase": "P4 forward pods",
+   "rounds": 30
+  },
+  {
+   "phase": "P5 portfolio",
+   "rounds": 25
+  },
+  {
+   "phase": "P6 governance",
+   "rounds": 15
+  }
+ ],
+ "rounds": [
+  {
+   "round": 1,
+   "phase": "P0 data integrity",
+   "asset_class": "EQUITY",
+   "title": "audit and repair the EQUITY price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/001_equity_integrity.md"
+  },
+  {
+   "round": 2,
+   "phase": "P0 data integrity",
+   "asset_class": "ETF",
+   "title": "audit and repair the ETF price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/002_etf_integrity.md"
+  },
+  {
+   "round": 3,
+   "phase": "P0 data integrity",
+   "asset_class": "CRYPTO",
+   "title": "audit and repair the CRYPTO price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/003_crypto_integrity.md"
+  },
+  {
+   "round": 4,
+   "phase": "P0 data integrity",
+   "asset_class": "COMMODITY",
+   "title": "audit and repair the COMMODITY price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/004_commodity_integrity.md"
+  },
+  {
+   "round": 5,
+   "phase": "P0 data integrity",
+   "asset_class": "FOREX",
+   "title": "audit and repair the FOREX price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/005_forex_integrity.md"
+  },
+  {
+   "round": 6,
+   "phase": "P0 data integrity",
+   "asset_class": "BOND",
+   "title": "audit and repair the BOND price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/006_bond_integrity.md"
+  },
+  {
+   "round": 7,
+   "phase": "P0 data integrity",
+   "asset_class": "FUTURES",
+   "title": "audit and repair the FUTURES price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/007_futures_integrity.md"
+  },
+  {
+   "round": 8,
+   "phase": "P0 data integrity",
+   "asset_class": "INDEX",
+   "title": "audit and repair the INDEX price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/008_index_integrity.md"
+  },
+  {
+   "round": 9,
+   "phase": "P0 data integrity",
+   "asset_class": "MUTUAL_FUND",
+   "title": "audit and repair the MUTUAL_FUND price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/009_mutual_fund_integrity.md"
+  },
+  {
+   "round": 10,
+   "phase": "P0 data integrity",
+   "asset_class": "PENNY_STOCK",
+   "title": "audit and repair the PENNY_STOCK price series (roll gaps, negatives, splits, survivorship)",
+   "gate": "series usable: no negative prints, no recurring month-day spikes, documented source",
+   "artifact": "reports/rounds/010_penny_stock_integrity.md"
+  },
+  {
+   "round": 11,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "EQUITY",
+   "title": "12-1 time-series momentum",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/011_equity_12-1.md"
+  },
+  {
+   "round": 12,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "EQUITY",
+   "title": "xsmom top-3 6m",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/012_equity_xsmom.md"
+  },
+  {
+   "round": 13,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "EQUITY",
+   "title": "dollar-neutral top3/bottom3 momentum",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/013_equity_dollar-neutral.md"
+  },
+  {
+   "round": 14,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "EQUITY",
+   "title": "PEAD on 12-quarter SUE",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/014_equity_pead.md"
+  },
+  {
+   "round": 15,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "ETF",
+   "title": "sector rotation 12m",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/015_etf_sector.md"
+  },
+  {
+   "round": 16,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "ETF",
+   "title": "dual momentum (GEM)",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/016_etf_dual.md"
+  },
+  {
+   "round": 17,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "ETF",
+   "title": "risk-parity weights",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/017_etf_risk-parity.md"
+  },
+  {
+   "round": 18,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "ETF",
+   "title": "vol-targeted SPY",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/018_etf_vol-targeted.md"
+  },
+  {
+   "round": 19,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "CRYPTO",
+   "title": "6m time-series momentum",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/019_crypto_6m.md"
+  },
+  {
+   "round": 20,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "CRYPTO",
+   "title": "xsmom top-3 3m",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/020_crypto_xsmom.md"
+  },
+  {
+   "round": 21,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "CRYPTO",
+   "title": "funding carry (delta-neutral)",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/021_crypto_funding.md"
+  },
+  {
+   "round": 22,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "CRYPTO",
+   "title": "cash-and-carry basis",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/022_crypto_cash-and-carry.md"
+  },
+  {
+   "round": 23,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "COMMODITY",
+   "title": "TSMOM on ETF basket",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/023_commodity_tsmom.md"
+  },
+  {
+   "round": 24,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "COMMODITY",
+   "title": "xsmom on ETF basket",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/024_commodity_xsmom.md"
+  },
+  {
+   "round": 25,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "COMMODITY",
+   "title": "roll yield (needs curves)",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/025_commodity_roll.md"
+  },
+  {
+   "round": 26,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "COMMODITY",
+   "title": "nat-gas winter seasonality",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/026_commodity_nat-gas.md"
+  },
+  {
+   "round": 27,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "FOREX",
+   "title": "carry (rate differential)",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/027_forex_carry.md"
+  },
+  {
+   "round": 28,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "FOREX",
+   "title": "TSMOM long/short",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/028_forex_tsmom.md"
+  },
+  {
+   "round": 29,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "FOREX",
+   "title": "cross-sectional momentum",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/029_forex_cross-sectional.md"
+  },
+  {
+   "round": 30,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "FOREX",
+   "title": "PPP value",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/030_forex_ppp.md"
+  },
+  {
+   "round": 31,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "BOND",
+   "title": "TLT 12-1 trend",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/031_bond_tlt.md"
+  },
+  {
+   "round": 32,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "BOND",
+   "title": "xsmom duration",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/032_bond_xsmom.md"
+  },
+  {
+   "round": 33,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "BOND",
+   "title": "credit spread (HYG vs IEF)",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/033_bond_credit.md"
+  },
+  {
+   "round": 34,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "BOND",
+   "title": "yield-curve slope",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/034_bond_yield-curve.md"
+  },
+  {
+   "round": 35,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "FUTURES",
+   "title": "index TSMOM",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/035_futures_index.md"
+  },
+  {
+   "round": 36,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "FUTURES",
+   "title": "contract-curve xsmom",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/036_futures_contract-curve.md"
+  },
+  {
+   "round": 37,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "FUTURES",
+   "title": "roll yield",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/037_futures_roll.md"
+  },
+  {
+   "round": 38,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "FUTURES",
+   "title": "term-structure carry",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/038_futures_term-structure.md"
+  },
+  {
+   "round": 39,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "INDEX",
+   "title": "GSPC 12-1 TSMOM",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/039_index_gspc.md"
+  },
+  {
+   "round": 40,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "INDEX",
+   "title": "xsmom across indices",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/040_index_xsmom.md"
+  },
+  {
+   "round": 41,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "INDEX",
+   "title": "vol-targeted index",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/041_index_vol-targeted.md"
+  },
+  {
+   "round": 42,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "INDEX",
+   "title": "drawdown-recovery rule",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/042_index_drawdown-recovery.md"
+  },
+  {
+   "round": 43,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "MUTUAL_FUND",
+   "title": "fund momentum",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/043_mutual_fund_fund.md"
+  },
+  {
+   "round": 44,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "MUTUAL_FUND",
+   "title": "expense-ratio screen",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/044_mutual_fund_expense-ratio.md"
+  },
+  {
+   "round": 45,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "MUTUAL_FUND",
+   "title": "manager persistence",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/045_mutual_fund_manager.md"
+  },
+  {
+   "round": 46,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "MUTUAL_FUND",
+   "title": "category rotation",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/046_mutual_fund_category.md"
+  },
+  {
+   "round": 47,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "PENNY_STOCK",
+   "title": "TSMOM",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/047_penny_stock_tsmom.md"
+  },
+  {
+   "round": 48,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "PENNY_STOCK",
+   "title": "reversal",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/048_penny_stock_reversal.md"
+  },
+  {
+   "round": 49,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "PENNY_STOCK",
+   "title": "liquidity screen",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/049_penny_stock_liquidity.md"
+  },
+  {
+   "round": 50,
+   "phase": "P1 mechanism hunt",
+   "asset_class": "PENNY_STOCK",
+   "title": "volatility breakout",
+   "gate": "G0-G8: CI-LB>0, 2x cost, both halves, excess vs bench, DSR>=0.95, n>=30",
+   "artifact": "reports/rounds/050_penny_stock_volatility.md"
+  },
+  {
+   "round": 51,
+   "phase": "P2 robustness",
+   "asset_class": "EQUITY",
+   "title": "cost grid 1x/2x/3x on the best EQUITY cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/051_equity_robust.md"
+  },
+  {
+   "round": 52,
+   "phase": "P2 robustness",
+   "asset_class": "ETF",
+   "title": "decade subsamples on the best ETF cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/052_etf_robust.md"
+  },
+  {
+   "round": 53,
+   "phase": "P2 robustness",
+   "asset_class": "CRYPTO",
+   "title": "regime split (VIX terciles) on the best CRYPTO cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/053_crypto_robust.md"
+  },
+  {
+   "round": 54,
+   "phase": "P2 robustness",
+   "asset_class": "COMMODITY",
+   "title": "parameter sensitivity (+/-25%) on the best COMMODITY cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/054_commodity_robust.md"
+  },
+  {
+   "round": 55,
+   "phase": "P2 robustness",
+   "asset_class": "FOREX",
+   "title": "walk-forward 5-fold on the best FOREX cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/055_forex_robust.md"
+  },
+  {
+   "round": 56,
+   "phase": "P2 robustness",
+   "asset_class": "BOND",
+   "title": "DSR/PBO with true trial count on the best BOND cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/056_bond_robust.md"
+  },
+  {
+   "round": 57,
+   "phase": "P2 robustness",
+   "asset_class": "FUTURES",
+   "title": "survivorship re-test on delisted names on the best FUTURES cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/057_futures_robust.md"
+  },
+  {
+   "round": 58,
+   "phase": "P2 robustness",
+   "asset_class": "INDEX",
+   "title": "cost grid 1x/2x/3x on the best INDEX cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/058_index_robust.md"
+  },
+  {
+   "round": 59,
+   "phase": "P2 robustness",
+   "asset_class": "MUTUAL_FUND",
+   "title": "decade subsamples on the best MUTUAL_FUND cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/059_mutual_fund_robust.md"
+  },
+  {
+   "round": 60,
+   "phase": "P2 robustness",
+   "asset_class": "PENNY_STOCK",
+   "title": "regime split (VIX terciles) on the best PENNY_STOCK cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/060_penny_stock_robust.md"
+  },
+  {
+   "round": 61,
+   "phase": "P2 robustness",
+   "asset_class": "EQUITY",
+   "title": "parameter sensitivity (+/-25%) on the best EQUITY cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/061_equity_robust.md"
+  },
+  {
+   "round": 62,
+   "phase": "P2 robustness",
+   "asset_class": "ETF",
+   "title": "walk-forward 5-fold on the best ETF cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/062_etf_robust.md"
+  },
+  {
+   "round": 63,
+   "phase": "P2 robustness",
+   "asset_class": "CRYPTO",
+   "title": "DSR/PBO with true trial count on the best CRYPTO cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/063_crypto_robust.md"
+  },
+  {
+   "round": 64,
+   "phase": "P2 robustness",
+   "asset_class": "COMMODITY",
+   "title": "survivorship re-test on delisted names on the best COMMODITY cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/064_commodity_robust.md"
+  },
+  {
+   "round": 65,
+   "phase": "P2 robustness",
+   "asset_class": "FOREX",
+   "title": "cost grid 1x/2x/3x on the best FOREX cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/065_forex_robust.md"
+  },
+  {
+   "round": 66,
+   "phase": "P2 robustness",
+   "asset_class": "BOND",
+   "title": "decade subsamples on the best BOND cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/066_bond_robust.md"
+  },
+  {
+   "round": 67,
+   "phase": "P2 robustness",
+   "asset_class": "FUTURES",
+   "title": "regime split (VIX terciles) on the best FUTURES cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/067_futures_robust.md"
+  },
+  {
+   "round": 68,
+   "phase": "P2 robustness",
+   "asset_class": "INDEX",
+   "title": "parameter sensitivity (+/-25%) on the best INDEX cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/068_index_robust.md"
+  },
+  {
+   "round": 69,
+   "phase": "P2 robustness",
+   "asset_class": "MUTUAL_FUND",
+   "title": "walk-forward 5-fold on the best MUTUAL_FUND cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/069_mutual_fund_robust.md"
+  },
+  {
+   "round": 70,
+   "phase": "P2 robustness",
+   "asset_class": "PENNY_STOCK",
+   "title": "DSR/PBO with true trial count on the best PENNY_STOCK cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/070_penny_stock_robust.md"
+  },
+  {
+   "round": 71,
+   "phase": "P2 robustness",
+   "asset_class": "EQUITY",
+   "title": "survivorship re-test on delisted names on the best EQUITY cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/071_equity_robust.md"
+  },
+  {
+   "round": 72,
+   "phase": "P2 robustness",
+   "asset_class": "ETF",
+   "title": "cost grid 1x/2x/3x on the best ETF cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/072_etf_robust.md"
+  },
+  {
+   "round": 73,
+   "phase": "P2 robustness",
+   "asset_class": "CRYPTO",
+   "title": "decade subsamples on the best CRYPTO cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/073_crypto_robust.md"
+  },
+  {
+   "round": 74,
+   "phase": "P2 robustness",
+   "asset_class": "COMMODITY",
+   "title": "regime split (VIX terciles) on the best COMMODITY cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/074_commodity_robust.md"
+  },
+  {
+   "round": 75,
+   "phase": "P2 robustness",
+   "asset_class": "FOREX",
+   "title": "parameter sensitivity (+/-25%) on the best FOREX cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/075_forex_robust.md"
+  },
+  {
+   "round": 76,
+   "phase": "P2 robustness",
+   "asset_class": "BOND",
+   "title": "walk-forward 5-fold on the best BOND cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/076_bond_robust.md"
+  },
+  {
+   "round": 77,
+   "phase": "P2 robustness",
+   "asset_class": "FUTURES",
+   "title": "DSR/PBO with true trial count on the best FUTURES cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/077_futures_robust.md"
+  },
+  {
+   "round": 78,
+   "phase": "P2 robustness",
+   "asset_class": "INDEX",
+   "title": "survivorship re-test on delisted names on the best INDEX cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/078_index_robust.md"
+  },
+  {
+   "round": 79,
+   "phase": "P2 robustness",
+   "asset_class": "MUTUAL_FUND",
+   "title": "cost grid 1x/2x/3x on the best MUTUAL_FUND cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/079_mutual_fund_robust.md"
+  },
+  {
+   "round": 80,
+   "phase": "P2 robustness",
+   "asset_class": "PENNY_STOCK",
+   "title": "decade subsamples on the best PENNY_STOCK cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/080_penny_stock_robust.md"
+  },
+  {
+   "round": 81,
+   "phase": "P2 robustness",
+   "asset_class": "EQUITY",
+   "title": "regime split (VIX terciles) on the best EQUITY cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/081_equity_robust.md"
+  },
+  {
+   "round": 82,
+   "phase": "P2 robustness",
+   "asset_class": "ETF",
+   "title": "parameter sensitivity (+/-25%) on the best ETF cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/082_etf_robust.md"
+  },
+  {
+   "round": 83,
+   "phase": "P2 robustness",
+   "asset_class": "CRYPTO",
+   "title": "walk-forward 5-fold on the best CRYPTO cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/083_crypto_robust.md"
+  },
+  {
+   "round": 84,
+   "phase": "P2 robustness",
+   "asset_class": "COMMODITY",
+   "title": "DSR/PBO with true trial count on the best COMMODITY cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/084_commodity_robust.md"
+  },
+  {
+   "round": 85,
+   "phase": "P2 robustness",
+   "asset_class": "FOREX",
+   "title": "survivorship re-test on delisted names on the best FOREX cell",
+   "gate": "the cell must survive the stress or be withdrawn",
+   "artifact": "reports/rounds/085_forex_robust.md"
+  },
+  {
+   "round": 86,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: EMA20/60 trend on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_01.json"
+  },
+  {
+   "round": 87,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: RSI(14) 30/70 reversal on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_02.json"
+  },
+  {
+   "round": 88,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: Donchian 20 breakout on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_03.json"
+  },
+  {
+   "round": 89,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: VWAP fade on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_04.json"
+  },
+  {
+   "round": 90,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: funding-spike fade on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_05.json"
+  },
+  {
+   "round": 91,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: 3-bar momentum on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_06.json"
+  },
+  {
+   "round": 92,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: volatility contraction then expansion on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_07.json"
+  },
+  {
+   "round": 93,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: range-break retest on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_08.json"
+  },
+  {
+   "round": 94,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: opening-range breakout on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_09.json"
+  },
+  {
+   "round": 95,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: EMA20/60 trend on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_10.json"
+  },
+  {
+   "round": 96,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: RSI(14) 30/70 reversal on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_11.json"
+  },
+  {
+   "round": 97,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: Donchian 20 breakout on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_12.json"
+  },
+  {
+   "round": 98,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: VWAP fade on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_13.json"
+  },
+  {
+   "round": 99,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: funding-spike fade on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_14.json"
+  },
+  {
+   "round": 100,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: 3-bar momentum on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_15.json"
+  },
+  {
+   "round": 101,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: volatility contraction then expansion on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_16.json"
+  },
+  {
+   "round": 102,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: range-break retest on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_17.json"
+  },
+  {
+   "round": 103,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: opening-range breakout on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_18.json"
+  },
+  {
+   "round": 104,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: EMA20/60 trend on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_19.json"
+  },
+  {
+   "round": 105,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: RSI(14) 30/70 reversal on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_20.json"
+  },
+  {
+   "round": 106,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: Donchian 20 breakout on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_21.json"
+  },
+  {
+   "round": 107,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: VWAP fade on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_22.json"
+  },
+  {
+   "round": 108,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: funding-spike fade on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_23.json"
+  },
+  {
+   "round": 109,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: 3-bar momentum on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_24.json"
+  },
+  {
+   "round": 110,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: volatility contraction then expansion on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_25.json"
+  },
+  {
+   "round": 111,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: range-break retest on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_26.json"
+  },
+  {
+   "round": 112,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: opening-range breakout on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_27.json"
+  },
+  {
+   "round": 113,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: EMA20/60 trend on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_28.json"
+  },
+  {
+   "round": 114,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: RSI(14) 30/70 reversal on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_29.json"
+  },
+  {
+   "round": 115,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: Donchian 20 breakout on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_30.json"
+  },
+  {
+   "round": 116,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: VWAP fade on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_31.json"
+  },
+  {
+   "round": 117,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: funding-spike fade on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_32.json"
+  },
+  {
+   "round": 118,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: 3-bar momentum on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_33.json"
+  },
+  {
+   "round": 119,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: volatility contraction then expansion on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_34.json"
+  },
+  {
+   "round": 120,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: range-break retest on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_35.json"
+  },
+  {
+   "round": 121,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: opening-range breakout on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_36.json"
+  },
+  {
+   "round": 122,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: EMA20/60 trend on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_37.json"
+  },
+  {
+   "round": 123,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: RSI(14) 30/70 reversal on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_38.json"
+  },
+  {
+   "round": 124,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: Donchian 20 breakout on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_39.json"
+  },
+  {
+   "round": 125,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: VWAP fade on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_40.json"
+  },
+  {
+   "round": 126,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: funding-spike fade on 1m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_41.json"
+  },
+  {
+   "round": 127,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: 3-bar momentum on 3m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_42.json"
+  },
+  {
+   "round": 128,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: volatility contraction then expansion on 5m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_43.json"
+  },
+  {
+   "round": 129,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: range-break retest on 15m bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_44.json"
+  },
+  {
+   "round": 130,
+   "phase": "P3 live sprint",
+   "asset_class": "CRYPTO",
+   "title": "live paper sprint: opening-range breakout on 1h bars",
+   "gate": "must open AND close inside the window, net of 24bps round trip; report win/loss either way",
+   "artifact": "data/realtime_challenge/sprint_45.json"
+  },
+  {
+   "round": 131,
+   "phase": "P4 forward pods",
+   "asset_class": "EQUITY",
+   "title": "register/refresh the EQUITY forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_equity.json"
+  },
+  {
+   "round": 132,
+   "phase": "P4 forward pods",
+   "asset_class": "ETF",
+   "title": "register/refresh the ETF forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_etf.json"
+  },
+  {
+   "round": 133,
+   "phase": "P4 forward pods",
+   "asset_class": "CRYPTO",
+   "title": "register/refresh the CRYPTO forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_crypto.json"
+  },
+  {
+   "round": 134,
+   "phase": "P4 forward pods",
+   "asset_class": "COMMODITY",
+   "title": "register/refresh the COMMODITY forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_commodity.json"
+  },
+  {
+   "round": 135,
+   "phase": "P4 forward pods",
+   "asset_class": "FOREX",
+   "title": "register/refresh the FOREX forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_forex.json"
+  },
+  {
+   "round": 136,
+   "phase": "P4 forward pods",
+   "asset_class": "BOND",
+   "title": "register/refresh the BOND forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_bond.json"
+  },
+  {
+   "round": 137,
+   "phase": "P4 forward pods",
+   "asset_class": "FUTURES",
+   "title": "register/refresh the FUTURES forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_futures.json"
+  },
+  {
+   "round": 138,
+   "phase": "P4 forward pods",
+   "asset_class": "INDEX",
+   "title": "register/refresh the INDEX forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_index.json"
+  },
+  {
+   "round": 139,
+   "phase": "P4 forward pods",
+   "asset_class": "MUTUAL_FUND",
+   "title": "register/refresh the MUTUAL_FUND forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_mutual_fund.json"
+  },
+  {
+   "round": 140,
+   "phase": "P4 forward pods",
+   "asset_class": "PENNY_STOCK",
+   "title": "register/refresh the PENNY_STOCK forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_penny_stock.json"
+  },
+  {
+   "round": 141,
+   "phase": "P4 forward pods",
+   "asset_class": "EQUITY",
+   "title": "register/refresh the EQUITY forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_equity.json"
+  },
+  {
+   "round": 142,
+   "phase": "P4 forward pods",
+   "asset_class": "ETF",
+   "title": "register/refresh the ETF forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_etf.json"
+  },
+  {
+   "round": 143,
+   "phase": "P4 forward pods",
+   "asset_class": "CRYPTO",
+   "title": "register/refresh the CRYPTO forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_crypto.json"
+  },
+  {
+   "round": 144,
+   "phase": "P4 forward pods",
+   "asset_class": "COMMODITY",
+   "title": "register/refresh the COMMODITY forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_commodity.json"
+  },
+  {
+   "round": 145,
+   "phase": "P4 forward pods",
+   "asset_class": "FOREX",
+   "title": "register/refresh the FOREX forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_forex.json"
+  },
+  {
+   "round": 146,
+   "phase": "P4 forward pods",
+   "asset_class": "BOND",
+   "title": "register/refresh the BOND forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_bond.json"
+  },
+  {
+   "round": 147,
+   "phase": "P4 forward pods",
+   "asset_class": "FUTURES",
+   "title": "register/refresh the FUTURES forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_futures.json"
+  },
+  {
+   "round": 148,
+   "phase": "P4 forward pods",
+   "asset_class": "INDEX",
+   "title": "register/refresh the INDEX forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_index.json"
+  },
+  {
+   "round": 149,
+   "phase": "P4 forward pods",
+   "asset_class": "MUTUAL_FUND",
+   "title": "register/refresh the MUTUAL_FUND forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_mutual_fund.json"
+  },
+  {
+   "round": 150,
+   "phase": "P4 forward pods",
+   "asset_class": "PENNY_STOCK",
+   "title": "register/refresh the PENNY_STOCK forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_penny_stock.json"
+  },
+  {
+   "round": 151,
+   "phase": "P4 forward pods",
+   "asset_class": "EQUITY",
+   "title": "register/refresh the EQUITY forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_equity.json"
+  },
+  {
+   "round": 152,
+   "phase": "P4 forward pods",
+   "asset_class": "ETF",
+   "title": "register/refresh the ETF forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_etf.json"
+  },
+  {
+   "round": 153,
+   "phase": "P4 forward pods",
+   "asset_class": "CRYPTO",
+   "title": "register/refresh the CRYPTO forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_crypto.json"
+  },
+  {
+   "round": 154,
+   "phase": "P4 forward pods",
+   "asset_class": "COMMODITY",
+   "title": "register/refresh the COMMODITY forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_commodity.json"
+  },
+  {
+   "round": 155,
+   "phase": "P4 forward pods",
+   "asset_class": "FOREX",
+   "title": "register/refresh the FOREX forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_forex.json"
+  },
+  {
+   "round": 156,
+   "phase": "P4 forward pods",
+   "asset_class": "BOND",
+   "title": "register/refresh the BOND forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_bond.json"
+  },
+  {
+   "round": 157,
+   "phase": "P4 forward pods",
+   "asset_class": "FUTURES",
+   "title": "register/refresh the FUTURES forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_futures.json"
+  },
+  {
+   "round": 158,
+   "phase": "P4 forward pods",
+   "asset_class": "INDEX",
+   "title": "register/refresh the INDEX forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_index.json"
+  },
+  {
+   "round": 159,
+   "phase": "P4 forward pods",
+   "asset_class": "MUTUAL_FUND",
+   "title": "register/refresh the MUTUAL_FUND forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_mutual_fund.json"
+  },
+  {
+   "round": 160,
+   "phase": "P4 forward pods",
+   "asset_class": "PENNY_STOCK",
+   "title": "register/refresh the PENNY_STOCK forward pod and its CI monitor",
+   "gate": "pod emits picks daily, resolver closes them, by_pod stats published",
+   "artifact": "audit_dashboard/data/forward_book_pod_penny_stock.json"
+  },
+  {
+   "round": 161,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "equal-weight combo of passing cells (variant 1)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/161_portfolio.md"
+  },
+  {
+   "round": 162,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "inverse-vol weights (variant 1)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/162_portfolio.md"
+  },
+  {
+   "round": 163,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "correlation cap 0.7 (variant 1)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/163_portfolio.md"
+  },
+  {
+   "round": 164,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "drawdown-throttled sizing (variant 1)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/164_portfolio.md"
+  },
+  {
+   "round": 165,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "kill-switch on 3 sigma day (variant 1)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/165_portfolio.md"
+  },
+  {
+   "round": 166,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "rebalance cadence sweep (variant 1)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/166_portfolio.md"
+  },
+  {
+   "round": 167,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "cash-yield on idle margin (variant 1)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/167_portfolio.md"
+  },
+  {
+   "round": 168,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "equal-weight combo of passing cells (variant 2)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/168_portfolio.md"
+  },
+  {
+   "round": 169,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "inverse-vol weights (variant 2)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/169_portfolio.md"
+  },
+  {
+   "round": 170,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "correlation cap 0.7 (variant 2)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/170_portfolio.md"
+  },
+  {
+   "round": 171,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "drawdown-throttled sizing (variant 2)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/171_portfolio.md"
+  },
+  {
+   "round": 172,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "kill-switch on 3 sigma day (variant 2)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/172_portfolio.md"
+  },
+  {
+   "round": 173,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "rebalance cadence sweep (variant 2)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/173_portfolio.md"
+  },
+  {
+   "round": 174,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "cash-yield on idle margin (variant 2)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/174_portfolio.md"
+  },
+  {
+   "round": 175,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "equal-weight combo of passing cells (variant 3)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/175_portfolio.md"
+  },
+  {
+   "round": 176,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "inverse-vol weights (variant 3)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/176_portfolio.md"
+  },
+  {
+   "round": 177,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "correlation cap 0.7 (variant 3)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/177_portfolio.md"
+  },
+  {
+   "round": 178,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "drawdown-throttled sizing (variant 3)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/178_portfolio.md"
+  },
+  {
+   "round": 179,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "kill-switch on 3 sigma day (variant 3)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/179_portfolio.md"
+  },
+  {
+   "round": 180,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "rebalance cadence sweep (variant 3)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/180_portfolio.md"
+  },
+  {
+   "round": 181,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "cash-yield on idle margin (variant 3)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/181_portfolio.md"
+  },
+  {
+   "round": 182,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "equal-weight combo of passing cells (variant 4)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/182_portfolio.md"
+  },
+  {
+   "round": 183,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "inverse-vol weights (variant 4)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/183_portfolio.md"
+  },
+  {
+   "round": 184,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "correlation cap 0.7 (variant 4)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/184_portfolio.md"
+  },
+  {
+   "round": 185,
+   "phase": "P5 portfolio",
+   "asset_class": "MULTI",
+   "title": "drawdown-throttled sizing (variant 4)",
+   "gate": "portfolio Sharpe > best single cell AND maxDD within mandate",
+   "artifact": "reports/rounds/185_portfolio.md"
+  },
+  {
+   "round": 186,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "monthly decay review of every live pod",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/186_governance.md"
+  },
+  {
+   "round": 187,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "retire a cell after 2 sigma degradation",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/187_governance.md"
+  },
+  {
+   "round": 188,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "re-run DSR with the true cumulative trial count",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/188_governance.md"
+  },
+  {
+   "round": 189,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "independent replication of the best cell",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/189_governance.md"
+  },
+  {
+   "round": 190,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "capital-scaling checklist before any real money",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/190_governance.md"
+  },
+  {
+   "round": 191,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "documented stop conditions per strategy",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/191_governance.md"
+  },
+  {
+   "round": 192,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "quarterly data-source audit",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/192_governance.md"
+  },
+  {
+   "round": 193,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "monthly decay review of every live pod",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/193_governance.md"
+  },
+  {
+   "round": 194,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "retire a cell after 2 sigma degradation",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/194_governance.md"
+  },
+  {
+   "round": 195,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "re-run DSR with the true cumulative trial count",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/195_governance.md"
+  },
+  {
+   "round": 196,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "independent replication of the best cell",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/196_governance.md"
+  },
+  {
+   "round": 197,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "capital-scaling checklist before any real money",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/197_governance.md"
+  },
+  {
+   "round": 198,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "documented stop conditions per strategy",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/198_governance.md"
+  },
+  {
+   "round": 199,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "quarterly data-source audit",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/199_governance.md"
+  },
+  {
+   "round": 200,
+   "phase": "P6 governance",
+   "asset_class": "ALL",
+   "title": "monthly decay review of every live pod",
+   "gate": "evidence on file before any capital moves",
+   "artifact": "reports/rounds/200_governance.md"
+  }
+ ]
+}

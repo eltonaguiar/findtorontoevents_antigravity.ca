@@ -72,3 +72,39 @@ def test_block_bootstrap_brackets_the_mean():
 def test_expected_max_sharpe_grows_with_trials():
     assert expected_max_sr(2, 1e-4) < expected_max_sr(500, 1e-4)
     assert expected_max_sr(1, 1e-4) == 0.0
+
+
+# ---- beta-free mechanisms (added 2026-11-22 with H-226/H-227/H-228)
+from tools.per_class_edge_harness import funding_carry_daily, xsmom_ls  # noqa: E402
+
+
+def test_xsmom_ls_is_dollar_neutral_with_gross_one():
+    closes = _panel()
+    _, w = xsmom_ls(closes, lookback=20, top_k=2, cost_bps=10)
+    assert float(w.sum(axis=1).abs().max()) < 1e-9      # net exposure 0
+    assert float(w.abs().sum(axis=1).max()) <= 1.0001   # gross exposure <= 1
+
+
+def test_xsmom_ls_goes_long_the_winner_and_short_the_loser():
+    closes = _panel()
+    _, w = xsmom_ls(closes, lookback=20, top_k=1, cost_bps=10)
+    assert w["A"].iloc[-1] > 0
+    assert w["B"].iloc[-1] < 0
+
+
+def test_funding_carry_aggregates_daily_and_charges_the_drag(tmp_path):
+    import json as _json
+    base = pd.Timestamp("2024-01-01")
+    for sym, rate in (("AAAUSDT", 0.0001), ("BBBUSDT", 0.0003)):
+        rows = []
+        for d in range(3):
+            for slot in range(3):                      # 3 settlements per day
+                ts = base + pd.Timedelta(days=d, hours=8 * slot)
+                rows.append({"symbol": sym,
+                             "funding_time_ms": int(ts.timestamp() * 1000),
+                             "funding_rate": rate, "source": "test"})
+        (tmp_path / f"{sym}.jsonl").write_text("\n".join(_json.dumps(r) for r in rows))
+    s = funding_carry_daily(tmp_path, daily_drag_bps=1.0)
+    assert len(s) == 3
+    expected = (3 * 0.0001 + 3 * 0.0003) / 2 - 1e-4
+    assert s.iloc[0] == pytest.approx(expected, rel=1e-6)

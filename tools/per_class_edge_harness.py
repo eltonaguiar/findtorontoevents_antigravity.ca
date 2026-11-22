@@ -50,6 +50,14 @@ BENCH_SYMBOL = {"EQUITY": "SPY", "ETF": "SPY", "BOND": "SPY",
                 "FUTURES": "ES=F", "PENNY_STOCK": "IWM",
                 "MUTUAL_FUND": "SPY", "INDEX": "SPY"}
 
+# Commodity FUTURES series from Yahoo carry unadjusted contract rolls: ZC=F
+# prints -23.6 % on July 15 of three separate years and CL=F closed NEGATIVE on
+# 2020-04-20, which makes pct_change meaningless. An ETF is the instrument this
+# desk can actually hold, and its NAV absorbs the roll, so the price series has
+# no roll gap. H-223/H-224 (pre-registered) measure the class here instead.
+COMMODITY_INVESTABLE = ["GLD", "SLV", "CPER", "DBA", "USO", "UNG", "CORN", "WEAT"]
+MAX_LEVERAGE = 4.0   # cap on vol-matching; beyond this the comparison is fiction
+
 
 def fetch(sym: str) -> pd.DataFrame | None:
     CACHE.mkdir(parents=True, exist_ok=True)
@@ -95,7 +103,8 @@ def tsmom(df: pd.DataFrame, lookback: int, skip: int, cost_bps: float,
 
 
 def xsmom(closes: pd.DataFrame, lookback: int, top_k: int, cost_bps: float,
-          rebal_days: int = 21) -> tuple[pd.Series, pd.DataFrame]:
+          rebal_days: int = 21,
+          abs_filter: bool = False) -> tuple[pd.Series, pd.DataFrame]:
     rets = closes.pct_change(fill_method=None)
     mom = closes.pct_change(lookback, fill_method=None)
     # NaN = "carry the previous weight"; an explicit 0.0 = "not selected now".
@@ -105,6 +114,8 @@ def xsmom(closes: pd.DataFrame, lookback: int, top_k: int, cost_bps: float,
     w = pd.DataFrame(np.nan, index=closes.index, columns=closes.columns)
     for i in range(lookback + 1, len(closes), rebal_days):
         row = mom.iloc[i].dropna()
+        if abs_filter:
+            row = row[row > 0]     # absolute momentum: a falling name is not held
         if len(row) < top_k:
             continue
         w.iloc[i, :] = 0.0                     # every non-selected name goes flat
@@ -119,6 +130,75 @@ def xsmom(closes: pd.DataFrame, lookback: int, top_k: int, cost_bps: float,
     gross = (w.shift(1) * rets).sum(axis=1)
     turn = (w - w.shift(1)).abs().sum(axis=1)
     return (gross - turn * cost_bps / 1e4).fillna(0.0), w
+
+
+def xsmom_ls(closes: pd.DataFrame, lookback: int, top_k: int, cost_bps: float,
+             rebal_days: int = 21) -> tuple[pd.Series, pd.DataFrame]:
+    """Dollar-neutral cross-sectional momentum: long top_k, short bottom_k.
+
+    Long-only cross-sectional momentum cannot beat buy-and-hold of a rising
+    universe -- it is beta plus extra trading -- which is why every long-only
+    cell outside EQUITY died on the benchmark gate. Removing the market leg
+    turns the cell into a factor bet: gross exposure 1, net exposure 0, so
+    `excess_vs_bench_bps` measures the factor instead of leverage.
+    """
+    rets = closes.pct_change(fill_method=None)
+    mom = closes.pct_change(lookback, fill_method=None)
+    w = pd.DataFrame(np.nan, index=closes.index, columns=closes.columns)
+    for i in range(lookback + 1, len(closes), rebal_days):
+        row = mom.iloc[i].dropna()
+        if len(row) < 2 * top_k:
+            continue
+        w.iloc[i, :] = 0.0
+        for c in row.nlargest(top_k).index:
+            w.iloc[i, w.columns.get_loc(c)] = 0.5 / top_k
+        for c in row.nsmallest(top_k).index:
+            w.iloc[i, w.columns.get_loc(c)] = -0.5 / top_k
+    w = w.ffill().fillna(0.0)
+    gross = w.abs().sum(axis=1)
+    if float(gross.max()) > 1.0001:
+        raise AssertionError(f"xsmom_ls gross {float(gross.max()):.4f} > 1")
+    if float(w.sum(axis=1).abs().max()) > 1e-9:
+        raise AssertionError("xsmom_ls is not dollar-neutral")
+    gross_ret = (w.shift(1) * rets).sum(axis=1)
+    turn = (w - w.shift(1)).abs().sum(axis=1)
+    return (gross_ret - turn * cost_bps / 1e4).fillna(0.0), w
+
+
+def funding_carry_daily(path: Path | None = None,
+                        daily_drag_bps: float = 1.0) -> pd.Series:
+    """Daily return of a delta-neutral perp/spot funding-carry book.
+
+    A delta-neutral book earns the funding print every settlement and carries
+    ~no price exposure, so its return IS the funding it collects. Measured from
+    the archived prints (data/funding_rate_archive/*.jsonl), not synthesised.
+    `daily_drag_bps` covers margin rebalancing, which a hedged book must do; it
+    is the only honest recurring cost, and the 2x variant doubles it.
+    """
+    frames = {}
+    # Prefer the deep ccxt archive when it exists (years of history beats the
+    # 9-month OKX snapshot, which cannot score a carry cell at all).
+    if path is None:
+        for cand in (Path("data/funding_rate_archive_ccxt"),
+                     Path("data/funding_rate_archive")):
+            if list(cand.glob("*.jsonl")):
+                path = cand
+                break
+        path = path or Path("data/funding_rate_archive")
+    for p in sorted(Path(path).glob("*.jsonl")):
+        rows = [json.loads(line) for line in p.read_text().splitlines() if line.strip()]
+        if not rows:
+            continue
+        frames[p.stem] = pd.Series(
+            {pd.Timestamp(int(r["funding_time_ms"]), unit="ms"): float(r["funding_rate"])
+             for r in rows}).sort_index()
+    if not frames:
+        return pd.Series(dtype=float)
+    df = pd.concat(frames, axis=1).sort_index()
+    if df.index.tz is not None:
+        df.index = df.index.tz_localize(None)
+    daily = df.groupby(df.index.normalize()).sum().mean(axis=1)   # equal-weight book
+    return (daily - daily_drag_bps / 1e4).dropna()
 
 
 def reversal(df: pd.DataFrame, drop_pct: float = -0.03, hold: int = 5,
@@ -424,12 +504,65 @@ def commodity_integrity(threshold: float = 0.08) -> list[dict]:
     return out
 
 
+def mdd(x) -> float:
+    """Max drawdown of a daily return series (negative fraction)."""
+    eq = np.cumprod(1.0 + np.asarray(x, dtype=float))
+    peak = np.maximum.accumulate(eq)
+    return float((eq / peak - 1.0).min())
+
+
+def cagr(x) -> float:
+    x = np.asarray(x, dtype=float)
+    if len(x) == 0:
+        return float("nan")
+    return float(np.prod(1.0 + x) ** (252.0 / len(x)) - 1.0)
+
+
+def matched_vol_block(x: np.ndarray, b: np.ndarray,
+                      max_lev: float = MAX_LEVERAGE) -> dict:
+    """Benchmark excess once the strategy is levered to the benchmark's own vol.
+
+    G6 as first written compares raw mean daily return against buy-and-hold of
+    the same universe. That yardstick cannot be passed by any de-risking rule:
+    holding cash part of the time must lower the mean return even when it
+    improves return per unit of risk. This block reports the other comparison a
+    fund manager actually uses -- scale the strategy to the benchmark's ex-post
+    volatility (capped at MAX_LEVERAGE so the result stays reachable), then
+    compare. It is labelled G6b and kept separate from the strict gate: nothing
+    is promoted to 'passes' on G6b alone.
+    """
+    s_vol = float(np.std(x, ddof=1) * math.sqrt(252))
+    b_vol = float(np.std(b, ddof=1) * math.sqrt(252))
+    lev = 0.0 if s_vol <= 0 else min(b_vol / s_vol, max_lev)
+    matched = lev * x - b
+    lo, _hi = block_bootstrap(matched)
+    h = len(matched) // 2
+    return {
+        "strategy_vol_pct": round(100 * s_vol, 2),
+        "bench_vol_pct": round(100 * b_vol, 2),
+        "leverage_to_match": round(lev, 3),
+        "matched_excess_bps": round(1e4 * float(matched.mean()), 3),
+        "matched_ci_lb_bps": round(1e4 * lo, 3),
+        "matched_halves_bps": [round(1e4 * float(matched[:h].mean()), 3),
+                               round(1e4 * float(matched[h:].mean()), 3)],
+        "cagr_pct": round(100 * cagr(x), 2),
+        "bench_cagr_pct": round(100 * cagr(b), 2),
+        "levered_cagr_pct": round(100 * cagr(lev * x), 2),
+        "mdd_pct": round(100 * mdd(x), 2),
+        "bench_mdd_pct": round(100 * mdd(b), 2),
+        "levered_mdd_pct": round(100 * mdd(lev * x), 2),
+        "risk_adj_pass": bool(matched.mean() > 0 and lo > 0
+                              and matched[:h].mean() > 0
+                              and matched[h:].mean() > 0),
+    }
+
+
 # ------------------------------------------------------------------------ run
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="reports/per_class_edge_2026-11-22.json")
     ap.add_argument("--md", default="reports/per_class_edge_2026-11-22.md")
-    ap.add_argument("--n-trials", type=int, default=14)
+    ap.add_argument("--n-trials", type=int, default=26)
     args = ap.parse_args()
 
     print("fetching universes...")
@@ -449,13 +582,14 @@ def main() -> int:
     def record(cell_id, cls, name, net: pd.Series, net2x: pd.Series,
                trades: list[float], pos: pd.Series, px: pd.Series,
                bench: pd.Series, extra: dict | None = None):
-        x = net.to_numpy(dtype=float)
-        x = x[~np.isnan(x)]
+        arr = net.to_numpy(dtype=float)
+        barr = bench.reindex(net.index).fillna(0.0).to_numpy(dtype=float)
+        keep = ~np.isnan(arr)          # x and b must stay row-aligned
+        x, b = arr[keep], barr[keep]
         if len(x) < 60:
             print(f"  - {cell_id} {name}: too few days ({len(x)}), skipped")
             return
         lo, hi = block_bootstrap(x)
-        b = bench.reindex(net.index).fillna(0.0).to_numpy(dtype=float)
         rec = {
             "id": cell_id, "asset_class": cls, "name": name,
             "n_days": int(len(x)), "n_trades": len(trades),
@@ -476,6 +610,7 @@ def main() -> int:
             "excess_vs_bench_bps": round(1e4 * float(np.mean(x - b)), 3),
         }
         rec["status"] = classify(rec)
+        rec.update(matched_vol_block(x, b))   # G6b, reported separately
         if extra:
             rec.update(extra)
         cells.append(rec)
@@ -532,6 +667,30 @@ def main() -> int:
                    monthly_trades(net), agg_pos,
                    closes.mean(axis=1), bench_ret)
 
+        if cls == "ETF":
+            # H-225 (pre-registered): dual momentum across stock/bond/gold.
+            gem = {s: fetch(s) for s in ("SPY", "QQQ", "IWM", "EFA",
+                                        "EEM", "TLT", "GLD")}
+            gem = {s: d for s, d in gem.items() if d is not None and len(d) > 200}
+            if len(gem) >= 5:
+                gc = pd.concat({s: d["close"] for s, d in gem.items()},
+                               axis=1).dropna(how="all")
+                g1, _ = xsmom(gc, 252, 2, 10, abs_filter=True)
+                g2, _ = xsmom(gc, 252, 2, 20, abs_filter=True)
+                record("H-225", cls, "dual_momentum_top2_12m", g1, g2,
+                       monthly_trades(g1), (g1 > 0).astype(float),
+                       gc.mean(axis=1), bench_ret,
+                       extra={"instruments": sorted(gem)})
+
+        if cls == "EQUITY":
+            # H-226 (pre-registered): the same momentum signal with the market
+            # leg stripped out, so a pass means factor, not beta.
+            nls, wls = xsmom_ls(closes, 126, 3, 10)
+            nls2, _ = xsmom_ls(closes, 126, 3, 20)
+            record("H-226", cls, "xsmom_ls_top3_bottom3_6m", nls, nls2,
+                   monthly_trades(nls), (wls > 0).sum(axis=1).astype(float),
+                   closes.mean(axis=1), bench_ret)
+
         if cls == "CRYPTO":
             net, pos = tsmom(data[cls]["BTC-USD"], 126, 7, 20)
             net2, _ = tsmom(data[cls]["BTC-USD"], 126, 7, 40)
@@ -544,6 +703,29 @@ def main() -> int:
             record("H-207", cls, "xsmom_top3_3m", net, net2,
                    monthly_trades(net), agg_pos,
                    closes.mean(axis=1), bench_ret)
+
+            # H-227 (pre-registered): dollar-neutral crypto momentum.
+            nls, wls = xsmom_ls(closes, 63, 2, 20)
+            nls2, _ = xsmom_ls(closes, 63, 2, 40)
+            record("H-227", cls, "xsmom_ls_top2_bottom2_3m", nls, nls2,
+                   monthly_trades(nls), (wls > 0).sum(axis=1).astype(float),
+                   closes.mean(axis=1), bench_ret)
+
+            # H-228 (pre-registered): funding carry, the only non-beta crypto
+            # return stream available from local data.
+            fc = funding_carry_daily()
+            if len(fc) > 60:
+                btc = fetch("BTC-USD")
+                bret_fc = (btc["close"].pct_change().fillna(0.0)
+                           if btc is not None else pd.Series(0.0, index=fc.index))
+                fc2 = fc - 1e-4      # 2x-cost variant: +1 bps/day extra drag
+                record("H-228", cls, "funding_carry_delta_neutral", fc, fc2,
+                       monthly_trades(fc), (fc > 0).astype(float), fc, bret_fc,
+                       extra={"instrument": "perp/spot delta-neutral",
+                              "funding_days": int(len(fc)),
+                              "source": "data/funding_rate_archive/*.jsonl"})
+            else:
+                print(f"  - H-228: funding archive too short ({len(fc)} days)")
 
         if cls == "FOREX":
             nets = []
@@ -579,6 +761,32 @@ def main() -> int:
             record("H-211", cls, "xsmom_top2_6m", net, net2,
                    monthly_trades(net), agg_pos,
                    closes.mean(axis=1), bench_ret)
+
+            # ---- repaired measurement (H-223/H-224): investable ETFs, no roll gap
+            etfs = {s: fetch(s) for s in COMMODITY_INVESTABLE}
+            etfs = {s: d for s, d in etfs.items() if d is not None and len(d) > 200}
+            print(f"  COMMODITY investable ETFs: {len(etfs)}/{len(COMMODITY_INVESTABLE)}")
+            if len(etfs) >= 5:
+                n1s, n2s = [], []
+                for s, d in etfs.items():
+                    a, _ = tsmom(d, 252, 21, 15)
+                    a2, _ = tsmom(d, 252, 21, 30)
+                    n1s.append(a)
+                    n2s.append(a2)
+                port = pd.concat(n1s, axis=1).mean(axis=1).dropna()
+                port2 = pd.concat(n2s, axis=1).mean(axis=1).dropna()
+                record("H-223", cls, "tsmom_12_1_etf_basket", port, port2,
+                       monthly_trades(port), (port > 0).astype(float),
+                       port, bench_ret,
+                       extra={"instruments": sorted(etfs)})
+                ecl = pd.concat({s: d["close"] for s, d in etfs.items()},
+                                axis=1).dropna(how="all")
+                nx, wx = xsmom(ecl, 126, 3, 15)
+                nx2, _ = xsmom(ecl, 126, 3, 30)
+                record("H-224", cls, "xsmom_top3_6m_etf", nx, nx2,
+                       monthly_trades(nx), (wx.sum(axis=1) > 0).astype(float),
+                       ecl.mean(axis=1), bench_ret,
+                       extra={"instruments": sorted(etfs)})
 
         if cls == "BOND":
             net, pos = tsmom(data[cls]["TLT"], 252, 21, 10)
@@ -636,9 +844,12 @@ def main() -> int:
 
     integrity = commodity_integrity()
     bad = {r["symbol"] for r in integrity if not r["usable"]}
+    # Only the cells built ON the contaminated futures series are flagged. The
+    # ETF cells (H-223/H-224) must not inherit a failure they do not have.
+    futures_cells = {"H-210", "H-211"}
     for c in cells:
-        if c["asset_class"] == "COMMODITY" and bad:
-            c["integrity_flag"] = True
+        if c["asset_class"] == "COMMODITY":
+            c["integrity_flag"] = bool(c["id"] in futures_cells and bad)
     out = {
         "generated_at": pd.Timestamp.utcnow().isoformat(),
         "data_integrity": {"commodity": integrity,

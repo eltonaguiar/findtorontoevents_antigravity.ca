@@ -58,7 +58,7 @@ def main() -> int:
          f"Window **{d['window']['start']} → {d['window']['end']}** · {len(cells)} cells · "
          f"n_trials declared **{d['n_trials_declared']}** · expected-max daily Sharpe "
          f"**{d['expected_max_sharpe_daily']}** · **PBO(CSCV) {d['pbo_cscv']}**", "",
-         "Every cell was pre-registered in `reports/hypothesis_registry.json` (H-200…H-221) and "
+         "Every cell was pre-registered in `reports/hypothesis_registry.json` (H-200…H-225) and "
          "`reports/preregistration_2026-11-22_per_class.json` **before** the first run. Costs are "
          "round-trip: EQUITY/ETF/BOND/INDEX/MF 10 bps, CRYPTO 20, FOREX 5, COMMODITY 15, FUTURES 10, "
          "PENNY 10 (understated by design).", "",
@@ -90,6 +90,28 @@ def main() -> int:
         L.append(f"| {cls} | {len(cs)} | {best['id']} {best['name']} (CI-LB "
                  f"{best['boot_ci_lb_bps']} bps, n={best['n_trades']}, DSR {best['dsr']}) | "
                  f"{cls_verdict} | {MEANING[cls_verdict]} |")
+
+    # ---- G6b: the same cells levered to their benchmark's own volatility.
+    matched = [c for c in cells if c.get("matched_excess_bps") is not None]
+    ra = [c for c in matched if c.get("risk_adj_pass")]
+    L += ["", "## Volatility-matched comparison (G6b) — reported, not a promotion", "",
+          "G6 as written asks a cell to beat buy-and-hold of its own universe on raw daily "
+          "return. No de-risking rule can pass that: holding cash part of the time must lower "
+          "the mean. G6b scales each cell to the benchmark's ex-post volatility (capped at 4×) "
+          "and compares there. It is a separate yardstick, applied to every cell alike, and "
+          "**no cell is promoted on G6b alone** — it tells us which classes have a risk-adjusted "
+          "edge worth a forward pod, nothing more.", "",
+          "| class | id | cell | vol | bench vol | lev | matched bps | matched CI-LB | halves | CAGR | bench CAGR | levered CAGR | MDD | bench MDD | G6b |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    for c in sorted(matched, key=lambda r: (ORDER.index(r["asset_class"]),
+                                            -(r.get("matched_ci_lb_bps") or -999))):
+        L.append(f"| {c['asset_class']} | {c['id']} | {c['name']} | {c['strategy_vol_pct']}% | "
+                 f"{c['bench_vol_pct']}% | {c['leverage_to_match']}× | {c['matched_excess_bps']} | "
+                 f"{c['matched_ci_lb_bps']} | {c['matched_halves_bps']} | {c['cagr_pct']}% | "
+                 f"{c['bench_cagr_pct']}% | {c['levered_cagr_pct']}% | {c['mdd_pct']}% | "
+                 f"{c['bench_mdd_pct']}% | {'PASS' if c.get('risk_adj_pass') else '—'} |")
+    L += ["", f"Cells clearing G6b (matched-vol excess > 0, CI-LB > 0, both halves > 0): "
+          f"**{len(ra)}** — " + (", ".join(f"{c['id']} {c['asset_class']}" for c in ra) or "none")]
 
     passing = [c for c in cells if c["final_status"] == "PASSES_ALL_BACKTEST_GATES"]
     counts = Counter(c["final_status"] for c in cells)
