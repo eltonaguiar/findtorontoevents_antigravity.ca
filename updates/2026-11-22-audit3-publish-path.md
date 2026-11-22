@@ -26,17 +26,20 @@ failure. The peer report also claimed `money_ready_verdict.json` was 404 at
    would therefore have requested `/audit/audit3_ledger.json`, which is 404. Both
    are now absolute (`/audit3/...`), which resolves from either location because
    those files are published by the same workflow as the page.
-2. `tools/deploy_audit_files.py`: added
-   `audit_dashboard/audit3.html -> /findtorontoevents.ca/audit/audit3.html`
-   (group `healthchecks`), so the expected URL is refreshed by the same deploy
-   pass as the rest of the `/audit` surface.
+2. `.github/workflows/audit3-ledger.yml`: the `/audit` FTP block (which already
+   writes `/audit/data/audit3_ledger.json`) now also stores the page as
+   `/audit/audit3.html`. This block is used rather than `deploy_audit_files.py`
+   because every `--only` group invoked anywhere in CI is `audit_data`, `updates`,
+   `pick_funnel`, `incidents`, `ai_tournament` or `ai_leaderboard` — the
+   `healthchecks` group is **never** run, so an entry there would have been dead
+   configuration. It runs on the same 6-hourly cadence that rebuilds the page.
 
 ## Verified
 
 * all four live URL status codes above re-checked with curl on 2026-11-22;
 * the two patched `fetch()` calls confirmed absolute in the file;
-* `python3 -m py_compile tools/deploy_audit_files.py` clean;
-* the new PAGES entry present at line 88.
+* `python3 -c "import yaml; yaml.safe_load(...)"` on the edited workflow: OK;
+* `python3 -m py_compile tools/deploy_audit_files.py` clean after removing the inert entry.
 
 **Not verified:** the 200 on the new URL — that needs the next deploy to run, and
 this machine holds no FTP credentials for it. The change is the publish list plus

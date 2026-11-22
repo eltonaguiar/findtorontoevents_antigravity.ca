@@ -348,5 +348,15 @@ jobs:
           with open("audit_dashboard/data/denominator.json", "rb") as f:
               ftp.storbinary("STOR denominator.json", f)
           print("uploaded denominator.json -> /findtorontoevents.ca/audit/data/denominator.json")
+          # 2026-11-22: /audit/audit3.html was never written by ANY workflow -- the
+          # page only ever landed at /audit3/index.html, so the /audit URL 404'd.
+          # Its data fetches are absolute (/audit3/*.json), so a copy here works.
+          # This block (not deploy_audit_files.py) is used because every --only
+          # group invoked in CI is audit_data/updates/pick_funnel/incidents/
+          # ai_tournament/ai_leaderboard -- "healthchecks" is never run.
+          ftp.cwd("..")
+          with open("audit_dashboard/audit3.html", "rb") as f:
+              ftp.storbinary("STOR audit3.html", f)
+          print("uploaded audit_dashboard/audit3.html -> /findtorontoevents.ca/audit/audit3.html")
           ftp.quit()
           PY
