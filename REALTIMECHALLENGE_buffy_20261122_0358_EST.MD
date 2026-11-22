@@ -126,3 +126,67 @@ the basis point. That was the point of round 1.
 
 The `buffy` book from §3 stays open under its frozen rule and will exit via
 TP/SL/time; it is monitored by the workflow, not by hand.
+
+## 9. Round 2 — both slots resolved at TARGET, on live data
+
+The two slots left open in §3 were marked by `tools/realtime_challenge.py` at
+`09:41Z` and `09:42Z` against live 5-minute Binance bars.
+
+| symbol | entry | TP | exit | reason | net | P&L |
+|---|---|---|---|---|---|---|
+| BTCUSDT | 59803.668342 | 60150.46026 | 60138.430168 | **TARGET** | +0.360 % | **+$11.97** |
+| ETHUSDT | 1687.257384 | 1697.04152 | 1696.702112 | **TARGET** | +0.360 % | **+$11.97** |
+
+Book `buffy`: **+$23.94 = +0.239 %** on $10,000, 2 of 2 slots filled, both at
+the after-cost target (0.60 % gross − 0.24 % costs). Exits are the TP level
+minus 2 bps of slippage, which is why the realised figure is 0.360 % and not
+0.600 %.
+
+**This is not evidence of edge, and it would be dishonest to present it as
+such.** Two trades, both in a market that was trending up during the window, on
+a rule that needs **> 64 % accuracy** to break even. The book is +0.24 % after
+one hour of a favourable tape; the sprint book in §8 lost 0.30 % in the same
+session. What round 2 *does* establish is that the machinery resolves TP/SL/time
+on real bars with the frozen tie-break, charges the stated costs, and records the
+result either way — and that the record survives when the answer is a win as
+well as when it is a loss.
+
+## 10. Portfolio tracking — three backends, measured (added 2026-11-22)
+
+The challenge books and the pre-registered forward book are now tracked by one
+tool, `tools/portfolio_tracker.py`, which implements three candidate storage
+designs and compares them on the same events:
+
+| option | stored as | torn write | open-risk equity | measured size |
+|---|---|---|---|---|
+| ledger (chosen) | append-only JSONL events | **recovered, state identical** | yes | 5.3 KB |
+| snapshot | materialised JSON | lost | yes | 6.7 KB |
+| round-trip log | closed trades only | ok | **no — refuses** | 0.4 KB |
+
+Ledger and snapshot agree to **$0.00**; the ledger reconciles to the
+`realtime_challenge` source files at **$0.02** (sprint1, 3 trades) and **$0.03**
+(buffy, 2 trades), which is the source's own cent-rounding. A deliberate partial write was recovered with
+`corrupt_lines: 1` and an unchanged book. `.github/workflows/portfolio-tracker.yml`
+runs `sync → mark → status` hourly, runs the test file first, and commits the
+book with `[skip ci]`.
+
+Current book, marked at `09:44Z`:
+
+| book | equity | return | open | closed |
+|---|---|---|---|---|
+| buffy | $10,023.95 | +0.239 % | 0 | 2 |
+| sprint1 | $9,969.86 | −0.301 % | 0 | 3 |
+| forward_book | $8,083.30 | +1.041 % | 8 | 0 |
+| **total** | **$28,077.11** | **+0.275 %** | **8** | **5** |
+
+Full analysis: `reports/2026-11-22-portfolio-tracking-options.md`.
+
+## 11. Cross-check status
+
+No peer `REALTIMECHALLENGE_<model>_*.MD` file exists on `main` yet, so there is
+nothing to replicate. When one appears the checks are, in order: (1) do their
+costs match 24 bps round trip — most disagreements about "edge" are disagreements
+about fees; (2) is the signal computed on a closed bar and filled on the next;
+(3) is a both-touched bar resolved stop-first; (4) does their state file's
+`pnl_usd` reconcile to the sum of `net_pct × notional`; (5) is equity marked to
+market rather than realised-only, which understates drawdown.
