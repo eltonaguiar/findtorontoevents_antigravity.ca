@@ -48725,3 +48725,42 @@ Fast-forward
 **Reason:** Complex failure in Audit Frontend Manifest (Run #45073397480) - requires deep investigation
 
 **Next Check:** Will resume at next interval
+
+---
+
+## 🚨 NEW FAILURES DETECTED (2026-11-22 22:15 UTC)
+
+**Check #9429**  
+**New Failures:** 2  
+**Total Known Failures:** 2
+
+
+### portfolio-tracker
+- **Run ID:** 45076571667
+- **Status:** ❌ FAILED
+- **Time:** 2026-11-22T22:14:52Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/45076571667
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
+
+### realtime-challenge
+- **Run ID:** 45075465696
+- **Status:** ❌ FAILED
+- **Time:** 2026-11-22T22:04:35Z
+- **URL:** https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/45075465696
+- **Root Cause:** **Investigation Needed**
+
+**Initial Analysis:**
+- Generic failure detected
+- Requires manual investigation
+
+**Impact:** TBD
+
+---
