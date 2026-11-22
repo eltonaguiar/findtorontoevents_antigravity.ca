@@ -24,7 +24,7 @@ The evidence must be **genuine forward data**. A forward observation is written
 > strongest HONEST money-ready lead"* — 430 rows, **0** forward, median write-lag
 > 103 days, 25% pre-registration.
 
-### Gate 1 — Cost (the binding constraint)
+### Gate 1 — Cost (was the binding constraint; superseded by Gate 0, see below)
 
 Report **gross, fees and net separately, always**. Net must be positive after the
 **measured** round trip for the venue and size you will actually trade.
@@ -88,19 +88,26 @@ attached and the gate it refers to.
 
 ---
 
-## Current state (2026-11-22)
+## Current state (2026-11-22, updated end of round 31)
+
+Superseded values are struck through rather than deleted, so a reader who saw the
+earlier table can see what changed and why.
 
 | class | label | blocking gate |
 |---|---|---|
-| CRYPTO directional | **REFUTED** | Gate 0 (0 forward) + Gate 3 (OUTSIDE-2 killed, worst 50-window −152bp) |
-| CRYPTO funding carry | **CANDIDATE** | Gate 1 — 3.18%/yr net at VIP0 vs 3.5% T-bill. Clears at VIP1. Delta drift measured at exactly 0. |
-| ETF breakout | **REFUTED** | Gate 3 (OUTSIDE-1 killed, both conditions) |
-| ETF tactical allocation | **CANDIDATE** | Gate 2 — loses to static 60/40 on Sharpe; PBO 0.70 |
-| EQUITY | **NOT ESTABLISHED** | Gate 0 + Gate 1 unmeasured |
-| COMMODITY trend | **NOT ESTABLISHED** | spec-dependent: basket-binary = 43% duty cycle; per-member SMA differs |
-| FOREX | **REFUTED** | three desks negative |
-| BOND | **NOT ESTABLISHED** | n too small; ballast only |
-| FUTURES / vol scaling / breakout pod | **REFUTED** | unreproduced or refuted |
+| CRYPTO directional | **REFUTED** | −16.04 bp, PF 0.90 (CI-LB 0.84), n=8,733. Gate 0 (0 forward) + Gate 3 (OUTSIDE-2 killed, worst 50-window −152bp) |
+| CRYPTO funding carry | **REFUTED** ~~CANDIDATE~~ | Gate 2 — +3.555%/yr mean vs 3.50% T-bill is **5 bp** of headroom, but the halves disagree (+5.96%/yr → **+1.24%/yr**) and 6/28 rolling blocks are negative. Window-dependent, not persistent. |
+| ETF breakout | **REFUTED** | Gate 3 (OUTSIDE-1 killed, both conditions). Gross edge is real (+22.43 bp, t=+7.32); Gate 1 spread is **UNMEASURED** — sampler live, zero samples. |
+| ETF tactical allocation | **REFUTED** ~~CANDIDATE~~ | Gate 2 — loses to static 60/40 (Sharpe 0.81 vs 0.86); PBO 0.70 |
+| EQUITY | **NOT ESTABLISHED** | +19.29 bp but PF CI-LB 0.89; Gate 0 + Gate 1 unmeasured |
+| COMMODITY trend | **REFUTED** | −369.80 bp, PF 0.08 (CI-LB 0.02), n=43 |
+| FOREX | **REFUTED** | −15.45 bp, PF 0.66, n=251; three desks negative |
+| BOND | **REFUTED** ~~NOT ESTABLISHED~~ | −18.22 bp, PF 0.66, n=35 |
+| FUTURES / vol scaling / breakout pod | **REFUTED** | unreproduced or refuted (FUTURES n=12, INSUFF-N) |
+| `mega_mutation` emitter | **QUARANTINE** ~~CANDIDATE~~ | 4/6 falsification tests: median CI includes zero; 16/105 duplicate rows |
+| Vol risk premium | **ESTABLISHED** (existence) / harvest **RUINED** | +357.9 bp, t=+46.50 — and equity ≤ 0 at 2020-03 when harvested |
+| GDX/SLV pairs | **REFUTED** | ADF OOS +0.15 (need < −2.86); nets +2.23%/yr < cash |
+| Polymarket calibration | **ESTABLISHED** | Brier skill +0.4956, n=362. Mid-range deviation is SHADOW (p≈0.086, spread unmeasured). |
 
 **Controls that catch most of what gets past a human reviewer**
 - **Clairvoyance control:** a strategy that sees next period's return must dominate.
@@ -108,6 +115,45 @@ attached and the gate it refers to.
   Sharpe 1.83 vs 0.73 real.)
 - **All-cells reporting:** never a median over a filtered subset.
 - **Named split basis:** `trades` / `calendar` / `symbols` are three different tests.
+
+---
+
+## THE BINDING CONSTRAINT IS NOW PROVENANCE, NOT STATISTICS (2026-11-22, round 31)
+
+Every statistical avenue has been walked to its end. The programme now knows:
+
+- **0 of 7 asset classes** clears a cluster-robust PF of 1.0. All-classes net is
+  **−13.40 bp/pick at t = −3.38** over 10,593 de-duplicated picks.
+- **0 of 67 emitters** is established. The last candidate (`mega_mutation`) scored
+  **4/6** on a falsification battery and is **QUARANTINED**.
+- Four independent hypothesis families were tested and refuted this round:
+  vol risk premium harvest (**RUINED**, equity ≤ 0 at 2020-03), GDX/SLV pairs
+  (**REFUTED**, ADF OOS +0.15), cross-venue funding arb (**REFUTED**, best
+  +1.56%/yr), funding carry (**REFUTED** as a stable cash-beater).
+
+What remains is one gap that no further statistics can close:
+
+| artifact | `created_at` present? | provenance test possible? |
+|---|---|---|
+| `resolved_closed_picks_net.json` (10,968 picks) | **no** | **no** |
+| `forward_observations.jsonl` (430 H-119 rows) | yes | **yes — result: 430/430 backfilled** |
+
+So the single test that separates **skill from hindsight** — was the pick written
+before its outcome? — has been run on the only artifact that permits it, and it
+failed completely. On every other artifact it cannot be run at all.
+
+**Concrete demonstration of why this decides everything:** `mega_mutation` hits its
+take-profit first 56.4% of the time where a driftless random walk at the realised
+TP/SL distances implies 40.9% (binomial p = 1.7 × 10⁻³). That is either genuine
+directional skill or TP/SL levels placed with hindsight. **No test available on
+this data can distinguish those two explanations.** The statistics are not the
+limitation; the recording is.
+
+**Therefore Gate 0 is the only gate that matters until it is fixed.** The next
+round of work should not be another backtest. It should be making the system write
+`created_at`, `signal_ts`, and the TP/SL levels **at emit time**, immutably,
+before any outcome exists. Until that exists, every result — positive or negative —
+is unfalsifiable in the one direction that counts.
 
 ---
 
