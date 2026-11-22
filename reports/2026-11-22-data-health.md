@@ -4,22 +4,24 @@ Every check below is arithmetic or structural, not statistical taste. `SIGN`, `N
 
 ## dashboard recent_closed (3500 rows)
 
-| class | BAD_PRICE | EXIT_SIGN | FLAT | GAIN_BEYOND_LEVELS | LEVELS | MISMATCH | NO_MOVE | NO_MOVE_EXIT | OUTLIER |
-|---|---|---|---|---|---|---|---|---|---|
-| CRYPTO | 0 | 12 | 2 | 297 | 39 | 2 | 0 | 1 | 6 |
-| EQUITY | 9 | 0 | 10 | 86 | 2 | 9 | 0 | 0 | 0 |
-| FOREX | 29 | 2 | 40 | 1 | 2 | 29 | 0 | 1 | 0 |
-| ETF | 0 | 0 | 0 | 16 | 0 | 0 | 1 | 0 | 0 |
-| BOND | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 |
-| COMMODITY | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 |
+| class | EXIT_SIGN | FLAT | GAIN_BEYOND_LEVELS | LEVELS | NO_MOVE |
+|---|---|---|---|---|---|
+| CRYPTO | 12 | 0 | 273 | 31 | 0 |
+| EQUITY | 2 | 1 | 112 | 4 | 0 |
+| FOREX | 4 | 39 | 1 | 5 | 0 |
+| ETF | 3 | 0 | 23 | 4 | 1 |
+| COMMODITY | 0 | 0 | 10 | 3 | 0 |
+| BOND | 1 | 0 | 0 | 1 | 0 |
+| FUTURES | 0 | 0 | 1 | 0 | 0 |
 
 | class | median pnl | MAD | robust z>10 | max pnl | min pnl |
 |---|---|---|---|---|---|
-| CRYPTO | -0.8758 | 2.999 | 6 | 100.0 | -97.225 |
-| FOREX | 0.0 | 0.4438 | 0 | 3.835 | -2.5 |
-| EQUITY | -0.1782 | 3.6254 | 0 | 23.48 | -24.602 |
-| ETF | -0.6753 | 1.7842 | 0 | 10.934 | -10.296 |
-| BOND | -0.7595 | 0.368 | 0 | 1.285 | -1.276 |
+| CRYPTO | -1.5132 | 2.5391 | 0 | 18.003 | -20.736 |
+| ETF | -0.8094 | 1.7563 | 0 | 13.124 | -10.296 |
+| COMMODITY | -3.0 | 2.0 | 0 | 6.697 | -24.984 |
+| EQUITY | -0.8915 | 3.5715 | 0 | 23.48 | -30.209 |
+| FOREX | 0.0 | 0.4016 | 0 | 3.835 | -2.254 |
+| BOND | -0.3805 | 0.6913 | 0 | 2.0 | -1.276 |
 
 ## universal_resolved_picks (4877 rows)
 
