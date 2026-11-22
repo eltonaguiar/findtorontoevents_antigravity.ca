@@ -278,6 +278,7 @@ def segment_trades(pos: pd.Series, px: pd.Series, cost_bps: float) -> list[float
     return trades
 
 
+
 def monthly_trades(net: pd.Series) -> list[float]:
     """Trades for an always-invested portfolio: one bucket per calendar month.
 
