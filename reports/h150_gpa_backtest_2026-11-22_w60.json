@@ -1,6 +1,6 @@
 {
   "hypothesis": "H-150 (quarterly TTM GP/A, next-open entry, 20-60 calendar-day exit)",
-  "generated_at": "2026-11-22T01:07:56.365842+00:00",
+  "generated_at": "2026-11-22T01:26:07.738436+00:00",
   "module": "tools/h150_gpa_backtest.py",
   "signal_module": "tools/h150_ttm_gpa.py (validated 91.11% within 1% vs audited 10-K)",
   "harness": {
@@ -376,7 +376,7 @@
       {
         "formation": "2017-03-31",
         "n_book": 7,
-        "book_net_pct": 0.7527,
+        "book_net_pct": 0.7526,
         "universe_net_pct": 0.9709,
         "hold_days": 18,
         "resolved_at": "2017-04-28"
@@ -384,7 +384,7 @@
       {
         "formation": "2017-04-28",
         "n_book": 8,
-        "book_net_pct": -1.2219,
+        "book_net_pct": -1.2218,
         "universe_net_pct": 0.2961,
         "hold_days": 21,
         "resolved_at": "2017-05-31"
@@ -400,7 +400,7 @@
       {
         "formation": "2017-06-30",
         "n_book": 8,
-        "book_net_pct": 1.2884,
+        "book_net_pct": 1.2883,
         "universe_net_pct": -0.0293,
         "hold_days": 19,
         "resolved_at": "2017-07-31"
@@ -504,7 +504,7 @@
       {
         "formation": "2018-07-31",
         "n_book": 7,
-        "book_net_pct": 6.6488,
+        "book_net_pct": 6.6489,
         "universe_net_pct": 5.3115,
         "hold_days": 22,
         "resolved_at": "2018-08-31"
@@ -545,7 +545,7 @@
         "formation": "2018-12-31",
         "n_book": 9,
         "book_net_pct": 11.0778,
-        "universe_net_pct": 12.1471,
+        "universe_net_pct": 12.1472,
         "hold_days": 20,
         "resolved_at": "2019-01-31"
       },
@@ -992,7 +992,7 @@
       {
         "formation": "2024-09-30",
         "n_book": 6,
-        "book_net_pct": -7.09,
+        "book_net_pct": -7.0899,
         "universe_net_pct": -2.9862,
         "hold_days": 22,
         "resolved_at": "2024-10-31"
@@ -1036,7 +1036,7 @@
     "available": true,
     "model": "r_book - RF = alpha + b*MKT + s*SMB + h*HML + r*RMW",
     "month_assignment": "factor month = month AFTER formation (the month held)",
-    "return_conversion": "net formation return compounded to a monthly equivalent at 21/hold_days",
+    "return_conversion": "net formation return compounded to a monthly equivalent at 21/hold_days, where hold_days counts TRADING sessions",
     "overlapping": {
       "n_months": 94,
       "alpha_pct_monthly": -0.6903,
@@ -1077,8 +1077,11 @@
       },
       "r_squared": 0.739
     },
-    "information_ratio": -0.0,
-    "ir_basis": "mean/sd of the residual after the FF4 fit, annualised at sqrt(12); the pre-registered benchmark is these four factors",
+    "appraisal_ratio_ff4": -0.524,
+    "ir_vs_universe": -0.003,
+    "tracking_error_monthly_pct": 4.5618,
+    "ir_basis": "appraisal ratio: monthly alpha divided by the sd of the FF4 residuals, annualised by sqrt(12). The earlier version reported the mean of the OLS residuals, which is zero by construction because the fit has an intercept -- that number measured nothing and is not used as a gate.",
+    "ir_vs_universe_basis": "mean/sd of (book net - in-band universe net) per formation, annualised by sqrt(12); no factor model involved",
     "overlap_note": "formations overlap when a hold exceeds one month; the every-2nd fit is the significance test, both are reported"
   },
   "cost_stress_2x": {
@@ -1304,14 +1307,14 @@
     "gates": {
       "harness_admissible_positive": false,
       "min_forward_n": true,
-      "information_ratio": false,
+      "appraisal_ratio_ge_0_5": false,
       "factor_alpha_t": false,
       "cost_survival": true
     },
     "passed": false,
     "verdict": "NOT_PROVEN",
     "measured": {
-      "information_ratio": -0.0,
+      "appraisal_ratio_ff4": -0.524,
       "factor_alpha_t": -1.41,
       "n_book_records": 817,
       "n_book_formations": 94,

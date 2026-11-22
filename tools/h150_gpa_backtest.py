@@ -279,38 +279,65 @@ def factor_fit(per_formation: list[dict]) -> dict:
                 "usable_formations": len(obs)}
     # 20-60 calendar days is ~1-2 months, so every 2nd formation limits overlap
     non_overlapping = H149._ols(obs[::2])
+    # Information ratio as an APPRAISAL ratio, not the OLS residual mean.
+    #
+    # The previous version averaged the OLS residuals and divided by their sd.
+    # Because the fit carries an intercept, that mean is exactly zero by
+    # construction: the reported IR could only ever print -0.0, whatever the book
+    # did. What the pre-registered benchmark asks for is the return the book earns
+    # BEYOND its own factor exposure, relative to how noisy that is:
+    #
+    #     excess = alpha + epsilon        (y - beta'f, i.e. intercept included)
+    #     IR     = mean(excess)/sd(excess) * sqrt(12) = alpha/sd(eps) * sqrt(12)
+    #
+    # Both an FF4 appraisal ratio and a model-free book-vs-universe IR are
+    # reported; the gate uses the FF4 one, which is the declared benchmark.
+    alpha_m = overlapping["alpha_pct_monthly"] / 100.0
     resid = []
     for r in obs:
-        pred = (overlapping["alpha_pct_monthly"] / 100.0
-                + sum(overlapping["betas"][c] * r[c] for c in H149.FACTOR_COLS))
-        resid.append(r["y"] - pred)
-    mean_r = sum(resid) / len(resid)
-    var = sum((x - mean_r) ** 2 for x in resid) / max(len(resid) - 1, 1)
-    ir = (mean_r / (var ** 0.5) * (12 ** 0.5)) if var > 0 else None
+        fitted = sum(overlapping["betas"][c] * r[c] for c in H149.FACTOR_COLS)
+        resid.append(r["y"] - alpha_m - fitted)
+    dof = max(len(resid) - 5, 1)              # 1 intercept + 4 factors
+    sd_resid = (sum(x * x for x in resid) / dof) ** 0.5
+    appraisal = (alpha_m / sd_resid * (12 ** 0.5)) if sd_resid > 0 else None
+
+    diffs = [f["book_net_pct"] - f["universe_net_pct"] for f in per_formation]
+    ir_universe = None
+    if len(diffs) >= 3:
+        m = sum(diffs) / len(diffs)
+        v = sum((x - m) ** 2 for x in diffs) / (len(diffs) - 1)
+        ir_universe = (m / (v ** 0.5) * (12 ** 0.5)) if v > 0 else None
     return {
         "available": True,
         "model": "r_book - RF = alpha + b*MKT + s*SMB + h*HML + r*RMW",
         "month_assignment": "factor month = month AFTER formation (the month held)",
-        "return_conversion": "net formation return compounded to a monthly equivalent at 21/hold_days",
+        "return_conversion": "net formation return compounded to a monthly equivalent at "
+                             "21/hold_days, where hold_days counts TRADING sessions",
         "overlapping": overlapping,
         "non_overlapping": non_overlapping,
-        "information_ratio": round(ir, 3) if ir is not None else None,
-        "ir_basis": ("mean/sd of the residual after the FF4 fit, annualised at sqrt(12); "
-                     "the pre-registered benchmark is these four factors"),
+        "appraisal_ratio_ff4": round(appraisal, 3) if appraisal is not None else None,
+        "ir_vs_universe": round(ir_universe, 3) if ir_universe is not None else None,
+        "tracking_error_monthly_pct": round(100.0 * sd_resid, 4),
+        "ir_basis": ("appraisal ratio: monthly alpha divided by the sd of the FF4 residuals, "
+                     "annualised by sqrt(12). The earlier version reported the mean of the OLS "
+                     "residuals, which is zero by construction because the fit has an "
+                     "intercept -- that number measured nothing and is not used as a gate."),
+        "ir_vs_universe_basis": ("mean/sd of (book net - in-band universe net) per formation, "
+                                 "annualised by sqrt(12); no factor model involved"),
         "overlap_note": ("formations overlap when a hold exceeds one month; the every-2nd fit "
                          "is the significance test, both are reported"),
     }
 
 
 def verdict_of(harness: dict, book: dict, factors: dict, cost_bp: float) -> dict:
-    ir = factors.get("information_ratio")
+    ir = factors.get("appraisal_ratio_ff4")
     alpha_t = ((factors.get("overlapping") or {}).get("alpha_t")
                if factors.get("available") else None)
     gates = {
         "harness_admissible_positive": bool(harness.get("admissible")
                                             and harness.get("sign") == "+"),
         "min_forward_n": len(book["formations"]) >= 1 and book["n_book_records"] >= MIN_FORWARD_N,
-        "information_ratio": (ir is not None and ir >= MIN_INFORMATION_RATIO),
+        "appraisal_ratio_ge_0_5": (ir is not None and ir >= MIN_INFORMATION_RATIO),
         "factor_alpha_t": (alpha_t is not None and alpha_t >= MIN_FACTOR_ALPHA_T),
         "cost_survival": (harness.get("cost_survival") is not None
                           and harness["cost_survival"] >= H149.COST_SURVIVAL_MIN),
@@ -320,7 +347,7 @@ def verdict_of(harness: dict, book: dict, factors: dict, cost_bp: float) -> dict
         "gates": gates,
         "passed": passed,
         "verdict": "PROVEN_CANDIDATE" if passed else "NOT_PROVEN",
-        "measured": {"information_ratio": ir, "factor_alpha_t": alpha_t,
+        "measured": {"appraisal_ratio_ff4": ir, "factor_alpha_t": alpha_t,
                      "n_book_records": book["n_book_records"],
                      "n_book_formations": len(book["formations"]),
                      "harness_sign": harness.get("sign"),
@@ -471,7 +498,7 @@ def main() -> int:
     if factors.get("available"):
         ov = factors["overlapping"]
         print(f"factors: alpha {ov['alpha_pct_monthly']}%/mo (t={ov['alpha_t']}), "
-              f"R2 {ov['r_squared']}, IR {factors['information_ratio']}")
+              f"R2 {ov['r_squared']}, appraisal {factors['appraisal_ratio_ff4']}")
     print(f"VERDICT: {verdict['verdict']} — gates {verdict['gates']}")
     print(f"\nwrote {out}")
     return 0

@@ -1,7 +1,7 @@
 # H-150 backtest + audit2/audit3 proof-surface decision
 
 **Date:** 2026-11-22
-**Files added:** `tools/h150_gpa_backtest.py`, `reports/2026-11-22-h150-backtest-result.md`,
+**Files added:** `tools/h150_gpa_backtest.py`, `tools/lms_consult.py`, `reports/2026-11-22-h150-backtest-result.md`,
 `reports/2026-11-22-audit2-vs-audit3-forward-test-decision.md`,
 `plans/2026-11-22-h149-h150-forward-proof-plan.md`,
 `reports/h150_gpa_backtest_2026-11-22.json`, `reports/h150_gpa_backtest_2026-11-22_w60.json`, `reports/h150_ttm_validation_full.json`
@@ -55,3 +55,18 @@ The harness is `UNTESTED` at the 14-day window because ~18 records per window is
 `FMP_API_KEY` in `~/dbpasses.txt` is a **dead credential** (HTTP 401 on `stable/`, 403 on
 `v3/`), so the delisted-ticker route stays open only with a new vendor key (Polygon, Tiingo or
 CRSP/WRDS). No secret values were printed or committed — only key names and status codes.
+
+## Correction (same day, after review)
+
+`factor_fit()` reported an information ratio of −0.0 by averaging the OLS residuals. With an
+intercept in the fit that mean is exactly zero, so the number could not move and the gate could
+never read true or false on evidence. It is now an **appraisal ratio** (-0.524, = monthly alpha
+/ sd(FF4 residuals) × √12) plus a model-free **book-vs-universe IR** (-0.003); tracking error
+4.5618 %/mo. Both artifacts were regenerated, every other number reproduced exactly, and the
+verdict stayed NOT_PROVEN.
+
+`tools/lms_consult.py` was added to query the LAN LM Studio box (11 models, `--list`, single or
+fan-out, OpenAI-compatible with the native endpoint as fallback). Two models reviewed this
+backtest; every specific finding they raised was wrong, and neither caught the IR defect. The
+client is kept because the fan-out is useful for cheap second opinions, with the caveat that
+these models need state-verifiable prompts and their claims must be checked against the code.

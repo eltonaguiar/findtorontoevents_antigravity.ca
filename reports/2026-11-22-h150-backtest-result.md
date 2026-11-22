@@ -13,7 +13,7 @@ top quintile, next-open entry, first month-end 20–60 calendar days later — p
 |---|---|---|
 | harness admissible and positive | `UNTESTED` — 0 windows reach the 80-record floor | ✗ |
 | ≥ 100 forward book records | 817 | ✓ |
-| net IR vs FF4 ≥ 0.5 | **−0.00** | ✗ |
+| net IR vs FF4 ≥ 0.5 (appraisal ratio) | **-0.524** | ✗ |
 | FF4 alpha t ≥ 2.0 | **−1.41** (alpha −0.6903 %/mo) | ✗ |
 | cost survival ≥ 0.60 | 0.783 | ✓ |
 
@@ -118,3 +118,28 @@ At 60 days the harness can score and finds no admissible positive: the only two 
 are negative, which is not enough (needs ≥3 same-sign) to reject on the harness alone, but it
 points the same way as the book (L/S −0.46 pp) and the factor fit (alpha t = −1.41). All three
 independent views agree, and none of them supports the quality story.
+
+## Correction found in review — the IR was measuring nothing
+
+The first run reported an information ratio of −0.0. That was an artifact, not a finding:
+`factor_fit()` averaged the OLS residuals and divided by their standard deviation, but a fit
+with an intercept forces that mean to exactly zero. The number was incapable of moving, whatever
+the book did. It has been replaced by two measures that can move:
+
+| measure | value | what it means |
+|---|---|---|
+| appraisal ratio (FF4) | **-0.524** | monthly alpha ÷ sd of the FF4 residuals × √12 — return beyond the book's own factor exposure, per unit of unexplained risk |
+| IR vs equal-weight universe | **-0.003** | mean/sd of (book − universe) per formation × √12 — no factor model involved |
+| tracking error (monthly) | **4.5618%** | sd of the FF4 residuals |
+
+Both agree with the alpha: negative. The gate still fails, so **the NOT_PROVEN verdict does not
+depend on the bug** — and every other number reproduced exactly on the re-run (4,753 records,
+584 names, book +0.7318 %, L/S −0.4576 %, alpha −0.6903 %/mo t = −1.41, R² 0.721).
+
+Two local models reviewed the excerpt through `tools/lms_consult.py`. Their specific claims were
+all wrong: `gpt-oss-20b` wanted `_exit_position` to keep scanning past a month-end beyond the
+60-day cap (impossible — month-ends only get further away) and read `hold_days` as a month count
+(it counts trading sessions, which is why the denominator is 21 per month); `llama-3.1-8b`
+proposed inverting the NaN-safe `not (p0 == p0)` guard into a broken condition and "found" a
+ZeroDivisionError on a line already guarded. Neither found the IR defect — the value of the pass
+was that writing the bug classes down forced the check that did.
