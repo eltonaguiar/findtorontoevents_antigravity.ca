@@ -43,7 +43,7 @@ on the **default branch**, so nothing can be verified until merge.
 **Do not** stand up a second emit path to work around the merge — that would be a
 second definition of the same measurement.
 
-## [ ] T4 — Add emit callsites beyond `production_scanner.py`
+## [x] T4 — Add emit callsites beyond `production_scanner.py`
 Only `production_scanner.py` emits today, so any pick that never passes through it
 is invisible to the ledger — a survivorship hole in the very instrument meant to
 close one.
