@@ -758,13 +758,13 @@ function renderEvidence(d){
   $('evGaps').innerHTML = (d.known_gaps||[]).map(g=>`<li>${esc(g)}</li>`).join('');
 }
 
-fetch('audit3_evidence.json', {cache:'no-store'})
+fetch('/audit3/audit3_evidence.json', {cache:'no-store'})
   .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(renderEvidence)
   .catch(err=>{ if($('evSub')) $('evSub').textContent =
     'Evidence registry not published yet ('+err.message+'). The weekly audit3-evidence workflow writes it.'; });
 
-fetch('audit3_ledger.json', {cache:'no-store'})
+fetch('/audit3/audit3_ledger.json', {cache:'no-store'})
   .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(d=>{
     render(d);

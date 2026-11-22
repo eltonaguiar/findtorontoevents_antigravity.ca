@@ -85,6 +85,7 @@ UPLOADS = [
     ("audit_dashboard/ai-tournament.html",                   "/findtorontoevents.ca/audit2/ai-tournament.html",                    "ai_tournament"),
     # 2026-10-19: Task 10 read-only ledger-benchmark panel + its sidecar JSON
     ("audit_dashboard/benchmark_proof.html",                 "/findtorontoevents.ca/audit/benchmark_proof.html",                  "healthchecks"),
+    ("audit_dashboard/audit3.html",                          "/findtorontoevents.ca/audit/audit3.html",                           "healthchecks"),
     ("audit_dashboard/benchmark_proof.html",                 "/findtorontoevents.ca/audit2/benchmark_proof.html",                  "healthchecks"),
     ("audit_dashboard/data/benchmark_ledger_proof.json",     "/findtorontoevents.ca/audit/data/benchmark_ledger_proof.json",      "healthchecks"),
     ("audit_dashboard/data/benchmark_ledger_proof.json",     "/findtorontoevents.ca/audit2/data/benchmark_ledger_proof.json",      "healthchecks"),
