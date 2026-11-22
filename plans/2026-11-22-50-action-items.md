@@ -189,3 +189,38 @@ each is cited, and where the peer's number differs in basis from ours that is st
 **77 trading days**, and both margins are too thin to size a position on. It is
 `NOT_PROVEN` in both directions, and the only legitimate ways to settle it are more forward
 days or an independent replication on a non-overlapping universe.
+
+---
+
+## Status log 2 — 2026-11-22 (portfolio block, register, retrospective)
+
+| # | Item | Result |
+|---|---|---|
+| 31 | Risk parity SPY/TLT/GLD/DBC vs 60/40 | **MEASURED — no win proven.** ERC CE 6.82 vs 60/40 5.95 full-sample; paired bootstrap **+0.36 pp [−2.71, +3.40]**, includes 0. HRP has the best Sharpe (0.779) and lowest vol (8.87 vs 10.28) but **loses 1.93 pp on the 213-month common window**. |
+| 33 | HRP + forward correlation matrix | **DONE.** Correlations: SPY/TLT **−0.079**, SPY/GLD +0.103, SPY/DBC +0.448, TLT/DBC −0.318, TLT/GLD +0.241, GLD/DBC +0.314. HRP's advantage is one regime; its *risk* advantage (lower vol, MDD −17.79 vs −28.45) is robust. |
+| 34 | Combine best-per-class into one book | **ANSWERED.** Long-only max-CE (in-sample) = **SPY 81.44 / GLD 18.56 / TLT 0 / DBC 0**. It zeroes TLT, the −0.079 diversifier — error maximisation, not a diversification finding. Risk allocation keeps TLT and delivers 11 pp shallower drawdown. Failed sleeves earn zero under every method. |
+| 35 | Publish what to actually hold | **DONE** — `reports/2026-11-22-portfolio-construction.md` §E35, with the error bars attached and the five-point answer. |
+| 21 | Per-class data-bias register | **DONE** — `reports/2026-11-22-data-bias-register.md`, 15 rows across 12 classes; **11 of 12 have `UNMEASURED` cost**. |
+| 50 | Retrospective | **DONE** — `reports/2026-11-22-retrospective.md`, five adopted rules. |
+
+### The one-line result of the portfolio block
+
+**Zero of five allocation schemes beat plain 60/40 on certainty equivalent with a 90% CI excluding
+zero, and 60/40's own CE moves 2.49 pp purely on window choice — more than every point-estimate
+difference in the table except one.** Allocation is second-order here, and the reasons are now
+named rather than assumed.
+
+### Still open — 14 items
+
+- **6** execution realism: stored fills vs modelled slippage, per class.
+- **12** crypto CME calendar basis vs perp basis (needs CME futures series).
+- **13** equity turn-of-month seasonality (low turnover, cheap to test).
+- **14** buy-write vs SPY (needs an options or BXM series).
+- **15** vol-scaled cross-sectional momentum re-test of H-201.
+- **19** penny-stock liquidity haircut from ADV.
+- **20** MUTUAL_FUND NAV execution lag verification.
+- **26** PBO/CSCV block-length sensitivity.
+- **27** White's Reality Check — **blocked on a harness change**: per-cell daily return series are
+  not stored, and the family p-value cannot be computed from summary statistics.
+- **40–44** forward pods (carry pod state, H-201 pod, breakout pod, daily runner, pod report).
+  The H-201 pod is the highest-value one: **77 trading days** is precisely what would settle it.
