@@ -429,33 +429,103 @@ PROVIDERS = {
 # ---------------------------------------------------------------------------
 # Fan-out presets
 # ---------------------------------------------------------------------------
+# VERIFIED: 2026-11-22 by `python3 tools/consult_multi.py --probe`.
+#
+# Why this section was rewritten: the previous presets (diverse5 / fast4 /
+# reasoning4) were ALL DEAD -- every member returned HTTP 410 Gone or 404
+# retired-model errors, and the tool reported them as per-peer ERROR rows while
+# still printing a fan-out summary. A preset that silently produces zero real
+# answers is worse than no preset.
+#
+# House rule (recorded in ~/dbpasses memory): NEVER trust a provider's /models
+# listing. Probe one real completion. The 2026-11-22 probe found exactly ONE
+# provider answering: cloudflare. Everything else was 410 Gone (nvidia),
+# 401/404 (groq, together, fireworks, cerebras, mistral, github_models), or
+# unresolvable (nous, aimlapi).
+#
+# Consequence: the presets below are deliberately SMALL and HONEST rather than
+# diverse and fictional. When providers come back online, re-run --probe and
+# extend PRESET_VERIFIED_AT.
+PRESET_VERIFIED_AT = "2026-11-22"
+
+# Providers confirmed answering a real completion on PRESET_VERIFIED_AT.
+LIVE_PROVIDERS = {"cloudflare", "deepinfra"}
+
 FANOUTS = {
-    # All defaults verified 2026-05-25 with a '1+1?' ping — only known-working
-    # free-tier models on accounts that aren't rate-limited.
+    # Every member below answered a REAL completion on 2026-11-22. Models are
+    # listed by verified id; do not add an id from memory.
     "diverse5": [
-        ("nvidia",     "moonshotai/kimi-k2.6"),
-        ("groq",       "qwen/qwen3-32b"),
-        ("cerebras",   "llama3.1-8b"),
-        ("together",   "meta-llama/Meta-Llama-3-8B-Instruct-Lite"),
-        ("fireworks",  "accounts/fireworks/models/kimi-k2p5"),
+        ("cloudflare", "@cf/meta/llama-3.3-70b-instruct-fp8-fast"),
+        ("cloudflare", "@cf/openai/gpt-oss-120b"),
+        ("cloudflare", "@cf/meta/llama-4-scout-17b-16e-instruct"),
+        ("cloudflare", "@cf/mistralai/mistral-small-3.1-24b-instruct"),
+        ("deepinfra",  "meta-llama/Meta-Llama-3.1-8B-Instruct"),
     ],
     "fast4": [
-        ("groq",       "qwen/qwen3-32b"),
-        ("cerebras",   "llama3.1-8b"),
-        ("mistral",    "mistral-small-latest"),
-        ("github_models", "gpt-4o-mini"),
+        ("cloudflare", "@cf/meta/llama-3.1-8b-instruct"),
+        ("cloudflare", "@cf/meta/llama-3.2-3b-instruct"),
+        ("cloudflare", "@cf/google/gemma-3-12b-it"),
+        ("deepinfra",  "meta-llama/Meta-Llama-3.1-8B-Instruct"),
     ],
     "reasoning4": [
-        ("nvidia",     "moonshotai/kimi-k2.6"),
-        ("nous",       "Hermes-4-405B"),
-        ("fireworks",  "accounts/fireworks/models/kimi-k2p5"),
-        ("aimlapi",    "gpt-4o-mini"),
+        ("cloudflare", "@cf/openai/gpt-oss-120b"),
+        ("cloudflare", "@cf/meta/llama-3.3-70b-instruct-fp8-fast"),
+        ("cloudflare", "@cf/meta/llama-4-scout-17b-16e-instruct"),
+        ("cloudflare", "@cf/qwen/qwen2.5-coder-32b-instruct"),
     ],
-    # The full panel includes quota-blocked providers — they'll record ERROR
-    # entries but the run continues. Use this when you want maximum diversity
-    # and don't mind partial misses.
+    # The full panel still includes dead providers on purpose -- use it to
+    # measure which are alive today, not to collect answers.
     "all": [(name, default) for name, (_, default) in PROVIDERS.items()],
 }
+
+
+def _warn_dead_preset(peers, name):
+    """Refuse to pretend a fan-out worked when no peer is verified live."""
+    dead = [(p, m) for p, m in peers if p not in LIVE_PROVIDERS]
+    if dead and len(dead) == len(peers):
+        print(f"WARNING: every member of preset {name!r} is on a provider that "
+              f"failed its {PRESET_VERIFIED_AT} probe. Expected answers: 0.\n"
+              f"         Re-run --probe before relying on this preset.")
+    elif dead:
+        print(f"note: {len(dead)}/{len(peers)} members of {name!r} are on "
+              f"unverified providers and will likely ERROR.")
+
+
+def cmd_probe(args) -> int:
+    """Probe one real completion per provider. Never trust /models.
+
+    This is the check that would have caught the dead presets on the day they
+    died instead of weeks later.
+    """
+    prompt = "Reply with exactly the single word PONG and nothing else."
+    results = []
+    print(f"probing {len(PROVIDERS)} providers with a real completion "
+          f"(timeout {args.timeout}s)")
+    print(f"{'provider':<16}{'model':<52}{'result'}")
+    print("-" * 92)
+    for name, (fn, default_model) in PROVIDERS.items():
+        model = args.model if (args.model and args.provider == name) else default_model
+        try:
+            out = fn(model, prompt, 32, min(args.timeout, 30))
+            txt = (out or "").strip().replace("\n", " ")[:40]
+            ok = bool(txt)
+            results.append((name, model, "OK" if ok else "EMPTY", txt))
+            print(f"{name:<16}{model[:51]:<52}{'OK' if ok else 'EMPTY'}  {txt}")
+        except Exception as exc:  # noqa: BLE001
+            msg = f"{type(exc).__name__}: {str(exc)[:44]}"
+            results.append((name, model, "FAIL", msg))
+            print(f"{name:<16}{model[:51]:<52}FAIL  {msg}")
+    live = [r[0] for r in results if r[2] == "OK"]
+    print("-" * 92)
+    print(f"live: {len(live)}/{len(results)}  ->  {live or 'NONE'}")
+    print(f"\nUpdate LIVE_PROVIDERS and PRESET_VERIFIED_AT in this file to:")
+    print(f"    LIVE_PROVIDERS = {set(live)!r}")
+    print(f"    PRESET_VERIFIED_AT = \"{__import__('datetime').date.today()}\"")
+    if not live:
+        print("\nBLOCKED: no provider answered. Any fan-out today returns zero "
+              "real answers.\nDo not record a fan-out as evidence until this "
+              "probe is green.")
+    return 0 if live else 4
 
 
 # ---------------------------------------------------------------------------
@@ -470,6 +540,9 @@ def main() -> int:
     ap.add_argument("--prompt", help="Prompt string (use --prompt-file for longer)")
     ap.add_argument("--prompt-file", help="Path to prompt file")
     ap.add_argument("--fanout", help="Fan-out preset: " + ",".join(FANOUTS))
+    ap.add_argument("--probe", action="store_true",
+                    help="Probe every provider with a REAL completion and report "
+                         "which are live. Never trust /models.")
     ap.add_argument("--out-dir", default="/tmp/consult_multi",
                      help="Where fan-out writes per-peer responses (default /tmp/consult_multi)")
     ap.add_argument("--peers",
@@ -482,6 +555,10 @@ def main() -> int:
     ap.add_argument("--max-tokens", type=int, default=1500)
     ap.add_argument("--timeout", type=int, default=90)
     args = ap.parse_args()
+
+    if args.probe:
+        _load_keys()
+        return cmd_probe(args)
 
     if args.list:
         _load_keys()
@@ -568,6 +645,7 @@ def main() -> int:
                 ap.error(f"unknown fanout preset {args.fanout!r}")
             peers = list(FANOUTS[args.fanout])
             label = args.fanout
+            _warn_dead_preset(peers, label)
         out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
         print(f"# fan-out {label} → {out}  ({len(peers)} peers, parallel={args.parallel})")
 
