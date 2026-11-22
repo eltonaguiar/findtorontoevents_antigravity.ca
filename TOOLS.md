@@ -51,7 +51,8 @@ Add whatever helps you do your job. This is your cheat sheet.
 | 192.168.2.32 (Windows) | Ollama | 11434 | 71 | `llama3.1:8b`, `usb-mistral-small-24b`, plus cloud tags |
 | 192.168.2.52 (Linux, this box) | Ollama | 11434 | 26 | `gemma3:12b`, `gemma4:31b-cloud`, `minimax-m3:cloud`, `deepseek-r1:32b` |
 | 192.168.2.52 (Linux) | vLLM | 8002 | 1 | `nvidia/diffusiongemma-26B-A4B-it-NVFP4` — **rejects the `temperature` field (HTTP 400)** |
-| 192.168.2.52 (Linux) | vLLM | 8000 / 8001 | — | configured in `~/.config/kilo/kilo.jsonc`, **not running** |
+| 192.168.2.52 (Linux) | vLLM | 8000 | 1 | container `vllm-qwen36`: `Qwen3.6-35B-A3B-NVFP4` (35B MoE / 3B active, NVFP4, 16k ctx), **thinking on by default** — see below |
+| 192.168.2.52 (Linux) | vLLM | 8001 / 8003 | 0–1 | 8001 not running; 8003 = container `vllm-qwen3-vl` (Qwen3-VL-2B, 2k ctx) |
 
 Kilo's global config (`~/.config/kilo/kilo.jsonc`) lists 34 providers. Read it for
 provider/model names only — it and `~/dbpasses.txt` hold credentials. Never print
@@ -81,6 +82,30 @@ key values; key *names* are fine.
 5. **Background jobs do not survive a tool-cleanup cycle.** A `nohup … &` inside a
    SYNC command is killed; long fan-outs must run as BACKGROUND or inside one waiting
    SYNC command.
+
+### Port 8000 (the local reasoning model)
+
+```
+docker run -d --name vllm-qwen36 --restart unless-stopped --gpus all --ipc=host \
+  -p 127.0.0.1:8000:8000 \
+  -v /home/eaguiar2015/.cache/huggingface:/root/.cache/huggingface \
+  -e HF_HOME=/root/.cache/huggingface vllm/vllm-openai:latest \
+  --model nvidia/Qwen3.6-35B-A3B-NVFP4 \
+  --served-model-name Qwen3.6-35B-A3B-NVFP4 \
+  --max-model-len 16384 --max-num-seqs 4 \
+  --gpu-memory-utilization 0.25 --enable-prefix-caching --reasoning-parser qwen3
+```
+
+- **Cold start is ~5 min** (weights load from NVMe). `--gpu-memory-utilization 0.25` is
+  deliberate: diffusiongemma already reserves 0.35 and Qwen3-VL 0.08 of the GB10's
+  unified memory, and swap was already full.
+- **Thinking mode is on by default.** With `max_tokens` below ~1,500 it returns
+  `content: ""` and puts everything in `reasoning_content` — `completion_tokens_details.
+  reasoning_tokens` equals the whole budget. Either budget 1,500–2,000 tokens, or send
+  `chat_template_kwargs: {"enable_thinking": false}` for a 38-token answer in 0.75 s.
+- Measured on this host: **~80 tok/s** while thinking (1,541 reasoning tokens in 20 s),
+  ~50 tok/s without (38 tokens in 0.75 s including HTTP overhead).
+- Verify it is alive: `curl -s localhost:8000/v1/models`, then read `docker logs vllm-qwen36`.
 
 ### Tools
 

@@ -2589,15 +2589,26 @@
       "data_sample_lock": null,
       "result": {
         "scaleup_2026_11_21": {
-          "sample_n": 2600, "names_with_prices": 711, "records": 10230,
-          "windows_with_min_n": 71, "windows_scored": 66,
-          "strong_positive": 4, "strong_negative": 11, "sign": "mixed",
-          "net_edge_pct": 0.9598, "cost_survival": 0.828,
+          "sample_n": 2600,
+          "names_with_prices": 711,
+          "records": 10230,
+          "windows_with_min_n": 71,
+          "windows_scored": 66,
+          "strong_positive": 4,
+          "strong_negative": 11,
+          "sign": "mixed",
+          "net_edge_pct": 0.9598,
+          "cost_survival": 0.828,
           "stress_net_edge_pct": 0.7598,
           "factor_alpha_pct_monthly": 0.0334,
           "factor_alpha_t": 0.04,
           "factor_r_squared": 0.415,
-          "factor_betas": {"Mkt-RF": 0.479, "SMB": 1.334, "HML": -0.729, "RMW": -0.405},
+          "factor_betas": {
+            "Mkt-RF": 0.479,
+            "SMB": 1.334,
+            "HML": -0.729,
+            "RMW": -0.405
+          },
           "factor_nonoverlap_alpha_pct_monthly": -0.9006,
           "factor_nonoverlap_alpha_t": -0.78,
           "admissible": false
@@ -2607,7 +2618,10 @@
           "rule": "price series ending inside the holding window exits at its last close with a -30% haircut (Shumway/Warther)",
           "records_exiting_on_last_trade": 0,
           "names_never_priceable": 48,
-          "bottom_bucket": {"n": 49, "net_mean_pct": -15.7378},
+          "bottom_bucket": {
+            "n": 49,
+            "net_mean_pct": -15.7378
+          },
           "conclusion": "the exit is not truncated by dropped records; 48 delisted/never-listed tickers are dropped at entry, so both legs remain survivor subsets and the L/S spread stays an artifact"
         },
         "reason": "Pre-registered per M-107 before any backtest. Source: multi-model asset-class panel 2026-11-21, where 4 of 4 round-2 critics independently converged on this as the single defensible next experiment (reports/2026-11-21-multimodel-asset-class-panel.md).",
@@ -2643,201 +2657,255 @@
       },
       "banned_check": "Distinct from H-001 (CFTC COT positioning, killed for M-095 look-ahead), H-002 (PEAD earnings drift -- a different signal and event clock), H-003 (ETF 12-1 cross-sectional momentum), and the killed CRYPTO ml_enhanced_* stack. Also not a re-test of the EQUITY RSI(2) mean-reversion configuration the panel's round 1 proposed and round 2 rejected: different signal, different horizon, different benchmark."
     },
-                {
-          "id": "H-150",
-          "asset_class": "EQUITY",
-          "family": "mid_cap_gross_profitability_literal",
-          "description": "Long-only US mid-cap quality, single signal, EXACTLY as filed for H-149. Universe: US common stocks with market cap $2B-$10B at formation (monthly market-cap snapshot; no index-membership list, so constituent churn cannot leak). Signal: gross profitability GP/A = (revenue - cost of revenue) / total assets, taken from the most recent QUARTERLY statement whose filing date is STRICTLY before the rebalance date. Each month-end rank the universe on GP/A and hold the TOP QUINTILE equal-weight. Entry at the NEXT SESSION OPEN after the month-end close. Exit at the first month-end at least 20 calendar days after entry, and no later than 60 calendar days. No leverage, no shorting, no sector hedge.",
-          "test_statistic": "walk_forward eff via edge_stability_harness.is_admissible(), plus net-of-cost information ratio against the pre-declared factor benchmark, plus the Fama-French 4-factor regression intercept",
-          "acceptance_criteria": {
-            "eff_floor": 0.3,
-            "min_windows_admissible": 3,
-            "same_sign": true,
-            "cost_survival_min": 0.6,
-            "min_forward_n": 100,
-            "min_information_ratio": 0.5,
-            "min_factor_alpha_t": 2.0,
-            "hold_days_min": 20,
-            "hold_days_max": 60,
-            "slippage": "2x the measured per-class mean_cost_pct, funding included",
-            "factor_benchmark": [
-              "MKT",
-              "SMB",
-              "HML",
-              "RMW"
-            ],
-            "factor_benchmark_note": "declared before the run; substituting the factor set after seeing results invalidates the test",
-            "falsification_window_days": 90,
-            "reject_if": "net IR < 0 over the forward window, or any admissible window flips sign"
-          },
-          "economic_prior": "Novy-Marx (2013): gross profitability is the cleanest accounting measure of quality because it is unaffected by R&D, advertising and interest-expense classification. H-149 established that the ANNUAL-10-K, 40-trading-day, close-entry rendering of this idea has no stable edge (4 strong positive vs 11 strong negative windows on 711 names). What H-149 did not test is the spec as filed: quarterly statements react to the signal up to a year sooner, next-open entry removes the close-to-open gap, and the 20-60 calendar-day exit is the horizon the premium is actually documented at.",
-          "signal_validation": {
-            "artifact": "reports/h150_ttm_validation.json",
-            "method": "each audited annual 10-K GrossProfit recomputed from the four quarterly facts filed on or before that 10-K, which must be non-overlapping and must tile the fiscal year",
-            "companies_checked": 95,
-            "companies_with_comparable_pair": 30,
-            "comparable_pairs": 225,
-            "pct_within_1pct": 91.11,
-            "pct_within_5pct": 94.22,
-            "median_rel_err": 0.0,
-            "p90_rel_err": 0.004913,
-            "loose_rule_baseline": {
-              "comparable_pairs": 254,
-              "pct_within_1pct": 82.28,
-              "max_rel_err": 2.065078
-            },
-            "conclusion": "the quarterly TTM framing reproduces the audited annual figure for 91% of pairs; the residual failures are restatement vintages. Signal construction is validated -- the backtest is still unrun."
-          },
-          "status": "REFUTED",
-          "result": {
-            "backtest_run": "2026-11-22",
-            "backtest_artifact": "reports/h150_gpa_backtest_2026-11-22.json",
-            "backtest_module": "tools/h150_gpa_backtest.py",
-            "universe": {
-              "ciks_attempted": 2600,
-              "names_with_quarterly_facts": 636,
-              "names_with_prices": 584,
-              "records": 4753,
-              "formations": 119,
-              "book_records": 817,
-              "delisted_exits": 0
-            },
-            "harness": {
-              "verdict": "UNTESTED",
-              "windows_scored": 0,
-              "reason": "~18 records per 14-day window vs MIN_WINDOW_N=80; the harness cannot score this density and this is not a pass",
-              "window_60d_sensitivity": {
-                "artifact": "reports/h150_gpa_backtest_2026-11-22_w60.json",
-                "why": "the 14-day window cannot score at ~18 records/window; this window was chosen AFTER that failure, so it is a sensitivity check, not the registered test",
-                "windows_scored": 38,
-                "windows_strong": 2,
-                "strong_positive": 0,
-                "strong_negative": 2,
-                "verdict": "REJECTED",
-                "net_edge_pct": 0.7217
-              }
-            },
-            "book": {
-              "net_mean_pct": 0.7318,
-              "universe_net_mean_pct": 0.7217,
-              "wr_pct": 52.14,
-              "bottom_net_mean_pct": 1.1894,
-              "long_short_net_pct": -0.4576,
-              "per_formation_mean_net_pct": 0.5736
-            },
-            "factor_regression": {
-              "model": "r_book - RF = alpha + b*MKT + s*SMB + h*HML + r*RMW",
-              "overlapping": {
-                "n_months": 94,
-                "alpha_pct_monthly": -0.6903,
-                "alpha_t": -1.41,
-                "r_squared": 0.721,
-                "betas": {
-                  "Mkt-RF": 1.28,
-                  "SMB": 1.004,
-                  "HML": -0.47,
-                  "RMW": 0.147
-                }
-              },
-              "non_overlapping": {
-                "n_months": 47,
-                "alpha_pct_monthly": 0.3372,
-                "alpha_t": 0.49
-              },
-              "appraisal_ratio_ff4": -0.524,
-              "ir_vs_universe": -0.003,
-              "tracking_error_monthly_pct": 4.5618,
-              "ir_basis": "appraisal ratio: monthly alpha / sd(FF4 residuals) * sqrt(12). The first run reported the MEAN of the OLS residuals, which is zero by construction (the fit has an intercept), so it measured nothing; corrected 2026-11-22."
-            },
-            "cost_survival": 0.783,
-            "gates": {
-              "harness_admissible_positive": false,
-              "min_forward_n": true,
-              "factor_alpha_t": false,
-              "cost_survival": true,
-              "appraisal_ratio_ge_0_5": false
-            },
-            "verdict": "NOT_PROVEN",
-            "signal_validation_full_sample": {
-              "artifact": "reports/h150_ttm_validation_full.json",
-              "companies_checked": 984,
-              "companies_with_ttm": 307,
-              "comparable_pairs": 2427,
-              "pct_within_1pct": 92.95,
-              "pct_within_5pct": 95.51,
-              "median_rel_err": 0.0,
-              "p90_rel_err": 0.00095,
-              "max_rel_err": 21.833333
-            },
-            "conclusion": "the quarterly rendering does not rank 20-60 day returns: the top quintile beats the universe by 0.010pp, the bottom quintile beats the top by 0.46pp, and the FF4 intercept is -0.69%/mo (t=-1.41) with a 1.00 SMB loading. The book is small-cap/market beta, not quality alpha. Does not advance to forward testing.",
-            "scope_caveat": "584 names, firms that tag quarterly GrossProfit, survivor-biased pricing (no delisted-ticker source), cap band excludes large caps. Refutes this rendering, not gross profitability everywhere.",
-            "corrections": [
-              {
-                "date": "2026-11-22",
-                "what": "the reported information ratio was the mean of the OLS residuals",
-                "why_wrong": "an intercept forces that mean to exactly zero, so the gate could never read anything but 0.0 whatever the book did",
-                "now": "appraisal ratio -0.524 (alpha/sd(residuals)*sqrt(12)); model-free book-vs-universe IR -0.003",
-                "verdict_impact": "none -- the gate fails either way; every other number reproduced exactly"
-              }
-            ]
-          },
-          "registered_at": "2026-11-21",
-          "predecessor": "H-149 (annual 10-K / 40 trading days / month-end close entry / full cross-section) - REJECTED 2026-11-21 on 711 names and 66 scorable windows. That verdict does NOT transfer here: the four deviations that produced it are exactly the four things this entry specifies differently.",
-          "data_sample_lock": "Frozen at registration: CIK pool with seed 149, 2,600-name sample, month-end rebalances 2016-01-01..2025-12-31, $2B-$10B cap band, top quintile, next-session-open entry, 20-60 calendar-day exit, 20 bp fallback round-trip cost. None of these may be changed after the first run without a new id.",
-          "not_yet_implemented": [
-            "quarterly XBRL framing: 10-Q facts mix quarterly and year-to-date frames, so the trailing-twelve-month GP/A must be built from FY plus YTD deltas and validated against known 10-K values before any run counts",
-            "next-session-open entry price: the H-149 price path carried adjusted closes only",
-            "20-60 calendar-day exit at a month-end instead of a fixed 40 trading days",
-            "top-quintile book: H-149 scored the full cross-section and reported a decile"
-          ],
-          "banned_check": "Not a re-test of H-149 (different statement cadence, entry price, exit clock and book size), not H-001 (CFTC COT, killed for M-095 look-ahead), not H-002 (PEAD), not H-003 (ETF 12-1 momentum), and not the killed CRYPTO ml_enhanced_* stack."
+    {
+      "id": "H-150",
+      "asset_class": "EQUITY",
+      "family": "mid_cap_gross_profitability_literal",
+      "description": "Long-only US mid-cap quality, single signal, EXACTLY as filed for H-149. Universe: US common stocks with market cap $2B-$10B at formation (monthly market-cap snapshot; no index-membership list, so constituent churn cannot leak). Signal: gross profitability GP/A = (revenue - cost of revenue) / total assets, taken from the most recent QUARTERLY statement whose filing date is STRICTLY before the rebalance date. Each month-end rank the universe on GP/A and hold the TOP QUINTILE equal-weight. Entry at the NEXT SESSION OPEN after the month-end close. Exit at the first month-end at least 20 calendar days after entry, and no later than 60 calendar days. No leverage, no shorting, no sector hedge.",
+      "test_statistic": "walk_forward eff via edge_stability_harness.is_admissible(), plus net-of-cost information ratio against the pre-declared factor benchmark, plus the Fama-French 4-factor regression intercept",
+      "acceptance_criteria": {
+        "eff_floor": 0.3,
+        "min_windows_admissible": 3,
+        "same_sign": true,
+        "cost_survival_min": 0.6,
+        "min_forward_n": 100,
+        "min_information_ratio": 0.5,
+        "min_factor_alpha_t": 2.0,
+        "hold_days_min": 20,
+        "hold_days_max": 60,
+        "slippage": "2x the measured per-class mean_cost_pct, funding included",
+        "factor_benchmark": [
+          "MKT",
+          "SMB",
+          "HML",
+          "RMW"
+        ],
+        "factor_benchmark_note": "declared before the run; substituting the factor set after seeing results invalidates the test",
+        "falsification_window_days": 90,
+        "reject_if": "net IR < 0 over the forward window, or any admissible window flips sign"
+      },
+      "economic_prior": "Novy-Marx (2013): gross profitability is the cleanest accounting measure of quality because it is unaffected by R&D, advertising and interest-expense classification. H-149 established that the ANNUAL-10-K, 40-trading-day, close-entry rendering of this idea has no stable edge (4 strong positive vs 11 strong negative windows on 711 names). What H-149 did not test is the spec as filed: quarterly statements react to the signal up to a year sooner, next-open entry removes the close-to-open gap, and the 20-60 calendar-day exit is the horizon the premium is actually documented at.",
+      "signal_validation": {
+        "artifact": "reports/h150_ttm_validation.json",
+        "method": "each audited annual 10-K GrossProfit recomputed from the four quarterly facts filed on or before that 10-K, which must be non-overlapping and must tile the fiscal year",
+        "companies_checked": 95,
+        "companies_with_comparable_pair": 30,
+        "comparable_pairs": 225,
+        "pct_within_1pct": 91.11,
+        "pct_within_5pct": 94.22,
+        "median_rel_err": 0.0,
+        "p90_rel_err": 0.004913,
+        "loose_rule_baseline": {
+          "comparable_pairs": 254,
+          "pct_within_1pct": 82.28,
+          "max_rel_err": 2.065078
         },
-                {
-                  "id": "H-151",
-                  "family": "NET_SHARE_ISSUANCE",
-                  "asset_class": "EQUITY",
-                  "description": "Net share issuance predicts cross-sectional equity returns. Companies whose shares outstanding grew over the trailing 12 months underperform companies that shrank them, on a one-month holding period, when the signal is read point-in-time from SEC EDGAR companyfacts filings.",
-                  "economic_prior": "Managers issue equity when they believe it is rich and repurchase when they believe it is cheap (Baker-Wurgler market timing). The demand curve for a company's shares slopes downward, so new supply depresses price and retirements raise it (inelastic demand). This is the FINANCING-side quantity. H-149 and H-150 tested the INVESTMENT-side quantity (gross profitability); a positive result here is not a rescue of those.",
-                  "test_statistic": "net long-short quintile spread, bottom-issuance minus top-issuance, equal weight, 10bps per side, with FF4 alpha, appraisal ratio (alpha / sd(residuals) * sqrt(12)), and a model-free book-vs-universe IR reported alongside. The appraisal ratio exists because the first H-150 run reported the mean of OLS residuals, which is zero by construction and measured nothing.",
-                  "acceptance_criteria": {
-                    "eff_floor": 0.3,
-                    "min_windows_admissible": 3,
-                    "same_sign": true,
-                    "cost_survival_min": 0.6,
-                    "slippage_bps": 10,
-                    "min_names_per_leg": 100,
-                    "min_months": 36,
-                    "factor_alpha_t_min": 2.0,
-                    "appraisal_ratio_min": 0.5,
-                    "appraisal_ratio_sign_must_match_raw_spread": true,
-                    "validation": "tools/edge_stability_harness.py imported unmodified, run on 14-day windows over the monthly rebalance book; FF4 alpha t>=2 on non-overlapping months; costs at 10bps per side with a 2x stress reported but not gated"
-                  },
-                  "data_sample_lock": {
-                    "fundamentals": "tools/cache/sec_companyfacts/ (SEC EDGAR companyfacts, free, already cached by the H-150 run)",
-                    "prices": "Yahoo daily closes via the H-149 downloader path",
-                    "field": "dei:EntityCommonStockSharesOutstanding",
-                    "universe": "US common stock, price >= $3 at formation, market cap $100M-$10B at formation",
-                    "point_in_time": "a filing is usable only from its filed date + 1 trading day; period end dates are never used as availability dates",
-                    "frozen_at": "2026-11-22T00:00:00Z"
-                  },
-                  "frozen_rules": [
-                    "signal: NIS = ln(shares_t / shares_t_minus_4q), most recent filing available as of formation date",
-                    "split guard: drop a name-quarter when the shares ratio is within 1.5% of k or 1/k for k in {2,3,4,5,6,7,8,10,15,20}; companyfacts does not adjust for splits and a 2x split otherwise reads as 100% issuance",
-                    "winsorise NIS at the 1st and 99th cross-sectional percentile each formation",
-                    "quintile breakpoints fixed at quintiles, equal weight, one-month hold, rebalance on the last trading day of the month",
-                    "no tuning after the first run. A second run is allowed only with the alternative disclosed in advance as a sensitivity, never as a replacement"
-                  ],
-                  "refutation_conditions": [
-                    "raw bottom-minus-top spread <= 0 net of costs",
-                    "harness rejects on 3 or more windows (same rule as H-150)",
-                    "sign flips between the overlapping and non-overlapping alpha fits"
-                  ],
-                  "prior_art": "Pontiff & Woodgate (2008) on share issuance. Inside this repo, the closest existing idea is proposal ET-1 (reports/new_strategy_proposals_2026_05_18.md, line 3460), which uses ETF shares outstanding as a creation/redemption FLOW proxy via Authorized Participants. That is an arbitrage-flow signal on a basket; H-151 is a managerial-timing signal on an issuer. They share the data field and nothing else, and H-151 does not cover ETFs.",
-                  "status": "PRE_REGISTERED",
-                  "registered_at": "2026-11-22",
-                  "originated_by": "gemma4:31b-cloud (idea), corroborated independently by gpt-oss:120b-cloud as QuarterlyShareIssuanceDilution; see reports/2026-11-22-fleet-ideation-sweep.md",
-                  "result": {}
-                }
+        "conclusion": "the quarterly TTM framing reproduces the audited annual figure for 91% of pairs; the residual failures are restatement vintages. Signal construction is validated -- the backtest is still unrun."
+      },
+      "status": "REFUTED",
+      "result": {
+        "backtest_run": "2026-11-22",
+        "backtest_artifact": "reports/h150_gpa_backtest_2026-11-22.json",
+        "backtest_module": "tools/h150_gpa_backtest.py",
+        "universe": {
+          "ciks_attempted": 2600,
+          "names_with_quarterly_facts": 636,
+          "names_with_prices": 584,
+          "records": 4753,
+          "formations": 119,
+          "book_records": 817,
+          "delisted_exits": 0
+        },
+        "harness": {
+          "verdict": "UNTESTED",
+          "windows_scored": 0,
+          "reason": "~18 records per 14-day window vs MIN_WINDOW_N=80; the harness cannot score this density and this is not a pass",
+          "window_60d_sensitivity": {
+            "artifact": "reports/h150_gpa_backtest_2026-11-22_w60.json",
+            "why": "the 14-day window cannot score at ~18 records/window; this window was chosen AFTER that failure, so it is a sensitivity check, not the registered test",
+            "windows_scored": 38,
+            "windows_strong": 2,
+            "strong_positive": 0,
+            "strong_negative": 2,
+            "verdict": "REJECTED",
+            "net_edge_pct": 0.7217
+          }
+        },
+        "book": {
+          "net_mean_pct": 0.7318,
+          "universe_net_mean_pct": 0.7217,
+          "wr_pct": 52.14,
+          "bottom_net_mean_pct": 1.1894,
+          "long_short_net_pct": -0.4576,
+          "per_formation_mean_net_pct": 0.5736
+        },
+        "factor_regression": {
+          "model": "r_book - RF = alpha + b*MKT + s*SMB + h*HML + r*RMW",
+          "overlapping": {
+            "n_months": 94,
+            "alpha_pct_monthly": -0.6903,
+            "alpha_t": -1.41,
+            "r_squared": 0.721,
+            "betas": {
+              "Mkt-RF": 1.28,
+              "SMB": 1.004,
+              "HML": -0.47,
+              "RMW": 0.147
+            }
+          },
+          "non_overlapping": {
+            "n_months": 47,
+            "alpha_pct_monthly": 0.3372,
+            "alpha_t": 0.49
+          },
+          "appraisal_ratio_ff4": -0.524,
+          "ir_vs_universe": -0.003,
+          "tracking_error_monthly_pct": 4.5618,
+          "ir_basis": "appraisal ratio: monthly alpha / sd(FF4 residuals) * sqrt(12). The first run reported the MEAN of the OLS residuals, which is zero by construction (the fit has an intercept), so it measured nothing; corrected 2026-11-22."
+        },
+        "cost_survival": 0.783,
+        "gates": {
+          "harness_admissible_positive": false,
+          "min_forward_n": true,
+          "factor_alpha_t": false,
+          "cost_survival": true,
+          "appraisal_ratio_ge_0_5": false
+        },
+        "verdict": "NOT_PROVEN",
+        "signal_validation_full_sample": {
+          "artifact": "reports/h150_ttm_validation_full.json",
+          "companies_checked": 984,
+          "companies_with_ttm": 307,
+          "comparable_pairs": 2427,
+          "pct_within_1pct": 92.95,
+          "pct_within_5pct": 95.51,
+          "median_rel_err": 0.0,
+          "p90_rel_err": 0.00095,
+          "max_rel_err": 21.833333
+        },
+        "conclusion": "the quarterly rendering does not rank 20-60 day returns: the top quintile beats the universe by 0.010pp, the bottom quintile beats the top by 0.46pp, and the FF4 intercept is -0.69%/mo (t=-1.41) with a 1.00 SMB loading. The book is small-cap/market beta, not quality alpha. Does not advance to forward testing.",
+        "scope_caveat": "584 names, firms that tag quarterly GrossProfit, survivor-biased pricing (no delisted-ticker source), cap band excludes large caps. Refutes this rendering, not gross profitability everywhere.",
+        "corrections": [
+          {
+            "date": "2026-11-22",
+            "what": "the reported information ratio was the mean of the OLS residuals",
+            "why_wrong": "an intercept forces that mean to exactly zero, so the gate could never read anything but 0.0 whatever the book did",
+            "now": "appraisal ratio -0.524 (alpha/sd(residuals)*sqrt(12)); model-free book-vs-universe IR -0.003",
+            "verdict_impact": "none -- the gate fails either way; every other number reproduced exactly"
+          }
+        ]
+      },
+      "registered_at": "2026-11-21",
+      "predecessor": "H-149 (annual 10-K / 40 trading days / month-end close entry / full cross-section) - REJECTED 2026-11-21 on 711 names and 66 scorable windows. That verdict does NOT transfer here: the four deviations that produced it are exactly the four things this entry specifies differently.",
+      "data_sample_lock": "Frozen at registration: CIK pool with seed 149, 2,600-name sample, month-end rebalances 2016-01-01..2025-12-31, $2B-$10B cap band, top quintile, next-session-open entry, 20-60 calendar-day exit, 20 bp fallback round-trip cost. None of these may be changed after the first run without a new id.",
+      "not_yet_implemented": [
+        "quarterly XBRL framing: 10-Q facts mix quarterly and year-to-date frames, so the trailing-twelve-month GP/A must be built from FY plus YTD deltas and validated against known 10-K values before any run counts",
+        "next-session-open entry price: the H-149 price path carried adjusted closes only",
+        "20-60 calendar-day exit at a month-end instead of a fixed 40 trading days",
+        "top-quintile book: H-149 scored the full cross-section and reported a decile"
+      ],
+      "banned_check": "Not a re-test of H-149 (different statement cadence, entry price, exit clock and book size), not H-001 (CFTC COT, killed for M-095 look-ahead), not H-002 (PEAD), not H-003 (ETF 12-1 momentum), and not the killed CRYPTO ml_enhanced_* stack."
+    },
+    {
+      "id": "H-151",
+      "family": "NET_SHARE_ISSUANCE",
+      "asset_class": "EQUITY",
+      "description": "Net share issuance predicts cross-sectional equity returns. Companies whose shares outstanding grew over the trailing 12 months underperform companies that shrank them, on a one-month holding period, when the signal is read point-in-time from SEC EDGAR companyfacts filings.",
+      "economic_prior": "Managers issue equity when they believe it is rich and repurchase when they believe it is cheap (Baker-Wurgler market timing). The demand curve for a company's shares slopes downward, so new supply depresses price and retirements raise it (inelastic demand). This is the FINANCING-side quantity. H-149 and H-150 tested the INVESTMENT-side quantity (gross profitability); a positive result here is not a rescue of those.",
+      "test_statistic": "net long-short quintile spread, bottom-issuance minus top-issuance, equal weight, 10bps per side, with FF4 alpha, appraisal ratio (alpha / sd(residuals) * sqrt(12)), and a model-free book-vs-universe IR reported alongside. The appraisal ratio exists because the first H-150 run reported the mean of OLS residuals, which is zero by construction and measured nothing.",
+      "acceptance_criteria": {
+        "eff_floor": 0.3,
+        "min_windows_admissible": 3,
+        "same_sign": true,
+        "cost_survival_min": 0.6,
+        "slippage_bps": 10,
+        "min_names_per_leg": 100,
+        "min_months": 36,
+        "factor_alpha_t_min": 2.0,
+        "appraisal_ratio_min": 0.5,
+        "appraisal_ratio_sign_must_match_raw_spread": true,
+        "validation": "tools/edge_stability_harness.py imported unmodified, run on 14-day windows over the monthly rebalance book; FF4 alpha t>=2 on non-overlapping months; costs at 10bps per side with a 2x stress reported but not gated"
+      },
+      "data_sample_lock": {
+        "fundamentals": "tools/cache/sec_companyfacts/ (SEC EDGAR companyfacts, free, already cached by the H-150 run)",
+        "prices": "Yahoo daily closes via the H-149 downloader path",
+        "field": "dei:EntityCommonStockSharesOutstanding",
+        "universe": "US common stock, price >= $3 at formation, market cap $100M-$10B at formation",
+        "point_in_time": "a filing is usable only from its filed date + 1 trading day; period end dates are never used as availability dates",
+        "frozen_at": "2026-11-22T00:00:00Z"
+      },
+      "frozen_rules": [
+        "signal: NIS = ln(shares_t / shares_t_minus_4q), most recent filing available as of formation date",
+        "split guard: drop a name-quarter when the shares ratio is within 1.5% of k or 1/k for k in {2,3,4,5,6,7,8,10,15,20}; companyfacts does not adjust for splits and a 2x split otherwise reads as 100% issuance",
+        "winsorise NIS at the 1st and 99th cross-sectional percentile each formation",
+        "quintile breakpoints fixed at quintiles, equal weight, one-month hold, rebalance on the last trading day of the month",
+        "no tuning after the first run. A second run is allowed only with the alternative disclosed in advance as a sensitivity, never as a replacement"
+      ],
+      "refutation_conditions": [
+        "raw bottom-minus-top spread <= 0 net of costs",
+        "harness rejects on 3 or more windows (same rule as H-150)",
+        "sign flips between the overlapping and non-overlapping alpha fits"
+      ],
+      "prior_art": "Pontiff & Woodgate (2008) on share issuance. Inside this repo, the closest existing idea is proposal ET-1 (reports/new_strategy_proposals_2026_05_18.md, line 3460), which uses ETF shares outstanding as a creation/redemption FLOW proxy via Authorized Participants. That is an arbitrage-flow signal on a basket; H-151 is a managerial-timing signal on an issuer. They share the data field and nothing else, and H-151 does not cover ETFs.",
+      "status": "REFUTED",
+      "registered_at": "2026-11-22",
+      "originated_by": "gemma4:31b-cloud (idea), corroborated independently by gpt-oss:120b-cloud as QuarterlyShareIssuanceDilution; see reports/2026-11-22-fleet-ideation-sweep.md",
+      "result": {
+        "backtest_run": "2026-11-22",
+        "backtest_artifact": "reports/h151_net_issuance_2026-11-22.json",
+        "backtest_module": "tools/h151_net_issuance.py",
+        "verdict": "NOT_PROVEN",
+        "refutation_triggered": "raw bottom-minus-top spread <= 0 net of costs (condition 1 of 3)",
+        "universe": {
+          "cached_filers_with_ticker": 755,
+          "names_with_share_facts_and_prices": 568,
+          "records": 29109,
+          "formations_used": 131,
+          "split_suspect_drops": 970,
+          "no_12m_lookback": 19695,
+          "delisted_exits": 0
+        },
+        "headline": {
+          "raw_ls_spread_net_pct_monthly": -0.2054,
+          "harness_verdict": "REJECTED",
+          "harness_sign": "mixed",
+          "windows_scored": 131,
+          "windows_strong": 15,
+          "cost_survival": 0.817,
+          "ff4_alpha_pct_monthly": -0.3567,
+          "ff4_alpha_t": -0.63,
+          "ff4_r2": 0.204,
+          "appraisal_ratio_ff4": -0.199,
+          "ir_long_short_raw": -0.104,
+          "median_names_per_leg": 43,
+          "months": 131
+        },
+        "gates": {
+          "harness_admissible_positive": false,
+          "min_names_per_leg_100": false,
+          "min_months_36": true,
+          "cost_survival_ge_0_60": true,
+          "factor_alpha_t_ge_2": false,
+          "appraisal_ge_0_5": false,
+          "appraisal_sign_matches_spread": true,
+          "raw_spread_positive": false,
+          "alpha_fit_sign_stable": true
+        },
+        "failed_gates": [
+          "harness_admissible_positive",
+          "min_names_per_leg_100",
+          "factor_alpha_t_ge_2",
+          "appraisal_ge_0_5",
+          "raw_spread_positive"
+        ],
+        "interpretation": "The sign is the opposite of the hypothesis: the bottom-issuance (net repurchaser) leg underperformed the top-issuance (net issuer) leg by 0.2054%/month net. Under the frozen rule this is a refutation, not a weak pass. It does NOT establish that the issuance effect is absent in the full US universe: the leg sizes (median 43 names) are below the registered 100 minimum, and the 568-name sample is the H-150 cache, which is 756 CIKs drawn for a mid-cap study rather than a random sample of US common stock.",
+        "limits": [
+          "median 43 names per leg vs the 100 the spec requires: the quintiles are thin, so the point estimate is noisy even though its sign is unambiguous",
+          "the long-short spread is cost-insensitive by construction -- both legs pay the same round trip, so the 2x stress is identical to the base case (reported, not hidden)",
+          "18 tickers had no price history at all (warrants and delisted shells); those names never enter, which is the known survivorship gap, not a new one"
+        ]
+      }
+    }
   ],
   "fork2_new_signals": [
     {
