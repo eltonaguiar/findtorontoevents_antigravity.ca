@@ -758,13 +758,13 @@ function renderEvidence(d){
   $('evGaps').innerHTML = (d.known_gaps||[]).map(g=>`<li>${esc(g)}</li>`).join('');
 }
 
-fetch('audit3_evidence.json', {cache:'no-store'})
+fetch('/audit3/audit3_evidence.json', {cache:'no-store'})
   .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(renderEvidence)
   .catch(err=>{ if($('evSub')) $('evSub').textContent =
     'Evidence registry not published yet ('+err.message+'). The weekly audit3-evidence workflow writes it.'; });
 
-fetch('audit3_ledger.json', {cache:'no-store'})
+fetch('/audit3/audit3_ledger.json', {cache:'no-store'})
   .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(d=>{
     render(d);
@@ -777,6 +777,34 @@ fetch('audit3_ledger.json', {cache:'no-store'})
       '. If you are viewing this file locally, serve the folder over HTTP (file:// blocks fetch).';
     $('headline').textContent = 'Ledger unavailable';
   });
+</script>
+<section id="fbook" style="max-width:1180px;margin:2.5rem auto;padding:0 1rem">
+  <h2>Forward paper book <span style="font-size:.7em;opacity:.7">pre-registered &middot; resolved from daily bars &middot; net of costs</span></h2>
+  <p id="fbSub" style="opacity:.8">loading&hellip;</p>
+  <table style="width:100%;border-collapse:collapse;font-size:.9em">
+    <thead><tr><th align="left">symbol</th><th align="left">rule</th><th>entry</th><th>SL</th><th>TP</th><th>status</th><th>net %</th></tr></thead>
+    <tbody id="fbRows"></tbody>
+  </table>
+  <p id="fbScore" style="opacity:.85"></p>
+</section>
+<script>
+fetch('/audit3/forward_book.json',{cache:'no-store'})
+ .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})
+ .then(d=>{
+   const q=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+   document.getElementById('fbSub').textContent =
+     d.counts.resolved+' resolved / '+d.counts.entries+' registered · cost '+
+     d.cost_model_bps.CRYPTO+'bp crypto / '+d.cost_model_bps.EQUITY+'bp equity';
+   document.getElementById('fbRows').innerHTML = d.entries.map(x=>
+     '<tr><td>'+q(x.symbol)+'</td><td>'+q(x.rule)+'</td><td>'+q(x.entry_price)+'</td><td>'+
+     q(x.stop_loss)+'</td><td>'+q(x.take_profit)+'</td><td>'+q(x.status)+'</td><td>'+
+     (x.resolution?q(x.resolution.net_pnl_pct):'—')+'</td></tr>').join('');
+   const o=d.overall||{};
+   document.getElementById('fbScore').textContent = o.n
+     ? 'net expectancy '+o.expectancy_pct+'%/trade over n='+o.n+', WR '+(100*o.win_rate).toFixed(1)+'%, PF '+o.profit_factor
+     : 'No resolutions yet — each entry resolves from daily bars after its entry date.';
+ })
+ .catch(err=>{document.getElementById('fbSub').textContent='forward_book.json not published yet ('+err.message+')'});
 </script>
 </body>
 </html>
