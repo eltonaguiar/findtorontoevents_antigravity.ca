@@ -47,8 +47,11 @@ Top-of-book half spread for BTC/USDT is **0.00082 bp** (Binance) and 0.0082 bp
 (KuCoin) — i.e. the **spread is negligible; the taker fee dominates**. All-in round
 trip is therefore **~20.0 bp** on a 10 bp/side venue and **~52.0 bp** on Kraken.
 ADA/USDT round-trip spread walks from 6.86 bp at $1k to **988.79 bp at $1M**.
-**Equity and FX cost are UNMEASURED** (FX: markets closed Sunday →
-`BLOCKED_LIVE_MEASUREMENT`).
+**Equity cost is UNMEASURED.** **FX cost is now MEASURED but Sunday-reopen (upper
+bound)**: USD-major median-of-medians **7.533 bp** round trip, all-pairs median
+**7.99 bp** ([`FOREX_COST_20261122.md`](reports/cost_measurement_forex/FOREX_COST_20261122.md)).
+A representative weekday measurement is **scheduled** (`.github/workflows/fx-cost-overlap.yml`,
+London/NY overlap 13:00-16:00 UTC) and pending.
 
 ### Hurdle (context row)
 
@@ -118,8 +121,8 @@ survivorship audit flags as unsafe.** Everything else is a kill or a data block.
   spread blowing out to 988 bp at $1M, which is a warning, not a test.)
 - **Any equity strategy at measured cost** — equity cost is `UNMEASURED`, so **no
   equity result in this programme is cost-honest**.
-- **FX at live-measured spread** — `BLOCKED_LIVE_MEASUREMENT` (markets were closed
-  Sunday 2026-11-22).
+- **FX at live-measured spread** — measured once at the Sunday 22:00Z reopen (upper
+  bound, ~7.5-8 bp); the representative weekday number is scheduled and pending.
 - **Commodity term-structure carry** — `BLOCKED_DATA` (no second-month contract series).
 
 ---
