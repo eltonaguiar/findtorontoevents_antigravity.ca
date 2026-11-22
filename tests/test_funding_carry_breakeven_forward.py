@@ -70,8 +70,24 @@ def test_a_steady_positive_series_survives():
     assert res["triggered"] == [] and res["verdict"] == "ALIVE"
 
 
-def test_a_single_stress_print_flags_k5_without_killing():
+def test_below_the_cash_hurdle_is_a_sizing_note_not_a_kill():
+    """3.0 bp/day gross cannot cover a 42.64bp round trip spread over 20 days, so it does not
+    beat cash — but that is a reason not to size it, not a reason to call the hypothesis dead.
+    K4 additionally requires the pledged-collateral fact, which nobody has measured."""
+    rows = [_row(3.0)] * SPEC["judgment_gate"]["min_n_days"]
+    res = evaluate(rows)
+    assert res["beats_cash"] is False
+    assert "sizing_note" in res
+    assert "K4" not in res["triggered"]
+    assert res["verdict"] == "ALIVE"
+
+
+def test_a_stress_print_is_flagged_and_does_not_shield_k1():
+    """K5 flags the print; it must not relax the mean gate. One -420bp day in 20 drags the
+    net CI-LB negative, and the pod is killed. Suppressing that because it is 'only one
+    print' would be the gate weakening itself."""
     rows = [_row(1.5)] * 19 + [_row(-420.0)]
     res = evaluate(rows)
     assert "K5" in res["triggered"]
-    assert res["verdict"] != "KILL", "one print is a review, not an automatic kill"
+    assert res["net_ci_lb_bp"] <= 0
+    assert res["verdict"] == "KILL"

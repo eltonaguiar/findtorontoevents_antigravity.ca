@@ -24,8 +24,14 @@ KILL CRITERIA (any one is sufficient; evaluated only once the judgment gate open
   K2 realised second-half mean < 60% of the first half (the 46% decay accelerating)
   K3 realised round trip > 2x modelled (>85.28 bp) — execution, not the signal, has failed
   K4 pledged-collateral yield unavailable AND net < the T-bill hurdle
-  K5 any single observation < -400 bp (outside the in-sample worst of -362.44) -> REVIEW,
-     not an automatic kill: one print is not a regime, but it is a reason to stop sizing.
+  K5 any single observation < -400 bp (outside the in-sample worst of -362.44) -> REVIEW flag.
+     Recorded ALONGSIDE whatever K1-K3 say; it does not shield the pod from them. A print
+     outside the in-sample worst is a reason to look, never a reason to relax a gate.
+
+SIZING vs KILLING, kept separate on purpose
+  Net below the T-bill hurdle means "do not size this". It is not a kill: K4 additionally
+  requires the pledged-collateral fact, which nobody has measured. Collapsing the two would
+  let an unmeasured question kill a hypothesis, or let a real kill hide behind a sizing note.
 
 Usage
   python3 tools/funding_carry_forward.py --run      # append any missing days since inception
@@ -171,7 +177,11 @@ def evaluate(rows: list[dict], spec: dict = SPEC) -> dict:
     hurdle = spec["benchmark"]["rate_pct"] / 365 * 100.0
     res["beats_cash"] = (sum(vals) / n - drag) > hurdle
     if not res["beats_cash"]:
-        res["triggered"].append("K4_candidate")
+        # a sizing statement, deliberately NOT a trigger: K4 also needs the
+        # pledged-collateral fact, and an unmeasured condition cannot kill anything
+        res["sizing_note"] = ("net is below the T-bill hurdle, so this may not be sized. "
+                              "K4 additionally requires the pledged-collateral fact, which "
+                              "is unmeasured; see the break-even table.")
     res["verdict"] = "KILL" if any(t in ("K1", "K2", "K3") for t in res["triggered"]) else "ALIVE"
     return res
 
