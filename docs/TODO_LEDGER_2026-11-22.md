@@ -106,6 +106,41 @@ Left paused deliberately rather than re-enabled: with no `[ ]` items the runner
 would hit "ledger exhausted" on its first tick and self-disable, removing the
 cron line for good. Pausing keeps the mechanism.
 
+---
+
+## QUEUED by the operator 2026-11-22 — do these AFTER PR #1064 merges
+
+Sequence matters. Do not start Q2 before Q1.
+
+### Q1 (after merge) — work the remaining todos
+T3 becomes unblocked the moment PR #1064 merges: flip `## [!] T3` back to `## [ ]`,
+run it, then un-comment the `todo/wakeup-autonomous` cron line.
+
+### Q2 — PRE-REGISTER the VALUE test (before any backtest)
+Monthly **HML long-short on our OWN universe**, **net of MEASURED costs** (not
+assumed costs — measure them, as `tools/measured_cost_recost.py` already does).
+
+KILL criteria, verbatim from the operator — either one kills it:
+  * OOS annualised net return on **committed capital** <= **4.3%**; OR
+  * the **one-sided 95% upper bound** <= **4.3%**.
+
+Note the second one: an upper bound at or below the hurdle kills the test even if the
+point estimate is above it. A result whose best case fails to clear the bar is not a
+small edge, it is no edge.
+
+### Q3 — record the PEAD decay in the SAME doc
+State that PEAD decayed **post-2005/06 across three independent sources**, so a
+**large-cap post-2006 null is the EXPECTED result, not a failure**. The pre-registration
+must name those three sources explicitly. If three independent sources cannot be named
+and read, say so — do NOT invent citations to satisfy the count.
+
+### Q4 — do NOT import a literature magnitude
+Models disagree **2x** on the effect (25-42 vs 50-70 bp/month gross). Therefore:
+  * no literature number is an input to this test's thresholds;
+  * the only magnitudes that count are the ones measured on our own universe;
+  * where a literature range is mentioned, print the full disagreement (2x), never a
+    point estimate.
+
 ## Notes for an unattended run
 
 - Work top-down, but skip `[!]` items — they need an external event.
