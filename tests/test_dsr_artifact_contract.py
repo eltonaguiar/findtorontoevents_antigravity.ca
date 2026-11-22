@@ -136,9 +136,18 @@ class TestDeployGuard:
         assert Path(written["path"]).name == "deflated_sharpe_results.json"
 
     def test_live_artifact_untouched_by_a_dry_run(self, tmp_path):
-        """End-to-end: run analyse to a temp path and hash the live file."""
+        """End-to-end: run analyse to a temp path and hash the live file.
+
+        Skipped when the analysis input is absent: `audit_dashboard/data/
+        dashboard_data.json` is an 18 MB GENERATED file that is not committed, so a
+        clean worktree legitimately does not have it. A skip here means "cannot
+        evaluate", never "passed".
+        """
         import deflated_sharpe as ds
 
+        if not Path(ds.DATA_PATH).exists():
+            pytest.skip("dashboard_data.json absent (generated, not committed) -- "
+                        "cannot evaluate the dry-run guard here")
         before = LIVE.read_bytes()
         ds.analyse(out_path=str(tmp_path / "out.json"), deploy=False)
         assert LIVE.read_bytes() == before, "a non-deploy run modified the live artifact"
