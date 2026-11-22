@@ -283,6 +283,9 @@ jobs:
       - name: Build public status contract
         run: python3 tools/write_public_status.py
 
+      - name: Resolve forward paper book from bars
+        run: |
+          python3 tools/forward_book.py --resolve --publish
       - name: Deploy /audit3 to findtorontoevents.ca
         env:
           # 50webs secret names as they actually exist in this repo (2026-11-19 audit).
@@ -309,6 +312,7 @@ jobs:
               ("audit_dashboard/audit3.html", "index.html"),
               ("audit_dashboard/data/audit3_ledger.json", "audit3_ledger.json"),
               ("audit_dashboard/data/audit3_public_status.json", "status.json"),
+              ("audit_dashboard/data/forward_book.json", "forward_book.json"),
           ]:
               with open(local, "rb") as f:
                   ftp.storbinary(f"STOR {remote}", f)
@@ -348,5 +352,15 @@ jobs:
           with open("audit_dashboard/data/denominator.json", "rb") as f:
               ftp.storbinary("STOR denominator.json", f)
           print("uploaded denominator.json -> /findtorontoevents.ca/audit/data/denominator.json")
+          # 2026-11-22: /audit/audit3.html was never written by ANY workflow -- the
+          # page only ever landed at /audit3/index.html, so the /audit URL 404'd.
+          # Its data fetches are absolute (/audit3/*.json), so a copy here works.
+          # This block (not deploy_audit_files.py) is used because every --only
+          # group invoked in CI is audit_data/updates/pick_funnel/incidents/
+          # ai_tournament/ai_leaderboard -- "healthchecks" is never run.
+          ftp.cwd("..")
+          with open("audit_dashboard/audit3.html", "rb") as f:
+              ftp.storbinary("STOR audit3.html", f)
+          print("uploaded audit_dashboard/audit3.html -> /findtorontoevents.ca/audit/audit3.html")
           ftp.quit()
           PY
