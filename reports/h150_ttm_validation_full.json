@@ -1,0 +1,7122 @@
+{
+  "hypothesis": "H-150 (quarterly TTM GP/A -- signal validation only, no backtest)",
+  "generated_at": "2026-11-22T00:45:44.495992+00:00",
+  "definitions": {
+    "quarter": "duration 80-100 days",
+    "annual": "duration 350-380 days",
+    "gap_between_quarters": "60-130 days",
+    "ttm": "sum of the last four consecutive quarterly GrossProfit facts",
+    "look_ahead_guard": "every fact used only if filed STRICTLY before the as-of date",
+    "validation": "each annual 10-K GrossProfit recomputed from the four quarters filed on or before that 10-K, which must tile the fiscal year (first start at the annual start, last end at the annual end)",
+    "non_overlap": "each quarter must start no earlier than the previous one ended"
+  },
+  "sample": {
+    "seed": 149,
+    "requested": 2600,
+    "checked": 984
+  },
+  "metrics": {
+    "companies_checked": 984,
+    "companies_with_annual_gp": 913,
+    "companies_with_ttm": 307,
+    "comparable_pairs": 2427,
+    "within_0_1pct": 2185,
+    "within_1pct": 2256,
+    "within_5pct": 2318,
+    "pct_within_1pct": 92.95,
+    "pct_within_5pct": 95.51,
+    "median_rel_err": 0.0,
+    "p90_rel_err": 0.00095,
+    "max_rel_err": 21.833333
+  },
+  "prior_loose_rule": {
+    "note": "baseline from the first run, before the non-overlap and tiling guards: four quarters chosen only by spacing of period ends, which double-counted overlapping facts",
+    "comparable_pairs": 254,
+    "pct_within_1pct": 82.28,
+    "max_rel_err": 2.065078
+  },
+  "mismatch_examples": [
+    {
+      "cik": 62996,
+      "annual_end": "2013-12-31",
+      "annual": 1959000000.0,
+      "ttm_four_quarters": 2255000000.0,
+      "abs_err": 296000000.0,
+      "rel_err": 0.15109749872383868
+    },
+    {
+      "cik": 62996,
+      "annual_end": "2017-12-31",
+      "annual": 2220000000.0,
+      "ttm_four_quarters": 2612000000.0,
+      "abs_err": 392000000.0,
+      "rel_err": 0.17657657657657658
+    },
+    {
+      "cik": 8947,
+      "annual_end": "2021-02-28",
+      "annual": 122899000.0,
+      "ttm_four_quarters": 188747000.0,
+      "abs_err": 65848000.0,
+      "rel_err": 0.5357895507693309
+    },
+    {
+      "cik": 8947,
+      "annual_end": "2024-02-29",
+      "annual": 363461000.0,
+      "ttm_four_quarters": 645875000.0,
+      "abs_err": 282414000.0,
+      "rel_err": 0.7770132146227519
+    },
+    {
+      "cik": 60714,
+      "annual_end": "2013-12-31",
+      "annual": 46836000.0,
+      "ttm_four_quarters": 143556000.0,
+      "abs_err": 96720000.0,
+      "rel_err": 2.065078145016654
+    },
+    {
+      "cik": 1618732,
+      "annual_end": "2016-07-31",
+      "annual": 332623000.0,
+      "ttm_four_quarters": 274141000.0,
+      "abs_err": 58482000.0,
+      "rel_err": 0.1758206738559871
+    },
+    {
+      "cik": 949157,
+      "annual_end": "2016-12-31",
+      "annual": -6100000.0,
+      "ttm_four_quarters": -10025000.0,
+      "abs_err": 3925000.0,
+      "rel_err": 0.6434426229508197
+    },
+    {
+      "cik": 1235468,
+      "annual_end": "2017-09-30",
+      "annual": 124490000.0,
+      "ttm_four_quarters": 112639000.0,
+      "abs_err": 11851000.0,
+      "rel_err": 0.09519640131737489
+    },
+    {
+      "cik": 822370,
+      "annual_end": "2018-12-31",
+      "annual": 15466000.0,
+      "ttm_four_quarters": 7414600.0,
+      "abs_err": 8051400.0,
+      "rel_err": 0.5205870942713048
+    },
+    {
+      "cik": 825542,
+      "annual_end": "2014-09-30",
+      "annual": 890100000.0,
+      "ttm_four_quarters": 1031400000.0,
+      "abs_err": 141300000.0,
+      "rel_err": 0.15874620829120323
+    }
+  ],
+  "pairs": [
+    {
+      "annual_end": "2009-12-31",
+      "annual": 2010000000.0,
+      "ttm_four_quarters": 2018000000.0,
+      "abs_err": 8000000.0,
+      "rel_err": 0.003980099502487562
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 1802000000.0,
+      "ttm_four_quarters": 1833000000.0,
+      "abs_err": 31000000.0,
+      "rel_err": 0.017203107658157604
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 1787000000.0,
+      "ttm_four_quarters": 1787000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 1956000000.0,
+      "ttm_four_quarters": 1956000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 1959000000.0,
+      "ttm_four_quarters": 2255000000.0,
+      "abs_err": 296000000.0,
+      "rel_err": 0.15109749872383868
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 2060000000.0,
+      "ttm_four_quarters": 2060000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 2253000000.0,
+      "ttm_four_quarters": 2253000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 2462000000.0,
+      "ttm_four_quarters": 2456000000.0,
+      "abs_err": 6000000.0,
+      "rel_err": 0.002437043054427295
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 2220000000.0,
+      "ttm_four_quarters": 2612000000.0,
+      "abs_err": 392000000.0,
+      "rel_err": 0.17657657657657658
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 2327000000.0,
+      "ttm_four_quarters": 2327000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 2371000000.0,
+      "ttm_four_quarters": 2371000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 2587000000.0,
+      "ttm_four_quarters": 2587000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 7412000.0,
+      "ttm_four_quarters": 7412000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-02-28",
+      "annual": 164173000.0,
+      "ttm_four_quarters": 164173000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-02-28",
+      "annual": 205705000.0,
+      "ttm_four_quarters": 205705000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-02-28",
+      "annual": 206773000.0,
+      "ttm_four_quarters": 205696000.0,
+      "abs_err": 1077000.0,
+      "rel_err": 0.005208610408515619
+    },
+    {
+      "annual_end": "2016-02-29",
+      "annual": 228118000.0,
+      "ttm_four_quarters": 228118000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-02-28",
+      "annual": 205332000.0,
+      "ttm_four_quarters": 205332000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-02-28",
+      "annual": 160309000.0,
+      "ttm_four_quarters": 160309000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-02-28",
+      "annual": 198621000.0,
+      "ttm_four_quarters": 198621000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-02-29",
+      "annual": 237228000.0,
+      "ttm_four_quarters": 237228000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-02-28",
+      "annual": 122899000.0,
+      "ttm_four_quarters": 188747000.0,
+      "abs_err": 65848000.0,
+      "rel_err": 0.5357895507693309
+    },
+    {
+      "annual_end": "2024-02-29",
+      "annual": 363461000.0,
+      "ttm_four_quarters": 645875000.0,
+      "abs_err": 282414000.0,
+      "rel_err": 0.7770132146227519
+    },
+    {
+      "annual_end": "2018-06-30",
+      "annual": 1856800000.0,
+      "ttm_four_quarters": 1856800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-06-30",
+      "annual": 1799000000.0,
+      "ttm_four_quarters": 1799100000.0,
+      "abs_err": 100000.0,
+      "rel_err": 5.558643690939411e-05
+    },
+    {
+      "annual_end": "2020-06-30",
+      "annual": 2536000000.0,
+      "ttm_four_quarters": 2535500000.0,
+      "abs_err": 500000.0,
+      "rel_err": 0.0001971608832807571
+    },
+    {
+      "annual_end": "2024-06-30",
+      "annual": 2712000000.0,
+      "ttm_four_quarters": 2712000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2025-06-30",
+      "annual": 2834000000.0,
+      "ttm_four_quarters": 2834000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 775045000.0,
+      "ttm_four_quarters": 774551000.0,
+      "abs_err": 494000.0,
+      "rel_err": 0.0006373823455412266
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 847517000.0,
+      "ttm_four_quarters": 849422000.0,
+      "abs_err": 1905000.0,
+      "rel_err": 0.0022477425231588275
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 918536000.0,
+      "ttm_four_quarters": 918536000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 872539000.0,
+      "ttm_four_quarters": 872539000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 785920000.0,
+      "ttm_four_quarters": 785920000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 832621000.0,
+      "ttm_four_quarters": 832621000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-09-30",
+      "annual": 44384000.0,
+      "ttm_four_quarters": 44383000.0,
+      "abs_err": 1000.0,
+      "rel_err": 2.2530641672674837e-05
+    },
+    {
+      "annual_end": "2012-09-30",
+      "annual": 58052000.0,
+      "ttm_four_quarters": 58052000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-09-30",
+      "annual": 66960000.0,
+      "ttm_four_quarters": 66960000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-09-30",
+      "annual": 83126000.0,
+      "ttm_four_quarters": 83126000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-09-30",
+      "annual": 99891000.0,
+      "ttm_four_quarters": 99891000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-09-30",
+      "annual": 126980000.0,
+      "ttm_four_quarters": 126980000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-09-30",
+      "annual": 140498000.0,
+      "ttm_four_quarters": 140498000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-09-30",
+      "annual": 149962000.0,
+      "ttm_four_quarters": 149962000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-09-30",
+      "annual": 182103000.0,
+      "ttm_four_quarters": 182103000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-09-30",
+      "annual": 227959000.0,
+      "ttm_four_quarters": 227959000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-06-30",
+      "annual": 60313000.0,
+      "ttm_four_quarters": 60313000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-06-30",
+      "annual": 60410000.0,
+      "ttm_four_quarters": 60410000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-06-30",
+      "annual": 65298000.0,
+      "ttm_four_quarters": 65298000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-06-30",
+      "annual": 74449000.0,
+      "ttm_four_quarters": 74449000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-06-30",
+      "annual": 83671000.0,
+      "ttm_four_quarters": 83671000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-06-30",
+      "annual": 81877000.0,
+      "ttm_four_quarters": 81877000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-06-30",
+      "annual": 89234000.0,
+      "ttm_four_quarters": 89234000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-06-30",
+      "annual": 73713000.0,
+      "ttm_four_quarters": 73713000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-06-30",
+      "annual": 73530000.0,
+      "ttm_four_quarters": 73530000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-06-30",
+      "annual": 78974000.0,
+      "ttm_four_quarters": 78974000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-06-30",
+      "annual": 109208000.0,
+      "ttm_four_quarters": 109208000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-06-30",
+      "annual": 136945000.0,
+      "ttm_four_quarters": 136945000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-06-30",
+      "annual": 133168000.0,
+      "ttm_four_quarters": 133168000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2025-06-30",
+      "annual": 141780000.0,
+      "ttm_four_quarters": 141780000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 223018000.0,
+      "ttm_four_quarters": 223018000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 183736000.0,
+      "ttm_four_quarters": 183736000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 46836000.0,
+      "ttm_four_quarters": 143556000.0,
+      "abs_err": 96720000.0,
+      "rel_err": 2.065078145016654
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 65465000.0,
+      "ttm_four_quarters": 65465000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 20048000.0,
+      "ttm_four_quarters": 20048000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": -49306000.0,
+      "ttm_four_quarters": -49306000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 5466000.0,
+      "ttm_four_quarters": 5466000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 15835000.0,
+      "ttm_four_quarters": 15835000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 4985000.0,
+      "ttm_four_quarters": 4985000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 17048000.0,
+      "ttm_four_quarters": 17048000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 138979000.0,
+      "ttm_four_quarters": 138979000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 348367000.0,
+      "ttm_four_quarters": 348367000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-07-31",
+      "annual": 332623000.0,
+      "ttm_four_quarters": 274141000.0,
+      "abs_err": 58482000.0,
+      "rel_err": 0.1758206738559871
+    },
+    {
+      "annual_end": "2017-07-31",
+      "annual": 518572000.0,
+      "ttm_four_quarters": 518572000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-07-31",
+      "annual": 769427000.0,
+      "ttm_four_quarters": 769427000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-07-31",
+      "annual": 932015000.0,
+      "ttm_four_quarters": 932015000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-07-31",
+      "annual": 1020993000.0,
+      "ttm_four_quarters": 1020993000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-01-29",
+      "annual": 1182151000.0,
+      "ttm_four_quarters": 1170959000.0,
+      "abs_err": 11192000.0,
+      "rel_err": 0.009467487655976266
+    },
+    {
+      "annual_end": "2012-01-28",
+      "annual": 1144594000.0,
+      "ttm_four_quarters": 1144594000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-02-02",
+      "annual": 1390322000.0,
+      "ttm_four_quarters": 1390322000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-02-01",
+      "annual": 1113999000.0,
+      "ttm_four_quarters": 1113999000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-31",
+      "annual": 1154674000.0,
+      "ttm_four_quarters": 1154674000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-30",
+      "annual": 1302734000.0,
+      "ttm_four_quarters": 1302734000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-01-28",
+      "annual": 1366927000.0,
+      "ttm_four_quarters": 1366865000.0,
+      "abs_err": 62000.0,
+      "rel_err": 4.535721366247064e-05
+    },
+    {
+      "annual_end": "2018-02-03",
+      "annual": 1370505000.0,
+      "ttm_four_quarters": 1370504000.0,
+      "abs_err": 1000.0,
+      "rel_err": 7.296580457568561e-07
+    },
+    {
+      "annual_end": "2020-02-01",
+      "annual": 1522301000.0,
+      "ttm_four_quarters": 1522301000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-04-30",
+      "annual": 19156000.0,
+      "ttm_four_quarters": 19156000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-04-30",
+      "annual": 22258000.0,
+      "ttm_four_quarters": 22258000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-04-30",
+      "annual": 22032000.0,
+      "ttm_four_quarters": 22032000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-04-30",
+      "annual": 21766000.0,
+      "ttm_four_quarters": 21766000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-04-30",
+      "annual": 23708000.0,
+      "ttm_four_quarters": 23708000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-04-30",
+      "annual": 26607000.0,
+      "ttm_four_quarters": 26607000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-04-30",
+      "annual": 32159000.0,
+      "ttm_four_quarters": 32159000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-04-30",
+      "annual": 25319000.0,
+      "ttm_four_quarters": 25319000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-04-30",
+      "annual": 23427000.0,
+      "ttm_four_quarters": 23427000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-04-30",
+      "annual": 23993000.0,
+      "ttm_four_quarters": 23993000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-04-30",
+      "annual": 24220000.0,
+      "ttm_four_quarters": 24220000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 87779000.0,
+      "ttm_four_quarters": 87779000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 207815000.0,
+      "ttm_four_quarters": 207815000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 278404000.0,
+      "ttm_four_quarters": 278404000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 269457000.0,
+      "ttm_four_quarters": 274144000.0,
+      "abs_err": 4687000.0,
+      "rel_err": 0.01739424101062507
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 277482000.0,
+      "ttm_four_quarters": 277482000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 274783000.0,
+      "ttm_four_quarters": 274783000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 239360000.0,
+      "ttm_four_quarters": 239360000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 250222000.0,
+      "ttm_four_quarters": 250222000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 250992000.0,
+      "ttm_four_quarters": 250992000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 269119000.0,
+      "ttm_four_quarters": 269119000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 268275000.0,
+      "ttm_four_quarters": 268275000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 283929000.0,
+      "ttm_four_quarters": 283929000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 34169000.0,
+      "ttm_four_quarters": 34169000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 58712000.0,
+      "ttm_four_quarters": 58712000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 98220000.0,
+      "ttm_four_quarters": 98220000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 138204000.0,
+      "ttm_four_quarters": 138204000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 156203000.0,
+      "ttm_four_quarters": 156203000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 198396000.0,
+      "ttm_four_quarters": 198396000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 133240000.0,
+      "ttm_four_quarters": 133240000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 227384000.0,
+      "ttm_four_quarters": 227384000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 213883000.0,
+      "ttm_four_quarters": 213883000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 112396000.0,
+      "ttm_four_quarters": 112396000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 89522000.0,
+      "ttm_four_quarters": 89522000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 46342000.0,
+      "ttm_four_quarters": 46342000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 39523000.0,
+      "ttm_four_quarters": 39523000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 201799000.0,
+      "ttm_four_quarters": 201799000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 41313000.0,
+      "ttm_four_quarters": 41313000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": -6100000.0,
+      "ttm_four_quarters": -10025000.0,
+      "abs_err": 3925000.0,
+      "rel_err": 0.6434426229508197
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 131300000.0,
+      "ttm_four_quarters": 128600000.0,
+      "abs_err": 2700000.0,
+      "rel_err": 0.020563594821020565
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": -22900000.0,
+      "ttm_four_quarters": -22900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": -23900000.0,
+      "ttm_four_quarters": -23900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": -36500000.0,
+      "ttm_four_quarters": -36500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 805270000.0,
+      "ttm_four_quarters": 805270000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-06-30",
+      "annual": 1039127000.0,
+      "ttm_four_quarters": 1039127000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-06-30",
+      "annual": 1023321000.0,
+      "ttm_four_quarters": 1023321000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-06-30",
+      "annual": 998361000.0,
+      "ttm_four_quarters": 998361000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 93130000.0,
+      "ttm_four_quarters": 93130000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 131962000.0,
+      "ttm_four_quarters": 129735000.0,
+      "abs_err": 2227000.0,
+      "rel_err": 0.016876070383898396
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 157479000.0,
+      "ttm_four_quarters": 157479000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 175946000.0,
+      "ttm_four_quarters": 175946000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 200569000.0,
+      "ttm_four_quarters": 200569000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 33531000.0,
+      "ttm_four_quarters": 33531000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 29640000.0,
+      "ttm_four_quarters": 29640000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 36522000.0,
+      "ttm_four_quarters": 36522000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 73426000.0,
+      "ttm_four_quarters": 73426000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 68772000.0,
+      "ttm_four_quarters": 68772000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 73004000.0,
+      "ttm_four_quarters": 73004000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 75679000.0,
+      "ttm_four_quarters": 75679000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 91403000.0,
+      "ttm_four_quarters": 91403000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 112584000.0,
+      "ttm_four_quarters": 112584000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 108575000.0,
+      "ttm_four_quarters": 108575000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-06-30",
+      "annual": 5607000.0,
+      "ttm_four_quarters": 5607000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-06-30",
+      "annual": 15890000.0,
+      "ttm_four_quarters": 15890000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-06-30",
+      "annual": 17233000.0,
+      "ttm_four_quarters": 17233000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-03-31",
+      "annual": 5676000000.0,
+      "ttm_four_quarters": 5676000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-03-31",
+      "annual": 5970000000.0,
+      "ttm_four_quarters": 5970000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-03-31",
+      "annual": 6402000000.0,
+      "ttm_four_quarters": 6567000000.0,
+      "abs_err": 165000000.0,
+      "rel_err": 0.02577319587628866
+    },
+    {
+      "annual_end": "2013-03-31",
+      "annual": 6881000000.0,
+      "ttm_four_quarters": 6848000000.0,
+      "abs_err": 33000000.0,
+      "rel_err": 0.004795814561836942
+    },
+    {
+      "annual_end": "2014-03-31",
+      "annual": 8352000000.0,
+      "ttm_four_quarters": 8352000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-03-31",
+      "annual": 11411000000.0,
+      "ttm_four_quarters": 11411000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-03-31",
+      "annual": 11416000000.0,
+      "ttm_four_quarters": 11416000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-03-31",
+      "annual": 11271000000.0,
+      "ttm_four_quarters": 11271000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-03-31",
+      "annual": 11184000000.0,
+      "ttm_four_quarters": 11184000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-03-31",
+      "annual": 11754000000.0,
+      "ttm_four_quarters": 11754000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-03-31",
+      "annual": 12023000000.0,
+      "ttm_four_quarters": 12023000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-03-31",
+      "annual": 12148000000.0,
+      "ttm_four_quarters": 12148000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-09-30",
+      "annual": 124490000.0,
+      "ttm_four_quarters": 112639000.0,
+      "abs_err": 11851000.0,
+      "rel_err": 0.09519640131737489
+    },
+    {
+      "annual_end": "2018-09-30",
+      "annual": 109712000.0,
+      "ttm_four_quarters": 109712000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-09-30",
+      "annual": 113280000.0,
+      "ttm_four_quarters": 113280000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-09-30",
+      "annual": 109924000.0,
+      "ttm_four_quarters": 109924000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-09-30",
+      "annual": 149853000.0,
+      "ttm_four_quarters": 149763000.0,
+      "abs_err": 90000.0,
+      "rel_err": 0.0006005885768052691
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 15466000.0,
+      "ttm_four_quarters": 7414600.0,
+      "abs_err": 8051400.0,
+      "rel_err": 0.5205870942713048
+    },
+    {
+      "annual_end": "2009-12-31",
+      "annual": 445962000.0,
+      "ttm_four_quarters": 445962000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 300726000.0,
+      "ttm_four_quarters": 300726000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 283869000.0,
+      "ttm_four_quarters": 283869000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 334026000.0,
+      "ttm_four_quarters": 334026000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 426880000.0,
+      "ttm_four_quarters": 426880000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 587582000.0,
+      "ttm_four_quarters": 587582000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 857533000.0,
+      "ttm_four_quarters": 857533000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 988885000.0,
+      "ttm_four_quarters": 1000817000.0,
+      "abs_err": 11932000.0,
+      "rel_err": 0.012066114866743858
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 993513000.0,
+      "ttm_four_quarters": 993513000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 1100945000.0,
+      "ttm_four_quarters": 1100945000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 1255900000.0,
+      "ttm_four_quarters": 1255901000.0,
+      "abs_err": 1000.0,
+      "rel_err": 7.96241738991958e-07
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 1281500000.0,
+      "ttm_four_quarters": 1281481000.0,
+      "abs_err": 19000.0,
+      "rel_err": 1.4826375341396801e-05
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 370099000.0,
+      "ttm_four_quarters": 370099000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 470236000.0,
+      "ttm_four_quarters": 470236000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 489548000.0,
+      "ttm_four_quarters": 489548000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 496845000.0,
+      "ttm_four_quarters": 496845000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 515349000.0,
+      "ttm_four_quarters": 515349000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 501103000.0,
+      "ttm_four_quarters": 501103000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 522247000.0,
+      "ttm_four_quarters": 523643000.0,
+      "abs_err": 1396000.0,
+      "rel_err": 0.0026730646609745964
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 538891000.0,
+      "ttm_four_quarters": 538890000.0,
+      "abs_err": 1000.0,
+      "rel_err": 1.8556628334858069e-06
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 611863000.0,
+      "ttm_four_quarters": 611863000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 638629000.0,
+      "ttm_four_quarters": 636612000.0,
+      "abs_err": 2017000.0,
+      "rel_err": 0.003158328231257898
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 595492000.0,
+      "ttm_four_quarters": 595492000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 615348000.0,
+      "ttm_four_quarters": 615348000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 673831000.0,
+      "ttm_four_quarters": 673831000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 852138000.0,
+      "ttm_four_quarters": 852138000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-12-31",
+      "annual": 860445000.0,
+      "ttm_four_quarters": 860445000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-01-28",
+      "annual": 964496000.0,
+      "ttm_four_quarters": 996640000.0,
+      "abs_err": 32144000.0,
+      "rel_err": 0.03332725070917868
+    },
+    {
+      "annual_end": "2013-02-02",
+      "annual": 988575000.0,
+      "ttm_four_quarters": 988575000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-02-01",
+      "annual": 1014288000.0,
+      "ttm_four_quarters": 1014289000.0,
+      "abs_err": 1000.0,
+      "rel_err": 9.859132711813607e-07
+    },
+    {
+      "annual_end": "2015-01-31",
+      "annual": 1040100000.0,
+      "ttm_four_quarters": 1040100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-30",
+      "annual": 1047803000.0,
+      "ttm_four_quarters": 1047803000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-01-28",
+      "annual": 1061991000.0,
+      "ttm_four_quarters": 1061991000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-02-03",
+      "annual": 1168649000.0,
+      "ttm_four_quarters": 1168649000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-02-02",
+      "annual": 1156344000.0,
+      "ttm_four_quarters": 1156344000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-02-01",
+      "annual": 1184360000.0,
+      "ttm_four_quarters": 1184360000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-09-30",
+      "annual": 1085600000.0,
+      "ttm_four_quarters": 1075900000.0,
+      "abs_err": 9700000.0,
+      "rel_err": 0.00893515106853353
+    },
+    {
+      "annual_end": "2011-09-30",
+      "annual": 1009200000.0,
+      "ttm_four_quarters": 1009200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-09-30",
+      "annual": 956600000.0,
+      "ttm_four_quarters": 961300000.0,
+      "abs_err": 4700000.0,
+      "rel_err": 0.004913234371733222
+    },
+    {
+      "annual_end": "2013-09-30",
+      "annual": 978200000.0,
+      "ttm_four_quarters": 978200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-09-30",
+      "annual": 890100000.0,
+      "ttm_four_quarters": 1031400000.0,
+      "abs_err": 141300000.0,
+      "rel_err": 0.15874620829120323
+    },
+    {
+      "annual_end": "2015-09-30",
+      "annual": 810800000.0,
+      "ttm_four_quarters": 908000000.0,
+      "abs_err": 97200000.0,
+      "rel_err": 0.11988159842131228
+    },
+    {
+      "annual_end": "2016-09-30",
+      "annual": 900300000.0,
+      "ttm_four_quarters": 900200000.0,
+      "abs_err": 100000.0,
+      "rel_err": 0.00011107408641563923
+    },
+    {
+      "annual_end": "2017-09-30",
+      "annual": 972600000.0,
+      "ttm_four_quarters": 972600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-09-30",
+      "annual": 864600000.0,
+      "ttm_four_quarters": 864500000.0,
+      "abs_err": 100000.0,
+      "rel_err": 0.00011566042100393245
+    },
+    {
+      "annual_end": "2019-09-30",
+      "annual": 1019600000.0,
+      "ttm_four_quarters": 1019500000.0,
+      "abs_err": 100000.0,
+      "rel_err": 9.807767752059631e-05
+    },
+    {
+      "annual_end": "2020-09-30",
+      "annual": 1347000000.0,
+      "ttm_four_quarters": 1347100000.0,
+      "abs_err": 100000.0,
+      "rel_err": 7.423904974016333e-05
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 17489000.0,
+      "ttm_four_quarters": 17489000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 44555000.0,
+      "ttm_four_quarters": 44555000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 176228000.0,
+      "ttm_four_quarters": 176228000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 185574000.0,
+      "ttm_four_quarters": 185574000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 354305000.0,
+      "ttm_four_quarters": 354305000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 257793000.0,
+      "ttm_four_quarters": 284867000.0,
+      "abs_err": 27074000.0,
+      "rel_err": 0.10502224653113157
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 209429000.0,
+      "ttm_four_quarters": 209429000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 222845000.0,
+      "ttm_four_quarters": 222845000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 187710000.0,
+      "ttm_four_quarters": 187710000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 174417000.0,
+      "ttm_four_quarters": 174417000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 42060000.0,
+      "ttm_four_quarters": 80610000.0,
+      "abs_err": 38550000.0,
+      "rel_err": 0.9165477888730386
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 21440000.0,
+      "ttm_four_quarters": 21440000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 43189000.0,
+      "ttm_four_quarters": 43189000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 70926000.0,
+      "ttm_four_quarters": 70801000.0,
+      "abs_err": 125000.0,
+      "rel_err": 0.0017624002481459549
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 108482000.0,
+      "ttm_four_quarters": 108482000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 162067000.0,
+      "ttm_four_quarters": 162067000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 194889000.0,
+      "ttm_four_quarters": 194889000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 450271000.0,
+      "ttm_four_quarters": 450271000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 543050000.0,
+      "ttm_four_quarters": 543050000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 435742000.0,
+      "ttm_four_quarters": 435742000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 417603000.0,
+      "ttm_four_quarters": 417603000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 375415000.0,
+      "ttm_four_quarters": 447109000.0,
+      "abs_err": 71694000.0,
+      "rel_err": 0.19097265692633486
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 469216000.0,
+      "ttm_four_quarters": 469216000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 571863000.0,
+      "ttm_four_quarters": 571863000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 526500000.0,
+      "ttm_four_quarters": 526500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 541800000.0,
+      "ttm_four_quarters": 541800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 553100000.0,
+      "ttm_four_quarters": 553100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 565600000.0,
+      "ttm_four_quarters": 565600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 602400000.0,
+      "ttm_four_quarters": 602400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 656500000.0,
+      "ttm_four_quarters": 656500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 677500000.0,
+      "ttm_four_quarters": 677500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 625400000.0,
+      "ttm_four_quarters": 625400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 77627000.0,
+      "ttm_four_quarters": 77627000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 113775000.0,
+      "ttm_four_quarters": 116900000.0,
+      "abs_err": 3125000.0,
+      "rel_err": 0.027466490881125027
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 129012000.0,
+      "ttm_four_quarters": 130389000.0,
+      "abs_err": 1377000.0,
+      "rel_err": 0.01067342572783927
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 159818000.0,
+      "ttm_four_quarters": 159818000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 203751000.0,
+      "ttm_four_quarters": 203751000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 218279000.0,
+      "ttm_four_quarters": 218279000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 270795000.0,
+      "ttm_four_quarters": 270795000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 268452000.0,
+      "ttm_four_quarters": 268452000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 270435000.0,
+      "ttm_four_quarters": 270435000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 269323000.0,
+      "ttm_four_quarters": 269323000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 276275000.0,
+      "ttm_four_quarters": 276275000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-09-30",
+      "annual": 5898000.0,
+      "ttm_four_quarters": 5898000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-09-30",
+      "annual": 5597000.0,
+      "ttm_four_quarters": 5597000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-09-30",
+      "annual": 7499000.0,
+      "ttm_four_quarters": 7498000.0,
+      "abs_err": 1000.0,
+      "rel_err": 0.00013335111348179759
+    },
+    {
+      "annual_end": "2015-09-30",
+      "annual": 11688000.0,
+      "ttm_four_quarters": 11688000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-09-30",
+      "annual": 17826000.0,
+      "ttm_four_quarters": 17826000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-09-30",
+      "annual": 25850000.0,
+      "ttm_four_quarters": 25850000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 483400000.0,
+      "ttm_four_quarters": 1381000000.0,
+      "abs_err": 897600000.0,
+      "rel_err": 1.856847331402565
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 426200000.0,
+      "ttm_four_quarters": 426200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-01-02",
+      "annual": 562801000.0,
+      "ttm_four_quarters": 562801000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-01-01",
+      "annual": 585616000.0,
+      "ttm_four_quarters": 585616000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 639063000.0,
+      "ttm_four_quarters": 639063000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-29",
+      "annual": 689227000.0,
+      "ttm_four_quarters": 689227000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-28",
+      "annual": 715292000.0,
+      "ttm_four_quarters": 715292000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-03",
+      "annual": 784200000.0,
+      "ttm_four_quarters": 784200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-02",
+      "annual": 847398000.0,
+      "ttm_four_quarters": 847398000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2009-12-31",
+      "annual": 13668000000.0,
+      "ttm_four_quarters": 13668000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 14207000000.0,
+      "ttm_four_quarters": 14207000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 15646000000.0,
+      "ttm_four_quarters": 15646000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 13011000000.0,
+      "ttm_four_quarters": 13011000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 11766000000.0,
+      "ttm_four_quarters": 11766000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 11947000000.0,
+      "ttm_four_quarters": 11947000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 12651000000.0,
+      "ttm_four_quarters": 12651000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 14481000000.0,
+      "ttm_four_quarters": 14481000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 14682000000.0,
+      "ttm_four_quarters": 14682000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 16094000000.0,
+      "ttm_four_quarters": 16094000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 18067000000.0,
+      "ttm_four_quarters": 18067000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 30745000000.0,
+      "ttm_four_quarters": 30745000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 537100000.0,
+      "ttm_four_quarters": 533400000.0,
+      "abs_err": 3700000.0,
+      "rel_err": 0.006888847514429343
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 547900000.0,
+      "ttm_four_quarters": 547900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 529900000.0,
+      "ttm_four_quarters": 529900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 478400000.0,
+      "ttm_four_quarters": 478400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 514900000.0,
+      "ttm_four_quarters": 515100000.0,
+      "abs_err": 200000.0,
+      "rel_err": 0.0003884249368809478
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 657300000.0,
+      "ttm_four_quarters": 657300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 627800000.0,
+      "ttm_four_quarters": 627800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 633500000.0,
+      "ttm_four_quarters": 633500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 492400000.0,
+      "ttm_four_quarters": 492400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 693523000.0,
+      "ttm_four_quarters": 693523000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 733949000.0,
+      "ttm_four_quarters": 733949000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 803979000.0,
+      "ttm_four_quarters": 806354000.0,
+      "abs_err": 2375000.0,
+      "rel_err": 0.0029540572577144426
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 821646000.0,
+      "ttm_four_quarters": 821646000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 907246000.0,
+      "ttm_four_quarters": 907246000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 944479000.0,
+      "ttm_four_quarters": 944479000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 1037862000.0,
+      "ttm_four_quarters": 1037862000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 1147012000.0,
+      "ttm_four_quarters": 1147012000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 1205453000.0,
+      "ttm_four_quarters": 1205453000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 1355868000.0,
+      "ttm_four_quarters": 1355868000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 1395382000.0,
+      "ttm_four_quarters": 1395382000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 79215000.0,
+      "ttm_four_quarters": 79212000.0,
+      "abs_err": 3000.0,
+      "rel_err": 3.787161522438932e-05
+    },
+    {
+      "annual_end": "2012-12-29",
+      "annual": 80572000.0,
+      "ttm_four_quarters": 80572000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-28",
+      "annual": 82961000.0,
+      "ttm_four_quarters": 82961000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-27",
+      "annual": 93892000.0,
+      "ttm_four_quarters": 93892000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-02",
+      "annual": 77093000.0,
+      "ttm_four_quarters": 77092000.0,
+      "abs_err": 1000.0,
+      "rel_err": 1.2971346296032065e-05
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 71349000.0,
+      "ttm_four_quarters": 71349000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-30",
+      "annual": 136525000.0,
+      "ttm_four_quarters": 136525000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-29",
+      "annual": 192683000.0,
+      "ttm_four_quarters": 192683000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-28",
+      "annual": 212282000.0,
+      "ttm_four_quarters": 212282000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-01-02",
+      "annual": 196200000.0,
+      "ttm_four_quarters": 196228000.0,
+      "abs_err": 28000.0,
+      "rel_err": 0.00014271151885830784
+    },
+    {
+      "annual_end": "2011-08-27",
+      "annual": 39754000.0,
+      "ttm_four_quarters": 39754000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-08-25",
+      "annual": 43680000.0,
+      "ttm_four_quarters": 43680000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-08-31",
+      "annual": 84631000.0,
+      "ttm_four_quarters": 84631000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-08-30",
+      "annual": 103997000.0,
+      "ttm_four_quarters": 103997000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-08-29",
+      "annual": 104880000.0,
+      "ttm_four_quarters": 104880000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-08-27",
+      "annual": 112649000.0,
+      "ttm_four_quarters": 112649000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-08-26",
+      "annual": 222577000.0,
+      "ttm_four_quarters": 222577000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-08-25",
+      "annual": 299836000.0,
+      "ttm_four_quarters": 299836000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-08-31",
+      "annual": 307197000.0,
+      "ttm_four_quarters": 307197000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-08-29",
+      "annual": 312928000.0,
+      "ttm_four_quarters": 312928000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2009-12-31",
+      "annual": 1030000000.0,
+      "ttm_four_quarters": 988000000.0,
+      "abs_err": 42000000.0,
+      "rel_err": 0.040776699029126215
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 1026000000.0,
+      "ttm_four_quarters": 1033000000.0,
+      "abs_err": 7000000.0,
+      "rel_err": 0.00682261208576998
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 11644910.0,
+      "ttm_four_quarters": 11644910.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 19277075.0,
+      "ttm_four_quarters": 19277075.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 23302000.0,
+      "ttm_four_quarters": 23302206.0,
+      "abs_err": 206.0,
+      "rel_err": 8.840442880439446e-06
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 26511000.0,
+      "ttm_four_quarters": 26511000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 25324000.0,
+      "ttm_four_quarters": 25325000.0,
+      "abs_err": 1000.0,
+      "rel_err": 3.9488232506713e-05
+    },
+    {
+      "annual_end": "2014-01-31",
+      "annual": 32802000.0,
+      "ttm_four_quarters": 32802000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-31",
+      "annual": 47973000.0,
+      "ttm_four_quarters": 47973000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-31",
+      "annual": 72598000.0,
+      "ttm_four_quarters": 72598000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-01-31",
+      "annual": 106355000.0,
+      "ttm_four_quarters": 106355000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-01-31",
+      "annual": 134916000.0,
+      "ttm_four_quarters": 134916000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-01-31",
+      "annual": 181193000.0,
+      "ttm_four_quarters": 181193000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-01-31",
+      "annual": 325909000.0,
+      "ttm_four_quarters": 325909000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-01-31",
+      "annual": 424765000.0,
+      "ttm_four_quarters": 424765000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-01-31",
+      "annual": 491935000.0,
+      "ttm_four_quarters": 491935000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-01-31",
+      "annual": 622637000.0,
+      "ttm_four_quarters": 622637000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 2813804.0,
+      "ttm_four_quarters": 2813804.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 3054259.0,
+      "ttm_four_quarters": 3054259.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 3060606.0,
+      "ttm_four_quarters": 3060605.0,
+      "abs_err": 1.0,
+      "rel_err": 3.2673267973728076e-07
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 4449037.0,
+      "ttm_four_quarters": 4449036.0,
+      "abs_err": 1.0,
+      "rel_err": 2.2476774187312895e-07
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 6250902.0,
+      "ttm_four_quarters": 6250903.0,
+      "abs_err": 1.0,
+      "rel_err": 1.599769121320411e-07
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 5420695.0,
+      "ttm_four_quarters": 5420695.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2009-12-31",
+      "annual": 3995200000.0,
+      "ttm_four_quarters": 3995200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 4316200000.0,
+      "ttm_four_quarters": 4316200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 4581900000.0,
+      "ttm_four_quarters": 4581800000.0,
+      "abs_err": 100000.0,
+      "rel_err": 2.1825007093127306e-05
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 4971000000.0,
+      "ttm_four_quarters": 4970900000.0,
+      "abs_err": 100000.0,
+      "rel_err": 2.0116676725005028e-05
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 6074500000.0,
+      "ttm_four_quarters": 6074600000.0,
+      "abs_err": 100000.0,
+      "rel_err": 1.646226026833484e-05
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 8532300000.0,
+      "ttm_four_quarters": 8532300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 9523400000.0,
+      "ttm_four_quarters": 9523500000.0,
+      "abs_err": 100000.0,
+      "rel_err": 1.0500451519415335e-05
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 9970100000.0,
+      "ttm_four_quarters": 9970100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 10643900000.0,
+      "ttm_four_quarters": 10643900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 11636600000.0,
+      "ttm_four_quarters": 11636600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 12422500000.0,
+      "ttm_four_quarters": 12422500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 11639400000.0,
+      "ttm_four_quarters": 11639400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-01-01",
+      "annual": 286677000.0,
+      "ttm_four_quarters": 286677000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-28",
+      "annual": 550011000.0,
+      "ttm_four_quarters": 550011000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-03",
+      "annual": 640585000.0,
+      "ttm_four_quarters": 640585000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-02",
+      "annual": 706505000.0,
+      "ttm_four_quarters": 706505000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 901180000.0,
+      "ttm_four_quarters": 901180000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-30",
+      "annual": 912741000.0,
+      "ttm_four_quarters": 912741000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-29",
+      "annual": 1004140000.0,
+      "ttm_four_quarters": 1004140000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-28",
+      "annual": 1103497000.0,
+      "ttm_four_quarters": 1103497000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-01-02",
+      "annual": 882048000.0,
+      "ttm_four_quarters": 882048000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-12-28",
+      "annual": 1251819000.0,
+      "ttm_four_quarters": 1251819000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 98410000.0,
+      "ttm_four_quarters": 98410000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 92269000.0,
+      "ttm_four_quarters": 92269000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 115939000.0,
+      "ttm_four_quarters": 115939000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 121591000.0,
+      "ttm_four_quarters": 121591000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 133653000.0,
+      "ttm_four_quarters": 133652000.0,
+      "abs_err": 1000.0,
+      "rel_err": 7.482061756937741e-06
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 90356000.0,
+      "ttm_four_quarters": 90355000.0,
+      "abs_err": 1000.0,
+      "rel_err": 1.106733365797512e-05
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 105261000.0,
+      "ttm_four_quarters": 105261000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 113468000.0,
+      "ttm_four_quarters": 117159000.0,
+      "abs_err": 3691000.0,
+      "rel_err": 0.032528994958931155
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 120938000.0,
+      "ttm_four_quarters": 120938000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 95006000.0,
+      "ttm_four_quarters": 95006000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 23241000.0,
+      "ttm_four_quarters": 23241000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 23892000.0,
+      "ttm_four_quarters": 24355000.0,
+      "abs_err": 463000.0,
+      "rel_err": 0.019378871588816342
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 24355000.0,
+      "ttm_four_quarters": 24809000.0,
+      "abs_err": 454000.0,
+      "rel_err": 0.01864093615274071
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 24810000.0,
+      "ttm_four_quarters": 24809000.0,
+      "abs_err": 1000.0,
+      "rel_err": 4.030632809351068e-05
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 26573000.0,
+      "ttm_four_quarters": 26573000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 27331000.0,
+      "ttm_four_quarters": 27331000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 27076000.0,
+      "ttm_four_quarters": 27076000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 26920000.0,
+      "ttm_four_quarters": 26920000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 29967000.0,
+      "ttm_four_quarters": 29967000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 33040000.0,
+      "ttm_four_quarters": 33040000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 45716000.0,
+      "ttm_four_quarters": 45716000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 524028000.0,
+      "ttm_four_quarters": 524029000.0,
+      "abs_err": 1000.0,
+      "rel_err": 1.908294976604304e-06
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 652190000.0,
+      "ttm_four_quarters": 652190000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 786826000.0,
+      "ttm_four_quarters": 786826000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 975817000.0,
+      "ttm_four_quarters": 975817000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 1331200000.0,
+      "ttm_four_quarters": 1331200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2008-12-31",
+      "annual": 2116300000.0,
+      "ttm_four_quarters": 2116300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2009-12-31",
+      "annual": 1867400000.0,
+      "ttm_four_quarters": 1867400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 2367200000.0,
+      "ttm_four_quarters": 2367200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-03-31",
+      "annual": 2415474.0,
+      "ttm_four_quarters": 2415474.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-03-31",
+      "annual": 2109000.0,
+      "ttm_four_quarters": 2108477.0,
+      "abs_err": 523.0,
+      "rel_err": 0.00024798482693219533
+    },
+    {
+      "annual_end": "2016-03-31",
+      "annual": 75000.0,
+      "ttm_four_quarters": 75000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-03-31",
+      "annual": -2262000.0,
+      "ttm_four_quarters": -2264000.0,
+      "abs_err": 2000.0,
+      "rel_err": 0.0008841732979664014
+    },
+    {
+      "annual_end": "2018-03-31",
+      "annual": -1543000.0,
+      "ttm_four_quarters": -1543000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 6968526.0,
+      "ttm_four_quarters": 6969000.0,
+      "abs_err": 474.0,
+      "rel_err": 6.802012362442216e-05
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 7273932.0,
+      "ttm_four_quarters": 7274000.0,
+      "abs_err": 68.0,
+      "rel_err": 9.348451429020783e-06
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 7683475.0,
+      "ttm_four_quarters": 7683000.0,
+      "abs_err": 475.0,
+      "rel_err": 6.182098594711377e-05
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 9016606.0,
+      "ttm_four_quarters": 9017000.0,
+      "abs_err": 394.0,
+      "rel_err": 4.369715167769336e-05
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 10846761.0,
+      "ttm_four_quarters": 10846638.0,
+      "abs_err": 123.0,
+      "rel_err": 1.1339790744905323e-05
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 40259000.0,
+      "ttm_four_quarters": 40259000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 39763000.0,
+      "ttm_four_quarters": 39763000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 52558000.0,
+      "ttm_four_quarters": 52558000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 68737000.0,
+      "ttm_four_quarters": 68737000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 71433000.0,
+      "ttm_four_quarters": 71433000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 86982000.0,
+      "ttm_four_quarters": 86982000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 96352000.0,
+      "ttm_four_quarters": 96352000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 121697000.0,
+      "ttm_four_quarters": 121697000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 128929000.0,
+      "ttm_four_quarters": 128929000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-31",
+      "annual": 21340000000.0,
+      "ttm_four_quarters": 21339000000.0,
+      "abs_err": 1000000.0,
+      "rel_err": 4.6860356138706655e-05
+    },
+    {
+      "annual_end": "2016-01-30",
+      "annual": 21544000000.0,
+      "ttm_four_quarters": 21789000000.0,
+      "abs_err": 245000000.0,
+      "rel_err": 0.011372075751949498
+    },
+    {
+      "annual_end": "2017-01-28",
+      "annual": 20350000000.0,
+      "ttm_four_quarters": 20350000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-02-03",
+      "annual": 20754000000.0,
+      "ttm_four_quarters": 20754000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 502938000.0,
+      "ttm_four_quarters": 502938000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 678995000.0,
+      "ttm_four_quarters": 678995000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 632154000.0,
+      "ttm_four_quarters": 632154000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 736483000.0,
+      "ttm_four_quarters": 736483000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-03-31",
+      "annual": 878108000.0,
+      "ttm_four_quarters": 878108000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-03-31",
+      "annual": 846668000.0,
+      "ttm_four_quarters": 846668000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-03-31",
+      "annual": 835235000.0,
+      "ttm_four_quarters": 835235000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-03-31",
+      "annual": 931642000.0,
+      "ttm_four_quarters": 931642000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-03-31",
+      "annual": 1040250000.0,
+      "ttm_four_quarters": 1040250000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-03-31",
+      "annual": 1103673000.0,
+      "ttm_four_quarters": 1103673000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-03-31",
+      "annual": 1374090000.0,
+      "ttm_four_quarters": 1374090000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-03-31",
+      "annual": 1607551000.0,
+      "ttm_four_quarters": 1607551000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-03-31",
+      "annual": 1825370000.0,
+      "ttm_four_quarters": 1825370000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-03-31",
+      "annual": 2385488000.0,
+      "ttm_four_quarters": 2385488000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2009-12-31",
+      "annual": 1970900000.0,
+      "ttm_four_quarters": 1970900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 2097800000.0,
+      "ttm_four_quarters": 2097800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 2274700000.0,
+      "ttm_four_quarters": 2274700000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 2249700000.0,
+      "ttm_four_quarters": 2249700000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 2223200000.0,
+      "ttm_four_quarters": 2223200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 2903300000.0,
+      "ttm_four_quarters": 2903300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 2854000000.0,
+      "ttm_four_quarters": 3180500000.0,
+      "abs_err": 326500000.0,
+      "rel_err": 0.11440084092501752
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 3091800000.0,
+      "ttm_four_quarters": 3091800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 3176400000.0,
+      "ttm_four_quarters": 3176400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 3252500000.0,
+      "ttm_four_quarters": 3252500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 61555000.0,
+      "ttm_four_quarters": 84823000.0,
+      "abs_err": 23268000.0,
+      "rel_err": 0.37800341158313705
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 84823000.0,
+      "ttm_four_quarters": 84823000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 109171000.0,
+      "ttm_four_quarters": 109171000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 134859000.0,
+      "ttm_four_quarters": 134859000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 113194000.0,
+      "ttm_four_quarters": 113194000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 111537000.0,
+      "ttm_four_quarters": 111537000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 114099000.0,
+      "ttm_four_quarters": 114099000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-09-30",
+      "annual": 353969000.0,
+      "ttm_four_quarters": 353969000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-09-30",
+      "annual": 297777000.0,
+      "ttm_four_quarters": 297777000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-09-30",
+      "annual": 353128000.0,
+      "ttm_four_quarters": 353128000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-09-30",
+      "annual": 406424000.0,
+      "ttm_four_quarters": 406424000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-09-30",
+      "annual": 470703000.0,
+      "ttm_four_quarters": 470703000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-09-30",
+      "annual": 392497000.0,
+      "ttm_four_quarters": 392497000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-09-30",
+      "annual": 408499000.0,
+      "ttm_four_quarters": 408499000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-09-30",
+      "annual": 463342000.0,
+      "ttm_four_quarters": 463342000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-09-30",
+      "annual": 487706000.0,
+      "ttm_four_quarters": 487706000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-09-30",
+      "annual": 475020000.0,
+      "ttm_four_quarters": 475020000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-09-30",
+      "annual": 477654000.0,
+      "ttm_four_quarters": 477654000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-09-30",
+      "annual": 484230000.0,
+      "ttm_four_quarters": 484230000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-09-30",
+      "annual": 470751000.0,
+      "ttm_four_quarters": 470751000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-09-30",
+      "annual": 501824000.0,
+      "ttm_four_quarters": 501824000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2025-09-30",
+      "annual": 562866000.0,
+      "ttm_four_quarters": 562866000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 109688000.0,
+      "ttm_four_quarters": 109688000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 140052000.0,
+      "ttm_four_quarters": 140052000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 188293000.0,
+      "ttm_four_quarters": 188293000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 252448000.0,
+      "ttm_four_quarters": 252448000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 324026000.0,
+      "ttm_four_quarters": 324026000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 371591000.0,
+      "ttm_four_quarters": 371591000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 434820000.0,
+      "ttm_four_quarters": 434820000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-09-30",
+      "annual": 119494000.0,
+      "ttm_four_quarters": 119494000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-09-30",
+      "annual": 133283000.0,
+      "ttm_four_quarters": 133283000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-09-30",
+      "annual": 150853000.0,
+      "ttm_four_quarters": 150853000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-09-30",
+      "annual": 161820000.0,
+      "ttm_four_quarters": 161818000.0,
+      "abs_err": 2000.0,
+      "rel_err": 1.235941169200346e-05
+    },
+    {
+      "annual_end": "2015-09-30",
+      "annual": 184767000.0,
+      "ttm_four_quarters": 184767000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-09-30",
+      "annual": 226028000.0,
+      "ttm_four_quarters": 226028000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-09-30",
+      "annual": 265315000.0,
+      "ttm_four_quarters": 265315000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-09-30",
+      "annual": 298233000.0,
+      "ttm_four_quarters": 298233000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-09-30",
+      "annual": 322832000.0,
+      "ttm_four_quarters": 322832000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-09-30",
+      "annual": 398713000.0,
+      "ttm_four_quarters": 398713000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 201100000.0,
+      "ttm_four_quarters": 273800000.0,
+      "abs_err": 72700000.0,
+      "rel_err": 0.3615116857284933
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 14700000.0,
+      "ttm_four_quarters": 46200000.0,
+      "abs_err": 31500000.0,
+      "rel_err": 2.142857142857143
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 27900000.0,
+      "ttm_four_quarters": 27900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 80300000.0,
+      "ttm_four_quarters": 67800000.0,
+      "abs_err": 12500000.0,
+      "rel_err": 0.15566625155666253
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 126600000.0,
+      "ttm_four_quarters": 126600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 22600000.0,
+      "ttm_four_quarters": 22600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 15600000.0,
+      "ttm_four_quarters": 15600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-01-31",
+      "annual": 269516000.0,
+      "ttm_four_quarters": 269516000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-01-31",
+      "annual": 507262000.0,
+      "ttm_four_quarters": 507262000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-01-31",
+      "annual": 1829379000.0,
+      "ttm_four_quarters": 1829379000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 751000000.0,
+      "ttm_four_quarters": 751000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-12-31",
+      "annual": 867800000.0,
+      "ttm_four_quarters": 867800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 123068000.0,
+      "ttm_four_quarters": 123068000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 161125000.0,
+      "ttm_four_quarters": 161125000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 171347000.0,
+      "ttm_four_quarters": 171347000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 114496000.0,
+      "ttm_four_quarters": 114496000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 111902000.0,
+      "ttm_four_quarters": 111902000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 128288000.0,
+      "ttm_four_quarters": 128288000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 147392000.0,
+      "ttm_four_quarters": 147392000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 182631000.0,
+      "ttm_four_quarters": 182631000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 177354000.0,
+      "ttm_four_quarters": 177354000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 172590000.0,
+      "ttm_four_quarters": 172590000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-09-24",
+      "annual": 493919000.0,
+      "ttm_four_quarters": 493919000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-09-29",
+      "annual": 514158000.0,
+      "ttm_four_quarters": 514158000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-09-28",
+      "annual": 463902000.0,
+      "ttm_four_quarters": 463902000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-09-27",
+      "annual": 454024000.0,
+      "ttm_four_quarters": 454024000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-09-26",
+      "annual": 488052000.0,
+      "ttm_four_quarters": 488052000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-09-24",
+      "annual": 553050000.0,
+      "ttm_four_quarters": 632808000.0,
+      "abs_err": 79758000.0,
+      "rel_err": 0.1442148087876322
+    },
+    {
+      "annual_end": "2017-09-30",
+      "annual": 632808000.0,
+      "ttm_four_quarters": 675376000.0,
+      "abs_err": 42568000.0,
+      "rel_err": 0.06726842897055663
+    },
+    {
+      "annual_end": "2018-09-29",
+      "annual": 675376000.0,
+      "ttm_four_quarters": 675376000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-09-28",
+      "annual": 704041000.0,
+      "ttm_four_quarters": 704041000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-09-26",
+      "annual": 796558000.0,
+      "ttm_four_quarters": 796558000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 114600000.0,
+      "ttm_four_quarters": 114700000.0,
+      "abs_err": 100000.0,
+      "rel_err": 0.0008726003490401396
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 177688000.0,
+      "ttm_four_quarters": 187828000.0,
+      "abs_err": 10140000.0,
+      "rel_err": 0.057066318490837875
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 321254000.0,
+      "ttm_four_quarters": 355893000.0,
+      "abs_err": 34639000.0,
+      "rel_err": 0.1078243383739969
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 454875000.0,
+      "ttm_four_quarters": 454875000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 557435000.0,
+      "ttm_four_quarters": 557435000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 678745000.0,
+      "ttm_four_quarters": 678745000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 795183000.0,
+      "ttm_four_quarters": 795183000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 850100000.0,
+      "ttm_four_quarters": 850073000.0,
+      "abs_err": 27000.0,
+      "rel_err": 3.176096929772968e-05
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 1023700000.0,
+      "ttm_four_quarters": 1023700000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 971500000.0,
+      "ttm_four_quarters": 1130000000.0,
+      "abs_err": 158500000.0,
+      "rel_err": 0.1631497683993824
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 947200000.0,
+      "ttm_four_quarters": 947200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 1142400000.0,
+      "ttm_four_quarters": 1142400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 155400000.0,
+      "ttm_four_quarters": 155400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 189800000.0,
+      "ttm_four_quarters": 189800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 176000000.0,
+      "ttm_four_quarters": 205100000.0,
+      "abs_err": 29100000.0,
+      "rel_err": 0.1653409090909091
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 208700000.0,
+      "ttm_four_quarters": 208700000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 225600000.0,
+      "ttm_four_quarters": 225600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 183400000.0,
+      "ttm_four_quarters": 183100000.0,
+      "abs_err": 300000.0,
+      "rel_err": 0.0016357688113413304
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 221200000.0,
+      "ttm_four_quarters": 221200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 282100000.0,
+      "ttm_four_quarters": 282100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 322800000.0,
+      "ttm_four_quarters": 322800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 10221802.0,
+      "ttm_four_quarters": 10222000.0,
+      "abs_err": 198.0,
+      "rel_err": 1.9370361507687198e-05
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 14137956.0,
+      "ttm_four_quarters": 14138535.0,
+      "abs_err": 579.0,
+      "rel_err": 4.095358621854531e-05
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 158400000.0,
+      "ttm_four_quarters": 158400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 75400000.0,
+      "ttm_four_quarters": 84200000.0,
+      "abs_err": 8800000.0,
+      "rel_err": 0.11671087533156499
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 129400000.0,
+      "ttm_four_quarters": 129400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 68900000.0,
+      "ttm_four_quarters": 68900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 45100000.0,
+      "ttm_four_quarters": 45100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 30200000.0,
+      "ttm_four_quarters": 30200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": -17900000.0,
+      "ttm_four_quarters": -17900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 32500000.0,
+      "ttm_four_quarters": 32500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 97600000.0,
+      "ttm_four_quarters": 97600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 36205000.0,
+      "ttm_four_quarters": 36205000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 39558000.0,
+      "ttm_four_quarters": 39558000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 141108000.0,
+      "ttm_four_quarters": 141108000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 218199000.0,
+      "ttm_four_quarters": 218199000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 396418000.0,
+      "ttm_four_quarters": 396418000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 452617000.0,
+      "ttm_four_quarters": 452617000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 488709000.0,
+      "ttm_four_quarters": 488709000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 531212000.0,
+      "ttm_four_quarters": 531212000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 19197000.0,
+      "ttm_four_quarters": 19197000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 68091000.0,
+      "ttm_four_quarters": 68091000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 196709000.0,
+      "ttm_four_quarters": 196709000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 507000000.0,
+      "ttm_four_quarters": 506414000.0,
+      "abs_err": 586000.0,
+      "rel_err": 0.0011558185404339251
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 794000000.0,
+      "ttm_four_quarters": 793864000.0,
+      "abs_err": 136000.0,
+      "rel_err": 0.0001712846347607053
+    },
+    {
+      "annual_end": "2011-08-31",
+      "annual": 139531000.0,
+      "ttm_four_quarters": 139531000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-08-31",
+      "annual": 206373000.0,
+      "ttm_four_quarters": 206373000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-08-31",
+      "annual": 322220000.0,
+      "ttm_four_quarters": 322220000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-08-31",
+      "annual": 537353000.0,
+      "ttm_four_quarters": 537353000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-08-31",
+      "annual": 421299000.0,
+      "ttm_four_quarters": 421299000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-08-31",
+      "annual": 409055000.0,
+      "ttm_four_quarters": 409055000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-08-31",
+      "annual": 366486000.0,
+      "ttm_four_quarters": 366486000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-08-31",
+      "annual": 353100000.0,
+      "ttm_four_quarters": 353131000.0,
+      "abs_err": 31000.0,
+      "rel_err": 8.779382611158312e-05
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 3319000000.0,
+      "ttm_four_quarters": 3319000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 3324000000.0,
+      "ttm_four_quarters": 3324000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 4052000000.0,
+      "ttm_four_quarters": 4052000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 3653000000.0,
+      "ttm_four_quarters": 3653000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 3763000000.0,
+      "ttm_four_quarters": 3746000000.0,
+      "abs_err": 17000000.0,
+      "rel_err": 0.00451767207015679
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 4020000000.0,
+      "ttm_four_quarters": 4020000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 4461000000.0,
+      "ttm_four_quarters": 4461000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 808801000.0,
+      "ttm_four_quarters": 808801000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 878808000.0,
+      "ttm_four_quarters": 878807000.0,
+      "abs_err": 1000.0,
+      "rel_err": 1.1379049803825182e-06
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 915643000.0,
+      "ttm_four_quarters": 915643000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 958608000.0,
+      "ttm_four_quarters": 959567000.0,
+      "abs_err": 959000.0,
+      "rel_err": 0.0010004089262764342
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 1221453000.0,
+      "ttm_four_quarters": 1221453000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 1220394000.0,
+      "ttm_four_quarters": 1220394000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 1785741000.0,
+      "ttm_four_quarters": 1785740000.0,
+      "abs_err": 1000.0,
+      "rel_err": 5.59991622525327e-07
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 1536000.0,
+      "ttm_four_quarters": 1536000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 584000.0,
+      "ttm_four_quarters": 584000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 5085000.0,
+      "ttm_four_quarters": 5085000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 3678000.0,
+      "ttm_four_quarters": 3678000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 60502000.0,
+      "ttm_four_quarters": 60502000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 78816000.0,
+      "ttm_four_quarters": 78816000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 105068000.0,
+      "ttm_four_quarters": 105068000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 127021000.0,
+      "ttm_four_quarters": 127021000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 147624000.0,
+      "ttm_four_quarters": 147624000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 178484000.0,
+      "ttm_four_quarters": 178484000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 212879000.0,
+      "ttm_four_quarters": 212879000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 261417000.0,
+      "ttm_four_quarters": 261417000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-25",
+      "annual": 1346374000.0,
+      "ttm_four_quarters": 1346374000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 1338592000.0,
+      "ttm_four_quarters": 1338592000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-29",
+      "annual": 1438480000.0,
+      "ttm_four_quarters": 1438480000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-28",
+      "annual": 1407300000.0,
+      "ttm_four_quarters": 1407300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-27",
+      "annual": 1604412000.0,
+      "ttm_four_quarters": 1604413000.0,
+      "abs_err": 1000.0,
+      "rel_err": 6.232813018102582e-07
+    },
+    {
+      "annual_end": "2015-12-26",
+      "annual": 1538704000.0,
+      "ttm_four_quarters": 1538705000.0,
+      "abs_err": 1000.0,
+      "rel_err": 6.49897576142e-07
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 1688525000.0,
+      "ttm_four_quarters": 1679570000.0,
+      "abs_err": 8955000.0,
+      "rel_err": 0.005303445314697739
+    },
+    {
+      "annual_end": "2017-12-30",
+      "annual": 1797941000.0,
+      "ttm_four_quarters": 1797941000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-29",
+      "annual": 1979719000.0,
+      "ttm_four_quarters": 1979718000.0,
+      "abs_err": 1000.0,
+      "rel_err": 5.051221915837551e-07
+    },
+    {
+      "annual_end": "2019-12-28",
+      "annual": 2233976000.0,
+      "ttm_four_quarters": 2233977000.0,
+      "abs_err": 1000.0,
+      "rel_err": 4.4763238280088956e-07
+    },
+    {
+      "annual_end": "2020-12-26",
+      "annual": 2481336000.0,
+      "ttm_four_quarters": 2481336000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-03-31",
+      "annual": 192548000.0,
+      "ttm_four_quarters": 193970000.0,
+      "abs_err": 1422000.0,
+      "rel_err": 0.007385171489706463
+    },
+    {
+      "annual_end": "2015-03-31",
+      "annual": 205113000.0,
+      "ttm_four_quarters": 205113000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-03-31",
+      "annual": 285352000.0,
+      "ttm_four_quarters": 285352000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-03-31",
+      "annual": 295810000.0,
+      "ttm_four_quarters": 295810000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-03-31",
+      "annual": 302481000.0,
+      "ttm_four_quarters": 302481000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-03-31",
+      "annual": 326967000.0,
+      "ttm_four_quarters": 326967000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-03-31",
+      "annual": 316479000.0,
+      "ttm_four_quarters": 316479000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 108112000.0,
+      "ttm_four_quarters": 108111000.0,
+      "abs_err": 1000.0,
+      "rel_err": 9.249667011987568e-06
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 99565000.0,
+      "ttm_four_quarters": 99566000.0,
+      "abs_err": 1000.0,
+      "rel_err": 1.0043690051725003e-05
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 99871000.0,
+      "ttm_four_quarters": 99869000.0,
+      "abs_err": 2000.0,
+      "rel_err": 2.0025833324989236e-05
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 125642000.0,
+      "ttm_four_quarters": 127766000.0,
+      "abs_err": 2124000.0,
+      "rel_err": 0.01690517502109167
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 143540000.0,
+      "ttm_four_quarters": 143540000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 130657000.0,
+      "ttm_four_quarters": 130659000.0,
+      "abs_err": 2000.0,
+      "rel_err": 1.530725487344727e-05
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 134514000.0,
+      "ttm_four_quarters": 134514000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 146523000.0,
+      "ttm_four_quarters": 147467000.0,
+      "abs_err": 944000.0,
+      "rel_err": 0.006442674528913549
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 167838000.0,
+      "ttm_four_quarters": 171522000.0,
+      "abs_err": 3684000.0,
+      "rel_err": 0.021949737246630678
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 148059000.0,
+      "ttm_four_quarters": 148059000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 142935000.0,
+      "ttm_four_quarters": 142935000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 148570000.0,
+      "ttm_four_quarters": 148570000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 157715000.0,
+      "ttm_four_quarters": 157715000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-01-31",
+      "annual": 50135000.0,
+      "ttm_four_quarters": 50135000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-01-31",
+      "annual": 78848000.0,
+      "ttm_four_quarters": 78848000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-31",
+      "annual": 83603000.0,
+      "ttm_four_quarters": 83603000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-31",
+      "annual": 99465000.0,
+      "ttm_four_quarters": 99465000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-01-31",
+      "annual": 146711000.0,
+      "ttm_four_quarters": 146711000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-01-31",
+      "annual": 149325000.0,
+      "ttm_four_quarters": 149325000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-01-31",
+      "annual": 82438000.0,
+      "ttm_four_quarters": 82438000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-01-31",
+      "annual": -6820000.0,
+      "ttm_four_quarters": -6820000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 100129000.0,
+      "ttm_four_quarters": 100129000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-29",
+      "annual": 67978000.0,
+      "ttm_four_quarters": 67978000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-28",
+      "annual": 63388000.0,
+      "ttm_four_quarters": 63388000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-27",
+      "annual": 105972000.0,
+      "ttm_four_quarters": 105972000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-26",
+      "annual": 89038000.0,
+      "ttm_four_quarters": 89038000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 94828000.0,
+      "ttm_four_quarters": 94828000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-30",
+      "annual": 140718000.0,
+      "ttm_four_quarters": 140718000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 1988937.0,
+      "ttm_four_quarters": 1988938.0,
+      "abs_err": 1.0,
+      "rel_err": 5.027811338418462e-07
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 2579070.0,
+      "ttm_four_quarters": 2579070.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 5574118.0,
+      "ttm_four_quarters": 5574118.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 9632394.0,
+      "ttm_four_quarters": 9632394.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 15014508.0,
+      "ttm_four_quarters": 15014508.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 17585554.0,
+      "ttm_four_quarters": 17585554.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 29952192.0,
+      "ttm_four_quarters": 29952192.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 32118177.0,
+      "ttm_four_quarters": 32118177.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 20733057.0,
+      "ttm_four_quarters": 20733057.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 21953237.0,
+      "ttm_four_quarters": 22392023.0,
+      "abs_err": 438786.0,
+      "rel_err": 0.01998730301139645
+    },
+    {
+      "annual_end": "2012-03-31",
+      "annual": 5084194.0,
+      "ttm_four_quarters": 5083000.0,
+      "abs_err": 1194.0,
+      "rel_err": 0.00023484548386627262
+    },
+    {
+      "annual_end": "2013-03-31",
+      "annual": 6558574.0,
+      "ttm_four_quarters": 6558000.0,
+      "abs_err": 574.0,
+      "rel_err": 8.751902471482368e-05
+    },
+    {
+      "annual_end": "2014-03-31",
+      "annual": -731793.0,
+      "ttm_four_quarters": -730814.0,
+      "abs_err": 979.0,
+      "rel_err": 0.0013378100091145993
+    },
+    {
+      "annual_end": "2015-03-31",
+      "annual": 2307472.0,
+      "ttm_four_quarters": 2307.0,
+      "abs_err": 2305165.0,
+      "rel_err": 0.9990002045528613
+    },
+    {
+      "annual_end": "2016-03-31",
+      "annual": 5493746.0,
+      "ttm_four_quarters": 5494000.0,
+      "abs_err": 254.0,
+      "rel_err": 4.623439088738358e-05
+    },
+    {
+      "annual_end": "2017-03-31",
+      "annual": 6096132.0,
+      "ttm_four_quarters": 6096000.0,
+      "abs_err": 132.0,
+      "rel_err": 2.165307444130147e-05
+    },
+    {
+      "annual_end": "2018-03-31",
+      "annual": 3976301.0,
+      "ttm_four_quarters": 3976339.0,
+      "abs_err": 38.0,
+      "rel_err": 9.556620587827732e-06
+    },
+    {
+      "annual_end": "2011-01-01",
+      "annual": 1211100000.0,
+      "ttm_four_quarters": 1211100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 1337900000.0,
+      "ttm_four_quarters": 1337900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-29",
+      "annual": 1390000000.0,
+      "ttm_four_quarters": 1390000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-28",
+      "annual": 1472900000.0,
+      "ttm_four_quarters": 1472900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-03",
+      "annual": 1584300000.0,
+      "ttm_four_quarters": 1584300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-02",
+      "annual": 1648300000.0,
+      "ttm_four_quarters": 1648300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 1709600000.0,
+      "ttm_four_quarters": 1709600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 19434000.0,
+      "ttm_four_quarters": 19434000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 45505000.0,
+      "ttm_four_quarters": 45505000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 70059000.0,
+      "ttm_four_quarters": 70059000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 112135000.0,
+      "ttm_four_quarters": 112135000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 167325000.0,
+      "ttm_four_quarters": 167325000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 238799000.0,
+      "ttm_four_quarters": 238799000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-12-31",
+      "annual": 253363000.0,
+      "ttm_four_quarters": 253363000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-04-30",
+      "annual": 1203500000.0,
+      "ttm_four_quarters": 1203500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-04-30",
+      "annual": 1239300000.0,
+      "ttm_four_quarters": 1239300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-04-30",
+      "annual": 1228500000.0,
+      "ttm_four_quarters": 1228500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-04-30",
+      "annual": 1268300000.0,
+      "ttm_four_quarters": 1268300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-04-30",
+      "annual": 1257800000.0,
+      "ttm_four_quarters": 1257800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-04-30",
+      "annual": 1265100000.0,
+      "ttm_four_quarters": 1265100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-04-30",
+      "annual": 1245300000.0,
+      "ttm_four_quarters": 1245300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-04-30",
+      "annual": 1240500000.0,
+      "ttm_four_quarters": 1240500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-04-30",
+      "annual": 1316200000.0,
+      "ttm_four_quarters": 1316200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-02-28",
+      "annual": 1190100000.0,
+      "ttm_four_quarters": 1190100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-02-29",
+      "annual": 1062100000.0,
+      "ttm_four_quarters": 1062100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-02-28",
+      "annual": 1108300000.0,
+      "ttm_four_quarters": 1108300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-02-28",
+      "annual": 1991700000.0,
+      "ttm_four_quarters": 1991700000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-02-28",
+      "annual": 2578600000.0,
+      "ttm_four_quarters": 2578600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-02-29",
+      "annual": 2942300000.0,
+      "ttm_four_quarters": 2942300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-02-28",
+      "annual": 3519000000.0,
+      "ttm_four_quarters": 3529400000.0,
+      "abs_err": 10400000.0,
+      "rel_err": 0.0029553850525717534
+    },
+    {
+      "annual_end": "2018-02-28",
+      "annual": 3812500000.0,
+      "ttm_four_quarters": 3812500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-02-28",
+      "annual": 4080300000.0,
+      "ttm_four_quarters": 4080300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-02-29",
+      "annual": 4151900000.0,
+      "ttm_four_quarters": 4151900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-02-28",
+      "annual": 4466000000.0,
+      "ttm_four_quarters": 4466000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-02-28",
+      "annual": 4707300000.0,
+      "ttm_four_quarters": 4707300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-02-28",
+      "annual": 4769000000.0,
+      "ttm_four_quarters": 4769000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-02-29",
+      "annual": 5017500000.0,
+      "ttm_four_quarters": 5017500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2025-02-28",
+      "annual": 5314600000.0,
+      "ttm_four_quarters": 5314600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 87849000.0,
+      "ttm_four_quarters": 87849000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 125465000.0,
+      "ttm_four_quarters": 125465000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 180028000.0,
+      "ttm_four_quarters": 180028000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-06-30",
+      "annual": 345120000.0,
+      "ttm_four_quarters": 345120000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-06-30",
+      "annual": 399334000.0,
+      "ttm_four_quarters": 399334000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-06-30",
+      "annual": 418823000.0,
+      "ttm_four_quarters": 423730000.0,
+      "abs_err": 4907000.0,
+      "rel_err": 0.011716166495154277
+    },
+    {
+      "annual_end": "2013-06-30",
+      "annual": 461394000.0,
+      "ttm_four_quarters": 461394000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-06-30",
+      "annual": 493801000.0,
+      "ttm_four_quarters": 493801000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-06-30",
+      "annual": 535854000.0,
+      "ttm_four_quarters": 535854000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-06-30",
+      "annual": 580995000.0,
+      "ttm_four_quarters": 580995000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-06-30",
+      "annual": 612083000.0,
+      "ttm_four_quarters": 612083000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-01-03",
+      "annual": 43450000000.0,
+      "ttm_four_quarters": 43450000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-01-02",
+      "annual": 42795000000.0,
+      "ttm_four_quarters": 42795000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-01-01",
+      "annual": 44670000000.0,
+      "ttm_four_quarters": 44670000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-30",
+      "annual": 45566000000.0,
+      "ttm_four_quarters": 45566000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-29",
+      "annual": 48970000000.0,
+      "ttm_four_quarters": 48970000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-28",
+      "annual": 51585000000.0,
+      "ttm_four_quarters": 51585000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-03",
+      "annual": 48538000000.0,
+      "ttm_four_quarters": 48538000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-01-01",
+      "annual": 50101000000.0,
+      "ttm_four_quarters": 50205000000.0,
+      "abs_err": 104000000.0,
+      "rel_err": 0.002075806870122353
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 51011000000.0,
+      "ttm_four_quarters": 51011000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-30",
+      "annual": 54490000000.0,
+      "ttm_four_quarters": 54490000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-29",
+      "annual": 54503000000.0,
+      "ttm_four_quarters": 54503000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-01-01",
+      "annual": 55394000000.0,
+      "ttm_four_quarters": 55394000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 58606000000.0,
+      "ttm_four_quarters": 58606000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 82501000.0,
+      "ttm_four_quarters": 82501000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 33405000.0,
+      "ttm_four_quarters": 33405000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 129456000.0,
+      "ttm_four_quarters": 129456000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 145536000.0,
+      "ttm_four_quarters": 145536000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 158531000.0,
+      "ttm_four_quarters": 158531000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 186673000.0,
+      "ttm_four_quarters": 186671000.0,
+      "abs_err": 2000.0,
+      "rel_err": 1.071392220621086e-05
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 208253000.0,
+      "ttm_four_quarters": 208253000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 182907000.0,
+      "ttm_four_quarters": 182907000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-03-31",
+      "annual": 753096000.0,
+      "ttm_four_quarters": 753096000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-03-29",
+      "annual": 2016100000.0,
+      "ttm_four_quarters": 2016070000.0,
+      "abs_err": 30000.0,
+      "rel_err": 1.4880214275085561e-05
+    },
+    {
+      "annual_end": "2015-03-28",
+      "annual": 2647700000.0,
+      "ttm_four_quarters": 2647700000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-04-02",
+      "annual": 2797200000.0,
+      "ttm_four_quarters": 2797200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-04-01",
+      "annual": 2661000000.0,
+      "ttm_four_quarters": 2859000000.0,
+      "abs_err": 198000000.0,
+      "rel_err": 0.07440811724915446
+    },
+    {
+      "annual_end": "2018-03-31",
+      "annual": 2859000000.0,
+      "ttm_four_quarters": 3180000000.0,
+      "abs_err": 321000000.0,
+      "rel_err": 0.11227701993704092
+    },
+    {
+      "annual_end": "2019-03-30",
+      "annual": 3180000000.0,
+      "ttm_four_quarters": 3180000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-03-28",
+      "annual": 3271000000.0,
+      "ttm_four_quarters": 3271000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-03-31",
+      "annual": 30038000.0,
+      "ttm_four_quarters": 30038000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-03-31",
+      "annual": 26730000.0,
+      "ttm_four_quarters": 26730000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-03-31",
+      "annual": 22980000.0,
+      "ttm_four_quarters": 22980000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-03-31",
+      "annual": -1137000.0,
+      "ttm_four_quarters": -1137000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-03-31",
+      "annual": 15997000.0,
+      "ttm_four_quarters": 15997000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-03-31",
+      "annual": 17337000.0,
+      "ttm_four_quarters": 17337000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-03-31",
+      "annual": 14672000.0,
+      "ttm_four_quarters": 14672000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-03-31",
+      "annual": 14552000.0,
+      "ttm_four_quarters": 14552000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-03-31",
+      "annual": 37123000.0,
+      "ttm_four_quarters": 37123000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-03-31",
+      "annual": 30124000.0,
+      "ttm_four_quarters": 30124000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-03-31",
+      "annual": 33912000.0,
+      "ttm_four_quarters": 33912000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-03-31",
+      "annual": 17511000.0,
+      "ttm_four_quarters": 17511000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-03-31",
+      "annual": 20911000.0,
+      "ttm_four_quarters": 20911000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 19015000.0,
+      "ttm_four_quarters": 19015000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 20462000.0,
+      "ttm_four_quarters": 20462000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 18698000.0,
+      "ttm_four_quarters": 18698000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 20378000.0,
+      "ttm_four_quarters": 20378000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 34690000.0,
+      "ttm_four_quarters": 34690000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 39401000.0,
+      "ttm_four_quarters": 39401000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 29225000.0,
+      "ttm_four_quarters": 29225000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 24104000.0,
+      "ttm_four_quarters": 24104000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 41224000.0,
+      "ttm_four_quarters": 41224000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 53440000.0,
+      "ttm_four_quarters": 53440000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 56978000.0,
+      "ttm_four_quarters": 56978000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2024-12-31",
+      "annual": 55424000.0,
+      "ttm_four_quarters": 55424000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2009-09-30",
+      "annual": 1569500000.0,
+      "ttm_four_quarters": 1733400000.0,
+      "abs_err": 163900000.0,
+      "rel_err": 0.1044281618349793
+    },
+    {
+      "annual_end": "2010-09-30",
+      "annual": 1936400000.0,
+      "ttm_four_quarters": 1936400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-09-30",
+      "annual": 2390400000.0,
+      "ttm_four_quarters": 2390400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-09-30",
+      "annual": 2522700000.0,
+      "ttm_four_quarters": 2522700000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-09-30",
+      "annual": 2573800000.0,
+      "ttm_four_quarters": 2573800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-09-30",
+      "annual": 2753900000.0,
+      "ttm_four_quarters": 2753900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-09-30",
+      "annual": 2703100000.0,
+      "ttm_four_quarters": 2703100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-09-30",
+      "annual": 2475500000.0,
+      "ttm_four_quarters": 2475500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-09-30",
+      "annual": 2667900000.0,
+      "ttm_four_quarters": 2624200000.0,
+      "abs_err": 43700000.0,
+      "rel_err": 0.01637992428501818
+    },
+    {
+      "annual_end": "2018-09-30",
+      "annual": 2884900000.0,
+      "ttm_four_quarters": 2884900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-09-30",
+      "annual": 2900100000.0,
+      "ttm_four_quarters": 2900100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-09-30",
+      "annual": 2595200000.0,
+      "ttm_four_quarters": 2595200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-30",
+      "annual": 216579000.0,
+      "ttm_four_quarters": 216579000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-29",
+      "annual": 219439000.0,
+      "ttm_four_quarters": 219439000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-28",
+      "annual": 238422000.0,
+      "ttm_four_quarters": 238422000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-01-02",
+      "annual": 245306000.0,
+      "ttm_four_quarters": 245306000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-04-25",
+      "annual": 254659000.0,
+      "ttm_four_quarters": 264247000.0,
+      "abs_err": 9588000.0,
+      "rel_err": 0.03765034811257407
+    },
+    {
+      "annual_end": "2015-04-24",
+      "annual": 264247000.0,
+      "ttm_four_quarters": 264247000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 723805000.0,
+      "ttm_four_quarters": 744758000.0,
+      "abs_err": 20953000.0,
+      "rel_err": 0.02894840461173935
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 594763000.0,
+      "ttm_four_quarters": 594763000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 705994000.0,
+      "ttm_four_quarters": 705994000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 44782000.0,
+      "ttm_four_quarters": 44782000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 24852000.0,
+      "ttm_four_quarters": 24852000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 11828000.0,
+      "ttm_four_quarters": 11828000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 17167000.0,
+      "ttm_four_quarters": 17167000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 16829000.0,
+      "ttm_four_quarters": 16829000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 26381000.0,
+      "ttm_four_quarters": 26381000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 34475000.0,
+      "ttm_four_quarters": 34475000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 37047000.0,
+      "ttm_four_quarters": 37047000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 24825000.0,
+      "ttm_four_quarters": 24825000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 30275000.0,
+      "ttm_four_quarters": 30275000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 47414000.0,
+      "ttm_four_quarters": 47414000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 52121000.0,
+      "ttm_four_quarters": 52121000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 13318000.0,
+      "ttm_four_quarters": 13318000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-07-31",
+      "annual": 184585000.0,
+      "ttm_four_quarters": 184585000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-07-31",
+      "annual": 286351000.0,
+      "ttm_four_quarters": 286351000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-07-31",
+      "annual": 438600000.0,
+      "ttm_four_quarters": 438551000.0,
+      "abs_err": 49000.0,
+      "rel_err": 0.00011171910624715003
+    },
+    {
+      "annual_end": "2015-07-31",
+      "annual": 676600000.0,
+      "ttm_four_quarters": 676600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-07-31",
+      "annual": 1008500000.0,
+      "ttm_four_quarters": 1008500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-07-31",
+      "annual": 1278700000.0,
+      "ttm_four_quarters": 1285000000.0,
+      "abs_err": 6300000.0,
+      "rel_err": 0.004926878861343552
+    },
+    {
+      "annual_end": "2018-07-31",
+      "annual": 1628500000.0,
+      "ttm_four_quarters": 1628500000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-07-31",
+      "annual": 2091200000.0,
+      "ttm_four_quarters": 2091200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-07-31",
+      "annual": 2408900000.0,
+      "ttm_four_quarters": 2408900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-06-30",
+      "annual": 3455000.0,
+      "ttm_four_quarters": 3455000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-06-30",
+      "annual": 2591000.0,
+      "ttm_four_quarters": 2591000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-06-30",
+      "annual": 4372000.0,
+      "ttm_four_quarters": 4372000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-01-28",
+      "annual": 220503000.0,
+      "ttm_four_quarters": 220503000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-07-31",
+      "annual": 317974000.0,
+      "ttm_four_quarters": 317974000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-07-31",
+      "annual": 356066000.0,
+      "ttm_four_quarters": 356066000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 106694000.0,
+      "ttm_four_quarters": 106694000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 91651000.0,
+      "ttm_four_quarters": 91651000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 81479000.0,
+      "ttm_four_quarters": 81479000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 97120000.0,
+      "ttm_four_quarters": 97120000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 99518000.0,
+      "ttm_four_quarters": 99518000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 91209000.0,
+      "ttm_four_quarters": 91209000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 101656000.0,
+      "ttm_four_quarters": 101656000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 138971000.0,
+      "ttm_four_quarters": 138971000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 122966000.0,
+      "ttm_four_quarters": 122966000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 131447000.0,
+      "ttm_four_quarters": 131447000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 167611000.0,
+      "ttm_four_quarters": 167611000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 201496000.0,
+      "ttm_four_quarters": 201496000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 347308000.0,
+      "ttm_four_quarters": 308332000.0,
+      "abs_err": 38976000.0,
+      "rel_err": 0.11222315639144506
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 317084000.0,
+      "ttm_four_quarters": 354657000.0,
+      "abs_err": 37573000.0,
+      "rel_err": 0.11849541446430599
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 450817000.0,
+      "ttm_four_quarters": 450817000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 444660000.0,
+      "ttm_four_quarters": 444660000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 400936000.0,
+      "ttm_four_quarters": 400936000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 408083000.0,
+      "ttm_four_quarters": 408083000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 424346000.0,
+      "ttm_four_quarters": 424346000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 492633000.0,
+      "ttm_four_quarters": 492634000.0,
+      "abs_err": 1000.0,
+      "rel_err": 2.0299086744087385e-06
+    },
+    {
+      "annual_end": "2011-08-31",
+      "annual": 4468000.0,
+      "ttm_four_quarters": 4468000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-08-31",
+      "annual": -5600000.0,
+      "ttm_four_quarters": -5602000.0,
+      "abs_err": 2000.0,
+      "rel_err": 0.00035714285714285714
+    },
+    {
+      "annual_end": "2013-08-31",
+      "annual": -14700000.0,
+      "ttm_four_quarters": -14698000.0,
+      "abs_err": 2000.0,
+      "rel_err": 0.00013605442176870748
+    },
+    {
+      "annual_end": "2014-08-31",
+      "annual": -11300000.0,
+      "ttm_four_quarters": -11311000.0,
+      "abs_err": 11000.0,
+      "rel_err": 0.0009734513274336283
+    },
+    {
+      "annual_end": "2015-08-31",
+      "annual": -4100000.0,
+      "ttm_four_quarters": -4090000.0,
+      "abs_err": 10000.0,
+      "rel_err": 0.0024390243902439024
+    },
+    {
+      "annual_end": "2016-08-31",
+      "annual": -4900000.0,
+      "ttm_four_quarters": -4938000.0,
+      "abs_err": 38000.0,
+      "rel_err": 0.007755102040816327
+    },
+    {
+      "annual_end": "2017-08-31",
+      "annual": 82000.0,
+      "ttm_four_quarters": 82000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-08-31",
+      "annual": 452000.0,
+      "ttm_four_quarters": 452000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 103868000.0,
+      "ttm_four_quarters": 103868000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 145115000.0,
+      "ttm_four_quarters": 145115000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 149560000.0,
+      "ttm_four_quarters": 149560000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 158097000.0,
+      "ttm_four_quarters": 158097000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 140045000.0,
+      "ttm_four_quarters": 140045000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 186976000.0,
+      "ttm_four_quarters": 186976000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 244762000.0,
+      "ttm_four_quarters": 244762000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 236544000.0,
+      "ttm_four_quarters": 236544000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 210926000.0,
+      "ttm_four_quarters": 242360000.0,
+      "abs_err": 31434000.0,
+      "rel_err": 0.14902856926125752
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 219897000.0,
+      "ttm_four_quarters": 219897000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 256343000.0,
+      "ttm_four_quarters": 256343000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-03-31",
+      "annual": 6132000.0,
+      "ttm_four_quarters": 6132000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-03-31",
+      "annual": 1460000.0,
+      "ttm_four_quarters": 9819000.0,
+      "abs_err": 8359000.0,
+      "rel_err": 5.725342465753425
+    },
+    {
+      "annual_end": "2017-03-31",
+      "annual": 11258000.0,
+      "ttm_four_quarters": 11258000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-03-31",
+      "annual": 25055000.0,
+      "ttm_four_quarters": 25055000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-03-31",
+      "annual": 35565000.0,
+      "ttm_four_quarters": 35565000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-03-31",
+      "annual": 55127000.0,
+      "ttm_four_quarters": 53673000.0,
+      "abs_err": 1454000.0,
+      "rel_err": 0.026375460300760063
+    },
+    {
+      "annual_end": "2010-06-30",
+      "annual": 5966400000.0,
+      "ttm_four_quarters": 5966400000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-06-30",
+      "annual": 6873100000.0,
+      "ttm_four_quarters": 6873100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-06-30",
+      "annual": 7717800000.0,
+      "ttm_four_quarters": 7717800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-06-30",
+      "annual": 8155800000.0,
+      "ttm_four_quarters": 8155800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-06-30",
+      "annual": 8810600000.0,
+      "ttm_four_quarters": 8810600000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-06-30",
+      "annual": 8680000000.0,
+      "ttm_four_quarters": 8679800000.0,
+      "abs_err": 200000.0,
+      "rel_err": 2.304147465437788e-05
+    },
+    {
+      "annual_end": "2016-06-30",
+      "annual": 9081000000.0,
+      "ttm_four_quarters": 9081000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-06-30",
+      "annual": 9390000000.0,
+      "ttm_four_quarters": 9387000000.0,
+      "abs_err": 3000000.0,
+      "rel_err": 0.0003194888178913738
+    },
+    {
+      "annual_end": "2018-06-30",
+      "annual": 10839000000.0,
+      "ttm_four_quarters": 10839000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-06-30",
+      "annual": 11476000000.0,
+      "ttm_four_quarters": 11476000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-06-30",
+      "annual": 10742000000.0,
+      "ttm_four_quarters": 10742000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-30",
+      "annual": 42369000.0,
+      "ttm_four_quarters": 42369000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-28",
+      "annual": 44291000.0,
+      "ttm_four_quarters": 44290000.0,
+      "abs_err": 1000.0,
+      "rel_err": 2.2577950373665078e-05
+    },
+    {
+      "annual_end": "2016-01-01",
+      "annual": 52723000.0,
+      "ttm_four_quarters": 52723000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-30",
+      "annual": 58369000.0,
+      "ttm_four_quarters": 58369000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-29",
+      "annual": 64280000.0,
+      "ttm_four_quarters": 64280000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-28",
+      "annual": 91510000.0,
+      "ttm_four_quarters": 91510000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-01-03",
+      "annual": 111954000.0,
+      "ttm_four_quarters": 111954000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-01-01",
+      "annual": 118362000.0,
+      "ttm_four_quarters": 118362000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 178637000.0,
+      "ttm_four_quarters": 178637000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 211308000.0,
+      "ttm_four_quarters": 211308000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 269546000.0,
+      "ttm_four_quarters": 269546000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 304383000.0,
+      "ttm_four_quarters": 304384000.0,
+      "abs_err": 1000.0,
+      "rel_err": 3.285334594901818e-06
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 433908000.0,
+      "ttm_four_quarters": 433908000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 493041000.0,
+      "ttm_four_quarters": 493041000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 597857000.0,
+      "ttm_four_quarters": 597857000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 727155000.0,
+      "ttm_four_quarters": 727155000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 945525000.0,
+      "ttm_four_quarters": 945525000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 1006221000.0,
+      "ttm_four_quarters": 1006222000.0,
+      "abs_err": 1000.0,
+      "rel_err": 9.938174615715633e-07
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 863132000.0,
+      "ttm_four_quarters": 1134731000.0,
+      "abs_err": 271599000.0,
+      "rel_err": 0.3146668180533221
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 980426000.0,
+      "ttm_four_quarters": 980426000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-06-30",
+      "annual": 107242000.0,
+      "ttm_four_quarters": 107242000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-06-30",
+      "annual": 137272000.0,
+      "ttm_four_quarters": 137272000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-06-30",
+      "annual": 97640000.0,
+      "ttm_four_quarters": 97640000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-06-30",
+      "annual": 142800000.0,
+      "ttm_four_quarters": 142800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-06-30",
+      "annual": 145402000.0,
+      "ttm_four_quarters": 145402000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-06-30",
+      "annual": 158713000.0,
+      "ttm_four_quarters": 158713000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-06-30",
+      "annual": 141341000.0,
+      "ttm_four_quarters": 141341000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-06-30",
+      "annual": 161695000.0,
+      "ttm_four_quarters": 161695000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-06-30",
+      "annual": 162651000.0,
+      "ttm_four_quarters": 162651000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-06-30",
+      "annual": 149721000.0,
+      "ttm_four_quarters": 149721000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-06-30",
+      "annual": 159507000.0,
+      "ttm_four_quarters": 159507000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 107000000.0,
+      "ttm_four_quarters": 107000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-29",
+      "annual": 91638000.0,
+      "ttm_four_quarters": 91638000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-28",
+      "annual": 74133000.0,
+      "ttm_four_quarters": 74133000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-03",
+      "annual": 78450000.0,
+      "ttm_four_quarters": 78450000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-02",
+      "annual": 83176000.0,
+      "ttm_four_quarters": 83434000.0,
+      "abs_err": 258000.0,
+      "rel_err": 0.0031018563047032796
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 92047000.0,
+      "ttm_four_quarters": 92047000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-30",
+      "annual": 89660000.0,
+      "ttm_four_quarters": 89660000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-28",
+      "annual": 84223000.0,
+      "ttm_four_quarters": 84223000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-09-30",
+      "annual": 311800000.0,
+      "ttm_four_quarters": 311800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-09-30",
+      "annual": 338000000.0,
+      "ttm_four_quarters": 338000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 185203000.0,
+      "ttm_four_quarters": 185203000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 192710000.0,
+      "ttm_four_quarters": 192710000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 256015000.0,
+      "ttm_four_quarters": 256015000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 236040000.0,
+      "ttm_four_quarters": 236040000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 219873000.0,
+      "ttm_four_quarters": 219873000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 201307000.0,
+      "ttm_four_quarters": 201307000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 278434000.0,
+      "ttm_four_quarters": 278434000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 325737000.0,
+      "ttm_four_quarters": 325737000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 330926000.0,
+      "ttm_four_quarters": 330926000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 370214000.0,
+      "ttm_four_quarters": 370214000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 416660000.0,
+      "ttm_four_quarters": 416660000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 456885000.0,
+      "ttm_four_quarters": 456885000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2023-12-31",
+      "annual": 587500000.0,
+      "ttm_four_quarters": 587491000.0,
+      "abs_err": 9000.0,
+      "rel_err": 1.5319148936170214e-05
+    },
+    {
+      "annual_end": "2024-12-31",
+      "annual": 703200000.0,
+      "ttm_four_quarters": 703200000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 18437000.0,
+      "ttm_four_quarters": 18437000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 13132000.0,
+      "ttm_four_quarters": 15010000.0,
+      "abs_err": 1878000.0,
+      "rel_err": 0.14300944258300335
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 10754000.0,
+      "ttm_four_quarters": 10754000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": -935000.0,
+      "ttm_four_quarters": 9223000.0,
+      "abs_err": 10158000.0,
+      "rel_err": 10.864171122994652
+    },
+    {
+      "annual_end": "2011-06-30",
+      "annual": 74914000.0,
+      "ttm_four_quarters": 74914000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-06-30",
+      "annual": 79618000.0,
+      "ttm_four_quarters": 79618000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-06-30",
+      "annual": 94702000.0,
+      "ttm_four_quarters": 94702000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-06-30",
+      "annual": 136473000.0,
+      "ttm_four_quarters": 136473000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-06-30",
+      "annual": 87370000.0,
+      "ttm_four_quarters": 87370000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-06-30",
+      "annual": 125991000.0,
+      "ttm_four_quarters": 125991000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-06-30",
+      "annual": 81003000.0,
+      "ttm_four_quarters": 81003000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-06-30",
+      "annual": 91936000.0,
+      "ttm_four_quarters": 91936000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-06-30",
+      "annual": 131951000.0,
+      "ttm_four_quarters": 131951000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-06-30",
+      "annual": 102176000.0,
+      "ttm_four_quarters": 102176000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2021-06-30",
+      "annual": 32765000.0,
+      "ttm_four_quarters": 32765000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-01-29",
+      "annual": 2140088000.0,
+      "ttm_four_quarters": 2144898000.0,
+      "abs_err": 4810000.0,
+      "rel_err": 0.002247571127916235
+    },
+    {
+      "annual_end": "2012-01-28",
+      "annual": 2216331000.0,
+      "ttm_four_quarters": 2216331000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-02-02",
+      "annual": 2346061000.0,
+      "ttm_four_quarters": 2346061000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-02-01",
+      "annual": 2307932000.0,
+      "ttm_four_quarters": 2307932000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-31",
+      "annual": 2348449000.0,
+      "ttm_four_quarters": 2348449000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-30",
+      "annual": 2244821000.0,
+      "ttm_four_quarters": 2244821000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-01-28",
+      "annual": 2090726000.0,
+      "ttm_four_quarters": 2090560000.0,
+      "abs_err": 166000.0,
+      "rel_err": 7.93982568734497e-05
+    },
+    {
+      "annual_end": "2018-02-03",
+      "annual": 2061759000.0,
+      "ttm_four_quarters": 2061759000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-02-02",
+      "annual": 2064589000.0,
+      "ttm_four_quarters": 2064589000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-02-01",
+      "annual": 1967542000.0,
+      "ttm_four_quarters": 1967542000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 108457000.0,
+      "ttm_four_quarters": 108457000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 114568000.0,
+      "ttm_four_quarters": 114568000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 123369000.0,
+      "ttm_four_quarters": 123369000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 130978000.0,
+      "ttm_four_quarters": 130978000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 155991000.0,
+      "ttm_four_quarters": 155991000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 240099000.0,
+      "ttm_four_quarters": 240099000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 1152125000.0,
+      "ttm_four_quarters": 1152125000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 1306222000.0,
+      "ttm_four_quarters": 1306222000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 1478845000.0,
+      "ttm_four_quarters": 1478845000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 1071686000.0,
+      "ttm_four_quarters": 1251774000.0,
+      "abs_err": 180088000.0,
+      "rel_err": 0.1680417585001577
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 992382000.0,
+      "ttm_four_quarters": 992382000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 671579000.0,
+      "ttm_four_quarters": 1029475000.0,
+      "abs_err": 357896000.0,
+      "rel_err": 0.5329171996146396
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 729376000.0,
+      "ttm_four_quarters": 815413000.0,
+      "abs_err": 86037000.0,
+      "rel_err": 0.11795973544509279
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 1401056000.0,
+      "ttm_four_quarters": 1401056000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 603640000.0,
+      "ttm_four_quarters": 1288105000.0,
+      "abs_err": 684465000.0,
+      "rel_err": 1.1338960307468027
+    },
+    {
+      "annual_end": "2021-12-31",
+      "annual": 777675000.0,
+      "ttm_four_quarters": 777675000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2022-12-31",
+      "annual": 869383000.0,
+      "ttm_four_quarters": 869383000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-01-31",
+      "annual": 275461000.0,
+      "ttm_four_quarters": 275461000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-01-31",
+      "annual": 339361000.0,
+      "ttm_four_quarters": 339361000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-01-31",
+      "annual": 348074000.0,
+      "ttm_four_quarters": 348074000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-01-31",
+      "annual": 308384000.0,
+      "ttm_four_quarters": 308384000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-01-31",
+      "annual": 205914000.0,
+      "ttm_four_quarters": 205914000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-01-31",
+      "annual": 213729000.0,
+      "ttm_four_quarters": 213729000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-01-31",
+      "annual": 215300000.0,
+      "ttm_four_quarters": 215300000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-01-31",
+      "annual": 231588000.0,
+      "ttm_four_quarters": 231586000.0,
+      "abs_err": 2000.0,
+      "rel_err": 8.636026046254556e-06
+    },
+    {
+      "annual_end": "2020-01-31",
+      "annual": 250818000.0,
+      "ttm_four_quarters": 250819000.0,
+      "abs_err": 1000.0,
+      "rel_err": 3.9869546842730585e-06
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 120048000.0,
+      "ttm_four_quarters": 120047000.0,
+      "abs_err": 1000.0,
+      "rel_err": 8.330001332800213e-06
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 133734000.0,
+      "ttm_four_quarters": 133736000.0,
+      "abs_err": 2000.0,
+      "rel_err": 1.4955060044566079e-05
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 139234000.0,
+      "ttm_four_quarters": 139232000.0,
+      "abs_err": 2000.0,
+      "rel_err": 1.4364307568553657e-05
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 154069000.0,
+      "ttm_four_quarters": 154069000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-03-03",
+      "annual": 117120000.0,
+      "ttm_four_quarters": 117120000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2013-03-02",
+      "annual": 145733000.0,
+      "ttm_four_quarters": 145733000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-03-01",
+      "annual": 165252000.0,
+      "ttm_four_quarters": 165252000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2015-02-28",
+      "annual": 208544000.0,
+      "ttm_four_quarters": 208544000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2016-02-27",
+      "annual": 243570000.0,
+      "ttm_four_quarters": 243570000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2017-03-04",
+      "annual": 292023000.0,
+      "ttm_four_quarters": 292023000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-03-03",
+      "annual": 333518000.0,
+      "ttm_four_quarters": 333518000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-03-02",
+      "annual": 293565000.0,
+      "ttm_four_quarters": 293565000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-02-29",
+      "annual": 318959000.0,
+      "ttm_four_quarters": 318959000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2009-12-31",
+      "annual": 886554000.0,
+      "ttm_four_quarters": 886554000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2010-12-31",
+      "annual": 1158228000.0,
+      "ttm_four_quarters": 1158228000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2011-12-31",
+      "annual": 1243660000.0,
+      "ttm_four_quarters": 1243660000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2012-12-31",
+      "annual": 1343200000.0,
+      "ttm_four_quarters": 1343212000.0,
+      "abs_err": 12000.0,
+      "rel_err": 8.933889219773675e-06
+    },
+    {
+      "annual_end": "2013-12-31",
+      "annual": 1450800000.0,
+      "ttm_four_quarters": 1450800000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2014-12-31",
+      "annual": 1693800000.0,
+      "ttm_four_quarters": 1694100000.0,
+      "abs_err": 300000.0,
+      "rel_err": 0.00017711654268508679
+    },
+    {
+      "annual_end": "2015-12-31",
+      "annual": 1779500000.0,
+      "ttm_four_quarters": 1779600000.0,
+      "abs_err": 100000.0,
+      "rel_err": 5.6195560550716494e-05
+    },
+    {
+      "annual_end": "2016-12-31",
+      "annual": 2040000000.0,
+      "ttm_four_quarters": 2039900000.0,
+      "abs_err": 100000.0,
+      "rel_err": 4.901960784313725e-05
+    },
+    {
+      "annual_end": "2017-12-31",
+      "annual": 2309900000.0,
+      "ttm_four_quarters": 2310000000.0,
+      "abs_err": 100000.0,
+      "rel_err": 4.32919173990216e-05
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 2654900000.0,
+      "ttm_four_quarters": 2654900000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 2616000000.0,
+      "ttm_four_quarters": 2616000000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 2664100000.0,
+      "ttm_four_quarters": 2664100000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2018-12-31",
+      "annual": 107009000.0,
+      "ttm_four_quarters": 107009000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2019-12-31",
+      "annual": 86424000.0,
+      "ttm_four_quarters": 86424000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    },
+    {
+      "annual_end": "2020-12-31",
+      "annual": 53283000.0,
+      "ttm_four_quarters": 53283000.0,
+      "abs_err": 0.0,
+      "rel_err": 0.0
+    }
+  ]
+}

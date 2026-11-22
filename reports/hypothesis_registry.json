@@ -2643,7 +2643,7 @@
       },
       "banned_check": "Distinct from H-001 (CFTC COT positioning, killed for M-095 look-ahead), H-002 (PEAD earnings drift -- a different signal and event clock), H-003 (ETF 12-1 cross-sectional momentum), and the killed CRYPTO ml_enhanced_* stack. Also not a re-test of the EQUITY RSI(2) mean-reversion configuration the panel's round 1 proposed and round 2 rejected: different signal, different horizon, different benchmark."
     },
-    {
+        {
       "id": "H-150",
       "asset_class": "EQUITY",
       "family": "mid_cap_gross_profitability_literal",
@@ -2671,16 +2671,104 @@
         "reject_if": "net IR < 0 over the forward window, or any admissible window flips sign"
       },
       "economic_prior": "Novy-Marx (2013): gross profitability is the cleanest accounting measure of quality because it is unaffected by R&D, advertising and interest-expense classification. H-149 established that the ANNUAL-10-K, 40-trading-day, close-entry rendering of this idea has no stable edge (4 strong positive vs 11 strong negative windows on 711 names). What H-149 did not test is the spec as filed: quarterly statements react to the signal up to a year sooner, next-open entry removes the close-to-open gap, and the 20-60 calendar-day exit is the horizon the premium is actually documented at.",
-            "signal_validation": {
+      "signal_validation": {
         "artifact": "reports/h150_ttm_validation.json",
         "method": "each audited annual 10-K GrossProfit recomputed from the four quarterly facts filed on or before that 10-K, which must be non-overlapping and must tile the fiscal year",
-        "companies_checked": 95, "companies_with_comparable_pair": 30, "comparable_pairs": 225,
-        "pct_within_1pct": 91.11, "pct_within_5pct": 94.22,
-        "median_rel_err": 0.0, "p90_rel_err": 0.004913,
-        "loose_rule_baseline": {"comparable_pairs": 254, "pct_within_1pct": 82.28, "max_rel_err": 2.065078},
+        "companies_checked": 95,
+        "companies_with_comparable_pair": 30,
+        "comparable_pairs": 225,
+        "pct_within_1pct": 91.11,
+        "pct_within_5pct": 94.22,
+        "median_rel_err": 0.0,
+        "p90_rel_err": 0.004913,
+        "loose_rule_baseline": {
+          "comparable_pairs": 254,
+          "pct_within_1pct": 82.28,
+          "max_rel_err": 2.065078
+        },
         "conclusion": "the quarterly TTM framing reproduces the audited annual figure for 91% of pairs; the residual failures are restatement vintages. Signal construction is validated -- the backtest is still unrun."
       },
-"status": "PRE-REGISTERED",
+      "status": "REFUTED",
+      "result": {
+        "backtest_run": "2026-11-22",
+        "backtest_artifact": "reports/h150_gpa_backtest_2026-11-22.json",
+        "backtest_module": "tools/h150_gpa_backtest.py",
+        "universe": {
+          "ciks_attempted": 2600,
+          "names_with_quarterly_facts": 636,
+          "names_with_prices": 584,
+          "records": 4753,
+          "formations": 119,
+          "book_records": 817,
+          "delisted_exits": 0
+        },
+        "harness": {
+          "verdict": "UNTESTED",
+          "windows_scored": 0,
+          "reason": "~18 records per 14-day window vs MIN_WINDOW_N=80; the harness cannot score this density and this is not a pass",
+          "window_60d_sensitivity": {
+            "artifact": "reports/h150_gpa_backtest_2026-11-22_w60.json",
+            "why": "the 14-day window cannot score at ~18 records/window; this window was chosen AFTER that failure, so it is a sensitivity check, not the registered test",
+            "windows_scored": 38,
+            "windows_strong": 2,
+            "strong_positive": 0,
+            "strong_negative": 2,
+            "verdict": "REJECTED",
+            "net_edge_pct": 0.7217
+          }
+        },
+        "book": {
+          "net_mean_pct": 0.7318,
+          "universe_net_mean_pct": 0.7217,
+          "wr_pct": 52.14,
+          "bottom_net_mean_pct": 1.1894,
+          "long_short_net_pct": -0.4576,
+          "per_formation_mean_net_pct": 0.5736
+        },
+        "factor_regression": {
+          "model": "r_book - RF = alpha + b*MKT + s*SMB + h*HML + r*RMW",
+          "overlapping": {
+            "n_months": 94,
+            "alpha_pct_monthly": -0.6903,
+            "alpha_t": -1.41,
+            "r_squared": 0.721,
+            "betas": {
+              "Mkt-RF": 1.28,
+              "SMB": 1.004,
+              "HML": -0.47,
+              "RMW": 0.147
+            }
+          },
+          "non_overlapping": {
+            "n_months": 47,
+            "alpha_pct_monthly": 0.3372,
+            "alpha_t": 0.49
+          },
+          "information_ratio": -0.0
+        },
+        "cost_survival": 0.783,
+        "gates": {
+          "harness_admissible_positive": false,
+          "min_forward_n": true,
+          "information_ratio": false,
+          "factor_alpha_t": false,
+          "cost_survival": true
+        },
+        "verdict": "NOT_PROVEN",
+        "signal_validation_full_sample": {
+          "artifact": "reports/h150_ttm_validation_full.json",
+          "companies_checked": 984,
+          "companies_with_ttm": 307,
+          "comparable_pairs": 2427,
+          "pct_within_1pct": 92.95,
+          "pct_within_5pct": 95.51,
+          "median_rel_err": 0.0,
+          "p90_rel_err": 0.00095,
+          "max_rel_err": 21.833333
+        },
+        "conclusion": "the quarterly rendering does not rank 20-60 day returns: the top quintile beats the universe by 0.010pp, the bottom quintile beats the top by 0.46pp, and the FF4 intercept is -0.69%/mo (t=-1.41) with a 1.00 SMB loading. The book is small-cap/market beta, not quality alpha. Does not advance to forward testing.",
+        "scope_caveat": "584 names, firms that tag quarterly GrossProfit, survivor-biased pricing (no delisted-ticker source), cap band excludes large caps. Refutes this rendering, not gross profitability everywhere."
+      },
       "registered_at": "2026-11-21",
       "predecessor": "H-149 (annual 10-K / 40 trading days / month-end close entry / full cross-section) - REJECTED 2026-11-21 on 711 names and 66 scorable windows. That verdict does NOT transfer here: the four deviations that produced it are exactly the four things this entry specifies differently.",
       "data_sample_lock": "Frozen at registration: CIK pool with seed 149, 2,600-name sample, month-end rebalances 2016-01-01..2025-12-31, $2B-$10B cap band, top quintile, next-session-open entry, 20-60 calendar-day exit, 20 bp fallback round-trip cost. None of these may be changed after the first run without a new id.",
