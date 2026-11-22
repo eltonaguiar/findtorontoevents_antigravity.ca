@@ -119,6 +119,18 @@ write-up quotes 12.07 bp. That is a discrepancy between the quoted numbers and t
 committed artifact, reported here rather than silently reconciled. This run's numbers live
 in `class_cost_20261122.json` and were read back from it.
 
+**RESOLVED 2026-11-22T23:10Z (provenance repair, diagnosis (a) stale artifact).** The
+12.07 bp was real: the yfinance spread loop in `equity_cost_measure.py` was key-gated on
+`TIINGO_API_KEY`, so a key-less re-run overwrote the good artifact with
+`SKIPPED_OFFLINE_OR_NO_KEY`. The gate is fixed (only `--offline` skips the spread) and the
+artifact regenerated: `n_symbols_with_data = 13`, median **12.0749 bp**, per-side
+**6.0375 bp**, `provenance_self_check = PASS`, per-name values inline. See
+[`2026-11-22-m1-provenance-repair.md`](2026-11-22-m1-provenance-repair.md).
+**This triage's conclusion is unaffected:** 0 of the 6 UNKNOWN rows are cost-addressable,
+and that rests on the 0 bp/side and 468.5 bp break-evens, the 16.398d holding-period
+mismatch, and the missing second-month contract series - none of which depend on 12.07 bp
+or on the M1 artifact.
+
 ## How verified
 
 - `python3 -c "import py_compile; py_compile.compile('tools/equity_cost_measure.py', doraise=True)"` → ok.

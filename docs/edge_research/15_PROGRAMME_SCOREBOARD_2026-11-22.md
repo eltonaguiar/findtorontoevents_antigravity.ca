@@ -53,6 +53,13 @@ the 13-name breakout universe), Corwin-Schultz point estimate **1.50 bp**, so pe
 cost used for re-costing is **6.04 bp** - well below the pod's assumed 25 bp. Top-of-book
 NBBO was `BLOCKED_NO_LIVE_NBBO` (Sunday, market closed) and commission is
 `COMMISSION_UNKNOWN` ([`equity_cost_20261122.json`](reports/equity_cost_measurement/equity_cost_20261122.json)).
+**Provenance repaired 2026-11-22T23:10Z:** the first committed artifact recorded
+`n_symbols_with_data: 0` / `SKIPPED_OFFLINE_OR_NO_KEY` (a key-gated re-run overwrote the
+good run), so 12.07 bp was initially unquotable from its own artifact. The gate is fixed and
+the artifact regenerated: `n_symbols_with_data = 13`, median **12.0749 bp**, per-side
+**6.0375 bp**, `provenance_self_check = PASS`, per-name values inline. The number was real;
+the artifact was stale. Tripwire [`tests/test_m1_cost_provenance.py`](tests/test_m1_cost_provenance.py)
+now fails on that defect shape. No verdict moved.
 **FX cost is now MEASURED but Sunday-reopen (upper
 bound)**: USD-major median-of-medians **7.533 bp** round trip, all-pairs median
 **7.99 bp** ([`FOREX_COST_20261122.md`](reports/cost_measurement_forex/FOREX_COST_20261122.md)).

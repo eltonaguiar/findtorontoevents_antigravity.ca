@@ -1,5 +1,37 @@
 # M1 — EQUITY/ETF cost measurement
 
+> ## ⚠️ CORRECTION NOTICE (provenance repair, 2026-11-22T23:10Z)
+>
+> **Diagnosis (a): stale artifact.** The 12.07 bp figure is a **REAL measurement**,
+> but the artifact committed at 22:49:21Z could not support it: it recorded
+> `spread.status = SKIPPED_OFFLINE_OR_NO_KEY`, `spread_aggregate.n_symbols_with_data = 0`,
+> and `proof_bar.measured = "no measured cost available"`. The write-up (mtime 22:50:43Z)
+> was authored *after* that artifact, quoting numbers from an earlier successful run whose
+> output had been overwritten.
+>
+> **Root cause:** [`tools/equity_cost_measure.py`](../tools/equity_cost_measure.py) gated the
+> yfinance spread loop on `if not a.offline and key:` where `key = TIINGO_API_KEY` — even
+> though `measure_spread()` uses yfinance and needs no key. A key-less re-run therefore took
+> the `else` branch and overwrote the good artifact with `SKIPPED_OFFLINE_OR_NO_KEY`.
+>
+> **What was wrong:** the artifact, not the number. **What it is now:** the gate is fixed
+> (only `--offline` skips the spread; top-of-book alone still requires the Tiingo key), and the
+> artifact was regenerated live from yfinance 1-min bars (2026-11-16..20, period=5d):
+> `n_symbols_with_data = 13`, median RT bound **12.0749 bp**, per-side **6.0375 bp**,
+> Corwin-Schultz **1.5033 bp**, `provenance_self_check = PASS`, with per-name values recorded
+> inline. Every per-name value quoted below reproduces exactly (KO 5.235→5.24, NVDA 20.997→21.0,
+> JNJ 6.751→6.75, PG 5.276→5.28, QQQ 12.075→12.07).
+>
+> **One figure below was ALSO wrong and is corrected:** the "measured 6.04 bp" proof-bar row
+> previously duplicated the 5 bp row (null 10.2, excess CAGR −12.69% [−45.23%, +34.54%],
+> CAGR +6.88%) because no measured run existed. The true 6.04 bp run is **null 10.2nd
+> percentile, excess CAGR −14.25% [−46.32%, +32.31%], CAGR +5.33%, required 28.54%,
+> NOT_INVESTABLE**. The verdict is unchanged; the row is now honest.
+>
+> **No conclusion is withdrawn.** The D7 kill is cost-independent and the pod's break-even
+> (14.58 bp/side) still exceeds measured cost. See
+> [`2026-11-22-m1-provenance-repair.md`](2026-11-22-m1-provenance-repair.md).
+
 **Date:** 2026-11-22 · **Tool:** [`tools/equity_cost_measure.py`](../tools/equity_cost_measure.py) ·
 **Artifact:** [`reports/equity_cost_measurement/equity_cost_20261122.json`](../reports/equity_cost_measurement/equity_cost_20261122.json)
 

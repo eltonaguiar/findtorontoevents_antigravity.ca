@@ -638,9 +638,10 @@ def main() -> int:
         "generated_utc": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "task": "M1 - EQUITY/ETF cost measurement",
         "sources": {
-            "intraday_bars": "Tiingo IEX 1-min bars: "
-                             "https://api.tiingo.com/iex/<SYM>/prices"
-                             "?startDate=<day>&endDate=<day>&resampleFreq=1min",
+            "intraday_bars": "yfinance 1-min bars, period=5d (Yahoo) - PRIMARY, "
+                             "needs no API key; Tiingo IEX 1-min is the documented "
+                             "fallback (https://api.tiingo.com/iex/<SYM>/prices"
+                             "?startDate=<day>&endDate=<day>&resampleFreq=1min)",
             "top_of_book": "Tiingo IEX: https://api.tiingo.com/iex/?tickers=<universe>",
             "daily_bars": "data/cache/asset_class_review/*_5y.csv "
                           "(2021-11-22..2026-11-19)",
@@ -652,18 +653,24 @@ def main() -> int:
         "survivorship": None,
     }
 
-    if not a.offline and key:
-        print("measuring 1-min bar spread upper bounds...", flush=True)
+    # FIX (provenance repair): the spread loop uses yfinance (Yahoo) and needs NO
+    # API key, so it must not be gated on TIINGO_API_KEY. Gating it there silently
+    # overwrote a good run with SKIPPED_OFFLINE_OR_NO_KEY, which made a real 12.07 bp
+    # unquotable from its own artifact. Only --offline may skip the spread.
+    if not a.offline:
+        print("measuring 1-min bar spread upper bounds (yfinance)...", flush=True)
         for sym in sorted(set(POD_UNIVERSE) | set(LARGECAP_UNIVERSE)):
             rec = measure_spread(sym)
             out["spread"][sym] = rec
             u = rec.get("range_upper_bound_rt_bp", {}).get("median")
             print(f"  {sym:<6} {rec.get('fetch_status', '?'):<12} "
                   f"range_ub_rt={u if u is None else round(u, 2)}bp", flush=True)
-        out["top_of_book"] = top_of_book(sorted(set(POD_UNIVERSE) | set(LARGECAP_UNIVERSE)), key)
+        # top-of-book still needs Tiingo; blocked (never zeroed) when no key exists
+        out["top_of_book"] = (top_of_book(sorted(set(POD_UNIVERSE) | set(LARGECAP_UNIVERSE)), key)
+                              if key else {"status": "SKIPPED_NO_KEY"})
     else:
-        out["spread"] = {"status": "SKIPPED_OFFLINE_OR_NO_KEY"}
-        out["top_of_book"] = {"status": "SKIPPED_OFFLINE_OR_NO_KEY"}
+        out["spread"] = {"status": "SKIPPED_OFFLINE"}
+        out["top_of_book"] = {"status": "SKIPPED_OFFLINE"}
 
     # aggregate the spread bound across the breakout universe only
     ub = [r["range_upper_bound_rt_bp"]["median"] for s, r in out["spread"].items()
@@ -673,13 +680,22 @@ def main() -> int:
           and s in POD_UNIVERSE]
     out["spread_aggregate"] = {
         "universe": "POD_UNIVERSE",
+        "universe_symbols": list(POD_UNIVERSE),
         "n_symbols_with_data": len(ub),
+        "per_name_rt_bp": {s: r["range_upper_bound_rt_bp"]["median"]
+                           for s, r in out["spread"].items()
+                           if isinstance(r, dict) and r.get("range_upper_bound_rt_bp")
+                           and s in POD_UNIVERSE},
         "range_upper_bound_rt_bp_median": statistics.median(ub) if ub else None,
         "corwin_schultz_rt_bp_median": statistics.median(cs) if cs else None,
         "measured_cost_per_side_used_bp": (statistics.median(ub) / 2) if ub else None,
+        "bar_interval": "1m", "window": "2026-11-16..2026-11-20 (last 5 sessions, period=5d)",
         "basis": ("half the median 1-min bar range = a rigorous UPPER bound on "
                   "per-side spread; the true NBBO is tighter but was not "
                   "measurable with markets closed"),
+        "provenance_self_check": ("PASS" if (ub and statistics.median(ub) is not None)
+                                  else "FAIL_NO_SPREAD_DATA - a quoted bp figure "
+                                       "must NOT be sourced from this artifact"),
     }
 
     out["commission"] = {
