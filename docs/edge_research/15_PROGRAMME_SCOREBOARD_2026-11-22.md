@@ -47,7 +47,13 @@ Top-of-book half spread for BTC/USDT is **0.00082 bp** (Binance) and 0.0082 bp
 (KuCoin) — i.e. the **spread is negligible; the taker fee dominates**. All-in round
 trip is therefore **~20.0 bp** on a 10 bp/side venue and **~52.0 bp** on Kraken.
 ADA/USDT round-trip spread walks from 6.86 bp at $1k to **988.79 bp at $1M**.
-**Equity cost is UNMEASURED.** **FX cost is now MEASURED but Sunday-reopen (upper
+**Equity cost is now MEASURED as an upper bound** (M1, 2026-11-22): from 1-minute bars
+(2026-11-16..20), the round-trip spread bound is **12.07 bp** (median 1-min high-low over
+the 13-name breakout universe), Corwin-Schultz point estimate **1.50 bp**, so per-side
+cost used for re-costing is **6.04 bp** - well below the pod's assumed 25 bp. Top-of-book
+NBBO was `BLOCKED_NO_LIVE_NBBO` (Sunday, market closed) and commission is
+`COMMISSION_UNKNOWN` ([`equity_cost_20261122.json`](reports/equity_cost_measurement/equity_cost_20261122.json)).
+**FX cost is now MEASURED but Sunday-reopen (upper
 bound)**: USD-major median-of-medians **7.533 bp** round trip, all-pairs median
 **7.99 bp** ([`FOREX_COST_20261122.md`](reports/cost_measurement_forex/FOREX_COST_20261122.md)).
 A representative weekday measurement is **scheduled** (`.github/workflows/fx-cost-overlap.yml`,
@@ -119,8 +125,9 @@ survivorship audit flags as unsafe.** Everything else is a kill or a data block.
 - **Bond / rate momentum** (item 34) — not yet run.
 - **Capacity** (items 35 / 36) — not yet run. (The only capacity datapoint is ADA's
   spread blowing out to 988 bp at $1M, which is a warning, not a test.)
-- **Any equity strategy at measured cost** — equity cost is `UNMEASURED`, so **no
-  equity result in this programme is cost-honest**.
+- **Equity at measured cost was closed 2026-11-22 (M1)** for the breakout rule and the
+  pod: equity cost is now a measured UPPER BOUND (12.07 bp RT), and both were re-run
+  across 0-25 bp. A true NBBO quote and commission remain unmeasured.
 - **FX at live-measured spread** — measured once at the Sunday 22:00Z reopen (upper
   bound, ~7.5-8 bp); the representative weekday number is scheduled and pending.
 - **Commodity term-structure carry** — `BLOCKED_DATA` (no second-month contract series).

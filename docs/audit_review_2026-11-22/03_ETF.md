@@ -26,6 +26,7 @@ The dashboard's 33 rows are a subset, so its PF is a small-n artifact rather tha
 
 ## 6 Cost reality
 [SRC: _raw/audit3_audit3_ledger.json] Flat constant 0.05 pct, which exceeds gross per-trade PnL. If ETFs really trade tighter than equities the constant is conservative, but the point estimate is -0.0062 pct, so even a large cost cut leaves it near zero.
+[SRC: reports/equity_cost_measurement/equity_cost_20261122.json] **ETF/equity cost is now MEASURED as an upper bound** (M1, 2026-11-22, 1-minute bars 2026-11-16..20): round-trip spread bound **12.07 bp** median over the breakout universe (SPY 8.31 bp, QQQ 12.07 bp, XLF 6.11 bp), Corwin-Schultz **1.50 bp**, per-side **6.04 bp**. The constant 0.05 pct (50 bp RT) is therefore ~4x the measured upper bound. This confirms the doc's own guess ("if ETFs really trade tighter ... the constant is conservative") but changes nothing: at 6.04 bp the class point estimate is still ≈ 0, so the answer to the central question is that cost does **not** explain the WEAK verdict, the absence of edge does.
 
 ## 7 What would change the verdict
 [SRC: _raw/audit3_audit3_ledger.json] One experiment: measure realised ETF slippage from fills for the 590 rows and recompute. Gate: net expectancy CI lower bound above zero. Falsifier: if the CI straddles zero even at measured cost, cadence changes cannot rescue it.

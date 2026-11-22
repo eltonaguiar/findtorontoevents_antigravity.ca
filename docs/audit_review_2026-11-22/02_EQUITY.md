@@ -28,7 +28,8 @@ Three PFs on three populations. Only the ledger's has a CI, and it straddles zer
 [SRC: _raw/audit3_audit3_ledger.json] The dashboard counts a fraction of the ledger's 956 EQUITY rows, so most EQUITY rows priced by the ledger are not in the dashboard headline. Which filter causes the gap is UNMEASURED this pass.
 
 ## 6 Cost reality
-[SRC: _raw/audit3_audit3_ledger.json] Flat constant 0.05 pct. Equities have spreads and borrow costs, so measured slippage is UNMEASURED. At 2x cost the CI is wider and still straddles zero, so the verdict does not hinge on the constant.
+[SRC: _raw/audit3_audit3_ledger.json] Flat constant 0.05 pct. At 2x cost the CI is wider and still straddles zero, so the verdict does not hinge on the constant.
+[SRC: reports/equity_cost_measurement/equity_cost_20261122.json] **Equity cost is now MEASURED as an upper bound** (M1, 2026-11-22, 1-minute bars 2026-11-16..20): round-trip spread bound **12.07 bp** median across the 13-name breakout universe (range 5.24 bp KO to 21.0 bp NVDA), Corwin-Schultz point estimate **1.50 bp**, per-side **6.04 bp**. Top-of-book NBBO is `BLOCKED_NO_LIVE_NBBO` (Sunday session closed) and commission is `COMMISSION_UNKNOWN` - neither is treated as zero. Borrow is zero for this long-only family; a hypothetical short leg is `BORROW_UNKNOWN`. At a $100k book order/ADV is 2e-7..9e-6, so slippage beyond the spread is negligible. Measured cost is **below** the 0.05 pct constant, which makes the ledger's cost conservative rather than optimistic - so the near-zero net verdict survives a cheaper cost, it does not improve.
 
 ## 7 What would change the verdict
 [SRC: _raw/audit3_audit3_ledger.json] One experiment: resolve the 956 EQUITY rows intrabar-honestly and re-run the bootstrap. Gate: net CI lower bound above 0.0 with the 2x-cost CI also above 0.0. Falsifier: if the CI still straddles zero at 2x, the class has no demonstrated edge.
