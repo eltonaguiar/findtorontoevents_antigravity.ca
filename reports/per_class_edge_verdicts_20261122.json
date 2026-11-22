@@ -1,0 +1,104 @@
+{
+  "rows": [
+    {
+      "class": "BOND",
+      "mechanism": "2s10s slope momentum continuous position (H-008)",
+      "n": 514,
+      "ci_low": null,
+      "halves_ok": false,
+      "cost_2x_pf": null,
+      "verdict": "KILL",
+      "blocking_gate": "327 strong windows split 140+/187-; needs 3 same-sign"
+    },
+    {
+      "class": "COMMODITY",
+      "mechanism": "COT commercial positioning",
+      "n": 0,
+      "ci_low": null,
+      "halves_ok": false,
+      "cost_2x_pf": null,
+      "verdict": "NO_ROWS",
+      "blocking_gate": "data/cftc_cot empty: no GC_latest.json or any COT file"
+    },
+    {
+      "class": "CRYPTO",
+      "mechanism": "Coinbase cross-exchange premium (H-020)",
+      "n": null,
+      "ci_low": null,
+      "halves_ok": false,
+      "cost_2x_pf": null,
+      "verdict": "KILL",
+      "blocking_gate": "gross +9.85bps but net -20.15bps, cost survival -205%, 26+/25- split"
+    },
+    {
+      "class": "EQUITY",
+      "mechanism": "PEAD (SUE decile)",
+      "n": 0,
+      "ci_low": null,
+      "halves_ok": false,
+      "cost_2x_pf": null,
+      "verdict": "BLOCKED_DATA",
+      "blocking_gate": "eps_estimate is a single snapshot, not point-in-time consensus"
+    },
+    {
+      "class": "ETF",
+      "mechanism": "creation/redemption flow z-score (ET-1, 17160 records)",
+      "n": 17160,
+      "ci_low": null,
+      "halves_ok": false,
+      "cost_2x_pf": null,
+      "verdict": "KILL",
+      "blocking_gate": "net edge -9.24bps, cost survival -1217%, 0/62 windows admissible"
+    },
+    {
+      "class": "FOREX",
+      "mechanism": "G10 carry + momentum",
+      "n": 8041,
+      "ci_low": -0.0033,
+      "halves_ok": false,
+      "cost_2x_pf": 0.8008,
+      "verdict": "BLOCKED_DATA",
+      "blocking_gate": "data/forex_rate_cache EMPTY; picks sweep net 1.0629 but 2x 0.8008 and single-pair concentrated"
+    },
+    {
+      "class": "FUTURES",
+      "mechanism": "time-series momentum diversified (H-035)",
+      "n": null,
+      "ci_low": null,
+      "halves_ok": false,
+      "cost_2x_pf": null,
+      "verdict": "KILL",
+      "blocking_gate": "net -9.00bps, cost survival -895%, 96 strong windows split 40+/56-"
+    },
+    {
+      "class": "INDEX",
+      "mechanism": "alias: overlaps other classes",
+      "n": 25,
+      "ci_low": -0.688,
+      "halves_ok": false,
+      "cost_2x_pf": 0.1846,
+      "verdict": "INSUFFICIENT_N",
+      "blocking_gate": "denominator leak audit not yet run; n=25"
+    },
+    {
+      "class": "MUTUAL_FUND",
+      "mechanism": "none: NAV-only, no shorting, fees, redemption lag",
+      "n": 0,
+      "ci_low": null,
+      "halves_ok": false,
+      "cost_2x_pf": null,
+      "verdict": "NO_ROWS",
+      "blocking_gate": "structurally unmeasurable on daily NAV"
+    },
+    {
+      "class": "PENNY_STOCK",
+      "mechanism": "none: only a 59-symbol seed universe, no closed rows",
+      "n": 0,
+      "ci_low": null,
+      "halves_ok": false,
+      "cost_2x_pf": null,
+      "verdict": "NO_ROWS",
+      "blocking_gate": "no closed picks; seed already excludes 12 known-delisted names"
+    }
+  ]
+}
