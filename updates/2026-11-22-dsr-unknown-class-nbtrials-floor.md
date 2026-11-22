@@ -1,3 +1,7 @@
+> **SUPERSEDED 2026-11-22.** The module change described below was reverted: it
+> invented a trial count the gate refuses to measure. See
+> `updates/2026-11-22-dsr-skip-contract-restored.md`.
+
 # `_dsr_gate` returned `nb_trials: None` for an unknown asset class — a crash, not a skip
 
 **Date:** 2026-11-22 · **File:** `alpha_engine/money_ready_verdict.py`

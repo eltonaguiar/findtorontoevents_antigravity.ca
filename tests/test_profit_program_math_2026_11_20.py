@@ -78,8 +78,14 @@ def test_dsr_gate_uses_the_class_trial_count():
     gated = _dsr_gate(rets, asset_class="CRYPTO")
     assert gated["nb_trials"] >= NB_TRIALS_BY_CLASS["CRYPTO"]
     assert gated["nb_trials"] > 1
-    # an unknown class still gets at least one trial (no crash, no zero)
-    assert _dsr_gate(rets, asset_class="NOPE")["nb_trials"] >= 1
+    # An unknown class is SKIPPED, not defaulted. nb_trials is None by contract
+    # (tests/test_dsr_baseline_skip.py::test_missing_asset_class_is_skipped), so
+    # comparing it numerically -- which this line used to do -- is the bug: it
+    # asserts a number the gate deliberately refuses to invent.
+    skipped = _dsr_gate(rets, asset_class="NOPE")
+    assert skipped["ok"] is None, "an unknown class must not report a pass"
+    assert skipped["skipped"] is True
+    assert skipped["nb_trials"] is None
 
 
 def test_dsr_gate_correction_is_monotone_conservative():
