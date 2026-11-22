@@ -1,0 +1,77 @@
+# gha-quality-framework - structural quality rules (Q1-Q10) for the workflow files themselves.
+#
+# Complements gha-health-audit.yml (R1-R12 = runtime health). This one is offline and static:
+# it parses every workflow YAML and checks how the action is built, not whether its last run was red.
+# Tool: tools/gha_quality_framework.py   Rules: docs/audit_review_2026-11-22/GHA_QA_RULE_CATALOG.md
+#
+# Enablement (deliberate, one step at a time - same policy as gha-health-audit):
+#   1. Land with workflow_dispatch ONLY (current state).
+#   2. Dispatch once, verify GREEN and that it committed GHACTIONS_LIVE/gha_quality.{json,md} with [skip ci].
+#   3. Only then uncomment the schedule block.
+# Cron minute :13 is staggered on purpose (repo policy: never :00; health audit owns :37).
+
+name: gha-quality-framework
+
+on:
+  workflow_dispatch:
+  # Enable after the first green dispatch:
+  # schedule:
+  #   - cron: '13 */6 * * *'
+
+# Serialize: this workflow self-pushes a report commit; two runs racing on main would
+# produce a non-fast-forward push. Its own group so it never cancels the health audit.
+concurrency:
+  group: gha-quality-framework
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: Compile + self-test the framework
+        run: |
+          python3 -m py_compile tools/gha_quality_framework.py
+          python3 tools/gha_quality_framework.py --self-test
+
+      - name: Gate on NEW blocking violations (baseline)
+        run: |
+          if [ -f GHACTIONS_LIVE/gha_quality_baseline.json ]; then
+            python3 tools/gha_quality_framework.py --check \
+              --baseline GHACTIONS_LIVE/gha_quality_baseline.json
+          else
+            echo "no baseline yet - advisory mode (first run writes it)"
+            python3 tools/gha_quality_framework.py --dry-run > /dev/null
+          fi
+
+      - name: Write the report
+        if: always()
+        run: python3 tools/gha_quality_framework.py
+
+      - name: Commit report (only when content changed)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add GHACTIONS_LIVE/gha_quality.json GHACTIONS_LIVE/gha_quality.md
+          if git diff --cached --quiet; then
+            echo "no change - nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore(gha-quality): refresh Q1-Q10 report [skip ci]"
+          git push

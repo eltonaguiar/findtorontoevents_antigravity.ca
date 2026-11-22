@@ -468,6 +468,11 @@ Before sending any response, you MUST check for these patterns:
 | `verified_strategies/paper_pilot/crypto_intraday_sim.py` | Live crypto intraday PAPER sim (2026-11-19): 3 pre-registered slots (H-2026-11-19-01/-02/-07) on real 4h bars, prop-firm guardrails. Run by `.github/workflows/crypto-intraday-sim.yml` (cron :07/:37). Paper-only; promotion only via the audit3 forward gate. |
 | `tools/pilot_forward_bridge.py` + `tools/crypto_bars.py` | Bridge: re-resolves paper-pilot CLOSE rows intrabar-honestly from real bars into `reports/forward_observations.jsonl` (validated, idempotent). Feeds the /audit2 forward clock + /audit3 forward gate. |
 | `.github/workflows/crypto-intraday-sim.yml` | 30-min cron ticking the crypto sim + bridge; commits sim state/log + forward ledger with `[skip ci]`. |
+| `tools/gha_quality_framework.py` + `tools/test_doc_source_lint.py` | GHA static quality framework (Q1-Q10 over every workflow YAML) and the dossier-lint tests (2026-11-22). Companion to `gha_health_audit.py` (R1-R12), not a replacement. |
+| `tools/doc_source_lint.py` | Enforces the audit-review dossier contract: 8 verbatim headings + Provenance footer + a `[SRC: ...]` marker (or `UNMEASURED`) covering every number, and the "least survivable number" answer. |
+| `.github/workflows/gha-quality-framework.yml` | Runs the Q1-Q10 framework dispatch-first (staggered :13 cron commented until first green); own concurrency group; commits `GHACTIONS_LIVE/gha_quality.{json,md}` with `[skip ci]`. Gate uses `GHACTIONS_LIVE/gha_quality_baseline.json` so only NEW blocking violations fail. |
+| `.github/workflows/audit-review-doc-lint.yml` | Read-only gate running `doc_source_lint.py` over `docs/audit_review_*/` on PR/push; no commit, no secrets. |
+| `docs/audit_review_2026-11-22/**` | Audit-surface review + 12 asset-class dossiers + GHA QA design (source of truth; mirrored to `26_ASSET_CLASS_DOSSIERS/` in the review repo via PR #4). |
 
 > **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the hourly cron.
 

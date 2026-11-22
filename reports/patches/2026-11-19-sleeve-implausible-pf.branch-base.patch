@@ -1,0 +1,100 @@
+diff --git a/alpha_engine/audit3_tribunal.py b/alpha_engine/audit3_tribunal.py
+index 38553957a82..2e6a0eb22d3 100644
+--- a/alpha_engine/audit3_tribunal.py
++++ b/alpha_engine/audit3_tribunal.py
+@@ -1826,8 +1826,13 @@ def main(argv: list[str] | None = None) -> int:
+             print(f"WARNING: benchmark sidecar unreadable ({exc}); continuing without it",
+                   file=sys.stderr)
+             benchmark = None
+-    sleeves = None
++    sleeves: list[dict] | None = None
+     if args.sleeves:
++        IMPLAUSIBLE_PF_ABS = 25.0
++        IMPLAUSIBLE_PF_MULT = 5.0
++        SLEEVE_MIN_N = 30
++        _class_pf: dict[str, float] = {}
++        _sleeves: list[dict] = []
+         try:
+             with open(args.sleeves, encoding="utf-8") as f:
+                 _dash = json.load(f)
+@@ -1836,6 +1841,22 @@ def main(argv: list[str] | None = None) -> int:
+             # We'll populate _audit3_keys after load_rows, but rows are already loaded.
+             _row_keys = {(str(r.get("asset_class") or "").upper(),
+                           str(r.get("strategy") or r.get("source_system") or "")) for r in rows}
++            # Class-relative PF baseline: a sleeve sitting an order of magnitude
++            # above its own class aggregate is a grading artefact, not an edge.
++            _win: dict[str, float] = {}
++            _loss: dict[str, float] = {}
++            for _r in rows:
++                _c = str(_r.get("asset_class") or "").upper()
++                _pnl = _r.get("pnl_pct")
++                try:
++                    _pnl = float(_pnl)
++                except (TypeError, ValueError):
++                    continue
++                if _pnl > 0:
++                    _win[_c] = _win.get(_c, 0.0) + _pnl
++                elif _pnl < 0:
++                    _loss[_c] = _loss.get(_c, 0.0) + abs(_pnl)
++            _class_pf = {c: (w / _loss[c]) for c, w in _win.items() if _loss.get(c, 0.0) > 0}
+             sleeves = []
+             for cls, info in _mr.items():
+                 for s in (info.get("top_sleeves") or []):
+@@ -1843,7 +1864,13 @@ def main(argv: list[str] | None = None) -> int:
+                     in_tribunal = key in _row_keys or any(
+                         ac == cls and strat.lower() == s.get("strategy", "").lower()
+                         for ac, strat in _row_keys)
+-                    sleeves.append({
++                    # --- implausible-PF gate (buffy, element 5) -----------------
++                    # A sleeve PF of 155 means the average win is 155x the average
++                    # loss. No 1.67:1 template produces that; it is a grading
++                    # artefact (near-zero or resolver-fallback losses inside a
++                    # self-graded single source). Such a sleeve MUST NOT be
++                    # rankable or displayable as a "top sleeve".
++                    _sleeves.append({
+                         "asset_class": cls,
+                         "strategy": s.get("strategy", "?"),
+                         "n": s.get("n", 0),
+@@ -1854,6 +1881,42 @@ def main(argv: list[str] | None = None) -> int:
+                         "in_tribunal": in_tribunal,
+                         "verdict": "VERIFIED" if in_tribunal else "UNVERIFIED",
+                     })
++                    _p = _sleeves[-1]
++                    _pf = float(_p.get("pf") or 0.0)
++                    _cls_pf = _class_pf.get(cls)
++                    _reasons = []
++                    if _pf > IMPLAUSIBLE_PF_ABS:
++                        _reasons.append(
++                            f"pf {_pf:.2f} exceeds absolute ceiling {IMPLAUSIBLE_PF_ABS:.0f}")
++                    if _cls_pf and _cls_pf > 0 and (_pf / _cls_pf) > IMPLAUSIBLE_PF_MULT:
++                        _reasons.append(
++                            f"pf is {_pf / _cls_pf:.1f}x the class aggregate "
++                            f"({_pf:.2f} vs {_cls_pf:.2f}), ceiling {IMPLAUSIBLE_PF_MULT:.0f}x")
++                    if _p.get("n", 0) < SLEEVE_MIN_N:
++                        _reasons.append(f"n {_p.get('n', 0)} < floor {SLEEVE_MIN_N}")
++                    _p["class_pf"] = round(_cls_pf, 4) if _cls_pf else None
++                    _p["pf_vs_class"] = (round(_pf / _cls_pf, 2)
++                                         if (_cls_pf and _cls_pf > 0) else None)
++                    _p["implausible_pf"] = bool(_pf > IMPLAUSIBLE_PF_ABS or any(
++                        "class aggregate" in r for r in _reasons))
++                    _p["rankable"] = bool(
++                        not _p["implausible_pf"]
++                        and _p.get("verdict") == "VERIFIED"
++                        and not _p.get("is_single_source")
++                        and _p.get("n", 0) >= SLEEVE_MIN_N
++                    )
++                    _p["rank_exclusion_reason"] = None if _p["rankable"] else (
++                        "; ".join(_reasons) if _reasons else "; ".join(filter(None, [
++                            None if _p.get("verdict") == "VERIFIED" else "not scored by the tribunal (UNVERIFIED)",
++                            "single-source grading" if _p.get("is_single_source") else None,
++                            f"n {_p.get('n', 0)} < floor {SLEEVE_MIN_N}" if _p.get("n", 0) < SLEEVE_MIN_N else None,
++                        ]))
++                    )
++                    if not _p["rankable"]:
++                        print(f"WARNING: sleeve not rankable: {cls}/{_p['strategy']} "
++                              f"pf={_pf:.2f} :: {_p['rank_exclusion_reason']}",
++                              file=sys.stderr)
++            sleeves = _sleeves
+         except (OSError, ValueError, KeyError) as exc:
+             print(f"WARNING: sleeves unreadable ({exc}); continuing without",
+                   file=sys.stderr)

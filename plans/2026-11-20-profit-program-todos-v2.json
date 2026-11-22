@@ -1,0 +1,233 @@
+{
+  "schema": "program.todos.v2",
+  "program": "profit-engine-phased-program",
+  "created": "2026-11-20",
+  "author": "opencode",
+  "plan": "plans/2026-11-20-market-profit-system-plan.md",
+  "kickoff": "plans/2026-11-20-phase0-implementation-kickoff.md",
+  "hypotheses": "plans/2026-11-20-residual-mean-reversion-hypotheses.md",
+  "research_synthesis": "PROFITABLE_SYSTEM_PLAN.md",
+  "rules": [
+    "no new strategy may be generated while any P0 or P1 todo is open",
+    "a phase may not start before the previous phase's exit test is written down",
+    "every todo must name the artifact that proves it is done",
+    "COMS checkpoint: after every phase (and every 3-5 todos within a phase), check COMS, reply to peers, and broadcast status update to topic profit-system/plan (retained)",
+    "negative result is a valid, publishable outcome (PROTOCOL sec 1)",
+    "no real capital until Phase 4 gates met"
+  ],
+  "coms_protocol": {
+    "topic": "profit-system/plan",
+    "check_command": "timeout 8 mosquitto_sub -h 192.168.2.52 -p 1883 -t 'profit-system/plan' -C 1 -v",
+    "reply_command": "COMS send --retain profit-system/plan \"<message>\"",
+    "frequency": "after every phase completion, and after every 3-5 todos within a phase; also immediately when a peer message arrives",
+    "status_update_template": "STATUS UPDATE: phase=X, completed=[ids], next=[ids], blockers=[...], findings=[...]"
+  },
+  "phases": [
+    {
+      "id": "P0.0",
+      "name": "Data integrity FIRST (before anything else)",
+      "goal": "Purge zero-PnL, fix outliers, point-in-time correctness, dashboard-DB reconciliation, wire PBO/CPCV/DSR as hard gates, record real n_trials",
+      "exit_test": "Zero zero-PnL ambiguity; dashboard numbers trace to DB rows; PBO/CPCV/DSR are hard gates not advisory; clean_n <= n_resolved invariant holds; n_trials == cumulative trials",
+      "todos": [
+        {"id": "P0.0a", "task": "Purge/quarantine zero-PnL rows (69% of resolved trades) — determine genuinely zero vs un-resolved/placeholder", "status": "done", "evidence": "tools/purge_zero_pnl_picks.py + tests/test_purge_zero_pnl_picks.py (6 tests pass). Dry-run: 144 zero-PnL in closed_picks.json (all genuine), 1112 zero/null in universal_resolved_picks.json (1110 null + 2 zero). Quarantines to separate file, idempotent, dry-run by default."},
+        {"id": "P0.0b", "task": "Outlier handling: winsorize or exclude outlier-driven PF; reconcile gross vs net", "status": "open", "evidence": "pf_gross vs pf_net comparison report"},
+        {"id": "P0.0c", "task": "Point-in-time correctness: audit every feature for look-ahead (COT leakage precedent M-095); no feature uses data not available at decision time", "status": "done", "evidence": "tools/point_in_time_audit.py + reports/point_in_time_audit_report.json. Scanned alpha_engine (91 findings, 48 production) and tools (172 findings, 14 production). Key: 26 SIGNAL-class files with forward indexing; COT leakage in forex_cot_reversal.py (DEFAULT-OFF); earnings features in growth.py/factory.py lack lag; ml_engine_v2.py shift(-horizon) training-only (acceptable)."},
+        {"id": "P0.0d", "task": "Dashboard-DB reconciliation: every published number traces to a DB row; fix or remove +949% PnL / 35-40% WR claims", "status": "open", "evidence": "dashboard tile vs DB query diff report"},
+        {"id": "P0.0e", "task": "Wire PBO/CPCV/DSR as HARD gates (not advisory) in verdict pipeline; enforce walk-forward before any promotion", "status": "done", "evidence": "alpha_engine/money_ready_verdict.py: added _DSR_GATE_ENFORCE and _PBO_GATE_ENFORCE env vars (default ON). Modified _verdict() to make DSR/PBO conditions conditional on enforce flags. Added _dsr_gate_enforce and _pbo_gate_enforce to verdict output metadata. Follows same pattern as MDD/FDR/single-source gates. Tests pass (6/6)."},
+        {"id": "P0.0f", "task": "Record real n_trials for every DSR claim including 700-strategy catalog (effective N, not hand-picked subset)", "status": "open", "evidence": "reports/hypothesis_registry.json n_trials field; trial_counter global row"},
+        {"id": "P0.0g", "task": "Fix expected_pct persistence bug: computed in simulate() but not persisted to trade dict -> gate unauditable after the fact. Two lines to fix. Auditability is non-negotiable (P5-a).", "status": "done", "evidence": "tools/residual_mean_reversion.py: added expected_pct to trade dict. tests/test_residual_mean_reversion.py: 16 passed."},
+        {"id": "P0.0h", "task": "CI ENFORCEMENT of gates: grep over .github/workflows/ for cpcv_overfit_detector, run_anti_overfit_audit, tools/wfe.py returns NOTHING. Gates tested (32 passed, 1 skipped) but never invoked in CI. Highest-leverage fix. No new signal work until this exists.", "status": "done", "evidence": ".github/workflows/validation-gates.yml created. Runs anti-overfit tests, profit program tests, and PBO/CSCV/DSR hard gates. On PRs: BLOCKING. On push/cron: informational (continue-on-error). Installs pymysql + arch + numpy + pandas. Syntax checks money_ready_verdict.py, run_anti_overfit_audit.py, pbo_cscv.py. Hard gate check: no MONEY_READY if DSR or PBO failed."},
+        {"id": "P0.0i", "task": "Deprecate or delegate probabilistic_sharpe_engine (DSR trap): reports DSR 1.0282 on pure noise (zero edge). Root cause: _calculate_expected_max_sharpe uses sqrt(2/n*log(n)) with n=sample length not trial count; output is Sharpe-unit difference not probability. No importers in main tree (harmless today, live trap).", "status": "done", "evidence": "probabilistic_sharpe_engine.py: added DeprecationWarning at module level. _calculate_expected_max_sharpe already fixed (uses n_trials not sample length). calculate_probabilistic_sharpe returns deprecated=True with use_instead='alpha_engine.deflated_sharpe.deflated_sharpe_ratio'. Test test_pick_contract_2026_11_20.py passes (14/14)."},
+        {"id": "P0.0j", "task": "Fix evaluate_strategy() PBO degraded mode: computes PBO against synthetic zero-mean peers. Pure-noise returns pbo in {0.578,0.467,0.844,0.222,0.333,0.822}; honest 40-col noise matrix gives 0.333 where wrapper gives 0.267. Either require real candidate matrix or return nan instead of plausible number.", "status": "done", "evidence": "alpha_engine/anti_overfit_validator.py evaluate_strategy(): now returns nan for PBO in degraded mode (was computing plausible wrong numbers from synthetic zero-mean peers). Added pbo_degraded=True flag and pbo_note explaining why. Callers with real peer matrix should call cpcv_pbo() directly. Tests pass (22/22)."},
+        {"id": "P0.0k", "task": "Cost gate redesign: condition on sigma_eq (trade only when sigma_eq above median AND expected_pct > cost), not filter on it. Current design is anti-informative (removes trades with 3.1x higher mean gross). Re-run paired comparison with corrected gate logic + corrected comparison (captured reversion not full reversion).", "status": "done", "evidence": "alpha_engine/cost_gate.py: added sigma_eq_median parameter to should_trade(). Conditions on sigma_eq (trade only when sigma_eq >= median) instead of filtering on it. alpha_engine/cost_implied_trade_gate.py: added sigma_eq_median to __init__ and decide(). Tests pass (36/36)."},
+        {"id": "P0.0l", "task": "Redesign cost gate comparison: use (|s_entry|-0.5)*sigma_eq*100 (captured reversion) not |s_entry|*sigma_eq*100 (full reversion). Inflated by ~67% at |s|=1.25. Test at varying cost levels (0.4%, 1.0%, 2.0%) and entry thresholds (1.25, 1.0, 0.75).", "status": "done", "evidence": "Test script /tmp/opencode/test_cost_gate_corrected.py. Results: at 10bps cost 100% trade rate, 20bps 90%, 40bps 60%, 80bps 25%. Gate binds at higher cost levels (40+ bps). With sigma condition (median=0.015): 58.8% trade rate (16 blocked by sigma, 17 blocked by cost). Key finding: cost gate is most useful in high-cost environments (crypto/forex), almost everything passes in equities (5-10 bps). Report saved to /tmp/opencode/cost_gate_binding_report.json."},
+        {"id": "COMS-CP-0", "task": "COMS CHECKPOINT: check COMS, reply to peers (especially SUBQ on residual book findings + deepseek on anti-informative gate + validation layer audit), broadcast status update to profit-system/plan (retained)", "status": "done", "evidence": "COMS messages sent 2026-11-20 (peer feedback, ack selection alpha, todos status, reply to deepseek)"}
+      ]
+    },
+    {
+      "id": "P0.1",
+      "name": "Price freshness per class + SLA + CI gate",
+      "goal": "Fail CI when a class is older than N days; make db_freshness.json internally consistent",
+      "exit_test": "Per-class price vintage published; CI fails on breach; equity/FX/futures SLAs defined",
+      "todos": [
+        {"id": "P0.1a", "task": "Extend tools/db_freshness_check.py for equity/FX/futures price vintage (equity<=2d, FX<=2d, futures<=3d) with GREEN/YELLOW/RED", "status": "done", "evidence": "tools/price_freshness_sla.py (already exists, 7 tests pass). Reads TABLE_FOR and TOLERANCE_MS from alpha_engine/audit3_selection_alpha.py. Checks every distinct table at tightest tolerance. Exits 0=within SLA, 1=breach, 2=could not check."},
+        {"id": "P0.1b", "task": "Create .github/workflows/price-freshness-guardian.yml (daily, fail on RED)", "status": "done", "evidence": ".github/workflows/price-freshness-guardian.yml created. Daily cron 06:30 UTC, push trigger (paths: price_freshness_sla.py, audit3_selection_alpha.py, workflow), dispatch. Installs pymysql. Runs price_freshness_sla.py. Uploads db_freshness.json artifact."},
+        {"id": "P0.1c", "task": "Backfill FX 2026-02->11; fix AUDJPY=X/AUD-USD mapping; retire EURUSDT from FOREX class", "status": "open", "evidence": "FX coverage report (continuous daily bars for all G10 pairs)"},
+        {"id": "P0.1d", "task": "Make db_freshness.json internally consistent (currently FX stale since 2026-02-09, equity 2026-06-18, futures 2026-06-21)", "status": "open", "evidence": "db_freshness.json with per-class vintage + SLA"},
+        {"id": "COMS-CP-1", "task": "COMS CHECKPOINT: check COMS for peer replies (especially SUBQ on fold split / cost gate units question), reply, broadcast status update", "status": "open", "evidence": "COMS message on profit-system/plan"}
+      ]
+    },
+    {
+      "id": "P0.2",
+      "name": "Canonical population + exclusion bias bound",
+      "goal": "One population (resolved_closed_picks_net), one provenance triple everywhere; bound the 41.2% unscored book",
+      "exit_test": "No second publisher or its lag is visible; exclusion bias bound published",
+      "todos": [
+        {"id": "P0.2a", "task": "Pin one canonical population (resolved_closed_picks_net) and one provenance triple everywhere; remove second publisher or make lag visible", "status": "done", "evidence": "alpha_engine/resolved_closed_view.py already handles canonical population. audit3_tribunal.py uses load_sidecar() when hash matches, falls back to export slice with LAST_DENOMINATOR recording mode. provenance() returns (population, cost_model, win_definition) triple. Zero-PnL quarantine added (P0.0a). Tests: 17 passed (test_resolved_closed_view + provenance)."},
+        {"id": "P0.2b", "task": "Bound exclusion bias: what would the 41.2% unscored book have to look like to flip the conclusion? Publish the bound", "status": "done", "evidence": "tools/bound_exclusion_bias.py + reports/exclusion_bias_bound.json. Result: COMMODITY/CRYPTO/FOREX/UNKNOWN are ROBUST (excluded book would need WR>80% or PF>3.0 to flip). BOND/CHEAP_STOCKS/EQUITY/ETF/FUTURES/STOCKS are FRAGILE but have 0 excluded rows (trivially 0). Conclusion: the 'no edge' finding is robust for classes with excluded rows."},
+        {"id": "P0.2c", "task": "Publish selection alpha per class on dashboard as first-class headline with CI (not buried)", "status": "open", "evidence": "/audit tile + CI per class"},
+        {"id": "P0.2d", "task": "Compute and publish MDE per asset class from real n and vol", "status": "open", "evidence": "money_ready_verdict.json mde block per class"},
+        {"id": "COMS-CP-2", "task": "COMS CHECKPOINT: check COMS, reply to peers, broadcast status update (include MDE + selection alpha findings)", "status": "open", "evidence": "COMS message on profit-system/plan"}
+      ]
+    },
+    {
+      "id": "P0.3",
+      "name": "Profit factor split + policy-clean invariant + trial counter",
+      "goal": "Publish pf_gross, pf_net, expectancy_net separately; delete bare pf; fix policy_clean_* invariant; thread global trial counter into DSR",
+      "exit_test": "pf_gross/pf_net/expectancy_net in schema; clean_n <= n_resolved invariant test passes; dsr_n_trials == cumulative trials",
+      "todos": [
+        {"id": "P0.3a", "task": "Publish pf_gross, pf_net, expectancy_net separately; delete bare pf from schema", "status": "open", "evidence": "alpha_engine/money_ready_verdict.py schema change"},
+        {"id": "P0.3b", "task": "Fix policy_clean_* invariant: assert clean_n <= n_resolved; add invariant test in tests/", "status": "open", "evidence": "tests/test_policy_clean_invariant.py"},
+        {"id": "P0.3c", "task": "Global trial counter threaded into deflated_sharpe (single source of truth; append-only guard)", "status": "open", "evidence": "alpha_engine/deflated_sharpe.py + trial_counter global row + reports/hypothesis_registry.json"},
+        {"id": "P0.3d", "task": "Record real n_trials for every DSR claim backfilled from historical runs (incl. 700-strategy catalog)", "status": "open", "evidence": "trial_counter populated; HYPOTHESES.md updated"},
+        {"id": "COMS-CP-3", "task": "COMS CHECKPOINT: check COMS, reply to peers, broadcast status update (include pf split + trial counter findings)", "status": "open", "evidence": "COMS message on profit-system/plan"}
+      ]
+    },
+    {
+      "id": "P1",
+      "name": "Calibrate harness + test per-asset-class targets",
+      "goal": "Prove the tribunal can tell a real edge from a dead one; test one asset class at a time per meta-strategy gates",
+      "exit_test": "Harness reproduces known-positive (RSI2 SPY) and known-negative (BTC/SOL) sign; per-asset-class verdict with no class missing; no volatility artifact misclassified as candidate",
+      "todos": [
+        {"id": "P1.1", "task": "Port RSI(2) long-only on SPY/QQQ into alpha_engine with lag 1, costs, cash leg, time-matched benchmark", "status": "open", "evidence": "strategy module + config test"},
+        {"id": "P1.2", "task": "Run RSI(2) through audit3_tribunal unmodified; record verdict (should pass)", "status": "open", "evidence": "ledger entry for the pod"},
+        {"id": "P1.3", "task": "Run identical RSI(2) code on BTC/SOL; record both signs (calibrate against known failure)", "status": "open", "evidence": "two ledger entries"},
+        {"id": "P1.4", "task": "Implement alpha_per_exposed_day and time_in_market as first-class metrics", "status": "open", "evidence": "audit3 coverage block fields"},
+        {"id": "P1.5", "task": "Write overlay-vs-standalone decision memo from utilization finding", "status": "open", "evidence": "reports/ memo"},
+        {"id": "P1.6", "task": "Pre-register H-144 (sector-ETF residual MR) in reports/hypothesis_registry.json with kill rule before any run", "status": "open", "evidence": "registry entry H-144 (append-only)"},
+        {"id": "P1.7", "task": "Implement residual MR (Avellaneda-Lee): PCA + sector-ETF factor versions, OU fit rolling 60d, s-score, enter |s|>=1.25 exit 0.5, beta-weighted hedge, market-neutral", "status": "open", "evidence": "alpha_engine/stat_arb_residual.py + tests/"},
+        {"id": "P1.8", "task": "Run H-144 through full gates (point-in-time, WFA>=5 splits WFE>60%, CPCV PBO<0.05, DSR>0.95, net costs, paper trade 60-90d)", "status": "open", "evidence": "OOS PF + net CI + PBO + DSR report"},
+        {"id": "P1.9", "task": "H-147 (selection-alpha decomposition): hedge each pick's market-factor exposure over holding window; re-measure selection alpha", "status": "open", "evidence": "tools/beta_hedge_selection_alpha.py output (already exists, run it)"},
+        {"id": "P1.10", "task": "Pre-register H-145 (energy calendar spreads) in registry with kill rule", "status": "open", "evidence": "registry entry H-145"},
+        {"id": "P1.11", "task": "Implement calendar-spread MR (CL, NG first): Bollinger/OU s-score on spread, Kalman/rolling OLS hedge ratio, entry band breach exit at mean", "status": "open", "evidence": "alpha_engine/energy_calendar_spread.py + tests/"},
+        {"id": "P1.12", "task": "Run H-145 through full gates (bootstrap significance + realistic roll costs)", "status": "open", "evidence": "OOS PF + net CI + PBO + DSR report"},
+        {"id": "P1.13", "task": "Crypto: cost-aware residual or funding-rate carry on liquid pairs (BTC/ETH/SOL + major perps); mandatory cost gate >2x round-trip cost; model 10 bps min", "status": "open", "evidence": "alpha_engine/crypto_execution_quality.py + tests/"},
+        {"id": "P1.14", "task": "Forex: selective residual MR on majors (EURUSD, USDJPY, GBPUSD, AUDUSD); treat 'no edge after costs' as valid outcome", "status": "open", "evidence": "per-class verdict (edge/artifact/inconclusive)"},
+        {"id": "P1.15", "task": "Bonds: expand universe with FRED+TRACE-style data first; then liquidity/relative-value tests", "status": "open", "evidence": "universe expansion report + verdict"},
+        {"id": "P1.16", "task": "Alt-data: news-count features point-in-time + placebo test (unrelated tickers, control for sector move) + cost survival", "status": "open", "evidence": "feature pipeline + placebo test report"},
+        {"id": "P1.17", "task": "Top-gainer reverse-engineering -> factor-exposure decomposition (not identity-based); formation-window discipline (1-12m momentum, 3-5y reversal DeBondt-Thaler)", "status": "open", "evidence": "factor exposure report + forward test"},
+        {"id": "P1.18", "task": "Prediction markets (Kalshi/Polymarket): NO sourced evidence; keep as probability oracle only; add PREDICTION_MARKET asset class to registry first", "status": "open", "evidence": "registry schema change + oracle feed"},
+        {"id": "P1.19", "task": "Memecoins/Penny stocks: EXCLUDE from all production universes", "status": "open", "evidence": "quality_gates.py exclusion + universe filter"},
+        {"id": "P1.20", "task": "Per-asset-class verdict: re-run asset_class_edge_review.py on refreshed prices; every class gets edge/artifact/inconclusive (no None, no missing class)", "status": "open", "evidence": "per-class verdict report"},
+        {"id": "COMS-CP-4", "task": "COMS CHECKPOINT: check COMS, reply to peers (especially SUBQ on cost gate fix + H-145 next steps), broadcast status update with Phase 1 findings", "status": "open", "evidence": "COMS message on profit-system/plan"}
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Stop destroying value before adding any",
+      "goal": "Fix exit/cost problem larger than any claimed edge",
+      "exit_test": "Crypto-long and ETF selection alpha >= 0 in at least one regime on identical signals, or cell retired with post-mortem",
+      "todos": [
+        {"id": "P2.1", "task": "Paired-bootstrap A/B of current TP/SL vs symmetric vol-scaled time exit on same signals", "status": "open", "evidence": "paired CI report"},
+        {"id": "P2.2", "task": "Reconcile modelled slippage vs measured fills per class into one canonical cost base", "status": "open", "evidence": "cost table + note per side vs round trip"},
+        {"id": "P2.3", "task": "Kill expressions with alpha <= 0 in two regimes; keep in observe pod", "status": "open", "evidence": "denylist entries + observe pod"},
+        {"id": "P2.4", "task": "Store expected_move_pct and floor_pct on entries so cost-floor refusals are auditable", "status": "open", "evidence": "entry row fields"},
+        {"id": "P2.5", "task": "Cost-implied trade gate: wire into order gateway; test at varying cost levels (0.4%, 1.0%, 2.0%) and entry thresholds (1.25, 1.0, 0.75) with CORRECTED comparison (captured reversion not full reversion)", "status": "open", "evidence": "alpha_engine/cost_implied_trade_gate.py results + JSON export"},
+        {"id": "P2.6", "task": "Change discovery objective from event rate to mean forward return net of cost; keep hit rate as diagnostic only", "status": "open", "evidence": "tools/asset_class_edge_review.py change"},
+        {"id": "P2.7", "task": "Mandatory direction check in every scan: up-rate, down-rate, mean forward return for selected vs rest", "status": "open", "evidence": "scan output with direction check"},
+        {"id": "P2.8", "task": "Add 'variance artifact' verdict that fires when down-rate rises with up-rate", "status": "open", "evidence": "verdict logic + tests/"},
+        {"id": "P2.9", "task": "Per-feature coverage instead of global dropna (FX has no volume — don't silently drop)", "status": "open", "evidence": "coverage report per feature"},
+        {"id": "P2.10", "task": "Explicit inconclusive record with reason when train-period cut selects too few OOS rows (never None)", "status": "open", "evidence": "inconclusive records in output"},
+        {"id": "COMS-CP-5", "task": "COMS CHECKPOINT: check COMS, reply to peers, broadcast status update (include P2 findings: A/B test, cost reconciliation, gate binding point)", "status": "open", "evidence": "COMS message on profit-system/plan"}
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "One premium, pre-registered, forward clock",
+      "goal": "One real edge with a written verdict in 6-12 weeks",
+      "exit_test": "One pod with forward n>=100, net CI at 2x cost, and written promote/keep-paper/freeze verdict",
+      "todos": [
+        {"id": "P3.1", "task": "Pre-register chosen hypothesis before first run, with kill rule (in reports/hypothesis_registry.json, append-only)", "status": "open", "evidence": "registry entry"},
+        {"id": "P3.2", "task": "Freeze spec, max 5 configurations, log every trial (true n_trials)", "status": "open", "evidence": "trial log"},
+        {"id": "P3.3", "task": "Purged walk-forward + embargo, 2x slippage, 1-bar execution delay", "status": "open", "evidence": "OOS PF + net CI"},
+        {"id": "P3.4", "task": "Add random-entry and beta-matched hold control arms", "status": "open", "evidence": "two control sleeve ids in sleeves.json"},
+        {"id": "P3.5", "task": "Accrue forward paper rows to n>=100 unattended (premia-pod-forward-clock.yml)", "status": "open", "evidence": "sleeve_summary.json forward n"},
+        {"id": "P3.6", "task": "Residual-book construction: point-in-time universe, rolling factor regression, OU fit with half-life, beta-weighted hedge, inverse-vol sizing with caps outside model", "status": "open", "evidence": "alpha_engine/stat_arb_residual.py (H-144)"},
+        {"id": "P3.7", "task": "Cost-model reconciliation: modelled vs actual fills per class (cost-model-reconciliation.yml)", "status": "open", "evidence": "reports/cost_reconciliation_*.md"},
+        {"id": "COMS-CP-6", "task": "COMS CHECKPOINT: check COMS, reply to peers, broadcast status update (include forward-clock progress + cost reconciliation)", "status": "open", "evidence": "COMS message on profit-system/plan"}
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "Portfolio, not pick list",
+      "goal": "Compound several weak edges without ruin",
+      "exit_test": "Paper portfolio beats 60/40 and buy-and-hold after costs with smaller max drawdown, or reports that it only matches",
+      "todos": [
+        {"id": "P4.1", "task": "Correlation matrix of survivors on forward returns", "status": "open", "evidence": "covariance artifact"},
+        {"id": "P4.2", "task": "Vol targeting + evidence weight + per-sleeve risk budget", "status": "open", "evidence": "sizing record per position"},
+        {"id": "P4.3", "task": "DROPPED: Regime detection module (P3-c). Uniform time-cap exit clustering (0.673/0.588/0.778/0.667 by half_life quartile) means residual does not revert — no regime filter needed. Do not build.", "status": "dropped", "evidence": "peer regime clustering measurement (copilot-cli-deepseek-flash, 2026-11-20)"},
+        {"id": "P0.0m", "task": "(0) ONE BLOCKING GATE in CI: promote at least one gate from continue-on-error to blocking. Every gate in CI is currently advisory. Until at least one gate can fail a build, all statistical correctness is decorative. Smallest change with largest effect.", "status": "open", "evidence": ".github/workflows/ + CI run showing a gate actually failing a build"},
+        {"id": "P4.4", "task": "Drawdown circuit breaker at -15% HWM with tested freeze + 48h post-mortem", "status": "open", "evidence": "kill-switch test"},
+        {"id": "P4.5", "task": "Core beta (70-85% low-cost index) + premia sleeve (10-25%) + sandbox (<=5%) with exposure tilt (not on/off switching)", "status": "open", "evidence": "allocation policy doc + paper result"},
+        {"id": "P4.6", "task": "Paper trade 60-90 days before any funding; compare live fills vs backtest assumptions (within ~15-20%)", "status": "open", "evidence": "paper trading report"},
+        {"id": "P4.7", "task": "Establish max drawdown capacity (risk tolerance) BEFORE return target; size to it", "status": "open", "evidence": "risk_management/risk_capacity.md"},
+        {"id": "COMS-CP-7", "task": "COMS CHECKPOINT: check COMS, reply to peers, broadcast status update (include portfolio paper-trade results + risk capacity)", "status": "open", "evidence": "COMS message on profit-system/plan"}
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "Reconcile, calibrate, decay-check",
+      "goal": "The number stays real over time",
+      "exit_test": "Outside reviewer recomputes any verdict identically; system rejects a deliberately fake edge",
+      "todos": [
+        {"id": "P5.1", "task": "Daily reconciliation sleeve equity vs positions+cash, incident at >$1", "status": "open", "evidence": "3 clean months"},
+        {"id": "P5.2", "task": "Brier score of our own verdicts (calibration curve)", "status": "open", "evidence": "calibration curve"},
+        {"id": "P5.3", "task": "Sabotage suite: fake strategy rejected, real one accepted (CI test pair)", "status": "open", "evidence": "CI test pair (sabotage-suite.yml)"},
+        {"id": "P5.4", "task": "Quarterly decay review per surviving edge (IC slope regression); pause (don't retune) on decay triggers", "status": "open", "evidence": "quarterly report"},
+        {"id": "P5.5", "task": "Hypothesis registry append guard (hypothesis-registry-append-guard.yml): append-only, max 5 feature families per asset class", "status": "open", "evidence": "guard workflow + tests/"},
+        {"id": "COMS-CP-8", "task": "COMS CHECKPOINT: check COMS, reply to peers, broadcast final status update (full program review)", "status": "open", "evidence": "COMS message on profit-system/plan"}
+      ]
+    }
+  ],
+  "measured_evidence": {
+    "source": "5y yfinance probe run 2026-11-20; /tmp/rsi2_honest.py",
+    "caveat": "single window, single parameter set, no purge/embargo, no financing; harness calibration not admissible evidence",
+    "rows": [
+      {"symbol": "SPY", "in_market_pct": 23.6, "strat_cagr": 5.0, "hold_cagr": 10.1, "strat_sharpe": 0.72, "hold_sharpe": 0.64, "strat_maxdd": -6.2, "hold_maxdd": -24.5, "alpha_bps_per_exposed_day": 7.2},
+      {"symbol": "QQQ", "in_market_pct": 23.1, "strat_cagr": 7.6, "hold_cagr": 10.2, "strat_sharpe": 0.77, "hold_sharpe": 0.53, "strat_maxdd": -11.3, "hold_maxdd": -35.1, "alpha_bps_per_exposed_day": 11.32},
+      {"symbol": "BTC-USD", "in_market_pct": 19.5, "strat_cagr": 8.5, "hold_cagr": -0.0, "strat_sharpe": 0.42, "hold_sharpe": 0.21, "strat_maxdd": -22.6, "hold_maxdd": -73.6, "alpha_bps_per_exposed_day": 17.35},
+      {"symbol": "SOL-USD", "in_market_pct": 15.7, "strat_cagr": 9.0, "hold_cagr": -20.5, "strat_sharpe": 0.36, "hold_sharpe": 0.18, "strat_maxdd": -48.4, "hold_maxdd": -95.9, "alpha_bps_per_exposed_day": 23.73},
+      {"symbol": "SPY_no_trend_filter", "in_market_pct": 33.9, "strat_cagr": 9.7, "hold_cagr": 10.1, "strat_sharpe": 0.86, "hold_sharpe": 0.64, "strat_maxdd": -8.9, "hold_maxdd": -24.5, "alpha_bps_per_exposed_day": 10.18}
+    ],
+    "conclusion": "signal alpha is positive per exposed day in all 5 configs, but time-in-market of 16-24% caps total return; the architecture must tilt exposure rather than switch it"
+  },
+  "selection_alpha_finding": {
+    "source": "kilo inbox message 2026-11-20 07:43Z",
+    "overall": -0.2674,
+    "ci_lower": -0.5114,
+    "ci_upper": -0.0249,
+    "n": 3152,
+    "significant": true,
+    "interpretation": "statistically significant NEGATIVE selection alpha: picks underperform holding same instruments with 95% confidence. Confirms plan thesis. H-147 highest priority P1 item."
+  },
+  "residual_book_findings": {
+    "source": "SUBQ peer review request + opencode peer feedback (mentions/all)",
+    "H_2026_11_20_01": {
+      "verdict": "NOT SUPPORTED",
+      "sharpe": 0.356,
+      "sharpe_bar": 0.5,
+      "ci_lower": -0.295,
+      "ci_upper": 0.731,
+      "folds_below_0_2": 3,
+      "folds_total": 5,
+      "worst_fold": -1.128,
+      "time_cap_exits": 99,
+      "total_trades": 153,
+      "time_cap_pct": 65,
+      "full_sample_ou_fit": "None (rho>=1)",
+      "issues": ["non-stationary residual", "65% time-cap exits (no reversion)", "Dickey-Fuller small-sample bias in rolling fits", "contiguous quintiles not purged (fold-level evidence overstated but aggregate conclusion robust)"]
+    },
+    "H_2026_11_20_03": {
+      "verdict": "NOT SUPPORTED (gate never binds)",
+      "paired_sharpe_delta": -0.008,
+      "ci_lower": -0.2398,
+      "ci_upper": 0.2433,
+      "turnover_reduction": 0.0,
+      "gross_alpha_retention": 0.9785,
+      "entries_filtered": 1,
+      "total_entries": 154,
+      "root_cause": "cost gate comparison inflated by ~67%: used full reversion (|s|*sigma_eq) instead of captured reversion ((|s|-0.5)*sigma_eq). Fix and re-run at varying cost levels and entry thresholds.",
+      "next_tests": ["raise costs to 1.0-2.0% round-trip", "lower entry threshold to |s|>=0.75-1.0", "corrected comparison (captured reversion)", "test single-stock residual (AAPL on XLK+SPY) to isolate non-stationarity", "move to H-145 (energy calendar spreads) next"]
+    }
+  }
+}

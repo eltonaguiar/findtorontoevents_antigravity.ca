@@ -1,0 +1,3477 @@
+{
+ "schema": "gha_quality.v1",
+ "n_workflows": 375,
+ "n_parse_errors": 1,
+ "aggregate_score": 94.4,
+ "by_rule": {
+  "Q1": 60,
+  "Q10": 28,
+  "Q2": 10,
+  "Q3": 28,
+  "Q4": 4,
+  "Q5": 21,
+  "Q6": 166,
+  "Q7": 40,
+  "Q8": 4,
+  "Q9": 15
+ },
+ "by_severity": {
+  "P0": 61,
+  "P1": 42,
+  "P2": 273
+ },
+ "blocking_violations": 103,
+ "rules": {
+  "Q1": {
+   "name": "cron-stampede",
+   "severity": "P2",
+   "why": "two workflows scheduled at the same minute contend for runners and API budget"
+  },
+  "Q2": {
+   "name": "unpinned-action",
+   "severity": "P1",
+   "why": "a mutable tag (or none) can change under you or be taken over"
+  },
+  "Q3": {
+   "name": "write-all-default",
+   "severity": "P1",
+   "why": "a pushing workflow with no `permissions:` runs with the repo default (often write-all)"
+  },
+  "Q4": {
+   "name": "self-push-without-skip-ci",
+   "severity": "P2",
+   "why": "a commit step without [skip ci] re-triggers the workflow (push trigger => loop)"
+  },
+  "Q5": {
+   "name": "duplicate-producer",
+   "severity": "P0",
+   "why": "two workflows write the same artifact path (the class of bug that made /audit lag /audit3)"
+  },
+  "Q6": {
+   "name": "orphan-artifact",
+   "severity": "P2",
+   "why": "a produced JSON that no workflow consumes (dead output, or a consumer was renamed)"
+  },
+  "Q7": {
+   "name": "silent-failure",
+   "severity": "P0",
+   "why": "continue-on-error or `|| true` on a gate-shaped step hides a failed check"
+  },
+  "Q8": {
+   "name": "missing-timeout",
+   "severity": "P1",
+   "why": "no timeout-minutes is the phantom-queue generator (runs hang until GitHub kills them)"
+  },
+  "Q9": {
+   "name": "secret-sprawl",
+   "severity": "P2",
+   "why": "one secret referenced by more workflows than the fan-in bound widens blast radius"
+  },
+  "Q10": {
+   "name": "dead-schedule",
+   "severity": "P2",
+   "why": "a cron whose workflow has not run in > 2x its interval is silently dead"
+  }
+ },
+ "findings": [
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "36 workflows share cron minute :0",
+   "evidence": "Analyst Tracker  Top 20 Crypto Analysts (0 * * * *); Automated Reporting (0 8 * * *); Automated Reporting (0 9 * * 1); Branch Large File Duplicate Guard (0 6 * * 0); Claude Code Gainer ML Tracker (0 6 * * 0); Cost Model Reconciliation (0 6 * * 1); Crypto Winner Scanner  Auto Scan (0 */6 * * *); Crypto Winner Scanner  Auto Scan (0 3 * * 0); Daily Regime Detection + Position Sizing (0 14 * * 0); Edge stability refresh (0 0 * * *); Gate Config Emit (0 5 * * *); KIMI_FEB172026 - Live Trading System (0 */2 * * *); KIMI_FEB172026 - Live Trading System (0 */4 * * *); KIMI_FEB172026 - Live Trading System (0 0 * * *); Live Trading Monitor  Auto Refresh (0 2 * * 0); Master Automation Scheduler (0 * * * *); Master Automation Scheduler (0 */4 * * *); Master Automation Scheduler (0 0 * * 0); Master Automation Scheduler (0 3 * * *); Meme Coin Scanner Auto Scan & Resolve (0 */2 * * *); Meme Coin Scanner Auto Scan & Resolve (0 */3 * * *); Meme Coin Scanner v2  Fixed & Monitored (0 * * * *); Meme Coin Scanner v2  Fixed & Monitored (0 */3 * * *); Meta-Strategy Permutation Engine (0 5,11,17,23 * * *); Run Backtests & Deploy Dashboards (0 */4 * * 0,6); Run Backtests & Deploy Dashboards (0 14,16,18,20 * * 1-5); Run Backtests & Deploy Dashboards (0 6 * * *); SEC EDGAR  Insider Trades & 13F Holdings (0 13 * * 1-5); SEC EDGAR  Insider Trades & 13F Holdings (0 6 * * 0); Secret Scan (M-043) (0 4 * * *); World-Class Algorithm Pipeline (0 15 * * 0); World-Class Intelligence  Daily Pipeline (0 14 * * 0); [torontoevent.net] Run Backtests & Deploy Dashboards (0 */4 * * 0,6); [torontoevent.net] Run Backtests & Deploy Dashboards (0 6 * * *); \ud83e\udde0 Smart Money Intelligence (0 11 * * 1-5); \ud83e\udde0 Smart Money Intelligence (0 14 * * 0)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :1",
+   "evidence": "Bond Agent (1 14 * * 1-5); Daily Miracle DayTrades Scan (1 23 * * 1-5); Live Trading Bot (1 */4 * * *); Weekly Real-Money Filter (1 6 * * 1)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :10",
+   "evidence": "Beta Portfolio Refresh (monthly) (10 6 1 * *); DNA Mutation Cycle (10 5 * * *); Daily Runs (10 0 * * *); Dynamic Universe Scanner (10 */2 * * *); Unified Audit Dashboard (10 */3 * * *); pod emission audit (10 5 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :11",
+   "evidence": "Academic Strategies Daily (11 13 * * *); Continuous Improvement Monitor (11 */2 * * *); Discord Channel Heartbeat (11 */4 * * *); H-002 PEAD Shadow Collector (11 22 * * 1-5); UEPS Swing Screener Daily (11 14 * * 1-5); Weekly Strategy Scorecard (11 0 * * 0)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "5 workflows share cron minute :12",
+   "evidence": "AsterDEX Paper Trading (12 * * * *); DB Freshness Guardian (12 * * * *); Live Trading Bot - Canada Edition (12 */4 * * *); Prediction Market Agents (12 */2 * * *); swarm-janitor (12 4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :13",
+   "evidence": "Hindsight Learner  Hourly Winner Analysis (13 * * * *); Mutation Lifecycle Runner (13 5 * * *); Mutation analysis report (13 6 * * 1); QA Market Validation (13 * * * *); Quick Guess ML Agent (13 * * * *); Self-Optimizing Trading Bot - Auto-Validates & Tweaks (13 */4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "12 workflows share cron minute :14",
+   "evidence": "Alpha Engine  Daily Picks (14 22 * * 1-5); Alpha Engine  Daily Picks (14 5 * * 0); Equities & Stocks Agent (14 13 * * 1-5); Equities & Stocks Agent (14 21 * * 1-5); Hoffman IRB Strategy Tracker (14 */6 * * *); ML Feedback Retrain  Learn from Closed Trades (14 */12 * * *); Non-Crypto A/B Portfolio Tracker (14 1 * * 1-5); Non-Crypto A/B Portfolio Tracker (14 13 * * 1-5); Non-Crypto A/B Portfolio Tracker (14 19 * * 1-5); Non-Crypto A/B Portfolio Tracker (14 7 * * 1-5); STOCKSUNIFY2 daily-stocks pull (14 13 * * *); Signal Quality Monitor (14 * * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "10 workflows share cron minute :15",
+   "evidence": "Analyst Tracker  Top 20 Crypto Analysts (15 */4 * * *); Asset Class Freshness Watchdog (15 13 * * *); Claude Code Gainer ML Tracker (15 */4 * * *); Claude Code Gainer ML Tracker (15 13 * * *); Low-Score Winner Tracker (15 * * * *); ML Feedback Loop (15 */6 * * *); Walk-Forward Backtest (Weekly) (15 8 * * 0); [torontoevent.net] Goldmine Tracker - Archive & Maintain (15 0 * * *); [torontoevent.net] Goldmine Tracker - Archive & Maintain (15 18 * * *); [torontoevent.net] Goldmine Tracker - Archive & Maintain (15 7 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "3 workflows share cron minute :16",
+   "evidence": "A/B Analysis + Zero-PnL Audit (16 5 * * *); ALPHA ENGINE - Adaptive Trust Tuner (16 0,12 * * *); Test Portfolios  Hourly Strategy Validation (16 * * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "2 workflows share cron minute :17",
+   "evidence": "GHA queue & duration audit (17 */4 * * *); sleeve daily marks (17 22 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :18",
+   "evidence": "Blacklist Reconciler (cross-check vs live systems) (18 4 * * *); Edge stability refresh (18 1 * * *); POC Picks Checkpoint (2-week reminder) (18 21 18 7 *); POC Picks Checkpoint (2-week reminder) (18 21 20 7 *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :19",
+   "evidence": "Audit Hourly Update (19 * * * *); Hierarchical Bayesian Edge Update (19 2 * * *); Operator Review \u2014 Manual Candidates daily snapshot (19 7 * * *); Rapid Validation Engine (19 */4 * * *); Sports Forensics Weekly (19 6 * * 1); macd_rsi_m048 Shadow Generator (19 23 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :2",
+   "evidence": "Daily Picks Snapshot  Crypto, Forex & Stocks (2 22 * * 1-5); Daily Picks Snapshot  Crypto, Forex & Stocks (2 5 * * 1); Hyro daily (filter + backtest) (2 13 * * *); ML Strategy Reviver Bridge & Standalone (2 */2 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "8 workflows share cron minute :20",
+   "evidence": "Alpha Engine - Weekly Validation Suite (20 6 * * 1); Daily Top-Picks Filter (20 */4 * * *); GHCOPILOT prospective paper monitor (20 * * * *); Kalshi snapshot (sports markets cache) (20 */6 * * *); Meta-Strategy Permutation Engine (20 * * * *); Send Accountability Reminders (20 * * * *); Smart Picks Tracker (20 * * * *); audit3 Health Monitor (20 5,17 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :22",
+   "evidence": "ETF Agent (22 14 * * 1-5); Mirror: findtorontoevents.ca  torontoevent.net (22 */6 * * *); Missed Opportunity Analyzer Hourly Self-Improvement (22 * * * *); Pick Data Quality Gate (22 13 * * *); Strategy Perf By Class Rebuild (22 13 * * *); TradingView Strategy Scanner (22 */4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :23",
+   "evidence": "ALPHA ENGINE - Dynamic Runner (Cloud or Local) (23 */2 * * *); Benchmark Comparison  Daily (23 7 * * *); Feature Stability Check (Weekly) (23 6 * * 1); ML System Health Monitor (23 */6 * * *); Statistical Rigor Validation - Thousands of Signals (23 0 * * *); audit3 ledger (23 */6 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "7 workflows share cron minute :24",
+   "evidence": "ALPHA ENGINE - Universe Expander (24 */4 * * *); Live Picks Tracker (24 * * * *); Picks-Now Live PnL (hourly) (24 * * * *); Signal Integrator - Isolated Source Aggregator (24 * * * *); Social Media Algo Trader Investigation (24 12 * * *); VOLATILE ALT SCANNER Hyperliquid High-Vol Alts (24 * * * *); bt_backtest_trades cross-DB sync (DRAFT) (24 4 * * 0)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "7 workflows share cron minute :25",
+   "evidence": "ALPHA ENGINE - ETF Emitter (25 */6 * * *); ALPHA ENGINE - Live Autonomous Scanner (25 */2 * * *); Baby Strat Real Forward Monitor (25 * * * *); Forex Agent (25 0,8,13,17 * * 1-5); H-103 Forward Logger (25 14 1 * *); MySQL Stale OPEN Picks Resolver (25 4 * * *); Pick Monitor & Price Validator (30min) (25 */2 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :26",
+   "evidence": "Crypto Picks Dispatch (26 */4 * * *); Crypto Test Portfolios (26 */4 * * *); Feature Signals \u2014 Non-LLM Emitters (26 0,8,16 * * *); Model Picks Emission (finpredict-v4 tactical allocation) (26 1 * * *); Pre-Spike Early Warning (26 12,13,14 * * 1-5); Spike Scanner (26 */2 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :27",
+   "evidence": "Contested Pick Checker (Claude vs Antigravity) (27 * * * *); Hyro Quan Bridge Regen (27 5 * * *); Picks NOW Refresh (27 6,12,18 * * *); UEPS Value Screener Weekly (27 6 * * 1)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "3 workflows share cron minute :28",
+   "evidence": "Forward Trade Tracking v2 (28 * * * *); Growth Stock Screener Daily (28 14 * * 1-5); ML Battleground Daily Retrain (28 4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "7 workflows share cron minute :29",
+   "evidence": "AI Hedge Fund Simulation \u2014 Weekly Pick Resolution (29 23 * * 6); Commodities Agent (29 10 * * 1-5); Commodities Agent (29 20 * * 1-5); ETF & Bond Scanner (29 13 * * 1-5); ETF & Bond Scanner (29 14 * * 1-5); ML Battleground System F (Claws of Doom) (29 * * * *); Research Orchestrator (weekly) (29 6 * * 6)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :3",
+   "evidence": "Auto-Retire \u2014 Daily Bleeder Check (3 9 * * *); Optimize Score Thresholds (3 3 * * *); Refresh Movies Databases (50webs + GoDaddy) (3 7 * * *); \ud83d\udcfa News Video Health Check (3 15 * * 1,4)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "5 workflows share cron minute :30",
+   "evidence": "DNA Strategy Pipeline (30 */4 * * *); Daily Regime Detection + Position Sizing (30 20 * * 1-5); Premia Pod Forward Clock (30 2 * * *); Price Freshness Guardian (P0.1) (30 6 * * *); World-Class Intelligence  Daily Pipeline (30 11 * * 1-5)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :31",
+   "evidence": "Mutation Lab  Strategy Evolution Pipeline (31 */3 * * *); Stale Branch Cleanup (31 6 * * 1); Strategy Funnel Hourly Refresh (31 * * * *); paper-pilot-daily (31 13 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "7 workflows share cron minute :32",
+   "evidence": "Audit Impact Tracker (32 */6 * * *); Coinglass DNA Scanner (32 * * * *); Copy Trader Forward Test (32 * * * *); FINDTORONTOEVENTS.CA Database Backups (32 4 * * *); STOCKSUNIFY Daily Stock Picks (32 21 * * 1-5); Sidecar Status Markdown Update (32 */4 * * *); Specialized Scanners - Rocket, Short Engine, TSMOM (32 1,5,9,13,17,21 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "9 workflows share cron minute :33",
+   "evidence": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest (33 12 * * *); ANTIGRAVITY ML  Hourly Discord Status + Picks (DISABLED) (33 * * * *); Buy Now Analysis & Tracking (33 */6 * * *); Daily Prices yfinance Refresh (33 8 * * 1-5); Mega Mutation Live Tracker (33 * * * *); Mercury 2  Weekly Retrain (33 2 * * 0); Sign-Coherence Gate (33 4 * * *); Signal Recorder (33 * * * *); Update Creator News (33 */2 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :34",
+   "evidence": "Backfill Missing Audit Trail Sources (34 */2 * * *); Backfill OHLCV Features (34 4 * * *); Backup Restore Verification (34 6 15 * *); Monthly Confidence Calibrator Refit (M-060) (34 7 1 * *); Penny Skyrocket Detector (34 14 * * 1-5); Strategy Health Monitor (34 */4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "2 workflows share cron minute :34,4",
+   "evidence": "Rapid Fire - NOW Scanner (34,4 * * * *); Top Gainers Spike Scanner (34,4 13-19 * * 1-5)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "13 workflows share cron minute :35",
+   "evidence": "Audit Frontend Manifest (35 7 * * *); CFTC COT Refresh (35 12 * * 6); Feed Health Check (35 */1 * * *); Goldmine Tracker - Archive & Maintain (35 0 * * *); Goldmine Tracker - Archive & Maintain (35 18 * * *); Goldmine Tracker - Archive & Maintain (35 7 * * *); ML Model Auto-Training (35 */6 * * *); ML Model Staleness Watchdog (35 13 * * *); Parquet Data Ingestion (35 */4 * * *); Signal Tracking & Validation - Beat the Market (35 */2 * * *); Surface Parity (35 * * * *); UEPS Value Resolver Quarterly (35 7 1 */3 *); Validate HF by asset class (35 6 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "2 workflows share cron minute :36",
+   "evidence": "Pick Funnel \u2014 nightly (36 4 * * *); System Health Check (36 */2 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :37",
+   "evidence": "Daily Per-Class Scrutiny Engine (37 7 * * *); Prediction Quality Tracker (37 * * * *); Sports endpoint smoke + Playwright (37 * * * *); gha-health-audit (37 */4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :38",
+   "evidence": "Dashboard Pick Trader (38 * * * *); Enhanced ML Crypto Train & Predict (38 */2 * * *); Enhanced ML Crypto Train & Predict (38 2 * * *); Sports Prediction Market Sync (38 14,20 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :39",
+   "evidence": "LuxAlgo Signal Generator (39 * * * *); OBI Hourly Snapshot (39 * * * *); Refresh Creator Updates (39 2 * * *); [RiseOfTheClaw] Weekly Backtest + Elimination (39 3 * * 0)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "2 workflows share cron minute :4",
+   "evidence": "Edge decay monitor (4 7 * * 1-5); Skyrocket Detector  Live Scanner (4 * * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "7 workflows share cron minute :40",
+   "evidence": "Copy Trader Portfolio Tracker (40 */2 * * *); Crypto Signal Engine (40 2 * * *); Daily Feed Summary (40 */2 * * *); LIVE SPIKE TRADING - Autonomous Crypto Monitor (40 */2 * * *); Quant Auditor (deep nightly) (40 6 * * *); Schema Drift Audit (40 3 * * *); rsi5070 Forward-Test Snapshot (Daily) (40 7 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "3 workflows share cron minute :40,10",
+   "evidence": "ALPHA ENGINE Gainer Capture (15min) (40,10 * * * *); Claude Gainer Short-Term Predictor (40,10 * * * *); Cross-System Signal Aggregator (40,10 * * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "15 workflows share cron minute :41",
+   "evidence": "AI Tournament Price Tracker (41 23 * * *); Algorithm Competition Refresh (41 10 * * 0); CRYPTO SMART PICKS - Portfolio A/B/C/D Scanner (41 */2 * * *); DB Sync: Bi-directional User Data (41 8 * * *); Daily Stock Data Refresh (41 14 * * 1-5); Daily Stock Data Refresh (41 22 * * 1-5); Daily Stock Picks Generator (STOCKSUNIFY) (41 21 * * 1-5); Deals & Freebies  Verify & Refresh (41 14 * * 1); Deals & Freebies  Verify & Refresh (41 14 1 * *); ML Gatekeeper Train A/B (Phase D) (41 19 * * *); MOMENTUM SCALP SCANNER - Dynamic Universe Expansion (41 */4 * * *); Recommended Portfolio Generator (41 * * * *); audit3 evidence registry (41 5 * * 1); forward observations ingest (41 */6 * * *); robust-edge-miner (41 */12 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :42",
+   "evidence": "Audit Drift Telemetry (42 */6 * * *); Autonomous Trading Bot - Runs Automatically Every 4 Hours (42 */4 * * *); Cross-Asset Correlation Monitor (42 0,6,12,18 * * *); Funding-Rate Archive Collector (42 0 * * *); Live Trading Monitor  Auto Refresh (42 * * * *); Taste Profile Scanner (42 3 * * 0)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "9 workflows share cron minute :43",
+   "evidence": "Forward Test - Strategy Validation (43 0,4,8,12,16,20 * * *); Forward-Test New Strategies Tracker (43 */6 * * *); Mercury 2  Signal Scanner (43 * * * *); SPY 20d Return Refresh (43 6 * * *); Traditional Test Portfolios (5-8) (43 1 * * 1-5); Traditional Test Portfolios (5-8) (43 13 * * 1-5); Traditional Test Portfolios (5-8) (43 19 * * 1-5); Traditional Test Portfolios (5-8) (43 7 * * 1-5); UEPS Pick Runner (43 */4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :44",
+   "evidence": "Deploy Vetted Master-Picks (44 */4 * * *); Forward Signal Scanner (44 */2 * * *); Real-Time Battle Test - Eliminate Losers, Optimize Winners (44 * * * *); Refresh Top Movies Data (44 */6 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "5 workflows share cron minute :45",
+   "evidence": "Crypto Gainer ML Live Tracker (45 * * * *); Market Beating System - Crypto & Forex Priority (45 */2 * * *); Strategy Genome Evolution (45 6 * * 0); World-Class Algorithm Pipeline (45 20 * * 1-5); audit3 denylist watchdog (45 * * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "5 workflows share cron minute :47",
+   "evidence": "Decile Separation Test (47 6 * * *); Hourly Master Picks to Discord (47 * * * *); Index All Creator Content (47 3 * * *); Outcome Resolver  Validate Unresolved Picks (47 */1 * * *); Strategy Forward Tester (47 */2 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "2 workflows share cron minute :48",
+   "evidence": "Portfolio Trackers (Real Money + Theory) (48 * * * *); Swarm Pick Review (resolve + weekly + patterns + tournament promotion) (48 3 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :49",
+   "evidence": "DARWIN ENGINE - DNA Evolution Pipeline (49 * * * *); Honest Kill Switch (49 */12 * * *); Weekly score quartile spread (49 14 * * 1); What Worked Active Picks Insights (49 */4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :5",
+   "evidence": "2hour-challenge (5 12 * * 1-5); ALPHA  Verify Predictions (5 */2 * * *); ALPHA ENGINE - Trend Catcher (4H Adaptive) (5 0,4,8,12,16,20 * * *); DNA Genome Daily Pipeline (5 */3 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "7 workflows share cron minute :50",
+   "evidence": "AI Leaderboard Freshness (daily FTP + data rebuild) (50 4 * * *); Breakout Arena  3 Approaches (50 * * * *); Conviction Picks Ultra-Selective Discord Alert (50 * * * *); MOMENTUM TRACKER - Real-Time Gainer Scanner (50 * * * *); Proven Strategies Scanner (50 */2 * * *); Schema Drift Watchdog (50 9 * * *); gha-summary-report (50 */6 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "5 workflows share cron minute :51",
+   "evidence": "Check Streamer Live Status (51 */2 * * *); Forward Benchmark Ledger Refresh (Daily) (51 8 * * *); Incidents + Enhancements \u2014 Nightly Page Render (51 4 * * *); Incubator Pipeline  Strategy Graduation (51 6 * * *); ML Monthly Full Retrain (51 4 1 * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "3 workflows share cron minute :52",
+   "evidence": "Money-Ready Verdict Snapshot (52 6 * * *); Strategy Health Report (52 8 * * *); crypto-ohlcv refresh (52 */4 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :53",
+   "evidence": "ALPHA ENGINE - Incubator Strategies (53 */2 * * *); FC-CRYPTO PRO Top Actionable Picks (53 */2 * * *); Strategy Kill Tribunal (53 14 * * 5); Verified pilot daily (53 6 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "5 workflows share cron minute :54",
+   "evidence": "ALPHA ENGINE - Equity 52wk High Breakout Scanner (54 22 * * 1-5); DXY State Update (54 13 * * 1-5); Master-Picks Health Score (54 */4 * * *); Monthly DNA Tournament (54 6 1 * *); MySQL Trading Picks Sync (54 * * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :55",
+   "evidence": "HC Evaluator Parity Test (55 15 * * 1); ML Forward Test 1745 Models (55 */4 * * *); Overnight Mutations (55 2 * * 6); Social Media Prediction Tracker (55 */2 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "2 workflows share cron minute :56",
+   "evidence": "AI-Model Portfolios \u2014 Daily EOD (56 22 * * 1-5); Weekly Exhaustive Stock Simulation (56 6 * * 0)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :57",
+   "evidence": "FRED Macro Refresh (57 */6 * * *); Track Quick Pick Portfolios (57 12 * * 0); Track Quick Pick Portfolios (57 23 * * 1-5); [torontoevent.net] Rapid Validation Engine (57 * * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :58",
+   "evidence": "DB Sync: findtorontoevents.ca  torontoevent.net (58 6 * * *); Scrape events (58 3 * * *); Scrape events (58 4 * * *); [torontoevent.net] Algorithm Competition Refresh (58 10 * * 0)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "6 workflows share cron minute :59",
+   "evidence": "Deploy Battleground to FTP (59 * * * *); Futures Agent (59 14 * * 1-5); Futures Agent (59 22 * * 0); Futures Agent (59 22 * * 1-5); Insider Trades Refresh (59 11 * * 1); Sports Betting  Odds Refresh & Auto-Settle (59 15,18,21,0,3 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "4 workflows share cron minute :6",
+   "evidence": "Auto-Shutdown Source Monitor (6 8 * * *); Data Pipeline Reliability Test (6 */6 * * *); Hub Data Sync (6 * * * *); Secret Rotation Reminder (6 9 1 * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "5 workflows share cron minute :7",
+   "evidence": "Cross-DB Strategy Consistency Audit (7 6 * * *); Discord Bot  Persistent (7 */6 * * *); Forex Smart Picks Scanner (7 8,10,12,14 * * 1-5); Populate alpha_macro Daily (7 21 * * *); Prune strategy_performance.json (30d) (7 3 * * *)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "2 workflows share cron minute :8",
+   "evidence": "KIMI Goldmine Data Collection (8 */2 * * *); KIMI Goldmine Data Collection (8 13,15,17,19 * * 1-5)"
+  },
+  {
+   "rule": "Q1",
+   "rule_name": "cron-stampede",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "3 workflows share cron minute :9",
+   "evidence": "GHA stale workflows audit (9 5 * * *); H-004 \u2014 Inventory Surprise + Roll Yield Backtest (real EIA data) (9 6 * * 1); Penny Stock Daily Picks (9 12 * * 1-5)"
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "FINDTORONTOEVENTS.CA Database Backups",
+   "detail": "third-party action not SHA-pinned: dawidd6/action-send-mail@v24",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "Deploy Strategy Bundle",
+   "detail": "third-party action not SHA-pinned: slackapi/slack-github-action@v1",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "DNA Genome Daily Pipeline",
+   "detail": "third-party action not SHA-pinned: SamKirkland/FTP-Deploy-Action@4.3.0",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "DNA Genome Daily Pipeline",
+   "detail": "third-party action not SHA-pinned: SamKirkland/FTP-Deploy-Action@4.3.0",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "KIMI Goldmine Data Collection",
+   "detail": "third-party action not SHA-pinned: shivammathur/setup-php@v2",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "Live Picks Tracker",
+   "detail": "third-party action not SHA-pinned: peaceiris/actions-gh-pages@v4",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "ML Feedback Loop",
+   "detail": "third-party action not SHA-pinned: peter-evans/repository-dispatch@v4",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "Secret Scan (M-043)",
+   "detail": "third-party action not SHA-pinned: gitleaks/gitleaks-action@v2",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "Sports Betting  Odds Refresh & Auto-Settle",
+   "detail": "third-party action not SHA-pinned: stefanzweifel/git-auto-commit-action@v7",
+   "evidence": ""
+  },
+  {
+   "rule": "Q2",
+   "rule_name": "unpinned-action",
+   "severity": "P1",
+   "workflow": "Weekly Real-Money Filter",
+   "detail": "third-party action not SHA-pinned: stefanzweifel/git-auto-commit-action@v7",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Backfill OHLCV Features",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Backfill Missing Audit Trail Sources",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Run Backtests & Deploy Dashboards",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Benchmark Comparison  Daily",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Breakout Arena  3 Approaches",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Claude Code Gainer ML Tracker",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Crypto Gainer ML Live Tracker",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Deploy Vetted Master-Picks",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Enhanced ML Crypto Train & Predict",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Forward Signal Scanner",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Funding-Rate Archive Collector",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Gainer Predictor Scanner",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Gate Config Emit",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Strategy Genome Evolution",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "GHA scan job (reusable)",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "H-004 \u2014 Inventory Surprise + Roll Yield Backtest (real EIA data)",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "KIMI Goldmine Data Collection",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Meta-Strategy Permutation Engine",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "ML Forward Test 1745 Models",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Optimize Score Thresholds",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Overnight Mutations",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "RL Agent (PPO) Train & Predict",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Skyrocket Detector  Live Scanner",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "SPY 20d Return Refresh",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "swarm-janitor",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "[torontoevent.net] Run Backtests & Deploy Dashboards",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "TradingView Strategy Scanner",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q3",
+   "rule_name": "write-all-default",
+   "severity": "P1",
+   "workflow": "Weekly Strategy Scorecard",
+   "detail": "pushes to the repo but declares no `permissions:`",
+   "evidence": ""
+  },
+  {
+   "rule": "Q4",
+   "rule_name": "self-push-without-skip-ci",
+   "severity": "P2",
+   "workflow": "Fix Battleground Deployment",
+   "detail": "1 commit/push step(s) with no [skip ci]",
+   "evidence": "Commit and push"
+  },
+  {
+   "rule": "Q4",
+   "rule_name": "self-push-without-skip-ci",
+   "severity": "P2",
+   "workflow": "GHA scan job (reusable)",
+   "detail": "1 commit/push step(s) with no [skip ci]",
+   "evidence": "Commit and push"
+  },
+  {
+   "rule": "Q4",
+   "rule_name": "self-push-without-skip-ci",
+   "severity": "P2",
+   "workflow": "paper-pilot-daily",
+   "detail": "1 commit/push step(s) with no [skip ci]",
+   "evidence": "Commit status JSON"
+  },
+  {
+   "rule": "Q4",
+   "rule_name": "self-push-without-skip-ci",
+   "severity": "P2",
+   "workflow": "Scrape events",
+   "detail": "1 commit/push step(s) with no [skip ci]",
+   "evidence": "Commit and push if changed"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write OPTIMIZATION_REPORT.md",
+   "evidence": "Market Beating System - Crypto & Forex Priority, Signal Tracking & Validation - Beat the Market"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write REAL_CHALLENGE_FINAL.md",
+   "evidence": "2hour-challenge, REAL 2-HOUR CHALLENGE - Live Market Data"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write REAL_CHALLENGE_RESULTS.json",
+   "evidence": "2hour-challenge, REAL 2-HOUR CHALLENGE - Live Market Data"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write STOCKS/competition/forward_picks.json",
+   "evidence": "Pre-Spike Early Warning, Top Gainers Spike Scanner"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write STOCKSUNIFY/data/daily-stocks.json",
+   "evidence": "Daily Stock Picks Generator (STOCKSUNIFY), STOCKSUNIFY Daily Stock Picks"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write alpha_engine/data/active_picks.json",
+   "evidence": "Prediction Market Agents, Proven Strategies Scanner"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write audit_dashboard/data/ai_tournament_model_summary.json",
+   "evidence": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest, AI Tournament Price Tracker"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write audit_dashboard/data/ai_tournament_picks_latest.json",
+   "evidence": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest, AI Tournament Price Tracker"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "3 workflows write copy_trader_intel/data/polymarket_picks.json",
+   "evidence": "ALPHA ENGINE - Live Autonomous Scanner, Polymarket Prediction Market Signals (Multi-Asset), Prediction Market Agents"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "3 workflows write copy_trader_intel/data/polymarket_trader_profiles.json",
+   "evidence": "ALPHA ENGINE - Live Autonomous Scanner, Polymarket Prediction Market Signals (Multi-Asset), Prediction Market Agents"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write daily-stocks.json",
+   "evidence": "Daily Stock Picks Generator (STOCKSUNIFY), STOCKSUNIFY Daily Stock Picks"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "6 workflows write data/freshpicks_gate_state.json",
+   "evidence": "ALPHA ENGINE - Live Autonomous Scanner, Claude Code Gainer ML Tracker, Claude Gainer Short-Term Predictor, Cross-System Signal Aggregator, Deploy Rise of the Claw Dashboard, KIMI_FEB172026 - Live Trading System"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write genome/active_picks.json",
+   "evidence": "DNA Genome Daily Pipeline, DNA Strategy Pipeline"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write ml_battleground/retrain_trigger.json",
+   "evidence": "Mercury 2  Signal Scanner, Mercury 2  Weekly Retrain"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "3 workflows write signal_aggregator/data/master_picks_history.json",
+   "evidence": "Deploy Vetted Master-Picks, Hourly Master Picks to Discord, Master Automation Scheduler"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "3 workflows write signal_aggregator/data/master_picks_tracker.json",
+   "evidence": "Deploy Vetted Master-Picks, Hourly Master Picks to Discord, Master Automation Scheduler"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write signals_database.json",
+   "evidence": "Market Beating System - Crypto & Forex Priority, Signal Tracking & Validation - Beat the Market"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write tmp/audit/result.json",
+   "evidence": "Quant Auditor (deep nightly), Quant Auditor (fast PR check)"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "4 workflows write trading_results.json",
+   "evidence": "Autonomous Trading Bot - Runs Automatically Every 4 Hours, Live Trading Bot, Live Trading Bot - Canada Edition, Self-Optimizing Trading Bot - Auto-Validates & Tweaks"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write tweak_history.json",
+   "evidence": "Market Beating System - Crypto & Forex Priority, Signal Tracking & Validation - Beat the Market"
+  },
+  {
+   "rule": "Q5",
+   "rule_name": "duplicate-producer",
+   "severity": "P0",
+   "workflow": "(repo)",
+   "detail": "2 workflows write validation_results.json",
+   "evidence": "Market Beating System - Crypto & Forex Priority, Signal Tracking & Validation - Beat the Market"
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Weekly Strategy Scorecard",
+   "detail": "produced but never consumed: -strategy-scorecard.md",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Battleground Mass Backtest (Part 2 - Babies)",
+   "detail": "produced but never consumed: .meta.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Refresh Creator Updates",
+   "detail": "produced but never consumed: /tmp/refresh_result_meta.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Real-Time Battle Test - Eliminate Losers, Optimize Winners",
+   "detail": "produced but never consumed: BATTLE_REPORT.md",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "gha-health-audit",
+   "detail": "produced but never consumed: GHACTIONS_LIVE/gha_health.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "2hour-challenge, REAL 2-HOUR CHALLENGE - Live Market Data",
+   "detail": "produced but never consumed: REAL_CHALLENGE_FINAL.md",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "2hour-challenge, REAL 2-HOUR CHALLENGE - Live Market Data",
+   "detail": "produced but never consumed: REAL_CHALLENGE_RESULTS.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Sidecar Status Markdown Update",
+   "detail": "produced but never consumed: SIDECAR_STATUS.md",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Social Media Algo Trader Investigation",
+   "detail": "produced but never consumed: SOCIAL_TRADER_REPORT.md",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "produced but never consumed: STOCKS/competition/.regime_cache.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Fast Stocks Competition  High Frequency Scanner",
+   "detail": "produced but never consumed: STOCKS/competition/fast_forward_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Pre-Spike Early Warning, Top Gainers Spike Scanner",
+   "detail": "produced but never consumed: STOCKS/competition/forward_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Pre-Spike Early Warning",
+   "detail": "produced but never consumed: STOCKS/scanners/data/pre_spike_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Top Gainers Spike Scanner",
+   "detail": "produced but never consumed: STOCKS/scanners/data/top_gainers_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Daily Stock Picks Generator (STOCKSUNIFY), STOCKSUNIFY Daily Stock Picks",
+   "detail": "produced but never consumed: STOCKSUNIFY/data/daily-stocks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Scrape events",
+   "detail": "produced but never consumed: TORONTOEVENTS_ANTIGRAVITY/metadata.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Refresh Top Movies Data",
+   "detail": "produced but never consumed: TORONTOEVENTS_ANTIGRAVITY/shared/top-movies.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ETF & Bond Scanner",
+   "detail": "produced but never consumed: active_picks_bond.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "produced but never consumed: active_signals.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ETF & Bond Scanner",
+   "detail": "produced but never consumed: alpha_engine/data/active_picks_bond.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - ETF Emitter",
+   "detail": "produced but never consumed: alpha_engine/data/active_picks_etf.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds",
+   "detail": "produced but never consumed: alpha_engine/data/active_picks_fast.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Benchmark Comparison  Daily",
+   "detail": "produced but never consumed: alpha_engine/data/benchmark_comparison.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Commodities Agent",
+   "detail": "produced but never consumed: alpha_engine/data/commodity_cot_contrarian_signals.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Monthly Confidence Calibrator Refit (M-060)",
+   "detail": "produced but never consumed: alpha_engine/data/confidence_calibrators.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Cross-Asset Correlation Monitor",
+   "detail": "produced but never consumed: alpha_engine/data/correlation_report.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Crypto Test Portfolios",
+   "detail": "produced but never consumed: alpha_engine/data/crypto_portfolio_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "DXY State Update",
+   "detail": "produced but never consumed: alpha_engine/data/dxy_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "EMA Retracement Mean Reversion Scanner",
+   "detail": "produced but never consumed: alpha_engine/data/ema_retracement_backtest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - ETF Emitter",
+   "detail": "produced but never consumed: alpha_engine/data/etf_decay_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - ETF Emitter",
+   "detail": "produced but never consumed: alpha_engine/data/etf_sector_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Feature Signals \u2014 Non-LLM Emitters",
+   "detail": "produced but never consumed: alpha_engine/data/feature_signals.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Walk-Forward Backtest (Weekly)",
+   "detail": "produced but never consumed: alpha_engine/data/forex_walk_forward_results.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - Live Autonomous Scanner",
+   "detail": "produced but never consumed: alpha_engine/data/freshpicks_sent.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE Gainer Capture (15min)",
+   "detail": "produced but never consumed: alpha_engine/data/gainer_capture_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "produced but never consumed: alpha_engine/data/hmm_regime.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Honest Kill Switch",
+   "detail": "produced but never consumed: alpha_engine/data/honest_kill_switch.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - Incubator Strategies",
+   "detail": "produced but never consumed: alpha_engine/data/incubator_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Incubator Pipeline  Strategy Graduation",
+   "detail": "produced but never consumed: alpha_engine/data/incubator_report.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Walk-Forward Backtest (Weekly)",
+   "detail": "produced but never consumed: alpha_engine/data/institutional_backtest_report.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Overnight Mutations",
+   "detail": "produced but never consumed: alpha_engine/data/massive_mutation_results.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "MOMENTUM TRACKER - Real-Time Gainer Scanner",
+   "detail": "produced but never consumed: alpha_engine/data/momentum_tracker_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Non-Crypto A/B Portfolio Tracker",
+   "detail": "produced but never consumed: alpha_engine/data/non_crypto_ab_history.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "H-002 PEAD Shadow Collector",
+   "detail": "produced but never consumed: alpha_engine/data/pead_shadow_log.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Prediction Market Agents",
+   "detail": "produced but never consumed: alpha_engine/data/pm_macro_expansion_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Dashboard Pick Trader",
+   "detail": "produced but never consumed: alpha_engine/data/portfolio_1x.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Copy Trader Portfolio Tracker",
+   "detail": "produced but never consumed: alpha_engine/data/portfolio_copytrader.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Polymarket Prediction Market Signals (Multi-Asset)",
+   "detail": "produced but never consumed: alpha_engine/data/prediction_market_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Polymarket Prediction Market Signals (Multi-Asset)",
+   "detail": "produced but never consumed: alpha_engine/data/prediction_market_whales.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA  Verify Predictions",
+   "detail": "produced but never consumed: alpha_engine/data/prediction_verification_log.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Recommended Portfolio Generator",
+   "detail": "produced but never consumed: alpha_engine/data/recommended_portfolio.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Alpha Engine - Weekly Validation Suite",
+   "detail": "produced but never consumed: alpha_engine/data/risk_metrics.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Specialized Scanners - Rocket, Short Engine, TSMOM",
+   "detail": "produced but never consumed: alpha_engine/data/rocket_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ETF & Bond Scanner",
+   "detail": "produced but never consumed: alpha_engine/data/scanner_output/active_picks_bond.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ETF & Bond Scanner",
+   "detail": "produced but never consumed: alpha_engine/data/scanner_output/active_picks_etf.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "SPY 20d Return Refresh",
+   "detail": "produced but never consumed: alpha_engine/data/spy_20d_return.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Forward Test - Strategy Validation",
+   "detail": "produced but never consumed: alpha_engine/data/survivor_backtest_results.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Sustained Gainer Confluence Scanner",
+   "detail": "produced but never consumed: alpha_engine/data/sustained_gainer_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Traditional Test Portfolios (5-8)",
+   "detail": "produced but never consumed: alpha_engine/data/traditional_portfolio_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - Trend Catcher (4H Adaptive)",
+   "detail": "produced but never consumed: alpha_engine/data/trend_catcher_backtest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "VOLATILE ALT SCANNER Hyperliquid High-Vol Alts",
+   "detail": "produced but never consumed: alpha_engine/data/volatile_alt_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Walk-Forward Backtest (Weekly)",
+   "detail": "produced but never consumed: alpha_engine/data/walk_forward_results.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Walk-Forward Backtest (Weekly)",
+   "detail": "produced but never consumed: alpha_engine/data/wf_audit_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Auto-Retire \u2014 Daily Bleeder Check",
+   "detail": "produced but never consumed: alpha_engine/quarantine_manifest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Honest Kill Switch",
+   "detail": "produced but never consumed: alpha_engine/strategy_kill_list.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Audit Frontend Manifest",
+   "detail": "produced but never consumed: audit_dashboard/audit_frontend_manifest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest",
+   "detail": "produced but never consumed: audit_dashboard/data/ai_tournament_model_diagnostics.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest, AI Tournament Price Tracker",
+   "detail": "produced but never consumed: audit_dashboard/data/ai_tournament_model_summary.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest, AI Tournament Price Tracker",
+   "detail": "produced but never consumed: audit_dashboard/data/ai_tournament_picks_latest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Forward Benchmark Ledger Refresh (Daily)",
+   "detail": "produced but never consumed: audit_dashboard/data/benchmark_prices.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Beta Portfolio Refresh (monthly)",
+   "detail": "produced but never consumed: audit_dashboard/data/beta_portfolio_status.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Daily Top-Picks Filter",
+   "detail": "produced but never consumed: audit_dashboard/data/daily_top_picks_filter.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "rsi5070 Forward-Test Snapshot (Daily)",
+   "detail": "produced but never consumed: audit_dashboard/data/entry_conditions_forward.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Feature Signals \u2014 Non-LLM Emitters",
+   "detail": "produced but never consumed: audit_dashboard/data/feature_signals_latest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Forward Benchmark Ledger Refresh (Daily)",
+   "detail": "produced but never consumed: audit_dashboard/data/forward_clock.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "GHCOPILOT prospective paper monitor",
+   "detail": "produced but never consumed: audit_dashboard/data/ghcopilot_paper.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "AI-Model Portfolios \u2014 Daily EOD",
+   "detail": "produced but never consumed: audit_dashboard/data/pf_portfolios.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Picks-Now Live PnL (hourly)",
+   "detail": "produced but never consumed: audit_dashboard/data/picks_now_live_pnl.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Model Picks Emission (finpredict-v4 tactical allocation)",
+   "detail": "produced but never consumed: audit_dashboard/data/picks_now_model_finpredict_v4.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest",
+   "detail": "produced but never consumed: audit_dashboard/data/research/research_index_data.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "sleeve daily marks",
+   "detail": "produced but never consumed: audit_dashboard/data/sleeve_daily.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Premia Pod Forward Clock",
+   "detail": "produced but never consumed: audit_dashboard/data/sleeve_summary.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "STOCKSUNIFY2 daily-stocks pull",
+   "detail": "produced but never consumed: audit_dashboard/data/stocksunify2_active_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: audit_dashboard/data/strategy_admissibility.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Strategy Funnel Hourly Refresh",
+   "detail": "produced but never consumed: audit_dashboard/data/strategy_funnel_data.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Strategy Perf By Class Rebuild",
+   "detail": "produced but never consumed: audit_dashboard/data/strategy_perf_by_class.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Swarm Pick Review (resolve + weekly + patterns + tournament promotion)",
+   "detail": "produced but never consumed: audit_dashboard/data/swarm_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest",
+   "detail": "produced but never consumed: audit_dashboard/data/tier_rating_algorithms.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: audit_dashboard/data/verified_edge_status.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Strategy Health Monitor",
+   "detail": "produced but never consumed: banned_strategies.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Audit Impact Tracker",
+   "detail": "produced but never consumed: battleground/data/alpha_benchmark_report.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Audit Impact Tracker",
+   "detail": "produced but never consumed: battleground/data/audit_baseline_20260313.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Audit Impact Tracker",
+   "detail": "produced but never consumed: battleground/data/audit_impact_results.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Claude Code Gainer ML Tracker",
+   "detail": "produced but never consumed: claude_gainer_ml/data/gainer_predictions.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Claude Code Gainer ML Tracker",
+   "detail": "produced but never consumed: claude_gainer_ml/data/online_training_data.csv",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Claude Code Gainer ML Tracker",
+   "detail": "produced but never consumed: claude_gainer_ml/models/training_meta.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Coinglass DNA Scanner",
+   "detail": "produced but never consumed: coinglass_strategies/data/active_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Coinglass DNA Scanner",
+   "detail": "produced but never consumed: coinglass_strategies/data/reconciled_ids.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - Live Autonomous Scanner, Polymarket Prediction Market Signals (Multi-Asset), Prediction Market Agents",
+   "detail": "produced but never consumed: copy_trader_intel/data/polymarket_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - Live Autonomous Scanner, Polymarket Prediction Market Signals (Multi-Asset), Prediction Market Agents",
+   "detail": "produced but never consumed: copy_trader_intel/data/polymarket_trader_profiles.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "produced but never consumed: cross_aggregation/data/beta_score_tracker.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "produced but never consumed: cross_aggregation/data/consensus_outcomes.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Contested Pick Checker (Claude vs Antigravity)",
+   "detail": "produced but never consumed: cross_aggregation/data/contested_picks_tracker.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "produced but never consumed: cross_aggregation/data/forward_test_results.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "produced but never consumed: cross_aggregation/data/super_signals.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Daily Stock Picks Generator (STOCKSUNIFY), STOCKSUNIFY Daily Stock Picks",
+   "detail": "produced but never consumed: daily-stocks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "produced but never consumed: data/aggregated_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Decile Separation Test",
+   "detail": "produced but never consumed: data/decile_test.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "produced but never consumed: data/elite_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "FC-CRYPTO PRO Top Actionable Picks",
+   "detail": "produced but never consumed: data/fc_crypto_pro_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - Live Autonomous Scanner, Claude Code Gainer ML Tracker, Claude Gainer Short-Term Predictor, Cross-System Signal Aggregator, Deploy Rise of the Claw Dashboard, KIMI_FEB172026 - Live Trading System",
+   "detail": "produced but never consumed: data/freshpicks_gate_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "KIMI Goldmine Data Collection",
+   "detail": "produced but never consumed: data/goldmine/meme_winners.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "KIMI Goldmine Data Collection",
+   "detail": "produced but never consumed: data/goldmine/sports_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "KIMI Goldmine Data Collection",
+   "detail": "produced but never consumed: data/goldmine/stock_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Scrape events",
+   "detail": "produced but never consumed: data/metadata.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Data Pipeline Reliability Test",
+   "detail": "produced but never consumed: data_source_health.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Sidecar Status Markdown Update",
+   "detail": "produced but never consumed: docs/SIDECAR_STATUS.md",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Penny Stock Daily Picks",
+   "detail": "produced but never consumed: findstocks/portfolio2/data/penny_picks_latest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Gate Config Emit",
+   "detail": "produced but never consumed: gate_config.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "MOMENTUM SCALP SCANNER - Dynamic Universe Expansion",
+   "detail": "produced but never consumed: genome/data/momentum_scalp_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "produced but never consumed: hmm_regime.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Hyro Quan Bridge Regen",
+   "detail": "produced but never consumed: hyro_quan_bridge.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ML Battleground Daily Retrain",
+   "detail": "produced but never consumed: ml_battleground/retrain_summary.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - Live Autonomous Scanner",
+   "detail": "produced but never consumed: ml_crypto_predictor/enhanced_models/live_picks/all_picks_log.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Commodities Agent",
+   "detail": "produced but never consumed: non_crypto_agent/data/commodities_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ETF Agent",
+   "detail": "produced but never consumed: non_crypto_agent/data/etf_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Forex Agent",
+   "detail": "produced but never consumed: non_crypto_agent/data/forex_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Futures Agent",
+   "detail": "produced but never consumed: non_crypto_agent/data/futures_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Operator Review \u2014 Manual Candidates daily snapshot",
+   "detail": "produced but never consumed: operator_review_today.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Self-Optimizing Trading Bot - Auto-Validates & Tweaks",
+   "detail": "produced but never consumed: performance_history.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "produced but never consumed: regime_cache.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "produced but never consumed: regime_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "produced but never consumed: regime_terminal/data/active_signals.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "produced but never consumed: regime_terminal/data/regime_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "POC Picks Checkpoint (2-week reminder)",
+   "detail": "produced but never consumed: reports/POC_CHECKPOINT_VERDICT.md",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "actions-failure-guardian",
+   "detail": "produced but never consumed: reports/actions_failure_guardian.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Honest Kill Switch",
+   "detail": "produced but never consumed: reports/blacklist_impact_simulation.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: reports/etf_forward_stats_latest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: reports/faber_forward_stats_latest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "gha-summary-report",
+   "detail": "produced but never consumed: reports/gha_actions_summary.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: reports/pilot_forward_dashboard.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: reports/pilot_forward_summary.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: reports/verified_pilots_daily_latest.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "ETF & Bond Scanner",
+   "detail": "produced but never consumed: scanner_output/active_picks_bond.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Hourly Master Picks to Discord",
+   "detail": "produced but never consumed: signal_aggregator/data/consensus_output.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Hourly Master Picks to Discord",
+   "detail": "produced but never consumed: signal_aggregator/data/last_sent_cache.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Deploy Vetted Master-Picks, Hourly Master Picks to Discord, Master Automation Scheduler",
+   "detail": "produced but never consumed: signal_aggregator/data/master_picks_history.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Deploy Vetted Master-Picks, Hourly Master Picks to Discord, Master Automation Scheduler",
+   "detail": "produced but never consumed: signal_aggregator/data/master_picks_tracker.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Buy Now Analysis & Tracking",
+   "detail": "produced but never consumed: signal_aggregator/data/pick_tracking.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Penny Skyrocket Detector",
+   "detail": "produced but never consumed: skyrocket_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "produced but never consumed: smart_money/data/active_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Social Media Algo Trader Investigation",
+   "detail": "produced but never consumed: social_traders.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Forward Benchmark Ledger Refresh (Daily)",
+   "detail": "produced but never consumed: state/forward_test/ledger.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Strategy Funnel Hourly Refresh",
+   "detail": "produced but never consumed: strategy_funnel_data.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Strategy Health Monitor",
+   "detail": "produced but never consumed: strategy_health/data/banned_strategies.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Strategy Perf By Class Rebuild",
+   "detail": "produced but never consumed: strategy_perf_by_class.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest",
+   "detail": "produced but never consumed: tier_rating_algorithms.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "FRED Macro Refresh",
+   "detail": "produced but never consumed: tools/data/fred_macro_context.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "AsterDEX Paper Trading",
+   "detail": "produced but never consumed: trading/data/dashboard_data.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Market Beating System - Crypto & Forex Priority, Signal Tracking & Validation - Beat the Market",
+   "detail": "produced but never consumed: tweak_history.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "UEPS Pick Runner",
+   "detail": "produced but never consumed: ueps_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Claude Code Gainer ML Tracker",
+   "detail": "produced but never consumed: updates/data/dashboard_status.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: verified_strategies/paper_pilot/crypto_wf_hyro_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: verified_strategies/paper_pilot/etf_dual_momentum_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "Verified pilot daily",
+   "detail": "produced but never consumed: verified_strategies/paper_pilot/forex_carry_g10_state.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q6",
+   "rule_name": "orphan-artifact",
+   "severity": "P2",
+   "workflow": "macd_rsi_m048 Shadow Generator",
+   "detail": "produced but never consumed: verified_strategies/paper_pilot/macd_rsi_m048_shadow_picks.json",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "A/B Analysis + Zero-PnL Audit",
+   "detail": "gate-shaped step swallows failure: Verify all Tier-2 winners DB vs dashboard PF/WR/n",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "A/B Analysis + Zero-PnL Audit",
+   "detail": "gate-shaped step swallows failure: Run CT=F friction-adjusted ROR MC + DSR gate",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest",
+   "detail": "gate-shaped step swallows failure: Check existing picks state",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "ALPHA ENGINE - Live Autonomous Scanner",
+   "detail": "gate-shaped step swallows failure: Verify audit sources staleness",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Unified Audit Dashboard",
+   "detail": "gate-shaped step swallows failure: Run DB health check (PnL integrity, ghost rows, OPEN bloat \u2192 audit_dashboard/data/db_health.json)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Unified Audit Dashboard",
+   "detail": "gate-shaped step swallows failure: Operator status check (validation/alerting snapshot \u2014 Grok next-step",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Unified Audit Dashboard",
+   "detail": "gate-shaped step swallows failure: ml_gatekeeper A/B sleeve decision (Phase D \u2014 reads OLD/NEW sleeves + closed_picks, runs z-test)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Unified Audit Dashboard",
+   "detail": "gate-shaped step swallows failure: Run Hyro QuanBridge (refresh regime + ensemble + risk gate)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Unified Audit Dashboard",
+   "detail": "gate-shaped step swallows failure: Run pick-flow funnel snapshot (DB \u2192 per-class raw/gated/forward-test counts)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Audit Drift Telemetry",
+   "detail": "gate-shaped step swallows failure: Pending SPA governance check",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Audit Drift Telemetry",
+   "detail": "gate-shaped step swallows failure: Data source health check (C-008)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "gate-shaped step swallows failure: Forward-test top picks",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Daily Miracle DayTrades Scan",
+   "detail": "gate-shaped step swallows failure: Verify miracle dashboard",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Daily Picks Snapshot  Crypto, Forex & Stocks",
+   "detail": "gate-shaped step swallows failure: Verify crypto picks",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Daily Picks Snapshot  Crypto, Forex & Stocks",
+   "detail": "gate-shaped step swallows failure: Verify momentum picks",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Daily Picks Snapshot  Crypto, Forex & Stocks",
+   "detail": "gate-shaped step swallows failure: Verify recent wins",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Daily Stock Data Refresh",
+   "detail": "gate-shaped step swallows failure: Verify report page loads",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Daily Stock Data Refresh",
+   "detail": "gate-shaped step swallows failure: Verify cached report data",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "DB Freshness Guardian",
+   "detail": "gate-shaped step swallows failure: Run DB freshness check",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "DB Sync: findtorontoevents.ca  torontoevent.net",
+   "detail": "gate-shaped step swallows failure: Verify export script deployed",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Deals & Freebies  Verify & Refresh",
+   "detail": "gate-shaped step swallows failure: Verify deals API health",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Deals & Freebies  Verify & Refresh",
+   "detail": "gate-shaped step swallows failure: Verify birthday freebies",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Deals & Freebies  Verify & Refresh",
+   "detail": "gate-shaped step swallows failure: Verify free today",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Deals & Freebies  Verify & Refresh",
+   "detail": "gate-shaped step swallows failure: Verify Canadian deals",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Deals & Freebies  Verify & Refresh",
+   "detail": "gate-shaped step swallows failure: Verify deals page loads",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Deals & Freebies  Verify & Refresh",
+   "detail": "gate-shaped step swallows failure: Verify search functionality",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Deploy Battleground to FTP",
+   "detail": "gate-shaped step swallows failure: Verify URLs",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Deploy FindCryptoPairs to FTP",
+   "detail": "gate-shaped step swallows failure: Verify URLs",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Live Trading Monitor  Auto Refresh",
+   "detail": "gate-shaped step swallows failure: Check circuit breakers",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Meme Coin Scanner v2  Fixed & Monitored",
+   "detail": "gate-shaped step swallows failure: Health Check",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Meta-Strategy Permutation Engine",
+   "detail": "gate-shaped step swallows failure: Run autopoietic health check",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Meta-Strategy Permutation Engine",
+   "detail": "gate-shaped step swallows failure: Update forward test matches (real price validation)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities",
+   "detail": "gate-shaped step swallows failure: Step 5: Quality monitor  validate non-crypto pick quality",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Pick Data Quality Gate",
+   "detail": "gate-shaped step swallows failure: Run pick-data-quality gate",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Price Freshness Guardian (P0.1)",
+   "detail": "gate-shaped step swallows failure: Run price freshness SLA check",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "SEC EDGAR  Insider Trades & 13F Holdings",
+   "detail": "gate-shaped step swallows failure: Check conviction picks (multi-fund overlap)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Sports Betting  Odds Refresh & Auto-Settle",
+   "detail": "gate-shaped step swallows failure: Check active sports",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "Sports Betting  Odds Refresh & Auto-Settle",
+   "detail": "gate-shaped step swallows failure: Credit usage check",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "[torontoevent.net] Deploy Live Monitor APIs",
+   "detail": "gate-shaped step swallows failure: Verify endpoints on torontoevent.net",
+   "evidence": ""
+  },
+  {
+   "rule": "Q7",
+   "rule_name": "silent-failure",
+   "severity": "P0",
+   "workflow": "[torontoevent.net] Deploy Rise of the Claw",
+   "detail": "gate-shaped step swallows failure: Verify deployment",
+   "evidence": ""
+  },
+  {
+   "rule": "Q8",
+   "rule_name": "missing-timeout",
+   "severity": "P1",
+   "workflow": "ALPHA ENGINE - Adaptive Trust Tuner",
+   "detail": "1 job(s) without timeout-minutes",
+   "evidence": "trust-tuner"
+  },
+  {
+   "rule": "Q8",
+   "rule_name": "missing-timeout",
+   "severity": "P1",
+   "workflow": "audit3 Health Monitor",
+   "detail": "1 job(s) without timeout-minutes",
+   "evidence": "health"
+  },
+  {
+   "rule": "Q8",
+   "rule_name": "missing-timeout",
+   "severity": "P1",
+   "workflow": "Consensus Outcome Tracker",
+   "detail": "1 job(s) without timeout-minutes",
+   "evidence": "track-outcomes"
+  },
+  {
+   "rule": "Q8",
+   "rule_name": "missing-timeout",
+   "severity": "P1",
+   "workflow": "Deploy BESTIEJOB page",
+   "detail": "1 job(s) without timeout-minutes",
+   "evidence": "deploy"
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "DB_PASS_STOCKS used by 39 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "DB_STOCKS_PASSWORD used by 14 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "DISCORD_WEBHOOK_FRESHPICKS used by 11 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "DISCORD_WEBHOOK_SANDBOX used by 15 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "DISCORD_WEBHOOK_URL used by 14 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "FTPGODADDYHOST_TE_DOTNET used by 24 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "FTPGODADDYPASS used by 24 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "FTPGODADDYUSER used by 24 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "FTP_HOST used by 24 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "FTP_PASS used by 44 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "FTP_SERVER used by 16 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "FTP_USER used by 44 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "GH_PAT used by 204 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "GITHUB_TOKEN used by 36 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q9",
+   "rule_name": "secret-sprawl",
+   "severity": "P2",
+   "workflow": "(repo)",
+   "detail": "MYSQL_PASSWORD used by 47 workflows (bound 8)",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "actions-failure-guardian",
+   "detail": "unusual cron minute '19/30' in '19/30 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds",
+   "detail": "unusual cron minute '3,33' in '3,33 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE Gainer Capture (15min)",
+   "detail": "unusual cron minute '40,10' in '40,10 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "ALPHA ENGINE - Quant Stack (KAMA + ATR + Regime)",
+   "detail": "unusual cron minute '5,35' in '5,35 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Claude Gainer ML  Live Scanner",
+   "detail": "unusual cron minute '23,53' in '23,53 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Claude Gainer Short-Term Predictor",
+   "detail": "unusual cron minute '40,10' in '40,10 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Claude's Test - Portfolio Manager",
+   "detail": "unusual cron minute '46,16' in '46,16 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Consensus Outcome Tracker",
+   "detail": "unusual cron minute '2/30' in '2/30 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Copy Trader Intelligence  Scrape + Analyze + Track",
+   "detail": "unusual cron minute '53,38' in '53,38 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Cross-System Signal Aggregator",
+   "detail": "unusual cron minute '40,10' in '40,10 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "crypto intraday sim",
+   "detail": "unusual cron minute '7,37' in '7,37 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Deploy Rise of the Claw Dashboard",
+   "detail": "unusual cron minute '49,19' in '49,19 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Gainer Predictor Scanner",
+   "detail": "unusual cron minute '30,0' in '30,0 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "MOMENTUM CATCHER - Real-time Pump Detector",
+   "detail": "unusual cron minute '42,12' in '42,12 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities",
+   "detail": "unusual cron minute '14/30' in '14/30 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Rapid Fire - NOW Scanner",
+   "detail": "unusual cron minute '34,4' in '34,4 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Polymarket Prediction Market Signals (Multi-Asset)",
+   "detail": "unusual cron minute '2,32' in '2,32 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "QUAN ENGINE - Live Autonomous Scanner",
+   "detail": "unusual cron minute '43,13' in '43,13 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Regime Terminal  HMM Live Scanner",
+   "detail": "unusual cron minute '36,6' in '36,6 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Crypto Signal Engine",
+   "detail": "unusual cron minute '39,9' in '39,9 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Sports data snapshots",
+   "detail": "unusual cron minute '59,14,29,44' in '59,14,29,44 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Sustained Gainer Confluence Scanner",
+   "detail": "unusual cron minute '25,55' in '25,55 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Swarm State Sync",
+   "detail": "unusual cron minute '4/30' in '4/30 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Top Gainers Spike Scanner",
+   "detail": "unusual cron minute '34,4' in '34,4 13-19 * * 1-5'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "[torontoevent.net] Deploy Rise of the Claw",
+   "detail": "unusual cron minute '17/30' in '17/30 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "[torontoevent.net] Spike Scanner",
+   "detail": "unusual cron minute '29/30' in '29/30 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "TV Paper TP/SL Watchdog",
+   "detail": "unusual cron minute '26,41,56,11' in '26,41,56,11 * * * *'",
+   "evidence": ""
+  },
+  {
+   "rule": "Q10",
+   "rule_name": "dead-schedule",
+   "severity": "P2",
+   "workflow": "Winner Pattern Precursor Scanner",
+   "detail": "unusual cron minute '22,52' in '22,52 * * * *'",
+   "evidence": ""
+  }
+ ],
+ "scores": {
+  "2hour-challenge": 94,
+  "Dynamic Runner Template": 100,
+  "A/B Analysis + Zero-PnL Audit": 50,
+  "Academic Strategies Daily": 100,
+  "actions-failure-guardian": 94,
+  "ALPHA ENGINE - Adaptive Trust Tuner": 90,
+  "AI Leaderboard Freshness (daily FTP + data rebuild)": 100,
+  "AI Leaderboard Refresh": 100,
+  "AI-Model Portfolios \u2014 Daily EOD": 97,
+  "AI Tournament Pipeline \u2014 Daily Picks + DB Ingest": 57,
+  "AI Tournament Price Tracker": 94,
+  "Algorithm Competition Refresh": 100,
+  "Alpha Engine  Daily Picks": 100,
+  "ALPHA ENGINE - ETF Emitter": 91,
+  "ALPHA ENGINE FAST Tighter TP/SL, Shorter Holds": 94,
+  "ALPHA ENGINE - Live Autonomous Scanner": 60,
+  "ALPHA ENGINE - Equity 52wk High Breakout Scanner": 100,
+  "ALPHA ENGINE Gainer Capture (15min)": 94,
+  "ALPHA ENGINE - Quant Stack (KAMA + ATR + Regime)": 97,
+  "ALPHA ENGINE - Trend Catcher (4H Adaptive)": 97,
+  "ALPHA  Verify Predictions": 97,
+  "Alpha Engine - Weekly Validation Suite": 97,
+  "Analyst Tracker  Top 20 Crypto Analysts": 100,
+  "Asset Class Freshness Watchdog": 100,
+  "AsterDEX Paper Trading": 97,
+  "Unified Audit Dashboard": 0,
+  "Audit Drift Telemetry": 50,
+  "Audit Frontend Manifest": 97,
+  "Audit Hourly Update": 100,
+  "Audit Impact Tracker": 91,
+  "audit3 denylist watchdog": 100,
+  "audit3 evidence registry": 100,
+  "audit3 Health Monitor": 90,
+  "audit3 ledger": 100,
+  "Auto-Retire \u2014 Daily Bleeder Check": 97,
+  "Auto-Shutdown Source Monitor": 100,
+  "Automated Reporting": 100,
+  "Autonomous Trading Bot - Runs Automatically Every 4 Hours": 100,
+  "Baby Strat Real Forward Monitor": 100,
+  "Backfill OHLCV Features": 90,
+  "Backfill Missing Audit Trail Sources": 90,
+  "Run Backtests & Deploy Dashboards": 80,
+  "Backup Restore Verification": 100,
+  "Real-Time Battle Test - Eliminate Losers, Optimize Winners": 97,
+  "Battleground Mass Backtest (Part 2 - Babies)": 97,
+  "Battleground Mass Backtest": 97,
+  "Benchmark Comparison  Daily": 87,
+  "BESTIEJOB page QA": 100,
+  "Beta Portfolio Refresh (monthly)": 97,
+  "Blacklist Reconciler (cross-check vs live systems)": 100,
+  "Bond Agent": 100,
+  "Branch Large File Duplicate Guard": 100,
+  "Breakout Arena  3 Approaches": 90,
+  "bt_backtest_trades cross-DB sync (DRAFT)": 100,
+  "Buy Now Analysis & Tracking": 97,
+  "CFTC COT Refresh": 100,
+  "Check Streamer Live Status": 100,
+  "CI Tests": 90,
+  "Claude Gainer ML  Live Scanner": 97,
+  "Claude Gainer Short-Term Predictor": 94,
+  "Claude Code Gainer ML Tracker": 75,
+  "Claude's Test - Portfolio Manager": 97,
+  "Clear Channel Command": 100,
+  "Closed Picks Command": 100,
+  "Coinglass DNA Scanner": 94,
+  "Commodities Agent": 94,
+  "Conflict Marker Check": 100,
+  "Consensus Outcome Tracker": 87,
+  "Contested Pick Checker (Claude vs Antigravity)": 97,
+  "Continuous Improvement Monitor": 100,
+  "Conviction Picks Ultra-Selective Discord Alert": 100,
+  "Copy Trader Forward Test": 100,
+  "Copy Trader Intelligence  Scrape + Analyze + Track": 97,
+  "Copy Trader Portfolio Tracker": 97,
+  "Cross-Asset Correlation Monitor": 97,
+  "Cost Model Reconciliation": 100,
+  "Cross-System Signal Aggregator": 48,
+  "Cross-DB Strategy Consistency Audit": 100,
+  "crypto intraday sim": 97,
+  "Crypto Gainer ML Live Tracker": 90,
+  "crypto-ohlcv refresh": 100,
+  "CRYPTO SMART PICKS - Portfolio A/B/C/D Scanner": 100,
+  "Crypto Test Portfolios": 97,
+  "Crypto Winner Scanner  Auto Scan": 100,
+  "Daily Feed Summary": 100,
+  "Daily Miracle DayTrades Scan": 75,
+  "Daily Picks Snapshot  Crypto, Forex & Stocks": 25,
+  "Daily Prices yfinance Refresh": 100,
+  "Daily Per-Class Scrutiny Engine": 100,
+  "Daily Stock Data Refresh": 50,
+  "Daily Top-Picks Filter": 97,
+  "Daily Runs": 100,
+  "DARWIN ENGINE - DNA Evolution Pipeline": 100,
+  "Dashboard Pick Trader": 97,
+  "Data Pipeline Reliability Test": 97,
+  "FINDTORONTOEVENTS.CA Database Backups": 95,
+  "DB Credentials Test": 100,
+  "DB Freshness Guardian": 75,
+  "DB Password Leak Guard": 100,
+  "DB Sync: Bi-directional User Data": 100,
+  "DB Sync: findtorontoevents.ca  torontoevent.net": 75,
+  "Deals & Freebies  Verify & Refresh": 0,
+  "Decile Separation Test": 97,
+  "Deploy Alpha Engine Dashboard": 100,
+  "Deploy Battleground to FTP": 75,
+  "Deploy BESTIEJOB page": 90,
+  "Deploy Competition to Live Site": 100,
+  "Deploy fc/api/.env to GoDaddy (torontoevent.net)": 100,
+  "Deploy FC API Hotfix (3 domains)": 100,
+  "Deploy FavCreators Frontend (/fc/)": 100,
+  "Deploy FindCryptoPairs to FTP": 75,
+  "Deploy FriendTracker": 100,
+  "Deploy findtorontoevents.ca next/events.json": 100,
+  "Deploy findtorontoevents.ca core site": 100,
+  "Deploy MOVIESHOWS2 + MOVIESHOWS3 (All 3 Domains)": 100,
+  "Deploy MOVIESHOWS3 Hotfix": 100,
+  "Deploy Rise of the Claw Dashboard": 94,
+  "Deploy Vetted Master-Picks": 84,
+  "Deploy Strategy Bundle": 95,
+  "Discord Bot  Persistent": 100,
+  "Discord Channel Heartbeat": 100,
+  "Discord Token Selftest": 100,
+  "ANTIGRAVITY ML  Hourly Discord Status + Picks (DISABLED)": 100,
+  "DNA Mutation Cycle": 100,
+  "DNA Strategy Pipeline": 100,
+  "DXY State Update": 97,
+  "ALPHA ENGINE - Dynamic Runner (Cloud or Local)": 100,
+  "Dynamic Universe Scanner": 100,
+  "Edge decay monitor": 100,
+  "Edge stability refresh": 100,
+  "EMA Retracement Mean Reversion Scanner": 97,
+  "Enhanced ML Crypto Train & Predict": 90,
+  "Equities & Stocks Agent": 100,
+  "ETF Agent": 97,
+  "ETF & Bond Scanner": 85,
+  "Fast Stocks Competition  High Frequency Scanner": 97,
+  "FC-CRYPTO PRO Top Actionable Picks": 97,
+  "Feature Signals \u2014 Non-LLM Emitters": 94,
+  "Feature Stability Check (Weekly)": 100,
+  "Feed Health Check": 100,
+  "Refresh Movies Databases (50webs + GoDaddy)": 100,
+  "Fetch New Movies & TV Shows (Manual)": 100,
+  "Fix Battleground Deployment": 95,
+  "Fix Ghost Cards & Thumbnails  All Sites": 100,
+  "Forex Agent": 97,
+  "Forex Smart Picks Scanner": 100,
+  "Forward Benchmark Ledger Refresh (Daily)": 91,
+  "forward observations ingest": 100,
+  "Forward Signal Scanner": 90,
+  "Forward-Test New Strategies Tracker": 100,
+  "Forward Trade Tracking v2": 100,
+  "Forward Test - Strategy Validation": 97,
+  "FRED Macro Refresh": 97,
+  "Funding-Rate Archive Collector": 90,
+  "Futures Agent": 97,
+  "Gainer Predictor Scanner": 87,
+  "Gate Config Emit": 87,
+  "DNA Genome Daily Pipeline": 90,
+  "Strategy Genome Evolution": 90,
+  "gha-health-audit": 97,
+  "GHA queue & duration audit": 100,
+  "GHA scan job (reusable)": 85,
+  "GHA stale workflows audit": 100,
+  "gha-summary-report": 97,
+  "GHCOPILOT prospective paper monitor": 97,
+  "Goldmine Tracker - Archive & Maintain": 100,
+  "Growth Stock Screener Daily": 100,
+  "H-004 \u2014 Inventory Surprise + Roll Yield Backtest (real EIA data)": 90,
+  "H-103 Forward Logger": 100,
+  "HC Evaluator Parity Test": 100,
+  "Hierarchical Bayesian Edge Update": 100,
+  "Hindsight Learner  Hourly Winner Analysis": 100,
+  "Hoffman IRB Strategy Tracker": 100,
+  "Honest Kill Switch": 91,
+  "Hourly Master Picks to Discord": 88,
+  "Hub Data Sync": 100,
+  "Hypothesis Registry Append Guard": 100,
+  "Hyro Quan Bridge Regen": 97,
+  "Hyro daily (filter + backtest)": 100,
+  "Incidents + Enhancements \u2014 Nightly Page Render": 100,
+  "Incubator Pipeline  Strategy Graduation": 97,
+  "ALPHA ENGINE - Incubator Strategies": 97,
+  "Index All Creator Content": 100,
+  "Insider Trades Refresh": 100,
+  "Kalshi snapshot (sports markets cache)": 100,
+  "KIMI_FEB172026 - Live Trading System": 97,
+  "Kimi Fetch Movies/TV (Manual)": 100,
+  "KIMI Goldmine Data Collection": 76,
+  "Live Trading Monitor  Auto Refresh": 75,
+  "LIVE SPIKE TRADING - Autonomous Crypto Monitor": 100,
+  "Live Picks Tracker": 95,
+  "Live Trading Bot": 100,
+  "Live Trading Bot - Canada Edition": 100,
+  "Low-Score Winner Tracker": 100,
+  "LuxAlgo Signal Generator": 100,
+  "macd_rsi_m048 Shadow Generator": 97,
+  "Market Beating System - Crypto & Forex Priority": 97,
+  "masking-policy-lint": 100,
+  "Master Automation Scheduler": 94,
+  "Master-Picks Health Score": 100,
+  "Mega Mutation Live Tracker": 100,
+  "Meme Coin Scanner v2  Fixed & Monitored": 75,
+  "Meme Coin Scanner Auto Scan & Resolve": 100,
+  "Mercury 2  Weekly Retrain": 100,
+  "Mercury 2  Signal Scanner": 100,
+  "Meta-Strategy Permutation Engine": 40,
+  "Mirror: findtorontoevents.ca  torontoevent.net": 100,
+  "Missed Opportunity Analyzer Hourly Self-Improvement": 100,
+  "ML Battleground System F (Claws of Doom)": 100,
+  "ML Battleground Daily Retrain": 97,
+  "ML Feedback Loop": 95,
+  "ML Feedback Retrain  Learn from Closed Trades": 100,
+  "ML Forward Test 1745 Models": 90,
+  "ML Gatekeeper Train A/B (Phase D)": 100,
+  "ML System Health Monitor": 100,
+  "ML Model Auto-Training": 100,
+  "ML Monthly Full Retrain": 100,
+  "ML Model Staleness Watchdog": 100,
+  "ML Strategy Reviver Bridge & Standalone": 100,
+  "Model Picks Emission (finpredict-v4 tactical allocation)": 97,
+  "MOMENTUM CATCHER - Real-time Pump Detector": 97,
+  "MOMENTUM SCALP SCANNER - Dynamic Universe Expansion": 97,
+  "MOMENTUM TRACKER - Real-Time Gainer Scanner": 97,
+  "Money-Ready Registry Gate": 100,
+  "Money-Ready Verdict Snapshot": 100,
+  "Monthly Confidence Calibrator Refit (M-060)": 97,
+  "Monthly DNA Tournament": 100,
+  "Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities": 72,
+  "Mutation analysis report": 100,
+  "Mutation Lab  Strategy Evolution Pipeline": 100,
+  "Mutation Lifecycle Runner": 100,
+  "MySQL Stale OPEN Picks Resolver": 100,
+  "MySQL Trading Picks Sync": 100,
+  "MySQL Dedup Fix": 100,
+  "\ud83d\udcfa News Video Health Check": 100,
+  "No stale DB passwords": 100,
+  "Non-Crypto A/B Portfolio Tracker": 97,
+  "Rapid Fire - NOW Scanner": 97,
+  "OBI Hourly Snapshot": 100,
+  "Operator Review \u2014 Manual Candidates daily snapshot": 97,
+  "Optimize Score Thresholds": 90,
+  "Outcome Resolver  Validate Unresolved Picks": 100,
+  "Overnight Mutations": 87,
+  "paper-pilot-daily": 95,
+  "Parquet Data Ingestion": 100,
+  "H-002 PEAD Shadow Collector": 97,
+  "Penny Skyrocket Detector": 97,
+  "Penny Stock Daily Picks": 97,
+  "Pick Data Quality Gate": 75,
+  "Pick Flow Snapshot (Fast)": 100,
+  "Pick Funnel \u2014 nightly": 100,
+  "Pick Monitor & Price Validator (30min)": 100,
+  "Picks-Now Live PnL (hourly)": 97,
+  "Picks NOW Refresh": 100,
+  "Crypto Picks Dispatch": 100,
+  "Pine Script Generator": 100,
+  "POC Picks Checkpoint (2-week reminder)": 97,
+  "pod emission audit": 100,
+  "Polymarket Prediction Market Signals (Multi-Asset)": 85,
+  "Populate alpha_macro Daily": 100,
+  "Portfolio Trackers (Real Money + Theory)": 100,
+  "Pre-Spike Early Warning": 94,
+  "Prediction Market Agents": 91,
+  "Prediction Quality Tracker": 100,
+  "Premia Pod Forward Clock": 97,
+  "Price Freshness Guardian (P0.1)": 75,
+  "Proven Strategies Scanner": 100,
+  "Prune strategy_performance.json (30d)": 100,
+  "QA Market Validation": 90,
+  "QUAN ENGINE - Live Autonomous Scanner": 97,
+  "Quant Auditor (deep nightly)": 100,
+  "Quant Auditor (fast PR check)": 100,
+  "Quick Guess ML Agent": 100,
+  "Rapid Validation Engine": 100,
+  "REAL 2-HOUR CHALLENGE - Live Market Data": 94,
+  "Recommended Portfolio Generator": 97,
+  "Refresh Creator Updates": 97,
+  "Refresh Top Movies Data": 97,
+  "Daily Regime Detection + Position Sizing": 100,
+  "Regime Terminal  HMM Live Scanner": 73,
+  "Research Orchestrator (weekly)": 100,
+  "Resolver Step 5-6 \u2014 at_raw_picks Backfill": 100,
+  "Resolver Step 7 \u2014 active_picks_sync APPLY": 100,
+  "[RiseOfTheClaw] Weekly Backtest + Elimination": 100,
+  "RL Agent (PPO) Train & Predict": 90,
+  "robust-edge-miner": 100,
+  "rsi5070 Forward-Test Snapshot (Daily)": 97,
+  "Schema Drift Audit": 100,
+  "Schema Drift Watchdog": 100,
+  "Scrape events": 89,
+  "SEC EDGAR  Insider Trades & 13F Holdings": 75,
+  "Secret Rotation Reminder": 100,
+  "Secret Scan (M-043)": 95,
+  "Self-Optimizing Trading Bot - Auto-Validates & Tweaks": 97,
+  "Send Accountability Reminders": 100,
+  "Sidecar Status Markdown Update": 94,
+  "Sign-Coherence Gate": 100,
+  "Crypto Signal Engine": 97,
+  "Signal Integrator - Isolated Source Aggregator": 100,
+  "Signal Quality Monitor": 100,
+  "Signal Recorder": 100,
+  "Signal Tracking & Validation - Beat the Market": 97,
+  "AI Hedge Fund Simulation \u2014 Weekly Pick Resolution": 100,
+  "Skyrocket Detector  Live Scanner": 90,
+  "sleeve daily marks": 97,
+  "\ud83e\udde0 Smart Money Intelligence": 100,
+  "Smart Picks Tracker": 100,
+  "Social Media Prediction Tracker": 100,
+  "Social Media Algo Trader Investigation": 94,
+  "Specialized Scanners - Rocket, Short Engine, TSMOM": 97,
+  "Spike Scanner": 88,
+  "Sports Betting  Odds Refresh & Auto-Settle": 45,
+  "Sports data snapshots": 97,
+  "Sports Forensics Weekly": 100,
+  "Sports Prediction Market Sync": 100,
+  "Sports endpoint smoke + Playwright": 100,
+  "SPY 20d Return Refresh": 87,
+  "Stale Branch Cleanup": 100,
+  "Statistical Rigor Validation - Thousands of Signals": 100,
+  "STOCKSUNIFY Daily Stock Picks": 94,
+  "Daily Stock Picks Generator (STOCKSUNIFY)": 94,
+  "STOCKSUNIFY2 daily-stocks pull": 97,
+  "Strategy Forward Tester": 100,
+  "Strategy Funnel Hourly Refresh": 94,
+  "Strategy Health Monitor": 94,
+  "Strategy Health Report": 100,
+  "Strategy Perf By Class Rebuild": 94,
+  "strategy_performance.json no-regression guard": 100,
+  "Strategy Kill Tribunal": 100,
+  "Surface Parity": 100,
+  "Sustained Gainer Confluence Scanner": 94,
+  "swarm-janitor": 90,
+  "Swarm Pick Review (resolve + weekly + patterns + tournament promotion)": 97,
+  "Swarm State Sync": 97,
+  "UEPS Swing Screener Daily": 100,
+  "System Health Check": 100,
+  "Taste Profile Scanner": 100,
+  "Test Fast Variants": 100,
+  "Test Portfolios  Hourly Strategy Validation": 100,
+  "Top Gainers Spike Scanner": 91,
+  "[torontoevent.net] Algorithm Competition Refresh": 100,
+  "[torontoevent.net] Run Backtests & Deploy Dashboards": 90,
+  "[torontoevent.net] Deploy Competition to Live Site": 100,
+  "[torontoevent.net] Deploy Live Monitor APIs": 75,
+  "[torontoevent.net] Deploy Rise of the Claw": 72,
+  "[torontoevent.net] Goldmine Tracker - Archive & Maintain": 100,
+  "[torontoevent.net] Rapid Validation Engine": 100,
+  "[torontoevent.net] Spike Scanner": 97,
+  "Track Quick Pick Portfolios": 100,
+  "Traditional Test Portfolios (5-8)": 97,
+  "TV Paper TP/SL Watchdog": 97,
+  "TradingView Strategy Scanner": 90,
+  "UEPS Pick Runner": 97,
+  "UEPS Smoke Tests": 100,
+  "ALPHA ENGINE - Universe Expander": 100,
+  "Update Creator News": 100,
+  "Validate HF by asset class": 100,
+  "": 0,
+  "UEPS Value Resolver Quarterly": 100,
+  "UEPS Value Screener Weekly": 100,
+  "Verified pilot daily": 70,
+  "VOLATILE ALT SCANNER Hyperliquid High-Vol Alts": 97,
+  "Walk-Forward Backtest (Weekly)": 88,
+  "walkforward-gate": 100,
+  "Weekly Real-Money Filter": 95,
+  "Weekly Exhaustive Stock Simulation": 100,
+  "Weekly Strategy Scorecard": 87,
+  "Weekly score quartile spread": 100,
+  "What Worked Active Picks Insights": 100,
+  "Winner Pattern Precursor Scanner": 97,
+  "Won PNL Contradiction Backfill": 100,
+  "World-Class Intelligence  Daily Pipeline": 100,
+  "World-Class Algorithm Pipeline": 100,
+  "WSL Runner Manager": 100
+ },
+ "weights": {
+  "parse_error": 30,
+  "Q7": 25,
+  "Q5": 15,
+  "Q8": 10,
+  "Q3": 10,
+  "Q2": 5,
+  "Q4": 5,
+  "Q1": 5,
+  "Q6": 3,
+  "Q9": 3,
+  "Q10": 3
+ },
+ "runtime_used": true,
+ "generated_at": null
+}

@@ -475,42 +475,6 @@ def power_analysis(rows: list[dict], mde_pct: float = PROVEN_MIN_NET_CI_LO_PCT,
 
 
 # ────────────────────────────────────────────────────────────────── report ──
-def power_analysis(rows: list[dict], mde_pct: float = PROVEN_MIN_NET_CI_LO_PCT,
-                   z: float = POWER_Z) -> dict[str, Any]:
-    """Per-class realized net-pnl SD and the pre-declared-MDE sample size.
-
-    For each asset class with >= 5 net-pnl observations, report the population
-    standard deviation (statistics.pstdev) of net pnl and the sample size that
-    80% power would need to detect `mde_pct` against that SD. The MDE is fixed
-    up front (the tribunal's PROVEN net-CI lower bound), so `required_n_mde`
-    never sees an observed cell mean -- it is non-circular by construction.
-    """
-    classes: dict[str, list[float]] = defaultdict(list)
-    for r in rows:
-        v = net_pnl(r)
-        if v is not None:
-            classes[_class(r)].append(v)
-    per_class = {}
-    for klass in sorted(classes):
-        vals = classes[klass]
-        if len(vals) < 5:
-            continue
-        sd = statistics.pstdev(vals)
-        per_class[klass] = {
-            "n": len(vals),
-            "net_pnl_sd_pct": round(sd, 4),
-            "required_n": required_n_mde(mde_pct, sd, z=z),
-        }
-    return {
-        "mde_pct": mde_pct,
-        "z": z,
-        "note": ("mde_pct is pre-declared (the tribunal's PROVEN net-CI lower "
-                 "bound), never the observed cell mean, to avoid the circular "
-                 "observed-mean trap in required_n"),
-        "by_asset_class": per_class,
-    }
-
-
 def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
     _PIT_ROWS.clear()
     beta = beta_accounting(rows, "CRYPTO")
@@ -526,8 +490,6 @@ def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
     pit_ok = bool((pit.get("discrimination_hi_vs_lo") or {}).get("proven"))
     beta_only = bool(beta.get("available") and abs(beta.get("residual_selection_alpha_pct") or 0)
                      < SLIPPAGE_PCT.get("CRYPTO", 0.15))
-
-    power = power_analysis(rows)
 
     if pit_ok:
         headline = ("A point-in-time gate beats its own past: prior-record filter "
@@ -609,6 +571,23 @@ def render_text(rep: dict[str, Any]) -> str:
     out.append(f"E. GATE PROVENANCE: at-issue present {g['at_issue_field_present']}, "
                f"zero {g['at_issue_value_is_zero']}, populated now "
                f"{g['current_value_populated']} -> contaminated={g['contaminated']}")
+    pw = rep.get("power_analysis") or {}
+    if pw.get("by_asset_class"):
+        # Published, not just computed: a per-class sample-size requirement that
+        # nobody reads cannot stop a claim being made on an underpowered cell.
+        out.append("")
+        out.append(f"F. POWER (pre-declared MDE {pw['mde_pct']}%/trade, z={pw['z']}):")
+        for klass, row in sorted(pw["by_asset_class"].items()):
+            need = row.get("required_n")
+            have = row["n"]
+            if need is None:
+                tag = " — sample size not well-defined"
+            elif have >= need:
+                tag = " — powered"
+            else:
+                tag = f" — UNDERPOWERED ({have}/{need})"
+            out.append(f"   {klass:<10} n={have:<5} sd={row['net_pnl_sd_pct']:.3f}% "
+                       f"need n>={need}{tag}")
     return "\n".join(out)
 
 

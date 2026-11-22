@@ -276,8 +276,7 @@ jobs:
           PYTHONUTF8: '1'
         run: |
           pip install pymysql -q 2>/dev/null || true
-          python tools/anti_overfit_audit_sidecar.py --min-n 20 || echo "::warning title=anti-overfit sidecar failed::see log; audit_dashboard/data/anti_overfit_audit.json will go stale (INCIDENT_OVERALL #45)"
-        continue-on-error: true
+          python tools/anti_overfit_audit_sidecar.py --min-n 20
 
       - name: Run research sidecars (Agent C external-research — 4 academically-backed)
         id: research_sidecars
@@ -1585,6 +1584,16 @@ jobs:
           # Non-fatal: don't exit(1) even if some fail
           PYEOF
 
+      - name: Anti-overfit GATE (blocking — DSR must clear 0.95)
+        id: anti_overfit_gate
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          # Runs AFTER commit + deploy on purpose: a gate that fails before the
+          # dashboard is published would take the whole hourly refresh down with
+          # it, and the artifact this judges would not exist yet. Here it can
+          # fail the job without withholding data.
+          python tools/anti_overfit_audit_sidecar.py --check-only --gate --dsr-threshold 0.95
       - name: Verify URLs
         if: always()
         run: |

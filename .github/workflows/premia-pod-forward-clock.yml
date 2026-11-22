@@ -1,0 +1,68 @@
+name: Premia Pod Forward Clock
+
+# Accrues forward_rows for each premia pod until n>=100, then writes a
+# promote/keep-paper/freeze verdict. Phase 3 exit test.
+#
+# Push trigger: NONE (cron only + dispatch). Adding push would risk
+# infinite loops on committed forward-row data.
+
+on:
+  schedule:
+    - cron: '30 2 * * *'   # daily 02:30 UTC
+  workflow_dispatch:
+    inputs:
+      pod_id:
+        description: 'Optional single pod id (e.g. H-144). Empty = all pods.'
+        required: false
+        default: ''
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  forward-clock:
+    name: Accrue Forward Rows
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run forward clock
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_PASS_BACKTESTS: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
+          DB_BACKTESTS_PASSWORD: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD || secrets.DB_BACKTESTS_PASSWORD }}
+          POD_ID: ${{ github.event.inputs.pod_id }}
+        run: |
+          echo "Forward clock not yet implemented (Phase 3)."
+          echo "When ready, invoke: python tools/premia_forward_clock.py --pod ${POD_ID:-ALL}"
+          # python tools/premia_forward_clock.py --pod "${POD_ID:-ALL}"
+
+      - name: Commit forward rows summary [skip ci]
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f audit_dashboard/data/sleeve_summary.json ]; then
+            git add audit_dashboard/data/sleeve_summary.json || true
+            git commit -m "chore(premia): forward clock update [skip ci]" || true
+            git push || true
+          fi

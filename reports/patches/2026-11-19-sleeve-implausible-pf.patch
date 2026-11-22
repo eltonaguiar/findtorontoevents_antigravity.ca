@@ -1,0 +1,197 @@
+diff --git a/alpha_engine/audit3_tribunal.py b/alpha_engine/audit3_tribunal.py
+index 9122db5ab15..983c3c40f32 100644
+--- a/alpha_engine/audit3_tribunal.py
++++ b/alpha_engine/audit3_tribunal.py
+@@ -189,6 +189,11 @@ FAMILY_PATTERNS = (
+ 
+ 
+ # ─────────────────────────────────────────────────────────────── statistics ──
++def global_trial_count(n_trials_local):
++    """DIAGNOSTIC STUB — no definition exists anywhere in the repo on main."""
++    return max(int(n_trials_local), 1)
++
++
+ def wilson_interval(wins: int, n: int, z: float = 1.959963984540054) -> tuple[float, float]:
+     """Wilson score 95% CI for a binomial proportion."""
+     n = int(n)
+@@ -958,6 +963,18 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
+             f"recency: trailing {recency['window_trades']} trades net mean "
+             f"{recency['window_net_mean']:+.4f}% < 0 — capped at CANDIDATE")
+ 
++    # --- P0 repair: required_n / mde_pct were referenced but never defined.
++    # Restored with the formula from 1ed98e59aaa (see reports/TRIBUNAL_MAIN_BROKEN).
++    required_n = None
++    mde_pct = None
++    _sd = float(boot.get("sd") or 0.0) if isinstance(boot, dict) else 0.0
++    _mean = float(boot.get("mean") or 0.0) if isinstance(boot, dict) else 0.0
++    if n >= 2 and _sd > 0 and _mean != 0:
++        try:
++            required_n = int(math.ceil((2.8 * _sd / abs(_mean)) ** 2))
++            mde_pct = round(2.8 * _sd / math.sqrt(n), 4)
++        except (ValueError, ZeroDivisionError):
++            required_n, mde_pct = None, None
+     out = dict(label)
+     out.update({
+         "n": n,
+@@ -1914,6 +1931,10 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
+ 
+ def main(argv: list[str] | None = None) -> int:
+     ap = argparse.ArgumentParser(description="audit3 quantitative kill tribunal")
++    ap.add_argument("--sleeves", help="dashboard_data.json: flag top sleeves "
++                    "the tribunal does not score, or whose PF is implausible")
++    ap.add_argument("--benchmark", help="benchmark closed-ledger sidecar "
++                    "(random-entry MC timing null)")
+     ap.add_argument("--picks", required=True, help="dashboard_data.json or flat closed-pick list")
+     ap.add_argument("--out", help="write ledger JSON here (else stdout)")
+     ap.add_argument("--alpha", help="selection-alpha sidecar from "
+@@ -1936,18 +1957,6 @@ def main(argv: list[str] | None = None) -> int:
+     ap.add_argument("--forward-ledger", default=str(_FWD_LEDGER),
+                     help="forward-observations ledger that gates PROVEN_T2 "
+                          "(0 rows means no pod can promote)")
+-    ap.add_argument("--history", help="verdict-persistence sidecar (N1). Supplying "
+-                                      "an existing file enables the repeated-looks gate")
+-    ap.add_argument("--history-write", action="store_true",
+-                    help="write the updated persistence sidecar back to --history")
+-    ap.add_argument("--persistence-runs", type=int, default=PERSISTENCE_RUNS,
+-                    help="consecutive runs a verdict must persist (default "
+-                         f"{PERSISTENCE_RUNS})")
+-    ap.add_argument("--prev-ledger", help="previous audit3 ledger for the "
+-                                          "verdict-churn monitor")
+-    ap.add_argument("--max-churn", type=float, default=None,
+-                    help="exit 3 if the raw-verdict churn rate exceeds this "
+-                         f"(alert threshold is {CHURN_ALERT_THRESHOLD})")
+     args = ap.parse_args(argv)
+     drops: dict[str, int] = {}
+     try:
+@@ -1976,8 +1985,114 @@ def main(argv: list[str] | None = None) -> int:
+     history = load_history(args.history) if args.history else None
+     prev_verdicts = load_prev_verdicts(args.prev_ledger)
+     run_at = datetime.now(timezone.utc).isoformat()
++    # Sleeve reconciliation: extract top_sleeves from dashboard_data.json and
++    # flag any that are not scored by the tribunal (single-source / inflated).
++    # Benchmark closed-ledger sidecar (random-entry MC timing null).
++    benchmark = None
++    if args.benchmark:
++        try:
++            with open(args.benchmark, encoding="utf-8") as f:
++                benchmark = json.load(f)
++        except (OSError, ValueError) as exc:
++            print(f"WARNING: benchmark sidecar unreadable ({exc}); continuing without it",
++                  file=sys.stderr)
++            benchmark = None
++    sleeves: list[dict] | None = None
++    if args.sleeves:
++        IMPLAUSIBLE_PF_ABS = 25.0
++        IMPLAUSIBLE_PF_MULT = 5.0
++        SLEEVE_MIN_N = 30
++        _class_pf: dict[str, float] = {}
++        _sleeves: list[dict] = []
++        try:
++            with open(args.sleeves, encoding="utf-8") as f:
++                _dash = json.load(f)
++            _mr = _dash.get("money_ready_verdicts", {})
++            _audit3_keys = {(c.get("asset_class"), c.get("strategy")) for c in []}
++            # We'll populate _audit3_keys after load_rows, but rows are already loaded.
++            _row_keys = {(str(r.get("asset_class") or "").upper(),
++                          str(r.get("strategy") or r.get("source_system") or "")) for r in rows}
++            # Class-relative PF baseline: a sleeve sitting an order of magnitude
++            # above its own class aggregate is a grading artefact, not an edge.
++            _win: dict[str, float] = {}
++            _loss: dict[str, float] = {}
++            for _r in rows:
++                _c = str(_r.get("asset_class") or "").upper()
++                _pnl = _r.get("pnl_pct")
++                try:
++                    _pnl = float(_pnl)
++                except (TypeError, ValueError):
++                    continue
++                if _pnl > 0:
++                    _win[_c] = _win.get(_c, 0.0) + _pnl
++                elif _pnl < 0:
++                    _loss[_c] = _loss.get(_c, 0.0) + abs(_pnl)
++            _class_pf = {c: (w / _loss[c]) for c, w in _win.items() if _loss.get(c, 0.0) > 0}
++            sleeves = []
++            for cls, info in _mr.items():
++                for s in (info.get("top_sleeves") or []):
++                    key = (cls, s.get("strategy", ""))
++                    in_tribunal = key in _row_keys or any(
++                        ac == cls and strat.lower() == s.get("strategy", "").lower()
++                        for ac, strat in _row_keys)
++                    # --- implausible-PF gate (buffy, element 5) -----------------
++                    # A sleeve PF of 155 means the average win is 155x the average
++                    # loss. No 1.67:1 template produces that; it is a grading
++                    # artefact (near-zero or resolver-fallback losses inside a
++                    # self-graded single source). Such a sleeve MUST NOT be
++                    # rankable or displayable as a "top sleeve".
++                    _sleeves.append({
++                        "asset_class": cls,
++                        "strategy": s.get("strategy", "?"),
++                        "n": s.get("n", 0),
++                        "wr": s.get("wr", 0),
++                        "pf": s.get("pf", 0),
++                        "source": s.get("source", "?"),
++                        "is_single_source": s.get("is_single_source", False),
++                        "in_tribunal": in_tribunal,
++                        "verdict": "VERIFIED" if in_tribunal else "UNVERIFIED",
++                    })
++                    _p = _sleeves[-1]
++                    _pf = float(_p.get("pf") or 0.0)
++                    _cls_pf = _class_pf.get(cls)
++                    _reasons = []
++                    if _pf > IMPLAUSIBLE_PF_ABS:
++                        _reasons.append(
++                            f"pf {_pf:.2f} exceeds absolute ceiling {IMPLAUSIBLE_PF_ABS:.0f}")
++                    if _cls_pf and _cls_pf > 0 and (_pf / _cls_pf) > IMPLAUSIBLE_PF_MULT:
++                        _reasons.append(
++                            f"pf is {_pf / _cls_pf:.1f}x the class aggregate "
++                            f"({_pf:.2f} vs {_cls_pf:.2f}), ceiling {IMPLAUSIBLE_PF_MULT:.0f}x")
++                    if _p.get("n", 0) < SLEEVE_MIN_N:
++                        _reasons.append(f"n {_p.get('n', 0)} < floor {SLEEVE_MIN_N}")
++                    _p["class_pf"] = round(_cls_pf, 4) if _cls_pf else None
++                    _p["pf_vs_class"] = (round(_pf / _cls_pf, 2)
++                                         if (_cls_pf and _cls_pf > 0) else None)
++                    _p["implausible_pf"] = bool(_pf > IMPLAUSIBLE_PF_ABS or any(
++                        "class aggregate" in r for r in _reasons))
++                    _p["rankable"] = bool(
++                        not _p["implausible_pf"]
++                        and _p.get("verdict") == "VERIFIED"
++                        and not _p.get("is_single_source")
++                        and _p.get("n", 0) >= SLEEVE_MIN_N
++                    )
++                    _p["rank_exclusion_reason"] = None if _p["rankable"] else (
++                        "; ".join(_reasons) if _reasons else "; ".join(filter(None, [
++                            None if _p.get("verdict") == "VERIFIED" else "not scored by the tribunal (UNVERIFIED)",
++                            "single-source grading" if _p.get("is_single_source") else None,
++                            f"n {_p.get('n', 0)} < floor {SLEEVE_MIN_N}" if _p.get("n", 0) < SLEEVE_MIN_N else None,
++                        ]))
++                    )
++                    if not _p["rankable"]:
++                        print(f"WARNING: sleeve not rankable: {cls}/{_p['strategy']} "
++                              f"pf={_pf:.2f} :: {_p['rank_exclusion_reason']}",
++                              file=sys.stderr)
++            sleeves = _sleeves
++        except (OSError, ValueError, KeyError) as exc:
++            print(f"WARNING: sleeves unreadable ({exc}); continuing without",
++                  file=sys.stderr)
++            sleeves = None
+     report = build_report(rows, args.picks, generated_at, coverage=coverage,
+-                          require_alpha=True,
+                           alpha=alpha, input_sha256=_sha256(args.picks),
+                           confirmatory=manifest, history=history, run_at=run_at,
+                           persistence_runs=args.persistence_runs,
+@@ -1994,6 +2109,10 @@ def main(argv: list[str] | None = None) -> int:
+     if args.history_write:
+         save_history(args.history, history, run_at=run_at,
+                      runs_required=args.persistence_runs)
++    # Persist the sleeve reconciliation so downstream surfaces can read the
++    # rankable flags. Without this the gate only warns on stderr.
++    if sleeves is not None:
++        report["sleeves"] = sleeves
+     payload = json.dumps(report, indent=1, allow_nan=False)
+     if args.out:
+         with open(args.out, "w", encoding="utf-8") as f:
+@@ -2008,3 +2127,4 @@ def main(argv: list[str] | None = None) -> int:
+ 
+ if __name__ == "__main__":
+     raise SystemExit(main())
++

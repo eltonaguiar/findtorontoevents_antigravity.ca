@@ -42,9 +42,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Optional
@@ -88,6 +90,39 @@ _KEY_LABELS = {
 _keys_cache: dict[str, str] = {}
 
 
+def _clean_key(raw: Optional[str]) -> Optional[str]:
+    """Reduce a dbpasses/env value to the bare credential.
+
+    2026-11-21: the Gemini lines in ~/dbpasses.txt carry inner whitespace (109
+    characters for a 39-character key), and the whole line was pasted into the
+    request URL -- so the key went out with trailing commentary and the 400
+    response echoed it into a log. A credential is one whitespace-free token:
+    take the first, then strip the quoting people wrap around it.
+    """
+    if not raw:
+        return None
+    v = raw.strip().strip('"' + "'" + '`').strip()
+    if not v:
+        return None
+    token = v.split()[0].strip().rstrip(",;")
+    return token.strip('"' + "'" + '`') or None
+
+
+def _scrub(text: str) -> str:
+    """Remove every known credential from an error string before it is shown.
+
+    Provider errors routinely echo the request URL, and Gemini carries its key in
+    a query param -- ``str(exc)`` must never reach a log or a terminal as-is.
+    """
+    out = str(text)
+    for value in _keys_cache.values():
+        if value and len(value) >= 8:
+            out = out.replace(value, "***")
+    out = re.sub(r"(key=)[A-Za-z0-9_\-\.]+", r"\1***", out)
+    out = re.sub(r"(Bearer )[A-Za-z0-9_\-\.]+", r"\1***", out)
+    return out
+
+
 def _load_keys() -> None:
     """Populate the in-memory cache. File FIRST (canonical credential store),
     env vars only as fallback.
@@ -113,7 +148,9 @@ def _load_keys() -> None:
                     for j in range(i + 1, min(i + 4, len(lines))):
                         v = lines[j].strip()
                         if v and not v.endswith(":"):
-                            _keys_cache[env_name] = v
+                            cleaned = _clean_key(v)
+                            if cleaned:
+                                _keys_cache[env_name] = cleaned
                             break
                     break
     # Env as fallback (only fills in missing keys)
@@ -121,7 +158,9 @@ def _load_keys() -> None:
         if k not in _keys_cache:
             v = os.environ.get(k)
             if v:
-                _keys_cache[k] = v.strip()
+                cleaned = _clean_key(v)
+                if cleaned:
+                    _keys_cache[k] = cleaned
 
 
 def _get_key(name: str) -> Optional[str]:
@@ -151,9 +190,23 @@ def _post_openai_compat(url: str, key: str, model: str, prompt: str,
                  # `Python-urllib/3.X` UA with 403. Send a real UA instead.
                  "User-Agent": "consult-multi/1.0 (curl-compat)"},
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-    return data["choices"][0]["message"]["content"]
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001 -- re-raised with the key scrubbed
+        raise RuntimeError(f"{type(exc).__name__}: {_scrub(exc)}") from None
+    try:
+        content = data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError):
+        raise RuntimeError(f"malformed completion: {json.dumps(data)[:200]}") from None
+    # 2026-11-21: the HF router answers HTTP 200 with ``content: null`` when the
+    # monthly credit pool is spent, so a None body was being reported as "OK".
+    if not content:
+        raise RuntimeError(
+            f"empty completion (finish_reason="
+            f"{data['choices'][0].get('finish_reason')!r}) -- quota or model refusal"
+        )
+    return content
 
 
 def _call_nvidia(model, prompt, max_tokens=1500, timeout=90):
@@ -303,7 +356,7 @@ def _call_gemini_api(model, prompt, max_tokens=1500, timeout=90):
     if not key:
         raise RuntimeError("GEMINI_API_KEY not in env or ~/dbpasses.txt")
     url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
-           f"{model}:generateContent?key={key}")
+           f"{model}:generateContent?key={urllib.parse.quote(key, safe='')}")
     payload = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"maxOutputTokens": max_tokens,
@@ -314,8 +367,11 @@ def _call_gemini_api(model, prompt, max_tokens=1500, timeout=90):
         headers={"Content-Type": "application/json",
                  "User-Agent": "consult-multi/1.0 (curl-compat)"},
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        raise RuntimeError(f"{type(exc).__name__}: {_scrub(exc)}") from None
     parts = data["candidates"][0]["content"]["parts"]
     return "".join(p.get("text", "") for p in parts)
 
@@ -336,8 +392,11 @@ def _call_cloudflare(model, prompt, max_tokens=1500, timeout=90):
         headers={"Authorization": f"Bearer {key}",
                  "Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        raise RuntimeError(f"{type(exc).__name__}: {_scrub(exc)}") from None
     if not data.get("success"):
         raise RuntimeError(f"CF error: {data.get('errors')}")
     result = data.get("result") or {}
@@ -413,6 +472,13 @@ def main() -> int:
     ap.add_argument("--fanout", help="Fan-out preset: " + ",".join(FANOUTS))
     ap.add_argument("--out-dir", default="/tmp/consult_multi",
                      help="Where fan-out writes per-peer responses (default /tmp/consult_multi)")
+    ap.add_argument("--peers",
+                     help="Custom fan-out as provider:model,provider:model "
+                          "(default model when the model part is omitted)")
+    ap.add_argument("--parallel", type=int, default=1,
+                     help="Fan-out concurrency (default 1 = sequential)")
+    ap.add_argument("--doctor", action="store_true",
+                     help="Ping every provider with a tiny prompt and report what answered")
     ap.add_argument("--max-tokens", type=int, default=1500)
     ap.add_argument("--timeout", type=int, default=90)
     args = ap.parse_args()
@@ -447,6 +513,23 @@ def main() -> int:
                   f"{', '.join(p[0] for p in peers)}")
         return 0
 
+    if args.doctor:
+        _load_keys()
+        print(f"{'provider':<14}{'model':<44}status")
+        print("-" * 100)
+        alive = 0
+        for name, (fn, default_model) in PROVIDERS.items():
+            t0 = time.time()
+            try:
+                text = fn(default_model, "Reply with exactly: OK", 8, args.timeout)
+                snippet = " ".join(str(text).split())[:48]
+                print(f"{name:<14}{default_model:<44}OK   {time.time() - t0:5.1f}s  {snippet}")
+                alive += 1
+            except Exception as exc:  # noqa: BLE001
+                print(f"{name:<14}{default_model:<44}FAIL       {_scrub(exc)[:70]}")
+        print(f"\n{alive}/{len(PROVIDERS)} providers answered")
+        return 0 if alive else 1
+
     # Get prompt text
     if args.prompt and args.prompt_file:
         ap.error("use --prompt OR --prompt-file, not both")
@@ -468,25 +551,51 @@ def main() -> int:
         print(fn(model, prompt, args.max_tokens, args.timeout))
         return 0
 
-    if args.fanout:
-        if args.fanout not in FANOUTS:
-            ap.error(f"unknown fanout preset {args.fanout!r}")
+    if args.fanout or args.peers:
+        if args.peers:
+            peers: list[tuple[str, str]] = []
+            for spec in args.peers.split(","):
+                spec = spec.strip()
+                if not spec:
+                    continue
+                provider, _, model = spec.partition(":")
+                if provider not in PROVIDERS:
+                    ap.error(f"unknown provider {provider!r} in --peers")
+                peers.append((provider, model.strip() or PROVIDERS[provider][1]))
+            label = "custom"
+        else:
+            if args.fanout not in FANOUTS:
+                ap.error(f"unknown fanout preset {args.fanout!r}")
+            peers = list(FANOUTS[args.fanout])
+            label = args.fanout
         out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
-        print(f"# fan-out {args.fanout} → {out}")
-        for provider, model in FANOUTS[args.fanout]:
+        print(f"# fan-out {label} → {out}  ({len(peers)} peers, parallel={args.parallel})")
+
+        def _one(peer: tuple[str, str]):
+            provider, model = peer
             fn, _ = PROVIDERS[provider]
+            try:
+                return peer, fn(model, prompt, args.max_tokens, args.timeout), None
+            except Exception as exc:  # noqa: BLE001
+                return peer, None, f"ERROR: {type(exc).__name__}: {_scrub(exc)}"
+
+        if args.parallel > 1:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=max(1, args.parallel)) as pool:
+                results = list(pool.map(_one, peers))
+        else:
+            results = [_one(peer) for peer in peers]
+
+        for (provider, model), text, err in results:
             slug = f"{provider}__{model.replace('/', '_').replace('@', '')}"[:90]
             path = out / f"{slug}.md"
             print(f"\n=== {provider} · {model} ===")
-            try:
-                text = fn(model, prompt, args.max_tokens, args.timeout)
+            if err:
+                path.write_text(err, encoding="utf-8")
+                print(f"  -> {path} ({err[:160]})")
+            else:
                 path.write_text(text, encoding="utf-8")
                 print(f"  -> {path} ({len(text)} chars)")
-            except Exception as exc:
-                err = f"ERROR: {type(exc).__name__}: {exc}"
-                path.write_text(err, encoding="utf-8")
-                print(f"  -> {path} ({err[:200]})")
-            time.sleep(0.5)
         return 0
 
     ap.error("provide --list, --provider, or --fanout")

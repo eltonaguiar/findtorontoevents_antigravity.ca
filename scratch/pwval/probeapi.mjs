@@ -1,0 +1,20 @@
+import { chromium } from 'playwright';
+const url = 'https://www.canadacomputers.com/en/xbox/184244/microsoft-xbox-series-x-1tb-black-rrt-00001.html';
+const browser = await chromium.launch();
+const ctx = await browser.newContext({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', locale: 'en-CA' });
+const page = await ctx.newPage();
+const seen = [];
+page.on('request', r => { const u = r.url(); if (/stock|inventor|pickup|store|availability|graphql|api/i.test(u)) seen.push(`${r.method()} ${u}`); });
+await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 }).catch(e => console.log('nav:', String(e).split('\n')[0].slice(0,80)));
+await page.waitForTimeout(3000);
+console.log('=== candidate endpoints observed ===');
+console.log([...new Set(seen)].slice(0, 25).join('\n') || '(none matched)');
+// also look for an embedded store list / stock json in the page
+const html = await page.content();
+const storeHits = [...new Set((html.match(/Toronto\s+Downtown|Markham|Richmond\s+Hill|Scarborough|Mississauga|Vaughan/gi) || []))];
+console.log('\n=== GTA store names present in the DOM ===');
+console.log(storeHits.join(', ') || '(none)');
+const jsonish = html.match(/"store[^"]{0,20}":\s*"[^"]{2,40}"/gi) || [];
+console.log('\n=== store-ish json keys ===');
+console.log([...new Set(jsonish)].slice(0, 10).join('\n') || '(none)');
+await browser.close();

@@ -218,18 +218,87 @@ def matched_diff(rows, ys, feature, b: int = 500, seed: int = 0) -> dict | None:
     }
 
 
+NET_FIELDS = ("pnl_net_pct", "net_pnl_pct")
+
+
+def resolve_objective(rows: list[dict], field: str) -> tuple[str, str | None]:
+    """Prefer a net-of-cost outcome field over the gross one.
+
+    Searching against gross return finds features that predict *gross* winners —
+    which is how a high-turnover signal with a real edge and a bigger cost bill
+    gets promoted. Returns (field_to_use, explanation_or_None).
+    """
+    if field in NET_FIELDS:
+        return field, None
+    for alt in NET_FIELDS:
+        if any(_num(r.get(alt)) is not None for r in rows):
+            return alt, (f"'{field}' is gross; using '{alt}' — a discovery objective "
+                         "that ignores costs selects for turnover")
+    return field, (f"no net field present; '{field}' is the only objective available, "
+                   "so survivors must be cost-checked downstream")
+
+
+def direction_check(rho: float, lift: float | None,
+                    matched: dict | None) -> str:
+    """Do the rank correlation, the decile spread and the matched diff agree?
+
+    Three independent views of the same feature with different failure modes.
+    If their signs disagree, at least one is measuring something other than a
+    monotone effect — usually a class-wide confound that matched_diff removes.
+    """
+    if lift is None:
+        return "unknown"
+    signs = {(1 if rho > 0 else -1), (1 if lift > 0 else -1)}
+    md = (matched or {}).get("matched_diff")
+    if md:
+        signs.add(1 if md > 0 else -1)
+    return "consistent" if len(signs) == 1 else "inconsistent"
+
+
+def load_trial_counter(path: str) -> int:
+    try:
+        return int(json.loads(Path(path).read_text(encoding="utf-8"))["trials"])
+    except Exception:
+        return 0
+
+
+def bump_trial_counter(path: str, k: int) -> int:
+    """Persist the cumulative trial count so multiple-testing debt survives runs.
+
+    A per-run count resets every invocation, which is exactly how the same
+    feature gets 'discovered' twice on overlapping data and looks independent.
+    """
+    total = load_trial_counter(path) + k
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps({"trials": total}), encoding="utf-8")
+    return total
+
+
 def analyze(payload, field: str = "pnl_pct", threshold: float = 20.0,
-            perm: int = 1000, seed: int = 0) -> dict:
+            perm: int = 1000, seed: int = 0, trial_counter: str | None = None) -> dict:
     rows = load_rows(payload)
+    requested = field
+    field, objective_note = resolve_objective(rows, field)
     ys = labels(rows, field, threshold)
     n_labelled = sum(1 for y in ys if y is not None)
     n_hit = sum(1 for y in ys if y == 1)
     lo, hi = wilson(n_hit, n_labelled)
     feats = numeric_features(rows)
     results = []
+    # A feature that could not be tested is not a feature that failed. Record it
+    # with a reason, or "0 features tested" silently reads as "nothing here".
+    skipped: list[dict] = []
     for f in feats:
         xs, ls = _pairs(rows, ys, f)
+        cov = round(len(xs) / len(rows), 4) if rows else 0.0
         if len(ls) < 30 or len(set(xs)) < 3:
+            skipped.append({
+                "feature": f, "coverage": cov, "n": len(ls),
+                "distinct": len(set(xs)),
+                "reason": (f"n={len(ls)} < 30" if len(ls) < 30
+                           else f"only {len(set(xs))} distinct values"),
+            })
             continue
         rho = spearman(xs, ls)
         p = permutation_p(xs, ls, b=perm, seed=seed)
@@ -237,22 +306,35 @@ def analyze(payload, field: str = "pnl_pct", threshold: float = 20.0,
         lift = None
         if len(dec) >= 2 and dec[0]["n"] and dec[-1]["n"]:
             lift = round(dec[-1]["rate"] - dec[0]["rate"], 4)
-        results.append({"feature": f, "n": len(ls), "rho": round(rho, 4),
-                        "p": round(p, 4), "top_minus_bottom_rate": lift,
-                        "matched": matched_diff(rows, ys, f, seed=seed),
-                        "deciles": dec})
+        md = matched_diff(rows, ys, f, seed=seed)
+        results.append({"feature": f, "n": len(ls), "coverage": cov,
+                        "rho": round(rho, 4), "p": round(p, 4),
+                        "top_minus_bottom_rate": lift,
+                        "direction": direction_check(rho, lift, md),
+                        "matched": md, "deciles": dec})
     qs = bh_adjust([r["p"] for r in results])
     for r, q in zip(results, qs):
         r["q"] = round(q, 4)
     results.sort(key=lambda r: r["p"])
+    trials = None
+    if trial_counter:
+        trials = {"path": trial_counter, "this_run": len(results),
+                  "cumulative": bump_trial_counter(trial_counter, len(results))}
     return {
-        "event": {"field": field, "threshold": threshold,
+        "event": {"field": field, "requested_field": requested,
+                  "threshold": threshold, "objective_note": objective_note,
                   "n_labelled": n_labelled, "n_hit": n_hit,
                   "base_rate": round(n_hit / n_labelled, 4) if n_labelled else None,
                   "wilson_ci": [round(lo, 4), round(hi, 4)]},
         "n_rows": len(rows),
         "features_tested": len(results),
+        "features_skipped": len(skipped),
+        "skipped": skipped,
+        "direction_inconsistent": sorted(
+            r["feature"] for r in results if r["direction"] == "inconsistent"),
+        "trials": trials,
         "features": results,
+        "inconclusive": (not results and bool(skipped)),
         "doctrine": "discovery only — no verdict; survivors must clear the audit3 forward gate",
     }
 
@@ -265,9 +347,12 @@ def main(argv=None) -> int:
     ap.add_argument("--perm", type=int, default=1000, help="permutation draws")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--json-out")
+    ap.add_argument("--trial-counter", default=None,
+                    help="JSON file accumulating the trial count across runs")
     a = ap.parse_args(argv)
     payload = json.loads(Path(a.picks).read_text(encoding="utf-8"))
-    rep = analyze(payload, a.field, a.threshold, a.perm, a.seed)
+    rep = analyze(payload, a.field, a.threshold, a.perm, a.seed,
+                  trial_counter=a.trial_counter)
     if a.json_out:
         Path(a.json_out).write_text(json.dumps(rep, indent=1), encoding="utf-8")
     e = rep["event"]

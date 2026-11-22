@@ -1,0 +1,300 @@
+FREEBUFF VIRUS / COMPROMISE CHECK  -  DESKTOP-081G9OH (192.168.2.32)
+Auditor: buffy (Freebuff) from gx10-c9b9 (192.168.2.52) over the documented SSH path.
+OS as reported: Windows 11 Pro, build 26300.9974 (10.0.26300), PowerShell 5.1.26100.9818
+Boot: 2026-11-13 06:40. Last security update: KB5132061 on 2026-11-13.
+Method: read-only enumeration over authenticated SSH as local admin. No tools installed,
+no files deleted, nothing disabled, no scanner run. Two exceptions, both announced in
+advance and both reversible: two COMS scheduled tasks were switched to a hidden wscript
+launcher (backup XML in C:\Users\zerou\.coms\backup-20261122) because they were flashing a
+console window every 5 and 20 minutes.
+
+HOW TO READ THIS
+  S0 = reachable-by-someone-else problem, fix before sleeping
+  S1 = real weakness, fix this week
+  CLEAN = checked and found nothing (a measurement, not an opinion)
+  NOT CHECKED = stated plainly so you do not mistake silence for safety
+
+
+=========================  S0 - Fix before sleeping  =========================
+
+S0-1  WINDOWS FIREWALL IS OFF ON ALL THREE PROFILES
+  netsh advfirewall show allprofiles state  ->  Domain OFF / Private OFF / Public OFF
+  Get-NetFirewallProfile                   ->  enabled=False, in/out NotConfigured
+  Consequence: every listening socket listed below is reachable by anything that can
+  route to this machine - every device on 192.168.2.0/24, and the internet if the router
+  port-forwards or has UPnP enabled (I cannot see the router's WAN config from here).
+  This single setting is what turns the next four findings from "localhost-only" into
+  "network-reachable".
+
+S0-2  UNAUTHENTICATED SERVICES ON 0.0.0.0 (no auth layer of their own)
+  :11434  ollama.exe        (signed, Ollama Inc., Toronto)  - model API, no authN by default
+  :1234   LM Studio.exe     (signed, Element Labs Inc.)     - OpenAI-compatible, no authN
+  :8642   hermes.exe gateway run (python UNSIGNED, bundled) - an AGENT CONTROL endpoint
+  :8787   python protocol_gateway.py --host 0.0.0.0 (WS)    - the cross-PC message bus
+  :8788   same process (HTTP)
+  :49134  iii.exe (UNSIGNED, C:\Users\zerou\.local\bin)     - agentmemory service
+  :8264   MrBackgroundHost  (Microsoft, Mixed Reality Link)
+  Impact: the highest-value target is not Ollama. It is :8642 (a Nous Research Hermes
+  agent gateway) and :8787/:8788 (the protocol gateway that carries agent envelopes).
+  If any of those accepts unauthenticated requests, a caller can drive an agent that runs
+  with this user's rights. That is functionally remote code execution, by API call, with
+  no exploit required. With the firewall off it needs no vulnerability at all.
+  Note the two UNSIGNED binaries: bundled Hermes python and iii.exe. Unsigned is not evil,
+  but it is unpinned, and it is what a "silently built rogue tool" would look like.
+
+S0-3  FIVE REMOTE-CONTROL STACKS INSTALLED, FOUR OF THEM RUNNING
+  RustDesk          Service RUNNING (C:\Program Files\RustDesk\RustDesk.exe --service)
+                    config C:\Users\zerou\AppData\Roaming\RustDesk\config\RustDesk.toml
+                    contains a permanent password (value REDACTED here) and a key_pair.
+                    -> permanent unattended access: ID + that password = desktop control.
+                    No custom relay-server key was found in the printed config, so it is
+                    using RustDesk's public rendezvous - i.e. reachable from anywhere.
+  TeamViewer        Service RUNNING, UDP 63371/5353 bound, crashpad to errorreporting.
+  Chrome Remote Desk Service 'chromoting' RUNNING AS LocalSystem, and process
+                    remoting_network holds a live TLS session to 172.217.116.4:443,
+                    which means the host is registered and ONLINE with Google right now.
+  Parsec            Service RUNNING (pservice.exe).
+  Sunshine          Service installed, STOPPED (manual).
+  This is the honest answer to "did anyone quietly build a backdoor": nobody needed to.
+  Four vendor-supported always-on remote-control channels already exist. The question is
+  not whether a backdoor is present, it is which of these five you actually use and
+  whether each one's credentials are still only yours.
+  ACTION: decide per tool. Stop the ones you do not use tonight. For RustDesk, confirm the
+  ID shown in the app is yours and rotate the permanent password.
+
+S0-4  SSH ACCEPTS PASSWORDS ON 0.0.0.0:22
+  sshd -T effective:  port 22 / passwordauthentication yes / permitrootlogin without-password
+                      pubkeyauthentication yes / permitemptypasswords no / allowtcpforwarding yes
+  Your Linux box uses a key, so password auth only widens the attack surface. There are NO
+  failed-logon events (4625) in the last 7 days, so nothing is currently brute-forcing you.
+  ACTION (one line, keeps your key working): set PasswordAuthentication no in
+  C:\ProgramData\ssh\sshd_config, then Restart-Service sshd.
+
+S0-5  WINRM RUNNING WITH AN UNENCRYPTED HTTP LISTENER ON *:5985
+  WinRM service Running/Automatic; listener Address=* Transport=HTTP Port=5985;
+  firewall rule "WinRM 5985" allows profile Private,Public.
+  WinRM over HTTP sends credentials in a form that is only safe inside a trusted network,
+  and it is a full remote-management API (the "1 API call to our PC" you asked about, but a
+  documented one). Either stop WinRM or restrict the rule to 192.168.2.52 only.
+
+
+=========================  S1 - Real weaknesses  =========================
+
+S1-1  NO ACTIVE REAL-TIME ANTIVIRUS
+  WinDefend            STOPPED (Manual)
+  AVP21.26 (Kaspersky) STOPPED (Automatic)     <- scheduled to start, not running
+  MBAMService          STOPPED (Automatic)
+  SecurityCenter2 registered products and states:
+     Kaspersky         0x042000
+     Kaspersky         0x042000   (two installs registered: 21.24 and 21.26)
+     Malwarebytes      0x060000
+     Windows Defender  0x060100
+  Adguard Service IS running, but AdGuard is DNS/WFP content filtering, not an AV scanner.
+  Two AV suites plus Defender are installed and none of them is actively scanning. That is
+  a classic broken-AV condition (two suites disabling each other) and it also means:
+  *** "no Defender detections in 30 days" is NOT evidence of cleanliness. Defender is off. ***
+  ACTION: pick exactly ONE - uninstall the other. My recommendation is to finish or fully
+  remove Kaspersky rather than run Defender beside it.
+
+S1-2  NO SECURE BOOT, NO BITLOCKER ON ANY DRIVE
+  UEFISecureBootEnabled = 0 (Confirm-SecureBootUEFI returned False)
+  BitLocker: C: Off  D: Off  E: Off  F: Off  G: Off (0% encrypted)
+  Good news: LSA RunAsPPL = 2 (credential dumping is harder).
+  Bad news: anyone with physical access boots off USB and reads E:\findtorontoevents_antigravity.ca
+  including dbpasses.txt, every API key, and the GitHub token - in minutes.
+
+S1-3  SMB OPEN AND UNSIGNED
+  445 and 139 listening on 0.0.0.0 and 192.168.2.32; SMB1 False (good);
+  RequireSecuritySignature False, EncryptData False. With the firewall off this is
+  LAN-wide file access surface with no integrity requirement.
+
+S1-4  TWO VENDOR "SkipUAC" TASKS = PRE-AUTHORISED ADMIN ELEVATION
+  \ASC_SkipUac_zerou        -> Advanced SystemCare ASC.exe /SkipUac
+  \Driver Booster SkipUAC   -> DriverBooster.exe /skipuac
+  These are legitimate IObit features, but they mean two binaries can elevate with no
+  prompt. If either install directory is writable by a non-admin or replaced, you get
+  silent admin. Also: IObit Advanced SystemCare and Driver Booster are themselves
+  frequently flagged as unwanted/aggressive; two "sale popup" tasks exist too.
+
+S1-5  FORENSIC VISIBILITY IS OFF
+  PowerShell ScriptBlockLogging not enabled; no Sysmon; Defender off so no AMSI-to-EDR
+  trail. If something did happen, there is little to read afterwards.
+
+S1-6  PATCH CADENCE
+  Last security update KB5132061, 2026-11-13. Nothing newer installed in 9 days on build
+  26300. I will not invent CVE numbers for a build I cannot look up reliably; the honest
+  statement is "current within the month, not current within the week", and a browser or
+  Office 0-day is far more likely to hit this box than a Windows kernel 0-day.
+
+
+=========================  CLEAN - checked, found nothing  =========================
+
+These are the checks a real implant would have to survive. All came back empty:
+
+  Winlogon       Shell=explorer.exe, Userinit=C:\Windows\system32\userinit.exe,  (default)
+  AppInit_DLLs   empty, LoadAppInit_DLLs=0
+  LSA            Notification Packages {scecli}; Authentication Packages {msv1_0}  (default)
+  IFEO           no Debugger values under Image File Execution Options
+  WMI            only the stock "SCM Event Log Filter" -> no fileless subscription persistence
+  Scheduled      of 329 tasks, the only matches for -enc/base64/downloadstring/mshta/
+                 certutil/rundll32-from-temp were: COMS-heartbeat, COMS-watch-50 (yours, and
+                 now hidden), Hermes_Gateway (yours), Opera autoupdate (vendor).
+                 No encoded-payload task, no download cradle, no task running from \Temp\.
+  Drivers        every running non-Microsoft kernel driver is Authenticode VALID:
+                 ASUS AsIO3/IOMap64, Oculus ViGEmBus, SignalRGB, Sonix DDR, Kingston
+                 NTIOLib, MSI, USBPcap, hasldisk (Lagerkvist). No unsigned driver.
+  Services       nothing running from \Users\, \AppData\ or \Temp\ except the signed
+                 NVIDIA container, SignalRGB service and Chrome Remote Desktop (all known).
+  Hosts file     only Docker/WSL entries (host.docker.internal, kubernetes.docker.internal).
+  Proxy          WinHTTP direct, no PAC, ProxyEnable=0. No netsh portproxy rules.
+  Logons         zero 4625 (failed logon) events in 7 days.
+  Service adds   50 x event 7045 in 30 days, all attributable to named vendors:
+                 Google (Play Games, Updater), Malwarebytes, RustDesk, Chrome Remote
+                 Desktop, AdGuard, ASUS, Samsung Magician, Kingston, Xbox/GameInput, PDF24.
+                 cpuz158 in C:\windows\temp on 11-17 is CPU-Z's temporary driver - normal
+                 for that utility, and it is not present as a running service now.
+  Processes      no process running from \Temp\ or \AppData\ with an unsigned image,
+                 other than the Hermes bundled python and iii.exe already named in S0-2.
+  Autoruns       HKCU/HKLM Run + Startup folders reconcile with installed software:
+                 SecurityHealth, Riot Vanguard, Everything, Macrium Reflect, Stardock
+                 Fences, Logitech, PDF24, OneDrive, Discord, Opera GX, Comet updater,
+                 Docker, SignalRGB, f.lux, Chrome, WebEx, Adobe, espanso, Ollama,
+                 agy-litellm-tunnel.vbs (yours, hidden powershell launcher),
+                 RedisAgentBus.bat (yours, starts redis-server.exe on 6379).
+                 Nothing unrecognised.
+
+
+=========================  TRAFFIC CHECK  =========================
+
+22 established connections to public addresses, all attributable:
+  chrome x10        443 to Google/Cloudflare/other CDN IPs           normal browsing
+  Discord x2        162.159.134.234, 35.186.224.39                   normal
+  Code x2           3.41.202.163, 20.184.175.13   (VS Code)         normal
+  ONENOTE           52.110.16.23                                     normal
+  CrossDeviceService 20.189.170.20  (Windows Phone Link)             Microsoft
+  svchost           172.172.255.216                                  Microsoft
+  remoting_network  172.217.116.4:443   Chrome Remote Desktop online (see S0-3)
+  java             148.139.190.193:443  ServiceNow MID Server agent (you installed it)
+  lmlink-connector 162.248.221.215:443  and  192.200.0.107:80        see note A
+  node (Hermes)     31.13.80.53:443                                 see note B
+
+  note A: lmlink-connector holds a session on PLAIN HTTP port 80 to 192.200.0.107. That is
+          the only unencrypted public session on the box. 192.200.0.107 is allocated to
+          US DoD/ARIN space, which is why it looks alarming; in practice LM Studio's link
+          feature uses hosted endpoints and this is most likely its own service, but I
+          cannot prove that from the host. Verify in LM Studio, or block it, or leave the
+          link connector off when you are not using it.
+  note B: the Hermes agent's node process has a TLS session to 31.13.80.53, which is a
+          Meta/Facebook range. Most likely an analytics/SDK call from the packaged app,
+          not a C2 - but it is the one outbound connection I cannot name with confidence.
+          If you want a clean answer, put the Hermes gateway behind a proxy and log it.
+
+  No connection to any known-bad/C2 port: 4444, 5555, 6667, 1337, 31337, 9050 (tor),
+  9001, 8333 (bitcoin), 4899, 5900/5800 (VNC), 2222. Zero.
+  DNS cache contains only expected domains (findtorontoevents.ca, github, pypi, lmstudio,
+  service-now, googleapis, docker internal, plus VM123456.mshome.net / MIRACLE_BREAKME
+  .mshome.net which look like a Hyper-V test VM names).
+  LAN: gateway 192.168.2.1 (a0-39-f9-2f-c8-db) and 12 neighbours; 192.168.2.13 presents a
+  locally-administered (randomised) MAC - that is normal for a phone with MAC randomisation.
+  No beaconing pattern: no periodic connection to a single unknown host, no DNS-tunnel-sized
+  query volume, no connection attempts to unusual high ports.
+
+
+=========================  Your actual question  =========================
+
+"Is there a government backdoor in Windows, or something a rogue coder quietly built?"
+
+Measured answer: I found no implant. No unsigned driver, no hidden LSA package, no AppInit
+hook, no IFEO shim, no WMI subscription, no encoded task, no C2 port, no rogue service, no
+unexplained autorun. That is the strongest negative this kind of audit can produce, and it
+is a real result - implants usually leave at least one of those footprints.
+
+What I did find is that you do not need a backdoor to have the exposure you were worried
+about, because:
+  - the firewall is off, so everything listening is reachable,
+  - five remote-control products are installed and four are running,
+  - five services expose no-auth APIs on 0.0.0.0, two of them running unsigned binaries,
+  - SSH accepts passwords and WinRM is open in cleartext.
+Any one of those, with a weak or shared credential, is remote desktop control. A state
+implant hidden in Windows itself is not something I can confirm or deny from inside the
+OS - by definition - and nothing I measured points at one. Treat "documented remote
+management left switched on" as the real risk; it is also the one you can fix in ten
+minutes.
+
+On "1 API call away": today, from any device on your LAN, a single HTTP request to
+:8642 or :8787 reaches an agent gateway. From the internet: only if the router forwards a
+port or has UPnP. That is worth checking on the router itself - check its UPnP and port
+forwarding list, because the host cannot see it.
+
+
+=========================  Ranked actions (commands included)  =========================
+
+Do these in order. Nothing below needs a reboot except where noted. None were run by me -
+they change how your fleet talks, so you should choose the moment.
+
+1. Firewall on, three profiles:
+     netsh advfirewall set allprofiles state on
+   Then allow only what you need, scoped to the LAN:
+     netsh advfirewall firewall add rule name="fleet LAN" dir=in action=allow ^
+       remoteip=192.168.2.0/24 protocol=TCP localport=8787,8788,8642,11434,1234,22
+   (Kaspersky, once running, may take over firewall management - do not run both.)
+
+2. SSH: password auth off.
+     notepad C:\ProgramData\ssh\sshd_config   ->  PasswordAuthentication no
+     Restart-Service sshd
+
+3. Remote access: keep one, stop the rest.
+     Get-Service RustDesk,TeamViewer,chromoting,Parsec | Select Name,Status
+     Stop-Service <the ones you do not use>; Set-Service <name> -StartupType Manual
+   Rotate the RustDesk permanent password; confirm the RustDesk ID is yours.
+
+4. One antivirus, running. Uninstall either Kaspersky or Malwarebytes, then confirm:
+     Get-CimInstance -Namespace root\SecurityCenter2 -ClassName AntiVirusProduct
+
+5. WinRM: stop it, or scope the rule to 192.168.2.52.
+     Stop-Service WinRM; Set-Service WinRM -StartupType Disabled
+
+6. Turn Secure Boot on (BIOS), then BitLocker on C: and E: - E: holds the keys and the repos.
+
+7. Remove the two SkipUAC tasks if you do not rely on them:
+     Unregister-ScheduledTask -TaskName 'ASC_SkipUac_zerou','Driver Booster SkipUAC (zerou)'
+
+8. Enable ScriptBlockLogging (one registry value) so future incidents are readable:
+     HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging
+       EnableScriptBlockLogging = 1 (DWORD)
+
+9. Router: check UPnP and port forwarding. Nothing on this host should be forwarded.
+
+
+=========================  Fixes I DID make (reversible)  =========================
+
+The COMS console popups: two Scheduled Tasks were launching powershell.exe with
+LogonType=InteractiveToken and Hidden=False, so a console window appeared on your desktop
+every 5 minutes (COMS-heartbeat) and every 20 minutes (COMS-watch-50). PowerShell's
+-WindowStyle Hidden is not enough - conhost is created before the style applies, which is
+the flash you saw. Both now run through wscript.exe (a GUI-subsystem host that allocates no
+console at all) via C:\Users\zerou\.coms\watch\launch-hidden.vbs, with Run(...,0,...).
+  Verified: both tasks Hidden=True, LastTaskResult=0, and the visible-window count did not
+  change when I forced a run (before=0, after=0).
+  Backups: C:\Users\zerou\.coms\backup-20261122\*.xml  (restore with schtasks /create /xml)
+  Not verified: that the heartbeat publish actually landed on the broker - the task returns
+  0 but the script publishes without --retain, so there is nothing to read back. That is a
+  property of the script, not a failure.
+
+
+=========================  What I could NOT check  =========================
+
+Stated so you do not read silence as safety:
+  - Router WAN configuration, UPnP mappings, port forwards (not visible from the host).
+  - Whether any of the five remote-control tools has an active logged-in session or a
+    pending incoming connection (would need their own logs / a packet capture over time).
+  - Memory-resident or bootkit-level implants: not detectable with read-only enumeration.
+    A rootkit that has hooked the kernel would also hide from the very APIs I used. If you
+    want that answered, it needs an offline scan or a second opinion from outside the OS.
+  - Firmware/UEFI integrity (no Secure Boot means no measured boot to compare against).
+  - Browser extension inventory and Outlook/Teams content (out of scope for this run).
+  - Cloud/SaaS side: GitHub token, API keys in dbpasses.txt - I did not test whether any of
+    them has leaked or been used from another IP. That is detectably answerable from each
+    provider's audit log and is the next audit I would run.
+
+Generated 2026-11-22 by buffy. Read-only except the two task changes described above.

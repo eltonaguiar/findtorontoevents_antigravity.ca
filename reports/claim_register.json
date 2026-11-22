@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "updated": "2026-11-22",
+  "rules": [
+    "append-only: to change a status, add a new entry with supersedes set",
+    "a claim needs an evidence path another agent can open",
+    "status changes end disagreements; prose does not",
+    "gross-only numbers are never a verdict"
+  ],
+  "claims": [
+    {
+      "id": "C-001",
+      "claim": "Volatility scaling adds +0.3 Sharpe for any momentum strategy",
+      "level": "DOCTRINE",
+      "status": "REFUTED",
+      "verifiers": ["buffy", "mercury3"],
+      "independent_runs": 3,
+      "detail": "buffy SPY 2007-2026 TSMOM: delta Sharpe -0.016 (cap 1.0) and -0.072 (cap 2.0), 5bp/switch. mercury3 9 series x 3 financing variants: 0/9 cells reach +0.30; capped mean -0.01; paid borrow -0.10. buffy re-ran mercury3's tool/vol_scaling_doctrine_test.py: capped mean -0.01, 0/9 cells at +0.30.",
+      "evidence": [
+        "reports/horizon_backtest_2026-11-22.json#e2_vol_scaling",
+        "reports/vol_scaling/vol_scaling_doctrine.json",
+        "reports/2026-11-22-horizon-allocation-review.md"
+      ],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-002",
+      "claim": "POD-EQUITY-BREAKOUT: PF 1.479, WR 50.2%, Sharpe 0.747, n=245 (2021-04..2026-04)",
+      "level": "FAMILY",
+      "status": "REFUTED",
+      "verifiers": ["mercury3", "buffy"],
+      "independent_runs": 2,
+      "detail": "mercury3: n=1,901, PF 1.00, WR 40.6%, pre-2021 negative. buffy independent run of the pod's own rule, 13 symbols, 25bp/side: n=1,941, gross +0.483%, net -0.017%/trade, WR 40.5%, PF 0.99, t=-0.15; pre-2021 n=1,521 net -0.032%, t=-0.25; 2021+ n=420 net +0.040%, t=+0.18, PF 1.02, WR 41.2%. Published n=245 vs measured n=420 in the same window implies an unreproduced selectivity. Not claiming the published number is false - claiming it is not reproducible from code on disk.",
+      "evidence": [
+        "reports/pod_equity_breakout/pod_equity_breakout_backtest.json",
+        "tools/pod_equity_breakout_backtest.py"
+      ],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-003",
+      "claim": "Faber TAA delivers Sharpe 1.74 (SPY) / 1.65 (QQQ)",
+      "level": "FAMILY",
+      "status": "REFUTED",
+      "verifiers": ["buffy", "mercury3"],
+      "independent_runs": 2,
+      "detail": "Measured 0.56/0.65 on daily excess returns (0.62/0.75 monthly) against quoted 1.74/1.65. The drawdown benefit is real (-24.7% vs -55.2%) at a CAGR cost of ~2.2 pp/yr. mercury3 concurs: risk control, not alpha.",
+      "evidence": ["reports/horizon_backtest_2026-11-22.json#e3_faber"],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-004",
+      "claim": "5m crypto: fees are 6-9x gross edge; gross-per-trade +2.2bp vs 4-24bp round-trip cost",
+      "level": "FAMILY",
+      "status": "AS_STORED",
+      "verifiers": ["mercury3"],
+      "independent_runs": 1,
+      "detail": "Not independently re-run by buffy. Stored artifact confirms n=1,254 and mean net -0.178%/trade; gross +28.02% and the fee decomposition have no stored artifact. Arithmetic is internally consistent (28.02%/1254 = 2.23bp). Treat the conclusion as MEASURABILITY_FAIL for 5m crypto, not as established for other cadences.",
+      "evidence": ["reports/realtime_challenge/backtest_live_bars.json"],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-005",
+      "claim": "CRYPTO KILL verdict implies crypto as an asset class is unprofitable",
+      "level": "PICK-vs-ASSET",
+      "status": "REFUTED",
+      "verifiers": ["buffy"],
+      "independent_runs": 1,
+      "detail": "CRYPTO KILL describes 6,926 of our picks at -0.42%/trade (DSR 0.000). BTC buy-and-hold 2014-09..2026-11: CAGR 49.1%, Sharpe 0.911, maxDD -83.0% vs SPY 0.655. Both statements are true at different levels. Level confusion is the single most common error on the bus.",
+      "evidence": ["reports/horizon_backtest_2026-11-22.json#e5_class_vs_pick"],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-006",
+      "claim": "Equities always beat cash over a 10-year horizon",
+      "level": "ASSET",
+      "status": "REFUTED",
+      "verifiers": ["buffy"],
+      "independent_runs": 1,
+      "detail": "SPY vs ^IRX T-bill accrual, 1993-01..2026-11, 8,491 sessions: SPY lost to cash in 20.6% of rolling 1y windows (p10 -12.0%), 19.6% of 3y, 24.1% of 5y and 11.6% of 10y. T-bills compounded +17.5% over ten years with no meaningful drawdown. Only ~3 independent 10y windows exist - report as regime evidence, not independent trials.",
+      "evidence": ["reports/horizon_backtest_2026-11-22.json#e1_horizon_long"],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-007",
+      "claim": "All 430 forward rows belong to orphan H-119, which no pod owns",
+      "level": "PROCESS",
+      "status": "AS_STORED",
+      "verifiers": ["mercury3"],
+      "independent_runs": 1,
+      "detail": "Not re-run by buffy. If true, G8 precludes promotion despite real forward evidence, and POD-EQUITY-BREAKOUT has zero forward rows while H-119 has 430. The measurement bug is worth more than any new hypothesis.",
+      "evidence": ["reports/forward_observations.jsonl"],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-008",
+      "claim": "Volatility scaling halves drawdown (free risk reduction)",
+      "level": "FAMILY",
+      "status": "REPRODUCED",
+      "verifiers": ["buffy", "mercury3"],
+      "independent_runs": 2,
+      "detail": "SPY 2007-2026: maxDD 21.0% -> 11.4% (cap 1.0) with CAGR 8.38% -> 6.64% and Sharpe 0.627 -> 0.611. Real, buyable, but it is a leverage/risk rule, not alpha. Never present as a Sharpe improvement.",
+      "evidence": ["reports/horizon_backtest_2026-11-22.json#e2_vol_scaling"],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-009",
+      "claim": "G6c denominator should be return on total margin posted minus T-bill on that same collateral, with leverage disclosed but not scored",
+      "level": "METHOD",
+      "status": "PROPOSED",
+      "verifiers": ["mercury3", "buffy"],
+      "independent_runs": 0,
+      "detail": "Agreed in principle: notional Sharpe is fiction for grossed-up hedge legs. Must be fixed in the SAME registration as the hypothesis, before results are seen, or it is retrofitting.",
+      "evidence": ["COMMUNICATION notes reply-mercury3-to-buffy-cost-first-2026-11-22"],
+      "date": "2026-11-22"
+    }
+  ]
+}

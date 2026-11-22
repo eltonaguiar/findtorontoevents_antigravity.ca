@@ -1,6 +1,6 @@
 # H-020 CRYPTO Cross-Exchange Premium (Coinbase Premium Index) — 2026-05-18
 
-_Generated 2026-05-18T19:09:12+00:00 by `tools/h020_cross_exchange_premium_research.py`._
+_Generated 2026-11-22T08:50:06+00:00 by `tools/h020_cross_exchange_premium_research.py`._
 
 ## VERDICT: **REJECTED**
 
@@ -27,35 +27,35 @@ Cross-exchange price premium — the **Coinbase Premium Index**:
 
 - **Binance** spot daily klines (failover api/api1/api2/api3), paginated full history.
 - **Coinbase Exchange** daily candles (`/products/<p>/candles`, free, no key), paginated backward in 300-candle pages.
-- **Sample:** 18153 coin-day resolved records.
+- **Sample:** 19657 coin-day resolved records.
 
 | coin | records | wins | gross WR | premium obs |
 |---|---|---|---|---|
-| BTC | 3165 | 1547 | 48.9% | 3197 |
-| ETH | 3165 | 1588 | 50.2% | 3197 |
-| SOL | 1765 | 879 | 49.8% | 1797 |
-| XRP | 1009 | 508 | 50.3% | 1041 |
-| ADA | 1856 | 943 | 50.8% | 1888 |
-| AVAX | 1660 | 799 | 48.1% | 1692 |
-| LINK | 2486 | 1223 | 49.2% | 2518 |
-| LTC | 3047 | 1509 | 49.5% | 3079 |
+| BTC | 3353 | 1640 | 48.9% | 3385 |
+| ETH | 3353 | 1677 | 50.0% | 3385 |
+| SOL | 1953 | 978 | 50.1% | 1985 |
+| XRP | 1197 | 600 | 50.1% | 1229 |
+| ADA | 2044 | 1041 | 50.9% | 2076 |
+| AVAX | 1848 | 895 | 48.4% | 1880 |
+| LINK | 2674 | 1321 | 49.4% | 2706 |
+| LTC | 3235 | 1601 | 49.5% | 3267 |
 
 ## Harness verdict (THE gate — `edge_stability_harness`, UNMODIFIED)
 
-- per-window eff (new->old): `+0.64 +0.09 +0.37 -0.04 -0.04 +0.04 -0.57 +0.13 -0.26 -0.21 +0.38 -0.21 +0.14 +0.46 -0.05 +0.35 -0.19 -0.51 -0.04 +0.49 +0.15 +0.19 +0.04 +0.41 -0.09 +0.16 +0.13 -0.41 +0.29 -0.35 -0.29 +0.14 -0.15 -0.25 -0.38 -0.44 -0.64 +0.08 +0.29 +0.49 -0.13 -0.36 -0.19 -0.64 -0.39 -0.53 +0.41 -0.36 -0.20 -0.46 -0.65 +0.38 +0.56 -0.14 -0.46 +0.18 +0.74 +0.41 +0.40 +0.06 -0.07 -0.11 +0.01 -0.42 -0.07 +0.15 +0.40 +0.18 -0.34 +0.21 -0.15 +0.37 +0.17 +0.00 -0.36 -0.56 -0.16 +0.08 +0.03 -0.64 +0.27 +0.15 +0.42 +0.54 +0.36 +0.29 +0.27 +0.31 +0.06 -0.06 -0.04 +0.43 -0.25 -0.15 -0.02 -0.02 +0.14 -0.24 -0.24 -0.04 +0.03 -0.02 -0.04 +0.26 -0.40 +0.06 +0.13 +0.09 +0.03 -0.38 -0.18 +0.13 +0.05 +0.17 -0.09 +0.11 +0.32 -0.03 +0.19 -0.01 -0.09 +0.02 +0.10 -0.24 -0.07 +0.50`
-- windows scored: 126  (strong 45: +23/-22)
+- per-window eff (new->old): `+0.17 -0.01 +0.01 -0.23 -0.62 +0.47 -0.05 -0.26 -0.01 -0.43 -0.08 -0.27 -0.20 -0.02 -0.01 +0.52 -0.17 +0.31 -0.04 -0.33 -0.46 +0.49 -0.03 -0.16 +0.02 -0.42 +0.37 -0.03 -0.15 +0.27 -0.41 -0.28 +0.28 -0.14 +0.33 +0.16 +0.07 +0.55 -0.01 +0.23 -0.24 -0.40 +0.20 -0.19 -0.47 +0.14 -0.33 -0.16 -0.40 -0.22 -0.12 +0.22 +0.34 +0.52 -0.25 -0.23 -0.43 -0.52 -0.53 -0.28 +0.45 -0.52 -0.53 -0.06 +0.22 +0.47 -0.22 -0.49 +0.73 +0.32 +0.56 +0.65 -0.20 +0.21 +0.03 -0.70 -0.26 +0.08 +0.19 +0.14 +0.19 -0.16 +0.03 -0.04 -0.43 -0.04 +0.33 -0.31 -0.38 -0.25 +0.21 -0.01 -0.47 -0.27 +0.47 +0.21 +0.62 -0.27 +0.44 +0.17 +0.45 -0.07 +0.31 -0.15 -0.23 +0.32 -0.35 +0.07 +0.10 -0.04 +0.01 -0.23 -0.28 -0.07 -0.10 +0.20 -0.03 +0.45 -0.69 +0.28 -0.24 -0.07 -0.03 -0.32 -0.19 +0.03 +0.10 +0.02 -0.18 +0.41 +0.04 +0.24 +0.36 -0.14 -0.18 +0.10 -0.07 -0.32 +0.45`
+- windows scored: 139  (strong 51: +26/-25)
 - `is_admissible()`: False
-- harness reason: REJECTED — strong in 45 windows but signs split (23+/22-); needs 3 same-sign
+- harness reason: REJECTED — strong in 51 windows but signs split (26+/25-); needs 3 same-sign
 
 ## Post-cost gate (30bps round-trip; net must keep >= 60% of gross)
 
-- gross edge: **9.3137 bps/trade**
-- net edge (after 30.0bps round-trip): **-20.6863 bps/trade**
-- cost-survival: **-222.11%** (floor 60%)
+- gross edge: **9.8477 bps/trade**
+- net edge (after 30.0bps round-trip): **-20.1523 bps/trade**
+- cost-survival: **-204.64%** (floor 60%)
 - post-cost gate: **FAIL**
 
 - pooled gross WR: 49.6%
-- pooled net WR: 45.8%
+- pooled net WR: 45.7%
 
 ## Honest conclusion
 

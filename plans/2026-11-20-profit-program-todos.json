@@ -1,0 +1,104 @@
+{
+  "schema": "program.todos.v1",
+  "program": "profit-engine-phased-program",
+  "created": "2026-11-20",
+  "author": "freebuff-deepseek-v4-flash",
+  "plan": "plans/2026-11-20-profit-engine-phased-program.md",
+  "rules": [
+    "no new strategy may be generated while any P0 or P1 todo is open",
+    "a phase may not start before the previous phase's exit test is written down",
+    "every todo must name the artifact that proves it is done"
+  ],
+  "phases": [
+    {
+      "id": "P0",
+      "name": "Instrument the truth",
+      "goal": "every published number has a denominator, vintage and power estimate",
+      "exit_test": "per class: rows, price vintage, MDE, net alpha vs hold; no number without a denominator",
+      "todos": [
+        {"id": "P0.1", "task": "price freshness per class + SLA + CI gate; make db_freshness.json internally consistent", "status": "open", "evidence": "tools/db_freshness_check.py + audit_dashboard/data/db_freshness.json"},
+        {"id": "P0.2", "task": "backfill FX 2026-02->11 and fix AUDJPY=X/AUD-USD mapping; retire EURUSDT from FOREX", "status": "open", "evidence": "fx_prices coverage report"},
+        {"id": "P0.3", "task": "publish MDE per asset class from real n and vol", "status": "open", "evidence": "money_ready_verdict.json mde block"},
+        {"id": "P0.4", "task": "selection alpha vs same-instrument hold as per-class headline with CI", "status": "open", "evidence": "audit3_selection_alpha.py output on /audit"},
+        {"id": "P0.5", "task": "global trial counter threaded into deflated_sharpe", "status": "open", "evidence": "dsr_n_trials equals cumulative trials"},
+        {"id": "P0.6", "task": "publish pf_gross, pf_net, expectancy_net separately; delete bare pf", "status": "open", "evidence": "schema change in money_ready_verdict.py"},
+        {"id": "P0.7", "task": "fix or rename policy_clean_*; assert clean_n <= n_resolved", "status": "open", "evidence": "invariant test in tests/"}
+      ]
+    },
+    {
+      "id": "P1",
+      "name": "Calibrate the harness against two knowns",
+      "goal": "prove the tribunal can tell a real edge from a dead one",
+      "exit_test": "harness reproduces a known-positive and a known-negative sign; every verdict reports utilization",
+      "todos": [
+        {"id": "P1.1", "task": "port the RSI(2) SPY/QQQ spec into alpha_engine with lag 1, costs, cash leg, time-matched benchmark", "status": "open", "evidence": "strategy module + config test"},
+        {"id": "P1.2", "task": "run it through audit3_tribunal unmodified and record the verdict", "status": "open", "evidence": "ledger entry for the pod"},
+        {"id": "P1.3", "task": "run the identical code on BTC/SOL and record both signs", "status": "open", "evidence": "two ledger entries"},
+        {"id": "P1.4", "task": "implement alpha_per_exposed_day and time_in_market as first-class metrics", "status": "open", "evidence": "audit3 coverage block fields"},
+        {"id": "P1.5", "task": "write the overlay-vs-standalone decision memo from the measured utilization finding", "status": "open", "evidence": "reports/ memo"}
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Stop destroying value before adding any",
+      "goal": "fix the exit/cost problem larger than any claimed edge",
+      "exit_test": "crypto-long and ETF selection alpha >= 0 in at least one regime on identical signals, or the cell is retired with a post-mortem",
+      "todos": [
+        {"id": "P2.1", "task": "paired-bootstrap A/B of current TP/SL vs symmetric vol-scaled time exit on the same signals", "status": "open", "evidence": "paired CI report"},
+        {"id": "P2.2", "task": "reconcile modelled slippage vs measured fills per class into one canonical cost base", "status": "open", "evidence": "cost table + note per side vs round trip"},
+        {"id": "P2.3", "task": "kill expressions with alpha <= 0 in two regimes; keep them in an observe pod", "status": "open", "evidence": "denylist entries + observe pod"},
+        {"id": "P2.4", "task": "store expected_move_pct and floor_pct on entries so cost-floor refusals are auditable", "status": "open", "evidence": "entry row fields"}
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "One premium, pre-registered, forward clock",
+      "goal": "one real edge with a written verdict in 6-12 weeks",
+      "exit_test": "one pod with forward n>=100, net CI at 2x cost, and a written promote/keep-paper/freeze verdict",
+      "todos": [
+        {"id": "P3.1", "task": "pre-register the chosen hypothesis before the first run, with kill rule", "status": "open", "evidence": "reports/hypothesis_registry.json entry"},
+        {"id": "P3.2", "task": "freeze spec, max 5 configurations, log every trial", "status": "open", "evidence": "trial log with true n_trials"},
+        {"id": "P3.3", "task": "purged walk-forward + embargo, 2x slippage, 1-bar execution delay", "status": "open", "evidence": "OOS PF + net CI"},
+        {"id": "P3.4", "task": "add random-entry and beta-matched hold control arms", "status": "open", "evidence": "two control sleeve ids in sleeves.json"},
+        {"id": "P3.5", "task": "accrue forward paper rows to n>=100 unattended", "status": "open", "evidence": "sleeve_summary.json forward n"}
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "Portfolio, not pick list",
+      "goal": "compound several weak edges without ruin",
+      "exit_test": "paper portfolio beats 60/40 and buy-and-hold after costs with smaller max drawdown, or reports that it only matches",
+      "todos": [
+        {"id": "P4.1", "task": "correlation matrix of survivors on forward returns", "status": "open", "evidence": "covariance artifact"},
+        {"id": "P4.2", "task": "vol targeting + evidence weight + per-sleeve risk budget", "status": "open", "evidence": "sizing record per position"},
+        {"id": "P4.3", "task": "regime detection with per-regime exposure caps", "status": "open", "evidence": "simulated 2020/2022 response"},
+        {"id": "P4.4", "task": "drawdown circuit breaker at -15% HWM with tested freeze + 48h post-mortem", "status": "open", "evidence": "kill-switch test"},
+        {"id": "P4.5", "task": "core beta + premia sleeve + sandbox with exposure tilt (not on/off switching)", "status": "open", "evidence": "allocation policy doc + paper result"}
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "Reconcile, calibrate, decay-check",
+      "goal": "the number stays real over time",
+      "exit_test": "an outside reviewer recomputes any verdict identically and the system rejects a deliberately fake edge",
+      "todos": [
+        {"id": "P5.1", "task": "daily reconciliation sleeve equity vs positions+cash, incident at >$1", "status": "open", "evidence": "3 clean months"},
+        {"id": "P5.2", "task": "Brier score of our own verdicts", "status": "open", "evidence": "calibration curve"},
+        {"id": "P5.3", "task": "sabotage suite: fake strategy rejected, real one accepted", "status": "open", "evidence": "CI test pair"},
+        {"id": "P5.4", "task": "quarterly decay review per surviving edge (IC slope)", "status": "open", "evidence": "quarterly report"}
+      ]
+    }
+  ],
+  "measured_evidence": {
+    "source": "5y yfinance probe run 2026-11-20; /tmp/rsi2_honest.py",
+    "caveat": "single window, single parameter set, no purge/embargo, no financing; harness calibration not admissible evidence",
+    "rows": [
+      {"symbol": "SPY", "in_market_pct": 23.6, "strat_cagr": 5.0, "hold_cagr": 10.1, "strat_sharpe": 0.72, "hold_sharpe": 0.64, "strat_maxdd": -6.2, "hold_maxdd": -24.5, "alpha_bps_per_exposed_day": 7.2},
+      {"symbol": "QQQ", "in_market_pct": 23.1, "strat_cagr": 7.6, "hold_cagr": 10.2, "strat_sharpe": 0.77, "hold_sharpe": 0.53, "strat_maxdd": -11.3, "hold_maxdd": -35.1, "alpha_bps_per_exposed_day": 11.32},
+      {"symbol": "BTC-USD", "in_market_pct": 19.5, "strat_cagr": 8.5, "hold_cagr": -0.0, "strat_sharpe": 0.42, "hold_sharpe": 0.21, "strat_maxdd": -22.6, "hold_maxdd": -73.6, "alpha_bps_per_exposed_day": 17.35},
+      {"symbol": "SOL-USD", "in_market_pct": 15.7, "strat_cagr": 9.0, "hold_cagr": -20.5, "strat_sharpe": 0.36, "hold_sharpe": 0.18, "strat_maxdd": -48.4, "hold_maxdd": -95.9, "alpha_bps_per_exposed_day": 23.73},
+      {"symbol": "SPY_no_trend_filter", "in_market_pct": 33.9, "strat_cagr": 9.7, "hold_cagr": 10.1, "strat_sharpe": 0.86, "hold_sharpe": 0.64, "strat_maxdd": -8.9, "hold_maxdd": -24.5, "alpha_bps_per_exposed_day": 10.18}
+    ],
+    "conclusion": "signal alpha is positive per exposed day in all 5 configs, but time-in-market of 16-24% caps total return; the architecture must tilt exposure rather than switch it"
+  }
+}

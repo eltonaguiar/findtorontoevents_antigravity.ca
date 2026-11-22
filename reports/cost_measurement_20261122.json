@@ -1,0 +1,2726 @@
+{
+ "generated_utc": "2026-11-22T11:49:49.444039+00:00",
+ "method": "ccxt fetch_order_book (limit=1000), VWAP walk to target notional; fees added separately from the measured spread",
+ "ccxt_calls": [
+  "exchange = ccxt.<venue>({'enableRateLimit': True, 'timeout': 20000})",
+  "exchange.load_markets()",
+  "exchange.fetch_order_book('<SYMBOL>/<QUOTE>', limit=1000)"
+ ],
+ "sizes_usd": [
+  1000,
+  10000,
+  100000,
+  1000000
+ ],
+ "n_samples_per_symbol": 3,
+ "sample_spacing_s": 3.0,
+ "snapshot_note": "SNAPSHOT observations spaced 3s apart, not time-averaged; min/median/max are reported rather than a single point.",
+ "taker_fee_bp_per_side": {
+  "binance": 10.0,
+  "binanceus": 10.0,
+  "kucoin": 10.0,
+  "kraken": 26.0
+ },
+ "maker_fee_bp_per_side": {
+  "binance": 10.0,
+  "binanceus": 10.0,
+  "kucoin": 10.0,
+  "kraken": 16.0
+ },
+ "raw_snapshot_dir": "reports/cost_measurement/20261122T114949Z",
+ "venues": [
+  {
+   "exchange": "binance",
+   "symbols": {
+    "BTC/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.0008202500041658258,
+       "median": 0.0008203116376021759,
+       "max": 0.0008203116376021759
+      },
+      "top_round_trip_spread_bp": {
+       "min": 0.0016405000083316516,
+       "median": 0.0016406232752043518,
+       "max": 0.0016406232752043518
+      },
+      "mid_last": 60952.445,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 0.0016405000083316516,
+        "median": 0.0016406232740106411,
+        "max": 0.0016406232740106411,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.00164062327401
+       },
+       "10000": {
+        "n": 3,
+        "min": 0.0016405000095252723,
+        "median": 0.0016406232775917726,
+        "max": 0.0016406232775917726,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.00164062327759
+       },
+       "100000": {
+        "n": 3,
+        "min": 0.24414916374564954,
+        "median": 0.47731697514867194,
+        "max": 1.1949783085006058,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.47731697514867
+       },
+       "1000000": {
+        "n": 3,
+        "min": 3.012434963519369,
+        "median": 3.395239227027146,
+        "max": 3.686504803798743,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 23.395239227027147
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 2978142.3934846986,
+       "ask_median": 3496142.5500761988
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 5703502.402287292,
+       "ask_median": 7599877.134362111
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 20.001640623275204
+     },
+     "samples": [
+      {
+       "best_bid": 60957.02,
+       "best_ask": 60957.03,
+       "mid": 60957.024999999994,
+       "top_half_spread_bp": 0.0008202500041658258,
+       "top_round_trip_spread_bp": 0.0016405000083316516,
+       "depth_bid_usd_within_10bp": 2579261.399753198,
+       "depth_ask_usd_within_10bp": 3600090.2799063013,
+       "depth_bid_usd_within_50bp": 5703502.402287292,
+       "depth_ask_usd_within_50bp": 7599877.134362111,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60957.03,
+         "vwap_sell": 60957.02,
+         "effective_half_spread_bp_buy": 0.0008202500047626362,
+         "effective_half_spread_bp_sell": 0.0008202500035690153,
+         "round_trip_spread_bp": 0.0016405000083316516,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60957.03,
+         "vwap_sell": 60957.01999999999,
+         "effective_half_spread_bp_buy": 0.0008202500047626362,
+         "effective_half_spread_bp_sell": 0.0008202500047626362,
+         "round_trip_spread_bp": 0.0016405000095252723,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 60957.03,
+         "vwap_sell": 60949.745767737426,
+         "effective_half_spread_bp_buy": 0.0008202500047626362,
+         "effective_half_spread_bp_sell": 1.1941580584958431,
+         "round_trip_spread_bp": 1.1949783085006058,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 47
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 60961.26043108032,
+         "vwap_sell": 60940.564062836034,
+         "effective_half_spread_bp_buy": 0.6948224721149932,
+         "effective_half_spread_bp_sell": 2.700416754912153,
+         "round_trip_spread_bp": 3.395239227027146,
+         "levels_consumed_buy": 68,
+         "levels_consumed_sell": 150
+        }
+       },
+       "ts_utc": "2026-11-22T11:49:51.332229+00:00"
+      },
+      {
+       "best_bid": 60952.44,
+       "best_ask": 60952.45,
+       "mid": 60952.445,
+       "top_half_spread_bp": 0.0008203116376021759,
+       "top_round_trip_spread_bp": 0.0016406232752043518,
+       "depth_bid_usd_within_10bp": 2978142.3934846986,
+       "depth_ask_usd_within_10bp": 3496142.5500761988,
+       "depth_bid_usd_within_50bp": 5611436.034539295,
+       "depth_ask_usd_within_50bp": 7676066.15797331,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60952.45,
+         "vwap_sell": 60952.44000000001,
+         "effective_half_spread_bp_buy": 0.0008203116376021759,
+         "effective_half_spread_bp_sell": 0.0008203116364084653,
+         "round_trip_spread_bp": 0.0016406232740106411,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60952.450000000004,
+         "vwap_sell": 60952.439999999995,
+         "effective_half_spread_bp_buy": 0.0008203116387958863,
+         "effective_half_spread_bp_sell": 0.0008203116387958863,
+         "round_trip_spread_bp": 0.0016406232775917726,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 60952.45,
+         "vwap_sell": 60950.9618511525,
+         "effective_half_spread_bp_buy": 0.0008203116376021759,
+         "effective_half_spread_bp_sell": 0.24332885210804736,
+         "round_trip_spread_bp": 0.24414916374564954,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 18
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 60957.3563711004,
+         "vwap_sell": 60938.9948434574,
+         "effective_half_spread_bp_buy": 0.8057709744708195,
+         "effective_half_spread_bp_sell": 2.20666398904855,
+         "round_trip_spread_bp": 3.012434963519369,
+         "levels_consumed_buy": 79,
+         "levels_consumed_sell": 137
+        }
+       },
+       "ts_utc": "2026-11-22T11:49:54.479252+00:00"
+      },
+      {
+       "best_bid": 60952.44,
+       "best_ask": 60952.45,
+       "mid": 60952.445,
+       "top_half_spread_bp": 0.0008203116376021759,
+       "top_round_trip_spread_bp": 0.0016406232752043518,
+       "depth_bid_usd_within_10bp": 3151458.5424583987,
+       "depth_ask_usd_within_10bp": 3240334.3535100003,
+       "depth_bid_usd_within_50bp": 5824785.450608994,
+       "depth_ask_usd_within_50bp": 7402916.52330031,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60952.45,
+         "vwap_sell": 60952.44000000001,
+         "effective_half_spread_bp_buy": 0.0008203116376021759,
+         "effective_half_spread_bp_sell": 0.0008203116364084653,
+         "round_trip_spread_bp": 0.0016406232740106411,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60952.450000000004,
+         "vwap_sell": 60952.439999999995,
+         "effective_half_spread_bp_buy": 0.0008203116387958863,
+         "effective_half_spread_bp_sell": 0.0008203116387958863,
+         "round_trip_spread_bp": 0.0016406232775917726,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 60955.117655191185,
+         "vwap_sell": 60952.20829152365,
+         "effective_half_spread_bp_buy": 0.43848203155512233,
+         "effective_half_spread_bp_sell": 0.03883494359354962,
+         "round_trip_spread_bp": 0.47731697514867194,
+         "levels_consumed_buy": 25,
+         "levels_consumed_sell": 18
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 60962.7133742642,
+         "vwap_sell": 60940.243226134626,
+         "effective_half_spread_bp_buy": 1.6846533825187628,
+         "effective_half_spread_bp_sell": 2.0018514212799796,
+         "round_trip_spread_bp": 3.686504803798743,
+         "levels_consumed_buy": 131,
+         "levels_consumed_sell": 135
+        }
+       },
+       "ts_utc": "2026-11-22T11:49:57.627332+00:00"
+      }
+     ]
+    },
+    "ETH/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.0292821481383608,
+       "median": 0.0292821481383608,
+       "max": 0.029285063738914593
+      },
+      "top_round_trip_spread_bp": {
+       "min": 0.0585642962767216,
+       "median": 0.0585642962767216,
+       "max": 0.058570127477829186
+      },
+      "mid_last": 1707.355,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 0.0585642962767216,
+        "median": 0.0585642962767216,
+        "max": 0.058570127477829186,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.05856429627672
+       },
+       "10000": {
+        "n": 3,
+        "min": 0.0585642962767216,
+        "median": 0.058570127477829186,
+        "max": 0.6795452752285478,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.05857012747783
+       },
+       "100000": {
+        "n": 3,
+        "min": 0.7215223229041163,
+        "median": 1.0861320564487513,
+        "max": 1.1734069257785964,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 21.08613205644875
+       },
+       "1000000": {
+        "n": 3,
+        "min": 5.3380240375112304,
+        "median": 5.66471158199057,
+        "max": 6.263085319055915,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 25.66471158199057
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 1860721.216035,
+       "ask_median": 2245154.7707680007
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 5657686.726250001,
+       "ask_median": 5107087.673235001
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 20.05856429627672
+     },
+     "samples": [
+      {
+       "best_bid": 1707.52,
+       "best_ask": 1707.53,
+       "mid": 1707.525,
+       "top_half_spread_bp": 0.0292821481383608,
+       "top_round_trip_spread_bp": 0.0585642962767216,
+       "depth_bid_usd_within_10bp": 1911728.6795269991,
+       "depth_ask_usd_within_10bp": 2002920.714309,
+       "depth_bid_usd_within_50bp": 5714004.751806,
+       "depth_ask_usd_within_50bp": 4944206.002687002,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1707.53,
+         "vwap_sell": 1707.52,
+         "effective_half_spread_bp_buy": 0.029282148137695,
+         "effective_half_spread_bp_sell": 0.029282148139026597,
+         "round_trip_spread_bp": 0.0585642962767216,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1707.53,
+         "vwap_sell": 1707.52,
+         "effective_half_spread_bp_buy": 0.029282148137695,
+         "effective_half_spread_bp_sell": 0.029282148139026597,
+         "round_trip_spread_bp": 0.0585642962767216,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1707.6217503907706,
+         "vwap_sell": 1707.4362906268018,
+         "effective_half_spread_bp_buy": 0.566611854997536,
+         "effective_half_spread_bp_sell": 0.5195202014512152,
+         "round_trip_spread_bp": 1.0861320564487513,
+         "levels_consumed_buy": 19,
+         "levels_consumed_sell": 14
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 1708.1068923266264,
+         "vwap_sell": 1707.0374548506843,
+         "effective_half_spread_bp_buy": 3.4078114617724644,
+         "effective_half_spread_bp_sell": 2.855273857283451,
+         "round_trip_spread_bp": 6.263085319055915,
+         "levels_consumed_buy": 89,
+         "levels_consumed_sell": 73
+        }
+       },
+       "ts_utc": "2026-11-22T11:49:57.772078+00:00"
+      },
+      {
+       "best_bid": 1707.52,
+       "best_ask": 1707.53,
+       "mid": 1707.525,
+       "top_half_spread_bp": 0.0292821481383608,
+       "top_round_trip_spread_bp": 0.0585642962767216,
+       "depth_bid_usd_within_10bp": 1828978.4797159988,
+       "depth_ask_usd_within_10bp": 2245154.7707680007,
+       "depth_bid_usd_within_50bp": 5657686.726250001,
+       "depth_ask_usd_within_50bp": 5107087.673235001,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1707.53,
+         "vwap_sell": 1707.52,
+         "effective_half_spread_bp_buy": 0.029282148137695,
+         "effective_half_spread_bp_sell": 0.029282148139026597,
+         "round_trip_spread_bp": 0.0585642962767216,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1707.53,
+         "vwap_sell": 1707.4139659453915,
+         "effective_half_spread_bp_buy": 0.029282148137695,
+         "effective_half_spread_bp_sell": 0.6502631270908528,
+         "round_trip_spread_bp": 0.6795452752285478,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 11
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1707.5557468088746,
+         "vwap_sell": 1707.3553846427806,
+         "effective_half_spread_bp_buy": 0.18006652244905735,
+         "effective_half_spread_bp_sell": 0.9933404033295392,
+         "round_trip_spread_bp": 1.1734069257785964,
+         "levels_consumed_buy": 9,
+         "levels_consumed_sell": 20
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 1707.9359120988088,
+         "vwap_sell": 1706.968648434405,
+         "effective_half_spread_bp_buy": 2.406477789834376,
+         "effective_half_spread_bp_sell": 3.258233792156194,
+         "round_trip_spread_bp": 5.66471158199057,
+         "levels_consumed_buy": 64,
+         "levels_consumed_sell": 80
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:01.272844+00:00"
+      },
+      {
+       "best_bid": 1707.35,
+       "best_ask": 1707.36,
+       "mid": 1707.355,
+       "top_half_spread_bp": 0.029285063738914593,
+       "top_round_trip_spread_bp": 0.058570127477829186,
+       "depth_bid_usd_within_10bp": 1860721.216035,
+       "depth_ask_usd_within_10bp": 2494338.6659180005,
+       "depth_bid_usd_within_50bp": 5650671.303667,
+       "depth_ask_usd_within_50bp": 5112028.601699002,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1707.36,
+         "vwap_sell": 1707.35,
+         "effective_half_spread_bp_buy": 0.029285063738248726,
+         "effective_half_spread_bp_sell": 0.029285063739580456,
+         "round_trip_spread_bp": 0.058570127477829186,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1707.36,
+         "vwap_sell": 1707.35,
+         "effective_half_spread_bp_buy": 0.029285063738248726,
+         "effective_half_spread_bp_sell": 0.029285063739580456,
+         "round_trip_spread_bp": 0.058570127477829186,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1707.36,
+         "vwap_sell": 1707.2368105254377,
+         "effective_half_spread_bp_buy": 0.029285063738248726,
+         "effective_half_spread_bp_sell": 0.6922372591658675,
+         "round_trip_spread_bp": 0.7215223229041163,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 21
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 1707.7441964077896,
+         "vwap_sell": 1706.832806204733,
+         "effective_half_spread_bp_buy": 2.2795283218167333,
+         "effective_half_spread_bp_sell": 3.0584957156944967,
+         "round_trip_spread_bp": 5.3380240375112304,
+         "levels_consumed_buy": 66,
+         "levels_consumed_sell": 78
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:04.420202+00:00"
+      }
+     ]
+    },
+    "SOL/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.7071635669323885,
+       "median": 0.7072635971430169,
+       "max": 0.7072635971430169
+      },
+      "top_round_trip_spread_bp": {
+       "min": 1.414327133864777,
+       "median": 1.4145271942860338,
+       "max": 1.4145271942860338
+      },
+      "mid_last": 70.705,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 1.414327133864777,
+        "median": 1.4145271942860338,
+        "max": 1.4145271942860338,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 21.414527194286034
+       },
+       "10000": {
+        "n": 3,
+        "min": 1.414327133864777,
+        "median": 1.4145271942860338,
+        "max": 1.8402123705271294,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 21.414527194286034
+       },
+       "100000": {
+        "n": 3,
+        "min": 2.8581465081125907,
+        "median": 3.197705800137036,
+        "max": 5.579775905277822,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 23.197705800137037
+       },
+       "1000000": {
+        "n": 3,
+        "min": 40.753813871022736,
+        "median": 43.835164664302916,
+        "max": 46.241513123712565,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 63.835164664302916
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 320969.24513000005,
+       "ask_median": 373059.02971
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 822379.5509799998,
+       "ask_median": 1172179.2310299997
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 21.414527194286034
+     },
+     "samples": [
+      {
+       "best_bid": 70.69,
+       "best_ask": 70.7,
+       "mid": 70.695,
+       "top_half_spread_bp": 0.7072635971430169,
+       "top_round_trip_spread_bp": 1.4145271942860338,
+       "depth_bid_usd_within_10bp": 313667.55498,
+       "depth_ask_usd_within_10bp": 373059.02971,
+       "depth_bid_usd_within_50bp": 775280.66423,
+       "depth_ask_usd_within_50bp": 1172179.2310299997,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 70.7,
+         "vwap_sell": 70.69,
+         "effective_half_spread_bp_buy": 0.707263597144022,
+         "effective_half_spread_bp_sell": 0.7072635971420119,
+         "round_trip_spread_bp": 1.4145271942860338,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 70.7,
+         "vwap_sell": 70.69,
+         "effective_half_spread_bp_buy": 0.707263597144022,
+         "effective_half_spread_bp_sell": 0.7072635971420119,
+         "round_trip_spread_bp": 1.4145271942860338,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 70.70609308016459,
+         "vwap_sell": 70.68588741342549,
+         "effective_half_spread_bp_buy": 1.5691463561212535,
+         "effective_half_spread_bp_sell": 1.2890001519913372,
+         "round_trip_spread_bp": 2.8581465081125907,
+         "levels_consumed_buy": 3,
+         "levels_consumed_sell": 2
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 70.82184555189579,
+         "vwap_sell": 70.5119528553015,
+         "effective_half_spread_bp_buy": 17.942648263073462,
+         "effective_half_spread_bp_sell": 25.89251640122945,
+         "round_trip_spread_bp": 43.835164664302916,
+         "levels_consumed_buy": 31,
+         "levels_consumed_sell": 89
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:04.566124+00:00"
+      },
+      {
+       "best_bid": 70.69,
+       "best_ask": 70.7,
+       "mid": 70.695,
+       "top_half_spread_bp": 0.7072635971430169,
+       "top_round_trip_spread_bp": 1.4145271942860338,
+       "depth_bid_usd_within_10bp": 322761.54907,
+       "depth_ask_usd_within_10bp": 270165.1983,
+       "depth_bid_usd_within_50bp": 822379.5509799998,
+       "depth_ask_usd_within_50bp": 1084696.0278099997,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 70.7,
+         "vwap_sell": 70.69,
+         "effective_half_spread_bp_buy": 0.707263597144022,
+         "effective_half_spread_bp_sell": 0.7072635971420119,
+         "round_trip_spread_bp": 1.4145271942860338,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 70.70300938135344,
+         "vwap_sell": 70.69,
+         "effective_half_spread_bp_buy": 1.1329487733851176,
+         "effective_half_spread_bp_sell": 0.7072635971420119,
+         "round_trip_spread_bp": 1.8402123705271294,
+         "levels_consumed_buy": 2,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 70.72528393905155,
+         "vwap_sell": 70.68583771328919,
+         "effective_half_spread_bp_buy": 4.28374553385066,
+         "effective_half_spread_bp_sell": 1.2960303714271624,
+         "round_trip_spread_bp": 5.579775905277822,
+         "levels_consumed_buy": 4,
+         "levels_consumed_sell": 3
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 70.8486307095236,
+         "vwap_sell": 70.52172633249552,
+         "effective_half_spread_bp_buy": 21.731481649849517,
+         "effective_half_spread_bp_sell": 24.51003147386305,
+         "round_trip_spread_bp": 46.241513123712565,
+         "levels_consumed_buy": 31,
+         "levels_consumed_sell": 76
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:08.066155+00:00"
+      },
+      {
+       "best_bid": 70.7,
+       "best_ask": 70.71,
+       "mid": 70.705,
+       "top_half_spread_bp": 0.7071635669323885,
+       "top_round_trip_spread_bp": 1.414327133864777,
+       "depth_bid_usd_within_10bp": 320969.24513000005,
+       "depth_ask_usd_within_10bp": 432662.29709,
+       "depth_bid_usd_within_50bp": 836425.88767,
+       "depth_ask_usd_within_50bp": 1178804.2812699997,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 70.71,
+         "vwap_sell": 70.7,
+         "effective_half_spread_bp_buy": 0.7071635669323885,
+         "effective_half_spread_bp_sell": 0.7071635669323885,
+         "round_trip_spread_bp": 1.414327133864777,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 70.71,
+         "vwap_sell": 70.7,
+         "effective_half_spread_bp_buy": 0.7071635669323885,
+         "effective_half_spread_bp_sell": 0.7071635669323885,
+         "round_trip_spread_bp": 1.414327133864777,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 70.71199963728984,
+         "vwap_sell": 70.68939025842997,
+         "effective_half_spread_bp_buy": 0.9899776946237642,
+         "effective_half_spread_bp_sell": 2.207728105513272,
+         "round_trip_spread_bp": 3.197705800137036,
+         "levels_consumed_buy": 2,
+         "levels_consumed_sell": 3
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 70.8222239656016,
+         "vwap_sell": 70.53407412462653,
+         "effective_half_spread_bp_buy": 16.579303528971938,
+         "effective_half_spread_bp_sell": 24.174510342050795,
+         "round_trip_spread_bp": 40.753813871022736,
+         "levels_consumed_buy": 30,
+         "levels_consumed_sell": 70
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:11.212742+00:00"
+      }
+     ]
+    },
+    "BNB/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.09046580844761491,
+       "median": 0.09047071915166427,
+       "max": 0.09047071915166427
+      },
+      "top_round_trip_spread_bp": {
+       "min": 0.18093161689522982,
+       "median": 0.18094143830332854,
+       "max": 0.18094143830332854
+      },
+      "mid_last": 552.665,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 0.18093161689522982,
+        "median": 0.18094143830332854,
+        "max": 0.18094143830332854,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.18094143830333
+       },
+       "10000": {
+        "n": 3,
+        "min": 0.25644462663343814,
+        "median": 0.3212538142784971,
+        "max": 0.7952057985626193,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.321253814278496
+       },
+       "100000": {
+        "n": 3,
+        "min": 3.258049184775726,
+        "median": 3.499041341845761,
+        "max": 4.2687249452550775,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 23.49904134184576
+       },
+       "1000000": {
+        "n": 3,
+        "min": 32.37915962477272,
+        "median": 32.41905319842867,
+        "max": 33.53545026903594,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 52.41905319842867
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 265062.1631199999,
+       "ask_median": 347078.48633000004
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 1163160.8439500001,
+       "ask_median": 1257638.1517499995
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 20.18094143830333
+     },
+     "samples": [
+      {
+       "best_bid": 552.69,
+       "best_ask": 552.7,
+       "mid": 552.695,
+       "top_half_spread_bp": 0.09046580844761491,
+       "top_round_trip_spread_bp": 0.18093161689522982,
+       "depth_bid_usd_within_10bp": 254178.63153999997,
+       "depth_ask_usd_within_10bp": 289639.75110000005,
+       "depth_bid_usd_within_50bp": 1172040.0939600004,
+       "depth_ask_usd_within_50bp": 1216656.2831599996,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 552.7,
+         "vwap_sell": 552.69,
+         "effective_half_spread_bp_buy": 0.09046580844761491,
+         "effective_half_spread_bp_sell": 0.09046580844761491,
+         "round_trip_spread_bp": 0.18093161689522982,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 552.7,
+         "vwap_sell": 552.6560493731164,
+         "effective_half_spread_bp_buy": 0.09046580844761491,
+         "effective_half_spread_bp_sell": 0.7047399901150045,
+         "round_trip_spread_bp": 0.7952057985626193,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 5
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 552.8227937406754,
+         "vwap_sell": 552.5868634473136,
+         "effective_half_spread_bp_buy": 2.3121928129495535,
+         "effective_half_spread_bp_sell": 1.9565321323055238,
+         "round_trip_spread_bp": 4.2687249452550775,
+         "levels_consumed_buy": 22,
+         "levels_consumed_sell": 22
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 553.5331944927871,
+         "vwap_sell": 551.6797069241426,
+         "effective_half_spread_bp_buy": 15.165588485276885,
+         "effective_half_spread_bp_sell": 18.369861783759056,
+         "round_trip_spread_bp": 33.53545026903594,
+         "levels_consumed_buy": 147,
+         "levels_consumed_sell": 176
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:11.359757+00:00"
+      },
+      {
+       "best_bid": 552.66,
+       "best_ask": 552.67,
+       "mid": 552.665,
+       "top_half_spread_bp": 0.09047071915166427,
+       "top_round_trip_spread_bp": 0.18094143830332854,
+       "depth_bid_usd_within_10bp": 265062.1631199999,
+       "depth_ask_usd_within_10bp": 352577.7943,
+       "depth_bid_usd_within_50bp": 1159106.8639200001,
+       "depth_ask_usd_within_50bp": 1263137.4597199995,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 552.67,
+         "vwap_sell": 552.66,
+         "effective_half_spread_bp_buy": 0.09047071915166427,
+         "effective_half_spread_bp_sell": 0.09047071915166427,
+         "round_trip_spread_bp": 0.18094143830332854,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 552.67,
+         "vwap_sell": 552.6522454260731,
+         "effective_half_spread_bp_buy": 0.09047071915166427,
+         "effective_half_spread_bp_sell": 0.23078309512683284,
+         "round_trip_spread_bp": 0.3212538142784971,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 552.7537139512041,
+         "vwap_sell": 552.5736529759337,
+         "effective_half_spread_bp_buy": 1.605202992845812,
+         "effective_half_spread_bp_sell": 1.652846191929914,
+         "round_trip_spread_bp": 3.258049184775726,
+         "levels_consumed_buy": 17,
+         "levels_consumed_sell": 24
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 553.443669747016,
+         "vwap_sell": 551.6541869216135,
+         "effective_half_spread_bp_buy": 14.089362398849406,
+         "effective_half_spread_bp_sell": 18.289797225923316,
+         "round_trip_spread_bp": 32.37915962477272,
+         "levels_consumed_buy": 126,
+         "levels_consumed_sell": 175
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:14.859406+00:00"
+      },
+      {
+       "best_bid": 552.66,
+       "best_ask": 552.67,
+       "mid": 552.665,
+       "top_half_spread_bp": 0.09047071915166427,
+       "top_round_trip_spread_bp": 0.18094143830332854,
+       "depth_bid_usd_within_10bp": 269115.89005999995,
+       "depth_ask_usd_within_10bp": 347078.48633000004,
+       "depth_bid_usd_within_50bp": 1163160.8439500001,
+       "depth_ask_usd_within_50bp": 1257638.1517499995,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 552.67,
+         "vwap_sell": 552.66,
+         "effective_half_spread_bp_buy": 0.09047071915166427,
+         "effective_half_spread_bp_sell": 0.09047071915166427,
+         "round_trip_spread_bp": 0.18094143830332854,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 552.67,
+         "vwap_sell": 552.6558272030421,
+         "effective_half_spread_bp_buy": 0.09047071915166427,
+         "effective_half_spread_bp_sell": 0.1659739074817739,
+         "round_trip_spread_bp": 0.25644462663343814,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 552.7744997924428,
+         "vwap_sell": 552.5811200241237,
+         "effective_half_spread_bp_buy": 1.9813049938547826,
+         "effective_half_spread_bp_sell": 1.5177363479909785,
+         "round_trip_spread_bp": 3.499041341845761,
+         "levels_consumed_buy": 17,
+         "levels_consumed_sell": 19
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 553.4540527711926,
+         "vwap_sell": 551.6623651676016,
+         "effective_half_spread_bp_buy": 14.277234331694373,
+         "effective_half_spread_bp_sell": 18.1418188667343,
+         "round_trip_spread_bp": 32.41905319842867,
+         "levels_consumed_buy": 126,
+         "levels_consumed_sell": 175
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:18.006140+00:00"
+      }
+     ]
+    },
+    "XRP/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.5376055050803128,
+       "median": 0.5376055050803128,
+       "max": 0.5376055050803128
+      },
+      "top_round_trip_spread_bp": {
+       "min": 1.0752110101606256,
+       "median": 1.0752110101606256,
+       "max": 1.0752110101606256
+      },
+      "mid_last": 0.93005,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 1.0752110101594319,
+        "median": 1.0752110101594319,
+        "max": 1.0752110101594319,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 21.075211010159432
+       },
+       "10000": {
+        "n": 3,
+        "min": 1.1750741996570528,
+        "median": 1.3088769312954243,
+        "max": 2.2006435184878335,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 21.308876931295423
+       },
+       "100000": {
+        "n": 3,
+        "min": 4.551618282161028,
+        "median": 4.576991416428058,
+        "max": 4.740656308544225,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 24.576991416428058
+       },
+       "1000000": {
+        "n": 3,
+        "min": 20.772604645066366,
+        "median": 20.797365049200234,
+        "max": 20.895225982649432,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 40.79736504920024
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 389078.61387,
+       "ask_median": 702483.7708200001
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 1178000.6649500004,
+       "ask_median": 1298063.5511299998
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 21.075211010160626
+     },
+     "samples": [
+      {
+       "best_bid": 0.93,
+       "best_ask": 0.9301,
+       "mid": 0.93005,
+       "top_half_spread_bp": 0.5376055050803128,
+       "top_round_trip_spread_bp": 1.0752110101606256,
+       "depth_bid_usd_within_10bp": 389512.45036,
+       "depth_ask_usd_within_10bp": 700946.1058000001,
+       "depth_bid_usd_within_50bp": 1178434.5014400005,
+       "depth_ask_usd_within_50bp": 1298063.5511299998,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.9300999999999999,
+         "vwap_sell": 0.93,
+         "effective_half_spread_bp_buy": 0.5376055050791191,
+         "effective_half_spread_bp_sell": 0.5376055050803128,
+         "round_trip_spread_bp": 1.0752110101594319,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.9301,
+         "vwap_sell": 0.9299907122240609,
+         "effective_half_spread_bp_buy": 0.5376055050803128,
+         "effective_half_spread_bp_sell": 0.6374686945767402,
+         "round_trip_spread_bp": 1.1750741996570528,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.9301842492831255,
+         "vwap_sell": 0.9297609260247931,
+         "effective_half_spread_bp_buy": 1.4434630732266298,
+         "effective_half_spread_bp_sell": 3.108155208934399,
+         "round_trip_spread_bp": 4.551618282161028,
+         "levels_consumed_buy": 2,
+         "levels_consumed_sell": 4
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.930780804941222,
+         "vwap_sell": 0.9288465460048211,
+         "effective_half_spread_bp_buy": 7.8576951908167025,
+         "effective_half_spread_bp_sell": 12.93966985838353,
+         "round_trip_spread_bp": 20.797365049200234,
+         "levels_consumed_buy": 19,
+         "levels_consumed_sell": 24
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:18.187044+00:00"
+      },
+      {
+       "best_bid": 0.93,
+       "best_ask": 0.9301,
+       "mid": 0.93005,
+       "top_half_spread_bp": 0.5376055050803128,
+       "top_round_trip_spread_bp": 1.0752110101606256,
+       "depth_bid_usd_within_10bp": 389078.61387,
+       "depth_ask_usd_within_10bp": 702493.7228900001,
+       "depth_bid_usd_within_50bp": 1178000.6649500004,
+       "depth_ask_usd_within_50bp": 1299611.1587099999,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.9300999999999999,
+         "vwap_sell": 0.93,
+         "effective_half_spread_bp_buy": 0.5376055050791191,
+         "effective_half_spread_bp_sell": 0.5376055050803128,
+         "round_trip_spread_bp": 1.0752110101594319,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.9301,
+         "vwap_sell": 0.9299782679010049,
+         "effective_half_spread_bp_buy": 0.5376055050803128,
+         "effective_half_spread_bp_sell": 0.7712714262151114,
+         "round_trip_spread_bp": 1.3088769312954243,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.9301828768215302,
+         "vwap_sell": 0.9297571937348453,
+         "effective_half_spread_bp_buy": 1.4287062150441503,
+         "effective_half_spread_bp_sell": 3.148285201383907,
+         "round_trip_spread_bp": 4.576991416428058,
+         "levels_consumed_buy": 2,
+         "levels_consumed_sell": 4
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.9307770808007019,
+         "vwap_sell": 0.9288451247056875,
+         "effective_half_spread_bp_buy": 7.817652821910964,
+         "effective_half_spread_bp_sell": 12.954951823155405,
+         "round_trip_spread_bp": 20.772604645066366,
+         "levels_consumed_buy": 19,
+         "levels_consumed_sell": 24
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:21.651010+00:00"
+      },
+      {
+       "best_bid": 0.93,
+       "best_ask": 0.9301,
+       "mid": 0.93005,
+       "top_half_spread_bp": 0.5376055050803128,
+       "top_round_trip_spread_bp": 1.0752110101606256,
+       "depth_bid_usd_within_10bp": 384510.19848,
+       "depth_ask_usd_within_10bp": 702483.7708200001,
+       "depth_bid_usd_within_50bp": 1172896.6594900005,
+       "depth_ask_usd_within_50bp": 1297575.78936,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.9300999999999999,
+         "vwap_sell": 0.93,
+         "effective_half_spread_bp_buy": 0.5376055050791191,
+         "effective_half_spread_bp_sell": 0.5376055050803128,
+         "round_trip_spread_bp": 1.0752110101594319,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.9301,
+         "vwap_sell": 0.9298953291495631,
+         "effective_half_spread_bp_buy": 0.5376055050803128,
+         "effective_half_spread_bp_sell": 1.6630380134075209,
+         "round_trip_spread_bp": 2.2006435184878335,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 3
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.930182886774304,
+         "vwap_sell": 0.9297419820343279,
+         "effective_half_spread_bp_buy": 1.4288132283641581,
+         "effective_half_spread_bp_sell": 3.3118430801800667,
+         "round_trip_spread_bp": 4.740656308544225,
+         "levels_consumed_buy": 2,
+         "levels_consumed_sell": 4
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.9307770987058676,
+         "vwap_sell": 0.9288337382133512,
+         "effective_half_spread_bp_buy": 7.81784534022378,
+         "effective_half_spread_bp_sell": 13.077380642425654,
+         "round_trip_spread_bp": 20.895225982649432,
+         "levels_consumed_buy": 19,
+         "levels_consumed_sell": 24
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:24.799800+00:00"
+      }
+     ]
+    },
+    "ADA/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 3.428179636612581,
+       "median": 3.428179636612581,
+       "max": 3.428179636612581
+      },
+      "top_round_trip_spread_bp": {
+       "min": 6.856359273225162,
+       "median": 6.856359273225162,
+       "max": 6.856359273225162
+      },
+      "mid_last": 0.14585,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 6.856359273225162,
+        "median": 6.856359273225162,
+        "max": 6.856359273225162,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 26.856359273225163
+       },
+       "10000": {
+        "n": 3,
+        "min": 6.856359273225162,
+        "median": 8.190379647669683,
+        "max": 12.23753923077733,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 28.190379647669683
+       },
+       "100000": {
+        "n": 3,
+        "min": 22.473711951408426,
+        "median": 23.894111434032954,
+        "max": 24.29953380761681,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 43.89411143403295
+       },
+       "1000000": {
+        "n": 3,
+        "min": 975.9545660300964,
+        "median": 988.792473339909,
+        "max": 990.230902218774,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 1008.792473339909
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 8055.406260000001,
+       "ask_median": 25284.06148
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 323825.96407,
+       "ask_median": 242311.05503999998
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 26.856359273225163
+     },
+     "samples": [
+      {
+       "best_bid": 0.1458,
+       "best_ask": 0.1459,
+       "mid": 0.14585,
+       "top_half_spread_bp": 3.428179636612581,
+       "top_round_trip_spread_bp": 6.856359273225162,
+       "depth_bid_usd_within_10bp": 8055.406260000001,
+       "depth_ask_usd_within_10bp": 22294.337040000002,
+       "depth_bid_usd_within_50bp": 323825.96407,
+       "depth_ask_usd_within_50bp": 238695.2026,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.1459,
+         "vwap_sell": 0.1458,
+         "effective_half_spread_bp_buy": 3.428179636612581,
+         "effective_half_spread_bp_sell": 3.428179636612581,
+         "round_trip_spread_bp": 6.856359273225162,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.1459,
+         "vwap_sell": 0.14578054331283874,
+         "effective_half_spread_bp_buy": 3.428179636612581,
+         "effective_half_spread_bp_sell": 4.762200011057103,
+         "round_trip_spread_bp": 8.190379647669683,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.14601057217480723,
+         "vwap_sell": 0.14566207655954186,
+         "effective_half_spread_bp_buy": 11.009405197615493,
+         "effective_half_spread_bp_sell": 12.884706236417463,
+         "round_trip_spread_bp": 23.894111434032954,
+         "levels_consumed_buy": 3,
+         "levels_consumed_sell": 3
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.1544962128094225,
+         "vwap_sell": 0.14007467458575992,
+         "effective_half_spread_bp_buy": 592.8154137416858,
+         "effective_half_spread_bp_sell": 395.9770595982231,
+         "round_trip_spread_bp": 988.792473339909,
+         "levels_consumed_buy": 400,
+         "levels_consumed_sell": 172
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:24.942749+00:00"
+      },
+      {
+       "best_bid": 0.1458,
+       "best_ask": 0.1459,
+       "mid": 0.14585,
+       "top_half_spread_bp": 3.428179636612581,
+       "top_round_trip_spread_bp": 6.856359273225162,
+       "depth_bid_usd_within_10bp": 15474.162240000001,
+       "depth_ask_usd_within_10bp": 25284.06148,
+       "depth_bid_usd_within_50bp": 330891.21045,
+       "depth_ask_usd_within_50bp": 242311.05503999998,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.1459,
+         "vwap_sell": 0.1458,
+         "effective_half_spread_bp_buy": 3.428179636612581,
+         "effective_half_spread_bp_sell": 3.428179636612581,
+         "round_trip_spread_bp": 6.856359273225162,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.1459,
+         "vwap_sell": 0.1458,
+         "effective_half_spread_bp_buy": 3.428179636612581,
+         "effective_half_spread_bp_sell": 3.428179636612581,
+         "round_trip_spread_bp": 6.856359273225162,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.14600469744860525,
+         "vwap_sell": 0.14567691835979396,
+         "effective_half_spread_bp_buy": 10.606612862889644,
+         "effective_half_spread_bp_sell": 11.867099088518781,
+         "round_trip_spread_bp": 22.473711951408426,
+         "levels_consumed_buy": 3,
+         "levels_consumed_sell": 3
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.15446753151718315,
+         "vwap_sell": 0.1402332341716342,
+         "effective_half_spread_bp_buy": 590.8489213015523,
+         "effective_half_spread_bp_sell": 385.1056447285441,
+         "round_trip_spread_bp": 975.9545660300964,
+         "levels_consumed_buy": 398,
+         "levels_consumed_sell": 162
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:28.444972+00:00"
+      },
+      {
+       "best_bid": 0.1458,
+       "best_ask": 0.1459,
+       "mid": 0.14585,
+       "top_half_spread_bp": 3.428179636612581,
+       "top_round_trip_spread_bp": 6.856359273225162,
+       "depth_bid_usd_within_10bp": 2152.70784,
+       "depth_ask_usd_within_10bp": 25284.06148,
+       "depth_bid_usd_within_50bp": 319416.59899999993,
+       "depth_ask_usd_within_50bp": 242311.05503999998,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.1459,
+         "vwap_sell": 0.1458,
+         "effective_half_spread_bp_buy": 3.428179636612581,
+         "effective_half_spread_bp_sell": 3.428179636612581,
+         "round_trip_spread_bp": 6.856359273225162,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.1459,
+         "vwap_sell": 0.14572151549031911,
+         "effective_half_spread_bp_buy": 3.428179636612581,
+         "effective_half_spread_bp_sell": 8.809359594164748,
+         "round_trip_spread_bp": 12.23753923077733,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.14600469744860525,
+         "vwap_sell": 0.14565028874802116,
+         "effective_half_spread_bp_buy": 10.606612862889644,
+         "effective_half_spread_bp_sell": 13.692920944727168,
+         "round_trip_spread_bp": 24.29953380761681,
+         "levels_consumed_buy": 3,
+         "levels_consumed_sell": 3
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.15446596471207458,
+         "vwap_sell": 0.14002344700321376,
+         "effective_half_spread_bp_buy": 590.7414955141975,
+         "effective_half_spread_bp_sell": 399.4894067045766,
+         "round_trip_spread_bp": 990.230902218774,
+         "levels_consumed_buy": 398,
+         "levels_consumed_sell": 176
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:31.587288+00:00"
+      }
+     ]
+    },
+    "DOGE/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.9016319538367199,
+       "median": 0.9016319538367199,
+       "max": 0.9016319538367199
+      },
+      "top_round_trip_spread_bp": {
+       "min": 1.8032639076734398,
+       "median": 1.8032639076734398,
+       "max": 1.8032639076734398
+      },
+      "mid_last": 0.055455000000000004,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 1.8032639076721888,
+        "median": 1.8032639076721888,
+        "max": 2.9149670777348313,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 21.80326390767219
+       },
+       "10000": {
+        "n": 3,
+        "min": 3.4302043297844915,
+        "median": 3.5147232382176905,
+        "max": 3.537376046786768,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 23.51472323821769
+       },
+       "100000": {
+        "n": 3,
+        "min": 9.141256283824125,
+        "median": 9.158263565103026,
+        "max": 9.219649874224102,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 29.158263565103027
+       },
+       "1000000": {
+        "n": 3,
+        "min": 130.33481895414198,
+        "median": 131.58732647866077,
+        "max": 136.93870568509357,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 151.58732647866077
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 178890.57088999997,
+       "ask_median": 207819.65783
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 759591.8178299998,
+       "ask_median": 683658.69695
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 21.80326390767344
+     },
+     "samples": [
+      {
+       "best_bid": 0.05545,
+       "best_ask": 0.05546,
+       "mid": 0.055455000000000004,
+       "top_half_spread_bp": 0.9016319538367199,
+       "top_round_trip_spread_bp": 1.8032639076734398,
+       "depth_bid_usd_within_10bp": 179408.0935,
+       "depth_ask_usd_within_10bp": 207758.70440000002,
+       "depth_bid_usd_within_50bp": 758859.8032999999,
+       "depth_ask_usd_within_50bp": 683658.69695,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.055459999999999995,
+         "vwap_sell": 0.05545,
+         "effective_half_spread_bp_buy": 0.9016319538348431,
+         "effective_half_spread_bp_sell": 0.9016319538373456,
+         "round_trip_spread_bp": 1.8032639076721888,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.05546137209618848,
+         "vwap_sell": 0.055441881198470946,
+         "effective_half_spread_bp_buy": 1.1490571072902962,
+         "effective_half_spread_bp_sell": 2.3656661309273943,
+         "round_trip_spread_bp": 3.5147232382176905,
+         "levels_consumed_buy": 2,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.05547660274993849,
+         "vwap_sell": 0.055425909913216546,
+         "effective_half_spread_bp_buy": 3.8955459270559585,
+         "effective_half_spread_bp_sell": 5.245710356768167,
+         "round_trip_spread_bp": 9.141256283824125,
+         "levels_consumed_buy": 4,
+         "levels_consumed_sell": 5
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.05584973877960999,
+         "vwap_sell": 0.05512002126062258,
+         "effective_half_spread_bp_buy": 71.18181942295308,
+         "effective_half_spread_bp_sell": 60.40550705570769,
+         "round_trip_spread_bp": 131.58732647866077,
+         "levels_consumed_buy": 197,
+         "levels_consumed_sell": 208
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:31.730226+00:00"
+      },
+      {
+       "best_bid": 0.05545,
+       "best_ask": 0.05546,
+       "mid": 0.055455000000000004,
+       "top_half_spread_bp": 0.9016319538367199,
+       "top_round_trip_spread_bp": 1.8032639076734398,
+       "depth_bid_usd_within_10bp": 178890.36359,
+       "depth_ask_usd_within_10bp": 207819.65783,
+       "depth_bid_usd_within_50bp": 759591.8178299998,
+       "depth_ask_usd_within_50bp": 670278.05858,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.055459999999999995,
+         "vwap_sell": 0.05545,
+         "effective_half_spread_bp_buy": 0.9016319538348431,
+         "effective_half_spread_bp_sell": 0.9016319538373456,
+         "round_trip_spread_bp": 1.8032639076721888,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.05546040440721068,
+         "vwap_sell": 0.05544138220909986,
+         "effective_half_spread_bp_buy": 0.9745572465378092,
+         "effective_half_spread_bp_sell": 2.4556470832466823,
+         "round_trip_spread_bp": 3.4302043297844915,
+         "levels_consumed_buy": 2,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.05547649373721592,
+         "vwap_sell": 0.05542570658661564,
+         "effective_half_spread_bp_buy": 3.8758880562469904,
+         "effective_half_spread_bp_sell": 5.282375508856035,
+         "round_trip_spread_bp": 9.158263565103026,
+         "levels_consumed_buy": 4,
+         "levels_consumed_sell": 5
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.05588079350928142,
+         "vwap_sell": 0.055121399916904734,
+         "effective_half_spread_bp_buy": 76.78180674085588,
+         "effective_half_spread_bp_sell": 60.15689894423769,
+         "round_trip_spread_bp": 136.93870568509357,
+         "levels_consumed_buy": 240,
+         "levels_consumed_sell": 208
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:35.236700+00:00"
+      },
+      {
+       "best_bid": 0.05545,
+       "best_ask": 0.05546,
+       "mid": 0.055455000000000004,
+       "top_half_spread_bp": 0.9016319538367199,
+       "top_round_trip_spread_bp": 1.8032639076734398,
+       "depth_bid_usd_within_10bp": 178890.57088999997,
+       "depth_ask_usd_within_10bp": 221268.03106,
+       "depth_bid_usd_within_50bp": 759592.0251299998,
+       "depth_ask_usd_within_50bp": 686246.31336,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 0.055459999999999995,
+         "vwap_sell": 0.05544383505007042,
+         "effective_half_spread_bp_buy": 0.9016319538348431,
+         "effective_half_spread_bp_sell": 2.013335123899988,
+         "round_trip_spread_bp": 2.9149670777348313,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 0.05546,
+         "vwap_sell": 0.055440383481132546,
+         "effective_half_spread_bp_buy": 0.9016319538360944,
+         "effective_half_spread_bp_sell": 2.6357440929506737,
+         "round_trip_spread_bp": 3.537376046786768,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 0.05547643466919367,
+         "vwap_sell": 0.05542530710081616,
+         "effective_half_spread_bp_buy": 3.8652365329846696,
+         "effective_half_spread_bp_sell": 5.3544133412394315,
+         "round_trip_spread_bp": 9.219649874224102,
+         "levels_consumed_buy": 4,
+         "levels_consumed_sell": 5
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 0.05584412271632488,
+         "vwap_sell": 0.05512135097781468,
+         "effective_half_spread_bp_buy": 70.16909500042793,
+         "effective_half_spread_bp_sell": 60.16572395371407,
+         "round_trip_spread_bp": 130.33481895414198,
+         "levels_consumed_buy": 193,
+         "levels_consumed_sell": 208
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:38.388107+00:00"
+      }
+     ]
+    },
+    "AVAX/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.7449899426353616,
+       "median": 0.7452120128178955,
+       "max": 0.7452120128178955
+      },
+      "top_round_trip_spread_bp": {
+       "min": 1.4899798852707231,
+       "median": 1.490424025635791,
+       "max": 1.490424025635791
+      },
+      "mid_last": 6.7095,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 2.942856402319499,
+        "median": 2.942856402319499,
+        "max": 2.964363232765403,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 22.9428564023195
+       },
+       "10000": {
+        "n": 3,
+        "min": 7.25741705229508,
+        "median": 7.285295163773478,
+        "max": 7.352771405520875,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 27.285295163773476
+       },
+       "100000": {
+        "n": 3,
+        "min": 22.964885096412612,
+        "median": 27.701989787551497,
+        "max": 28.137669939199494,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 47.7019897875515
+       },
+       "1000000": {
+        "n": 0,
+        "status": "INSUFFICIENT_DEPTH"
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 35271.541959999995,
+       "ask_median": 31170.32657
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 166732.71957999998,
+       "ask_median": 148202.47512999998
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 21.49042402563579
+     },
+     "samples": [
+      {
+       "best_bid": 6.711,
+       "best_ask": 6.712,
+       "mid": 6.7115,
+       "top_half_spread_bp": 0.7449899426353616,
+       "top_round_trip_spread_bp": 1.4899798852707231,
+       "depth_bid_usd_within_10bp": 54944.5125,
+       "depth_ask_usd_within_10bp": 43034.60024,
+       "depth_bid_usd_within_50bp": 196953.14145,
+       "depth_ask_usd_within_50bp": 148202.47512999998,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 6.712,
+         "vwap_sell": 6.710010467616329,
+         "effective_half_spread_bp_buy": 0.7449899426353616,
+         "effective_half_spread_bp_sell": 2.219373290130042,
+         "round_trip_spread_bp": 2.964363232765403,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 6.713519051405412,
+         "vwap_sell": 6.708584238876597,
+         "effective_half_spread_bp_buy": 3.0083459813933433,
+         "effective_half_spread_bp_sell": 4.344425424127532,
+         "round_trip_spread_bp": 7.352771405520875,
+         "levels_consumed_buy": 4,
+         "levels_consumed_sell": 5
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 6.719611657294299,
+         "vwap_sell": 6.704198774661842,
+         "effective_half_spread_bp_buy": 12.086206204722362,
+         "effective_half_spread_bp_sell": 10.878678891690253,
+         "round_trip_spread_bp": 22.964885096412612,
+         "levels_consumed_buy": 16,
+         "levels_consumed_sell": 12
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 672311.3930200005,
+         "filled_sell_usd": 1000000
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:38.530744+00:00"
+      },
+      {
+       "best_bid": 6.709,
+       "best_ask": 6.71,
+       "mid": 6.7095,
+       "top_half_spread_bp": 0.7452120128178955,
+       "top_round_trip_spread_bp": 1.490424025635791,
+       "depth_bid_usd_within_10bp": 32790.09121,
+       "depth_ask_usd_within_10bp": 31128.918490000004,
+       "depth_bid_usd_within_50bp": 164260.94193999996,
+       "depth_ask_usd_within_50bp": 149748.40355,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 6.71,
+         "vwap_sell": 6.708025490496864,
+         "effective_half_spread_bp_buy": 0.7452120128172336,
+         "effective_half_spread_bp_sell": 2.1976443895022655,
+         "round_trip_spread_bp": 2.942856402319499,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 6.711410281669402,
+         "vwap_sell": 6.7065222128792685,
+         "effective_half_spread_bp_buy": 2.8471296958075905,
+         "effective_half_spread_bp_sell": 4.438165467965887,
+         "round_trip_spread_bp": 7.285295163773478,
+         "levels_consumed_buy": 4,
+         "levels_consumed_sell": 5
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 6.718142349858257,
+         "vwap_sell": 6.699263380212551,
+         "effective_half_spread_bp_buy": 12.880765866692109,
+         "effective_half_spread_bp_sell": 15.256904072507385,
+         "round_trip_spread_bp": 28.137669939199494,
+         "levels_consumed_buy": 17,
+         "levels_consumed_sell": 18
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 676842.2201300005,
+         "filled_sell_usd": 1000000
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:42.031370+00:00"
+      },
+      {
+       "best_bid": 6.709,
+       "best_ask": 6.71,
+       "mid": 6.7095,
+       "top_half_spread_bp": 0.7452120128178955,
+       "top_round_trip_spread_bp": 1.490424025635791,
+       "depth_bid_usd_within_10bp": 35271.541959999995,
+       "depth_ask_usd_within_10bp": 31170.32657,
+       "depth_bid_usd_within_50bp": 166732.71957999998,
+       "depth_ask_usd_within_50bp": 147080.10460999998,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 6.71,
+         "vwap_sell": 6.708025490496864,
+         "effective_half_spread_bp_buy": 0.7452120128172336,
+         "effective_half_spread_bp_sell": 2.1976443895022655,
+         "round_trip_spread_bp": 2.942856402319499,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 2
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 6.711403248868723,
+         "vwap_sell": 6.706533884897485,
+         "effective_half_spread_bp_buy": 2.8366478407072164,
+         "effective_half_spread_bp_sell": 4.420769211587863,
+         "round_trip_spread_bp": 7.25741705229508,
+         "levels_consumed_buy": 3,
+         "levels_consumed_sell": 5
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 6.7181341633097,
+         "vwap_sell": 6.699547513261742,
+         "effective_half_spread_bp_buy": 12.868564438035314,
+         "effective_half_spread_bp_sell": 14.833425349516181,
+         "round_trip_spread_bp": 27.701989787551497,
+         "levels_consumed_buy": 17,
+         "levels_consumed_sell": 18
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 674179.4291900003,
+         "filled_sell_usd": 1000000
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:45.174431+00:00"
+      }
+     ]
+    }
+   },
+   "errors": []
+  },
+  {
+   "exchange": "kucoin",
+   "symbols": {
+    "BTC/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.008202658153281826,
+       "median": 0.008202779265551428,
+       "max": 0.008202779265551428
+      },
+      "top_round_trip_spread_bp": {
+       "min": 0.016405316306563653,
+       "median": 0.016405558531102857,
+       "max": 0.016405558531102857
+      },
+      "mid_last": 60954.95,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 0.016405316306563653,
+        "median": 0.016405558531102857,
+        "max": 0.016405558531102857,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.0164055585311
+       },
+       "10000": {
+        "n": 3,
+        "min": 0.3332280715050405,
+        "median": 0.4759604194334218,
+        "max": 0.7100076301389353,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.47596041943342
+       },
+       "100000": {
+        "n": 2,
+        "min": 1.0729958811690394,
+        "median": 1.2498683574738192,
+        "max": 1.2498683574738192,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 21.24986835747382
+       },
+       "1000000": {
+        "n": 0,
+        "status": "INSUFFICIENT_DEPTH"
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 125850.89294245496,
+       "ask_median": 415276.29157811607
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 125850.89294245496,
+       "ask_median": 415276.29157811607
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 20.0164055585311
+     },
+     "samples": [
+      {
+       "best_bid": 60955.8,
+       "best_ask": 60955.9,
+       "mid": 60955.850000000006,
+       "top_half_spread_bp": 0.008202658153281826,
+       "top_round_trip_spread_bp": 0.016405316306563653,
+       "depth_bid_usd_within_10bp": 148418.53247253996,
+       "depth_ask_usd_within_10bp": 310137.67821964994,
+       "depth_bid_usd_within_50bp": 148418.53247253996,
+       "depth_ask_usd_within_50bp": 310137.67821964994,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60955.9,
+         "vwap_sell": 60955.8,
+         "effective_half_spread_bp_buy": 0.008202658152685005,
+         "effective_half_spread_bp_sell": 0.00820265815387865,
+         "round_trip_spread_bp": 0.016405316306563653,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60955.9,
+         "vwap_sell": 60953.86877996576,
+         "effective_half_spread_bp_buy": 0.008202658152685005,
+         "effective_half_spread_bp_sell": 0.3250254133523555,
+         "round_trip_spread_bp": 0.3332280715050405,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 29
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 60958.83100700421,
+         "vwap_sell": 60951.21232819242,
+         "effective_half_spread_bp_buy": 0.4890436281681972,
+         "effective_half_spread_bp_sell": 0.7608247293056221,
+         "round_trip_spread_bp": 1.2498683574738192,
+         "levels_consumed_buy": 7,
+         "levels_consumed_sell": 65
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 310137.6782196497,
+         "filled_sell_usd": 148418.53247254004
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:46.406156+00:00"
+      },
+      {
+       "best_bid": 60954.9,
+       "best_ask": 60955.0,
+       "mid": 60954.95,
+       "top_half_spread_bp": 0.008202779265551428,
+       "top_round_trip_spread_bp": 0.016405558531102857,
+       "depth_bid_usd_within_10bp": 52989.09959545703,
+       "depth_ask_usd_within_10bp": 476640.35948023194,
+       "depth_bid_usd_within_50bp": 52989.09959545703,
+       "depth_ask_usd_within_50bp": 476640.35948023194,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60955.0,
+         "vwap_sell": 60954.9,
+         "effective_half_spread_bp_buy": 0.00820277926614826,
+         "effective_half_spread_bp_sell": 0.008202779264954599,
+         "round_trip_spread_bp": 0.016405558531102857,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60955.0,
+         "vwap_sell": 60950.672152040526,
+         "effective_half_spread_bp_buy": 0.00820277926614826,
+         "effective_half_spread_bp_sell": 0.701804850872787,
+         "round_trip_spread_bp": 0.7100076301389353,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 71
+        },
+        "100000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 100000,
+         "filled_sell_usd": 52989.09959545707
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 476640.359480232,
+         "filled_sell_usd": 52989.099595456966
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:49.609272+00:00"
+      },
+      {
+       "best_bid": 60954.9,
+       "best_ask": 60955.0,
+       "mid": 60954.95,
+       "top_half_spread_bp": 0.008202779265551428,
+       "top_round_trip_spread_bp": 0.016405558531102857,
+       "depth_bid_usd_within_10bp": 125850.89294245496,
+       "depth_ask_usd_within_10bp": 415276.29157811607,
+       "depth_bid_usd_within_50bp": 125850.89294245496,
+       "depth_ask_usd_within_50bp": 415276.29157811607,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60955.0,
+         "vwap_sell": 60954.9,
+         "effective_half_spread_bp_buy": 0.00820277926614826,
+         "effective_half_spread_bp_sell": 0.008202779264954599,
+         "round_trip_spread_bp": 0.016405558531102857,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60955.0,
+         "vwap_sell": 60952.098785643146,
+         "effective_half_spread_bp_buy": 0.00820277926614826,
+         "effective_half_spread_bp_sell": 0.4677576401672735,
+         "round_trip_spread_bp": 0.4759604194334218,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 42
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 60955.19102196439,
+         "vwap_sell": 60948.650580935704,
+         "effective_half_spread_bp_buy": 0.039540999441955035,
+         "effective_half_spread_bp_sell": 1.0334548817270843,
+         "round_trip_spread_bp": 1.0729958811690394,
+         "levels_consumed_buy": 7,
+         "levels_consumed_sell": 71
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 415276.2915781158,
+         "filled_sell_usd": 125850.89294245502
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:52.758443+00:00"
+      }
+     ]
+    },
+    "ETH/USDT": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.0292775186717109,
+       "median": 0.029282491120057933,
+       "max": 0.029283520113359152
+      },
+      "top_round_trip_spread_bp": {
+       "min": 0.0585550373434218,
+       "median": 0.058564982240115866,
+       "max": 0.058567040226718305
+      },
+      "mid_last": 1707.795,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 0.7556448092744874,
+        "median": 0.8256962758354057,
+        "max": 0.8503147310029898,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 20.825696275835405
+       },
+       "10000": {
+        "n": 3,
+        "min": 1.2935492852225907,
+        "median": 1.344471617626241,
+        "max": 1.656717034311211,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 21.34447161762624
+       },
+       "100000": {
+        "n": 3,
+        "min": 4.765030521001928,
+        "median": 5.012438244628971,
+        "max": 5.2822374053922605,
+        "fees_bp_round_trip": 20.0,
+        "all_in_round_trip_bp": 25.01243824462897
+       },
+       "1000000": {
+        "n": 0,
+        "status": "INSUFFICIENT_DEPTH"
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 265237.05940366606,
+       "ask_median": 208819.08616413997
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 278654.22654024203,
+       "ask_median": 701288.2428120353
+      },
+      "fees_bp_per_side_taker": 10.0,
+      "maker_bp_per_side": 10.0,
+      "fees_bp_round_trip_taker": 20.0,
+      "all_in_round_trip_bp_top": 20.058564982240117
+     },
+     "samples": [
+      {
+       "best_bid": 1707.44,
+       "best_ask": 1707.45,
+       "mid": 1707.4450000000002,
+       "top_half_spread_bp": 0.029283520113359152,
+       "top_round_trip_spread_bp": 0.058567040226718305,
+       "depth_bid_usd_within_10bp": 266381.727760361,
+       "depth_ask_usd_within_10bp": 208928.14839021798,
+       "depth_bid_usd_within_50bp": 278654.22654024203,
+       "depth_ask_usd_within_50bp": 707187.6459178869,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1707.5690221951372,
+         "vwap_sell": 1707.44,
+         "effective_half_spread_bp_buy": 0.7263612891604624,
+         "effective_half_spread_bp_sell": 0.029283520114024984,
+         "round_trip_spread_bp": 0.7556448092744874,
+         "levels_consumed_buy": 8,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1707.6675742747452,
+         "vwap_sell": 1707.4380131406294,
+         "effective_half_spread_bp_buy": 1.3035516502438247,
+         "effective_half_spread_bp_sell": 0.040919967382416184,
+         "round_trip_spread_bp": 1.344471617626241,
+         "levels_consumed_buy": 13,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1707.9381921022718,
+         "vwap_sell": 1707.0823458404118,
+         "effective_half_spread_bp_buy": 2.88848016932714,
+         "effective_half_spread_bp_sell": 2.123958075301832,
+         "round_trip_spread_bp": 5.012438244628971,
+         "levels_consumed_buy": 39,
+         "levels_consumed_sell": 37
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 707187.6459178871,
+         "filled_sell_usd": 278654.2265402429
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:52.908409+00:00"
+      },
+      {
+       "best_bid": 1707.5,
+       "best_ask": 1707.51,
+       "mid": 1707.505,
+       "top_half_spread_bp": 0.029282491120057933,
+       "top_round_trip_spread_bp": 0.058564982240115866,
+       "depth_bid_usd_within_10bp": 265237.05940366606,
+       "depth_ask_usd_within_10bp": 208819.08616413997,
+       "depth_bid_usd_within_50bp": 296150.83702927205,
+       "depth_ask_usd_within_50bp": 696208.626006541,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1707.640988051947,
+         "vwap_sell": 1707.5,
+         "effective_half_spread_bp_buy": 0.796413784714682,
+         "effective_half_spread_bp_sell": 0.02928249112072374,
+         "round_trip_spread_bp": 0.8256962758354057,
+         "levels_consumed_buy": 6,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1707.717072351299,
+         "vwap_sell": 1707.4961981640727,
+         "effective_half_spread_bp_buy": 1.2420013487454329,
+         "effective_half_spread_bp_sell": 0.05154793647715748,
+         "round_trip_spread_bp": 1.2935492852225907,
+         "levels_consumed_buy": 11,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1708.0091115198418,
+         "vwap_sell": 1707.1954801758654,
+         "effective_half_spread_bp_buy": 2.952328220659218,
+         "effective_half_spread_bp_sell": 1.81270230034271,
+         "round_trip_spread_bp": 4.765030521001928,
+         "levels_consumed_buy": 40,
+         "levels_consumed_sell": 28
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 696208.6260065415,
+         "filled_sell_usd": 296150.8370292734
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:56.059888+00:00"
+      },
+      {
+       "best_bid": 1707.79,
+       "best_ask": 1707.8,
+       "mid": 1707.795,
+       "top_half_spread_bp": 0.0292775186717109,
+       "top_round_trip_spread_bp": 0.0585550373434218,
+       "depth_bid_usd_within_10bp": 252422.90922142906,
+       "depth_ask_usd_within_10bp": 174748.589157885,
+       "depth_bid_usd_within_50bp": 259696.23745683403,
+       "depth_ask_usd_within_50bp": 701288.2428120353,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1707.9352163246033,
+         "vwap_sell": 1707.79,
+         "effective_half_spread_bp_buy": 0.8210372123306133,
+         "effective_half_spread_bp_sell": 0.029277518672376598,
+         "round_trip_spread_bp": 0.8503147310029898,
+         "levels_consumed_buy": 7,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1708.0688100705258,
+         "vwap_sell": 1707.7858767637647,
+         "effective_half_spread_bp_buy": 1.6032958904655965,
+         "effective_half_spread_bp_sell": 0.05342114384561459,
+         "round_trip_spread_bp": 1.656717034311211,
+         "levels_consumed_buy": 13,
+         "levels_consumed_sell": 2
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1708.3596208342913,
+         "vwap_sell": 1707.457522971317,
+         "effective_half_spread_bp_buy": 3.3061394036824705,
+         "effective_half_spread_bp_sell": 1.9760980017097902,
+         "round_trip_spread_bp": 5.2822374053922605,
+         "levels_consumed_buy": 39,
+         "levels_consumed_sell": 31
+        },
+        "1000000": {
+         "status": "INSUFFICIENT_DEPTH",
+         "filled_buy_usd": 701288.242812035,
+         "filled_sell_usd": 259696.23745683394
+        }
+       },
+       "ts_utc": "2026-11-22T11:50:59.214755+00:00"
+      }
+     ]
+    }
+   },
+   "errors": []
+  },
+  {
+   "exchange": "kraken",
+   "symbols": {
+    "BTC/USD": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.00821558348294279,
+       "median": 0.00821558348294279,
+       "max": 0.00821558348294279
+      },
+      "top_round_trip_spread_bp": {
+       "min": 0.01643116696588558,
+       "median": 0.01643116696588558,
+       "max": 0.01643116696588558
+      },
+      "mid_last": 60859.95,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 0.016431166967081103,
+        "median": 0.016431166967081103,
+        "max": 0.016431166967081103,
+        "fees_bp_round_trip": 52.0,
+        "all_in_round_trip_bp": 52.01643116696708
+       },
+       "10000": {
+        "n": 3,
+        "min": 0.016431166967081103,
+        "median": 0.016431166967081103,
+        "max": 0.016431166967081103,
+        "fees_bp_round_trip": 52.0,
+        "all_in_round_trip_bp": 52.01643116696708
+       },
+       "100000": {
+        "n": 3,
+        "min": 1.7839854274867037,
+        "median": 2.6153065328854597,
+        "max": 2.89140166529947,
+        "fees_bp_round_trip": 52.0,
+        "all_in_round_trip_bp": 54.61530653288546
+       },
+       "1000000": {
+        "n": 3,
+        "min": 9.923416760476542,
+        "median": 9.971409674637824,
+        "max": 10.34451898645509,
+        "fees_bp_round_trip": 52.0,
+        "all_in_round_trip_bp": 61.971409674637826
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 2518626.196799999,
+       "ask_median": 653513.1591
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 2725787.0568999997,
+       "ask_median": 1794372.8514999999
+      },
+      "fees_bp_per_side_taker": 26.0,
+      "maker_bp_per_side": 16.0,
+      "fees_bp_round_trip_taker": 52.0,
+      "all_in_round_trip_bp_top": 52.01643116696589
+     },
+     "samples": [
+      {
+       "best_bid": 60859.9,
+       "best_ask": 60860.0,
+       "mid": 60859.95,
+       "top_half_spread_bp": 0.00821558348294279,
+       "top_round_trip_spread_bp": 0.01643116696588558,
+       "depth_bid_usd_within_10bp": 2477010.5339999995,
+       "depth_ask_usd_within_10bp": 631717.1456999999,
+       "depth_bid_usd_within_50bp": 2687696.3611000003,
+       "depth_ask_usd_within_50bp": 1770153.7382,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60860.00000000001,
+         "vwap_sell": 60859.9,
+         "effective_half_spread_bp_buy": 0.008215583484736078,
+         "effective_half_spread_bp_sell": 0.008215583482345027,
+         "round_trip_spread_bp": 0.016431166967081103,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60860.00000000001,
+         "vwap_sell": 60859.9,
+         "effective_half_spread_bp_buy": 0.008215583484736078,
+         "effective_half_spread_bp_sell": 0.008215583482345027,
+         "round_trip_spread_bp": 0.016431166967081103,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 60872.50147524821,
+         "vwap_sell": 60854.904419170205,
+         "effective_half_spread_bp_buy": 2.062353854745564,
+         "effective_half_spread_bp_sell": 0.8290478105539055,
+         "round_trip_spread_bp": 2.89140166529947,
+         "levels_consumed_buy": 17,
+         "levels_consumed_sell": 19
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 60905.031718564795,
+         "vwap_sell": 60842.075027735824,
+         "effective_half_spread_bp_buy": 7.407452448580304,
+         "effective_half_spread_bp_sell": 2.9370665378747876,
+         "round_trip_spread_bp": 10.34451898645509,
+         "levels_consumed_buy": 77,
+         "levels_consumed_sell": 69
+        }
+       },
+       "ts_utc": "2026-11-22T11:51:00.454398+00:00"
+      },
+      {
+       "best_bid": 60859.9,
+       "best_ask": 60860.0,
+       "mid": 60859.95,
+       "top_half_spread_bp": 0.00821558348294279,
+       "top_round_trip_spread_bp": 0.01643116696588558,
+       "depth_bid_usd_within_10bp": 2518626.196799999,
+       "depth_ask_usd_within_10bp": 676778.2769999999,
+       "depth_bid_usd_within_50bp": 2725787.0568999997,
+       "depth_ask_usd_within_50bp": 1794372.8514999999,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60860.00000000001,
+         "vwap_sell": 60859.9,
+         "effective_half_spread_bp_buy": 0.008215583484736078,
+         "effective_half_spread_bp_sell": 0.008215583482345027,
+         "round_trip_spread_bp": 0.016431166967081103,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60860.00000000001,
+         "vwap_sell": 60859.9,
+         "effective_half_spread_bp_buy": 0.008215583484736078,
+         "effective_half_spread_bp_sell": 0.008215583482345027,
+         "round_trip_spread_bp": 0.016431166967081103,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 60871.9372222792,
+         "vwap_sell": 60856.02047979659,
+         "effective_half_spread_bp_buy": 1.969640507296458,
+         "effective_half_spread_bp_sell": 0.6456660255890015,
+         "round_trip_spread_bp": 2.6153065328854597,
+         "levels_consumed_buy": 18,
+         "levels_consumed_sell": 14
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 60903.66748651558,
+         "vwap_sell": 60843.273621728404,
+         "effective_half_spread_bp_buy": 7.183293202768488,
+         "effective_half_spread_bp_sell": 2.740123557708053,
+         "round_trip_spread_bp": 9.923416760476542,
+         "levels_consumed_buy": 78,
+         "levels_consumed_sell": 70
+        }
+       },
+       "ts_utc": "2026-11-22T11:51:04.678194+00:00"
+      },
+      {
+       "best_bid": 60859.9,
+       "best_ask": 60860.0,
+       "mid": 60859.95,
+       "top_half_spread_bp": 0.00821558348294279,
+       "top_round_trip_spread_bp": 0.01643116696588558,
+       "depth_bid_usd_within_10bp": 2543692.5801999997,
+       "depth_ask_usd_within_10bp": 653513.1591,
+       "depth_bid_usd_within_50bp": 3715174.9303999995,
+       "depth_ask_usd_within_50bp": 1822668.5168999997,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 60860.00000000001,
+         "vwap_sell": 60859.9,
+         "effective_half_spread_bp_buy": 0.008215583484736078,
+         "effective_half_spread_bp_sell": 0.008215583482345027,
+         "round_trip_spread_bp": 0.016431166967081103,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 60860.00000000001,
+         "vwap_sell": 60859.9,
+         "effective_half_spread_bp_buy": 0.008215583484736078,
+         "effective_half_spread_bp_sell": 0.008215583482345027,
+         "round_trip_spread_bp": 0.016431166967081103,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 60870.75732639176,
+         "vwap_sell": 60859.9,
+         "effective_half_spread_bp_buy": 1.7757698440043588,
+         "effective_half_spread_bp_sell": 0.008215583482345027,
+         "round_trip_spread_bp": 1.7839854274867037,
+         "levels_consumed_buy": 15,
+         "levels_consumed_sell": 1
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 60904.13845556685,
+         "vwap_sell": 60843.45250614405,
+         "effective_half_spread_bp_buy": 7.260678913941137,
+         "effective_half_spread_bp_sell": 2.710730760696687,
+         "round_trip_spread_bp": 9.971409674637824,
+         "levels_consumed_buy": 76,
+         "levels_consumed_sell": 60
+        }
+       },
+       "ts_utc": "2026-11-22T11:51:07.778716+00:00"
+      }
+     ]
+    },
+    "ETH/USD": {
+     "summary": {
+      "n_samples": 3,
+      "n_ok": 3,
+      "status": "OK",
+      "top_half_spread_bp": {
+       "min": 0.02932181572409023,
+       "median": 0.02932181572409023,
+       "max": 0.02932181572409023
+      },
+      "top_round_trip_spread_bp": {
+       "min": 0.05864363144818046,
+       "median": 0.05864363144818046,
+       "max": 0.05864363144818046
+      },
+      "mid_last": 1705.2150000000001,
+      "round_trip_spread_bp_by_size": {
+       "1000": {
+        "n": 3,
+        "min": 0.05864363144818046,
+        "median": 0.05864363144818046,
+        "max": 0.05864363144818046,
+        "fees_bp_round_trip": 52.0,
+        "all_in_round_trip_bp": 52.05864363144818
+       },
+       "10000": {
+        "n": 3,
+        "min": 0.831266709303272,
+        "median": 0.8848760565412758,
+        "max": 1.0181108485789145,
+        "fees_bp_round_trip": 52.0,
+        "all_in_round_trip_bp": 52.88487605654127
+       },
+       "100000": {
+        "n": 3,
+        "min": 3.270544990025661,
+        "median": 3.786499700312204,
+        "max": 3.8378076839251594,
+        "fees_bp_round_trip": 52.0,
+        "all_in_round_trip_bp": 55.786499700312206
+       },
+       "1000000": {
+        "n": 3,
+        "min": 11.680837727256817,
+        "median": 12.03116796315398,
+        "max": 12.176629360486645,
+        "fees_bp_round_trip": 52.0,
+        "all_in_round_trip_bp": 64.03116796315398
+       }
+      },
+      "depth_usd_within_10bp": {
+       "bid_median": 965861.9159100002,
+       "ask_median": 1139011.3854099999
+      },
+      "depth_usd_within_50bp": {
+       "bid_median": 2045922.72685,
+       "ask_median": 4475071.16448
+      },
+      "fees_bp_per_side_taker": 26.0,
+      "maker_bp_per_side": 16.0,
+      "fees_bp_round_trip_taker": 52.0,
+      "all_in_round_trip_bp_top": 52.05864363144818
+     },
+     "samples": [
+      {
+       "best_bid": 1705.21,
+       "best_ask": 1705.22,
+       "mid": 1705.2150000000001,
+       "top_half_spread_bp": 0.02932181572409023,
+       "top_round_trip_spread_bp": 0.05864363144818046,
+       "depth_bid_usd_within_10bp": 931207.7765300001,
+       "depth_ask_usd_within_10bp": 1134415.0854299997,
+       "depth_bid_usd_within_50bp": 1987293.26759,
+       "depth_ask_usd_within_50bp": 4467698.902799999,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1705.22,
+         "vwap_sell": 1705.21,
+         "effective_half_spread_bp_buy": 0.02932181572342353,
+         "effective_half_spread_bp_sell": 0.02932181572475693,
+         "round_trip_spread_bp": 0.05864363144818046,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1705.2916769709143,
+         "vwap_sell": 1705.1499281247438,
+         "effective_half_spread_bp_buy": 0.4496616022856351,
+         "effective_half_spread_bp_sell": 0.3816051070176369,
+         "round_trip_spread_bp": 0.831266709303272,
+         "levels_consumed_buy": 5,
+         "levels_consumed_sell": 7
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1705.4890786655953,
+         "vwap_sell": 1704.9313804280787,
+         "effective_half_spread_bp_buy": 1.6072968252988502,
+         "effective_half_spread_bp_sell": 1.6632481647268111,
+         "round_trip_spread_bp": 3.270544990025661,
+         "levels_consumed_buy": 10,
+         "levels_consumed_sell": 13
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 1706.118902100381,
+         "vwap_sell": 1704.1270681298727,
+         "effective_half_spread_bp_buy": 5.300810164002467,
+         "effective_half_spread_bp_sell": 6.380027563254352,
+         "round_trip_spread_bp": 11.680837727256817,
+         "levels_consumed_buy": 57,
+         "levels_consumed_sell": 81
+        }
+       },
+       "ts_utc": "2026-11-22T11:51:07.882720+00:00"
+      },
+      {
+       "best_bid": 1705.21,
+       "best_ask": 1705.22,
+       "mid": 1705.2150000000001,
+       "top_half_spread_bp": 0.02932181572409023,
+       "top_round_trip_spread_bp": 0.05864363144818046,
+       "depth_bid_usd_within_10bp": 972322.8440600003,
+       "depth_ask_usd_within_10bp": 1139011.3854099999,
+       "depth_bid_usd_within_50bp": 2052415.97647,
+       "depth_ask_usd_within_50bp": 4475071.16448,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1705.22,
+         "vwap_sell": 1705.21,
+         "effective_half_spread_bp_buy": 0.02932181572342353,
+         "effective_half_spread_bp_sell": 0.02932181572475693,
+         "round_trip_spread_bp": 0.05864363144818046,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1705.317977800442,
+         "vwap_sell": 1705.144368011376,
+         "effective_half_spread_bp_buy": 0.6038992176455721,
+         "effective_half_spread_bp_sell": 0.41421163093334235,
+         "round_trip_spread_bp": 1.0181108485789145,
+         "levels_consumed_buy": 4,
+         "levels_consumed_sell": 8
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1705.5290156260958,
+         "vwap_sell": 1704.8745869031213,
+         "effective_half_spread_bp_buy": 1.8415016645738196,
+         "effective_half_spread_bp_sell": 1.9963060193513396,
+         "round_trip_spread_bp": 3.8378076839251594,
+         "levels_consumed_buy": 8,
+         "levels_consumed_sell": 14
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 1706.167966470124,
+         "vwap_sell": 1704.0915893666297,
+         "effective_half_spread_bp_buy": 5.588541445646346,
+         "effective_half_spread_bp_sell": 6.5880879148403,
+         "round_trip_spread_bp": 12.176629360486645,
+         "levels_consumed_buy": 54,
+         "levels_consumed_sell": 65
+        }
+       },
+       "ts_utc": "2026-11-22T11:51:12.084392+00:00"
+      },
+      {
+       "best_bid": 1705.21,
+       "best_ask": 1705.22,
+       "mid": 1705.2150000000001,
+       "top_half_spread_bp": 0.02932181572409023,
+       "top_round_trip_spread_bp": 0.05864363144818046,
+       "depth_bid_usd_within_10bp": 965861.9159100002,
+       "depth_ask_usd_within_10bp": 1170127.5849299997,
+       "depth_bid_usd_within_50bp": 2045922.72685,
+       "depth_ask_usd_within_50bp": 4511673.150769999,
+       "sizes": {
+        "1000": {
+         "status": "OK",
+         "vwap_buy": 1705.22,
+         "vwap_sell": 1705.21,
+         "effective_half_spread_bp_buy": 0.02932181572342353,
+         "effective_half_spread_bp_sell": 0.02932181572475693,
+         "round_trip_spread_bp": 0.05864363144818046,
+         "levels_consumed_buy": 1,
+         "levels_consumed_sell": 1
+        },
+        "10000": {
+         "status": "OK",
+         "vwap_buy": 1705.312432733418,
+         "vwap_sell": 1705.1615423409426,
+         "effective_half_spread_bp_buy": 0.5713809309554391,
+         "effective_half_spread_bp_sell": 0.3134951255858367,
+         "round_trip_spread_bp": 0.8848760565412758,
+         "levels_consumed_buy": 3,
+         "levels_consumed_sell": 7
+        },
+        "100000": {
+         "status": "OK",
+         "vwap_buy": 1705.5218312880231,
+         "vwap_sell": 1704.8761516793763,
+         "effective_half_spread_bp_buy": 1.799370097160633,
+         "effective_half_spread_bp_sell": 1.987129603151571,
+         "round_trip_spread_bp": 3.786499700312204,
+         "levels_consumed_buy": 6,
+         "levels_consumed_sell": 14
+        },
+        "1000000": {
+         "status": "OK",
+         "vwap_buy": 1706.1481422481984,
+         "vwap_sell": 1704.0965694403694,
+         "effective_half_spread_bp_buy": 5.472285009211373,
+         "effective_half_spread_bp_sell": 6.558882953942605,
+         "round_trip_spread_bp": 12.03116796315398,
+         "levels_consumed_buy": 54,
+         "levels_consumed_sell": 69
+        }
+       },
+       "ts_utc": "2026-11-22T11:51:15.190167+00:00"
+      }
+     ]
+    }
+   },
+   "errors": []
+  }
+ ],
+ "item": "item5_full_12_symbols"
+}

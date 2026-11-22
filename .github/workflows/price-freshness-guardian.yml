@@ -1,0 +1,64 @@
+name: Price Freshness Guardian (P0.1)
+
+# Runs tools/price_freshness_sla.py — per-class price-table freshness SLA.
+# Fails CI when any table is stale beyond its tolerance (from audit3_selection_alpha
+# TABLE_FOR / TOLERANCE_MS). Equity <=2d, FX <=2d, futures <=3d.
+#
+# Push trigger: tools/price_freshness_sla.py (see AGENTS.md push-trigger registry)
+# Secrets required: DB_PASS_STOCKS (or MYSQL_PASSWORD)
+
+on:
+  schedule:
+    - cron: '30 6 * * *'   # daily 06:30 UTC
+  push:
+    branches: [main]
+    paths:
+      - tools/price_freshness_sla.py
+      - alpha_engine/audit3_selection_alpha.py
+      - .github/workflows/price-freshness-guardian.yml
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  price-freshness:
+    name: Price Freshness SLA Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run price freshness SLA check
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD || secrets.DB_STOCKS_PASSWORD }}
+        run: python tools/price_freshness_sla.py
+        # Exit 0=within SLA, 1=breach (CI failure), 2=could not check
+        continue-on-error: true
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: price-freshness-report
+          path: audit_dashboard/data/db_freshness.json
+          retention-days: 7

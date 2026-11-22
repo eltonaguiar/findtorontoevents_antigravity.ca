@@ -136,7 +136,11 @@ def is_performance_scored_row(row: dict) -> bool:
         return False
     if row.get("paper_trade") or row.get("expired_no_pnl") or row.get("_auto_expired"):
         return False
-    if _f(row.get("pnl_pct")) is None:
+    _pnl = _f(row.get("pnl_pct"))
+    if _pnl is None:
+        return False
+    # P0.0a: zero-PnL rows are not scored (quarantined).
+    if _pnl == 0.0:
         return False
     exit_reason = str(row.get("exit_reason", "") or "").upper().strip()
     # "" and UNKNOWN are ABSENT INFORMATION, not a stated non-performance exit:
@@ -220,8 +224,14 @@ def default_exclusion_reason(pick: Any) -> str | None:
         return "paper_trade"
     if pick.get("expired_no_pnl") or pick.get("_auto_expired"):
         return "auto_expired"
-    if _f(pick.get("pnl_pct")) is None:
+    pnl_val = _f(pick.get("pnl_pct"))
+    if pnl_val is None:
         return "no_numeric_pnl"
+    # P0.0a: zero-PnL rows are quarantined, not scored.
+    # A zero PnL is either a genuine timeout/expiry or an un-resolved placeholder.
+    # Either way, it is not a realised outcome and must not inflate the denominator.
+    if pnl_val == 0.0:
+        return "zero_pnl_quarantined"
     exit_reason = str(pick.get("exit_reason", "") or "").upper().strip()
     if exit_reason in _NON_PERFORMANCE_EXITS or exit_reason.startswith("STALE"):
         return "non_performance_exit"

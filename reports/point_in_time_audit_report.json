@@ -1,0 +1,1104 @@
+{
+  "generated_at": "2026-11-20T18:06:02.881212+00:00",
+  "scan_path": "/home/eaguiar2015/findtorontoevents_antigravity.ca/alpha_engine",
+  "total_findings": 91,
+  "production_findings": 48,
+  "by_classification": {
+    "SIGNAL": 26,
+    "BACKTEST": 2,
+    "PATTERN": 19,
+    "INCUBATOR": 1
+  },
+  "by_file": {
+    "alpha_engine/cyclical_strategies.py": 2,
+    "alpha_engine/crypto_pairs_arb.py": 1,
+    "alpha_engine/smart_entry.py": 2,
+    "alpha_engine/forex_strategy_harness.py": 2,
+    "alpha_engine/backtest_untapped.py": 2,
+    "alpha_engine/crypto_strategies.py": 2,
+    "alpha_engine/regime_filtered_momentum.py": 1,
+    "alpha_engine/pattern_cnn_lite.py": 2,
+    "alpha_engine/tradingview_strategies_wave3.py": 1,
+    "alpha_engine/indicators.py": 2,
+    "alpha_engine/diagonal_trendline_breakout.py": 2,
+    "alpha_engine/fib_trend_pullback.py": 1,
+    "alpha_engine/prove_winners.py": 1,
+    "alpha_engine/equity_rsi_divergence_mr_old.py": 4,
+    "alpha_engine/statistical_strategies.py": 4,
+    "alpha_engine/equity_rsi_divergence_mr.py": 4,
+    "alpha_engine/confluence_pipeline.py": 6,
+    "alpha_engine/incubator_grad_strategies.py": 1,
+    "alpha_engine/tradingview_strategies_wave2.py": 6,
+    "alpha_engine/proven_edge_strategies.py": 2
+  },
+  "signal_findings": [
+    {
+      "file": "alpha_engine/cyclical_strategies.py",
+      "line": 1323,
+      "pattern": "forward_index",
+      "code": "high_window.iloc[i] >= high_window.iloc[i + 1]):"
+    },
+    {
+      "file": "alpha_engine/cyclical_strategies.py",
+      "line": 1327,
+      "pattern": "forward_index",
+      "code": "low_window.iloc[i] <= low_window.iloc[i + 1]):"
+    },
+    {
+      "file": "alpha_engine/crypto_pairs_arb.py",
+      "line": 385,
+      "pattern": "forward_index",
+      "code": "future = fwd_df[\"close\"].iloc[t + 1 : t + 6].to_numpy()"
+    },
+    {
+      "file": "alpha_engine/smart_entry.py",
+      "line": 548,
+      "pattern": "forward_index",
+      "code": "lo_next = float(low.iloc[idx + 1]) if low is not None else float(close.iloc[idx + 1])"
+    },
+    {
+      "file": "alpha_engine/smart_entry.py",
+      "line": 550,
+      "pattern": "forward_index",
+      "code": "hi_next = float(high.iloc[idx + 1]) if high is not None else float(close.iloc[idx + 1])"
+    },
+    {
+      "file": "alpha_engine/forex_strategy_harness.py",
+      "line": 1002,
+      "pattern": "negative_shift",
+      "code": "price_change = close.pct_change().shift(-1)  # next-bar return"
+    },
+    {
+      "file": "alpha_engine/forex_strategy_harness.py",
+      "line": 1130,
+      "pattern": "negative_shift",
+      "code": "test_returns = last_signal * test_df[\"close\"].pct_change().shift(-1)"
+    },
+    {
+      "file": "alpha_engine/crypto_strategies.py",
+      "line": 2388,
+      "pattern": "forward_index",
+      "code": "and h >= float(high.iloc[i+1]) and h >= float(high.iloc[i+2])):"
+    },
+    {
+      "file": "alpha_engine/crypto_strategies.py",
+      "line": 2391,
+      "pattern": "forward_index",
+      "code": "and l <= float(low.iloc[i+1]) and l <= float(low.iloc[i+2])):"
+    },
+    {
+      "file": "alpha_engine/regime_filtered_momentum.py",
+      "line": 339,
+      "pattern": "forward_index",
+      "code": "exitp = float(df[\"Close\"].iloc[t + 21])"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave3.py",
+      "line": 164,
+      "pattern": "negative_shift",
+      "code": "returns = close.pct_change().shift(-1).values  # returns[i] = return after bar i"
+    },
+    {
+      "file": "alpha_engine/indicators.py",
+      "line": 350,
+      "pattern": "forward_index",
+      "code": "if window.iloc[i] <= window.iloc[i - 1] and window.iloc[i] <= window.iloc[i + 1]:"
+    },
+    {
+      "file": "alpha_engine/indicators.py",
+      "line": 352,
+      "pattern": "forward_index",
+      "code": "if window.iloc[i] >= window.iloc[i - 1] and window.iloc[i] >= window.iloc[i + 1]:"
+    },
+    {
+      "file": "alpha_engine/prove_winners.py",
+      "line": 108,
+      "pattern": "forward_index",
+      "code": "future = df.iloc[i+1:i+1+max_hold]"
+    },
+    {
+      "file": "alpha_engine/statistical_strategies.py",
+      "line": 160,
+      "pattern": "future_variable",
+      "code": "next_ret = float(close.iloc[loc + 1] / close.iloc[loc] - 1)"
+    },
+    {
+      "file": "alpha_engine/statistical_strategies.py",
+      "line": 160,
+      "pattern": "forward_index",
+      "code": "next_ret = float(close.iloc[loc + 1] / close.iloc[loc] - 1)"
+    },
+    {
+      "file": "alpha_engine/statistical_strategies.py",
+      "line": 161,
+      "pattern": "future_variable",
+      "code": "if current_z < 0 and next_ret > 0:"
+    },
+    {
+      "file": "alpha_engine/statistical_strategies.py",
+      "line": 163,
+      "pattern": "future_variable",
+      "code": "elif current_z > 0 and next_ret < 0:"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 661,
+      "pattern": "forward_index",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1]))"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 663,
+      "pattern": "forward_index",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1]))"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 719,
+      "pattern": "forward_index",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1])):"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 722,
+      "pattern": "forward_index",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1])):"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 758,
+      "pattern": "forward_index",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1])):"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 761,
+      "pattern": "forward_index",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1])):"
+    },
+    {
+      "file": "alpha_engine/proven_edge_strategies.py",
+      "line": 769,
+      "pattern": "forward_index",
+      "code": "float(recent_close.iloc[i]) <= float(recent_close.iloc[i+1])):"
+    },
+    {
+      "file": "alpha_engine/proven_edge_strategies.py",
+      "line": 778,
+      "pattern": "forward_index",
+      "code": "float(recent_close.iloc[i]) >= float(recent_close.iloc[i+1])):"
+    }
+  ],
+  "findings": [
+    {
+      "file": "alpha_engine/unique_edge_live.py",
+      "line": 6,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "when the latest *completed* bar (index -2) matches a signal \u2014 no lookahead.",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/cyclical_strategies.py",
+      "line": 1323,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "high_window.iloc[i] >= high_window.iloc[i + 1]):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/cyclical_strategies.py",
+      "line": 1327,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "low_window.iloc[i] <= low_window.iloc[i + 1]):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/ml_engine_v2.py",
+      "line": 9,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "- 50+ properly lagged features (no look-ahead bias)",
+      "is_training": true,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/ml_engine_v2.py",
+      "line": 361,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "All features are properly lagged to prevent look-ahead bias.",
+      "is_training": true,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/ml_engine_v2.py",
+      "line": 390,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "Uses past data only (shifted by 1 to prevent look-ahead).",
+      "is_training": true,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/ml_engine_v2.py",
+      "line": 861,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "future_return = df[\"close\"].shift(-horizon) / df[\"close\"] - 1",
+      "is_training": true,
+      "is_comment": false,
+      "classification": "TRAINING"
+    },
+    {
+      "file": "alpha_engine/ml_engine_v2.py",
+      "line": 861,
+      "pattern": "target_leak",
+      "description": "Target variable leaking into features",
+      "code": "future_return = df[\"close\"].shift(-horizon) / df[\"close\"] - 1",
+      "is_training": true,
+      "is_comment": false,
+      "classification": "TRAINING"
+    },
+    {
+      "file": "alpha_engine/ml_engine_v2.py",
+      "line": 862,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "return (future_return > threshold).astype(int)",
+      "is_training": true,
+      "is_comment": false,
+      "classification": "TRAINING"
+    },
+    {
+      "file": "alpha_engine/equity_strategy_harness.py",
+      "line": 1328,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "position = sig.shift(1).fillna(0)          # avoid look-ahead",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/crypto_pairs_arb.py",
+      "line": 385,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "future = fwd_df[\"close\"].iloc[t + 1 : t + 6].to_numpy()",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/smart_entry.py",
+      "line": 548,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "lo_next = float(low.iloc[idx + 1]) if low is not None else float(close.iloc[idx + 1])",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/smart_entry.py",
+      "line": 550,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "hi_next = float(high.iloc[idx + 1]) if high is not None else float(close.iloc[idx + 1])",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/ml_drift_repair_workflow.py",
+      "line": 51,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "Prevents silent look-ahead bias when the caller passes overlapping windows.\"\"\"",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/forex_strategy_harness.py",
+      "line": 1002,
+      "pattern": "negative_shift",
+      "description": "Uses future data via .shift(-N)",
+      "code": "price_change = close.pct_change().shift(-1)  # next-bar return",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/forex_strategy_harness.py",
+      "line": 1130,
+      "pattern": "negative_shift",
+      "description": "Uses future data via .shift(-N)",
+      "code": "test_returns = last_signal * test_df[\"close\"].pct_change().shift(-1)",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/ml_strategy_reviver.py",
+      "line": 976,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# look-ahead-free validation (the 3 controls).",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/backtest_untapped.py",
+      "line": 279,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "entry = float(open_price.iloc[i + 1])",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "BACKTEST"
+    },
+    {
+      "file": "alpha_engine/backtest_untapped.py",
+      "line": 280,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "exit_price = float(close.iloc[i + 3])",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "BACKTEST"
+    },
+    {
+      "file": "alpha_engine/crypto_strategies.py",
+      "line": 2388,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "and h >= float(high.iloc[i+1]) and h >= float(high.iloc[i+2])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/crypto_strategies.py",
+      "line": 2391,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "and l <= float(low.iloc[i+1]) and l <= float(low.iloc[i+2])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/regime_filtered_momentum.py",
+      "line": 339,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "exitp = float(df[\"Close\"].iloc[t + 21])",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/value_backtest.py",
+      "line": 139,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# at rebalance time (no look-ahead via not-yet-filed financials).",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/genome_evolution_v2.py",
+      "line": 231,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "look-ahead bias and tests temporal robustness.",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/pattern_cnn_lite.py",
+      "line": 75,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if window.iloc[i] <= window.iloc[i - 1] and window.iloc[i] <= window.iloc[i + 1]:",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/pattern_cnn_lite.py",
+      "line": 77,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if window.iloc[i] >= window.iloc[i - 1] and window.iloc[i] >= window.iloc[i + 1]:",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave3.py",
+      "line": 164,
+      "pattern": "negative_shift",
+      "description": "Uses future data via .shift(-N)",
+      "code": "returns = close.pct_change().shift(-1).values  # returns[i] = return after bar i",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/institutional_scorecard.py",
+      "line": 81,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "- No look-ahead bias: timestamps validated (10 pts)",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/institutional_scorecard.py",
+      "line": 110,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# --- No look-ahead bias (10 pts) ---",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/threshold_overfit_validator.py",
+      "line": 280,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# Use only prior picks as \"training\" context (no lookahead)",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/meta_labeler.py",
+      "line": 212,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "look-ahead leakage. `heuristic_score()` still reads `forward_wr` separately",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/run_v2_bundle_backtests.py",
+      "line": 177,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "look_ahead = 100",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/run_v2_bundle_backtests.py",
+      "line": 178,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "end_search = min(i + look_ahead, len(df) - 1)",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/indicators.py",
+      "line": 350,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if window.iloc[i] <= window.iloc[i - 1] and window.iloc[i] <= window.iloc[i + 1]:",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/indicators.py",
+      "line": 352,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if window.iloc[i] >= window.iloc[i - 1] and window.iloc[i] >= window.iloc[i + 1]:",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/backtest_etf_dual_momentum.py",
+      "line": 11,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "2. Purged-embargoed walk-forward \u2014 prevents look-ahead bias",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/diagonal_trendline_breakout.py",
+      "line": 83,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "neighbors = pd.concat([lows.iloc[i - self.strength:i], lows.iloc[i + 1:i + self.strength + 1]])",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/diagonal_trendline_breakout.py",
+      "line": 96,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "neighbors = pd.concat([highs.iloc[i - self.strength:i], highs.iloc[i + 1:i + self.strength + 1]])",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/config.py",
+      "line": 310,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# effective_date to eliminate look-ahead bias. COT_MATCH_REQUIRED gates",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/trust_audit_export.py",
+      "line": 5,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "enrich_picks_with_trust_score() using strat_fwd_wr (partial lookahead).  There",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/commodity_cot_contrarian.py",
+      "line": 215,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# same day or within 3 calendar days uses pre-release data (look-ahead bias).",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/commodity_cot_contrarian.py",
+      "line": 369,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "f\"{COT_PUBLICATION_LAG_DAYS}d \u2014 skip (look-ahead risk)\"",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/ml_ranker.py",
+      "line": 858,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# (Phase 11 -- Lopez de Prado AFML Ch.7: embargo prevents look-ahead bias)",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/ml_predictor_merger.py",
+      "line": 468,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# ML_EMIT_ENABLED=1 only after a clean retrain + look-ahead-free validation (the 3 controls).",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/ml_predictor_merger.py",
+      "line": 480,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "print(\"[ML MERGER] HALTED \u2014 ml_trading_enabled=False (ML_AUDIT_2026-07-04). No picks emitted. Set ML_EMIT_ENABLED=1 afte",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/fib_trend_pullback.py",
+      "line": 159,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if float(recent.iloc[i]) < float(recent.iloc[i - 1]) and float(recent.iloc[i]) < float(recent.iloc[i + 1]):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/prove_winners.py",
+      "line": 108,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "future = df.iloc[i+1:i+1+max_hold]",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/equity_rsi_divergence_mr_old.py",
+      "line": 52,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if (close.iloc[i] < close.iloc[i-1] and close.iloc[i] < close.iloc[i+1] and",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/equity_rsi_divergence_mr_old.py",
+      "line": 56,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if (rsi_14.iloc[i] < rsi_14.iloc[i-1] and rsi_14.iloc[i] < rsi_14.iloc[i+1] and",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/equity_rsi_divergence_mr_old.py",
+      "line": 83,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if (close.iloc[i] > close.iloc[i-1] and close.iloc[i] > close.iloc[i+1] and",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/equity_rsi_divergence_mr_old.py",
+      "line": 87,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "if (rsi_14.iloc[i] > rsi_14.iloc[i-1] and rsi_14.iloc[i] > rsi_14.iloc[i+1] and",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/statistical_strategies.py",
+      "line": 160,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "next_ret = float(close.iloc[loc + 1] / close.iloc[loc] - 1)",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/statistical_strategies.py",
+      "line": 160,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "next_ret = float(close.iloc[loc + 1] / close.iloc[loc] - 1)",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/statistical_strategies.py",
+      "line": 161,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "if current_z < 0 and next_ret > 0:",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/statistical_strategies.py",
+      "line": 163,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "elif current_z > 0 and next_ret < 0:",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/equity_rsi_divergence_mr.py",
+      "line": 61,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "and close.iloc[i] < close.iloc[i + 1]",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/equity_rsi_divergence_mr.py",
+      "line": 69,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "and rsi_14.iloc[i] < rsi_14.iloc[i + 1]",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/equity_rsi_divergence_mr.py",
+      "line": 119,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "and close.iloc[i] > close.iloc[i + 1]",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/equity_rsi_divergence_mr.py",
+      "line": 127,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "and rsi_14.iloc[i] > rsi_14.iloc[i + 1]",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/confluence_pipeline.py",
+      "line": 216,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1]))",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/confluence_pipeline.py",
+      "line": 218,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1]))",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/confluence_pipeline.py",
+      "line": 268,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/confluence_pipeline.py",
+      "line": 271,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/confluence_pipeline.py",
+      "line": 300,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/confluence_pipeline.py",
+      "line": 303,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "PATTERN"
+    },
+    {
+      "file": "alpha_engine/incubator_grad_strategies.py",
+      "line": 507,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "next_close = float(df[\"close\"].iloc[end + 1])",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "INCUBATOR"
+    },
+    {
+      "file": "alpha_engine/smart_picks_engine.py",
+      "line": 386,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# certainly look-ahead leakage (reports/hypothesis_registry.json H-001/H-004",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/survivor_backtest.py",
+      "line": 15,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "Uses yfinance OHLCV data -- no fake data, no lookahead bias.",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 661,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1]))",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 663,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1]))",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 719,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 722,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 758,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(high.iloc[j]) >= float(high.iloc[j + 1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/tradingview_strategies_wave2.py",
+      "line": 761,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(low.iloc[j]) <= float(low.iloc[j + 1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/walkforward_validator.py",
+      "line": 180,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# banned, which is a look-ahead-style bias against the current production",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/futures_strategies.py",
+      "line": 402,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# established as of yesterday's close (no look-ahead, achievable threshold).",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/feed_hygiene.py",
+      "line": 454,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "* timestamp parses as a future datetime (look-ahead leakage)",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/feed_hygiene.py",
+      "line": 570,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# Schema validation: reject look-ahead timestamps + soft-fill the",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/cot_positioning.py",
+      "line": 39,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# until Friday \u2014 a textbook look-ahead bias. Reviewed external models (DeepSeek",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/backtest_bridge.py",
+      "line": 7,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "Backtest data gets 0.3x weight (lower trust due to possible look-ahead bias).",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/backtest_bridge.py",
+      "line": 543,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "- Backtest picks get weight 0.3 (lower trust -- possible look-ahead bias)",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/proven_edge_strategies.py",
+      "line": 769,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(recent_close.iloc[i]) <= float(recent_close.iloc[i+1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/proven_edge_strategies.py",
+      "line": 778,
+      "pattern": "forward_index",
+      "description": "Forward indexing via .iloc[i+N]",
+      "code": "float(recent_close.iloc[i]) >= float(recent_close.iloc[i+1])):",
+      "is_training": false,
+      "is_comment": false,
+      "classification": "SIGNAL"
+    },
+    {
+      "file": "alpha_engine/strategies/institutional_vector_signals.py",
+      "line": 7,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "Callers MUST .shift(1) before trading to avoid same-bar lookahead; the matrix",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/strategies/cot_paper_pilot.py",
+      "line": 57,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "#   reports/cot_timing_leakage_audit_2026-05-13.md              (look-ahead leak)",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/strategies/equity_momentum_regime.py",
+      "line": 4,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "Fully point-in-time \u2014 no lookahead anywhere:",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/strategies/equity_momentum_regime.py",
+      "line": 11,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "- regime comparison used same full-df std as threshold \u2014 double lookahead",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/strategies/equity_momentum_regime.py",
+      "line": 59,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "# Current realized vol (annualized) \u2014 no lookahead",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/validation/walk_forward.py",
+      "line": 6,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "No lookahead bias by construction.",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/backtest/engine.py",
+      "line": 9,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "- No lookahead bias",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    },
+    {
+      "file": "alpha_engine/backtest/engine.py",
+      "line": 104,
+      "pattern": "future_variable",
+      "description": "Variable name suggests future data usage",
+      "code": "No lookahead bias: each day only uses information available up to that day.",
+      "is_training": false,
+      "is_comment": true,
+      "classification": "COMMENT"
+    }
+  ]
+}

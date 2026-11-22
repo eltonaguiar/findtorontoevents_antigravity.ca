@@ -1,0 +1,97 @@
+name: Validation Gates (P0.0h)
+
+# P0.0h: CI enforcement of PBO/CPCV/DSR gates.
+# This is the highest-leverage fix: the gates are tested (32+ passed) but were
+# never invoked in CI. A gate that never runs is not a gate.
+#
+# - On PRs: BLOCKING. Failing the gate fails the PR check.
+# - On main-branch pushes: informational (continue-on-error: true) so
+#   production data flow is not blocked while we tune the gate.
+#
+# Secrets required: DB_PASS_STOCKS (or MYSQL_PASSWORD), DB_PASS_BACKTESTS
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "alpha_engine/**"
+      - "tools/run_anti_overfit_audit.py"
+      - "tools/pbo_cscv.py"
+      - "tools/wfe.py"
+      - "tests/test_anti_overfit_validator.py"
+      - "tests/test_anti_overfit_gate_2026_11_20.py"
+      - "tests/test_anti_overfit_wireup.py"
+      - "tests/test_profit_program_math_2026_11_20.py"
+      - "tests/test_profit_program_policies_2026_11_20.py"
+      - ".github/workflows/validation-gates.yml"
+  push:
+    branches: [main]
+    paths:
+      - "alpha_engine/data/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validation-gates:
+    name: PBO / CPCV / DSR Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install pymysql arch numpy pandas
+
+      - name: Syntax check
+        run: |
+          python -m py_compile alpha_engine/money_ready_verdict.py
+          python -m py_compile tools/run_anti_overfit_audit.py
+          python -m py_compile tools/pbo_cscv.py
+
+      - name: Run anti-overfit tests (blocking on PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          python -m pytest tests/test_anti_overfit_validator.py tests/test_anti_overfit_gate_2026_11_20.py tests/test_anti_overfit_wireup.py -v
+
+      - name: Run profit program tests (blocking on PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          python -m pytest tests/test_profit_program_math_2026_11_20.py tests/test_profit_program_policies_2026_11_20.py tests/test_purge_zero_pnl_picks.py -v
+
+      - name: Run anti-overfit audit (informational on push/cron)
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        run: |
+          python tools/run_anti_overfit_audit.py --json 2>&1 | head -50
+
+      - name: Run PBO/CSCV gate (blocking on PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          python -c "
+import sys; sys.path.insert(0, '.')
+from alpha_engine.money_ready_verdict import money_ready_verdict
+results = money_ready_verdict()
+for ac, r in results.items():
+    print(f'{ac}: verdict={r.get(\"verdict\")} dsr_ok={r.get(\"dsr_ok\")} pbo_ok={r.get(\"pbo_ok\")} n={r.get(\"n_resolved\", r.get(\"n\", 0))}')
+    # Hard gate: no MONEY_READY if DSR or PBO failed
+    if r.get('verdict') == 'MONEY_READY':
+        assert r.get('dsr_ok') is True or r.get('dsr_ok') is None, f'{ac}: MONEY_READY but DSR failed'
+        assert r.get('pbo_ok') is True or r.get('pbo_ok') is None, f'{ac}: MONEY_READY but PBO failed'
+print('All hard gates passed.')
+"

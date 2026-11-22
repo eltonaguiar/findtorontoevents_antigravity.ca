@@ -1,0 +1,59 @@
+# audit-review-doc-lint - read-only gate over docs/audit_review_*.
+#
+# Enforces the dossier contract: 8 verbatim headings + Provenance footer + a [SRC: ...] marker
+# (or the literal UNMEASURED) covering every number, plus the "least survivable number" answer.
+# Tool: tools/doc_source_lint.py   Tests: tools/test_doc_source_lint.py
+# Read-only: no commit, no push, no secrets beyond the checkout token.
+
+name: audit-review-doc-lint
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/audit_review_*/**'
+      - 'tools/doc_source_lint.py'
+      - 'tools/test_doc_source_lint.py'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/audit_review_*/**'
+      - 'tools/doc_source_lint.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-review-doc-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Unit tests for the lint
+        run: python3 tools/test_doc_source_lint.py
+
+      - name: Lint every audit-review dossier set
+        run: |
+          shopt -s nullglob
+          dirs=(docs/audit_review_*/)
+          if [ ${#dirs[@]} -eq 0 ]; then
+            echo "no docs/audit_review_* directories - nothing to lint"
+            exit 0
+          fi
+          rc=0
+          for d in "${dirs[@]}"; do
+            echo "== $d"
+            python3 tools/doc_source_lint.py "$d" || rc=1
+          done
+          exit $rc

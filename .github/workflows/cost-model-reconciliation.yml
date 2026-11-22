@@ -1,0 +1,54 @@
+name: Cost Model Reconciliation
+
+# Weekly: reconcile modelled slippage vs actual fills per class.
+# Phase 5 (P5-d). Surfaces cost-model drift before it eats alpha.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Monday 06:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    name: Reconcile Modelled vs Actual Costs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pymysql
+
+      - name: Run reconciliation
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
+          DB_PASS_BACKTESTS: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD }}
+        run: |
+          echo "Cost-model reconciliation not yet implemented (Phase 5)."
+          echo "When ready: python tools/cost_model_reconciliation.py"
+          # python tools/cost_model_reconciliation.py
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cost-reconciliation-report
+          path: reports/cost_reconciliation_*.md
+          retention-days: 30

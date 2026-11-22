@@ -1,0 +1,116 @@
+{
+  "config": {
+    "bare": {
+      "label": "asker with no numbers",
+      "state": "An open-source multi-asset trading research platform emits daily picks across CRYPTO, EQUITY, ETF, FOREX, COMMODITY, FUTURES and BOND. Its audit ledger measures every class net of trading costs. The operator wants to know which class, if any, deserves a forward-test budget."
+    },
+    "evidence": {
+      "label": "same question with the measured ledger",
+      "state": "An open-source multi-asset trading research platform emits daily picks across CRYPTO, EQUITY, ETF, FOREX, COMMODITY, FUTURES and BOND. Measured net-of-cost results from its audit ledger: CRYPTO n=6836 mean -0.380%/trade, 95% CI [-0.647,-0.114], verdict KILL; EQUITY n=955 +0.098%, CI [-0.516,+0.720], WEAK; ETF n=589 -0.003%, CI [-0.420,+0.450], WEAK; FOREX n=264 WEAK; COMMODITY n=48, policy-clean PF 0.29, KILL after a COT look-ahead correction; BOND n=37 below the n floor; FUTURES n=4. Search space already tested: 629 CRYPTO strategy cells, 19 EQUITY, 12 ETF, 18 FOREX, 9 COMMODITY, 3 FUTURES, 2 BOND. Promotion requires 100+ forward rows, a net CI excluding zero at twice the measured slippage, and an information ratio of 0.5 or better against a matched benchmark leg."
+    },
+    "questions": {
+      "crypto_aggregate_kill_justified": {
+        "type": "noul",
+        "instructions": "Judge whether a class whose aggregate net expectancy is negative with a CI excluding zero should be closed to further strategy work, or whether a subset edge could still exist within it.",
+        "criteria": {
+          "true": "The negative aggregate justifies stopping work on the whole class",
+          "false": "A subset edge could still exist, so the class should not be closed on the aggregate alone"
+        }
+      },
+      "any_class_worth_forward_budget": {
+        "type": "noul",
+        "instructions": "Judge whether any of these classes is a defensible forward-test candidate given the measured numbers.",
+        "criteria": {
+          "true": "At least one class is a defensible forward-test candidate",
+          "false": "None of the classes is a defensible forward-test candidate"
+        }
+      },
+      "longer_holding_period_is_the_fix": {
+        "type": "noul",
+        "instructions": "Judge whether extending holding periods from intraday/short-horizon to 20-60 days is the change most likely to reveal a real edge that the current tests hide.",
+        "criteria": {
+          "true": "Longer holding periods are the highest-leverage fix",
+          "false": "Something other than holding period is the higher-leverage fix"
+        }
+      },
+      "panel_consensus_is_evidence": {
+        "type": "noul",
+        "instructions": "Judge whether agreement among several language models about which asset class has an edge constitutes evidence about the edge.",
+        "criteria": {
+          "true": "Model agreement constitutes evidence about the edge",
+          "false": "Model agreement is not evidence about the edge"
+        }
+      }
+    }
+  },
+  "runs": {
+    "bare": {
+      "requested_at": "2026-11-21T09:09:09.259963+00:00",
+      "endpoint": "https://api.subq.ai/v1/systemone",
+      "model": "subq-snap-1.2",
+      "request_sha256": "e85eed980b02c6dd1bccde4544c39696fcf3546d00efb1b265322eee2e2a9202",
+      "state_chars": 274,
+      "n_questions": 4,
+      "http_status": 200,
+      "response": {
+        "model": "subq-snap-1.2",
+        "answers": {
+          "crypto_aggregate_kill_justified": {
+            "type": "noul",
+            "noul": 0.1290462464094162
+          },
+          "any_class_worth_forward_budget": {
+            "type": "noul",
+            "noul": 0.22514863312244415
+          },
+          "longer_holding_period_is_the_fix": {
+            "type": "noul",
+            "noul": 0.4539478123188019
+          },
+          "panel_consensus_is_evidence": {
+            "type": "noul",
+            "noul": 0.009343634359538555
+          }
+        },
+        "usage": {
+          "input_tokens": 378,
+          "output_tokens": 0
+        }
+      }
+    },
+    "evidence": {
+      "requested_at": "2026-11-21T09:09:09.405779+00:00",
+      "endpoint": "https://api.subq.ai/v1/systemone",
+      "model": "subq-snap-1.2",
+      "request_sha256": "cc1f0ec021e456e144adb5a73525ba03e873a7279cc5b0b6c302ec9bfe022967",
+      "state_chars": 775,
+      "n_questions": 4,
+      "http_status": 200,
+      "response": {
+        "model": "subq-snap-1.2",
+        "answers": {
+          "crypto_aggregate_kill_justified": {
+            "type": "noul",
+            "noul": 0.4174528121948242
+          },
+          "any_class_worth_forward_budget": {
+            "type": "noul",
+            "noul": 0.05382659286260605
+          },
+          "longer_holding_period_is_the_fix": {
+            "type": "noul",
+            "noul": 0.3405130207538605
+          },
+          "panel_consensus_is_evidence": {
+            "type": "noul",
+            "noul": 0.00447487086057663
+          }
+        },
+        "usage": {
+          "input_tokens": 603,
+          "output_tokens": 0
+        }
+      }
+    }
+  }
+}

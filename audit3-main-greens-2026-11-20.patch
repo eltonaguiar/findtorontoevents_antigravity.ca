@@ -1,0 +1,168 @@
+diff --git a/alpha_engine/audit3_tribunal.py b/alpha_engine/audit3_tribunal.py
+index 4b51d79a5cf..eddf0aff0a1 100644
+--- a/alpha_engine/audit3_tribunal.py
++++ b/alpha_engine/audit3_tribunal.py
+@@ -1137,61 +1137,112 @@ def apply_harm_gate(bucket: list[dict]) -> None:
+                 f"negative but harm q={q:.3f} > {FDR_Q}: not proven, keep observing")
+ 
+ 
+-def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
++ALPHA_MIN_N = 20
++ALPHA_MIN_COVERAGE = 0.50
++
++
++def demote_proven_without_alpha(buckets: Iterable[list[dict]]) -> int:
++    """Fail-closed fallback for the published ledger when alpha is missing."""
++    demoted = 0
++    for bucket in buckets:
++        for c in bucket:
++            if c.get("verdict") != "PROVEN_T2":
++                continue
++            c["verdict"] = "CANDIDATE"
++            c["beta_dominant"] = True
++            c["reasons"].append(
++                "G8 selection-alpha gate: alpha sidecar unavailable — PROVEN_T2 "
++                "requires a measured selection alpha")
++            demoted += 1
++    return demoted
++
++
++def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[str, Any]:
+     """G8 — selection alpha must be proven positive before promotion.
+ 
+-    A cell (or class) that is profitable purely because the underlying rose
+-    (market beta) must not reach PROVEN_T2. This gate looks up the
+-    direction-adjusted selection alpha measured by
+-    ``alpha_engine/audit3_selection_alpha.py`` and requires its bootstrap 95% CI
+-    lower bound to be strictly positive.
++    A cell that is profitable purely because the underlying rose (market beta)
++    must not reach PROVEN_T2. This gate looks up the direction-adjusted selection
++    alpha measured by ``alpha_engine/audit3_selection_alpha.py`` and requires its
++    bootstrap 95% CI lower bound to be strictly positive.
++
++    Scope matters. A strategy cell may only be proven by alpha measured on that
++    same (class, strategy, direction) cohort. A class-level number is a *proxy*
++    for a strategy or symbol cell: it can say the class beat buy-and-hold without
++    saying that this strategy did, so it demotes rather than proves.
+ 
+-    * PROVEN_T2 without a positive-alpha proof is demoted to CANDIDATE and
+-      flagged ``beta_dominant``.
+-    * CANDIDATE without a positive-alpha proof keeps its verdict but is flagged
+-      ``beta_dominant`` (it still needs forward paper to prove the edge is skill).
++    * PROVEN_T2 without positive alpha at the same scope is demoted to CANDIDATE
++      and flagged ``beta_dominant``, recording the scope actually available.
++    * CANDIDATE keeps its verdict (it is not sizing-eligible) but is flagged.
+ 
+-    Fail-open only when the alpha sidecar is absent or empty — library callers
+-    and unit tests that pass no alpha keep the pre-gate behaviour. The published
+-    ledger always passes alpha (``audit3-ledger.yml`` runs the alpha sidecar).
++    Fail-open only when the alpha sidecar is absent or empty — library callers and
++    unit tests that pass no alpha keep pre-gate behaviour. When the sidecar *is*
++    present, a missing strategy measurement is not a pass: it demotes.
+     """
+     if not isinstance(alpha, dict):
+-        return
++        return {"applied": False, "reason": "no alpha sidecar"}
+     by_class = alpha.get("by_class") or {}
+     by_slice = alpha.get("by_slice") or {}
+-    if not by_class and not by_slice:
+-        return
+-
+-    def _alpha_lo(ac: Any, direction: Any) -> float | None:
+-        ac = str(ac or "").strip().upper()
+-        d = str(direction or "").strip().upper()
+-        # Finest measurement first (class x direction slice), then the class
+-        # aggregate, then "no measurement". by_class/by_slice are keyed uppercase
+-        # by audit3_selection_alpha (via _class -> .upper()).
+-        slice_entry = by_slice.get(f"{ac}/{d}")
+-        if slice_entry and slice_entry.get("n"):
+-            lo = (slice_entry.get("alpha_ci") or [None, None])[0]
++    by_strategy = alpha.get("by_strategy") or {}
++    if not by_class and not by_slice and not by_strategy:
++        return {"applied": False, "reason": "alpha sidecar empty"}
++
++    def _entry_lo_n(entry: Any) -> tuple[float | None, int]:
++        if not entry or not entry.get("n"):
++            return None, 0
++        return (entry.get("alpha_ci") or [None, None])[0], int(entry.get("n") or 0)
++
++    def _lookup(cell: dict) -> tuple[float | None, str, int]:
++        ac = str(cell.get("asset_class") or "").strip().upper()
++        d = str(cell.get("direction") or "").strip().upper()
++        strat = cell.get("strategy")
++        if strat:
++            lo, n = _entry_lo_n(by_strategy.get(f"{ac}/{strat}/{d}"))
+             if lo is not None:
+-                return lo
+-        cls_entry = by_class.get(ac)
+-        if cls_entry and cls_entry.get("n"):
+-            lo = (cls_entry.get("alpha_ci") or [None, None])[0]
++                return lo, "strategy", n
++            lo, n = _entry_lo_n(by_slice.get(f"{ac}/{d}"))
+             if lo is not None:
+-                return lo
+-        return None
+-
++                return lo, "class_proxy", n
++            lo, n = _entry_lo_n(by_class.get(ac))
++            return lo, "class_proxy", n
++        if cell.get("symbol"):
++            lo, n = _entry_lo_n(by_slice.get(f"{ac}/{d}"))
++            if lo is not None:
++                return lo, "class_proxy", n
++            lo, n = _entry_lo_n(by_class.get(ac))
++            return lo, "class_proxy", n
++        # Class aggregate: the class number IS the same-scope measurement.
++        lo, n = _entry_lo_n(by_class.get(ac))
++        return lo, "class", n
++
++    summary: dict[str, Any] = {"applied": True, "tested": 0, "demoted": 0, "scopes": {}}
+     for c in bucket:
+-        lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
+-        alpha_proven = lo is not None and lo > 0
+-        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
+-        if not alpha_proven:
++        lo, scope, alpha_n = _lookup(c)
++        cell_n = int(c.get("n") or 0)
++        need_n = max(ALPHA_MIN_N, int(ALPHA_MIN_COVERAGE * cell_n))
++        covered = alpha_n >= need_n
++        proven = (lo is not None and lo > 0 and scope in ("strategy", "class")
++                  and covered)
++        c["alpha_gate"] = {"alpha_ci_lo": lo, "scope": scope, "alpha_n": alpha_n,
++                           "alpha_coverage_ok": bool(covered),
++                           "status": "proven" if proven else "unproven",
++                           "passed": bool(proven)}
++        summary["tested"] += 1
++        summary["scopes"][scope] = summary["scopes"].get(scope, 0) + 1
++        if not proven:
+             c["beta_dominant"] = True
+             if c["verdict"] == "PROVEN_T2":
+                 c["verdict"] = "CANDIDATE"
+-                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
+-                       if lo is not None else
+-                       "selection alpha unavailable for this class")
+-                c["reasons"].append(f"G8 selection-alpha gate: {why} — beta-dominant")
++                summary["demoted"] += 1
++                if lo is None:
++                    why = "selection alpha unavailable"
++                elif lo <= 0:
++                    why = f"selection alpha CI lower bound {lo:+.4f} not > 0"
++                else:
++                    why = (f"selection alpha covers {alpha_n}/{cell_n} rows "
++                           f"(need {need_n})")
++                c["reasons"].append(
++                    f"G8 selection-alpha gate ({scope}): {why} — beta-dominant")
++    return summary
+ 
+ 
+ # ─────────────────────────────────────────────── N1 repeated looks ──
+@@ -1476,7 +1527,8 @@ def _denylist_hit_summary() -> dict[str, Any]:
+ 
+ 
+ #: Sidecar fields passed straight through into report["selection_alpha"].
+-ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "generated_at",
++ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "by_class",
++                          "by_slice", "bar_coverage", "missing", "generated_at",
+                           "schema", "source", "note")
+ 
+ 

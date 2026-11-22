@@ -1,0 +1,90 @@
+name: QA Actions Audit
+
+# Meta-workflow: audits every other GitHub Actions workflow in this repo against a
+# QA rubric. Runs on demand, on a schedule, and when workflow files change.
+# Report is committed to reports/gha_qa_audit_<date>.md and the job fails if any
+# workflow has a QA violation.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * 1"   # weekly Monday 05:00 UTC
+  push:
+    paths:
+      - ".github/workflows/**"
+
+concurrency:
+  group: qa-actions-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-workflows:
+    name: Audit all workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run workflow audit
+        id: audit
+        run: |
+          python3 gha-framework/audit_workflows.py \
+            --repo . \
+            --out reports/gha_qa_audit_$(date +%F).md
+        shell: bash
+        # audit_workflows.py exits 1 when any issue is found
+
+      - name: Verify actionlint (if available)
+        continue-on-error: true
+        run: |
+          if command -v actionlint >/dev/null 2>&1; then
+            actionlint .github/workflows/*.yml || true
+          else
+            echo "actionlint not installed — skipping (optional)"
+          fi
+
+      - name: Upload audit report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gha-qa-audit
+          path: reports/gha_qa_audit_*.md
+          if-no-files-found: warn
+
+  run-critical-qa:
+    name: Critical QA smoke (subset)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: audit-workflows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps (light)
+        run: |
+          python3 -m pip install --quiet pyyaml pytest || true
+
+      - name: Syntax-check core alpha_engine modules
+        run: |
+          for f in alpha_engine/outcome_resolver.py alpha_engine/audit3_tribunal.py alpha_engine/production_scanner.py; do
+            [ -f "$f" ] && python3 -c "import py_compile; py_compile.compile('$f', doraise=True)" || echo "skip $f (not present)"
+          done
+
+      - name: Surface-parity drift check (if present)
+        continue-on-error: true
+        run: |
+          if [ -f tools/assert_surface_parity.py ]; then
+            python3 tools/assert_surface_parity.py || true
+          else
+            echo "surface-parity tool not present — skipping"
+          fi

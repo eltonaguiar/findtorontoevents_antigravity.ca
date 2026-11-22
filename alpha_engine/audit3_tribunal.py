@@ -95,6 +95,63 @@ except ImportError:  # pragma: no cover
     def _dir_key(direction):
         return str(direction or "").strip().upper()
 
+# One definition of "this closed row counts toward performance", shared with the
+# canonical view (Phase A, 2026-11-20). This module used to carry its own 3-value
+# status deny-list that never read exit_reason, while resolved_closed_view also
+# dropped on exit reason — a measured ~4.9k-row disagreement that was dormant
+# only while the sidecar happened to be present. Two filters, one question, two
+# answers: that is the bug this import removes.
+try:
+    from alpha_engine.resolved_closed_view import (
+        is_performance_scored_row as _is_scored_row,
+    )
+except ImportError:  # pragma: no cover
+    # Standalone fallback. It WARNS rather than silently differing: a silent
+    # difference between two copies of this rule is exactly what Phase A fixed.
+    # The logic below must stay identical to resolved_closed_view's; if it ever
+    # cannot, this branch should raise instead of guessing.
+    import warnings
+
+    warnings.warn(
+        "audit3_tribunal: alpha_engine.resolved_closed_view unavailable; using a "
+        "local copy of is_performance_scored_row. This copy can drift from the "
+        "canonical definition — install the package properly if you see this.",
+        RuntimeWarning,
+        stacklevel=2,
+    )
+    _NON_PERF_EXITS = {"", "UNKNOWN", "MANUAL", "CANCELLED", "CANCELED",
+                      "INVALID_ENTRY", "NO_FILL", "NOT_FILLED"}
+    _NON_PERF_STATUSES = ("OPEN", "PENDING", "CANCELLED", "CANCELED", "INVALID")
+    _TERMINAL_STATUSES = frozenset({"WON", "LOST", "EXPIRED", "CLOSED"})
+    _NO_EXIT_INFO = ("", "UNKNOWN")
+
+    def _is_scored_row(row):  # type: ignore[misc]
+        if not isinstance(row, dict):
+            return False
+        if (row.get("paper_trade") or row.get("expired_no_pnl")
+                or row.get("_auto_expired")):
+            return False
+        pnl = row.get("pnl_pct")
+        if isinstance(pnl, bool) or not isinstance(pnl, (int, float)):
+            return False
+        exit_reason = str(row.get("exit_reason", "") or "").upper().strip()
+        if (exit_reason not in _NO_EXIT_INFO
+                and exit_reason in _NON_PERF_EXITS):
+            return False
+        if exit_reason.startswith("STALE"):
+            return False
+        if exit_reason.startswith("RESOLVE_FAILED"):
+            return False
+        status = str(row.get("status", "") or "").upper().strip()
+        if status in _NON_PERF_STATUSES:
+            return False
+        if exit_reason in _NO_EXIT_INFO:
+            close_markers = (row.get("closed_at") or row.get("exit_timestamp")
+                             or row.get("exit_time_est") or row.get("exit_date"))
+            if not close_markers and status not in _TERMINAL_STATUSES:
+                return False
+        return True
+
 WR_MIN_N = 20
 PROVEN_MIN_N = 100
 CANDIDATE_MIN_N = 30
@@ -102,6 +159,8 @@ CANDIDATE_MIN_N = 30
 # whose net-CI lower bound is below this is statistically positive but not worth
 # risking capital on: 5bp/trade is inside the error of the cost model itself.
 PROVEN_MIN_NET_CI_LO_PCT = 0.05
+# 80% power at two-sided 5% — the z used to SIZE a study, never to judge one.
+POWER_Z = 2.8
 # N4 (2026-11-19): the materiality floor scales with the applied cost model. A flat
 # 5bp floor is meaningful for FOREX (5bp cost) and inside the noise for CRYPTO
 # (15bp cost). The floor is the larger of the flat minimum and this fraction of
@@ -217,6 +276,13 @@ def _log_binom_pmf(k: int, n: int) -> float:
     """log C(n,k) - n*log(2), i.e. log P(X=k) under p=0.5."""
     return (math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)
             - n * math.log(2.0))
+
+
+try:
+    from alpha_engine.pf_basis import format_pf as _pf_label  # noqa: E402
+except Exception:  # pragma: no cover - optional import
+    def _pf_label(value, n=None, **_kw):
+        return f"PF {value} (n={n})" if value is not None else f"PF n/a (n={n})"
 
 
 def binom_sf(k: int, n: int) -> float:
@@ -532,8 +598,11 @@ def load_rows(path: str, drops: dict[str, int] | None = None
         if not isinstance(pnl, (int, float)):
             drop["no_numeric_pnl"] = drop.get("no_numeric_pnl", 0) + 1
             continue
-        status = str(r.get("status") or "").upper()
-        if status in ("OPEN", "PENDING", ""):
+        # Same predicate the canonical view uses — in BOTH modes. The old
+        # 3-value status deny-list here never read exit_reason, so the
+        # payload_slice fallback admitted rows the canonical view dropped.
+        # Keeping the "not_closed" bucket name preserves the drops contract.
+        if not _is_scored_row(r):
             drop["not_closed"] = drop.get("not_closed", 0) + 1
             continue
         key = str(r.get("id") or "") or (
@@ -551,6 +620,63 @@ def load_rows(path: str, drops: dict[str, int] | None = None
         _to_dt(r.get("closed_at") or r.get("timestamp")) or
         datetime(1970, 1, 1, tzinfo=timezone.utc)))
     return clean, generated_at
+
+
+def exclusion_bias_bound(rows: list[dict], unscored: int | None,
+                         quantiles: tuple[float, ...] = (0.05, 0.5, 0.95)
+                         ) -> dict[str, Any] | None:
+    """How far the headline could move if the unscored book is not neutral.
+
+    The coverage block says HOW MANY closed picks the ledger does not score.
+    It does not say whether they could change a verdict, and dropping 41% of
+    a book is only defensible if the answer is bounded. This bounds it
+    without the missing data: for each quantile q of the SCORED net
+    distribution, assume every unscored row landed at that value and
+    recompute the mean.
+
+    Read it as a sensitivity range, not an estimate. If the whole range keeps
+    one sign, exclusion cannot flip the conclusion. If it straddles zero, the
+    headline is not robust to the missing book and must not be quoted alone.
+    The scenarios are deliberately extreme (every missing row identical at a
+    tail quantile); real excluded rows are heterogeneous, so the true combined
+    mean is normally well inside the range.
+    """
+    if not unscored or unscored <= 0 or not rows:
+        return None
+    nets = sorted(_net(r) for r in rows
+                  if isinstance(r.get("pnl_pct"), (int, float)))
+    n = len(nets)
+    if not n:
+        return None
+    total = sum(nets)
+    mean = total / n
+    denom = n + unscored
+    scenarios = []
+    for q in quantiles:
+        idx = min(n - 1, max(0, int(round(q * (n - 1)))))
+        assumed = nets[idx]
+        combined = (total + assumed * unscored) / denom
+        scenarios.append({
+            "quantile": q,
+            "assumed_unscored_net_pct": round(assumed, 4),
+            "combined_mean_net_pct": round(combined, 4),
+            "delta_pct": round(combined - mean, 4),
+        })
+    lo = min(s["combined_mean_net_pct"] for s in scenarios)
+    hi = max(s["combined_mean_net_pct"] for s in scenarios)
+    return {
+        "scored_n": n,
+        "unscored_n": unscored,
+        "scored_mean_net_pct": round(mean, 4),
+        "combined_mean_range_pct": [lo, hi],
+        "sign_stable": bool(lo > 0 or hi < 0),
+        "straddles_zero": bool(lo <= 0 <= hi),
+        "scenarios": scenarios,
+        "note": ("bounds, not estimates: each scenario assumes EVERY unscored "
+                 "row landed at that quantile of the scored book. sign_stable "
+                 "means exclusion cannot flip the conclusion; straddles_zero "
+                 "means the headline is not robust to the missing book"),
+    }
 
 
 def _coverage_statement(scored: int, total: int | None, integrity: int | None,
@@ -670,8 +796,18 @@ def payload_coverage(data: Any, scored_rows: list[dict],
         cov_statement = (f"{cov_statement} This run scores the canonical resolved "
                          f"view (sha256 {str(canon.get('rows_sha256'))[:12]}…).")
 
+    bias = exclusion_bias_bound(
+        scored_rows, (max(0, total - scored) if total else None))
+    if bias and bias["straddles_zero"]:
+        cov_statement += (
+            f" Exclusion is not neutral: if the {bias['unscored_n']:,} unscored "
+            "rows behaved like the scored book's 5th/50th/95th percentile, the "
+            f"mean net would land in {bias['combined_mean_range_pct']}, which "
+            "straddles zero — the headline cannot be quoted without them.")
+
     return {
         "denominator": denominator,
+        "exclusion_bias": bias,
         "scored_rows": scored,
         "total_closed_picks": total,
         "valid_closed_picks": valid,
@@ -978,11 +1114,18 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     # ledger run would have failed. Restored verbatim from 1ed98e59.
     sd = statistics.stdev(nets) if n >= 2 else None
     mean_net = boot.get("mean", 0.0)
+    # Two different quantities, deliberately not one:
+    #   mde_pct    — the smallest effect THIS sample could detect. Observational:
+    #                it describes the data in hand and shrinks as n grows.
+    #   required_n — the n needed to detect the DECLARED materiality floor.
+    #                Sizing from the observed mean is circular: a lucky mean
+    #                collapses n and a near-zero mean inflates it to infinity,
+    #                so the effect size is the floor promotion already clears.
     required_n = None
     mde_pct = None
-    if sd is not None and sd > 0 and mean_net:
-        required_n = int(math.ceil((2.8 * sd / abs(mean_net)) ** 2))
-        mde_pct = round(2.8 * sd / math.sqrt(n), 4)
+    if sd is not None and sd > 0:
+        mde_pct = round(POWER_Z * sd / math.sqrt(n), 4)
+        required_n = int(math.ceil((POWER_Z * sd / floor_pct) ** 2))
 
     out = dict(label)
     out.update({
@@ -993,6 +1136,12 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         "wr": round(wr, 4),
         "wr_ci": [round(lo, 4), round(hi, 4)],
         "pf": round(pf, 4) if pf is not None else None,
+        # PF travels with the denominator and the cost it was charged: a bare
+        # 0.83 invited comparison against a 0.26 computed on 3x the picks.
+        "pf_n": n,
+        "pf_basis": "net",
+        "pf_cost_pct": round(mean_cost, 4),
+        "pf_label": _pf_label(pf, n, cost_bps=mean_cost * 100.0),
         "gross_expectancy_pct": round(sum(float(r["pnl_pct"]) for r in rows) / n, 4) if n else 0.0,
         "net_expectancy_pct": round(boot.get("mean", 0.0), 4),
         "net_ci_pct": [round(boot["ci_lo"], 4) if boot.get("ci_lo") is not None else None,
@@ -1137,61 +1286,112 @@ def apply_harm_gate(bucket: list[dict]) -> None:
                 f"negative but harm q={q:.3f} > {FDR_Q}: not proven, keep observing")
 
 
-def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
+ALPHA_MIN_N = 20
+ALPHA_MIN_COVERAGE = 0.50
+
+
+def demote_proven_without_alpha(buckets: Iterable[list[dict]]) -> int:
+    """Fail-closed fallback for the published ledger when alpha is missing."""
+    demoted = 0
+    for bucket in buckets:
+        for c in bucket:
+            if c.get("verdict") != "PROVEN_T2":
+                continue
+            c["verdict"] = "CANDIDATE"
+            c["beta_dominant"] = True
+            c["reasons"].append(
+                "G8 selection-alpha gate: alpha sidecar unavailable — PROVEN_T2 "
+                "requires a measured selection alpha")
+            demoted += 1
+    return demoted
+
+
+def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict[str, Any]:
     """G8 — selection alpha must be proven positive before promotion.
 
-    A cell (or class) that is profitable purely because the underlying rose
-    (market beta) must not reach PROVEN_T2. This gate looks up the
-    direction-adjusted selection alpha measured by
-    ``alpha_engine/audit3_selection_alpha.py`` and requires its bootstrap 95% CI
-    lower bound to be strictly positive.
+    A cell that is profitable purely because the underlying rose (market beta)
+    must not reach PROVEN_T2. This gate looks up the direction-adjusted selection
+    alpha measured by ``alpha_engine/audit3_selection_alpha.py`` and requires its
+    bootstrap 95% CI lower bound to be strictly positive.
 
-    * PROVEN_T2 without a positive-alpha proof is demoted to CANDIDATE and
-      flagged ``beta_dominant``.
-    * CANDIDATE without a positive-alpha proof keeps its verdict but is flagged
-      ``beta_dominant`` (it still needs forward paper to prove the edge is skill).
+    Scope matters. A strategy cell may only be proven by alpha measured on that
+    same (class, strategy, direction) cohort. A class-level number is a *proxy*
+    for a strategy or symbol cell: it can say the class beat buy-and-hold without
+    saying that this strategy did, so it demotes rather than proves.
 
-    Fail-open only when the alpha sidecar is absent or empty — library callers
-    and unit tests that pass no alpha keep the pre-gate behaviour. The published
-    ledger always passes alpha (``audit3-ledger.yml`` runs the alpha sidecar).
+    * PROVEN_T2 without positive alpha at the same scope is demoted to CANDIDATE
+      and flagged ``beta_dominant``, recording the scope actually available.
+    * CANDIDATE keeps its verdict (it is not sizing-eligible) but is flagged.
+
+    Fail-open only when the alpha sidecar is absent or empty — library callers and
+    unit tests that pass no alpha keep pre-gate behaviour. When the sidecar *is*
+    present, a missing strategy measurement is not a pass: it demotes.
     """
     if not isinstance(alpha, dict):
-        return
+        return {"applied": False, "reason": "no alpha sidecar"}
     by_class = alpha.get("by_class") or {}
     by_slice = alpha.get("by_slice") or {}
-    if not by_class and not by_slice:
-        return
+    by_strategy = alpha.get("by_strategy") or {}
+    if not by_class and not by_slice and not by_strategy:
+        return {"applied": False, "reason": "alpha sidecar empty"}
 
-    def _alpha_lo(ac: Any, direction: Any) -> float | None:
-        ac = str(ac or "").strip().upper()
-        d = str(direction or "").strip().upper()
-        # Finest measurement first (class x direction slice), then the class
-        # aggregate, then "no measurement". by_class/by_slice are keyed uppercase
-        # by audit3_selection_alpha (via _class -> .upper()).
-        slice_entry = by_slice.get(f"{ac}/{d}")
-        if slice_entry and slice_entry.get("n"):
-            lo = (slice_entry.get("alpha_ci") or [None, None])[0]
-            if lo is not None:
-                return lo
-        cls_entry = by_class.get(ac)
-        if cls_entry and cls_entry.get("n"):
-            lo = (cls_entry.get("alpha_ci") or [None, None])[0]
-            if lo is not None:
-                return lo
-        return None
+    def _entry_lo_n(entry: Any) -> tuple[float | None, int]:
+        if not entry or not entry.get("n"):
+            return None, 0
+        return (entry.get("alpha_ci") or [None, None])[0], int(entry.get("n") or 0)
 
+    def _lookup(cell: dict) -> tuple[float | None, str, int]:
+        ac = str(cell.get("asset_class") or "").strip().upper()
+        d = str(cell.get("direction") or "").strip().upper()
+        strat = cell.get("strategy")
+        if strat:
+            lo, n = _entry_lo_n(by_strategy.get(f"{ac}/{strat}/{d}"))
+            if lo is not None:
+                return lo, "strategy", n
+            lo, n = _entry_lo_n(by_slice.get(f"{ac}/{d}"))
+            if lo is not None:
+                return lo, "class_proxy", n
+            lo, n = _entry_lo_n(by_class.get(ac))
+            return lo, "class_proxy", n
+        if cell.get("symbol"):
+            lo, n = _entry_lo_n(by_slice.get(f"{ac}/{d}"))
+            if lo is not None:
+                return lo, "class_proxy", n
+            lo, n = _entry_lo_n(by_class.get(ac))
+            return lo, "class_proxy", n
+        # Class aggregate: the class number IS the same-scope measurement.
+        lo, n = _entry_lo_n(by_class.get(ac))
+        return lo, "class", n
+
+    summary: dict[str, Any] = {"applied": True, "tested": 0, "demoted": 0, "scopes": {}}
     for c in bucket:
-        lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
-        alpha_proven = lo is not None and lo > 0
-        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
-        if not alpha_proven:
+        lo, scope, alpha_n = _lookup(c)
+        cell_n = int(c.get("n") or 0)
+        need_n = max(ALPHA_MIN_N, int(ALPHA_MIN_COVERAGE * cell_n))
+        covered = alpha_n >= need_n
+        proven = (lo is not None and lo > 0 and scope in ("strategy", "class")
+                  and covered)
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "scope": scope, "alpha_n": alpha_n,
+                           "alpha_coverage_ok": bool(covered),
+                           "status": "proven" if proven else "unproven",
+                           "passed": bool(proven)}
+        summary["tested"] += 1
+        summary["scopes"][scope] = summary["scopes"].get(scope, 0) + 1
+        if not proven:
             c["beta_dominant"] = True
             if c["verdict"] == "PROVEN_T2":
                 c["verdict"] = "CANDIDATE"
-                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
-                       if lo is not None else
-                       "selection alpha unavailable for this class")
-                c["reasons"].append(f"G8 selection-alpha gate: {why} — beta-dominant")
+                summary["demoted"] += 1
+                if lo is None:
+                    why = "selection alpha unavailable"
+                elif lo <= 0:
+                    why = f"selection alpha CI lower bound {lo:+.4f} not > 0"
+                else:
+                    why = (f"selection alpha covers {alpha_n}/{cell_n} rows "
+                           f"(need {need_n})")
+                c["reasons"].append(
+                    f"G8 selection-alpha gate ({scope}): {why} — beta-dominant")
+    return summary
 
 
 # ─────────────────────────────────────────────── N1 repeated looks ──
@@ -1476,8 +1676,38 @@ def _denylist_hit_summary() -> dict[str, Any]:
 
 
 #: Sidecar fields passed straight through into report["selection_alpha"].
-ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "generated_at",
+ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "by_class",
+                          "by_slice", "bar_coverage", "missing", "generated_at",
                           "schema", "source", "note")
+
+
+def registry_trial_count(path: str = "reports/hypothesis_registry.json") -> dict[str, Any]:
+    """How many hypotheses have ever been pre-registered, for cumulative DSR.
+
+    DSR corrects for the number of things tried. A live ledger only shows the
+    cells that still exist, so every strategy that was tried and abandoned
+    silently leaves the count — making the correction too lenient precisely
+    where it matters. The registry is append-only, so it remembers them.
+
+    Returns availability explicitly: a missing or unreadable registry is
+    reported, never silently treated as zero trials (which would restore the
+    optimism this exists to remove).
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return {"available": False, "count": 0, "reason": f"{path} not found"}
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"available": False, "count": 0,
+                "reason": f"{path} unreadable: {type(exc).__name__}"}
+    try:
+        from alpha_engine.hypothesis_status import iter_hypotheses
+        count = sum(1 for _ in iter_hypotheses(data))
+    except Exception as exc:  # never let bookkeeping break a ledger run
+        return {"available": False, "count": 0,
+                "reason": f"could not enumerate hypotheses: {type(exc).__name__}"}
+    return {"available": True, "count": count, "reason": None}
 
 
 def build_report(rows: list[dict], source: str, source_generated_at: str | None,
@@ -1517,6 +1747,14 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
                                            str(r.get("strategy") or r.get("source_system") or "(unattributed)"),
                                            _direction(r)))
     n_trials = len(strat_groups)
+    # A refuted hypothesis is a trial, and it is exactly the kind a live ledger
+    # no longer shows — so correcting only for today's cells is optimistic by
+    # construction. The registry is append-only, so counting it recovers part
+    # of that history. Verdicts are NOT re-gated on it; the DSR at the
+    # cumulative count is recorded beside the one at the ledger count, so a
+    # cell that only clears G4 because the failures were forgotten is visible.
+    registry_trials = registry_trial_count()
+    n_trials_cumulative = n_trials + int(registry_trials.get("count") or 0)
 
     for (ac, strat, direction), group in strat_groups.items():
         pod = _pod_for(ac, strat, direction, confirmatory)
@@ -1526,6 +1764,12 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             label["pod"] = pod.get("id")
         cell = evaluate_cell(group, n_trials, label, apply_source_gate=False,
                              n_trials_local=len(strat_groups))
+        if cell.get("dsr") is not None and n_trials_cumulative > n_trials:
+            d_cum = deflated_sharpe([_net(r) for r in group], n_trials_cumulative)
+            if d_cum:
+                cell["dsr_cumulative"] = round(d_cum["dsr"], 4)
+                cell["dsr_cumulative_n_trials"] = int(n_trials_cumulative)
+                cell["dsr_survives_cumulative"] = bool(d_cum["dsr"] >= DSR_THRESHOLD)
         cells.append(cell)
     cells.sort(key=lambda c: (-c["n"], c["asset_class"], c["strategy"]))
 
@@ -1647,6 +1891,17 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
         a = alpha_by_class.get(c.get("asset_class")) or {}
         ci = a.get("alpha_ci")
         if not ci or ci[0] is None:
+            # Alpha WAS measured for this class but carries no CI. Silence here
+            # would let a PROVEN_T2 stand on a number nobody can bound, so when
+            # this build requires alpha, absence of a CI is treated like G8
+            # below: cap at CANDIDATE and say why. When alpha is optional,
+            # absent data still changes nothing.
+            if require_alpha and a.get("n"):
+                c["verdict"] = "CANDIDATE"
+                c["reasons"].append(
+                    f"selection alpha measured for {c.get('asset_class')} "
+                    f"(n={a.get('n')}) but has no bootstrap CI - cannot show it is "
+                    f"positive (G8); capped at CANDIDATE")
             continue
         if ci[0] <= 0:
             c["verdict"] = "CANDIDATE"
@@ -1932,11 +2187,21 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
             "git_sha": _git_sha(),
             "n_cells_scored_with_dsr": sum(1 for c in cells if c.get("dsr") is not None),
             "n_trials_dsr": n_trials,
+            "n_trials_registry": int(registry_trials.get("count") or 0),
+            "n_trials_cumulative": int(n_trials_cumulative),
+            "registry_trials_available": bool(registry_trials.get("available")),
+            "registry_trials_reason": registry_trials.get("reason"),
+            "n_cells_dsr_fails_cumulative": sum(
+                1 for c in cells if c.get("dsr_survives_cumulative") is False),
             "registry_note": "multiplicity is counted two ways on purpose: "
                              "BH/Bonferroni operate on tested cells (n >= sample "
                              "floor); DSR uses the global trial count (every "
                              "distinct cell, so G4 corrects for the full search "
-                             "space).",
+                             "space). n_trials_cumulative adds the pre-registered "
+                             "registry, because refuted trials are trials too and "
+                             "a live ledger no longer shows them — a cell with "
+                             "dsr_survives_cumulative=false cleared G4 only on the "
+                             "forgotten-failures count.",
         },
     }
     # Every rendered number must be joinable to its (population, cost, win) triple.

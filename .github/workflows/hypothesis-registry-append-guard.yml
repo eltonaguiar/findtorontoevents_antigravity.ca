@@ -1,0 +1,42 @@
+name: Hypothesis Registry Append Guard
+
+# Enforces append-only discipline on reports/hypothesis_registry.json.
+# - No rows deleted (M-107).
+# - Max 5 feature families per asset class.
+# - Every hypothesis has a pre-registered kill rule.
+
+on:
+  pull_request:
+    paths:
+      - 'reports/hypothesis_registry.json'
+      - 'research/profitability/HYPOTHESES.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  append-guard:
+    name: Append-Only Guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Verify append-only
+        run: |
+          echo "Append-guard not yet implemented (Phase 0)."
+          echo "When ready: python tools/hypothesis_registry_guard.py --base origin/main --head HEAD"
+          # python tools/hypothesis_registry_guard.py --base origin/main --head HEAD

@@ -36,6 +36,12 @@ share, and check whether that pattern could have happened by luck.
 | Forward rows | 430, all H-119; POD-EQUITY-BREAKOUT 0 | `forward_gate` |
 | Publishers of `audit3_ledger.json` | **two** (`audit3-ledger.yml` 6-hourly → `/audit3`; `audit-dashboard.yml` hourly → `/audit/data`) | measured lag 223 min |
 | Sleeve layer | 0/10 sleeves verified against audit3 cells; CRYPTO sleeve PF 155.85 inside a class PF 0.8383 | `tools/sleeve_reconciliation.py` |
+| `policy_clean_pf` vs `pf` | **bit-identical in all 11 classes** while `policy_clean_n` differs; CRYPTO's clean subset is 22,081 rows against a 3,726-row parent | `reports/CLASS_DIVERGENCE_2026-11-19.md` |
+| Scored share | 8,605 / 14,632 = **58.8% scored, 41.2% not scored** (canonical exclusion list sums to 6,027) | N6 — still open |
+| Price tables | equity last bar **2026-06-18**, FX **2026-02-09**, futures **2026-06-21**, ETF only 36 symbols | `bar_coverage` |
+| ETF TAA claim | **NOT REPRODUCED** — 0/576 pre-registered cells met the bar; best Sharpe 0.795 vs SPY 0.735, MaxDD −41.7% | `reports/TAA_SETTLE_2026-11-19.md` |
+| Tribunal gates landed | F1 block bootstrap, F2 split-half materiality, N1 persistence, N2 churn, N3 recency, N4 cost-scaled floor, N7 freeze gate — but N5 hold-normalised alpha is **code only, not published** | `updates/2026-11-19-*` |
+| Runtime smoke gate | `tools/assert_tribunal_runs.py` runs the tribunal for real — **not wired into CI** | session notes 2026-11-20 |
 
 Cross-surface contradictions that a reader sees right now: COMMODITY `WATCH` vs `KILL`;
 ETF win rate 1.9% vs 43.2%; kill counts 42 vs 11 vs 8; two forward-clock renderers on one
@@ -92,6 +98,10 @@ Rules that make it hold:
 | P0-5 | Derive `asset_class` from `symbol` in every aggregate; add a CI check that rejects FX symbols tagged CRYPTO | all 285 `bt_backtest_runs` are tagged CRYPTO, 4 BOND strategies too — every per-class number built on the column is wrong | zero FX under CRYPTO; `cross_db_consistency` green |
 | P0-6 | Selection alpha becomes the per-class headline; raw PF and WR demoted to descriptors | it is the only metric that separates skill from beta, and it is negative | no page leads with WR |
 | P0-7 | Rotate the leaked DB credential (human action) and scan `discord_*` columns for tokens before any distribution | a secret in git history is a secret | rotated; scan report committed with redactions |
+| P0-8 | Retire the 70-minute parity tolerance; assert equal `generation_id` / `input_sha256` instead | a 6-hourly producer can never satisfy a 70-minute window, so parity RED is structural and the alert is noise | parity compares content hashes, not clocks |
+| P0-9 | Fix `policy_clean_pf`: it equals `pf` in all 11 classes while `policy_clean_n` differs, and a clean subset exceeds its parent | the policy-clean net view is the readiness basis — the gate is reading a filter that does not filter | `policy_clean_n <= n` per class, and `policy_clean_pf` differs from `pf` or the equality is documented per class |
+| P0-10 | Stop citing ETF tactical allocation as proven, everywhere | 0/576 cells met the pre-registered bar; the 0.88 Sharpe / −19% MaxDD figure is a window artifact that holds only in 2018-2026 | no page, plan or doc presents TAA as evidence |
+| P0-11 | Apply the publish-split + sleeve-gate patch (currently has no owner) | `/audit` was 223 minutes behind `/audit3` at the end of yesterday's session, and the sleeve gate is inert until applied | one deploy step writes `/audit3/` and `/audit/data/` from one generation |
 
 ### P1 — measurement quality
 
@@ -211,7 +221,51 @@ per-feature decile lift, a permutation p-value for rank association, and matched
 feature differences with bootstrap CIs. It is a discovery instrument: it proposes
 candidates and deliberately refuses to declare an edge.
 
-## 6. Explicit non-goals
+## 6. Level-up layer — from "trusted numbers" to "verifiable audit"
+
+Fixing the numbers gets you a trustworthy scoreboard. These eight get you an audit that can be
+*checked by a stranger*, which is what a research ledger is for.
+
+```mermaid
+flowchart LR
+  subgraph today [Today]
+    A1[audit3-ledger every 6h] --> L1[audit3_ledger.json]
+    A2[audit-dashboard hourly] --> L1
+    L1 --> S1[/audit3/]
+    L1 --> S2[/audit/]
+    S3[/audit2/ fallback chain]
+  end
+  subgraph next [Next level]
+    CONTRACT[metric contract registry] --> TRIB[tribunal]
+    DISC[discovery registry] --> TRIB
+    BARS[price data SLA] --> TRIB
+    EXCL[exclusion ledger + bias bound] --> TRIB
+    TRIB --> GEN[one generation id]
+    GEN --> V1[/audit3 truth/]
+    GEN --> V2[/audit overview/]
+    GEN --> V3[/audit2 method/]
+    GEN --> REPLAY[replay verifier]
+    GEN --> POWER[MDE per class]
+  end
+```
+
+| # | Enhancement | Why it is a level up | Test |
+|---|---|---|---|
+| L1 | **Replayable ledgers** — `audit3 replay <ledger>` regenerates from the pinned inputs (`input_sha256`, `generator_version`, `git_sha`) and diffs | Today a published number is trusted; with replay it is *checkable* by anyone, offline | replay of a pinned ledger is identical modulo timestamps; a tampered ledger fails |
+| L2 | **Exclusion ledger + bias bound** (N6 done properly, not skipped) | 41.2% of the book is unscored. If what is excluded differs from what is kept, every headline is biased — and no one has tested that | per-cohort exclusion counts with reasons; scored-vs-unscored comparison on class, direction, hold, entry month; build fails on an unexplained divergence |
+| L3 | **Price-data SLA** — stale class renders `UNMEASURABLE (stale since DATE)`, never `unmeasured`, and backfill is a tracked P0 | FOREX has been unmeasurable since **2026-02-09** because of missing bars, not missing edge. The current wording hides that | a class whose last bar is older than N days cannot emit an alpha number; backfill verified by row count and last bar |
+| L4 | **Sabotage suite** — inject known-bad cells: pure noise, a look-ahead feature, single-symbol concentration, a survivors-only universe | Existing tests prove gates *fire on fixtures*. This proves the judge has **power** against frauds it will actually meet | each sabotage fixture is demoted below PROVEN; if any passes, the suite is red |
+| L5 | **MDE per class** — publish the minimum detectable effect at the real n and dispersion | With no MDE, "we found no edge" is uninformative: it cannot distinguish no edge from no power. This is the lesson from the per-class review, where two classes were *inconclusive*, not negative | every "no edge" claim prints its MDE; a class whose MDE exceeds a plausible edge is labelled underpowered |
+| L6 | **Discovery trials feed `n_trials`** — append-only discovery registry of every feature, event and threshold tried; DSR at the forward gate counts them | Otherwise discovery silently inflates the gate's significance: 200 features searched, then a forward test that pretends it was the only trial | a discovery run increments the registry; the forward gate's DSR uses the total; a test asserts the count flows through |
+| L7 | **Verdict calibration** — for cells judged PROVEN k runs ago, compare claimed expectancy to realized forward expectancy; publish a calibration curve | Churn rate (N2) is a symptom. Calibration is the disease metric: does PROVEN mean what it claims? | calibration bins with realized-vs-claimed expectancy and a Brier-style score tracked per ledger |
+| L8 | **Metric contract registry, enforced** — every published metric name maps to `(population, cost_model, win_definition)` in one machine-readable file | Rule 3 is currently a convention; this makes it a build failure. A page rendering a name it does not own cannot ship | a page that renders an unowned metric fails; adding a metric without a contract entry fails |
+
+Two smaller carries: **normalize-on-read for verdict strings** (the `hypothesis_status.py` pattern —
+seven canonical states, `UNKNOWN` never guessed, CLI exits 1 on drift) applied to verdicts across
+ledgers, and **`assert_tribunal_runs.py` in CI on every PR**, so a branch that compiles but crashes
+at runtime can never again be approved on the strength of `--help`.
+
+## 7. Explicit non-goals
 
 - No new strategy hunting until steps 1–3 are green.
 - No promotion to real money; the audit3 forward gate decides that (n≥100 forward rows,

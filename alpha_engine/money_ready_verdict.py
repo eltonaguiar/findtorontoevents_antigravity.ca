@@ -49,6 +49,15 @@ except ImportError:
     np = None  # type: ignore[assignment]
     print("WARN: numpy unavailable; statistical gates degraded", file=sys.stderr)
 
+# Every PF this module publishes carries its denominator and cost treatment
+# (2026-11-20): CRYPTO was quoted as 0.26 / 0.83 / 1.31 from three populations
+# and no reader could tell which was the class figure.
+try:
+    from alpha_engine.pf_basis import format_pf as _pf_label
+except Exception:  # pragma: no cover - optional import
+    def _pf_label(value, n=None, **_kw):
+        return f"PF {value} (n={n})" if value is not None else f"PF n/a (n={n})"
+
 # Lazy imports to avoid ModuleNotFoundError when ci_gate scripts import this
 # module from a different sys.path context (e.g. GHA runners).
 def _get_eagle_gates():
@@ -197,6 +206,22 @@ _FDR_GATE_ENFORCE: bool = (
 # were 100% single-source, i.e. the shipped default promoted feed idiosyncrasies.
 _SINGLE_SOURCE_GATE_ENFORCE: bool = (
     os.environ.get("MONEY_READY_SINGLE_SOURCE_GATE", "1").strip().lower()
+    in ("1", "true", "yes", "on")
+)
+
+# P0.0e (2026-11-20): DSR + PBO hard gates.
+# DSR (Deflated Sharpe Ratio) and PBO (Probability of Backtest Overfitting)
+# are multiple-testing gates. When ENFORCED (default ON), a failing DSR or PBO
+# gate blocks MONEY_READY (the class lands in WATCH, not MONEY_READY). When
+# shadow mode (env=0), the gate result is stamped but does not change the verdict.
+# This follows the same pattern as MDD/FDR/single-source gates above.
+# Set MONEY_READY_DSR_GATE=0 or MONEY_READY_PBO_GATE=0 for shadow mode.
+_DSR_GATE_ENFORCE: bool = (
+    os.environ.get("MONEY_READY_DSR_GATE", "1").strip().lower()
+    in ("1", "true", "yes", "on")
+)
+_PBO_GATE_ENFORCE: bool = (
+    os.environ.get("MONEY_READY_PBO_GATE", "1").strip().lower()
     in ("1", "true", "yes", "on")
 )
 # M-070: a class whose resolved picks are dominated by ONE symbol is not a
@@ -897,6 +922,9 @@ def _class_stats(picks: list[dict]) -> dict[str, dict]:
             # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
             "wr_pct": round(wr * 100, 2),
             "pf": round(pf, 4),
+            "pf_n": n,
+            "pf_basis": "net",
+            "pf_label": _pf_label(pf, n, basis="net"),
             "returns": returns,
             "picks": ps,
             "top_symbol": top_symbol,
@@ -1001,32 +1029,77 @@ def _json_safe(obj):
 # DSR gate (per-class aggregate — treat all class picks as one strategy)
 # ---------------------------------------------------------------------------
 
-def _dsr_gate(returns: list[float]) -> dict[str, Any]:
+# Classes already warned about a missing trial-count baseline (one line each per
+# process, so a per-class loop does not repeat the same warning six times).
+_DSR_BASELINE_WARNED: set[str] = set()
+
+
+def _dsr_gate(returns: list[float], asset_class: str = "") -> dict[str, Any]:
+    """Deflated Sharpe Ratio for one asset class.
+
+    The deflation needs a *baseline*: how many independent trials were run in
+    that class (``NB_TRIALS_BY_CLASS``). Until 2026-11-21 this function passed
+    ``nb_trials=1`` unconditionally -- zero multiple-testing correction -- so a
+    class with no recorded baseline (EQUITY, ETF, BOND, ...) produced a
+    confident-looking DSR that had not been deflated at all. A missing baseline
+    is not a pass: it is a skip, reported as ``ok=None`` with the reason, and
+    the caller's verdict then has to rest on SPA (which is family-wise) or stay
+    unpromoted.
+    """
+    class_key = (asset_class or "").strip().upper()
+    n_trials = NB_TRIALS_BY_CLASS.get(class_key)
+    if n_trials is None:
+        if class_key not in _DSR_BASELINE_WARNED:
+            _DSR_BASELINE_WARNED.add(class_key)
+            print(
+                "[money_ready_verdict] WARNING: DSR gate SKIPPED for "
+                f"{class_key or '(no asset_class)'} -- no n_trials baseline in "
+                "NB_TRIALS_BY_CLASS, so a Deflated Sharpe would apply no "
+                "multiple-testing correction. Add the class's real trial count "
+                "to assess it.",
+                file=sys.stderr,
+            )
+        return {
+            "ok": None,
+            "skipped": True,
+            "dsr_score": None,
+            "n_trials": None,
+            "note": (
+                f"no n_trials baseline for {class_key or '(no asset_class)'} "
+                "in NB_TRIALS_BY_CLASS -- DSR skipped (a blanket nb_trials=1 "
+                "would report an undeflated number as a pass)"
+            ),
+        }
+
     try:
         try:
             from alpha_engine.deflated_sharpe import returns_stats, sharpe_variance, deflated_sharpe_ratio
         except ImportError:
             from deflated_sharpe import returns_stats, sharpe_variance, deflated_sharpe_ratio
     except ImportError:
-        return {"ok": None, "note": "deflated_sharpe not importable", "dsr_score": None}
+        return {"ok": None, "note": "deflated_sharpe not importable", "dsr_score": None,
+                "n_trials": n_trials}
 
     arr = np.array(returns, dtype=float)
     if len(arr) < 10:
-        return {"ok": None, "note": f"n={len(arr)} too small for DSR", "dsr_score": None}
+        return {"ok": None, "note": f"n={len(arr)} too small for DSR", "dsr_score": None,
+                "n_trials": n_trials}
 
     mu, sd = arr.mean(), arr.std()
     if sd == 0:
-        return {"ok": False, "note": "zero variance returns", "dsr_score": 0.0}
+        return {"ok": False, "note": "zero variance returns", "dsr_score": 0.0,
+                "n_trials": n_trials}
 
     sr = mu / sd * np.sqrt(252)  # annualised daily SR approximation
     stats = returns_stats(list(returns))
     horizon = len(arr)
     sr_var = sharpe_variance(sr, horizon, stats["skewness"], stats["kurtosis"])
-    # nb_trials=1 — we're testing the class aggregate, not a selected-best strategy
+    # nb_trials from the class baseline (the number of independent trials run in
+    # this class). Missing baseline is handled above as a SKIP -- never as 1.
     dsr = deflated_sharpe_ratio(
         estimated_sharpe=sr,
         sr_variance=sr_var,
-        nb_trials=1,
+        nb_trials=n_trials,
         backtest_horizon=horizon,
         skew=stats["skewness"],
         kurtosis=stats["kurtosis"],
@@ -1042,8 +1115,10 @@ def _dsr_gate(returns: list[float]) -> dict[str, Any]:
             "ok": None,
             "note": "deflated_sharpe non-finite (degenerate sr_variance/moments inputs)",
             "dsr_score": None,
+            "n_trials": n_trials,
         }
-    return {"ok": dsr_f >= DSR_THRESHOLD, "dsr_score": round(dsr_f, 4), "note": ""}
+    return {"ok": dsr_f >= DSR_THRESHOLD, "dsr_score": round(dsr_f, 4), "note": "",
+            "n_trials": n_trials}
 
 
 # ---------------------------------------------------------------------------
@@ -1319,7 +1394,14 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
     pbo_ok = pbo.get("ok") is True
     spa_ok = spa.get("ok") is True
 
-    if wr_ok and pf_ok and (dsr_ok or spa_ok) and (pbo_ok or spa_ok):
+    # P0.0e (2026-11-20): DSR + PBO hard gates.
+    # When _DSR_GATE_ENFORCE is True (default), DSR failure blocks MONEY_READY.
+    # When False (shadow mode), DSR result is stamped but does not change verdict.
+    # Same pattern for PBO. SPA can substitute for either (existing behavior).
+    dsr_condition = (dsr_ok or spa_ok) if _DSR_GATE_ENFORCE else True
+    pbo_condition = (pbo_ok or spa_ok) if _PBO_GATE_ENFORCE else True
+
+    if wr_ok and pf_ok and dsr_condition and pbo_condition:
         # M-070: a class edge concentrated in one symbol is a single-name bet,
         # not a class-level edge — cannot be MONEY_READY. Downgrade to WATCH.
         _conc_cap = MAX_SYMBOL_CONCENTRATION_BY_CLASS.get(
@@ -1674,7 +1756,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
                 pf = float(h.get("pf") or h.get("profit_factor") or 0)
                 data_source = "dashboard_fallback"
 
-        dsr = _dsr_gate(returns)
+        dsr = _dsr_gate(returns, ac)
         pbo = _pbo_gate(ac_picks) if not _CI_MODE else {"ok": None, "note": "skipped in CI mode", "pbo": None}
         spa = _spa_gate(ac_picks) if not _CI_MODE else {"ok": None, "note": "skipped in CI mode", "spa_p": None, "n_spa_pass": 0}
         fdr = _fdr_gate(ac_picks) if not _CI_MODE else {"ok": None, "n_tested": 0, "n_fdr_pass": 0, "n_bonferroni_pass": 0, "min_p": None, "fdr_q": FDR_Q, "note": "skipped in CI mode"}
@@ -1774,6 +1856,13 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
             "wr_pct": round(wr * 100, 2),
             "pf": round(pf, 4) if pf != float("inf") else None,
+            # PF alone cannot be compared across surfaces; these two can.
+            "pf_label": _pf_label(pf, n, basis="net"),
+            "policy_clean_pf_label": _pf_label(
+                _policy_pf if _policy_pf != float("inf") else None,
+                _policy_n,
+                basis="net",
+            ),
             "n": n,
             "n_ok": _sizing_n >= MIN_N_CLASS,
             # Descriptive, matches `wr` above. The gate uses `sizing_wr_ok`.
@@ -1786,6 +1875,9 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             "pf_ok": _sizing_pf >= MIN_PF,
             "dsr_ok": dsr.get("ok"),
             "dsr_score": dsr.get("dsr_score"),
+            "dsr_n_trials": dsr.get("n_trials"),
+            "dsr_skipped": bool(dsr.get("skipped")),
+            "dsr_note": dsr.get("note"),
             "pbo_ok": pbo.get("ok"),
             "pbo": pbo.get("pbo"),
             "spa_ok": spa.get("ok"),
@@ -1840,6 +1932,14 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
                     and verdict == "MONEY_READY")
                 else None
             ),
+            # P0.0e (2026-11-20): DSR + PBO hard gates
+            "_dsr_gate_enforce": _DSR_GATE_ENFORCE,
+            "_pbo_gate_enforce": _PBO_GATE_ENFORCE,
+            "dsr_ok": dsr.get("ok"),
+            "dsr_n_trials": dsr.get("n_trials"),
+            "dsr_skipped": bool(dsr.get("skipped")),
+            "dsr_note": dsr.get("note"),
+            "pbo_ok": pbo.get("ok"),
             # ENHANCEMENT #65: single-source-artifact pre-gate
             "_single_source_gate_enforce": _SINGLE_SOURCE_GATE_ENFORCE,
             "single_source_ok": single_src.get("ok"),
