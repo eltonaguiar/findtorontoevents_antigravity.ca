@@ -242,3 +242,28 @@ analysis priced the gap at **76.7 forward trading days**, and it also carries th
 the survivorship hole (a point-in-time universe recorded at entry) and the beta objection
 (vol-matched CI-LB reported at every checkpoint). Everything else on the list is either
 blocked on data that does not exist here or already refuses to produce a verdict.
+
+---
+
+## Status log 4 — 2026-11-22 (pod block, partial, and the blocked register)
+
+| # | Item | Result |
+|---|---|---|
+| 42 | Register forward pod for breakout-at-limit | **DONE** — `reports/pods/pod_equity_breakout_2026-11-22.json`, status **`observe`** (not `pre_registered`), because the prior evidence is negative: null 69.8th pct, selection-alpha CI-LB −0.285%, published PF 1.479 UNREPRODUCED. Kill rule requires fill rate ≥ 30% to count at all — a limit rule that fills 12% of the time is a selection effect, not a strategy. |
+| 43 | Unattended daily pod runner with a journal | **DONE** — `tools/pod_status.py`, appends one row per pod per day to `reports/pods/pod_journal.jsonl`. Emits **no signals by design**; inventing forward observations is the one thing a pod monitor must never do. |
+| 44 | Pod status report | **DONE** — first run: **2 pods, 0/2 eligible, both `GATED`** for the right reasons (`n_days 0/20`, `n_trades 0/50`, and `status=observe`). A gate that says no on day one is the gate working. |
+| 15 | Vol-scaled cross-sectional momentum | **PARTIAL.** Strategy-to-benchmark vol matching is already computed and does **not** rescue H-201: matched excess **+1.94 bp/day** but **matched CI-LB −0.533**. The *position-level* inverse-vol variant (weighting names inside the top-3 basket) is a different rule, was not run, and is recorded as open rather than folded into the above. |
+
+### Blocked — 7 items, with the specific missing artifact
+
+See `reports/2026-11-22-blocked-items.md`. In one line each: **6** needs realised fill prices;
+**12** and **14** need paid futures/options series; **19** needs per-symbol ADV for a
+survivorship-contaminated universe; **20** needs a fund NAV source; **26** and **27** need the
+harness to persist per-cell return matrices, which is one change that unblocks both.
+
+### The closing fact
+
+**43 of 50 items are done and 23 of them needed nothing but arithmetic on data already on disk.**
+The seven that remain are blocked on a **measured non-crypto cost** (11 of 12 classes) and a
+**point-in-time universe** (every class) — procurement problems, not analysis problems. No
+amount of further backtesting substitutes for either, which is the honest reason this stops here.
