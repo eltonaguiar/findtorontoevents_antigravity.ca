@@ -1,0 +1,92 @@
+{
+  "round": "R21",
+  "class": "FOREX",
+  "mechanism": "FX cross-sectional momentum (63d lookback, 21d hold, quintile long/short), net of spot round-trip cost",
+  "hypothesis": "A daily cross-sectional FX strategy that goes long the top-quintile and short the bottom-quintile of pairs ranked by 63-day momentum, held 21 days, earns a positive net return after 2x realistic costs.",
+  "carry_note": "Carry is not tested: it needs interest-rate differentials and no yield curve exists on disk (data/rate_curve_cache is absent - the same gap that blocks BOND).",
+  "preregistered": {
+    "lookback_days": 63,
+    "hold_days": 21,
+    "rebalance_days": 21,
+    "quintile": 0.2,
+    "seed": 42,
+    "n_bootstrap": 10000,
+    "n_shuffles": 1000
+  },
+  "panel": {
+    "n_pairs": 110,
+    "n_dates": 2022,
+    "first_date": "2018-12-31",
+    "last_date": "2026-11-20",
+    "source": "data/forex_rate_cache/*.csv (ECB fix via Frankfurter)",
+    "missing_values_filled": 0,
+    "caveat": "110 ordered pairs over 11 currencies means every currency appears in both directions (EURUSD and USDEUR are exact inverses), so breadth is 55 independent crosses, not 110. The pre-registered test uses all 110 as instructed; leg breakdown shows what that does to exposure."
+  },
+  "cost": {
+    "bp_round_trip_1x": 10.0,
+    "bp_round_trip_2x": 20.0,
+    "justification": "ECB fix is a mid rate; G10 spot round trip is 2-5bp institutional / 10-20bp retail. 110 pairs over 11 currencies include thin DKK/SEK/NOK crosses, priced at a daily fix with no tick data. 10bp = retail midpoint, conservative for a non-institutional participant; 20bp covers the retail upper bound. One round trip per position per window."
+  },
+  "stats": {
+    "n_pair_rebalances": 4092,
+    "n_rebalance_windows": 93,
+    "n_windows_positive": 40,
+    "long_leg_mean_net_bp": -33.96999833508825,
+    "short_leg_mean_net_bp": -39.78662845001866,
+    "mean_gross_bp": -26.878313392553455,
+    "mean_net_bp": -36.87831339255346,
+    "median_net_bp": -35.93002971259473,
+    "ci95_net_bp": [
+      -44.12889210632265,
+      -29.586507804907843
+    ],
+    "ci95_net_bp_window_clustered": [
+      -63.16471770671417,
+      -11.257486736990082
+    ],
+    "ci_method": "percentile bootstrap, 10000 resamples, seed 42",
+    "cost_bp_1x": 10.0,
+    "mean_net_bp_1x": -36.87831339255346,
+    "mean_net_bp_2x": -46.87831339255346,
+    "win_rate_net": 0.4423264907135875,
+    "win_rate_gross": 0.4550342130987292,
+    "half_1_mean_net_bp": -43.592676624400816,
+    "half_2_mean_net_bp": -30.306808952873066,
+    "halves_both_positive": false,
+    "worst_window_mean_net_bp": -438.7955892183603,
+    "best_window_mean_net_bp": 242.07142597229023,
+    "worst_pair_rebalance_net_bp": -1145.5921352610433,
+    "best_pair_rebalance_net_bp": 1592.953257865929,
+    "total_gross_bp": -109986.05840232874,
+    "total_net_bp": -150906.05840232875,
+    "cost_haircut_bp": 40920.000000000015,
+    "best_pair": "CHFAUD",
+    "best_pair_sum_net_bp": 1007.8435893712015,
+    "best_pair_share_of_total_net": null,
+    "best_pair_share_note": "undefined: total net return is negative, so a share of the total is not interpretable",
+    "n_pairs_traded": 108,
+    "top_pair_window_share": 0.011485826001955034
+  },
+  "null": {
+    "n_shuffles": 1000,
+    "seed": 42,
+    "mean_net_bp": -9.927130274531773,
+    "sd_net_bp": 3.487914988045339,
+    "p05_net_bp": -15.740325461044122,
+    "p95_net_bp": -4.215113986417142,
+    "max_net_bp": 1.2075962828286482,
+    "mean_gross_bp": 0.07286972546822465,
+    "observed_percentile_net": 0.0,
+    "observed_percentile_gross": 0.0,
+    "empirical_p_net": 1.0,
+    "empirical_p_gross": 1.0
+  },
+  "gates": {
+    "G1_ci_lower_gt_0_at_1x": false,
+    "G2_mean_gt_0_at_2x": false,
+    "G3_both_halves_positive": false,
+    "G4_above_null_p95": false,
+    "G5_no_pair_over_30pct": null
+  },
+  "verdict": "KILL"
+}

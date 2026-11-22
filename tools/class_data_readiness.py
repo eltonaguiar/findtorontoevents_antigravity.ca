@@ -62,7 +62,10 @@ REQUIREMENTS: dict[str, list[tuple[str, Path | None, int]]] = {
                ("point-in-time earnings", None, 0),
                ("survivorship-free universe", DATA / "universe", 0)],
     "ETF": [("price history", DATA / "equity_quote_cache", 20)],
-    "BOND": [("rate curve", DATA / "forex_rate_cache", 1)],
+    # FX spot exchange rates are NOT a yield/rate curve. Bond research needs
+    # genuine curve data (yields/tenors), so it gets its own directory; until
+    # that exists BOND stays BLOCKED_DATA rather than piggy-backing on FX prices.
+    "BOND": [("rate curve", DATA / "rate_curve_cache", 1)],
     "FOREX": [("fx rates", DATA / "forex_rate_cache", 100)],
     "COMMODITY": [("futures prices", DATA / "commodity_price_cache", 20),
                   ("COT history", DATA / "cftc_cot", 100)],
