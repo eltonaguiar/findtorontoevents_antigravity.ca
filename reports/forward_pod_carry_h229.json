@@ -1,0 +1,38 @@
+{
+  "pod_id": "POD-CRYPTO-CARRY-H229",
+  "hypothesis_id": "H-229",
+  "asset_class": "CRYPTO",
+  "inception": "2026-11-22",
+  "frozen": true,
+  "signal": "equal-weight delta-neutral spot/perp funding carry, 5 coins",
+  "return_definition": "daily summed funding per coin, averaged across coins, bp/day",
+  "cost_model": {
+    "roundtrip_bp": 42.64,
+    "fee_share_of_roundtrip": 0.94,
+    "holding_floor_days": 60,
+    "rehedge_bp_day": 0.072,
+    "source": "mercury3 carry_execution_cost.py (live books) + tools/venue_rebalance_cost.py"
+  },
+  "benchmark": {
+    "name": "T-bill",
+    "rate_pct": 3.5,
+    "why": "carry competes with cash, not with BTC beta"
+  },
+  "judgment_gate": {
+    "min_n_days": 20,
+    "min_hold_days": 60,
+    "rule": "no verdict of any kind before both are met"
+  },
+  "kill_criteria": {
+    "K1": "net CI-LB <= 0 at the pre-registered cost",
+    "K2": "realised second-half mean < 60% of the first half",
+    "K3": "realised round trip > 2x modelled (>85.28 bp)",
+    "K4": "pledged-collateral yield unavailable AND net < T-bill hurdle",
+    "K5": "any single observation < -400 bp -> REVIEW, not auto-kill"
+  },
+  "known_limitations": [
+    "one exchange, one venue, no counterparty-risk price",
+    "cost is a single measured snapshot treated as a floor; stress widens it",
+    "a 60-day floor means the first judgment is impossible before ~2027-01-21"
+  ]
+}

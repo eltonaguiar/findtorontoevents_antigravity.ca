@@ -1,0 +1,266 @@
+{
+  "generated_by": "tools/venue_rebalance_cost.py",
+  "question": "what is the drag of STAYING delta-neutral, measured rather than assumed?",
+  "venue": "binance",
+  "assumptions": {
+    "model": "equal USD notional at entry; re-hedge on |spot/perp-1| > band",
+    "spot_fee_bps": 10.0,
+    "perp_fee_bps": 4.0,
+    "note": "the re-hedge trades the PERP leg only; internal transfers between spot and futures wallets are free on one venue"
+  },
+  "books": {
+    "BTC|spot": {
+      "symbol": "BTC/USDT",
+      "mid": 60946.685,
+      "spread_bps": 0.002,
+      "buy_cost_bps": 1.289,
+      "sell_cost_bps": 0.001,
+      "filled_notional": 100000.0
+    },
+    "BTC|perp": {
+      "symbol": "BTC/USDT:USDT",
+      "mid": 60924.05,
+      "spread_bps": 0.016,
+      "buy_cost_bps": 0.165,
+      "sell_cost_bps": 0.008,
+      "filled_notional": 100000.0
+    },
+    "ETH|spot": {
+      "symbol": "ETH/USDT",
+      "mid": 1709.335,
+      "spread_bps": 0.059,
+      "buy_cost_bps": 1.364,
+      "sell_cost_bps": 0.029,
+      "filled_notional": 100000.0
+    },
+    "ETH|perp": {
+      "symbol": "ETH/USDT:USDT",
+      "mid": 1708.7849999999999,
+      "spread_bps": 0.059,
+      "buy_cost_bps": 0.029,
+      "sell_cost_bps": 0.874,
+      "filled_notional": 100000.0
+    },
+    "BNB|spot": {
+      "symbol": "BNB/USDT",
+      "mid": 552.875,
+      "spread_bps": 0.181,
+      "buy_cost_bps": 2.432,
+      "sell_cost_bps": 2.397,
+      "filled_notional": 100000.0
+    },
+    "BNB|perp": {
+      "symbol": "BNB/USDT:USDT",
+      "mid": 552.875,
+      "spread_bps": 0.181,
+      "buy_cost_bps": 2.936,
+      "sell_cost_bps": 1.605,
+      "filled_notional": 100000.0
+    },
+    "SOL|spot": {
+      "symbol": "SOL/USDT",
+      "mid": 70.83500000000001,
+      "spread_bps": 1.412,
+      "buy_cost_bps": 2.375,
+      "sell_cost_bps": 1.042,
+      "filled_notional": 100000.0
+    },
+    "SOL|perp": {
+      "symbol": "SOL/USDT:USDT",
+      "mid": 70.785,
+      "spread_bps": 1.413,
+      "buy_cost_bps": 1.514,
+      "sell_cost_bps": 0.706,
+      "filled_notional": 100000.0
+    },
+    "XRP|spot": {
+      "symbol": "XRP/USDT",
+      "mid": 0.93325,
+      "spread_bps": 1.072,
+      "buy_cost_bps": 1.381,
+      "sell_cost_bps": 1.33,
+      "filled_notional": 100000.0
+    },
+    "XRP|perp": {
+      "symbol": "XRP/USDT:USDT",
+      "mid": 0.93275,
+      "spread_bps": 1.072,
+      "buy_cost_bps": 2.694,
+      "sell_cost_bps": 0.536,
+      "filled_notional": 100000.0
+    }
+  },
+  "coins": {
+    "BTC": {
+      "bars": 8760,
+      "days": 365.0,
+      "first": 1762948800000,
+      "last": 1795345200000,
+      "bands": {
+        "0.02": {
+          "rehedges": 300,
+          "rehedges_per_month": 24.66,
+          "traded_notional_frac": 7.4322,
+          "max_drift_pct": 5.5,
+          "drag_bp_day": 0.1018
+        },
+        "0.05": {
+          "rehedges": 54,
+          "rehedges_per_month": 4.44,
+          "traded_notional_frac": 2.9849,
+          "max_drift_pct": 7.56,
+          "drag_bp_day": 0.0409
+        },
+        "0.10": {
+          "rehedges": 15,
+          "rehedges_per_month": 1.23,
+          "traded_notional_frac": 1.6104,
+          "max_drift_pct": 12.46,
+          "drag_bp_day": 0.0221
+        }
+      },
+      "daily_vol_pct": 2.27
+    },
+    "ETH": {
+      "bars": 8760,
+      "days": 365.0,
+      "first": 1762948800000,
+      "last": 1795345200000,
+      "bands": {
+        "0.02": {
+          "rehedges": 429,
+          "rehedges_per_month": 35.26,
+          "traded_notional_frac": 11.6019,
+          "max_drift_pct": 7.18,
+          "drag_bp_day": 0.1589
+        },
+        "0.05": {
+          "rehedges": 104,
+          "rehedges_per_month": 8.55,
+          "traded_notional_frac": 6.0231,
+          "max_drift_pct": 10.25,
+          "drag_bp_day": 0.0825
+        },
+        "0.10": {
+          "rehedges": 32,
+          "rehedges_per_month": 2.63,
+          "traded_notional_frac": 3.4717,
+          "max_drift_pct": 13.41,
+          "drag_bp_day": 0.0476
+        }
+      },
+      "daily_vol_pct": 3.024
+    },
+    "BNB": {
+      "bars": 8760,
+      "days": 365.0,
+      "first": 1762948800000,
+      "last": 1795345200000,
+      "bands": {
+        "0.02": {
+          "rehedges": 297,
+          "rehedges_per_month": 24.41,
+          "traded_notional_frac": 7.3722,
+          "max_drift_pct": 7.12,
+          "drag_bp_day": 0.101
+        },
+        "0.05": {
+          "rehedges": 63,
+          "rehedges_per_month": 5.18,
+          "traded_notional_frac": 3.4064,
+          "max_drift_pct": 6.42,
+          "drag_bp_day": 0.0467
+        },
+        "0.10": {
+          "rehedges": 19,
+          "rehedges_per_month": 1.56,
+          "traded_notional_frac": 2.0081,
+          "max_drift_pct": 11.95,
+          "drag_bp_day": 0.0275
+        }
+      },
+      "daily_vol_pct": 2.284
+    },
+    "SOL": {
+      "bars": 8760,
+      "days": 365.0,
+      "first": 1762948800000,
+      "last": 1795345200000,
+      "bands": {
+        "0.02": {
+          "rehedges": 546,
+          "rehedges_per_month": 44.88,
+          "traded_notional_frac": 14.4268,
+          "max_drift_pct": 6.97,
+          "drag_bp_day": 0.1976
+        },
+        "0.05": {
+          "rehedges": 127,
+          "rehedges_per_month": 10.44,
+          "traded_notional_frac": 7.296,
+          "max_drift_pct": 8.89,
+          "drag_bp_day": 0.0999
+        },
+        "0.10": {
+          "rehedges": 34,
+          "rehedges_per_month": 2.79,
+          "traded_notional_frac": 3.6408,
+          "max_drift_pct": 12.63,
+          "drag_bp_day": 0.0499
+        }
+      },
+      "daily_vol_pct": 3.311
+    },
+    "XRP": {
+      "bars": 8760,
+      "days": 365.0,
+      "first": 1762948800000,
+      "last": 1795345200000,
+      "bands": {
+        "0.02": {
+          "rehedges": 515,
+          "rehedges_per_month": 42.33,
+          "traded_notional_frac": 13.6986,
+          "max_drift_pct": 8.11,
+          "drag_bp_day": 0.1877
+        },
+        "0.05": {
+          "rehedges": 118,
+          "rehedges_per_month": 9.7,
+          "traded_notional_frac": 6.7458,
+          "max_drift_pct": 10.97,
+          "drag_bp_day": 0.0924
+        },
+        "0.10": {
+          "rehedges": 36,
+          "rehedges_per_month": 2.96,
+          "traded_notional_frac": 3.8807,
+          "max_drift_pct": 13.12,
+          "drag_bp_day": 0.0532
+        }
+      },
+      "daily_vol_pct": 3.273
+    }
+  },
+  "aggregate": {
+    "0.02": {
+      "coins": 5,
+      "drag_bp_day": 0.1494,
+      "rehedges_per_month": 34.31,
+      "verdict_vs_mercury3_condition": "TRIGGERS raise-to-20pct (<=0.5 bp/day)"
+    },
+    "0.05": {
+      "coins": 5,
+      "drag_bp_day": 0.0725,
+      "rehedges_per_month": 7.66,
+      "verdict_vs_mercury3_condition": "TRIGGERS raise-to-20pct (<=0.5 bp/day)"
+    },
+    "0.10": {
+      "coins": 5,
+      "drag_bp_day": 0.0401,
+      "rehedges_per_month": 2.23,
+      "verdict_vs_mercury3_condition": "TRIGGERS raise-to-20pct (<=0.5 bp/day)"
+    }
+  },
+  "headline": "measured rehedging drag is small relative to the 1.0 bp/day flat charge"
+}

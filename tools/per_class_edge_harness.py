@@ -286,7 +286,10 @@ def monthly_trades(net: pd.Series) -> list[float]:
     Monthly buckets keep the same idea -- win/loss ratio of held periods -- with
     an honest n.
     """
-    m = (1.0 + net.fillna(0.0)).resample("ME").prod() - 1.0
+    # groupby on the period instead of resample("ME"): the "ME" alias only
+    # exists in pandas >= 2.2, and CI installs an older pandas where it raises
+    # "Invalid frequency: ME". to_period("M") is stable across both.
+    m = (1.0 + net.fillna(0.0)).groupby(net.index.to_period("M")).prod() - 1.0
     return [float(x) for x in m.dropna().to_numpy()]
 
 
