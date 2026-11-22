@@ -2791,7 +2791,53 @@
             "top-quintile book: H-149 scored the full cross-section and reported a decile"
           ],
           "banned_check": "Not a re-test of H-149 (different statement cadence, entry price, exit clock and book size), not H-001 (CFTC COT, killed for M-095 look-ahead), not H-002 (PEAD), not H-003 (ETF 12-1 momentum), and not the killed CRYPTO ml_enhanced_* stack."
-        }
+        },
+                {
+                  "id": "H-151",
+                  "family": "NET_SHARE_ISSUANCE",
+                  "asset_class": "EQUITY",
+                  "description": "Net share issuance predicts cross-sectional equity returns. Companies whose shares outstanding grew over the trailing 12 months underperform companies that shrank them, on a one-month holding period, when the signal is read point-in-time from SEC EDGAR companyfacts filings.",
+                  "economic_prior": "Managers issue equity when they believe it is rich and repurchase when they believe it is cheap (Baker-Wurgler market timing). The demand curve for a company's shares slopes downward, so new supply depresses price and retirements raise it (inelastic demand). This is the FINANCING-side quantity. H-149 and H-150 tested the INVESTMENT-side quantity (gross profitability); a positive result here is not a rescue of those.",
+                  "test_statistic": "net long-short quintile spread, bottom-issuance minus top-issuance, equal weight, 10bps per side, with FF4 alpha, appraisal ratio (alpha / sd(residuals) * sqrt(12)), and a model-free book-vs-universe IR reported alongside. The appraisal ratio exists because the first H-150 run reported the mean of OLS residuals, which is zero by construction and measured nothing.",
+                  "acceptance_criteria": {
+                    "eff_floor": 0.3,
+                    "min_windows_admissible": 3,
+                    "same_sign": true,
+                    "cost_survival_min": 0.6,
+                    "slippage_bps": 10,
+                    "min_names_per_leg": 100,
+                    "min_months": 36,
+                    "factor_alpha_t_min": 2.0,
+                    "appraisal_ratio_min": 0.5,
+                    "appraisal_ratio_sign_must_match_raw_spread": true,
+                    "validation": "tools/edge_stability_harness.py imported unmodified, run on 14-day windows over the monthly rebalance book; FF4 alpha t>=2 on non-overlapping months; costs at 10bps per side with a 2x stress reported but not gated"
+                  },
+                  "data_sample_lock": {
+                    "fundamentals": "tools/cache/sec_companyfacts/ (SEC EDGAR companyfacts, free, already cached by the H-150 run)",
+                    "prices": "Yahoo daily closes via the H-149 downloader path",
+                    "field": "dei:EntityCommonStockSharesOutstanding",
+                    "universe": "US common stock, price >= $3 at formation, market cap $100M-$10B at formation",
+                    "point_in_time": "a filing is usable only from its filed date + 1 trading day; period end dates are never used as availability dates",
+                    "frozen_at": "2026-11-22T00:00:00Z"
+                  },
+                  "frozen_rules": [
+                    "signal: NIS = ln(shares_t / shares_t_minus_4q), most recent filing available as of formation date",
+                    "split guard: drop a name-quarter when the shares ratio is within 1.5% of k or 1/k for k in {2,3,4,5,6,7,8,10,15,20}; companyfacts does not adjust for splits and a 2x split otherwise reads as 100% issuance",
+                    "winsorise NIS at the 1st and 99th cross-sectional percentile each formation",
+                    "quintile breakpoints fixed at quintiles, equal weight, one-month hold, rebalance on the last trading day of the month",
+                    "no tuning after the first run. A second run is allowed only with the alternative disclosed in advance as a sensitivity, never as a replacement"
+                  ],
+                  "refutation_conditions": [
+                    "raw bottom-minus-top spread <= 0 net of costs",
+                    "harness rejects on 3 or more windows (same rule as H-150)",
+                    "sign flips between the overlapping and non-overlapping alpha fits"
+                  ],
+                  "prior_art": "Pontiff & Woodgate (2008) on share issuance. Inside this repo, the closest existing idea is proposal ET-1 (reports/new_strategy_proposals_2026_05_18.md, line 3460), which uses ETF shares outstanding as a creation/redemption FLOW proxy via Authorized Participants. That is an arbitrage-flow signal on a basket; H-151 is a managerial-timing signal on an issuer. They share the data field and nothing else, and H-151 does not cover ETFs.",
+                  "status": "PRE_REGISTERED",
+                  "registered_at": "2026-11-22",
+                  "originated_by": "gemma4:31b-cloud (idea), corroborated independently by gpt-oss:120b-cloud as QuarterlyShareIssuanceDilution; see reports/2026-11-22-fleet-ideation-sweep.md",
+                  "result": {}
+                }
   ],
   "fork2_new_signals": [
     {
