@@ -1,5 +1,7 @@
 # 09 PENNY_STOCK
 
+> **M3 cost note (2026-11-22):** spread could not be measured - there is **no penny-stock instrument in this repo's cache**, so the universe is empty and the result is `NO_INSTRUMENT_IN_REPO`. An empty universe stays empty; no equity number is borrowed for it. The 0.3 pct round-trip constant remains an assumption ([`class_cost_20261122.json`](reports/equity_cost_measurement/class_cost_20261122.json)).
+
 Central question: are the tiny-n catastrophic cells evidence or noise, and does the literature
 bound it?
 

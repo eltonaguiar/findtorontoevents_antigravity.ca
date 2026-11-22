@@ -22,6 +22,7 @@ The plan recalled ghost-row inflation.
 
 ## 6 Cost reality
 [SRC: _raw/audit3_audit3_ledger.json] The ledger conventions assign MEME 0.3 pct round-trip, the highest with PENNY_STOCK. Given a 10 pct WR, cost is not what kills it, and measured slippage is UNMEASURED.
+[SRC: reports/equity_cost_measurement/class_cost_20261122.json] M3 (2026-11-22) tried to measure it from 1-min Yahoo bars and could not get a trustworthy average. DOGE-USD round-trip upper bound **6.79 bp** (791 distinct highs over 7,135 bars, 10.3 pct zero-range). SHIB-USD reports 0.00 bp but has only **53 distinct highs across 7,135 bars** and **84.3 pct zero-range bars** - that zero is **tick truncation, not a zero spread**, and is not quoted as a cost. PEPE-USD returned no data. With 2 usable names and 1 truncated, a MEME spread number is **not measurable** from this source; the 0.3 pct constant remains an assumption.
 
 ## 7 What would change the verdict
 [SRC: _raw/audit_data_money_ready_verdict.json] One experiment: resolve meme rows intrabar-honestly and compare daily versus honest PF. Gate: honest PF above 1.0. Falsifier: if honest PF is below daily PF, the daily number is inflated and the class is worse.

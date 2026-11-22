@@ -195,3 +195,26 @@ Reported, not silently resolved:
 - `funding_carry_20261122.json`: `"pair_round_trip_bp": 45.52381668506905` and `"aggregate_mean_breakeven_days_at_median": 16.398025378162416`.
 - `momentum_12_1_20261122.json`: `"item48_null": {"percentile": 1.6, …}` for the long/short variant.
 - `crypto_meanrev_intraday_20261122.json`: `"breakeven_cost_bp": 0.0` and `"cost_sweep": {"0bp": {"pf": 0.8153830397211412, …}`.
+
+---
+
+## 9. M3 cost triage (2026-11-22) — which UNKNOWN rows cost can actually decide
+
+Full working: [`updates/2026-11-22-m3-cost-triage.md`](updates/2026-11-22-m3-cost-triage.md).
+Tally recomputed from the rows, unchanged: **0 INVESTABLE / 8 NOT_INVESTABLE / 6 UNKNOWN**.
+
+| UNKNOWN row | Triage | Arithmetic |
+|---|---|---|
+| FX momentum | BLOCKED_OTHER | gross −26.88 bp (zero-cost negative); missing a machine-readable report, not a cost |
+| FX mean-reversion | ALREADY_SCHEDULED | break-even 4.3038 bp; clustered CI [−4.32, +11.09] at 1 bp includes zero; weekday run in `fx-cost-overlap.yml` |
+| Commodity momentum | COST_IRRELEVANT_ZERO_COST_KILL | break-even 0 bp/side; no variant clears 4.32% even free |
+| Bond momentum | COST_IRRELEVANT_ZERO_COST_KILL | break-even 0 bp/side; B1 PF 1.312 beside Sharpe −0.550 |
+| Funding carry | BLOCKED_OTHER | cost MEASURED (45.524 bp RT); needs ≥16.4 d regime, capacity, clean universe |
+| Commodity term-structure carry | BLOCKED_OTHER | no second-month contract series; signal does not exist yet |
+
+**Class cost measured (context, not a verdict)** from 1-min bars 2026-11-16..20
+([`class_cost_20261122.json`](reports/equity_cost_measurement/class_cost_20261122.json)):
+ETF median RT upper bound **6.71 bp** (per-name 0.61 SHY → 22.90 SOXX, 37× spread);
+INDEX (alias) **8.03 bp**; MEME only DOGE-USD usable at **6.79 bp** (SHIB is tick-truncated,
+84.3% zero-range bars); PENNY_STOCK blocked (no instrument). Live NBBO `BLOCKED_NO_LIVE_NBBO`
+(Tiingo IEX HTTP 429), commission `COMMISSION_UNKNOWN`.

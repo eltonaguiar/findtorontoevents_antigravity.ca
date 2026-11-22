@@ -30,6 +30,7 @@ Adversarial review note [SRC: docs/audit_review_2026-11-22/_reviews/05_COMMODITY
 
 ## 6 Cost reality
 [SRC: _raw/audit3_audit3_ledger.json] Flat constant 0.15 pct. For contract-sized commodities that is likely optimistic rather than conservative, and measured slippage is UNMEASURED. Even at 2x the CI stays below zero, so the direction of the kill is robust.
+[SRC: docs/edge_research/22_FINAL_SYNTHESIS_2026-11-22.md] M3 (2026-11-22) **deliberately refused** to measure commodity cost for the momentum variants: their break-even cost is **0 bp/side**, so they lose with free trading and no fill price can change the answer. The GLD round-trip upper bound was measured as context (5.32 bp, [`class_cost_20261122.json`](reports/equity_cost_measurement/class_cost_20261122.json)) but is not a deciding input, and futures contract cost is not the same as an ETF's. The row stays UNKNOWN only because the futures series are roll-corrupted, not because cost is missing.
 
 ## 7 What would change the verdict
 [SRC: _raw/audit3_audit3_ledger.json] One experiment: reprice the 50 rows with contract-level tick and commission data. Gate: net CI lower bound above zero. Falsifier: if true-cost repricing moves the CI above zero the kill was a cost artifact, but a gross expectancy of -2.81 pct makes that unlikely.

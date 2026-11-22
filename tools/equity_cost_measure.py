@@ -69,6 +69,22 @@ D7_UNIVERSE = ["SPY", "QQQ", "IWM", "DIA", "XLK", "XLF", "XLV", "XLE",
 # a large-cap control set (liquid, not in the breakout universe)
 LARGECAP_UNIVERSE = ["JNJ", "KO", "PG", "XOM", "JPM", "WMT", "DIS"]
 
+# --- M3 (2026-11-22): class-level universes for the cost-triage measurement ---
+# ETF: the index/sector products actually filed under ETF in the audit3 ledger,
+#      plus the bond/commodity ETFs that the BOND and COMMODITY rows trade, so
+#      their spread is recorded as CONTEXT for those rows (which are refused on
+#      other grounds) rather than as a verdict.
+ETF_UNIVERSE = ["SPY", "QQQ", "IWM", "DIA", "XLK", "XLF", "XLV", "XLE", "XLY",
+                "SOXX", "GLD", "TLT", "AGG", "SHY"]
+# INDEX is an ETF alias: the SAME instruments, measured once and reported under
+# both labels so the alias can be seen rather than asserted.
+INDEX_UNIVERSE = ["SPY", "QQQ", "IWM", "DIA"]
+# MEME: the names the audit surfaces actually carry (DOGE dominates the sample).
+MEME_UNIVERSE = ["DOGE-USD", "SHIB-USD", "PEPE-USD"]
+# PENNY_STOCK: no penny-name series exists in this workspace's cache -> BLOCKED.
+# An empty universe must stay empty; borrowing an equity number would be a lie.
+PENNY_UNIVERSE = []
+
 COST_POINTS = [0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25]
 SAMPLE_DAY = "2026-11-20"          # last completed US session before 2026-11-22
 NOW = datetime.now(timezone.utc)
@@ -178,6 +194,10 @@ def measure_spread(sym: str) -> dict:
     per_day = {}
     for ts, v in zip(d.index, vols):
         per_day[str(ts)[:10]] = per_day.get(str(ts)[:10], 0.0) + v
+    # tick-quantisation diagnostic: a cheap stock prints few distinct prices and
+    # many zero-range bars, so its 0.00 median is TRUNCATION, not a zero spread.
+    n_zero = sum(1 for r in ranges if r == 0)
+    frac_zero = n_zero / n if n else None
     rec.update({
         "fetch_status": "ok", "n_bars": len(d),
         "first_bar": str(d.index[0]), "last_bar": str(d.index[-1]),
@@ -187,6 +207,14 @@ def measure_spread(sym: str) -> dict:
                      "UPPER BOUND, not the NBBO."),
             "median": ranges[n // 2], "p25": ranges[n // 4],
             "p75": ranges[3 * n // 4], "p90": ranges[int(0.9 * (n - 1))],
+        },
+        "tick_truncation": {
+            "n_distinct_high": len(set(highs)), "n_distinct_low": len(set(lows)),
+            "n_zero_range_bars": n_zero, "frac_zero_range": frac_zero,
+            "suspect": bool(frac_zero is not None and frac_zero > 0.5),
+            "note": ("frac_zero_range > 0.5 means the quote grid is coarser than "
+                      "the price moves, so this name's 0.00 bp is TRUNCATION and "
+                      "must NOT be quoted as a zero spread"),
         },
         "corwin_schultz": corwin_schultz(highs, lows),
         "roll": roll_estimator(closes),
@@ -500,11 +528,109 @@ def _last_date(sym):
     return r[-1]["date"] if r else None
 
 
+# ------------------------------------------------- M3 class measurement
+def measure_class(name: str, universe) -> dict:
+    """Per-name spread distribution for one asset class.
+
+    An AVERAGE across a universe that mixes liquid and illiquid names hides the
+    only number that matters, so this returns the FULL per-name distribution
+    (min / p25 / median / p75 / max / p90) plus every name's own record, and it
+    never collapses the class to a single figure without the spread of it.
+    A name that cannot be fetched is listed as blocked, not dropped and not set
+    to zero.
+    """
+    rec = {"asset_class": name, "universe": list(universe),
+           "source": "yfinance period=5d interval=1m (Yahoo); Tiingo IEX is the "
+                     "documented fallback and returned HTTP 429 this run",
+           "fetched_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+           "per_name": {}, "blocked": [], "aggregate": None}
+    if not universe:
+        rec["blocked"].append({"reason": "NO_INSTRUMENT_IN_REPO",
+                                "detail": "an empty universe stays empty; no number "
+                                          "is borrowed from another class"})
+        return rec
+    ubs, css = [], []
+    for sym in universe:
+        r = measure_spread(sym)
+        rec["per_name"][sym] = r
+        if r.get("range_upper_bound_rt_bp"):
+            ubs.append((sym, r["range_upper_bound_rt_bp"]["median"]))
+            cs = r.get("corwin_schultz", {}).get("median_bp")
+            if cs is not None:
+                css.append(cs)
+        else:
+            rec["blocked"].append({"symbol": sym,
+                                    "reason": r.get("fetch_status", "unknown")})
+    if ubs:
+        vals = sorted(v for _, v in ubs)
+        n = len(vals)
+        rec["aggregate"] = {
+            "n_names_with_data": n,
+            "range_ub_rt_bp": {"min": vals[0], "p25": vals[n // 4],
+                                "median": statistics.median(vals),
+                                "p75": vals[3 * n // 4],
+                                "p90": vals[int(0.9 * (n - 1))], "max": vals[-1]},
+            "per_name_rt_bp": dict(ubs),
+            "corwin_schultz_rt_bp_median": statistics.median(css) if css else None,
+            "ratio_max_to_min": (vals[-1] / vals[0]) if vals[0] > 0 else None,
+            "basis": ("median 1-min bar range = rigorous UPPER bound on round-trip "
+                       "quoted spread (bid and ask both lie inside [low, high]); "
+                       "NOT the NBBO"),
+        }
+    return rec
+
+
+def classes_main() -> int:
+    """M3: measure ETF (and its INDEX alias) and MEME per-name distributions.
+
+    Writes a SEPARATE artifact so the M1 artifact is not silently rewritten.
+    BOND/COMMODITY ETFs are measured as CONTEXT only - their strategy rows are
+    refused on break-even grounds, so no verdict is inferred from these numbers.
+    """
+    OUT.mkdir(parents=True, exist_ok=True)
+    out = {"generated_utc": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
+           "task": "M3 - cost triage: class cost distributions for COST_ADDRESSABLE rows",
+           "sources": {"intraday_bars": "yfinance 1-min, period=5d (Yahoo)",
+                        "top_of_book": "Tiingo IEX https://api.tiingo.com/iex/?tickers=<u>",
+                        "session_note": "2026-11-22 is a Sunday; US session closed.",
+                        "tiingo_state_this_run": "HTTP 429 (hourly allocation exhausted)"},
+           "classes": {}}
+    for name, uni in (("ETF", ETF_UNIVERSE), ("INDEX_alias_of_ETF", INDEX_UNIVERSE),
+                      ("MEME", MEME_UNIVERSE), ("PENNY_STOCK", PENNY_UNIVERSE)):
+        print(f"measuring {name} ({len(uni)} names)...", flush=True)
+        c = measure_class(name, uni)
+        out["classes"][name] = c
+        agg = c.get("aggregate")
+        if agg:
+            print(f"  {name}: n={agg['n_names_with_data']} median_rt="
+                  f"{agg['range_ub_rt_bp']['median']:.2f}bp "
+                  f"max/min={agg['ratio_max_to_min']}", flush=True)
+        else:
+            print(f"  {name}: no data - {c['blocked']}", flush=True)
+    # top-of-book attempted once, honestly blocked rather than zeroed
+    key = os.environ.get("TIINGO_API_KEY", "")
+    out["top_of_book"] = (top_of_book(sorted(set(ETF_UNIVERSE) | set(MEME_UNIVERSE)), key)
+                          if key else {"status": "SKIPPED_NO_KEY"})
+    out["commission"] = {"status": "COMMISSION_UNKNOWN",
+                          "why": "no broker statement or fill data in repo; the 10bp "
+                                 "constant in transaction_costs.json is an unsourced "
+                                 "assumption and is not propagated as measured"}
+    path = OUT / "class_cost_20261122.json"
+    path.write_text(json.dumps(out, indent=1, default=str))
+    print(f"\nwrote {path}")
+    return 0
+
+
 # ------------------------------------------------------------------ main
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true", help="skip network calls")
+    ap.add_argument("--classes-measure", action="store_true",
+                    help="M3: measure ETF/INDEX-alias/MEME per-name spread "
+                         "distributions into class_cost_20261122.json")
     a = ap.parse_args()
+    if a.classes_measure:
+        return classes_main()
     key = os.environ.get("TIINGO_API_KEY", "")
     OUT.mkdir(parents=True, exist_ok=True)
 
