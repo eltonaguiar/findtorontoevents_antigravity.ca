@@ -32,7 +32,13 @@ from pathlib import Path
 MEASURED_RT_BP = 42.64          # Mercury3, live books, $25k/leg, retail taker
 MEASURED_FILLS = 4              # spot entry, perp entry, spot exit, perp exit
 SECOND_HALF_BP = 1.346          # forward-honest gross funding
-REHEDGE_BP_DAY = 0.072          # 5% drift band, measured on live books
+# 0.0 for a QUANTITY-MATCHED book (long q coins spot, short q coins perp): net delta is
+# identically zero because both legs hold the same coin quantity, so nothing needs re-trading.
+# My earlier 0.072 bp/day described a CONSTANT-USD-NOTIONAL mandate, which is a different
+# strategy whose measured maintenance cost (3.22 bp/day at a 5% band, see
+# tools/delta_drift_construction_check.py) exceeds the carry's entire gross.
+REHEDGE_BP_DAY = 0.0
+NOTIONAL_MANDATE_REHEDGE_BP_DAY = 3.217
 HOLDS = (30, 60, 90, 120, 180, 365)
 
 
@@ -77,7 +83,7 @@ def path_cost(entry_fee: float, exit_fee: float, spread_per_fill: float,
 
 
 def net_bp_day(round_trip: float, hold_days: int, hurdle_bp_day: float,
-               gross: float = SECOND_HALF_BP, rehedge: float = REHEDGE_BP_DAY) -> dict:
+               rehedge: float = REHEDGE_BP_DAY, gross: float = SECOND_HALF_BP) -> dict:
     drag = round_trip / hold_days if hold_days else float("inf")
     net = gross - drag - rehedge
     return {
@@ -90,9 +96,9 @@ def net_bp_day(round_trip: float, hold_days: int, hurdle_bp_day: float,
 
 
 def crossing_days(round_trip: float, hurdle_bp_day: float,
-                  holds=range(1, 731)) -> int | None:
+                  rehedge: float = REHEDGE_BP_DAY, holds=range(1, 731)) -> int | None:
     for h in holds:
-        if net_bp_day(round_trip, h, hurdle_bp_day)["beats_cash"]:
+        if net_bp_day(round_trip, h, hurdle_bp_day, rehedge)["beats_cash"]:
             return h
     return None
 
@@ -106,10 +112,14 @@ def main() -> None:
                     help="Binance VIP0 maker, published; override for your tier")
     ap.add_argument("--maker-adverse-bp", type=float, default=1.0,
                     help="assumed adverse selection per maker fill")
+    ap.add_argument("--rehedge-bp", type=float, default=REHEDGE_BP_DAY,
+                    help="per-day maintenance drag. 0.0 for quantity-matched (default); use "
+                         f"{NOTIONAL_MANDATE_REHEDGE_BP_DAY} for a USD-notional-constant mandate")
     ap.add_argument("--out", default="reports/funding_carry/funding_maker_breakeven.json")
     args = ap.parse_args()
 
     hurdle = args.tbill_pct / 365.0 * 100.0
+    rehedge = args.rehedge_bp
     split = per_fill_split(args.taker_fee_bp)
     spf = split["spread_and_impact_bp_per_fill"]
 
@@ -139,7 +149,12 @@ def main() -> None:
             "tbill_pct": args.tbill_pct,
             "hurdle_bp_day": round(hurdle, 4),
             "gross_forward_honest_bp_day": SECOND_HALF_BP,
-            "rehedge_bp_day": REHEDGE_BP_DAY,
+            "rehedge_bp_day": rehedge,
+            "rehedge_construction": ("quantity_matched" if rehedge == 0.0
+                                     else "usd_notional_constant"),
+            "rehedge_source": "tools/delta_drift_construction_check.py: quantity-matched "
+                              "book needs 0 re-trades (net delta identically 0). The 0.072 "
+                              "bp/day I previously charged described a notional mandate.",
             "taker_fee_bp": args.taker_fee_bp,
             "maker_fee_bp": args.maker_fee_bp,
             "maker_adverse_selection_bp_per_fill": args.maker_adverse_bp,
@@ -158,13 +173,14 @@ def main() -> None:
     }
 
     print(f"hurdle {args.tbill_pct:.2f}% = {hurdle:.4f} bp/day; "
-          f"forward-honest gross {SECOND_HALF_BP:.3f} - rehedge {REHEDGE_BP_DAY:.3f} "
-          f"= {SECOND_HALF_BP - REHEDGE_BP_DAY:.3f} bp/day before entry/exit\n")
+          f"forward-honest gross {SECOND_HALF_BP:.3f} - rehedge {rehedge:.3f} "
+          f"= {SECOND_HALF_BP - rehedge:.3f} bp/day before entry/exit "
+          f"[construction: {'quantity_matched' if rehedge == 0 else 'usd_notional'}]\n")
     print(f"{'path':<38}{'RT bp':>8}{'cross days':>12}{'net@90d':>10}{'net@180d':>11}")
 
     for name, p in paths.items():
-        cross = crossing_days(p["roundtrip_bp"], hurdle)
-        table = {str(h): net_bp_day(p["roundtrip_bp"], h, hurdle) for h in HOLDS}
+        cross = crossing_days(p["roundtrip_bp"], hurdle, rehedge)
+        table = {str(h): net_bp_day(p["roundtrip_bp"], h, hurdle, rehedge) for h in HOLDS}
         out["paths"][name] = {**p, "crossing_days": cross, "by_hold": table}
         n90 = table["90"]["net_ann_pct"]
         n180 = table["180"]["net_ann_pct"]
@@ -175,7 +191,7 @@ def main() -> None:
     for adv in (0, 1, 2, 3, 4, 5, 7, 10):
         p = path_cost(args.maker_fee_bp, args.maker_fee_bp, spf, adv, args.taker_fee_bp)
         budget.append({"adverse_bp_per_fill": adv, "roundtrip_bp": p["roundtrip_bp"],
-                       "crossing_days": crossing_days(p["roundtrip_bp"], hurdle)})
+                       "crossing_days": crossing_days(p["roundtrip_bp"], hurdle, rehedge)})
     out["maker_adverse_selection_budget"] = budget
 
     taker_cross = out["paths"]["retail_taker_both_sides (measured)"]["crossing_days"]
