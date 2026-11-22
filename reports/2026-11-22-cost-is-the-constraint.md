@@ -14,7 +14,7 @@ From the 40-cell sweep (`reports/2026-11-22-per-class-edge-results.md`, 2012-01-
 | binding constraint | classes | evidence |
 |---|---|---|
 | **Cost** | FUTURES, CRYPTO (carry) | H-218 CI-LB 0.186 → **−0.054** at 2× cost; H-228 0.143 → **−0.857** at 2× |
-| **Multiplicity** | EQUITY | H-201 DSR 0.9469 vs 0.95 — and at 2× cost CI-LB is still **+7.002**, so cost would have to rise ~13× to bind |
+| **Multiplicity** | EQUITY | H-201 DSR 0.9469 vs 0.95 — and at 2× cost CI-LB is still **+7.002**, so cost would have to rise **30.7× (to 614 bp round trip)** to bind |
 | **Benchmark** | ETF, INDEX, MUTUAL_FUND | positive CI-LB, negative excess vs buy-and-hold of own universe |
 | **No signal at all** | BOND, FOREX, PENNY | CI-LB negative before any cost discussion |
 | **Data integrity** | COMMODITY | `CL=F` has a negative print and 55 moves >8%; `NG=F` has 25 recurring month-day roll spikes |
