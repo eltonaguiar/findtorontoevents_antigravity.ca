@@ -555,6 +555,54 @@ def selftest() -> int:
     return 0
 
 
+def gate_problems(st: dict, picks: list[dict], res: list[dict]) -> tuple[list[str], str]:
+    """The SINGLE definition of "is the provenance gate failing?".
+
+    Pure (no I/O, no printing) so the weekly scorecard can reuse it instead of
+    reimplementing the thresholds. Before this existed the scorecard had its own
+    `pct_forward < 95 -> alert` rule with no minimum-n guard, while the CI gate had
+    one -- two definitions of the same judgement, which is how a threshold drifts.
+
+    Returns (problems, human-readable verdict line).
+    """
+    problems: list[str] = []
+
+    if not st["resolution_chain_ok"]:
+        problems.append("resolution chain BROKEN -- outcomes were edited")
+
+    if st["n_emitted"] == 0:
+        return problems, "GATE: PASS (no picks emitted yet -- nothing to measure)"
+
+    n_res = st["n_resolved"]
+    verdict = ""
+    if n_res < MIN_RESOLVED:
+        verdict = (f"GATE: PASS (only {n_res} resolved; need {MIN_RESOLVED} to "
+                   f"judge pct_forward)")
+    elif st["pct_forward"] is not None and st["pct_forward"] < PCT_FORWARD_MIN:
+        problems.append(f"pct_forward {st['pct_forward']:.1f}% < {PCT_FORWARD_MIN}% "
+                        f"over {n_res} resolved picks -- picks are not resolving "
+                        f"after creation")
+
+    # starved resolver: picks exist and are old, but almost nothing resolves
+    done = {r.get("pick_seq") for r in res}
+    pending = [p for p in picks if p.get("seq") not in done]
+    if pending:
+        stamps = []
+        for p in pending:
+            try:
+                stamps.append(datetime.fromisoformat(p["created_at"]))
+            except (KeyError, TypeError, ValueError):
+                continue
+        if stamps:
+            age_days = (datetime.now(timezone.utc) - min(stamps)).days
+            if age_days > MAX_DAYS + STARVE_GRACE_DAYS:
+                problems.append(
+                    f"resolver starved: {len(pending)} pick(s) pending, oldest "
+                    f"{age_days}d (limit {MAX_DAYS}d + {STARVE_GRACE_DAYS}d grace) "
+                    f"-- no market data path or a broken symbol map")
+    return problems, verdict or "GATE: evaluating"
+
+
 def cmd_gate() -> int:
     """Hard CI gate. Exit 1 only on a condition that is genuinely actionable.
 
@@ -576,42 +624,13 @@ def cmd_gate() -> int:
     st = compute_status()
     picks = read_jsonl(PICKS)
     res = read_jsonl(RES)
-    problems: list[str] = []
-
-    if not st["resolution_chain_ok"]:
-        v = verify_resolutions(RES)
-        problems.append(f"resolution chain BROKEN at index {v.get('index')}: "
-                        f"{v.get('reason')}")
-
-    if st["n_emitted"] == 0:
-        print("GATE: PASS (no picks emitted yet -- nothing to measure)")
-        return 0
-
-    n_res = st["n_resolved"]
-    if n_res < MIN_RESOLVED:
-        print(f"GATE: PASS (only {n_res} resolved; need {MIN_RESOLVED} to judge "
-              f"pct_forward)")
-    elif st["pct_forward"] is not None and st["pct_forward"] < PCT_FORWARD_MIN:
-        problems.append(f"pct_forward {st['pct_forward']:.1f}% < {PCT_FORWARD_MIN}% "
-                        f"over {n_res} resolved picks -- picks are not resolving "
-                        f"after creation")
-
-    # starved resolver: picks exist and are old, but nothing has been resolved
-    done = {r["pick_seq"] for r in res}
-    pending = [p for p in picks if p["seq"] not in done]
-    if pending:
-        oldest = min(datetime.fromisoformat(p["created_at"]) for p in pending)
-        age_days = (datetime.now(timezone.utc) - oldest).days
-        if age_days > MAX_DAYS + STARVE_GRACE_DAYS:
-            problems.append(f"resolver starved: {len(pending)} pick(s) pending, "
-                            f"oldest {age_days}d (limit {MAX_DAYS}d + "
-                            f"{STARVE_GRACE_DAYS}d grace) -- no market data path "
-                            f"or a broken symbol map")
+    problems, verdict = gate_problems(st, picks, res)
 
     print(json.dumps(st, indent=1))
+    print(f"\n{verdict}")
+    for p in problems:
+        print(f"::error::provenance gate: {p}")
     if problems:
-        for p in problems:
-            print(f"::error::provenance gate: {p}")
         print(f"\nGATE: FAIL ({len(problems)} problem(s))")
         return 1
     print("\nGATE: PASS")

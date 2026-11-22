@@ -32,6 +32,22 @@ REPO = Path(__file__).resolve().parent.parent
 OUT = REPO / "reports/weekly_scorecard"
 TBILL = 3.50
 
+
+def _resolver():
+    """The provenance resolver module, imported rather than reimplemented.
+
+    `--strict` used to alert on `pct_forward < 95` with no minimum-n guard while the
+    CI gate required n_resolved >= 20 -- two definitions of one judgement, which is
+    how a threshold drifts apart. Importing keeps ONE definition.
+    """
+    try:
+        if str(REPO / "tools") not in sys.path:
+            sys.path.insert(0, str(REPO / "tools"))
+        import provenance_resolver  # noqa: PLC0415
+        return provenance_resolver
+    except Exception:  # noqa: BLE001
+        return None
+
 # Every input the scorecard knows about. `what` is printed when the file is absent.
 SOURCES = {
     "harness": ("reports/harness_certification/latest.json",
@@ -296,11 +312,29 @@ def build():
                          f"{fnum(pf_, 1, '%')}, hit {fnum(rs.get('hit_rate'), 1, '%')}, "
                          f"mean {fnum(rs.get('mean_bp'), 1, ' bp')}, "
                          f"PF {fnum(rs.get('profit_factor'), 3)}", "observed"))
-            if pf_ is not None and pf_ < 95:
-                alerts.append(f"pct_forward is {pf_:.1f}% - picks are not being "
-                              f"resolved after creation as they should be")
-        if rs.get("resolution_chain_ok") is False:
-            alerts.append("resolution chain BROKEN - outcomes were edited")
+
+        # ONE definition of the gate, shared with CI (tools/provenance_resolver.py).
+        # "Not yet measurable" (empty ledger, or too few resolutions) PASSES; "should
+        # be measurable and is not" (stale pct_forward, starved resolver, edited
+        # outcomes) FAILS -- which is exactly the distinction --strict was missing.
+        pr = _resolver()
+        if pr is None:
+            notes.append("provenance gate NOT enforced this run: could not import "
+                         "tools/provenance_resolver.py")
+            if rs.get("resolution_chain_ok") is False:
+                alerts.append("resolution chain BROKEN - outcomes were edited")
+        else:
+            try:
+                picks = pr.read_jsonl(pr.PICKS)
+                res = pr.read_jsonl(pr.RES)
+                probs, verdict = pr.gate_problems(dict(rs), picks, res)
+            except Exception as e:  # noqa: BLE001
+                probs, verdict = [], f"gate could not run: {e}"
+                notes.append(f"provenance gate could not run: {e}")
+            for p in probs:
+                alerts.append(f"provenance gate: {p}")
+            if not probs:
+                notes.append(f"provenance gate: {verdict}")
     else:
         rows.append(("Provenance resolution", "NOT RUN",
                      "python3 tools/provenance_resolver.py --status", "-"))

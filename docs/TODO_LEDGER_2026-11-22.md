@@ -76,7 +76,7 @@ rate; SE computed in consistent units; a selftest proving `dsr ∈ [0,1]` and th
 known-z input maps to the correct probability; the 64.4% headline withdrawn in the
 regenerated artifact. Document in `updates/`.
 
-## [ ] T7 — Scorecard: strict thresholds for the provenance rows
+## [x] T7 — Scorecard: strict thresholds for the provenance rows
 `tools/weekly_scorecard.py` prints the provenance/resolution rows but treats
 `EMPTY`/`NO DATA` as non-alerts, so `--strict` exits 0 while nothing is measured.
 **Acceptance:** `--strict` distinguishes "not yet measurable" (empty ledger, no
