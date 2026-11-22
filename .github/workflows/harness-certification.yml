@@ -67,6 +67,31 @@ jobs:
           echo "rc=$rc" >> "$GITHUB_OUTPUT"
           exit 0
 
+      # Integrity lint catches the three mechanical defects that produced fake
+      # results in this programme: selection on the dependent variable (a median
+      # over positive cells only), backfilled rows posing as forward observations,
+      # and Sharpe/PF reported without a trial count. --strict fails on Check A
+      # HIGH and Check B only; Check C is advisory because a legitimate
+      # single-strategy artifact implies n_trials=1.
+      - name: Integrity lint (selection-on-DV, ledger provenance, n_trials)
+        id: lint
+        run: |
+          set +e
+          python3 tools/integrity_lint.py --strict 2>&1 | tee /tmp/lint.txt
+          rc=${PIPESTATUS[0]}
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Fail on integrity violations
+        if: steps.lint.outputs.rc != '0'
+        run: |
+          echo "::error::Integrity lint found a HIGH-severity violation."
+          echo "Check A HIGH = an aggregate over a population filtered by outcome."
+          echo "Check B     = ledger rows created AFTER their own close (backfill)."
+          echo "Both invalidate any statistic computed from the affected data."
+          sed -n '1,40p' /tmp/lint.txt
+          exit 1
+
       - name: Summarise to the job page
         run: |
           {
