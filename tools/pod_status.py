@@ -23,6 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 POD_DIR = ROOT / "reports" / "pods"
 JOURNAL = POD_DIR / "pod_journal.jsonl"
+FWD_DIR = POD_DIR / "forward"
 
 
 def load_specs() -> list[dict]:
@@ -37,11 +38,8 @@ def load_specs() -> list[dict]:
     return out
 
 
-def load_rows() -> dict[str, list[dict]]:
-    rows: dict[str, list[dict]] = {}
-    if not JOURNAL.exists():
-        return rows
-    for line in JOURNAL.read_text().splitlines():
+def _ingest(path: Path, rows: dict[str, list[dict]]) -> None:
+    for line in path.read_text().splitlines():
         line = line.strip()
         if not line:
             continue
@@ -50,6 +48,23 @@ def load_rows() -> dict[str, list[dict]]:
         except json.JSONDecodeError:
             continue
         rows.setdefault(r.get("pod_id", "?"), []).append(r)
+
+
+def load_rows() -> dict[str, list[dict]]:
+    """Forward observations PLUS gate-state rows.
+
+    The journal on its own only ever records gate STATE, so reading it alone pins
+    `n_days` at 0 forever -- a pod could run daily and never become eligible. The
+    actual forward sessions are written by `pod_forward.py` under forward/, and
+    they are what the gate must count. (Found on the first real run: 15 sessions
+    on disk, status still reading 0/20.)
+    """
+    rows: dict[str, list[dict]] = {}
+    if FWD_DIR.exists():
+        for p in sorted(FWD_DIR.glob("*.jsonl")):
+            _ingest(p, rows)
+    if JOURNAL.exists():
+        _ingest(JOURNAL, rows)
     return rows
 
 

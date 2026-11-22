@@ -53,6 +53,13 @@ charges once per name from the basket being purchased. Also: a 15-day bootstrap 
 no content, so inference and vol-matching now start at 30 days and the row reports the cumulative
 excess instead of a meaningless CI.
 
+**Bug 5 — the clock ran and nothing read it.** The first real run wrote 15 forward sessions, and
+`pod_status.py` still reported `n_days 0/20`, because its `load_rows()` read only the journal, and
+the journal records gate STATE rather than observations. Writing the recorder without wiring it into
+the reader would have produced a perfectly functioning clock that no gate could ever see. `load_rows()`
+now ingests `reports/pods/forward/*.jsonl` first, then the journal; status reads **n_days 15/20,
+n_trades 3/10**, still correctly GATED.
+
 ## 3. Verification
 
 | check | command | result |
@@ -61,7 +68,8 @@ excess instead of a meaningless CI.
 | New tests | `pytest tests/test_effective_trials.py tests/test_pbo_reality_check_invvol.py -q` | **18 passed** |
 | Power test for the near-zero finding | in the above | ρ=0.9 narrows the max-tail > 15%, ρ=0.19 < 12% |
 | Pod recorder, dry run | `python3 tools/pod_forward.py --dry-run` | `RC=0`, 15 sessions, entry cost now charged |
-| Pod recorder, real run | `python3 tools/pod_forward.py` | appends rows; verdict barred by universe size |
+| Pod recorder, real run | `python3 tools/pod_forward.py` | `RC=0`, 15 sessions appended, entry cost charged, verdict barred by universe size |
+| Recorder wired into the gate | `python3 tools/pod_status.py` | reads **n_days 15/20, n_trades 3/10** (was 0/0 before the fix); still GATED |
 
 The power test is the load-bearing one: the headline result is that correlation barely matters for
 a maximum, and a near-zero effect is only credible if the same code detects a large one. On
