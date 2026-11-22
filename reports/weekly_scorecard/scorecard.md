@@ -1,6 +1,6 @@
 # Weekly scorecard
 
-_generated 2026-11-22 22:22 UTC by `tools/weekly_scorecard.py`_
+_generated 2026-11-22 22:24 UTC by `tools/weekly_scorecard.py`_
 
 T-bill hurdle used throughout: **3.50%/yr**
 
@@ -10,14 +10,14 @@ T-bill hurdle used throughout: **3.50%/yr**
 |---|---|---|---|
 | Harness certification | **PASS** | 6 harnesses (5 deterministic, 1 live); drift vs baseline is checked by tools/harness_certification.py --rerun | deterministic |
 | Integrity lint | **PASS** | new 0 / total 10 | deterministic |
-| Live ledger net expectancy | **-15.24 bp** | n=10,968  PF=0.904  CI-LB=0.852  t=-3.91 | observed |
-|   CRYPTO | **FAIL** | net -18.17 bp  PF 0.885 (LB 0.829)  n=9,099 | observed |
-|   EQUITY | **pf>1 but CI includes 1** | net 18.60 bp  PF 1.088 (LB 0.885)  n=936 | observed |
-|   ETF | **FAIL** | net -0.32 bp  PF 0.997 (LB 0.802)  n=590 | observed |
-|   FOREX | **FAIL** | net -15.13 bp  PF 0.668 (LB 0.420)  n=252 | observed |
-|   COMMODITY | **FAIL** | net -346.51 bp  PF 0.120 (LB 0.033)  n=44 | observed |
-|   BOND | **FAIL** | net -18.22 bp  PF 0.657 (LB 0.268)  n=35 | observed |
-|   FUTURES | **INSUFF-N** | net 57.09 bp  PF 1.556 (LB 0.341)  n=12 | observed |
+| Live ledger net expectancy | **-13.40 bp** | n=10,593  PF=0.915  CI-LB=0.859  t=-3.38 | observed |
+|   CRYPTO | **FAIL** | net -16.04 bp  PF 0.898 (LB 0.842)  n=8,733 | observed |
+|   EQUITY | **pf>1 but CI includes 1** | net 19.29 bp  PF 1.091 (LB 0.885)  n=934 | observed |
+|   ETF | **FAIL** | net -0.22 bp  PF 0.998 (LB 0.816)  n=585 | observed |
+|   FOREX | **FAIL** | net -15.45 bp  PF 0.662 (LB 0.429)  n=251 | observed |
+|   COMMODITY | **FAIL** | net -369.80 bp  PF 0.083 (LB 0.022)  n=43 | observed |
+|   BOND | **FAIL** | net -18.22 bp  PF 0.657 (LB 0.263)  n=35 | observed |
+|   FUTURES | **INSUFF-N** | net 57.09 bp  PF 1.556 (LB 0.334)  n=12 | observed |
 | Funding carry, net of fees | **REFUTED** | gross 3.555%/yr  halves 5.96 -> 1.24%/yr  blocks>cash 18/28 | observed |
 | Vol risk premium (existence) | **ESTABLISHED** | mean 357.9 bp  t=46.50 | observed |
 |   short-vol harvest | **RUINED** | worst period -102.9% | observed |
@@ -32,8 +32,8 @@ T-bill hurdle used throughout: **3.50%/yr**
 ## State notes
 
 - L1 48 rows are WON on gross but LOSS on net (1.0% of gross wins). Any WR computed from the won flag overstates by this much.
-- L2 48 status-label conflicts (0.44% of rows).
-- L3 src 'luxalgo_filters' is 36.7% of the ledger; any ledger-wide stat is mostly that one emitter.
+- L2 48 status-label conflicts (0.45% of rows).
+- L3 src 'luxalgo_filters' is 36.4% of the ledger; any ledger-wide stat is mostly that one emitter.
 - mega_mutation is QUARANTINED - no positive-expectancy emitter is established anywhere in the programme; the honest default is T-bills.
 
 ## What this scorecard deliberately does not do

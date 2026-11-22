@@ -170,6 +170,30 @@ def load_rows():
     return d, d["rows"]
 
 
+def dedup_reemissions(kept):
+    """Drop re-emissions: same source, symbol, side and EXACT entry price.
+
+    Discovered by tools/mega_mutation_falsification.py: two AVAXUSDT SHORT rows at
+    entry 9.409 on the same day. Within a source, an identical (symbol, side,
+    entry) is the same position recorded twice, not two trades -- a strategy
+    cannot fill twice at the same price to the cent without that being the same
+    fill. Kept keys are disjoint from cross-source pairs, so this cannot merge two
+    different emitters' picks.
+    """
+    seen, out, dropped = {}, [], 0
+    for r in kept:
+        k = (r["src"], r["sym"], r["dir"], round(r["entry"], 8))
+        if k in seen:
+            dropped += 1
+            # keep the EARLIER closed_at as the canonical record
+            if r["dt"] < seen[k]["dt"]:
+                seen[k].update(r)
+            continue
+        seen[k] = r
+        out.append(r)
+    return out, dropped
+
+
 def screen(rows):
     """Canonical screen applied by EVERY section.
 
@@ -218,6 +242,7 @@ def screen(rows):
             "net": net,
             "gross": float(r.get("pnl_gross_pct") or 0.0),
             "cost": float(r.get("cost_bps") or 0.0),
+            "entry": ent,
             "dt": dt,
             "day": daykey(dt),
             "cluster": f"{sym}|{daykey(dt)}",
@@ -540,6 +565,11 @@ def main():
     ap.add_argument("--boot", type=int, default=2000)
     ap.add_argument("--out", default=str(OUT))
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--dedup", dest="dedup", action="store_true", default=True,
+                    help="Drop same-source same-symbol same-side same-entry "
+                         "re-emissions before any statistic (DEFAULT).")
+    ap.add_argument("--no-dedup", dest="dedup", action="store_false",
+                    help="Keep re-emissions, for comparison only.")
     a = ap.parse_args()
 
     if not LEDGER.exists():
@@ -551,6 +581,12 @@ def main():
     print(f"rows      {len(rows):,}")
 
     kept, reject = screen(rows)
+    pre = len(kept)
+    if a.dedup:
+        kept, dropped = dedup_reemissions(kept)
+        reject["reemission_dup"] = dropped
+        print(f"\nDEDUP (--dedup): dropped {dropped:,} re-emissions "
+              f"({100*dropped/pre:.2f}%) -> {len(kept):,} rows remain")
     f31 = section_leakage(rows, kept, reject)
     r33 = section_per_class(kept, a.boot)
     r34 = section_sources(kept)
@@ -566,6 +602,7 @@ def main():
           f"{r34['n_positive_bh']} positive after BH")
 
     payload = {"ledger": str(LEDGER.relative_to(REPO)),
+               "dedup_applied": bool(a.dedup),
                "generated_at": d.get("generated_at"),
                "n_raw": len(rows), "n_kept": len(kept),
                "rejections": dict(reject), "leakage_findings": f31,
