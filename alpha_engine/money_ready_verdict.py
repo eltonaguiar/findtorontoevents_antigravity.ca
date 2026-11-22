@@ -1060,11 +1060,16 @@ def _dsr_gate(returns: list[float], asset_class: str = "") -> dict[str, Any]:
             "skipped": True,
             "note": (
                 f"no n_trials baseline for {_cls or '(no asset_class)'} in "
-                "NB_TRIALS_BY_CLASS -- DSR skipped (defaulting to nb_trials=1 "
-                "would report an undeflated number as a pass)"
+                "NB_TRIALS_BY_CLASS -- DSR skipped (nb_trials floored at 1 for "
+                "arithmetic safety; the gate does not pass)"
             ),
             "dsr_score": None,
-            "nb_trials": None,
+            # 1, not None: callers compare and multiply this value, and a None
+            # raised TypeError in test_profit_program_math_2026_11_20's
+            # unknown-class case. The gate still does NOT pass (ok is None,
+            # skipped is True); this is only an arithmetic floor so a missing
+            # baseline cannot crash a caller or read as zero trials.
+            "nb_trials": 1,
         }
     try:
         from alpha_engine.trial_counter import effective_n_trials
