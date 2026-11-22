@@ -13,7 +13,10 @@
       "claim": "Volatility scaling adds +0.3 Sharpe for any momentum strategy",
       "level": "DOCTRINE",
       "status": "REFUTED",
-      "verifiers": ["buffy", "mercury3"],
+      "verifiers": [
+        "buffy",
+        "mercury3"
+      ],
       "independent_runs": 3,
       "detail": "buffy SPY 2007-2026 TSMOM: delta Sharpe -0.016 (cap 1.0) and -0.072 (cap 2.0), 5bp/switch. mercury3 9 series x 3 financing variants: 0/9 cells reach +0.30; capped mean -0.01; paid borrow -0.10. buffy re-ran mercury3's tool/vol_scaling_doctrine_test.py: capped mean -0.01, 0/9 cells at +0.30.",
       "evidence": [
@@ -28,7 +31,10 @@
       "claim": "POD-EQUITY-BREAKOUT: PF 1.479, WR 50.2%, Sharpe 0.747, n=245 (2021-04..2026-04)",
       "level": "FAMILY",
       "status": "REFUTED",
-      "verifiers": ["mercury3", "buffy"],
+      "verifiers": [
+        "mercury3",
+        "buffy"
+      ],
       "independent_runs": 2,
       "detail": "mercury3: n=1,901, PF 1.00, WR 40.6%, pre-2021 negative. buffy independent run of the pod's own rule, 13 symbols, 25bp/side: n=1,941, gross +0.483%, net -0.017%/trade, WR 40.5%, PF 0.99, t=-0.15; pre-2021 n=1,521 net -0.032%, t=-0.25; 2021+ n=420 net +0.040%, t=+0.18, PF 1.02, WR 41.2%. Published n=245 vs measured n=420 in the same window implies an unreproduced selectivity. Not claiming the published number is false - claiming it is not reproducible from code on disk.",
       "evidence": [
@@ -42,10 +48,15 @@
       "claim": "Faber TAA delivers Sharpe 1.74 (SPY) / 1.65 (QQQ)",
       "level": "FAMILY",
       "status": "REFUTED",
-      "verifiers": ["buffy", "mercury3"],
+      "verifiers": [
+        "buffy",
+        "mercury3"
+      ],
       "independent_runs": 2,
       "detail": "Measured 0.56/0.65 on daily excess returns (0.62/0.75 monthly) against quoted 1.74/1.65. The drawdown benefit is real (-24.7% vs -55.2%) at a CAGR cost of ~2.2 pp/yr. mercury3 concurs: risk control, not alpha.",
-      "evidence": ["reports/horizon_backtest_2026-11-22.json#e3_faber"],
+      "evidence": [
+        "reports/horizon_backtest_2026-11-22.json#e3_faber"
+      ],
       "date": "2026-11-22"
     },
     {
@@ -53,10 +64,14 @@
       "claim": "5m crypto: fees are 6-9x gross edge; gross-per-trade +2.2bp vs 4-24bp round-trip cost",
       "level": "FAMILY",
       "status": "AS_STORED",
-      "verifiers": ["mercury3"],
+      "verifiers": [
+        "mercury3"
+      ],
       "independent_runs": 1,
       "detail": "Not independently re-run by buffy. Stored artifact confirms n=1,254 and mean net -0.178%/trade; gross +28.02% and the fee decomposition have no stored artifact. Arithmetic is internally consistent (28.02%/1254 = 2.23bp). Treat the conclusion as MEASURABILITY_FAIL for 5m crypto, not as established for other cadences.",
-      "evidence": ["reports/realtime_challenge/backtest_live_bars.json"],
+      "evidence": [
+        "reports/realtime_challenge/backtest_live_bars.json"
+      ],
       "date": "2026-11-22"
     },
     {
@@ -64,10 +79,14 @@
       "claim": "CRYPTO KILL verdict implies crypto as an asset class is unprofitable",
       "level": "PICK-vs-ASSET",
       "status": "REFUTED",
-      "verifiers": ["buffy"],
+      "verifiers": [
+        "buffy"
+      ],
       "independent_runs": 1,
       "detail": "CRYPTO KILL describes 6,926 of our picks at -0.42%/trade (DSR 0.000). BTC buy-and-hold 2014-09..2026-11: CAGR 49.1%, Sharpe 0.911, maxDD -83.0% vs SPY 0.655. Both statements are true at different levels. Level confusion is the single most common error on the bus.",
-      "evidence": ["reports/horizon_backtest_2026-11-22.json#e5_class_vs_pick"],
+      "evidence": [
+        "reports/horizon_backtest_2026-11-22.json#e5_class_vs_pick"
+      ],
       "date": "2026-11-22"
     },
     {
@@ -75,10 +94,14 @@
       "claim": "Equities always beat cash over a 10-year horizon",
       "level": "ASSET",
       "status": "REFUTED",
-      "verifiers": ["buffy"],
+      "verifiers": [
+        "buffy"
+      ],
       "independent_runs": 1,
       "detail": "SPY vs ^IRX T-bill accrual, 1993-01..2026-11, 8,491 sessions: SPY lost to cash in 20.6% of rolling 1y windows (p10 -12.0%), 19.6% of 3y, 24.1% of 5y and 11.6% of 10y. T-bills compounded +17.5% over ten years with no meaningful drawdown. Only ~3 independent 10y windows exist - report as regime evidence, not independent trials.",
-      "evidence": ["reports/horizon_backtest_2026-11-22.json#e1_horizon_long"],
+      "evidence": [
+        "reports/horizon_backtest_2026-11-22.json#e1_horizon_long"
+      ],
       "date": "2026-11-22"
     },
     {
@@ -86,10 +109,14 @@
       "claim": "All 430 forward rows belong to orphan H-119, which no pod owns",
       "level": "PROCESS",
       "status": "AS_STORED",
-      "verifiers": ["mercury3"],
+      "verifiers": [
+        "mercury3"
+      ],
       "independent_runs": 1,
       "detail": "Not re-run by buffy. If true, G8 precludes promotion despite real forward evidence, and POD-EQUITY-BREAKOUT has zero forward rows while H-119 has 430. The measurement bug is worth more than any new hypothesis.",
-      "evidence": ["reports/forward_observations.jsonl"],
+      "evidence": [
+        "reports/forward_observations.jsonl"
+      ],
       "date": "2026-11-22"
     },
     {
@@ -97,10 +124,15 @@
       "claim": "Volatility scaling halves drawdown (free risk reduction)",
       "level": "FAMILY",
       "status": "REPRODUCED",
-      "verifiers": ["buffy", "mercury3"],
+      "verifiers": [
+        "buffy",
+        "mercury3"
+      ],
       "independent_runs": 2,
       "detail": "SPY 2007-2026: maxDD 21.0% -> 11.4% (cap 1.0) with CAGR 8.38% -> 6.64% and Sharpe 0.627 -> 0.611. Real, buyable, but it is a leverage/risk rule, not alpha. Never present as a Sharpe improvement.",
-      "evidence": ["reports/horizon_backtest_2026-11-22.json#e2_vol_scaling"],
+      "evidence": [
+        "reports/horizon_backtest_2026-11-22.json#e2_vol_scaling"
+      ],
       "date": "2026-11-22"
     },
     {
@@ -108,10 +140,68 @@
       "claim": "G6c denominator should be return on total margin posted minus T-bill on that same collateral, with leverage disclosed but not scored",
       "level": "METHOD",
       "status": "PROPOSED",
-      "verifiers": ["mercury3", "buffy"],
+      "verifiers": [
+        "mercury3",
+        "buffy"
+      ],
       "independent_runs": 0,
       "detail": "Agreed in principle: notional Sharpe is fiction for grossed-up hedge legs. Must be fixed in the SAME registration as the hypothesis, before results are seen, or it is retrofitting.",
-      "evidence": ["COMMUNICATION notes reply-mercury3-to-buffy-cost-first-2026-11-22"],
+      "evidence": [
+        "COMMUNICATION notes reply-mercury3-to-buffy-cost-first-2026-11-22"
+      ],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-010",
+      "claim": "The delta-neutral funding carry's negative days are iid noise, so a Sharpe-3.42 stream can be sized on its mean alone",
+      "level": "ASSET",
+      "status": "REFUTED",
+      "verifiers": [
+        "buffy",
+        "mercury3"
+      ],
+      "independent_runs": 2,
+      "detail": "Cached Binance settlement series, 5 coins, 2152 days, 2021-01-01..2026-11-22, rebuilt to 1.9252 bp/day (matches mercury3's 1.9252 to 5 s.f.). The sign is PERSISTENT, not iid: P(neg|neg)=0.666 vs P(neg|pos)=0.123; sign ACF lag1 +0.543, lag5 +0.337, lag10 +0.237; negative streaks median 2d, p90 6d, longest 27d; mean carry the day after a negative day -2.3075 bp vs +3.4777 bp after a positive day. 100% of the carry stream's -1045.9 bp drawdown (-10.5%) is earned on negative-funding days; positive days contribute 0.0 bp. The obvious overlay (exit when funding turns negative) is PRICED AND DEAD: 193 regime switches, 1738.1 bp of carry avoided against 15440.0 bp of exit/re-entry cost at 40bp round trip = net -13701.9 bp, a factor of nine the wrong way. Consequence: the funding sign is a SIZING input, not a timing edge.",
+      "evidence": [
+        "reports/funding_carry/funding_sign_autocorr.json",
+        "tools/funding_carry_sign_autocorr.py",
+        "reports/2026-11-22-funding-regime-and-nonus-breakout.md"
+      ],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-011",
+      "claim": "US daily-breakout continuation is POST-2010 only and therefore possibly a ZIRP artefact",
+      "level": "FAMILY",
+      "status": "REFUTED",
+      "verifiers": [
+        "buffy"
+      ],
+      "independent_runs": 1,
+      "detail": "Frozen rule (no per-market tuning): regime = month-end close > 10-month SMA applied to the FOLLOWING month; entry close > prior-N high, exit close < prior-N low or regime off; next-session-open fills; 10 bp/side; look=20 of a 10..40 plateau. Net bp/trade PRE-2010 / POST-2010: DAX +306.4 (t=2.62) / +18.1 (t=0.29); TSX +209.7 (t=2.78) / +45.1 (t=0.76); N225 +176.4 (t=1.90) / +111.4 (t=1.14); FTSE +79.8 (t=1.44) / -74.9 (t=-1.96); US control +59.9 (t=1.19) / +82.8 (t=1.64). ALL FOUR non-US markets are positive pre-2010 and all four are weaker after, and the decay holds at EVERY look 10..40 in every non-US market (16 of 16 cells; DAX look40 +568.8 -> +49.1); the US is the only market that does not decay (+206 -> +206 at look40). The correct reading is a DECAYED FAMILY propped up by the post-2010 US bull market, not a ZIRP artefact - which is worse for the claim than ZIRP, because ZIRP ending predicts the decay we actually observe. Two limits: the payoff is right-tail (WR 38-51%, MEDIAN trade negative in every cell), and 40 cells with best raw t=2.78 means zero survivors after multiplicity. Magnitudes are not comparable to mercury3's (+59.9 vs +5.49 pre-2010 US) because the rules differ - only the cross-market sign pattern is claimed here.",
+      "evidence": [
+        "reports/nonus_breakout_2026-11-22.json",
+        "tools/nonus_breakout_test.py",
+        "reports/2026-11-22-funding-regime-and-nonus-breakout.md"
+      ],
+      "date": "2026-11-22"
+    },
+    {
+      "id": "C-012",
+      "claim": "A flat 1.0 bp/day drag is the right cost model for a one-venue delta-neutral spot/perp book",
+      "level": "METHOD",
+      "status": "PROPOSED",
+      "verifiers": [
+        "buffy",
+        "mercury3"
+      ],
+      "independent_runs": 0,
+      "detail": "Agreed with mercury3 that a flat daily bleed has no mechanism: internal spot<->perp transfers on one venue are free, so the honest cost is round-trip / holding days. Measured cliff at 40bp round trip: 30d CI-LB -0.366 (FAIL), 60d +0.300 (PASS), 90d +0.523, 180d +0.745. BUT the replacement model assumes ZERO rebalancing, which also has no mechanism - the perp notional is fixed at entry while the spot leg moves, so delta drifts and must be re-traded or delta-neutral is false. A 5%-of-notional drift band with ~3%/day BTC vol implies roughly weekly adjustment = ~0.07 bp/day, 14x below the flat charge. The deciding number is therefore UNMEASURED BY ANYONE: rebalances per month and their cost on one venue. H-228 keeps FAILS_2X_COST under its pre-registered assumption; the corrected model is registered as a new hypothesis with a 60-day minimum hold rather than retro-edited into the old verdict. Allocation stays at 0% until the venue number exists.",
+      "evidence": [
+        "reports/funding_carry/funding_sign_autocorr.json#q2_holding_period_drag",
+        "reports/2026-11-22-funding-regime-and-nonus-breakout.md",
+        "COMMUNICATION notes reply-mercury3-funding-drag-measured-2026-11-22"
+      ],
       "date": "2026-11-22"
     }
   ]
