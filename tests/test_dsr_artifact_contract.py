@@ -37,6 +37,25 @@ LIVE = REPO / "tools" / "deflated_sharpe_results.json"
 CORRECTED_DIR = REPO / "reports"
 
 
+def _dsr():
+    """Load tools/deflated_sharpe.py BY PATH.
+
+    `import deflated_sharpe` is NOT safe here: a second module with the same name
+    exists at alpha_engine/deflated_sharpe.py, and any earlier test that puts
+    alpha_engine/ on sys.path registers it under the top-level name first. The
+    contract tests then operate on the wrong module and fail with AttributeError --
+    only in a full-suite run, never when this file is run alone. Loading by path is
+    deterministic and independent of pytest's import order.
+    """
+    import importlib.util
+
+    path = REPO / "tools" / "deflated_sharpe.py"
+    spec = importlib.util.spec_from_file_location("_dsr_tools_under_test", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def _load_live():
     if not LIVE.exists():
         pytest.skip("live DSR artifact not present")
@@ -101,7 +120,7 @@ class TestDeployGuard:
     """A default run must not overwrite the file the live gates read."""
 
     def test_default_run_targets_a_review_path_not_the_live_file(self, monkeypatch, tmp_path):
-        import deflated_sharpe as ds
+        ds = _dsr()
 
         written = {}
 
@@ -120,7 +139,7 @@ class TestDeployGuard:
         assert "deflated_sharpe_corrected_" in Path(written["path"]).name
 
     def test_deploy_flag_targets_the_live_file(self, monkeypatch):
-        import deflated_sharpe as ds
+        ds = _dsr()
 
         written = {}
 
@@ -143,7 +162,7 @@ class TestDeployGuard:
         clean worktree legitimately does not have it. A skip here means "cannot
         evaluate", never "passed".
         """
-        import deflated_sharpe as ds
+        ds = _dsr()
 
         if not Path(ds.DATA_PATH).exists():
             pytest.skip("dashboard_data.json absent (generated, not committed) -- "
