@@ -278,6 +278,22 @@ def segment_trades(pos: pd.Series, px: pd.Series, cost_bps: float) -> list[float
     return trades
 
 
+def _month_end_freq() -> str:
+    """The month-end resample alias this pandas accepts.
+
+    pandas renamed 'M' -> 'ME' in 2.2. requirements.txt pins pandas==2.1.4, so a hardcoded
+    'ME' raises `ValueError: Invalid frequency: ME` in CI while passing on any dev box with a
+    newer pandas (this repo's local interpreter is 2.3.3). Probing for the alias keeps the
+    module working on both, instead of pinning it to whichever version happened to be installed
+    when the line was written.
+    """
+    try:
+        pd.tseries.frequencies.to_offset("ME")
+        return "ME"
+    except (ValueError, TypeError):
+        return "M"
+
+
 def monthly_trades(net: pd.Series) -> list[float]:
     """Trades for an always-invested portfolio: one bucket per calendar month.
 
@@ -286,7 +302,7 @@ def monthly_trades(net: pd.Series) -> list[float]:
     Monthly buckets keep the same idea -- win/loss ratio of held periods -- with
     an honest n.
     """
-    m = (1.0 + net.fillna(0.0)).resample("ME").prod() - 1.0
+    m = (1.0 + net.fillna(0.0)).resample(_month_end_freq()).prod() - 1.0
     return [float(x) for x in m.dropna().to_numpy()]
 
 
