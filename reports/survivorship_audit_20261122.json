@@ -1,0 +1,83 @@
+{
+  "item": "20-22",
+  "title": "Survivorship / point-in-time audit",
+  "generated": "2026-11-22",
+  "source_panel": "data/cache/asset_class_review/*_5y.csv",
+  "universe_inventory": [
+    {"universe": "79-symbol panel / N1 / 12-1 momentum", "path": "data/cache/asset_class_review/*_5y.csv", "ref": "tools/momentum_12_1.py:6, tools/momentum_12_1.py:33", "n": 79, "construction": "glob of *_5y.csv files present on disk today"},
+    {"universe": "equity breakout", "path": "tools/pod_equity_breakout_backtest.py", "ref": "tools/pod_equity_breakout_backtest.py:49", "n": 13, "construction": "hardcoded tuple of US ETF/large-cap"},
+    {"universe": "breakout cost sweep", "path": "tools/breakout_cost_sweep.py", "ref": "tools/breakout_cost_sweep.py:27", "n": 13, "construction": "imports SYMBOLS from pod_equity_breakout_backtest"},
+    {"universe": "breakout backtest equity/crypto", "path": "tools/breakout_backtest.py", "ref": "tools/breakout_backtest.py:64, tools/breakout_backtest.py:66", "n": null, "construction": "hardcoded EQUITY_UNIVERSE + CRYPTO_UNIVERSE, only tickers that exist on disk"},
+    {"universe": "KIMI backtest engine", "path": "KIMI_RISEOFTHECLAW/backtest_engine.py", "ref": "KIMI_RISEOFTHECLAW/backtest_engine.py:57", "n": null, "construction": "hardcoded STOCKS_ETF/CRYPTO/FOREX/PENNY lists assembled today; includes names since delisted (NKLA, CLOV) -- whether they enter depends on fetch success, so effective membership is silently filtered"},
+    {"universe": "S&P 500 static snapshot", "path": "data/universe/sp500_tickers.txt", "ref": "data/universe/sp500_tickers.txt:1", "n": 502, "construction": "static current-constituent snapshot ~2026-06 -- survivorship-filtered by construction, no historical membership"}
+  ],
+  "survivorship_counts": {
+    "n_symbols_total": 79,
+    "n_series_ending_before_panel_end": 0,
+    "n_series_starting_after_panel_start": 0,
+    "n_series_with_multiday_gaps": 10,
+    "multiday_gap_symbols": ["AUDUSD_X", "EURGBP_X", "EURJPY_X", "EURUSD_X", "GBPJPY_X", "GBPUSD_X", "JPY_X", "NZDUSD_X", "USDCAD_X", "USDCHF_X"],
+    "n_zero_or_suspicious_volume": 20,
+    "zero_volume_symbols": ["AUDUSD_X", "CL_F", "ES_F", "EURGBP_X", "EURJPY_X", "EURUSD_X", "GBPJPY_X", "GBPUSD_X", "GC_F", "HG_F", "JPY_X", "NG_F", "NQ_F", "NZDUSD_X", "SI_F", "USDCAD_X", "USDCHF_X", "YM_F", "ZC_F", "ZS_F"],
+    "n_stale_close_run_ge5": 0,
+    "panel_window": ["2021-11-22", "2026-11-19"],
+    "note": "Zero series end early and zero start late -- the pure signature of a current-constituent universe. All 79 exist at both ends of the window."
+  },
+  "bias_quantification": {
+    "years": 4.9911,
+    "cagr_all_series": 0.068645,
+    "cagr_both_ends_only": 0.068645,
+    "gap_pp_per_year": 0.0,
+    "direction": "Panel is NOT overstated relative to its own both-ends subset (gap 0) -- but this is a ZERO LOWER BOUND, not proof of zero bias: no series drops out, so the two definitions coincide by construction.",
+    "why_lower_bound": "A survivorship-free benchmark is not available offline, and the frozen cache contains no delisted series. The measured gap therefore only proves the panel is internally consistent; the absolute upward bias from excluding never-listed/delisted names is UNMEASURED.",
+    "n_present_both_ends": 79,
+    "n_partial": 0
+  },
+  "per_verdict_consequence": [
+    {"strategy": "N1 R1 12m momentum top5", "verdict": "KILL", "standing": "UNCHANGED", "reason": "PIT re-run bit-identical; excess +0.97pp, null pct 61.2 (< 95 gate)"},
+    {"strategy": "N1 R2 sector momentum top2", "verdict": "KILL", "standing": "UNCHANGED", "reason": "PIT re-run bit-identical; excess -11.3pp, null pct 35.4"},
+    {"strategy": "N1 R3 SPY 200d trend filter", "verdict": "KILL", "standing": "UNCHANGED", "reason": "PIT re-run bit-identical; excess -6.8pp, null pct 53.4"},
+    {"strategy": "12-1 momentum (long/short)", "verdict": "KILL", "standing": "UNSAFE_TO_OVERCLAIM", "reason": "momentum longs are exactly the survivors a survivorship-biased universe flatters; KILL is conservative only if bias helped the strategy -- here bias would have HELPED, so the KILL is conservative (kill even more right). But a positive variant would be suspect."},
+    {"strategy": "equity breakout family", "verdict": "KILL", "standing": "CONSERVATIVE", "reason": "bias flatters breakout/momentum; killing a flattered strategy is conservative"},
+    {"strategy": "FX carry", "verdict": "KILL", "standing": "CONSERVATIVE", "reason": "FX series show gaps but not delisting; carry lost despite favourable data"},
+    {"strategy": "cross-venue basis", "verdict": "KILL", "standing": "CONSERVATIVE", "reason": "crypto majors all survive; bias would have helped, KILL is conservative"},
+    {"strategy": "funding carry", "verdict": "MARGINAL", "standing": "UNSAFE", "reason": "a marginal survive is exactly the verdict survivorship could flip; treat as unproven"}
+  ],
+  "point_in_time_attempt": {
+    "local_membership_sources_found": [
+      {"path": "data/universe/sp500_tickers.txt", "kind": "static current snapshot", "historical": false},
+      {"path": "data/penny_universe_seed.json", "kind": "seed list", "historical": false}
+    ],
+    "local_historical_membership_sources": "none (searched data/, data_lake/, data_providers/, references/, schemas/, research/, alpha_engine/)",
+    "network_fetch": {
+      "url": "https://raw.githubusercontent.com/fja05680/sp500/master/S%26P%20500%20Historical%20Components%20%26%20Changes(08-01-2024).csv",
+      "result": "FAILED",
+      "error_verbatim": "FETCH_FAILED: HTTPError HTTP Error 404: Not Found"
+    },
+    "approximation_built": "first-observation universe via tools/pit_universe.build_pit_universe(date, cache_dir)",
+    "what_it_removes": "left-censoring (symbol excluded before its first close) and right-censoring (excluded after its last close)",
+    "what_it_cannot_capture": "delisting-with-poor-returns bias -- a delisted name's final frozen observations still enter; and pre-IPO absence is handled only in the sense that a symbol is not counted before it exists",
+    "pit_universe_size_by_date": {"2021-11-25": 79, "2022-11-25": 79, "2023-01-03": 79, "2024-01-02": 79, "2025-01-02": 79, "2026-01-02": 79, "2026-11-19": 79}
+  },
+  "n1_rerun": {
+    "original_report": "reports/low_turnover_20261122.json",
+    "pit_report": "/tmp/low_turnover_PIT.json (regenerated; identical rules payload)",
+    "change_made": "ONLY tools/low_turnover_test.py rule_r1 candidate pool restricted to build_pit_universe(date). R2/R3 untouched.",
+    "mean_pit_universe_size": 79.0,
+    "sufficiency": "SUFFICIENT (>= 30 symbols every date)",
+    "rules_payload_identical": true,
+    "side_by_side": {
+      "R1_12m_momentum_annual_top5": {"n_trades": [33, 33], "cagr": [0.18046, 0.18046], "max_drawdown": [-0.46381, -0.46381], "sharpe": [0.59034, 0.59034], "excess_cagr_vs_spy": [0.00974, 0.00974], "random_null_percentile": [61.2, 61.2], "verdict": ["KILL", "KILL"], "survivorship_contribution_cagr": 0.0},
+      "R2_sector_momentum_quarterly_top2": {"n_trades": [30, 30], "cagr": [0.05755, 0.05755], "max_drawdown": [-0.23068, -0.23068], "sharpe": [0.41347, 0.41347], "excess_cagr_vs_spy": [-0.11316, -0.11316], "random_null_percentile": [35.4, 35.4], "verdict": ["KILL", "KILL"], "survivorship_contribution_cagr": 0.0},
+      "R3_spy_200d_trend_filter": {"n_trades": [19, 19], "cagr": [0.10240, 0.10240], "max_drawdown": [-0.11976, -0.11976], "sharpe": [0.86089, 0.86089], "excess_cagr_vs_spy": [-0.06831, -0.06831], "random_null_percentile": [53.4, 53.4], "verdict": ["KILL", "KILL"], "survivorship_contribution_cagr": 0.0}
+    },
+    "n1_conclusion": "SURVIVES (no change) -- but the re-run is uninformative about survivorship because the PIT universe equals the original at every date. The N1 KILLs rest on excess-vs-SPY and null percentiles, both far from the gates."
+  },
+  "tests": {
+    "file": "tests/test_pit_universe.py",
+    "command": "python3 -m unittest tests.test_pit_universe -v",
+    "result_verbatim": "Ran 4 tests in 0.035s  OK",
+    "n_passed": 4,
+    "n_total": 4
+  }
+}

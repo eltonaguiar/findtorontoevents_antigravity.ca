@@ -1,0 +1,16 @@
+{
+ "item": 17,
+ "strategy": "commodity_term_structure_carry",
+ "generated_utc": "2026-11-22T12:14:10Z",
+ "verdict": "BLOCKED_DATA",
+ "decisive": "zero second-month contract series on disk; roll yield = (front - second)/second cannot be computed from one price series",
+ "searched": [
+  "data/cache/asset_class_review/*_F_5y.csv (10 files: CL, GC, NG, SI, HG, ZC, ZS, ES, NQ, YM) -- each is ONE continuous front-month series with columns Date,Open,High,Low,Close,Volume",
+  "data/commodity_price_cache/ -- empty (.gitkeep only)",
+  "data_lake/ -- feature_store + ingest script only, no futures curves",
+  "backtest_results/futures_comparison/ -- strategy win-rate comparison report, no price data",
+  "recursive find for *front*, *back*month*, *roll*, *curve*, *_F_* -- only the single-series panel files above"
+ ],
+ "not_done_on_purpose": "No term structure was synthesised from the single front-month series or from spot ETF prices; that would invent the very signal being tested.",
+ "cost_treatment": "commodity futures cost is UNMEASURED; a break-even sweep would have been reported had the test been runnable"
+}
