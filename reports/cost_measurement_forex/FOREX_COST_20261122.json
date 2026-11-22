@@ -1,0 +1,47 @@
+{
+  "asset_class": "FOREX",
+  "item": "M2",
+  "generated_utc": "2026-11-22T22:20:00Z",
+  "status": "MEASURED_UPPER_BOUND",
+  "status_reason": "Live top-of-book was sampled successfully at 8 G10 pairs, but the session was the Sunday 22:00Z weekly reopen. Books were thin: two pairs frozen for the whole window, spreads wide, and sample-to-sample variance large. The numbers are REAL quotes (not assumptions) but are an UPPER BOUND on representative weekday cost, so they are published as evidence while the FOREX verdicts stay UNKNOWN pending a weekday London/NY-overlap run.",
+  "source": {
+    "endpoint": "https://api.tiingo.com/tiingo/fx/top?tickers=<csv>&token=$TIINGO_API_KEY",
+    "kind": "live top-of-book (bid/ask/sizes) from a commercial FX data vendor",
+    "tool": "tools/fx_cost_sampler.py",
+    "raw_windows": [
+      "reports/cost_measurement_forex/fx_top_of_book_samples.json (21:41:51Z-21:53:14Z, 17 polls, pre-open)",
+      "reports/cost_measurement_forex/fx_top_of_book_samples_window2.json (21:55:16Z-22:19:4xZ, 48 polls, straddles 22:00Z open)"
+    ],
+    "fx_week_open_utc": "2026-11-22T22:00:00Z (Sunday)",
+    "note_on_pre_open": "The 21:41-21:53Z samples were taken before the weekly open; FX books at that time are indicative only."
+  },
+  "commission": "COMMISSION_UNKNOWN",
+  "commission_note": "Tiingo top-of-book exposes bid/ask only. Whether a retail commission is layered on top cannot be determined from this feed, so it is not assumed to be zero. Round-trip cost below is SPREAD ONLY.",
+  "round_trip_definition": "round_trip_bp = full_spread_bp = (ask - bid) / mid * 1e4 (cross the spread on entry and on exit). half_spread_bp = full_spread_bp / 2 is the one-way cost.",
+  "window_post_open": {
+    "range_utc": ["2026-11-22T22:00:00Z", "2026-11-22T22:19:42Z"],
+    "samples_per_pair": 38
+  },
+  "pairs_bp_of_mid_post_open": {
+    "eurusd": {"n": 38, "min": 3.826, "median": 3.826, "max": 3.826, "mean": 3.826, "sd": 0.00, "unique_prices": 1, "note": "frozen at one price; tightest major"},
+    "usdcad": {"n": 38, "min": 1.952, "median": 1.952, "max": 1.952, "mean": 1.952, "sd": 0.00, "unique_prices": 1, "note": "frozen at one price"},
+    "usdjpy": {"n": 38, "min": 2.017, "median": 6.686, "max": 7.377, "mean": 5.672, "sd": 1.53, "unique_prices": 21},
+    "eurjpy": {"n": 38, "min": 7.240, "median": 7.987, "max": 10.340, "mean": 8.234, "sd": 0.75, "unique_prices": 12},
+    "audusd": {"n": 38, "min": 5.436, "median": 8.38, "max": 13.584, "mean": 9.769, "sd": 3.21, "unique_prices": 28},
+    "usdchf": {"n": 38, "min": 9.762, "median": 9.762, "max": 23.566, "mean": 10.897, "sd": 4.18, "unique_prices": 5, "note": "spiked to 23.6bp"},
+    "gbpusd": {"n": 38, "min": 9.774, "median": 12.52, "max": 14.512, "mean": 12.423, "sd": 1.23, "unique_prices": 16},
+    "eurgbp": {"n": 38, "min": 10.626, "median": 15.15, "max": 22.433, "mean": 16.709, "sd": 3.45, "unique_prices": 31}
+  },
+  "aggregate_post_open": {"n": 304, "min": 1.952, "median": 7.99, "mean": 8.52, "max": 23.566},
+  "majors_median_of_pair_medians_bp": 7.533,
+  "majors_mean_of_pair_medians_bp": 7.188,
+  "majors_range_of_medians_bp": [1.952, 12.52],
+  "majors_note": "The six USD majors' post-open medians are eurusd 3.826, gbpusd 12.52, usdjpy 6.686, audusd 8.38, usdcad 1.952, usdchf 9.762. Median of those six = 7.533 bp; mean = 7.188 bp; range 1.952-12.52 bp.",
+  "pre_open_for_comparison": {
+    "note": "21:41-21:53Z, before the weekly open; indicative books, wider on the crosses",
+    "eurusd": 7.688, "gbpusd": 12.216, "usdjpy": 6.680, "audusd": 12.444,
+    "usdcad": 1.952, "usdchf": 9.762, "eurgbp": 16.876, "eurjpy": 9.969
+  },
+  "apply_with_caution": "For a strategy trading G10 majors, use the per-pair median, not the aggregate (the aggregate is inflated by wide crosses). Even so, treat these as upper bounds until a weekday session is measured.",
+  "does_not_overwrite": "reports/cost_measurement/ (the CRYPTO books) is untouched."
+}
