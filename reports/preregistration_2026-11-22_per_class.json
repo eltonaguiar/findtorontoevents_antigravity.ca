@@ -179,6 +179,41 @@
     "notes": "Registered before first run (M-107). Antonacci dual momentum; the only new ETF mechanism added, so the trial count rises by exactly one for this class."
    }
   ],
-  "gate_note": "The strict G6 (excess vs buy-and-hold of the same universe) is unchanged. A volatility-matched comparison is reported alongside it as G6b and is labelled separately; no cell is promoted on G6b alone."
+  "gate_note": "The strict G6 (excess vs buy-and-hold of the same universe) is unchanged. A volatility-matched comparison is reported alongside it as G6b and is labelled separately; no cell is promoted on G6b alone.",
+  "cells_added_v2": [
+   {
+    "id": "H-226",
+    "status": "PRE_REGISTERED",
+    "asset_class": "EQUITY",
+    "name": "xsmom_ls_top3_bottom3_6m",
+    "spec": "Dollar-neutral cross-sectional momentum on the 10-name equity universe: every 21 sessions long the top 3 and short the bottom 3 by 126-session return, 0.5/top_k each side (gross 1, net 0 asserted), 10bps round trip (20bps at 2x); monthly buckets for PF; benchmark SPY.",
+    "registered_at": "2026-11-22T08:57:57.096342+00:00",
+    "source": "reports/preregistration_2026-11-22_per_class.json",
+    "frozen": true,
+    "notes": "Registered before first run (M-107). Long-only xsmom (H-201) is beta; removing the market leg makes excess-vs-benchmark measure the factor rather than leverage."
+   },
+   {
+    "id": "H-227",
+    "status": "PRE_REGISTERED",
+    "asset_class": "CRYPTO",
+    "name": "xsmom_ls_top2_bottom2_3m",
+    "spec": "Dollar-neutral cross-sectional momentum on the 6 coin universe: every 21 sessions long the top 2 and short the bottom 2 by 63-session return, gross 1 net 0, 20bps round trip (40bps at 2x); benchmark BTC.",
+    "registered_at": "2026-11-22T08:57:57.096342+00:00",
+    "source": "reports/preregistration_2026-11-22_per_class.json",
+    "frozen": true,
+    "notes": "Registered before first run (M-107). The short leg is what a long-only crypto cell cannot express."
+   },
+   {
+    "id": "H-228",
+    "status": "PRE_REGISTERED",
+    "asset_class": "CRYPTO",
+    "name": "funding_carry_delta_neutral",
+    "spec": "Delta-neutral perp/spot carry: equal-weight book over BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT; daily return = that day's summed funding per symbol, averaged across symbols, minus a 1.0 bps/day holding drag (2.0 bps at 2x) for margin rebalancing. Measured from data/funding_rate_archive/*.jsonl (OKX prints), not synthesised. Benchmark BTC buy-and-hold.",
+    "registered_at": "2026-11-22T08:57:57.096342+00:00",
+    "source": "reports/preregistration_2026-11-22_per_class.json",
+    "frozen": true,
+    "notes": "Registered before first run (M-107). Funding is the only crypto return stream here that is not beta. Archive covers ~9 months, which cannot contain a liquidation cascade: a pass is a candidate, never a proof."
+   }
+  ]
  }
 }
