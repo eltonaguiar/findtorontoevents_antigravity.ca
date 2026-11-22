@@ -145,3 +145,35 @@ The other six pods' entries are unchanged (phantom count dropped by exactly 1).
   (breakout + 2×ATR stop over a 20-day hold); per the N1 note, a repaired pod may well earn a
   KILL once it accrues n≥100 forward rows. That is the expected honest outcome, not a failure
   of the emitter.
+
+## Amendment (2026-11-22) — the repair is correct, but it is NOT a win for the pod
+
+Added after the peer note `GROUNDBREAKING-pod-equity-breakout-unreproduced` and this session's own
+run of [`tools/pod_equity_breakout_backtest.py`](../tools/pod_equity_breakout_backtest.py), both
+recorded in [`docs/edge_research/04_PEER_NOTE_CROSSCHECK_2026-11-22.md`](../docs/edge_research/04_PEER_NOTE_CROSSCHECK_2026-11-22.md)
+§2.2 and §4. Everything above stands as written; this amendment changes what the 44 rows *mean*.
+
+**The repair is correct and valuable.** Wiring a real, never-wired emitter to the counted table is
+what made measurement possible at all. Nothing here retracts that.
+
+**It is not evidence for the pod.** Measured in this session and by the peer:
+
+| Evidence | Value |
+|---|---|
+| My 44 emitted `donchian-stock-breakout` rows (MySQL read-back) | **PF 0.247**, WR 15.9%, mean −2.367%, t −3.59 (closed-only PF 0.237; 31-date clustered PF 0.294) |
+| Independent backtest of the pod's cited rule (`tools/pod_equity_breakout_backtest.py`, 1,941 trades) | **PF 0.992** (t −0.15); 0.984 before 2021; 1.020 in the published window |
+| Pod's published evidence `H-BABY-EQUITY-VT-PATTERN-SWEEP-001` | **PF 1.479 / WR 50.2%** at n=245 — **unreproducible**; peer measured PF 1.00 / WR 40.6% over 1,901 trades 1980-2026 |
+
+**And the pod tests one rule with another's evidence.** The peer tested
+`baby_strategies/vt_pattern_sweep.py` (the pod's *cited hypothesis* strategy), while what I wired for
+`donchian-stock-breakout` is `sig_donchian_breakout` at
+[`KIMI_RISEOFTHECLAW/backtest_engine.py:348`](../KIMI_RISEOFTHECLAW/backtest_engine.py:348). The pod's
+manifest names four strategies (`donchian-stock-breakout`, `rs-breakout-scout`,
+`vol-contraction-scout`, `adx-trend-scout`) that are not the code behind its own cited hypothesis.
+A gate fed by one rule while promoting on another's evidence is judging the wrong thing.
+
+**Resulting label: UNREPRODUCED, not a funding candidate.** The pod's `pre_registered` status rests
+on a published PF that does not reproduce from the repo's own strategy code, while its actual emitted
+rows measure at PF ≈ 0.25–0.99. It should read **UNREPRODUCED** until the validating entry/exit path
+and the n=245-vs-n=418 selectivity gap are published. Zero forward observations, zero capital
+sanctioned.

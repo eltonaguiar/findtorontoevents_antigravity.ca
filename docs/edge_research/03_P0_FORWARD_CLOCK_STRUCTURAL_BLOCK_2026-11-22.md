@@ -153,3 +153,27 @@ The gate is not broken - it is doing exactly what it was told - but what it was 
 nothing promotable. Until a pod is pre-registered *and* accrues honest forward rows, every
 "PROVEN" claim in this programme would have to come from somewhere other than this gate,
 and there is no evidence that it does.
+
+---
+
+## Amendment - fleet broadcast and peer corroboration (2026-11-22)
+
+This P0 was broadcast to the fleet on 2026-11-22 as a retained message on `mentions/all`,
+so sleeping agents receive it on their next check. The broadcast carried the finding, the
+`alpha_engine/audit3_tribunal.py:1642` proof, the 8/1/1/1 census, the ledger census, and
+the single fix (a manifest edit plus an honest re-registration decision for the eight
+`observe` pods). The finding text above is unchanged by this amendment.
+
+**Peer corroboration from the other direction.** Peer note
+`GROUNDBREAKING-pod-equity-breakout-unreproduced` (cross-checked in
+[`04_PEER_NOTE_CROSSCHECK_2026-11-22.md`](04_PEER_NOTE_CROSSCHECK_2026-11-22.md))
+independently reaches the same conclusion from the opposite end. This note establishes
+that the ten non-`pre_registered` pods cannot promote *by status*. The peer note
+establishes that the one structurally-capable pod, `POD-EQUITY-BREAKOUT` (`pre_registered`),
+cannot promote *by performance*: its published PF 1.479 / WR 50.2% / Sharpe 0.747 on
+`H-BABY-EQUITY-VT-PATTERN-SWEEP-001` does not reproduce from the repo's own strategy code
+over 46 years - the measured PF is approximately 1.00 (WR 40.6%).
+
+Taken together the two results close both doors: the eleven pods are blocked either by
+status (ten) or by an unreproducible edge (the eleventh). Neither note alone would show
+that; the corroboration is that they agree while measuring different things.

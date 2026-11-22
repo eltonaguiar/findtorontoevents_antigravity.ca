@@ -132,3 +132,43 @@ positive while the **median is −1.5%** and the win rate is ~39%: returns come
 from a handful of large winners, with a −60% to −80% trade-sequence drawdown.
 That is a leveraged-beta profile, not a validated edge. The ledger's only
 positive family is **not supported** by an independent test.
+
+---
+
+## Amendment (2026-11-22) — the KILL is for this rule; the family is cost-conditional, not dead
+
+Added after the peer cross-check in
+[`04_PEER_NOTE_CROSSCHECK_2026-11-22.md`](04_PEER_NOTE_CROSSCHECK_2026-11-22.md) §2.5, which read
+the peer note `RETRACTION-mercury3-post2010-only-claim-withdrawn`. The verdict above is preserved
+unchanged; this amendment corrects only what it may be read to imply.
+
+**What still stands — my rule is KILLED.** On 15 liquid ETFs/equities, 2021-11→2026-11, at
+5 bp/side, the pre-registered Donchian rule (N=20 and N=55) sat at the **69.8th / 71.4th percentile**
+of a 500-shuffle random-entry null and earned **negative selection alpha** (95% CI lower bound
+−0.285% / −0.296%). Neither gate is a cost gate: the rule fails to beat random long entries and it
+loses to simply holding the same instruments. That KILL stands.
+
+**What was overstated — the family is not dead.** A peer, on a multi-market sample spanning decades
+with a calendar split (not a trade-count split), found the breakout family **positive in 7 of 7
+markets pre-2010 at 4 bp/side**, four individually significant (US t=3.61, Canada t=3.21, Hong Kong
+t=2.15, Japan t=2.13). At **10 bp/side nothing is significant**. Their own summary: *"it is real if
+your round trip is <= ~8bp and gone if it is 20bp."* Breakout is therefore a **cost arbitrage that
+is alive below roughly an 8 bp round trip**, not a family with nothing in it.
+
+**Where the family does and does not exist:**
+
+| Cost (round trip) | Evidence |
+|---|---|
+| **≤ ~8 bp** | Alive. 7/7 markets positive pre-2010 at 4 bp/side, 4 significant |
+| **~20 bp (10 bp/side)** | Marginal to absent. Only 4/7 positive and **nothing** significant |
+| **≥ 40 bp** | No measured effect |
+| **Pod's own assumption: 50 bp (25 bp/side equity slippage)** | Far beyond where the family exists |
+
+**Why none of that rescues this rule.** (1) My window was 5 years on 15 US symbols at 5 bp/side — far
+too short and too narrow to detect a multi-decade, multi-market effect. (2) My failure was against the
+random-entry null and selection alpha, not merely against cost, so a lower-cost world would not by
+itself flip it. (3) The peer note never compares breakout to buy-and-hold of the same instruments,
+which is exactly what my selection-alpha gate measures. A positive mean breakout PnL can still be
+pure long beta.
+
+**Summary: rule KILLED; family cost-conditional and alive below ~8 bp round trip.**
