@@ -30,7 +30,11 @@ def test_sharpe_is_zero_on_flat_series():
 def test_boot_lb_brackets_the_mean_and_needs_history():
     xs = [0.01] * 48
     lb, ub = m.boot_lb(xs)
-    assert lb <= 0.01 <= ub
+    # a degenerate (constant) series must still bracket its own mean; compare with
+    # a float tolerance because resampling 0.01 sums in binary floating point
+    # (0.01*48/48 == 0.010000000000000005 on some platforms).
+    assert lb <= 0.01 + 1e-12
+    assert ub >= 0.01 - 1e-12
     assert m.boot_lb([0.01] * 5) == (0.0, 0.0)
 
 
