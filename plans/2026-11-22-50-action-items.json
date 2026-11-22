@@ -1,0 +1,116 @@
+{
+  "schema": "program.todos.v2",
+  "program": "profitability-50-action-items",
+  "created": "2026-11-22",
+  "author": "freebuff-deepseek-v4-flash",
+  "plan": "plans/2026-11-22-50-action-items.md",
+  "standing_fact": "0 of 40 pre-registered per-class cells clear every gate (n_trials 29, PBO 0.345). Where classes nearly passed, they failed on cost.",
+  "rules": [
+    "P0 before P1 before P2",
+    "M-107: pre-register before the first backtest, always",
+    "no number without a denominator, vintage and power estimate",
+    "a backtest pass is not an edge: G8 needs n >= 100 closed forward trades",
+    "every code fix ships with a .MD in updates/"
+  ],
+  "exit_test": "one class with a forward pod at n >= 100 closed trades, net CI-LB at 2x cost > 0, plus a written promote/keep-paper/freeze verdict",
+  "blocks": [
+    {
+      "id": "A",
+      "name": "cost is the binding constraint",
+      "todos": [
+        {"id": 1, "pri": "P0", "task": "carry break-even at maker fees instead of retail taker", "evidence": "reports/funding_carry/funding_maker_breakeven.json"},
+        {"id": 2, "pri": "P0", "task": "blended execution paths (maker entry/taker exit, TWAP) with effective round trip", "evidence": "round-trip table by path"},
+        {"id": 3, "pri": "P0", "task": "equity breakout with limit-order fills instead of close fills", "evidence": "CI-LB at realistic fills vs 8bp break-even"},
+        {"id": 4, "pri": "P0", "task": "per-class cost floor: max round trip each class can bear", "evidence": "published table"},
+        {"id": 5, "pri": "P0", "task": "COMS CHECK #1 - sweep peer notes for new findings and cost bases", "evidence": "findings logged in dispute ledger"},
+        {"id": 6, "pri": "P1", "task": "execution realism audit: stored fills vs modelled slippage", "evidence": "per-class delta"},
+        {"id": 7, "pri": "P1", "task": "publish the cost-first memo", "evidence": "reports/2026-11-22-cost-is-the-constraint.md"}
+      ]
+    },
+    {
+      "id": "B",
+      "name": "mechanisms never tested, chosen for low cost",
+      "todos": [
+        {"id": 8, "pri": "P0", "task": "pre-register FX carry (rate differential) as H-230", "evidence": "hypothesis_registry entry"},
+        {"id": 9, "pri": "P0", "task": "FX carry backtest with CI-LB, halves, vol-matched", "evidence": "verdict in claim register"},
+        {"id": 10, "pri": "P1", "task": "pre-register bond carry / roll-down as H-231", "evidence": "hypothesis_registry entry"},
+        {"id": 11, "pri": "P1", "task": "bond carry / roll-down backtest", "evidence": "verdict"},
+        {"id": 12, "pri": "P1", "task": "crypto CME calendar basis vs perp basis", "evidence": "basis series + net comparison to H-228"},
+        {"id": 13, "pri": "P2", "task": "equity turn-of-month seasonality", "evidence": "pre-registered + run"},
+        {"id": 14, "pri": "P2", "task": "buy-write vs SPY after cost", "evidence": "net comparison with MDD"},
+        {"id": 15, "pri": "P1", "task": "vol-scaled cross-sectional momentum to rescue H-201 if possible", "evidence": "verdict on scaling"}
+      ]
+    },
+    {
+      "id": "C",
+      "name": "data integrity",
+      "todos": [
+        {"id": 16, "pri": "P0", "task": "survivorship audit of the equity universe behind H-201", "evidence": "bias quantified or cleared"},
+        {"id": 17, "pri": "P0", "task": "rebuild commodity futures as back-adjusted continuous contracts", "evidence": "clean series + integrity report"},
+        {"id": 18, "pri": "P1", "task": "re-run commodity cells on the clean series", "evidence": "verdict off DATA_INTEGRITY_FAIL"},
+        {"id": 19, "pri": "P2", "task": "penny-stock liquidity haircut from ADV", "evidence": "haircut table"},
+        {"id": 20, "pri": "P2", "task": "verify MUTUAL_FUND execution lag", "evidence": "lag documented"},
+        {"id": 21, "pri": "P1", "task": "publish per-class data-bias register", "evidence": "one table, every class"}
+      ]
+    },
+    {
+      "id": "D",
+      "name": "statistical power and multiplicity",
+      "todos": [
+        {"id": 22, "pri": "P0", "task": "MDE per class from real n and vol", "evidence": "mde block per class"},
+        {"id": 23, "pri": "P0", "task": "required-n table for the effect sizes we claim", "evidence": "published table"},
+        {"id": 24, "pri": "P0", "task": "self-audit for the positive-subset median bug across my reports", "evidence": "scan output, corrections if found"},
+        {"id": 25, "pri": "P1", "task": "verify n_trials=29 by counting trials actually run", "evidence": "reconciled count"},
+        {"id": 26, "pri": "P2", "task": "PBO/CSCV block-length sensitivity", "evidence": "sensitivity table"},
+        {"id": 27, "pri": "P1", "task": "White's Reality Check across the 40-cell family", "evidence": "family-wide p-value"},
+        {"id": 28, "pri": "P1", "task": "DSR sensitivity memo for H-201", "evidence": "memo, no goalpost move"}
+      ]
+    },
+    {
+      "id": "E",
+      "name": "portfolio construction, no new alpha needed",
+      "todos": [
+        {"id": 29, "pri": "P0", "task": "vol-target SPY vs SPY", "evidence": "reports/portfolio/vol_target_vs_hold.json"},
+        {"id": 30, "pri": "P0", "task": "vol-targeted 60/40 vs 60/40", "evidence": "same report"},
+        {"id": 31, "pri": "P1", "task": "risk parity SPY/TLT/GLD/DBC vs 60/40", "evidence": "measured comparison"},
+        {"id": 32, "pri": "P1", "task": "200-day SMA defensive timing on the core, net of cost", "evidence": "beats hold?"},
+        {"id": 33, "pri": "P2", "task": "HRP allocation on survivors + correlation matrix", "evidence": "covariance artifact"},
+        {"id": 34, "pri": "P1", "task": "combine best-per-class into one book", "evidence": "incremental Sharpe"},
+        {"id": 35, "pri": "P1", "task": "publish what to actually hold with honest error bars", "evidence": "one page"}
+      ]
+    },
+    {
+      "id": "F",
+      "name": "COMS peer exchange",
+      "todos": [
+        {"id": 36, "pri": "P0", "task": "COMS CHECK #2 - read replies to the cost-first note", "evidence": "replies logged"},
+        {"id": 37, "pri": "P0", "task": "COMS REPLY - publish the 50-item programme and the 0/40 cost finding", "evidence": "note published and read back"},
+        {"id": 38, "pri": "P1", "task": "ask the fleet to verify maker fees and publish cost bases", "evidence": "question + answers logged"},
+        {"id": 39, "pri": "P2", "task": "peer dispute ledger", "evidence": "reports/coms_dispute_ledger.md"}
+      ]
+    },
+    {
+      "id": "G",
+      "name": "forward evidence",
+      "todos": [
+        {"id": 40, "pri": "P1", "task": "H-229 carry pod daily accrual and gate state", "evidence": "--status output"},
+        {"id": 41, "pri": "P1", "task": "register forward pod for the best equity cell", "evidence": "pod spec + kill rule"},
+        {"id": 42, "pri": "P1", "task": "register forward pod for breakout-at-limit", "evidence": "pod spec + kill rule"},
+        {"id": 43, "pri": "P2", "task": "unattended daily pod runner with journal", "evidence": "runs daily"},
+        {"id": 44, "pri": "P1", "task": "pod status report across all pods", "evidence": "one table"}
+      ]
+    },
+    {
+      "id": "H",
+      "name": "register, picks, reporting",
+      "todos": [
+        {"id": 45, "pri": "P1", "task": "claim register v3, append-only", "evidence": "register v3"},
+        {"id": 46, "pri": "P1", "task": "top-3 register v3 only if a measurement changes a pick", "evidence": "revision or explicit no-change"},
+        {"id": 47, "pri": "P1", "task": ".MD in updates/ for every fix", "evidence": "files present"},
+        {"id": 48, "pri": "P1", "task": "PR #1063 CI green + merge-order report", "evidence": "checks pass"},
+        {"id": 49, "pri": "P2", "task": "local mergeability proof by diff-apply for all four PRs", "evidence": "no conflicting hunks"},
+        {"id": 50, "pri": "P2", "task": "retrospective on what would have found the cost problem faster", "evidence": "lessons file"}
+      ]
+    }
+  ]
+}
