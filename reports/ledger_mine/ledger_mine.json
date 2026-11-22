@@ -1,0 +1,137 @@
+{
+ "ledger": "audit_dashboard/data/resolved_closed_picks_net.json",
+ "generated_at": "2026-11-22T10:57:17Z",
+ "n_raw": 10968,
+ "n_kept": 10968,
+ "rejections": {},
+ "leakage_findings": [
+  "L1 48 rows are WON on gross but LOSS on net (1.0% of gross wins). Any WR computed from the won flag overstates by this much.",
+  "L2 48 status-label conflicts (0.44% of rows).",
+  "L3 src 'luxalgo_filters' is 36.7% of the ledger; any ledger-wide stat is mostly that one emitter.",
+  "L3 cls 'CRYPTO' is 83.0% of the ledger; any ledger-wide stat is mostly that one emitter.",
+  "L4 3916 rows are redundant re-emissions of the same symbol-day (35.7%). iid stats treat them as independent evidence; they are not.",
+  "L5 2 rows move >50% net; verify against raw prints before any of them is counted as evidence."
+ ],
+ "per_class": {
+  "CRYPTO": {
+   "n": 9099,
+   "n_clusters": 4319,
+   "gross_bp": -8.203326739202112,
+   "net_bp": -18.17332673920211,
+   "wr_pct": 43.015716012748655,
+   "pf": 0.8851664894270026,
+   "pf_ci_lo": 0.829079622925849,
+   "pf_ci_hi": 0.9422318939714647,
+   "t": -4.336065046644333,
+   "verdict": "FAIL"
+  },
+  "EQUITY": {
+   "n": 936,
+   "n_clusters": 769,
+   "gross_bp": 23.597884615384615,
+   "net_bp": 18.597884615384615,
+   "wr_pct": 46.47435897435897,
+   "pf": 1.0880179465876956,
+   "pf_ci_lo": 0.8847353514436084,
+   "pf_ci_hi": 1.3362627979319353,
+   "t": 0.9983200763194847,
+   "verdict": "pf>1 but CI includes 1"
+  },
+  "ETF": {
+   "n": 590,
+   "n_clusters": 477,
+   "gross_bp": 4.6818644067796615,
+   "net_bp": -0.31813559322033924,
+   "wr_pct": 42.88135593220339,
+   "pf": 0.9972650922612457,
+   "pf_ci_lo": 0.8024848176460935,
+   "pf_ci_hi": 1.2401026751975956,
+   "t": -0.02714241750535322,
+   "verdict": "FAIL"
+  },
+  "FOREX": {
+   "n": 252,
+   "n_clusters": 209,
+   "gross_bp": -13.131031746031747,
+   "net_bp": -15.131031746031747,
+   "wr_pct": 40.476190476190474,
+   "pf": 0.6678823057017158,
+   "pf_ci_lo": 0.4201061376463625,
+   "pf_ci_hi": 1.016892795019683,
+   "t": -2.3635305353978437,
+   "verdict": "FAIL"
+  },
+  "COMMODITY": {
+   "n": 44,
+   "n_clusters": 19,
+   "gross_bp": -331.5131818181818,
+   "net_bp": -346.5131818181818,
+   "wr_pct": 15.909090909090908,
+   "pf": 0.12029707740410388,
+   "pf_ci_lo": 0.03294855651457222,
+   "pf_ci_hi": 0.40151133050207566,
+   "t": -4.317519520573138,
+   "verdict": "FAIL"
+  },
+  "BOND": {
+   "n": 35,
+   "n_clusters": 30,
+   "gross_bp": -13.217428571428572,
+   "net_bp": -18.21742857142857,
+   "wr_pct": 40.0,
+   "pf": 0.6574217847529295,
+   "pf_ci_lo": 0.2684357541899441,
+   "pf_ci_hi": 1.4385240397528871,
+   "t": -1.1181653885084681,
+   "verdict": "FAIL"
+  },
+  "FUTURES": {
+   "n": 12,
+   "n_clusters": 11,
+   "gross_bp": 72.09416666666667,
+   "net_bp": 57.09416666666666,
+   "wr_pct": 58.333333333333336,
+   "pf": 1.5558097463230223,
+   "pf_ci_lo": 0.34128688693400805,
+   "pf_ci_hi": 6.510172143974962,
+   "t": 0.6184375580318455,
+   "verdict": "INSUFF-N"
+  },
+  "ALL": {
+   "n": 10968,
+   "net_bp": -15.23990335521517,
+   "pf": 0.9038421648715739,
+   "pf_ci_lo": 0.8515374081906586,
+   "pf_ci_hi": 0.9578821389902942,
+   "t": -3.909291280378602
+  }
+ },
+ "sources": {
+  "n_trials": 20,
+  "n_positive_raw": 9,
+  "n_positive_bh": 3,
+  "best": [
+   "ml_strategy_reviver_inverse",
+   85,
+   145.50058823529412,
+   5.940819388115284,
+   1.4180046843119497e-09,
+   3.5300722962550783
+  ],
+  "worst": [
+   "aggregated_picks",
+   77,
+   -512.1707792207792,
+   -6.141182787157308,
+   0.9999999995904537,
+   0.16192897769834702
+  ]
+ },
+ "claim_789": {
+  "crypto_n": 9099,
+  "wr_net": 43.015716012748655,
+  "wr_gross": 43.47730519837345,
+  "net_bp": -18.17332673920211,
+  "pf": 0.8851664894270026
+ }
+}
