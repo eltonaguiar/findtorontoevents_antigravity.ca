@@ -24,25 +24,61 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import urllib.error
 import urllib.request
 
-DEFAULT_REF = "origin/main"
+# CI checks out a detached merge ref with NO origin/main, so this default is
+# only a preference: resolve_ref() falls back to refs/remotes/origin/main, then
+# a local main. VERIFY_LIVE_REF overrides it.
+DEFAULT_REF = os.environ.get("VERIFY_LIVE_REF") or "origin/main"
+
+
+def _ref_candidates(ref: str) -> list[str]:
+    """Named forms of `ref`, most specific first.
+
+    `origin/main` is absent in a detached PR checkout (actions/checkout fetches
+    the merge ref, not the remote branches). Checking only that one name made
+    this guard report a merged feature as branch-only, which is the same class of
+    false statement it exists to prevent — in the other direction.
+    """
+    cands = [ref]
+    if ref == "origin/main":
+        cands += ["refs/remotes/origin/main", "main", "refs/heads/main"]
+    return cands
+
+
+def resolve_ref(ref: str = DEFAULT_REF, cwd: str | None = None) -> tuple[str | None, str]:
+    """(resolved_name, commit_sha) for the first form of `ref` that exists."""
+    for cand in _ref_candidates(ref):
+        try:
+            r = subprocess.run(["git", "rev-parse", "--verify", "--quiet", f"{cand}^{{commit}}"],
+                               cwd=cwd, capture_output=True, text=True)
+        except FileNotFoundError:
+            return None, ""
+        if r.returncode == 0 and r.stdout.strip():
+            return cand, r.stdout.strip()
+    return None, ""
 
 
 def path_on_ref(path: str, ref: str = DEFAULT_REF, cwd: str | None = None) -> tuple[bool, str]:
-    """(ok, detail) for `path` existing on `ref` in the repo at cwd."""
+    """(ok, detail) for `path` existing in the tree of `ref` at cwd."""
+    resolved, sha = resolve_ref(ref, cwd)
+    if resolved is None:
+        # Unverifiable is not verified. Say so instead of guessing a tree.
+        return False, (f"cannot resolve {ref} (or a local main) in this clone — no "
+                       f"tree to check, so the claim is NOT verified")
     try:
-        r = subprocess.run(["git", "cat-file", "-e", f"{ref}:{path}"],
+        r = subprocess.run(["git", "cat-file", "-e", f"{resolved}:{path}"],
                            cwd=cwd, capture_output=True, text=True)
     except FileNotFoundError:
         return False, "git not available"
     if r.returncode == 0:
-        return True, f"present on {ref}"
-    return False, (f"ABSENT on {ref} — exists only on a branch or in the working "
-                   f"tree, so no workflow and no deploy can be using it")
+        return True, f"present on {resolved} ({sha[:9]})"
+    return False, (f"ABSENT on {resolved} ({sha[:9]}) — exists only on a branch or in "
+                   f"the working tree, so no workflow and no deploy can be using it")
 
 
 def url_ok(url: str, expect: str | None = None, timeout: int = 25) -> tuple[bool, str]:
