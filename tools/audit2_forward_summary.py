@@ -164,49 +164,6 @@ def summarize(rows: list[dict], pods: list[dict] | None = None,
     }
 
 
-def merge_gate(payload: dict, ledger: dict | None) -> dict:
-    """Fold the ledger's forward-gate verdict into each hypothesis row.
-
-    The gate already computes exactly why a pod cannot promote (benchmark
-    coverage, PF CI-LB, IR). Without this the page can only say "accruing",
-    which tells a reader nothing about what is actually missing.
-    """
-    gate = ((ledger or {}).get("forward_gate") or {})
-    hyps = gate.get("hypotheses") or {}
-    pods = gate.get("pods") or {}
-    rows = payload.get("by_hypothesis")
-    if not isinstance(rows, dict):
-        rows = payload["by_hypothesis"] = {}
-    for hid, g in hyps.items():
-        b = rows.setdefault(hid, {"n": 0, "benchmark_leg": 0, "intrabar": 0,
-                                  "pods": []})
-        b["gate"] = {
-            "eligible": bool(g.get("eligible")),
-            "reasons": list(g.get("reasons") or [])[:3],
-            "benchmark_coverage": g.get("benchmark_coverage"),
-            "pf_ci_lb": g.get("pf_ci_lb"),
-            "ir": g.get("ir"),
-            "n_forward": g.get("n_forward"),
-        }
-    for pid, g in pods.items():
-        hid = g.get("hypothesis_id")
-        if not hid:
-            continue
-        # A pod with 0 rows is exactly the case the page must name, so create
-        # the row rather than only annotating hypotheses that already have rows.
-        b = rows.setdefault(hid, {"n": 0, "benchmark_leg": 0, "intrabar": 0,
-                                  "pods": [pid]})
-        b.setdefault("gate", {
-            "eligible": bool(g.get("eligible")),
-            "reasons": list(g.get("reasons") or [])[:3],
-            "pf_ci_lb": g.get("pf_ci_lb"),
-            "ir": g.get("ir"),
-            "n_forward": g.get("n_forward"),
-        })
-    payload["gate_enforced"] = bool(gate.get("enforced"))
-    return payload
-
-
 def main() -> int:
     rows: list[dict] = []
     if SRC.exists():
@@ -215,7 +172,6 @@ def main() -> int:
     ledger = _load(LEDGER) or {}
     payload = summarize(rows, pods_doc.get("pods") or [],
                         ledger.get("forward_gate") or {})
-    payload = merge_gate(payload, ledger)
     payload["sources"]["pods_generated_at"] = pods_doc.get("generated_at")
     payload["sources"]["gate_generated_at"] = ledger.get("generated_at")
     OUT.parent.mkdir(parents=True, exist_ok=True)
