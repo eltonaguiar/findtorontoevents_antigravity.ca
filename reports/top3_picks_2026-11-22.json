@@ -1,0 +1,263 @@
+{
+ "as_of": "2026-11-22",
+ "registered_by": "buffy",
+ "status": "PAPER_ONLY_PRE_REGISTRATION - not investment advice, zero capital sanctioned",
+ "decision_readiness": "NOT_READY_FOR_3_PER_CLASS",
+ "rule": "Pre-registered BEFORE any entry price was fetched. Ranks and tiers are frozen; the tracker may add entry_price/entry_date and returns, and may never reorder, re-tier or rewrite a thesis. A pick is only ever demoted to NO_PRICE/NO_DATA, never silently dropped.",
+ "why_this_exists": "The 200-round programme has produced zero money-ready classes. Rather than claim otherwise, this register freezes the least-bad defensible choice per class, labelled by evidence tier, so that forward data can judge it honestly.",
+ "what_i_would_actually_hold": {
+  "core": "VT (or SPY if you want US only) - one line, lowest cost, no selection claim",
+  "cash_sleeve": "BIL / T-bill - beats most of our bond and commodity results after cost",
+  "commodity": "0% - buy-and-hold measured at -0.81%/yr with a -62.5% drawdown; no trend rule we tested beat it",
+  "crypto": "0% core; if held at all, <=5% and labelled BETA, not alpha (BTC Sharpe 0.911, DD -83%)",
+  "one_line": "Buy the index, hold T-bills, stop paying for signals until one survives 2x cost and honest multiplicity."
+ },
+ "classes": [
+  {
+   "asset_class": "EQUITY",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "READY_AS_BENCHMARK_ONLY",
+   "note": "H-201 DSR 0.9469 fails by 0.003 once the honest trial count went 23->29. Nothing here is alpha; these are the nulls every rule must beat.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "SPY",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_CORE",
+     "thesis": "Cheapest access to the equity risk premium; the null hypothesis for every strategy in this repo.",
+     "evidence": "buy-and-hold, no selection; H-201 selection alpha fails DSR",
+     "falsifier": "any rule beating it net of 20bp with DSR>0.95 on 10y+ and both halves positive",
+     "entry_price": null
+    },
+    {
+     "rank": 2,
+     "symbol": "QQQ",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_HIGH_BETA",
+     "thesis": "Same premium with more concentration and more drawdown; higher expected return is compensation for risk, not skill.",
+     "evidence": "beta decomposition; not a selection claim",
+     "falsifier": "QQQ underperforming SPY over a full cycle after cost",
+     "entry_price": null
+    },
+    {
+     "rank": 3,
+     "symbol": "RSP",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_EQUAL_WEIGHT",
+     "thesis": "Removes cap concentration; the honest test of whether the index is three names wearing a trenchcoat.",
+     "evidence": "construction difference only",
+     "falsifier": "RSP failing to reduce single-name concentration risk",
+     "entry_price": null
+    }
+   ]
+  },
+  {
+   "asset_class": "ETF",
+   "basis": "INSUFFICIENT_N",
+   "readiness": "NOT_READY",
+   "note": "Dual momentum (C5) cannot be run without survivorship-free ETF membership lists with delisting dates. Backtesting it on today's tickers is a delisting fantasy.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "VT",
+     "instrument": "ETF",
+     "tier": "UNMEASURED",
+     "thesis": "Global equity in one line, no home bias, no rebalancing discipline required.",
+     "evidence": "none measured here; recorded as the default until measured",
+     "falsifier": "a measured dual-momentum panel that beats it net of cost",
+     "entry_price": null
+    },
+    {
+     "rank": 2,
+     "symbol": "VTI",
+     "instrument": "ETF",
+     "tier": "UNMEASURED",
+     "thesis": "US total market; lower fee than SPY, same exposure.",
+     "evidence": "none measured here",
+     "falsifier": "as above",
+     "entry_price": null
+    },
+    {
+     "rank": 3,
+     "symbol": "SPY",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_CORE",
+     "thesis": "Same as EQUITY rank 1; listed here so the class has a measured anchor.",
+     "evidence": "buy-and-hold",
+     "falsifier": "as above",
+     "entry_price": null
+    }
+   ]
+  },
+  {
+   "asset_class": "BOND",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "READY_AS_BENCHMARK_ONLY",
+   "note": "Every bond strategy measured here loses to simply holding the T-bill leg, and 1.5% MER costs -33.6% of terminal wealth over 30y.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "BIL",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_CASH",
+     "thesis": "The T-bill leg itself; the bar that bond strategies fail to clear.",
+     "evidence": "cash leg used as the denominator in every test; MER drag measurement",
+     "falsifier": "a duration strategy beating BIL net of cost in both halves",
+     "entry_price": null
+    },
+    {
+     "rank": 2,
+     "symbol": "AGG",
+     "instrument": "ETF",
+     "tier": "UNPROVEN",
+     "thesis": "Core duration exposure; modest spread over cash, real rate risk.",
+     "evidence": "WEAK class verdict; not promoted",
+     "falsifier": "rising-rate regime shows the spread vanish",
+     "entry_price": null
+    },
+    {
+     "rank": 3,
+     "symbol": "TLT",
+     "instrument": "ETF",
+     "tier": "UNPROVEN",
+     "thesis": "Long duration is a rates bet, not carry; only holds if you want convexity against an equity crash.",
+     "evidence": "not measured as a standalone cell here",
+     "falsifier": "a rate shock producing equity-like drawdown with no equity-like recovery",
+     "entry_price": null
+    }
+   ]
+  },
+  {
+   "asset_class": "COMMODITY",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "NOT_READY",
+   "note": "Buy-and-hold EW on 11 commodity ETFs = -0.81%/yr, MDD -62.5%, 2011-2026. Per-member monthly SMA(10) trend = -2.16%/yr (CI-LB -86.98 bps/mo). A peer's +3.59% claim is NOT_REPRODUCED and stays open pending his weight function.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "GLD",
+     "instrument": "ETF",
+     "tier": "UNMEASURED",
+     "thesis": "Monetary metal held outright is not a trend strategy; the only commodity exposure with no roll drag.",
+     "evidence": "in the tested basket; no standalone edge claim",
+     "falsifier": "real yields rising for a sustained period",
+     "entry_price": null
+    },
+    {
+     "rank": 2,
+     "symbol": "DBC",
+     "instrument": "ETF",
+     "tier": "NULL_MEASURED",
+     "thesis": "Broad basket; its measured job here is to be the null that must be beaten (-0.81%/yr).",
+     "evidence": "reports/commodity_tsmom_v3_2026-11-22.json",
+     "falsifier": "a rule that beats the basket net of 20bp in both halves",
+     "entry_price": null
+    },
+    {
+     "rank": 3,
+     "symbol": "CPER",
+     "instrument": "ETF",
+     "tier": "UNPROVEN",
+     "thesis": "Copper as an industrial-cycle proxy; included in the tested basket, no edge established.",
+     "evidence": "in basket, no standalone significance",
+     "falsifier": "growth shock with no trend persistence",
+     "entry_price": null
+    }
+   ]
+  },
+  {
+   "asset_class": "CRYPTO",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "NOT_READY",
+   "note": "Picks are KILL (-0.42%/trade, n=6,926). The asset is strong (BTC CAGR 49.1%, Sharpe 0.911, MDD -83%) but that is beta. The only non-beta stream, funding carry, dies at 2x cost (CI-LB -0.857 bps).",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "BTC-USD",
+     "instrument": "spot",
+     "tier": "BETA_ONLY",
+     "thesis": "Exposure to the asset class, explicitly labelled beta and not our alpha.",
+     "evidence": "E5 class-vs-pick: asset premium real, pick layer negative",
+     "falsifier": "another -80% drawdown with no recovery inside 5y",
+     "entry_price": null
+    },
+    {
+     "rank": 2,
+     "symbol": "ETH-USD",
+     "instrument": "spot",
+     "tier": "BETA_ONLY",
+     "thesis": "Same beta with more upside and more drawdown.",
+     "evidence": "same as rank 1",
+     "falsifier": "as above",
+     "entry_price": null
+    },
+    {
+     "rank": 3,
+     "symbol": "FUNDING_CARRY_BOOK",
+     "instrument": "delta-neutral perp/spot",
+     "tier": "UNPROVEN",
+     "thesis": "The only mechanism here that is not beta: collect funding on BTC/ETH/BNB/SOL/XRP while hedged.",
+     "evidence": "H-228 gross +1.925 bps/day, Sharpe 3.42 at zero cost; FAILS at 2x cost (CI-LB -0.857)",
+     "falsifier": "measured rebalancing cost above 1.0 bps/day kills it",
+     "entry_price": null
+    }
+   ]
+  },
+  {
+   "asset_class": "FUTURES",
+   "basis": "NO_DATA",
+   "readiness": "NOT_READY",
+   "note": "Free roll-adjusted continuous contracts do not exist for us. Yahoo =F series are provably corrupt (CL=F closed -37.63; ZC=F -23.6% in three separate years). Any futures number produced from them is DATA_INTEGRITY_FAIL.",
+   "picks": []
+  },
+  {
+   "asset_class": "FOREX",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "NOT_READY",
+   "note": "REJECTED on cost. We assume 20bp where retail reality is wider, and no measured per-session spread deck exists on the bus.",
+   "picks": []
+  },
+  {
+   "asset_class": "MUTUAL_FUND",
+   "basis": "INSUFFICIENT_N",
+   "readiness": "NOT_READY",
+   "note": "Peer-measured only (Mercury3 PART11, common 2008-12..2026-11 window: VWELX Sharpe 1.013, VBIAX 0.999, SPY 0.958). AS_STORED, not independently reproduced here.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "VWELX",
+     "instrument": "mutual fund",
+     "tier": "AS_STORED",
+     "thesis": "Wellington: 60/40-ish with an active hand; peer-measured above SPY on that window.",
+     "evidence": "peer number, not reproduced by me",
+     "falsifier": "fails to reproduce on a common window with daily MDD",
+     "entry_price": null
+    },
+    {
+     "rank": 2,
+     "symbol": "VBIAX",
+     "instrument": "mutual fund",
+     "tier": "AS_STORED",
+     "thesis": "Balanced index at low cost; the honest 60/40 comparison.",
+     "evidence": "peer number",
+     "falsifier": "as above",
+     "entry_price": null
+    }
+   ]
+  },
+  {
+   "asset_class": "PENNY",
+   "basis": "INSUFFICIENT_N",
+   "readiness": "NOT_READY",
+   "note": "Data quality cannot support an n that means anything. Stop generating hypotheses here.",
+   "picks": []
+  },
+  {
+   "asset_class": "INDEX",
+   "basis": "NO_DATA",
+   "readiness": "NOT_READY",
+   "note": "No survivorship-free index panel; same defect as ETF dual momentum.",
+   "picks": []
+  }
+ ]
+}
