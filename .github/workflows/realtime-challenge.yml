@@ -1,0 +1,58 @@
+name: realtime-challenge
+
+# Monitors the paper-trading challenge: every 15 minutes it marks open
+# positions against live Binance prices, closes anything that hit TP/SL/time,
+# and opens new slots when the frozen rule qualifies. State is committed so the
+# record is auditable even if a run fails.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: challenge tag (one book per tag)
+        required: false
+        default: buffy
+
+permissions:
+  contents: write
+
+concurrency:
+  group: realtime-challenge
+  cancel-in-progress: false
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Mark open positions and open new slots
+        run: |
+          TAG="${{ github.event.inputs.tag || 'buffy' }}"
+          python3 tools/realtime_challenge.py cycle --tag "$TAG"
+          python3 tools/realtime_challenge.py report --tag "$TAG"
+
+      - name: Commit the ledger
+        run: |
+          git config user.name "challenge-bot"
+          git config user.email "challenge-bot@users.noreply.github.com"
+          if [ -d data/realtime_challenge ]; then
+            git add data/realtime_challenge
+            if git diff --cached --quiet; then
+              echo "no change"
+            else
+              git commit -m "realtime-challenge: cycle [skip ci]"
+              for i in 1 2 3; do
+                git push && break || { git pull --rebase --autostash; sleep 5; }
+              done
+            fi
+          fi
