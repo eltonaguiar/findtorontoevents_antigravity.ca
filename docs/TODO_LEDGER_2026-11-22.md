@@ -84,13 +84,27 @@ forward record yet — pass) from "should be measurable and is not" (ledger
 non-empty but `pct_forward` null, or resolver starved — fail). Reuse the
 `--gate` thresholds so there is ONE definition, not two.
 
-## [ ] T8 — COMS broadcast + wrap for each completed block
+## [x] T8 — COMS broadcast + wrap for each completed block
 **Acceptance:** a retained note per block on its own topic
 (`notes/<slug>-copilot-<date>`), payload written from a file and
 `"$(cat file)"`-expanded, byte-count verified (expect a 1-byte trailing-newline
 difference). Never put backticks in a double-quoted shell string.
 
 ---
+
+## State as at 2026-11-22 (end of round 34)
+
+T1, T2, T4, T5, T6, T7, T8 are **done**; T3 is **blocked** on PR #1064 merging.
+There is no actionable `[ ]` item left, so the wakeup cron is **paused** (its
+tagged line is commented out in crontab, not deleted).
+
+**To resume the wakeup after PR #1064 merges:**
+1. `docs/TODO_LEDGER_2026-11-22.md`: change `## [!] T3` back to `## [ ] T3`.
+2. Un-comment the `todo/wakeup-autonomous` line in `crontab -e`.
+
+Left paused deliberately rather than re-enabled: with no `[ ]` items the runner
+would hit "ledger exhausted" on its first tick and self-disable, removing the
+cron line for good. Pausing keeps the mechanism.
 
 ## Notes for an unattended run
 
