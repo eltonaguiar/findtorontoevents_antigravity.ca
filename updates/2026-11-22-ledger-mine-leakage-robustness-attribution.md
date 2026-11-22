@@ -47,10 +47,21 @@ next to the kept count: a silent 67% loss cannot hide again.
 
 Concentration: `luxalgo_filters` 36.7% of rows; CRYPTO 83.0% of rows (HHI 0.699).
 
-**The load-bearing leakage finding is the 35.7% redundancy.** 1,048 symbol-day
-clusters carry >2 rows. Any iid statistic treats those as independent evidence;
-they are re-emissions of one signal and they inflate every `n` in the ledger by
-roughly half. This is why every number below is cluster-bootstrapped.
+**CORRECTION (2026-11-22, same day).** The line here originally read
+"**The load-bearing leakage finding is the 35.7% redundancy**" and described
+1,048 symbol-day clusters as re-emissions of one signal.
+
+That was **wrong as a measure of duplication.** Symbol-day clustering conflates
+two different things: two *different* sources trading the same symbol on the same
+day (legitimate agreement between independent emitters) and one source recording
+the *same fill* twice (genuine duplication). Strict duplication on the correct key
+`(source, symbol, side, exact entry)` is **375 rows = 3.42%**, not 3,916 = 35.70%.
+
+Cluster-bootstrapping is still the right choice for exactly the reason above —
+symbol-day clustering does break iid assumptions even when the rows are not
+duplicates. But the 35.7% figure overstated the duplication. Verdicts are
+unaffected: all seven are unchanged under strict dedup
+(see `updates/2026-11-22-ledger-dedup-default-and-round29-correction.md`).
 
 `breakout_b_ml` is a **phantom source**: 44 rows, **zero** wins, every row exactly
 −0.1097%, all status FLAT, exits `expired_72h`. It is a flat fee charged 44 times,
