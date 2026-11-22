@@ -296,3 +296,23 @@ cross-cell correlation, which makes its effective trial count far smaller. So th
 **45 of 50 complete. 5 blocked** — 6 (realised fill prices), 12 and 14 (paid futures/options
 series), 19 (per-symbol ADV on a survivorship-contaminated universe), 20 (fund NAV source). Zero
 items are partial.
+
+---
+
+## Status log 6 — 2026-11-22 (effective trial count, DSR re-derived, pod clock started)
+
+| Item | Result |
+|---|---|
+| Effective trial count of the 34-cell family | **SETTLED: ≈25, i.e. closer to 29 than to 5.** ρ̄ = 0.1903. The variance-of-sum estimator gives 4.67 but counts independent trials for an **average**; correlation narrows the **max**-tail by only **1.45%** (2.769 → 2.729), because a common factor both synchronises the cells and widens each marginal, and at ρ ≈ 0.19 the two merely cancel. Bootstrap calibration on random subsets of the real cells: N_eff ≈ 25 (band 20–30). |
+| DSR re-derived on a matched basis | **Bar reconstructs exactly** (`sqrt(var_sr) = 0.02279886` → `sr0(29) = 0.04695`, frozen 0.04695; DSR(29) = 0.9469). Pass boundary is **N ≤ 27** (28 gives 0.9490 — the boundary is 27–28 and the cell sits on it). At N_eff = 25 the DSR is 0.949–0.967, so H-201 **passes by 2 trials** — inside N_eff's own ±5 uncertainty. |
+| Does the label change? | **No.** `NOT_PROVEN` stands, but the reason sharpens from "fails multiplicity by one trial" to "the multiplicity correction is not resolvable at this sample size and the cell sits inside its uncertainty band". |
+| Correction to C-022 | My earlier mechanism claim — that SPA's smaller p comes from it measuring far fewer effective trials — is **wrong** and is superseded in C-025. The real difference: the DSR inflates by the cross-trial Sharpe **dispersion** (1.393 in t units), while a standardised bootstrap puts every cell at sampling sd 1.0. Different nulls, not a rescaling. |
+| H-201 pod forward clock | **STARTED.** `tools/pod_forward.py` records real post-entry sessions (anchor signal 2026-10-30, entry 2026-11-02, basket MSFT/XOM/AAPL, 11 bp/side). 15 forward sessions recorded; **n_days 15, n_trades 3**. |
+| Why the pod cannot yet return a PASS | The spec requires a point-in-time universe of ≥ 22 names; available universe is 10 mega-caps, which item 16 marked UNSAFE. Every forward row carries `universe_ok: false`, so a KILL stays admissible (survivorship inflates returns, so failing anyway is real) and a PASS is **barred by the pod's own rule**. 77 trading days puts the first eligible verdict around **2027-03**. |
+
+### Four bugs caught this round, all by checking output against the economics
+
+1. Effective-trials nulls inherited each cell's drift → H-201's t landed at its own null's 47.5th percentile and both percentiles pinned to the solver cap.
+2. Mixed units: `sd_sr·√T` (1.393) applied to a null already standardised to 1.0 → solved to N = 3 for both nulls.
+3. DSR basis taken from the 34-cell subset instead of all 40 cells → 0.9761 at N=29 instead of 0.9469, boundary pushed to N=58. Now an aborting gate.
+4. Pod recorder charged entry cost over the empty *existing* holdings → the first, certain trade booked at 0 bp.
