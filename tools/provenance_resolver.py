@@ -74,30 +74,139 @@ def read_jsonl(p: Path) -> list[dict]:
     return out
 
 
+# ------------------------------------------------------- symbol resolution
+# BTC-only resolution would leave every FOREX / COMMODITY / EQUITY / BOND pick
+# permanently OPEN, which is indistinguishable from "never resolved" and would
+# silently understate pct_forward. So map every class onto a yfinance symbol.
+
+_CRYPTO_QUOTE = ("USDT", "USDC", "BUSD", "USDP", "TUSD", "FDUSD", "DAI", "PERP")
+
+# Known coin bases. Needed only for the separator-less "BTCUSD" form; the guard
+# exists so a 6-letter equity ticker cannot be silently rewritten into a crypto
+# pair that returns no data.
+_CRYPTO_BASES = frozenset({
+    "BTC", "ETH", "SOL", "XRP", "ADA", "DOGE", "BNB", "AVAX", "DOT", "LINK",
+    "MATIC", "POL", "LTC", "BCH", "ATOM", "NEAR", "APT", "ARB", "OP", "SUI",
+    "INJ", "TIA", "SEI", "PEPE", "SHIB", "TRX", "TON", "XLM", "ETC", "FIL",
+    "RNDR", "AAVE", "UNI", "MKR", "CRV", "LDO", "FET", "WLD", "JUP", "PYTH",
+    "STRK", "ENA", "ONDO", "JTO", "WIF", "BONK", "FLOKI", "HBAR", "ICP",
+})
+
+# ISO-4217 codes. A 6-letter token is only treated as an FX pair when BOTH halves
+# are real currencies -- otherwise 6-letter equity tickers get silently mangled
+# into a nonexistent FX pair that simply returns no data.
+_FX_CCY = frozenset({
+    "USD", "EUR", "GBP", "JPY", "CHF", "AUD", "NZD", "CAD", "CNH", "CNY",
+    "SEK", "NOK", "DKK", "MXN", "ZAR", "TRY", "SGD", "HKD", "PLN", "HUF",
+    "CZK", "ILS", "INR", "BRL", "RUB", "THB", "KRW", "TWD",
+})
+
+# Metals / energy quoted as CFD-style spot codes but only tradeable on yfinance as
+# the front future. Gold and silver were the two named in the roadmap.
+_CFD_TO_FUT = {
+    "XAUUSD": "GC=F", "XAGUSD": "SI=F", "XPTUSD": "PL=F", "XPDUSD": "PA=F",
+    "WTIUSD": "CL=F", "BRENTUSD": "BZ=F", "NATGAS": "NG=F", "COPPER": "HG=F",
+    "USOIL": "CL=F", "UKOIL": "BZ=F",
+}
+
+_INDEX_CFD = {
+    "SPX500": "^GSPC", "US500": "^GSPC", "SPX": "^GSPC",
+    "NAS100": "^NDX", "US100": "^NDX", "NDX": "^NDX",
+    "US30": "^DJI", "DJI": "^DJI",
+    "GER40": "^GDAXI", "DAX": "^GDAXI", "UK100": "^FTSE", "JP225": "^N225",
+}
+
+# Treasury / credit ETFs are ordinary tickers, so without this they get labelled
+# EQUITY and the per-class provenance breakdown silently misattributes bonds.
+_BOND_ETFS = frozenset({
+    "TLT", "IEF", "SHY", "AGG", "BND", "LQD", "HYG", "TIP", "GOVT", "TLH",
+    "EMB", "JNK", "MUB", "VCIT", "VCSH", "BIL", "SHV", "SGOV", "IGSB", "HYLB",
+})
+
+
+def resolve_symbol(sym: str) -> tuple[str, str]:
+    """Map a repo symbol onto (yfinance_symbol, asset_class).
+
+    Handles crypto pairs, FX pairs, CFD-style metals/energy, index CFDs and
+    leaves plain tickers (SPY, AAPL, TLT) untouched.
+    """
+    raw = (sym or "").strip().upper()
+    # normalise separators: BTC/USDT, BTC_USDT, BTC-USDT all become BTCUSDT
+    compact = raw.replace("/", "").replace("_", "").replace("-", "")
+    if not compact:
+        return raw, "UNKNOWN"
+
+    # 1. explicit CFD / index tables win before anything else
+    if compact in _CFD_TO_FUT:
+        return _CFD_TO_FUT[compact], "COMMODITY"
+    if compact in _INDEX_CFD:
+        return _INDEX_CFD[compact], "INDEX"
+
+    # 2. crypto quote suffixes
+    for q in _CRYPTO_QUOTE:
+        if compact.endswith(q) and len(compact) > len(q) + 1:
+            return f"{compact[:-len(q)]}-USD", "CRYPTO"
+
+    # 2b. "BTCUSD" (USD quote, no separator) -- only when the base is a KNOWN coin,
+    #     so a 6-letter equity ticker is never mistaken for a crypto pair
+    if compact.endswith("USD") and len(compact) > 3:
+        base = compact[:-3]
+        if base in _CRYPTO_BASES:
+            return f"{base}-USD", "CRYPTO"
+
+    # 3. FX pair -- only when both halves are currencies
+    if len(compact) == 6 and compact.isalpha():
+        base, quote = compact[:3], compact[3:]
+        if base in _FX_CCY and quote in _FX_CCY:
+            return f"{compact}=X", "FOREX"
+
+    # 4. already a yfinance future / index
+    if raw.endswith("=F") or raw.startswith("^"):
+        return raw, "FUTURE" if raw.endswith("=F") else "INDEX"
+
+    # 5. plain ticker. Crypto pairs written as "BTC-USD" survive here because the
+    #    dash was stripped to BTCUSD and matched rule 2 already.
+    if raw in _BOND_ETFS:
+        return raw, "BOND"
+    return raw, "EQUITY"
+
+
 def yf_symbol(sym: str) -> str:
-    """BTCUSDT -> BTC-USD ; SPY -> SPY ; BTC/USDT -> BTC-USD."""
-    s = (sym or "").upper().replace("/", "")
-    for q in ("USDT", "USDC", "BUSD", "PERP"):
-        if s.endswith(q) and len(s) > len(q):
-            return f"{s[:-len(q)]}-USD"
-    return (sym or "").upper()
+    """Backwards-compatible thin wrapper -> just the yfinance symbol."""
+    return resolve_symbol(sym)[0]
 
 
-def load_bars(symbols: list[str], start: datetime):
+_INTERVALS = ("1h", "1d")   # 1h first, daily as the fallback
+
+
+def load_bars(symbols: list[str], start: datetime) -> tuple[dict, dict]:
+    """Download bars, falling back 1h -> 1d per symbol.
+
+    Returns (frames, interval_by_symbol). The interval matters: `bars_held` is
+    only comparable within an interval, so the resolution record stores it rather
+    than silently mixing hour-counts and day-counts in one column.
+
+    1h data on yfinance is capped at ~730 calendar days, so old picks legitimately
+    fall back to daily rather than being reported as "no data".
+    """
     import yfinance as yf
-    frames = {}
+    frames: dict = {}
+    used: dict = {}
     for s in symbols:
-        try:
-            df = yf.download(s, start=start.date(), progress=False,
-                             auto_adjust=False, interval="1h", timeout=25)
-        except Exception:  # noqa: BLE001
-            continue
-        if df is None or df.empty:
-            continue
-        if hasattr(df.columns, "nlevels") and df.columns.nlevels > 1:
-            df.columns = [c[0] for c in df.columns]
-        frames[s] = df
-    return frames
+        for interval in _INTERVALS:
+            try:
+                df = yf.download(s, start=start.date(), progress=False,
+                                 auto_adjust=False, interval=interval, timeout=25)
+            except Exception:  # noqa: BLE001
+                continue
+            if df is None or df.empty:
+                continue
+            if hasattr(df.columns, "nlevels") and df.columns.nlevels > 1:
+                df.columns = [c[0] for c in df.columns]
+            frames[s] = df
+            used[s] = interval
+            break
+    return frames, used
 
 
 def decide(pick: dict, bars) -> dict | None:
@@ -122,6 +231,18 @@ def decide(pick: dict, bars) -> dict | None:
     entry = float(bars["Open"].iloc[pos]) if "Open" in bars else float(bars["Close"].iloc[pos])
     if not (entry > 0):
         return None
+    # Guard: a level on the wrong side of the ACTUAL fill is a data defect, not a
+    # trade. provenance_ledger.validate_pick() checks TP/SL against the signal-time
+    # entry_ref, but the resolver fills at a different bar's open; if the market
+    # gapped between signal and fill, TP/SL can end up inverted relative to the real
+    # entry and would otherwise be booked as a "TP" that lost money (observed on real
+    # data: SPY "TP" at -746.8bp, TLT "SL" at +203.0bp). Refuse those instead.
+    if side == "LONG" and not (tp > entry > sl):
+        return {"outcome": "INVALID_LEVELS", "entry_px": entry, "exit_px": entry,
+                "exit_utc": start.isoformat(), "bars_held": 0}
+    if side == "SHORT" and not (tp < entry < sl):
+        return {"outcome": "INVALID_LEVELS", "entry_px": entry, "exit_px": entry,
+                "exit_utc": start.isoformat(), "bars_held": 0}
     deadline = start + timedelta(days=MAX_DAYS)
     for i in range(pos, len(bars)):
         ts = idx[i]
@@ -244,16 +365,29 @@ def cmd_resolve() -> int:
         print("nothing new to resolve")
         return 0
 
-    symbols = sorted({yf_symbol(p["symbol"]) for p in todo})
+    # map every pick once; a pick whose symbol cannot be mapped must be counted as
+    # no_data, never silently dropped
+    mapped = {p["seq"]: resolve_symbol(p["symbol"]) for p in todo}
+    symbols = sorted({m[0] for m in mapped.values() if m[0]})
     oldest = min(datetime.fromisoformat(p["created_at"]) for p in todo)
-    print(f"loading hourly bars for {len(symbols)} symbol(s) from {oldest:%Y-%m-%d}")
-    bars = load_bars(symbols, oldest - timedelta(days=2))
+    print(f"resolving {len(todo)} pick(s) across {len(symbols)} yfinance symbol(s) "
+          f"from {oldest:%Y-%m-%d}")
+    for cls in sorted({m[1] for m in mapped.values()}):
+        n = sum(1 for m in mapped.values() if m[1] == cls)
+        print(f"  {cls:<10} {n} pick(s)")
+    bars, intervals = load_bars(symbols, oldest - timedelta(days=2))
     print(f"loaded {len(bars)}/{len(symbols)} series")
+    if intervals:
+        by_iv: dict[str, int] = {}
+        for iv in intervals.values():
+            by_iv[iv] = by_iv.get(iv, 0) + 1
+        print(f"  intervals: {by_iv}")
 
-    rows, still_open, no_data = [], 0, 0
+    rows, still_open, no_data, invalid = [], 0, 0, 0
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     for p in todo:
-        b = bars.get(yf_symbol(p["symbol"]))
+        yfs, asset_class = mapped[p["seq"]]
+        b = bars.get(yfs)
         if b is None:
             no_data += 1
             continue
@@ -261,7 +395,12 @@ def cmd_resolve() -> int:
         if o is None:
             still_open += 1
             continue
-        rows.append({"pick_seq": p["seq"], "symbol": p["symbol"], "side": p["side"],
+        if o["outcome"] == "INVALID_LEVELS":
+            invalid += 1
+            continue
+        rows.append({"pick_seq": p["seq"], "symbol": p["symbol"],
+                     "yf_symbol": yfs, "asset_class": asset_class,
+                     "bar_interval": intervals.get(yfs), "side": p["side"],
                      "outcome": o["outcome"], "entry_px": o["entry_px"],
                      "exit_px": o["exit_px"], "exit_utc": o["exit_utc"],
                      "bars_held": o["bars_held"], "resolved_at": now,
@@ -269,7 +408,12 @@ def cmd_resolve() -> int:
     if rows:
         n = append_resolutions(rows)
         print(f"appended {n} resolution(s) -> {RES.relative_to(REPO)}")
-    print(f"still open {still_open}  no data {no_data}")
+    elif no_data:
+        print("::warning::no market data for any pending pick this pass")
+    if invalid:
+        print(f"::warning::{invalid} pick(s) had TP/SL inverted vs the actual fill "
+              f"(gap between signal and entry) -- NOT recorded as outcomes")
+    print(f"still open {still_open}  no data {no_data}  invalid levels {invalid}")
     st = compute_status()
     STATUS.write_text(json.dumps(st, indent=1))
     print(json.dumps(st, indent=1))
@@ -331,6 +475,70 @@ def selftest() -> int:
     print(f"  edited resolution detected          -> ok={v['ok']} "
           f"reason={v.get('reason')}")
     assert not v["ok"], "edited resolution NOT detected"
+
+    # ---- symbol mapping must cover every asset class, not just BTC ----
+    cases = [
+        ("BTCUSDT", "BTC-USD", "CRYPTO"),
+        ("BTC/USDT", "BTC-USD", "CRYPTO"),
+        ("BTC-USD", "BTC-USD", "CRYPTO"),
+        ("ETHUSDT", "ETH-USD", "CRYPTO"),
+        ("BTCUSD", "BTC-USD", "CRYPTO"),
+        ("EURUSD", "EURUSD=X", "FOREX"),
+        ("EUR/USD", "EURUSD=X", "FOREX"),
+        ("GBPJPY", "GBPJPY=X", "FOREX"),
+        ("XAUUSD", "GC=F", "COMMODITY"),
+        ("WTIUSD", "CL=F", "COMMODITY"),
+        ("SPY", "SPY", "EQUITY"),
+        ("AAPL", "AAPL", "EQUITY"),
+        ("TLT", "TLT", "BOND"),
+        ("IEF", "IEF", "BOND"),
+        ("BRK.B", "BRK.B", "EQUITY"),
+        ("^GSPC", "^GSPC", "INDEX"),
+        ("CL=F", "CL=F", "FUTURE"),
+        # a 6-letter equity ticker must NOT become an FX pair
+        ("ALPHAB", "ALPHAB", "EQUITY"),
+    ]
+    print("  symbol mapping:")
+    bad = []
+    for raw, want_sym, want_cls in cases:
+        got_sym, got_cls = resolve_symbol(raw)
+        ok = (got_sym == want_sym and got_cls == want_cls)
+        if not ok:
+            bad.append((raw, want_sym, want_cls, got_sym, got_cls))
+        print(f"    {raw:<10} -> {got_sym:<10} {got_cls:<10} {'ok' if ok else 'FAIL'}")
+    assert not bad, f"symbol mapping failures: {bad}"
+
+    # ---- coarser (daily) bars: SL-first must still hold with wider ranges ----
+    didx = pd.date_range("2026-01-01", periods=4, freq="D", tz="UTC")
+    dbars = pd.DataFrame({
+        "Open": [100.0, 100.0, 100.0, 100.0],
+        "High": [100.0, 121.0, 100.0, 100.0],
+        "Low":  [100.0,  89.0, 100.0, 100.0],   # daily bar spans TP 110 AND SL 95
+        "Close": [100.0, 100.0, 100.0, 100.0],
+    }, index=didx)
+    od = decide(pick, dbars)
+    print(f"  daily bar spans TP+SL         -> outcome={od['outcome']} (must be SL)")
+    assert od["outcome"] == "SL", "daily-bar pessimistic tie-break violated"
+    print(f"  daily bars_held is day-counted -> {od['bars_held']}")
+
+    # ---- inverted levels vs the ACTUAL fill must be refused, not booked ----
+    # LONG whose "TP" sits BELOW the entry bar's open: a gapped-down market after
+    # the signal. Booking this as a TP that lost money is how a resolver lies.
+    inv = dict(pick, tp=98.0, sl=105.0)     # LONG with tp < sl is caught by the ledger
+    gapped = pd.DataFrame({
+        "Open": [150.0, 150.0], "High": [150.0, 150.0],
+        "Low": [150.0, 149.0], "Close": [150.0, 150.0],
+    }, index=pd.date_range("2026-01-01", periods=2, freq="h", tz="UTC"))
+    # ledger-valid LONG (tp>sl) but the fill is 150 while levels are 110/95 -> both
+    # levels are BELOW the fill, so any touch is a loss disguised as a TP
+    legit_but_gapped = {"seq": 9, "symbol": "X", "side": "LONG", "entry_ref": 100.0,
+                        "tp": 110.0, "sl": 95.0,
+                        "created_at": "2026-01-01T00:00:00+00:00"}
+    oi = decide(legit_but_gapped, gapped)
+    print(f"  fill gaps above both levels  -> outcome={oi['outcome']} "
+          f"(must be INVALID_LEVELS)")
+    assert oi["outcome"] == "INVALID_LEVELS", "inverted-levels guard failed"
+    _ = inv
 
     print("\n  ALL RESOLVER SELFTESTS PASSED")
     return 0
