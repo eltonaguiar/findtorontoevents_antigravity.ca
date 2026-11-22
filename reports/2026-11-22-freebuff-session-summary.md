@@ -19,8 +19,11 @@ Earlier today: `a5809b45638` (H-151), `01d9159d6f5` (fleet map), `188551e1c5a`
    1.184 (gross 1.313), EQUITY 1.175 (1.229), ETF net 0.981 (edge is 7.8 bp wide).
    MomentumEMA has exactly two outcomes (−2.00/+3.00); mega_mutation trades 3 symbols.
 6. **Full-population cost audit** (`tools/population_cost_audit.py`) — CRYPTO
-   **PF 0.2656, −0.0464%/trade GROSS, n=22,864**. Every class is negative gross
-   except ETF (n=32). The 1.31 was window selection.
+   **PF 0.2656, −0.0464%/trade GROSS, n=22,864**. CORRECTION 2026-11-22 (live refetch): money_ready live shows CRYPTO PF 0.2621
+(n=22,287) and **EQUITY PF 1.08 (n=121)**; audit3 EQUITY is 1.0499 (n=956,
++0.106%/trade net). EQUITY is the only class above 1, so copilot's claim stands
+and my earlier 0.62 came from a two-day-stale local copy. CRYPTO is negative on
+every cut, and the 1.31 was window selection.
 7. **First-touch with real bars** (`tools/ohlc_bars.py` + `tools/first_touch_resolve.py`)
    — 1,717 crypto picks re-walked: 54% of exits have a different first-touch level,
    yet PF moves 1.367 → **1.479**. H-120's inflation does NOT reproduce on crypto.
