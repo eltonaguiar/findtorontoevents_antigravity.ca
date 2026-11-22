@@ -30,6 +30,7 @@ on:
     paths:
       - 'reports/provenance/**'
       - 'tools/provenance_ledger.py'
+      - 'tools/provenance_resolver.py'
   workflow_dispatch:
 
 permissions:
@@ -62,6 +63,13 @@ jobs:
       - name: Resolver selftest (pessimistic tie-break, no-mutation)
         run: python3 tools/provenance_resolver.py --selftest
 
+      # Without this the resolver can never resolve anything in CI: yfinance and
+      # pandas are not on the runner, --resolve fails, and pct_forward stays null
+      # forever even once the ledger fills. That silent no-op is what --gate exists
+      # to catch, but it is cheaper to just install the two libraries.
+      - name: Install resolver deps
+        run: pip install --quiet --disable-pip-version-check pandas yfinance
+
       - name: Resolve any new picks (never blocks)
         run: |
           # Resolving needs market data; a network hiccup must not fail the gate.
@@ -71,6 +79,14 @@ jobs:
       - name: Resolution status
         if: always()
         run: python3 tools/provenance_resolver.py --status || true
+
+      # BLOCKING. Tolerant of "not yet measurable" (empty ledger, or n_resolved <
+      # MIN_RESOLVED) so it cannot fire before there is data; fails on a broken
+      # resolution chain, pct_forward below 95% once judgeable, or a resolver that
+      # has picks pending past MAX_DAYS + grace (the silent-no-op case).
+      - name: Provenance gate (blocking)
+        if: always()
+        run: python3 tools/provenance_resolver.py --gate
 
       - name: Show head
         if: always()
