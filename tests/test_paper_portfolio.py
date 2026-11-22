@@ -1,6 +1,7 @@
 """Deterministic unit tests for tools/paper_portfolio.py - synthetic prices, no network."""
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -189,3 +190,166 @@ def test_init_refuses_overwrite_without_force(tmp_path, monkeypatch):
         raise AssertionError("--init should refuse to overwrite without --force")
     assert pp.main(["--init", "--cash", "6000", "--force"]) == 0
     assert json.loads((tmp_path / "book.json").read_text())["starting_cash"] == 6000.0
+
+
+# ============================================================ gate-checked loader
+# These lock the ONLY honest behaviour available today: the loader refuses when
+# nothing passes the real forward gate, and it is still capable of loading when
+# something genuinely does.
+
+def _sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _pod(pod_id, *, status="pre_registered", hid="H-TEST", **extra):
+    p = {"id": pod_id, "status": status, "registered_at": "2026-11-19",
+         "hypothesis_id": hid, "strategies": [f"strat-{pod_id.lower()}"],
+         "asset_classes": ["EQUITY"], "directions": ["LONG"]}
+    p.update(extra)
+    return p
+
+
+def _write_manifest(tmp_path: Path, pods) -> Path:
+    f = tmp_path / "manifest.json"
+    f.write_text(json.dumps({"schema": "audit3.confirmatory.v1", "pods": pods}))
+    return f
+
+
+def _row(i: int, hid="H-TEST") -> dict:
+    """A forward row the real promotion() can judge.
+
+    Alternates +8% / -2% so the series has BOTH wins and losses: an all-winner
+    series has an infinite PF, whose CI is not estimable, and the gate rightly
+    refuses it. Mean +3%, sd 5% -> IR 0.6 >= 0.5, PF 4.0.
+    """
+    return {"id": f"r{i}", "hypothesis_id": hid, "opened_at": "2026-11-20T00:00:00Z",
+            "closed_at": "2026-11-20T04:00:00Z", "symbol": f"SYM{i}", "asset_class": "EQUITY",
+            "side": "LONG", "entry_px": 100.0, "exit_px": 108.0 if i % 2 == 0 else 98.0,
+            "qty": 1.0, "fees": 0.0,
+            "funding": 0.0, "slippage_bps": 0.0, "resolver_version": "v1",
+            "intrabar_first_touch": True, "benchmark_leg_ret": 0.001, "regime_ok": True,
+            "created_at": "2026-11-20T04:00:01Z"}
+
+
+def _write_ledger(tmp_path: Path, rows) -> Path:
+    f = tmp_path / "ledger.jsonl"
+    f.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    return f
+
+
+def _write_registry(tmp_path: Path, hyps) -> Path:
+    f = tmp_path / "registry.json"
+    f.write_text(json.dumps({"hypotheses": hyps}))
+    return f
+
+
+def test_gate_real_state_refuses_and_leaves_book_untouched(tmp_path, monkeypatch):
+    """The real repo gate state: nothing passes, so the book hash must not move."""
+    monkeypatch.setattr(pp, "BOOK_FILE", tmp_path / "book.json")
+    monkeypatch.setattr(pp, "BOOK_DIR", tmp_path)
+    monkeypatch.setattr(pp, "EQUITY_FILE", tmp_path / "equity_curve.jsonl")
+    monkeypatch.setattr(pp, "SNAP_DIR", tmp_path / "snapshots")
+    assert pp.main(["--init", "--cash", "10000"]) == 0
+    book = pp.load_book()
+    pp.open_position(book, "BTC/USDT", "LONG", 0.05, 60000.0, strategy="demo_plumbing")
+    pp.save_book(book)
+    before = _sha(tmp_path / "book.json")
+
+    assert pp.main(["--load-from-gate"]) == 0
+
+    assert _sha(tmp_path / "book.json") == before, "refusal must leave book.json byte-identical"
+    assert len(pp.load_book()["positions"]) == 1     # demo position kept, nothing added
+
+
+def test_gate_real_state_outcome_is_refusal():
+    """On the checked-in repo state every pod fails the real gate."""
+    gate = pp.evaluate_gate()
+    assert gate["pods"], "real manifest must expose pods"
+    assert all(not p["loadable"] for p in gate["pods"]), \
+        "some pod passes the real gate - the programme's conclusion changed, re-check"
+    book = pp.new_book(10000.0, 10.0)
+    outcome, out_book = pp.load_from_gate(book, gate)
+    assert outcome["loaded"] == 0
+    assert outcome["reason"] == "no_pod_passed_forward_gate"
+    assert out_book is book and book["positions"] == []
+    assert {p["pod"] for p in outcome["pod_results"]} == {p["pod"] for p in gate["pods"]}
+    assert all("n" in p and "eligible" in p for p in outcome["pod_results"])
+
+
+def test_gate_synthetic_eligible_pod_produces_position(tmp_path, monkeypatch):
+    """Proof of capability: a pod that genuinely passes DOES load."""
+    manifest = _write_manifest(tmp_path, [_pod("POD-EQUITY-BREAKOUT", hid="H-TEST")])
+    ledger = _write_ledger(tmp_path, [_row(i) for i in range(120)])
+    registry = _write_registry(tmp_path, [{"id": "H-TEST", "status": "FORWARD"}])
+    monkeypatch.setattr(pp, "fetch_price",
+                        lambda s: {"px": 500.0, "ts": "2026-11-22T00:00:00Z", "source": "stub"})
+
+    gate = pp.evaluate_gate(manifest, ledger, registry)
+    assert gate["pods"][0]["eligible"] is True     # real promotion() judged it
+    assert gate["pods"][0]["loadable"] is True
+
+    book = pp.new_book(10000.0, 10.0)
+    outcome, book = pp.load_from_gate(book, gate)
+
+    assert outcome["loaded"] == 1
+    pos = book["positions"][0]
+    assert pos["gated"] is True
+    assert pos["strategy"] == "POD-EQUITY-BREAKOUT"
+    assert pos["source"].startswith("forward-gate:")
+    assert pos["qty"] > 0 and pos["entry_px"] == 500.0
+    assert pos["gate_n"] == 120
+
+
+def test_gate_promotable_false_is_never_loadable(tmp_path, monkeypatch):
+    """Same passing numbers, but the registry vetoes it: never loadable."""
+    manifest = _write_manifest(tmp_path, [_pod("POD-EQUITY-BREAKOUT", hid="H-TEST")])
+    ledger = _write_ledger(tmp_path, [_row(i) for i in range(120)])
+    registry = _write_registry(
+        tmp_path, [{"id": "H-TEST", "status": "FORWARD", "promotable": False,
+                    "promotable_reason": "not a pod"}])
+    monkeypatch.setattr(pp, "fetch_price",
+                        lambda s: {"px": 500.0, "ts": "2026-11-22T00:00:00Z", "source": "stub"})
+
+    gate = pp.evaluate_gate(manifest, ledger, registry)
+    pod = gate["pods"][0]
+    assert pod["eligible"] is True            # the gate alone would pass it
+    assert pod["promotable"] is False
+    assert pod["loadable"] is False           # the registry flag vetoes it
+    assert any("promotable: false" in r for r in pod["reasons"])
+
+    book = pp.new_book(10000.0, 10.0)
+    outcome, book = pp.load_from_gate(book, gate)
+    assert outcome["loaded"] == 0
+    assert book["positions"] == []
+
+
+def test_gate_unpriced_pod_is_skipped_not_guessed(tmp_path, monkeypatch):
+    """A passing pod whose instrument cannot be quoted adds nothing (no guess)."""
+    manifest = _write_manifest(tmp_path, [_pod("POD-EQUITY-BREAKOUT", hid="H-TEST")])
+    ledger = _write_ledger(tmp_path, [_row(i) for i in range(120)])
+    registry = _write_registry(tmp_path, [{"id": "H-TEST", "status": "FORWARD"}])
+    monkeypatch.setattr(pp, "fetch_price", lambda s: None)
+
+    book = pp.new_book(10000.0, 10.0)
+    outcome, book = pp.load_from_gate(book, pp.evaluate_gate(manifest, ledger, registry))
+
+    assert outcome["loaded"] == 0
+    assert book["positions"] == []
+    assert outcome["skipped"][0]["reason"] == "no real quote"
+
+
+def test_status_labels_demo_positions_as_ungated(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(pp, "BOOK_FILE", tmp_path / "book.json")
+    monkeypatch.setattr(pp, "BOOK_DIR", tmp_path)
+    monkeypatch.setattr(pp, "EQUITY_FILE", tmp_path / "equity_curve.jsonl")
+    monkeypatch.setattr(pp, "SNAP_DIR", tmp_path / "snapshots")
+    assert pp.main(["--init", "--cash", "10000"]) == 0
+    book = pp.load_book()
+    pp.open_position(book, "BTC/USDT", "LONG", 0.05, 60000.0, strategy="demo_plumbing")
+    pp.save_book(book)
+
+    assert pp.main(["--status"]) == 0
+    out = capsys.readouterr().out
+    assert "DEMO BOOK - NOT GATE-BACKED" in out
+    assert "DEMO/UNGATED" in out
+    assert "GATED" not in out.replace("DEMO/UNGATED", "").replace("NOT GATE-BACKED", "")

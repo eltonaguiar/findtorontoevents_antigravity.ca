@@ -31,11 +31,19 @@ Usage:
   python3 tools/paper_portfolio.py --mark
   python3 tools/paper_portfolio.py --status
   python3 tools/paper_portfolio.py --mark --json
+  python3 tools/paper_portfolio.py --load-from-gate
+
+--load-from-gate is the only mode that can put a NON-demo position in the book.
+It reuses the real forward gate (``alpha_engine.audit3_tribunal.forward_gate_block``,
+which itself calls ``forward_observations.promotion``) and opens a position ONLY
+for a pod that passes it. When nothing passes - the current reality - it REFUSES,
+prints a machine-readable refusal, and leaves ``book.json`` byte-identical.
 """
 from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import sys
 from datetime import datetime, timezone
@@ -50,11 +58,29 @@ BOOK_FILE = BOOK_DIR / "book.json"
 EQUITY_FILE = BOOK_DIR / "equity_curve.jsonl"
 SNAP_DIR = BOOK_DIR / "snapshots"
 FOREX_CACHE = ROOT / "data" / "forex_rate_cache"
+# The three authoritative gate inputs (read-only; this tool never writes them).
+MANIFEST = ROOT / "reports" / "audit3_confirmatory.json"
+FORWARD_LEDGER = ROOT / "reports" / "forward_observations.jsonl"
+REGISTRY_FILE = ROOT / "reports" / "hypothesis_registry.json"
 
 SCHEMA_VERSION = 1
 DEFAULT_COST_BPS = 10.0
 PURPOSE = "plumbing_demo_not_validated_edge"
 CRYPTO_QUOTES = ("USDT", "USDC", "USD", "EUR", "BTC", "ETH")
+#: The instrument a gated pod would be expressed in - the asset class's own
+#: home-market default, not a stock pick. Explicitly refused rather than guessed:
+#: a pod with no mapping here is skipped with a reason.
+PROXY_SYMBOL = {
+    "POD-EQUITY-BREAKOUT": "SPY",
+    "POD-ETF-DUAL-MOMENTUM": "SPY",
+    "POD-CRYPTO-VWAP-REVERSION": "BTC/USDT",
+    "POD-CRYPTO-BOLLINGER-MR": "BTC/USDT",
+    "POD-CRYPTO-POSITION": "BTC/USDT",
+    "POD-CRYPTO-BTC4H-RSIMACD": "BTC/USDT",
+    "POD-FOREX-USDJPY-MOMENTUM": "USDJPY",
+    "POD-COMMODITY-ROLL-YIELD": "GLD",
+    "POD-FABER-TAA": "SPY",
+}
 
 
 def utcnow() -> str:
@@ -181,6 +207,8 @@ def open_position(book: dict, symbol: str, direction: str, qty: float, entry_px:
         "sl": float(sl) if sl else None,
         "strategy": strategy,
         "source": source,
+        # gated=False until --load-from-gate proves a pod passed the forward gate.
+        "gated": False,
         "entry_fee": round(fee, 8),
         "status": "OPEN",
         "last_px": None,
@@ -210,6 +238,7 @@ def close_position(book: dict, pos: dict, exit_px: float, reason: str, mark_ts: 
         "qty": qty, "entry_px": pos["entry_px"], "exit_px": float(exit_px),
         "entry_ts": pos["entry_ts"], "exit_ts": mark_ts or utcnow(),
         "reason": reason, "strategy": pos.get("strategy"), "source": pos.get("source"),
+        "gated": bool(pos.get("gated")),
         "gross": round(gross, 8), "fees": round(pos.get("entry_fee", 0.0) + exit_fee, 8),
         "net": round(net, 8),
     }
@@ -414,6 +443,136 @@ def write_snapshot(book: dict, payload: dict) -> Path:
     return path
 
 
+# ----------------------------------------------------------- gate-checked loader
+def _promotable_map(registry_file: Path) -> dict[str, bool]:
+    """hypothesis_id -> the registry's explicit ``promotable`` flag.
+
+    Absent means "no explicit flag", which is NOT the same as True: the gate
+    decides, and only an explicit ``false`` vetoes a pod that would otherwise pass.
+    """
+    try:
+        data = json.loads(Path(registry_file).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    out: dict[str, bool] = {}
+    try:
+        from alpha_engine.hypothesis_status import iter_hypotheses
+        records = list(iter_hypotheses(data))
+    except Exception:
+        records = data.get("hypotheses") or [] if isinstance(data, dict) else []
+
+    def walk(node):
+        if isinstance(node, dict):
+            hid, val = node.get("id"), node.get("promotable")
+            if isinstance(hid, str) and isinstance(val, bool):
+                out.setdefault(hid.strip().upper(), val)
+            for v in node.values():
+                walk(v)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v)
+
+    walk(records)
+    return out
+
+
+def _manifest_pods(manifest_file: Path) -> list[dict]:
+    try:
+        data = json.loads(Path(manifest_file).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return [p for p in (data.get("pods") or []) if isinstance(p, dict)]
+
+
+def evaluate_gate(manifest_file: Path = MANIFEST, ledger_file: Path = FORWARD_LEDGER,
+                  registry_file: Path = REGISTRY_FILE) -> dict:
+    """Every pod's real gate result, judged by the repo's own gate code.
+
+    Reuses ``forward_gate_block`` (which filters to the pod's own forward rows
+    since ``registered_at`` and calls ``forward_observations.promotion``) - no
+    threshold here is re-implemented or relaxed. A pod is loadable only when the
+    gate marks it eligible AND the registry does not say ``promotable: false``.
+    """
+    from alpha_engine.audit3_tribunal import forward_gate_block, load_confirmatory
+
+    manifest = load_confirmatory(str(manifest_file))
+    block = forward_gate_block(manifest, str(ledger_file))
+    promotable = _promotable_map(registry_file)
+    results: list[dict] = []
+    for pod in _manifest_pods(manifest_file):
+        pid = pod.get("id")
+        res = (block.get("pods") or {}).get(pid)
+        if res is None:  # declined/post_hoc/retired pods are hidden by the gate
+            results.append({"pod": pid, "status": pod.get("status"),
+                            "hypothesis_id": pod.get("hypothesis_id"),
+                            "n": 0, "eligible": False, "loadable": False,
+                            "reasons": [f"pod status {pod.get('status')!r} cannot "
+                                        "confer confirmatory"], "gate_seen": False})
+            continue
+        hid = str(res.get("hypothesis_id") or "").upper()
+        flag = promotable.get(hid)
+        reasons = list(res.get("reasons") or [])
+        loadable = bool(res.get("eligible")) and flag is not False
+        if res.get("eligible") and flag is False:
+            reasons.append("registry marks hypothesis promotable: false")
+        results.append({
+            "pod": pid, "status": res.get("status"), "hypothesis_id": res.get("hypothesis_id"),
+            "n": int(res.get("n_forward") or 0), "eligible": bool(res.get("eligible")),
+            "promotable": flag, "loadable": loadable, "reasons": reasons, "gate_seen": True,
+        })
+    return {"ledger": _rel(ledger_file), "ledger_fingerprint": block.get("fingerprint"),
+            "n_rows": block.get("n_rows"), "manifest": _rel(manifest_file),
+            "pods": results}
+
+
+def load_from_gate(book: dict, gate: dict | None = None) -> tuple[dict, dict]:
+    """Open gated positions only for pods that pass the real gate.
+
+    Returns (outcome, book). When no pod is loadable the book is returned
+    UNTOUCHED - the caller must not save it, so ``book.json`` stays
+    byte-identical. A passing pod gets a LONG position in the asset class's home
+    market instrument at its last real quote; a symbol that cannot be quoted is
+    skipped (never valued at a guess). Market orders carry no TP/SL because the
+    gate does not publish levels.
+    """
+    gate = gate or evaluate_gate()
+    pods = gate["pods"]
+    outcome: dict = {"loaded": 0, "pods_checked": [p["pod"] for p in pods],
+                     "pod_results": pods, "loaded_positions": []}
+    passing = [p for p in pods if p.get("loadable")]
+    if not passing:
+        outcome["reason"] = "no_pod_passed_forward_gate"
+        return outcome, book
+    for pod in passing:
+        symbol = PROXY_SYMBOL.get(str(pod.get("pod") or "").upper())
+        if symbol is None:
+            outcome.setdefault("skipped", []).append(
+                {"pod": pod["pod"], "reason": "no instrument mapped for pod"})
+            continue
+        quote = fetch_price(symbol)
+        if not quote or not quote.get("px"):
+            outcome.setdefault("skipped", []).append(
+                {"pod": pod["pod"], "symbol": symbol, "reason": "no real quote"})
+            continue
+        px = float(quote["px"])
+        alloc = min(float(book["cash"]) * 0.10, float(book["starting_cash"]) * 0.10)
+        qty = alloc / px if px > 0 else 0.0
+        if qty <= 0:
+            outcome.setdefault("skipped", []).append(
+                {"pod": pod["pod"], "symbol": symbol, "reason": "no allocatable cash"})
+            continue
+        pos = open_position(book, symbol, "LONG", qty, px, strategy=pod["pod"],
+                            source=f"forward-gate:{pod.get('hypothesis_id') or '-'}")
+        pos["gated"] = True
+        pos["gate_n"] = pod.get("n")
+        pos["gate_evidence"] = pod.get("reasons") or []
+        outcome["loaded"] += 1
+        outcome["loaded_positions"].append(pos["id"])
+    if outcome["loaded"] == 0:
+        outcome["reason"] = "no_pod_passed_forward_gate"
+    return outcome, book
+
+
 # ------------------------------------------------------------------- printing
 def _fmt(x, nd=2):
     if x is None:
@@ -421,7 +580,34 @@ def _fmt(x, nd=2):
     return f"{x:,.{nd}f}"
 
 
+def _banner(book: dict) -> str | None:
+    """Loud demo label whenever no open position is gate-backed."""
+    positions = book.get("positions") or []
+    if any(p.get("gated") for p in positions) or not positions:
+        return None
+    return (f"DEMO BOOK - NOT GATE-BACKED ({len(positions)} position(s), none from "
+            "--load-from-gate)")
+
+
+def _describe(book: dict) -> dict:
+    """Book plus an explicit gate summary (never rewrites the stored book)."""
+    positions = book.get("positions") or []
+    n_gated = sum(1 for p in positions if p.get("gated"))
+    return {**book,
+            "gate_summary": {
+                "n_positions": len(positions),
+                "n_gated": n_gated,
+                "n_demo_ungated": len(positions) - n_gated,
+                "gate_backed": n_gated > 0,
+                "note": ("positions are demo entries until --load-from-gate "
+                         "proves a pod passed the forward gate"),
+            }}
+
+
 def print_payload(payload: dict, book: dict) -> None:
+    banner = _banner(book)
+    if banner:
+        print(banner)
     print(f"paper portfolio mark  {payload['ts_utc']}   [{PURPOSE}]")
     print(f"  cash          {_fmt(payload['cash'])}")
     print(f"  positions val {_fmt(payload['positions_value'])}")
@@ -436,10 +622,11 @@ def print_payload(payload: dict, book: dict) -> None:
         for c in payload["closed_now"]:
             print(f"  CLOSED {c['symbol']} {c['reason']} @ {c['exit_px']}  net {c['net']:+.4f}")
     print()
-    hdr = f"  {'symbol':<12}{'dir':<6}{'qty':>12}{'entry':>14}{'mark':>14}{'uPnL':>12}  source/status"
+    hdr = f"  {'symbol':<12}{'dir':<6}{'gate':<6}{'qty':>12}{'entry':>14}{'mark':>14}{'uPnL':>12}  source/status"
     print(hdr)
     print("  " + "-" * (len(hdr) - 2))
     for p in book["positions"]:
+        gflag = "GATED" if p.get("gated") else "demo"
         px = p.get("last_px")
         if p.get("status") != "OPEN" or px is None:
             note = "STALE - no price (excluded from equity)"
@@ -450,7 +637,7 @@ def print_payload(payload: dict, book: dict) -> None:
             upnl = f"{(px - p['entry_px']) * p['qty'] * sign:+,.2f}"
             mark = _fmt(px, 4)
             note = p.get("last_mark_source") or ""
-        print(f"  {p['symbol']:<12}{p['direction']:<6}{p['qty']:>12g}"
+        print(f"  {p['symbol']:<12}{p['direction']:<6}{gflag:<6}{p['qty']:>12g}"
               f"{_fmt(p['entry_px'], 4):>14}{mark:>14}{upnl:>12}  {note}")
     if payload["stale_symbols"]:
         print(f"\n  WARNING: no price for {payload['stale_symbols']} - "
@@ -475,8 +662,44 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--source", default="cli")
     ap.add_argument("--mark", action="store_true", help="fetch prices, resolve, write equity+snapshot")
     ap.add_argument("--status", action="store_true", help="print book without fetching")
+    ap.add_argument("--load-from-gate", action="store_true",
+                    help="open positions ONLY for pods that pass the real forward gate "
+                         "(refuses, leaving book.json untouched, when none do)")
+    ap.add_argument("--manifest", help="pod manifest (default reports/audit3_confirmatory.json)")
+    ap.add_argument("--ledger", help="forward ledger (default reports/forward_observations.jsonl)")
+    ap.add_argument("--registry", help="hypothesis registry (default reports/hypothesis_registry.json)")
     ap.add_argument("--json", action="store_true", help="machine output")
     args = ap.parse_args(argv)
+
+    if args.load_from_gate:
+        book = load_book()
+        before = hashlib.sha256(BOOK_FILE.read_bytes()).hexdigest() if BOOK_FILE.exists() else None
+        gate = evaluate_gate(Path(args.manifest) if args.manifest else MANIFEST,
+                             Path(args.ledger) if args.ledger else FORWARD_LEDGER,
+                             Path(args.registry) if args.registry else REGISTRY_FILE)
+        outcome, book = load_from_gate(book, gate)
+        if outcome["loaded"] > 0:  # the ONLY path that writes the book
+            save_book(book)
+        after = hashlib.sha256(BOOK_FILE.read_bytes()).hexdigest() if BOOK_FILE.exists() else None
+        outcome["book"] = _rel(BOOK_FILE)
+        outcome["book_sha256_before"] = before
+        outcome["book_sha256_after"] = after
+        outcome["book_unchanged"] = before == after
+        if args.json:
+            print(json.dumps(outcome, indent=2))
+        elif outcome["loaded"] > 0:
+            print(f"loaded {outcome['loaded']} gated position(s) from {outcome['book']}")
+            for pid in outcome["loaded_positions"]:
+                print(f"  LOADED {pid}")
+        else:
+            print(f"REFUSED: {outcome['reason']} - no position opened, "
+                  f"{outcome['book']} unchanged ({str(before)[:12]})")
+            print(f"  pods checked: {len(outcome['pods_checked'])}")
+            for p in outcome["pod_results"]:
+                r = (p.get("reasons") or ["-"])[0]
+                print(f"  {p['pod']:<32} n={p.get('n', 0):<4} eligible={str(p.get('eligible')):<5} {r}")
+            print("  This book holds no gate-backed positions because nothing passed.")
+        return 0
 
     if args.init:
         if BOOK_FILE.exists() and not args.force:
@@ -524,15 +747,23 @@ def main(argv: list[str] | None = None) -> int:
     if args.status:
         book = load_book()
         if args.json:
-            print(json.dumps(book, indent=2))
+            print(json.dumps(_describe(book), indent=2))
         else:
+            banner = _banner(book)
+            if banner:
+                print(banner)
             print(f"book {_rel(BOOK_FILE)}  updated {book['updated_utc']}  [{book.get('purpose')}]")
             print(f"  cash {book['cash']:.2f}  start {book['starting_cash']:.2f}  "
                   f"realized net {book['realized_pnl_net']:.4f}  fees {book['fees_paid']:.4f}")
             for p in book["positions"]:
+                gflag = "GATED" if p.get("gated") else "DEMO/UNGATED"
                 print(f"  OPEN {p['symbol']:<12}{p['direction']:<6} qty {p['qty']:g} "
-                      f"@ {p['entry_px']:g}  tp={p['tp']} sl={p['sl']}  [{p['status']}]")
+                      f"@ {p['entry_px']:g}  tp={p['tp']} sl={p['sl']}  "
+                      f"[{p['status']}] [{gflag}]")
             print(f"  closed trades: {len(book['closed'])}")
+            if not any(p.get("gated") for p in book["positions"]):
+                print("  NOTE: no position here came from --load-from-gate; "
+                      "these are demo entries, not signals.")
         return 0
 
     ap.print_help()
