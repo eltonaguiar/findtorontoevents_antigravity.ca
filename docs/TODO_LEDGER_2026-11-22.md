@@ -43,7 +43,7 @@ on the **default branch**, so nothing can be verified until merge.
 **Do not** stand up a second emit path to work around the merge — that would be a
 second definition of the same measurement.
 
-## [ ] T4 — Add emit callsites beyond `production_scanner.py`
+## [x] T4 — Add emit callsites beyond `production_scanner.py`
 Only `production_scanner.py` emits today, so any pick that never passes through it
 is invisible to the ledger — a survivorship hole in the very instrument meant to
 close one.
@@ -53,7 +53,7 @@ which paths emit and which do not, and a test proving a pick from the new path
 lands in the ledger with a valid chain. Add the new file to
 `provenance-verify.yml` push paths.
 
-## [ ] T5 — Ledger vs dashboard reconciliation report
+## [x] T5 — Ledger vs dashboard reconciliation report
 The ledger and `audit_dashboard/data/dashboard_data.json` are two populations of
 the same thing. Any divergence is a defect in one of them.
 **Acceptance:** `tools/provenance_reconcile.py` emitting
@@ -76,7 +76,7 @@ rate; SE computed in consistent units; a selftest proving `dsr ∈ [0,1]` and th
 known-z input maps to the correct probability; the 64.4% headline withdrawn in the
 regenerated artifact. Document in `updates/`.
 
-## [ ] T7 — Scorecard: strict thresholds for the provenance rows
+## [x] T7 — Scorecard: strict thresholds for the provenance rows
 `tools/weekly_scorecard.py` prints the provenance/resolution rows but treats
 `EMPTY`/`NO DATA` as non-alerts, so `--strict` exits 0 while nothing is measured.
 **Acceptance:** `--strict` distinguishes "not yet measurable" (empty ledger, no

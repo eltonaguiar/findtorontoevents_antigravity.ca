@@ -6782,41 +6782,20 @@ def main():
     #   here (callers cannot supply it), TP/SL are fixed now, and prev_sha256 links
     #   to the previous record. See updates/2026-11-22-provenance-ledger-emit-time-recording.md
     #
-    #   Fail-safe: any error is logged and swallowed. A provenance write must never
-    #   be able to stop picks from being produced.
+    #   Fail-safe: emit_picks never raises. A provenance write must never be able to
+    #   stop picks from being produced.
+    #
+    #   2026-11-22: the mapping moved to alpha_engine/provenance_hook.py so a SECOND
+    #   callsite (smart_picks_engine) could share it. This path was the only emitter,
+    #   so every pick that reached the dashboard another way was invisible to the
+    #   ledger -- 3,500 of 3,500 closed dashboard picks were dashboard_only
+    #   (reports/provenance/reconciliation.json). One shared hook, not two copies.
     try:
-        _prov_tools = str(Path(__file__).resolve().parent.parent / "tools")
-        if _prov_tools not in sys.path:          # guard: don't accumulate entries
-            sys.path.insert(0, _prov_tools)
-        from provenance_ledger import emit as _prov_emit
-
-        _prov_picks = []
-        for _p in active:
-            try:
-                _entry = float(_p.get("entry_price") or _p.get("entry") or 0)
-                _tp = float(_p.get("take_profit") or _p.get("tp") or 0)
-                _sl = float(_p.get("stop_loss") or _p.get("sl") or 0)
-            except (TypeError, ValueError):
-                continue
-            if _entry <= 0 or _tp <= 0 or _sl <= 0:
-                continue
-            _prov_picks.append({
-                "symbol": _p.get("symbol"),
-                "side": _p.get("direction") or _p.get("side"),
-                "entry_ref": _entry,
-                "tp": _tp,
-                "sl": _sl,
-                "strategy": _p.get("strategy") or _p.get("strategy_family") or "unknown",
-                "source_system": _p.get("source_system") or "alpha_engine",
-                "horizon_hours": _p.get("horizon_hours"),
-                "signal_ts": _p.get("signal_ts") or _p.get("as_of"),
-            })
-        _written, _rejected = _prov_emit(_prov_picks)
-        print(f"  [PROVENANCE] recorded {len(_written)} pick(s), "
-              f"rejected {len(_rejected)} (no usable TP/SL or entry)")
-        if _written:
-            print(f"  [PROVENANCE] chain head seq={_written[-1]['seq']} "
-                  f"sha={_written[-1]['sha256'][:16]}...")
+        try:
+            from alpha_engine.provenance_hook import emit_picks as _prov_emit
+        except ImportError:                        # run as a bare script
+            from provenance_hook import emit_picks as _prov_emit
+        _prov_emit(active, default_source="alpha_engine", label="PROVENANCE")
     except Exception as _prov_err:
         print(f"  [PROVENANCE] skipped (non-fatal): {_prov_err}")
 

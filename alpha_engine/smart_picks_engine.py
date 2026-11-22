@@ -2568,6 +2568,21 @@ def run():
         "concentration_probation_stats": concentration_probation_stats,
     }
     out_path = _DATA / "smart_picks.json"
+    # PROVENANCE (T4): record the EMITTED picks before their outcome can exist.
+    #   production_scanner.py was the only path that emitted, so every pick that
+    #   reached the dashboard via this engine was invisible to the ledger and could
+    #   never be forward-credited. Measured 2026-11-22: 3,500 of 3,500 closed
+    #   dashboard picks were dashboard_only
+    #   (reports/provenance/reconciliation.json).
+    #   Fail-safe by construction -- provenance_hook.emit_picks never raises, and this
+    #   block cannot change what is written below.
+    try:
+        from alpha_engine.provenance_hook import emit_picks as _prov_emit_picks
+        _prov_emit_picks(output.get("picks") or [], default_source="smart_picks_engine",
+                         label="PROVENANCE/smart_picks")
+    except Exception as _prov_err:  # noqa: BLE001
+        print(f"  [PROVENANCE/smart_picks] skipped (non-fatal): {_prov_err}")
+
     out_path.write_text(json.dumps(output, indent=2), encoding="utf-8")
     log.info("Saved %d smart picks to %s", len(top), out_path)
     return output
