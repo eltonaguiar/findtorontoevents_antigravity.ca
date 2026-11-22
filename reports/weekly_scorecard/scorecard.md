@@ -9,7 +9,7 @@ T-bill hurdle used throughout: **3.50%/yr**
 | item | verdict | evidence | class |
 |---|---|---|---|
 | Harness certification | **PASS** | 6 harnesses (5 deterministic, 1 live); drift vs baseline is checked by tools/harness_certification.py --rerun | deterministic |
-| Integrity lint | **NOT RUN** | run tools/integrity_lint.py | - |
+| Integrity lint | **PASS** | new 0 / total 10 | deterministic |
 | Live ledger net expectancy | **-15.24 bp** | n=10,968  PF=0.904  CI-LB=0.852  t=-3.91 | observed |
 |   CRYPTO | **FAIL** | net -18.17 bp  PF 0.885 (LB 0.829)  n=9,099 | observed |
 |   EQUITY | **pf>1 but CI includes 1** | net 18.60 bp  PF 1.088 (LB 0.885)  n=936 | observed |
@@ -33,7 +33,6 @@ T-bill hurdle used throughout: **3.50%/yr**
 - L1 48 rows are WON on gross but LOSS on net (1.0% of gross wins). Any WR computed from the won flag overstates by this much.
 - L2 48 status-label conflicts (0.44% of rows).
 - L3 src 'luxalgo_filters' is 36.7% of the ledger; any ledger-wide stat is mostly that one emitter.
-- NOT RUN: integrity lint (selection-on-DV, provenance, n_trials) (`reports/integrity_lint/latest.json`)
 
 ## What this scorecard deliberately does not do
 

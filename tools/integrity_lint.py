@@ -294,6 +294,35 @@ def main() -> int:
         print("\n  NEW BLOCKING FINDINGS:")
         for k in new:
             print(f"    {k.replace('|', ' :: ')}")
+
+    # Machine-readable snapshot for tools/weekly_scorecard.py. The scorecard reads
+    # reports/integrity_lint/latest.json; before this existed that row could only
+    # ever read NOT RUN. Written on every run (not just --accept) so the weekly
+    # scorecard reflects the CURRENT lint state rather than the last baseline.
+    try:
+        LATEST = BASELINE.parent / "latest.json"
+        all_findings = []
+        for f in (findings if isinstance(findings := globals().get("findings"), list) else []):
+            all_findings.append(str(f)[:200])
+        LATEST.write_text(json.dumps({
+            "generated_utc": __import__("datetime").datetime.now(
+                __import__("datetime").timezone.utc).isoformat(timespec="seconds"),
+            "n_blocking": len(cur_keys),
+            "n_baselined": len(base),
+            "new_findings": len(new),
+            "n_new": len(new),
+            "fixed_since_baseline": len(fixed),
+            "total_findings": len(cur_keys) + len(fixed),
+            "n_total": len(cur_keys) + len(fixed),
+            "baseline_exists": BASELINE.exists(),
+            "new_keys": new,
+            "sample": all_findings[:20],
+            "verdict": "PASS" if not new else "FAIL",
+        }, indent=1))
+        print(f"  wrote {LATEST.relative_to(ROOT)}")
+    except (OSError, TypeError, ValueError) as exc:  # noqa: BLE001
+        print(f"  (could not write latest.json: {type(exc).__name__})")
+
     if a.strict and new:
         return 1
     if a.strict and not BASELINE.exists():
