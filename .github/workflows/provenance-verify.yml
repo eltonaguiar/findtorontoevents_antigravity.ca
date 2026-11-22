@@ -59,6 +59,19 @@ jobs:
         id: verify
         run: python3 tools/provenance_ledger.py --status
 
+      - name: Resolver selftest (pessimistic tie-break, no-mutation)
+        run: python3 tools/provenance_resolver.py --selftest
+
+      - name: Resolve any new picks (never blocks)
+        run: |
+          # Resolving needs market data; a network hiccup must not fail the gate.
+          python3 tools/provenance_resolver.py --resolve \
+            || echo "::notice::resolver could not run this pass (no data / empty ledger)"
+
+      - name: Resolution status
+        if: always()
+        run: python3 tools/provenance_resolver.py --status || true
+
       - name: Show head
         if: always()
         run: python3 tools/provenance_ledger.py --head
