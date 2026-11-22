@@ -240,6 +240,19 @@ jobs:
                     f"flagged: {len(sl) - len(rankable)}")
           PY
 
+      # N6 2026-11-22: the rows sidecar this run scored is the ONLY thing the
+      # published digest describes, and it is never retained (it is not
+      # committed, and /audit/data/ keeps only the latest FTP overwrite). Keep
+      # it with the run so a published digest stays checkable after the fact.
+      - name: Upload canonical rows sidecar (what the digest describes)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit3-canonical-rows
+          path: /tmp/audit3/resolved_closed_picks_net.json
+          retention-days: 90
+          if-no-files-found: warn
+
       # Fail-open is the right runtime behaviour and the wrong CI behaviour: if the
       # ledger stops loading or goes stale, enforcement silently disappears. This
       # step turns that into a red build.
