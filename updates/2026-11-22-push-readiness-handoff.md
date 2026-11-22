@@ -209,3 +209,92 @@ The shared working tree is dirty with a concurrent agent's work. These entries w
 
 Only this handoff file was committed, on a new branch cut from `59f536ce2a5`, using a
 temporary index so the shared working tree was never committed.
+
+---
+
+# PUSHED — 2026-11-22T23:54–23:56Z
+
+**Status: 12 of 12 refs pushed, each verified by `git ls-remote` immediately after its own push. No push was rejected. No `--force`, no `+` refspec, no `:ref` delete form, no bare `git push`, no `git push origin HEAD`.**
+
+Executed by the authorised push agent in `/home/eaguiar2015/findtorontoevents_antigravity.ca`. This section supersedes the "NOTHING WAS PUSHED" status at the top of this document for the 12 refs listed below.
+
+## 1. Per-commit result (sha → branch → verified remote sha)
+
+| # | Commit | Branch | Verified remote sha | Result |
+|---|--------|--------|---------------------|--------|
+| 1 | `24db34304c9` | `push/m2-forex-cost-2026-11-22` | `24db34304c913cb081e31e66b63dca6d660ac8f4` | **PASS** |
+| 2 | `692d30d7e62` | `m2-residual/fx-cost-overlap-scheduler` | `692d30d7e62079bca8105835f94bd34c6bb44c67` | **PASS** |
+| 3 | `3f76b104066` | `m1-equity-cost-measurement` | `3f76b10406660d18ba2675463ed27cd338dcb434` | **PASS** |
+| 4 | `87a2e0cbe2f` | `m3-cost-triage-2026-11-22` | `87a2e0cbe2fa91e4d546b7279382ee3319c6a1da` | **PASS** |
+| 5 | `649aa763afd` | `research/m1-provenance-repair` | `649aa763afdc3597cecc0b9ac1326dacdffb4249` | **PASS** |
+| 6 | `559e7795320` | `research/edge-candidates-2026-11-22` | `559e7795320e6e25c32b54b8797447f761fc0520` | **PASS** |
+| 7 | `8229bb6d015` | `closing-edge-programme-2026-11-22` | `8229bb6d015fb011a8881d44d037d5d3a0140144` | **PASS** |
+| 8 | `59f536ce2a5` | `reconcile/tally-enumeration` | `59f536ce2a5bfc5563dd11a6aa49c3df64bbb256` | **PASS** |
+| 9 | `679a5f741a0` | `push-readiness/handoff-2026-11-22` | `679a5f741a0c9d6c702c0229d002d84cdf34ca42` | **PASS** |
+| 10 | `ba70af2cfad` | `tally-drift-fix-2026-11-22` | `ba70af2cfad32d0e1b88c80f6723357a86a1b1aa` | **PASS** |
+| 11 | `d6627aef183` | `fc-opportunity-frequency-2026-11-22` | `d6627aef1835f7f965aa2149e8981c61529cdebd` | **PASS** |
+| 12 | `6e160cf7212` | `block-d-session-record-2026-11-22` | `6e160cf7212547679a25cdb675a193b05816492a` | **PASS** |
+
+12 PASS / 0 FAIL.
+
+Commits 9-12 are **not** in the original 8-commit table above; they were added to this record by the push pass.
+
+## 2. Pre-flight
+
+- `git cat-file -t` → `commit` for all 12. None missing.
+- `git merge-base --is-ancestor origin/main <sha>` → **exit 1 (false) for all 12**, using local `origin/main` = `128fa19794fcb292858bdac40129d69e184c94ea` (the same value this document quotes at §3). None of the 12 drags `origin/main` history.
+
+## 3. Remote diff (pre 23:54:32Z vs post 23:55:54Z)
+
+`git ls-remote origin 'refs/heads/*'` went from **259 to 271 refs**.
+
+- **Added: 13 lines, of which 12 are the intended refs** and the 13th is a change to `refs/heads/main` (see below).
+- **Deleted: 0 refs.**
+- **Of the 12 intended refs: 12 added, 0 modified, 0 deleted.**
+
+### Finding: `refs/heads/main` moved during the window
+
+`refs/heads/main` was `55229d1cbf94862f5a9e8df3a1a4cda64760a913` in the pre-flight snapshot and `294523e93beb87c7ef232bb657b173e7ac72d6fd` in the post-flight snapshot.
+
+- **This push session did not push, fetch-and-update, merge into or rebase onto `main`.** Every refspec used named a feature ref, never `refs/heads/main`.
+- Verified **benign fast-forward, not a rewrite**: `git merge-base --is-ancestor 55229d1cb 294523e93` → exit 0 (true). The two intervening commits are concurrent automation, timestamps in the same minute as this session:
+  - `33ac01b0e51 Scanner data update [2026-11-22 23:54 UTC] [skip ci]`
+  - `294523e93be Cross-system aggregation 2026-11-22 23:55 UTC [skip ci]`
+- Local `origin/main` (`128fa19794f`) was stale at snapshot time; it is also an ancestor of `294523e93`. Reported because a moved protected ref is a finding, not because this session caused it.
+
+## 4. Protected refs
+
+| Branch | Expected | Observed post-push | Result |
+|--------|----------|--------------------|--------|
+| `push/edge-research-p0` | `68d887c8641` | `68d887c864115a0de1d24aa7d7aebfe27e7726f9` | unchanged |
+| `push/h119-nonpromotable` | `78b9794ad77` | `78b9794ad77775d72847913a851f1b00c38faaf5` | unchanged |
+| `push/n1-n8-research-integrity` | `532413a292e` | `532413a292efc788597b7aaf885bb7f6383eddcb` | unchanged |
+| `push/phase2-round-2026-11-22` | `1c15c5d7d07` | `1c15c5d7d0796202763af1ed4919f3643834c1ea` | unchanged — **not pushed by this session** |
+| `main` | (snapshot) | moved `55229d1cb`→`294523e93` by concurrent automation | fast-forward, not this session |
+
+`push/phase2-round-2026-11-22` retains the correct remote value `1c15c5d7d07`; the locally-advanced ref (`9614cf15639`) was deliberately left alone.
+
+## 5. Workflow scheduling caveat (correction to §6 above)
+
+Default branch is **`main`** (`git ls-remote --symref origin HEAD` → `ref: refs/heads/main`).
+
+`.github/workflows/fx-cost-overlap.yml` is now on `m2-residual/fx-cost-overlap-scheduler`, so it is **visible and `workflow_dispatch`-able on that branch**. But it is driven by `schedule:` crons (`48 13 * * 1-5`, …). **GitHub Actions only schedules `schedule:` triggers from the default branch.** Therefore:
+
+- **The weekday FX cron will NOT fire** while the workflow exists only on `m2-residual/fx-cost-overlap-scheduler`.
+- **FX mean-reversion cost stays `UNKNOWN`** until a human merges the workflow (commit `692d30d7e62` or its content) into `main`.
+- This corrects the phrase "pushing activates the cron": pushing makes it dispatchable, it does not schedule it.
+
+## 6. Discrepancies against this document
+
+- **Title and scope are stale.** This document covers 8 commits; the authorised set was 12. Commits `679a5f741a0`, `ba70af2cfad`, `d6627aef183`, `6e160cf7212` are absent from the 8-commit table and are recorded only in §1 above.
+- **Commit 6 branch name.** The 8-commit table (row 6) names `559e7795320`'s branch as `research/m1-provenance-repair` "(same branch as 5)", while §4's refspecs give it `research/edge-candidates-2026-11-22`. The table is internally inconsistent; the push used `research/edge-candidates-2026-11-22`, so `research/m1-provenance-repair` now points at `649aa763afd` only.
+- **`SCOPE_DEVIATION` on `559e7795320` is now moot for the push** (the human authorised all 12), but the note stands that it was unrequested in the original brief.
+- Nothing else differed: all 12 shas resolved, all ancestry results were false, and every refspec verified.
+
+## 7. Tally-consistency test
+
+`python3 -m pytest tests/test_edge_research_tally_consistency.py -q` → **18 passed in 0.28s**. No tally was edited in this block, so the result is unchanged, as expected.
+
+## 8. Follow-up queued (not part of this push)
+
+User asked, on approval of push 6, for a pre-registration to be written at `docs/preregistration/HML_VALUE_TEST_2026-11-22.md`: monthly HML long-short on a point-in-time universe, measured on our data rather than importing either literature magnitude (25–42 bp/month gross vs 50–70 bp); kill rule = OOS annualised net return on committed capital ≤ 4.3% **or** one-sided 95% upper bound ≤ 4.3%; turnover costs counted once; compared against committed capital including cash collateral rather than a raw T-bill yield; and a recorded note that PEAD decayed post-2005/06 across three independent sources, so a large-cap post-2006 null is the expected result, not a failure.
