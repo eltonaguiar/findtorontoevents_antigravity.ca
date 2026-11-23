@@ -17,12 +17,29 @@ folded my note into it. Author identity cannot catch this — every agent here c
   and `head` (refuses when HEAD moved mid-operation — the race detector).
 - `.githooks/pre-commit` — detects `--amend` from the reflog action, the live git command line, and
   git's own argument, then delegates. `install.sh` now chmods it.
-- `tests/test_git_guard.py` — **11 hermetic tests** in a throwaway repo: amends of foreign HEAD refused,
-  own HEAD allowed, foreign staged file refused, unregistered agent warns but never blocks, HEAD-moved
-  refused, override honoured but announced, **missing ownership file is an error, not a pass**.
+- `tests/test_git_guard.py` — **10 hermetic tests** in a throwaway repo: amends of foreign HEAD refused,
+  own HEAD allowed, amend target defaults to HEAD, foreign staged file refused, own staged file allowed,
+  unregistered agent warns but never blocks, HEAD-moved refused, HEAD-unchanged allowed, override
+  honoured but announced, **missing ownership file is an error, not a pass**.
 
 An unregistered agent is never blocked (warn only), so this cannot wedge another agent's workflow; it
-only stops *my* commits from carrying their files, and theirs from being rewritten by me.
+only stops *my* commits from carrying their files, and theirs from being rewritten by me. There is
+**no default-to-me fallback**: in a shared clone that would hand every unidentified process my ownership
+list and block legitimate foreign commits.
+
+### What the tests caught, and why that matters
+
+The guard's first version grepped the whole git argv for the amend flag. A commit message containing
+that flag **as text** then made a plain commit take the amend branch — so the guard was silently
+checking the wrong thing. The tests failed first (2 of 10), and the live commit reproduced it. Detection
+is now token-exact. I also measured what git actually exposes to a `pre-commit` hook and found
+`GIT_REFLOG_ACTION` **unset for both plain and amend commits**, so argv really is the only available
+signal — which is precisely why the substring shortcut was tempting and why it had to be removed rather
+than trusted.
+
+Commit mode also crashed on the first run: it called `files_in_commit()` with an empty sha. Both bugs
+were found by the tests before the hook could protect anything, which is the argument for shipping this
+with tests rather than as a comment in AGENTS.md.
 
 ## 2. σ is now measured, not back-solved
 
@@ -56,11 +73,14 @@ cells**. That is the most precise statement of "not ready" this programme has pr
 
 ## 4. Verification
 
-- `pytest tests/test_git_guard.py` — 11 passed (hermetic, throwaway repo per test).
+- `pytest tests/test_git_guard.py` — **10 passed** (hermetic, throwaway repo per test), after fixing
+two real bugs the first run exposed.
 - Live refusal checks against this clone: `--mode amend --head f1489c159a3` (another agent's commit) →
   **exit 1, REFUSED**; `--head 3898c10eb02` (mine) → exit 0.
 - Harness re-run: exit 0, 40 cells, PBO 0.215, matrix 5158×39.
 - Hook installed via the repo's own `bash .githooks/install.sh` (`core.hooksPath=.githooks`), so the
   guard runs on every commit in this clone from now on.
-- **Not verified:** the hook firing inside a real `git commit --amend` on the live tree — deliberately
-  not tested by amending real history. Its two branches are covered by direct invocation instead.
+- **End-to-end:** the hook fired inside a real `git commit` in this clone and took the **commit**
+branch (`commit allowed for freebuff-deepseek-v4-flash, 2 file(s) checked`), including on a message whose
+text contained the amend flag. The amend branch is covered by direct invocation against a real foreign
+commit, not by amending real history.

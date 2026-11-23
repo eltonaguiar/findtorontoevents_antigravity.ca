@@ -42,19 +42,32 @@ CORRECTION above: they are **live on production**, merely unversioned.
 They may exist on the FTP host, but nothing in the repo can produce them — so a fresh clone deploys
 four 404s.
 
-## 2. Three of the twelve catalogue sections are empty or mislabeled
+## 2. ~~Three of the twelve catalogue sections are empty or mislabeled~~ — RETRACTED
 
-From `investments/all-dashboards.html`:
+> ### ⚠️ RETRACTION (2026-11-23, later same day)
+> **This entire section was wrong.** I counted `<a href>` tags and concluded three sections were
+> empty. They are not. Measured properly:
+>
+> | Section | `<a>` links | content cards | text chars |
+> |---|---:|---:|---:|
+> | 🗄️ SQLite Databases | 0 | **19 db-cards** | 3,919 |
+> | 📁 Backtest & Live Data (JSON/CSV) | 0 | **45-row table** | 4,054 |
+> | 🧠 Trained ML Model Files | 3 | model table w/ paths | 2,444 |
+>
+> The SQLite section describes 19 databases in `<div class="db-card">` blocks; the Backtest
+> section is a 45-row `<table class="dash-table">`; the ML Models section lists model files with
+> `<code>` paths. **None of them is empty.** The defect was in my measurement, not the page —
+> counting hyperlinks is not a measure of content.
+>
+> The "Meme section links the same URL twice" item is also **downgraded**: the two rows are
+> labelled `(filter: Meme)` and `(filter: Penny)` and describe two different datasets served by
+> one competition page. Confusing, but intentional, not a bug.
+>
+> **What survives from this section: nothing.** The real catalogue defects are the orphaned
+> published pages (leaderboard.html, risk_analytics.html, kimi-goldmine.html), which were
+> unreachable from any menu and are now linked.
 
-| Section | Links found | Problem |
-|---|---|---|
-| 🗄️ SQLite Databases | **0** | Promises a database catalogue, contains nothing |
-| 📁 Key Backtest & Live Data Files (JSON/CSV) | **0** | Promises a data-file catalogue, contains nothing |
-| 🧠 Trained ML Model Files | 3 | The 3 "links" are just nav footer links (`/`, `/investments/`, `/updates/`) — **no models listed** |
-| 💀 Meme Coin & Penny Stock | 2 | Both links are the **same** URL, `/STOCKS/algorithm-competition.html` |
-
-An "All Dashboards & Data" page whose data and model sections are empty is the most misleading thing on
-the hub, because its title promises exactly the inventory that is missing.
+The original (wrong) analysis is kept below for the audit trail:
 
 ## 3. The page that matters: `live-monitor/research/live-vs-research.html`
 
