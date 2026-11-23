@@ -62,3 +62,36 @@ does not decide landing or merging, and never edits `expected_verdict`.
   parametrised in), all passing.
 - `pytest tests/test_verify_peer_claims.py -q` - 25 passed.
 - `python3 tools/verify_peer_claims.py --strict` - exit 0.
+
+## Post-merge run observation (first real dispatch)
+
+The first real dispatch of the workflow (run `45114413921`) went **green** - every step
+`success`, conclusion `success` - and committed a regenerated report to `main`. The report
+was largely WRONG.
+
+- Local, full clone, same commit range: `16 claims: 12 agree, 4 disagree (1 non-manual); strict violations: 0`.
+- CI, same range: `16 claims: 6 agree, 10 disagree (5 non-manual); strict violations: 3`.
+
+B12, B7-context, A1i, A1ii, A2 and B9 were inverted from their true verdicts, e.g.
+`[B12] NOT LANDED ... (hand: VERIFIED)` and `[A1i] NOT LANDED ... FAIL supports
+commit_on_any_origin_ref: 3a4f199132d does not resolve to a commit`.
+
+Cause: the checkout step used `actions/checkout@v4` with `fetch-depth: 1`. A depth-1 clone
+holds one commit and no other branch refs, so `git cat-file -e <sha>^{commit}` fails for
+every sha that is not HEAD, `git branch -r --contains` finds nothing and `git merge-base
+--is-ancestor` cannot work. The engine faithfully reported NOT LANDED for commits that had
+genuinely landed. Because the workflow runs without `--strict`, it still exited 0.
+
+Fix (this change):
+
+1. `fetch-depth: 0` in the workflow - full history is required.
+2. The engine now refuses to run in a shallow clone: `git rev-parse --is-shallow-repository`
+   -> `true` is a FATAL error (exit 2) unless `--allow-shallow` is passed, and then every
+   affected check and verdict is tagged `[SHALLOW CLONE - results unreliable]`.
+3. The report header records `checked-out HEAD at report time`, the ref used for checks,
+   and `shallow:` - captured just before writing, since a rebase can move the sha after
+   checkout.
+4. Regression tests build a real `git clone --depth 1` fixture and drive the CLI.
+
+Before/after, same claims: 6 agree / 10 disagree / 5 non-manual / 3 violations (CI, shallow)
+-> 12 agree / 4 disagree / 1 non-manual / 0 violations (full clone).

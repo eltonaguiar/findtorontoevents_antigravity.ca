@@ -181,7 +181,10 @@ def test_remote_map_env_var(tmp_path, monkeypatch):
                      "ref": "review/main", "polarity": "supports"}],
          "manual": False, "expected_verdict": "VERIFIED"}]}), encoding="utf-8")
     out = tmp_path / "report.md"
-    rc = vpc.main(["--claims", str(claims), "--out", str(out), "--strict", "--allow-dirty-ref"])
+    # --allow-shallow: main() runs against this checkout's repo root, which may
+    # itself be shallow-marked; this test is about the remote map, not depth.
+    rc = vpc.main(["--claims", str(claims), "--out", str(out), "--strict",
+                   "--allow-dirty-ref", "--allow-shallow"])
     assert rc == 0
     assert "R2" in out.read_text(encoding="utf-8")
 
@@ -351,3 +354,138 @@ def test_report_rendering_is_deterministic_and_avoids_docs(tmp_path):
     assert "COMS bus" in first_render
     assert "ref-reachability result only" in first_render
     assert "clone-local" in first_render
+
+
+# --------------------------------------------------------------------------- #
+# shallow clones (Block 30: depth-1 inverts landed verdicts)
+# --------------------------------------------------------------------------- #
+def _shallow_pair(tmp_path: Path):
+    """A two-commit source repo plus a depth-1 clone of it, with the engine copied in.
+
+    The clone is real (`git clone --depth 1 file://...`), so `git rev-parse
+    --is-shallow-repository` prints true there - exactly the CI condition.
+    """
+    src = _init_repo(tmp_path / "shallow_src")
+    base = _commit(src, "base.txt", "base\n", "base commit")
+    second = _commit(src, "second.txt", "second\n", "second commit")
+    _run("git", "update-ref", "refs/remotes/origin/main", second, cwd=src)
+    dst = tmp_path / "shallow_dst"
+    _run("git", "clone", "-q", "--depth", "1", f"file://{src}", str(dst), cwd=tmp_path)
+    (dst / "tools").mkdir()
+    (dst / "tools" / "verify_peer_claims.py").write_text(
+        (TOOLS / "verify_peer_claims.py").read_text(encoding="utf-8"), encoding="utf-8")
+    claims = dst / "claims.json"
+    claims.write_text(json.dumps({"claims": [
+        {"id": "S1", "group": "B", "claimant": "peer", "summary": "base landed",
+         "checks": [{"kind": "commit_ancestor_of_main", "sha": base, "polarity": "supports"}],
+         "manual": False, "expected_verdict": "VERIFIED"},
+        {"id": "S2", "group": "B", "claimant": "peer", "summary": "base on origin",
+         "checks": [{"kind": "commit_on_any_origin_ref", "sha": base, "polarity": "supports"}],
+         "manual": False, "expected_verdict": "VERIFIED"},
+    ]}), encoding="utf-8")
+    return src, dst, base, second
+
+
+def _cli(repo: Path, *args):
+    return subprocess.run(
+        [sys.executable, "tools/verify_peer_claims.py", *args],
+        cwd=str(repo), capture_output=True, text=True)
+
+
+def test_shallow_clone_is_fatal_by_default(tmp_path):
+    _src, dst, _base, _second = _shallow_pair(tmp_path)
+    assert _run("git", "rev-parse", "--is-shallow-repository", cwd=dst) == "true"
+    proc = _cli(dst, "--claims", "claims.json", "--out", "out.md",
+                "--allow-dirty-ref", "--strict")
+    assert proc.returncode == 2, (proc.returncode, proc.stdout, proc.stderr)
+    assert "FATAL: this is a shallow clone" in proc.stderr
+    assert "--allow-shallow" in proc.stderr
+    assert not (dst / "out.md").exists()
+
+
+def test_allow_shallow_marks_results_unreliable(tmp_path):
+    _src, dst, _base, _second = _shallow_pair(tmp_path)
+    proc = _cli(dst, "--claims", "claims.json", "--out", "out.md",
+                "--allow-dirty-ref", "--allow-shallow")
+    assert proc.returncode == 0, (proc.returncode, proc.stderr)
+    assert "WARNING: shallow clone" in proc.stderr
+    report = (dst / "out.md").read_text(encoding="utf-8")
+    # The inverted NOT LANDED is present but can never be mistaken for a real one.
+    assert "NOT LANDED [SHALLOW CLONE - results unreliable]" in report
+    assert report.count(vpc.SHALLOW_SUFFIX) >= 2
+
+
+def test_full_clone_does_not_warn_shallow(tmp_path):
+    src, _dst, base, _second = _shallow_pair(tmp_path)
+    (src / "tools").mkdir()
+    (src / "tools" / "verify_peer_claims.py").write_text(
+        (TOOLS / "verify_peer_claims.py").read_text(encoding="utf-8"), encoding="utf-8")
+    proc = _cli(src, "--claims", str(_dst_claims(tmp_path)), "--out", "out.md",
+                "--allow-dirty-ref", "--strict")
+    # In the full repo the same claims are decidable: the base commit IS landed.
+    assert proc.returncode == 0, (proc.returncode, proc.stdout, proc.stderr)
+    assert "shallow" not in proc.stderr.lower()
+    assert vpc.SHALLOW_SUFFIX not in (src / "out.md").read_text(encoding="utf-8")
+
+
+def _dst_claims(tmp_path: Path) -> Path:
+    return tmp_path / "shallow_dst" / "claims.json"
+
+
+def test_header_records_shallow_status_and_head_at_report_time(tmp_path):
+    _src, dst, _base, second = _shallow_pair(tmp_path)
+    proc = _cli(dst, "--claims", "claims.json", "--out", "out.md",
+                "--allow-dirty-ref", "--allow-shallow")
+    assert proc.returncode == 0, proc.stderr
+    header = (dst / "out.md").read_text(encoding="utf-8").splitlines()[:12]
+    text = "\n".join(header)
+    assert "- shallow: true" in text
+    assert f"- checked-out HEAD at report time: `{second}`" in text
+    assert "- ref used for checks: `origin/main`" in text
+
+
+def test_detect_shallow_returns_none_when_git_fails(tmp_path):
+    empty = tmp_path / "not_a_repo"
+    empty.mkdir()
+    assert vpc.detect_shallow(empty) is None
+
+
+def test_run_claim_marks_only_shallow_sensitive_checks(tmp_path):
+    repo, first = _repo_with_origin_main(tmp_path)
+    claim = {"id": "K1", "group": "B", "claimant": "peer", "summary": "mixed kinds",
+             "checks": [{"kind": "commit_ancestor_of_main", "sha": first, "polarity": "supports"},
+                        {"kind": "pr_state", "number": 1, "expect_state": "OPEN",
+                         "polarity": "supports"}],
+             "manual": False, "expected_verdict": "VERIFIED"}
+    shallow = vpc.run_claim(repo, "origin/main", None, claim, {}, shallow=True)
+    full = vpc.run_claim(repo, "origin/main", None, claim, {}, shallow=False)
+    assert shallow["checks"][0]["detail"].endswith(vpc.SHALLOW_SUFFIX)
+    assert not shallow["checks"][1]["detail"].endswith(vpc.SHALLOW_SUFFIX)
+    assert vpc.SHALLOW_SUFFIX not in full["computed_verdict"]
+    assert vpc.SHALLOW_SUFFIX in shallow["computed_verdict"]
+
+
+# --------------------------------------------------------------------------- #
+# report header provenance (Block 30)
+# --------------------------------------------------------------------------- #
+def test_header_carries_head_at_report_and_shallow_fields():
+    meta = {"generated_utc": "2026-11-23T00:00:00Z", "origin_main": "a" * 40,
+            "ref": "origin/main", "head_at_report": "b" * 40, "shallow": False,
+            "extra_remotes": "", "claims_path": "claims/x.json", "claims_sha256": "0" * 64,
+            "n_claims": 0, "n_agree": 0, "n_disagree": 0, "n_disagree_nonmanual": 0,
+            "n_manual": 0}
+    text = vpc.build_report(meta, [])
+    assert f"- checked-out HEAD at report time: `{'b' * 40}`" in text
+    assert f"- ref used for checks: `origin/main` (`{'a' * 40}`)" in text
+    assert "- shallow: false" in text
+    assert "WARNING: shallow clone" not in text
+
+
+def test_shallow_strict_violations_are_marked_but_still_counted(tmp_path):
+    """--allow-shallow degrades honestly: a disagreement stays a disagreement."""
+    _src, dst, _base, _second = _shallow_pair(tmp_path)
+    proc = _cli(dst, "--claims", "claims.json", "--out", "out.md",
+                "--allow-dirty-ref", "--allow-shallow", "--strict")
+    assert proc.returncode == 1, (proc.returncode, proc.stderr)
+    assert "strict violations: 2" in proc.stdout
+    assert "VIOLATION [S1]" in proc.stderr
