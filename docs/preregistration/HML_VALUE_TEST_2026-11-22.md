@@ -173,9 +173,9 @@ null with a tight interval, which is a real answer rather than an absence of one
 - It does not import a magnitude from the literature.
 - It does **not** yet specify a point-in-time universe, despite §2 requiring one — the
   data does not exist (B1). §2 states the requirement; it is not a statement of fact.
-- It does not change any tally row. The programme tally stays `0 INVESTABLE / 11
-  NOT_INVESTABLE / 3 UNKNOWN over 14 rows` — HML moved from UNKNOWN to
-  NOT_INVESTABLE on the run recorded in §8.
+- It does not change any tally row. The programme tally stays
+  `TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)` — HML moved from
+  UNKNOWN to NOT_INVESTABLE on the run recorded in §8.
 
 ---
 
