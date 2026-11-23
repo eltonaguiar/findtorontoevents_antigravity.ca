@@ -61,8 +61,14 @@ def build(ledger_path: str, ticket_usd: float) -> dict:
     for s in syms:
         if not s.get("n"):
             continue
-        ne_pct = s.get("net_expectancy_pct")
-        gross_bp = (float(ne_pct) * 100.0) if ne_pct is not None else 0.0  # pct -> bp
+        # Use GROSS expectancy (the ledger's net is already net of its own 5 bp cost;
+        # re-costing from net would double-subtract). Fall back to net+5bp if gross absent.
+        ge = s.get("gross_expectancy_pct")
+        if ge is not None:
+            gross_bp = float(ge) * 100.0
+        else:
+            ne = s.get("net_expectancy_pct")
+            gross_bp = (float(ne) * 100.0 + 5.0) if ne is not None else 0.0
         sym = s.get("symbol", "UNK")
         hold = hold_feed.get(sym, {}).get("hold_days_mean", 0.0) if hold_feed else 0.0
         p = Pick(
