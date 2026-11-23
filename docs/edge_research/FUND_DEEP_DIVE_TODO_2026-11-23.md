@@ -1,4 +1,4 @@
-# Fund deep-dive — 120-item remediation & research plan
+# Fund deep-dive — remediation & research plan (173 items)
 
 **Date:** 2026-11-23
 **Scope:** `tools/fund_deep_dive.py`, `reports/fund_deep_dive.json`, `docs/edge_research/FUNDS_WHAT_TO_BUY_2026-11-23.md`
@@ -186,3 +186,107 @@ assertion: every "confirmed" item was checked against the code or re-run.
 8. **K1–K7** — errata, docs, updates card.
 
 Deferred pending operator decision: **E3/E4/E5/E6** (jurisdiction), **G3–G7** (futures data acquisition — needs contract-level feed).
+
+---
+
+# Part II — Research, peer review, acceptance, operations
+
+Added 2026-11-23 after block A landed. Part I is "fix what is wrong"; Part II is
+"establish what we do not yet know". Nothing in L is answerable by editing code —
+each needs evidence gathered from outside this repo.
+
+## L. Open research questions (17)
+
+- [ ] **L1** — Does adjusted-close data from this CSV actually reinvest dividends, or is it split-adjusted only? *Why it matters:* if not reinvested, every CAGR here understates total return by ~1.3%/yr for equity and the whole comparison shifts. *Method:* reconstruct SPY total return and compare to a known benchmark.
+- [ ] **L2** — What is the achievable *net* return for a Canadian retail investor holding US-domiciled ETFs? Withholding tax, FX conversion cost, and MER together may exceed the fee gap that drives the recommendation. *Method:* model 15% WHT vs treaty rate; add 1.5% FX round-trip if applicable.
+- [ ] **L3** — Is the FXAIX − SPY gap explainable entirely by fee + dividend-timing, or is there a tracking-error component? *Method:* decompose into fee, dividend timing, and residual tracking error; test whether residual is distinguishable from zero.
+- [ ] **L4** — What is the true forward equity risk premium today? *Method:* earnings yield (or CAPE) minus the current real risk-free rate, with the caveat that both are noisy.
+- [ ] **L5** — How large is the volatility-harvesting bonus from rebalancing 60/40, empirically, in this window? *Method:* buy-and-hold vs monthly vs quarterly vs daily, already scaffolded by D2.
+- [ ] **L6** — Does the 60/40 recommendation survive a 1970s-style stagflation regime? Five years of data cannot answer this. *Method:* cite the literature; do not extrapolate.
+- [ ] **L7** — What is the actual distribution of drawdown recovery times for a 100% equity portfolio? A single −24.5% observation is n=1. *Method:* extend history or cite long-run studies.
+- [ ] **L8** — Are index mutual funds still distributing capital gains in 2026, or has the practice faded? The tax argument depends on it. *Method:* check recent distribution history for VTSAX.
+- [ ] **L9** — What is the empirically correct block length for a moving-block bootstrap on daily equity returns? *Method:* spectral analysis / Politis–White; compare 5/21/63.
+- [ ] **L10** — Does SGOV net CAGR represent the *investor's* cash alternative, or should it be a money-market fund / HISA rate? *Method:* compare SGOV, a HISA, and a T-bill index.
+- [ ] **L11** — Is BND's −0.29% a rate-hike artefact, and what does its current YTM imply? *Method:* pull current YTM and duration; compute expected 5y return if rates hold.
+- [ ] **L12** — What is the minimum viable account size for each vehicle (whole-share friction, MF minimums, fractional-share brokers)? *Method:* check each broker's current policy.
+- [ ] **L13** — Do the seven funds have equivalent securities-lending and tax-treatment profiles? *Method:* read prospectuses; note any material differences.
+- [ ] **L14** — What survivorship bias is introduced by choosing these seven funds today? *Method:* enumerate index funds that closed/merged in the window.
+- [ ] **L15** — Is a 5-year window ever sufficient to rank same-index vehicles? *Method:* show that the *fee* ranking is robust while the *return* ranking is not.
+- [ ] **L16** — What would falsify the "low MER is the whole argument" conclusion? *Method:* find a case where a higher-fee vehicle beat a lower-fee one persistently on the same index.
+- [ ] **L17** — Does the repo's own alpha work justify the index-fund recommendation, or is that outside this document's remit? *Method:* cite `docs/edge_research/ALPHA_GATE_POWER_CORRECTION_2026-11-23.md` rather than restating.
+
+## M. Peer review protocol (14)
+
+Every claim in the corrected document gets external review before publication. Repo has `/consult-multi`, `/consult-local`, `/consult-PROXY`, `/consult-nvidia-models`.
+
+- [ ] **M1** — Fan the corrected metric definitions to ≥4 independent engines and ask one question only: "Is this Sharpe definitionally correct?" *Done when:* replies archived with engine names.
+- [ ] **M2** — Ask a second set to red-team the Sortino denominator (`all-N` vs `downside-count`) and record the consensus. *Done when:* verdict recorded; if split, report the split.
+- [ ] **M3** — Ask a third set to attack the bootstrap design specifically (block length, pairing, stationarity). *Done when:* each objection is either addressed or logged as a limitation.
+- [ ] **M4** — Return the FXAIX/SPY unit-error finding to the original reviewer for re-check. *Done when:* round-trip documented; if they disagree, say so.
+- [ ] **M5** — Blind test: give two engines the corrected numbers **without** the recommendation and ask "what should I buy?" *Done when:* compare their answer to the doc's; divergence ⇒ doc is ambiguous.
+- [ ] **M6** — Adversarial numeric check: have an engine recompute CAGR from the raw CSV without seeing the script. *Done when:* agreement to 2dp documented.
+- [ ] **M7** — Ask an engine to find any remaining overclaim by grepping for absolutes ("clear", "guaranteed", "proven", "always"). *Done when:* each instance evidenced or removed.
+- [ ] **M8** — Have an engine review only the *decision table* for retail-actionability. *Done when:* gaps listed.
+- [ ] **M9** — Cross-check the tax claims with an engine that has tax knowledge; tax is the most likely place to be confidently wrong. *Done when:* claims either sourced or softened.
+- [ ] **M10** — Record which claims were *refuted* by review and keep them visible in an errata section. *Done when:* errata published.
+- [ ] **M11** — Do not accept a review claim without reproducing it — four of twelve in the first review were wrong. *Done when:* this rule is stated in the doc.
+- [ ] **M12** — Archive transcripts + hashes under `reports/peer_review/`. *Done when:* files committed.
+- [ ] **M13** — Re-run the full review suite after every subsequent metric change. *Done when:* a checklist exists.
+- [ ] **M14** — Note explicitly in the doc which numbers were peer-reviewed and which were not. *Done when:* per-number provenance column.
+
+## N. Acceptance criteria & risk register (12)
+
+- [ ] **N1** — No metric is labelled Sharpe/Sortino unless it is `(R − R_f)/risk`. *Accept when:* code review confirms.
+- [ ] **N2** — The cash vehicle never prints a finite ratio. *Accept when:* JSON `sharpe` is `null` for SGOV.
+- [ ] **N3** — Every headline number carries an interval or the word "point estimate". *Accept when:* grep finds no bare number in a headline.
+- [ ] **N4** — No ranking is asserted between funds whose CIs overlap. *Accept when:* ranking table shows overlap flags.
+- [ ] **N5** — Portfolio rows state their rebalancing assumption. *Accept when:* label present.
+- [ ] **N6** — The doc states its data window, source, and that it is a bull-heavy sample. *Accept when:* header block complete.
+- [ ] **N7** — Futures are either analysed properly or explicitly scoped out. *Accept when:* a sentence exists.
+- [ ] **N8** — Risk 1: **precision overclaim** — a 5y CAGR presented as an expectation. Mitigation: F-block anchors + intervals.
+- [ ] **N9** — Risk 2: **tax error** — a US-centric tax claim applied to a Canadian investor. Mitigation: E3/E4 explicit jurisdiction.
+- [ ] **N10** — Risk 3: **data artefact** — adjusted close not total return. Mitigation: L1 before publishing any return.
+- [ ] **N11** — Risk 4: **unit confusion** — the exact error the first review made (annual vs 5-year fee gap). Mitigation: quote units on every delta.
+- [ ] **N12** — Risk 5: **recommendation laundering** — measurement quietly becoming advice. Mitigation: keep the "not investment advice / buying analysis (beta)" banner and never phrase as "you should".
+
+## O. Operationalisation (10)
+
+- [ ] **O1** — Make the script re-runnable monthly with a single command. *Done when:* documented one-liner.
+- [ ] **O2** — Add a GHA workflow that runs it and fails if the JSON schema drifts. *Done when:* workflow green.
+- [ ] **O3** — Store a dated snapshot per run so history is visible. *Done when:* `reports/fund_deep_dive_YYYY-MM-DD.json`.
+- [ ] **O4** — Add a diff report: what changed vs the previous run and why. *Done when:* diff emitted.
+- [ ] **O5** — Alert if the cash hurdle moves >50bp (it changes the whole Sharpe ranking). *Done when:* threshold check exists.
+- [ ] **O6** — Alert if any fund's data goes stale >5 trading days. *Done when:* freshness check exists.
+- [ ] **O7** — Publish the corrected doc to the repo `docs/edge_research/` index. *Done when:* linked.
+- [ ] **O8** — Add an updates/ card per repo convention. *Done when:* `updates/2026-11-23-*.md` written.
+- [ ] **O9** — Record the reproduce command + data hash in the doc. *Done when:* both present.
+- [ ] **O10** — Explicitly do NOT merge to `main` — leave for operator review. *Done when:* confirmed in the PR description.
+
+---
+
+## Roll-up
+
+| Part | Section | Items |
+|---|---|---:|
+| I | A metric correctness | 12 |
+| I | B statistical rigor | 14 |
+| I | C data provenance | 12 |
+| I | D portfolio & costs | 14 |
+| I | E tax & accounts | 10 |
+| I | F forward anchors | 10 |
+| I | G futures & coverage | 8 |
+| I | H decision output | 10 |
+| I | I testing & engineering | 12 |
+| I | J peer review | 10 |
+| I | K docs & hygiene | 8 |
+| II | L open research | 17 |
+| II | M peer-review protocol | 14 |
+| II | N acceptance & risk | 12 |
+| II | O operationalisation | 10 |
+| | **TOTAL** | **173** |
+
+### Progress
+
+- **Block A — DONE** (`07e958e932a`): A1, A2, A4, A5, A6, A7. FXAIX Sharpe 0.728→0.457, SPY 0.714→0.443, SGOV 15.886→null.
+- Next block: **I1** (tests to lock the metrics) then **D1–D3** (real rebalancing).
+

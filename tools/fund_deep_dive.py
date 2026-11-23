@@ -7,7 +7,7 @@ CAGR, vol, true Sharpe, true Sortino, max drawdown, and NET-of-MER CAGR. Also bu
 simple portfolios (100% equity, 60/40, 80/20, T-bill), net of the fund's own MER.
 This is a BUYING analysis (beta), not an edge claim.
 
-2026-11-23 corrections (see docs/edge_research/FUND_DEEP_DIVE_TODO_120_2026-11-23.md):
+2026-11-23 corrections (see docs/edge_research/FUND_DEEP_DIVE_TODO_2026-11-23.md):
   A1/A2  Sharpe and Sortino are now (R - R_f)/risk with SGOV net CAGR as R_f.
          The old column survives as `ret_vol` because it is a fee-adjusted
          return/vol ratio, NOT Sharpe. Calling it Sharpe did not make it Sharpe.
