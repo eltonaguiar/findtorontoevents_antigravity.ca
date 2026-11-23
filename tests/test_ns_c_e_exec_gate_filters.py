@@ -57,14 +57,30 @@ def test_ns_e_filter_present_in_source():
 
 
 def test_ns_e_filter_default_off():
-    """NS-E: env defaults to '0' (filter OFF — preserves current sizing)."""
+    """NS-E: filter defaults OFF (module docstring: "off-by-default").
+
+    2026-11-23: the gate no longer hardcodes a literal default for NS-E. It now
+    derives it from alpha_engine.config.FOREX_HARD_DISABLE, which itself defaults
+    to "0" (config.py:423, "the default is 0/OFF now that the carry-factor rehab
+    shipped"). The old assertion demanded a hardcoded "1" — the interim halt —
+    which contradicted both this module's docstring and the current code. Assert
+    the resolved default instead of a literal the refactor replaced.
+    """
     src = _read_gate_source()
-    m = re.search(
-        r'_truthy\(\s*os\.environ\.get\(\s*"FOREX_HARD_DISABLE"\s*\)\s*,\s*"(\d)"\s*\)',
-        src,
+    m = re.search(r'_truthy\(\s*os\.environ\.get\(\s*"FOREX_HARD_DISABLE"\s*\)', src)
+    assert m is not None, "expected _truthy FOREX_HARD_DISABLE read via os.environ.get"
+    # Default must be config-driven, not a hardcoded "1".
+    assert "_ae_config.FOREX_HARD_DISABLE" in src, (
+        "FOREX_HARD_DISABLE default must come from alpha_engine.config"
     )
-    assert m is not None, "expected _truthy FOREX_HARD_DISABLE read with default"
-    assert m.group(1) == "1", "NS-E defaults ON (2026-05-15: FOREX halted until carry backtest ships)"
+    cfg_src = (ROOT / "alpha_engine" / "config.py").read_text(encoding="utf-8")
+    dm = re.search(
+        r'FOREX_HARD_DISABLE:\s*bool\s*=\s*[^\n]*?'
+        r'environ\.get\(\s*"FOREX_HARD_DISABLE"\s*,\s*"(\d)"\s*\)',
+        cfg_src,
+    )
+    assert dm is not None, "expected a declared default for FOREX_HARD_DISABLE in config.py"
+    assert dm.group(1) == "0", "NS-E must default OFF (docstring: off-by-default)"
 
 
 def test_ns_c_filter_fires_only_on_crypto():
