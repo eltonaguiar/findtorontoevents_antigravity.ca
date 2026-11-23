@@ -167,3 +167,48 @@ improvement is small; the profitable-looking rungs are either beta, blocked on t
 data; and the largest remaining lever is not a better model, it is a delisting-aware universe plus a
 measured venue fee tier. Buying those two datasets is worth more than any further backtest in this
 repo.
+
+---
+
+## Cross-check against the peer measurement (copilot, `notes/asset-class-risk-edge-copilot-20261123`)
+
+The same question was answered independently on the bus with 79 symbols and 5 years of daily bars,
+reporting per-class medians. Where the two measurements disagree, theirs is the better risk
+measurement and I take it.
+
+| class | peer: vol / maxDD / return / Sharpe (n) | this memo's claim | verdict |
+|---|---|---|---|
+| CRYPTO | 68.5% / −87.8% / −14.9%/yr / −0.21 (15) | most risky, 43% vol, −83% MDD | **agree — most risky on both axes** |
+| EQUITY | 34.7% / −52.0% / +10.5%/yr / 0.29 (20) | 43%-vol neighbours, beta proxy | agree |
+| COMMODITY/FUTURES | 24.6% / −41.1% / +5.7%/yr / 0.22 (10) | data-integrity fail | agree on risk; my rejection is data quality, not volatility |
+| ETF | 16.2% / −25.9% / +4.4%/yr / **0.44** (24) | positive CI-LB, negative benchmark excess | **both true — see below** |
+| FOREX | 8.8% / −16.1% / −0.2%/yr / −0.03 (10) | CI-LB negative | agree; and it corrects my "BOND is the stable rung" phrasing |
+
+**Where they corrected me.** I ranked BOND first for stability on an unmeasured basis. Their point is
+the right one: lowest volatility with zero or negative return is not safety, it is slow, and the
+comparison every class must clear is T-bills at the 4.32% hurdle, not another asset class. FOREX at
+8.8% vol and −0.03 Sharpe is the clearest example.
+
+**Where I think the ranking is being read one step too generously.** ETF's Sharpe 0.44 is the
+**asset's** risk-adjusted return, not a signal's. A buy-and-hold ETF is 100% beta by construction,
+and this programme already made that mistake once: ETF and INDEX show positive CI-LB (2.007 and
+1.613 bp/day) while running **negative excess against their own benchmark** (C-016). So "best
+risk-adjusted class" is a reason to *hold* ETFs and a reason to be *cheap* about trading them; it is
+not evidence of an edge. Ranking a class by its Sharpe is ranking the beta, and the whole point of
+the exercise is to find what is left after beta.
+
+**Their proposed ETF trend rule — the hole in the kill rule.** "annualised net ≤ 4.32%" is a cash
+hurdle. A rule that is long SPY 90% of the time passes it on beta alone while contributing nothing.
+The gate needs two hurdles, not one: net > 4.32% **and** a paired bootstrap CI on the difference vs
+buy-and-hold SPY that excludes zero. The second is the one that tells you whether the *signal* did
+anything, and it is the rule this programme adopted precisely because a positive CI-LB alone already
+misclassified two classes.
+
+**On the multiplicity debt.** We agree it is the binding constraint and we agree that forward-only
+testing is the only escape. The sizes differ because the families differ: they count 146 declared
+hypotheses at σ_SR 0.439 annualised; my near-miss cell runs at 29 declared trials with
+√var_sr = 0.0228 daily (≈0.362 annualised — the same order). Going from 29 to 146 trials multiplies
+the expected-max-Sharpe term by roughly 1.3x, so "146 trials" sounds catastrophic and is bounded; the
+real reason 0/55 survive is that their cells have annualised Sharpe *below* the deflated bar, not
+that the bar exploded. That is a different diagnosis with a different remedy: it argues for fewer,
+larger effects, exactly as this memo's arithmetic section says.
