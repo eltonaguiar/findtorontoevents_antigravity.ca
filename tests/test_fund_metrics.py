@@ -583,6 +583,23 @@ def test_E10_jurisdiction_is_declared_unresolved():
     assert "not verified" in text.lower() or "unverified" in text.lower()
 
 
+def test_E10_step0_keeps_the_barriers_that_outrank_the_fee():
+    """A peer review of Step 0 found four omissions that can each outweigh a
+    0.08pp fee difference. Losing them would make the section actively
+    misleading for a non-US investor, so pin them.
+    """
+    step0 = DOC.read_text()
+    step0 = step0[step0.index("Step 0"):step0.index("Step 1")]
+    for required, why in [
+        ("PFIC", "the actual legal barrier for Canadians, not mere unavailability"),
+        ("estate tax", "US-situs exposure above ~US$60k can dwarf any MER saving"),
+        ("W-8BEN", "treaty relief depends on the declaration being filed"),
+        ("dividend", "withholding hits dividends only, not gains or interest"),
+        ("currency", "CAD/USD moves can swamp a 0.2-0.5% fee edge"),
+    ]:
+        assert required.lower() in step0.lower(), f"Step 0 dropped {required} ({why})"
+
+
 def test_portfolio_does_not_double_charge_the_fee():
     """`merblend` is a label, not a charge - metrics() applies the MER.
 

@@ -83,29 +83,49 @@ fund is even *purchasable*, depends on which account the money sits in. Answer t
    securities to meet redemptions and distributes the gains to every holder. In a taxable account
    that difference can exceed the MER gap. In a tax-sheltered account it is worth **exactly zero** —
    so the only thing left to compare is the expense ratio.
-2. **The funds named in this report may not be available to you at all.** FXAIX, FZROX and VTSAX are
-   US-domiciled mutual funds. They are generally **not purchasable by Canadian residents**, and
-   FZROX is a Fidelity loss-leader that is only offered in US Fidelity accounts. If you are
-   investing from Canada, most of the fund-specific conclusions here do not apply as written — the
-   transferable conclusion is the *method*, not the ticker.
+2. **The funds named in this report may not be available to you at all — and the reason is legal, not
+   commercial.** FXAIX, FZROX and VTSAX are US-domiciled mutual funds. For a Canadian resident the
+   binding obstacle is **PFIC** (Passive Foreign Investment Company) treatment: a non-Canadian fund
+   held by a Canadian is a PFIC, taxed punitively with no step-up in basis. Brokers block them
+   because of that, not out of caprice. FZROX additionally is a Fidelity loss-leader offered only in
+   US Fidelity accounts. If you are investing from Canada, most of the fund-specific conclusions
+   here do not apply as written — the transferable conclusion is the *method*, not the ticker.
+
+3. **For a non-US person, the account wrapper can matter more than the expense ratio.** Two things
+   routinely outrank a 0.08pp fee difference and are not modelled in the numbers below:
+   - **US estate tax.** US-situs assets held by a non-resident alien are exposed to US estate tax
+     above a low exemption threshold (~US$60,000). A Canadian holding US-domiciled funds directly
+     can face a charge that dwarfs any MER saving. Inside an RRSP this is generally not an issue;
+     in a taxable account it can make Canadian-domiciled exposure the correct choice despite a
+     higher fee.
+   - **Currency.** A CAD-based investor's return is CAD/USD-sensitive. Unhedged versus hedged share
+     classes move that exposure, and currency moves can swamp a 0.2–0.5% fee advantage in a single
+     year. Nothing here models it.
 
 ### What the wrapper implies
 
-| account | tax on distributions | does the fee edge survive? | what to optimise |
+| account | tax on distributions | is the fee comparison still meaningful? | what to optimise |
 |---|---|---|---|
 | US taxable brokerage | **yes**, MFs distribute gains | yes — and the ETF's in-kind structure often beats the fee edge | tax efficiency, then MER |
 | US Roth IRA / 401(k) / traditional IRA | no | yes, undiluted | **MER only** — FZROX/FXAIX win outright |
-| Canadian TFSA | no Canadian tax on growth | yes, but see withholding below | MER only, *and* avoid US-domiciled holdings |
-| Canadian RRSP | deferred | yes, undiluted | MER only; US-domiciled is *preferred* here |
-| Canadian taxable | yes | yes — but the MF's distributions can swamp it | tax efficiency, then MER |
+| Canadian TFSA | no Canadian tax on growth | yes — but a separate US tax drag applies on top | MER, **and** avoid US-domiciled holdings (no treaty relief in a TFSA) |
+| Canadian RRSP | deferred | yes, undiluted | MER; US-domiciled is *preferred* here (treaty relief) |
+| Canadian taxable | yes | yes — but the MF's distributions can swamp it | tax efficiency, then MER, **and** check US estate-tax exposure |
 
 ### The Canadian withholding wrinkle (flag, not advice)
 
 US-domiciled funds pay US dividend withholding to non-residents. Under the Canada–US treaty an
-**RRSP is exempt**; a **TFSA is not**, so roughly 15% of the US dividend is lost permanently inside a
-TFSA. This inverts the naive answer twice over: in a TFSA you want Canadian-domiciled (or
-swap-based) exposure even at a higher MER, while in an RRSP the US-domiciled fund is the efficient
-choice. **I have not verified this against current CRA/IRS guidance in this session** — treat it as a
+**RRSP is exempt**; a **TFSA is not**, so roughly 15% of the US **dividend** — not capital gains,
+not interest — is lost permanently inside a TFSA. The exemption also depends on the correct
+**W-8BEN** declaration being on file. This partially inverts the naive answer: in a TFSA you may
+want Canadian-domiciled (or swap-based) exposure even at a higher MER, while in an RRSP the
+US-domiciled fund is the efficient choice.
+
+Note the two effects are separate and should not be netted into one "does the fee edge survive"
+figure: the MER gap is a cost, withholding is a tax. A 0.08pp fee advantage is real even when a 15%
+dividend drag is larger — they simply get added, not compared.
+
+**I have not verified this against current CRA/IRS guidance in this session** — treat it as a
 question to confirm with a tax professional, not a conclusion.
 
 ### Why this is section zero and not a footnote
