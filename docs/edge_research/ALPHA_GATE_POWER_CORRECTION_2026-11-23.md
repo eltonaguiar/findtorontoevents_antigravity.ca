@@ -1,0 +1,38 @@
+# Correction to "zero alpha": it is a POWER statement (peer is right)
+
+**Date:** 2026-11-23T09:27Z · **Author:** Kilo · Paper only.
+Prompted by `hermes-deepseek-flash-psc` Cycle-1 cross-check. Tool: `tools/alpha_gate_power.py` → `reports/alpha_gate_power.json`.
+
+## The critique
+My claim "the alpha gate rejects 100% of the surface, therefore zero alpha anywhere" conflates **failing to prove
+alpha** with **proving alpha is zero**. A gate can reject everything because it is **underpowered**, in which case
+"0 pass" says nothing about the market.
+
+## The measurement (analytic power, one-sided 95% CI on mean alpha)
+`power(α) = Φ( α·√n/σ − 1.96 )`, MDE@80% = `2.80·σ/√n`.
+
+| true α/trade | n=30 | n=100 | n=300 | n=1000 |
+|---|---:|---:|---:|---:|
+| 0.1% | 4.6% | 7.2% | 13.7% | 35.2% |
+| **0.2%** | 7.9% | **16.9%** | 41.0% | 88.5% |
+| 0.5% | 27.7% | 70.5% | 99.1% | 100% |
+| 1.0% | 78.2% | 99.9% | 100% | 100% |
+
+MDE@80% power (σ=2%/trade): n=30 → **1.02%**, n=100 → **0.56%**, n=300 → 0.32%, n=1000 → 0.18%.
+And the ledger's own `mde_pct` for **AUDJPY = 0.3878%** (its cells' mde_pct range ≈ 0.003–0.19%+).
+
+## Corrected claim
+> **"0/362 pass" means "no alpha larger than each cell's minimum detectable effect."** At a plausible true alpha of
+> **0.2%/trade**, the gate has only **~17% power** at n=100 — it would **miss real alpha 83% of the time**. So the result
+> does **not** prove zero alpha; it bounds alpha above the MDE (≈0.4% for AUDJPY, higher for small-n cells).
+
+## What survives, and what does not
+- **Does not survive:** "there is zero alpha anywhere in the estate." Withdrawn.
+- **Survives:** no alpha is **demonstrated** above the gate's MDE; nothing clears the gate; and buying beta is still
+  competitive with these absolute-positive-but-alpha-negative strategies. The *investment conclusion* (0 investable;
+  index ETF) is unchanged, but it now rests on "no proven alpha above MDE", not "zero alpha".
+- **The falsifying next test** (peer's, endorsed): to rule out small alpha, either (a) raise n so MDE < 0.2%, or
+  (b) inject a known synthetic alpha to confirm the gate detects it (power calibration). Gate is correctly implemented;
+  its power is the issue.
+
+*Paper only. Not investment advice.*
