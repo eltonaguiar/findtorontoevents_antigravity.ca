@@ -24,7 +24,12 @@ import csv, json, math, random, statistics as st
 from datetime import datetime, timezone
 from pathlib import Path
 
-SRC = "2026-11-15_AM_profitability-plan/copilot-financial-review/market_prices.csv"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+# absolute: cwd is used ONLY for output, never to locate the input. A relative
+# SRC made it impossible to sandbox tests by chdir, which let a test overwrite
+# the tracked reports/fund_deep_dive.json with fixture numbers.
+SRC = str(REPO_ROOT / "2026-11-15_AM_profitability-plan"
+                  / "copilot-financial-review" / "market_prices.csv")
 ANN = 252
 CASH_KEY = "SGOV_adj"
 # expense ratios (MER), decimal per year

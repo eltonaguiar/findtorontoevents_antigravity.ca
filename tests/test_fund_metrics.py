@@ -15,6 +15,10 @@ not copied from whatever the code happens to print.
 from __future__ import annotations
 
 import csv
+import os
+# Pin hash randomisation BEFORE importing the tool: set iteration order
+# leaks into float accumulation and flips headline CAGRs by ~0.1pp.
+os.environ.setdefault("PYTHONHASHSEED", "0")
 import json
 import sys
 from pathlib import Path
@@ -476,3 +480,24 @@ def test_L1_adjusted_closes_reinvest_dividends():
     # so every equity series must be positive over this bull window.
     for key in ("SPY_adj", "FXAIX_adj", "VTI_adj", "VTSAX_adj", "FZROX_adj"):
         assert cagr(key) > 0.05, f"{key} CAGR {cagr(key):.2%} implausible"
+
+
+def test_generator_is_byte_stable_across_runs(tmp_path, monkeypatch):
+    """Two in-process runs must agree exactly (ignoring generated_at).
+
+    Rationale: this was NOT true. Headline values flipped between two stable
+    states (SPY 11.48 vs 11.59) depending on interpreter hash seed, i.e. a set
+    was iterated somewhere before the arithmetic. Pinning the seed hides it,
+    this test makes it visible if it ever leaks into the numbers again.
+    """
+    outs = []
+    for i in range(2):
+        d = tmp_path / f"r{i}"
+        d.mkdir()
+        monkeypatch.chdir(d)
+        monkeypatch.setattr(fd, "SRC", str(REPO_ROOT / fd.SRC))
+        fd.main(["--out", str(d / "o.json")])
+        payload = json.loads((d / "o.json").read_text())
+        payload.pop("generated_at", None)
+        outs.append(json.dumps(payload, sort_keys=True))
+    assert outs[0] == outs[1], "generator output is not reproducible"

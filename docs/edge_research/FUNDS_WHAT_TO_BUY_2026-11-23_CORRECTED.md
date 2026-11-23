@@ -42,13 +42,13 @@ Cash hurdle **R_f = 3.81%/yr** (SGOV trailing net CAGR).
 
 | instrument | MER | net CAGR | vol | Sharpe | Sortino | max DD |
 |---|---:|---:|---:|---:|---:|---:|
-| **Fidelity 500 Index (FXAIX)** MF | 0.015% | 11.66% | 17.2% | **0.457** | 0.652 | −24.5% |
-| SPDR S&P 500 (SPY) ETF | 0.0945% | 11.48% | 17.3% | 0.443 | 0.634 | −24.5% |
-| Fidelity ZERO Total Mkt (FZROX) MF | 0.00% | 10.74% | 17.6% | 0.393 | 0.560 | −25.1% |
-| Vanguard Total Mkt (VTI) ETF | 0.03% | 10.49% | 17.7% | 0.379 | 0.539 | −25.4% |
-| Vanguard Total Stock (VTSAX) MF | 0.04% | 10.48% | 17.6% | 0.379 | 0.539 | −25.4% |
-| Vanguard Total Bond (BND) ETF | 0.03% | −0.32% | 6.1% | **−0.680** | −0.932 | −17.3% |
-| iShares 0-3mo T-bill (SGOV) | 0.09% | 3.81% | 0.2% | **n/a (cash)** | n/a | −0.03% |
+| **Fidelity 500 Index (FXAIX)** MF | 0.015% | 11.66% | 17.2% | **0.457** | 0.652 | **−24.5%** |
+| **SPDR S&P 500 (SPY)** ETF | 0.0945% | 11.48% | 17.3% | **0.443** | 0.634 | **−24.5%** |
+| Fidelity ZERO Total Mkt (FZROX) MF | 0.00% | 10.74% | 17.6% | 0.393 | 0.560 | −25.12% |
+| Vanguard Total Mkt (VTI) ETF | 0.03% | 10.49% | 17.7% | 0.379 | 0.539 | −25.36% |
+| Vanguard Total Stock (VTSAX) MF | 0.04% | 10.48% | 17.6% | 0.379 | 0.539 | −25.36% |
+| **Vanguard Total Bond (BND)** ETF | 0.03% | -0.32% | 6.1% | **−0.680** | −0.932 | **−17.31%** |
+| **iShares 0-3mo T-bill (SGOV)** ETF | 0.09% | 3.81% | 0.2% | **n/a (cash)** | n/a | **−0.03%** |
 
 Note how the correction bites: BND's Sharpe goes from a harmless −0.02 to **−0.68** — over the
 window it destroyed value *against cash*, which the original table hid.
