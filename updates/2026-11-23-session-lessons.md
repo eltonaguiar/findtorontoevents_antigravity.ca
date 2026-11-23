@@ -87,3 +87,67 @@ test, the imagined gap instead of the code, the earlier block's figure instead o
 1. Re-read the exact source line immediately before quoting any figure; never carry one forward.
 2. Read the test or the code before claiming what it does or does not check.
 3. Merge a deliverable to main in the same block you finish it, or say out loud that it is unmerged.
+
+## 9. Put `[skip ci]` on commits that added a test suite
+
+PR #1082 added `tools/verify_peer_claims.py`, `tests/test_verify_peer_claims.py` and a workflow, and
+every commit in it carried `[skip ci]` (`4e9ac2f`, `bcefb7d`, `a63729d`, `6500a5a`, plus the cron
+tweak `71c0597`). I copied the token from generated-data commits, which is where it belongs
+(`crypto-intraday-sim.yml:85`, `fx-cost-overlap.yml:114`), without copying the reason it was there:
+those commits change nothing a test could judge. On a commit that adds a test suite it suppresses
+the very CI run that should have validated them. **No CI ran on that branch at all.** My evidence
+was local pytest only — real, but not the repository's own gate — and I described the work as
+verified on the strength of it.
+
+Fix: the four follow-up commits (PRs #1083-#1086) went in without the token.
+
+**Rule: `[skip ci]` belongs on commits whose only content is generated artefacts; a commit touching
+`tools/`, `tests/`, `.github/workflows/` or `docs/` must be able to trigger CI.**
+
+## 10. A shallow clone inverted six verdicts, and the workflow still went green
+
+`.github/workflows/peer-claim-verification.yml` shipped with `actions/checkout@v4` and
+`fetch-depth: 1`. I reasoned that the engine reads `origin/main`, so a shallow checkout was fine. It
+is not: a depth-1 clone holds one commit and no other refs, so `git cat-file -e <sha>^{commit}`,
+`git merge-base --is-ancestor` and `git branch -r --contains` all fail for anything that is not HEAD.
+
+The first real dispatch (run 45114413921) therefore reported **NOT LANDED** for commits that were
+genuinely landed — B12, B7-context, A1i, A1ii, A2 and B9 inverted — and printed
+`16 claims: 6 agree, 10 disagree (5 non-manual); strict violations: 3` where the same code in a full
+clone printed `12 agree, 4 disagree (1 non-manual); strict violations: 0`. Every step passed. The job
+exited 0 and committed a mostly-wrong report to main.
+
+Fix: `fetch-depth: 0` (later refined to `filter: blob:none` plus sparse checkout after a 10-minute
+timeout, PR #1084) [SRC: `.github/workflows/peer-claim-verification.yml:54-56`]; the engine now
+refuses a shallow repo with exit 2 unless `--allow-shallow` is passed
+[SRC: `tools/verify_peer_claims.py:782-788`]; and shallow runs tag every affected verdict
+`[SHALLOW CLONE - results unreliable]` [SRC: `tools/verify_peer_claims.py:104`].
+
+**Rule: when the correctness of a check depends on git history or refs, never accept a shallow
+clone; and make the tool refuse a degraded environment rather than silently reporting a false
+negative. A false negative in a verification tool is worse than a false positive, because its output
+*is* the product.**
+
+## 11. Treated "the workflow went green" as evidence the output was correct
+
+After the first dispatch I reported the job body as "proven" because `conclusion: success` and every
+step passed. That was true and irrelevant: the run succeeded at producing a report in which 10 of 16
+claims were wrong. The success signal measured that the steps did not crash, nothing about whether
+the result was right. Only reading the log's verdict lines against the local baseline revealed it.
+
+**Rule: for a job whose output is the deliverable, the acceptance test is the content of the output
+compared against a known-good baseline, never the conclusion colour. Concretely: dispatch, then
+diff the produced artefact against a locally-verified run, and treat a mismatch as a failure
+regardless of the green tick.**
+
+### Shared pattern across errors 9-11
+
+All three are the same shape as the earlier ones: asserting the state of a system from the nearest
+available proxy instead of the thing itself — the token copied from another file's context, the
+checkout depth assumed adequate, the conclusion colour assumed to mean correctness.
+
+1. Copy a convention *and* its preconditions, not just its text.
+2. When a tool's output is a judgement, make it fail loudly in a degraded environment; never let it degrade silently.
+3. Never accept a green check as evidence about content.
+
+Provenance: run ids 45114413921, 45116843696, 45118943977; PRs #1082-#1086.
