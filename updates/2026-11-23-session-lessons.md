@@ -140,14 +140,33 @@ compared against a known-good baseline, never the conclusion colour. Concretely:
 diff the produced artefact against a locally-verified run, and treat a mismatch as a failure
 regardless of the green tick.**
 
-### Shared pattern across errors 9-11
+## 12. Asserted the tally appears once under `docs/` when it is a per-document invariant
 
-All three are the same shape as the earlier ones: asserting the state of a system from the nearest
+Across three blocks I gave "the canonical tally appears exactly once under `docs/`" as an acceptance
+criterion, and reasoned about edits as if adding one more occurrence would break uniqueness.
+Measured: the canonical line `0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)` occurs
+**10 times in 10 distinct files** under `docs/`, and
+`tests/test_edge_research_tally_consistency.py` passes anyway. It is parametrized per discovered
+document and asserts each document that states a tally states the settled one
+[SRC: `tests/test_edge_research_tally_consistency.py:170-186`]. The invariant is *per document*, not
+global uniqueness. (A looser grep finds an 11th hit, HML's line with no `(14 rows)` suffix
+[SRC: `docs/preregistration/HML_VALUE_TEST_2026-11-22.md:243`]; the test's `CLAIM_RE` deliberately
+takes no row suffix [SRC: `tests/test_edge_research_tally_consistency.py:137-138`], so it is
+discovered too.)
+
+**Rule: an invariant is whatever the enforcing test measures. Read the test and count the real
+occurrences before treating "exactly once" as a constraint.**
+
+### Shared pattern across errors 9-12
+
+All four are the same shape as the earlier ones: asserting the state of a system from the nearest
 available proxy instead of the thing itself — the token copied from another file's context, the
-checkout depth assumed adequate, the conclusion colour assumed to mean correctness.
+checkout depth assumed adequate, the conclusion colour assumed to mean correctness, the invariant
+assumed from the shape it took the first time I looked instead of measured.
 
 1. Copy a convention *and* its preconditions, not just its text.
 2. When a tool's output is a judgement, make it fail loudly in a degraded environment; never let it degrade silently.
 3. Never accept a green check as evidence about content.
+4. Measure the invariant the test enforces; do not infer uniqueness from one sighting.
 
 Provenance: run ids 45114413921, 45116843696, 45118943977; PRs #1082-#1086.

@@ -1,6 +1,6 @@
 {
   "_comment": "Machine-readable transcription of updates/2026-11-23-peer-claim-verification.md (Group A defects raised against me, Group B peer landed-claims). expected_verdict is the verdict the hand-written report recorded, so tools/verify_peer_claims.py can self-check against it. Do NOT edit expected_verdict to make the script agree - report a disagreement instead.",
-  "_verdict_vocabulary": ["VERIFIED", "NOT LANDED", "PARTIALLY", "UNVERIFIABLE"],
+  "_verdict_vocabulary": ["VERIFIED", "NOT LANDED", "PARTIALLY", "UNVERIFIABLE", "RETIRED"],
   "_origin_reachable_definition": "A commit is origin-reachable when it is an ancestor of origin/main OR sits on some refs/remotes/origin/* ref. A commit that exists only locally is NOT LANDED by definition.",
   "_polarity_definition": "Every check carries an explicit polarity. 'supports': PASS is evidence FOR the claim, FAIL is evidence AGAINST. 'refutes': PASS is evidence AGAINST the claim, FAIL is evidence FOR. Absence checks (path_absent_from_main, commit_absent, commit_not_reachable) are 'refutes' - finding X missing is evidence against a claim that X landed. The engine tallies supporting vs refuting: no executable check -> UNVERIFIABLE; 0 refuting and >=1 supporting -> VERIFIED; >=1 refuting and 0 supporting -> NOT LANDED; both -> PARTIALLY.",
   "_ref_definition": "Every check accepts an optional 'ref' (default: the CLI --ref, origin/main). A ref that is not resolvable in this clone is looked up in the repos given by --remote-map / VERIFY_EXTRA_REMOTES ({remote name: local git path}); e.g. 'review/main' works when --remote-map '{\"review\": \"/path/to/review-clone\"}' is given. An unresolvable ref makes the check SKIP, never FAIL.",
@@ -224,7 +224,24 @@
       ],
       "manual": true,
       "manual_reason": "The provenance gap itself is mechanical (the file is absent from origin/main, so the cited line cannot be verified there), but whether that makes the claim 'NOT LANDED' versus 'UNVERIFIABLE' is a human call - the report chose NOT LANDED. The 4.32% hurdle cannot be reproduced from the repository until tools/capacity_model.py is restored to main or the value is re-cited to a source that exists.",
-      "expected_verdict": "NOT LANDED"
+      "expected_verdict": "NOT LANDED",
+      "retired": true,
+      "retired_reason": "Resolved by PR #1095 (merge 8e3cefd5ca0c): tools/capacity_model.py and its test are now on main, so the absence checks that supported this claim no longer hold. The gap it recorded was real at the time; keeping it active would report a fixed problem as an ongoing one.",
+      "superseded_by": "B11-resolved",
+      "retired_at": "2026-11-23"
+    },
+    {
+      "id": "B11-resolved",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "B11's gap is closed: tools/capacity_model.py is on main (PR #1095, merge 8e3cefd5ca0c), so the cited HURDLE_TBILL_APR = 0.0432 at line 49 is now reproducible from a clean clone of main",
+      "checks": [
+        {"kind": "path_on_main", "path": "tools/capacity_model.py", "polarity": "supports"},
+        {"kind": "path_on_main", "path": "tests/test_capacity_model.py", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "8e3cefd5ca0cf3efc94563e4e115f83543ebdfed", "polarity": "supports"}
+      ],
+      "manual": false,
+      "expected_verdict": "VERIFIED"
     },
     {
       "id": "B12",
