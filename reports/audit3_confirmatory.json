@@ -10,26 +10,10 @@
   "pods": [
     {
       "id": "POD-EQUITY-BREAKOUT",
-      "status": "pre_registered",
+      "status": "declined",
       "registered_at": "2026-11-19",
-      "hypothesis_id": "H-BABY-EQUITY-VT-PATTERN-SWEEP-001",
-      "strategies": [
-        "donchian-stock-breakout",
-        "rs-breakout-scout",
-        "vol-contraction-scout",
-        "adx-trend-scout"
-      ],
-      "asset_classes": [
-        "EQUITY",
-        "ETF"
-      ],
-      "directions": [
-        "LONG"
-      ],
-      "thesis": "Breakout continuation on liquid US equities/ETFs is the one family where this system already shows positive out-of-sample statistics (EQUITY OOS Sharpe +0.61 on 33 folds, ETF +0.21 on 53).",
-      "expression": "Monthly/weekly cadence only. Exit on time or a 2-3 ATR trail, vol-scaled size, no fixed take-profit. ETF daily cadence is ruled out: measured slippage is 234% of per-trade PnL.",
-      "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched SPY leg, split-half stable. CI-LB<=0 at day 30 or 60 ends the pod.",
-      "evidence_at_registration": "EQUITY is the only class with positive walk-forward OOS Sharpe; individual breakout cells straddle zero."
+      "decline_reason": "4 registered strategies (donchian-stock-breakout, rs-breakout-scout, vol-contraction-scout, adx-trend-scout) have zero rows in trading_picks and at_signal_outcomes. Phantom pod cannot emit forward rows or confer confirmatory status. Real emitters (donchian_breakout_scalp 81, proven_donchian_adx_trend 55, adx_momentum 95) were not in the manifest at registration time.",
+      "revisit_if": "A future manifest amendment registers the actual emitters that have n>0 and passes pod_emission_audit.py --strict."
     },
     {
       "id": "POD-LUXALGO-SHORT",
