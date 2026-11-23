@@ -130,3 +130,58 @@ def test_frozen_parameters():
     assert len(clock.UNIVERSE) == 20
     assert clock.TOP_K == 5
     assert clock.LOOKBACK_DAYS == 252
+
+
+# ------------------------------------------------------ month-end trigger
+def _daily(d0: date, d1: date, slope: float = 0.05):
+    """Weekday closes from d0..d1 inclusive, drifting up so signals are positive."""
+    out, d, i = [], d0, 0
+    while d <= d1:
+        if d.weekday() < 5:
+            out.append((d.isoformat(), 100.0 + i * slope))
+            i += 1
+        d += timedelta(days=1)
+    return out
+
+
+def test_provable_month_end_none_within_one_month():
+    sep = _daily(date(2026, 9, 1), date(2026, 9, 30))
+    assert clock.provable_month_end([d for d, _ in sep]) is None
+
+
+def test_provable_month_end_is_final_session_of_prior_month():
+    ser = _daily(date(2026, 10, 1), date(2026, 11, 19))
+    got = clock.provable_month_end([d for d, _ in ser])
+    assert got == "2026-10-30", "2026-10-31 is a Saturday; Friday is the month's last session"
+
+
+def test_provable_month_end_never_reaches_into_the_current_month():
+    ser = _daily(date(2026, 10, 1), date(2026, 11, 19))
+    got = clock.provable_month_end([d for d, _ in ser])
+    assert got[:7] == "2026-10", "must not nominate a date in the incomplete month"
+
+
+def test_month_end_check_does_not_record_a_pre_clock_month(tmp_path, monkeypatch):
+    led = tmp_path / "positions.jsonl"
+    monkeypatch.setattr(clock, "LEDGER", led)
+    ser = _daily(date(2025, 6, 2), date(2026, 11, 19))
+    monkeypatch.setattr(clock, "load_closes", lambda s: ser)
+    monkeypatch.setattr(sys, "argv", ["x", "--month-end-check"])
+    assert clock.main() == 0
+    assert not led.exists(), "2026-10-30 precedes CLOCK_START and must not be recorded"
+
+
+def test_month_end_check_records_the_completed_month_exactly_once(tmp_path, monkeypatch):
+    led = tmp_path / "positions.jsonl"
+    monkeypatch.setattr(clock, "LEDGER", led)
+    ser = _daily(date(2025, 6, 2), date(2026, 12, 4))
+    monkeypatch.setattr(clock, "load_closes", lambda s: ser)
+    monkeypatch.setattr(sys, "argv", ["x", "--month-end-check"])
+    assert clock.main() == 0
+    recs = [json.loads(l) for l in led.read_text().splitlines() if l.strip()]
+    assert len(recs) == 1
+    assert recs[0]["rebalance_date"] == "2026-11-30", "Monday 2026-11-30 is November's last session"
+    assert recs[0]["held"], "an uptrend should select positive-momentum names"
+    before = led.read_text()
+    assert clock.main() == 0, "a second same-day run must be a no-op, not an error"
+    assert led.read_text() == before

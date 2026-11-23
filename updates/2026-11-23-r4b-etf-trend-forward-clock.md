@@ -90,7 +90,14 @@ prevent.
 
 ## Next actions
 
-1. Wire a month-end trigger so a record is written on the last trading day of each month.
+1. ~~Wire a month-end trigger so a record is written on the last trading day of each month.~~
+   **Done 2026-11-23.** `--month-end-check` records only once a month is provably complete (the
+   cache must contain a date in a later month), and
+   `.github/workflows/etf-trend-forward-month-end.yml` runs it Tue–Sat after the US close. The
+   trigger is calendar-free, so it has no exchange-holiday dependency, and a daily run is a
+   no-op until the month actually ends. Live check today: `latest provable month-end 2026-10-30
+   precedes CLOCK_START 2026-11-23`, so the first record will be November's last session
+   (**2026-11-30**, a Monday). See `updates/2026-11-23-etf-forward-clock-month-end-trigger.md`.
 2. Interim review at 12 months: **INFO only**, no verdict.
 3. Do not backtest this rule. Ever. A backtest makes it a different trial.
 

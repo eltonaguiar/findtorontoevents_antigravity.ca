@@ -93,6 +93,38 @@ def last_trading_day_in_data() -> str | None:
     return max(dates) if dates else None
 
 
+def all_dates() -> list[str]:
+    out: list[str] = []
+    for s in UNIVERSE:
+        out.extend(d for d, _ in load_closes(s))
+    return out
+
+
+def provable_month_end(dates: list[str]) -> str | None:
+    """Last trading day of the most recent COMPLETED month, or None.
+
+    A month is only known to be complete once the data contains a date in a LATER
+    month, so this can never fire early. It also cannot look ahead: the candidate
+    is the final date observed within its own month, and the signal for it uses
+    nothing after that date.
+
+    This is the calendar-free form of "the last trading day of the month" -- no
+    exchange-calendar dependency, and it agrees with the calendar whenever the
+    price data is contiguous across the month boundary.
+    """
+    ds = sorted({str(d)[:10] for d in dates})
+    if not ds:
+        return None
+    current_month = ds[-1][:7]
+    prior = [d for d in ds if d[:7] != current_month]
+    if not prior:
+        return None
+    cand = prior[-1]
+    if any(d[:7] == cand[:7] and d > cand for d in ds):
+        return None
+    return cand
+
+
 def read_ledger() -> list[dict]:
     if not LEDGER.exists():
         return []
@@ -205,12 +237,24 @@ def main() -> int:
     ap.add_argument("--stats", action="store_true")
     ap.add_argument("--allow-past", action="store_true")
     ap.add_argument("--reason", default=None)
+    ap.add_argument("--month-end-check", action="store_true",
+                    help="record only if a month has provably completed (safe for a daily cron)")
     a = ap.parse_args()
 
     if a.stats:
         return stats()
 
-    asof = a.asof or last_trading_day_in_data()
+    if a.month_end_check:
+        asof = provable_month_end(all_dates())
+        if asof is None:
+            print("no completed calendar month in the cache yet -- nothing to record")
+            return 0
+        if asof < CLOCK_START:
+            print(f"latest provable month-end {asof} precedes CLOCK_START {CLOCK_START} "
+                  f"-- waiting for the first month-end on or after the clock start")
+            return 0
+    else:
+        asof = a.asof or last_trading_day_in_data()
     if not asof:
         print("::error:: no cached price data for the frozen universe")
         return 2
