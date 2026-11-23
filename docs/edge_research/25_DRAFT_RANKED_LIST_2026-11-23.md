@@ -104,6 +104,8 @@ Bootstrap excess vs SPY excludes zero on the negative side for all three (B1 [�
 The only live paper pilot is `crypto_intraday_sim` ([`verified_strategies/paper_pilot/crypto_intraday_sim_state.json`](verified_strategies/paper_pilot/crypto_intraday_sim_state.json), last run 2026-11-20T01:43Z; log `crypto_intraday_sim_paper_log.jsonl`).
 
 - **n:** **3 rows, all OPEN, 0 CLOSED.** `n_closed = 0` in every guardrail (`vwap_reversion`, `bollinger_mr`, `btc_4h_rsi_macd`), each with judgment `no_judgment: n<20`. The pod's own hypothesis `H-2026-11-19-01` has **0 forward rows** in the confirmatory ledger [`reports/forward_observations.jsonl`](reports/forward_observations.jsonl) (432 lines; 430 are on non-pod H-119).
+
+> **Update 2026-11-23:** the pilot log now shows 5 CLOSE rows (close dates 2026-11-20 to 2026-11-22; entry timestamps 2026-11-19T16:00Z to 2026-11-20T20:00Z). The "0 closed" figure was accurate when written; see `verified_strategies/paper_pilot/crypto_intraday_sim_paper_log.jsonl` on `origin/main` (12 rows: 5 CLOSE, 7 OPEN). The verdict below is unchanged: 5 closes is far below the n >= 100 gate, so the class remains `PENDING_N`.
 - **Net PF CI-LB:** `UNMEASURED` — with zero closed rows there is no PF, hence no CI. (The pre-lag lab PF was 1.323; the lagged replay was 0.957 [`reports/hypothesis_registry.json` H-2026-11-19-01].)
 - **IR vs matched BTC/ETH benchmark:** `UNMEASURED` (no closed rows).
 - **Kill triggers** (frozen in [`12_OBSERVE_TO_PRE_REGISTERED_DECISION_MEMO_2026-11-22.md`](docs/edge_research/12_OBSERVE_TO_PRE_REGISTERED_DECISION_MEMO_2026-11-22.md:112)): **not fired, and not evaluable** — `n` is too small for every clause. The day-30 / day-60 CI-LB check cannot be run without closes; the n ≥ 100 clause needs 100 closed rows.
