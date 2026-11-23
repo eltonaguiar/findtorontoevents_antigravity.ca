@@ -1,30 +1,33 @@
 # Long-term memory — vanilla-handsaw / kilo
 
-**Last updated:** 2026-11-23T00:31Z (this session)
+**Last updated:** 2026-11-23T01:34Z
 
-## Current state
-- Branch: feat/coms-final-notes-2026-11-20 (clean, 6 commits ahead of origin/main on the parity/fix work)
-- Parity items 2–5 complete + P1-5 verifier + P1-6/P1-6b/P1-6c complete.
-- End-goal chain (ranked picks per class + overall best real-money option + backtest + quant metrics) is the active todo list.
-- N7 freeze gate (E11/E13/E14) still red — do not start new scanners.
+## Headline (measured, paper only)
+- **0 / 6 asset classes** survive deflation; **0 / 69 ranked picks** pass G1–G5.
+- Best credible DSR: **0.159 @ n≥30 → 0.136 @ n≥50 → 0.021 @ n≥100**. The 0.9999 DSR is n=22 (below floor).
+- SR* at programme N: **1.62 (N=90) → 2.03 (N=658)**.
+- Only defensible real-money answer: **buy a low-cost broad index ETF** (active MF = 17.6× the ETF over 10y). Break-even bar for any active strategy: **+3.34%/yr excess at $1k tickets, +0.80%/yr at $25k**.
 
-## Key decisions recorded elsewhere
-- POD-EQUITY-BREAKOUT retired (phantom strategies).
-- EQUITY is the only class with positive net expectancy after measured Questrade costs (5.13 bps).
-- CRYPTO/COMMODITY/FOREX = KILL (PF 0.84, negative expectancy).
-- Highest profit potential (risk-controlled) is the ETF tactical drawdown sleeve (38% MaxDD cut).
+## Traps discovered (do not repeat)
+1. **BH over bootstrap p-values** → 21 fake "survivors", all at the p=0.0005 resolution floor. Saturation, not signal.
+2. **Mean-only paired bootstrap** falsely passed H-119 (+20.6%/yr). Median CI + sign test (p=0.45) kills it. Two-hurdle rule now requires **mean AND median** CI to exclude zero.
+3. My **12.07 bp spread** cited "13 names" that were **never persisted** → LOW_CONFIDENCE. Use copilot 4.97 bp primary, 12.87 bp conservative bound.
+4. **Trial N is object-dependent**: registry 108 / cells 362 / symbols 658 / copilot 146. Every claim must state which.
+5. **EQUITY/ETF universe is survivorship-biased** (0 delisted names). CRYPTO perps are PIT-clean.
 
-## Next actions (wake on any of these)
-- Background task finishes (P2-9 + asset_class_rankings.json)
-- Fresh ledger lands from audit3-ledger cron
-- Any COMS message on inbox/gx10-c9b9/vanilla-handsaw/kilo or mentions/all
+## Constraint
+**Trial debt is binding.** Stop running new backtests. Spend trials only on (a) an unspent data axis and (b) forward-only, pre-registered measurement (1 trial, not 5).
 
-## Constraints to respect
-- Never read dbpasses.txt.
-- Never push a branch that contains commits from other authors.
-- Every code fix must have a matching .MD in updates/.
-- Zero real money until forward gate (n>=100, PF CI-LB>1.0, 100% intrabar honesty, >=90% benchmark coverage).
+## Open pre-registration
+**H-2026-11-23-01** — turn-of-month long bias, CRYPTO, frozen 2026-11-23 before any measurement. Harness `tools/tom_forward_clock.py` refuses pre-freeze dates, emits `n_records=0`. Registry now 109 (was 108). Expected: KILL.
 
-## Personal notes
-- The "prove an edge" request from the human is the true north star: produce a ranked list a human can actually put money into, then backtest it under the same entry criteria the live system would have used.
-- Keep the COMS messages concise and actionable; the bus is for wake-ups, Git is the filing cabinet.
+## Blocked / missing inputs
+- PIT fundamentals tool (`tools/edgar_pit_fundamentals.py`) exists at commit `c0d48e28968` but is **not on this branch**.
+- Survivorship-free universe needs delisted-name history.
+- FX backfill needs DB creds (dbpasses.txt — never read).
+
+## Key files
+`docs/edge_research/DISTANCE_TO_INVESTABLE.md`, `reports/REPORT_INDEX.json`, `reports/deflation_programme.json`, `reports/cost_ladder.json`, `reports/two_hurdle_kill.json`, `updates/2026-11-23-two-hurdle-kill-rule.md`.
+
+## Rules
+Never read dbpasses.txt. Never push other authors' commits. Every fix has a matching `.MD`. Zero real money until forward gate (n≥100, two-hurdle pass). Verify any artefact path resolves at the commit named before citing it.
