@@ -1,39 +1,30 @@
-# MEMORY
+# Long-term memory — vanilla-handsaw / kilo
 
-- **Response looping rule added to AGENTS.md, SOUL.md**: Scan responses for repetitive phrasing, circular reasoning, and over-explaining. Lead with answer, provide only necessary context, then stop. Quality > quantity.
+**Last updated:** 2026-11-23T00:31Z (this session)
 
-- Added caching of OHLCV data to local CSV files to reduce API calls.
-- Implemented concurrent processing of multiple crypto pairs using ThreadPoolExecutor for predictions and backtests.
-- Integrated Python logging for better traceability and error handling.
-- Updated imports to include concurrent.futures and logging.
-- Refactored run_predictions and run_backtests to use parallel execution and logging.
-- Added cache directory creation and ensured data persistence.
-- Long-term crypto mission: judge pick quality against the true hourly crypto winners, with a wider liquid universe and hindsight reverse-engineering of better entries and TP/SL templates.
-- Copy-trading research note: BingX and MQL5 are the strongest public source families for large-scale verified trader pools. BingX exposes crypto leaderboard cards with public performance stats; MQL5 exposes forex signal cards with growth, reliability, copy price, and category listings.
+## Current state
+- Branch: feat/coms-final-notes-2026-11-20 (clean, 6 commits ahead of origin/main on the parity/fix work)
+- Parity items 2–5 complete + P1-5 verifier + P1-6/P1-6b/P1-6c complete.
+- End-goal chain (ranked picks per class + overall best real-money option + backtest + quant metrics) is the active todo list.
+- N7 freeze gate (E11/E13/E14) still red — do not start new scanners.
 
-- Heartbeat 2026-03-26: Detected negative average PnL across active portfolios. Triggered mutate_top_performers.py subagent to evolve new strategies based on best-performing DNA from MySQL. 64 new mutations registered into the registry.
+## Key decisions recorded elsewhere
+- POD-EQUITY-BREAKOUT retired (phantom strategies).
+- EQUITY is the only class with positive net expectancy after measured Questrade costs (5.13 bps).
+- CRYPTO/COMMODITY/FOREX = KILL (PF 0.84, negative expectancy).
+- Highest profit potential (risk-controlled) is the ETF tactical drawdown sleeve (38% MaxDD cut).
 
-- **Institutional Strategy Policy (Rehabilitation-First):** Never "kill" a strategy outright. Every underperformer must cycle through the 6-stage Rehabilitation Pipeline defined in `TESTING_PROTOCOL.MD` (Cross-symbol → Cross-asset → Inverse → Mutation → Regime → Crossover) before reaching the Graveyard. Evidence: `winner_pattern_precursor_inverse` = 81.2% WR, `claude_gainer_ml_inverse` = 80.0% WR.
+## Next actions (wake on any of these)
+- Background task finishes (P2-9 + asset_class_rankings.json)
+- Fresh ledger lands from audit3-ledger cron
+- Any COMS message on inbox/gx10-c9b9/vanilla-handsaw/kilo or mentions/all
 
-- **2026-04-12 PR Integration Session:** Created 4 new PRs for branches with integrated code lacking formal submissions: PR #127 (10 enhanced multi-asset strategies + MC validator), PR #128 (drift telemetry), PR #129 (FOREX/PAXG baby strategies), PR #130 (MIMO strategies + edge analysis). All 4 successfully merged to main (commit de81786b). 6 remaining PRs open (#76, #77, #79, #118, #119, #121) for continued strategy work.
+## Constraints to respect
+- Never read dbpasses.txt.
+- Never push a branch that contains commits from other authors.
+- Every code fix must have a matching .MD in updates/.
+- Zero real money until forward gate (n>=100, PF CI-LB>1.0, 100% intrabar honesty, >=90% benchmark coverage).
 
-- **2026-05-05 Swarm Cleanup Session:** Fixed 4 critical bugs in swarm tooling (cost overrun in openrouter estimate, thread safety in orchestrator, empty-envelope retry, API key pre-flight skip). Fixed YAML agent silent-drop bug causing 71% hallucination rate in bug_hunter. Fixed Hermes --model flag not reaching CLI causing 404 errors. Both swarms (.ruflo/ + tools/swarm/) verified ready on main. Confluence tests: 13/13 passed. Pruned dead files (_config_shared.py, bridge.ts, quant-*.md). Committed session docs + 3 ruflo agent YAMLs. Created HERMES_SWARM_NOTES.MD (comprehensive reference for Hermes Agent). Key files: HERMES_SWARM_NOTES.MD, CHATLOG_2026-05-05.md (in updates/), RUFLO_SWARM_GUIDE.MD.
-
-- **Hermes Agent note:** Runs via WSL (`hermes chat -q`). 36 commits behind upstream — user should run `hermes update`. grok-3-fast not found — use grok-3 or grok-3-mini. Default orchestrator tier is `hybrid` (paid first, free fallback). OpenRouter :free models broken (404/429) — use pollinations or set OPENROUTER_API_KEY.
-
-- **Cross-PC Protocol (cross-pc/v1) key learnings, 2026-05-07):**
-  - **Peer identity matters:** `from=` field in envelope should match the actual runtime, not an arbitrary `--peer-id`. Cursor traffic showing `from=claude-main` was mislabeled — fixed by runtime-based identity in `cursor_claude_adapter.py`.
-  - **Identity resolution order:** 1) explicit `--peer-id`, 2) `CROSS_PC_PEER_ID` env var, 3) inferred `<runtime>-<hostname>` from `--runtime` / `CROSS_PC_RUNTIME`.
-  - **Broadcast routing:** Messages with `to=all` are stored under peer `"all"` in the offline queue (not empty-string broadcast). The gateway routes them to the `all` peer inbox, NOT via live WS broadcast to all sessions. WS broadcast is live-only (no persistence).
-  - **`--poll-peer` flag:** The freebuff adapter now supports `--poll-peer all` to fetch the `all` inbox in addition to own inbox. Broadcasts only appear in the `all` inbox, not in individual peer inboxes.
-  - **`to=` empty vs `to=all`:** Empty `to` = live-only broadcast (no persistence). `to=all` = stored in `all` peer's offline queue (durable, pollable).
-  - **OfflineQueue deduplication:** Fixed bug where `OfflineQueue.push()` was not deduplicating by `message_id`, causing duplicates. Commit `ed87cf5346c`.
-  - **Auto-ACK on poll:** Gateway now auto-ACKs messages when polled. Commit `07a59e079ed`.
-
-- **swarm-sync-v2.yml bug (2026-05-07):** `CHANGED_FILES="$CHANGED_FILES $file"` accumulated a leading space, causing `git add " agent_shared_memory.json"` → exit code 127 (bare quote as command). Fixed with bash array: `CHANGED_FILES=()` / `CHANGED_FILES+=("$file")` / `git add "${CHANGED_FILES[@]}"`. Pushed to main as `458677309d1`.
-
-- **GH_PAT_AGENTS secret:** Set in repo settings as `gho_...` token with `repo` scope. Enables workflow to push changes via `safe_push.sh`. Verified working on `swarm-sync-v2.yml` and `swarm-janitor.yml`.
-
-- **Git workflow for this repo:** Remote `main` is protected — force-push blocked. Non-fast-forward pushes require pull-first. Always `git pull origin main --rebase` before pushing if remote has new commits. Use `safe_push.sh` or `git push --force-with-lease` (respects protection rules).
-
-- **2026-05-26 CRYPTO Quant Research (EAGLE + 90d Plan Review):** As specialized subagent, reviewed full EAGLE 2026-05-27 cluster (cursor-composer-strategy-audit.md, Claude-Opus meta-synthesis, remaining-items-claude-sonnet, deepseek EAGLE) + canonical asset_class_90day_plan_CRYPTO_2026-05-15.md (w/ 05-24 institutional refresh) + supporting reports (2026-05-25_crypto_78pct_wr_verification.md etc). Confirmed current emphasis (liquid core via is_liquid_crypto in asset_class.py + $50M/$500M ADV thresholds + coingecko cache; hour filter M-001 wired in score_booster.py + config.py CRYPTO_UTC_HOUR_FILTER; on-chain in crypto_onchain_momentum.py (BTC/ETH, default-OFF); basic funding carry penalties in quality_gates.py Q16; partial source blocks + pairs_arb.py for BTC-ETH/SOL). Gaps real: meme/alt noise (179 syms historical, quarantine M-038 pending full), hot streaks (no exemption; proposed in EAGLE REMAINING-P2-01 as probation in quality_gates.py, unimplemented), single-token concentration. Designed 2 new enhancements grounded in EAGLE osc/funding notes + existing infra (crypto_pairs_arb.py, is_liquid_crypto, funding filters, hour/onchain): (1) Funding-Oscillation Pairs MR for BTC-ETH (extend pairs_arb with funding divergence + chop/EMA-osc regime filter + confluences; hedged carry+statarb); (2) High-ADV Chop-Adaptive MR Overlay (regime-gated short-term fades on liquid core only). Concrete rules + rationale in session research note (to be captured or referenced). Prioritizes risk-adjusted (hedge lowers DD vs directional hot streaks; regime avoids chop failures; enforces liquid per 90d plan). Aligns Goal #1 phenomenal performance. No code changes; pure research. References logged.
+## Personal notes
+- The "prove an edge" request from the human is the true north star: produce a ranked list a human can actually put money into, then backtest it under the same entry criteria the live system would have used.
+- Keep the COMS messages concise and actionable; the bus is for wake-ups, Git is the filing cabinet.
