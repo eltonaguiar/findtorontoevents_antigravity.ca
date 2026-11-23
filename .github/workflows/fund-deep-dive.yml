@@ -1,0 +1,71 @@
+name: fund-deep-dive
+
+# I10/O2: keeps reports/fund_deep_dive.json honest.
+#
+# The report once quoted figures the tool did not produce, and the payload grew
+# fields while the document kept quoting old ones. This workflow blocks that
+# class of drift: metric tests, a fresh regeneration, a schema/contract gate,
+# a reproducibility check, and a staleness check on the tracked artifact.
+#
+# Read-only. It never commits - see the rationale in AGENTS.md about
+# push-triggered workflows cascading against their own output.
+
+on:
+  pull_request:
+    paths:
+      - 'tools/fund_deep_dive.py'
+      - 'tools/check_fund_schema.py'
+      - 'tools/gen_corrected_table.py'
+      - 'tests/test_fund_metrics.py'
+      - 'reports/fund_deep_dive.json'
+      - 'docs/edge_research/**'
+      - '.github/workflows/fund-deep-dive.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/fund_deep_dive.py'
+      - 'reports/fund_deep_dive.json'
+      - 'docs/edge_research/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fund-deep-dive-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test deps
+        run: python3 -m pip install --quiet pytest pytest-timeout
+
+      - name: Metric tests
+        run: >
+          python3 -m pytest tests/test_fund_metrics.py -q --no-header
+          --timeout=120 --timeout-method=thread
+
+      - name: Regenerate payload from scratch
+        run: python3 tools/fund_deep_dive.py --out /tmp/fresh.json
+
+      - name: Schema, reproducibility and staleness gate
+        run: python3 tools/check_fund_schema.py /tmp/fresh.json reports/fund_deep_dive.json
+
+      - name: Two runs must agree on content
+        run: |
+          python3 tools/fund_deep_dive.py --out /tmp/again.json
+          python3 -c "import json,sys; a=json.load(open('/tmp/fresh.json')); b=json.load(open('/tmp/again.json')); a.pop('generated_at',None); b.pop('generated_at',None); print('reproducible' if a==b else 'NON-REPRODUCIBLE'); sys.exit(0 if a==b else 1)"
+
+      - name: Document numbers match the payload
+        run: >
+          python3 -m pytest tests/test_fund_metrics.py -q --no-header
+          -k "doc_numbers or scopes_futures or byte_stable or net_cagr or estimand"
