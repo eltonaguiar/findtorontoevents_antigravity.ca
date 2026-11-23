@@ -80,6 +80,22 @@ jobs:
         with:
           submodules: false
 
+      # `verify_peer_claims` resolves refs with `git rev-parse --verify
+      # <ref>^{commit}` (default ref: origin/main). The default shallow checkout
+      # fetches only the PR merge ref, so origin/main did not exist locally, the
+      # tool exited 2 with "cannot resolve origin/main", and
+      # tests/test_verify_peer_claims.py::test_remote_map_env_var failed on
+      # EVERY pull request (5 of the last 8 PR runs), while passing on main's
+      # own push runs where origin/main is present. One depth-1 fetch of the ref
+      # is enough: the tool already downgrades object-graph checks to warnings
+      # under --allow-shallow, it only needs the ref to resolve.
+      - name: Make origin/main resolvable for ref-based checks
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+          git rev-parse --verify --quiet 'origin/main^{commit}' >/dev/null
+          echo "origin/main resolves at $(git rev-parse --short 'origin/main^{commit}')"
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with:
