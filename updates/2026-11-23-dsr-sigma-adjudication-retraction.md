@@ -61,8 +61,19 @@ No deploy-list change was needed.
 ## One failing test, flagged not fixed
 
 `tests/test_audit2_per_class_panel.py::test_panel_matches_golden_snapshot` fails with
-`CRYPTO.flat: panel 0 != golden 1`. The suite is otherwise **18 passed**. That test builds the per-class
-panel from the ledger plus a golden snapshot; this commit touches neither, and the two files it was
-added to (`audit2.html`, `audit2.js`) are not read by it. It is reported here as **unexplained and
-pre-existing-looking, not caused by this change and not fixed** — asserting a cause without checking the
-inputs would be the same unprovenanced claim this programme keeps catching.
+`CRYPTO.flat: panel 0 != golden 1`. The suite is otherwise **18 passed**.
+
+**Correction to my first draft of this paragraph.** I wrote that the test "reads neither `audit2.html`
+nor `audit2.js`". That is false and I checked it: the file reads `audit2.js` **twice** — once slicing
+`function renderPerClass` to assert no statistic is computed in the renderer, once asserting the two
+empty-state strings. The corrected evidence is narrower but still decisive for this failure:
+
+- the failing assertion is the **golden-snapshot** one, which calls `build_per_class_verdicts(...)` and
+  compares to `tests/golden/audit2_per_class_verdicts.json`; it never touches the JS;
+- my edits to `audit2.js` were confined to `renderStatic()` and the static arrays above `BENCHMARKS`,
+  so the `renderPerClass` slice the test does read is byte-identical;
+- the two JS-reading tests are among the **18 that passed**.
+
+So: not caused by this change, and **not diagnosed** — the cause sits in `build_per_class_verdicts`,
+`alpha_engine.resolved_closed_view`, or the golden file, all of which belong to another owner. I am not
+asserting which. "A human must decide which is right" is literally the assertion's own text.
