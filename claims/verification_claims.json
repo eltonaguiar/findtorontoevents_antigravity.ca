@@ -111,16 +111,27 @@
       "id": "B5",
       "group": "B",
       "claimant": "peer / other agent",
-      "summary": "Review repo a3f6a6b, 41a6e19 and 3f1ab35 landed on review main; one note says 41a6e19, another 41e6e19",
+      "summary": "The three commits a3f6a6b, 41a6e19 and 3f1ab35 are landed on the review repo's main",
       "checks": [
-        {"kind": "commit_absent", "sha": "41e6e19", "polarity": "refutes"},
         {"kind": "commit_ancestor_of_main", "sha": "a3f6a6b", "ref": "review/main", "polarity": "supports"},
         {"kind": "commit_ancestor_of_main", "sha": "41a6e19", "ref": "review/main", "polarity": "supports"},
         {"kind": "commit_ancestor_of_main", "sha": "3f1ab35", "ref": "review/main", "polarity": "supports"}
       ],
-      "manual": true,
-      "manual_reason": "The negative half (41e6e19 does not exist) and the three positive shas against review/main are now mechanical. The mechanical result is PARTIALLY, not VERIFIED, because taken literally '41e6e19 landed' is refuted; the hand report's VERIFIED rests on the human judgement that 41e6e19 is a typo for 41a6e19.",
+      "manual": false,
       "expected_verdict": "VERIFIED"
+    },
+    {
+      "id": "B5-typo",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "The sha as originally written, 41e6e19, does not exist; it is a typo for the real 41a6e19",
+      "checks": [
+        {"kind": "commit_absent", "sha": "41e6e19", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "41a6e19", "ref": "review/main", "polarity": "supports"}
+      ],
+      "manual": false,
+      "expected_verdict": "VERIFIED",
+      "notes": "Recorded so the report distinguishes \"the cited string is a typo\" from \"the intended commits are landed\". Without this split the two facts were averaged into PARTIALLY."
     },
     {
       "id": "B6",

@@ -156,3 +156,29 @@ disagreement is reported, not suppressed. `expected_verdict` was left at VERIFIE
 **B2's manifest paths were wrong** and were corrected here: the two files exist under
 `34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/`, not at the review-repo root. The
 checks now assert the real files are present *and* the claimed root paths are absent.
+
+## B5 resolved by splitting
+
+B5 bundled two propositions and the derivation rule averaged them: the three intended
+commits are landed on review main (3 supporting checks) and the sha as written,
+`41e6e19`, does not exist (1 refuting check) folded to PARTIALLY against a hand verdict
+of VERIFIED. The manifest now carries them separately:
+
+- `B5` (landing, `manual: false`): `a3f6a6b`, `41a6e19`, `3f1ab35` each
+  `commit_ancestor_of_main` against `review/main` -> 3 supporting, 0 refuting -> VERIFIED.
+- `B5-typo` (citation integrity, `manual: false`): `commit_absent` on `41e6e19` with
+  `polarity: supports` (the claim asserts non-existence), plus `commit_ancestor_of_main`
+  on `41a6e19` against `review/main` to pin the correction -> 2 supporting, 0 refuting
+  -> VERIFIED.
+
+No check was deleted and `expected_verdict` for the landing proposition was unchanged.
+With `--remote-map '{"review": "/tmp/review_b37"}'` the run is
+`17 claims: 17 agree, 0 disagree (0 non-manual), 6 manual; strict violations: 0`
+(the count of manual claims drops from 7 to 6 because B5 is no longer manual).
+Without the map, `B5` SKIPs to UNVERIFIABLE and `B5-typo` still PASSes its
+clone-local absence check - neither FAILs.
+
+The manifest test that required every absence check to be `refutes` now exempts
+`B5-typo` (a claim that asserts non-existence), and a new test,
+`test_split_typo_claim_verifies_both_propositions`, pins the split-vs-averaged
+behaviour. `tests/test_verify_peer_claims.py`: 34 passed.

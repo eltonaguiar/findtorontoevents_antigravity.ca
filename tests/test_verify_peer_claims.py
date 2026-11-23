@@ -277,7 +277,11 @@ def test_default_polarity_is_supports(tmp_path):
 
 def test_manifest_declares_polarity_and_absence_checks_refute():
     """FIX 2: every check in the real manifest has an explicit polarity, and every
-    absence check (path_absent_from_main / commit_absent / commit_not_reachable) refutes."""
+    absence check (path_absent_from_main / commit_absent / commit_not_reachable) refutes.
+
+    Exception: B5-typo asserts non-existence, so its `commit_absent` check is `supports`
+    there - a PASS is evidence FOR that claim. Any other absence check must refute.
+    """
     manifest = Path(__file__).resolve().parent.parent / "claims" / "verification_claims.json"
     claims = json.loads(manifest.read_text(encoding="utf-8"))["claims"]
     absence_kinds = {"path_absent_from_main", "commit_absent", "commit_not_reachable"}
@@ -286,10 +290,44 @@ def test_manifest_declares_polarity_and_absence_checks_refute():
         for chk in claim["checks"]:
             n_checks += 1
             assert chk.get("polarity") in vpc.POLARITIES, (claim["id"], chk)
-            if chk["kind"] in absence_kinds:
+            if chk["kind"] in absence_kinds and claim["id"] != "B5-typo":
                 assert chk["polarity"] == vpc.POLARITY_REFUTES, (claim["id"], chk)
     assert n_checks >= 40
     assert vpc.validate_claims(claims) == []
+
+
+def test_split_typo_claim_verifies_both_propositions(tmp_path):
+    """B5 bundles two propositions: the intended commits landed, and the cited sha is a typo.
+
+    Averaged into one claim they cancel to PARTIALLY; split, each computes VERIFIED.
+    """
+    repo, first = _repo_with_origin_main(tmp_path)
+    second = _commit(repo, "second.txt", "second\n", "second commit")
+    _run("git", "update-ref", "refs/remotes/origin/main", second, cwd=repo)
+    typo = second[:6] + "0f0f0f"  # a sha that does not exist in this clone
+
+    landing = {"id": "T-landing", "group": "B", "claimant": "peer", "summary": "landed",
+               "checks": [{"kind": "commit_ancestor_of_main", "sha": first, "polarity": "supports"},
+                          {"kind": "commit_ancestor_of_main", "sha": second, "polarity": "supports"}],
+               "manual": False, "expected_verdict": "VERIFIED"}
+    citation = {"id": "T-typo", "group": "B", "claimant": "peer", "summary": "typo",
+                "checks": [{"kind": "commit_absent", "sha": typo, "polarity": "supports"},
+                           {"kind": "commit_ancestor_of_main", "sha": second, "polarity": "supports"}],
+                "manual": False, "expected_verdict": "VERIFIED"}
+
+    for claim in (landing, citation):
+        result = vpc.run_claim(repo, "origin/main", None, claim, {})
+        assert result["computed_verdict"] == "VERIFIED", result
+        assert result["refuting"] == 0, result
+        assert vpc.strict_violations([result]) == []
+
+    # Averaged into a single claim (the original B5 shape: the typo check declared
+    # `refutes`), the same evidence reads PARTIALLY.
+    bundled_checks = landing["checks"] + [{"kind": "commit_absent", "sha": typo, "polarity": "refutes"},
+                                          {"kind": "commit_ancestor_of_main", "sha": second,
+                                           "polarity": "supports"}]
+    bundled = dict(landing, checks=bundled_checks)
+    assert vpc.run_claim(repo, "origin/main", None, bundled, {})["computed_verdict"] == "PARTIALLY"
 
 
 def test_manual_claims_never_block_strict(tmp_path):

@@ -154,6 +154,11 @@ A SKIP never decides on its own: an unresolvable ref makes a check SKIP, never F
 " (manual judgement required)" suffix but never blocks `--strict`
 (`tools/verify_peer_claims.py:41-42`).
 
+A claim that bundles two propositions - here a landing fact and a citation-integrity
+fact - must be split into one claim per proposition rather than averaged into a
+single PARTIALLY, as B7 (split into `B7` and `B7-context`) and B5 (split into `B5`
+and `B5-typo`) both demonstrate.
+
 ### The absent-evidence trap
 
 An "absent" observation must count as REFUTING evidence, not supporting. The original
