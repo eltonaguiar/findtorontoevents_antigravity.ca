@@ -209,3 +209,37 @@ The shared working tree is dirty with a concurrent agent's work. These entries w
 
 Only this handoff file was committed, on a new branch cut from `59f536ce2a5`, using a
 temporary index so the shared working tree was never committed.
+
+---
+
+## Addendum, 2026-11-23T01:58Z — the push question this document left open has been answered
+
+**Everything above is a snapshot of 2026-11-22T23:25Z. Two of its claims are now false, and they
+are false in the direction that retires the decision rather than in the direction that needs a new one.**
+
+Re-verified today against a fresh `git fetch origin`:
+
+| Handoff claim (23:25Z on 2026-11-22) | Tree state (01:58Z on 2026-11-23) |
+|---|---|
+| `git branch -r --contains <sha>` is **empty for all 8** — no remote branch holds them | **All 8 are on remote branches.** 24db34304c9 on 13, 692d30d7e62 on 12, 3f76b104066 on 11, 87a2e0cbe2f on 10, 649aa763afd on 9, 8229bb6d015 on 7, 59f536ce2a5 on 6, 559e7795320 on 1. |
+| "Nothing was pushed" | True at 23:25Z, no longer true. The programme's work is on `origin/push-readiness/handoff-2026-11-22`, `origin/closing-edge-programme-2026-11-22`, `origin/reconcile/tally-enumeration`, `origin/m1-equity-cost-measurement`, `origin/m2-residual/fx-cost-overlap-scheduler`, `origin/fc-opportunity-frequency-2026-11-22` and `origin/block-d-session-record-2026-11-22`. |
+
+**None of the 8 is on `origin/main`** (`origin/main` = `b28f775b2e5` at 01:58Z; `merge-base
+--is-ancestor` is false for both `8229bb6d015` and `59f536ce2a5`). So the merge to main is
+still an open decision — but it is now **someone else's**, and it is a review of already-pushed
+branches, not a push of local-only commits.
+
+**What this changes about the document's own headline.** The `SCOPE_DEVIATION` on commit 6
+(`559e7795320`, the unrequested `docs/EDGE_CANDIDATES_2026-11-22.md`) is moot: that commit is
+pushed on exactly one remote branch, and the file itself now sits on the same code path as
+everything else and has since been brought into canonical tally form
+(`updates/2026-11-22-final-verification-sweep.md`).
+
+**Evidence-path note.** §5's allowlist-completeness section lists files as "dirty" that this
+session has since committed on its own branches (`reports/equity_cost_measurement/`, both test
+files, `tools/equity_cost_measure.py`, `docs/EDGE_CANDIDATES`, doc 23). A reader on 2026-11-23
+should treat that section as history. The failure mode it warns about is real and unchanged:
+a citation that resolves only in one worktree is indistinguishable from a citation to nothing.
+
+**Nothing is pushed by this addendum.** No ref, no `origin/main`, no working-tree file other
+than this handoff was modified.
