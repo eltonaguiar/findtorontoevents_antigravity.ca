@@ -86,6 +86,28 @@
    "title": "Start reducing 79-failure test baseline",
    "status": "done",
    "closed_at": "2026-11-23T03:59:49+00:00"
+  },
+  {
+   "id": 14,
+   "title": "Make goldmines PHP actually parse on the live PHP 5.2 host",
+   "status": "done",
+   "detail": "Round 2 after todo 4. Fixed 6 function-call array dereferences (PHP 5.4+) in kimi_goldmine_api.php via a goldmine_api_fetch_count() helper, and 13 multi-line short-array literals plus __DIR__ in check_dead_data.php. Deployed over FTPS after backing up the live files; download-back sha256 matched the repo for both. Verified by the host's own parser: both now emit runtime errors instead of 'Parse error'.",
+   "evidence": "updates/2026-11-23-goldmines-php52-deploy.md",
+   "closed_at": "2026-11-23T05:20:00+00:00"
+  },
+  {
+   "id": 15,
+   "title": "Restore goldmines DB connectivity (db_connect.php + credentials)",
+   "status": "blocked",
+   "blocker": "Two distinct gaps. (a) kimi_goldmine_api.php requires findstocks/portfolio2/api/db_connect.php which is HTTP 404 on live AND absent from the repo at that path (only findstocks/kimis_claw/api/db_connect.php exists). (b) check_dead_data.php still ships template placeholders: db_user='root', db_pass='', db_name='your_database'. Both need real goldmines credentials, which supersedes/clarifies todo 5."
+  },
+  {
+   "id": 16,
+   "title": "Fix validate_php52.py false PASS",
+   "status": "done",
+   "detail": "The gate reported 'passed: 7 file(s)' for two files that could not parse: its short-array regex forbade newlines so multi-line literals never matched, and it had no rule for )['k'] dereferencing. Rewritten to scan with a string/comment-aware tokeniser. Verified both ways: fixed tree passes 7 files, original broken files fail with 9 and 14 issues. Regression tests pin the false-PASS case.",
+   "evidence": "tests/test_php52_goldmines.py (7 passed)",
+   "closed_at": "2026-11-23T05:20:00+00:00"
   }
  ]
 }

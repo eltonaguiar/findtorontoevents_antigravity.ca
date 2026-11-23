@@ -56,3 +56,64 @@ def test_kimi_api_has_no_short_array_literals():
     # json_encode(['...']) is the literal form that broke; array('...') is correct.
     assert "json_encode(['" not in src
     assert "json_encode(array(" in src
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for the VALIDATOR ITSELF (the second incident, 2026-11-23)
+#
+# The gate above passed two files that still contained 13 short-array literals
+# and 6 function-call dereferences. The old short-array regex demanded the whole
+# literal on one line, so multi-line literals were invisible to it, and there
+# was no dereference rule at all. Both files then returned "Parse error" from
+# the live PHP 5.2 host. A gate that PASSES unparseable code is worse than none,
+# so the false-PASS cases are pinned here.
+# ---------------------------------------------------------------------------
+
+def _validate_source(tmp_path, body: str):
+    """Write ``body`` as a .php file and return the validator CompletedProcess."""
+    f = tmp_path / "sample.php"
+    f.write_text(body, encoding="utf-8")
+    return subprocess.run(
+        [sys.executable, str(VALIDATOR), str(f)],
+        capture_output=True, text=True, timeout=120,
+    )
+
+
+def test_validator_catches_multiline_short_array(tmp_path):
+    """THE false-PASS case: a literal that opens at end-of-line."""
+    r = _validate_source(tmp_path, "<?php\n$systems = array(\n")
+    # sanity: a correctly written multi-line array must PASS
+    ok = _validate_source(tmp_path, "<?php\n$systems = array(\n  'a' => 1\n);\n")
+    assert ok.returncode == 0, ok.stdout
+
+    r = _validate_source(tmp_path, "<?php\n$systems = [\n  'a' => 1\n];\n")
+    assert r.returncode == 1, "multi-line short array literal was NOT caught:\n" + r.stdout
+    assert "short array syntax" in r.stdout
+
+
+def test_validator_catches_call_dereference(tmp_path):
+    """$res->fetch_assoc()['c'] is PHP 5.4+ and must be flagged."""
+    r = _validate_source(tmp_path, "<?php\n$x = $res->fetch_assoc()['c'];\n")
+    assert r.returncode == 1, r.stdout
+    assert "dereference" in r.stdout
+
+
+def test_validator_allows_subscripts_and_url_strings(tmp_path):
+    """No false positives: index writes and URL/string contents are legal 5.2."""
+    body = (
+        "<?php\n"
+        "$a = array();\n"
+        "$a['k'] = 1;\n"
+        "$b[] = 2;\n"
+        "$u = '/findmutualfunds2/portfolio2/api/data.php?type=stats';\n"
+        "$q = \"SELECT x FROM t WHERE c = '{$a['k']}'\";\n"
+        "echo json_encode(array('ok' => true));\n"
+    )
+    r = _validate_source(tmp_path, body)
+    assert r.returncode == 0, "false positive on valid PHP 5.2:\n" + r.stdout
+
+
+def test_validator_catches_dir_magic_constant(tmp_path):
+    r = _validate_source(tmp_path, "<?php\n$f = __DIR__ . '/x.json';\n")
+    assert r.returncode == 1, r.stdout
+    assert "__DIR__" in r.stdout

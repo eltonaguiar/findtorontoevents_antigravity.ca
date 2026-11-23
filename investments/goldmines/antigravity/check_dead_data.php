@@ -17,60 +17,60 @@ if ($conn->connect_error) {
 }
 
 // Define all prediction systems to check
-$systems = [
-    'crypto_winners' => [
+$systems = array(
+    'crypto_winners' => array(
         'name' => 'Crypto Winner Scanner',
         'table' => 'cw_winners',
         'timestamp_col' => 'created_at',
         'max_age_hours' => 24,
         'url' => '/findcryptopairs/api/crypto_winners.php?action=winners'
-    ],
-    'meme_scanner' => [
+    ),
+    'meme_scanner' => array(
         'name' => 'Meme Coin Scanner',
         'table' => 'mc_winners',
         'timestamp_col' => 'created_at',
         'max_age_hours' => 24,
         'url' => '/findcryptopairs/api/meme_scanner.php?action=winners'
-    ],
-    'sports_picks' => [
+    ),
+    'sports_picks' => array(
         'name' => 'Sports Betting Picks',
         'table' => 'sports_picks',
         'timestamp_col' => 'generated_at',
         'max_age_hours' => 48,
         'url' => '/live-monitor/api/sports_picks.php'
-    ],
-    'stock_intel' => [
+    ),
+    'stock_intel' => array(
         'name' => 'Stock Intelligence',
         'table' => 'stock_picks',
         'timestamp_col' => 'pick_date',
         'max_age_hours' => 72,
         'url' => '/findstocks/portfolio2/api/stock_intel.php'
-    ],
-    'penny_stocks' => [
+    ),
+    'penny_stocks' => array(
         'name' => 'Penny Stocks',
         'table' => 'penny_stocks',
         'timestamp_col' => 'last_updated',
         'max_age_hours' => 72,
         'url' => '/findstocks/portfolio2/api/penny_stocks.php'
-    ],
-    'forex_insights' => [
+    ),
+    'forex_insights' => array(
         'name' => 'Forex Insights',
         'table' => 'fxp_price_history',
         'timestamp_col' => 'timestamp',
         'max_age_hours' => 24,
         'url' => '/findforex2/portfolio/api/forex_insights.php?action=market_overview'
-    ],
-    'mutual_funds' => [
+    ),
+    'mutual_funds' => array(
         'name' => 'Mutual Funds',
         'table' => 'mf2_fund_picks',
         'timestamp_col' => 'pick_date',
         'max_age_hours' => 168, // 1 week
         'url' => '/findmutualfunds2/portfolio2/api/data.php?type=stats'
-    ]
-];
+    )
+);
 
-$results = [];
-$alerts = [];
+$results = array();
+$alerts = array();
 $now = time();
 
 echo "=== ANTIGRAVITY PREDICTION SYSTEMS - DEAD DATA CHECK ===\n";
@@ -79,14 +79,14 @@ echo "Timestamp: " . date('Y-m-d H:i:s') . "\n\n";
 foreach ($systems as $key => $config) {
     echo "Checking: {$config['name']}...\n";
     
-    $result = [
+    $result = array(
         'system' => $config['name'],
         'status' => 'unknown',
         'last_update' => null,
         'hours_ago' => null,
         'record_count' => 0,
         'is_stale' => false
-    ];
+    );
     
     // Check if table exists
     $table_check = $conn->query("SHOW TABLES LIKE '{$config['table']}'");
@@ -185,16 +185,16 @@ if (count($alerts) > 0) {
 }
 
 // Export JSON report
-$report = [
+$report = array(
     'timestamp' => date('Y-m-d H:i:s'),
-    'summary' => [
+    'summary' => array(
         'total_systems' => count($results),
         'active' => $active_count,
         'stale' => $stale_count
-    ],
+    ),
     'systems' => $results,
     'alerts' => $alerts
-];
+);
 
 $json_file = dirname(__FILE__) . '/dead_data_report_' . date('Ymd_His') . '.json';
 file_put_contents($json_file, json_encode($report, JSON_PRETTY_PRINT));
