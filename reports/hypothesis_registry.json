@@ -2997,6 +2997,54 @@
      "reports/h235_drawdown_generalisation_2026-11-23.json"
     ]
    }
+  },
+  {
+   "id": "H-236",
+   "asset_class": "EQUITY",
+   "family": "cross_sectional_momentum",
+   "description": "H-201 xsmom_top3_6m reproduces on the 44-name PIT universe over the artifact's own window 2021-11-30..2026-11-20, with positive CI lower bound and positive SPY excess.",
+   "test_statistic": "mean net daily bp on the 44-name book, block bootstrap 95% CI, plus SPY excess",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "excess_gt_0": true
+   },
+   "economic_prior": "If 6-month cross-sectional momentum is breadth-independent it should survive a wider universe; if it is a mega-cap phenomenon the 44-name book will not show it.",
+   "status": "REFUTED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "reports/pit_equity_universe_20261122.json universe, window 2021-11-30..2026-11-20",
+   "result": {
+    "verdict": "REFUTED on the pre-registered criterion (CI lower bound > 0). The point estimate replicates almost exactly; the interval is what fails.",
+    "PIT_44": {
+     "n": 1254,
+     "symbols": 44,
+     "mean_bps": 9.407,
+     "ci95": [
+      -3.147,
+      22.199
+     ],
+     "excess_bps": 4.901,
+     "pass": false
+    },
+    "MEGA_10_same_window": {
+     "n": 1254,
+     "symbols": 10,
+     "mean_bps": 9.54,
+     "ci95": [
+      1.072,
+      18.428
+     ],
+     "excess_bps": 5.033,
+     "pass": true
+    },
+    "reading": "Same effect size on 44 names as on 10 (9.41 vs 9.54 bp/day, excess 4.90 vs 5.03) but the wider universe widens the bootstrap interval past zero on a 5-year sample. So breadth does not destroy the effect - 5 years simply cannot certify it, whereas 15 years of the 10-name book could (H-234). REFUTED here bounds attribution, it does not overturn H-234.",
+    "caveat": "PIT artifact is PARTIAL_NON_DELISTING_AWARE, so even a pass would not be survivorship-free; ~5 years only.",
+    "artifacts": [
+     "tools/h236_h201_pit_universe.py",
+     "reports/h236_h201_pit_universe_2026-11-23.json"
+    ],
+    "prereg_doc": "plans/2026-11-23-prereg-H-236-h201-pit-universe.md"
+   }
   }],
  "fork2_new_signals": [
   {
