@@ -188,3 +188,15 @@ def test_outcome_labeller_splits_realised_and_would_hit():
     assert d["REALISED"] + d["WOULD_HIT"] == d["total"]
     # the defect: most WOULD_HIT rows sit exactly on a barrier
     assert d["would_hit_pct_on_barrier"] >= 50.0
+
+
+# ── shrinkage estimator ────────────────────────────────────────────
+def test_shrinkage_preserves_order_and_reports_B():
+    r = subprocess.run([sys.executable, str(ROOT / "tools/shrinkage_estimator.py"),
+                        "--out", "/tmp/shrink_test.json"], cwd=ROOT, capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    d = json.load(open("/tmp/shrink_test.json"))
+    strat = d["dimensions"]["strategy"]
+    # shrinkage is monotone -> raw and shrunk top-5 order must match
+    assert strat["raw_top5"] == strat["shrunk_top5"]
+    assert 0.0 < strat["meta"]["B"] <= 1.0
