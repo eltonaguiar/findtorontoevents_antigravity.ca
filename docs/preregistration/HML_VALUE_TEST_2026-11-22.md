@@ -56,6 +56,11 @@ per rebalance.
 §3 promises measured costs. For EQUITY they do not exist:
 
 - `tools/measured_cost_recost.py` → `UNMEASURED = {"BOND", "COMMODITY", "EQUITY", "ETF", "FUTURES"}`. Only FOREX (7.53 bp, upper bound) and CRYPTO (12.60 bp) are measured.
+  **(Superseded 2026-11-23:** that constant is the tool's *fallback list*, not the current measurement
+  state. EQUITY 12.0749 bp RT / ETF 6.7122 bp were measured in the M1/M3 pass, BOND 1.2125 bp and
+  COMMODITY 6.3182 bp RT upper bounds in the new-class pass. B2 is **CLEARED** — see §8 B2 below, which
+  records 4.97 bp RT on 191 names. The block is kept below as the record of what the test faced when the
+  pre-registration was written.)**
 - The assumed EQUITY cost is **5.0 bp** in `tools/measured_cost_recost.py:ASSUMED` and `alpha_engine/cost_model.py`.
 - A second tool, `tools/pod_equity_breakout_backtest.py:COST_BP_PRIMARY`, assumes
   **25.0 bp** — a **5x disagreement between two constants in the same repo**.
