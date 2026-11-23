@@ -26,6 +26,17 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from audit_trail.pnl_ingest_sanity import apply_pnl_clamp_to_pick
 
+# 2026-11-23: strategy-family attribution (operator-approved, additive).
+# Guarded so the resolver still imports when run as a direct script (no parent package).
+try:
+    from audit_trail.strategy_family import family_of as _strategy_family_of
+except ImportError:  # pragma: no cover - direct-script invocation
+    try:
+        from strategy_family import family_of as _strategy_family_of
+    except ImportError:
+        def _strategy_family_of(strategy=None, system=None):  # type: ignore[misc]
+            return "unknown", "unavailable"
+
 # 2026-11-16: mutual funds resolve on daily NAV instead of intraday OHLCV.
 try:
     from alpha_engine.mutual_fund_nav import (
@@ -990,7 +1001,24 @@ def _extract_pick_fields(raw, system_name):
     # Populate asset_class so consumers reading universal_resolved_picks.json
     # directly (not via dashboard_generator._normalize_pick) see a labeled class.
     pick["asset_class"] = normalize_asset_class({**raw, **pick})
-    
+
+    # ── STRATEGY FAMILY (ADDITIVE, 2026-11-23) ──
+    # Operator condition (i): ADD a field, do not reshape the record. Nothing above is
+    # renamed, reordered or removed, so consumers that ignore these two keys are unaffected.
+    # Condition (ii): the provenance tag distinguishes a family the source DECLARED from one
+    # we INFERRED. `mapped` is a judgement -- the rule table is committed at
+    # reports/strategy_family_mapping.json so a reviewer can challenge a specific rule.
+    # Condition (iii): with this field present the hub's "80%+ momentum/breakout/Ichimoku"
+    # claim becomes testable by family; tools/hub_signal_share.py --by-family runs that test.
+    try:
+        _fam, _prov = _strategy_family_of(strategy, system_name)
+        pick["strategy_family"] = _fam
+        pick["strategy_family_provenance"] = _prov
+    except Exception:
+        # Never let attribution break pick resolution -- an unlabelled pick is still a pick.
+        pick["strategy_family"] = "unknown"
+        pick["strategy_family_provenance"] = "error"
+
     # ── PRESERVE ALL SCORING METADATA ──
     # This is the critical fix - without this, quality metrics are lost on resolution
     for field in _SCORING_FIELDS:
