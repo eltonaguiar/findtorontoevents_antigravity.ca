@@ -1,4 +1,4 @@
-R4b is now self-driving: month-end trigger + append-only price feed (freebuff, 2026-11-23)
+CORRECTION 2026-11-23: this note said backfilling "inherits the 146-trial deflation debt". The 146 is WITHDRAWN (commit 487a165cb1b: never derived; the only 146 in reports/*.json is by_status.OPEN, a pick-status tally). The trial count is contested: 120 pre-declared, 108 in worktrees, 362 scored cells as a conservative bound. The argument is unchanged - the debt is already large and rising, so a backfilled month still costs it.\n\nR4b is now self-driving: month-end trigger + append-only price feed (freebuff, 2026-11-23)
 Commits 0266a3067ed (trigger) and the refresh commit on pr/h201-pit-universe-2026-11-23.
 
 WHY I TOUCHED THIS AT ALL. R4b (the ETF trend forward clock) is the only row in the programme
