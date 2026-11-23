@@ -1,0 +1,109 @@
+# Verification test gate.
+#
+# WHY THIS EXISTS
+# PR #1097 (merge a70bf659fd2, 2026-11-23) changed the peer-claim engine
+# (tools/verify_peer_claims.py), the claims manifest (claims/verification_claims.json)
+# and the tests, and merged with NO gate that could have blocked it: branch
+# protection on main is disabled, and the only pytest workflow (ci-tests.yml)
+# was already failing on unrelated drift and merged straight through. A
+# regression in these invariants would have shipped silently.
+#
+# It would have caught three real defects that were instead found by hand, late,
+# after merging:
+#   1. a fetch-depth: 1 clone that inverted six verdicts while the job stayed green
+#      (fixed in 4be51510620 by refusing shallow clones),
+#   2. a polarity rule that counted absence of evidence as support
+#      (fixed in bcefb7dd5da by treating absent evidence as refuting),
+#   3. the claim-retirement change itself (4f740be3a73, PR #1097), merged ungated.
+#
+# This is a fast, focused gate (~80 tests, ~2s) over the verification invariants
+# only. It is NOT a replacement for ci-tests.yml (the full ~747-test suite); the
+# two are deliberately separate so this gate stays sub-minute and its paths can
+# include docs/ without re-triggering the heavy suite on every docs commit.
+#
+# READ-ONLY BY DESIGN: this job only runs tests. It never commits, pushes,
+# comments, or otherwise writes to the repo. `permissions: contents: read`.
+name: Verification Tests
+
+'on':
+  pull_request:
+    branches: [main]
+    paths:
+      # The engine under test.
+      - 'tools/verify_peer_claims.py'
+      # The claim manifest it reads.
+      - 'claims/**'
+      # The three suites this gate runs.
+      - 'tests/test_verify_peer_claims.py'
+      - 'tests/test_capacity_model.py'
+      - 'tests/test_edge_research_tally_consistency.py'
+      # The module exercised by test_capacity_model.py.
+      - 'tools/capacity_model.py'
+      # The tally test recursively globs every markdown file under docs/ (see
+      # tests/test_edge_research_tally_consistency.py SEARCH_DIR), so a docs edit
+      # can flip the tally invariant.
+      - 'docs/**'
+      # Editing this gate must re-run it.
+      - '.github/workflows/verification-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/verify_peer_claims.py'
+      - 'claims/**'
+      - 'tests/test_verify_peer_claims.py'
+      - 'tests/test_capacity_model.py'
+      - 'tests/test_edge_research_tally_consistency.py'
+      - 'tools/capacity_model.py'
+      - 'docs/**'
+      - '.github/workflows/verification-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Superseded runs on the same ref should die: a newer push to a PR branch makes
+# the older run's result useless. Unlike the weekly report job, nothing is lost
+# by cancelling a test run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verification-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        # Depth-1 clone. A full-history fetch of this ~500MB repo does not
+        # finish inside the timeout (two runs were cancelled at 10m). These
+        # tests build their own throwaway repos in tmp_path, so they need no
+        # ancestry from this checkout -- they only need an `origin/main` ref to
+        # exist, which the next step provides. Submodules are not needed.
+        uses: actions/checkout@v5
+        with:
+          submodules: false
+
+      - name: Expose origin/main ref
+        # tests/test_verify_peer_claims.py::test_remote_map_env_var drives
+        # main(), which resolves origin/main against this checkout. The depth-1
+        # clone has no such remote ref, so fetch just the main tip (a few MB)
+        # and map it. This is a ref for resolution, not history for ancestry.
+        run: |
+          git fetch --no-tags --depth=1 origin main:refs/remotes/origin/main
+          git rev-parse --verify origin/main
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet 'pytest>=7,<9'
+
+      - name: Run verification test suites
+        run: |
+          python3 -m pytest \
+            tests/test_verify_peer_claims.py \
+            tests/test_capacity_model.py \
+            tests/test_edge_research_tally_consistency.py \
+            -q
