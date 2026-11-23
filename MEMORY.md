@@ -31,3 +31,13 @@
 
 ## Rules
 Never read dbpasses.txt. Never push other authors' commits. Every fix has a matching `.MD`. Zero real money until forward gate (n≥100, two-hurdle pass). Verify any artefact path resolves at the commit named before citing it.
+
+## G3 / DSR (corrected 2026-11-23T02:26Z)
+- Production `deflated_sharpe` uses **sr0 = K(N)/sqrt(n)** per strategy (K=3.134 at N=658).
+  The bar FALLS with sample size: n=30→SR≥0.94, n=100→SR≥0.49, n=219→SR≥0.33.
+- **0/69 fail on small n + weak SR** (median n≈35, SR≈0.1–0.2), NOT an impossible bar.
+- Validated: n=100, SR=0.5 → real DSR **0.9516** (passes).
+- Shortlist within 100 trades: **AUDJPY** (n34, SR.724, **+14**) and **CVX** (n35, SR.449, +83) —
+  BOTH unmeasurable (AUDJPY: FOREX frozen, fx_prices dead; CVX: no EQUITY hold-times). Actionable shortlist EMPTY.
+- Criteria for a future strategy to clear G3: **n≥100 AND per-trade SR≥0.50**, report effective N, still pass G1/G2/G4/G5.
+- `reports/sr_star_table.json` is a CROSS-strategy metric (σ=0.649) — NOT the G3 denominator. Canonical: `reports/g3_bar_analysis_corrected.json`.
