@@ -44,22 +44,29 @@ run timestamp, because other copies of the same ledger hold 359 and 374 cells.
 **Verified:** read `len(cells)` and `summary.n_cells_total` from the ledger in the main tree;
 both 362; verdict histogram sums to 362 (59+8+295).
 
-**Ledger correction, 2026-11-23 (supersedes the "anomaly" framing I published an hour earlier).**
-Two EQUITY cells carry `alpha_gate.passed == true` while holding WEAK verdicts:
-`vol-contraction-scout` (n=63, alpha_n=61) and `vwap-reversion-scout` (n=27, alpha_n=22). I first
-called that a contradiction. Reading the gate settles it the other way — **both are correct, and
-the misleading claim was mine and the peer's.** `apply_selection_alpha_gate`
-(`alpha_engine/audit3_tribunal.py:1309`) requires `alpha_ci_lo > 0`, a strategy-or-class scope, and
-`alpha_n >= need_n` where `need_n = max(ALPHA_MIN_N=20, 0.5 * cell_n)` — 31 rows needed for a 63-row
-cell, 20 for a 27-row cell. Both clear it (0.1745 / 0.176). The `required_n` of 922 / 295 that keeps
-them WEAK belongs to the *verdict's* power test, a different question asked by a different function.
+**Ledger correction, 2026-11-23 (supersedes two of my own framings — the "anomaly" one and the
+"0 pass is false" one).** Both are wrong, in opposite directions, and the dated copies settle it:
 
-So "0 of 362 cells pass the alpha gate" is **false as stated**. The true pair of statements is:
-**0 cells are PROVEN or CANDIDATE, and 2 cells pass the G8 selection-alpha gate while still being
-WEAK.** Those two cells are the only measured positive selection alpha in the estate (CI lower bound
-+17.5bp and +17.6bp against buy-and-hold) and they fail on sample size, not on skill — which is a
-materially different finding from "nothing has alpha", and worth someone's attention rather than a
-tick in a zero column.
+| copy | generated_at | cells | PROVEN/CANDIDATE | `alpha_gate.passed` |
+|---|---|---:|---:|---:|
+| main tree | 2026-11-20T01:57Z | 362 | 0 / 0 | **0** |
+| `_raw` (both copies) | 2026-11-22T06:35Z | 374 | 0 / 0 | **2** |
+| this branch | 2026-11-23T06:48Z | 367 | 0 / 0 | **2** |
+
+So **`0/362` is correct as stated, twice over**: zero PROVEN/CANDIDATE *and* zero alpha-gate passes on
+the copy it names. I briefly claimed the gate statement was false, which generalized a current-copy
+observation onto a dated run — the same error I had just corrected in the other direction. What changed
+is real but happened later: from the 2026-11-22 regeneration on, **two EQUITY cells pass the G8 gate** —
+`vol-contraction-scout` (n=63, alpha_n=61, `alpha_ci_lo` +0.1745) and `vwap-reversion-scout` (n=27,
+alpha_n=22, +0.176) — while remaining WEAK, because the gate's coverage rule is `need_n = max(20,
+0.5*cell_n)` (`alpha_engine/audit3_tribunal.py:1309`) and the verdict's power rule asks `required_n` of
+922 and 295.
+
+The two are not contradictory; they answer different questions (`alpha_gate`: does this beat holding the
+same names, at this scope, with half the rows measured? `verdict`: is this promotion-grade?). But the
+consequence is that **any statement about gate passes must carry `generated_at`**, exactly like the
+denominator, and a canonical schema must store both fields or the transition disappears. `0/362` stays
+publishable; "nothing in the estate has positive selection alpha" stopped being true on 2026-11-22.
 
 ## 2. `AUDJPY` is not a "deterministic-loser pattern"
 

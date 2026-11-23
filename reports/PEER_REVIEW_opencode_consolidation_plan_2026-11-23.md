@@ -9,8 +9,8 @@ Paper only, zero capital, not investment advice.
 
 **The plan is right about the disease and under-specified about the cure.** Its diagnosis — multiple
 ledgers, one denominator, provenance on every number — matches what I measured independently, and its
-P0 list is the correct four. Three of its gate definitions would, as written, let a false claim through
-or suppress a true one, and one root-cause statement is now falsifiable. Those are the edits below.
+P0 list is the correct four. Two corrections would, as written, admit contaminated or unmeasurable
+results (C2, C3); two are calibration (C1, C4). No claim in the plan is false for the run it names.
 
 ## What holds (verified independently)
 
@@ -33,22 +33,29 @@ or suppress a true one, and one root-cause statement is now falsifiable. Those a
 
 ## Four corrections
 
-### C1 — `alpha_gate` is not the verdict, and "0 cells pass the alpha gate" is false
+### C1 — the schema must store `alpha_gate` and `verdict` as separate fields (the plan does not say otherwise)
 
-The plan's invariants treat a PROVEN cell as needing "alpha gate status". Both fields exist and they
-disagree, correctly. Current ledger: **0 PROVEN / 0 CANDIDATE; 2 cells pass the G8 selection-alpha gate** — rule counts `{"alpha_gate.passed": 2, "alpha_passed": 0, "passed": 0, "alpha_ci_lo>0": 0}`.
+**Withdrawal first:** my COMS summary of this review quoted the plan as claiming "0 cells pass the alpha
+gate". It makes no such claim — §0 says "0 PROVEN / 0 CANDIDATE / 8 KILL", which is correct for its run.
+The wrong statement was mine, and the dated copies show why the distinction matters:
 
-`apply_selection_alpha_gate` (`alpha_engine/audit3_tribunal.py:1309`) passes a cell when
-`alpha_ci_lo > 0`, scope is strategy-or-class, and `alpha_n >= max(ALPHA_MIN_N=20, 0.5 * cell_n)`.
-The two passing EQUITY cells clear that (63 rows, 61 measured; 27 rows, 22 measured) with CI lower
-bounds near +17.5 bp, and are WEAK only because their `required_n` is 922 / 295. **They are the only
-measured positive selection alpha in the estate and they fail on sample size, not on skill.** A canonical
-schema that stores one boolean called "passed" will silently delete them. Store both, and label them:
-`verdict` answers "is this promotion-grade", `alpha_gate` answers "does this beat holding the same names".
+| copy | generated_at | cells | PROVEN/CANDIDATE | `alpha_gate.passed` |
+|---|---|---:|---:|---:|
+| main tree | 2026-11-20T01:57Z | 362 | 0 / 0 | 0 |
+| `_raw` copies | 2026-11-22T06:35Z | 374 | 0 / 0 | **2** |
+| branch | 2026-11-23T06:48Z | 367 | 0 / 0 | **2** |
 
-Consequence for the plan's §0 headline: the aggregate "selection alpha is significantly negative
-(−0.2674 %/trade over n=3,152)" and "0 proven" are both true and neither is the whole story. Say
-"aggregate alpha negative; 2 of N cells individually positive at strategy scope, both under-powered".
+At the plan's ledger age the gate had zero passes. From 2026-11-22 it has two:
+`vol-contraction-scout` (n=63, alpha_n=61, `alpha_ci_lo` +0.1745) and `vwap-reversion-scout` (n=27,
+alpha_n=22, +0.176). They pass because `apply_selection_alpha_gate`
+(`alpha_engine/audit3_tribunal.py:1309`) uses `need_n = max(20, 0.5 * cell_n)`, and they stay WEAK
+because their `required_n` is 922 / 295. Those are different questions, both correctly answered.
+
+The map at §3 keeps `alpha_gate` per cell, which is right, and invariant 4 only asks that a
+PROVEN/CANDIDATE carry the status — also right. The edit is narrower: state that `cells[i].alpha_gate`
+and `cells[i].verdict` are **independent** and both render, and that any count derived from either one
+carries `generated_at`. Otherwise a "0 pass" tile is true in November and false the next morning, with
+no visual difference.
 
 ### C2 — `emitted` must be dated, not existential
 
@@ -94,4 +101,4 @@ random. Use ≤ 0.2, or state 0.5 explicitly as a provisional floor and record i
    "`emitted_after_registration: <count of rows with ts >= preregistered_at>`".
 3. §5 P1-9 — append the implementation pin (deflated Sharpe, σ_sr 0.6488) from the runbook §2.1.
 4. §6.4 — `PBO<0.5` → `PBO ≤ 0.2 (0.5 only as a provisional floor, recorded)`.
-5. §0 — restate the alpha headline as aggregate-negative plus the two positive under-powered cells.
+5. §3 — state that `alpha_gate` and `verdict` are independent fields and that counts from either carry `generated_at`; the gate-pass count moved from 0 to 2 between the 2026-11-20 and 2026-11-22 copies.

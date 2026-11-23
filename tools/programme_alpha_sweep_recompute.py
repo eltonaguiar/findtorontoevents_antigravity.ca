@@ -266,7 +266,8 @@ def main():
                 "cells where the G8 selection-alpha gate passed: alpha_ci_lo > 0, scope "
                 "strategy/class, and alpha_n >= max(20, 0.5*cell_n). This is a DIFFERENT "
                 "question from the verdict; 2 EQUITY cells pass it and are still WEAK."),
-            "quote_this": "0 PROVEN / 0 CANDIDATE; 2 cells pass the G8 selection-alpha gate",
+            "quote_this": ("0 PROVEN / 0 CANDIDATE; 2 cells pass the G8 selection-alpha gate "
+                              "on this copy -- the 2026-11-20T01:57Z copy had 0, so the gate-pass count moved, and the quote must carry generated_at")
         },
         "zero_passes_evidence": {"ledger_symbols_alpha_passed": sym_pass,
                                  "cell_sidecar_passed": cells_pass,
