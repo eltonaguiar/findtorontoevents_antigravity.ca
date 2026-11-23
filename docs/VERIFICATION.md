@@ -85,14 +85,40 @@ Every flag below was checked against `python3 tools/verify_peer_claims.py --help
 | `--remote-map` | none | JSON object `{remote name: local git path}` so a check's `ref` can be e.g. `review/main`; env fallback `VERIFY_EXTRA_REMOTES` |
 | `--strict` | off | exit non-zero on a non-manual verdict disagreement or an unexpected check FAIL |
 | `--allow-dirty-ref` | off | silence the warning about uncommitted changes in the working tree |
+| `--allow-shallow` | off | run in a shallow clone anyway. By default a shallow clone is a FATAL error (exit 2); this flag downgrades it to a warning and appends `[SHALLOW CLONE - results unreliable]` to every check and verdict that depends on the object graph |
 
 ### Exit codes
 
 | code | meaning |
 |------|---------|
 | 0 | ran to completion. Disagreements are still reported, but they only fail the run under `--strict` |
-| 1 | `--strict` was given and there were violations (`tools/verify_peer_claims.py:802-803`) |
-| 2 | usage or environment error: bad `--remote-map`, not a git repository, unresolvable `--ref`, missing or invalid claims file, invalid manifest, or an unwritable report path |
+| 1 | `--strict` was given and there were violations |
+| 2 | usage or environment error: bad `--remote-map`, not a git repository, **a shallow clone without `--allow-shallow`**, unresolvable `--ref`, missing or invalid claims file, invalid manifest, or an unwritable report path |
+
+### Shallow clones invert verdicts
+
+A depth-1 clone (`actions/checkout` with `fetch-depth: 1`) contains one commit and
+no other branch refs. `git cat-file -e <sha>^{commit}` then fails for every sha that
+is not HEAD, `git branch -r --contains` finds nothing, and
+`git merge-base --is-ancestor` cannot work - so **landed commits are reported as NOT
+LANDED**. The engine therefore checks `git rev-parse --is-shallow-repository` at
+startup and refuses to run in a shallow clone unless `--allow-shallow` is passed
+(`tools/verify_peer_claims.py:66-76`). If the probe itself fails (very old git), it
+warns and proceeds instead of crashing.
+
+### Report header provenance
+
+The markdown header records, so the artefact is auditable on its own:
+
+- `checked-out HEAD at report time: <sha>` - captured immediately before the report
+  is written, because a rebase or a concurrent push can move `origin/main` after
+  checkout, so the sha seen at run start may describe a tree the report is not
+  sitting on. It is the checked-out HEAD, not the merge commit the report will
+  eventually land as - that cannot be known at write time.
+- `ref used for checks: <ref> (<sha>)` - the ref and its resolved tip that every
+  check read.
+- `shallow: true|false` - the clone state the run saw; `true` also adds a warning
+  line naming the unreliable-result marker.
 
 ## Interpreting the output
 
@@ -137,8 +163,11 @@ local `git cat-file` success is not evidence of landing
 
 ## The weekly workflow
 
-`.github/workflows/peer-claim-verification.yml` runs Mondays at 06:23 UTC
-(`'23 6 * * 1'`) and on `workflow_dispatch`. It checks out `main`, runs
+`.github/workflows/peer-claim-verification.yml` runs Mondays at 06:31 UTC
+(`'31 6 * * 1'`) and on `workflow_dispatch`. It checks out `main` with
+`fetch-depth: 0` - full history is REQUIRED, because ancestry, branch-containment
+and object-existence checks all need objects and refs outside HEAD, and a depth-1
+clone silently inverts VERIFIED claims into NOT LANDED. It runs
 `tools/verify_peer_claims.py` without `--strict`, prints a summary (raising
 `::warning::` annotations for violations instead of failing), and commits the two
 generated files back to `main` with a `[skip ci]` message.
@@ -206,9 +235,13 @@ re-derive them because they are settled (`docs/edge_research/28_PROGRAMME_STATUS
 | polarity definition | `[SRC: claims/verification_claims.json:5]` |
 | check kinds | `[SRC: tools/verify_peer_claims.py:44-59]` |
 | SKIP on unresolvable ref | `[SRC: tools/verify_peer_claims.py:64]` |
-| `--strict` semantics | `[SRC: tools/verify_peer_claims.py:66-71]` |
-| exit 1 only under `--strict` with violations | `[SRC: tools/verify_peer_claims.py:802-803]` |
-| `--out` must not live under `docs/` | `[SRC: tools/verify_peer_claims.py:683]` |
+| `--strict` semantics | `[SRC: tools/verify_peer_claims.py:78-83]` |
+| exit 1 only under `--strict` with violations | `[SRC: tools/verify_peer_claims.py:891-892]` |
+| `--out` must not live under `docs/` | `[SRC: tools/verify_peer_claims.py:740]` |
+| shallow-clone guard (fatal by default, `--allow-shallow` opt-out) | `[SRC: tools/verify_peer_claims.py:66-76]` |
+| shallow detection helper | `[SRC: tools/verify_peer_claims.py:119-140]` |
+| shallow-sensitive check kinds | `[SRC: tools/verify_peer_claims.py:492-497]` |
+| HEAD-at-report-time + `shallow:` header fields | `[SRC: tools/verify_peer_claims.py:628-633]` |
 | B3 verdict and evidence | `[SRC: updates/2026-11-23-peer-claim-verification.md:51]` |
 | local-only commits were described as landed | `[SRC: updates/2026-11-23-peer-claim-verification.md:67]` |
 | COMS broker is a LAN address, anonymous, no TLS | `[SRC: INVESTIGATION_2026-11-18_job_board_coms_assetclasses_pm.md:99]` |

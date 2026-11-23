@@ -63,6 +63,16 @@ ref is resolved against the repository first and then against any `--remote-map`
 (or `VERIFY_EXTRA_REMOTES`) entry, so a review-repo claim can point `ref` at e.g.
 `review/main`.  An unresolvable ref makes the check SKIP, never FAIL.
 
+Shallow-clone guard (2026-11-23, Block 30): a depth-1 clone holds one commit and
+no other branch refs, so object-existence, ancestry and branch-containment checks
+fail for every sha that is not HEAD and genuinely landed commits are reported as
+NOT LANDED.  `git rev-parse --is-shallow-repository` is therefore consulted at
+startup: when it says `true` the engine exits 2 with a FATAL message by default.
+`--allow-shallow` is the only opt-out: it downgrades the error to a warning and
+appends `[SHALLOW CLONE - results unreliable]` to every check and verdict that
+depends on the object graph.  The report header records `shallow:` so the state
+is auditable from the artefact itself.
+
 --strict semantics: a violation is (a) a non-manual claim whose computed verdict
 disagrees with `expected_verdict`, or (b) a FAIL of a *supporting* check inside a
 claim that the hand report recorded as VERIFIED (a claimed-to-have-landed object
@@ -91,6 +101,8 @@ from pathlib import Path
 
 VERDICT_VOCAB = ("VERIFIED", "NOT LANDED", "PARTIALLY", "UNVERIFIABLE")
 MANUAL_SUFFIX = " (manual judgement required)"
+SHALLOW_SUFFIX = " [SHALLOW CLONE - results unreliable]"
+EXIT_ENV_ERROR = 2
 
 STATUS_PASS = "PASS"
 STATUS_FAIL = "FAIL"
@@ -104,6 +116,26 @@ POLARITIES = (POLARITY_SUPPORTS, POLARITY_REFUTES)
 # --------------------------------------------------------------------------- #
 # git plumbing
 # --------------------------------------------------------------------------- #
+def detect_shallow(root) -> bool | None:
+    """True/False from `git rev-parse --is-shallow-repository`; None when undeterminable.
+
+    A shallow clone (actions/checkout `fetch-depth: 1`) holds one commit and no
+    other branch refs, so `git cat-file -e`, `git merge-base --is-ancestor` and
+    `git branch -r --contains` all fail for genuinely landed commits and the
+    engine reports NOT LANDED for work that did land.  None (very old git) must
+    degrade to a warning, never a crash.
+    """
+    rc, out, _ = _git(root, ["rev-parse", "--is-shallow-repository"])
+    if rc != 0:
+        return None
+    answer = out.strip().lower()
+    if answer == "true":
+        return True
+    if answer == "false":
+        return False
+    return None
+
+
 def _git(root, args, timeout: int = 120):
     """(returncode, stdout.strip(), stderr.strip()) for `git -C root <args>`."""
     try:
@@ -454,8 +486,24 @@ def _check_polarity(chk) -> str:
     return polarity if polarity in POLARITIES else POLARITY_SUPPORTS
 
 
-def run_claim(root, ref: str, repo: str | None, claim: dict, extras=None) -> dict:
-    """Run every check of one claim and derive its mechanical verdict."""
+# Check kinds whose outcome depends on objects/ancestry/refs beyond HEAD: a
+# shallow clone can silently invert them (landed -> NOT LANDED).  pr_state talks
+# to gh, not to the local object graph, so it is unaffected.
+SHALLOW_SENSITIVE_KINDS = frozenset({
+    "commit_ancestor_of_main", "commit_on_any_origin_ref", "commit_exists",
+    "commit_absent", "commit_not_reachable", "path_on_main",
+    "path_absent_from_main", "author_set",
+})
+
+
+def run_claim(root, ref: str, repo: str | None, claim: dict, extras=None,
+              shallow: bool = False) -> dict:
+    """Run every check of one claim and derive its mechanical verdict.
+
+    `shallow=True` (only reachable via --allow-shallow) appends SHALLOW_SUFFIX to
+    every check that depends on the object graph and to the claim's verdict, so a
+    reader cannot mistake a degraded NOT LANDED for a real one.
+    """
     checks = []
     for chk in claim.get("checks", []):
         kind = chk.get("kind")
@@ -468,11 +516,17 @@ def run_claim(root, ref: str, repo: str | None, claim: dict, extras=None) -> dic
                 status, detail = fn(root, ref, repo, chk, extras)
             except KeyError as exc:
                 status, detail = STATUS_FAIL, f"check {kind!r} is missing required param {exc}"
+        if shallow and kind in SHALLOW_SENSITIVE_KINDS:
+            detail += SHALLOW_SUFFIX
         checks.append({"kind": kind, "status": status, "detail": detail,
                        "polarity": polarity, "ref": chk.get("ref") or ref,
                        "params": {k: v for k, v in chk.items() if k != "kind"}})
     manual = bool(claim.get("manual"))
     computed = derive_verdict([(c["status"], c["polarity"]) for c in checks], manual=manual)
+    if shallow and any(c["kind"] in SHALLOW_SENSITIVE_KINDS for c in checks):
+        suffix = MANUAL_SUFFIX if computed.endswith(MANUAL_SUFFIX) else ""
+        base = computed[:len(computed) - len(suffix)] if suffix else computed
+        computed = base + SHALLOW_SUFFIX + suffix
     expected = claim.get("expected_verdict", "")
     supporting, refuting = tally([(c["status"], c["polarity"]) for c in checks])
     return {
@@ -571,9 +625,12 @@ def build_report(meta: dict, results) -> str:
         "**VERIFIED** / **NOT LANDED** / **PARTIALLY** / **UNVERIFIABLE**.",
         "",
         f"- generated_utc: `{meta['generated_utc']}`",
-        f"- origin/main sha: `{meta['origin_main']}`",
-        f"- ref used: `{meta['ref']}`",
+        f"- checked-out HEAD at report time: `{meta.get('head_at_report', '')}`",
+        f"- ref used for checks: `{meta['ref']}` (`{meta['origin_main']}`)",
+        f"- shallow: {str(bool(meta.get('shallow'))).lower()}",
     ]
+    if meta.get("shallow"):
+        lines.append(f"- WARNING: shallow clone - results marked `{SHALLOW_SUFFIX.strip()}` are unreliable")
     if meta.get("extra_remotes"):
         lines.append(f"- extra remotes: `{meta['extra_remotes']}`")
     lines += [
@@ -691,6 +748,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="exit non-zero on a non-manual verdict disagreement or an unexpected check FAIL")
     ap.add_argument("--allow-dirty-ref", action="store_true",
                     help="silence the warning about uncommitted changes in the working tree")
+    ap.add_argument("--allow-shallow", action="store_true",
+                    help="run in a shallow clone anyway: downgrades the fatal error to a warning "
+                         "and marks every affected verdict as unreliable (default: refuse)")
     args = ap.parse_args(argv)
 
     extras = {}
@@ -709,7 +769,27 @@ def main(argv: list[str] | None = None) -> int:
     rc, _, _ = _git(root, ["rev-parse", "--git-dir"])
     if rc != 0:
         print(f"[verify_peer_claims] ERROR: not a git repository: {root}", file=sys.stderr)
-        return 2
+        return EXIT_ENV_ERROR
+
+    # Shallow-clone guard.  Fatal by DEFAULT - the only opt-out is the explicit
+    # --allow-shallow flag, so the inverted-verdict failure cannot recur by accident.
+    shallow = detect_shallow(root)
+    if shallow is None:
+        print("[verify_peer_claims] WARNING: cannot determine whether this clone is shallow "
+              "(git rev-parse --is-shallow-repository failed); object/ancestry checks may be "
+              "unreliable", file=sys.stderr)
+        shallow = False
+    elif shallow and not args.allow_shallow:
+        print("[verify_peer_claims] FATAL: this is a shallow clone. Ancestry, branch-containment "
+              "and object-existence checks are unreliable here and will report landed commits as "
+              "NOT LANDED. Re-fetch with full history (git fetch --unshallow, or actions/checkout "
+              "fetch-depth: 0), or pass --allow-shallow to run anyway with degraded results.",
+              file=sys.stderr)
+        return EXIT_ENV_ERROR
+    elif shallow:
+        print("[verify_peer_claims] WARNING: shallow clone (--allow-shallow given); every verdict "
+              "that depends on an object/ancestry/ref check is marked "
+              f"'{SHALLOW_SUFFIX.strip()}'", file=sys.stderr)
 
     tip = resolve_ref(root, args.ref)
     if tip is None:
@@ -748,7 +828,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     repo_slug = args.repo or derive_repo_slug(root)
-    results = [run_claim(root, args.ref, repo_slug, claim, extras) for claim in claims]
+    results = [run_claim(root, args.ref, repo_slug, claim, extras, shallow=shallow)
+               for claim in claims]
 
     violations = strict_violations(results)
     n_disagree = sum(1 for r in results if not r["agree"])
@@ -756,6 +837,7 @@ def main(argv: list[str] | None = None) -> int:
         "generated_utc": _now_utc(),
         "origin_main": tip,
         "ref": args.ref,
+        "shallow": shallow,
         "extra_remotes": ", ".join(f"{k} -> {v}" for k, v in sorted(extras.items())),
         "claims_path": str(claims_path.relative_to(root)) if claims_path.is_relative_to(root) else str(claims_path),
         "claims_sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
@@ -773,6 +855,12 @@ def main(argv: list[str] | None = None) -> int:
         for c in r["checks"]:
             print(f"    {c['status']:<4} {c['polarity']:<8} {c['kind']} (ref {c['ref']}): {c['detail']}")
 
+    # Capture HEAD as late as possible: a rebase or a concurrent push can move
+    # origin/main after checkout, so the sha recorded at run start may describe a
+    # tree this report is not sitting on.  This is the checked-out HEAD, not the
+    # merge commit the report will eventually land as - that cannot be known here.
+    head_rc, head_sha, _ = _git(root, ["rev-parse", "HEAD"])
+    meta["head_at_report"] = head_sha if head_rc == 0 and head_sha else "(unknown)"
     report = build_report(meta, results)
     out_path = Path(args.out)
     if not out_path.is_absolute():
@@ -788,7 +876,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.json_out:
         json_path = Path(args.json_out)
         payload = {"generated_utc": meta["generated_utc"], "ref": args.ref,
-                   "origin_main": tip, "claims_sha256": meta["claims_sha256"],
+                   "origin_main": tip, "head_at_report": meta["head_at_report"],
+                   "shallow": shallow, "claims_sha256": meta["claims_sha256"],
                    "claims": results, "strict_violations": violations}
         json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         print(f"[verify_peer_claims] json written: {json_path}")

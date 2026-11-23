@@ -38,13 +38,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          # fetch-depth: 1 makes commit_absent less reliable (a real commit can
-          # look absent in a shallow clone), which is why the manifest prefers
-          # commit_ancestor_of_main (supports polarity: a FAIL is the "not an
-          # ancestor" evidence) and commit_not_reachable for "not landed" claims.
-          # commit_absent is used only for B5's typo sha 41e6e19, where the point
-          # IS that no such object exists anywhere.
-          fetch-depth: 1
+          # FULL history is REQUIRED, not an optimisation. `git cat-file -e`,
+          # `git merge-base --is-ancestor` and `git branch -r --contains` all need
+          # objects and refs outside HEAD; in a depth-1 clone every sha that is
+          # not HEAD "does not resolve", so genuinely landed commits are reported
+          # as NOT LANDED (a silent inversion - the first real dispatch went green
+          # with 10/16 claims wrong). The engine now refuses to run in a shallow
+          # clone unless --allow-shallow is passed, so this can never regress
+          # silently again.
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
