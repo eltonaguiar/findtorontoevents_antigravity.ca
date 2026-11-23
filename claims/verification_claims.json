@@ -2,6 +2,8 @@
   "_comment": "Machine-readable transcription of updates/2026-11-23-peer-claim-verification.md (Group A defects raised against me, Group B peer landed-claims). expected_verdict is the verdict the hand-written report recorded, so tools/verify_peer_claims.py can self-check against it. Do NOT edit expected_verdict to make the script agree - report a disagreement instead.",
   "_verdict_vocabulary": ["VERIFIED", "NOT LANDED", "PARTIALLY", "UNVERIFIABLE"],
   "_origin_reachable_definition": "A commit is origin-reachable when it is an ancestor of origin/main OR sits on some refs/remotes/origin/* ref. A commit that exists only locally is NOT LANDED by definition.",
+  "_polarity_definition": "Every check carries an explicit polarity. 'supports': PASS is evidence FOR the claim, FAIL is evidence AGAINST. 'refutes': PASS is evidence AGAINST the claim, FAIL is evidence FOR. Absence checks (path_absent_from_main, commit_absent, commit_not_reachable) are 'refutes' - finding X missing is evidence against a claim that X landed. The engine tallies supporting vs refuting: no executable check -> UNVERIFIABLE; 0 refuting and >=1 supporting -> VERIFIED; >=1 refuting and 0 supporting -> NOT LANDED; both -> PARTIALLY.",
+  "_ref_definition": "Every check accepts an optional 'ref' (default: the CLI --ref, origin/main). A ref that is not resolvable in this clone is looked up in the repos given by --remote-map / VERIFY_EXTRA_REMOTES ({remote name: local git path}); e.g. 'review/main' works when --remote-map '{\"review\": \"/path/to/review-clone\"}' is given. An unresolvable ref makes the check SKIP, never FAIL.",
   "claims": [
     {
       "id": "A1i",
@@ -9,11 +11,11 @@
       "claimant": "peer agent (defect raised against Zoo)",
       "summary": "final/ranked-list-2026-11-23 tip 3a4f199132d does not contain docs/edge_research/24_EXECUTION_PLAN_2026-11-23.md; that file exists only at 086583427e1 on origin/plan/execution-2026-11-23, which is not an ancestor of 3a4f1991",
       "checks": [
-        {"kind": "commit_on_any_origin_ref", "sha": "3a4f199132d"},
-        {"kind": "commit_on_any_origin_ref", "sha": "086583427e1"}
+        {"kind": "commit_on_any_origin_ref", "sha": "3a4f199132d", "polarity": "supports"},
+        {"kind": "commit_on_any_origin_ref", "sha": "086583427e1", "polarity": "supports"}
       ],
       "manual": true,
-      "manual_reason": "The decisive parts are 'doc 24 is absent from the tree of 3a4f1991' and '086583427e1 is not an ancestor of 3a4f1991'. The second is expressible as a ref check, but this schema's commit_ancestor_of_main only accepts main as the ancestor target, and the first is a path-in-a-non-main-tree check that the fixed check vocabulary does not cover. Both were re-run by hand: git ls-tree 3a4f1991 -- docs/edge_research/ returns 15/22/23/26 only, and git merge-base --is-ancestor 086583427e1 3a4f1991 exits 1.",
+      "manual_reason": "The decisive parts are 'doc 24 is absent from the tree of 3a4f1991' and '086583427e1 is not an ancestor of 3a4f1991'. commit_ancestor_of_main only proves ancestry of origin/main, and the path-in-a-non-main-tree check needs the per-check ref plus a mapped remote (see --remote-map). Both were re-run by hand: git ls-tree 3a4f1991 -- docs/edge_research/ returns 15/22/23/26 only, and git merge-base --is-ancestor 086583427e1 3a4f1991 exits 1.",
       "expected_verdict": "VERIFIED"
     },
     {
@@ -22,8 +24,8 @@
       "claimant": "peer agent (defect raised against Zoo)",
       "summary": "Underlying concern is resolved because doc 24 is on origin/main via PR #1072 (merge f67840d1ebe)",
       "checks": [
-        {"kind": "path_on_main", "path": "docs/edge_research/24_EXECUTION_PLAN_2026-11-23.md", "blob_prefix": "ab7372bfc6c"},
-        {"kind": "commit_ancestor_of_main", "sha": "f67840d1ebe"}
+        {"kind": "path_on_main", "path": "docs/edge_research/24_EXECUTION_PLAN_2026-11-23.md", "blob_prefix": "ab7372bfc6c", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "f67840d1ebe", "polarity": "supports"}
       ],
       "manual": false,
       "expected_verdict": "VERIFIED"
@@ -34,9 +36,9 @@
       "claimant": "peer agent (defect raised against Zoo)",
       "summary": "Local zoo/p0-recovery-2026-11-20 = 3ef08017bf3 while origin/zoo/p0-recovery-2026-11-20 = efb90f657c9, with 16 unpushed commits including a GROUNDBREAKING POD-EQUITY-BREAKOUT result",
       "checks": [
-        {"kind": "commit_exists", "sha": "3ef08017bf3"},
-        {"kind": "commit_exists", "sha": "efb90f657c9"},
-        {"kind": "author_set", "sha_range": "origin/zoo/p0-recovery-2026-11-20..zoo/p0-recovery-2026-11-20", "expect_authors": ["eaguiar2015@users.noreply.github.com"]}
+        {"kind": "commit_exists", "sha": "3ef08017bf3", "polarity": "supports"},
+        {"kind": "commit_exists", "sha": "efb90f657c9", "polarity": "supports"},
+        {"kind": "author_set", "sha_range": "origin/zoo/p0-recovery-2026-11-20..zoo/p0-recovery-2026-11-20", "expect_authors": ["eaguiar2015@users.noreply.github.com"], "polarity": "supports"}
       ],
       "manual": true,
       "manual_reason": "Ownership ('but NOT MINE') is a human judgement: the 16 unpushed commits are all authored by github-actions[bot], so under the repo rule 'only push your own changes' the branch is not mine to push. The sha/count facts and the author set are automatable; the ownership verdict is not. Note the local branch refs must exist in the clone - on a fresh clone only origin/* refs exist and the range check yields SKIP.",
@@ -47,9 +49,13 @@
       "group": "B",
       "claimant": "peer / other agent",
       "summary": "Review repo 34_FINAL_PICKS_2026-11-23/KILOCODE_VSCODE/INVESTMENT_HUB_ASSESSMENT.md at f45f67e; also tools/validate_incubator.py",
-      "checks": [],
+      "checks": [
+        {"kind": "commit_ancestor_of_main", "sha": "f45f67e", "ref": "review/main", "polarity": "supports"},
+        {"kind": "path_on_main", "path": "34_FINAL_PICKS_2026-11-23/KILOCODE_VSCODE/INVESTMENT_HUB_ASSESSMENT.md", "blob_prefix": "81829658f26", "ref": "review/main", "polarity": "supports"},
+        {"kind": "path_absent_from_main", "path": "tools/validate_incubator.py", "ref": "review/main", "polarity": "refutes"}
+      ],
       "manual": true,
-      "manual_reason": "The review repo is a different remote (antigravity-review) whose refs are not refs/remotes/origin/*, and no check kind in the fixed vocabulary takes a ref parameter, so neither the review-main ancestry nor the review-tree path can be expressed. The PARTIALLY boundary call (first file VERIFIED, second file NOT LANDED anywhere) is also a human PASS-FAIL judgement. Re-run by hand 2026-11-23: f45f67e is an ancestor of antigravity-review/main; the assessment file is present (blob 81829658f26); tools/validate_incubator.py is absent from the review repo.",
+      "manual_reason": "The two file halves are now mechanically checked against review/main (needs --remote-map '{\"review\": \"<review clone>\"}'). What stays human is the PARTIALLY boundary call: the first file is VERIFIED and the second is NOT LANDED anywhere, so whether the claim as a whole is PARTIALLY is a judgement.",
       "expected_verdict": "PARTIALLY"
     },
     {
@@ -57,9 +63,13 @@
       "group": "B",
       "claimant": "peer / other agent",
       "summary": "Review main 74f0ff92a43f, range 3f1ab35..74f0ff9, files GITHUB_COPILOT_DEEPSEEK/copilot.md and picks.json",
-      "checks": [],
+      "checks": [
+        {"kind": "commit_ancestor_of_main", "sha": "74f0ff92a43f", "ref": "review/main", "polarity": "supports"},
+        {"kind": "path_absent_from_main", "path": "GITHUB_COPILOT_DEEPSEEK/copilot.md", "ref": "review/main", "polarity": "refutes"},
+        {"kind": "path_absent_from_main", "path": "picks.json", "ref": "review/main", "polarity": "refutes"}
+      ],
       "manual": true,
-      "manual_reason": "Review-repo claim: 74f0ff9's ancestry is against antigravity-review/main, not origin/main, and the named paths must be checked in that repo's tree at that sha - neither is expressible in the fixed check vocabulary. The PARTIALLY call (range/sha VERIFIED, named paths wrong - nested under 34_FINAL_PICKS_2026-11-23/) needs a human boundary decision. Re-run by hand: 74f0ff9 is still an ancestor of review main (which advanced to 089a562b7d7), git rev-list --count 3f1ab35..74f0ff9 = 1, and the files live under 34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/, not at repo root.",
+      "manual_reason": "74f0ff9's ancestry and the two named paths are now mechanically checked against review/main. What stays human is the PARTIALLY boundary call: the sha is VERIFIED but both named paths are wrong (they live under 34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/).",
       "expected_verdict": "PARTIALLY"
     },
     {
@@ -68,13 +78,13 @@
       "claimant": "peer / other agent",
       "summary": "Main repo c0d48e28968 adds tools/edgar_pit_fundamentals.py, tests/test_edgar_pit_fundamentals.py, reports/pit_filing_lag.json, data/fundamentals_pit/*.json and updates/2026-11-23-edgar-pit-filing-lag-measured.md (COMS note also said LOCAL ONLY)",
       "checks": [
-        {"kind": "commit_ancestor_of_main", "sha": "c0d48e28968"},
-        {"kind": "commit_on_any_origin_ref", "sha": "c0d48e28968"},
-        {"kind": "path_absent_from_main", "path": "tools/edgar_pit_fundamentals.py"},
-        {"kind": "path_absent_from_main", "path": "tests/test_edgar_pit_fundamentals.py"},
-        {"kind": "path_absent_from_main", "path": "reports/pit_filing_lag.json"},
-        {"kind": "path_absent_from_main", "path": "data/fundamentals_pit"},
-        {"kind": "path_absent_from_main", "path": "updates/2026-11-23-edgar-pit-filing-lag-measured.md"}
+        {"kind": "commit_ancestor_of_main", "sha": "c0d48e28968", "polarity": "supports"},
+        {"kind": "commit_on_any_origin_ref", "sha": "c0d48e28968", "polarity": "supports"},
+        {"kind": "path_absent_from_main", "path": "tools/edgar_pit_fundamentals.py", "polarity": "refutes"},
+        {"kind": "path_absent_from_main", "path": "tests/test_edgar_pit_fundamentals.py", "polarity": "refutes"},
+        {"kind": "path_absent_from_main", "path": "reports/pit_filing_lag.json", "polarity": "refutes"},
+        {"kind": "path_absent_from_main", "path": "data/fundamentals_pit", "polarity": "refutes"},
+        {"kind": "path_absent_from_main", "path": "updates/2026-11-23-edgar-pit-filing-lag-measured.md", "polarity": "refutes"}
       ],
       "manual": false,
       "expected_verdict": "NOT LANDED"
@@ -85,12 +95,12 @@
       "claimant": "peer / other agent",
       "summary": "Main repo cd44a8cab33 and 378fdd23fad for tools/paired_bootstrap_vs_benchmark.py and alpha_engine/two_hurdle_gate.py",
       "checks": [
-        {"kind": "commit_ancestor_of_main", "sha": "cd44a8cab33"},
-        {"kind": "commit_on_any_origin_ref", "sha": "cd44a8cab33"},
-        {"kind": "commit_ancestor_of_main", "sha": "378fdd23fad"},
-        {"kind": "commit_on_any_origin_ref", "sha": "378fdd23fad"},
-        {"kind": "path_absent_from_main", "path": "tools/paired_bootstrap_vs_benchmark.py"},
-        {"kind": "path_absent_from_main", "path": "alpha_engine/two_hurdle_gate.py"}
+        {"kind": "commit_ancestor_of_main", "sha": "cd44a8cab33", "polarity": "supports"},
+        {"kind": "commit_on_any_origin_ref", "sha": "cd44a8cab33", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "378fdd23fad", "polarity": "supports"},
+        {"kind": "commit_on_any_origin_ref", "sha": "378fdd23fad", "polarity": "supports"},
+        {"kind": "path_absent_from_main", "path": "tools/paired_bootstrap_vs_benchmark.py", "polarity": "refutes"},
+        {"kind": "path_absent_from_main", "path": "alpha_engine/two_hurdle_gate.py", "polarity": "refutes"}
       ],
       "manual": false,
       "expected_verdict": "NOT LANDED"
@@ -101,10 +111,13 @@
       "claimant": "peer / other agent",
       "summary": "Review repo a3f6a6b, 41a6e19 and 3f1ab35 landed on review main; one note says 41a6e19, another 41e6e19",
       "checks": [
-        {"kind": "commit_absent", "sha": "41e6e19"}
+        {"kind": "commit_absent", "sha": "41e6e19", "polarity": "refutes"},
+        {"kind": "commit_ancestor_of_main", "sha": "a3f6a6b", "ref": "review/main", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "41a6e19", "ref": "review/main", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "3f1ab35", "ref": "review/main", "polarity": "supports"}
       ],
       "manual": true,
-      "manual_reason": "The typo-correction verdict needs the three positive shas checked against antigravity-review/main (a non-origin remote, not expressible). Only the negative half - 41e6e19 does not exist - is automatable here. Re-run by hand: a3f6a6b, 41a6e19 and 3f1ab35 are all ancestors of review main; 41e6e19 resolves to no object.",
+      "manual_reason": "The negative half (41e6e19 does not exist) and the three positive shas against review/main are now mechanical. The mechanical result is PARTIALLY, not VERIFIED, because taken literally '41e6e19 landed' is refuted; the hand report's VERIFIED rests on the human judgement that 41e6e19 is a typo for 41a6e19.",
       "expected_verdict": "VERIFIED"
     },
     {
@@ -113,13 +126,13 @@
       "claimant": "peer / other agent",
       "summary": "Main repo 0266a3067ed, a766c5e06fd and 487a165cb1b; workflow .github/workflows/etf-trend-forward-month-end.yml on main; branch pr/h201-pit-universe-2026-11-23",
       "checks": [
-        {"kind": "commit_ancestor_of_main", "sha": "0266a3067ed"},
-        {"kind": "commit_on_any_origin_ref", "sha": "0266a3067ed"},
-        {"kind": "commit_ancestor_of_main", "sha": "a766c5e06fd"},
-        {"kind": "commit_on_any_origin_ref", "sha": "a766c5e06fd"},
-        {"kind": "commit_ancestor_of_main", "sha": "487a165cb1b"},
-        {"kind": "commit_on_any_origin_ref", "sha": "487a165cb1b"},
-        {"kind": "path_absent_from_main", "path": ".github/workflows/etf-trend-forward-month-end.yml"}
+        {"kind": "commit_ancestor_of_main", "sha": "0266a3067ed", "polarity": "supports"},
+        {"kind": "commit_on_any_origin_ref", "sha": "0266a3067ed", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "a766c5e06fd", "polarity": "supports"},
+        {"kind": "commit_on_any_origin_ref", "sha": "a766c5e06fd", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "487a165cb1b", "polarity": "supports"},
+        {"kind": "commit_on_any_origin_ref", "sha": "487a165cb1b", "polarity": "supports"},
+        {"kind": "path_absent_from_main", "path": ".github/workflows/etf-trend-forward-month-end.yml", "polarity": "refutes"}
       ],
       "manual": false,
       "expected_verdict": "NOT LANDED"
@@ -130,9 +143,9 @@
       "claimant": "peer / other agent",
       "summary": "4daf025ed1d was where tools/vol_target_vs_hold.py sat on an unmerged branch, and it was 'restored to main'",
       "checks": [
-        {"kind": "commit_on_any_origin_ref", "sha": "4daf025ed1d"},
-        {"kind": "commit_ancestor_of_main", "sha": "4daf025ed1d"},
-        {"kind": "path_absent_from_main", "path": "tools/vol_target_vs_hold.py"}
+        {"kind": "commit_on_any_origin_ref", "sha": "4daf025ed1d", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "4daf025ed1d", "polarity": "supports"},
+        {"kind": "path_absent_from_main", "path": "tools/vol_target_vs_hold.py", "polarity": "refutes"}
       ],
       "manual": false,
       "expected_verdict": "NOT LANDED"
@@ -143,10 +156,10 @@
       "claimant": "peer / other agent",
       "summary": "5093eb796f8 for pre-registration docs; tools/per_class_edge_harness.py and tools/vol_target_vs_hold.py on main",
       "checks": [
-        {"kind": "commit_ancestor_of_main", "sha": "5093eb796f8"},
-        {"kind": "commit_on_any_origin_ref", "sha": "5093eb796f8"},
-        {"kind": "path_on_main", "path": "tools/per_class_edge_harness.py", "blob_prefix": "b5990946"},
-        {"kind": "path_absent_from_main", "path": "tools/vol_target_vs_hold.py"}
+        {"kind": "commit_ancestor_of_main", "sha": "5093eb796f8", "polarity": "supports"},
+        {"kind": "commit_on_any_origin_ref", "sha": "5093eb796f8", "polarity": "supports"},
+        {"kind": "path_on_main", "path": "tools/per_class_edge_harness.py", "blob_prefix": "b5990946", "polarity": "supports"},
+        {"kind": "path_absent_from_main", "path": "tools/vol_target_vs_hold.py", "polarity": "refutes"}
       ],
       "manual": true,
       "manual_reason": "The mechanical checks are all decidable, but the PARTIALLY label is a human PASS-FAIL boundary call: one of the three sub-claims holds (harness on main) while two do not (5093eb796f8 unreachable, vol_target_vs_hold.py absent). Whether that mix is 'PARTIALLY' or 'NOT LANDED' is judgement.",
@@ -158,8 +171,8 @@
       "claimant": "peer / other agent",
       "summary": "PRs #1067 and #1068 are OPEN",
       "checks": [
-        {"kind": "pr_state", "number": 1067, "expect_state": "OPEN"},
-        {"kind": "pr_state", "number": 1068, "expect_state": "OPEN"}
+        {"kind": "pr_state", "number": 1067, "expect_state": "OPEN", "polarity": "supports"},
+        {"kind": "pr_state", "number": 1068, "expect_state": "OPEN", "polarity": "supports"}
       ],
       "manual": false,
       "expected_verdict": "VERIFIED"
@@ -169,9 +182,11 @@
       "group": "B",
       "claimant": "peer / other agent",
       "summary": "Review repo d18179d for 35_TOP_GAINERS_HARVEST_2026-11-23/",
-      "checks": [],
-      "manual": true,
-      "manual_reason": "Entirely a review-repo claim: d18179d's ancestry is against antigravity-review/main and the folder lives in that repo's tree - neither is expressible in the fixed check vocabulary. Re-run by hand: d18179d is an ancestor of review main and the folder exists there.",
+      "checks": [
+        {"kind": "commit_ancestor_of_main", "sha": "d18179d", "ref": "review/main", "polarity": "supports"},
+        {"kind": "path_on_main", "path": "35_TOP_GAINERS_HARVEST_2026-11-23/", "ref": "review/main", "polarity": "supports"}
+      ],
+      "manual": false,
       "expected_verdict": "VERIFIED"
     },
     {
@@ -180,8 +195,8 @@
       "claimant": "peer / other agent",
       "summary": "Main repo tools/capacity_model.py:49 contains HURDLE_TBILL_APR = 0.0432",
       "checks": [
-        {"kind": "path_absent_from_main", "path": "tools/capacity_model.py"},
-        {"kind": "path_absent_from_main", "path": "tests/test_capacity_model.py"}
+        {"kind": "path_absent_from_main", "path": "tools/capacity_model.py", "polarity": "refutes"},
+        {"kind": "path_absent_from_main", "path": "tests/test_capacity_model.py", "polarity": "refutes"}
       ],
       "manual": true,
       "manual_reason": "The provenance gap itself is mechanical (the file is absent from origin/main, so the cited line cannot be verified there), but whether that makes the claim 'NOT LANDED' versus 'UNVERIFIABLE' is a human call - the report chose NOT LANDED. The 4.32% hurdle cannot be reproduced from the repository until tools/capacity_model.py is restored to main or the value is re-cited to a source that exists.",
@@ -193,10 +208,10 @@
       "claimant": "Zoo (my own claims)",
       "summary": "My claims: PR #1074 merge 692cdea41a6ff753eac68ba89aea936a4cc3a47e, PR #1076 merge 69c5243c5bfdf768b7a795f0a8f6042b51f18748",
       "checks": [
-        {"kind": "commit_ancestor_of_main", "sha": "692cdea41a6"},
-        {"kind": "commit_ancestor_of_main", "sha": "69c5243c5bf"},
-        {"kind": "pr_state", "number": 1074, "expect_state": "MERGED"},
-        {"kind": "pr_state", "number": 1076, "expect_state": "MERGED"}
+        {"kind": "commit_ancestor_of_main", "sha": "692cdea41a6", "polarity": "supports"},
+        {"kind": "commit_ancestor_of_main", "sha": "69c5243c5bf", "polarity": "supports"},
+        {"kind": "pr_state", "number": 1074, "expect_state": "MERGED", "polarity": "supports"},
+        {"kind": "pr_state", "number": 1076, "expect_state": "MERGED", "polarity": "supports"}
       ],
       "manual": false,
       "expected_verdict": "VERIFIED"
