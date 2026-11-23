@@ -112,7 +112,17 @@ def test_tournament_loader_handles_connection_failure():
     mod = _reload_build_pf_registry()
     fake_db_env = MagicMock()
     fake_db_env.get_stocks_creds.side_effect = RuntimeError("no creds")
-    with patch.dict(sys.modules, {"tools.db_env": fake_db_env, "pymysql": MagicMock()}):
+    # 2026-11-23: the module does `from tools import db_env` INSIDE
+    # _load_tournament_picks_rows, which resolves the ATTRIBUTE `db_env` on the
+    # `tools` package -- it does not consult sys.modules["tools.db_env"]. Patching
+    # sys.modules alone therefore only took effect while tools.db_env had not yet
+    # been imported, which made this test order-dependent: it passed in isolation
+    # and failed in the full suite (any earlier test importing tools.db_env left
+    # the real module bound to the package attribute). Patch the attribute too.
+    import tools as _tools_pkg
+
+    with patch.dict(sys.modules, {"tools.db_env": fake_db_env, "pymysql": MagicMock()}), \
+         patch.object(_tools_pkg, "db_env", fake_db_env, create=True):
         rows, meta = mod._load_tournament_picks_rows(days=90)
     assert rows == []
     assert meta["loaded"] == 0
