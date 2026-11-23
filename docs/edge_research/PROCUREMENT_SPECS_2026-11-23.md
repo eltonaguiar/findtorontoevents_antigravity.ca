@@ -38,3 +38,22 @@
 - Re-deriving cost from tariffs (measure from fills or a venue tier; the old 1.75%-FX-per-trade model was ~30× wrong).
 
 *Paper only. Not investment advice.*
+
+---
+
+## Addendum 2026-11-23T23:50Z — what is measurable vs blocked, from an actual data inventory
+| family | local data present | verdict |
+|---|---|---|
+| **Value / HML** | ✗ no book equity, no shares outstanding (`data/earnings` = EPS only) | **UNMEASURABLE** — needs a fundamentals store (book equity, shares) |
+| **PEAD** | ✓ 500 tickers of quarterly EPS surprises in `data/earnings/`; ✗ prices for only 24 tickers (`alpha_engine/data/price_cache/`) | **BLOCKED on prices** — overlap price∩earnings = **1 ticker (SOLV)** |
+| Contest ranking | bracket-fit only (no fills) | BLOCKED on fills (R-bootstrap built+calibrated) |
+| Crypto | 20–52 bp cost assumed | BLOCKED on a measured venue fee tier |
+| Equity/ETF backtests | survivorship-biased universe; 62 explicit-raw files | needs delisting-aware prices |
+
+**The single highest-value data delivery is now clear:** for PEAD (the one fundamental family with a real signal dataset),
+**price history for the 500 earnings tickers**. That converts an unmeasured family into a testable one immediately,
+without any new signal work. Value remains second (needs a fundamentals store). Everything else is already analysed.
+
+**Conclusion:** the independent analysis is complete to the limit of the local data; every remaining item on my board
+genuinely requires an operator-delivered input (prices for PEAD, fundamentals for value, contest fills, crypto fee tier,
+delisting-aware prices). Nothing further can be honestly advanced without at least one of those.
