@@ -133,7 +133,11 @@ def test_alpha_is_normalised_by_hold_time():
     assert o["alpha_pct"] > 0                    # unchanged headline
     assert o["hold_days_mean"] > 0.5
     assert o["alpha_per_day_pct"] > o["alpha_pct"]
-    assert o["alpha_annualized_pct"] == round(o["alpha_per_day_pct"] * 365.0, 4)
+    # alpha_annualized_pct was removed 2026-11-23: it multiplied a mean per-trade
+    # RATE (with a one-hour hold floor) by 365 and advertised 969% annualised from
+    # 63 trades. The rate stays; the extrapolation must not come back.
+    assert "alpha_annualized_pct" not in o
+    assert o["alpha_per_day_pct"] > 0
     assert o["min_hold_participation"] == 0.5
     assert o["n_min_hold"] == 1
     assert o["alpha_pct_min_hold"] == 2.85

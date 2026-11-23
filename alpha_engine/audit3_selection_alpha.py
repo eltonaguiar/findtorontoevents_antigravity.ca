@@ -333,7 +333,13 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
         if not items:
             return {"n": 0}
         a = [x["alpha"] for x in items]
-        ci = bootstrap_mean_ci(a) if len(a) >= 5 else {"ci_lo": None, "ci_hi": None}
+        # block=True: a pick is held for days, so consecutive rows share calendar
+        # time and market moves. An iid resample treats them as independent and
+        # understates the variance -- the lower bound decides G8, so this must be
+        # the block interval (audit3_tribunal.bootstrap_mean_ci documents it as
+        # "the honest interval for overlapping positions").
+        ci = (bootstrap_mean_ci(a, block=True) if len(a) >= 5
+              else {"ci_lo": None, "ci_hi": None})
         holds = [x["hold_days"] for x in items]
         per_day = [x["alpha"] / max(x["hold_days"], MIN_HOLD_DAYS_FLOOR)
                    for x in items]
@@ -352,7 +358,6 @@ def alpha_for(rows: list[dict], bars: dict[str, list[tuple[int, float]]],
             "hold_days_mean": round(statistics.mean(holds), 4),
             "hold_days_median": round(statistics.median(holds), 4),
             "alpha_per_day_pct": round(statistics.mean(per_day), 4),
-            "alpha_annualized_pct": round(statistics.mean(per_day) * ANNUALIZATION_DAYS, 4),
             "min_hold_days": MIN_HOLD_DAYS_FOR_HEADLINE,
             "n_min_hold": len(long_items),
             "min_hold_participation": round(len(long_items) / len(items), 4),
@@ -408,8 +413,12 @@ def main(argv=None) -> int:
     res["schema"] = "audit3.selection_alpha.v1"
     res["generated_at"] = datetime.now(timezone.utc).isoformat()
     res["definition"] = ("alpha = pick net return - direction-adjusted buy & hold "
-                         "over the same entry..exit window (M1b); alpha_per_day_pct "
-                         "and alpha_annualized_pct normalise by hold time, and "
+                         "over the same entry..exit window (M1b). alpha_per_day_pct is "
+                         "the mean per-trade alpha/held-day RATE: it is not compoundable "
+                         "and no annualised figure is published (the old "
+                         "alpha_annualized_pct multiplied this rate by 365 and reported "
+                         "e.g. 969% for 63 trades). min_hold_participation reports the "
+                         "share of trades held "
                          "min_hold_participation reports the share of trades held "
                          f">= {MIN_HOLD_DAYS_FOR_HEADLINE:.0f} day(s)")
     if not res["covered"]:
