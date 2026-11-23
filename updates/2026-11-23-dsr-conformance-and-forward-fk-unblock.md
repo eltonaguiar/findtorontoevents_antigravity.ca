@@ -125,3 +125,18 @@ both of which deflate and agree with each other. I have not edited that file —
 deprecation note is a protocol decision (TESTING_PROTOCOL v4.0) and changing it silently
 would re-point every consumer. The recommendation is one line, with the measurement above
 behind it.
+
+## 6. Self-correction: I reformatted the whole registry on the way in
+
+The first commit for this work (`4756c3d879a`) re-serialised
+`reports/hypothesis_registry.json` with `json.dumps(indent=2)` instead of inserting two
+rows textually. The content was correct — 137 upstream rows, none lost, none altered —
+but the diff was **6,474 insertions / 4,444 deletions** for a two-row addition, because
+every line of a 137-row shared file was rewritten. On a file other agents also edit, a
+whole-file reformat is a merge hazard and it buries the two rows that matter.
+
+Fixed in the follow-up commit: the registry is restored byte-for-byte to its previous
+formatting with the two new rows inserted textually before the array's closing bracket.
+Verified that every pre-existing row is content-identical and that the shape is now
+additive. Note also that upstream held **137** rows where my local tree held 130 — the
+insertion is applied to upstream's own copy, never to my stale local one.
