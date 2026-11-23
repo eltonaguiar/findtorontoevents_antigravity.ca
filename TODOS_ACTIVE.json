@@ -155,6 +155,55 @@
    "detail": "After connectivity was restored the checker still produced 4 broken verdicts out of 7, none of them about dead data. (a) penny_stocks.php uses NO database (Yahoo screener proxy) and Sports Betting serves a static JSON file, so 'table does not exist' was a permanent false CRITICAL -- both now declared db_backed=false and reported as skipped. (b) Schema drift: asked for 'timestamp' on fxp_price_history (has price_date) and 'last_updated' elsewhere. Replaced the hardcoded name with SHOW COLUMNS + a preference list, taking the first column that exists AND holds a value (a column can exist and be all-NULL, as mc_winners.created_at is). (c) A config typo could masquerade as data staleness because QUERY_ERROR set is_stale=true; errors are now reported as errors. VERIFIED LIVE: zero false alarms, and Forex changed from a false alarm into a REAL finding (2,694 records, 4685h stale). Checker now reports 0 active / 5 stale, with the 5 backed by real row counts whose newest rows are 108-239 days old.",
    "evidence": "updates/2026-11-23-dead-data-checker-column-autodetect.md",
    "closed_at": "2026-11-23T05:45:00+00:00"
+  },
+  {
+   "id": 22,
+   "title": "Unstick forex price pipeline (row-count guard -> freshness guard)",
+   "status": "done",
+   "detail": "findforex2/portfolio/api/fetch_prices.php guarded on `ph.cnt < 20`: a pair with 20 bars counted as complete however old, so after seeding the query matched nothing forever and fxp_price_history froze ~195d while the endpoint reported success. Added MAX(price_date) + a 2-day staleness condition. Live: fetched 0 -> 8 pairs x 259 records; checker flipped that system from STALE 4685h to Active 5.93h.",
+   "closed_at": "2026-11-23T06:00:00+00:00"
+  },
+  {
+   "id": 23,
+   "title": "Empty tables never detected (strict-compare type bug)",
+   "status": "done",
+   "detail": "Diagnosing mc_winners (MAX(created_at) NULL) returned rows=0, so EMPTY_TABLE should have fired. It never could: record_count was assigned the MySQL STRING and compared with `=== 0`, which is always false. Cast to int at assignment. Meme Coin now correctly reports 'Table is empty!'.",
+   "closed_at": "2026-11-23T06:00:00+00:00"
+  },
+  {
+   "id": 24,
+   "title": "Checker report file not retrievable + JSON_PRETTY_PRINT on PHP 5.2",
+   "status": "done",
+   "detail": "file_put_contents return never checked; JSON_PRETTY_PRINT is PHP 5.4+ on a 5.2 host; a new dated file accumulated per run in a web-served dir and fetched back as 200/0B or 404. Now one stable dead_data_report.json, plain json_encode, truthful save/fail message. Live: HTTP 200, 1463 bytes, summary {total 7, active 2, stale 3, skipped 2}.",
+   "closed_at": "2026-11-23T06:00:00+00:00"
+  },
+  {
+   "id": 25,
+   "title": "Checker summary arithmetic does not reconcile",
+   "status": "done",
+   "detail": "Skipped systems were counted in Total but in neither Active nor Stale, so '5 stale of 7' hid 2 unassessed systems. Added a skipped bucket: '7 (2 active + 3 stale + 2 skipped)'.",
+   "closed_at": "2026-11-23T06:00:00+00:00"
+  },
+  {
+   "id": 26,
+   "title": "Deploy pump-watch consensus panel to production",
+   "status": "done",
+   "detail": "Was committed but never served. Deployed audit_dashboard/pumpwatch_consensus.html + data/pumpwatch_consensus.json. Live: /audit/pumpwatch_consensus.html HTTP 200 9101B, /audit/data/pumpwatch_consensus.json HTTP 200 2707B verdict REFUTED.",
+   "closed_at": "2026-11-23T06:00:00+00:00"
+  },
+  {
+   "id": 27,
+   "title": "Implement cost rule breakeven_cost_bp > cost_high_bp as a gate",
+   "status": "deferred",
+   "detail": "DEFERRED: changes a promotion criterion on the money path; making it a hard gate would silently reclassify strategies and could flip verdicts recorded under the previous rule. The value is already computed and reported by tools/cost_sensitivity.py; enforcement needs an explicit owner decision.",
+   "defer_reason": "DEFERRED: changes a promotion criterion on the money path; making it a hard gate would silently reclassify strategies and could flip verdicts recorded under the previous rule. The value is already computed and reported by tools/cost_sensitivity.py; enforcement needs an explicit owner decision."
+  },
+  {
+   "id": 28,
+   "title": "Restore writers for stock_picks / mf2_fund_picks",
+   "status": "deferred",
+   "detail": "DEFERRED with evidence: measured 0 files WRITE either table (27 and 4 merely mention them; the GHA hit is an unrelated stock_picks.json). Their pipelines are external or decommissioned, likely on the Windows host or a retired 50webs cron. Nothing is fixable here without first locating the writer. cw_winners went Active during this pass, so it was correctly excluded.",
+   "defer_reason": "DEFERRED with evidence: measured 0 files WRITE either table (27 and 4 merely mention them; the GHA hit is an unrelated stock_picks.json). Their pipelines are external or decommissioned, likely on the Windows host or a retired 50webs cron. Nothing is fixable here without first locating the writer. cw_winners went Active during this pass, so it was correctly excluded."
   }
  ]
 }

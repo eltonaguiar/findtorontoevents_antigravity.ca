@@ -30,8 +30,19 @@ if ($single !== '') {
     $skip_mode = isset($_GET['force']) ? false : true;
     $sql = "SELECT DISTINCT p.symbol FROM fxp_pairs p";
     if ($skip_mode) {
-        $sql .= " LEFT JOIN (SELECT symbol, COUNT(*) as cnt FROM fxp_price_history GROUP BY symbol) ph ON p.symbol = ph.symbol";
-        $sql .= " WHERE ph.cnt IS NULL OR ph.cnt < 20";
+        // FRESHNESS, not just row count (fixed 2026-11-23).
+        // The original guard was `ph.cnt IS NULL OR ph.cnt < 20`, which treats a
+        // pair with 20 rows as "complete" no matter how old they are. Once every
+        // pair had been seeded, this query matched nothing, the endpoint answered
+        // "No pairs need price data", and fxp_price_history froze for good -- which
+        // is why the dead-data checker reported it ~195 days stale while this
+        // writer kept reporting success. Also refresh anything whose newest bar is
+        // older than 2 days.
+        $sql .= " LEFT JOIN (SELECT symbol, COUNT(*) as cnt, MAX(price_date) as max_date"
+              . " FROM fxp_price_history GROUP BY symbol) ph ON p.symbol = ph.symbol";
+        $sql .= " WHERE ph.cnt IS NULL OR ph.cnt < 20"
+              . " OR ph.max_date IS NULL"
+              . " OR ph.max_date < DATE_SUB(CURDATE(), INTERVAL 2 DAY)";
     }
     $sql .= " ORDER BY p.symbol";
     $res = $conn->query($sql);
