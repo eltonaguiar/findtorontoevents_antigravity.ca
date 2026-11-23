@@ -35,6 +35,11 @@
       "claim": "POD-EQUITY-BREAKOUT is a live pod",
       "verdict": "KILLED (retired)",
       "evidence": "4 strategies had 0 rows; reports/audit3_confirmatory.json"
+    },
+    {
+      "claim": "G3 was enforced (deflated Sharpe gate)",
+      "verdict": "DEFECT FOUND+FIXED",
+      "evidence": "G3 only checked DSR presence, so DSR 0.318@N658 passed. Fixed to require DSR>=0.95. After fix 0/69 pass G3 (max per-symbol DSR 0.318)."
     }
   ],
   "confirmed": [
@@ -54,5 +59,9 @@
       "evidence": "G2 hold_days fails regardless of cost 4.97-20bp"
     }
   ],
-  "summary": "7 claims killed/demoted, 3 confirmed. Net: nothing investable; buy index ETF."
+  "summary": "7 claims killed/demoted, 3 confirmed. Net: nothing investable; buy index ETF.",
+  "post_fix_state": {
+    "g3_pass": "0/69 (max per-symbol DSR 0.318 < 0.95)",
+    "binding_gates": "G3 (DSR>=0.95): 0 pass; G2 (hold>=1): 0 pass (no hold times); G4 (ann>4.32%): 0 pass"
+  }
 }
