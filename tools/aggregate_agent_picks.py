@@ -16,6 +16,7 @@ def main():
     ap.add_argument("--root", default="/home/eaguiar2015/antigravity_review_Nov192026")
     ap.add_argument("--date", default="2026-11-23")
     ap.add_argument("--out", default="reports/agent_picks_rollup.json")
+    ap.add_argument("--filing-check", action="store_true", help="also report who filed in 34_FINAL_PICKS vs expected")
     a=ap.parse_args()
     base=Path(a.root)/a.date
     if not base.exists():
@@ -60,6 +61,18 @@ def main():
          "any_agent_reports_full_pass":any(
              any(p.get("gates_passed")=="5/5" for p in (d.get("per_class",{}).get(c) or []) if isinstance(d.get("per_class",{}).get(c),list))
              for d in agents.values() for c in d.get("per_class",{}))}
+    if a.filing_check:
+        fp=Path(a.root)/"34_FINAL_PICKS_2026-11-23"
+        filed_md={p.stem for p in fp.glob("*.md")} if fp.exists() else set()
+        subdirs={p.name for p in fp.iterdir() if p.is_dir()} if fp.exists() else set()
+        expected=["copilot","zoo","kilo","ag-swarm","hermes","buffy-freebuff","kilo-vscode","KILOCODE_VSCODE"]
+        out["filing_check"]={
+            "final_picks_dir_exists": fp.exists(),
+            "md_files": sorted(filed_md),
+            "subdirs": sorted(subdirs),
+            "expected_agents": expected,
+            "note": "an agent is FILED only if its file/subdir exists with header block + all ten class rows",
+        }
     Path(a.out).parent.mkdir(parents=True,exist_ok=True)
     Path(a.out).write_text(json.dumps(out,indent=2)+"\n")
     print(f"agents={len(agents)} picks={out['n_picks_total']} consensus={len(consensus)} issues={len(issues)} full_pass_any={out['any_agent_reports_full_pass']}")
