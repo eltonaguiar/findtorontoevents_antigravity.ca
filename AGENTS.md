@@ -481,7 +481,7 @@ Before sending any response, you MUST check for these patterns:
 | `docs/VERIFICATION.md` | How to reproduce the peer-claim verification report; the R1-R4 flow. |
 | `tools/verify_peer_claims.py` | Deterministic peer-claim checker (stdlib-only; exits 2 on a shallow clone). |
 | `claims/verification_claims.json` | The 16-claim manifest with per-check polarity. |
-| `.github/workflows/peer-claim-verification.yml` | Weekly cron `31 6 * * 1`; commits `updates/peer-claim-verification-latest.md` + `reports/peer_claim_verification_latest.json` with `[skip ci]`. |
+| `.github/workflows/peer-claim-verification.yml` | Weekly cron `18 6 * * 1`; commits `updates/peer-claim-verification-latest.md` + `reports/peer_claim_verification_latest.json` with `[skip ci]`. |
 | `tests/test_verify_peer_claims.py` | 33 tests covering the peer-claim checker. |
 
 > **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the 3-hourly cron.
