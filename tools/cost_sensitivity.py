@@ -68,6 +68,58 @@ def drag_fraction(turnover_per_year: float, cost_bp: float) -> float:
     return turnover_per_year * cost_bp / 10000.0
 
 
+#: A strategy earns a cost-headroom pass only when the cost at which its net
+#: return reaches zero is above the worst cost constant any backtest in this repo
+#: charges. Otherwise the downside cost case can still kill it.
+COST_HEADROOM_RULE = "breakeven_cost_bp > cost_high_bp"
+
+
+def cost_headroom_gate(breakeven_cost_bp, cost_high_bp: float = COST_HIGH_BP) -> dict:
+    """Evaluate ``breakeven_cost_bp > cost_high_bp`` as a gate.
+
+    Returns a dict with ``status`` in {PASS, FAIL, UNKNOWN}. The comparison is
+    strict, so a breakeven exactly equal to the high constant FAILS: it survives
+    only by assuming the pessimistic case is never reached.
+
+    ``UNKNOWN`` is returned when breakeven is undefined (zero turnover). That is
+    not a pass and not a fail -- with no turnover there is no cost drag, so the
+    cost constant cannot bind and the rule has nothing to say.
+
+    NOTE: this gate is deliberately *not* wired into pick promotion. Turning a
+    FAIL into an automatic demotion would silently reclassify live strategies, so
+    that step is left to an explicit owner decision. The gate is exposed as a
+    computed field and as `--gate` (non-zero exit) so it can be enforced where
+    somebody chooses to enforce it.
+    """
+    if breakeven_cost_bp is None:
+        return {
+            "rule": COST_HEADROOM_RULE,
+            "status": "UNKNOWN",
+            "breakeven_cost_bp": None,
+            "cost_high_bp": round(cost_high_bp, 4),
+            "headroom_bp": None,
+            "reason": ("breakeven cost is undefined (zero turnover); with no turnover "
+                       "there is no cost drag, so the cost constant cannot bind"),
+        }
+
+    headroom = float(breakeven_cost_bp) - float(cost_high_bp)
+    passed = float(breakeven_cost_bp) > float(cost_high_bp)
+    return {
+        "rule": COST_HEADROOM_RULE,
+        "status": "PASS" if passed else "FAIL",
+        "breakeven_cost_bp": round(float(breakeven_cost_bp), 4),
+        "cost_high_bp": round(float(cost_high_bp), 4),
+        "headroom_bp": round(headroom, 4),
+        "reason": (
+            f"breakeven {breakeven_cost_bp:.4f} bp is above the worst cost assumption "
+            f"{cost_high_bp:.4f} bp, so even the pessimistic case leaves net positive"
+            if passed else
+            f"breakeven {breakeven_cost_bp:.4f} bp is at or below the worst cost "
+            f"assumption {cost_high_bp:.4f} bp, so that case can wipe out the edge"
+        ),
+    }
+
+
 def analyse(gross_ann: float, turnover_per_year: float, hurdle_ann: float,
             cost_low_bp: float = COST_LOW_BP, cost_high_bp: float = COST_HIGH_BP) -> dict:
     """Compare a strategy's verdict under the measured cost and the repo constant."""
@@ -120,6 +172,7 @@ def analyse(gross_ann: float, turnover_per_year: float, hurdle_ann: float,
         "verdict_flip": verdict_flip,
         "breakeven_cost_bp": None if breakeven_bp is None else round(breakeven_bp, 4),
         "breakeven_vs_hurdle_cost_bp": None if hurdle_cost_bp is None else round(hurdle_cost_bp, 4),
+        "cost_headroom_gate": cost_headroom_gate(breakeven_bp, cost_high_bp),
         "assessment": assessment,
         "interpretation": _interpret(assessment, sign_flip, gross_ann, hurdle_ann,
                                      breakeven_bp, cost_low_bp, cost_high_bp),
@@ -184,6 +237,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--cost-low-bp", type=float, default=COST_LOW_BP)
     ap.add_argument("--cost-high-bp", type=float, default=COST_HIGH_BP)
     ap.add_argument("--out", default="reports/cost_sensitivity_2026-11-23.json")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit non-zero when the cost-headroom gate does not PASS")
     args = ap.parse_args(argv[1:])
 
     if args.hml:
@@ -208,9 +263,16 @@ def main(argv: list[str]) -> int:
     print(f"  sign flip        {out['sign_flip']}")
     print(f"  verdict flip     {out['verdict_flip']}")
     print(f"  breakeven cost   {out['breakeven_cost_bp']} bp")
+    gate = out.get("cost_headroom_gate") or {}
+    if gate:
+        print(f"  cost headroom    {gate['status']}  ({gate['rule']})")
+        print(f"                   {gate['reason']}")
     print(f"  ASSESSMENT       {out['assessment']}")
     print(f"  {out['interpretation']}")
     print(f"  written          {args.out}")
+    if args.gate and gate.get("status") != "PASS":
+        print(f"  GATE FAILED      {gate.get('status')}", file=sys.stderr)
+        return 1
     return 0
 
 

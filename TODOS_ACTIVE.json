@@ -194,9 +194,8 @@
   {
    "id": 27,
    "title": "Implement cost rule breakeven_cost_bp > cost_high_bp as a gate",
-   "status": "deferred",
-   "detail": "DEFERRED: changes a promotion criterion on the money path; making it a hard gate would silently reclassify strategies and could flip verdicts recorded under the previous rule. The value is already computed and reported by tools/cost_sensitivity.py; enforcement needs an explicit owner decision.",
-   "defer_reason": "DEFERRED: changes a promotion criterion on the money path; making it a hard gate would silently reclassify strategies and could flip verdicts recorded under the previous rule. The value is already computed and reported by tools/cost_sensitivity.py; enforcement needs an explicit owner decision."
+   "status": "done",
+   "detail": "DONE: implemented as tools/cost_sensitivity.cost_headroom_gate() and emitted from analyse() as cost_headroom_gate (additive). --gate exits 1 on non-PASS so it is enforceable. Deliberately NOT wired into pick promotion: auto-demotion would silently reclassify live strategies, which remains an explicit owner decision. HML: breakeven 6.1582 bp vs 25.0 bp high constant -> FAIL, headroom -18.8418 bp, agreeing with ROBUSTLY-KILLED. 12 tests in tests/test_cost_sensitivity_gate.py. Doc: updates/2026-11-23-cost-headroom-gate.md"
   },
   {
    "id": 28,
