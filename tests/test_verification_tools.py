@@ -165,3 +165,14 @@ def test_incubator_validator_rejects_paper_ready_without_n():
     d = json.load(open("/tmp/inc_val.json"))
     assert d["n_admissible"] == 0
     assert any("no_n" in e.get("reasons", []) for e in d["rejected"])
+
+
+# ── cross-system consensus ─────────────────────────────────────────
+def test_cross_system_consensus_runs_and_maps_kimi_signals():
+    r = subprocess.run([sys.executable, str(ROOT / "tools/cross_system_consensus.py"),
+                        "--out", "/tmp/consensus_test.json"], cwd=ROOT, capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    d = json.load(open("/tmp/consensus_test.json"))
+    # KIMI uses signal:BUY - must be mapped to LONG, so kimi must contribute picks
+    assert d["per_system"]["kimi"].get("n_picks", 0) >= 1
+    assert "caveat" in d and "NOT a recommendation" in d["caveat"]
