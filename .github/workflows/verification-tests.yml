@@ -46,6 +46,12 @@ name: Verification Tests
       - 'tools/pmc_pilot_monitor.py'
       - 'tools/track_pmc_paper_pilot.py'
       - 'verified_strategies/paper_pilot/**'
+      # The dossier-citation checker: the tool, its test, the allowlist it
+      # reads by default, and the dossiers it scans.
+      - 'tools/check_dossier_citations.py'
+      - 'tools/dossier_citation_allowlist.txt'
+      - 'tests/test_check_dossier_citations.py'
+      - 'docs/audit_review_2026-11-22/**'
       # The tally test recursively globs every markdown file under docs/ (see
       # tests/test_edge_research_tally_consistency.py SEARCH_DIR), so a docs edit
       # can flip the tally invariant.
@@ -66,6 +72,10 @@ name: Verification Tests
       - 'tools/pmc_pilot_monitor.py'
       - 'tools/track_pmc_paper_pilot.py'
       - 'verified_strategies/paper_pilot/**'
+      - 'tools/check_dossier_citations.py'
+      - 'tools/dossier_citation_allowlist.txt'
+      - 'tests/test_check_dossier_citations.py'
+      - 'docs/audit_review_2026-11-22/**'
       - 'docs/**'
       - '.github/workflows/verification-tests.yml'
   workflow_dispatch:
@@ -122,4 +132,5 @@ jobs:
             tests/test_capacity_model.py \
             tests/test_edge_research_tally_consistency.py \
             tests/test_pmc_promotion_consistency.py \
+            tests/test_check_dossier_citations.py \
             -q
