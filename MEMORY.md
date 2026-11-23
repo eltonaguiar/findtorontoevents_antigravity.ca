@@ -41,3 +41,20 @@ Never read dbpasses.txt. Never push other authors' commits. Every fix has a matc
   BOTH unmeasurable (AUDJPY: FOREX frozen, fx_prices dead; CVX: no EQUITY hold-times). Actionable shortlist EMPTY.
 - Criteria for a future strategy to clear G3: **n≥100 AND per-trade SR≥0.50**, report effective N, still pass G1/G2/G4/G5.
 - `reports/sr_star_table.json` is a CROSS-strategy metric (σ=0.649) — NOT the G3 denominator. Canonical: `reports/g3_bar_analysis_corrected.json`.
+
+## Data-integrity landmine (2026-11-23T03:58Z)
+`alpha_engine/data/closed_picks.json` is **88% synthetic**: of 2,204 rows only **290** have `entry_date`; 1,914 are
+WOULD_HIT placeholders whose `pnl_pct` sits on an exact barrier (−2.5×790, −2.0×529, 3.75×187, 3.0×177). **Filter to
+`entry_date IS NOT NULL` before any DSR/edge/hit-rate.** Tools: `tools/label_closed_pick_outcomes.py`;
+report `reports/closed_picks_outcome_basis.json`. The only "LB-positive" symbols were 100% placeholders.
+Real-dated only: 3 strategies n≥10 (forex_rsi2 n97 DSR .9987@N61), 6 symbols n≥10, **0 with LB>0**.
+
+## Operator ranking standard (now required)
+Rank on the **95% LOWER BOUND of net return**, not the point estimate; n≥30 hard floor; per-pick
+MECHANISM/COUNTERPARTY/WHY-SYMBOL/WHY-NOW/KILL; "my scan ranked it" is not a mechanism; empty list is
+respectable. `tools/rank_on_lower_bound.py` (strategy LB) and `tools/rank_picks_lower_bound.py` (symbol LB).
+
+## Contract facts
+Index MF ≈ 0.995–0.998 correlated with SPY and return ~11.6%/yr → same beta, fees decide. SGOV ~3.9%/yr = cash hurdle.
+Contest ledger hashes were unstable due to **CRLF** (not fabrication) — resolved 10/10 at 3eac5c2; use LF-normalised sha.
+Operators: `tools/cross_review_picks.py` flags n=0 / net<cost across agents.
