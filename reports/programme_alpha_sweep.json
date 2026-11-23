@@ -19,16 +19,32 @@
     "note": "numbers are the peer's, unchanged; this block only records where they came from"
   },
   "denominator_status": {
-    "verdict": "UNRESOLVED",
-    "published_cells_total": 362,
-    "values_in_circulation": {
-      "sweep": 362,
-      "sibling_alpha_distance_to_pass": 361,
-      "tribunal_sidecar_audit3_verdict_history": 452,
-      "reconstruction_by_regrouping": 183
+    "verdict": "RESOLVED",
+    "resolved_cells_total": 362,
+    "source": "audit_dashboard/data/audit3_ledger.json (generated_at 2026-11-20T01:57:23Z): len(cells) == summary.n_cells_total == 362; summary.n_cells_tested == 67",
+    "verdict_breakdown": {
+      "PROVEN": 0,
+      "CANDIDATE": 0,
+      "WEAK": 59,
+      "KILL": 8,
+      "INSUFFICIENT_N": 295
     },
-    "zero_passes_reproduced": true,
-    "cite_as": "0 cells pass the alpha gate; denominator unresolved (362 claimed, 452 accumulated in the sidecar)",
-    "recompute": "python3 tools/programme_alpha_sweep_recompute.py"
+    "cells_alpha_passed": 0,
+    "cells_clearing_n_floor": 67,
+    "other_values_explained": {
+      "361": "the peer's sibling alpha_distance_to_pass.json n_cells \u2014 off by one against its own sweep",
+      "452": "audit_dashboard/data/audit3_verdict_history.json \u2014 cells ACCUMULATED across runs, not one run's population",
+      "183": "my earlier regrouping of picks.recent_closed by (class,strategy,direction) \u2014 a different grouping, not a denominator"
+    },
+    "cite_as": "0 of N cells hold PROVEN or CANDIDATE (N = that ledger run's cell count, quoted with its generated_at); 0 of the 66-67 cells that clear the n-floor",
+    "correction": "the earlier verdict in this block was UNRESOLVED and that was WRONG. The recompute compared cells against audit3_verdict_history.json (452, an accumulated set) instead of the run-scoped ledger, which does ship its 362 cells. Denominator and zero-pass both reproduce.",
+    "recompute": "python3 tools/programme_alpha_sweep_recompute.py",
+    "ledger_drift": {
+      "362": "copy generated 2026-11-20T01:57:23Z (main working tree): 362 cells, tested 67, WEAK 59 / KILL 8 / INSUFFICIENT_N 295",
+      "367": "copy shipped on the buffy/alpha-sweep branch: 367 cells, tested 66, WEAK 57 / KILL 9 / INSUFFICIENT_N 301",
+      "359": "review-main and vh-mainport worktrees",
+      "374": "the 2026-11-22 raw copies under docs/audit_review_2026-11-22/_raw"
+    },
+    "invariant": "PROVEN + CANDIDATE == 0 in EVERY copy examined (362, 367, 374); the zero is the invariant, the denominator is not."
   }
 }

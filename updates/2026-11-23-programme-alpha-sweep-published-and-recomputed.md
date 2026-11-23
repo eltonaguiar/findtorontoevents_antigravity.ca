@@ -18,7 +18,7 @@ a source hash for every input, and the numbers untouched.
 | symbols_total | 69 | **69** | yes |
 | symbols_beta_dominant | 69 | **69** | yes |
 | symbols_alpha_passed | 0 | **0** | yes |
-| cells_total | 362 | **452** | **NO** |
+| cells_total | 362 | **362** | **yes** — corrected; see "The denominator, resolved" |
 | cells_alpha_passed | 0 | **0** | yes |
 
 Sources: `audit_dashboard/data/audit3_ledger.json` for symbols;
@@ -34,10 +34,12 @@ Sources: `audit_dashboard/data/audit3_ledger.json` for symbols;
 | **452** | the tribunal's verdict-history sidecar | cells **accumulated across runs** (each carries `last_seen`; 0 with `passes > 0`) |
 | **183** | my reconstruction from `picks.recent_closed` grouped by (class, strategy, direction) | a different grouping entirely |
 
-These are not four opinions about alpha. They are **one undefined denominator**: two artefacts
-that count run-scoped cells disagree by one, the authoritative sidecar counts an accumulating set,
-and my independent grouping gets a fourth number. **None of the four ships its cell list**, so
-"362" cannot be rebuilt by anyone, including its author.
+**CORRECTED 2026-11-23 — the denominator is resolved and this paragraph was wrong.** `362` is
+`len(cells)` of `audit_dashboard/data/audit3_ledger.json` (generated 2026-11-20T01:57:23Z), which
+**does** ship its cell list and **does** reproduce. The `452` above is a different universe: the
+verdict-history sidecar **accumulates** cells across runs. My recompute compared a run-scoped
+denominator to a cumulative set and reported the mismatch as an unrebuildable number — the fault
+was in the reference, not in the artefact. `361` remains an off-by-one in the peer's own sibling file.
 
 ## Verdict
 
@@ -45,9 +47,9 @@ and my independent grouping gets a fourth number. **None of the four ships its c
   candidate pass-rule I tested (`alpha_gate.passed`, `alpha_passed`, `passed`, `alpha_ci_lo > 0`)
   and in the sidecar (`passes: 0` on all 452 entries). The "zero alpha anywhere" conclusion is
   safe.
-- **The denominator does not.** `0/362` should be cited as **"0 cells pass; denominator
-  unresolved (362 claimed, 452 in the accumulated sidecar)"** until the sweep ships its cell list
-  or states which run it counted.
+- **The denominator does too.** `0/362` is legitimate: 0 PROVEN / 0 CANDIDATE out of 362 cells,
+  with 295 `INSUFFICIENT_N`. Quote it with its timestamp (other copies of the same ledger hold 359
+  and 374 cells), and prefer the sharper "0 of the **67** cells that clear the n-floor".
 - The tool exits **3** on a full run, deliberately: the published artefact does **not** fully
   reproduce, and a green exit would hide the denominator problem. The pass-count half of the
   claim exits green on its own (`zero_passes_reproduced: true`).

@@ -1,0 +1,477 @@
+{
+  "schema": "dsr.wiring_matrix.v1",
+  "note": "Deterministic reconstruction. Row sets are wins/losses, not samples.",
+  "peer_claim": {
+    "A": 0.8,
+    "B": 0.994,
+    "C": 1.0,
+    "D": 0.968
+  },
+  "documented_sigma_sr": 0.6488,
+  "implementations": {
+    "alpha_engine.statistical_rigor.deflated_sharpe_ratio": "returns[], n_trials",
+    "alpha_engine.deflated_sharpe.deflated_sharpe_ratio": "observed_sharpe, sr_variance, nb_trials, horizon, skew, kurt",
+    "crypto_ml_edge.validation.deflated_sharpe_ratio": "observed_sharpe, n_trials, n_obs, skew, kurt",
+    "alpha_engine.validation.sharpe_metrics.deflated_sharpe_ratio": "returns Series, risk_free_rate, freq \u2014 NOT WIRED: computes its own n_trials internally, cannot take 658"
+  },
+  "rowsets": {
+    "A": {
+      "spec": {
+        "wins": 40,
+        "losses": 80,
+        "win_pct": 3.0,
+        "loss_pct": -0.6
+      },
+      "n": 120,
+      "mean_pct": 0.6,
+      "sd0": 1.697056,
+      "sd1": 1.704172,
+      "sr": 0.352077,
+      "sr0": 0.353553,
+      "skew": 0.707107,
+      "kurtosis": 1.5,
+      "peer_dsr": 0.8
+    },
+    "B": {
+      "spec": {
+        "wins": 50,
+        "losses": 100,
+        "win_pct": 3.0,
+        "loss_pct": -0.6
+      },
+      "n": 150,
+      "mean_pct": 0.6,
+      "sd0": 1.697056,
+      "sd1": 1.702742,
+      "sr": 0.352373,
+      "sr0": 0.353553,
+      "skew": 0.707107,
+      "kurtosis": 1.5,
+      "peer_dsr": 0.994
+    },
+    "C": {
+      "spec": {
+        "wins": 70,
+        "losses": 140,
+        "win_pct": 4.0,
+        "loss_pct": -0.6
+      },
+      "n": 210,
+      "mean_pct": 0.933333,
+      "sd0": 2.168461,
+      "sd1": 2.173642,
+      "sr": 0.429387,
+      "sr0": 0.430413,
+      "skew": 0.707107,
+      "kurtosis": 1.5,
+      "peer_dsr": 1.0
+    },
+    "D": {
+      "spec": {
+        "wins": 40,
+        "losses": 80,
+        "win_pct": 4.0,
+        "loss_pct": -0.6
+      },
+      "n": 120,
+      "mean_pct": 0.933333,
+      "sd0": 2.168461,
+      "sd1": 2.177553,
+      "sr": 0.428616,
+      "sr0": 0.430413,
+      "skew": 0.707107,
+      "kurtosis": 1.5,
+      "peer_dsr": 0.968
+    }
+  },
+  "grid": {
+    "26": {
+      "A": {
+        "statistical_rigor": 0.967340961321402,
+        "deflated_sharpe(sigma=0.6488)": 0.057439695854456296,
+        "deflated_sharpe(sigma=empirical)": 0.9999999984742197,
+        "crypto_ml(ddof=1)": 1.6078011296187827e-120,
+        "crypto_ml(ddof=0)": 1.789104492056572e-120
+      },
+      "B": {
+        "statistical_rigor": 0.9893304923457678,
+        "deflated_sharpe(sigma=0.6488)": 0.0574819732904922,
+        "deflated_sharpe(sigma=empirical)": 0.9999999985349919,
+        "crypto_ml(ddof=1)": 4.6023505197464187e-150,
+        "crypto_ml(ddof=0)": 5.120959365600614e-150
+      },
+      "C": {
+        "statistical_rigor": 0.9999871560168158,
+        "deflated_sharpe(sigma=0.6488)": 0.06934910850773066,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999999916,
+        "crypto_ml(ddof=1)": 8.439832418147286e-205,
+        "crypto_ml(ddof=0)": 9.677854699839753e-205
+      },
+      "D": {
+        "statistical_rigor": 0.996335489128801,
+        "deflated_sharpe(sigma=0.6488)": 0.06922157935931005,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999999903,
+        "crypto_ml(ddof=1)": 4.727816410223023e-118,
+        "crypto_ml(ddof=0)": 5.4223928412749794e-118
+      }
+    },
+    "67": {
+      "A": {
+        "statistical_rigor": 0.9292829506114435,
+        "deflated_sharpe(sigma=0.6488)": 0.025633444358249723,
+        "deflated_sharpe(sigma=empirical)": 0.9999999862142035,
+        "crypto_ml(ddof=1)": 8.237083486853511e-175,
+        "crypto_ml(ddof=0)": 8.637275105391433e-175
+      },
+      "B": {
+        "statistical_rigor": 0.9731549513109939,
+        "deflated_sharpe(sigma=0.6488)": 0.025655365367717238,
+        "deflated_sharpe(sigma=empirical)": 0.9999999867312025,
+        "crypto_ml(ddof=1)": 6.514128796440181e-218,
+        "crypto_ml(ddof=0)": 6.830431922997757e-218
+      },
+      "C": {
+        "statistical_rigor": 0.9999374894229869,
+        "deflated_sharpe(sigma=0.6488)": 0.03192258192979816,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999998563,
+        "crypto_ml(ddof=1)": 3.648432584858556e-302,
+        "crypto_ml(ddof=0)": 3.878846484436633e-302
+      },
+      "D": {
+        "statistical_rigor": 0.989525682208735,
+        "deflated_sharpe(sigma=0.6488)": 0.03185406694357522,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999998366,
+        "crypto_ml(ddof=1)": 1.0367991724860406e-173,
+        "crypto_ml(ddof=0)": 1.1023539845455582e-173
+      }
+    },
+    "359": {
+      "A": {
+        "statistical_rigor": 0.817349264635252,
+        "deflated_sharpe(sigma=0.6488)": 0.005961737736110297,
+        "deflated_sharpe(sigma=empirical)": 0.9999996997166161,
+        "crypto_ml(ddof=1)": 2.18521589655888e-274,
+        "crypto_ml(ddof=0)": 1.9917591552123733e-274
+      },
+      "B": {
+        "statistical_rigor": 0.9137424031486987,
+        "deflated_sharpe(sigma=0.6488)": 0.005967948036684365,
+        "deflated_sharpe(sigma=empirical)": 0.999999709918855,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "C": {
+        "statistical_rigor": 0.9994639771959837,
+        "deflated_sharpe(sigma=0.6488)": 0.007794001835553517,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999918074,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "D": {
+        "statistical_rigor": 0.9593983812615812,
+        "deflated_sharpe(sigma=0.6488)": 0.007773516976751396,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999907675,
+        "crypto_ml(ddof=1)": 1.5232771079191675e-276,
+        "crypto_ml(ddof=0)": 1.3501404968192076e-276
+      }
+    },
+    "361": {
+      "A": {
+        "statistical_rigor": 0.8168938431806091,
+        "deflated_sharpe(sigma=0.6488)": 0.005932747128265512,
+        "deflated_sharpe(sigma=empirical)": 0.999999697033254,
+        "crypto_ml(ddof=1)": 1.0118827841407148e-274,
+        "crypto_ml(ddof=0)": 9.218249465930209e-275
+      },
+      "B": {
+        "statistical_rigor": 0.9134717237089472,
+        "deflated_sharpe(sigma=0.6488)": 0.005938930645661755,
+        "deflated_sharpe(sigma=empirical)": 0.9999997073234157,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "C": {
+        "statistical_rigor": 0.9994607109364563,
+        "deflated_sharpe(sigma=0.6488)": 0.007757265030913772,
+        "deflated_sharpe(sigma=empirical)": 0.99999999999171,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "D": {
+        "statistical_rigor": 0.9592482650167015,
+        "deflated_sharpe(sigma=0.6488)": 0.007736865176030025,
+        "deflated_sharpe(sigma=empirical)": 0.999999999990658,
+        "crypto_ml(ddof=1)": 6.860952024929617e-277,
+        "crypto_ml(ddof=0)": 6.077034175486907e-277
+      }
+    },
+    "362": {
+      "A": {
+        "statistical_rigor": 0.8166668980873811,
+        "deflated_sharpe(sigma=0.6488)": 0.005918364006206853,
+        "deflated_sharpe(sigma=empirical)": 0.9999996956890379,
+        "crypto_ml(ddof=1)": 6.896560305668243e-275,
+        "crypto_ml(ddof=0)": 6.281149010796885e-275
+      },
+      "B": {
+        "statistical_rigor": 0.9133367593832434,
+        "deflated_sharpe(sigma=0.6488)": 0.005924534228849528,
+        "deflated_sharpe(sigma=empirical)": 0.9999997060232328,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "C": {
+        "statistical_rigor": 0.9994590783367553,
+        "deflated_sharpe(sigma=0.6488)": 0.007739036532930051,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999916611,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "D": {
+        "statistical_rigor": 0.959173378520867,
+        "deflated_sharpe(sigma=0.6488)": 0.007718678878699414,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999906031,
+        "crypto_ml(ddof=1)": 4.612049288142773e-277,
+        "crypto_ml(ddof=0)": 4.083714799367074e-277
+      }
+    },
+    "452": {
+      "A": {
+        "statistical_rigor": 0.7980723163622734,
+        "deflated_sharpe(sigma=0.6488)": 0.004869585737979414,
+        "deflated_sharpe(sigma=empirical)": 0.9999995683408222,
+        "crypto_ml(ddof=1)": 2.8448007123255547e-288,
+        "crypto_ml(ddof=0)": 2.537434504707231e-288
+      },
+      "B": {
+        "statistical_rigor": 0.9021003492573004,
+        "deflated_sharpe(sigma=0.6488)": 0.0048747736560591694,
+        "deflated_sharpe(sigma=empirical)": 0.9999995828167829,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "C": {
+        "statistical_rigor": 0.9993136945546313,
+        "deflated_sharpe(sigma=0.6488)": 0.006405589107761658,
+        "deflated_sharpe(sigma=empirical)": 0.999999999986723,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "D": {
+        "statistical_rigor": 0.9528553418925051,
+        "deflated_sharpe(sigma=0.6488)": 0.00638836113802887,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999850557,
+        "crypto_ml(ddof=1)": 6.207038635235818e-291,
+        "crypto_ml(ddof=0)": 5.348175592544848e-291
+      }
+    },
+    "658": {
+      "A": {
+        "statistical_rigor": 0.7650592991680196,
+        "deflated_sharpe(sigma=0.6488)": 0.003497959338036866,
+        "deflated_sharpe(sigma=empirical)": 0.999999239274503,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "B": {
+        "statistical_rigor": 0.881303680630682,
+        "deflated_sharpe(sigma=0.6488)": 0.0035018180787842993,
+        "deflated_sharpe(sigma=empirical)": 0.9999992642547308,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "C": {
+        "statistical_rigor": 0.9989933587194461,
+        "deflated_sharpe(sigma=0.6488)": 0.004646823007557879,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999716962,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      },
+      "D": {
+        "statistical_rigor": 0.9407510365471927,
+        "deflated_sharpe(sigma=0.6488)": 0.004633871319441039,
+        "deflated_sharpe(sigma=empirical)": 0.9999999999682029,
+        "crypto_ml(ddof=1)": 0.0,
+        "crypto_ml(ddof=0)": 0.0
+      }
+    }
+  },
+  "best_match": {
+    "impl": "statistical_rigor",
+    "n_trials": 359,
+    "max_abs_err": 0.0803,
+    "rmse": 0.0413,
+    "values": {
+      "A": 0.8173,
+      "B": 0.9137,
+      "C": 0.9995,
+      "D": 0.9594
+    }
+  },
+  "ranking": [
+    {
+      "impl": "statistical_rigor",
+      "n_trials": 359,
+      "max_abs_err": 0.0803,
+      "rmse": 0.0413,
+      "values": {
+        "A": 0.8173,
+        "B": 0.9137,
+        "C": 0.9995,
+        "D": 0.9594
+      }
+    },
+    {
+      "impl": "statistical_rigor",
+      "n_trials": 361,
+      "max_abs_err": 0.0805,
+      "rmse": 0.0414,
+      "values": {
+        "A": 0.8169,
+        "B": 0.9135,
+        "C": 0.9995,
+        "D": 0.9592
+      }
+    },
+    {
+      "impl": "statistical_rigor",
+      "n_trials": 362,
+      "max_abs_err": 0.0807,
+      "rmse": 0.0414,
+      "values": {
+        "A": 0.8167,
+        "B": 0.9133,
+        "C": 0.9995,
+        "D": 0.9592
+      }
+    },
+    {
+      "impl": "statistical_rigor",
+      "n_trials": 452,
+      "max_abs_err": 0.0919,
+      "rmse": 0.0466,
+      "values": {
+        "A": 0.7981,
+        "B": 0.9021,
+        "C": 0.9993,
+        "D": 0.9529
+      }
+    },
+    {
+      "impl": "statistical_rigor",
+      "n_trials": 658,
+      "max_abs_err": 0.1127,
+      "rmse": 0.0605,
+      "values": {
+        "A": 0.7651,
+        "B": 0.8813,
+        "C": 0.999,
+        "D": 0.9408
+      }
+    },
+    {
+      "impl": "statistical_rigor",
+      "n_trials": 67,
+      "max_abs_err": 0.1293,
+      "rmse": 0.0664,
+      "values": {
+        "A": 0.9293,
+        "B": 0.9732,
+        "C": 0.9999,
+        "D": 0.9895
+      }
+    },
+    {
+      "impl": "statistical_rigor",
+      "n_trials": 26,
+      "max_abs_err": 0.1673,
+      "rmse": 0.0849,
+      "values": {
+        "A": 0.9673,
+        "B": 0.9893,
+        "C": 1.0,
+        "D": 0.9963
+      }
+    },
+    {
+      "impl": "deflated_sharpe(sigma=empirical)",
+      "n_trials": 26,
+      "max_abs_err": 0.2,
+      "rmse": 0.1013,
+      "values": {
+        "A": 1.0,
+        "B": 1.0,
+        "C": 1.0,
+        "D": 1.0
+      }
+    },
+    {
+      "impl": "deflated_sharpe(sigma=empirical)",
+      "n_trials": 67,
+      "max_abs_err": 0.2,
+      "rmse": 0.1013,
+      "values": {
+        "A": 1.0,
+        "B": 1.0,
+        "C": 1.0,
+        "D": 1.0
+      }
+    },
+    {
+      "impl": "deflated_sharpe(sigma=empirical)",
+      "n_trials": 359,
+      "max_abs_err": 0.2,
+      "rmse": 0.1013,
+      "values": {
+        "A": 1.0,
+        "B": 1.0,
+        "C": 1.0,
+        "D": 1.0
+      }
+    }
+  ],
+  "reproduces_peer": false,
+  "hurdle_at_95": {
+    "statistical_rigor": {
+      "sr_at_N658": 0.4381,
+      "sr_at_N26": 0.3354,
+      "annualised_N658_252": 6.954,
+      "delta_per_trial": 0.000163
+    },
+    "crypto_ml": {
+      "sr_at_N658": 3.3936,
+      "sr_at_N26": 2.2463,
+      "annualised_N658_252": 53.871,
+      "delta_per_trial": 0.001815
+    },
+    "deflated_sharpe": {
+      "sr_at_N658": 3.8494,
+      "sr_at_N26": 2.9469,
+      "annualised_N658_252": 61.107,
+      "delta_per_trial": 0.001428
+    }
+  },
+  "peer_implied_n_trials": {
+    "A": {
+      "peer": 0.8,
+      "implied_n_trials": 442,
+      "err": 0.0
+    },
+    "B": {
+      "peer": 0.994,
+      "implied_n_trials": 16,
+      "err": 0.0001
+    },
+    "C": {
+      "peer": 1.0,
+      "implied_n_trials": 2,
+      "err": 0.0
+    },
+    "D": {
+      "peer": 0.968,
+      "implied_n_trials": 254,
+      "err": 0.0
+    }
+  },
+  "conclusion": "no shipped implementation reproduces the peer vector at any n_trials; worse, the four peer values imply mutually inconsistent n_trials under statistical_rigor (A~359, B~26), so the published table cannot come from a single wiring. The 658 floor can only be expressed through alpha_engine.deflated_sharpe.deflated_sharpe_ratio, the sole implementation that accepts sr_variance (documented sigma_sr=0.6488)."
+}

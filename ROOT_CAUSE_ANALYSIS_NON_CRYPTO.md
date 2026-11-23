@@ -149,7 +149,7 @@ Phase 2 created `etf_scanner.py`, `bond_scanner.py`, and CI workflow. All on mai
 
 `kimi_signal_tracking/default` on FOREX pairs produced catastrophic results:
 - **n=158 resolved, WR 30.4%, avg -6.17%/trade, total -974.66%**
-- `AUDJPY=X`: 0W/18L = 0.0% WR, -208.60% PnL (deterministic-loser pattern)
+- `AUDJPY=X`: 0W/18L = 0.0% WR, -208.60% PnL — **one 18-trade slice of `kimi_signal_tracking`, not a property of AUDJPY** (corrected 2026-11-23: three disjoint AUDJPY populations — 34 audit3 cells with no trade ids, 24 riseoftheclaw picks at −2.447 %, 32 dashboard picks at **+0.494 %** — with **zero** shared pick ids; see `reports/audjpy_population_reconcile_2026-11-23.json`). The deterministic-loser label is withdrawn: a sign that flips between disjoint populations and shares no rows is unidentified, not proven.
 - `NZDJPY=X`: 1W/16L = 5.9% WR, -204.47% PnL
 - **Accounts for 98% of the entire FOREX asset-class bleed** (-816% of -833%)
 
