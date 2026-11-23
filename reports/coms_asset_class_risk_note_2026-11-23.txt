@@ -1,0 +1,71 @@
+ASSET-CLASS RISK + WHERE THE PROVABLE EDGE IS  (copilot, 2026-11-23)
+
+A) RISK, MEASURED not asserted. 79 symbols, 5y daily bars 2021-11..2026-11,
+annualised vol / max drawdown / annual return / Sharpe, medians per class:
+
+  CRYPTO             n=15  vol 68.5%  MDD -87.8%  ret -14.9%/yr  SR -0.21
+  EQUITY             n=20  vol 34.7%  MDD -52.0%  ret +10.5%/yr  SR  0.29
+  COMMODITY/FUTURES  n=10  vol 24.6%  MDD -41.1%  ret  +5.7%/yr  SR  0.22
+  ETF                n=24  vol 16.2%  MDD -25.9%  ret  +4.4%/yr  SR  0.44
+  FOREX              n=10  vol  8.8%  MDD -16.1%  ret  -0.2%/yr  SR -0.03
+
+MOST RISKY = CRYPTO, on both axes. Highest vol (68.5%), worst drawdown (-87.8%),
+negative 5y return, worst risk-adjusted. AND its measurement is broken: 1864
+duplicate signal-ts groups, EXPIRED->WON mislabels, so the "78.9% win rate" is
+disputed against a raw 39% WR / PF 0.37. High vol + untrustworthy numbers is the
+worst combination there is.
+
+LEAST RISKY by volatility = FOREX (8.8%) but it earns nothing (SR -0.03). Low risk
+with no return is not safety, it is just slow. The real least-risk asset is T-bills
+at the 4.32% hurdle - that is the bar anything must beat.
+
+B) HIGHEST PROFIT POTENTIAL. Two different answers and the distinction matters:
+  - Highest RAW return = EQUITY (+10.5%/yr) but you pay 52% drawdown for it.
+  - Highest RISK-ADJUSTED = ETF (SR 0.44) with the shallowest drawdown (-25.9%)
+    of any return-generating class, AND the lowest cost.
+
+ETF wins on all four things that decide whether an edge is real: best Sharpe,
+shallowest drawdown, lowest transaction cost, deepest history.
+
+C) THE COST FACT THAT CHANGES THE RANKING. We measured EQUITY cost today: n=191
+names, 238,810 daily + 356,271 minute bars -> round trip 1-5 bp, participation
+0.008% of ADV. The repo had been using TWO constants 5x apart (5.0 bp vs 25.0 bp);
+the 25 bp one overstated cost by ~5x. The old Questrade model also charged 175 bp
+per trade (1.75% FX applied to every trade) which is simply wrong: buy and sell are
+$0 commission, ECN is $0 on smart-routed orders, FX is 1.5% and only on conversion.
+So the cheapest place to actually trade is ETFs, at ~1-2 bp.
+
+D) WHY WE HAVE NOT "PROVEN" ANYTHING YET - the binding constraint is NOT signal
+discovery, it is MULTIPLE-TESTING DEBT. 146 pre-registered hypotheses, 0 at PROVEN.
+0/55 strategies survive deflation at SR* 1.014, sigma_SR 0.439. Every extra backtest
+raises the bar for the next one. We just killed HML as a live demonstration: 186
+names, 44 monthly rebalances, GROSS +0.11%/yr, net +0.02%/yr vs a 4.32% hurdle. It
+did not die of cost - it died because the gross premium is absent.
+
+E) WHAT I WOULD ACTUALLY FUND, AND HOW TO PROVE IT. Stop mining history. Pick ONE
+family, pre-register it, and prove it FORWARD so its trial count stays at 1 and the
+deflation bar stays near nominal:
+
+  ETF TREND / TACTICAL ALLOCATION
+  - universe: the 24 liquid ETFs we already hold (SPY QQQ IWM EFA EEM TLT IEF LQD
+    HYG GLD XLE XLF XLK XLV ...)
+  - signal: 12-month absolute momentum per ETF, monthly rebalance, hold top-k
+    else cash
+  - costs: MEASURED (1-2 bp + $0 commission), not assumed
+  - no short leg -> zero borrow (this was a real blocker on HML)
+  - no FX if held in a USD account or CAD-listed equivalents
+  - kill rule, frozen in advance: annualised net <= 4.32% OR one-sided 95% upper
+    bound <= 4.32%. Same hurdle as everything else. No post-hoc rescue.
+  - PROOF = forward clock only. Start it, publish the monthly numbers, do not
+    backtest it again.
+
+Why this and not another crypto scan: low turnover, no borrow, no FX, no
+single-name blowup risk, deep history, and cost measured at ~1-2 bp so a small gross
+edge is not instantly eaten. If trend-following on a diversified ETF basket cannot
+beat 4.32% net of 1-2 bp, then nothing we can run at this size can, and we should
+hold cash - which is itself a real, provable answer worth having.
+
+Artifacts: reports/equity_cost_hml.json, reports/hml_result.json,
+updates/2026-11-23-equity-cost-measured-questrade.md,
+updates/2026-11-23-hml-value-test-killed.md
+Zero capital sanctioned. Not investment advice.
