@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Leaderboard | Antigravity</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #1a1a3a;
+            --border: #2a2a4a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #eab308;
+            --blue: #3b82f6;
+            --gold: #f59e0b;
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #12122a 0%, #1e1e3f 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--gold), #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            color: var(--text-dim);
+        }
+
+        .tab:hover {
+            color: var(--text);
+        }
+
+        .tab.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .rank {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .rank-1 {
+            color: var(--gold);
+        }
+
+        .rank-2 {
+            color: #c0c0c0;
+        }
+
+        .rank-3 {
+            color: #cd7f32;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-elite {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--green);
+        }
+
+        .badge-excellent {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--blue);
+        }
+
+        .badge-good {
+            background: rgba(234, 179, 8, 0.15);
+            color: var(--yellow);
+        }
+
+        .metric {
+            font-weight: 600;
+        }
+
+        .metric.positive {
+            color: var(--green);
+        }
+
+        .metric.negative {
+            color: var(--red);
+        }
+
+        .system-tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--accent);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-dim);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🏆 Algorithm Leaderboard</h1>
+        <p>Performance rankings across all prediction systems</p>
+        <div style="margin-top:0.75rem;display:flex;gap:1rem;flex-wrap:wrap;font-size:0.8rem;">
+            <a href="/investments/goldmines/antigravity/" style="color:#f59e0b;text-decoration:none;">← Back to Dashboard</a>
+            <span style="color:var(--text-dim);">|</span>
+            <span style="color:var(--text-dim);">Data sources:</span>
+            <a href="/findstocks/portfolio2/dashboard.html" target="_blank" style="color:#6366f1;text-decoration:none;">Stock Portfolio</a>
+            <a href="/findstocks/portfolio2/picks.html" target="_blank" style="color:#6366f1;text-decoration:none;">Quick Picks</a>
+            <a href="/findstocks/portfolio2/stats/index.html" target="_blank" style="color:#6366f1;text-decoration:none;">Portfolio Stats</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="leaderboard">Leaderboard</div>
+            <div class="tab" data-tab="hidden-winners">Hidden Winners</div>
+            <div class="tab" data-tab="systems">By System</div>
+        </div>
+
+        <!-- Leaderboard Tab -->
+        <div class="tab-content active" id="leaderboard">
+            <div id="leaderboard-loading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 1rem;">Loading algorithm rankings...</p>
+            </div>
+            <div id="leaderboard-content" style="display: none;">
+                <div class="stats-grid" id="leaderboard-stats"></div>
+                <div class="leaderboard-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Algorithm</th>
+                                <th>System</th>
+                                <th>Win Rate</th>
+                                <th>Avg P&L</th>
+                                <th>Trades (W/L)</th>
+                                <th>Last Trade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden Winners Tab -->
+        <div class="tab-content" id="hidden-winners">
+            <div id="winners-loading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 1rem;">Finding hidden winners...</p>
+            </div>
+            <div id="winners-content" style="display: none;">
+                <p style="color: var(--text-dim); margin-bottom: 1.5rem;">
+                    Elite performers with Sharpe ratio ≥ 1.0 and minimum 30 trades
+                </p>
+                <div class="leaderboard-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rating</th>
+                                <th>Algorithm</th>
+                                <th>System</th>
+                                <th>Win Rate</th>
+                                <th>Total P&L</th>
+                                <th>Trades</th>
+                            </tr>
+                        </thead>
+                        <tbody id="winners-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Systems Tab -->
+        <div class="tab-content" id="systems">
+            <div id="systems-loading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 1rem;">Loading system performance...</p>
+            </div>
+            <div id="systems-content" style="display: none;">
+                <div class="leaderboard-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>System</th>
+                                <th>Algorithms</th>
+                                <th>Total Trades</th>
+                                <th>Win Rate</th>
+                                <th>Avg P&L</th>
+                                <th>Last Trade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="systems-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+                document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        var API_BASE = '/investments/goldmines/antigravity/api/unified_predictions.php';
+
+        function fmtNum(v, dec) { return parseFloat(v || 0).toFixed(dec !== undefined ? dec : 2); }
+        function fmtDate(d) { try { return new Date(d).toLocaleDateString(); } catch(e) { return d || '--'; } }
+
+        // Load leaderboard
+        function loadLeaderboard() {
+            fetch(API_BASE + '?action=leaderboard&min_trades=1')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok) throw new Error(data.error || 'API error');
+                    var list = data.leaderboard || [];
+                    if (list.length === 0) {
+                        document.getElementById('leaderboard-loading').innerHTML = '<p style="color:var(--text-dim);">No algorithms with resolved trades yet. Data populates as predictions are resolved.</p>';
+                        return;
+                    }
+                    var totalTrades = 0, totalWR = 0;
+                    for (var i = 0; i < list.length; i++) {
+                        totalTrades += parseInt(list[i].total_trades || 0);
+                        totalWR += parseFloat(list[i].win_rate || list[i].win_rate_pct || 0);
+                    }
+                    var avgWR = list.length > 0 ? (totalWR / list.length) : 0;
+                    document.getElementById('leaderboard-stats').innerHTML =
+                        '<div class="stat-card"><div class="stat-label">Total Algorithms</div><div class="stat-value">' + data.count + '</div></div>' +
+                        '<div class="stat-card"><div class="stat-label">Avg Win Rate</div><div class="stat-value">' + avgWR.toFixed(1) + '%</div></div>' +
+                        '<div class="stat-card"><div class="stat-label">Total Trades</div><div class="stat-value">' + totalTrades.toLocaleString() + '</div></div>';
+                    var html = '';
+                    for (var j = 0; j < list.length; j++) {
+                        var a = list[j];
+                        var wr = parseFloat(a.win_rate || a.win_rate_pct || 0);
+                        var pnl = parseFloat(a.avg_pnl || a.avg_pnl_pct || 0);
+                        var rankCls = j === 0 ? 'rank-1' : j === 1 ? 'rank-2' : j === 2 ? 'rank-3' : '';
+                        html += '<tr>'
+                            + '<td class="rank ' + rankCls + '">#' + (j + 1) + '</td>'
+                            + '<td><strong>' + (a.algorithm || '--') + '</strong></td>'
+                            + '<td><span class="system-tag">' + (a.system || 'stocks') + '</span></td>'
+                            + '<td class="metric ' + (wr >= 50 ? 'positive' : 'negative') + '">' + wr.toFixed(1) + '%</td>'
+                            + '<td class="metric ' + (pnl >= 0 ? 'positive' : 'negative') + '">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</td>'
+                            + '<td>' + (a.total_trades || 0) + ' (' + (a.wins || 0) + 'W/' + (a.losses || 0) + 'L)</td>'
+                            + '<td style="color:var(--text-dim);font-size:0.85rem;">' + fmtDate(a.last_trade_date) + '</td>'
+                            + '</tr>';
+                    }
+                    document.getElementById('leaderboard-body').innerHTML = html;
+                    document.getElementById('leaderboard-loading').style.display = 'none';
+                    document.getElementById('leaderboard-content').style.display = 'block';
+                })
+                .catch(function(err) {
+                    document.getElementById('leaderboard-loading').innerHTML = '<p style="color:var(--red);">Error: ' + err.message + '</p>';
+                });
+        }
+
+        // Load hidden winners
+        function loadHiddenWinners() {
+            fetch(API_BASE + '?action=hidden_winners')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok) throw new Error(data.error || 'API error');
+                    var list = data.hidden_winners || [];
+                    if (list.length === 0) {
+                        document.getElementById('winners-loading').innerHTML = '<p style="color:var(--text-dim);">No hidden winners found yet. Algorithms need 30+ trades with win rate >= 55% to qualify.</p>';
+                        return;
+                    }
+                    var html = '';
+                    for (var i = 0; i < list.length; i++) {
+                        var a = list[i];
+                        var wr = parseFloat(a.win_rate || a.win_rate_pct || 0);
+                        var badge = wr >= 65 ? 'badge-elite' : wr >= 55 ? 'badge-excellent' : 'badge-good';
+                        var label = wr >= 65 ? 'Elite' : wr >= 55 ? 'Excellent' : 'Good';
+                        html += '<tr>'
+                            + '<td><span class="badge ' + badge + '">' + (a.rating || label) + '</span></td>'
+                            + '<td><strong>' + (a.algorithm || '--') + '</strong></td>'
+                            + '<td><span class="system-tag">' + (a.system || 'stocks') + '</span></td>'
+                            + '<td class="metric positive">' + wr.toFixed(1) + '%</td>'
+                            + '<td class="metric ' + (parseFloat(a.total_pnl || a.total_pnl_pct || 0) >= 0 ? 'positive' : 'negative') + '">' + fmtNum(a.total_pnl || a.total_pnl_pct, 2) + '%</td>'
+                            + '<td>' + (a.total_trades || 0) + '</td>'
+                            + '</tr>';
+                    }
+                    document.getElementById('winners-body').innerHTML = html;
+                    document.getElementById('winners-loading').style.display = 'none';
+                    document.getElementById('winners-content').style.display = 'block';
+                })
+                .catch(function(err) {
+                    document.getElementById('winners-loading').innerHTML = '<p style="color:var(--red);">Error: ' + err.message + '</p>';
+                });
+        }
+
+        // Load systems
+        function loadSystems() {
+            fetch(API_BASE + '?action=system_summary')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.ok) throw new Error(data.error || 'API error');
+                    var list = data.systems || [];
+                    if (list.length === 0) {
+                        document.getElementById('systems-loading').innerHTML = '<p style="color:var(--text-dim);">No system data yet. Predictions are resolved as market data comes in.</p>';
+                        return;
+                    }
+                    var html = '';
+                    for (var i = 0; i < list.length; i++) {
+                        var s = list[i];
+                        var wr = parseFloat(s.win_rate || s.win_rate_pct || 0);
+                        var pnl = parseFloat(s.avg_pnl || s.total_pnl_pct || 0);
+                        var daysAgo = s.last_trade_date ? Math.floor((Date.now() - new Date(s.last_trade_date).getTime()) / 86400000) : '--';
+                        html += '<tr>'
+                            + '<td><strong>' + (s.system || '--') + '</strong></td>'
+                            + '<td>' + (s.algorithms_count || '--') + '</td>'
+                            + '<td>' + (s.total_trades || 0) + '</td>'
+                            + '<td class="metric ' + (wr >= 50 ? 'positive' : 'negative') + '">' + wr.toFixed(1) + '%</td>'
+                            + '<td class="metric ' + (pnl >= 0 ? 'positive' : 'negative') + '">' + (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + '%</td>'
+                            + '<td style="color:var(--text-dim);font-size:0.85rem;">' + fmtDate(s.last_trade_date) + ' <span style="opacity:0.7;">(' + daysAgo + 'd ago)</span></td>'
+                            + '</tr>';
+                    }
+                    document.getElementById('systems-body').innerHTML = html;
+                    document.getElementById('systems-loading').style.display = 'none';
+                    document.getElementById('systems-content').style.display = 'block';
+                })
+                .catch(function(err) {
+                    document.getElementById('systems-loading').innerHTML = '<p style="color:var(--red);">Error: ' + err.message + '</p>';
+                });
+        }
+
+        // Load all data
+        loadLeaderboard();
+        loadHiddenWinners();
+        loadSystems();
+
+        // Auto-refresh every 5 minutes
+        setInterval(function() { loadLeaderboard(); loadHiddenWinners(); loadSystems(); }, 300000);
+    </script>
+</body>
+
+</html>

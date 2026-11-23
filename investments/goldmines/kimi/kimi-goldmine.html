@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIMI Goldmine | Antigravity Investment Hub</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --accent-gold: #ffd700;
+            --accent-green: #00c853;
+            --accent-red: #ff1744;
+            --accent-blue: #00b0ff;
+            --accent-purple: #e040fb;
+            --border-color: #2a2a3a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-gold), #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tagline {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .header-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .alert-badge {
+            background: var(--accent-red);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .last-updated {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 2rem;
+            gap: 0.5rem;
+        }
+        
+        .nav-tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .nav-tab:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-tab.active {
+            color: var(--accent-gold);
+            border-bottom-color: var(--accent-gold);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+        
+        /* Section Grid */
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .section-action {
+            font-size: 0.75rem;
+            color: var(--accent-blue);
+            cursor: pointer;
+        }
+        
+        .section-content {
+            padding: 1rem;
+        }
+        
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            text-align: left;
+            padding: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table td {
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-gold {
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--accent-gold);
+        }
+        
+        .badge-green {
+            background: rgba(0, 200, 83, 0.2);
+            color: var(--accent-green);
+        }
+        
+        .badge-red {
+            background: rgba(255, 23, 68, 0.2);
+            color: var(--accent-red);
+        }
+        
+        .badge-blue {
+            background: rgba(0, 176, 255, 0.2);
+            color: var(--accent-blue);
+        }
+        
+        .badge-purple {
+            background: rgba(224, 64, 251, 0.2);
+            color: var(--accent-purple);
+        }
+        
+        /* Return indicators */
+        .return-positive {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+        
+        .return-negative {
+            color: var(--accent-red);
+            font-weight: 600;
+        }
+        
+        /* Source type icons */
+        .type-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .type-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .type-stock { background: var(--accent-blue); }
+        .type-crypto { background: var(--accent-purple); }
+        .type-meme { background: #ff6d00; }
+        .type-forex { background: #00bcd4; }
+        .type-fund { background: #8bc34a; }
+        .type-sports { background: #ff5722; }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                overflow-x: auto;
+                padding: 0 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+        }
+        
+        /* Goldmine highlight */
+        .goldmine-row {
+            background: rgba(255, 215, 0, 0.05) !important;
+        }
+        
+        /* Winner categories */
+        .winner-mega { color: #ff6d00; font-weight: 700; }
+        .winner-gem { color: var(--accent-purple); }
+        .winner-quick { color: var(--accent-green); }
+        
+        /* Refresh button */
+        .refresh-btn {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .refresh-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">🏆 KIMI GOLDMINE</div>
+            <div class="tagline">Hidden Winners Discovery System</div>
+        </div>
+        <div class="header-right">
+            <span class="last-updated" id="lastUpdated">Loading...</span>
+            <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh</button>
+            <div class="alert-badge" id="alertBadge" style="display:none" onclick="showAlerts()">0</div>
+        </div>
+    </header>
+    
+    <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button class="nav-tab" onclick="switchTab('picks')">🎯 All Picks</button>
+        <button class="nav-tab" onclick="switchTab('winners')">🏆 Winners</button>
+        <button class="nav-tab" onclick="switchTab('goldmines')">⭐ Goldmines</button>
+        <button class="nav-tab" onclick="switchTab('sources')">📡 Sources</button>
+        <button class="nav-tab" onclick="switchTab('performance')">📈 Performance</button>
+        <button class="nav-tab" onclick="switchTab('alerts')">🔔 Alerts</button>
+    </nav>
+    
+    <main class="main-content" id="mainContent">
+        <div class="loading">Loading goldmine data...</div>
+    </main>
+
+    <script>
+        const API_BASE = './';
+        let currentTab = 'dashboard';
+        let dashboardData = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+        
+        // Tab switching
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            switch(tab) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'picks':
+                    loadPicks();
+                    break;
+                case 'winners':
+                    loadWinners();
+                    break;
+                case 'goldmines':
+                    loadGoldmines();
+                    break;
+                case 'sources':
+                    loadSources();
+                    break;
+                case 'performance':
+                    loadPerformance();
+                    break;
+                case 'alerts':
+                    loadAlerts();
+                    break;
+            }
+        }
+        
+        // Refresh all data
+        function refreshAll() {
+            const btn = document.querySelector('.refresh-btn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Loading...';
+            
+            // Re-trigger collection (would need admin key in production)
+            loadDashboard().then(() => {
+                btn.disabled = false;
+                btn.textContent = '🔄 Refresh';
+                document.getElementById('lastUpdated').textContent = 
+                    'Updated: ' + new Date().toLocaleString();
+            });
+        }
+        
+        // Load Dashboard
+        async function loadDashboard() {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading">Loading dashboard...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + 'kimi_goldmine_api.php?action=dashboard');
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    container.innerHTML = '<div class="empty-state">Error loading dashboard</div>';
+                    return;
+                }
+                
+                dashboardData = data.dashboard;
+                renderDashboard(data.dashboard);
+                
+                // Update alert badge
+                const unreadAlerts = data.dashboard.unread_alerts?.length || 0;
+                const badge = document.getElementById('alertBadge');
+                if (unreadAlerts > 0) {
+                    badge.textContent = unreadAlerts;
+                    badge.style.display = 'inline-block';
+                }
+                
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        function renderDashboard(data) {
+            const container = document.getElementById('mainContent');
+            
+            const stats = data.stats || {};
+            const byType = data.performance_by_type || {};
+            const topSources = data.top_sources || [];
+            const winners = data.recent_winners || [];
+            const recent = data.recent_picks || [];
+            const goldmines = data.goldmines || [];
+            
+            container.innerHTML = `
+                <!-- Stats Row -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total_picks_tracked?.toLocaleString() || 0}</div>
+                        <div class="stat-label">Total Picks Tracked</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.active_picks || 0}</div>
+                        <div class="stat-label">Active Picks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.total_winners || 0}</div>
+                        <div class="stat-label">Winners Discovered</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${stats.active_goldmines || 0}</div>
+                        <div class="stat-label">Active Goldmines</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">+${stats.new_picks_today || 0}</div>
+                        <div class="stat-label">New Today</div>
+                    </div>
+                </div>
+                
+                <!-- Main Grid -->
+                <div class="section-grid">
+                    <!-- Performance by Asset Type -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <span class="section-title">📊 Performance by Type (30d)</span>
+                        </div>
+                        <div class="section-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Picks</th>
+                                        <th>Win Rate</th>
+                                        <th>Avg Return</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${Object.entries(byType).map(([type, stats]) => `
+                                        <tr>
+                                            <td><span class="type-icon"><span class="type-dot type-${type}"></span>${type.replace('_', ' ')}</span></td>
+                                            <td>${stats.picks}</td>
+                                            <td>${stats.win_rate}%</td>
+                                            <td class="${stats.avg_return >= 0 ? 'return-positive' : 'return-negative'}">${stats.avg_return >= 0 ? '+' : ''}${stats.avg_return}%</td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="4" class="empty-state">No data yet</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Performing Sources -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <span class="section-title">🏆 Top Sources (30d)</span>
+                            <span class="section-action" onclick="switchTab('sources')">View All →</span>
+                        </div>
+                        <div class="section-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Algorithm</th>
+                                        <th>Picks</th>
+                                        <th>Win Rate</th>
+                                        <th>Avg Return</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${topSources.map(src => `
+                                        <tr>
+                                            <td>${src.name}</td>
+                                            <td>${src.picks}</td>
+                                            <td>${src.win_rate}%</td>
+                                            <td class="${src.avg_return >= 0 ? 'return-positive' : 'return-negative'}">${src.avg_return >= 0 ? '+' : ''}${src.avg_return}%</td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="4" class="empty-state">No data yet</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Winners -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <span class="section-title">💎 Recent Winners</span>
+                            <span class="section-action" onclick="switchTab('winners')">View All →</span>
+                        </div>
+                        <div class="section-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Algorithm</th>
+                                        <th>Return</th>
+                                        <th>Category</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${winners.map(w => `
+                                        <tr>
+                                            <td><strong>${w.symbol}</strong></td>
+                                            <td>${w.algorithm}</td>
+                                            <td class="return-positive">+${w.return}%</td>
+                                            <td><span class="winner-${w.category}">${w.category.replace('_', ' ')}</span></td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="4" class="empty-state">No winners yet</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Goldmines -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <span class="section-title">⭐ Active Goldmines</span>
+                        </div>
+                        <div class="section-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Type</th>
+                                        <th>Recent Return</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${goldmines.map(g => `
+                                        <tr class="goldmine-row">
+                                            <td><strong>${g.name}</strong></td>
+                                            <td>${g.type}</td>
+                                            <td class="${g.recent_return >= 0 ? 'return-positive' : 'return-negative'}">${g.recent_return >= 0 ? '+' : ''}${g.recent_return}%</td>
+                                            <td><span class="badge badge-gold">⭐ GOLDMINE</span></td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="4" class="empty-state">No goldmines yet - need more data</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Picks -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <span class="section-title">🎯 Recent Active Picks</span>
+                        </div>
+                        <div class="section-content">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Algorithm</th>
+                                        <th>Confidence</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${recent.map(p => `
+                                        <tr>
+                                            <td>${p.symbol}</td>
+                                            <td>${p.algorithm}</td>
+                                            <td>${p.confidence}/100</td>
+                                            <td><span class="badge badge-blue">${p.status}</span></td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="4" class="empty-state">No active picks</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Load Picks
+        async function loadPicks() {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading">Loading picks...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + 'kimi_goldmine_api.php?action=picks&limit=50');
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    container.innerHTML = '<div class="empty-state">Error loading picks</div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="section-card" style="grid-column: 1 / -1;">
+                        <div class="section-header">
+                            <span class="section-title">🎯 All Tracked Picks</span>
+                            <span class="section-action">Total: ${data.total}</span>
+                        </div>
+                        <div class="section-content" style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Type</th>
+                                        <th>Source</th>
+                                        <th>Algorithm</th>
+                                        <th>Entry</th>
+                                        <th>Current</th>
+                                        <th>Return</th>
+                                        <th>Target</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.picks.map(p => `
+                                        <tr onclick="showPickDetail('${p.uuid}')" style="cursor: pointer;">
+                                            <td><strong>${p.symbol}</strong></td>
+                                            <td><span class="type-icon"><span class="type-dot type-${p.type}"></span>${p.type.replace('_', ' ')}</span></td>
+                                            <td>${p.source}</td>
+                                            <td>${p.algorithm}</td>
+                                            <td>$${p.entry?.toFixed ? p.entry.toFixed(2) : p.entry}</td>
+                                            <td>${p.current ? '$' + p.current.toFixed(2) : '-'}</td>
+                                            <td class="${p.return > 0 ? 'return-positive' : p.return < 0 ? 'return-negative' : ''}">${p.return ? (p.return > 0 ? '+' : '') + p.return + '%' : '-'}</td>
+                                            <td>${p.target ? '+' + p.target + '%' : '-'}</td>
+                                            <td><span class="badge badge-${p.status === 'target_hit' ? 'green' : p.status === 'stop_hit' ? 'red' : 'blue'}">${p.status}</span></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Load Winners
+        async function loadWinners() {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading">Loading winners...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + 'kimi_goldmine_api.php?action=winners&limit=30');
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    container.innerHTML = '<div class="empty-state">Error loading winners</div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="section-card" style="grid-column: 1 / -1;">
+                        <div class="section-header">
+                            <span class="section-title">🏆 Discovered Winners</span>
+                        </div>
+                        <div class="section-content" style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Algorithm</th>
+                                        <th>Entry</th>
+                                        <th>Exit</th>
+                                        <th>Return</th>
+                                        <th>Days</th>
+                                        <th>Category</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.winners.map(w => `
+                                        <tr>
+                                            <td><strong>${w.symbol}</strong></td>
+                                            <td>${w.name || '-'}</td>
+                                            <td>${w.type}</td>
+                                            <td>${w.algorithm}</td>
+                                            <td>$${w.entry?.toFixed(4)}</td>
+                                            <td>$${w.exit?.toFixed(4)}</td>
+                                            <td class="return-positive">+${w.return}%</td>
+                                            <td>${w.days_held}</td>
+                                            <td><span class="winner-${w.category}">${w.category.replace('_', ' ')}</span></td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="9" class="empty-state">No winners discovered yet. Keep tracking!</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Load Goldmines
+        async function loadGoldmines() {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading">Loading goldmines...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + 'kimi_goldmine_api.php?action=goldmines');
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    container.innerHTML = '<div class="empty-state">Error loading goldmines</div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div style="max-width: 1000px; margin: 0 auto;">
+                        <div class="section-card">
+                            <div class="section-header">
+                                <span class="section-title">⭐ Goldmine-Worthy Sources</span>
+                            </div>
+                            <div class="section-content">
+                                <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+                                    These sources have demonstrated exceptional performance and meet our goldmine criteria 
+                                    (high win rate, strong returns, sufficient sample size).
+                                </p>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Source</th>
+                                            <th>Type</th>
+                                            <th>Strategy</th>
+                                            <th>Risk</th>
+                                            <th>Total Picks</th>
+                                            <th>Recent Return</th>
+                                            <th>Achieved</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.goldmines.map(g => `
+                                            <tr class="goldmine-row">
+                                                <td><strong>${g.name}</strong></td>
+                                                <td>${g.type}</td>
+                                                <td>${g.strategy}</td>
+                                                <td><span class="badge badge-${g.risk === 'low' ? 'green' : g.risk === 'high' ? 'red' : 'blue'}">${g.risk}</span></td>
+                                                <td>${g.total_picks}</td>
+                                                <td class="${g.recent_return >= 0 ? 'return-positive' : 'return-negative'}">${g.recent_return >= 0 ? '+' : ''}${g.recent_return}%</td>
+                                                <td>${g.achieved_date || 'Recently'}</td>
+                                            </tr>
+                                        `).join('') || '<tr><td colspan="7" class="empty-state">No goldmines yet. Systems need more data to qualify.</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="section-card" style="margin-top: 1.5rem;">
+                            <div class="section-header">
+                                <span class="section-title">📋 Goldmine Criteria</span>
+                            </div>
+                            <div class="section-content">
+                                <ul style="color: var(--text-secondary); line-height: 2;">
+                                    <li>✅ Minimum 10 resolved picks (statistical significance)</li>
+                                    <li>✅ Win rate of 55% or higher</li>
+                                    <li>✅ Average return of 10% or higher</li>
+                                    <li>✅ Sharpe ratio of 1.0 or higher (risk-adjusted returns)</li>
+                                    <li>✅ Consistent performance across market conditions</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Load Sources
+        async function loadSources() {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading">Loading sources...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + 'kimi_goldmine_api.php?action=sources');
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    container.innerHTML = '<div class="empty-state">Error loading sources</div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="section-card" style="grid-column: 1 / -1;">
+                        <div class="section-header">
+                            <span class="section-title">📡 All Prediction Sources</span>
+                        </div>
+                        <div class="section-content" style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Algorithm</th>
+                                        <th>Type</th>
+                                        <th>Strategy</th>
+                                        <th>Timeframe</th>
+                                        <th>Risk</th>
+                                        <th>Status</th>
+                                        <th>Total Picks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.sources.map(s => `
+                                        <tr onclick="showSourceDetail('${s.slug}')" style="cursor: pointer;">
+                                            <td><strong>${s.name}</strong></td>
+                                            <td>${s.algorithm}</td>
+                                            <td><span class="type-icon"><span class="type-dot type-${s.type}"></span>${s.type.replace('_', ' ')}</span></td>
+                                            <td>${s.strategy}</td>
+                                            <td>${s.timeframe}</td>
+                                            <td><span class="badge badge-${s.risk === 'low' ? 'green' : s.risk === 'high' || s.risk === 'very_high' ? 'red' : 'blue'}">${s.risk}</span></td>
+                                            <td>${s.is_goldmine ? '⭐ GOLDMINE' : s.is_active ? '✅ Active' : '⏸️ Paused'}</td>
+                                            <td>${s.total_picks}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Load Performance
+        async function loadPerformance() {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading">Loading performance metrics...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + 'kimi_goldmine_api.php?action=performance&period=monthly');
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    container.innerHTML = '<div class="empty-state">Error loading performance</div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="section-card" style="grid-column: 1 / -1;">
+                        <div class="section-header">
+                            <span class="section-title">📈 Monthly Performance</span>
+                        </div>
+                        <div class="section-content" style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Source</th>
+                                        <th>Algorithm</th>
+                                        <th>Type</th>
+                                        <th>Picks</th>
+                                        <th>Win Rate</th>
+                                        <th>Avg Return</th>
+                                        <th>Sharpe</th>
+                                        <th>Profit Factor</th>
+                                        <th>Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.performance.map(p => `
+                                        <tr class="${p.is_goldmine ? 'goldmine-row' : ''}">
+                                            <td>${p.source}</td>
+                                            <td>${p.algorithm}</td>
+                                            <td>${p.type}</td>
+                                            <td>${p.total_picks}</td>
+                                            <td>${p.win_rate}%</td>
+                                            <td class="${p.avg_return >= 0 ? 'return-positive' : 'return-negative'}">${p.avg_return >= 0 ? '+' : ''}${p.avg_return}%</td>
+                                            <td>${p.sharpe || '-'}</td>
+                                            <td>${p.profit_factor || '-'}</td>
+                                            <td>${p.is_goldmine ? '⭐ ' + p.score : p.score || '-'}</td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="9" class="empty-state">No performance data yet</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Load Alerts
+        async function loadAlerts() {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '<div class="loading">Loading alerts...</div>';
+            
+            try {
+                const response = await fetch(API_BASE + 'kimi_goldmine_api.php?action=alerts');
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    container.innerHTML = '<div class="empty-state">Error loading alerts</div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="section-card" style="grid-column: 1 / -1; max-width: 900px; margin: 0 auto;">
+                        <div class="section-header">
+                            <span class="section-title">🔔 System Alerts</span>
+                        </div>
+                        <div class="section-content">
+                            ${data.alerts.length === 0 ? 
+                                '<div class="empty-state">No alerts - all systems operational</div>' :
+                                data.alerts.map(a => `
+                                    <div style="padding: 1rem; border-bottom: 1px solid var(--border-color); ${a.is_read ? '' : 'background: rgba(255,215,0,0.05);'}">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                            <span class="badge badge-${a.severity === 'critical' ? 'red' : a.severity === 'warning' ? 'purple' : 'blue'}">${a.type.replace('_', ' ')}</span>
+                                            <span style="font-size: 0.75rem; color: var(--text-secondary);">${new Date(a.created).toLocaleString()}</span>
+                                        </div>
+                                        <h4 style="margin-bottom: 0.5rem;">${a.title}</h4>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">${a.message}</p>
+                                        ${!a.is_read ? `<button onclick="markAlertRead(${a.id})" style="margin-top: 0.5rem; background: var(--accent-gold); color: var(--bg-primary); border: none; padding: 0.25rem 0.75rem; border-radius: 0.25rem; cursor: pointer;">Mark Read</button>` : ''}
+                                    </div>
+                                `).join('')
+                            }
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = '<div class="empty-state">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Show pick detail
+        function showPickDetail(uuid) {
+            fetch(API_BASE + 'kimi_goldmine_api.php?action=pick_detail&uuid=' + encodeURIComponent(uuid))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        alert(`Pick Detail:\n${JSON.stringify(data.pick, null, 2)}`);
+                    }
+                });
+        }
+        
+        // Show source detail
+        function showSourceDetail(slug) {
+            fetch(API_BASE + 'kimi_goldmine_api.php?action=source_detail&slug=' + encodeURIComponent(slug))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        alert(`Source Detail:\n${JSON.stringify(data.source, null, 2)}`);
+                    }
+                });
+        }
+        
+        // Show alerts
+        function showAlerts() {
+            switchTab('alerts');
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-tab')[6].classList.add('active');
+        }
+        
+        // Mark alert read
+        async function markAlertRead(id) {
+            await fetch(API_BASE + 'kimi_goldmine_api.php?action=mark_alert_read&id=' + id);
+            loadAlerts();
+        }
+    </script>
+</body>
+</html>
