@@ -109,6 +109,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-ci-
 
+      # tests/test_movies_db_config.py, test_movies_legacy_wrapper.py and
+      # test_movies_rating_refresh.py carry
+      # `pytest.mark.skipif(not PHP, reason="PHP CLI not available")`, so with no
+      # PHP on the runner all 46 tests report SKIPPED and the suite still exits 0.
+      # That made "CI green" a hollow claim for those 631 lines of coverage.
+      #
+      # The tests execute the real db-config.php with a stubbed PDO class, so the
+      # PHP binary must have PDO as a SHARED module: they pass `-n` (no ini) to
+      # suppress it. Ubuntu's php-cli loads PDO from conf.d/*.ini, so `-n` hides
+      # it and the stub can be declared. Verified against ubuntu:24.04 php 8.3.6
+      # (46/46 pass) and Debian php 8.2.36. Do NOT switch to the official
+      # `php:8.x-cli` docker image -- PDO is compiled in statically there and the
+      # stub declaration dies with "Cannot declare class PDO".
+      - name: Install PHP CLI (movies tests skip without it)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install -y -qq --no-install-recommends php-cli
+          php -v | head -1
+          # Guard against a silent return to skipping: assert PDO is absent under
+          # -n, which is the precondition the stub class relies on.
+          php -n -r 'exit(extension_loaded("pdo") ? 1 : 0);' \
+            || { echo "FAIL: PDO is built into this PHP; the movies tests' stub class cannot be declared under -n"; exit 1; }
+          echo "PHP ready: movies tests will execute rather than skip"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
