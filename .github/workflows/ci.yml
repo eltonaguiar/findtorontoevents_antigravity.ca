@@ -23,10 +23,13 @@ name: CI
 permissions:
   contents: read
 
-# No cancel-in-progress: a cancelled run on main reports as "cancelled", not "failed", which
-# is how a red main hides. The job is deliberately short instead.
+# Grouped by SHA, not by ref. This repo receives bot commits to main every few minutes; with
+# `group: ci-${{ github.ref }}` every one of those shares a group and a newer push cancelled the
+# in-flight run (observed 2026-11-23: build succeeded, lint "cancelled"). A cancelled run reports
+# as "cancelled", not "failed", which is how a red main hides. Per-SHA grouping means each
+# commit's run completes, while re-runs of the SAME commit still dedupe.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
