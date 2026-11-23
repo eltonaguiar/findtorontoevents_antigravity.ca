@@ -128,10 +128,12 @@ def evaluate(mode: str, agent: str, ownership: dict, files: list[str] | None = N
                            f"HEAD moved from {expect_head} to {current} while the guard was "
                            "running - another agent committed on this branch")}
 
-    paths = files if files is not None else (files_in_commit(head_sha() if mode == "amend" else "")
-                                             or staged_files())
-    if mode == "commit":
-        paths = files if files is not None else staged_files()
+    if files is not None:
+        paths = files
+    elif mode == "commit":
+        paths = staged_files()
+    else:                       # amend: the file list of the commit being rewritten
+        paths = files_in_commit(REPO and head_sha())
     split = classify(paths, own, foreign)
 
     if not registered:

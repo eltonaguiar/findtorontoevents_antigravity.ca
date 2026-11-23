@@ -25,10 +25,14 @@ amend=0
 # 1. reflog action, when git sets it ("commit (amend)")
 case "${GIT_REFLOG_ACTION:-}" in *amend*) amend=1 ;; esac
 
-# 2. the actual git command line — the reliable signal on Linux/macOS/Git-Bash
+# 2. the actual git command line. TOKEN-EXACT, because a substring match on the whole
+#    argv also matches --amend when it appears inside the -m message text. That bug made
+#    this hook take the amend branch on a plain commit on 2026-11-23 (caught by the tests).
 if [ "$amend" -eq 0 ]; then
   for pid in "${PPID:-0}" "$$"; do
-    if ps -o args= -p "$pid" 2>/dev/null | grep -q -- '--amend'; then amend=1; break; fi
+    if ps -o args= -p "$pid" 2>/dev/null | tr -s ' [:space:]' '\n' | grep -qx -- '--amend'; then
+      amend=1; break
+    fi
   done
 fi
 
