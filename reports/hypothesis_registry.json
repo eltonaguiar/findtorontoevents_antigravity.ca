@@ -4810,12 +4810,13 @@
     "benchmark": "universe_mean_not_SPY"
    },
    "economic_prior": "The weekly test (H-238) found a significant rank-IC that flipped sign out of sample, which says the feature has information at weekly frequency but not a tradeable map. Monthly is a different horizon with 1/21st the cost drag, so the cost objection changes even if the signal does not; direction genuinely uncertain.",
-   "status": "UNTESTED",
+   "status": "REFUTED",
    "registered_at": "2026-11-23",
    "data_sample_lock": null,
    "result": {
-    "verdict": "UNTESTED",
-    "reason": "Pre-registered per M-107 before any monthly run. Blocked by the 48-period observation requirement: the 105-week crypto panel yields ~24 monthly periods, so no monthly verdict may be issued on it. Runs only on a >=48-month panel."
+    "verdict": "REFUTED",
+    "reason": "69 scored monthly periods (bar 48), breadth min 29; mean excess 41.28bp/month, CI [-247.81, 361.74] includes zero; rank-IC 0.1431; cost survival 0.923 at 20.0bp RT; 12 name-periods rejected by the price integrity guard",
+    "artifact": "reports/h239_h240_monthly_top_gainer_2026-11-23.json"
    },
    "banned_check": "Distinct from H-237 (daily) and H-238 (weekly): different horizon, not a re-test of their sample. Feature list FROZEN to the two the weekly holdout model already used (dollar_vol, vol1m); any feature re-selection voids the verdict. Benchmark frozen to universe mean, not SPY."
   },
@@ -4835,12 +4836,13 @@
     "benchmark": "universe_mean_not_SPY"
    },
    "economic_prior": "Same family as H-238, one horizon out. Monthly rebalancing cuts cost drag from ~247 charges/yr to ~12, which is the only mechanism that could turn the weekly null into a tradeable rule; whether the signal itself carries is the open question.",
-   "status": "UNTESTED",
+   "status": "REFUTED",
    "registered_at": "2026-11-23",
    "data_sample_lock": null,
    "result": {
-    "verdict": "UNTESTED",
-    "reason": "Pre-registered per M-107 before any monthly run. ~71 monthly periods available from the 6y daily panel, so the count bar can be met, but the universe is names liquid TODAY: a PASS must be labelled WEAK_PASS_SURVIVORSHIP_FLAGGED, a FAIL needs no such caveat."
+    "verdict": "REFUTED",
+    "reason": "68 scored monthly periods (bar 48), breadth min 115; mean excess 67.61bp/month, CI [-30.76, 187.48] includes zero; rank-IC 0.0083; cost survival 0.994 at 0.98bp RT",
+    "artifact": "reports/h239_h240_monthly_top_gainer_2026-11-23.json"
    },
    "banned_check": "Distinct from H-237 (daily) and H-238 (weekly): different horizon and different sample construction. Features frozen to dollar_vol+volratio, the pair the weekly holdout model used; benchmark frozen to universe mean."
   },
@@ -4864,6 +4866,28 @@
     "reason": "Pre-registered per M-107 before the run. Motivated by a measured procurement failure: delisted prices are not obtainable free (Yahoo purges 30/37 known dead tickers; Stooq is behind a JS proof-of-work wall), so the bias is bounded rather than removed."
    },
    "banned_check": "Not a re-test of H-201 or H-236: same rule, deliberately perturbed sample. Does not change the rule, lookback, top_k, cost or window, and cannot upgrade H-201's flag past BOUNDED."
+  },
+  {
+   "id": "H-242",
+   "asset_class": "EQUITY",
+   "family": "sample_length_extension",
+   "description": "H-201's rule on the SAME 44-name PIT universe over a 10-year window (2016-11..2026-11) instead of the published 5-year slice, with a W5 control that must reproduce H-236's 9.407bp/day and -3.147bp CI-LB. Prereg: plans/2026-11-23-prereg-H-242-pit-10y-extension.md",
+   "test_statistic": "mean net daily bp with block-bootstrap 95% CI (block 5, 2000 resamples); W10 interval width compared to W5",
+   "acceptance_criteria": {
+    "w10_ci_lb_gt_0": true,
+    "w10_ci_at_least_25pct_narrower_than_w5": true,
+    "w5_control_must_reproduce_h236": true
+   },
+   "economic_prior": "H-241 measured the delisting stress at 1.27bp/day against a 12.673bp CI half-width, so sampling error - not survivorship - is the binding uncertainty. More history is the only input that shrinks it without changing the rule.",
+   "status": "REPLICATED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "WIDENS_OR_HOLDS",
+    "reason": "W10 (registered) n=2514 mean 16.345bp/day CI [7.8,25.069], width 0.681x the W5 width; W5 control reproduced H-236 exactly (mean 9.407, CI-LB -3.147). Passes the CI gate only - DSR at the new N is NOT computed and no allocation follows.",
+    "artifact": "reports/h242_pit_10y_2026-11-23.json"
+   },
+   "banned_check": "Not a re-test of H-201/H-236: identical universe and rule, only the window changes. Cannot upgrade the survivorship flag past BOUNDED, and a pass on W10 while W5 failed must be reported as period-dependent."
   }
  ]
 }

@@ -1,0 +1,102 @@
+{
+  "hypothesis": "H-242",
+  "prereg": "plans/2026-11-23-prereg-H-242-pit-10y-extension.md",
+  "generated_utc": "2026-11-23T03:35:02Z",
+  "rule": {
+    "xsmom_lookback": 126,
+    "top_k": 3,
+    "rebal_days": 21,
+    "cost_bps_per_side": 10,
+    "benchmark": "SPY"
+  },
+  "universe": {
+    "n": 44,
+    "source": "reports/pit_equity_universe_20261122.json",
+    "span": [
+      "2012-01-03",
+      "2026-11-20"
+    ],
+    "flag": "BOUNDED (unchanged; a longer window is not a clean universe)"
+  },
+  "books": {
+    "W10": {
+      "n": 2514,
+      "mean_bps": 16.345,
+      "ci_lb_bps": 7.8,
+      "ci_ub_bps": 25.069,
+      "ci_width_bps": 17.27,
+      "excess_bps": 10.492,
+      "excess_ci_lb_bps": 3.033,
+      "window": [
+        "2016-11-21",
+        "2026-11-20"
+      ]
+    },
+    "W10_FULL": {
+      "n": 3744,
+      "mean_bps": 17.46,
+      "ci_lb_bps": 10.98,
+      "ci_ub_bps": 24.087,
+      "ci_width_bps": 13.107,
+      "excess_bps": 11.723,
+      "excess_ci_lb_bps": 6.159,
+      "window": [
+        "2012-01-03",
+        "2026-11-20"
+      ]
+    },
+    "W5": {
+      "n": 1254,
+      "mean_bps": 9.407,
+      "ci_lb_bps": -3.147,
+      "ci_ub_bps": 22.199,
+      "ci_width_bps": 25.346,
+      "excess_bps": 4.901,
+      "excess_ci_lb_bps": -6.065,
+      "window": [
+        "2021-11-22",
+        "2026-11-19"
+      ]
+    }
+  },
+  "control": {
+    "published_h236": {
+      "mean_bps": 9.407,
+      "ci_lb_bps": -3.147,
+      "n": 1254
+    },
+    "recomputed_W5": {
+      "mean_bps": 9.407,
+      "ci_lb_bps": -3.147,
+      "n": 1254
+    },
+    "reproduced": true
+  },
+  "informational_full_cache_window": {
+    "note": "the cached panel starts 2012-01-03 (14y), more history than the registered 10y; reported for context only, the verdict uses the registered window",
+    "result": {
+      "n": 3744,
+      "mean_bps": 17.46,
+      "ci_lb_bps": 10.98,
+      "ci_ub_bps": 24.087,
+      "ci_width_bps": 13.107,
+      "excess_bps": 11.723,
+      "excess_ci_lb_bps": 6.159,
+      "window": [
+        "2012-01-03",
+        "2026-11-20"
+      ]
+    }
+  },
+  "intervals": {
+    "w5_width_bps": 25.346,
+    "w10_width_bps": 17.27,
+    "narrowing_ratio": 0.681,
+    "sqrt_of_time_expectation": 0.5
+  },
+  "verdict": {
+    "label": "WIDENS_OR_HOLDS",
+    "why": "W10 CI-LB > 0; width 17.27bp vs W5 25.346bp",
+    "period_dependence_warning": "a W10 pass while W5 failed is PERIOD-DEPENDENT and must be reported with both numbers; it does not make H-201 investable"
+  }
+}
