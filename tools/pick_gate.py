@@ -26,6 +26,7 @@ from dataclasses import dataclass, field, asdict
 SPREAD_BP_PER_SIDE = 6.04
 SPREAD_BP_ROUND_TRIP = 12.07  # measured round-trip, 13 names (≈ 2 x 6.04, rounded)
 TBIL_YIELD_PCT = 4.3          # risk-free hurdle for G4
+DSR_PASS = 0.95               # G3 deflation threshold (Bailey/Lopez de Prado band)
 
 # IBKR commission per side, measured, not scale-invariant.
 IBKR_BP_PER_SIDE = {
@@ -72,7 +73,7 @@ class Pick:
 GLOSSARY = {
     "G1": "gross edge > 2x measured round-trip cost",
     "G2": "survives holding >= 1 day",
-    "G3": "deflated Sharpe with trial count stated",
+    "G3": "deflated Sharpe >= 0.95 with trial count stated",
     "G4": "return on committed capital (incl. cash collateral) > 4.3% T-bill",
     "G5": "pick recorded before outcome",
 }
@@ -102,8 +103,10 @@ def gate_pick(p: Pick) -> Pick:
     # G2: holding >= 1 day
     g["G2"] = p.holding_days >= 1.0
 
-    # G3: DSR present AND trial count stated
-    g["G3"] = (p.dsr is not None and p.dsr_n_trials is not None and p.dsr_n_trials >= 1)
+    # G3: DSR must CLEAR the deflation threshold (0.95) AND state its trial count.
+    # Presence alone is not a pass: a DSR of 0.318 at N=658 is far below the bar.
+    g["G3"] = (p.dsr is not None and p.dsr >= DSR_PASS and
+               p.dsr_n_trials is not None and p.dsr_n_trials >= 1)
 
     # G4: return on committed capital vs T-bill.
     # net edge % on the committed ticket, annualised by turnover, must exceed T-bill.
