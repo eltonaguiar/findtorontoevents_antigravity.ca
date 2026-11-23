@@ -1,1 +1,68 @@
-{"generated_at":"2026-11-23T01:20Z","ledger":{"EQUITY":{"exact_frozen_rule":"CI-LB<=0 at day 30/60 or forward n<100","current_status":"FAIL (CI-LB negative, n=942 but hold_days=0)"},"ETF":{"exact_frozen_rule":"CI-LB<=0 at day 30/60 or forward n<100","current_status":"FAIL (CI-LB negative, n=0 forward closes)"},"CRYPTO":{"exact_frozen_rule":"CI-LB<=0 at day 30/60 or forward n<100","current_status":"FAIL (CI-LB negative on most, n=430 forward but net_bp<=0)"},"FOREX":{"exact_frozen_rule":"Class exhausted (fx_prices ends 2026-02-09)","current_status":"FROZEN KILL"},"COMMODITY":{"exact_frozen_rule":"Class negative expectancy + 0 rows","current_status":"FROZEN KILL"},"BOND":{"exact_frozen_rule":"No emitters + negative expectancy","current_status":"FROZEN KILL"},"FUTURES":{"exact_frozen_rule":"Insufficient n + no PIT data","current_status":"FROZEN KILL"},"PREDICTION_MARKETS":{"exact_frozen_rule":"No registered pod + no forward rows","current_status":"FROZEN KILL"},"OPTIONS":{"exact_frozen_rule":"No data layer","current_status":"FROZEN KILL"}}}
+{
+  "generated_at": "2026-11-23T01:20Z",
+  "ledger": {
+    "EQUITY": {
+      "exact_frozen_rule": "CI-LB<=0 at day 30/60 or forward n<100",
+      "current_status": "FAIL / UNMEASURED hurdle2 (no paired benchmark_leg for EQUITY in forward obs; CI-LB negative in ledger)"
+    },
+    "ETF": {
+      "exact_frozen_rule": "CI-LB<=0 at day 30/60 or forward n<100",
+      "current_status": "FAIL / UNMEASURED hurdle2 (0 forward closes; no paired benchmark leg)"
+    },
+    "CRYPTO": {
+      "exact_frozen_rule": "(net annualised > 4.32% T-bill) AND (paired bootstrap 95% CI on net-minus-benchmark_leg excludes 0 on BOTH mean AND median) AND forward n>=100",
+      "current_status": "KILL (H-119 fails robust hurdle 2; sign test p=0.45)"
+    },
+    "FOREX": {
+      "exact_frozen_rule": "Class exhausted (fx_prices ends 2026-02-09)",
+      "current_status": "FROZEN KILL"
+    },
+    "COMMODITY": {
+      "exact_frozen_rule": "Class negative expectancy + 0 rows",
+      "current_status": "FROZEN KILL"
+    },
+    "BOND": {
+      "exact_frozen_rule": "No emitters + negative expectancy",
+      "current_status": "FROZEN KILL"
+    },
+    "FUTURES": {
+      "exact_frozen_rule": "Insufficient n + no PIT data",
+      "current_status": "FROZEN KILL"
+    },
+    "PREDICTION_MARKETS": {
+      "exact_frozen_rule": "No registered pod + no forward rows",
+      "current_status": "FROZEN KILL"
+    },
+    "OPTIONS": {
+      "exact_frozen_rule": "No data layer",
+      "current_status": "FROZEN KILL"
+    },
+    "CRYPTO_H119": {
+      "exact_frozen_rule": "(net annualised > 4.32% T-bill) AND (paired bootstrap 95% CI on net-minus-benchmark_leg excludes 0 on BOTH mean AND median) AND forward n>=100",
+      "measured": {
+        "n_paired": 343,
+        "mean_hold_days": 4.9178,
+        "net_annualised_pct": 20.5601,
+        "mean_ci": [
+          0.001896,
+          0.022846
+        ],
+        "median_ci": [
+          -0.00508,
+          0.001679
+        ],
+        "frac_beat_benchmark": 0.4781,
+        "sign_test_p": 0.4497
+      },
+      "hurdle1_net_gt_tbil": true,
+      "hurdle2_mean_ci": true,
+      "hurdle2_median_ci": false,
+      "current_status": "KILL \u2014 mean CI passes only via fat benchmark left tail; median CI includes 0 and <50% of trades beat benchmark"
+    }
+  },
+  "rule_v2": {
+    "exact_frozen_rule": "(net annualised > 4.32% T-bill) AND (paired bootstrap 95% CI on net-minus-benchmark_leg excludes 0 on BOTH mean AND median) AND forward n>=100",
+    "why_two_hurdles": "A single cash hurdle lets a rule that is long the benchmark clear it on beta alone. Copilot correction #2, adopted 2026-11-23.",
+    "measured_source": "reports/two_hurdle_kill.json (forward_observations.jsonl benchmark_leg_ret, 343 paired rows, cost 12.87bp RT)"
+  }
+}
