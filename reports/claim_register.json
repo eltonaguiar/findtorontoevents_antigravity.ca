@@ -1,118 +1,438 @@
 {
-  "schema_version": 1,
-  "updated": "2026-11-22",
-  "rules": [
-    "append-only: to change a status, add a new entry with supersedes set",
-    "a claim needs an evidence path another agent can open",
-    "status changes end disagreements; prose does not",
-    "gross-only numbers are never a verdict"
-  ],
-  "claims": [
-    {
-      "id": "C-001",
-      "claim": "Volatility scaling adds +0.3 Sharpe for any momentum strategy",
-      "level": "DOCTRINE",
-      "status": "REFUTED",
-      "verifiers": ["buffy", "mercury3"],
-      "independent_runs": 3,
-      "detail": "buffy SPY 2007-2026 TSMOM: delta Sharpe -0.016 (cap 1.0) and -0.072 (cap 2.0), 5bp/switch. mercury3 9 series x 3 financing variants: 0/9 cells reach +0.30; capped mean -0.01; paid borrow -0.10. buffy re-ran mercury3's tool/vol_scaling_doctrine_test.py: capped mean -0.01, 0/9 cells at +0.30.",
-      "evidence": [
-        "reports/horizon_backtest_2026-11-22.json#e2_vol_scaling",
-        "reports/vol_scaling/vol_scaling_doctrine.json",
-        "reports/2026-11-22-horizon-allocation-review.md"
-      ],
-      "date": "2026-11-22"
-    },
-    {
-      "id": "C-002",
-      "claim": "POD-EQUITY-BREAKOUT: PF 1.479, WR 50.2%, Sharpe 0.747, n=245 (2021-04..2026-04)",
-      "level": "FAMILY",
-      "status": "REFUTED",
-      "verifiers": ["mercury3", "buffy"],
-      "independent_runs": 2,
-      "detail": "mercury3: n=1,901, PF 1.00, WR 40.6%, pre-2021 negative. buffy independent run of the pod's own rule, 13 symbols, 25bp/side: n=1,941, gross +0.483%, net -0.017%/trade, WR 40.5%, PF 0.99, t=-0.15; pre-2021 n=1,521 net -0.032%, t=-0.25; 2021+ n=420 net +0.040%, t=+0.18, PF 1.02, WR 41.2%. Published n=245 vs measured n=420 in the same window implies an unreproduced selectivity. Not claiming the published number is false - claiming it is not reproducible from code on disk.",
-      "evidence": [
-        "reports/pod_equity_breakout/pod_equity_breakout_backtest.json",
-        "tools/pod_equity_breakout_backtest.py"
-      ],
-      "date": "2026-11-22"
-    },
-    {
-      "id": "C-003",
-      "claim": "Faber TAA delivers Sharpe 1.74 (SPY) / 1.65 (QQQ)",
-      "level": "FAMILY",
-      "status": "REFUTED",
-      "verifiers": ["buffy", "mercury3"],
-      "independent_runs": 2,
-      "detail": "Measured 0.56/0.65 on daily excess returns (0.62/0.75 monthly) against quoted 1.74/1.65. The drawdown benefit is real (-24.7% vs -55.2%) at a CAGR cost of ~2.2 pp/yr. mercury3 concurs: risk control, not alpha.",
-      "evidence": ["reports/horizon_backtest_2026-11-22.json#e3_faber"],
-      "date": "2026-11-22"
-    },
-    {
-      "id": "C-004",
-      "claim": "5m crypto: fees are 6-9x gross edge; gross-per-trade +2.2bp vs 4-24bp round-trip cost",
-      "level": "FAMILY",
-      "status": "AS_STORED",
-      "verifiers": ["mercury3"],
-      "independent_runs": 1,
-      "detail": "Not independently re-run by buffy. Stored artifact confirms n=1,254 and mean net -0.178%/trade; gross +28.02% and the fee decomposition have no stored artifact. Arithmetic is internally consistent (28.02%/1254 = 2.23bp). Treat the conclusion as MEASURABILITY_FAIL for 5m crypto, not as established for other cadences.",
-      "evidence": ["reports/realtime_challenge/backtest_live_bars.json"],
-      "date": "2026-11-22"
-    },
-    {
-      "id": "C-005",
-      "claim": "CRYPTO KILL verdict implies crypto as an asset class is unprofitable",
-      "level": "PICK-vs-ASSET",
-      "status": "REFUTED",
-      "verifiers": ["buffy"],
-      "independent_runs": 1,
-      "detail": "CRYPTO KILL describes 6,926 of our picks at -0.42%/trade (DSR 0.000). BTC buy-and-hold 2014-09..2026-11: CAGR 49.1%, Sharpe 0.911, maxDD -83.0% vs SPY 0.655. Both statements are true at different levels. Level confusion is the single most common error on the bus.",
-      "evidence": ["reports/horizon_backtest_2026-11-22.json#e5_class_vs_pick"],
-      "date": "2026-11-22"
-    },
-    {
-      "id": "C-006",
-      "claim": "Equities always beat cash over a 10-year horizon",
-      "level": "ASSET",
-      "status": "REFUTED",
-      "verifiers": ["buffy"],
-      "independent_runs": 1,
-      "detail": "SPY vs ^IRX T-bill accrual, 1993-01..2026-11, 8,491 sessions: SPY lost to cash in 20.6% of rolling 1y windows (p10 -12.0%), 19.6% of 3y, 24.1% of 5y and 11.6% of 10y. T-bills compounded +17.5% over ten years with no meaningful drawdown. Only ~3 independent 10y windows exist - report as regime evidence, not independent trials.",
-      "evidence": ["reports/horizon_backtest_2026-11-22.json#e1_horizon_long"],
-      "date": "2026-11-22"
-    },
-    {
-      "id": "C-007",
-      "claim": "All 430 forward rows belong to orphan H-119, which no pod owns",
-      "level": "PROCESS",
-      "status": "AS_STORED",
-      "verifiers": ["mercury3"],
-      "independent_runs": 1,
-      "detail": "Not re-run by buffy. If true, G8 precludes promotion despite real forward evidence, and POD-EQUITY-BREAKOUT has zero forward rows while H-119 has 430. The measurement bug is worth more than any new hypothesis.",
-      "evidence": ["reports/forward_observations.jsonl"],
-      "date": "2026-11-22"
-    },
-    {
-      "id": "C-008",
-      "claim": "Volatility scaling halves drawdown (free risk reduction)",
-      "level": "FAMILY",
-      "status": "REPRODUCED",
-      "verifiers": ["buffy", "mercury3"],
-      "independent_runs": 2,
-      "detail": "SPY 2007-2026: maxDD 21.0% -> 11.4% (cap 1.0) with CAGR 8.38% -> 6.64% and Sharpe 0.627 -> 0.611. Real, buyable, but it is a leverage/risk rule, not alpha. Never present as a Sharpe improvement.",
-      "evidence": ["reports/horizon_backtest_2026-11-22.json#e2_vol_scaling"],
-      "date": "2026-11-22"
-    },
-    {
-      "id": "C-009",
-      "claim": "G6c denominator should be return on total margin posted minus T-bill on that same collateral, with leverage disclosed but not scored",
-      "level": "METHOD",
-      "status": "PROPOSED",
-      "verifiers": ["mercury3", "buffy"],
-      "independent_runs": 0,
-      "detail": "Agreed in principle: notional Sharpe is fiction for grossed-up hedge legs. Must be fixed in the SAME registration as the hypothesis, before results are seen, or it is retrofitting.",
-      "evidence": ["COMMUNICATION notes reply-mercury3-to-buffy-cost-first-2026-11-22"],
-      "date": "2026-11-22"
-    }
-  ]
+ "schema_version": 1,
+ "updated": "2026-11-22",
+ "rules": [
+  "append-only: to change a status, add a new entry with supersedes set",
+  "a claim needs an evidence path another agent can open",
+  "status changes end disagreements; prose does not",
+  "gross-only numbers are never a verdict"
+ ],
+ "claims": [
+  {
+   "id": "C-001",
+   "claim": "Volatility scaling adds +0.3 Sharpe for any momentum strategy",
+   "level": "DOCTRINE",
+   "status": "REFUTED",
+   "verifiers": [
+    "buffy",
+    "mercury3"
+   ],
+   "independent_runs": 3,
+   "detail": "buffy SPY 2007-2026 TSMOM: delta Sharpe -0.016 (cap 1.0) and -0.072 (cap 2.0), 5bp/switch. mercury3 9 series x 3 financing variants: 0/9 cells reach +0.30; capped mean -0.01; paid borrow -0.10. buffy re-ran mercury3's tool/vol_scaling_doctrine_test.py: capped mean -0.01, 0/9 cells at +0.30.",
+   "evidence": [
+    "reports/horizon_backtest_2026-11-22.json#e2_vol_scaling",
+    "reports/vol_scaling/vol_scaling_doctrine.json",
+    "reports/2026-11-22-horizon-allocation-review.md"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-002",
+   "claim": "POD-EQUITY-BREAKOUT: PF 1.479, WR 50.2%, Sharpe 0.747, n=245 (2021-04..2026-04)",
+   "level": "FAMILY",
+   "status": "REFUTED",
+   "verifiers": [
+    "mercury3",
+    "buffy"
+   ],
+   "independent_runs": 2,
+   "detail": "mercury3: n=1,901, PF 1.00, WR 40.6%, pre-2021 negative. buffy independent run of the pod's own rule, 13 symbols, 25bp/side: n=1,941, gross +0.483%, net -0.017%/trade, WR 40.5%, PF 0.99, t=-0.15; pre-2021 n=1,521 net -0.032%, t=-0.25; 2021+ n=420 net +0.040%, t=+0.18, PF 1.02, WR 41.2%. Published n=245 vs measured n=420 in the same window implies an unreproduced selectivity. Not claiming the published number is false - claiming it is not reproducible from code on disk.",
+   "evidence": [
+    "reports/pod_equity_breakout/pod_equity_breakout_backtest.json",
+    "tools/pod_equity_breakout_backtest.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-003",
+   "claim": "Faber TAA delivers Sharpe 1.74 (SPY) / 1.65 (QQQ)",
+   "level": "FAMILY",
+   "status": "REFUTED",
+   "verifiers": [
+    "buffy",
+    "mercury3"
+   ],
+   "independent_runs": 2,
+   "detail": "Measured 0.56/0.65 on daily excess returns (0.62/0.75 monthly) against quoted 1.74/1.65. The drawdown benefit is real (-24.7% vs -55.2%) at a CAGR cost of ~2.2 pp/yr. mercury3 concurs: risk control, not alpha.",
+   "evidence": [
+    "reports/horizon_backtest_2026-11-22.json#e3_faber"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-004",
+   "claim": "5m crypto: fees are 6-9x gross edge; gross-per-trade +2.2bp vs 4-24bp round-trip cost",
+   "level": "FAMILY",
+   "status": "AS_STORED",
+   "verifiers": [
+    "mercury3"
+   ],
+   "independent_runs": 1,
+   "detail": "Not independently re-run by buffy. Stored artifact confirms n=1,254 and mean net -0.178%/trade; gross +28.02% and the fee decomposition have no stored artifact. Arithmetic is internally consistent (28.02%/1254 = 2.23bp). Treat the conclusion as MEASURABILITY_FAIL for 5m crypto, not as established for other cadences.",
+   "evidence": [
+    "reports/realtime_challenge/backtest_live_bars.json"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-005",
+   "claim": "CRYPTO KILL verdict implies crypto as an asset class is unprofitable",
+   "level": "PICK-vs-ASSET",
+   "status": "REFUTED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "CRYPTO KILL describes 6,926 of our picks at -0.42%/trade (DSR 0.000). BTC buy-and-hold 2014-09..2026-11: CAGR 49.1%, Sharpe 0.911, maxDD -83.0% vs SPY 0.655. Both statements are true at different levels. Level confusion is the single most common error on the bus.",
+   "evidence": [
+    "reports/horizon_backtest_2026-11-22.json#e5_class_vs_pick"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-006",
+   "claim": "Equities always beat cash over a 10-year horizon",
+   "level": "ASSET",
+   "status": "REFUTED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "SPY vs ^IRX T-bill accrual, 1993-01..2026-11, 8,491 sessions: SPY lost to cash in 20.6% of rolling 1y windows (p10 -12.0%), 19.6% of 3y, 24.1% of 5y and 11.6% of 10y. T-bills compounded +17.5% over ten years with no meaningful drawdown. Only ~3 independent 10y windows exist - report as regime evidence, not independent trials.",
+   "evidence": [
+    "reports/horizon_backtest_2026-11-22.json#e1_horizon_long"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-007",
+   "claim": "All 430 forward rows belong to orphan H-119, which no pod owns",
+   "level": "PROCESS",
+   "status": "AS_STORED",
+   "verifiers": [
+    "mercury3"
+   ],
+   "independent_runs": 1,
+   "detail": "Not re-run by buffy. If true, G8 precludes promotion despite real forward evidence, and POD-EQUITY-BREAKOUT has zero forward rows while H-119 has 430. The measurement bug is worth more than any new hypothesis.",
+   "evidence": [
+    "reports/forward_observations.jsonl"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-008",
+   "claim": "Volatility scaling halves drawdown (free risk reduction)",
+   "level": "FAMILY",
+   "status": "REPRODUCED",
+   "verifiers": [
+    "buffy",
+    "mercury3"
+   ],
+   "independent_runs": 2,
+   "detail": "SPY 2007-2026: maxDD 21.0% -> 11.4% (cap 1.0) with CAGR 8.38% -> 6.64% and Sharpe 0.627 -> 0.611. Real, buyable, but it is a leverage/risk rule, not alpha. Never present as a Sharpe improvement.",
+   "evidence": [
+    "reports/horizon_backtest_2026-11-22.json#e2_vol_scaling"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-009",
+   "claim": "G6c denominator should be return on total margin posted minus T-bill on that same collateral, with leverage disclosed but not scored",
+   "level": "METHOD",
+   "status": "PROPOSED",
+   "verifiers": [
+    "mercury3",
+    "buffy"
+   ],
+   "independent_runs": 0,
+   "detail": "Agreed in principle: notional Sharpe is fiction for grossed-up hedge legs. Must be fixed in the SAME registration as the hypothesis, before results are seen, or it is retrofitting.",
+   "evidence": [
+    "COMMUNICATION notes reply-mercury3-to-buffy-cost-first-2026-11-22"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-010",
+   "claim": "The delta-neutral funding carry's negative days are iid noise, so a Sharpe-3.42 stream can be sized on its mean alone",
+   "level": "ASSET",
+   "status": "REFUTED",
+   "verifiers": [
+    "buffy",
+    "mercury3"
+   ],
+   "independent_runs": 2,
+   "detail": "Cached Binance settlement series, 5 coins, 2152 days, 2021-01-01..2026-11-22, rebuilt to 1.9252 bp/day (matches mercury3's 1.9252 to 5 s.f.). The sign is PERSISTENT, not iid: P(neg|neg)=0.666 vs P(neg|pos)=0.123; sign ACF lag1 +0.543, lag5 +0.337, lag10 +0.237; negative streaks median 2d, p90 6d, longest 27d; mean carry the day after a negative day -2.3075 bp vs +3.4777 bp after a positive day. 100% of the carry stream's -1045.9 bp drawdown (-10.5%) is earned on negative-funding days; positive days contribute 0.0 bp. The obvious overlay (exit when funding turns negative) is PRICED AND DEAD: 193 regime switches, 1738.1 bp of carry avoided against 15440.0 bp of exit/re-entry cost at 40bp round trip = net -13701.9 bp, a factor of nine the wrong way. Consequence: the funding sign is a SIZING input, not a timing edge.",
+   "evidence": [
+    "reports/funding_carry/funding_sign_autocorr.json",
+    "tools/funding_carry_sign_autocorr.py",
+    "reports/2026-11-22-funding-regime-and-nonus-breakout.md"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-011",
+   "claim": "US daily-breakout continuation is POST-2010 only and therefore possibly a ZIRP artefact",
+   "level": "FAMILY",
+   "status": "REFUTED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "Frozen rule (no per-market tuning): regime = month-end close > 10-month SMA applied to the FOLLOWING month; entry close > prior-N high, exit close < prior-N low or regime off; next-session-open fills; 10 bp/side; look=20 of a 10..40 plateau. Net bp/trade PRE-2010 / POST-2010: DAX +306.4 (t=2.62) / +18.1 (t=0.29); TSX +209.7 (t=2.78) / +45.1 (t=0.76); N225 +176.4 (t=1.90) / +111.4 (t=1.14); FTSE +79.8 (t=1.44) / -74.9 (t=-1.96); US control +59.9 (t=1.19) / +82.8 (t=1.64). ALL FOUR non-US markets are positive pre-2010 and all four are weaker after, and the decay holds at EVERY look 10..40 in every non-US market (16 of 16 cells; DAX look40 +568.8 -> +49.1); the US is the only market that does not decay (+206 -> +206 at look40). The correct reading is a DECAYED FAMILY propped up by the post-2010 US bull market, not a ZIRP artefact - which is worse for the claim than ZIRP, because ZIRP ending predicts the decay we actually observe. Two limits: the payoff is right-tail (WR 38-51%, MEDIAN trade negative in every cell), and 40 cells with best raw t=2.78 means zero survivors after multiplicity. Magnitudes are not comparable to mercury3's (+59.9 vs +5.49 pre-2010 US) because the rules differ - only the cross-market sign pattern is claimed here.",
+   "evidence": [
+    "reports/nonus_breakout_2026-11-22.json",
+    "tools/nonus_breakout_test.py",
+    "reports/2026-11-22-funding-regime-and-nonus-breakout.md"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-012",
+   "claim": "A flat 1.0 bp/day drag is the right cost model for a one-venue delta-neutral spot/perp book",
+   "level": "METHOD",
+   "status": "PROPOSED",
+   "verifiers": [
+    "buffy",
+    "mercury3"
+   ],
+   "independent_runs": 0,
+   "detail": "Agreed with mercury3 that a flat daily bleed has no mechanism: internal spot<->perp transfers on one venue are free, so the honest cost is round-trip / holding days. Measured cliff at 40bp round trip: 30d CI-LB -0.366 (FAIL), 60d +0.300 (PASS), 90d +0.523, 180d +0.745. BUT the replacement model assumes ZERO rebalancing, which also has no mechanism - the perp notional is fixed at entry while the spot leg moves, so delta drifts and must be re-traded or delta-neutral is false. A 5%-of-notional drift band with ~3%/day BTC vol implies roughly weekly adjustment = ~0.07 bp/day, 14x below the flat charge. The deciding number is therefore UNMEASURED BY ANYONE: rebalances per month and their cost on one venue. H-228 keeps FAILS_2X_COST under its pre-registered assumption; the corrected model is registered as a new hypothesis with a 60-day minimum hold rather than retro-edited into the old verdict. Allocation stays at 0% until the venue number exists.",
+   "evidence": [
+    "reports/funding_carry/funding_sign_autocorr.json#q2_holding_period_drag",
+    "reports/2026-11-22-funding-regime-and-nonus-breakout.md",
+    "COMMUNICATION notes reply-mercury3-funding-drag-measured-2026-11-22"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-013",
+   "claim": "Delta-neutral funding carry beats a 3.5% T-bill from a 136-day hold at the measured 42.64 bp retail-taker round trip, from 87 days with maker entry / taker exit, and from 39 days with maker fills on both legs",
+   "level": "ASSET",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 0,
+   "detail": "tools/funding_carry_maker_path.py decomposes the measured 42.64 bp over 4 fills into fee + spread/impact and rebuilds the round trip per execution path. The model refuses to publish unless the taker path reproduces 42.64 bp within 0.05 (calibration gate); it does. Paths: taker/taker 42.64 bp -> 136d; maker entry/taker exit 27.32 bp -> 87d; maker both 12.00 bp -> 39d. Adverse-selection budget on the maker path: survives to ~5 bp/fill (89d), back to worse than taker above ~7 bp/fill (115d). THIS SUPERSEDES my published 180-day figure, which was merely the first row of a 30/60/90/120/180 grid that cleared, not the crossing. The fee split is an ASSUMPTION (published VIP0 taker 5bp / maker 2bp); only the 42.64 total is measured, and maker fill quality on both legs is untestable from this box.",
+   "evidence": [
+    "reports/funding_carry/funding_maker_breakeven.json",
+    "reports/2026-11-22-cost-is-the-constraint.md",
+    "tools/funding_carry_maker_path.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-014",
+   "claim": "Volatility-targeting a 60/40 portfolio raises CAGR, lowers volatility and lowers drawdown versus plain 60/40, but volatility-targeting a single asset lowers the certainty equivalent",
+   "level": "FAMILY",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 0,
+   "detail": "2005-01-03..2026-11-20, SPY/TLT (and DBC/GLD in the panel), 5 bp per unit turnover, leverage from yesterday's realised 60-day vol only, cap 2x. Plain 60/40 CAGR 7.85%, vol 10.87%, Sharpe 0.750, MDD -31.42%, CE 7.55%. 60/40 vol-target 10%: CAGR 9.28%, vol 10.53%, Sharpe 0.895, MDD -22.37%, CE 8.87%. SPY hold CAGR 10.30% vs SPY vol-target 10% CAGR 7.31% with CE FALLING 9.81% -> 7.06%: on a single asset vol targeting is a risk choice, not an improvement. This is risk control and must never be booked as alpha; it also depends on 2005-2026 correlations persisting.",
+   "evidence": [
+    "reports/portfolio/vol_target_vs_hold.json",
+    "reports/2026-11-22-cost-is-the-constraint.md",
+    "tools/vol_target_vs_hold.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-015",
+   "claim": "Our per-class edge harness does not carry the positive-subset median defect; every published aggregate is computed over the full array",
+   "level": "METHOD",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 0,
+   "detail": "Mercury3 found a published cost-horizon ladder that took a median AFTER discarding negative cells, doubling the numbers by construction (15m +2.48 published vs -0.57 honest). I audited my own generator for the same defect: mean_trade_pct, mean_daily_bps, bench_mean_bps and excess_vs_bench_bps all call np.mean on the full array; np.median is never used in either per-class generator. The only >0 filters are the absolute-momentum hold rule (row = row[row > 0]) and the win-rate numerator, both correct usage. Caveat: this is a manual grep sweep, not a tool, and a grep cannot prove absence for code paths added later.",
+   "evidence": [
+    "tools/per_class_edge_harness.py",
+    "reports/2026-11-22-cost-is-the-constraint.md"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-016",
+   "claim": "COST is the binding constraint for 2 of 10 classes, not for the programme as a whole; the other 8 fail on multiplicity, benchmark, absent signal, or data integrity",
+   "level": "METHOD",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 0,
+   "detail": "Corrects my own repeated framing that near-misses all failed on cost. From the 40-cell sweep: cost binds for FUTURES (H-218 CI-LB 0.186 -> -0.054 at 2x) and CRYPTO carry (0.143 -> -0.857 at 2x). EQUITY H-201 fails on multiplicity (DSR 0.9469 vs 0.95) and is NOT cost-bound at all - at 2x cost its CI-LB is still +7.002, so cost would have to rise ~13x to bind. ETF/INDEX/MUTUAL_FUND are benchmark-bound (positive CI-LB, negative excess vs own universe). BOND/FOREX/PENNY have no signal before cost is discussed. COMMODITY is DATA_INTEGRITY_FAIL: CL=F has a negative print and 55 moves >8%, NG=F has 25 recurring month-day roll spikes, so commodity was never refuted on economics.",
+   "evidence": [
+    "reports/2026-11-22-per-class-edge-results.md",
+    "reports/2026-11-22-cost-is-the-constraint.md"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-017",
+   "claim": "EQUITY's cost floor is 30.7x the assumed 10 bp round trip (614 bp), not the ~13x I estimated by eye; FUTURES' is 1.8x (18 bp)",
+   "level": "METHOD",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 0,
+   "supersedes": "C-016",
+   "detail": "Refines C-016. The cost multiple is now computed rather than estimated: k* = 1 + CI_LB(1x)/(CI_LB(1x) - CI_LB(2x)), from the measured 1x and 2x cost lower bounds. EQUITY H-201: 1 + 7.246/0.244 = 30.7x -> 614 bp round trip. FUTURES H-218: 1 + 0.186/0.240 = 1.8x -> 18 bp. Six classes bounded, four already below floor (BOND, COMMODITY, FOREX, PENNY). I had published ~13x for EQUITY by eye; the computed number is 30.7x, which makes the point more strongly, not less: EQUITY is not a cost problem at all.",
+   "evidence": [
+    "reports/per_class_cost_floor_2026-11-22.json",
+    "reports/2026-11-22-cost-floor-and-power.md",
+    "tools/per_class_cost_floor.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-018",
+   "claim": "A quantity-matched spot-long/perp-short book has zero maintenance cost, so the carry's rehedge drag is 0.0 bp/day and its cash crossing is 111/71/32 days by execution path",
+   "level": "ASSET",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy",
+    "mercury3"
+   ],
+   "independent_runs": 2,
+   "supersedes": "C-013",
+   "detail": "Corrects C-013. Mercury3 showed the construction error: long q coins spot, short q coins perp, q unchanged -> net delta = q*px - q*px = 0 every day by algebra; what drifts is margin, not delta, and margin top-up is a free internal transfer on one venue. I reproduced it independently (tools/delta_drift_construction_check.py, BTC-USD 2019-01-01..2026-11-22, n=2883): 0 re-trades, 0.000 bp/day, 0 days with nonzero delta. My earlier 0.072 bp/day described a CONSTANT-USD-NOTIONAL mandate instead: I measure 3.217 bp/day at a 5% band (435 re-trades, 15.1% of days) while mercury3 measures 10.67 (1826 re-trades, 97% of days); the likely gap is rebasing the target at each re-trade vs against a fixed inception notional. Unresolved, but both are 3x+ too expensive for the sleeve. Setting rehedge to 0.0 moves crossings EARLIER, in the flattering direction: taker 136->111d, maker-entry 87->71d, maker-both 39->32d. Adverse-selection budget: 1bp/fill 32d, 3 52d, 5 73d, 7 94d. Sleeve stays 0%: the binding constraints are the VIP0 fee tier and funding decay.",
+   "evidence": [
+    "reports/delta_drift/construction_check.json",
+    "reports/funding_carry/funding_maker_breakeven.json",
+    "tools/delta_drift_construction_check.py",
+    "tools/funding_carry_maker_path.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-019",
+   "claim": "H-201's multiplicity failure is a one-trial bookkeeping margin (DSR holds to N=28 against 29 declared) plus a 77-trading-day data margin, so the cell is NOT_PROVEN rather than refuted or proven",
+   "level": "FAMILY",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "Corrects the label FAILS_MULTIPLICITY, which read as a negative result. Tools/dsr_multiplicity_sensitivity.py rebuilds the DSR column: sqrt(var_sr)=0.02279813 is recovered exactly from the artifact's expected_max_sharpe_daily via the closed-form K(N)=(1-g)Z^-1(1-1/N)+gZ^-1(1-1/(Ne)); the focus cell reproduces to 0.0014 (0.948264 vs 0.9469 stored) and 39/40 cells land within 0.05, the single outlier being H-228 at 0.1374 where the non-normality term is largest. Trial count: 29 declared, 26 produced a cell, H-202/H-203/H-204 ran and yielded none; counting them is CONSERVATIVE and omitting them would let H-201 pass at 0.9547. Margins: DSR holds >=0.95 up to N=28 vs 29 declared (one trial); needed daily Sharpe 0.073872 vs 0.073600 observed = 0.000272/day = 76.7 more trading days (0.30 yr) on top of the 3,744 available. Neither margin can carry a real-money decision. The CI-LB remains +7.246 bp/day and the return series is unchanged, so the data is almost for this cell, not against it. Only two things can settle it: 77 more forward trading days at the same effect size, or an independent replication on a non-overlapping universe. Moving the bar, lowering the trial count, or assuming cheaper cost are all illegitimate.",
+   "evidence": [
+    "reports/dsr_multiplicity_2026-11-22.json",
+    "reports/dsr_multiplicity_2026-11-22.md",
+    "tools/dsr_multiplicity_sensitivity.py",
+    "tests/test_dsr_multiplicity_sensitivity.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-020",
+   "level": "PORTFOLIO",
+   "status": "REFUTED",
+   "claim": "No risk-based allocation (ERC, HRP, or either with a 10% vol target) beats plain 60/40 on certainty equivalent with a CI excluding zero, so portfolio construction is not the programme's remaining edge",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "tools/risk_parity_vs_6040.py, 2006-03-31..2026-11-30, 249 months, monthly rebalance, 5bp/unit turnover, rf=^IRX/12, CE = excess mean*12 - 0.5*var*12. Ten strategies measured; five paired bootstraps of the CE DIFFERENCE vs 60/40 (5000 month-resamples, 90% CI, BOTH CEs restated on the common window). Result: 0 of 5 exclude zero. ERC +0.36 [-2.71,+3.40] on 225m; HRP -1.93 [-4.82,+0.93] on 213m; HRP+VT -0.93 [-4.38,+2.61]; ERC+VT +0.97 [-2.66,+4.56]; 60/40+VT +0.75 [-0.90,+2.39]. Point estimates alone would have shipped HRP+VT as a +1.56pp win; it is not supported. Key context: 60/40's OWN CE moves 5.95 (249m) -> 8.44 (213m) -> 6.45 (225m), a 2.49pp swing from window choice alone, larger than every point difference except HRP's -1.93. HRP's real and robust advantage is RISK (vol 8.87 vs 10.28, MDD -17.79 vs -28.45), not return, and must be sold as risk control. Cost is irrelevant at this layer (5->10bp moves ERC CE 6.82->6.77). CORRECTION included: vol targeting's DRAWDOWN benefit is granularity-dependent - daily gave MDD -22.37 vs -31.42 (improvement) while monthly gives -33.72 vs -28.45 (worse), because 2006-07 vol ~7% levered ~1.4x into 2008. Its return benefit is granularity-robust; its drawdown benefit is not, and the rebalance frequency must travel with the number.",
+   "evidence": [
+    "reports/portfolio/risk_parity_2026-11-22.json",
+    "reports/2026-11-22-portfolio-construction.md",
+    "tools/risk_parity_vs_6040.py",
+    "tests/test_risk_parity_vs_6040.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-021",
+   "level": "MULTIPLICITY",
+   "status": "CORRECTED",
+   "claim": "The programme's PBO of 0.345 is robust to the CSCV block length but was computed on a matrix that filled ragged NaN with 0.0; on the honest common window it is about 0.53, i.e. the in-sample winner has no out-of-sample information",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "tools/pbo_and_reality_check.py on reports/per_class_edge_series_2026-11-22.csv (5157x39). Sweep s_blocks in {8,16,24} under two matrix constructions. Harness convention (NaN->0): 0.350 / 0.345 / 0.315, range 0.035 - so s=16 was not cherry-picked. Common window (1478 days, 2021-01-04..2026-11-20, no cell scored on a day it did not trade): 0.570 / 0.535 / 0.505, range 0.065 - also not block-sensitive. The frozen 0.345 REPRODUCES EXACTLY (|diff| 0.0) on a fresh fetch, so the discrepancy is not data drift: it is the fillna(0) convention crediting late-starting cells with 0% returns, which depresses their full-sample Sharpe and distorts which cell wins the in-sample half. The correction moves in the UNFLATTERING direction (0.345 -> ~0.53), and PBO 0.53 means the selection carries no information. SUPERSEDES any reading of 0.345 as a modest overfitting estimate.",
+   "evidence": [
+    "reports/pbo_reality_check_2026-11-22.json",
+    "reports/2026-11-22-pbo-and-family-tests.md",
+    "tools/pbo_and_reality_check.py",
+    "tests/test_pbo_reality_check_invvol.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-022",
+   "level": "MULTIPLICITY",
+   "status": "NOT_PROVEN",
+   "claim": "Family-wide data snooping does not reject the best cell under the registered Reality Check, but does reject under studentised/SPA variants at about 1.5%, so the multiplicity penalty is a range rather than a verdict - and H-201 stays NOT_PROVEN for the survivorship reason, not the multiplicity one",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "Item 27. Stationary block bootstrap (Politis-Romano, mean block T^(1/3)=15.5d, 5000 draws, seed 11). All-cells common window (39 cells, 1478d, 2021-2026): raw RC p=0.4794 (best H-200:NVDA 10.258 bp/day, uncorrected 0.0529), studentised RC 0.5322, SPA 0.5018 (best H-201 5.471 bp/day, uncorrected 0.0357). Full-history family (34 cells present from 2012-01-03, 3735d): raw RC 0.1436 (no rejection), studentised RC 0.0156, SPA 0.0152 (best H-201 5.512 bp/day, uncorrected 0.0008). The spread is the RC-vs-SPA distinction: RC recentres EVERY cell, so ~20 dead cells widen the bootstrap null over the winner; Hansen wrote SPA for exactly this case, recentring only cells with t above -sqrt(2 log log T) = -2.053. Our family is mostly dead cells, so RC is severe. This REVISES the earlier reading that the multiplicity penalty is definitely fatal: the DSR (0.9483 at 29 trials) deflates under an independence assumption across near-duplicate cells, while the bootstrap preserves their correlation and effectively counts far fewer independent trials. Neither end of the range promotes anything: the full-history winner is drawn from today's ten largest companies (0 of 79 series end early, item 16), and a bootstrap resamples time, not the universe.",
+   "evidence": [
+    "reports/pbo_reality_check_2026-11-22.json",
+    "reports/2026-11-22-pbo-and-family-tests.md",
+    "tools/pbo_and_reality_check.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-023",
+   "level": "EQUITY",
+   "status": "REFUTED",
+   "claim": "Inverse-volatility position sizing inside the H-201 top-3 cross-sectional momentum basket is significantly WORSE than equal weight, so position-level vol scaling does not rescue the cell either",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "H-232, pre-registered in reports/hypothesis_registry.json and committed (b9ff7faab3e) BEFORE the first run. Window 2012-01-03..2026-11-20, 3744 days, 10-name universe, lookback 126, rebal 21, top_k 3, 10 bp/side, exposure fixed at 1.0 - identical to H-201 except the weight split (w_i proportional to 1/sigma_i over the same 126d window). Inverse-vol 9.695 bp/day vs equal-weight 11.521 bp/day on the same days. PAIRED block-bootstrap difference -1.826 bp/day, 95% CI [-2.754, -0.922], t=-4.23, CI EXCLUDES ZERO. All gates fail: CI-LB 5.675, 2x-cost CI-LB 5.365, halves [8.306, 11.083], DSR 0.8491 at n_trials=30 (raised from 29 to charge this cell, never lowered), excess vs SPY 3.958, vol-matched CI-LB -1.329. Control separates selection from sizing: random top-3 with the SAME inverse-vol sizing averages 8.011 bp/day (5-95%: 6.177-9.960) and the observed cell sits at the 92.4th percentile - so momentum SELECTION carries information and the SIZING change destroys 1.83 bp/day of it. Cross-check: the equal-weight leg reproduces the frozen CI-LB of 7.246 bp exactly on a separately-built tool. Closes item 15: vol matching says no (matched CI-LB -0.533) and position-level sizing says worse.",
+   "evidence": [
+    "reports/h232_invvol_2026-11-22.json",
+    "reports/h232_invvol_2026-11-22.md",
+    "tools/xsmom_invvol_variant.py",
+    "reports/hypothesis_registry.json",
+    "tests/test_pbo_reality_check_invvol.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-024",
+   "level": "MULTIPLICITY",
+   "status": "MEASURED",
+   "claim": "The 34-cell family is worth about 25 independent trials for the MAX-type statistics the programme actually uses - closer to 29 than to 5 - because correlation narrows the max tail by only 1.45%, and that leaves H-201 inside the uncertainty band of the DSR's own pass boundary",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "tools/effective_trials.py, 34-cell full-history family, 3735 days. mean pairwise corr 0.1903, median 0.0732, share of pairs >0.5 = 0.1604, lambda1 share 0.3065. Estimators: N^2/sum(rho)=4.67 (variance of a SUM), equicorrelation 4.67, participation ratio 8.12, Kaiser 8, Marchenko-Pastur edge 6, entropy exp 15.71. The 4.67 is the source of the 'N_eff ~ 5' intuition and is the WRONG yardstick: it counts independent trials for an average, while DSR/White RC/Hansen SPA are all maximum-type statistics. Direct measurement: zero-skill block bootstrap (mean block T^(1/3)=15d, 3000 draws) gives max-t p95 = 2.729 correlation-preserving vs 2.769 independent - correlation narrows the max tail by 1.45%, because a common factor both synchronises the cells and widens each marginal and at rho~0.19 the two cancel. Bootstrap calibration on random subsets of the real cells (5:2.1739, 10:2.4361, 15:2.5818, 20:2.6437, 25:2.7612, 30:2.7518) puts N_eff at 25, band 20-30. DSR re-derived on a matched basis: sqrt(var_sr)=0.02279886 reconstructs sr0(29)=0.04695 (frozen 0.04695) and DSR(29)=0.9469 exactly; pass boundary N<=27 (N=28 gives 0.9490), so H-201 passes at N_eff=25 by two trials while failing at 30 - the boundary sits INSIDE the N_eff band. Label therefore does not change: NOT_PROVEN, but the reason is now 'the multiplicity correction is not resolvable at this sample size', not 'fails by one trial'.",
+   "evidence": [
+    "reports/effective_trials_2026-11-22.json",
+    "reports/2026-11-22-effective-trials.md",
+    "tools/effective_trials.py",
+    "tests/test_effective_trials.py"
+   ],
+   "date": "2026-11-22"
+  },
+  {
+   "id": "C-025",
+   "level": "MULTIPLICITY",
+   "status": "CORRECTED",
+   "claim": "The stated MECHANISM in C-022 for the SPA-vs-DSR gap is wrong: it is not that SPA measures far fewer effective trials, but that the DSR inflates by the cross-trial Sharpe dispersion while a standardised bootstrap puts every cell at sampling sd 1",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "C-022's numbers stand and are unaffected; only its explanation does. C-022 said SPA 'resamples the actual matrix and so preserves the cross-cell correlation, which makes its effective trial count far smaller'. Measurement (C-024) shows correlation narrows the max tail by 1.45% and N_eff is about 25, not about 5, so that explanation cannot carry the 0.9469-vs-0.0152 gap. The actual cause: the DSR null scales by the cross-sectional dispersion of trial Sharpes (1.393 in t units here, since sd_sr=0.0228 and sqrt(T)=61.1) and applies a small order-statistic factor, whereas the bootstrap null standardises each cell by its OWN sampling sd so every cell is ~N(0,1) in t units and the max tail is ~2.7. Two defensible but DIFFERENT nulls, not a rescaling of one another. Consequence: the earlier framing that the multiplicity penalty 'moves to the favourable end' because SPA respects correlation overstated the correction; it moves a little, and not enough to settle H-201.",
+   "evidence": [
+    "reports/effective_trials_2026-11-22.json",
+    "reports/2026-11-22-effective-trials.md",
+    "tools/effective_trials.py"
+   ],
+   "supersedes": "mechanism sentence in C-022",
+   "date": "2026-11-22"
+  }
+ ]
 }

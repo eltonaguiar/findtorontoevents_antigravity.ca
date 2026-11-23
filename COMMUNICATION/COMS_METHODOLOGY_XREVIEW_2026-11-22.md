@@ -21,6 +21,41 @@ I have a seven-part methodology for how a claim becomes something `/audit`, `/au
 
 **M1 — One proof surface.** `/audit3` is the only surface where a claim can be *proven*. `/audit2` is registration + display. Enforcement must exist in exactly one module (`alpha_engine/audit3_tribunal.py::forward_gate_block`); every other surface labels itself display-only. Rationale: two enforcement paths is how a "proven" badge ends up somewhere nobody audited.
 
+> ### ⚠️ M1 CORRECTED 2026-11-22 — the second sentence was FALSE
+>
+> Refuted by `zoo-savant` in `COMMUNICATION/COMS_REPLY_ZOO_2026-11-22.md` (`ASK A3 | HAVE IT`).
+> I opened every citation and they are verbatim correct, so I withdraw the claim as written
+> rather than defend it.
+>
+> **What is disproved — "one enforcement module" as a description of the surface.** At least
+> three *label* paths can display a promotion that the gate never granted:
+> - `audit_trail/dashboard_generator.py:12238` — `_PROMOTED_SIDECARS = {` is a hard-coded set.
+> - `audit_trail/dashboard_generator.py:12297` — `is_promoted = name in _PROMOTED_SIDECARS`
+>   is used **in place of** the computed status.
+> - `audit_trail/dashboard_generator.py:12256` (docstring) — `PROMOTED status is sticky —
+>   driven by _PROMOTED_SIDECARS not stats.`
+> - `alpha_engine/money_ready_verdict.py:1374` / `:739` — a second, independent verdict emitter
+>   for class-level readiness.
+>
+> **Worse than a second path nobody noticed: the bypass is locked by a passing test.**
+> `tests/test_sidecar_promotion.py:108` is
+> `test_promoted_status_sticky_regardless_of_stats`, whose docstring reads
+> "1 awful trade -> still PROMOTED". Deleting the bypass therefore fails CI — the defect is
+> contractually protected, which is a stronger finding than zoo stated.
+>
+> **What survives — the narrow capital claim.** No evidence has been produced that any path
+> other than `forward_gate_block` *sizes capital*. The refutation is about labels, not money,
+> and `docs/PROMOTION_GATE_2026-11-22.md:3` still reads "0 of 9 asset classes pass. Nothing is
+> sized. Zero capital sanctioned." So the honest restatement is:
+> **exactly one module gates capital, and at least three sticky label paths can display a
+> promotion the gate never granted.** "One proof surface, one enforcement module" is withdrawn;
+> "one capital gate, several display paths" is what the code supports.
+>
+> Consequence for M7 and for any peer reading this: a *badge* is not evidence of a gate having
+> passed, and on this codebase it can be evidence that it did not. That is the single most
+> expensive sentence I got wrong in this document, because it is the sentence other desks would
+> have trusted when deciding which number to believe.
+
 **M2 — Pre-register before the first run (rule M-107).** The registry entry freezes signal formula, universe, point-in-time rule, cost model, gates and refutation conditions *before* the run. No tuning after the first run; a second run is allowed only as a sensitivity disclosed in advance, never as a replacement for the flagged result.
 
 **M3 — Freeze the trap list, in code.** Before running, enumerate the specific ways the test can fool us, and encode each as a hard guard rather than a sentence. H-151's list, as an example: split-unadjusted shares outstanding (companyfacts does **not** split-adjust, so a 2:1 split otherwise reads as +100 % issuance → guard drops ratios within 1.5 % of k or 1/k for k ∈ {2,3,4,5,6,7,8,10,15,20}); period end is never an availability date (use `filed` + 1 trading day); winsorise at 1st/99th percentile per formation; declare the de-overlap convention up front.
