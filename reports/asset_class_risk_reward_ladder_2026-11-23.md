@@ -9,7 +9,7 @@ from an artifact in this repo; the claim IDs are in `reports/claim_register.json
 
 ---
 
-## Tier 0 — Buyable now, and the only thing here that is *measured* rather than hoped for
+## Tier 0 — The risk control that replicated, and the return gain that did not
 
 **Volatility-targeted 60/40.** C-014, 2005-01-03..2026-11-20, SPY/TLT, 5 bp/unit turnover, leverage
 from *yesterday's* realised 60-day vol, cap 2x:
@@ -25,16 +25,41 @@ drawdown half is real and repeatable, the return half is not free.
 
 **Read it correctly:** this is risk control, not alpha. It does not beat buy-and-hold SPY on
 absolute return (7.31% vs 10.30% when applied to a single asset — C-014), and its drawdown benefit
-is **granularity-dependent**: daily rebalancing gave −22.37% vs −31.42%, monthly gave −33.72% vs
-−28.45% (C-020). Rebalance frequency must travel with the number or the claim is not reproducible.
+is **granularity-dependent**. The −22.37% vs −31.42% pair above is the **monthly**-rebalanced basis
+(verified against the artifact); a **daily** reset gives −21.60% vs −26.82%, with plain CAGR 8.43%
+and vol-target 9.54%. Rebalance frequency must travel with the number.
 
-**Why it is Tier 0:** it is the only rung where the evidence is 20 years of data, the mechanism is
-arithmetic (constant risk instead of constant weights), and the cost is 5 bp/unit — orders of
-magnitude below every cost floor in this programme. It is also the honest answer to "give me
-something relatively stable": the stability is the deliverable, the +1.43 pp is the bonus.
+### H-233: I tested this properly and it failed on the return half
 
-**What would promote it:** an out-of-sample window never touched (e.g. 2015-2026 held out before
-looking), plus the rebalance-frequency convention stated up front. Nothing else is missing.
+I pre-registered the replication (`plans/2026-11-23-prereg-H-233-vol-target-replication.md`), filed
+it in the registry, and ran it before looking — then reported the verdict the rule pointed at.
+
+| window | plain CE | vol-target CE | ΔCE | 95% CI | plain CAGR → VT | max DD plain → VT |
+|---|---|---|---|---|---|---|
+| A 2005-2015 | 6.70% | 9.07% | **+2.38pp** | [−0.22, +4.90] | — | −26.82% → −21.60% |
+| B 2016-2026 | 9.51% | 9.15% | **−0.35pp** | [−3.35, +2.66] | 9.97% → **9.58%** | −26.39% → −19.10% |
+| FULL (diagnostic) | 8.09% | 9.11% | +1.02pp | [−1.03, +3.00] | 8.43% → 9.54% | −26.82% → −21.60% |
+
+**Verdict: `REFUTED_OOS`.** The sign flips between sub-periods, both CIs contain zero, and in the
+holdout window vol targeting *lowered* CAGR as well as CE. The pre-registered kill rule fired, and
+I did not switch to the monthly basis — which would have passed (+1.32pp) — because that switch was
+excluded in advance.
+
+**What survives, and it is not nothing:** the drawdown reduction appears in **both** windows (−26.82
+→ −21.60 and −26.39 → −19.10) and criterion 3 passed. So the honest tier-0 recommendation is now
+**"risk control only — no demonstrated return gain"**. It reduces drawdown; it does not reliably pay
+you for it. C-014's "raises CAGR" does not generalise, and this memo's earlier claim that the stable
+rung had a +1.43 pp tailwind is **withdrawn**. The full-sample daily ΔCE CI [−1.03, +3.00] also
+contains zero, so even the original point estimate was never statistically distinguishable.
+
+**Why it is still Tier 0:** it is the only rung whose *risk* effect replicated on data disjoint from
+where it was found, the mechanism is arithmetic (constant risk instead of constant weights), and the
+cost is 5 bp/unit — orders of magnitude below every cost floor here. And it remains the honest answer
+to "give me something relatively stable": the stability is the deliverable, and it is now the *only*
+deliverable.
+
+**What would promote it back:** another disjoint window (pre-2005, or non-US books) where the CE sign
+agrees, or a forward clock on the overlay alone. Not a different rebalance convention.
 
 **HRP as the risk-only variant** (C-020): vol 8.87 vs 10.28 and maxDD −17.79 vs −28.45 versus
 60/40, but its certainty equivalent does **not** beat 60/40 — 0 of 5 paired bootstraps exclude zero
@@ -162,8 +187,9 @@ proof standard is fixed and non-negotiable:
 4. **Stop testing PENNY, MEME and COMMODITY** until their price series pass a data-integrity gate.
    Effort there produces noise with a p-value attached.
 
-**The honest summary a fund manager should take from this:** the stable rung is real and the
-improvement is small; the profitable-looking rungs are either beta, blocked on time, or blocked on
+**The honest summary a fund manager should take from this:** the stable rung's *risk* effect is
+real and replicated on disjoint data, while its *return* effect did not (H-233, `REFUTED_OOS`: the
+certainty-equivalent gain changes sign between sub-periods and both CIs contain zero); the profitable-looking rungs are either beta, blocked on time, or blocked on
 data; and the largest remaining lever is not a better model, it is a delisting-aware universe plus a
 measured venue fee tier. Buying those two datasets is worth more than any further backtest in this
 repo.

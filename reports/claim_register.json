@@ -434,5 +434,23 @@
    "supersedes": "mechanism sentence in C-022",
    "date": "2026-11-22"
   }
- ]
+ ,
+  {
+   "id": "C-026",
+   "claim": "Volatility-targeting a 60/40 book produces no statistically distinguishable certainty-equivalent gain: the effect changes sign between sub-periods (+2.38pp in 2005-2015, -0.35pp in 2016-2026, both 95% CIs containing zero), while the max-drawdown reduction replicates in both windows",
+   "level": "SINGLE",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "H-233, pre-registered before the run (plans/2026-11-23-prereg-H-233-vol-target-replication.md). Daily-rebalanced SPY 60/TLT 40, 10% target, yesterday's 60-day realised vol, cap 2x, 5 bp per unit turnover, paired block bootstrap 10k resamples block 20. Window A 2005-2015: plain CE 6.70%, vol-target CE 9.07%, dCE +2.3756pp, CI [-0.2182,+4.9008]. Window B 2016-2026: plain CE 9.51%, vol-target 9.15%, dCE -0.3549pp, CI [-3.3468,+2.6607], CAGR FELL 9.97%->9.58%. Full sample dCE +1.0178pp, CI [-1.03,+2.999], so C-014's own daily-basis advantage is not distinguishable from zero either. Max drawdown improved in both windows (-26.82->-21.60 daily full sample; -26.39->-19.10 in B), so the drawdown component stands.",
+   "supersedes_component": "C-014 return-gain component only; C-014's drawdown component is confirmed and its -22.37/-31.42 pair is the MONTHLY-rebalanced basis, not the daily one",
+   "evidence": [
+    "reports/h233_vol_target_replication_2026-11-23.json",
+    "tools/h233_vol_target_replication.py",
+    "updates/2026-11-23-h233-vol-target-refuted-and-c014-downgrade.md"
+   ],
+   "date": "2026-11-23"
+  }]
 }

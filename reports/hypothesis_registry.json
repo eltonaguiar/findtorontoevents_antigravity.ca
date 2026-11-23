@@ -1961,7 +1961,9 @@
    "registered_at": "2026-06-13",
    "data_sample_lock": "at_signal_outcomes intrabar, n=108 as of 2026-06-13 16:19Z",
    "result": "n=108: gross PF 1.53 (CI-LB 1.073); net@16bp PF 1.36 (CI-LB 0.953, sub-bar); IS/OOS net 1.44/1.30 (HOLDS, no decay); WR 47.2%; top-symbol RENDERUSDT 6% (diversified). Survives cost + holds OOS + diversified; only the CI-LB lower bound is short at n=108. See reports/CRYPTO_RSI5070_US_LEAD_CANDIDATE_2026-06-13.md. 2026-11-19 update: n=431 \u2014 gross PF 1.277 (CI-LB 1.047), net@16bp PF 1.119 (CI-LB 0.9158), IS/OOS net 1.079/1.157, top-symbol JUPUSDT 5.1%, last-30d WR 52.4% on n=42. The min_n=150 criterion is MET; only net CI-LB>1.15 still fails. The gate_eta in acceptance_criteria is a registration-time record and is no longer a live instruction (that date passed without a promotion). Source: audit_dashboard/data/crypto_rsi5070_us_forward_status.json.",
-   "kill_reason": null
+   "kill_reason": null,
+   "promotable": false,
+   "promotable_reason": "Not a pod: reports/audit3_confirmatory.json has no pod for H-119, and forward_gate_block promotes only manifest pods (alpha_engine/audit3_tribunal.py:1603-1654) - non-pod hypotheses are reported under hypotheses[] and can never promote a cell. Marked non-promotable by the N3 orphan resolution 2026-11-22. Its 430 forward rows stay useful accruing evidence for the lead, but cannot gate a promotion; the same-date gate also fails on net PF CI-LB 0.9213<=1.0, IR 0.043<0.5, benchmark coverage 0.798<0.90."
   },
   {
    "id": "H-120",
@@ -2558,336 +2560,353 @@
    }
   },
   {
-   "id": "H-200",
-   "status": "PRE_REGISTERED",
-   "asset_class": "EQUITY",
-   "name": "tsmom_12_1_long_flat",
-   "spec": "long when 252d return excl last 21d > 0, hold daily, cost 10bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-201",
-   "status": "PRE_REGISTERED",
-   "asset_class": "EQUITY",
-   "name": "xsmom_top3_6m",
-   "spec": "monthly rebalance, top 3 of 10 by 126d return, equal weight, 10bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-202",
-   "status": "PRE_REGISTERED",
-   "asset_class": "EQUITY",
-   "name": "reversal_5d",
-   "spec": "long 5 sessions after a -3pct 5-day move, 10bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-203",
-   "status": "PRE_REGISTERED",
-   "asset_class": "EQUITY",
-   "name": "pead_sue20d",
-   "spec": "enter next open after earnings surprise > +5pct, hold 20 sessions, 10bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-204",
-   "status": "PRE_REGISTERED",
+   "id": "H-2026-11-20-01",
    "asset_class": "ETF",
-   "name": "tsmom_12_1_long_flat",
-   "spec": "long when 252d return excl last 21d > 0, hold daily, 10bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
+   "family": "residual_mean_reversion",
+   "description": "Factor-residual OU mean reversion on liquid US sector ETFs. Rolling 60-day regression of each ETF on the market factor plus its sector factor; fit OU to the residual; enter when |s-score| >= 1.25, exit at |s| <= 0.5; beta-weighted factor hedge for neutrality; inverse-vol sizing with caps enforced in the order gateway, not the model. Daily rebalance, 5 bps per trade base and 10 bps stress.",
+   "test_statistic": "net-of-cost Sharpe ratio of the residual book (annualized, walk-forward)",
+   "acceptance_criteria": {
+    "min_sharpe": 0.5,
+    "min_n_per_leg": 50,
+    "slippage_bps": 5,
+    "stress_slippage_bps": 10,
+    "dsr": 0.95,
+    "n_trials_recorded": true,
+    "validation": "purged walk-forward, 5 folds; reject if any fold < 0.2 Sharpe or if the paired-block 95% CI of net return includes 0"
+   },
+   "economic_prior": "Short-horizon overreaction and liquidity provision in idiosyncratic returns. Market-neutral by construction: the prior risk is that residuals trend (half-life drift), not that the market moves against us. Published PCA residual stat-arb earned Sharpe 1.44 net 1997-2007 but only 0.9 in 2003-2007 as capital crowded in, hence the 0.5 bar.",
+   "status": "REFUTED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "NOT SUPPORTED \u2014 fails all three pre-registered criteria on its own first sample.",
+    "superseded_numbers_warning": "An earlier version of this block recorded mean_net_pct 0.1997 and Sharpe 0.356. Those were the GROSS figures: the artifact they came from predated cost accounting, and the Sharpe reconstructed from gross exactly (0.1997/3.3114*sqrt(252/7.24)=0.356). Corrected below. The trade set is identical (153 trades, same exits).",
+    "primary_statistic_2026_11_20": {
+     "sharpe_hold_normalized": -0.0005,
+     "sharpe_bar": 0.5,
+     "mean_net_pct": -0.0003,
+     "mean_gross_pct": 0.0716,
+     "cost_per_trade_pct": 0.2,
+     "sd_pct": 3.3114,
+     "win_rate": 0.2418,
+     "profit_factor": 0.623,
+     "ci_includes_zero": true,
+     "folds_below_0_2": 3,
+     "folds_note": "Fold Sharpes are DIAGNOSTIC only \u2014 contiguous quintiles share autocorrelation structure, so they are not independent draws. The aggregate CI is the claim; the folds are not."
+    },
+    "criteria_outcome": [
+     "min_sharpe 0.5 \u2014 FAIL (0.356)",
+     "paired-block 95% CI of net return excludes 0 \u2014 FAIL ([-0.295, +0.731] straddles 0)",
+     "no fold below 0.2 Sharpe \u2014 FAIL (3 of 5 folds: 0.157, -1.128, 0.130)"
+    ],
+    "honesty_note": "Folds were taken as contiguous quintiles of the trade sequence, not purged. Purging would remove overlap between train and test and can only widen the uncertainty, so it cannot rescue a result that already fails unpurged.",
+    "first_pass_2026_11_20": {
+     "config": "SPY on QQQ+IWM+TLT, window 60, 10y daily, 5 bps/leg",
+     "bars": 2514,
+     "n": 153,
+     "mean_net_pct": 0.1997,
+     "win_rate": 0.4902,
+     "profit_factor": 1.279,
+     "mean_hold_days": 7.24,
+     "by_exit": {
+      "revert": 54,
+      "stop": 0,
+      "time": 99
+     }
+    },
+    "why_not_a_verdict": "The primary statistic is walk-forward net Sharpe over 5 purged folds with a paired-block CI. Neither was computed in this pass, so neither the min_sharpe 0.5 bar nor the CI-excludes-0 test has been evaluated. A +0.20%/trade mean at PF 1.28 CANNOT be called supported on one configuration.",
+    "already_negative": [
+     "99 of 153 trades (65%) exited on the time cap, never on reversion \u2014 the residual did not snap back within the holding period for two thirds of entries. That is the exact signature the operator note warned about: a trend bet wearing a mean-reversion label.",
+     "A full-sample OU fit of the SPY residual on those factors returns None, i.e. rho >= 1 and kappa <= 0: over 10 years the residual shows no estimated mean reversion at all. Only rolling 60-day fits produce tradeable half-lives, which is consistent with the Dickey-Fuller small-sample bias documented in ou_fit, not with a stable OU process."
+    ],
+    "win_rate_note": "49% win rate with PF 1.28 means the mean is carried by a few large winners, not by consistency \u2014 the opposite of what a mean-reversion book should look like.",
+    "operator_note": "Do not test on the same sample as any ETF TAA variant. Publish the OU half-life per name alongside the Sharpe: a half-life longer than the holding period means the trend-bet failure mode. Next step is the fold-level Sharpe, not a bigger sample."
+   }
   },
   {
-   "id": "H-205",
+   "id": "H-2026-11-20-02",
+   "asset_class": "COMMODITY",
+   "family": "calendar_spread_reversion",
+   "description": "Energy calendar spread (front vs second contract, WTI and NG) mean reversion. Kalman-filter hedge ratio, Bollinger entry and exit on the spread, roll-aware continuous series with point-in-time contract selection. 10 bps per leg base, 20 bps stress.",
+   "test_statistic": "net-of-cost Sharpe ratio of the spread sleeve (annualized, walk-forward)",
+   "acceptance_criteria": {
+    "min_sharpe": 0.5,
+    "min_n_round_trips": 100,
+    "slippage_bps": 10,
+    "stress_slippage_bps": 20,
+    "dsr": 0.95,
+    "validation": "walk-forward spanning >= 3 regimes including the post-2020 negative-price regime; reject if any regime fold is negative"
+   },
+   "economic_prior": "Storage and roll-yield economics make calendar spreads less trend-exposed than outrights; the spread is a relative-value claim, not a price forecast. Pre-2013 results do not transfer: WTI traded negative in 2020 and storage economics changed.",
    "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "PRE_REGISTERED - not run.",
+    "operator_note": "Kalman hedge ratios are free parameters: record how many were fitted and include them in n_trials. 1992-2013 evidence is a different regime, not corroboration."
+   }
+  },
+  {
+   "id": "H-2026-11-20-03",
    "asset_class": "ETF",
-   "name": "xsmom_top3_6m",
-   "spec": "monthly rebalance, top 3 of 10 by 126d return, equal weight, 10bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
+   "family": "execution_cost_gate",
+   "description": "Change position only when forecast magnitude exceeds round-trip cost, applied to the residual-book signal set. Paired comparison on identical signals: gated vs ungated. Turnover reduction and gross-alpha retention are reported alongside, never substituted for, the primary statistic.",
+   "test_statistic": "paired difference in net-of-cost Sharpe (gated minus ungated), block-bootstrapped 95% CI",
+   "acceptance_criteria": {
+    "paired_sharpe_delta": "> 0 with 95% CI excluding 0",
+    "min_turnover_reduction": 0.5,
+    "min_gross_alpha_retention": 0.6,
+    "slippage_bps": 5,
+    "validation": "same folds as the residual-book hypothesis so the comparison is paired, not independent"
+   },
+   "economic_prior": "Annual cost drag is turnover times round-trip cost. When the forecast is smaller than the cost it must pay, trading is negative-expectancy regardless of forecast skill. Should hold even if the residual hypothesis fails, which makes it the most independently informative of the set.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "NOT SUPPORTED on the residual-book signal set \u2014 the gate is nearly non-binding, so there is nothing for it to improve.",
+    "result_2026_11_20": {
+     "n_ungated": 153,
+     "n_gated": 153,
+     "entries_filtered": 1,
+     "sharpe_ungated": -0.0006,
+     "sharpe_gated": -0.0082,
+     "sharpe_delta": -0.0076,
+     "delta_ci95": [
+      -0.2398,
+      0.2433
+     ],
+     "ci_excludes_zero": false,
+     "turnover_reduction": 0.0,
+     "gross_alpha_retention": 0.9785
+    },
+    "reading": "The paired comparison is clean (identical bars and fits, differing only in the gate), and the CI straddles zero, so the paired-Sharpe criterion fails. The more useful fact is WHY: with a 0.4% round-trip cost on a 2-leg trade and entry only at |s| >= 1.25, the forecast almost always clears cost, so the gate filtered 1 of 154 entries and turnover did not move. A gate that never binds cannot help. Its value would only appear at higher cost or a lower entry threshold \u2014 so this result does not refute the economic argument, it shows the argument is untested at this configuration.",
+    "operator_note": "If it holds here it applies to every class, so a CROSS-ASSET record may follow. Kept under ETF for now because a hypothesis needs one measurable population."
+   }
   },
   {
-   "id": "H-206",
-   "status": "PRE_REGISTERED",
-   "asset_class": "CRYPTO",
-   "name": "tsmom_6m_long_flat",
-   "spec": "long when 126d return excl last 7d > 0, hold daily, 20bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-207",
-   "status": "PRE_REGISTERED",
-   "asset_class": "CRYPTO",
-   "name": "xsmom_top3_3m",
-   "spec": "monthly rebalance, top 3 of 6 by 63d return, equal weight, 20bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-208",
-   "status": "PRE_REGISTERED",
-   "asset_class": "FOREX",
-   "name": "tsmom_12_1_long_short",
-   "spec": "long/short 252d excl 21d sign per pair, daily, 5bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-209",
-   "status": "PRE_REGISTERED",
-   "asset_class": "FOREX",
-   "name": "xsmom_top2_3m",
-   "spec": "monthly rebalance, top 2 of 5 by 63d return, equal weight, 5bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-210",
-   "status": "PRE_REGISTERED",
-   "asset_class": "COMMODITY",
-   "name": "tsmom_12_1_long_flat",
-   "spec": "long when 252d return excl 21d > 0, hold daily, 15bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-211",
-   "status": "PRE_REGISTERED",
-   "asset_class": "COMMODITY",
-   "name": "xsmom_top2_6m",
-   "spec": "monthly rebalance, top 2 of 6 by 126d return, equal weight, 15bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-212",
-   "status": "PRE_REGISTERED",
-   "asset_class": "BOND",
-   "name": "tsmom_12_1_long_flat",
-   "spec": "long when 252d return excl 21d > 0, hold daily, 10bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-213",
-   "status": "PRE_REGISTERED",
-   "asset_class": "BOND",
-   "name": "xsmom_top2_6m",
-   "spec": "monthly rebalance, top 2 of 5 by 126d return, equal weight, 10bps",
-   "registered_at": "2026-11-22T08:22:07.842876+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Parameters and costs fixed in the spec string; any change requires a new id."
-  },
-  {
-   "id": "H-214",
-   "status": "PRE_REGISTERED",
-   "asset_class": "FUTURES",
-   "name": "tsmom_6m_long_flat",
-   "spec": "long when 126d return excl last 21d > 0 on front ES contract, daily, 10bps",
-   "registered_at": "2026-11-22T08:25:51.709019+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Adding a class to the sweep must not become a post-hoc selection."
-  },
-  {
-   "id": "H-215",
-   "status": "PRE_REGISTERED",
-   "asset_class": "PENNY_STOCK",
-   "name": "tsmom_12_1_long_flat",
-   "spec": "long when 252d return excl last 21d > 0, daily, 10bps (liquidity NOT modelled - caveat)",
-   "registered_at": "2026-11-22T08:25:51.709019+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Adding a class to the sweep must not become a post-hoc selection."
-  },
-  {
-   "id": "H-216",
-   "status": "PRE_REGISTERED",
-   "asset_class": "MUTUAL_FUND",
-   "name": "tsmom_12_1_long_flat",
-   "spec": "long when 252d return excl last 21d > 0 on NAV series, daily, 10bps",
-   "registered_at": "2026-11-22T08:25:51.709019+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Adding a class to the sweep must not become a post-hoc selection."
-  },
-  {
-   "id": "H-217",
-   "status": "PRE_REGISTERED",
-   "asset_class": "INDEX",
-   "name": "tsmom_12_1_long_flat",
-   "spec": "long when 252d return excl last 21d > 0 on index level, daily, 10bps",
-   "registered_at": "2026-11-22T08:25:51.709019+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Adding a class to the sweep must not become a post-hoc selection."
-  },
-  {
-   "id": "H-218",
-   "status": "PRE_REGISTERED",
-   "asset_class": "FUTURES",
-   "name": "xsmom_top2_6m",
-   "spec": "monthly rebalance, top 2 of 8 by 126d return, 10bps",
-   "registered_at": "2026-11-22T08:25:51.709019+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Adding a class to the sweep must not become a post-hoc selection."
-  },
-  {
-   "id": "H-219",
-   "status": "PRE_REGISTERED",
-   "asset_class": "PENNY_STOCK",
-   "name": "xsmom_top2_6m",
-   "spec": "monthly rebalance, top 2 of 8 by 126d return, 10bps",
-   "registered_at": "2026-11-22T08:25:51.709019+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Adding a class to the sweep must not become a post-hoc selection."
-  },
-  {
-   "id": "H-220",
-   "status": "PRE_REGISTERED",
-   "asset_class": "MUTUAL_FUND",
-   "name": "xsmom_top2_6m",
-   "spec": "monthly rebalance, top 2 of 7 by 126d return, 10bps",
-   "registered_at": "2026-11-22T08:25:51.709019+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Adding a class to the sweep must not become a post-hoc selection."
-  },
-  {
-   "id": "H-221",
-   "status": "PRE_REGISTERED",
-   "asset_class": "INDEX",
-   "name": "xsmom_top2_6m",
-   "spec": "monthly rebalance, top 2 of 6 by 126d return, 10bps",
-   "registered_at": "2026-11-22T08:25:51.709019+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Adding a class to the sweep must not become a post-hoc selection."
-  },
-  {
-   "id": "H-222",
-   "status": "PRE_REGISTERED",
+   "id": "H-2026-11-20-04",
    "asset_class": "EQUITY",
-   "name": "pead_sue12_20d",
-   "spec": "enter next open after a surprise z-scored against >=8 prior quarters (SUE>=1.0), hold 20 sessions, 10bps; no lookahead in the z-score",
-   "registered_at": "2026-11-22T08:37:30.077882+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Pre-registered before first run (M-107). Revives PEAD with multi-quarter SUE per Kaczmarek & Zaremba (2025)."
+   "family": "factor_neutralization",
+   "description": "For each resolved closed pick, hedge the market-factor exposure over its own holding window and re-measure selection alpha. Compare to the unhedged figure of -0.2763%/trade (CI [-0.506, -0.043], n=3192).",
+   "test_statistic": "selection alpha = mean net return minus direction-adjusted buy-and-hold over the same window, beta-hedged",
+   "acceptance_criteria": {
+    "min_n": 200,
+    "criterion": "beta-hedged selection alpha > 0 with 95% CI excluding 0"
+   },
+   "economic_prior": "Selection alpha is negative and roughly the size of unhedged beta mis-timing. If picks carry information but time badly, hedging recovers it; if not, they carry no information. Either way it is a clean falsification.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "PRE_REGISTERED - not run.",
+    "operator_note": "Cheapest decisive test in the set: reuses existing closed picks, needs no new strategy code. Run before building any new sleeve."
+   }
   },
   {
-   "id": "H-223",
-   "status": "PRE_REGISTERED",
-   "asset_class": "COMMODITY",
-   "name": "tsmom_12_1_etf_basket",
-   "spec": "COMMODITY measured on INVESTABLE ETFs (GLD,SLV,CPER,DBA,USO,UNG,CORN,WEAT), not raw futures. Per symbol: long when close/close[-273] (12m, skip 21d) > 0 else flat; equal-weight the 8 nets; 15bps round trip (30bps at 2x); monthly buckets for PF; benchmark DBC.",
-   "registered_at": "2026-11-22T08:54:04.153248+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Registered before first run (M-107). Replaces H-210/H-211 for the class: ZC=F prints -23.6% on 07-15 in three separate years and CL=F went negative, so futures series cannot score a strategy. ETF NAV absorbs the roll, so a holder really earns this series."
-  },
-  {
-   "id": "H-224",
-   "status": "PRE_REGISTERED",
-   "asset_class": "COMMODITY",
-   "name": "xsmom_top3_6m_etf",
-   "spec": "Same 8 investable commodity ETFs; rank by 126-session return every 21 sessions, hold top 3 equal weight, non-selected names flat (exposure <= 1 asserted); 15bps (30bps at 2x); benchmark DBC.",
-   "registered_at": "2026-11-22T08:54:04.153248+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Registered before first run (M-107). Cross-sectional variant of the repaired commodity measurement."
-  },
-  {
-   "id": "H-225",
-   "status": "PRE_REGISTERED",
+   "id": "H-2026-11-20-05",
    "asset_class": "ETF",
-   "name": "dual_momentum_top2_12m",
-   "spec": "Universe SPY,QQQ,IWM,EFA,EEM,TLT,GLD. Every 21 sessions hold the top 2 by 252-session return, equal weight, ONLY if that return > 0 (absolute momentum filter) else cash; 10bps (20bps at 2x); benchmark SPY.",
-   "registered_at": "2026-11-22T08:54:04.153248+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Registered before first run (M-107). Antonacci dual momentum; the only new ETF mechanism added, so the trial count rises by exactly one for this class."
+   "family": "etf_basket_basis_reversion",
+   "description": "Intraday mean reversion of the spread between a liquid index ETF and its constituent basket, traded as a relative-value pair. No creation/redemption authority required, unlike true NAV arbitrage. Minute bars, point-in-time constituents and weights, 2 bps per leg base and 5 bps stress.",
+   "test_statistic": "net-of-cost Sharpe ratio of the basis-reversion pair (annualized, walk-forward)",
+   "acceptance_criteria": {
+    "min_sharpe": 0.5,
+    "min_n_round_trips": 200,
+    "slippage_bps": 2,
+    "stress_slippage_bps": 5,
+    "dsr": 0.95,
+    "validation": "walk-forward across >= 2 volatility regimes; reject if the basis half-life exceeds the average holding period observed"
+   },
+   "economic_prior": "ETF price and basket value are tied by arbitrage, so deviation is a liquidity-provision claim, not a direction call. Genuine NAV arbitrage is access-gated (creation units of 50k shares, competing with firms holding dedicated infrastructure); this is its retail-accessible shadow.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "PRE_REGISTERED - not run.",
+    "operator_note": "Requires minute bars and point-in-time constituent weights, which we may not have. BLOCKED_DATA is the honest status if we lack them, not a backtest on daily closes."
+   }
   },
   {
-   "id": "H-226",
+   "id": "H-2026-11-20-06",
+   "asset_class": "ETF",
+   "family": "rsi2_mean_reversion_replication",
+   "description": "Replication of Connors RSI(2) mean reversion on SPY and QQQ daily bars (long when RSI(2) < 10, exit on close above the 5-day MA or RSI(2) > 60), judged by the audit3 tribunal rather than a standalone backtest. Same code on BTC/SOL is the known-failure control: a crypto 24/7 series has no daily gap structure, so if it also 'works' the mechanism is not the one claimed.",
+   "test_statistic": "selection alpha (pick net return minus direction-adjusted buy-and-hold over the same window) with block-bootstrap CI, per instrument",
+   "acceptance_criteria": {
+    "min_n_trades": 200,
+    "alpha_ci_lo_pct": 0.0,
+    "dsr": 0.95,
+    "slippage_bps": 2,
+    "stress_slippage_bps": 5,
+    "validation": "walk-forward in time order; purged folds; reject if the BTC/SOL control shows alpha at the same significance (that would mean the test is measuring market beta or a coding artifact, not RSI(2))",
+    "control_must_fail": "BTC, SOL"
+   },
+   "economic_prior": "Short-horizon overreaction: a 2-period RSI below 10 is a sharp down-move, and the claim is that it partially reverts within days. Documented for equity indices since the 1990s, so the prior is that any surviving effect is small and cost-sensitive \u2014 this is a replication with an honest null, not a discovery.",
    "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "REFUTED as a timing-alpha claim; absolute return was beta.",
+    "run_at": "2026-11-20",
+    "artifact": "reports/rsi2_replication_2026-11-20.json",
+    "per_symbol": {
+     "SPY": {
+      "n": 115,
+      "mean_net_pct": 0.2547,
+      "win_rate": 0.7478,
+      "mean_selection_alpha_pct": -0.1224,
+      "mean_buy_hold_pct": 0.3771,
+      "mean_hold_days": 3.23
+     },
+     "QQQ": {
+      "n": 113,
+      "mean_net_pct": 0.3722,
+      "win_rate": 0.6814,
+      "mean_selection_alpha_pct": -0.147,
+      "mean_buy_hold_pct": 0.5192,
+      "mean_hold_days": 3.46
+     },
+     "BTC-USD": {
+      "n": 191,
+      "mean_net_pct": 0.6052,
+      "win_rate": 0.7277,
+      "mean_selection_alpha_pct": 0.4154,
+      "mean_buy_hold_pct": 0.1898
+     },
+     "SOL-USD": {
+      "n": 127,
+      "mean_net_pct": 0.2146,
+      "win_rate": 0.6299,
+      "mean_selection_alpha_pct": -0.5304,
+      "mean_buy_hold_pct": 0.745
+     }
+    },
+    "reading": "Both equity targets are profitable in absolute terms on every metric a naive backtest reports (SPY +0.25%/trade, 74.8% win rate) while LOSING to buy-and-hold over the identical holding windows (-0.12% and -0.15% per trade). The entire positive mean is beta captured during an up decade, not timing. The BTC control then shows +0.42% selection alpha, i.e. more than either equity target, so the test does not isolate the gap-structure mechanism it was supposed to. Both pre-registered failure conditions fired: control_must_fail, and min_n_trades (115 and 113 vs 200). The pipeline reproduces the well-known raw profile of RSI(2) and correctly refuses to credit it as alpha \u2014 that is the useful outcome.",
+    "caveats": "yfinance daily bars, auto-adjusted, exploratory only. Long-only implementation; the documented Connors result is also long-only but the selection-alpha framing is mine. n below the pre-registered minimum, so this is a refusal to support, not a powered proof of absence.",
+    "operator_note": "Daily bars via yfinance are exploratory only (survivorship and licensing caveats), which is acceptable for a replication whose purpose is to prove the pipeline reproduces a documented effect, not to certify a live strategy."
+   }
+  },
+  {
+   "id": "H-2026-11-22-EQUITY-TREND10M",
    "asset_class": "EQUITY",
-   "name": "xsmom_ls_top3_bottom3_6m",
-   "spec": "Dollar-neutral cross-sectional momentum on the 10-name equity universe: every 21 sessions long the top 3 and short the bottom 3 by 126-session return, 0.5/top_k each side (gross 1, net 0 asserted), 10bps round trip (20bps at 2x); monthly buckets for PF; benchmark SPY.",
-   "registered_at": "2026-11-22T08:57:57.096342+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Registered before first run (M-107). Long-only xsmom (H-201) is beta; removing the market leg makes excess-vs-benchmark measure the factor rather than leverage."
+   "family": "timeseries_momentum_10m_sma",
+   "description": "Long-only trend filter: hold SPY when the SPY level is above its 10-month simple moving average, otherwise hold 3-month T-bills. Signals use data through month t-2 (conservative); no leverage, no shorting.",
+   "test_statistic": "forward Sharpe(realised) and MDD_daily, monthly observations accrued from registration",
+   "acceptance_criteria": {
+    "min_forward_months": 100,
+    "require_sharpe_gt_buy_and_hold": true,
+    "require_mdd_daily_le_0.6x_buy_and_hold": true,
+    "kill_if": {
+     "forward_sharpe_lt_buy_and_hold_for_24_consecutive_months": true,
+     "mdd_daily_exceeds_buy_and_hold": true,
+     "rolling_10y_sharpe_advantage_negative_at_n_gte_100": true
+    }
+   },
+   "economic_prior": "Time-series momentum / trend: volatility clustering plus slow information diffusion mean bear phases persist; documented Faber 2007 (10-month SMA), Moskowitz-Ooi-Pedersen 2012. Backtest 93y S&P: delta-Sharpe positive in all four eras (+0.10/+0.26/+0.15/+0.06). RISK CONTROL NOT ALPHA - dividend-inclusive CAGR give-up measured at -0.71pp/yr for a 61% MDD cut (^SP500TR 1988-2026).",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-22T08:54:13Z",
+   "data_sample_lock": null,
+   "result": {
+    "backtest_summary": "93y GSPC + real T-bills: 7.55% vs 7.16% CAGR, Sharpe 0.69 vs 0.52, MDD -45.5 vs -57.6. L1d honest timing: Sharpe 0.796 vs 0.566 (equity basket). PBO/CSCV on the 20-config SMA x universe grid = 0.471 => the CHOICE of config is not informative, the FAMILY is (all equity-like configs Sharpe 0.70-1.03).",
+    "known_failures": "Fails COVID (100% invested through Feb-Mar 2020, -19.9% both legs); currently underperforming buy-and-hold over 2025-01..2026-11 (+0.5% vs +17.5%); worse than buy-and-hold in 31% of rolling 10-year windows.",
+    "forward_observations": 0
+   },
+   "kill_reason": null
   },
   {
-   "id": "H-227",
+   "id": "H-2026-11-22-COMMODITY-TREND10M",
+   "asset_class": "COMMODITY",
+   "family": "timeseries_momentum_10m_sma_roll_managed_etf",
+   "description": "Long-only trend filter on an equal-weight basket of roll-managed commodity ETFs (DBC GSG GLD SLV USO UNG CORN WEAT SOYB DBA CPER): hold the basket when its equal-weight level is above its 10-month SMA, else 3-month T-bills. Signals through month t-2.",
+   "test_statistic": "forward Sharpe(realised) and MDD_daily, monthly observations accrued from registration",
+   "acceptance_criteria": {
+    "min_forward_months": 100,
+    "require_sharpe_gt_buy_and_hold": true,
+    "require_positive_forward_cagr": true,
+    "kill_if": {
+     "forward_sharpe_lt_buy_and_hold_for_24_consecutive_months": true,
+     "forward_cagr_negative_at_n_gte_100": true
+    }
+   },
+   "economic_prior": "Long-only commodity futures have structurally negative expected return from roll cost in contango. A trend filter's job is to be OUT of the asset when trend and term structure are adverse. Prediction is 'avoid the loss', not 'commodities rise'. Backtest 2011-12..2026-11 (180mo, clean ETF data): BH -0.83% CAGR / 0.010 Sharpe / -62.8% MDD vs TREND +3.59% / 0.431 / -15.4% (MDD cut 75%, invested 43% of the time, 23 switches).",
    "status": "PRE_REGISTERED",
-   "asset_class": "CRYPTO",
-   "name": "xsmom_ls_top2_bottom2_3m",
-   "spec": "Dollar-neutral cross-sectional momentum on the 6 coin universe: every 21 sessions long the top 2 and short the bottom 2 by 63-session return, gross 1 net 0, 20bps round trip (40bps at 2x); benchmark BTC.",
-   "registered_at": "2026-11-22T08:57:57.096342+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Registered before first run (M-107). The short leg is what a long-only crypto cell cannot express."
-  },
-  {
-   "id": "H-228",
-   "status": "PRE_REGISTERED",
-   "asset_class": "CRYPTO",
-   "name": "funding_carry_delta_neutral",
-   "spec": "Delta-neutral perp/spot carry: equal-weight book over BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT; daily return = that day's summed funding per symbol, averaged across symbols, minus a 1.0 bps/day holding drag (2.0 bps at 2x) for margin rebalancing. Measured from data/funding_rate_archive/*.jsonl (OKX prints), not synthesised. Benchmark BTC buy-and-hold.",
-   "registered_at": "2026-11-22T08:57:57.096342+00:00",
-   "source": "reports/preregistration_2026-11-22_per_class.json",
-   "frozen": true,
-   "notes": "Registered before first run (M-107). Funding is the only crypto return stream here that is not beta. Archive covers ~9 months, which cannot contain a liquidation cascade: a pass is a candidate, never a proof."
-  },
-  {
-   "id": "H-229",
-   "status": "PRE_REGISTERED",
-   "asset_class": "CRYPTO",
-   "name": "funding_carry_holding_period_respec",
-   "spec": "Same delta-neutral 5-coin funding carry as H-228, re-specified with the cost model that H-228 could not justify: drag = measured round trip (42.64 bp) / holding days, with a 60-day holding floor, plus a measured re-hedge term of 0.072 bp/day (5% drift band, live Binance books). Holds at 0% allocation. Judged against a 3.5% T-bill, not BTC: the question is whether carry beats CASH.",
-   "registered_at": "2026-11-22T11:37:39.895438+00:00",
-   "source": "reports/forward_pod_carry_h229.json",
-   "frozen": true,
-   "notes": "Registered AFTER H-228's result, and that is declared rather than dressed up: this adds NO new evidence, because the motivating series is H-228's own. H-228 keeps its verdict under its pre-registered flat 1.0 bp/day drag. H-229 exists to accrue FORWARD observations under a cost model with a stated holding period, judged by tools/funding_carry_forward.py. Kill criteria are in the pod spec and were written before the first observation. Measured break-even: at 42.64 bp retail taker the sleeve beats a 3.5% T-bill only from a 180-day hold; at a 90-day hold it needs <=28.4 bp round trip (14.2 bp/side)."
+   "registered_at": "2026-11-22T08:54:13Z",
+   "data_sample_lock": null,
+   "result": {
+    "backtest_summary": "180 months only. Much of the +3.59% is T-bill interest earned in cash 57% of the time; at zero policy rates that leg contributes nothing. Yahoo =F continuous contracts are UNUSABLE (CL=F negative close -37.63) - this uses roll-managed ETFs instead.",
+    "known_failures": "Short sample, one asset class, 11 correlated funds. The 20bp cost model is generous for some of these ETFs.",
+    "forward_observations": 0
+   },
+   "kill_reason": null
   }
- ],
+ ,
+    {
+   "id": "H-233",
+   "asset_class": "PORTFOLIO",
+   "family": "vol_targeting_overlay",
+   "description": "Volatility-targeted 60/40 (SPY 60 / TLT 40) scaled to a 10% annualised vol target from YESTERDAY's realised 60-day vol only, cap 2x, 5 bp per unit turnover, retains a positive certainty-equivalent advantage over plain 60/40 on a window disjoint from the development period (2016-01-01..2026-11-20). Replication of C-014, which had independent_runs=0.",
+   "test_statistic": "delta certainty equivalent (annualised, risk aversion 1) in Window B, paired block bootstrap 95% CI, 10000 resamples, block length 20",
+   "acceptance_criteria": {
+    "delta_ce_positive": true,
+    "ci_lower_bound_gt": "0",
+    "maxdd_not_worse": true,
+    "sign_agreement_across_windows": true,
+    "validation": "two-window replication; NOT a virgin holdout because C-014 already used 2005-2026 in aggregate"
+   },
+   "economic_prior": "Constant-risk rather than constant-weight exposure raises realised risk efficiency when vol clusters. This is a risk-overlay mechanism, not a forecast, so it does not consume an alpha feature family.",
+   "status": "REFUTED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "2005-01-03..2026-11-20 daily closes, SPY/TLT, frozen at registration",
+   "result": {
+    "verdict": "REFUTED_OOS - the certainty-equivalent advantage does not replicate; the drawdown reduction does.",
+    "run_date": "2026-11-23",
+    "window_A_2005_2015": {
+     "plain_ce_pct": 6.7,
+     "vt_ce_pct": 9.07,
+     "delta_ce_pp": 2.3756,
+     "ci95": [
+      -0.2182,
+      4.9008
+     ],
+     "n": 2768
+    },
+    "window_B_2016_2026": {
+     "plain_ce_pct": 9.51,
+     "vt_ce_pct": 9.15,
+     "delta_ce_pp": -0.3549,
+     "ci95": [
+      -3.3468,
+      2.6607
+     ],
+     "n": 2738,
+     "plain_cagr_pct": 9.97,
+     "vt_cagr_pct": 9.58,
+     "plain_mdd_pct": -26.39,
+     "vt_mdd_pct": -19.1
+    },
+    "full_sample_diagnostic": {
+     "delta_ce_pp": 1.0178,
+     "ci95": [
+      -1.03,
+      2.999
+     ],
+     "n": 5506
+    },
+    "criteria": {
+     "delta_ce_positive_in_B": false,
+     "ci_low_gt_zero": false,
+     "maxdd_not_worse": true,
+     "sign_agreement": false
+    },
+    "interpretation": "The drawdown half of the mechanism is real and appears in both windows (-26.82->-21.60 and -26.39->-19.10). The return/CE half is not stable: in 2016-2026 vol targeting LOWERED CAGR (9.97% -> 9.58%) as well as CE, and the full-sample daily CE advantage has a CI containing zero. C-014's 'raises CAGR' therefore does not generalise.",
+    "labels": "Verdict restricted by the pre-registration to REPLICATED / REFUTED_OOS / INCONCLUSIVE. No post-hoc switch to the monthly basis, which would have passed.",
+    "artifacts": [
+     "tools/h233_vol_target_replication.py",
+     "reports/h233_vol_target_replication_2026-11-23.json",
+     "plans/2026-11-23-prereg-H-233-vol-target-replication.md"
+    ]
+   }
+  }],
  "fork2_new_signals": [
   {
    "id": "H-006",
@@ -4448,6 +4467,117 @@
    },
    "banned_check": "Related-family replication of non-killed H-103 allocation research; not H-109 VIX gate, H-141 annual survivor selection or killed equity price-factor tests. One variant counted with its parent, not independent corroboration.",
    "protocol_path": "2026-11-15_AM_profitability-plan/copilot-financial-review/08_SIMULATION_PLAN.md"
+  },
+  {
+   "id": "H-144",
+   "asset_class": "ETF",
+   "family": "residual_mean_reversion",
+   "description": "Factor-residual OU mean reversion on liquid US sector ETFs. Rolling 60-day regression of each ETF on the market factor plus its sector factor; fit OU to the residual; enter when |s-score| >= 1.25, exit at |s| <= 0.5; beta-weighted factor hedge for neutrality; inverse-vol sizing with caps enforced in the order gateway, not the model. Daily rebalance, 5 bps per trade base and 10 bps stress.",
+   "test_statistic": "net-of-cost Sharpe ratio of the residual book (annualized, walk-forward)",
+   "acceptance_criteria": {
+    "min_sharpe": 0.5,
+    "min_n_per_leg": 50,
+    "slippage_bps": 5,
+    "stress_slippage_bps": 10,
+    "dsr": 0.95,
+    "n_trials_recorded": true,
+    "validation": "purged walk-forward, 5 folds; reject if any fold < 0.2 Sharpe or if the paired-block 95% CI of net return includes 0"
+   },
+   "economic_prior": "Short-horizon overreaction and liquidity provision in idiosyncratic returns. The residual is market-neutral by construction, so this makes no direction call: the prior risk is that residuals trend (half-life drift), not that the market moves against us. Published PCA residual stat-arb earned Sharpe 1.44 net 1997-2007 but only 0.9 in 2003-2007 as capital crowded in, hence the 0.5 bar.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "PRE_REGISTERED - not run.",
+    "operator_note": "Do not test against the same sample as H-143 (month-end trend) or any ETF TAA variant. Publish the OU half-life per name alongside the Sharpe: a half-life longer than the holding period means the trade is a trend bet wearing a mean-reversion label."
+   }
+  },
+  {
+   "id": "H-145",
+   "asset_class": "COMMODITY",
+   "family": "calendar_spread_reversion",
+   "description": "Energy calendar spread (front vs second contract, WTI and NG) mean reversion. Kalman-filter hedge ratio, Bollinger entry and exit on the spread, roll-aware continuous series with point-in-time contract selection. 10 bps per leg base, 20 bps stress.",
+   "test_statistic": "net-of-cost Sharpe ratio of the spread sleeve (annualized, walk-forward)",
+   "acceptance_criteria": {
+    "min_sharpe": 0.5,
+    "min_n_round_trips": 100,
+    "slippage_bps": 10,
+    "stress_slippage_bps": 20,
+    "dsr": 0.95,
+    "validation": "walk-forward spanning at least 3 regimes including the post-2020 negative-price regime; reject if any regime fold is negative"
+   },
+   "economic_prior": "Storage and roll-yield economics make calendar spreads less trend-exposed than outrights, and the spread is a relative-value claim rather than a price forecast. Published pre-2013 results do not transfer: WTI traded negative in 2020 and storage economics changed.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "PRE_REGISTERED - not run.",
+    "operator_note": "Kalman hedge ratios are free parameters: record how many were fitted and include them in n_trials. The 1992-2013 evidence is a different regime, not corroboration."
+   }
+  },
+  {
+   "id": "H-146",
+   "asset_class": "ETF",
+   "family": "execution_cost_gate",
+   "description": "Change position only when the forecast magnitude exceeds round-trip cost, applied to the H-144 signal set. Measured as a paired comparison on identical signals: gated versus ungated. Turnover reduction and gross-alpha retention are reported alongside, not substituted for, the primary statistic.",
+   "test_statistic": "paired difference in net-of-cost Sharpe (gated minus ungated), block-bootstrapped 95% CI",
+   "acceptance_criteria": {
+    "paired_sharpe_delta": "> 0 with 95% CI excluding 0",
+    "min_turnover_reduction": 0.5,
+    "min_gross_alpha_retention": 0.6,
+    "slippage_bps": 5,
+    "validation": "same folds as H-144 so the comparison is paired, not independent"
+   },
+   "economic_prior": "Annual cost drag is turnover times round-trip cost. When the forecast is smaller than the cost it must pay, trading is strictly negative-expectancy regardless of whether the forecast is skilful. This should hold even if H-144 fails, which makes it the most independently informative hypothesis of the set.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "PRE_REGISTERED - not run.",
+    "operator_note": "If it holds here it applies to every class, so a CROSS-ASSET record may be warranted once the ETF measurement is done. Kept under ETF for now because a hypothesis needs one measurable population."
+   }
+  },
+  {
+   "id": "H-147",
+   "asset_class": "EQUITY",
+   "family": "factor_neutralization",
+   "description": "For each resolved closed pick, hedge the market-factor exposure over its own holding window and re-measure selection alpha. Compare beta-hedged selection alpha to the current unhedged figure of -0.2763%/trade (CI [-0.506, -0.043], n=3192).",
+   "test_statistic": "selection alpha = mean net return minus direction-adjusted buy-and-hold over the same window, beta-hedged",
+   "acceptance_criteria": {
+    "min_n": 200,
+    "criterion": "beta-hedged selection alpha > 0 with 95% CI excluding 0"
+   },
+   "economic_prior": "Our selection alpha is negative and roughly the size of an unhedged beta mis-timing. If the picks carry information but time the market badly, hedging recovers it. If hedging does not recover it, the picks carry no information - which is the more likely outcome, and a clean falsification either way.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "PRE_REGISTERED - not run.",
+    "operator_note": "This is the cheapest decisive test in the set: it reuses existing closed picks and needs no new strategy code. Run it before building any new sleeve."
+   }
+  },
+  {
+   "id": "H-148",
+   "asset_class": "ETF",
+   "family": "etf_basket_basis_reversion",
+   "description": "Intraday mean reversion of the spread between a liquid index ETF and its constituent basket, traded as a relative-value pair. No creation/redemption authority required, unlike true NAV arbitrage. Minute bars, point-in-time constituents and weights, 2 bps per leg base and 5 bps stress.",
+   "test_statistic": "net-of-cost Sharpe ratio of the basis-reversion pair (annualized, walk-forward)",
+   "acceptance_criteria": {
+    "min_sharpe": 0.5,
+    "min_n_round_trips": 200,
+    "slippage_bps": 2,
+    "stress_slippage_bps": 5,
+    "dsr": 0.95,
+    "validation": "walk-forward across at least 2 volatility regimes; reject if the basis half-life exceeds the average holding period observed"
+   },
+   "economic_prior": "ETF price and basket value are tied by arbitrage, so deviation is a liquidity-provision claim rather than a direction call. The genuine NAV arbitrage is access-gated (creation units of 50k shares, competing with firms holding dedicated infrastructure); this is the retail-accessible shadow of it.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-20",
+   "data_sample_lock": null,
+   "result": {
+    "verdict": "PRE_REGISTERED - not run.",
+    "operator_note": "Requires minute bars and point-in-time constituent weights, which we may not have. Check data availability before declaring this testable - a BLOCKED_DATA status is the honest outcome if we lack the bars, not a backtest on daily closes."
+   }
   }
  ]
 }
