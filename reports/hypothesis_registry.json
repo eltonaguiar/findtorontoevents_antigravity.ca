@@ -2840,7 +2840,7 @@
    "kill_reason": null
   }
  ,
-  {
+    {
    "id": "H-233",
    "asset_class": "PORTFOLIO",
    "family": "vol_targeting_overlay",
@@ -2854,13 +2854,57 @@
     "validation": "two-window replication; NOT a virgin holdout because C-014 already used 2005-2026 in aggregate"
    },
    "economic_prior": "Constant-risk rather than constant-weight exposure raises realised risk efficiency when vol clusters. This is a risk-overlay mechanism, not a forecast, so it does not consume an alpha feature family.",
-   "status": "PRE_REGISTERED",
+   "status": "REFUTED",
    "registered_at": "2026-11-23",
    "data_sample_lock": "2005-01-03..2026-11-20 daily closes, SPY/TLT, frozen at registration",
    "result": {
-    "verdict": "PRE_REGISTERED - not run at filing time.",
-    "operator_note": "Pre-registration ahead of the run per rule M-107. Result labels restricted to REPLICATED / REFUTED_OOS / INCONCLUSIVE. CORRECTION: the evidence script tools/vol_target_vs_hold.py was absent from main but EXISTS on unmerged branch research/commodity-tsmom-v3-2026-11-22 at 4daf025ed1d; it is restored to main alongside this test and its vol_target()/perf() are reused. Also recorded: C-014's -22.37/-31.42 pair is the MONTHLY-rebalanced basis per that artifact, not the daily one.",
-    "prereg_doc": "plans/2026-11-23-prereg-H-233-vol-target-replication.md"
+    "verdict": "REFUTED_OOS - the certainty-equivalent advantage does not replicate; the drawdown reduction does.",
+    "run_date": "2026-11-23",
+    "window_A_2005_2015": {
+     "plain_ce_pct": 6.7,
+     "vt_ce_pct": 9.07,
+     "delta_ce_pp": 2.3756,
+     "ci95": [
+      -0.2182,
+      4.9008
+     ],
+     "n": 2768
+    },
+    "window_B_2016_2026": {
+     "plain_ce_pct": 9.51,
+     "vt_ce_pct": 9.15,
+     "delta_ce_pp": -0.3549,
+     "ci95": [
+      -3.3468,
+      2.6607
+     ],
+     "n": 2738,
+     "plain_cagr_pct": 9.97,
+     "vt_cagr_pct": 9.58,
+     "plain_mdd_pct": -26.39,
+     "vt_mdd_pct": -19.1
+    },
+    "full_sample_diagnostic": {
+     "delta_ce_pp": 1.0178,
+     "ci95": [
+      -1.03,
+      2.999
+     ],
+     "n": 5506
+    },
+    "criteria": {
+     "delta_ce_positive_in_B": false,
+     "ci_low_gt_zero": false,
+     "maxdd_not_worse": true,
+     "sign_agreement": false
+    },
+    "interpretation": "The drawdown half of the mechanism is real and appears in both windows (-26.82->-21.60 and -26.39->-19.10). The return/CE half is not stable: in 2016-2026 vol targeting LOWERED CAGR (9.97% -> 9.58%) as well as CE, and the full-sample daily CE advantage has a CI containing zero. C-014's 'raises CAGR' therefore does not generalise.",
+    "labels": "Verdict restricted by the pre-registration to REPLICATED / REFUTED_OOS / INCONCLUSIVE. No post-hoc switch to the monthly basis, which would have passed.",
+    "artifacts": [
+     "tools/h233_vol_target_replication.py",
+     "reports/h233_vol_target_replication_2026-11-23.json",
+     "plans/2026-11-23-prereg-H-233-vol-target-replication.md"
+    ]
    }
   }],
  "fork2_new_signals": [
