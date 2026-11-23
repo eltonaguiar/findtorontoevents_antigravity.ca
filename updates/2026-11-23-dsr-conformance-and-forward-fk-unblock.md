@@ -157,9 +157,9 @@ top of upstream's own copy and is verified below.
 **2. "H-201 was structurally blocked" was half wrong.** I checked H-201 against **my local
 tree's** registry, which held 130 rows and no H-201, and reported that as the estate's
 state. Upstream's registry held **138 rows and already contained H-201**. Only **R4b** was
-ever absent from the real registry. This is the stale-local-copy hazard: the local tree is
-169 commits behind `origin/main`, so any "is X registered?" question must be asked of
-`git show origin/main:...`, never of the working tree.
+ever absent from the real registry. This is the stale-local-copy hazard: the local tree carries 169
+unpushed commits of its own and is missing upstream's later ones, so any "is X registered?" question
+must be asked of `git show origin/main:...`, never of the working tree.
 
 **Verified after the fix:**
 
