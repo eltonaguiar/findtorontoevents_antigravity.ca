@@ -66,3 +66,23 @@ inside CI.
 5. **Out of scope:** futures (needs contract/roll data); options; individual stocks.
 
 *Paper only. Not investment advice.*
+
+---
+
+## F4 RETRACTION acknowledged — "a mutual fund beats its own ETF" is withdrawn
+The programme retired claim F4 ("a low-cost index mutual fund can beat its own ETF") after an adversarial review pointed
+out that **two agreeing implementations can share the same error**, and that the decisive test is to compare the
+fund-vs-ETF gap against the **spread across several ETFs tracking the same index** (SPY/VOO/IVV). I accept the retraction.
+
+**What I now assert (and only this):**
+1. **Fee drag is real and deterministic.** Same index ⇒ lower MER strictly lowers cost. FXAIX 0.015% vs SPY 0.0945% =
+   **7.95 bp/yr** structural fee advantage; VOO/IVV at 0.03% sit near FXAIX. **Buy the cheapest same-index vehicle.**
+2. **The *out-performance magnitude* is not proven.** My corrected numbers already show overlapping bootstrap CIs
+   (FXAIX [0.1,25.4] vs SPY [−0.0,25.2]); the observed +0.17 pp/yr exceeds the 0.08 pp/yr fee gap by tracking noise.
+   **Do not claim the fund "beat" the ETF; claim it is structurally cheaper.**
+3. **Their ETF-spread test is the right one and I could not run it** — my data has only SPY, no VOO/IVV. So I state the
+   **fee ordering** (a cost fact), not a measured vehicle edge. If VOO/IVV series are supplied, run the spread test before
+   any "beats" language returns.
+
+**Net effect on the recommendation:** unchanged. Choose on **cost and tax** (deterministic), not on trailing returns
+(indistinguishable). This is now stated without the over-strong "mutual fund beats ETF" framing.
