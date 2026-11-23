@@ -1,0 +1,49 @@
+{
+ "generated_for": "reports/TOP_PICKS_BY_ASSET_CLASS_2026-11-23.md",
+ "balance": 100000,
+ "years": 10,
+ "method": "simple MER x balance x years (NOT compounded; compounding would make high-fee products look worse)",
+ "assumptions_status": "ASSUMED illustrative MERs, not scraped from fund documents. Ratios are robust; absolute dollars are not.",
+ "rows": {
+  "direct_index": {
+   "label": "Direct index ownership (no wrapper)",
+   "assumed_mer_pct": 0.0,
+   "cost_dollars": 0.0,
+   "cost_bp_of_balance_per_year": 0.0,
+   "note": "No ongoing management fee. Transaction/spread costs are separate and are NOT counted here."
+  },
+  "index_etf": {
+   "label": "Broad-market index ETF",
+   "assumed_mer_pct": 0.105,
+   "cost_dollars": 1050.0,
+   "cost_bp_of_balance_per_year": 10.5,
+   "note": "ASSUMED ~0.105%/yr blend of a US total-market ETF and a CAD-listed equivalent."
+  },
+  "index_mutual_fund": {
+   "label": "Low-MER index mutual fund",
+   "assumed_mer_pct": 0.452,
+   "cost_dollars": 4520.0,
+   "cost_bp_of_balance_per_year": 45.2,
+   "note": "ASSUMED ~0.45%/yr. Typically 3-5x the ETF version for the same underlying exposure."
+  },
+  "active_mutual_fund": {
+   "label": "Active mutual fund",
+   "assumed_mer_pct": 1.852,
+   "cost_dollars": 18520.0,
+   "cost_bp_of_balance_per_year": 185.2,
+   "note": "ASSUMED ~1.85%/yr, typical of Canadian active equity funds incl. trailing commission."
+  }
+ },
+ "ratios": {
+  "index_mf_vs_index_etf": 4.3,
+  "active_mf_vs_index_etf": 17.64,
+  "active_mf_vs_direct": null
+ },
+ "fixed_fee_note": "A FIXED fee is an account-size decision, not a fund-quality decision. A $25/yr admin fee is 4.5%/yr on a $550 account and 0.05% on $50,000. Any MER comparison that omits the fixed component is wrong for small accounts.",
+ "measured_separately": {
+  "equity_round_trip_bp": 0.98,
+  "equity_round_trip_bp_if_fx_not_avoided": 150.98,
+  "source": "reports/equity_cost_hml.json",
+  "note": "One FX-avoidance decision is worth 150x every MER difference here."
+ }
+}

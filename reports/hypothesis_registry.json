@@ -2838,8 +2838,7 @@
     "forward_observations": 0
    },
    "kill_reason": null
-  }
- ,
+  },
   {
    "id": "H-233",
    "asset_class": "PORTFOLIO",
@@ -3045,7 +3044,82 @@
     ],
     "prereg_doc": "plans/2026-11-23-prereg-H-236-h201-pit-universe.md"
    }
-  }],
+  },
+  {
+   "id": "H-237",
+   "asset_class": "EQUITY",
+   "family": "top_gainer_persistence_daily",
+   "description": "Reverse-engineering the retail 'daily top gainers' screen: on a liquid US large-cap universe, the top decile by yesterday's return outperforms the universe mean over the NEXT day, net of 0.98bp round-trip cost, with block-bootstrap 95% CI lower bound > 0.",
+   "test_statistic": "mean forward-1d return of top-decile-by-trailing-1d minus universe mean, in bp; moving-block bootstrap 95% CI",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "survives_2x_cost": true
+   },
+   "economic_prior": "Null is strongly expected: single-day extreme returns are dominated by bid-ask bounce and transient order-flow imbalance, which reverse. This is the screen most retail 'top gainer' dashboards sell, so measuring it is a service even if the answer is negative.",
+   "status": "REFUTED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "liquid US large-cap universe, daily closes, ~5y window ending 2026-11-21",
+   "result": {
+    "verdict": "REFUTED on the pre-registered criterion (block-bootstrap 95% CI lower bound > 0).",
+    "excess_bp_per_period": 1.611,
+    "excess_ci_bp": [
+     -4.378,
+     7.262
+    ],
+    "ci_excludes_zero": false,
+    "n_periods": 1504,
+    "universe": 117,
+    "cost_bp_rt": 0.98,
+    "hurdle": 0.0432,
+    "window": [
+     "2020-11-23",
+     "2026-11-20"
+    ],
+    "alpha_note": "Jensen alpha +6.48%/yr, block-bootstrap CI [-10.41%, +21.27%], excludes zero = False. Beta 1.240 did the work.",
+    "artifact": "reports/top_gainer_test.json",
+    "runner": "tools/top_gainer_test.py",
+    "bugfixes_before_trusting": "(1) look-ahead: ranked on day d then captured day d's own return -> fabricated +880% alpha; (2) double .shift(-(hold-1)) misaligned hold>1; (3) hurdle test on raw net return rewards beta (reported, non-deciding)."
+   }
+  },
+  {
+   "id": "H-238",
+   "asset_class": "EQUITY",
+   "family": "top_gainer_persistence_weekly",
+   "description": "The swing version: on the same universe, the top decile by trailing 5-day return outperforms the universe mean over the NEXT 5 days, net of 0.98bp round-trip cost, with block-bootstrap 95% CI lower bound > 0.",
+   "test_statistic": "mean forward-5d return of top-decile-by-trailing-5d minus universe mean, in bp; moving-block bootstrap 95% CI",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "survives_2x_cost": true
+   },
+   "economic_prior": "Cross-sectional momentum is a documented premium (Jegadeesh-Titman), but the extreme-gainer slice is where microstructure reversal and crowding bite hardest. Direction genuinely uncertain ex ante, which is why it is pre-registered rather than assumed.",
+   "status": "REFUTED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "liquid US large-cap universe, daily closes, ~5y window ending 2026-11-21",
+   "result": {
+    "verdict": "REFUTED on the pre-registered criterion (block-bootstrap 95% CI lower bound > 0).",
+    "excess_bp_per_period": -2.238,
+    "excess_ci_bp": [
+     -22.754,
+     23.931
+    ],
+    "ci_excludes_zero": false,
+    "n_periods": 1496,
+    "universe": 117,
+    "cost_bp_rt": 0.98,
+    "hurdle": 0.0432,
+    "window": [
+     "2020-11-23",
+     "2026-11-20"
+    ],
+    "alpha_note": "Jensen alpha -3.11%/yr, CI [-17.10%, +12.53%], excludes zero = False. Point estimate negative.",
+    "artifact": "reports/top_gainer_test.json",
+    "runner": "tools/top_gainer_test.py",
+    "bugfixes_before_trusting": "(1) look-ahead: ranked on day d then captured day d's own return -> fabricated +880% alpha; (2) double .shift(-(hold-1)) misaligned hold>1; (3) hurdle test on raw net return rewards beta (reported, non-deciding)."
+   }
+  }
+ ],
  "fork2_new_signals": [
   {
    "id": "H-006",
