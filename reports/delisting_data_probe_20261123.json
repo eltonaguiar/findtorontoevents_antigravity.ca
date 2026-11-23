@@ -1,0 +1,39 @@
+{
+ "generated_utc": "2026-11-23",
+ "task": "Build a delisting-aware equity universe so a clean PASS becomes nameable -- SOURCE PROBE",
+ "outcome": "BLOCKED_ON_SOURCE",
+ "question": "Can any data source available in this repo return price history for tickers that have stopped trading during or after the measurement window?",
+ "method": "Downloaded a fixed probe set of 14 tickers from yfinance (the repo's only free equity source) over 2021-11-01..2026-11-20: 12 that genuinely stopped trading in or after the window, plus 2 known survivors as controls. A delisting-aware universe requires the 12; if they cannot be fetched, no such universe can be built here.",
+ "probe_results": [
+  {"ticker": "TWTR", "event": "taken private 2022-10", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "ATVI", "event": "acquired by MSFT 2023-10", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "VMW", "event": "taken private 2023-11", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "SPLK", "event": "acquired by CSCO 2024-03", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "PXD", "event": "acquired by XOM 2024-05", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "HES", "event": "acquired by CVX 2024-07", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "K", "event": "acquired by Mars 2025", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "DISCA", "event": "renamed WBD", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "ANTM", "event": "renamed ELV 2022-06", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "FRC", "event": "failed 2023-05 (First Republic)", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "SIVB", "event": "failed 2023-03 (SVB Financial)", "bars": 0, "status": "UNAVAILABLE"},
+  {"ticker": "BBBY", "event": "bankrupt 2023-04", "bars": 89, "first": "2026-07-17", "last": "2026-11-19", "status": "TICKER_REUSED_NOT_ORIGINAL", "note": "89 bars starting 2026-07-17 is a different issuer reusing the symbol; using it would inject a fabricated history"},
+  {"ticker": "PTON", "event": "control: still listed", "bars": 1269, "first": "2021-11-01", "last": "2026-11-19", "status": "AVAILABLE"},
+  {"ticker": "AAPL", "event": "control: still listed", "bars": 1269, "first": "2021-11-01", "last": "2026-11-19", "status": "AVAILABLE"}
+ ],
+ "score": {
+  "probe_tickers": 14,
+  "genuinely_delisted": 12,
+  "delisted_resolvable": 0,
+  "delisted_unavailable": 12,
+  "controls_resolvable": 2,
+  "usable_delisted_series_for_a_PIT_universe": 0
+ },
+ "why_this_matters": "The 44-name point-in-time universe meets the pod's 22-name count bar but contains only survivors. Survivorship bias direction is UPWARD: names that died are absent, so a momentum strategy's winners are kept and its losers are deleted from the sample. That inflates any measured edge, so a PASS on such a universe is not admissible evidence. This probe shows the repo cannot fix that by adding the missing names.",
+ "sources_checked": [
+  {"source": "yfinance (repo default free equity source)", "delisting_aware": false, "evidence": "all 12 delisted probe tickers return 0 bars"},
+  {"source": "CRSP / Norgate / Polygon / Tiingo / Bloomberg", "delisting_aware": true, "available": false, "evidence": "no API key present for any of them (already recorded as COMS ask A1)"}
+ ],
+ "what_would_unblock_a_clean_PASS": "A delisting-aware price source: CRSP (academic), Norgate Data (US delisted included), Polygon.io with delisted tickers, or Tiingo. Any one of them, keyed, would let tools/pit_equity_universe.py build a universe whose membership includes names that later died, at which point the survivorship flag can be removed honestly rather than by relabelling.",
+ "what_was_NOT_done_and_why": "I did not fabricate a delisting-aware universe by injecting synthetic terminal losses for names that never existed in the data. A simulated death rate is a sensitivity test, and it may be worth running later, but it is not a replacement universe and must never be labelled one: the whole purpose of the flag is to stop exactly that kind of relabelling.",
+ "consequence": "The H-201 pod's verdict stays capped at CANDIDATE_SURVIVORSHIP_FLAGGED. The count bar is met; the purpose of the bar is not. A KILL remains admissible, because failing to clear zero despite upward bias is the stronger result."
+}
