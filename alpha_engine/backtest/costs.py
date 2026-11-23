@@ -52,15 +52,48 @@ class CostModel:
     """
     commission_per_share: float = 0.005    # $0.005/share (IB-style)
     min_commission: float = 1.00           # $1.00 minimum
+    max_commission: float = float("inf")   # per-trade cap (Questrade had $9.95 when it charged)
     slippage_bps: float = 10               # 10 bps = 0.10%
-    spread_bps: float = 5                  # 5 bps estimated half-spread
+    spread_bps: float = 5                  # 5 bps estimated HALF-spread (charged each side)
     borrow_cost_annual_bps: float = 50     # 50 bps/year for shorts
     exchange_fee_per_share: float = 0.003  # Exchange/ECN fees
 
     # Questrade-specific
+    # NOTE (2026-11-23): these were mis-modelled. See questrade_canada().
     questrade_mode: bool = False
-    forex_fee_pct: float = 0.0175          # 1.75% for USD trades (Questrade)
-    ecn_fee: float = 0.0035               # ECN fee per share
+    forex_fee_pct: float = 0.0175          # RATE ONLY - apply via
+                                          # currency_conversion_cost(), never per trade
+    ecn_fee: float = 0.0035               # per share; $0 on smart-routed orders
+    # U.S. SEC fee, charged on SALES only, 0.0000206 x sell notional.
+    # 0.0 by default so the IB path is unchanged.
+    sec_fee_rate: float = 0.0
+
+    def _per_side_cost(self, price: float, shares: int) -> float:
+        """Costs incurred on EACH side (entry or exit) of a trade.
+
+        Extracted so entry and exit charge the same per-side legs exactly once.
+        Previously exit_cost() called entry_cost(), which silently charged any
+        per-trade term (notably FX) TWICE on a round trip.
+        """
+        commission = min(max(shares * self.commission_per_share, self.min_commission),
+                         self.max_commission)
+        slippage = price * shares * (self.slippage_bps / 10_000)
+        spread = price * shares * (self.spread_bps / 10_000)
+        exchange = shares * self.exchange_fee_per_share
+        if self.questrade_mode:
+            # smart-routed orders incur no ECN; ecn_fee is 0.0 for that case
+            exchange = shares * self.ecn_fee
+        return commission + slippage + spread + exchange
+
+    def currency_conversion_cost(self, notional: float) -> float:
+        """One-off FX conversion cost. NOT a per-trade cost.
+
+        Questrade charges 1.5% only when converting currency, and a dual-currency
+        USD account avoids it entirely. Applying it to every trade (the previous
+        behaviour) overstated a round trip by 350 bp and swamped every other term.
+        Deliberately excluded from compute_entry_cost()/compute_exit_cost().
+        """
+        return max(0.0, notional) * self.forex_fee_pct
 
     def compute_entry_cost(
         self,
@@ -70,29 +103,14 @@ class CostModel:
     ) -> float:
         """
         Compute total cost for entering a position.
-        
+
         Returns total dollar cost (always positive).
         """
-        # Commission
-        commission = max(shares * self.commission_per_share, self.min_commission)
-
-        # Slippage (market impact)
-        slippage = price * shares * (self.slippage_bps / 10000)
-
-        # Half-spread cost
-        spread = price * shares * (self.spread_bps / 10000)
-
-        # Exchange fees
-        exchange = shares * self.exchange_fee_per_share
-
-        # Questrade forex fee
-        forex = 0
-        if self.questrade_mode:
-            forex = price * shares * self.forex_fee_pct
-            exchange = shares * self.ecn_fee
-
-        total = commission + slippage + spread + exchange + forex
-        return total
+        cost = self._per_side_cost(price, shares)
+        # SEC fee applies to SALES. A short's entry IS the sale.
+        if is_short and self.sec_fee_rate > 0:
+            cost += price * shares * self.sec_fee_rate
+        return cost
 
     def compute_exit_cost(
         self,
@@ -103,18 +121,19 @@ class CostModel:
     ) -> float:
         """
         Compute total cost for exiting a position.
-        Includes borrow cost for shorts.
+        Includes borrow cost for shorts, and the SEC fee when the exit is a sale.
         """
-        # Same base costs as entry
-        base_cost = self.compute_entry_cost(price, shares, is_short)
+        cost = self._per_side_cost(price, shares)
+        # SEC fee applies to SALES. A long's exit IS the sale.
+        if not is_short and self.sec_fee_rate > 0:
+            cost += price * shares * self.sec_fee_rate
 
         # Add borrow cost for shorts
-        borrow = 0
         if is_short and holding_days > 0:
-            annual_borrow = price * shares * (self.borrow_cost_annual_bps / 10000)
-            borrow = annual_borrow * (holding_days / 365)
+            annual_borrow = price * shares * (self.borrow_cost_annual_bps / 10_000)
+            cost += annual_borrow * (holding_days / 365)
 
-        return base_cost + borrow
+        return cost
 
     def compute_round_trip_cost(
         self,
@@ -169,11 +188,38 @@ class CostModel:
 
     @classmethod
     def questrade_canada(cls) -> "CostModel":
-        """Questrade Canada cost model."""
+        """Questrade Canada cost model, built on the VERIFIED tariff.
+
+        Verified 2026-11-23 from Questrade's own pages
+        (pricing/self-directed-commissions-plans-fees/transaction and
+        pricing-fees):
+          * stock and ETF BUY  = Free
+          * stock and ETF SELL = Free
+          * ECN                = $0 on smart-routed orders (charges only on
+                                 direct-routed orders: EDGA/IEX/NASDAQ/etc.)
+          * SEC fee            = 0.0000206 x sell notional (sales only)
+          * FX                 = 1.5%, only on currency conversion, and a
+                                 dual-currency USD account avoids it entirely
+
+        The previous version charged forex_fee_pct on EVERY trade - and because
+        compute_exit_cost() reused compute_entry_cost(), a round trip paid it
+        TWICE: 350 bp of FX on a book whose measured round-trip spread is ~5 bp.
+        It also charged $0.0035/share ECN on every trade.
+
+        spread_bps/slippage_bps come from measurement, not guesswork
+        (reports/equity_cost_hml.json, n=191 names): full spread median 4.77 bp
+        -> half-spread 2.385 bp per side; impact measured at 0.008% of median ADV
+        at $20k/name, i.e. below 1 bp, so slippage is 0 at this size.
+        Round trip is then 2*2.385 + 0.206 SEC = 4.98 bp.
+        """
         return cls(
-            commission_per_share=0, min_commission=0,
-            slippage_bps=10, spread_bps=5,
-            questrade_mode=True, forex_fee_pct=0.0175, ecn_fee=0.0035,
+            commission_per_share=0.0, min_commission=0.0, max_commission=float("inf"),
+            slippage_bps=0.0, spread_bps=2.385,
+            exchange_fee_per_share=0.0,
+            questrade_mode=True,
+            forex_fee_pct=0.0,          # NOT a per-trade cost; see currency_conversion_cost()
+            ecn_fee=0.0,                # smart-routed orders incur none
+            sec_fee_rate=0.0000206,     # sales only -> ~0.206 bp
         )
 
     @classmethod
