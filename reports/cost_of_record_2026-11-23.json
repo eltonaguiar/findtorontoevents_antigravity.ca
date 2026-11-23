@@ -1,0 +1,189 @@
+{
+  "generated": "2026-11-23",
+  "hurdle_tbill_bp_per_yr": 432.0,
+  "costs_in_flight": [
+    {
+      "id": "questrade_measured",
+      "bp_round_trip": 4.98,
+      "provenance": "MEASURED (spread only) \u2014 tools/equity_cost_hml.py, n=191 names, 238,810 daily + 356,271 minute bars, Corwin-Schultz 65/191 usable. LOWER BOUND: commission/ECN/exchange fields are 0 by construction, so 4.98bp excludes any per-trade commission",
+      "verdict_grade": false,
+      "used_by": "nothing (questrade_canada() has ZERO call sites)"
+    },
+    {
+      "id": "ib_default",
+      "bp_round_trip": 16.52,
+      "provenance": "ASSUMED \u2014 CostModel.interactive_brokers() (slippage_bps=5, spread_bps=3, exchange_fee_per_share=0.003, ecn_fee=0.0035, commission_per_share=0.005); no measurement, no source cited",
+      "verdict_grade": true,
+      "used_by": "alpha_engine/backtest/engine.py:115 \u2014 the PRODUCTION DEFAULT"
+    },
+    {
+      "id": "freebuff_upper_bound",
+      "bp_round_trip": 12.0749,
+      "provenance": "UPPER BOUND \u2014 freebuff, 13 symbols, 1-min bars; author states it is superseded for EQUITY by the 191-name measurement",
+      "verdict_grade": true,
+      "used_by": "zoo notes/zoo-final-2026-11-23 EQUITY DEAD-NOT-REOPENED"
+    },
+    {
+      "id": "zoo_breakout_25bp_per_side",
+      "bp_round_trip": 50.0,
+      "provenance": "ASSUMED \u2014 'PF 0.9917 @25bp/side' stress case, not a measured cost",
+      "verdict_grade": true,
+      "used_by": "zoo EQUITY breakout verdict"
+    },
+    {
+      "id": "subq_forex",
+      "bp_round_trip": 7.533,
+      "provenance": "CLAIMED \u2014 reports/fx_meanrev_cost_sweep/sweep.json; not reproduced in this session",
+      "verdict_grade": true,
+      "used_by": "zoo FOREX NOT_INVESTABLE (break-even 4.3038 < cost 7.533)"
+    }
+  ],
+  "cost_spread_ratio": 10.04,
+  "cost_of_record": {
+    "id": "questrade_measured",
+    "bp_round_trip": 4.98,
+    "two_x_cost_bp": 9.96,
+    "reason": "it is the only MEASURED round-trip cost in the programme",
+    "caveat": "spread-only measurement; commission/ECN/exchange fields are 0 by construction, so 4.98bp is a LOWER bound on true round-trip cost"
+  },
+  "verdict_grade_costs_not_measured": [
+    "ib_default",
+    "freebuff_upper_bound",
+    "zoo_breakout_25bp_per_side",
+    "subq_forex"
+  ],
+  "verdicts_at_risk": [
+    {
+      "class": "FOREX",
+      "strategy": "mean reversion",
+      "gross_bp": 4.3038,
+      "cost_bp_used": 7.533,
+      "published": "NOT_INVESTABLE",
+      "source": "reports/fx_meanrev_cost_sweep/sweep.json",
+      "note": "break-even cost is 4.3038bp RT; verdict flips to positive if true cost < 4.3038bp. Cost of record for FX is UNVERIFIED, so this is a cost-margin kill, not a signal kill."
+    },
+    {
+      "class": "ETF",
+      "strategy": "breakout",
+      "gross_bp": 4.7,
+      "cost_bp_used": 5.1,
+      "published": "no edge found",
+      "source": "notes/investment-decision-framework-and-assignments-2026-11-23",
+      "note": "margin is 0.4bp \u2014 inside the measurement error of any cost estimate."
+    },
+    {
+      "class": "EQUITY",
+      "strategy": "breakout",
+      "gross_bp": null,
+      "cost_bp_used": 50.0,
+      "published": "PF 0.9917 -> DEAD",
+      "source": "notes/zoo-final-2026-11-23",
+      "note": "PF<1 is a SIGNAL failure and survives any cost change; listed to show the verdict is cost-robust even though the cost is 10x the measurement."
+    }
+  ],
+  "classes_that_flip_at_cost_of_record": [],
+  "factory_provenance": [
+    {
+      "factory": "interactive_brokers",
+      "fields": {
+        "commission_per_share": {
+          "value": 0.005,
+          "status": "ASSUMED"
+        },
+        "min_commission": {
+          "value": 1.0,
+          "status": "ASSUMED"
+        },
+        "slippage_bps": {
+          "value": 5,
+          "status": "partly \u2014 Questrade set to 0.0 because spread covers it"
+        },
+        "spread_bps": {
+          "value": 3,
+          "status": "partly \u2014 Questrade 2.385bp from Corwin-Schultz/Roll on 191 names"
+        },
+        "exchange_fee_per_share": {
+          "value": 0.003,
+          "status": "ASSUMED"
+        },
+        "ecn_fee": {
+          "value": 0.0035,
+          "status": "ASSUMED"
+        },
+        "sec_fee_rate": {
+          "value": 0.0,
+          "status": "yes \u2014 SEC statutory 0.0000206"
+        }
+      },
+      "rt_bp_at_500x100": 16.52
+    },
+    {
+      "factory": "questrade_canada",
+      "fields": {
+        "commission_per_share": {
+          "value": 0.0,
+          "status": "ASSUMED"
+        },
+        "min_commission": {
+          "value": 0.0,
+          "status": "ASSUMED"
+        },
+        "slippage_bps": {
+          "value": 0.0,
+          "status": "partly \u2014 Questrade set to 0.0 because spread covers it"
+        },
+        "spread_bps": {
+          "value": 2.385,
+          "status": "partly \u2014 Questrade 2.385bp from Corwin-Schultz/Roll on 191 names"
+        },
+        "exchange_fee_per_share": {
+          "value": 0.0,
+          "status": "ASSUMED"
+        },
+        "ecn_fee": {
+          "value": 0.0,
+          "status": "ASSUMED"
+        },
+        "sec_fee_rate": {
+          "value": 2.06e-05,
+          "status": "yes \u2014 SEC statutory 0.0000206"
+        }
+      },
+      "rt_bp_at_500x100": 4.98
+    },
+    {
+      "factory": "zero_cost",
+      "fields": {
+        "commission_per_share": {
+          "value": 0,
+          "status": "ASSUMED"
+        },
+        "min_commission": {
+          "value": 0,
+          "status": "ASSUMED"
+        },
+        "slippage_bps": {
+          "value": 0,
+          "status": "partly \u2014 Questrade set to 0.0 because spread covers it"
+        },
+        "spread_bps": {
+          "value": 0,
+          "status": "partly \u2014 Questrade 2.385bp from Corwin-Schultz/Roll on 191 names"
+        },
+        "exchange_fee_per_share": {
+          "value": 0,
+          "status": "ASSUMED"
+        },
+        "ecn_fee": {
+          "value": 0.0035,
+          "status": "ASSUMED"
+        },
+        "sec_fee_rate": {
+          "value": 0.0,
+          "status": "yes \u2014 SEC statutory 0.0000206"
+        }
+      },
+      "rt_bp_at_500x100": 0.0
+    }
+  ]
+}
