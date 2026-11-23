@@ -23,10 +23,21 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT || github.token }}
           fetch-depth: 1
+          # 2026-11-23: 'tools' and 'audit_trail' were MISSING from this list, so the
+          # runner had no such directories on disk. That is why the log carried
+          #   [PROVENANCE] skipped (non-fatal): No module named 'provenance_ledger'
+          #   [SHADOW]     skipped (non-fatal): No module named 'audit_trail'
+          # Both modules exist and are tracked; sparse-checkout simply never fetched
+          # them. PYTHONPATH already pointed at the workspace -- the files were absent.
+          # One cause, two symptoms. reports/provenance is added so the ledger dir
+          # exists and git can stage the file the scan writes.
           sparse-checkout: |
             .github
             alpha_engine
             shared
+            tools
+            audit_trail
+            reports/provenance
           sparse-checkout-cone-mode: true
 
       - name: Set up Python
@@ -55,13 +66,36 @@ jobs:
           echo " 50% tighter TP/SL, 50% shorter holds"
           echo " $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           echo "============================================"
-          python alpha_engine/production_scanner.py
+          # Tee the log so a later step can assert the provenance emit actually ran.
+          python alpha_engine/production_scanner.py 2>&1 | tee "$RUNNER_TEMP/scan.log"
+
+      - name: Provenance must not be silently skipped
+        run: |
+          LOG="$RUNNER_TEMP/scan.log"
+          if [ ! -f "$LOG" ]; then
+            echo "::error::scanner log missing -- cannot verify provenance"
+            exit 1
+          fi
+          if grep -q '\[PROVENANCE\] skipped' "$LOG"; then
+            echo "::error::provenance emit was SKIPPED. The non-fatal handler hid it and the job would have reported green. The ledger is NOT being written."
+            grep '\[PROVENANCE\]' "$LOG" || true
+            exit 1
+          fi
+          line=$(grep -oE '\[PROVENANCE\] recorded [0-9]+ pick' "$LOG" | tail -1 || true)
+          if [ -z "$line" ]; then
+            echo "::warning::no provenance emit line found in the scanner log"
+          else
+            echo "provenance: $line"
+          fi
 
       - name: Commit fast variant data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add alpha_engine/data/active_picks_fast.json alpha_engine/data/closed_picks_fast.json 2>/dev/null || true
+          # The provenance ledger must reach main or T3 can never pass. It was never
+          # staged here, so even a successful emit died in the runner's filesystem.
+          git add -f reports/provenance/picks_provenance.jsonl 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Alpha Engine FAST: $(date -u '+%Y-%m-%d %H:%M') [AUTO] [skip ci]"
 
       - name: Push with retry

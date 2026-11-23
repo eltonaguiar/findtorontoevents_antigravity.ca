@@ -33,7 +33,28 @@ yfinance/pandas install added; def-time default-argument bug fixed.
 **Evidence:** six gate regimes correct; empty ledger → exit 0; workflow parses
 (12 steps); pushed to PR #1064 at `2851cc13617`.
 
-## [~] T3 — FAILED VERIFICATION (run succeeded, emit did not happen)
+## [~] T3 — ROOT CAUSE FOUND + FIXED (awaiting one real CI run)
+
+ROOT CAUSE (proven): `alpha-engine-fast.yml` uses **sparse-checkout** limited to
+`.github`, `alpha_engine`, `shared`. `tools/` and `audit_trail/` were never on the
+runner's disk, so `provenance_ledger` and `audit_trail` both failed to import. One cause,
+two symptoms. `PYTHONPATH` was already correct -- the FILES were absent. This is why every
+local reproduction succeeded.
+
+FIXED in `.github/workflows/alpha-engine-fast.yml`:
+  1. sparse-checkout 3 -> 6 paths (added tools, audit_trail, reports/provenance)
+  2. commit step now stages `reports/provenance/picks_provenance.jsonl` (was never staged)
+  3. new blocking step "Provenance must not be silently skipped" fails the job on
+     `[PROVENANCE] skipped`; a zero-pick cycle is NOT a failure (emit_picks([]) writes
+     nothing legitimately -- only an actual skip fails)
+
+VERIFIED: YAML parses (7 steps), guard placed after scan and before commit, safe_push.sh
+pushes HEAD:main so the commit carries the ledger.
+NOT VERIFIED: the fix has never run in CI. I cannot run a GH Actions job from here.
+T3 stays OPEN until a real run writes n_records > 0 to main AND provenance-verify.yml
+reports chain intact. Claiming otherwise repeats the original error.
+
+Original heading: FAILED VERIFICATION (run succeeded, emit did not happen)
 
 Run `45086985710` completed/success at 00:43:33Z, but
 `reports/provenance/picks_provenance.jsonl` is ABSENT on origin/main. T3 stays OPEN.
