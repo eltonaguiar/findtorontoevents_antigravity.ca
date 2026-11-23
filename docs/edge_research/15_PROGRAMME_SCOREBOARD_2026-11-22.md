@@ -188,3 +188,27 @@ Reported, not silently resolved:
 - `funding_carry_20261122.json`: `"pair_round_trip_bp": 45.52381668506905` and `"aggregate_mean_breakeven_days_at_median": 16.398025378162416`.
 - `momentum_12_1_20261122.json`: `"item48_null": {"percentile": 1.6, …}` for the long/short variant.
 - `crypto_meanrev_intraday_20261122.json`: `"breakeven_cost_bp": 0.0` and `"cost_sweep": {"0bp": {"pf": 0.8153830397211412, …}`.
+
+---
+
+## 9. Open blockers (added 2026-11-23)
+
+Informational only. **No row verdict, no class verdict, and no measurement figure changes; the
+programme tally is unchanged.**
+
+### B1 - `tools.fx_meanrev_research` is missing on `main`
+
+- **What is blocked:** the FX cost-overlap job's optional chained FX mean-reversion re-run. The
+  import is [`tools/fx_cost_sampler.py:379`](tools/fx_cost_sampler.py:379)
+  (`from tools.fx_meanrev_research import run as run_meanrev`), inside `run_strategy_chain()`.
+- **What is NOT blocked:** the cost measurement and its artifact are still produced; the chain is
+  recorded as `CHAIN_FAILED` and the job exits 0. `guard_verdict()` cannot emit `INVESTABLE`
+  ([`tools/fx_cost_sampler.py:450`](tools/fx_cost_sampler.py:450)).
+- **Artifact that IS produced:** `reports/cost_measurement_forex/FOREX_COST_<date>_overlap.json` (and
+  `.md`), containing the measured decision cost and `"strategy_chain": {"state": "CHAIN_FAILED", ...}`
+  ([`tools/fx_cost_sampler.py:653`](tools/fx_cost_sampler.py:653)).
+- **Exact reopen requirement (summary):** a reviewed, tested, standalone
+  `tools/fx_meanrev_research.py` on `main`, with its signature documented in the sampler, `--self-test`
+  green, a network-free `--dry-run` chain path, and a named maintainer. Full enumerated list:
+  [`updates/2026-11-23-fx-chain-missing-module-blocker.md`](updates/2026-11-23-fx-chain-missing-module-blocker.md) §4.
+- **Date:** 2026-11-23. `[SRC: updates/2026-11-23-fx-chain-missing-module-blocker.md]`
