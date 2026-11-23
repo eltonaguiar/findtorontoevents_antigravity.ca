@@ -1,66 +1,63 @@
 #!/usr/bin/env python3
-"""audit_total_return.py — which price-return computations use raw Close (dividend-omitting)?
+"""audit_total_return.py — which return computations use PRICE-ONLY (raw Close)?
 
-A raw Close feed erases dividends. That is harmless for crypto/FX (no dividends) but
-understates EQUITY/ETF/BOND returns by ~2-4%/yr (VTV +2.78, DVY +3.78 measured). This scans
-the repo for files that index ["Close"] WITHOUT auto_adjust/Adj Close, and classifies each as
-'exempt' (crypto/fx-only) or 'exposed' (equity/etf/bond/fund context) so the real blast radius
-is visible. Heuristic classifier — for triage, not a verdict.
+CORRECTION 2026-11-23 (important): yfinance 1.3.0's `Ticker.history()` defaults to
+`auto_adjust=None` which RESOLVES TO TRUE — so `history()["Close"]` is ALREADY adjusted
+(verified: VTV first Close 27.32 adjusted vs 49.25 raw). An earlier version of this tool
+wrongly flagged yfinance-default users as price-only. The GENUINELY price-only cases are:
+  - explicit `auto_adjust=False`
+  - raw Close from Stooq/custom CSV (unadjusted)
+  - raw chart-API `quote[0]["close"]` (not `adjclose`)
+This scans for THOSE in equity/etf/bond context; crypto/FX are exempt (no dividends).
 """
 import subprocess, re, json
 from pathlib import Path
 
-CRYPTO = re.compile(r"USDT|BTC|ETH(?:USD)?|SOL|DOGE|binance|ccxt|crypto|coin", re.I)
-EQUITY = re.compile(r"SPY|QQQ|VOO|VTI|VTV|DVY|VBR|GLD|TLT|IEF|SHY|stock|equity|\betf\b|dividend|fund|\bbond\b|reit|yfinance|yf\.Ticker", re.I)
-RETURN = re.compile(r"pct_change|returns?\b|shift\(|cumprod|\bret\b|/ *close|np\.log", re.I)
+EQUITY = re.compile(r"equity|stock|etf|dividend|fund|bond|reit|SPY|QQQ|VTV|VTI|TLT|IEF|GLD", re.I)
+CRYPTO = re.compile(r"USDT|BTC|ETH|SOL|DOGE|binance|ccxt|crypto|coin", re.I)
+RETURN = re.compile(r"pct_change|returns?\b|shift\(|cumprod", re.I)
 
 
-def files_using_close(root="."):
-    out = subprocess.run(["grep", "-rl", "--include=*.py", "-e", '["Close"]', "-e", "['Close']", "."],
+def scan(root="."):
+    raw = subprocess.run(["grep", "-rl", "--include=*.py", "-e", "auto_adjust=False",
+                          "-e", 'row["Close"]', "-e", "quote\"][0][\"close\"]", "."],
                          cwd=root, capture_output=True, text=True).stdout.split()
-    return [f for f in out if "node_modules" not in f and "/.kilo/" not in f]
-
-
-def classify(root="."):
+    raw = [f for f in raw if "node_modules" not in f and "/.kilo/" not in f]
     rows = []
-    for f in files_using_close(root):
-        p = Path(root) / f
+    for f in raw:
         try:
-            t = p.read_text(errors="ignore")
+            t = (Path(root) / f).read_text(errors="ignore")
         except Exception:
             continue
-        if '["Close"]' not in t and "['Close']" not in t:
+        explicit_raw = "auto_adjust=False" in t
+        raw_csv_close = bool(re.search(r'row\["Close"\]|row\[\'Close\'\]', t))
+        raw_api_close = bool(re.search(r'quote"\]\[0\]\["close"\]', t))
+        if not (explicit_raw or raw_csv_close or raw_api_close):
             continue
-        adjusted = ("auto_adjust=True" in t) or ("Adj Close" in t) or ("adjclose" in t)
-        if adjusted:
-            continue  # OK
         crypto = bool(CRYPTO.search(t)); equity = bool(EQUITY.search(t)); ret = bool(RETURN.search(t))
-        if ret and equity and not (crypto and not equity):
-            status = "EXPOSED"     # equity/etf/bond return math on raw Close
-        elif crypto:
+        if crypto and not equity:
             status = "EXEMPT(crypto)"
+        elif equity and ret:
+            status = "EXPOSED"
         else:
             status = "REVIEW"
-        rows.append({"file": f, "status": status, "crypto": crypto, "equity": equity, "return_math": ret})
+        rows.append({"file": f, "status": status, "explicit_auto_adjust_false": explicit_raw,
+                     "raw_csv_close": raw_csv_close, "raw_api_close": raw_api_close})
     return rows
 
 
 def main():
-    rows = classify(".")
+    rows = scan(".")
     from collections import Counter
     c = Counter(r["status"] for r in rows)
-    out = {"total_raw_close_no_adjust": len(rows), "by_status": dict(c),
+    out = {"rule": "EXPOSED = explicit auto_adjust=False OR raw CSV/chart-API Close, in equity return math",
+           "total_price_only_candidates": len(rows), "by_status": dict(c),
            "exposed_files": sorted(r["file"] for r in rows if r["status"] == "EXPOSED"),
-           "review_files": sorted(r["file"] for r in rows if r["status"] == "REVIEW")[:60],
-           "measured_drag_pct": {"SPY": 1.94, "VTV": 2.78, "DVY": 3.78, "VBR": 2.23},
-           "note": "EXPOSED = raw-Close return math in equity/etf/bond context; each understates by ~2-4%/yr."}
+           "correction": "yfinance default history()['Close'] is ADJUSTED (auto_adjust None->True); NOT flagged here"}
     Path("reports/total_return_audit.json").write_text(json.dumps(out, indent=2) + "\n")
-    print("raw-Close-without-adjust files:", len(rows))
-    for k, v in c.most_common():
-        print(f"  {k}: {v}")
-    print("\nfirst 12 EXPOSED:")
-    for f in out["exposed_files"][:12]:
-        print("  ", f)
+    print("price-only candidates:", len(rows), dict(c))
+    for f in out["exposed_files"]:
+        print("  EXPOSED", f)
 
 
 if __name__ == "__main__":
