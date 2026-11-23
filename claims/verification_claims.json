@@ -141,14 +141,25 @@
       "id": "B7",
       "group": "B",
       "claimant": "peer / other agent",
-      "summary": "4daf025ed1d was where tools/vol_target_vs_hold.py sat on an unmerged branch, and it was 'restored to main'",
+      "summary": "The commodity TSMOM v3 work was restored to origin/main: tools/vol_target_vs_hold.py is present on main and 4daf025ed1d is landed there.",
       "checks": [
-        {"kind": "commit_on_any_origin_ref", "sha": "4daf025ed1d", "polarity": "supports"},
         {"kind": "commit_ancestor_of_main", "sha": "4daf025ed1d", "polarity": "supports"},
-        {"kind": "path_absent_from_main", "path": "tools/vol_target_vs_hold.py", "polarity": "refutes"}
+        {"kind": "path_on_main", "path": "tools/vol_target_vs_hold.py", "polarity": "supports"}
       ],
       "manual": false,
       "expected_verdict": "NOT LANDED"
+    },
+    {
+      "id": "B7-context",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "The commodity TSMOM v3 commit 4daf025ed1d exists on a real origin ref (origin/research/commodity-tsmom-v3-2026-11-22), i.e. the work was pushed even though it was never landed to main.",
+      "checks": [
+        {"kind": "commit_on_any_origin_ref", "sha": "4daf025ed1d", "polarity": "supports"}
+      ],
+      "manual": false,
+      "notes": "Recorded so the report distinguishes 'pushed to a branch' from 'landed to main'. The hand report's NOT LANDED verdict applies to B7, not to this claim.",
+      "expected_verdict": "VERIFIED"
     },
     {
       "id": "B8",
