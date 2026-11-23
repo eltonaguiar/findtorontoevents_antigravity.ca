@@ -5,6 +5,8 @@ import json
 import os
 import sys
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from alpha_engine.audit3_tribunal import (  # noqa: E402
@@ -15,6 +17,7 @@ from alpha_engine.audit3_tribunal import (  # noqa: E402
     bootstrap_mean_ci,
     build_report,
     cell_key,
+    compounded_max_drawdown,
     compute_verdict_churn,
     deflated_sharpe,
     evaluate_cell,
@@ -475,3 +478,29 @@ def test_high_cost_class_needs_larger_edge():
     # Equity clears the N4 materiality floor (0.06 >= 0.05) but its 0.06% edge
     # is wiped at 2x cost (0.10), so the G9 cost-stress gate caps it one tier.
     assert equity["verdict"] == "CANDIDATE"
+
+
+# ─────────────────────────────────────────────── F1 compounded drawdown ──
+def test_compounded_max_drawdown_uses_geometric_path():
+    """F1: +50% then -50% must not read as 0 drawdown (arithmetic sum)."""
+    dd = compounded_max_drawdown([50.0, -50.0])
+    # Equity 1.0 -> 1.5 -> 0.75; peak-to-trough loss is 50% of the high.
+    assert dd == pytest.approx(50.0, abs=1e-6)
+    # Arithmetic sum would be 0.0; compounded path must differ from that.
+    assert dd > 0.0
+
+
+def test_compounded_max_drawdown_monotone_winner_is_zero():
+    assert compounded_max_drawdown([10.0, 5.0, 3.0]) == pytest.approx(0.0)
+
+
+def test_compounded_max_drawdown_empty_is_none():
+    assert compounded_max_drawdown([]) is None
+
+
+def test_evaluate_cell_reports_max_drawdown():
+    cell = evaluate_cell(_timed_rows([50.0, -50.0] * 50), 1,
+                         {"asset_class": "CRYPTO", "strategy": "s1",
+                          "direction": "LONG", "namespace": "discovery"})
+    assert "max_drawdown_pct" in cell
+    assert cell["max_drawdown_pct"] is not None

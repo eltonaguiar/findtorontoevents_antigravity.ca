@@ -297,6 +297,36 @@ def profit_factor(values: Iterable[float]) -> float | None:
     return gross / loss
 
 
+def compounded_max_drawdown(nets_pct: Iterable[float]) -> float | None:
+    """F1 — compounded (geometric) max drawdown of a return sequence, in percent.
+
+    Each element is a per-trade net return in percent. The equity curve is built
+    multiplicatively (equity *= 1 + r), so a +50% then -50% sequence gives a
+    compounded -25% drawdown, not the arithmetic-sum 0%. Returns ``None`` for an
+    empty sequence.
+
+    Returning a *fraction lost from the running peak* (positive number) is the
+    conventional sign for "max drawdown"; e.g. the worst peak-to-trough of the
+    +50%/-50% sequence is 0.25 (25%). A sequence with no losing step -> 0.0.
+    """
+    peak = 1.0
+    equity = 1.0
+    worst = 0.0
+    seen = False
+    for r in nets_pct:
+        seen = True
+        equity *= (1.0 + float(r) / 100.0)
+        if equity > peak:
+            peak = equity
+        if peak > 0:
+            dd = (peak - equity) / peak
+            if dd > worst:
+                worst = dd
+    if not seen:
+        return None
+    return worst * 100.0
+
+
 def _norm_cdf(x: float) -> float:
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
@@ -862,6 +892,8 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
     nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
     boot_2x = bootstrap_mean_ci(nets_2x, block=True) if n >= 2 else {"ci_lo": None, "ci_hi": None}
     stress_2x_ok = bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0)
+    # F1 drawdown (compounded, not arithmetic sum)
+    max_dd = compounded_max_drawdown(nets) if n >= 1 else None
     mean_cost = (sum(_cost_pct(r) for r in rows) / n) if n else 0.0
     floor_pct = materiality_floor(mean_cost)
     stable, halves = split_half_ok(nets, min_mean=floor_pct)
@@ -1005,6 +1037,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
         "net_ci_pct_2x": [round(boot_2x["ci_lo"], 4) if boot_2x.get("ci_lo") is not None else None,
                           round(boot_2x["ci_hi"], 4) if boot_2x.get("ci_hi") is not None else None],
         "stress_2x_ok": stress_2x_ok,
+        "max_drawdown_pct": round(max_dd, 4) if max_dd is not None else None,
         "dsr": None,
         "split_half": ({"stable": stable, **{k: round(v, 4) for k, v in halves.items()}}
                        if halves else None),
