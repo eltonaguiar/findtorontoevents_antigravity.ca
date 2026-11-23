@@ -35,6 +35,12 @@ jobs:
         with:
           python-version: '3.12'
 
+      # setup-python provides the interpreter but not pytest. Without this the
+      # regression step always died with "No module named pytest", so the gate
+      # reported a failure that looked like a code defect but was a missing dep.
+      - name: Install pytest
+        run: python3 -m pip install --quiet --disable-pip-version-check pytest
+
       - name: Fail if any served PHP uses a 5.3+ construct
         run: |
           set -euo pipefail
