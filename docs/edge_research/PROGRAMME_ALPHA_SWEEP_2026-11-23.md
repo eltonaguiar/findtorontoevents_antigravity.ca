@@ -56,3 +56,20 @@ restated correctly as **"closest class (FOREX) needs +14.4%"**, since the gate i
 
 The conclusion is unchanged and cleaner: **zero classes have positive alpha; the programme's own gate rejects the whole
 surface at the class level.**
+
+---
+
+## CORRECTION 2026-11-23T09:20Z — UNIT ERROR: it is −0.144%, not −14.4%
+I mis-scaled by 100×. The code defines `move = (p1/p0 − 1)*100` and `alpha = pnl − bench`, both in **percent**, and
+`net_expectancy_pct` is also percent. So `alpha_ci_lo = −0.1442` means **−0.144 percentage points**, NOT −14.4%.
+
+**Corrected, accurate statement:**
+- **FOREX** alpha CI lower bound = **−0.144%** — i.e. FOREX picks **underperform buy-and-hold by 0.144%** at the CI bound.
+  It is small but **alpha-negative**.
+- ETF −0.309%, EQUITY −0.361%, BOND −0.431%, CRYPTO −0.945%, COMMODITY **−5.512%** (this one is large).
+- **No class has positive alpha; the closest (FOREX) is 0.144 pp short of zero — not 14.4 pp.**
+
+**What this changes:** nothing in the verdict, but the honest magnitude. FOREX is *absolute-positive* (net +0.576%/trade)
+yet *alpha-negative* (it does not beat simply holding the asset) — which is precisely why buying the beta (a low-cost index
+ETF) is as good or better. The earlier "−14.4%" was wrong; the correct gap is **0.144%**. Ordinal conclusion (FOREX
+closest, none pass) stands; cardinal magnitude is 100× smaller.
