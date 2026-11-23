@@ -47,12 +47,23 @@ def main():
     for cls in combined: combined[cls].sort(key=lambda x:-(x["net_bp"] or -1e9))
     # consensus: symbol named by >=2 agents
     from collections import defaultdict
+    # Consensus requires the symbol to have REAL evidence (n>0 AND a net_bp) from
+    # >=2 agents. A symbol merely mentioned with n=0 / net_bp=null is NOT agreement;
+    # counting it produces a false consensus (caught 2026-11-23: XLE/XLK/IWM were
+    # named by buffy with n=0 and by kilo with numbers, and IWM was -45.9 bp).
     sym_agents=defaultdict(set)
+    sym_no_evidence=defaultdict(set)
     for agent,d in agents.items():
         for cls,lst in (d.get("per_class") or {}).items():
             if isinstance(lst,list):
-                for p in lst: sym_agents[p.get("symbol")].add(agent)
+                for p in lst:
+                    s=p.get("symbol")
+                    if p.get("n") and p.get("net_bp") is not None:
+                        sym_agents[s].add(agent)
+                    else:
+                        sym_no_evidence[s].add(agent)
     consensus={s:sorted(a) for s,a in sym_agents.items() if len(a)>=2}
+    name_overlap_no_evidence={s:sorted(a) for s,a in sym_no_evidence.items() if len(a)>=1}
     out={"generated_at":__import__("datetime").datetime.now(__import__("datetime").UTC).isoformat(),
          "date":a.date,"n_agents":len(agents),"agents":sorted(agents),
          "n_picks_total":sum(len(v) for v in combined.values()),
