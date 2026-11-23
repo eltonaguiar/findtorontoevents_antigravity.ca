@@ -1,0 +1,1275 @@
+{
+ "generated_utc": "2026-11-22T22:59:06Z",
+ "task": "M3 - cost triage: class cost distributions for COST_ADDRESSABLE rows",
+ "sources": {
+  "intraday_bars": "yfinance 1-min, period=5d (Yahoo)",
+  "top_of_book": "Tiingo IEX https://api.tiingo.com/iex/?tickers=<u>",
+  "session_note": "2026-11-22 is a Sunday; US session closed.",
+  "tiingo_state_this_run": "HTTP 429 (hourly allocation exhausted)"
+ },
+ "classes": {
+  "ETF": {
+   "asset_class": "ETF",
+   "universe": [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "DIA",
+    "XLK",
+    "XLF",
+    "XLV",
+    "XLE",
+    "XLY",
+    "SOXX",
+    "GLD",
+    "TLT",
+    "AGG",
+    "SHY"
+   ],
+   "source": "yfinance period=5d interval=1m (Yahoo); Tiingo IEX is the documented fallback and returned HTTP 429 this run",
+   "fetched_utc": "2026-11-22T22:59:06Z",
+   "per_name": {
+    "SPY": {
+     "symbol": "SPY",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:06Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 8.313920845766807,
+      "p25": 5.49952894330148,
+      "p75": 11.911867224882581,
+      "p90": 15.717372250888365
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1530,
+      "n_distinct_low": 1519,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 1.213555116992295,
+      "p25_bp": -2.8820040639231923,
+      "p75_bp": 3.808838587118372,
+      "frac_floored": 0.40738840430990253
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.008288427156183435,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 172571680.0,
+       "2026-11-17": 315678018.0,
+       "2026-11-18": 137314748.0,
+       "2026-11-19": 173341592.0,
+       "2026-11-20": 627677382.0
+      },
+      "median_daily_shares": 173341592.0,
+      "median_minute_volume": 116183.5
+     }
+    },
+    "QQQ": {
+     "symbol": "QQQ",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:06Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 12.074926303113397,
+      "p25": 7.972443240299153,
+      "p75": 17.583011857113675,
+      "p90": 23.592727440868202
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1590,
+      "n_distinct_low": 1604,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 1.743827375077554,
+      "p25_bp": -4.2320402135468065,
+      "p75_bp": 5.441338465673976,
+      "frac_floored": 0.4155977424320164
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.019580861702788502,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 483067711.0,
+       "2026-11-17": 456826374.0,
+       "2026-11-18": 589606479.0,
+       "2026-11-19": 752794976.0,
+       "2026-11-20": 949565808.0
+      },
+      "median_daily_shares": 589606479.0,
+      "median_minute_volume": 111462.5
+     }
+    },
+    "IWM": {
+     "symbol": "IWM",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:07Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 7.751160320103858,
+      "p25": 5.178631170844713,
+      "p75": 11.237157470971464,
+      "p90": 15.22988280982099
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1193,
+      "n_distinct_low": 1202,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.587049193833256,
+      "p25_bp": -3.1643371834068392,
+      "p75_bp": 3.4246788702469013,
+      "frac_floored": 0.45151359671626473
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.01684934708963798,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 23932939.0,
+       "2026-11-17": 26810607.0,
+       "2026-11-18": 20832006.0,
+       "2026-11-19": 52986671.0,
+       "2026-11-20": 49002917.0
+      },
+      "median_daily_shares": 26810607.0,
+      "median_minute_volume": 45005.0
+     }
+    },
+    "DIA": {
+     "symbol": "DIA",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:07Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 5.589579050781645,
+      "p25": 3.5881560917253883,
+      "p75": 8.345450853431831,
+      "p90": 11.728176342011048
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1484,
+      "n_distinct_low": 1505,
+      "n_zero_range_bars": 1,
+      "frac_zero_range": 0.0005128205128205128,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": -0.06431915872712617,
+      "p25_bp": -3.426647718351961,
+      "p75_bp": 2.0627440362754856,
+      "frac_floored": 0.5053873781426372
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.008983152152387527,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 3229497.0,
+       "2026-11-17": 3661851.0,
+       "2026-11-18": 3815465.0,
+       "2026-11-19": 4374006.0,
+       "2026-11-20": 5443500.0
+      },
+      "median_daily_shares": 3815465.0,
+      "median_minute_volume": 5998.0
+     }
+    },
+    "XLK": {
+     "symbol": "XLK",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:07Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 14.214881020861192,
+      "p25": 8.991292074893456,
+      "p75": 21.297682324149278,
+      "p90": 29.08166530346847
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1024,
+      "n_distinct_low": 1031,
+      "n_zero_range_bars": 2,
+      "frac_zero_range": 0.0010256410256410256,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 1.1380610994093157,
+      "p25_bp": -6.634297296022625,
+      "p75_bp": 5.68391575538236,
+      "frac_floored": 0.46023601847101075
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.016228688556804267,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 14312901.0,
+       "2026-11-17": 16525161.0,
+       "2026-11-18": 13353878.0,
+       "2026-11-19": 20135843.0,
+       "2026-11-20": 62074122.0
+      },
+      "median_daily_shares": 16525161.0,
+      "median_minute_volume": 31536.0
+     }
+    },
+    "XLF": {
+     "symbol": "XLF",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:07Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 6.114578334346209,
+      "p25": 4.309493431343076,
+      "p75": 8.964452835980266,
+      "p90": 12.513352975092289
+     },
+     "tick_truncation": {
+      "n_distinct_high": 672,
+      "n_distinct_low": 687,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.6834372008584366,
+      "p25_bp": -2.6453365482132245,
+      "p75_bp": 2.7375464737338637,
+      "frac_floored": 0.4345818368394048
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.013564514278163636,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 61221971.0,
+       "2026-11-17": 49638589.0,
+       "2026-11-18": 63170872.0,
+       "2026-11-19": 55371408.0,
+       "2026-11-20": 74414439.0
+      },
+      "median_daily_shares": 61221971.0,
+      "median_minute_volume": 64965.0
+     }
+    },
+    "XLV": {
+     "symbol": "XLV",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:07Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 5.784744582018496,
+      "p25": 3.9112638515401232,
+      "p75": 8.924936306087607,
+      "p90": 13.43740509175905
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1086,
+      "n_distinct_low": 1099,
+      "n_zero_range_bars": 1,
+      "frac_zero_range": 0.0005128205128205128,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.42082663091582506,
+      "p25_bp": -2.9978158670950097,
+      "p75_bp": 2.4484085605875787,
+      "frac_floored": 0.46228835300153925
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.0007197378943259883,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 14202303.0,
+       "2026-11-17": 19722190.0,
+       "2026-11-18": 19108420.0,
+       "2026-11-19": 17989679.0,
+       "2026-11-20": 35823894.0
+      },
+      "median_daily_shares": 19108420.0,
+      "median_minute_volume": 24375.5
+     }
+    },
+    "XLE": {
+     "symbol": "XLE",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:07Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 7.387042316179689,
+      "p25": 4.925907807100348,
+      "p75": 11.378363833445803,
+      "p90": 16.442145510926903
+     },
+     "tick_truncation": {
+      "n_distinct_high": 609,
+      "n_distinct_low": 655,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.5203161597719781,
+      "p25_bp": -3.8202540058006713,
+      "p75_bp": 3.297763719407746,
+      "frac_floored": 0.4689584402257568
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 1.3851405690008285,
+      "acf1": -0.0076140838127547955,
+      "structurally_valid": true
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 29456910.0,
+       "2026-11-17": 56361236.0,
+       "2026-11-18": 52889451.0,
+       "2026-11-19": 29961016.0,
+       "2026-11-20": 63426391.0
+      },
+      "median_daily_shares": 52889451.0,
+      "median_minute_volume": 50061.5
+     }
+    },
+    "XLY": {
+     "symbol": "XLY",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:07Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 7.30986286248482,
+      "p25": 4.641375964200949,
+      "p75": 10.997145285913836,
+      "p90": 15.466601600258656
+     },
+     "tick_truncation": {
+      "n_distinct_high": 801,
+      "n_distinct_low": 857,
+      "n_zero_range_bars": 1,
+      "frac_zero_range": 0.0005128205128205128,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.5478788397756736,
+      "p25_bp": -3.787361380920159,
+      "p75_bp": 2.8976613601838217,
+      "frac_floored": 0.46126218573627503
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.006570431907949099,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 15329692.0,
+       "2026-11-17": 8429120.0,
+       "2026-11-18": 13407743.0,
+       "2026-11-19": 11148936.0,
+       "2026-11-20": 18199884.0
+      },
+      "median_daily_shares": 13407743.0,
+      "median_minute_volume": 14306.0
+     }
+    },
+    "SOXX": {
+     "symbol": "SOXX",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:08Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 22.904852325053827,
+      "p25": 14.924766143056303,
+      "p75": 34.725072003728464,
+      "p90": 47.42087202482102
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1126,
+      "n_distinct_low": 1107,
+      "n_zero_range_bars": 1,
+      "frac_zero_range": 0.0005128205128205128,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 1.9551172515248192,
+      "p25_bp": -9.699440654618044,
+      "p75_bp": 9.469936788113735,
+      "frac_floored": 0.44638276038994357
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.019181730439661253,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 33905676.0,
+       "2026-11-17": 63636011.0,
+       "2026-11-18": 72177807.0,
+       "2026-11-19": 58088383.0,
+       "2026-11-20": 84117441.0
+      },
+      "median_daily_shares": 63636011.0,
+      "median_minute_volume": 66382.5
+     }
+    },
+    "GLD": {
+     "symbol": "GLD",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:08Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 5.323391505740034,
+      "p25": 3.404503208778908,
+      "p75": 7.935621052515042,
+      "p90": 11.663389265523069
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1315,
+      "n_distinct_low": 1249,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.42367608962375014,
+      "p25_bp": -2.480484842433009,
+      "p75_bp": 2.2445092947014422,
+      "frac_floored": 0.448435094920472
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 1.2646841657105283,
+      "acf1": -0.005503900204528186,
+      "structurally_valid": true
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 16754790.0,
+       "2026-11-17": 19744758.0,
+       "2026-11-18": 37544006.0,
+       "2026-11-19": 13773529.0,
+       "2026-11-20": 58145964.0
+      },
+      "median_daily_shares": 19744758.0,
+      "median_minute_volume": 17806.5
+     }
+    },
+    "TLT": {
+     "symbol": "TLT",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:08Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 2.5126261380006722,
+      "p25": 1.8707145910885286,
+      "p75": 3.7503163017913486,
+      "p90": 5.523245003149865
+     },
+     "tick_truncation": {
+      "n_distinct_high": 621,
+      "n_distinct_low": 675,
+      "n_zero_range_bars": 3,
+      "frac_zero_range": 0.0015384615384615385,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.18003027254935036,
+      "p25_bp": -1.4617502223747945,
+      "p75_bp": 1.1057180034230476,
+      "frac_floored": 0.46228835300153925
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.011114115906782445,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 35127935.0,
+       "2026-11-17": 47522519.0,
+       "2026-11-18": 36905686.0,
+       "2026-11-19": 35153429.0,
+       "2026-11-20": 88688294.0
+      },
+      "median_daily_shares": 36905686.0,
+      "median_minute_volume": 54464.0
+     }
+    },
+    "AGG": {
+     "symbol": "AGG",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:08Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 1.0506708894546648,
+      "p25": 0.9442141615466341,
+      "p75": 1.5828223509446742,
+      "p90": 2.1347774243056143
+     },
+     "tick_truncation": {
+      "n_distinct_high": 551,
+      "n_distinct_low": 613,
+      "n_zero_range_bars": 13,
+      "frac_zero_range": 0.006666666666666667,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.20572356399588315,
+      "p25_bp": -0.5062720766632773,
+      "p75_bp": 0.5961203893123577,
+      "frac_floored": 0.3884043099025141
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.3893330839278736,
+      "acf1": -0.01960632177240609,
+      "structurally_valid": true
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 8995345.0,
+       "2026-11-17": 11581190.0,
+       "2026-11-18": 19853101.0,
+       "2026-11-19": 23981050.0,
+       "2026-11-20": 13666361.0
+      },
+      "median_daily_shares": 13666361.0,
+      "median_minute_volume": 14186.5
+     }
+    },
+    "SHY": {
+     "symbol": "SHY",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:08Z",
+     "fetch_status": "ok",
+     "n_bars": 1878,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 0.614441572047355,
+      "p25": 0.3198651951116719,
+      "p75": 0.9586233942940897,
+      "p90": 1.2258135577784555
+     },
+     "tick_truncation": {
+      "n_distinct_high": 384,
+      "n_distinct_low": 405,
+      "n_zero_range_bars": 311,
+      "frac_zero_range": 0.16560170394036208,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1877,
+      "pooled_bp": 0.0,
+      "median_bp": 0.0,
+      "p25_bp": -0.25357975745448386,
+      "p75_bp": 0.3534194805839296,
+      "frac_floored": 0.51092168353756
+     },
+     "roll": {
+      "n": 1877,
+      "bp": 0.5968493506041708,
+      "acf1": -0.16647791806829607,
+      "structurally_valid": true
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 4851222.0,
+       "2026-11-17": 2969165.0,
+       "2026-11-18": 3730493.0,
+       "2026-11-19": 5689662.0,
+       "2026-11-20": 4633187.0
+      },
+      "median_daily_shares": 4633187.0,
+      "median_minute_volume": 4011.5
+     }
+    }
+   },
+   "blocked": [],
+   "aggregate": {
+    "n_names_with_data": 14,
+    "range_ub_rt_bp": {
+     "min": 0.614441572047355,
+     "p25": 5.323391505740034,
+     "median": 6.712220598415515,
+     "p75": 8.313920845766807,
+     "p90": 12.074926303113397,
+     "max": 22.904852325053827
+    },
+    "per_name_rt_bp": {
+     "SPY": 8.313920845766807,
+     "QQQ": 12.074926303113397,
+     "IWM": 7.751160320103858,
+     "DIA": 5.589579050781645,
+     "XLK": 14.214881020861192,
+     "XLF": 6.114578334346209,
+     "XLV": 5.784744582018496,
+     "XLE": 7.387042316179689,
+     "XLY": 7.30986286248482,
+     "SOXX": 22.904852325053827,
+     "GLD": 5.323391505740034,
+     "TLT": 2.5126261380006722,
+     "AGG": 1.0506708894546648,
+     "SHY": 0.614441572047355
+    },
+    "corwin_schultz_rt_bp_median": 0.5340974997738259,
+    "ratio_max_to_min": 37.27751077898836,
+    "basis": "median 1-min bar range = rigorous UPPER bound on round-trip quoted spread (bid and ask both lie inside [low, high]); NOT the NBBO"
+   }
+  },
+  "INDEX_alias_of_ETF": {
+   "asset_class": "INDEX_alias_of_ETF",
+   "universe": [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "DIA"
+   ],
+   "source": "yfinance period=5d interval=1m (Yahoo); Tiingo IEX is the documented fallback and returned HTTP 429 this run",
+   "fetched_utc": "2026-11-22T22:59:08Z",
+   "per_name": {
+    "SPY": {
+     "symbol": "SPY",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:08Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 8.313920845766807,
+      "p25": 5.49952894330148,
+      "p75": 11.911867224882581,
+      "p90": 15.717372250888365
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1530,
+      "n_distinct_low": 1519,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 1.213555116992295,
+      "p25_bp": -2.8820040639231923,
+      "p75_bp": 3.808838587118372,
+      "frac_floored": 0.40738840430990253
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.008288427156183435,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 172571680.0,
+       "2026-11-17": 315678018.0,
+       "2026-11-18": 137314748.0,
+       "2026-11-19": 173341592.0,
+       "2026-11-20": 627677382.0
+      },
+      "median_daily_shares": 173341592.0,
+      "median_minute_volume": 116183.5
+     }
+    },
+    "QQQ": {
+     "symbol": "QQQ",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:08Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 12.074926303113397,
+      "p25": 7.972443240299153,
+      "p75": 17.583011857113675,
+      "p90": 23.592727440868202
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1590,
+      "n_distinct_low": 1604,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 1.743827375077554,
+      "p25_bp": -4.2320402135468065,
+      "p75_bp": 5.441338465673976,
+      "frac_floored": 0.4155977424320164
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.019580861702788502,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 483067711.0,
+       "2026-11-17": 456826374.0,
+       "2026-11-18": 589606479.0,
+       "2026-11-19": 752794976.0,
+       "2026-11-20": 949565808.0
+      },
+      "median_daily_shares": 589606479.0,
+      "median_minute_volume": 111462.5
+     }
+    },
+    "IWM": {
+     "symbol": "IWM",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:09Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 7.751160320103858,
+      "p25": 5.178631170844713,
+      "p75": 11.237157470971464,
+      "p90": 15.22988280982099
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1193,
+      "n_distinct_low": 1202,
+      "n_zero_range_bars": 0,
+      "frac_zero_range": 0.0,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": 0.587049193833256,
+      "p25_bp": -3.1643371834068392,
+      "p75_bp": 3.4246788702469013,
+      "frac_floored": 0.45151359671626473
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.01684934708963798,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 23932939.0,
+       "2026-11-17": 26810607.0,
+       "2026-11-18": 20832006.0,
+       "2026-11-19": 52986671.0,
+       "2026-11-20": 49002917.0
+      },
+      "median_daily_shares": 26810607.0,
+      "median_minute_volume": 45005.0
+     }
+    },
+    "DIA": {
+     "symbol": "DIA",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:09Z",
+     "fetch_status": "ok",
+     "n_bars": 1950,
+     "first_bar": "2026-11-16 14:30:00+00:00",
+     "last_bar": "2026-11-20 20:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 5.589579050781645,
+      "p25": 3.5881560917253883,
+      "p75": 8.345450853431831,
+      "p90": 11.728176342011048
+     },
+     "tick_truncation": {
+      "n_distinct_high": 1484,
+      "n_distinct_low": 1505,
+      "n_zero_range_bars": 1,
+      "frac_zero_range": 0.0005128205128205128,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 1949,
+      "pooled_bp": 0.0,
+      "median_bp": -0.06431915872712617,
+      "p25_bp": -3.426647718351961,
+      "p75_bp": 2.0627440362754856,
+      "frac_floored": 0.5053873781426372
+     },
+     "roll": {
+      "n": 1949,
+      "bp": 0.0,
+      "acf1": 0.008983152152387527,
+      "structurally_valid": false
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-16": 3229497.0,
+       "2026-11-17": 3661851.0,
+       "2026-11-18": 3815465.0,
+       "2026-11-19": 4374006.0,
+       "2026-11-20": 5443500.0
+      },
+      "median_daily_shares": 3815465.0,
+      "median_minute_volume": 5998.0
+     }
+    }
+   },
+   "blocked": [],
+   "aggregate": {
+    "n_names_with_data": 4,
+    "range_ub_rt_bp": {
+     "min": 5.589579050781645,
+     "p25": 7.751160320103858,
+     "median": 8.032540582935333,
+     "p75": 12.074926303113397,
+     "p90": 8.313920845766807,
+     "max": 12.074926303113397
+    },
+    "per_name_rt_bp": {
+     "SPY": 8.313920845766807,
+     "QQQ": 12.074926303113397,
+     "IWM": 7.751160320103858,
+     "DIA": 5.589579050781645
+    },
+    "corwin_schultz_rt_bp_median": 0.9003021554127755,
+    "ratio_max_to_min": 2.1602568267506377,
+    "basis": "median 1-min bar range = rigorous UPPER bound on round-trip quoted spread (bid and ask both lie inside [low, high]); NOT the NBBO"
+   }
+  },
+  "MEME": {
+   "asset_class": "MEME",
+   "universe": [
+    "DOGE-USD",
+    "SHIB-USD",
+    "PEPE-USD"
+   ],
+   "source": "yfinance period=5d interval=1m (Yahoo); Tiingo IEX is the documented fallback and returned HTTP 429 this run",
+   "fetched_utc": "2026-11-22T22:59:09Z",
+   "per_name": {
+    "DOGE-USD": {
+     "symbol": "DOGE-USD",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:09Z",
+     "fetch_status": "ok",
+     "n_bars": 7135,
+     "first_bar": "2026-11-18 00:00:00+00:00",
+     "last_bar": "2026-11-22 22:58:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 6.793846184994066,
+      "p25": 3.4301293386839693,
+      "p75": 11.691255614430434,
+      "p90": 18.880942256722754
+     },
+     "tick_truncation": {
+      "n_distinct_high": 791,
+      "n_distinct_low": 803,
+      "n_zero_range_bars": 736,
+      "frac_zero_range": 0.10315346881569727,
+      "suspect": false,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 7134,
+      "pooled_bp": 0.0,
+      "median_bp": -0.7601082088594493,
+      "p25_bp": -8.765090580989952,
+      "p75_bp": 1.0648283946839547,
+      "frac_floored": 0.652789458929072
+     },
+     "roll": {
+      "n": 7134,
+      "bp": 3.994752818748753,
+      "acf1": -0.03106404392123476,
+      "structurally_valid": true
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-18": 95704800.0,
+       "2026-11-19": 143845696.0,
+       "2026-11-20": 414207264.0,
+       "2026-11-21": 372411136.0,
+       "2026-11-22": 87771392.0
+      },
+      "median_daily_shares": 143845696.0,
+      "median_minute_volume": 0.0
+     }
+    },
+    "SHIB-USD": {
+     "symbol": "SHIB-USD",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:09Z",
+     "fetch_status": "ok",
+     "n_bars": 7136,
+     "first_bar": "2026-11-18 00:00:00+00:00",
+     "last_bar": "2026-11-22 22:59:00+00:00",
+     "range_upper_bound_rt_bp": {
+      "note": "at any instant bid and ask both lie inside the bar's [low, high], so RT quoted spread <= high-low. This is an UPPER BOUND, not the NBBO.",
+      "median": 0.0,
+      "p25": 0.0,
+      "p75": 0.0,
+      "p90": 26.595463230018407
+     },
+     "tick_truncation": {
+      "n_distinct_high": 53,
+      "n_distinct_low": 55,
+      "n_zero_range_bars": 6018,
+      "frac_zero_range": 0.843329596412556,
+      "suspect": true,
+      "note": "frac_zero_range > 0.5 means the quote grid is coarser than the price moves, so this name's 0.00 bp is TRUNCATION and must NOT be quoted as a zero spread"
+     },
+     "corwin_schultz": {
+      "n_pairs": 7135,
+      "pooled_bp": 0.0,
+      "median_bp": 0.0,
+      "p25_bp": 0.0,
+      "p75_bp": 0.0,
+      "frac_floored": 0.9774351786965663
+     },
+     "roll": {
+      "n": 7135,
+      "bp": 9.297406886896228,
+      "acf1": -0.11066525174982433,
+      "structurally_valid": true
+     },
+     "volume": {
+      "shares_per_day": {
+       "2026-11-18": 9055172.0,
+       "2026-11-19": 17433484.0,
+       "2026-11-20": 32976700.0,
+       "2026-11-21": 24225600.0,
+       "2026-11-22": 7714500.0
+      },
+      "median_daily_shares": 17433484.0,
+      "median_minute_volume": 0.0
+     }
+    },
+    "PEPE-USD": {
+     "symbol": "PEPE-USD",
+     "source": "yfinance period=5d interval=1m (Yahoo)",
+     "fetched_utc": "2026-11-22T22:59:09Z",
+     "fetch_status": "empty"
+    }
+   },
+   "blocked": [
+    {
+     "symbol": "PEPE-USD",
+     "reason": "empty"
+    }
+   ],
+   "aggregate": {
+    "n_names_with_data": 2,
+    "range_ub_rt_bp": {
+     "min": 0.0,
+     "p25": 0.0,
+     "median": 3.396923092497033,
+     "p75": 6.793846184994066,
+     "p90": 0.0,
+     "max": 6.793846184994066
+    },
+    "per_name_rt_bp": {
+     "DOGE-USD": 6.793846184994066,
+     "SHIB-USD": 0.0
+    },
+    "corwin_schultz_rt_bp_median": -0.38005410442972465,
+    "ratio_max_to_min": null,
+    "basis": "median 1-min bar range = rigorous UPPER bound on round-trip quoted spread (bid and ask both lie inside [low, high]); NOT the NBBO"
+   }
+  },
+  "PENNY_STOCK": {
+   "asset_class": "PENNY_STOCK",
+   "universe": [],
+   "source": "yfinance period=5d interval=1m (Yahoo); Tiingo IEX is the documented fallback and returned HTTP 429 this run",
+   "fetched_utc": "2026-11-22T22:59:09Z",
+   "per_name": {},
+   "blocked": [
+    {
+     "reason": "NO_INSTRUMENT_IN_REPO",
+     "detail": "an empty universe stays empty; no number is borrowed from another class"
+    }
+   ],
+   "aggregate": null
+  }
+ },
+ "top_of_book": {
+  "endpoint": "https://api.tiingo.com/iex/?tickers=<universe>",
+  "sampled_utc": "2026-11-22T22:59:06Z",
+  "fetch_status": "ok",
+  "quotes": [
+   {
+    "ticker": "AGG",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "XLY",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "QQQ",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "XLF",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "XLV",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "SHY",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "DIA",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "TLT",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "XLE",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "IWM",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "SPY",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "XLK",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "SOXX",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   },
+   {
+    "ticker": "GLD",
+    "bid": null,
+    "ask": null,
+    "bidSize": null,
+    "askSize": null,
+    "quoteTimestamp": null,
+    "timestamp": "2026-11-20T21:00:00+00:00"
+   }
+  ],
+  "status": "BLOCKED_NO_LIVE_NBBO",
+  "reason": "IEX returned null bid/ask - outside US regular session (2026-11-22 is a Sunday) or stale. Not a zero."
+ },
+ "commission": {
+  "status": "COMMISSION_UNKNOWN",
+  "why": "no broker statement or fill data in repo; the 10bp constant in transaction_costs.json is an unsourced assumption and is not propagated as measured"
+ }
+}
