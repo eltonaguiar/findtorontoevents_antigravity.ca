@@ -67,5 +67,23 @@ none was touched.
 
 ## Post-merge dispatch result
 
-Filled in after merge: run id, per-step conclusions, `Node.js 20 is deprecated`
-grep count (expected 0), and the claims line (expected unchanged).
+PR #1090 merged as `1df8edb4487` (merge commit); dispatched run **`45122483349`**
+on main, conclusion **success**.
+
+| Step | Conclusion |
+|---|---|
+| Set up job | success |
+| Checkout | success |
+| Checkout review repo | success |
+| Setup Python | success |
+| Check gh availability (non-fatal) | success |
+| Run verification | success |
+| Summarise (warn, do not fail) | success |
+| Commit report + JSON ([skip ci]) | success |
+| Post Setup Python / Post Checkout review repo / Post Checkout | success |
+| Complete job | success |
+
+`Node.js 20 is deprecated` grep count: **1 before** (run `45122121748`) -> **0 after**.
+Total `##[warning]` lines: 1 -> 0, so no new annotation replaced it.
+
+Claims line unchanged: `16 claims: 15 agree, 1 disagree (0 non-manual), 7 manual; strict violations: 0`.
