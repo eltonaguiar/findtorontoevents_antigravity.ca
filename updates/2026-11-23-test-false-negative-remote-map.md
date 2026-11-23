@@ -58,7 +58,14 @@ now pins `--ref HEAD` (always resolvable), and instead of the old shallow assert
 
 - the check's `status` is `PASS` (with its detail on failure),
 - the check's resolved `ref` is `review/main` (i.e. it went through the map, not a fallback),
-- the claim's `computed_verdict` is `VERIFIED`.
+- the claim's normalized `computed_verdict` is `VERIFIED`.
+
+The verdict is compared with `vpc.normalize_verdict`, not by exact string: the gate's checkout is
+depth-1 by design, `--allow-shallow` is passed, and the engine then appends
+`[SHALLOW CLONE - results unreliable]` to every affected verdict
+(SRC: `tools/verify_peer_claims.py:125`). That suffix is an environment fact, not this test's
+subject; normalizing still separates `VERIFIED` from `UNVERIFIABLE`, which is what a broken remote
+map produces.
 
 This is the preferred shape from the brief's option (a): the test's preconditions are owned by the
 test, so it cannot be perturbed by the checkout it runs in. A `skipif` was rejected because it would
@@ -87,8 +94,14 @@ The engine was **not** changed: exit 2 on an unresolvable top-level ref is corre
    The engine was reverted afterwards (`git diff --stat tools/verify_peer_claims.py` empty).
 3. **Full suite** - `python3 -m pytest tests/test_verify_peer_claims.py tests/test_capacity_model.py tests/test_edge_research_tally_consistency.py -q`
    -> `80 passed in 1.33s`.
-4. **CI** - see the PR below; the `Verification Tests` gate on a real PR checkout is the check that
-   failed in run 45128193990 and must now be green.
+4. **CI** - the `Verification Tests` gate on PR #1099 (a real PR checkout - the environment that
+   exposed the original bug). The first attempt on the PR was red for a *different* environmental
+   reason: the exact-string verdict assertion did not allow for the shallow marker (see above); it
+   was corrected and the gate re-run. Final run id and conclusion are recorded in the PR.
+
+Also verified in a **shallow** hostile checkout (depth-1 clone, `origin/main` absent - the gate's
+environment shape): 39 passed; and with the remote map sabotaged the test fails with
+`assert 'SKIP' == 'PASS'`.
 
 ## Scope
 

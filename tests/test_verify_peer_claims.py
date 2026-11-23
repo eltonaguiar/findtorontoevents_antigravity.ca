@@ -198,7 +198,11 @@ def test_remote_map_env_var(tmp_path, monkeypatch):
     check = payload["claims"][0]["checks"][0]
     assert check["status"] == vpc.STATUS_PASS, check["detail"]
     assert check["ref"] == "review/main"
-    assert payload["claims"][0]["computed_verdict"] == "VERIFIED"
+    # Normalized: in a shallow checkout (--allow-shallow) the engine appends
+    # SHALLOW_SUFFIX to the verdict, and that is an environment fact, not this
+    # test's subject. Normalizing still separates VERIFIED from UNVERIFIABLE,
+    # which is what a broken remote map produces.
+    assert vpc.normalize_verdict(payload["claims"][0]["computed_verdict"]) == "VERIFIED"
 
 
 def test_unresolvable_ref_skips_not_fails(tmp_path):
