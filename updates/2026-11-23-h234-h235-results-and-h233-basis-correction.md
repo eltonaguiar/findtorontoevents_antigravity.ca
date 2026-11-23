@@ -50,9 +50,13 @@ full-sample CI lower bound reproduces the claimed **+7.246 bp/day** to the third
 also validates the harness against the artifact that produced C-019.
 
 **This is the first cell in the programme that replicates on both halves of its own sample with
-positive benchmark excess.** It does not become PROVEN: the DSR margin (holds to N=28 of 29) and the
-76.7-day data margin are untouched by this test, and the extra trial raises N to 30, which moves the
-bar the wrong way.
+positive benchmark excess.** It does not become PROVEN: the multiplicity and data margins are
+untouched by this test, and the extra trial raises N to 30, which moves the bar the wrong way.
+
+**Corrected 2026-11-23 (C-029):** this paragraph originally repeated C-019's "holds to N=28 of 29"
+and "76.7-day data margin". Recomputed with the series' own skew and kurtosis (12.254), the DSR is
+**0.9490 at N=28** — the margin was already closed before H-234 landed — and the requirement at
+N=29 is **137 days**, not 77. See `updates/2026-11-23-dsr-recompute-at-30-trials.md`.
 
 ## H-235: the drawdown reduction holds outside the US book — `SURVIVES`, with real caveats
 

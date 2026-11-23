@@ -80,20 +80,26 @@ agrees, or a forward clock on the overlay alone. Not a different rebalance conve
 **+7.246 bp/day** over 3,744 days, 179 trades. Cost is irrelevant here: the floor is a **614 bp**
 round trip (30.7x the assumed 10 bp) — C-017.
 
-It is `NOT_PROVEN` for two arithmetic reasons, not for a bad result (C-019, C-024):
-- **Multiplicity:** DSR 0.9469 against a 0.95 bar; it holds to N=28 against 29 declared. The
-  effective trial count is ~25 (band 20-30), so the pass boundary sits *inside* the uncertainty
-  band — unresolvable at this sample size.
-- **Data margin:** needs 0.073872 daily Sharpe, has 0.073600 — **76.7 more trading days**.
+It is `NOT_PROVEN` for two arithmetic reasons, not for a bad result (C-019, C-024; both figures
+**corrected by C-029** on 2026-11-23):
+- **Multiplicity:** DSR **0.9469** at N=29 against a 0.95 bar — and **0.9490 even at N=28** once
+the series' own skew (−0.050) and kurtosis (12.254) are in the denominator. The cell therefore
+  clears only at **N ≤ 27**, while 30–31 trials are declared. The effective trial count is ~25
+  (band 20–30), so the pass boundary sits *inside* the uncertainty band — unresolvable at this
+  sample size.
+- **Data margin:** needs 0.073872 daily Sharpe, has 0.073600 — **137 more trading days** at N=29
+  (232 at N=30, 327 at N=31). C-019's 76.7 days used a normal-returns denominator; the measured
+  kurtosis of 12.254 widens it to 1.0094.
 
 And the honest ceiling: on a survivorship-free universe it may not survive. The 44-name PIT
 universe meets the count bar but is `PARTIAL_NON_DELISTING_AWARE`, so the pod caps its verdict at
 `CANDIDATE_SURVIVORSHIP_FLAGGED`. The vol-matched CI-LB is **−0.533**: when scaled to SPY's
 volatility the excess goes *negative*, which is what a beta proxy looks like (C-022).
 
-**What would promote it:** 77 forward trading days at the same effect size (running now, day 15 of
-a 20-day gate), and a non-overlapping second universe. Both are already specified; neither can be
-hurried.
+**What would promote it:** **137** forward trading days at the same effect size (corrected from 77
+by C-029; the pod is day 15 of a 20-day gate, and that gate is a clock check, not a significance
+test), and a non-overlapping second universe. Both are already specified; neither can be hurried.
+
 
 ---
 
