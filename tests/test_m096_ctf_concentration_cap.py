@@ -65,6 +65,14 @@ def _common_env(monkeypatch):
     # matrix_symbol_gates restricts multi_asset_cot to CT=F only; disable so
     # M-096 tests that probe non-CT=F symbols (HG=F) aren't blocked by matrix gate.
     monkeypatch.setenv("MATRIX_SYMBOL_GATES", "0")
+    # 2026-11-23: COMMODITY/multi_asset_cot is in HARDCODED_TOXIC_PAIRS
+    # (emitter_whitelist.py:49, evidence "WR=17% (n=223 closed)"), so
+    # passes_active_gate -- which passes_smart_gate calls at line 9443 -- rejects
+    # the fixture before M-096 ever runs. That kill is correct and must not be
+    # weakened; this pair is only a vehicle for reaching M-096, so disable the
+    # registry gate for these tests the same way the other isolation switches
+    # above do. NOT a claim that the toxic pair is wrong.
+    monkeypatch.setenv("EMITTER_REGISTRY_GATE", "0")
 
 
 class TestM096CTFConcentrationCap:
