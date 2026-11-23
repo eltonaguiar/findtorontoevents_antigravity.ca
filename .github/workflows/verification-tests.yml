@@ -33,12 +33,19 @@ name: Verification Tests
       - 'tools/verify_peer_claims.py'
       # The claim manifest it reads.
       - 'claims/**'
-      # The three suites this gate runs.
+      # The three suites this gate runs, plus the PMC promotion-flag guard.
       - 'tests/test_verify_peer_claims.py'
       - 'tests/test_capacity_model.py'
       - 'tests/test_edge_research_tally_consistency.py'
+      - 'tests/test_pmc_promotion_consistency.py'
       # The module exercised by test_capacity_model.py.
       - 'tools/capacity_model.py'
+      # The PMC guard reads these directly, so a change to any of them can flip
+      # its promotion-flag outcome and must re-run it.
+      - 'tools/prediction_market_consensus_pilot.py'
+      - 'tools/pmc_pilot_monitor.py'
+      - 'tools/track_pmc_paper_pilot.py'
+      - 'verified_strategies/paper_pilot/**'
       # The tally test recursively globs every markdown file under docs/ (see
       # tests/test_edge_research_tally_consistency.py SEARCH_DIR), so a docs edit
       # can flip the tally invariant.
@@ -53,7 +60,12 @@ name: Verification Tests
       - 'tests/test_verify_peer_claims.py'
       - 'tests/test_capacity_model.py'
       - 'tests/test_edge_research_tally_consistency.py'
+      - 'tests/test_pmc_promotion_consistency.py'
       - 'tools/capacity_model.py'
+      - 'tools/prediction_market_consensus_pilot.py'
+      - 'tools/pmc_pilot_monitor.py'
+      - 'tools/track_pmc_paper_pilot.py'
+      - 'verified_strategies/paper_pilot/**'
       - 'docs/**'
       - '.github/workflows/verification-tests.yml'
   workflow_dispatch:
@@ -106,4 +118,5 @@ jobs:
             tests/test_verify_peer_claims.py \
             tests/test_capacity_model.py \
             tests/test_edge_research_tally_consistency.py \
+            tests/test_pmc_promotion_consistency.py \
             -q
