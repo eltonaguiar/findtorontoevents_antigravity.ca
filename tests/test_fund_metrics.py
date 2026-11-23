@@ -369,7 +369,11 @@ def test_fetch_anchors_returns_a_dated_dict():
     assert a["ttl_hours"] == fd.ANCHOR_TTL_HOURS
     # either a number or an explicit error -- never absent
     assert ("cash_tbill_yield_pct" in a) or ("cash_error" in a)
-    assert ("bnd_ytm_pct" in a) or ("bnd_error" in a)
+    # `bnd_ytm_pct` was renamed to `bnd_yield_pct` once it became clear the
+    # source field is a DISTRIBUTION yield, not a yield-to-maturity.
+    assert ("bnd_yield_pct" in a) or ("bnd_error" in a)
+    if "bnd_yield_pct" in a:
+        assert a["bnd_yield_kind"] in {"yield_to_maturity", "distribution_yield_ttm"}
 
 
 def test_out_flag_writes_where_asked(tmp_path, monkeypatch):
@@ -617,3 +621,42 @@ def test_portfolio_does_not_double_charge_the_fee():
     a, _ = fd.portfolio(fd.RET_FOR_TEST, w, rebal=21, merblend=0.0, spread_bp=5.0)
     b, _ = fd.portfolio(fd.RET_FOR_TEST, w, rebal=21, merblend=0.01, spread_bp=5.0)
     assert a == pytest.approx(b), "merblend must not affect portfolio() output"
+
+
+# --------------------------------------------------------------------------
+# F1/F2 — the forward anchors must be traceable and correctly LABELLED
+# --------------------------------------------------------------------------
+ANCHORS = REPO_ROOT / "reports" / "fund_forward_anchors.json"
+
+
+def test_F2_anchor_snapshot_exists_and_is_dated():
+    assert ANCHORS.exists(), "doc quotes anchors but no committed snapshot exists"
+    a = json.loads(ANCHORS.read_text())
+    assert "fetched_at" in a, "anchor snapshot must record when it was fetched"
+    assert "cash_asof" in a, "cash anchor must record its as-of date"
+    assert a.get("cash_stale") is False, "committed anchor is stale"
+
+
+def test_F2_bnd_figure_is_not_called_a_ytm():
+    """The number comes from yfinance's `yield` field, which is the trailing
+    DISTRIBUTION yield. Calling it a YTM understates the forward bond case.
+    """
+    a = json.loads(ANCHORS.read_text())
+    assert a["bnd_yield_kind"] == "distribution_yield_ttm"
+    assert a["bnd_yield_source"] == "yield"
+
+
+def test_F2_doc_does_not_mislabel_the_bond_yield():
+    text = DOC.read_text()
+    assert "BND distribution yield" in text
+    # the wrong phrasing must not survive anywhere outside the correction note
+    bad = text.replace("called 4.11% BND's", "")
+    assert "BND YTM of 4.11" not in bad, "doc still calls 4.11% a YTM"
+
+
+def test_F2_doc_anchor_numbers_match_the_snapshot():
+    a = json.loads(ANCHORS.read_text())
+    text = DOC.read_text().replace("\u2212", "-")
+    assert f"{a['cash_tbill_yield_pct']:.2f}%" in text, "cash figure not in doc"
+    assert f"{a['bnd_yield_pct']:.2f}%" in text, "bond figure not in doc"
+    assert a["cash_asof"] in text, "as-of date not in doc"

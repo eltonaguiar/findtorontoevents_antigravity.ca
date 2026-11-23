@@ -32,7 +32,7 @@ net-CAGR, the population stdev, and the Python ≥3.11 dependency.
 | 2 | SGOV Sharpe 15.886 | Undefined. Emitted as `null` now. |
 | 3 | 60/40 at 7.05%, "monthly rebalance" | The code rebalanced **daily**; `rebal` was ignored. True monthly: **6.91%**. |
 | 4 | "FXAIX net CAGR +0.17pp higher — durable" | The **gross** advantage **flips sign** between halves (+0.099 → −0.021). Only the **fee** is durable. |
-| 5 | "60/40 gives up return for a shallower hole" | True **trailing**, but BND's forward **YTM is 4.11%**, not −0.29%. On current yields bonds are expected to *contribute*, which changes the forward case. |
+| 5 | "60/40 gives up return for a shallower hole" | True **trailing**, but BND's forward **distribution yield is 4.11%** (not YTM — see the correction below), against a −0.29% trailing CAGR. On current yields bonds are expected to *contribute*, which changes the forward case. |
 
 ---
 
@@ -214,23 +214,32 @@ Quarterly rebalancing is worse at every mix (60/40: 6.71% net vs 7.37% buy-and-h
 0.17 turnover — consistent with the rebalancing table above: rebalancing kept buying the
 falling sleeve.
 
-**Read this against the forward anchors, not on its own.** On a forward BND YTM of 4.11%
-versus a 4.12% cash rate, a bond sleeve is roughly neutral-to-positive going forward, so this
-table's monotonic Sharpe decline is a statement about the *past five years of rising rates*,
-not a general law. This is the SPY/BND line only — it is not the efficient frontier over all
-assets, and a point further left may exist.
+**Read this against the forward anchors, not on its own.** On a forward BND distribution yield of
+4.11% (a floor — true YTM is typically higher) versus a 4.15% cash rate, a bond sleeve is roughly
+neutral-to-positive going forward, so this table's monotonic Sharpe decline is a statement about the
+*past five years of rising rates*, not a general law. This is the SPY/BND line only — it is not the
+efficient frontier over all assets, and a point further left may exist.
 
 ## Forward anchors (current, not trailing)
 
-Fetched 2026-11-23 via `--anchors`:
+Fetched 2026-11-23 via `--anchors`; snapshot committed at
+`reports/fund_forward_anchors.json` so these are traceable to a dated fetch
+rather than a session artifact:
 
-- **Cash (13-week T-bill, ^IRX): 4.12%** as of 2026-11-20 — vs 3.81% trailing SGOV
-- **BND yield-to-maturity: 4.11%** — vs −0.29% trailing CAGR
+- **Cash (13-week T-bill, ^IRX): 4.15%** as of 2026-11-23 — vs 3.81% trailing SGOV
+- **BND distribution yield: 4.11%** (trailing twelve months) — vs −0.29% trailing CAGR
 
-**This is the single largest correction.** BND's forward expectation is ≈ +4.1%/yr. The original
-"60/40 gives up return" conclusion rests on a trailing window dominated by a rate-hike bond bear
-market. On current yields a bond sleeve is expected to *add* return, so the forward case for 60/40
-is materially stronger than the trailing numbers imply.
+> **Correction.** An earlier version of this section called 4.11% BND's "yield-to-maturity".
+> It is not. The number comes from yfinance's `yield` field, which is the **distribution yield**
+> over the trailing year. For a bond fund trading at a discount the true YTM is typically
+> **higher** than the distribution yield, so the labelling understated the forward bond case —
+> it did not create it. The true YTM is not available from this data source and is **not fetched
+> here**; treat 4.11% as a conservative floor, not an estimate of YTM.
+
+**This is still the single largest correction.** BND's forward yield of ~4.1% (at minimum) compares
+with a −0.29% trailing CAGR. The original "60/40 gives up return" conclusion rests on a trailing
+window dominated by a rate-hike bond bear market. On current yields a bond sleeve is expected to
+*add* return, so the forward case for 60/40 is materially stronger than the trailing numbers imply.
 
 ## Futures — explicitly out of scope
 

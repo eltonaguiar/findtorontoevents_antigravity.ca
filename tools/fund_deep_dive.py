@@ -234,15 +234,31 @@ def fetch_anchors(ttl_hours=ANCHOR_TTL_HOURS):
     # F2: bond anchor = BND yield-to-maturity proxy from the fund's own metadata
     try:
         info = yf.Ticker("BND").info or {}
-        for key in ("yield", "yieldToMaturity", "ytm", "dividendYield"):
+        # A TRUE yield-to-maturity is only reported by the first two keys.
+        # `yield` and `dividendYield` are the trailing DISTRIBUTION yield: for a
+        # bond fund trading at a discount the YTM is typically HIGHER, so
+        # labelling them "YTM" understates the forward case. (A report claimed
+        # "BND YTM 4.11%" from the `yield` field; that was a distribution yield.)
+        TRUE_YTM = ("yieldToMaturity", "ytm")
+        DIST = ("yield", "dividendYield")
+        found = None
+        for key in TRUE_YTM + DIST:
             v = info.get(key)
             if v:
-                pct = float(v) * (100.0 if float(v) < 1.0 else 1.0)
-                out["bnd_ytm_pct"] = round(pct, 3)
-                out["bnd_ytm_source"] = key
+                found = (key, float(v) * (100.0 if float(v) < 1.0 else 1.0))
                 break
-        else:
+        if found is None:
             out["bnd_error"] = "no yield field in BND metadata"
+        else:
+            key, pct = found
+            out["bnd_yield_pct"] = round(pct, 3)
+            out["bnd_yield_source"] = key
+            out["bnd_yield_kind"] = ("yield_to_maturity" if key in TRUE_YTM
+                                     else "distribution_yield_ttm")
+            if key not in TRUE_YTM:
+                out["bnd_note"] = ("distribution yield, NOT yield-to-maturity; "
+                                   "true YTM is not available from this source "
+                                   "and is typically HIGHER for a discounted fund")
     except Exception as e:  # noqa: BLE001
         out["bnd_error"] = str(e)[:160]
 
@@ -470,9 +486,13 @@ def main(argv=None):
             print(f"    vs trailing SGOV net CAGR {out['funds'][CASH_KEY]['net_cagr_pct']:.2f}%")
         else:
             print(f"  cash anchor UNAVAILABLE: {a.get('cash_error')}")
-        if a.get("bnd_ytm_pct") is not None:
-            print(f"  BND YTM           {a['bnd_ytm_pct']:6.2f}%  (source: {a.get('bnd_ytm_source')})")
-            print(f"    vs trailing BND CAGR     {out['funds']['BND_adj']['cagr_pct']:.2f}%")
+        if a.get("bnd_yield_pct") is not None:
+            kind = a.get("bnd_yield_kind")
+            label = "BND YTM" if kind == "yield_to_maturity" else "BND dist yield"
+            print(f"  {label:18s}{a['bnd_yield_pct']:6.2f}%  ({kind}, source: {a.get('bnd_yield_source')})")
+            print(f"    vs trailing BND CAGR  {out['funds']['BND_adj']['cagr_pct']:.2f}%")
+            if kind != "yield_to_maturity":
+                print(f"    NOTE: {a.get('bnd_note')}")
         else:
             print(f"  BND YTM UNAVAILABLE: {a.get('bnd_error')}")
         if a.get("cash_stale"):
