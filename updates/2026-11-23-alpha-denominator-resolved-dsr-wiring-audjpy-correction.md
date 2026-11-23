@@ -44,6 +44,15 @@ run timestamp, because other copies of the same ledger hold 359 and 374 cells.
 **Verified:** read `len(cells)` and `summary.n_cells_total` from the ledger in the main tree;
 both 362; verdict histogram sums to 362 (59+8+295).
 
+**One contradiction inside the ledger itself, found while fixing this.** Two cells carry
+`alpha_gate.passed == true` while holding verdicts WEAK/KILL, so the ledger's own rule count says
+**2** where its verdict count says **0**. I am reporting the zero (verdicts) as the answer and the
+field count as the anomaly, because PROVEN/CANDIDATE is what the estate's gate means by "passes" —
+but until someone with the generator in hand says whether those two cells are a scoring artefact or
+a genuine pair that cleared the gate without being promoted, "0 pass" is a verdict-based claim, not
+a rule-based one. `tools/programme_alpha_sweep_recompute.py` now prints both, side by side, rather
+than letting one silently overwrite the other.
+
 ## 2. `AUDJPY` is not a "deterministic-loser pattern"
 
 `ROOT_CAUSE_ANALYSIS_NON_CRYPTO.md` Root Cause #4 asserted
