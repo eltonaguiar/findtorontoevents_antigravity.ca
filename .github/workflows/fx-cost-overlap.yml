@@ -1,0 +1,116 @@
+name: fx-cost-overlap
+
+# Representative FOREX spread measurement in the London/NY overlap.
+#
+# WHY: FOREX cost is measured once, at the Sunday 22:00Z reopen - an upper bound
+# (thin book, frozen pairs, high variance). The one number that can close FX
+# mean-reversion (break-even 4.3038 bp) is the WEEKDAY cost, and it has only ever
+# been missing because nobody re-ran the probe during a weekday session. This
+# schedules it so it self-completes.
+#
+# WINDOW: 13:00-16:00 UTC, Monday-Friday. GitHub cron is UTC and this window is
+# fixed in UTC year-round (it is the overlap of London business hours and NY
+# business hours), so DST shifts the local clock around the window but not the
+# window itself. Six runs across it (two per hour at 13, 14, 15) so a single
+# flaky API call cannot produce a null result. Each cron line is a single minute
+# (not a comma list) so a schedule is unambiguous and no minute collides inside
+# this workflow.
+#
+# SAFETY:
+#  * No secrets in this file. The Tiingo token comes from the existing repository
+#    secret TIINGO_API_KEY (same one etf-spread-series / stocks-daily use).
+#  * Read-only against the FX API: no MySQL, no trading, no order path. The only
+#    write is the artifact commit below.
+#  * Own concurrency group.
+#  * The artifact commit carries [skip ci] (an unguarded commit loop is the exact
+#    failure this repo has already been burned by).
+#  * The job stays green when blocked: an off-session / holiday / no-quote run
+#    writes BLOCKED_NO_REPRESENTATIVE_SESSION and moves no verdict. A scheduled
+#    job that silently published a bad number at 03:00 on Christmas would be
+#    worse than no job.
+#  * NOTHING AUTO-PROMOTES. The sampler can write NOT_INVESTABLE or hand a
+#    below-break-even result to a human; it cannot write INVESTABLE.
+
+on:
+  schedule:
+    # Weekdays only, inside 13:00-16:00 UTC. Minutes chosen from the least-used
+    # slots in this repo (:48 unused, :52/:54/:56/:57/:58 used by <= 5 others).
+    - cron: '48 13 * * 1-5'
+    - cron: '56 13 * * 1-5'
+    - cron: '52 14 * * 1-5'
+    - cron: '57 14 * * 1-5'
+    - cron: '54 15 * * 1-5'
+    - cron: '58 15 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      until_samples:
+        description: 'Plausible quotes per pair before stopping'
+        required: false
+        default: '30'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fx-cost-overlap
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: python3 -m pip install --quiet numpy pyyaml
+
+      - name: Self-test classifier rules
+        run: python3 tools/fx_cost_sampler.py --self-test
+
+      - name: Measure overlap cost and chain FX mean-reversion
+        env:
+          TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
+          UNTIL_SAMPLES: ${{ inputs.until_samples || '30' }}
+        run: |
+          if [ -z "${TIINGO_API_KEY}" ]; then
+            echo "::warning::TIINGO_API_KEY secret is not set - cannot sample; writing a blocked artifact."
+          fi
+          # Never fail the job on a blocked session: the artifact records why.
+          python3 tools/fx_cost_sampler.py --overlap \
+            --until-samples "${UNTIL_SAMPLES}" --interval 20 --max-minutes 12 \
+            --chain-shuffles 200 || \
+            echo "::notice::sampler exited non-zero; artifact (if any) records the reason"
+
+      - name: Show verdict
+        run: |
+          latest=$(ls -t reports/cost_measurement_forex/FOREX_COST_*_overlap*.json 2>/dev/null | head -1 || true)
+          if [ -n "${latest}" ]; then
+            python3 - "${latest}" <<'PY'
+          import json, sys
+          d = json.load(open(sys.argv[1]))
+          print("status        :", d.get("status"), d.get("block_reason") or "")
+          print("decision cost :", (d.get("aggregate") or {}).get("decision_cost_bp"), "bp")
+          print("strategy      :", (d.get("strategy_decision") or {}).get("strategy_verdict"))
+          PY
+          else
+            echo "::notice::no overlap artifact produced this run"
+          fi
+
+      - name: Commit artifact
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/cost_measurement_forex/ || true
+          if git diff --cached --quiet; then
+            echo "no new artifact"
+          else
+            git commit -m "chore(fx-cost): overlap spread sample [skip ci]"
+            git push
+          fi
