@@ -125,3 +125,34 @@ reads the two PR states and derives VERIFIED. Fix: the workflow grants
 `pull-requests: read` and exports `GH_TOKEN: ${{ github.token }}` to the verification
 step. B1/B2/B5/B10 remain UNVERIFIABLE-by-design (they need the review repo, which is not
 checked out here; B1/B2/B5 are manual claims).
+
+## Review-repo claims resolved (B1, B2, B5, B10)
+
+The workflow now checks out `eltonaguiar/antigravity_review_Nov192026` into `.review` and
+passes `--remote-map '{"review": "${{ github.workspace }}/.review"}'`, so the four
+`review/main` claims are decidable instead of SKIPping to UNVERIFIABLE. Measured locally
+against a full (non-shallow) clone of the main repo and a fresh clone of the review repo
+(review main `63e129c96f1`):
+
+| id | hand | mechanical | decisive command | output |
+|----|------|-----------|------------------|--------|
+| B1 | PARTIALLY | PARTIALLY | `git -C review merge-base --is-ancestor f45f67e main`; `git -C review ls-tree main -- 34_FINAL_PICKS_2026-11-23/KILOCODE_VSCODE/INVESTMENT_HUB_ASSESSMENT.md` | rc=0; `81829658f26b` -> agree |
+| B2 | PARTIALLY | PARTIALLY | `git -C review merge-base --is-ancestor 74f0ff92a43f main`; `git -C review ls-tree main -- 34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/{copilot.md,picks.json}`; root paths | rc=0; real files `52ad862d3d28`, `18216a8c3443` PRESENT, root `GITHUB_COPILOT_DEEPSEEK/copilot.md` and `picks.json` ABSENT -> agree |
+| B5 | VERIFIED | PARTIALLY | `git -C review merge-base --is-ancestor {a3f6a6b,41a6e19,3f1ab35} main`; `git -C review cat-file -t 41e6e19` | all rc=0; `41e6e19` -> `fatal: Not a valid object name` -> DISAGREE |
+| B10 | VERIFIED | VERIFIED | `git -C review merge-base --is-ancestor d18179d main`; `git -C review ls-tree main -- 35_TOP_GAINERS_HARVEST_2026-11-23/` | rc=0; tree `c24ff01a8af3` -> agree |
+
+Totals with the mapping: `16 claims: 15 agree, 1 disagree (0 non-manual), 7 manual; strict violations: 0`
+(before the mapping the same run had the four as UNVERIFIABLE). Without `--remote-map` the
+four checks SKIP and the claims read UNVERIFIABLE - never FAIL - so a missing review
+checkout degrades coverage, it does not break the job.
+
+**B5 is the one genuine disagreement, and the hand report is right.** The mechanical rule
+tallies the literal claim: `41e6e19` does not exist, so "41e6e19 landed" is refuted
+(supporting=3, refuting=1 -> PARTIALLY). The hand report's VERIFIED rests on the human
+judgement that `41e6e19` is a typo for `41a6e19`, which *is* an ancestor of review main -
+a judgement the engine deliberately does not make, so B5 stays `manual: true` and the
+disagreement is reported, not suppressed. `expected_verdict` was left at VERIFIED.
+
+**B2's manifest paths were wrong** and were corrected here: the two files exist under
+`34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/`, not at the review-repo root. The
+checks now assert the real files are present *and* the claimed root paths are absent.

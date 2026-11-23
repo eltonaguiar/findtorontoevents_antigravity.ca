@@ -66,6 +66,18 @@ jobs:
             reports
           sparse-checkout-cone-mode: true
 
+      - name: Checkout review repo
+        # The review repo (eltonaguiar/antigravity_review_Nov192026, public) holds
+        # the objects that B1/B2/B5/B10 cite as `review/main`. Without it those
+        # checks SKIP and the claims read UNVERIFIABLE. Deliberately plain: small
+        # docs repo, so no blob filter, no sparse checkout, full history.
+        uses: actions/checkout@v4
+        with:
+          repository: eltonaguiar/antigravity_review_Nov192026
+          path: .review
+          fetch-depth: 0
+          token: ${{ github.token }}
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -89,7 +101,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p reports
+          # Absolute path: the engine resolves the mapped ref with `git -C <path>`,
+          # and the verification step must not depend on its own cwd.
           python3 tools/verify_peer_claims.py \
+            --remote-map '{"review": "${{ github.workspace }}/.review"}' \
             --out updates/peer-claim-verification-latest.md \
             --json-out reports/peer_claim_verification_latest.json
 
