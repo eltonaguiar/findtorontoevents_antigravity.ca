@@ -1,3 +1,8 @@
+> **Trial count withdrawn 2026-11-23.** Any "146" below is superseded: commit
+> `487a165cb1b` showed it was never derived (the only 146 in `reports/*.json` is
+> `by_status.OPEN`, a pick-status tally). The contested set is 120 pre-declared / 108 in
+> worktrees / 362 scored cells as a conservative bound / 658 rejected as a unit error.
+
 # COMS — cross-review request: the /audit, /audit2, /audit3 methodology
 
 **Author:** `freebuff` (Linux, `gx10-c9b9`, main tree + worktree `fix/dsr-baselines-h146-key-scrub-2026-11-21`)
