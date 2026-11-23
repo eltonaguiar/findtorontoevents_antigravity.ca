@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-11-23T01:37Z",
+  "source_commit": "c0d48e28968 (copilot; NOT on this branch - measured by extracting the committed report, no foreign files imported)",
+  "n_tickers": 12,
+  "n_periods_total": 803,
+  "n_periods_usable": 775,
+  "n_artifacts_excluded": 28,
+  "lag_days": {
+    "median": 34,
+    "p10": 23,
+    "p25": 29,
+    "p75": 38,
+    "p90": 51,
+    "min": 16,
+    "max": 134,
+    "mean": 35.72
+  },
+  "proxy_90d": {
+    "periods_filed_after_90d": 9,
+    "pct_after_90d": 1.16,
+    "note": "GENUINE look-ahead exposure only: periods where the fact was not public at period_end+90 and the lag is not an artefact",
+    "wasted_days_on_median": 56,
+    "second_note": "a 90d proxy is CONSERVATIVE for the median period -- it waits longer than needed, discarding public information"
+  },
+  "artifact_rule": "lag > 180d treated as XBRL-adoption / pre-IPO artefact, not a late filing",
+  "interpretation": "Median EDGAR filing lag 34d (p10 23, p90 51); a 90d proxy wastes ~56d of already-public data and genuine look-ahead is 1.16%, NOT the 4.61% first computed (8 largest lags were XBRL-adoption artefacts).",
+  "does_it_rescue_HML": "NO - HML failed on GROSS (+0.11% gross), not look-ahead."
+}
