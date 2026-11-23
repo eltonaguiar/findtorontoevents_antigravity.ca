@@ -74,16 +74,23 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        # fetch-depth: 0 (full history), NOT the default depth-1 clone.
-        # verify_peer_claims refuses shallow clones by default because ancestry
-        # and object-existence checks silently invert verdicts there (defect 1
-        # above). A full fetch of this ~500MB history is slow, but checkout runs
-        # once and the 10-minute timeout covers it; the tests themselves are ~2s.
+        # Depth-1 clone. A full-history fetch of this ~500MB repo does not
+        # finish inside the timeout (two runs were cancelled at 10m). These
+        # tests build their own throwaway repos in tmp_path, so they need no
+        # ancestry from this checkout -- they only need an `origin/main` ref to
+        # exist, which the next step provides. Submodules are not needed.
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0
-          # Submodules are not needed and each one adds a fetch.
           submodules: false
+
+      - name: Expose origin/main ref
+        # tests/test_verify_peer_claims.py::test_remote_map_env_var drives
+        # main(), which resolves origin/main against this checkout. The depth-1
+        # clone has no such remote ref, so fetch just the main tip (a few MB)
+        # and map it. This is a ref for resolution, not history for ancestry.
+        run: |
+          git fetch --no-tags --depth=1 origin main:refs/remotes/origin/main
+          git rev-parse --verify origin/main
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v6
