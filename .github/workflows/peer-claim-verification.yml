@@ -24,6 +24,10 @@ on:
 
 permissions:
   contents: write
+  # pr_state checks run `gh pr view`; without a token gh is installed but
+  # unauthenticated and every PR-state check SKIPs (B9 then reads UNVERIFIABLE
+  # where a local authenticated run reads VERIFIED).
+  pull-requests: read
 
 concurrency:
   group: peer-claim-verification
@@ -81,6 +85,8 @@ jobs:
         # Deliberately NOT --strict. A weekly job that exits non-zero on a
         # legitimate new disagreement goes red forever and gets ignored; the
         # next step surfaces violations as ::warning:: annotations instead.
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p reports
           python3 tools/verify_peer_claims.py \

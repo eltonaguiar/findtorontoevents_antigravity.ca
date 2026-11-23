@@ -111,3 +111,17 @@ commit step uses `git add --sparse` for the two generated files.
 
 Locally this combination costs ~66 MB / ~12 s for the full commit graph of 340k commits,
 versus a 25 GB working repository - the timeout was fetching blobs nobody reads.
+
+## Post-merge re-dispatch (run 45116581495): green, provenance correct, one remaining gap
+
+The re-dispatch after the fetch fix succeeded: `16 claims: 11 agree, 5 disagree (2
+non-manual), 7 manual; strict violations: 0`, report header `shallow: false` with
+`checked-out HEAD at report time` equal to the ref tip.
+
+The one extra disagreement versus a local run (`12 agree, 4 disagree (1 non-manual)`) is
+B9, and it is not shallow-related: on CI `gh` is installed but unauthenticated, so its
+`pr_state` checks SKIP and B9 derives UNVERIFIABLE, while an authenticated local `gh`
+reads the two PR states and derives VERIFIED. Fix: the workflow grants
+`pull-requests: read` and exports `GH_TOKEN: ${{ github.token }}` to the verification
+step. B1/B2/B5/B10 remain UNVERIFIABLE-by-design (they need the review repo, which is not
+checked out here; B1/B2/B5 are manual claims).
