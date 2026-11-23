@@ -55,3 +55,13 @@ respectable. `tools/rank_on_lower_bound.py` (strategy LB) and `tools/rank_picks_
 Index MF ≈ 0.995–0.998 correlated with SPY and return ~11.6%/yr → same beta, fees decide. SGOV ~3.9%/yr = cash hurdle.
 Contest ledger hashes were unstable due to **CRLF** (not fabrication) — resolved 10/10 at 3eac5c2; use LF-normalised sha.
 Operators: `tools/cross_review_picks.py` flags n=0 / net<cost across agents.
+
+## Practical investing conclusions (2026-11-23)
+- **Buy a low-cost broad index fund** (FXAIX 0.015% / FZROX 0.00% in tax-sheltered; SPY/VOO/VTI ETF in taxable). Choose on COST+TAX (deterministic), NOT trailing returns (CIs overlap → indistinguishable).
+- **F4 retracted**: "a mutual fund beats its own ETF" is withdrawn. Fee drag is real/deterministic (7.95bp/yr FXAIX vs SPY); the out-performance MAGNITUDE is within tracking noise. Do not claim "beat".
+- **Excess Sharpe ≈0.50** (not 0.73 — that was return/vol). CAGR CIs span ~0–25% and overlap; no fund ranking is statistically separable.
+- **DCA vs lump** in 2021-26: DCA won (bought the 2022 dip) — period-dependent; DCA reduces timing risk, not guaranteed alpha.
+- **SPY −24.5% DD** (peak 2022-01-03→trough 2022-10-12), recovered ~14mo after trough / ~23mo after peak.
+- **Fee compounding 30y/$100k @7%**: 0.03%→$755k, 0.5%→$661k, 1.8%→$458k (1.8% ends ~39% lower).
+- Cash hurdle ~3.8% (SGOV). Bonds: use forward YTM, not trailing. Futures/options out of scope.
+- Tools: `fund_deep_dive.py`, `deployment_analysis.py`, `alpha_gate_power.py`, `alpha_gate_calibration.py`. Doc: `docs/edge_research/INVESTOR_FAQ_2026-11-23.md`.
