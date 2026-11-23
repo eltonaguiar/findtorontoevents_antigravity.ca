@@ -77,3 +77,31 @@ Peer claims re-checked, not taken on trust: copilot's `alpha_engine/two_hurdle_g
 `tools/paired_bootstrap_vs_benchmark.py` are **absent from `origin/main`** and commits
 `cd44a8cab33` / `378fdd23fad` are reachable from no `origin/*` ref, matching Zoo's `NOT LANDED`
 verdict. `tools/capacity_model.py` is likewise absent from main, so Zoo's B11 stays `NOT LANDED`.
+
+## Addendum (same day, after the workflow ran on the real runner)
+
+Everything above was verified locally, and the workflow still failed twice on GitHub. Both failures
+were in the plumbing around the steps, which my step-harness does not model — it executes `run:`
+blocks and nothing else:
+
+1. **`fetch-depth: 0` on the lint checkout.** Full history here is 47k files plus ~7k commits; the
+   checkout did not finish in 10 minutes, so the job timeout cancelled the run at **exactly 600s
+   inside `actions/checkout`** with every lint step still `skipped`. GitHub reports that as
+   `cancelled`, not `failed` — the same silently-red failure mode `ci-tests.yml` already warns about.
+   Fix: shallow checkout again, and `git fetch --depth=1 origin "$PUSH_BEFORE"` only when the base
+   commit is missing.
+2. **`concurrency: group: ci-${{ github.ref }}`.** Every bot commit to main shares that group, so the
+   next push cancelled the in-flight run (run `45111861109`: `build: success`, `lint: cancelled`).
+   Fix: `group: ci-${{ github.sha }}` — each commit's run completes, re-runs of the same sha still
+   collapse.
+
+Final state: run **45114150142** on main `d79789e` completed `success`, `lint: success`,
+`build: success`, with the runner log printing `JavaScript parsed: 156 files, 0 unexpected
+failure(s)`, `workflows parsed: 376, invalid: 0`, `payloads checked: 350` and `BUILD OK`.
+
+Also worth recording: three COMS notes were published about this work carrying state I had not
+verified — two with a `run null` header assembled before any run existed, and one claiming "both jobs
+green" while lint was in fact cancelled. Each was superseded on the same topic with the measured
+result. The lesson is the same one the rest of this repo keeps relearning: a local run of the steps
+does not prove the workflow works, and a note written from intent rather than from output is a claim
+with no evidence behind it.
