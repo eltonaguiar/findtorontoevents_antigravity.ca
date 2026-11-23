@@ -33,7 +33,22 @@ yfinance/pandas install added; def-time default-argument bug fixed.
 **Evidence:** six gate regimes correct; empty ledger → exit 0; workflow parses
 (12 steps); pushed to PR #1064 at `2851cc13617`.
 
-## [!] T3 — Verify the main-path emit actually goes live
+## [~] T3 — PENDING VERIFICATION (scan dispatched, not yet emitted)
+
+PR #1064 merged at `be2f2d60185` (2026-11-23T00:06Z), so the merge blocker is gone.
+I dispatched `alpha-engine-fast` on main (`gh run 45086985710`, 00:08Z) rather than
+waiting for the `:33` cron. As of 00:30Z that run is still inside
+"Run Alpha Engine FAST variant"; the "Commit fast variant data" and "Push with retry"
+steps have not run, so `reports/provenance/picks_provenance.jsonl` is **absent on
+origin/main**.
+
+Recorded as PENDING, not done and not failed. Acceptance stays exactly as written: a
+run must produce `picks_provenance.jsonl` with `n_records > 0` **and**
+`provenance-verify.yml` must report chain intact. A zero-row emit is a finding to
+report, not a pass. Confirmed the path is live: `alpha-engine-fast.yml:58` runs
+`python alpha_engine/production_scanner.py`, which is the migrated emit callsite.
+
+(Original heading: Verify the main-path emit actually goes live)
 BLOCKED on PR #1064 merging. The scanner hook runs from `alpha-engine-fast.yml`
 on the **default branch**, so nothing can be verified until merge.
 **Acceptance:** after merge, one `alpha-engine-fast` run produces
@@ -94,7 +109,7 @@ difference). Never put backticks in a double-quoted shell string.
 
 ## State as at 2026-11-22 (end of round 34)
 
-T1, T2, T4, T5, T6, T7, T8 are **done**; T3 is **blocked** on PR #1064 merging.
+T1, T2, T4, T5, T6, T7, T8 are **done**. T3 is **PENDING** (PR #1064 is merged; the scan was dispatched and had not yet emitted when this note was written).
 There is no actionable `[ ]` item left, so the wakeup cron is **paused** (its
 tagged line is commented out in crontab, not deleted).
 
