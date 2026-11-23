@@ -132,15 +132,17 @@
   },
   {
    "id": 19,
-   "title": "Deploy the missing Stock Intelligence / Penny Stocks APIs",
-   "status": "blocked",
-   "blocker": "findstocks/portfolio2/api/stock_intel.php and penny_stocks.php both 404 on live and do NOT exist in the repo, so there is no source to deploy. check_dead_data.php proves the underlying data exists (stock_intel table: 7,239 records, 5,044h stale), so only the endpoint files are missing. Needs the source from the Windows workspace."
+   "title": "Deploy the missing Stock Intelligence / Penny Stocks APIs (DONE)",
+   "status": "done",
+   "detail": "Recovered both sources from the Windows host via SSH: C:/Users/zerou/Downloads/findtorontoevents.ca (3)/findtorontoevents.ca/findstocks/portfolio2/api/{stock_intel.php (19,488B), penny_stocks.php (11,707B)}. Both pass the PHP 5.2 gate. Discovered the deeper bug: findstocks/portfolio2/api/ had no api/ directory at all -- that is why the path 404'd. Created db_config.php (resolves the password from the FTP-deployed .env, no hardcoded secret) + db_connect.php, created the remote dir over FTP MKD, deployed all four. VERIFIED LIVE: stock_intel returns {\"ok\":true,\"company_name\":\"Apple Inc\",\"technicals\":{\"current_price\":349.21,\"data_points\":252,...}} and penny_stocks returns {\"ok\":true,\"total\":1529,\"count\":50,...}. 6 of 7 monitored systems now serve real JSON.",
+   "evidence": "findstocks/portfolio2/api/",
+   "closed_at": "2026-11-23T05:05:00+00:00"
   },
   {
    "id": 20,
    "title": "Cost model: is the 5-25bp equity constant invalidating KILLs?",
    "status": "done",
-   "detail": "Measured US equity round-trip cost = 0.9756bp (CS spread 0.7696 + SEC 0.206; zero commission/ECN, FX avoided; 191 names, 356,271 1-min bars). Repo charges 5.0bp or 25.0bp -> 5-25x too high. Built tools/cost_sensitivity.py to separate SIGN flips from VERDICT flips. HML worked through: breakeven cost 6.16bp sits inside [0.98,25] so the SIGN flips, but at the cheapest cost HML nets +0.09%/yr vs a 4.32% hurdle -> verdict does NOT flip. Assessment ROBUSTLY-KILLED. Conclusion: hurdle-based KILLs are robust to the cost model; sign-based judgements are not. Recommended rule: require breakeven_cost_bp > cost_high_bp.",
+   "detail": "Measured US equity round-trip cost = 0.9756bp (CS spread 0.7696 + SEC 0.206; zero commission/ECN, FX avoided; 191 names, 356,271 1-min bars). Repo charges 5.0bp or 25.0bp -> 5-25x too high. Built tools/cost_sensitivity.py to separate SIGN flips from VERDICT flips. HML worked through: breakeven cost 6.16bp sits inside [0.98,25] so the SIGN flips, but at the cheapest cost HML nets +0.09%/yr vs a 4.32% hurdle -> verdict does NOT flip. Assessment ROBUSTLY-KILLED. Conclusion: hurdle-based KILLs are robust to the cost model; sign-based judgements are not. Recommended rule: require breakeven_cost_bp > cost_high_bp. VERIFIED INDEPENDENTLY: components recompose to 0.975600bp exactly, and recomputing median(cs_bp) over the 65 usable symbols from per_symbol gives 0.769640 + SEC 0.206 = 0.9756bp, matching the stored total. Ratios: 5.0bp constant is 5.13x the measurement, 25.0bp is 25.63x. FINAL MEASURED ROUND-TRIP = 0.9756 bp.",
    "evidence": "updates/2026-11-23-equity-cost-model-sensitivity.md",
    "closed_at": "2026-11-23T05:30:00+00:00"
   }

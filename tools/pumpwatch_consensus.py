@@ -80,6 +80,66 @@ SOURCES: dict[str, tuple[str, str, str]] = {
 QUOTE_SUFFIXES = ("USDT", "USDC", "BUSD", "USD")
 DIRECTION_MAP = {"LONG": "LONG", "BUY": "LONG", "SHORT": "SHORT", "SELL": "SHORT"}
 
+# Candidate ENTRY timestamp fields, in preference order. Deliberately excludes
+# closed_at / exit_date / resolved_at: those are EXIT times, and clustering two
+# systems on when they exited would manufacture "consensus" out of unrelated
+# entries. Only entry-time fields may be used.
+CANDIDATE_TS_FIELDS = ("timestamp", "timestamp_est", "entry_date", "entry_time", "created_at")
+
+
+def normalization_audit() -> dict:
+    """Per-ledger field coverage, so normalization completeness is measured.
+
+    This exists because the first run of H-248 rejected 1,874 of alpha_engine's
+    2,204 rows for a missing timestamp. Before blaming the normalizer it is worth
+    proving which fields are actually populated: ``entry_date`` turns out to be a
+    strict SUBSET of ``timestamp`` (290 rows, all of which also have a timestamp),
+    so no fallback can recover them -- the data is not there. The exit-time fields
+    that DO cover 94.9% (``closed_at``) are unusable by construction.
+    """
+    audit: dict[str, dict] = {}
+    for system, (rel, pnl_field, _ts_field) in SOURCES.items():
+        path = REPO_ROOT / rel
+        entry: dict[str, Any] = {"file": rel, "exists": path.exists()}
+        if not path.exists():
+            audit[system] = entry
+            continue
+        try:
+            data = json.loads(path.read_text())
+        except Exception as exc:
+            entry["parse_error"] = str(exc)
+            audit[system] = entry
+            continue
+        if not isinstance(data, list):
+            entry["error"] = "not a list"
+            audit[system] = entry
+            continue
+        n = len(data)
+        entry["n_rows"] = n
+        entry["entry_time_coverage"] = {
+            f: sum(1 for r in data if isinstance(r, dict) and r.get(f)) for f in CANDIDATE_TS_FIELDS
+        }
+        entry["pnl_field"] = pnl_field
+        entry["pnl_coverage"] = sum(
+            1 for r in data
+            if isinstance(r, dict) and isinstance(r.get(pnl_field), (int, float))
+            and not isinstance(r.get(pnl_field), bool)
+        )
+        # exit-time fields, recorded only to explain why they are NOT used
+        entry["exit_time_fields_not_used"] = {
+            f: sum(1 for r in data if isinstance(r, dict) and r.get(f))
+            for f in ("closed_at", "exit_date", "resolved_at", "exit_time", "exit_time_est")
+        }
+        usable = sum(
+            1 for r in data
+            if isinstance(r, dict)
+            and any(r.get(f) for f in ("timestamp", "timestamp_est", "entry_date"))
+            and isinstance(r.get(pnl_field), (int, float))
+        )
+        entry["entry_time_and_pnl_usable"] = usable
+        audit[system] = entry
+    return audit
+
 
 def normalize_symbol(raw: Any) -> str:
     """Reduce a symbol to its base asset (see the frozen rule in the docstring)."""
@@ -307,6 +367,7 @@ def analyse(cost_bps: float = 0.0) -> dict:
         "criteria": criteria,
         "verdict": verdict,
         "per_system_rows": {s: sum(1 for r in rows if r["system"] == s) for s in SOURCES},
+        "normalization_audit": normalization_audit(),
         "generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "note": ("Descriptive comparison of already-resolved ledger rows. No capital, "
                  "no picks, not investment advice."),
@@ -350,6 +411,15 @@ def main(argv: list[str]) -> int:
     print(f"  mean difference  {result['mean_diff_pct']}%  CI {result['mean_diff_ci95']}")
     print(f"  criteria         {result['criteria']}")
     print(f"  VERDICT          {result['verdict']}")
+    print("  normalization    (entry-time coverage per ledger)")
+    for system, info in result["normalization_audit"].items():
+        if "n_rows" not in info:
+            print(f"      {system:<24} {info}")
+            continue
+        cov = info["entry_time_coverage"]
+        print(f"      {system:<24} n={info['n_rows']:<5} "
+              f"entry-usables={info['entry_time_and_pnl_usable']:<5} "
+              f"timestamp={cov.get('timestamp', 0)} entry_date={cov.get('entry_date', 0)}")
     print(f"  written          {args.out}")
     return 0
 
