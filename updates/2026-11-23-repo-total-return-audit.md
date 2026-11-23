@@ -36,3 +36,24 @@ This is a systemic hygiene item, not an emergency: every affected equity backtes
 yield, which makes the estate look *worse* than it is — the opposite of the usual optimistic-bias failure.
 
 *Paper only. Not investment advice.*
+
+---
+
+## CORRECTION 2026-11-23T21:35Z — my earlier 333/231/49 counts were WRONG (default-adjusted)
+I verified on the installed **yfinance 1.3.0**: `Ticker.history()` defaults to `auto_adjust=None`, which **resolves to
+True** — so `history()["Close"]` is **already adjusted** (VTV first Close = 27.32 adjusted vs 49.25 raw; no "Adj Close"
+column appears). My earlier scan counted those default-adjusted files as "raw Close" — **they are not.**
+
+**Corrected exposure (genuine price-only):** files that explicitly request raw data —
+| condition | genuinely price-only? |
+|---|---|
+| `auto_adjust=False` | **YES** |
+| Stooq / custom CSV `row["Close"]` | **YES** (unadjusted) |
+| chart-API `quote[0]["close"]` (not `adjclose`) | **YES** |
+| `history()["Close"]` (default) | **NO — already adjusted** |
+
+Re-scan: **70 raw-usage candidates → 62 EXPOSED (equity return math) + 8 crypto-exempt.** Not 231/49.
+
+**Net:** the systemic concern is real but **much smaller than I claimed** — 62 files that explicitly opt into raw prices,
+not hundreds. Crypto/FX still exempt. The value-pipeline "fix" (explicit `auto_adjust=True`) is harmless (it just makes the
+already-adjusted default explicit) but was **not** fixing a live price-only bug.
