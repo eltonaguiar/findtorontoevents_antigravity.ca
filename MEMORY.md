@@ -43,11 +43,8 @@ Never read dbpasses.txt. Never push other authors' commits. Every fix has a matc
 - `reports/sr_star_table.json` is a CROSS-strategy metric (σ=0.649) — NOT the G3 denominator. Canonical: `reports/g3_bar_analysis_corrected.json`.
 
 ## Data-integrity landmine (2026-11-23T03:58Z)
-`alpha_engine/data/closed_picks.json` is **88% synthetic**: of 2,204 rows only **290** have `entry_date`; 1,914 are
-WOULD_HIT placeholders whose `pnl_pct` sits on an exact barrier (−2.5×790, −2.0×529, 3.75×187, 3.0×177). **Filter to
-`entry_date IS NOT NULL` before any DSR/edge/hit-rate.** Tools: `tools/label_closed_pick_outcomes.py`;
-report `reports/closed_picks_outcome_basis.json`. The only "LB-positive" symbols were 100% placeholders.
-Real-dated only: 3 strategies n≥10 (forex_rsi2 n97 DSR .9987@N61), 6 symbols n≥10, **0 with LB>0**.
+**STALE-BRANCH ONLY, corrected 2026-11-23T07:15Z:** my branch's 2,204-row closed_picks was 88% barrier-quantised placeholders, but **current origin/main has 505 rows, 0 dateless-on-barrier (clean)**. The 88% alarm is retracted for main. Still filter to `entry_date IS NOT NULL` as hygiene. Tools: `tools/label_closed_pick_outcomes.py`.
+On MAIN data: forex_rsi2 n77 DSR@61 0.968 but net -7.3bp after FOREX cost; all classes net-negative; EQUITY n=1 dated.
 
 ## Operator ranking standard (now required)
 Rank on the **95% LOWER BOUND of net return**, not the point estimate; n≥30 hard floor; per-pick
