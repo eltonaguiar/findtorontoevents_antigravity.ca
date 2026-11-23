@@ -17,9 +17,12 @@ name: Peer claim verification (weekly)
 
 on:
   schedule:
-    # Slot moved off feature-stability-check.yml's '23 6 * * 1' to avoid a
-    # schedule collision on the same runner queue.
-    - cron: '31 6 * * 1'   # Mondays 06:31 UTC
+    # Slot moved off feature-stability-check.yml's '23 6 * * 1' (Block 28), then
+    # off '31 6 * * 1' on 2026-11-23 (Block 39): stale-branch-cleanup.yml already
+    # held that exact cron, and it DELETES merged branches - it can race this
+    # job's branch-containment checks. Minute 18 is the only minute in Monday
+    # hour 6 with no scheduled job at all (see updates/2026-11-23-cron-collision-audit.md).
+    - cron: '18 6 * * 1'   # Mondays 06:18 UTC
   workflow_dispatch: {}
 
 permissions:

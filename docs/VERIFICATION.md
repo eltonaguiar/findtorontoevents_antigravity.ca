@@ -177,8 +177,8 @@ local `git cat-file` success is not evidence of landing
 
 ## The weekly workflow
 
-`.github/workflows/peer-claim-verification.yml` runs Mondays at 06:31 UTC
-(`'31 6 * * 1'`) and on `workflow_dispatch`. It checks out `main` with
+`.github/workflows/peer-claim-verification.yml` runs Mondays at 06:18 UTC
+(`'18 6 * * 1'`) and on `workflow_dispatch`. It checks out `main` with
 `fetch-depth: 0` - full history is REQUIRED, because ancestry, branch-containment
 and object-existence checks all need objects and refs outside HEAD, and a depth-1
 clone silently inverts VERIFIED claims into NOT LANDED. `filter: blob:none` and a
