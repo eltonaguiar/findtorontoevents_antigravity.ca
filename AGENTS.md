@@ -486,7 +486,7 @@ Before sending any response, you MUST check for these patterns:
 
 > **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the 3-hourly cron.
 >
-> **Audit status 2026-11-23:** all 56 paths in the table above were re-checked with `git ls-tree origin/main` and exist on main. Three entries an earlier brief flagged as missing (`.github/workflows/gha-quality-framework.yml`, `.github/workflows/audit-review-doc-lint.yml`, `docs/audit_review_2026-11-22/**`) are not present on main and are also not in this table — they were aspirational and never landed, so there is nothing to mark here, but do not assume they exist.
+> **Audit status 2026-11-23:** all 59 paths in the table above were re-checked with `git ls-tree origin/main` and exist on main. Three entries an earlier brief flagged as missing (`.github/workflows/gha-quality-framework.yml`, `.github/workflows/audit-review-doc-lint.yml`, `docs/audit_review_2026-11-22/**`) are not present on main and are also not in this table — they were aspirational and never landed, so there is nothing to mark here, but do not assume they exist.
 
 ### Safety rules for updating paths
 
