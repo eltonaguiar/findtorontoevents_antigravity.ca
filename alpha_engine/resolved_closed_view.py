@@ -113,6 +113,18 @@ _TERMINAL_STATUSES = frozenset({"WON", "LOST", "EXPIRED", "CLOSED"})
 #: judged by closure evidence (close marker or terminal status), not denied.
 _NO_EXIT_INFO = ("", "UNKNOWN")
 
+#: Exit reasons that prove a position actually resolved at breakeven.
+#:
+#: A zero PnL alone cannot distinguish a genuine flat trade from an unresolved
+#: placeholder, and 3,645 ``EXPIRED`` zero rows are exactly what the P0.0a
+#: quarantine exists to keep out of the denominator. So a zero row is admitted
+#: ONLY on an explicit resolved-time-exit reason: ``TIME_EXIT`` is written after
+#: a position exits on its horizon at the entry price, ``EXPIRED`` is not.
+#: Without this split, ``flat`` is structurally always 0 and the panel's
+#: published win rate ("decided trades, excludes flat") has a denominator that
+#: silently absorbed every breakeven trade as a loss-free deletion.
+_ZERO_PNL_RESOLVED_EXITS = frozenset({"TIME_EXIT", "TIME"})
+
 
 def is_performance_scored_row(row: dict) -> bool:
     """Single definition of 'this closed row counts toward performance'.
@@ -139,10 +151,23 @@ def is_performance_scored_row(row: dict) -> bool:
     _pnl = _f(row.get("pnl_pct"))
     if _pnl is None:
         return False
-    # P0.0a: zero-PnL rows are not scored (quarantined).
-    if _pnl == 0.0:
-        return False
     exit_reason = str(row.get("exit_reason", "") or "").upper().strip()
+    status = str(row.get("status", "") or "").upper().strip()
+    # P0.0a: zero-PnL rows are quarantined UNLESS they are evidence of a resolved
+    # trade that finished flat. Quarantining all of them (the previous rule) made
+    # `flat` unreachable, so a breakeven trade vanished from n / mean_net_pct / PF
+    # rather than being counted as the flat outcome it was.
+    if _pnl == 0.0:
+        if exit_reason not in _ZERO_PNL_RESOLVED_EXITS:
+            return False
+        zero_close_marker = (
+            row.get("closed_at")
+            or row.get("exit_timestamp")
+            or row.get("exit_time_est")
+            or row.get("exit_date")
+        )
+        if not zero_close_marker and status not in _TERMINAL_STATUSES:
+            return False
     # "" and UNKNOWN are ABSENT INFORMATION, not a stated non-performance exit:
     # they are judged by the closure-evidence clause below. Every other denied
     # reason is an affirmative statement that the row is not a realised
@@ -153,7 +178,6 @@ def is_performance_scored_row(row: dict) -> bool:
         return False
     if exit_reason.startswith("RESOLVE_FAILED"):
         return False
-    status = str(row.get("status", "") or "").upper().strip()
     if status in _NON_PERFORMANCE_STATUSES:
         return False
     # With no exit reason, the row must still be demonstrably closed: a close
@@ -227,10 +251,13 @@ def default_exclusion_reason(pick: Any) -> str | None:
     pnl_val = _f(pick.get("pnl_pct"))
     if pnl_val is None:
         return "no_numeric_pnl"
-    # P0.0a: zero-PnL rows are quarantined, not scored.
-    # A zero PnL is either a genuine timeout/expiry or an un-resolved placeholder.
-    # Either way, it is not a realised outcome and must not inflate the denominator.
+    # P0.0a: zero-PnL rows are quarantined, not scored — except a resolved flat
+    # trade, which the predicate above admits as `flat`. This classifier must
+    # agree with the predicate exactly or the published exclusion counts describe
+    # a different rule than the one applied.
     if pnl_val == 0.0:
+        if str(pick.get("exit_reason", "") or "").upper().strip() in _ZERO_PNL_RESOLVED_EXITS:
+            return None
         return "zero_pnl_quarantined"
     exit_reason = str(pick.get("exit_reason", "") or "").upper().strip()
     if exit_reason in _NON_PERFORMANCE_EXITS or exit_reason.startswith("STALE"):
