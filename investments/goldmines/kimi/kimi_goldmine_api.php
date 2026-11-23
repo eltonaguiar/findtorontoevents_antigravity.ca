@@ -41,7 +41,7 @@ function goldmine_api_fetch_count($res) {
 set_error_handler('goldmine_api_error_handler');
 
 try {
-    require_once dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
+    require_once dirname(__FILE__) . '/../../../findforex2/portfolio/api/db_connect.php';
 } catch (Exception $e) {
     echo json_encode(array('ok' => false, 'error' => 'Database connection failed: ' . $e->getMessage()));
     exit;

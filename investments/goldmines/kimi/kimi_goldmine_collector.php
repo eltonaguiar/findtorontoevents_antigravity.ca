@@ -17,7 +17,7 @@ ob_start();
 // Include with error capture
 $dbError = null;
 try {
-    $dbFile = dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
+    $dbFile = dirname(__FILE__) . '/../../../findforex2/portfolio/api/db_connect.php';
     if (!file_exists($dbFile)) {
         $dbError = 'Database config file not found at: ' . $dbFile;
     } else {

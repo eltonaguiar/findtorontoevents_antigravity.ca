@@ -5,15 +5,16 @@
  * Run via: php check_dead_data.php
  */
 
-// Database configuration - update with your credentials
-$db_host = 'localhost';
-$db_user = 'root';
-$db_pass = '';
-$db_name = 'your_database';
-
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Database configuration.
+// PHP 5.2 / credential fix (2026-11-23): this file previously shipped the
+// template placeholders ($db_user='root', $db_pass='', $db_name='your_database')
+// which can never authenticate on the live host, so every run died with
+//   Access denied for user 'root'@'localhost' (using password: NO)
+// Use the shared connector instead; it reads the FTP-deployed, gitignored .env
+// that already holds the current password.
+require_once dirname(__FILE__) . '/../../../findforex2/portfolio/api/db_connect.php';
+if (!isset($conn) || !$conn) {
+    die("Connection failed: no database handle from db_connect.php\n");
 }
 
 // Define all prediction systems to check
