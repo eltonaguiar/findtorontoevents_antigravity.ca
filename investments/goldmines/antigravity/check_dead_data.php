@@ -74,7 +74,16 @@ $systems = array(
         'table' => 'mf2_fund_picks',
         'timestamp_col' => 'pick_date',
         'max_age_hours' => 168, // 1 week
-        'url' => '/findmutualfunds2/portfolio2/api/data.php?type=stats'
+        'url' => '/findmutualfunds2/portfolio2/api/data.php?type=stats',
+        // 2026-11-23: neither `mf2_fund_picks` nor its universe table `mf2_funds`
+        // has a writer in this repo OR the Windows source tree. With no fund
+        // universe there is nothing to generate picks from, so no writer can be
+        // restored -- only invented, which would be fabrication. The table holds
+        // 600 historical rows and the app was superseded by the /audit equity
+        // surface. Reporting this as STALE forever raised a permanent alert that
+        // no action could ever clear; DECOMMISSIONED is the truthful status.
+        'decommissioned' => true,
+        'decommissioned_reason' => 'No upstream source: mf2_funds has no writer, so there is no fund universe to generate picks from'
     )
 );
 
@@ -97,6 +106,19 @@ foreach ($systems as $key => $config) {
         'is_stale' => false
     );
     
+    // A decommissioned system has a table and historical rows but no upstream
+    // producer. Freshness is not a meaningful question for it, and no amount of
+    // waiting will ever clear a staleness alert -- so it is reported as its own
+    // status rather than as dead data.
+    if (!empty($config['decommissioned'])) {
+        $result['status'] = 'DECOMMISSIONED';
+        $result['is_stale'] = false;
+        $result['source'] = isset($config['decommissioned_reason']) ? $config['decommissioned_reason'] : 'decommissioned';
+        $results[] = $result;
+        echo "  - Decommissioned (" . $result['source'] . ") - not an alert\n\n";
+        continue;
+    }
+
     // Systems with no database behind them cannot be assessed for data freshness.
     // Saying so is the correct answer; querying a non-existent table and raising
     // CRITICAL is a false alarm (see the db_backed note in the config above).
@@ -259,17 +281,20 @@ echo "\n=== SUMMARY ===\n";
 $active_count = 0;
 $stale_count = 0;
 $skipped_count = 0;
+$decommissioned_count = 0;
 
 foreach ($results as $r) {
     if ($r['status'] === 'ACTIVE') $active_count++;
     elseif ($r['status'] === 'NOT_DB_BACKED') $skipped_count++;
+    elseif ($r['status'] === 'DECOMMISSIONED') $decommissioned_count++;
     elseif ($r['is_stale']) $stale_count++;
 }
 
 echo "Active Systems: $active_count\n";
 echo "Stale/Dead Systems: $stale_count\n";
 echo "Skipped (no database): $skipped_count\n";
-echo "Total Systems Checked: " . count($results) . " (" . $active_count . " active + " . $stale_count . " stale + " . $skipped_count . " skipped)\n\n";
+echo "Decommissioned (no upstream source): $decommissioned_count\n";
+echo "Total Systems Checked: " . count($results) . " (" . $active_count . " active + " . $stale_count . " stale + " . $skipped_count . " skipped + " . $decommissioned_count . " decommissioned)\n\n";
 
 if (count($alerts) > 0) {
     echo "=== ALERTS ===\n";
@@ -286,7 +311,8 @@ $report = array(
         'total_systems' => count($results),
         'active' => $active_count,
         'stale' => $stale_count,
-        'skipped' => $skipped_count
+        'skipped' => $skipped_count,
+        'decommissioned' => $decommissioned_count
     ),
     'systems' => $results,
     'alerts' => $alerts

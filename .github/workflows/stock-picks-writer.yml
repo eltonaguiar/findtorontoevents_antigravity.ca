@@ -1,0 +1,65 @@
+name: stock_picks writer (legacy table backfill)
+
+# WHY: `ejaguiar1_stocks.stock_picks` is read by 11 PHP files (several served
+# live) but had NO writer in this tree or the Windows source tree, so the live
+# surfaces served data frozen at ~5,047 hours. The equity pick pipeline did not
+# break, it moved to eltonaguiar/STOCKSUNIFY2 -> tools/sync_stocksunify2.py ->
+# audit_dashboard/data/stocksunify2_active_picks.json. This workflow feeds that
+# canonical file back into the legacy table via tools/stock_picks_writer.py.
+#
+# SAFE BY DEFAULT: the dry run below always executes; the write step only runs
+# when the repo variable STOCK_PICKS_WRITER_ENABLED is 'true' (or a manual
+# dispatch explicitly asks for commit). Nothing is written otherwise.
+#
+# Read-only on the repo: no commits, no deploys.
+
+on:
+  schedule:
+    # 13:30 UTC, 25 min after stocksunify2-pull.yml (13:05) refreshes the source file.
+    - cron: '30 13 * * *'
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Actually write to MySQL (leave false for a dry run)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stock-picks-writer
+  cancel-in-progress: false
+
+jobs:
+  write:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # setup-python ships the interpreter only -- pytest and the driver are not
+      # present, which is the same gap that made the php52 gate red on PR #1096.
+      - name: Install dependencies
+        run: python3 -m pip install --quiet --disable-pip-version-check pytest pymysql
+
+      - name: Unit tests
+        run: python3 -m pytest tests/test_stock_picks_writer.py -q
+
+      - name: Dry run (always)
+        run: python3 tools/stock_picks_writer.py
+
+      - name: Write to stock_picks
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.commit) || vars.STOCK_PICKS_WRITER_ENABLED == 'true' }}
+        env:
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
+          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
+          DB_STOCKS_NAME: ${{ secrets.DB_STOCKS_NAME }}
+        run: python3 tools/stock_picks_writer.py --commit

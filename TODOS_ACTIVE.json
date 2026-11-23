@@ -200,9 +200,9 @@
   {
    "id": 28,
    "title": "Restore writers for stock_picks / mf2_fund_picks",
-   "status": "deferred",
-   "detail": "DEFERRED with evidence: measured 0 files WRITE either table (27 and 4 merely mention them; the GHA hit is an unrelated stock_picks.json). Their pipelines are external or decommissioned, likely on the Windows host or a retired 50webs cron. Nothing is fixable here without first locating the writer. cw_winners went Active during this pass, so it was correctly excluded.",
-   "defer_reason": "DEFERRED with evidence: measured 0 files WRITE either table (27 and 4 merely mention them; the GHA hit is an unrelated stock_picks.json). Their pipelines are external or decommissioned, likely on the Windows host or a retired 50webs cron. Nothing is fixable here without first locating the writer. cw_winners went Active during this pass, so it was correctly excluded."
+   "status": "done",
+   "detail": "DONE (split verdict). stock_picks: writer restored as tools/stock_picks_writer.py, which maps the canonical STOCKSUNIFY2 picks (already pulled daily by sync_stocksunify2.py into audit_dashboard/data/stocksunify2_active_picks.json) into stock_picks, idempotent on pick_hash, dry-run by default. The writer was never deleted -- the pipeline moved and the legacy table was left behind; confirmed by findstr over the Windows source tree and a full-tree search of .php/.py/.js/.sql on Linux (INSERT, INSERT IGNORE, REPLACE INTO, to_sql). 20 offline tests pass; a real dry run mapped 6 picks. Wired by .github/workflows/stock-picks-writer.yml (13:30 UTC; write only when vars.STOCK_PICKS_WRITER_ENABLED=true). mf2_fund_picks: NOT restorable -- its universe table mf2_funds also has zero writers in either source tree, so any writer would have to invent symbols. Declared decommissioned in check_dead_data.php (status DECOMMISSIONED, emits no alert, counted separately); verified live as 2 active + 2 stale + 2 skipped + 1 decommissioned = 7.",
+   "resolution": "stock_picks writer restored + wired; mf2_fund_picks declared decommissioned (no upstream source). See updates/2026-11-23-stock-picks-writer-restored.md"
   }
  ]
 }
