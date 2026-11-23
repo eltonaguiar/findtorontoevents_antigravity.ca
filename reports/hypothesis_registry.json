@@ -4885,9 +4885,105 @@
    "result": {
     "verdict": "WIDENS_OR_HOLDS",
     "reason": "W10 (registered) n=2514 mean 16.345bp/day CI [7.8,25.069], width 0.681x the W5 width; W5 control reproduced H-236 exactly (mean 9.407, CI-LB -3.147). Passes the CI gate only - DSR at the new N is NOT computed and no allocation follows.",
-    "artifact": "reports/h242_pit_10y_2026-11-23.json"
+    "artifact": "reports/h242_pit_10y_2026-11-23.json",
+    "deflated_sharpe": {
+     "at_N_121_canonical": 0.6872,
+     "at_N_121_se_convention": 0.799,
+     "verdict": "FAILS_MULTIPLICITY",
+     "detail": "SR_daily 0.06901 (ann 1.095), n=2514; DSR at N=121 is 0.6872 under Bailey-Lopez-de-Prado's cross-trial Var(SR) and 0.799 under the SE-of-SR convention used by alpha_engine.deflated_sharpe. The two sigma scales are not the same object, so this is UNDECIDED, not a pass."
+    }
    },
    "banned_check": "Not a re-test of H-201/H-236: identical universe and rule, only the window changes. Cannot upgrade the survivorship flag past BOUNDED, and a pass on W10 while W5 failed must be reported as period-dependent."
+  },
+  {
+   "id": "H-243",
+   "family": "momentum_replication",
+   "claim": "H-242's 44-name 10-year pass holds at the reconciled 4.0124bp RT cost of record (2.0062bp/side), with no unexplained jump in the mean daily return",
+   "asset_class": "EQUITY",
+   "prereg": "plans/2026-11-23-prereg-H-243-H-244-cost-and-etf.md",
+   "registered_at": "2026-11-23",
+   "status": "PASSES_AT_RECORD_COST",
+   "rule": "xsmom lookback 126, top_k 3, rebal 21, long-only flat-on-exit",
+   "params": {
+    "window": [
+     "2016-11-21",
+     "2026-11-20"
+    ],
+    "cost_bps_rt": 4.0124,
+    "universe": "44-name PIT"
+   },
+   "result": {
+    "mean_bps": 16.598,
+    "mean_10bp_bps": 16.345,
+    "ci_lb_bps": 8.033,
+    "ci_ub_bps": 25.317,
+    "n": 2514,
+    "saving_bps": 0.252,
+    "implied_annual_turnover": 0.0,
+    "verdict": "PASSES_AT_RECORD_COST"
+   }
+  },
+  {
+   "id": "H-244",
+   "family": "momentum_replication",
+   "claim": "The 44-name xsmom_top3_6m_21d rule has the same positive sign on a 10-name ETF universe over 2016-11-21..2026-11-20 (CI-LB > 0 at 20bp RT)",
+   "asset_class": "ETF",
+   "prereg": "plans/2026-11-23-prereg-H-243-H-244-cost-and-etf.md",
+   "registered_at": "2026-11-23",
+   "status": "PASSES_W10",
+   "rule": "xsmom lookback 126, top_k 3, rebal 21, long-only flat-on-exit",
+   "params": {
+    "window": [
+     "2016-11-21",
+     "2026-11-20"
+    ],
+    "cost_bps_rt": 20,
+    "universe": "10-name ETF (harness)"
+   },
+   "result": {
+    "universe": [
+     "EEM",
+     "EFA",
+     "GLD",
+     "IWM",
+     "QQQ",
+     "SMH",
+     "SPY",
+     "TLT",
+     "XLE",
+     "XLF"
+    ],
+    "n_names": 10,
+    "W10_cost_20bp_rt": {
+     "n": 2514,
+     "mean_bps": 5.581,
+     "ci_lb_bps": 1.134,
+     "ci_ub_bps": 10.239,
+     "sr_daily": 0.04735
+    },
+    "W10_cost_4bp_rt": {
+     "n": 2514,
+     "mean_bps": 5.802,
+     "ci_lb_bps": 1.367,
+     "ci_ub_bps": 10.445,
+     "sr_daily": 0.04924
+    },
+    "W5_cost_20bp_rt": {
+     "n": 1254,
+     "mean_bps": 6.193,
+     "ci_lb_bps": -0.029,
+     "ci_ub_bps": 13.041,
+     "sr_daily": 0.04982
+    },
+    "W5_cost_4bp_rt": {
+     "n": 1254,
+     "mean_bps": 6.431,
+     "ci_lb_bps": 0.147,
+     "ci_ub_bps": 13.273,
+     "sr_daily": 0.05175
+    },
+    "verdict": "PASSES_W10"
+   }
   }
  ]
 }

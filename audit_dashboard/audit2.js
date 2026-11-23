@@ -59,6 +59,50 @@ var RETIRED = [
   ["POD-LUXALGO-SHORT","post_hoc: registered after the rows were scored, 97.7% single-source; observe only."]
 ];
 
+/* Graveyard: hypotheses that died on a measured number. Ported from the
+   /investments hub panel, which listed ideas without the arithmetic that
+   retired them; each row here carries the figure that did it. Static because
+   reports/ is not web-served. */
+var GRAVEYARD = [
+  ["Top-gainer capture, CRYPTO, daily/weekly/monthly", "REFUTED at every horizon",
+   "Monthly (69 months, bar was 48): mean excess +41.28bp/month, CI [-247.81, +361.74] includes zero. Rank-IC +0.143 is the largest cross-sectional signal recorded in the programme, and a 3-4 name book still cannot express it. Cost survival 0.923 at 20bp RT, so cost was never the binding constraint.",
+   "reports/h239_h240_monthly_top_gainer_2026-11-23.json"],
+  ["Top-gainer capture, EQUITY, monthly", "REFUTED",
+   "68 scored months: mean excess +67.61bp/month, CI [-30.76, +187.48] includes zero. Rank-IC 0.0083 — effectively zero-ranked. Cost survival 0.994 at 0.98bp RT.",
+   "reports/h239_h240_monthly_top_gainer_2026-11-23.json"],
+  ["44-name momentum book (H-242) as a promotion candidate", "CI gate PASSED, multiplicity gate FAILED",
+   "W10 CI-LB +7.800bp/day over 2514 days, but deflated Sharpe is 0.687 at N=121 (0.687 canonical Var(SR); 0.799 under the SE convention) against a 0.95 gate. Best case anywhere in the trial range is 0.922 at N=26. Real in direction, too small for the width of the search.",
+   "reports/h242_dsr_2026-11-23.json"],
+  ["Hub claim: 80% of picks attributable to one source", "NOT REPRODUCED",
+   "Measured share is 0.6%, not 80% — two orders of magnitude. A claim this far from its own data is retired rather than re-labelled.",
+   "reports/investment_hub_portability_2026-11-23.md"],
+  ["Hub link /findstocks/portfolio2/learning-lab.html", "DEAD",
+   "HTTP 404 while the hub still lists it as a live tool (2 of 7 hub links dead).",
+   "reports/investment_hub_portability_2026-11-23.md"],
+  ["Hub link /findstocks/portfolio2/daytrader-sim.html", "DEAD",
+   "HTTP 404 while the hub still lists it as a live tool (2 of 7 hub links dead).",
+   "reports/investment_hub_portability_2026-11-23.md"],
+  ["Hub claim: Questrade FX conversion 1.75%", "CORRECTED",
+   "Verified tariff is 1.5%. The hub overstated the cost it charges users, which inflates any net-return figure computed from it.",
+   "reports/equity_cost_reconciliation_191_2026-11-23.md"]
+];
+
+/* Pre-registration hashes. The hash is of the plan FILE as filed before the run. */
+var PREREG = [
+  ["H-239 / H-240", "monthly top-gainer capture, CRYPTO and EQUITY",
+   "792160aad0b96990674b99781782c54213b5affc8c7b77b7eb2cbc00344aa426", "REFUTED (both)",
+   "plans/2026-11-23-prereg-H-239-H-240-monthly-top-gainer.md"],
+  ["H-241", "survivorship envelope: bound the delisting stress instead of faking a clean universe",
+   "6da3b8f2a2184bb932a50847d70eda3a9e39848723a2949a1c3aa36cbbe77b19", "BOUNDED (10% of the interval)",
+   "plans/2026-11-23-prereg-H-241-survivorship-envelope.md"],
+  ["H-242", "44-name book over the registered 10-year window",
+   "c3108e595082c7e3f1374284cce6e8586542014803a38141002d5960226eb3b6", "WIDENS_OR_HOLDS, DSR 0.687",
+   "plans/2026-11-23-prereg-H-242-pit-10y-extension.md"],
+  ["H-243 / H-244", "record-cost re-measurement and ETF-universe replication",
+   "c50258b035dc1dadc0c7015544940d8a1ddd472beedf08dd2ae55ac95f42533d", "PASSES_AT_RECORD_COST / PASSES_W10",
+   "plans/2026-11-23-prereg-H-243-H-244-cost-and-etf.md"]
+];
+
 var BENCHMARKS = [
   ["CRYPTO", "BTC-USD hold", "excess vs hold; 2x slippage; IR>=0.5"],
   ["EQUITY", "SPY total return", "IR>=0.5, down-capture, n>=100 forward"],
@@ -81,6 +125,13 @@ function renderStatic(){
     return "<tr><td><strong>"+esc(t[0])+"</strong></td><td>"+esc(t[1])+"</td></tr>"; }).join("");
   el("retired").innerHTML = RETIRED.map(function(t){
     return "<tr><td><strong>"+esc(t[0])+"</strong></td><td>"+esc(t[1])+"</td></tr>"; }).join("");
+  el("graveyard").innerHTML = GRAVEYARD.map(function(g){
+    return "<tr><td><strong>"+esc(g[0])+"</strong></td><td>"+esc(g[1])+"</td><td class=\"small\">"+esc(g[2])+
+      "</td><td class=\"small muted\"><code>"+esc(g[3])+"</code></td></tr>"; }).join("");
+  el("preregRows").innerHTML = PREREG.map(function(p){
+    return "<tr><td><strong>"+esc(p[0])+"</strong></td><td class=\"small\">"+esc(p[1])+"</td>"+
+      "<td class=\"small\"><code>"+esc(p[2])+"</code><div class=\"muted\">"+esc(p[4])+"</div></td>"+
+      "<td>"+esc(p[3])+"</td></tr>"; }).join("");
   el("benchRows").innerHTML = BENCHMARKS.map(function(b){
     return "<tr><td><strong>"+esc(b[0])+"</strong></td><td>"+esc(b[1])+"</td><td>"+esc(b[2])+"</td></tr>";
   }).join("");
