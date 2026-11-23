@@ -125,9 +125,12 @@ kimi\         kimi-goldmine-client.html 16,767 | kimi-goldmine.html 46,357
 windsurf\     index.html 62,527
 ```
 
-Three copies exist (Downloads, `.kimi` session baseline, plus the live host). **The live host is the only
-authoritative one** — the Windows copies may be older than what is deployed. Nothing here is under version
-control, so there is no way to tell which copy is current without diffing against the server.
+Three copies exist (Downloads, `.kimi` session baseline, plus the live host). **That the live host serves
+something is not a resolution of this finding — it IS the finding.** A HEAD request against the FTP host
+does not put the file back in a clone, and asserting "the live site is authoritative" would paper over a
+repo/production divergence rather than fix it. Recorded here as a **known divergence**: five published
+paths have no tracked source, so no reviewer can diff, review, or revert them. Choosing which copy is
+current requires a diff against the server, which I have not done.
 
 ## 5. What to do, ranked
 

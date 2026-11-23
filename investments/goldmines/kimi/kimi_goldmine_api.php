@@ -27,10 +27,21 @@ function goldmine_api_error_handler($errno, $errstr) {
     echo json_encode(array('ok' => false, 'error' => $errstr));
     exit;
 }
+
+// PHP 5.2 FIX (2026-11-23): the original used function-call array dereferencing,
+// e.g. (int)$res->fetch_assoc()['c'] -- a PHP 5.4+ feature. The production host
+// runs PHP 5.2.17, so those lines were a parse error. Every "COUNT(*) as c" read
+// is now routed through this helper instead.
+function goldmine_api_fetch_count($res) {
+    if (!$res) return 0;
+    $row = $res->fetch_assoc();
+    return ($row && isset($row['c'])) ? (int)$row['c'] : 0;
+}
+
 set_error_handler('goldmine_api_error_handler');
 
 try {
-    require_once dirname(__FILE__) . '/../../../findstocks/portfolio2/api/db_connect.php';
+    require_once dirname(__FILE__) . '/../../../findforex2/portfolio/api/db_connect.php';
 } catch (Exception $e) {
     echo json_encode(array('ok' => false, 'error' => 'Database connection failed: ' . $e->getMessage()));
     exit;
@@ -86,23 +97,23 @@ function get_dashboard($conn) {
     
     // Total picks tracked
     $res = $conn->query("SELECT COUNT(*) as c FROM KIMI_GOLDMINE_PICKS");
-    $stats['total_picks_tracked'] = (int)$res->fetch_assoc()['c'];
+    $stats['total_picks_tracked'] = goldmine_api_fetch_count($res);
     
     // Active picks
     $res = $conn->query("SELECT COUNT(*) as c FROM KIMI_GOLDMINE_PICKS WHERE status = 'active'");
-    $stats['active_picks'] = (int)$res->fetch_assoc()['c'];
+    $stats['active_picks'] = goldmine_api_fetch_count($res);
     
     // Total winners
     $res = $conn->query("SELECT COUNT(*) as c FROM KIMI_GOLDMINE_WINNERS");
-    $stats['total_winners'] = (int)$res->fetch_assoc()['c'];
+    $stats['total_winners'] = goldmine_api_fetch_count($res);
     
     // Active goldmines
     $res = $conn->query("SELECT COUNT(*) as c FROM KIMI_GOLDMINE_SOURCES WHERE current_goldmine_status = 1");
-    $stats['active_goldmines'] = (int)$res->fetch_assoc()['c'];
+    $stats['active_goldmines'] = goldmine_api_fetch_count($res);
     
     // Today's new picks
     $res = $conn->query("SELECT COUNT(*) as c FROM KIMI_GOLDMINE_PICKS WHERE DATE(pick_date) = CURDATE()");
-    $stats['new_picks_today'] = (int)$res->fetch_assoc()['c'];
+    $stats['new_picks_today'] = goldmine_api_fetch_count($res);
     
     $dashboard['stats'] = $stats;
     
@@ -248,7 +259,7 @@ function get_picks($conn) {
     
     // Get total count
     $count_res = $conn->query("SELECT COUNT(*) as c FROM KIMI_GOLDMINE_PICKS WHERE $where_clause");
-    $total = (int)$count_res->fetch_assoc()['c'];
+    $total = goldmine_api_fetch_count($count_res);
     
     // Get picks
     $sql = "SELECT * FROM KIMI_GOLDMINE_PICKS 
