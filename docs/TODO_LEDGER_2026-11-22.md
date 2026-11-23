@@ -33,7 +33,31 @@ yfinance/pandas install added; def-time default-argument bug fixed.
 **Evidence:** six gate regimes correct; empty ledger → exit 0; workflow parses
 (12 steps); pushed to PR #1064 at `2851cc13617`.
 
-## [~] T3 — PENDING VERIFICATION (scan dispatched, not yet emitted)
+## [~] T3 — FAILED VERIFICATION (run succeeded, emit did not happen)
+
+Run `45086985710` completed/success at 00:43:33Z, but
+`reports/provenance/picks_provenance.jsonl` is ABSENT on origin/main. T3 stays OPEN.
+
+Three independent, silent defects (full evidence in
+`updates/2026-11-23-t3-live-emit-did-not-happen.md`):
+  1. `[PROVENANCE] skipped (non-fatal): No module named 'provenance_ledger'` -- the emit
+     never ran. The module exists and is tracked at this exact commit, and the identical
+     call path works locally, so the CI sys.path differs in a way not yet isolated. The
+     same log also reports `No module named 'audit_trail'` (125 tracked files), so treat
+     these as ONE shared cause, not two missing files.
+  2. `T4 HALT: clearing all 0 active picks` + `All 0 picks passed` + `0 signals` -- even
+     with imports fixed this cycle would emit ZERO rows.
+  3. DECISIVE: `alpha-engine-fast.yml:64` stages only `active_picks_fast.json` and
+     `closed_picks_fast.json`. `reports/provenance/` appears NOWHERE in the workflow, so
+     the ledger could never reach main even if written.
+
+The job was green because the provenance write is wrapped in `non-fatal`. Between the
+merge (00:06Z) and now, every run has silently recorded nothing.
+
+Diagnostic side effect cleaned: my repro wrote a synthetic `strategy=test` record at
+seq=1 into the live ledger; deleted, `--stats` back to n_emitted: 0.
+
+Original heading: PENDING VERIFICATION (scan dispatched, not yet emitted)
 
 PR #1064 merged at `be2f2d60185` (2026-11-23T00:06Z), so the merge blocker is gone.
 I dispatched `alpha-engine-fast` on main (`gh run 45086985710`, 00:08Z) rather than
@@ -109,7 +133,7 @@ difference). Never put backticks in a double-quoted shell string.
 
 ## State as at 2026-11-22 (end of round 34)
 
-T1, T2, T4, T5, T6, T7, T8 are **done**. T3 is **PENDING** (PR #1064 is merged; the scan was dispatched and had not yet emitted when this note was written).
+T1, T2, T4, T5, T6, T7, T8 are **done**. T3 is **OPEN and FAILING**: the run went green but the ledger is absent on main -- see the T3 section for the three defects.
 There is no actionable `[ ]` item left, so the wakeup cron is **paused** (its
 tagged line is commented out in crontab, not deleted).
 
