@@ -55,6 +55,17 @@ CHECKPOINTS = (12, 36, 60, 120)
 Z_95 = N.inv_cdf(1 - ALPHA / 2)
 Z_80 = N.inv_cdf(POWER)
 Z_ONE_SIDED_95 = N.inv_cdf(0.95)
+MONTHS_PER_YEAR = 12.0
+
+
+def monthly_hurdle() -> float:
+    """clock.HURDLE is ANNUAL (0.0432). Every edge in this module is MONTHLY.
+
+    Mixing the two silently inflates the confirm threshold by 12x -- the first version of this
+    file did exactly that and printed 506 bp/month instead of 110. Never compare an annual
+    hurdle to a monthly standard error.
+    """
+    return clock.HURDLE / MONTHS_PER_YEAR
 
 
 def monthly_closes(sym: str) -> dict[str, float]:
@@ -109,28 +120,28 @@ def months_needed(sig_book: float, edge: float, alpha: float = ALPHA,
 
 def confirm_threshold(sig_book: float, n: int, hurdle: float | None = None,
                       z: float = Z_ONE_SIDED_95) -> float:
-    """Point estimate needed for a one-sided 95% lower bound to clear the hurdle."""
-    h = clock.HURDLE if hurdle is None else hurdle
+    """MONTHLY point estimate needed for a one-sided 95% lower bound to clear the hurdle."""
+    h = monthly_hurdle() if hurdle is None else hurdle
     return h + z * standard_error(sig_book, n)
 
 
 def refute_threshold(sig_book: float, n: int, hurdle: float | None = None,
                      z: float = Z_ONE_SIDED_95) -> float:
-    """Point estimate below which a one-sided 95% upper bound falls under the hurdle."""
-    h = clock.HURDLE if hurdle is None else hurdle
+    """MONTHLY point estimate below which a one-sided 95% upper bound falls under the hurdle."""
+    h = monthly_hurdle() if hurdle is None else hurdle
     return h - z * standard_error(sig_book, n)
 
 
 def power_confirm(sig_book: float, n: int, mu: float, hurdle: float | None = None) -> float:
-    """P(point >= hurdle + 1.645*SE) when the true monthly edge is `mu`."""
-    h = clock.HURDLE if hurdle is None else hurdle
+    """P(point >= hurdle + 1.645*SE) when the true monthly edge is `mu` (monthly units)."""
+    h = monthly_hurdle() if hurdle is None else hurdle
     z = (mu - h) / standard_error(sig_book, n) - Z_ONE_SIDED_95
     return N.cdf(z)
 
 
 def power_refute(sig_book: float, n: int, mu: float, hurdle: float | None = None) -> float:
-    """P(point <= hurdle - 1.645*SE) when the true monthly edge is `mu`."""
-    h = clock.HURDLE if hurdle is None else hurdle
+    """P(point <= hurdle - 1.645*SE) when the true monthly edge is `mu` (monthly units)."""
+    h = monthly_hurdle() if hurdle is None else hurdle
     z = -Z_ONE_SIDED_95 - (mu - h) / standard_error(sig_book, n)
     return N.cdf(z)
 

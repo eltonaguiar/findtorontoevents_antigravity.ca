@@ -29,7 +29,8 @@ def test_book_sigma_is_monotone_in_rho():
 
 def test_mde_scales_as_inverse_sqrt_n():
     sb = 0.035
-    assert power.mde(sb, 4) == pytest.approx(2 * power.mde(sb, 1))
+    # more observations => smaller detectable effect; quadrupling n halves the MDE
+    assert power.mde(sb, 4) == pytest.approx(power.mde(sb, 1) / 2)
 
 
 def test_months_needed_round_trips_to_the_edge():
@@ -40,8 +41,15 @@ def test_months_needed_round_trips_to_the_edge():
 
 def test_confirm_threshold_is_exactly_hurdle_plus_1_645_se():
     sb, n = 0.035, 60
+    # clock.HURDLE is ANNUAL; the threshold is MONTHLY. Mixing them inflates it 12x.
     assert power.confirm_threshold(sb, n) == pytest.approx(
-        power.clock.HURDLE + 1.645 * power.standard_error(sb, n), rel=1e-4)
+        power.clock.HURDLE / 12 + 1.645 * power.standard_error(sb, n), rel=1e-4)
+
+
+def test_units_are_monthly_not_annual():
+    sb = 0.035
+    assert power.monthly_hurdle() == pytest.approx(power.clock.HURDLE / 12)
+    assert power.confirm_threshold(sb, 60) < power.clock.HURDLE  # 0.0110 < 0.0432, not 0.0506
 
 
 def test_thresholds_tighten_as_records_accumulate():
