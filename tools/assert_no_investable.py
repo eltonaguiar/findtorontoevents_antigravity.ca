@@ -19,6 +19,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rankings", default="reports/asset_class_rankings.json")
     ap.add_argument("--out", default="reports/investable_invariant.json")
+    ap.add_argument("--ledger", default=None, help="optional audit3 ledger; assert 0 cells pass alpha_gate")
     a = ap.parse_args()
     p = Path(a.rankings)
     if not p.exists():
@@ -51,6 +52,22 @@ def main():
         print(f"ALARM: {len(winners)} pick(s) pass all five gates: {winners} — human review required",
               file=sys.stderr)
         return 1
+    if a.ledger:
+        try:
+            led = json.loads(Path(a.ledger).read_text())
+        except Exception as e:
+            print(f"FAIL: ledger unparseable: {e}", file=sys.stderr); return 1
+        cells = [c for c in led.get("cells", []) if isinstance(c.get("alpha_gate"), dict)]
+        passed = [c for c in cells if c["alpha_gate"].get("passed")]
+        out["ledger"] = a.ledger
+        out["cells_with_alpha_gate"] = len(cells)
+        out["cells_passing_alpha_gate"] = len(passed)
+        Path(a.out).write_text(json.dumps(out, indent=2) + "\n")
+        if passed:
+            print(f"ALARM: {len(passed)} cell(s) pass alpha_gate — a real edge may exist, human review required",
+                  file=sys.stderr)
+            return 1
+        print(f"OK: alpha_gate rejects all {len(cells)} cells (0 pass) — zero alpha invariant holds")
     print(f"OK: invariant holds — {len(picks)} picks, 0 full passes, 0 malformed")
     return 0
 

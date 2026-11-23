@@ -222,3 +222,14 @@ def test_investable_invariant_fires_on_full_pass():
                         "--rankings", p, "--out", "/tmp/inv_fail.json"], cwd=ROOT, capture_output=True, text=True)
     assert r.returncode == 1
     assert "ALARM" in r.stderr or "ALARM" in r.stdout
+
+
+# ── alpha-gate invariant ───────────────────────────────────────────
+def test_invariant_alpha_gate_rejects_all_on_canonical_ledger():
+    r = subprocess.run([sys.executable, str(ROOT / "tools/assert_no_investable.py"),
+                        "--ledger", "audit_dashboard/data/audit3_ledger.json",
+                        "--out", "/tmp/inv_alpha.json"], cwd=ROOT, capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    d = json.load(open("/tmp/inv_alpha.json"))
+    assert d["cells_passing_alpha_gate"] == 0
+    assert d["cells_with_alpha_gate"] > 0
