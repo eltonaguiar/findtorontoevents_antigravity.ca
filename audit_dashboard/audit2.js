@@ -3,6 +3,8 @@
    Live numbers come from audit3_ledger.json; the pod registry is a static
    snapshot (reports/ is not web-served). Generated 2026-11-19. */
 
+var LEDGER_SERVED_FROM = "audit_dashboard/data/audit3_ledger.json";  // P2-9 disclosure for parity gate
+
 var PODS = [
   {id:"POD-EQUITY-BREAKOUT", status:"pre_registered", hypothesis:"H-BABY-EQUITY-VT-PATTERN-SWEEP-001", klass:"EQUITY / ETF", dir:"LONG",
    evidence:"EQUITY OOS Sharpe +0.61 (33 folds), ETF +0.21 (53 folds); ~364 resolved trades net +0.46%.",
