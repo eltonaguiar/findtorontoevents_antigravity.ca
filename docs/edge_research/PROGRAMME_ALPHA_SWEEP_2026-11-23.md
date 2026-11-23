@@ -33,3 +33,26 @@ That is why nothing is investable, and it supersedes every per-class net figure 
   My CI invariant (`tools/assert_no_investable.py`) can be extended to assert `alpha_gate` too.
 
 *Paper only. Not investment advice.*
+
+---
+
+## Refinement 2026-11-23T09:17Z — the alpha gate is CLASS-level (not per-cell)
+Checking the distinct values showed `alpha_ci_lo` takes only 1–2 unique values **per asset class** — the gate is computed
+at the class level, applied to every cell in that class. The clean per-class verdict:
+
+| class | cells | best `alpha_ci_lo` | passed |
+|---|---:|---:|---:|
+| **FOREX** | 23 | **−0.1442** | 0 |
+| ETF | 36 | −0.3088 | 0 |
+| EQUITY | 53 | −0.3614 | 0 |
+| BOND | 12 | −0.4305 | 0 |
+| CRYPTO | 229 | −0.9446 | 0 |
+| COMMODITY | 8 | −5.5118 | 0 |
+| FUTURES | 1 | (n/a) | 0 |
+
+**No class passes alpha.** FOREX is closest and still **−14.4%** short — i.e. it would need ~14.4% more beta-adjusted alpha,
+or far more independent observations, before its alpha CI could reach zero. The earlier "closest cell needs +14.4%" is
+restated correctly as **"closest class (FOREX) needs +14.4%"**, since the gate is class-scoped.
+
+The conclusion is unchanged and cleaner: **zero classes have positive alpha; the programme's own gate rejects the whole
+surface at the class level.**
