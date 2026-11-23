@@ -73,3 +73,21 @@ I mis-scaled by 100×. The code defines `move = (p1/p0 − 1)*100` and `alpha = 
 yet *alpha-negative* (it does not beat simply holding the asset) — which is precisely why buying the beta (a low-cost index
 ETF) is as good or better. The earlier "−14.4%" was wrong; the correct gap is **0.144%**. Ordinal conclusion (FOREX
 closest, none pass) stands; cardinal magnitude is 100× smaller.
+
+---
+
+## Gate scope (verified in code) — 2026-11-23T09:26Z
+`apply_selection_alpha_gate` (`audit3_tribunal.py:1173`) resolves alpha **per class × direction slice**, falling back to
+the class aggregate:
+```
+slice = by_slice["<CLASS>/<DIRECTION>"]  -> alpha_ci[0]
+else  = by_class["<CLASS>"]               -> alpha_ci[0]
+passed = (lo > 0)
+```
+So the two values per class are the **LONG** and **SHORT** slices. Verified mapping for the closest class:
+**FOREX SHORT α_lo = −0.1442%, FOREX LONG α_lo = −0.1467%.** A cell with no positive slice/class α_lo is flagged
+`beta_dominant: true`, and any `PROVEN_T2` is demoted to `CANDIDATE`.
+
+**Consequence:** the unit of the alpha verdict is the **class×direction slice**, and **all slices are negative**. The single,
+reproducible edge test for the whole programme is therefore: *does any `by_slice` entry have `alpha_ci[0] > 0`?* Today:
+**no**.
