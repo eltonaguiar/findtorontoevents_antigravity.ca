@@ -1,0 +1,48 @@
+{
+  "id": "H-2026-11-23-01",
+  "title": "Turn-of-month long bias in CRYPTO perpetual futures",
+  "frozen_at": "2026-11-23T01:24:41.905183+00:00",
+  "status": "PRE_REGISTERED",
+  "asset_class": "CRYPTO",
+  "why_fresh": "'turn-of-month' appears 0 times across the 108 registered hypotheses (checked 2026-11-23). Price-only: no new data needed, so it cannot be blocked.",
+  "axis_ranking": [
+    {
+      "rank": 1,
+      "axis": "turn-of-month (TOM) long bias, CRYPTO perps",
+      "fresh": true,
+      "measurable_now": true,
+      "pit_clean": true,
+      "why": "0 registry mentions; timestamps are real (opened<=closed 430/430); no survivorship issue on perps"
+    },
+    {
+      "rank": 2,
+      "axis": "weekday-of-entry asymmetry, CRYPTO",
+      "fresh": "partly (overnight/intraday used, weekday not)",
+      "measurable_now": true,
+      "pit_clean": true
+    },
+    {
+      "rank": 3,
+      "axis": "PEAD on EQUITY with measured 34d filing lag",
+      "fresh": "PEAD used once",
+      "measurable_now": false,
+      "pit_clean": false,
+      "why": "BLOCKED on PIT fundamentals (tool not on branch) AND survivorship-biased universe (0 delisted names)"
+    }
+  ],
+  "chosen_axis": "turn-of-month (TOM)",
+  "hypothesis": "CRYPTO longs entered in the last 1 trading day of a calendar month and held ~5 days have positive net expectancy that beats crypto buy-and-hold over the same window.",
+  "single_test_statistic": "paired bootstrap on (net_trade_return - benchmark_leg) at n>=30 forward closes, plus mean annualised net return",
+  "kill_rule_frozen": {
+    "hurdle1": "net annualised > 4.32% (T-bill)",
+    "hurdle2": "paired bootstrap 95% CI on (net - benchmark_leg) must exclude 0 on BOTH mean AND median (mean-only passes are fat-tail artifacts - see updates/2026-11-23-two-hurdle-kill-rule.md)",
+    "min_n": 100,
+    "entry_rule": "LONG only, enter on last trading day of month, hold 5 calendar days, exit at close",
+    "cost": "copilot 4.97bp RT primary; 12.87bp conservative bound; ticket stated with every bp",
+    "kill_if": "ANY hurdle fails at n>=100 forward closes, or CI-LB<=0 at day 30/60 interim"
+  },
+  "forward_clock_start": "2026-11-23",
+  "data_peeking_declaration": "No outcome data for entries dated >= 2026-11-23 has been examined. The harness refuses any entry dated before the freeze. This is a single pre-registered trial, not 5.",
+  "trial_cost": "1",
+  "harness": "tools/tom_forward_clock.py"
+}
