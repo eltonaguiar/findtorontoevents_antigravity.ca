@@ -167,8 +167,10 @@ local `git cat-file` success is not evidence of landing
 (`'31 6 * * 1'`) and on `workflow_dispatch`. It checks out `main` with
 `fetch-depth: 0` - full history is REQUIRED, because ancestry, branch-containment
 and object-existence checks all need objects and refs outside HEAD, and a depth-1
-clone silently inverts VERIFIED claims into NOT LANDED. It runs
-`tools/verify_peer_claims.py` without `--strict`, prints a summary (raising
+clone silently inverts VERIFIED claims into NOT LANDED. `filter: blob:none` and a
+sparse checkout (`tools`, `claims`, `updates`, `reports`) keep it inside the job's
+10-minute timeout: the commit graph is what the checks need, not every blob. It
+runs `tools/verify_peer_claims.py` without `--strict`, prints a summary (raising
 `::warning::` annotations for violations instead of failing), and commits the two
 generated files back to `main` with a `[skip ci]` message.
 

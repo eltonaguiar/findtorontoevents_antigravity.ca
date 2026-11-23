@@ -43,10 +43,24 @@ jobs:
           # objects and refs outside HEAD; in a depth-1 clone every sha that is
           # not HEAD "does not resolve", so genuinely landed commits are reported
           # as NOT LANDED (a silent inversion - the first real dispatch went green
-          # with 10/16 claims wrong). The engine now refuses to run in a shallow
-          # clone unless --allow-shallow is passed, so this can never regress
-          # silently again.
+          # with 10/16 claims wrong). The engine refuses to run in a shallow clone
+          # unless --allow-shallow is passed, so this can never regress silently.
+          #
+          # fetch-depth: 0 = every commit of every branch (needed: a sha may land
+          # on a non-main origin ref), but NOT every blob. filter blob:none keeps
+          # it to the commit graph; a plain full checkout of this repo exceeded
+          # the job's 10-minute timeout fetching all history. checkout fetches
+          # on-demand the few blobs it needs for the files below.
           fetch-depth: 0
+          filter: 'blob:none'
+          # Only the four trees this job reads or writes; everything else stays
+          # out of the working copy (git add of generated files needs --sparse).
+          sparse-checkout: |
+            tools
+            claims
+            updates
+            reports
+          sparse-checkout-cone-mode: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -94,7 +108,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           mkdir -p reports
-          git add updates/peer-claim-verification-latest.md \
+          # --sparse: updates/ and reports/ are inside the sparse cone, but the
+          # flag keeps this working if the cone is ever narrowed.
+          git add --sparse updates/peer-claim-verification-latest.md \
                   reports/peer_claim_verification_latest.json
           if git diff --cached --quiet; then
             echo "nothing to commit"

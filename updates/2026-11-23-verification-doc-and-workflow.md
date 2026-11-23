@@ -95,3 +95,19 @@ Fix (this change):
 
 Before/after, same claims: 6 agree / 10 disagree / 5 non-manual / 3 violations (CI, shallow)
 -> 12 agree / 4 disagree / 1 non-manual / 0 violations (full clone).
+
+## Post-merge re-dispatch (run 45115464824): fetch-depth 0 alone times out
+
+The first re-dispatch after merging the fix was **cancelled**: the `Checkout` step ran
+`git fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*`
+for 10 minutes and hit the job's `timeout-minutes: 10`. Full history across every branch
+and tag is large, so an unfiltered full checkout is not viable on a hosted runner.
+
+The requirement is the commit graph, not every blob. The workflow now uses
+`fetch-depth: 0` (all commits of all refs - a sha may land on a non-main origin ref),
+`filter: blob:none` (commit graph and trees only; blobs are fetched on demand for the files
+actually read), and a sparse checkout of `tools`, `claims`, `updates`, `reports`. The
+commit step uses `git add --sparse` for the two generated files.
+
+Locally this combination costs ~66 MB / ~12 s for the full commit graph of 340k commits,
+versus a 25 GB working repository - the timeout was fetching blobs nobody reads.
