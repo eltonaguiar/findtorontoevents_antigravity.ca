@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-11-23T01:28Z",
+  "D40_edgar_pit": {
+    "reachable_commit": "c0d48e28968 EXISTS in this clone",
+    "on_my_branch": false,
+    "tool_file_present": false,
+    "data_dir_present": false,
+    "status": "BLOCKED: tool exists at commit c0d48e28968 but is NOT on branch feat/coms-final-notes-2026-11-20. Missing input = the tool + data/fundamentals_pit/*.json on this branch. Exact 'pointer not reachable from the ref you name' case."
+  },
+  "D43_survivorship": {
+    "n_symbols": 69,
+    "delisted_present": [],
+    "status": "SURVIVORSHIP-BIASED: 0 known-delisted names in the 69-name universe. EQUITY(17)/ETF(9) are all currently-listed. Any EQUITY/ETF backtest on this universe is upward-biased. CRYPTO(40) less affected (perp pairs)."
+  },
+  "D45_pit_status_by_class": {
+    "CRYPTO": "timestamp-PIT OK (opened/closed real, 430/430 opened<=closed)",
+    "EQUITY": "timestamp OK but SURVIVORSHIP-BIASED",
+    "ETF": "timestamp OK but SURVIVORSHIP-BIASED",
+    "FOREX/BOND/COMMODITY/FUTURES/PM/OPTIONS": "no data / frozen KILL"
+  },
+  "D46_g5_timing": {
+    "opened_le_closed": 430,
+    "violations": 0,
+    "status": "PASS - picks recorded at open before outcome"
+  },
+  "D47_hold_lookahead": {
+    "status": "PASS - hold_days from closed_at-opened_at, both >= open time; no future data used"
+  },
+  "D51_benchmark_leg": {
+    "definition": "same-symbol direction-adjusted buy-and-hold, bar close at opened_ms -> bar close at closed_ms",
+    "gap_vs_trade_fill": {
+      "n": 343,
+      "mean": 0.0132,
+      "median": -0.0002,
+      "sd": 0.0996,
+      "frac_positive": 0.499,
+      "frac_abs_gt_2pct": 0.557
+    },
+    "verdict": "BENCHMARK IS SAME-SYMBOL BnH (median gap ~0, symmetric). The \u00b110% per-trade gap is intrabar-fill-vs-bar-close noise in volatile crypto, NOT a data error. Consequence: paired diff has sd~10%, so the MEAN test is outlier-driven (min -40%, max +72%) and the MEDIAN/sign test is authoritative. This empirically justifies the two-hurdle rule requiring BOTH mean and median CI."
+  },
+  "D50_missing_inputs": {
+    "PIT_fundamentals": "tool+data not on branch (owner: copilot branch c0d48e28968)",
+    "survivorship_free_universe": "needs delisted-name history (owner: data layer)"
+  }
+}
