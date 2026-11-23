@@ -39,8 +39,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # the changed-files style gate needs github.event.before
+        # Shallow on purpose. fetch-depth: 0 on this repo clones 47k files plus ~7k commits of
+        # history and takes over 10 minutes: run 45113051785 was cancelled at exactly 600s INSIDE
+        # checkout with every later step skipped. The style gate fetches only its base sha.
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -122,17 +123,22 @@ jobs:
         run: |
           set -euo pipefail
           base="${PUSH_BEFORE:-}"
-          # workflow_dispatch / force-push have no usable 'before': fall back to HEAD~1
+          # The clone is shallow, so fetch just the base commit when it is missing.
+          if [ -n "$base" ] && [ "$base" != "0000000000000000000000000000000000000000" ] \
+             && ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            git fetch --quiet --depth=1 origin "$base" 2>/dev/null || true
+          fi
+          # workflow_dispatch / force-push / unfetchable base: fall back to HEAD~1
           if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ] \
              || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
             base="$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)"
           fi
           files=$(git diff --name-only "$base" HEAD -- '*.py' | tr '\n' ' ' || true)
           if [ -z "${files// /}" ]; then
-            echo "no Python files changed in this push - style gate skipped"
+            echo "no Python files changed in this push - style gate skipped (base=$base)"
             exit 0
           fi
-          echo "linting changed Python files:"
+          echo "linting changed Python files (base=$base):"
           printf '  %s\n' $files
           python3 -m ruff check --select E9,F63,F7 --output-format=concise $files
 
