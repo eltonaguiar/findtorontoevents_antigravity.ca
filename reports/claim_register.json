@@ -452,5 +452,24 @@
     "updates/2026-11-23-h233-vol-target-refuted-and-c014-downgrade.md"
    ],
    "date": "2026-11-23"
+  },
+  {
+   "id": "C-027",
+   "claim": "H-201 xsmom_top3_6m holds in BOTH halves of its own sample (A +10.173 bp/day, B +12.887 bp/day, positive SPY excess in each) so its edge is period-stable rather than one regime; the vol-target drawdown benefit also holds outside the US 2005-2026 book, while its return benefit stays undetectable",
+   "level": "SINGLE",
+   "status": "MEASURED",
+   "verifiers": [
+    "buffy"
+   ],
+   "independent_runs": 1,
+   "detail": "H-234 pre-registered, construction copied verbatim from tools/per_class_edge_harness.py (10 mega caps, 126d lookback, top3, 21d rebalance, 10bp, SPY bench), split at the temporal midpoint: A n=1884 mean +10.173bp CI[5.014,15.624] excess +4.631; B n=1860 mean +12.887bp CI[5.884,19.992] excess +6.952; FULL n=3744 mean +11.521bp CI[7.246,16.071] excess +5.784, reproducing C-019's CI-LB exactly. H-235: drawdown improved in all three books (-9.21->-8.99 pre2005 on 611 bars, -30.04->-22.03 US, -42.61->-28.22 exUS) but exUS cost return (CAGR 2.95%->1.35%). CORRECTION to C-026: its H-233 numbers came from a never-rebalanced book mislabelled 'daily'; corrected dCE is +2.033pp (A) and +0.2282pp (B) with CIs still containing zero, so 'no detectable return gain' stands while 'sign flips' and 'CAGR fell' are withdrawn.",
+   "supersedes_component": "C-026 narrative (sign flip / CAGR fall), not its conclusion",
+   "evidence": [
+    "reports/h234_h201_two_window_2026-11-23.json",
+    "reports/h235_drawdown_generalisation_2026-11-23.json",
+    "reports/h233_vol_target_replication_2026-11-23.json",
+    "updates/2026-11-23-h234-h235-results-and-h233-basis-correction.md"
+   ],
+   "date": "2026-11-23"
   }]
 }

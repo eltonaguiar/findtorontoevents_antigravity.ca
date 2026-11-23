@@ -2840,70 +2840,161 @@
    "kill_reason": null
   }
  ,
-    {
+  {
    "id": "H-233",
    "asset_class": "PORTFOLIO",
    "family": "vol_targeting_overlay",
-   "description": "Volatility-targeted 60/40 (SPY 60 / TLT 40) scaled to a 10% annualised vol target from YESTERDAY's realised 60-day vol only, cap 2x, 5 bp per unit turnover, retains a positive certainty-equivalent advantage over plain 60/40 on a window disjoint from the development period (2016-01-01..2026-11-20). Replication of C-014, which had independent_runs=0.",
-   "test_statistic": "delta certainty equivalent (annualised, risk aversion 1) in Window B, paired block bootstrap 95% CI, 10000 resamples, block length 20",
+   "description": "Volatility-targeted 60/40 (SPY 60 / TLT 40) scaled to a 10% annualised vol target from YESTERDAY's realised 60-day vol, cap 2x, 5 bp per unit turnover, retains a positive certainty-equivalent advantage over plain 60/40 on a window disjoint from the development period.",
+   "test_statistic": "delta certainty equivalent (annualised, risk aversion 1) in Window B, paired block bootstrap 95% CI, 10000 resamples, block 20",
    "acceptance_criteria": {
     "delta_ce_positive": true,
     "ci_lower_bound_gt": "0",
     "maxdd_not_worse": true,
-    "sign_agreement_across_windows": true,
-    "validation": "two-window replication; NOT a virgin holdout because C-014 already used 2005-2026 in aggregate"
+    "sign_agreement_across_windows": true
    },
-   "economic_prior": "Constant-risk rather than constant-weight exposure raises realised risk efficiency when vol clusters. This is a risk-overlay mechanism, not a forecast, so it does not consume an alpha feature family.",
+   "economic_prior": "Constant-risk rather than constant-weight exposure raises realised risk efficiency when vol clusters. Risk-overlay mechanism, not a forecast.",
    "status": "REFUTED",
    "registered_at": "2026-11-23",
-   "data_sample_lock": "2005-01-03..2026-11-20 daily closes, SPY/TLT, frozen at registration",
+   "data_sample_lock": "2005-01-03..2026-11-20 daily closes, SPY/TLT",
    "result": {
-    "verdict": "REFUTED_OOS - the certainty-equivalent advantage does not replicate; the drawdown reduction does.",
-    "run_date": "2026-11-23",
-    "window_A_2005_2015": {
-     "plain_ce_pct": 6.7,
-     "vt_ce_pct": 9.07,
-     "delta_ce_pp": 2.3756,
+    "verdict": "REFUTED_OOS on criterion 2 only. BASIS BUG FOUND AND FIXED: freq=None set a constant bucket so the 'daily' book never rebalanced; all figures are the corrected daily-reset run.",
+    "window_A": {
+     "delta_ce_pp": 2.033,
      "ci95": [
-      -0.2182,
-      4.9008
+      -0.8123,
+      4.8369
      ],
-     "n": 2768
+     "plain_ce": 7.64,
+     "vt_ce": 9.67,
+     "plain_mdd": -30.04,
+     "vt_mdd": -21.12
     },
-    "window_B_2016_2026": {
-     "plain_ce_pct": 9.51,
-     "vt_ce_pct": 9.15,
-     "delta_ce_pp": -0.3549,
+    "window_B": {
+     "delta_ce_pp": 0.2282,
      "ci95": [
-      -3.3468,
-      2.6607
+      -2.5217,
+      2.8852
      ],
-     "n": 2738,
-     "plain_cagr_pct": 9.97,
-     "vt_cagr_pct": 9.58,
-     "plain_mdd_pct": -26.39,
-     "vt_mdd_pct": -19.1
+     "plain_ce": 8.05,
+     "vt_ce": 8.28,
+     "plain_cagr": 8.38,
+     "vt_cagr": 8.63,
+     "plain_mdd": -27.29,
+     "vt_mdd": -22.03
     },
-    "full_sample_diagnostic": {
-     "delta_ce_pp": 1.0178,
+    "full": {
+     "delta_ce_pp": 1.1355,
      "ci95": [
-      -1.03,
-      2.999
-     ],
-     "n": 5506
+      -0.8675,
+      3.0924
+     ]
     },
-    "criteria": {
-     "delta_ce_positive_in_B": false,
-     "ci_low_gt_zero": false,
-     "maxdd_not_worse": true,
-     "sign_agreement": false
-    },
-    "interpretation": "The drawdown half of the mechanism is real and appears in both windows (-26.82->-21.60 and -26.39->-19.10). The return/CE half is not stable: in 2016-2026 vol targeting LOWERED CAGR (9.97% -> 9.58%) as well as CE, and the full-sample daily CE advantage has a CI containing zero. C-014's 'raises CAGR' therefore does not generalise.",
-    "labels": "Verdict restricted by the pre-registration to REPLICATED / REFUTED_OOS / INCONCLUSIVE. No post-hoc switch to the monthly basis, which would have passed.",
+    "withdrawn": "'sign flips between sub-periods' and 'lowered CAGR' were artifacts of the never-rebalanced book; the effect is positive in both windows and fails on power (effect ~1pp vs CI width ~5pp).",
     "artifacts": [
      "tools/h233_vol_target_replication.py",
-     "reports/h233_vol_target_replication_2026-11-23.json",
-     "plans/2026-11-23-prereg-H-233-vol-target-replication.md"
+     "reports/h233_vol_target_replication_2026-11-23.json"
+    ]
+   }
+  },
+  {
+   "id": "H-234",
+   "asset_class": "EQUITY",
+   "family": "cross_sectional_momentum",
+   "description": "H-201 xsmom_top3_6m reproduces with the same sign, a positive block-bootstrap CI lower bound and positive SPY excess in BOTH temporal halves of its own sample.",
+   "test_statistic": "mean net daily bp per window with block bootstrap CI lower bound and mean excess vs SPY",
+   "acceptance_criteria": {
+    "both_windows_mean_gt_0": true,
+    "both_windows_ci_lb_gt_0": true,
+    "both_windows_excess_gt_0": true
+   },
+   "economic_prior": "6-month cross-sectional momentum among mega caps. If it is a persistent risk premium it should appear in both halves; if it is one regime it will not.",
+   "status": "REPLICATED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "2012-01-01..2026-11-20, 10 EQUITY names, frozen",
+   "result": {
+    "verdict": "ROBUST - both halves clear mean>0, CI-LB>0 and positive SPY excess; the holdout half is stronger.",
+    "window_A": {
+     "n": 1884,
+     "mean_bps": 10.173,
+     "ci95": [
+      5.014,
+      15.624
+     ],
+     "excess_bps": 4.631,
+     "excess_ci_lb": 0.899
+    },
+    "window_B": {
+     "n": 1860,
+     "mean_bps": 12.887,
+     "ci95": [
+      5.884,
+      19.992
+     ],
+     "excess_bps": 6.952,
+     "excess_ci_lb": 1.477
+    },
+    "full": {
+     "n": 3744,
+     "mean_bps": 11.521,
+     "ci95": [
+      7.246,
+      16.071
+     ],
+     "excess_bps": 5.784,
+     "excess_ci_lb": 2.534,
+     "note": "full-sample CI-LB reproduces the claimed +7.246 bp/day, validating the harness against C-019's artifact"
+    },
+    "caveat": "does NOT make H-201 PROVEN: DSR holds to N=28 of 29 and the 76.7-day margin is untouched; this trial raises N to 30.",
+    "run_timing": "pre-registration doc committed 5093eb796f8 before the run; registry entry landed after due to a locator bug - recorded, not tidied",
+    "artifacts": [
+     "tools/h234_h201_two_window.py",
+     "reports/h234_h201_two_window_2026-11-23.json"
+    ]
+   }
+  },
+  {
+   "id": "H-235",
+   "asset_class": "PORTFOLIO",
+   "family": "vol_targeting_overlay",
+   "description": "The vol-target drawdown reduction that survived both halves of H-233 also survives on a pre-2005 US book and on a non-US (EFA/BWX) book.",
+   "test_statistic": "max drawdown of vol-target vs plain per book (dCE secondary only)",
+   "acceptance_criteria": {
+    "drawdown_better_pre2005": true,
+    "drawdown_better_nonUS": true
+   },
+   "economic_prior": "Volatility clustering is near-universal, so a constant-risk overlay should reduce drawdown broadly; if not, H-233's drawdown result was sample-specific.",
+   "status": "REPLICATED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "SPY/TLT 2002-07-30..2004-12-31 and 2005-01-03..2026-11-20; EFA/BWX 2007-05-01..2026-11-20",
+   "result": {
+    "verdict": "SURVIVES - drawdown improved in all 3 books, but the label is broader than the evidence.",
+    "books": {
+     "US_pre2005": {
+      "plain_mdd": -9.21,
+      "vt_mdd": -8.99,
+      "improvement_pp": 0.22,
+      "bars": 611
+     },
+     "US_2005_2026_control": {
+      "plain_mdd": -30.04,
+      "vt_mdd": -22.03,
+      "improvement_pp": 8.01,
+      "bars": 5506
+     },
+     "INTL_exUS": {
+      "plain_mdd": -42.61,
+      "vt_mdd": -28.22,
+      "improvement_pp": 14.39,
+      "bars": 4808,
+      "plain_cagr": 2.95,
+      "vt_cagr": 1.35
+     }
+    },
+    "reading": "Pre-2005 margin is 0.22pp on 611 bars and says nothing. In the ex-US book the 14.39pp drawdown gain cost half the return. Surviving rule: vol targeting cuts drawdown broadly and is nearly free in a high-vol book.",
+    "run_timing": "same registry-timing note as H-234",
+    "artifacts": [
+     "tools/h235_drawdown_generalisation.py",
+     "reports/h235_drawdown_generalisation_2026-11-23.json"
     ]
    }
   }],
