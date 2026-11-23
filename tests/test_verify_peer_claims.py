@@ -181,12 +181,24 @@ def test_remote_map_env_var(tmp_path, monkeypatch):
                      "ref": "review/main", "polarity": "supports"}],
          "manual": False, "expected_verdict": "VERIFIED"}]}), encoding="utf-8")
     out = tmp_path / "report.md"
-    # --allow-shallow: main() runs against this checkout's repo root, which may
-    # itself be shallow-marked; this test is about the remote map, not depth.
-    rc = vpc.main(["--claims", str(claims), "--out", str(out), "--strict",
+    json_out = tmp_path / "report.json"
+    # --ref HEAD: main() resolves its top-level ref against THIS checkout, and a
+    # PR checkout has no origin/main (CI run 45128193990 failed on exactly that).
+    # HEAD always exists, and this test's subject is the per-check remote-map
+    # wiring (review/main), not the top-level ref. --allow-shallow: this checkout
+    # may itself be shallow-marked; the test is about the remote map, not depth.
+    rc = vpc.main(["--claims", str(claims), "--out", str(out), "--strict", "--ref", "HEAD",
+                   "--json", "--json-out", str(json_out),
                    "--allow-dirty-ref", "--allow-shallow"])
     assert rc == 0
     assert "R2" in out.read_text(encoding="utf-8")
+    # The check must have resolved through the map to the review repo - not
+    # fallen back to a same-named ref in the host checkout - and passed.
+    payload = json.loads(json_out.read_text(encoding="utf-8"))
+    check = payload["claims"][0]["checks"][0]
+    assert check["status"] == vpc.STATUS_PASS, check["detail"]
+    assert check["ref"] == "review/main"
+    assert payload["claims"][0]["computed_verdict"] == "VERIFIED"
 
 
 def test_unresolvable_ref_skips_not_fails(tmp_path):

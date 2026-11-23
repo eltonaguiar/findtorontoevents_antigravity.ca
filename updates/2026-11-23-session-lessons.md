@@ -170,3 +170,28 @@ assumed from the shape it took the first time I looked instead of measured.
 4. Measure the invariant the test enforces; do not infer uniqueness from one sighting.
 
 Provenance: run ids 45114413921, 45116843696, 45118943977; PRs #1082-#1086.
+
+## 13. Shipped a test that could not pass in the environment designed to run it
+
+`tests/test_verify_peer_claims.py::test_remote_map_env_var` called `vpc.main()` without `--ref`, so
+it inherited the `origin/main` default and resolved that ref against the host checkout
+[SRC: `tools/verify_peer_claims.py:824,880,884`]. PR checkouts have no `origin/main`, so the test
+exited 2 before the remote map it was supposed to exercise was ever consulted. It failed on PR #1097
+(run 45128193990, both 3.11 and 3.12) - and the PR merged anyway, so the red was ignored exactly as
+predicted. Worse, when I deliberately broke the remote map the old assertions still passed in a
+healthy checkout: an unresolvable per-check ref yields SKIP, and `strict_violations` exempts SKIP, so
+`rc == 0` and the claim id still appeared in the report. The test was simultaneously fragile *and*
+hollow: it could fail for the wrong reason and pass for the wrong reason.
+
+Fix: pin `--ref HEAD` (always resolvable, incidental to the subject) and assert on the `--json`
+payload that the per-check ref is `review/main`, the check PASSes, and the verdict is VERIFIED
+[SRC: `tests/test_verify_peer_claims.py:173-204`].
+
+**Rule: a check whose signal is not trustworthy is worse than no check, whether it cries wolf or
+stays quiet.** This is the other half of error 10: there a green tick hid a wrong answer; here a red X
+hid a test that could not have caught the bug it was written for. Both train everyone to ignore the
+signal. A test must own its preconditions (build its own world) rather than inherit them from the
+checkout, and it must be shown to fail when its subject is broken - a test never observed red for the
+right reason is not yet a test.
+
+Provenance: run id 45128193990; PR #1097 (merged as `a70bf659fd247e02abe48d344aaba7317561e5c8`).
