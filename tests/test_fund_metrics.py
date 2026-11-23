@@ -160,4 +160,64 @@ def test_payload_declares_rebalancing_assumption(tmp_path, monkeypatch):
 
     payload = json.loads((tmp_path / "reports" / "fund_deep_dive.json").read_text())
     assert payload["schema_version"] >= 2
-    assert "daily" in payload["rebalancing"].lower()
+    # D1: standard portfolios are monthly-rebalanced; before the fix the JSON
+    # said "daily" while the docstring claimed monthly -- the opposite of true.
+    assert "monthly" in payload["rebalancing"].lower()
+    assert "rebalance_sensitivity" in payload
+
+
+# --------------------------------------------------------------------------
+# D1 / D2 / D3 — rebalancing must be real, and its cost must be charged
+# --------------------------------------------------------------------------
+def test_single_sleeve_reproduces_the_fund_series():
+    """weight=1.0 must return the underlying series exactly (no rebalancing)."""
+    r = {"A": [0.01, -0.02, 0.03, 0.004]}
+    out, stats = fd.portfolio(r, {"A": 1.0})
+    assert out == pytest.approx(r["A"], abs=1e-12)
+    assert stats["turnover"] == 0.0
+    assert stats["rebalances"] == 0
+
+
+def test_buy_and_hold_never_trades():
+    r = {"A": [0.10, -0.05, 0.02], "B": [0.00, 0.01, -0.01]}
+    _, stats = fd.portfolio(r, {"A": 0.6, "B": 0.4}, rebal=None)
+    assert stats["rebalances"] == 0
+    assert stats["turnover"] == 0.0
+
+
+def test_rebalancing_trades_and_buy_and_hold_does_not():
+    """D1: the two schedules must be genuinely different paths.
+
+    The old implementation ignored `rebal`, so both calls returned the same
+    series -- the test that would have caught it.
+    """
+    r = {"A": [0.10, -0.05, 0.08, -0.03, 0.06],
+         "B": [0.00, 0.01, -0.01, 0.02, 0.00]}
+    bh, bh_stats = fd.portfolio(r, {"A": 0.6, "B": 0.4}, rebal=None)
+    rb, rb_stats = fd.portfolio(r, {"A": 0.6, "B": 0.4}, rebal=2)
+    assert bh != pytest.approx(rb, abs=1e-12)
+    assert rb_stats["rebalances"] > 0
+    assert rb_stats["turnover"] > 0.0
+    assert bh_stats["turnover"] == 0.0
+
+
+def test_rebalance_cost_reduces_return():
+    """D3: a wider spread must not increase the compounded return."""
+    r = {"A": [0.10, -0.09, 0.11, -0.10, 0.07, -0.06],
+         "B": [0.01, 0.00, -0.02, 0.03, 0.00, 0.01]}
+    free, _ = fd.portfolio(r, {"A": 0.6, "B": 0.4}, rebal=1, spread_bp=0.0)
+    costly, _ = fd.portfolio(r, {"A": 0.6, "B": 0.4}, rebal=1, spread_bp=50.0)
+    nav_free = 1.0
+    for x in free:
+        nav_free *= (1 + x)
+    nav_cost = 1.0
+    for x in costly:
+        nav_cost *= (1 + x)
+    assert nav_cost < nav_free
+
+
+def test_portfolio_nav_conserves_weights():
+    """With zero returns everywhere the NAV must stay flat at 1.0."""
+    r = {"A": [0.0] * 10, "B": [0.0] * 10}
+    out, _ = fd.portfolio(r, {"A": 0.6, "B": 0.4}, rebal=3)
+    assert all(abs(x) < 1e-12 for x in out)

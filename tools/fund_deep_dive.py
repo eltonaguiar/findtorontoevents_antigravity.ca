@@ -110,19 +110,52 @@ def add_ratios(m, rf):
     return m
 
 
-def portfolio(ret, weights, rebal=None, merblend=0.0):
-    """Weighted daily returns.
+def portfolio(ret, weights, rebal=None, merblend=0.0, spread_bp=0.0):
+    """Portfolio daily returns with genuine periodic rebalancing.
 
-    NOTE (plan item D1, NOT yet fixed): `rebal` is accepted for API compatibility
-    but ignored — port[i]=sum(w*r_i) is a DAILY-rebalanced series, which harvests
-    volatility and overstates a 60/40 versus buy-and-hold. The output is labelled
-    daily-rebalanced until real rebalancing lands.
+    rebal=None  -> BUY AND HOLD: sleeves drift, nothing is ever traded.
+    rebal=k     -> rebalance back to target weights every k trading days.
+
+    Compounding is done sleeve-by-sleeve on a NAV, so buy-and-hold is a real,
+    different path from rebalancing. The previous implementation summed weighted
+    daily returns (`sum(w*r_i)`), which is *silently daily rebalancing* -- it
+    harvested volatility and overstated the 60/40 versus buy-and-hold, while the
+    docstring claimed monthly. (plan item D1)
+
+    `spread_bp` charges a round-trip cost on the traded fraction at each
+    rebalance: cost = turnover * spread. Turnover is the one-way weight change,
+    sum(|w_drifted - w_target|)/2. (plan item D3)
     """
-    n = min(len(ret[c]) for c in weights)
-    port = [0.0] * n
+    cols = list(weights)
+    n = min(len(ret[c]) for c in cols)
+    target = [float(weights[c]) for c in cols]
+    sleeve = list(target)                 # NAV starts at sum(target)
+    prev_nav = sum(sleeve)
+    out = []
+    turnover_total = 0.0
+    rebalances = 0
+
     for i in range(n):
-        port[i] = sum(w * ret[c][i] for c, w in weights.items())
-    return port, merblend
+        for j, c in enumerate(cols):
+            sleeve[j] *= (1.0 + ret[c][i])
+        nav = sum(sleeve)
+        day_ret = nav / prev_nav - 1.0
+
+        if rebal and (i + 1) % rebal == 0 and (i + 1) < n:
+            drift = [v / nav for v in sleeve]
+            turnover = sum(abs(drift[j] - target[j]) for j in range(len(cols))) / 2.0
+            if turnover > 0:
+                nav *= (1.0 - turnover * (spread_bp / 1e4))
+                day_ret = nav / prev_nav - 1.0
+                turnover_total += turnover
+                rebalances += 1
+                sleeve = [nav * t for t in target]
+
+        out.append(day_ret)
+        prev_nav = nav
+
+    stats = {"turnover": round(turnover_total, 4), "rebalances": rebalances}
+    return out, stats
 
 
 def main():
@@ -134,7 +167,8 @@ def main():
            "corrections": ["A1/A2 excess-of-cash Sharpe+Sortino", "A4 SGOV cash-labelled",
                            "A5 Sortino all-N denominator", "A6 compounded net CAGR",
                            "A7 sample stdev"],
-           "rebalancing": "daily (rebal ignored -- plan item D1)",
+           "rebalancing": "monthly (21 trading days) for standard portfolios; "
+                          "see rebalance_sensitivity for buy-and-hold vs daily",
            "funds": {}}
 
     # Pass 1: raw statistics. Pass 2: ratios need the cash hurdle from SGOV.
@@ -160,7 +194,7 @@ def main():
               f"{m['vol_pct']:7.2f}{str(m['ret_vol']):>9s}{label:>14s}"
               f"{str(m['sortino']):>9s}{m['max_dd_pct']:8.2f}")
 
-    print("\nPortfolios (DAILY-rebalanced, net of blended MER):")
+    print("\nPortfolios (MONTHLY-rebalanced 21d, net of blended MER):")
     ports = {
         "100% SPY (SP500)": ({"SPY_adj": 1.0}, 0.000945),
         "100% VTI (total mkt)": ({"VTI_adj": 1.0}, 0.0003),
@@ -170,7 +204,9 @@ def main():
     }
     out["portfolios"] = {}
     for name, (w, mer) in ports.items():
-        p, _ = portfolio(ret, w, merblend=mer)
+        # D1: monthly (21 trading day) rebalancing, which is what the original
+        # docstring claimed while the code actually rebalanced daily.
+        p, _ = portfolio(ret, w, rebal=21, merblend=mer)
         m = add_ratios(metrics(p, mer), rf)
         if set(w) == {CASH_KEY}:
             m["sharpe"] = None
@@ -184,6 +220,21 @@ def main():
         print(f"{name:34s}{m['cagr_pct']:8.2f}{m['net_cagr_pct']:9.2f}"
               f"{m['vol_pct']:7.2f}{str(m['ret_vol']):>9s}{label:>14s}"
               f"{str(m['sortino']):>9s}{m['max_dd_pct']:8.2f}")
+
+    # D2/D3: the rebalancing choice is worth real money -- show it rather than
+    # assert it. Same 60/40, 5bp round-trip cost on the traded fraction.
+    print("\nRebalancing sensitivity (60/40 SPY/BND, 5bp spread):")
+    w6040 = {"SPY_adj": 0.6, "BND_adj": 0.4}
+    mer6040 = 0.6 * 0.000945 + 0.4 * 0.0003
+    out["rebalance_sensitivity"] = {}
+    for label, rb in (("buy & hold", None), ("quarterly (63d)", 63),
+                      ("monthly (21d)", 21), ("daily (1d)", 1)):
+        p, pstats = portfolio(ret, w6040, rebal=rb, spread_bp=5.0)
+        m = add_ratios(metrics(p, mer6040), rf)
+        out["rebalance_sensitivity"][label] = {**m, **pstats}
+        print(f"{label:16s}{m['cagr_pct']:8.2f}{m['vol_pct']:7.2f}"
+              f"{str(m['sharpe']):>8s}{m['max_dd_pct']:8.2f}"
+              f"{pstats['turnover']:9.2f}{pstats['rebalances']:7d}")
 
     Path("reports").mkdir(exist_ok=True)
     Path("reports/fund_deep_dive.json").write_text(json.dumps(out, indent=2) + "\n")
