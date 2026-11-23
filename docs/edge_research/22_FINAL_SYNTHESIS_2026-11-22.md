@@ -169,3 +169,13 @@ Reported, not silently resolved. Only the ones that affect a verdict above.
 6. **Bond-momentum null percentile 2.0 belongs to B1 only.** B2 and B3 declared no null and are killed on Sharpe and on an excess-vs-SPY CI that excludes zero on the negative side.
 7. **SPY Sharpe 0.351 / 1.114 / 0.911 / 0.987** are four windows, not four measurements of one thing. Every comparison above names its window.
 8. **Funding-carry net at 30 d is +2.42% APR, which is below the 4.32% T-bill** — a number that reads positive and is a loss. It is an APR, not a total return, and it is compared to an APR.
+
+---
+
+## 9. Programme tally (settled)
+
+TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)
+
+Settled tally for the 14-row set, as of 2026-11-23 [SRC: docs/edge_research/23_DEFINITIVE_ANSWER_2026-11-22.md:195].
+The per-family lines elsewhere in this document are subsets of the 14 rows, not competing totals; the row-level
+accounting that reconciles them is in doc 23, "The final accounting".
