@@ -98,8 +98,8 @@ def main() -> int:
         extra = f"  ({t.get('blocker')})" if t["status"] == "blocked" and t.get("blocker") else ""
         print(f"  {mark} {t['id']:>2}. {t['title']}{extra}")
 
-    if open_items:
-        print(f"\nWORK REMAINS: {len(open_items)} open. Not authorized to stop.")
+    if open_items or blocked:
+        print(f"\nWORK REMAINS: {len(open_items)} open, {len(blocked)} blocked. Not done.")
         return 1
     print("\nALL TODOS DONE.")
     return 0
