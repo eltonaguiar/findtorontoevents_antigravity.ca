@@ -45,19 +45,33 @@ def build(ledger_path: str, ticket_usd: float) -> dict:
     trial_counts = [c.get("dsr_n_trials") for c in cells if c.get("dsr_n_trials")]
     global_trials = max(trial_counts) if trial_counts else None
 
+    # Optional hold_days feed (partial, from forward ledger only)
+    hold_feed = {}
+    hf = Path("reports/hold_days_by_symbol.json")
+    if hf.exists():
+        try:
+            hd = json.loads(hf.read_text())
+            for k, v in hd.get("by_symbol", {}).items():
+                # k = "CRYPTO:BTC"
+                hold_feed[k.split(":", 1)[1]] = v
+        except Exception:
+            pass
+
     picks = []
     for s in syms:
         if not s.get("n"):
             continue
         ne_pct = s.get("net_expectancy_pct")
         gross_bp = (float(ne_pct) * 100.0) if ne_pct is not None else 0.0  # pct -> bp
+        sym = s.get("symbol", "UNK")
+        hold = hold_feed.get(sym, {}).get("hold_days_mean", 0.0) if hold_feed else 0.0
         p = Pick(
-            symbol=s.get("symbol", "UNK"),
+            symbol=sym,
             asset_class=s.get("asset_class", "UNK"),
             side=s.get("direction", "LONG"),
             n=int(s.get("n", 0)),
             gross_edge_bp=round(gross_bp, 4),
-            holding_days=float(s.get("hold_days_mean") or 0.0),  # absent -> 0 -> G2 fail
+            holding_days=float(hold),  # partial feed from forward ledger
             ticket_usd=ticket_usd,
             dsr=s.get("dsr"),
             dsr_n_trials=s.get("dsr_n_trials") or global_trials,
@@ -95,7 +109,9 @@ def build(ledger_path: str, ticket_usd: float) -> dict:
             "measured_rt_cost_bp": cost["total_rt_bp"],
             "ratio": round(cost["total_rt_bp"] / 5.0, 2),
             "hold_days_present_in_ledger": False,
-            "g2_note": "G2 unmeasurable from ledger (no hold_days field); all picks FAIL:G2 until hold-time feed exists",
+            "hold_days_feed": "reports/hold_days_by_symbol.json (partial: 430 forward rows, 31 symbols)",
+            "hold_feed_symbols": len(hold_feed),
+            "g2_note": "G2 computed where forward-ledger hold_days exists; picks without a feed row still FAIL:G2",
         },
         "top3_summary": top3,
         "n_pass": sum(1 for p in picks if p.verdict == "PASS"),
