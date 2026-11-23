@@ -171,3 +171,11 @@ change made it harder to call something profitable.*
 CANDIDATE, alpha −0.2681; forward rows faber_taa 12, etf_dual_momentum 1, H-119 430.
 
 **Unchanged conclusion:** repair and measurement, not signal. Nothing is money-ready.
+
+### 9.1 Correction — FX (2026-11-23)
+
+My earlier note that `fx_prices` ends 2026-02-09 and left 211 forex picks unmeasurable was wrong:
+`stock_ohlcv` carries `AUDJPY=X` through 2026-11-23, and `trading_picks` holds **64,082** `=X` rows
+with **46,249** open (`exit_price IS NULL`). FX is blocked by the **resolver** (entries never closed),
+not by missing prices. Corollary: the FX/carry path can be unblocked with a resolver fix, which is
+cheaper than procuring data.

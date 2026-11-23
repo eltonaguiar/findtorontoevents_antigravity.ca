@@ -189,6 +189,22 @@ denominator is pinned and published with the ledger, no cross-surface tile compa
 auditable. This supersedes my earlier payload-slice claim: the live ledger has moved to
 canonical, and the movement itself is the finding.
 
+### 3.5 CORRECTION (2026-11-23): FX was a resolver failure, not a dead feed
+
+My §6.4/J text said `fx_prices` ends 2026-02-09 and therefore 211 forex picks were
+"unmeasurable". That was wrong in an important way:
+
+- **Prices exist and are current.** `stock_ohlcv` holds `AUDJPY=X` with 4,282 rows through
+  **2026-11-23**. The legacy `fx_prices` table is a different schema and is not the FX source the
+  pipeline uses.
+- **The picks are open, not unpriced.** `trading_picks` has **64,082** `=X` rows, of which
+  **46,249** have `exit_price IS NULL`. A strict recent-FX slice shows ~24 picks, all open.
+- **So the blocker is the resolver**: FX entries are written but never closed, and placeholders with
+  `exit == entry` remain. Closing them from bars already stored is a code fix, not a data purchase.
+
+This changes the priority: the FX/carry path (the one class with a documented mechanism, G10 carry)
+is blocked on resolution, and a resolver fix is cheaper than acquiring a feed.
+
 ## 4. Cross-surface contradictions (fix before adding features)
 
 | Claim | Where | Contradiction |
