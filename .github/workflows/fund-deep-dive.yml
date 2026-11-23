@@ -65,6 +65,11 @@ jobs:
         # arithmetic ones. This is the check that catches that class.
         run: python3 tools/fund_doc_lint.py --strict
 
+      - name: Glide path and block sensitivity regenerate
+        run: |
+          python3 tools/fund_glide_path.py --json /tmp/g.json
+          python3 tools/fund_block_sensitivity.py --json /tmp/b.json --n-boot 300
+
       - name: Two runs must agree on content
         run: |
           python3 tools/fund_deep_dive.py --out /tmp/again.json

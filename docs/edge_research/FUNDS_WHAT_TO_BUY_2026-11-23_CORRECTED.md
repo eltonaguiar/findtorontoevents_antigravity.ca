@@ -70,6 +70,30 @@ Moving-block bootstrap (21-day blocks, 1,000 draws, fixed seed), 90% intervals o
 Equity CAGR intervals span ~25 percentage points. **Ranking equity funds on 5-year CAGR is not
 supported by this data.** Only the cash series is tight.
 
+### The interval width depends on a choice I made (block length)
+
+A reviewer objected that a 21-day moving block is too short for equity returns, since
+autocorrelation runs for weeks to months, and that the intervals should therefore be too *narrow*.
+That is testable, so it was tested (`tools/fund_block_sensitivity.py`):
+
+| block | ~blocks | SPY 90% width | BND 90% width |
+|---:|---:|---:|---:|
+| 5 | 250 | 26.11 | 8.42 |
+| **21 (used)** | 59 | **25.02** | **8.93** |
+| 63 | 19 | 23.40 | 9.73 |
+| 126 | 9 | 21.75 | 8.17 |
+| 252 | 4 | 18.81 | 7.38 |
+
+**The objection's direction does not hold.** For SPY the width *shrinks* as blocks lengthen
+(26.11 → 18.81), so the 21-day choice is not producing too-narrow an interval — it sits near the
+wide end. What is true is that the width moves by roughly ±29% depending on the block, so the
+choice should be disclosed rather than treated as canonical. One trap worth naming: at block=252
+there are only ~4 blocks, so a narrow interval there reflects *few* effective samples, not more
+information.
+
+The conclusion this strengthens is the existing one: don't rank funds on point estimates from this
+window, and don't read 2 decimal places as precision.
+
 ## Step 0 — the account wrapper decides this, not the fund
 
 **(plan item E10.)** The original document asked "mutual fund or ETF?" first. That is the wrong
@@ -216,9 +240,10 @@ falling sleeve.
 
 **Read this against the forward anchors, not on its own.** On a forward BND distribution yield of
 4.11% (a floor — true YTM is typically higher) versus a 4.15% cash rate, a bond sleeve is roughly
-neutral-to-positive going forward, so this table's monotonic Sharpe decline is a statement about the
-*past five years of rising rates*, not a general law. This is the SPY/BND line only — it is not the
-efficient frontier over all assets, and a point further left may exist.
+neutral-to-positive going forward — subject to duration risk, since a rate rise hits price before
+yield helps. So this table's monotonic Sharpe decline is a statement about the *past five years of
+rising rates*, not a general law. This is the SPY/BND line only — it is not the efficient frontier
+over all assets, and a point further left may exist.
 
 ## Forward anchors (current, not trailing)
 
@@ -236,10 +261,17 @@ rather than a session artifact:
 > it did not create it. The true YTM is not available from this data source and is **not fetched
 > here**; treat 4.11% as a conservative floor, not an estimate of YTM.
 
-**This is still the single largest correction.** BND's forward yield of ~4.1% (at minimum) compares
-with a −0.29% trailing CAGR. The original "60/40 gives up return" conclusion rests on a trailing
-window dominated by a rate-hike bond bear market. On current yields a bond sleeve is expected to
-*add* return, so the forward case for 60/40 is materially stronger than the trailing numbers imply.
+**This is still the single largest correction — but it is not a forecast.** BND's forward yield of
+~4.1% (at minimum) compares with a −0.29% trailing CAGR, which is why the original "60/40 gives up
+return" reading was misleading.
+
+**The qualifier matters as much as the number.** A yield-to-maturity is the expected return only if
+the fund is held for roughly its duration, coupons are reinvested at that yield, and yields do not
+change. BND's duration is around six years, so a 1pp rise in yields is roughly a 6% price fall —
+price risk dominates over any 1-3 year horizon. Treating 4.11% as "what bonds will return next
+year" would be a mistake, and an independent review was right to flag the first draft for implying
+it. The defensible statement is narrower: **a bond sleeve is no longer expected to be a guaranteed
+loss at current yields**, not that it is expected to earn ~4% annually.
 
 ## Futures — explicitly out of scope
 
