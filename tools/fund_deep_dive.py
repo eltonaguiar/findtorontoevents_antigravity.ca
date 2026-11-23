@@ -190,6 +190,59 @@ def bootstrap_pair_diff(a, b, block=21, n_boot=1000, seed=20261123):
             "distinguishable_from_zero": not (lo <= 0.0 <= hi_)}
 
 
+ANCHOR_TTL_HOURS = 24
+
+
+def fetch_anchors(ttl_hours=ANCHOR_TTL_HOURS):
+    """F1/F2/F7: current forward anchors, dated, failing loudly when stale.
+
+    Trailing 5y CAGR is a poor forecast input. The decision-relevant numbers are
+    the CURRENT cash yield and the CURRENT bond yield-to-maturity. They are
+    fetched opt-in (--anchors) so the default run stays deterministic and works
+    offline; but once fetched they are timestamped and a stale anchor is an
+    error, not a silent fallback. (plan items F1, F2, F7)
+    """
+    out = {"fetched_at": datetime.now(timezone.utc).isoformat(), "ttl_hours": ttl_hours}
+    try:
+        import yfinance as yf
+    except ImportError:
+        out["error"] = "yfinance not installed; anchors unavailable"
+        return out
+
+    # F1: cash anchor = 13-week T-bill yield (^IRX, quoted in percent)
+    try:
+        h = yf.Ticker("^IRX").history(period="7d")
+        if len(h):
+            out["cash_tbill_yield_pct"] = round(float(h["Close"].iloc[-1]), 3)
+            asof = str(h.index[-1].date())
+            out["cash_asof"] = asof
+            age_h = (datetime.now(timezone.utc)
+                     - datetime.fromisoformat(asof + "T00:00:00+00:00")).total_seconds() / 3600
+            out["cash_age_hours"] = round(age_h, 1)
+            out["cash_stale"] = age_h > ttl_hours * 7   # weekend-tolerant
+        else:
+            out["cash_error"] = "no ^IRX history returned"
+    except Exception as e:  # noqa: BLE001
+        out["cash_error"] = str(e)[:160]
+
+    # F2: bond anchor = BND yield-to-maturity proxy from the fund's own metadata
+    try:
+        info = yf.Ticker("BND").info or {}
+        for key in ("yield", "yieldToMaturity", "ytm", "dividendYield"):
+            v = info.get(key)
+            if v:
+                pct = float(v) * (100.0 if float(v) < 1.0 else 1.0)
+                out["bnd_ytm_pct"] = round(pct, 3)
+                out["bnd_ytm_source"] = key
+                break
+        else:
+            out["bnd_error"] = "no yield field in BND metadata"
+    except Exception as e:  # noqa: BLE001
+        out["bnd_error"] = str(e)[:160]
+
+    return out
+
+
 def portfolio(ret, weights, rebal=None, merblend=0.0, spread_bp=0.0):
     """Portfolio daily returns with genuine periodic rebalancing.
 
@@ -238,7 +291,14 @@ def portfolio(ret, weights, rebal=None, merblend=0.0, spread_bp=0.0):
     return out, stats
 
 
-def main():
+def main(argv=None):
+    import argparse
+    ap = argparse.ArgumentParser(description="Fund deeper dive (paper only, not investment advice).")
+    ap.add_argument("--anchors", action="store_true",
+                    help="fetch current cash T-bill yield and BND YTM (needs network)")
+    ap.add_argument("--out", default="reports/fund_deep_dive.json")
+    args = ap.parse_args(argv)
+
     dates, ser, ret = load()
     out = {"schema_version": 2,
            "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -386,9 +446,29 @@ def main():
               f"{str(m['sharpe']):>8s}{m['max_dd_pct']:8.2f}"
               f"{pstats['turnover']:9.2f}{pstats['rebalances']:7d}")
 
-    Path("reports").mkdir(exist_ok=True)
-    Path("reports/fund_deep_dive.json").write_text(json.dumps(out, indent=2) + "\n")
-    print("\nwrote reports/fund_deep_dive.json")
+    # F3: forward expectations, opt-in and clearly separated from measurement.
+    out["forward_anchors"] = None
+    if args.anchors:
+        print("\nForward anchors (current, not trailing):")
+        a = fetch_anchors()
+        out["forward_anchors"] = a
+        if a.get("cash_tbill_yield_pct") is not None:
+            print(f"  cash (13w T-bill)  {a['cash_tbill_yield_pct']:6.2f}%  asof {a.get('cash_asof')}")
+            print(f"    vs trailing SGOV net CAGR {out['funds'][CASH_KEY]['net_cagr_pct']:.2f}%")
+        else:
+            print(f"  cash anchor UNAVAILABLE: {a.get('cash_error')}")
+        if a.get("bnd_ytm_pct") is not None:
+            print(f"  BND YTM           {a['bnd_ytm_pct']:6.2f}%  (source: {a.get('bnd_ytm_source')})")
+            print(f"    vs trailing BND CAGR     {out['funds']['BND_adj']['cagr_pct']:.2f}%")
+        else:
+            print(f"  BND YTM UNAVAILABLE: {a.get('bnd_error')}")
+        if a.get("cash_stale"):
+            print("  WARNING: cash anchor is stale -- do not use it as an expectation")
+
+    outp = Path(args.out)
+    outp.parent.mkdir(parents=True, exist_ok=True)
+    outp.write_text(json.dumps(out, indent=2) + "\n")
+    print(f"\nwrote {outp}")
 
 
 if __name__ == "__main__":

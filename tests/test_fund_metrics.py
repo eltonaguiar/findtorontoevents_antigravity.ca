@@ -133,7 +133,7 @@ def test_cash_vehicle_emits_null_ratio(tmp_path, monkeypatch):
 
     monkeypatch.setattr(fd, "SRC", str(src))
     monkeypatch.chdir(tmp_path)
-    fd.main()
+    fd.main([])
 
     payload = json.loads((tmp_path / "reports" / "fund_deep_dive.json").read_text())
     sgov = payload["funds"]["SGOV_adj"]
@@ -156,7 +156,7 @@ def test_payload_declares_rebalancing_assumption(tmp_path, monkeypatch):
 
     monkeypatch.setattr(fd, "SRC", str(src))
     monkeypatch.chdir(tmp_path)
-    fd.main()
+    fd.main([])
 
     payload = json.loads((tmp_path / "reports" / "fund_deep_dive.json").read_text())
     assert payload["schema_version"] >= 2
@@ -289,7 +289,7 @@ def test_subperiods_are_reported(tmp_path, monkeypatch):
         pytest.skip("market_prices.csv not present in this checkout")
     monkeypatch.setattr(fd, "SRC", str(src))
     monkeypatch.chdir(tmp_path)
-    fd.main()
+    fd.main([])
     payload = json.loads((tmp_path / "reports" / "fund_deep_dive.json").read_text())
 
     sp = payload["subperiods"]
@@ -342,3 +342,42 @@ def _load_for_test():
         return fd.load()
     finally:
         os.chdir(cwd)
+
+
+# --------------------------------------------------------------------------
+# F1 / F2 / F7 — forward anchors are opt-in, dated, and never silent
+# --------------------------------------------------------------------------
+def test_anchors_are_off_by_default(tmp_path, monkeypatch):
+    """The default run must stay deterministic and offline."""
+    src = REPO_ROOT / fd.SRC
+    if not src.exists():
+        pytest.skip("market_prices.csv not present in this checkout")
+    monkeypatch.setattr(fd, "SRC", str(src))
+    monkeypatch.chdir(tmp_path)
+    fd.main([])
+    payload = json.loads((tmp_path / "reports" / "fund_deep_dive.json").read_text())
+    assert payload["forward_anchors"] is None
+
+
+def test_fetch_anchors_returns_a_dated_dict():
+    """Structural contract: whatever happens (network, no data), the result is a
+    dict carrying fetched_at and an explicit error key rather than silence."""
+    a = fd.fetch_anchors()
+    assert isinstance(a, dict)
+    assert "fetched_at" in a
+    assert a["ttl_hours"] == fd.ANCHOR_TTL_HOURS
+    # either a number or an explicit error -- never absent
+    assert ("cash_tbill_yield_pct" in a) or ("cash_error" in a)
+    assert ("bnd_ytm_pct" in a) or ("bnd_error" in a)
+
+
+def test_out_flag_writes_where_asked(tmp_path, monkeypatch):
+    src = REPO_ROOT / fd.SRC
+    if not src.exists():
+        pytest.skip("market_prices.csv not present in this checkout")
+    monkeypatch.setattr(fd, "SRC", str(src))
+    monkeypatch.chdir(tmp_path)
+    target = tmp_path / "nested" / "x.json"
+    fd.main(["--out", str(target)])
+    assert target.exists()
+    assert json.loads(target.read_text())["schema_version"] >= 2
