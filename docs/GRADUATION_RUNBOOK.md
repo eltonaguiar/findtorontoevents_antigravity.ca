@@ -36,6 +36,24 @@ gate here stays paper, no matter how good its backtest looks.
 
 A sleeve that fails any gate is **not** "almost ready"; it is unproven.
 
+### 2.1 How the DSR gate is computed (pinned 2026-11-23)
+
+"DSR ≥ 0.95" is not a gate until it names an implementation and a dispersion. Ours:
+
+- **Implementation:** `alpha_engine.deflated_sharpe.deflated_sharpe_ratio(estimated_sharpe,
+  sr_variance, nb_trials, ...)` — the only estimator in the tree that accepts a trial-dispersion
+  term. `alpha_engine.statistical_rigor`, `crypto_ml_edge.validation` and
+  `alpha_engine.validation.sharpe_metrics` do **not** implement this gate.
+- **`sr_variance` = `σ_sr²` with `σ_sr = 0.6488`**, the trial dispersion in
+  `docs/TRIAL_BUDGET_2026-11-23.md` (Grid B).
+- **`nb_trials` = the declared family size**, global floor 658.
+
+At DSR 0.95 and N=658 this requires SR ≈ **3.85 standard deviations per trade** (≈61 annualised at
+252 bars, Δ 0.00143/trial). The same threshold wired through `crypto_ml_edge.validation` asks 3.39
+(≈53.9 annualised) and through `alpha_engine.statistical_rigor` asks 0.44 (≈7.0) — a **9× spread for
+one stated gate**. `tools/dsr_wiring_matrix.py` prints all three plus the implied `n_trials` behind
+any published DSR table; run it before quoting a DSR number.
+
 ## 3. Sizing ladder
 
 1. **Paper** (current): $0 real. Marks only. No exceptions.

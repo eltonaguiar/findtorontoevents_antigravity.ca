@@ -236,12 +236,13 @@ def main():
         # canonical: the rule the cells actually carry
         sample = next((v for v in cells.values() if isinstance(v, dict)), {})
         if cells_source == "audit3_ledger":
-            # Two counting rules disagree in this ledger: 2 cells carry `alpha_gate.passed ==
-            # true` (status "proven", alpha_ci_lo ~0.175) while holding WEAK verdicts, because
-            # their n (63, 27) is far under required_n (922, 295). A cell is positive here only
-            # when its VERDICT is PROVEN/CANDIDATE, so the rule counts are reported for
-            # transparency and never used as the canonical count. A rule count previously
-            # overwrote the verdict count, printing 2 beside a check that said 0.
+            # These are two different questions, not two answers to one: `alpha_gate.passed`
+            # asks whether SELECTION alpha is positive at that scope with >=50% coverage
+            # (need_n = max(20, 0.5*cell_n) in audit3_tribunal.apply_selection_alpha_gate),
+            # while `verdict` asks whether the cell's own expectancy survives the power and
+            # deflation tests (required_n = 922 for vol-contraction-scout). 2 cells answer yes
+            # to the first and no to the second, which is correct. Never let a rule count
+            # overwrite the verdict count: an earlier version printed 2 beside a check saying 0.
             field_passed = rule_counts.get("passed", 0)
         elif isinstance(sample.get("alpha_gate"), dict):
             cells_pass = rule_counts["alpha_gate.passed"]
@@ -259,6 +260,14 @@ def main():
                                  "n_cells_total": ledger_meta.get("n_cells_total"),
                                  "n_cells_tested": ledger_meta.get("n_cells_tested"),
                                  "note": "the denominator is a RUN STAMP: copies in circulation hold 359/362/367/374. Only PROVEN+CANDIDATE==0 is invariant across them."},
+        "definitions": {
+            "cells_alpha_passed": "cells whose VERDICT is PROVEN/CANDIDATE (the promotion test)",
+            "cell_pass_rule_counts.alpha_gate.passed": (
+                "cells where the G8 selection-alpha gate passed: alpha_ci_lo > 0, scope "
+                "strategy/class, and alpha_n >= max(20, 0.5*cell_n). This is a DIFFERENT "
+                "question from the verdict; 2 EQUITY cells pass it and are still WEAK."),
+            "quote_this": "0 PROVEN / 0 CANDIDATE; 2 cells pass the G8 selection-alpha gate",
+        },
         "zero_passes_evidence": {"ledger_symbols_alpha_passed": sym_pass,
                                  "cell_sidecar_passed": cells_pass,
                                  "cells_with_passed_true_but_not_proven": (
