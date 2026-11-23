@@ -294,10 +294,55 @@ def main():
                           ("VTI - VTSAX (same portfolio)", ("VTI_adj", "VTSAX_adj"))):
         pd_ = bootstrap_pair_diff(ret[a], ret[b])
         if pd_:
+            # The paired test is on GROSS returns; the fee difference is the only
+            # part that is certain in expectation. Report both, because a gross
+            # gap can flip sign while the net gap stays positive.
+            fee_pp = (MER[b] - MER[a]) * 100.0
+            pd_["fee_advantage_pct"] = round(fee_pp, 4)
+            pd_["net_point_pct"] = round(pd_["point_pct"] + fee_pp, 4)
+            pd_["net_ci_pct"] = (round(pd_["ci_pct"][0] + fee_pp, 4),
+                                 round(pd_["ci_pct"][1] + fee_pp, 4))
             out["paired_diffs"][label] = pd_
             lo, hi = pd_["ci_pct"]
-            verdict = "distinguishable" if pd_["distinguishable_from_zero"] else "NOT distinguishable from zero"
-            print(f"  {label:28s} {pd_['point_pct']:+6.3f}  [{lo:+.3f}, {hi:+.3f}]  {verdict}")
+            verdict = "distinguishable" if pd_["distinguishable_from_zero"] else "NOT distinguishable"
+            print(f"  {label:28s} gross {pd_['point_pct']:+6.3f} [{lo:+.3f},{hi:+.3f}]"
+                  f"  fee {fee_pp:+.4f}  NET {pd_['net_point_pct']:+6.3f}  {verdict}")
+
+    # B9: one 5y window can be a single regime. Split it and report both halves,
+    # then re-run the paired test inside each half -- if the fee story only holds
+    # in one half, it is a regime artefact, not a fee effect.
+    split = "2024-11-15"
+    cut = next((i for i, d in enumerate(dates) if d >= split), len(dates) // 2)
+    cut_ret = max(2, cut - 1)          # ret[c][i] corresponds to dates[i+1]
+    print(f"\nSub-periods (split {split}; H1 {dates[0]}..{dates[cut_ret]}, "
+          f"H2 {dates[cut_ret+1]}..{dates[-1]}):")
+    out["subperiods"] = {"split_date": split, "funds": {}, "paired_diffs": {}}
+    print(f"  {'fund':31s}{'H1 CAGR':>10s}{'H2 CAGR':>10s}")
+    for c in ret:
+        h1, h2 = ret[c][:cut_ret], ret[c][cut_ret:]
+        if len(h1) < 30 or len(h2) < 30:
+            continue
+        c1 = _cagr_of(h1) * 100
+        c2 = _cagr_of(h2) * 100
+        out["subperiods"]["funds"][c] = {"h1_cagr_pct": round(c1, 2),
+                                         "h2_cagr_pct": round(c2, 2),
+                                         "h1_n": len(h1), "h2_n": len(h2)}
+        print(f"  {LABEL[c][:30]:31s}{c1:10.2f}{c2:10.2f}")
+
+    print("  paired FXAIX - SPY per half:")
+    for half, sl in (("H1", slice(0, cut_ret)), ("H2", slice(cut_ret, None))):
+        a, b = ret["FXAIX_adj"][sl], ret["SPY_adj"][sl]
+        pd_ = bootstrap_pair_diff(a, b, n_boot=500)
+        if pd_:
+            fee_pp = (MER["SPY_adj"] - MER["FXAIX_adj"]) * 100.0
+            pd_["fee_advantage_pct"] = round(fee_pp, 4)
+            pd_["net_point_pct"] = round(pd_["point_pct"] + fee_pp, 4)
+            out["subperiods"]["paired_diffs"][half] = pd_
+            lo, hi = pd_["ci_pct"]
+            verdict = ("distinguishable" if pd_["distinguishable_from_zero"]
+                       else "NOT distinguishable")
+            print(f"    {half}  gross {pd_['point_pct']:+6.3f} [{lo:+.3f},{hi:+.3f}]"
+                  f"  fee {fee_pp:+.4f}  NET {pd_['net_point_pct']:+6.3f}  {verdict}")
 
     print("\nPortfolios (MONTHLY-rebalanced 21d, net of blended MER):")
     ports = {

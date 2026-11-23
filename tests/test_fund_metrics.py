@@ -278,3 +278,67 @@ def test_paired_diff_uses_the_difference_not_separate_legs():
     paired_width = paired["ci_pct"][1] - paired["ci_pct"][0]
     solo_width = solo["cagr_ci_pct"][1] - solo["cagr_ci_pct"][0]
     assert paired_width < solo_width
+
+
+# --------------------------------------------------------------------------
+# B9 — sub-period split, and the net-vs-gross gap
+# --------------------------------------------------------------------------
+def test_subperiods_are_reported(tmp_path, monkeypatch):
+    src = REPO_ROOT / fd.SRC
+    if not src.exists():
+        pytest.skip("market_prices.csv not present in this checkout")
+    monkeypatch.setattr(fd, "SRC", str(src))
+    monkeypatch.chdir(tmp_path)
+    fd.main()
+    payload = json.loads((tmp_path / "reports" / "fund_deep_dive.json").read_text())
+
+    sp = payload["subperiods"]
+    assert sp["split_date"] == "2024-11-15"
+    # both halves must cover every fund, and each must have a usable sample
+    assert set(sp["funds"]) == set(payload["funds"])
+    for c, v in sp["funds"].items():
+        assert v["h1_n"] >= 30 and v["h2_n"] >= 30, c
+    # the halves must be roughly 3y / 2y of a ~5y window
+    total = sum(v["h1_n"] for v in sp["funds"].values()) / len(sp["funds"])
+    assert 600 < total < 900
+
+
+def test_paired_diff_reports_gross_fee_and_net():
+    """The fee advantage is the only structurally certain part; the JSON must
+    carry gross, fee and net separately so a sign flip in gross is visible."""
+    src = REPO_ROOT / fd.SRC
+    if not src.exists():
+        pytest.skip("market_prices.csv not present in this checkout")
+    dates, ser, ret = _load_for_test()
+    pd_ = fd.bootstrap_pair_diff(ret["FXAIX_adj"], ret["SPY_adj"], n_boot=100)
+    fee = (fd.MER["SPY_adj"] - fd.MER["FXAIX_adj"]) * 100.0
+    assert fee == pytest.approx(0.0795, abs=1e-9)
+    assert pd_["point_pct"] != 0.0
+
+
+def test_net_gap_is_positive_in_both_halves_for_the_fee_story():
+    """The doc's core claim, tested: the FILM is that gross flips sign but the
+    net gap stays positive. If this ever fails, the fee story is broken."""
+    src = REPO_ROOT / fd.SRC
+    if not src.exists():
+        pytest.skip("market_prices.csv not present in this checkout")
+    dates, ser, ret = _load_for_test()
+    cut = next(i for i, d in enumerate(dates) if d >= "2024-11-15")
+    cut_ret = max(2, cut - 1)
+    fee = (fd.MER["SPY_adj"] - fd.MER["FXAIX_adj"]) * 100.0
+    nets = []
+    for sl in (slice(0, cut_ret), slice(cut_ret, None)):
+        pd_ = fd.bootstrap_pair_diff(ret["FXAIX_adj"][sl], ret["SPY_adj"][sl], n_boot=300)
+        nets.append(pd_["point_pct"] + fee)
+    assert all(x > 0 for x in nets), f"fee story broken: net halves {nets}"
+
+
+def _load_for_test():
+    src = REPO_ROOT / fd.SRC
+    import os
+    cwd = os.getcwd()
+    os.chdir(REPO_ROOT)
+    try:
+        return fd.load()
+    finally:
+        os.chdir(cwd)
