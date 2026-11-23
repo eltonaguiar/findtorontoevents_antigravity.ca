@@ -62,14 +62,28 @@ INSTRUMENTS = {
     "COMMODITY": "GC_F",
     "BOND": "TLT",
 }
-# measured cost where we have it; PROXY flagged where we do not
+# Cost where we have it; PROXY flagged where we do not.
+# PROVENANCE CORRECTED 2026-11-23 (backlog A5-A7). Each label now says whether the
+# number can be RE-RUN from a committed artifact or is only an import:
+#   * FOREX 7.53 was labelled "MEASURED" but is in NO fx artifact -- grep for
+#     7.533 across reports/fx_meanrev_cost_sweep/* returns nothing. It is imported
+#     from the subq COMS note (Tiingo top-of-book, 48 polls, thin Sunday reopen).
+#     What IS committed is the break-even, 4.3038 bp (sweep.json).
+#   * CRYPTO 12.60 was labelled "MEASURED" but the committed measurement is a BAND:
+#     reports/cost_measurement_20261122.json gives taker 10 bp/side (binance,
+#     binanceus, kucoin) and 26 bp/side (kraken) => round trip 20-52 bp. 12.60 is a
+#     mid-band choice, not a measurement.
 COST_BP = {
-    "EQUITY": (4.97, "MEASURED reports/equity_cost_hml.json n=191"),
-    "ETF": (4.97, "MEASURED (conservative; ETF-only measured 1-2bp)"),
-    "CRYPTO": (12.60, "MEASURED measured_cost_recost carry_execution_cost"),
-    "FOREX": (7.53, "MEASURED upper bound measured_cost_recost"),
+    "EQUITY": (4.97, "MEASURED reports/equity_cost_hml.json n=191 (spread only, LOWER bound)"),
+    "ETF": (4.97, "MEASURED 6.7122bp house band; 4.97 used as conservative floor"),
+    "CRYPTO": (12.60, "BAND 20-52bp MEASURED (reports/cost_measurement_20261122.json); "
+                       "12.60 is a mid-band choice, NOT a measurement"),
+    "FOREX": (7.53, "IMPORT from subq COMS note (Tiingo, 48 polls, thin Sunday reopen); "
+                     "NOT reproducible from a repo artifact. Committed break-even is 4.3038bp"),
     "COMMODITY": (4.97, "PROXY UNMEASURED - futures execution not measured"),
-    "BOND": (4.97, "PROXY UNMEASURED - bond execution not measured"),
+    "BOND": (4.97, "PROXY UNMEASURED - bond execution not measured. NOTE: the 42.64bp "
+                   "figure sometimes quoted for BOND is claim C-013, which is a CRYPTO "
+                   "delta-neutral funding-carry round trip, NOT a bond cost"),
 }
 LOOKBACKS = [21, 63, 126, 189, 252]
 HOLDS = [5, 10, 21]
