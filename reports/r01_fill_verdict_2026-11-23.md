@@ -1,11 +1,11 @@
 # R01 round-open fill — verdict
 
-**Checked:** 2026-11-23T10:30:49.814414+00:00  ·  **Open:** 2026-11-23T14:30:00Z  ·  **Fill waiter:** alive
+**Checked:** 2026-11-23T10:31:00.795344+00:00  ·  **Open:** 2026-11-23T14:30:00Z  ·  **Fill waiter:** alive
 **Verdict:** `REFUSED_PRE_OPEN` — the tool refused: no instrument had a bar at or after the round start. This is a refusal, not a result.
 
 - artefact: `reports/r01_round_open_fill_2026-11-23.json` (status `NOT_OPEN_YET`, generated `2026-11-23T09:49:48Z`)
 - filled rows: **0**
-- instruments listed in the artefact: n/a
+- instruments listed in the artefact: 25
 
 ## Waiter log (last lines)
 ```

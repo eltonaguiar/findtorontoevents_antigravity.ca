@@ -71,7 +71,7 @@ def main() -> int:
         log_tail = "\n".join(LOG.read_text(errors="replace").splitlines()[-6:])
     alive = waiter_alive()
     _ins = art.get("instruments") or art.get("panel") or art.get("coverage") or []
-    n_instruments = (len(_ins) if isinstance(_ins, list)
+    n_instruments = (len(_ins) if isinstance(_ins, (list, dict))
                      else (art.get("n_covered") or art.get("covered") or "n/a"))
     filled = art.get("filled") or art.get("positions") or []
 
