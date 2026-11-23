@@ -60,6 +60,11 @@ jobs:
       - name: Schema, reproducibility and staleness gate
         run: python3 tools/check_fund_schema.py /tmp/fresh.json reports/fund_deep_dive.json
 
+      - name: Every table number must trace to a source
+        # Three defects in this report were labelling/provenance errors, not
+        # arithmetic ones. This is the check that catches that class.
+        run: python3 tools/fund_doc_lint.py --strict
+
       - name: Two runs must agree on content
         run: |
           python3 tools/fund_deep_dive.py --out /tmp/again.json

@@ -57,12 +57,12 @@ window it destroyed value *against cash*, which the original table hid.
 
 Moving-block bootstrap (21-day blocks, 1,000 draws, fixed seed), 90% intervals on CAGR:
 
-| fund | CAGR | 90% CI |
+| fund | CAGR (gross) | 90% CI |
 |---|---:|---|
 | SPY | 11.59% | **[−0.10, 24.92]** |
 | FXAIX | 11.67% | **[0.01, 25.02]** |
 | FZROX | 10.74% | [−1.07, 24.39] |
-| VTI | 10.53% | [−1.34, 24.09] |
+| VTI | 10.53% | [−1.33, 24.09] |
 | VTSAX | 10.52% | [−1.36, 24.03] |
 | BND | −0.29% | [−4.75, 4.17] |
 | SGOV | 3.90% | [3.57, 4.27] |

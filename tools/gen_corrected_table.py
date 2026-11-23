@@ -59,3 +59,52 @@ text = re.sub(r"Cash hurdle \*\*R_f = [\d.]+%/yr\*\*",
 doc.write_text(text)
 print(table)
 print(f"\n  rf sentence -> {rf:.2f}%")
+
+
+# --------------------------------------------------------------------------
+# The bootstrap CI table was hand-transcribed and drifted from the JSON
+# (VTI lower bound read -1.34 where the payload rounds to -1.33). Its "CAGR"
+# column also showed GROSS while the measured table shows NET, which is the
+# same gross/net confusion that produced a false bug report. Generate it, and
+# label the column for what it is.
+# --------------------------------------------------------------------------
+CI_ORDER = [
+    ("SPY_adj", "SPY"),
+    ("FXAIX_adj", "FXAIX"),
+    ("FZROX_adj", "FZROX"),
+    ("VTI_adj", "VTI"),
+    ("VTSAX_adj", "VTSAX"),
+    ("BND_adj", "BND"),
+    ("SGOV_adj", "SGOV"),
+]
+
+
+def gen_ci_table(payload):
+    rows = ["| fund | CAGR (gross) | 90% CI |", "|---|---:|---|"]
+    for key, name in CI_ORDER:
+        m = payload["funds"][key]
+        bs = m.get("bootstrap") or {}
+        ci = bs.get("cagr_ci_pct")
+        g = f"{m['cagr_pct']:.2f}%".replace("-", NEG)
+        if ci is None:
+            span = "n/a"
+        else:
+            lo, hi = ci
+            span = "[" + f"{lo:.2f}".replace("-", NEG) + ", " + f"{hi:.2f}".replace("-", NEG) + "]"
+            if key in ("SPY_adj", "FXAIX_adj"):
+                span = f"**{span}**"
+        rows.append(f"| {name} | {g} | {span} |")
+    return "\n".join(rows)
+
+
+ci_table = gen_ci_table(d)
+text = doc.read_text()
+hdr = "| fund | CAGR | 90% CI |"
+if hdr in text:
+    start = text.index(hdr)
+    end = text.index("\n\n", text.index("SGOV", start))
+    text = text[:start] + ci_table + text[end:]
+    doc.write_text(text)
+    print("\n  regenerated the CI table (labelled gross)")
+else:
+    print("\n  WARNING: CI table header not found")
