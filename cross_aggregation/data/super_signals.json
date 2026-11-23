@@ -1,31 +1,31 @@
 {
-  "generated_at": "2026-11-23T09:29:57Z",
+  "generated_at": "2026-11-23T09:54:01Z",
   "market_direction": "NEUTRAL",
-  "cross_pair_ratio": 0.5,
-  "active_symbols": 38,
-  "systems_reporting": 7,
+  "cross_pair_ratio": 0.588,
+  "active_symbols": 51,
+  "systems_reporting": 6,
   "super_signals": [
     {
-      "symbol": "BTCUSDT",
-      "direction": "SHORT",
-      "confidence": 0.703,
-      "raw_confidence": 0.652,
-      "entry_price": 60980.01,
-      "take_profit": 59738.262429,
-      "stop_loss": 61713.769929,
+      "symbol": "TLT",
+      "direction": "LONG",
+      "confidence": 0.99,
+      "raw_confidence": 35.0,
+      "entry_price": 81.654999,
+      "take_profit": 82.83035524,
+      "stop_loss": 80.87142781,
       "agreeing_systems": [
-        "kol_consensus",
-        "luxalgo_filters"
+        "alpha_engine",
+        "kimi"
       ],
       "agreement_count": 2,
-      "cross_pair_ratio": 0.5,
+      "cross_pair_ratio": 0.588,
       "signal_tier": "STRONG",
-      "source_system": "luxalgo_filters",
-      "generated_at": "2026-11-23T09:29:57Z",
-      "strategy": "super signal (strong) via luxalgo_filters",
+      "source_system": "kimi",
+      "generated_at": "2026-11-23T09:54:01Z",
+      "strategy": "super signal (strong) via kimi",
       "conflict_resolution": {
-        "recommended_direction": "SHORT",
-        "conflict_confidence": 0.6923,
+        "recommended_direction": "LONG",
+        "conflict_confidence": 1.0,
         "rules_applied": [],
         "overrides": [],
         "warnings": [
@@ -36,8 +36,45 @@
         ]
       },
       "_conflict_lessons": {
-        "system_canonical": "luxalgo_sell",
-        "trust_weight": 1.0,
+        "system_canonical": "kimi_standalone",
+        "trust_weight": 0.0,
+        "is_suppressed": true,
+        "suppression_reason": "20% WR solo, only useful as confirmer",
+        "historical_wr": 0.2,
+        "historical_pnl": -125.38,
+        "age_hours": 0.0,
+        "applicable_rules": []
+      }
+    },
+    {
+      "symbol": "MSFT",
+      "direction": "LONG",
+      "confidence": 0.735,
+      "raw_confidence": 0.676,
+      "entry_price": 484.519989,
+      "take_profit": 540.447386,
+      "stop_loss": 456.55629,
+      "agreeing_systems": [
+        "alpha_engine",
+        "smart_money"
+      ],
+      "agreement_count": 2,
+      "cross_pair_ratio": 0.588,
+      "signal_tier": "STRONG",
+      "source_system": "alpha_engine",
+      "generated_at": "2026-11-23T09:54:01Z",
+      "strategy": "super signal (strong) via alpha_engine",
+      "conflict_resolution": {
+        "recommended_direction": "LONG",
+        "conflict_confidence": 1.0,
+        "rules_applied": [],
+        "overrides": [],
+        "warnings": [],
+        "suppressed_systems": []
+      },
+      "_conflict_lessons": {
+        "system_canonical": "alpha_engine_short",
+        "trust_weight": 1.1,
         "is_suppressed": false,
         "age_hours": 0.0,
         "applicable_rules": []
@@ -108,6 +145,32 @@
           "system": "kimi",
           "direction": "LONG",
           "strategy": "",
+          "trust_tier": "WATCH",
+          "vote_weight": 1.0
+        }
+      ]
+    },
+    "MSFT": {
+      "dominant_direction": "LONG",
+      "system_agreement": 2,
+      "long": 2,
+      "short": 0,
+      "systems": [
+        "alpha_engine",
+        "smart_money"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "smart_money_accumulation",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        },
+        {
+          "system": "smart_money",
+          "direction": "LONG",
+          "strategy": "smart_money_consensus",
           "trust_tier": "WATCH",
           "vote_weight": 1.0
         }
@@ -321,96 +384,6 @@
         }
       ]
     },
-    "SPY": {
-      "dominant_direction": "SHORT",
-      "system_agreement": 1,
-      "long": 0,
-      "short": 1,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "SHORT",
-          "strategy": "vix_regime_overlay",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "GBPUSD=X": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "forex_zscore_200d_fade",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "AUDUSD=X": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "forex_zscore_200d_fade",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "NZDUSD=X": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "forex_zscore_200d_fade",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
-    "AUDJPY=X": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "alpha_engine"
-      ],
-      "system_details": [
-        {
-          "system": "alpha_engine",
-          "direction": "LONG",
-          "strategy": "forex_zscore_200d_fade",
-          "trust_tier": "RELIABLE",
-          "vote_weight": 1.5
-        }
-      ]
-    },
     "AMD": {
       "dominant_direction": "SHORT",
       "system_agreement": 1,
@@ -460,6 +433,366 @@
           "system": "alpha_engine",
           "direction": "LONG",
           "strategy": "regime_mild_bull",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "AUDUSD=X": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "forex_zscore_200d_fade",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "AUDJPY=X": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "forex_zscore_200d_fade",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "JNJ": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "smart_money_accumulation",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "ABBV": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "smart_money_accumulation",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "WMT": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "smart_money_accumulation",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "AAPL": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "smart_money_accumulation",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "EEM": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 1,
+      "long": 0,
+      "short": 1,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "SHORT",
+          "strategy": "cta_golden_cross_200",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "CL=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "cta_commodity_momentum_term",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "NG=F": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 1,
+      "long": 0,
+      "short": 1,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "SHORT",
+          "strategy": "cta_commodity_momentum_term",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "ZW=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "cta_commodity_momentum_term",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "GBPUSD=X": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "forex_zscore_200d_fade",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "NZDUSD=X": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "forex_zscore_200d_fade",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "SI=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "cot_positioning",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "HD": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "smart_money_accumulation",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "HG=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "cta_commodity_momentum_term",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "IEF": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "cta_cross_asset_tsmom",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "SPY": {
+      "dominant_direction": "SHORT",
+      "system_agreement": 1,
+      "long": 0,
+      "short": 1,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "SHORT",
+          "strategy": "vix_regime_overlay",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "ZS=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "cta_golden_cross_200",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "GC=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "cot_positioning",
+          "trust_tier": "RELIABLE",
+          "vote_weight": 1.5
+        }
+      ]
+    },
+    "PL=F": {
+      "dominant_direction": "LONG",
+      "system_agreement": 1,
+      "long": 1,
+      "short": 0,
+      "systems": [
+        "alpha_engine"
+      ],
+      "system_details": [
+        {
+          "system": "alpha_engine",
+          "direction": "LONG",
+          "strategy": "cot_positioning",
           "trust_tier": "RELIABLE",
           "vote_weight": 1.5
         }
@@ -753,24 +1086,6 @@
         }
       ]
     },
-    "MSFT": {
-      "dominant_direction": "LONG",
-      "system_agreement": 1,
-      "long": 1,
-      "short": 0,
-      "systems": [
-        "smart_money"
-      ],
-      "system_details": [
-        {
-          "system": "smart_money",
-          "direction": "LONG",
-          "strategy": "smart_money_consensus",
-          "trust_tier": "WATCH",
-          "vote_weight": 1.0
-        }
-      ]
-    },
     "NVDA": {
       "dominant_direction": "LONG",
       "system_agreement": 1,
@@ -797,15 +1112,22 @@
   },
   "conflict_lessons": {
     "engine_available": true,
-    "symbols_analyzed": 1,
+    "symbols_analyzed": 2,
     "all_aligned": true,
     "summary": {
-      "BTCUSDT": {
-        "consensus_dir": "SHORT",
-        "lessons_dir": "SHORT",
+      "TLT": {
+        "consensus_dir": "LONG",
+        "lessons_dir": "LONG",
         "aligned": true,
         "rules_count": 0,
         "warnings_count": 1
+      },
+      "MSFT": {
+        "consensus_dir": "LONG",
+        "lessons_dir": "LONG",
+        "aligned": true,
+        "rules_count": 0,
+        "warnings_count": 0
       }
     }
   }
