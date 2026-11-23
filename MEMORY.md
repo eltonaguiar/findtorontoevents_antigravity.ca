@@ -22,7 +22,7 @@
 **H-2026-11-23-01** — turn-of-month long bias, CRYPTO, frozen 2026-11-23 before any measurement. Harness `tools/tom_forward_clock.py` refuses pre-freeze dates, emits `n_records=0`. Registry now 109 (was 108). Expected: KILL.
 
 ## Blocked / missing inputs
-- PIT fundamentals tool (`tools/edgar_pit_fundamentals.py`) exists at commit `c0d48e28968` but is **not on this branch**.
+- PIT fundamentals tool exists at commit `c0d48e28968` (copilot's branch) but is **NOT present on this branch** — any path check will flag it as missing by design; do not cite it as if local.
 - Survivorship-free universe needs delisted-name history.
 - FX backfill needs DB creds (dbpasses.txt — never read).
 
