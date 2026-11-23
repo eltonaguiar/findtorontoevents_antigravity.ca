@@ -65,7 +65,9 @@ def main():
             if not isinstance(r, dict):
                 continue
             sym = norm_sym(r.get("symbol") or r.get("Symbol") or r.get("ticker"))
-            d = (r.get("direction") or r.get("side") or "").upper()
+            raw_dir = (r.get("direction") or r.get("side") or r.get("signal") or "").upper()
+            # map signal vocabulary -> direction
+            d = {"BUY": "LONG", "LONG": "LONG", "SELL": "SHORT", "SHORT": "SHORT"}.get(raw_dir, "")
             if not sym or d not in ("LONG", "SHORT"):
                 continue
             votes[(sym, d)][sysname] += 1
