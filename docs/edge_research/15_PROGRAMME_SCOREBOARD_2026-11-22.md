@@ -188,3 +188,14 @@ Reported, not silently resolved:
 - `funding_carry_20261122.json`: `"pair_round_trip_bp": 45.52381668506905` and `"aggregate_mean_breakeven_days_at_median": 16.398025378162416`.
 - `momentum_12_1_20261122.json`: `"item48_null": {"percentile": 1.6, …}` for the long/short variant.
 - `crypto_meanrev_intraday_20261122.json`: `"breakeven_cost_bp": 0.0` and `"cost_sweep": {"0bp": {"pf": 0.8153830397211412, …}`.
+
+---
+
+## 9. Programme tally (settled)
+
+TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)
+
+Settled tally for the 14-row set, as of 2026-11-23 [SRC: docs/edge_research/23_DEFINITIVE_ANSWER_2026-11-22.md].
+This line changes no class verdict above: the per-strategy KILL / MARGINAL / BLOCKED_DATA entries in section 2 are
+the reason for each verdict, not a separate count. The row-level accounting that reconciles the 14 rows is in
+doc 23, "The final accounting".
