@@ -179,3 +179,9 @@ My earlier note that `fx_prices` ends 2026-02-09 and left 211 forex picks unmeas
 with **46,249** open (`exit_price IS NULL`). FX is blocked by the **resolver** (entries never closed),
 not by missing prices. Corollary: the FX/carry path can be unblocked with a resolver fix, which is
 cheaper than procuring data.
+### 9.2 Addendum — EQUITY drift and a second class table (2026-11-23)
+
+audit3 now reports EQUITY **+0.106%/trade, PF 1.050, n=956, CI [−0.480, +0.693]** — down from +0.184 at
+n=939 on 11-19. A peer's 505-row COD-cost table shows EQUITY −0.148% at n=8. Different populations,
+same decision: **no class is investable; EQUITY is least-bad, not proven.** Do not fund on the point
+estimate, and any EQUITY work must carry the CI and the drift.

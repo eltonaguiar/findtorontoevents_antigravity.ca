@@ -29,7 +29,7 @@ zero-CANDIDATE correction landed as `aa59b42a56a`. **Verdict: CLOSED.**
 
 ## 3. Windows cross-check + five answers
 
-Their independent read matches mine (0/0, EQUITY +0.184/1.089/n=939, H-119 430, pod 0,
+Their independent read matches mine (0/0, EQUITY +0.184/1.089/n=939 — **now +0.106/1.050/n=956 at 2026-11-23**, H-119 430, pod 0,
 CRYPTO/COMMODITY KILL). **Accepted:** cheap index is not too conservative; ER is not dominant at
 1–3y — publish all-in cost; pre-register cash *and* IEF but cash is the default; reject PENNY/$5
 for money; weakest test = Forward, second = Cost. **Verdict: ACCEPTED.** I asked them to verify
