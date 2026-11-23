@@ -120,12 +120,16 @@ foreach ($systems as $key => $config) {
         continue;
     }
     
-    // Get total record count
+    // Get total record count.
+    // MySQL returns COUNT(*) as a STRING, and the empty-table test below uses
+    // `=== 0`, so without this cast that branch was dead code: an empty table
+    // fell through to the timestamp check and was reported as "no timestamp"
+    // instead of "table is empty". Cast once, here.
     $count_sql = "SELECT COUNT(*) as total FROM {$config['table']}";
     $count_result = $conn->query($count_sql);
     if ($count_result) {
         $count_row = $count_result->fetch_assoc();
-        $result['record_count'] = $count_row['total'];
+        $result['record_count'] = (int)$count_row['total'];
     }
     
     // Check for empty table
@@ -201,8 +205,21 @@ foreach ($systems as $key => $config) {
         $result['is_stale'] = true;
         $result['timestamp_columns_tried'] = $tried_cols;
         if ($last_query_error === null) {
-            $alerts[] = "⚠️ WARNING: {$config['name']} - all date columns are NULL (" . implode(', ', $tried_cols) . ")";
-            echo "  ⚠️ All date columns NULL (tried: " . implode(', ', $tried_cols) . ")\n\n";
+            // Distinguish 'no rows' from 'rows exist but every date is NULL'.
+            // Without this the message was ambiguous and could not be acted on.
+            $probe_note = '';
+            if (count($tried_cols) > 0) {
+                $probe = $conn->query("SELECT COUNT({$tried_cols[0]}) as nn FROM {$config['table']}");
+                $probe_row = $probe ? $probe->fetch_assoc() : null;
+                if ($probe_row) {
+                    $probe_note = ' [rows=' . $result['record_count'] . ', non_null_' . $tried_cols[0] . '=' . $probe_row['nn'] . ']';
+                    $result['null_probe'] = array('rows' => (int)$result['record_count'],
+                                                  'column' => $tried_cols[0],
+                                                  'non_null' => (int)$probe_row['nn']);
+                }
+            }
+            $alerts[] = "⚠️ WARNING: {$config['name']} - all date columns are NULL (" . implode(', ', $tried_cols) . ")" . $probe_note;
+            echo "  ⚠️ All date columns NULL (tried: " . implode(', ', $tried_cols) . ")" . $probe_note . "\n\n";
         } else {
             $alerts[] = "⚠️ ERROR: {$config['name']} - Query failed: " . $last_query_error;
             echo "  ❌ Query error!\n\n";
@@ -235,18 +252,24 @@ foreach ($systems as $key => $config) {
 $conn->close();
 
 // Summary
+// Counts must reconcile: skipped systems used to fall into neither the active nor
+// the stale bucket while still being counted in the total, so '5 stale of 7' hid
+// two systems that were simply never assessed.
 echo "\n=== SUMMARY ===\n";
 $active_count = 0;
 $stale_count = 0;
+$skipped_count = 0;
 
 foreach ($results as $r) {
     if ($r['status'] === 'ACTIVE') $active_count++;
+    elseif ($r['status'] === 'NOT_DB_BACKED') $skipped_count++;
     elseif ($r['is_stale']) $stale_count++;
 }
 
 echo "Active Systems: $active_count\n";
 echo "Stale/Dead Systems: $stale_count\n";
-echo "Total Systems Checked: " . count($results) . "\n\n";
+echo "Skipped (no database): $skipped_count\n";
+echo "Total Systems Checked: " . count($results) . " (" . $active_count . " active + " . $stale_count . " stale + " . $skipped_count . " skipped)\n\n";
 
 if (count($alerts) > 0) {
     echo "=== ALERTS ===\n";
@@ -262,15 +285,28 @@ $report = array(
     'summary' => array(
         'total_systems' => count($results),
         'active' => $active_count,
-        'stale' => $stale_count
+        'stale' => $stale_count,
+        'skipped' => $skipped_count
     ),
     'systems' => $results,
     'alerts' => $alerts
 );
 
-$json_file = dirname(__FILE__) . '/dead_data_report_' . date('Ymd_His') . '.json';
-file_put_contents($json_file, json_encode($report, JSON_PRETTY_PRINT));
-echo "Report saved to: $json_file\n";
+// One overwritten report instead of a new dated file per run: the dated files
+// accumulated inside a web-served directory, and fetching them back returned
+// 200/0 bytes or 404 -- so the old "Report saved to: ..." line was not a claim
+// anyone could check. Also JSON_PRETTY_PRINT is PHP 5.4+ and this host is 5.2.
+$json_file = dirname(__FILE__) . '/dead_data_report.json';
+$encoded = json_encode($report);
+$written = false;
+if ($encoded !== false) {
+    $written = @file_put_contents($json_file, $encoded);
+}
+if ($written === false || $written === 0) {
+    echo "Report NOT saved: write failed for $json_file (directory may not be writable)\n";
+} else {
+    echo "Report saved: $json_file ($written bytes)\n";
+}
 
 // Exit code: 0 if all active, 1 if any stale
 exit($stale_count > 0 ? 1 : 0);
