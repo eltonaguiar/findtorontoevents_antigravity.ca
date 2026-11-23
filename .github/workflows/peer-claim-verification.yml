@@ -1,0 +1,106 @@
+name: Peer claim verification (weekly)
+
+# Re-runs the deterministic half of the peer-claim verification report
+# (updates/2026-11-23-peer-claim-verification.md) once a week and commits the
+# regenerated report + JSON back to main.
+#
+# What this can NOT do: sweep the COMS bus. The broker is 192.168.2.52:1883 -
+# an RFC-1918 LAN address, anonymous, no TLS - and this job runs on a
+# GitHub-hosted ubuntu-latest runner, which cannot reach it. Claims that exist
+# only as COMS messages are neither confirmed nor refuted here; collecting and
+# transcribing them into claims/verification_claims.json stays a manual step
+# (see docs/VERIFICATION.md, R2).
+#
+# No push: trigger. Generated-data workflows in this repo removed push triggers
+# after a cancel-cascade incident (queued runs cancelling each other); the cron
+# and workflow_dispatch are the only mechanisms.
+
+on:
+  schedule:
+    - cron: '23 6 * * 1'   # Mondays 06:23 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: peer-claim-verification
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          # fetch-depth: 1 makes commit_absent less reliable (a real commit can
+          # look absent in a shallow clone), which is why the manifest prefers
+          # commit_ancestor_of_main (supports polarity: a FAIL is the "not an
+          # ancestor" evidence) and commit_not_reachable for "not landed" claims.
+          # commit_absent is used only for B5's typo sha 41e6e19, where the point
+          # IS that no such object exists anywhere.
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check gh availability (non-fatal)
+        # pr_state checks need gh; the engine SKIPs them when it is absent or
+        # unauthorised, so a missing gh degrades coverage but must not fail the job.
+        run: |
+          if command -v gh >/dev/null 2>&1; then
+            echo "gh present: $(gh --version | head -n1)"
+          else
+            echo "gh not available - PR-state checks will SKIP"
+          fi
+
+      - name: Run verification
+        # Deliberately NOT --strict. A weekly job that exits non-zero on a
+        # legitimate new disagreement goes red forever and gets ignored; the
+        # next step surfaces violations as ::warning:: annotations instead.
+        run: |
+          mkdir -p reports
+          python3 tools/verify_peer_claims.py \
+            --out updates/peer-claim-verification-latest.md \
+            --json-out reports/peer_claim_verification_latest.json
+
+      - name: Summarise (warn, do not fail)
+        run: |
+          python3 - <<'PY'
+          import json
+          d = json.load(open("reports/peer_claim_verification_latest.json"))
+          print(f"ref={d.get('ref')} origin_main={d.get('origin_main')} "
+                f"claims={len(d.get('claims', []))}")
+          for c in d.get("claims", []):
+              print(f"{c['id']}: {c['computed_verdict']} (hand: {c['expected_verdict']})"
+                    f"{'' if c['agree'] else '  DISAGREE'}")
+          for v in d.get("strict_violations", []):
+              print(f"::warning title=peer-claim-verification::{v['id']} {v['why']}: "
+                    f"mechanical {v['computed']} vs hand {v['expected']}")
+          PY
+
+      - name: Commit report + JSON ([skip ci])
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p reports
+          git add updates/peer-claim-verification-latest.md \
+                  reports/peer_claim_verification_latest.json
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore(verification): weekly peer-claim verification refresh [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*5))
+          done
+          echo "::error title=peer-claim-verification::could not push the weekly refresh"
+          exit 1
