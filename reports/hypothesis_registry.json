@@ -2997,6 +2997,52 @@
      "reports/h235_drawdown_generalisation_2026-11-23.json"
     ]
    }
+  },
+  {
+   "id": "H-236",
+   "asset_class": "EQUITY",
+   "family": "cross_sectional_momentum",
+   "description": "H-201 xsmom_top3_6m reproduces on the 44-name PIT universe over 2021-11-30..2026-11-20 with positive CI lower bound and positive SPY excess.",
+   "test_statistic": "mean net daily bp on the 44-name book, block bootstrap 95% CI, plus SPY excess",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "excess_gt_0": true
+   },
+   "economic_prior": "If 6-month cross-sectional momentum is breadth-independent it should survive a wider universe.",
+   "status": "REFUTED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "PIT universe 2021-11-30..2026-11-20",
+   "result": {
+    "verdict": "REFUTED on the pre-registered CI criterion, though the EFFECT SIZE replicated almost exactly - the failure is the interval, not the estimate.",
+    "PIT_44": {
+     "n": 1254,
+     "symbols": 44,
+     "mean_bps": 9.407,
+     "ci95": [
+      -3.147,
+      22.199
+     ],
+     "excess_bps": 4.901,
+     "excess_ci_lb": null
+    },
+    "MEGA_10_same_window": {
+     "n": 1254,
+     "symbols": 10,
+     "mean_bps": 9.54,
+     "ci95": [
+      1.072,
+      18.428
+     ],
+     "excess_bps": 5.033,
+     "pass": true
+    },
+    "reading": "9.407 vs 9.540 bp/day on the identical window: breadth does not move the point estimate. The 44-name top-3 portfolio is far more dispersed, so its interval is ~2.5x wider and a 5-year window cannot certify it. This BOUNDS H-234's universe dependence (it is not a mega-cap artefact) without certifying it on the wide universe.",
+    "artifacts": [
+     "tools/h236_h201_pit_universe.py",
+     "reports/h236_h201_pit_universe_2026-11-23.json"
+    ]
+   }
   }],
  "fork2_new_signals": [
   {
