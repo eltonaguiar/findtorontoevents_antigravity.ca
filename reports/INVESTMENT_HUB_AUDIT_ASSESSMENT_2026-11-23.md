@@ -7,6 +7,17 @@
 apparatus anywhere in it, four dead links, three empty catalogue sections — and one genuinely valuable
 idea (strategy-family attribution) that `/audit` is currently missing.
 
+> ### ⚠️ CORRECTION (2026-11-23, later same day)
+> The "four dead links" framing below is **wrong about production and misleading**. All four paths are
+> **live and served correctly** (HTTP 200). They are missing from the *repository*, not from the site.
+> Worse, the goldmines system they point to is **live in HTML but dead in data**: its API returns
+> `{"ok":false,"error":"Database connection failed"}` and its sister API fails with
+> `unexpected T_FUNCTION` because the host runs **PHP 5.2.17**.
+>
+> See `reports/INVESTMENT_HUB_GOLDMINES_EXISTENCE_2026-11-23.md` for the full existence matrix and root
+> cause. The fix-list item "Remove, or ship the files" was the **wrong action** — nothing should be
+> removed; the files exist and need fixing. Everything else in this document stands.
+
 ---
 
 ## 1. What the hub actually is
@@ -18,7 +29,8 @@ The submenu points at `/investments/` and four siblings. Only **two files exist 
 | `investments/index.html` | 35 KB | OK — "Investment Tools", 25+ outbound links |
 | `investments/all-dashboards.html` | 76 KB | OK — 12-section catalogue of dashboards |
 
-**Four links are dead in-repo**, because `investments/goldmines/` does not exist at all:
+**Four links are dead in-repo** — ~~because `investments/goldmines/` does not exist at all~~ — see
+CORRECTION above: they are **live on production**, merely unversioned.
 
 | Link | In repo? |
 |---|---|
@@ -170,7 +182,7 @@ which is the opposite of "Deploy These" before any test. Note the repo already h
 
 | Item | Action |
 |---|---|
-| 4 dead `/investments/goldmines/…` + `master_dashboard.html` links | Remove, or ship the files |
+| 4 dead `/investments/goldmines/…` + `master_dashboard.html` links | **CORRECTED:** they are LIVE. Version-control them and fix the broken PHP, do not remove |
 | SQLite Databases / Backtest JSON / ML Models sections (0 links) | Populate or delete — an empty "All Data" section is worse than none |
 | Meme/Penny section links the same URL twice | Fix |
 | Non-monotonic TIER grading (79=B+, 77=A-) | Drop letter grades; use measured PF/WR with n |
