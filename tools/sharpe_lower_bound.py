@@ -43,8 +43,20 @@ Caveats
 2. Lo-2002 SE is a first-order asymptotic correction. For very small
    samples (n < 20) it under-estimates true uncertainty; we enforce a
    `min_n=20` floor.
-3. Per-trade Sharpe is annualised by sqrt(ANNUAL_TRADES). The constant
-   matches `tools/deflated_sharpe.py:ANNUAL_TRADES = 6 * 365`.
+3. Per-trade Sharpe is annualised by sqrt(ANNUAL_TRADES). This tool keeps its OWN
+   copy of that constant (see below) instead of importing
+   `tools/deflated_sharpe.py:ANNUAL_TRADES`, because that constant was removed on
+   2026-11-22 as DEFECT 3 of the deflation gate: a hardcoded 6*365 multiplier
+   inflated every per-trade Sharpe by sqrt(2190) = 46.8x regardless of the
+   strategy's real trade rate.
+
+   KNOWN DEFECTS RETAINED HERE, DELIBERATELY, PENDING A SEPARATE REVIEWED FIX:
+     * defect 3 — `annual_trades` is a constant, not the measured trade rate;
+     * defect 4 — an ANNUALISED Sharpe is passed to `_sharpe_se(..., T)` where T is
+       a PER-TRADE count, which is dimensionally incoherent.
+   Fixing them here would change every LB this tool reports. That is the same class
+   of silent production change the 2026-11-22 DSR work was explicitly separated
+   from, so it is queued rather than smuggled in.
 """
 from __future__ import annotations
 
@@ -65,17 +77,29 @@ OUT_JSON = REPO_ROOT / "tools" / "data" / "sharpe_lb_results.json"
 DEFAULT_MIN_N = 20
 Z_95_ONE_SIDED = 1.645
 
+# Legacy annualisation constant, OWNED BY THIS MODULE.
+# See the module docstring: deflated_sharpe.ANNUAL_TRADES was removed on 2026-11-22
+# as a defect (46.8x inflation). This tool's maths is left byte-for-byte unchanged
+# so its reported LBs do not shift under a bug-fix commit; the defect is recorded
+# and queued instead.
+ANNUAL_TRADES = 6 * 365
+
 
 def _load_deflated_sharpe_helpers():
-    """Import _sharpe_se, _compute_moments, ANNUAL_TRADES from
-    tools/deflated_sharpe.py via importlib so the math stays in one
-    place."""
+    """Import _sharpe_se and _compute_moments from tools/deflated_sharpe.py via
+    importlib so the MATH stays in one place.
+
+    Returns this module's own ANNUAL_TRADES, not deflated_sharpe's: that constant
+    was removed there as DEFECT 3 (hardcoded 2190). Importing it is what broke this
+    tool on 2026-11-22 (AttributeError). Keeping behaviour identical here while the
+    defect is queued is deliberate -- see the module docstring.
+    """
     spec = importlib.util.spec_from_file_location(
         "deflated_sharpe", REPO_ROOT / "tools" / "deflated_sharpe.py"
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    return mod._sharpe_se, mod._compute_moments, mod.ANNUAL_TRADES
+    return mod._sharpe_se, mod._compute_moments, ANNUAL_TRADES
 
 
 def compute_sharpe_lb(returns: list[float],
