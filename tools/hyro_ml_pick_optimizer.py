@@ -39,6 +39,23 @@ from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError
 
+def _finite_or_none(value, digits=3):
+    """Rounded float or None. Keeps NaN/Infinity out of JSON payloads.
+
+    json.dump writes a bare NaN, which is INVALID JSON: the browser rejects the whole
+    document, so the panel renders empty behind an HTTP 200. Added 2026-11-23 after
+    audit_dashboard/data/hyro_ml_pick_rankings.json shipped "cv_accuracy": NaN.
+    """
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return None
+    if v != v or v in (float("inf"), float("-inf")):
+        return None
+    return round(v, digits)
+
+
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
 
@@ -452,7 +469,7 @@ def train_model(vectors: list[dict], labels: dict, force_retrain: bool = False) 
     return {
         "model": model,
         "model_type": model_type,
-        "cv_accuracy": cv_acc,
+        "cv_accuracy": _finite_or_none(cv_acc) or 0.0,
         "top_features": top_features,
         "samples": len(y),
     }
@@ -676,7 +693,7 @@ def run(save: bool = False, force_retrain: bool = False) -> dict:
         "total_combos": len(scored),
         "model_info": {
             "type": model_info["model_type"] if model_info else "heuristic",
-            "cv_accuracy": round(model_info["cv_accuracy"], 3) if model_info and model_info.get("cv_accuracy") else None,
+            "cv_accuracy": _finite_or_none(model_info.get("cv_accuracy")) if model_info else None,
             "training_samples": model_info["samples"] if model_info else 0,
             "top_features": [(f, round(float(imp), 4)) for f, imp in (model_info.get("top_features", []) if model_info else [])[:5]],
             "drift_detected": drift,
@@ -741,7 +758,7 @@ def run(save: bool = False, force_retrain: bool = False) -> dict:
     if save:
         OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
         with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-            json.dump(result, f, indent=2)
+            json.dump(result, f, indent=2, allow_nan=False)
         log.info(f"Saved rankings to {OUTPUT_PATH}")
 
     # Log summary

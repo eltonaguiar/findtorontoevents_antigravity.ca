@@ -36,6 +36,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the changed-files style gate needs github.event.before
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -47,14 +49,14 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Install lint tooling
-        run: python3 -m pip install --quiet pyyaml
+        run: python3 -m pip install --quiet pyyaml ruff
 
       - name: Lint — JavaScript parses
         run: |
           node - <<'JS'
           const acorn = require("acorn"), fs = require("fs"), cp = require("child_process");
           // Files already invalid on main before this gate existed. Pinned exactly.
-          const KNOWN_BROKEN = new Set(["_builder.js", "tools/Untitled-1.js"]);
+          const KNOWN_BROKEN = new Set([]);  // emptied 2026-11-23: both files repaired/renamed
           const files = cp.execSync("git ls-files '*.js' | grep -v node_modules",
                                     {encoding: "utf8"}).trim().split("\n").filter(Boolean);
           const bad = [];
@@ -109,6 +111,28 @@ jobs:
           sys.exit(1 if bad else 0)
           PY
 
+      - name: Lint — Python style, changed files only
+        env:
+          # Passed via env, never interpolated into the shell: a push payload is
+          # attacker-influenced text and ${{ }} inside run: would be code.
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          base="${PUSH_BEFORE:-}"
+          # workflow_dispatch / force-push have no usable 'before': fall back to HEAD~1
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ] \
+             || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            base="$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)"
+          fi
+          files=$(git diff --name-only "$base" HEAD -- '*.py' | tr '\n' ' ' || true)
+          if [ -z "${files// /}" ]; then
+            echo "no Python files changed in this push - style gate skipped"
+            exit 0
+          fi
+          echo "linting changed Python files:"
+          printf '  %s\n' $files
+          python3 -m ruff check --select E9,F63,F7 --output-format=concise $files
+
   build:
     name: build
     runs-on: ubuntu-latest
@@ -134,9 +158,9 @@ jobs:
               "audit_dashboard/template.html",
               "audit_dashboard/audit2.html",
           ]
-          # Payloads already shipping non-strict JSON on main. A tracked defect, not a pass:
-          # it fails the moment a file OUTSIDE this set breaks, and reports when one is fixed.
-          NON_STRICT_BASELINE = {"audit_dashboard/data/hyro_ml_pick_rankings.json"}
+          # Was {hyro_ml_pick_rankings.json}; its generator emitted NaN and is fixed, so
+          # every deployed payload must now be strict JSON with no exceptions.
+          NON_STRICT_BASELINE = set()  # emptied 2026-11-23: NaN fixed in the generator
 
           failures = []
 
