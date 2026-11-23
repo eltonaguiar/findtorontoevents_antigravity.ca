@@ -154,3 +154,14 @@ def test_aggregate_agent_picks_runs_on_review_drop():
         d = json.load(open("/tmp/rollup_test.json"))
         assert d["n_agents"] >= 1
         assert "per_class_combined" in d
+
+
+# ── incubator validator ────────────────────────────────────────────
+def test_incubator_validator_rejects_paper_ready_without_n():
+    r = subprocess.run([sys.executable, str(ROOT / "tools/validate_incubator.py"),
+                        "--out", "/tmp/inc_val.json"], cwd=ROOT, capture_output=True, text=True)
+    # exits 1 because nothing is admissible (no n / duplicates) - that is the correct verdict
+    assert r.returncode == 1, r.stdout + r.stderr
+    d = json.load(open("/tmp/inc_val.json"))
+    assert d["n_admissible"] == 0
+    assert any("no_n" in e.get("reasons", []) for e in d["rejected"])
