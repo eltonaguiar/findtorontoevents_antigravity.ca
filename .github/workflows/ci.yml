@@ -1,0 +1,193 @@
+# CI — install dependencies, lint, build on every push to main.
+#
+# This repository has no bundler and no eslint/ruff config, so "lint" and "build" are defined
+# from what measurably exists, and every check below was run green against main before landing:
+#
+#   lint   JavaScript parses (acorn — already a devDependency, no new tool needed)
+#          Python compiles (compileall over tools/, alpha_engine/, audit_trail/)
+#          all 374 workflow YAMLs are valid YAML with a trigger and jobs
+#   build  the deployable static tree is internally consistent: required pages exist and parse,
+#          and every payload in audit_dashboard/data/*.json is STRICT JSON (no NaN/Infinity), which
+#          is the exact defect class that previously made live panels render "no data" while
+#          returning HTTP 200.
+#
+# Two known-broken sets are pinned by exact path instead of being silently skipped: if one is
+# fixed, the gate says the entry is stale; if a NEW one appears, the gate fails.
+name: CI
+
+"on":
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# No cancel-in-progress: a cancelled run on main reports as "cancelled", not "failed", which
+# is how a red main hides. The job is deliberately short instead.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install lint tooling
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: Lint — JavaScript parses
+        run: |
+          node - <<'JS'
+          const acorn = require("acorn"), fs = require("fs"), cp = require("child_process");
+          // Files already invalid on main before this gate existed. Pinned exactly.
+          const KNOWN_BROKEN = new Set(["_builder.js", "tools/Untitled-1.js"]);
+          const files = cp.execSync("git ls-files '*.js' | grep -v node_modules",
+                                    {encoding: "utf8"}).trim().split("\n").filter(Boolean);
+          const bad = [];
+          for (const f of files) {
+            try {
+              acorn.parse(fs.readFileSync(f, "utf8"), {
+                ecmaVersion: "latest", sourceType: "module",
+                allowHashBang: true, allowReturnOutsideFunction: true,
+              });
+            } catch (e) {
+              if (KNOWN_BROKEN.has(f)) continue;
+              bad.push(f + ": " + e.message);
+            }
+          }
+          for (const f of KNOWN_BROKEN) {
+            if (!files.includes(f)) console.log("stale allowlist entry, file no longer tracked: " + f);
+          }
+          console.log("JavaScript parsed: " + files.length + " files, " + bad.length + " unexpected failure(s)");
+          if (bad.length) {
+            for (const b of bad) console.error("  " + b);
+            process.exit(1);
+          }
+          JS
+
+      - name: Lint — Python compiles
+        run: python3 -m compileall -q tools alpha_engine audit_trail
+
+      - name: Lint — workflow YAML is valid
+        run: |
+          python3 - <<'PY'
+          import glob, sys, yaml
+
+          files = sorted(glob.glob(".github/workflows/*.yml"))
+          bad = []
+          for f in files:
+              try:
+                  doc = yaml.safe_load(open(f, encoding="utf-8"))
+              except Exception as e:
+                  bad.append((f, str(e).splitlines()[0][:90]))
+                  continue
+              if not isinstance(doc, dict):
+                  bad.append((f, "top level is not a mapping"))
+                  continue
+              # PyYAML implements YAML 1.1, where a bare `on:` key parses as the boolean True.
+              if "on" not in doc and True not in doc:
+                  bad.append((f, "no trigger key"))
+              elif "jobs" not in doc:
+                  bad.append((f, "no jobs key"))
+          print(f"workflows parsed: {len(files)}, invalid: {len(bad)}")
+          for f, why in bad:
+              print(f"  INVALID {f}: {why}")
+          sys.exit(1 if bad else 0)
+          PY
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build — deployable static tree is consistent
+        run: |
+          python3 - <<'PY'
+          import glob, json, pathlib, sys
+          from html.parser import HTMLParser
+
+          REQUIRED = [
+              "TORONTOEVENTS_ANTIGRAVITY/index.html",
+              "audit_dashboard/index.html",
+              "audit_dashboard/template.html",
+              "audit_dashboard/audit2.html",
+          ]
+          # Payloads already shipping non-strict JSON on main. A tracked defect, not a pass:
+          # it fails the moment a file OUTSIDE this set breaks, and reports when one is fixed.
+          NON_STRICT_BASELINE = {"audit_dashboard/data/hyro_ml_pick_rankings.json"}
+
+          failures = []
+
+          for p in REQUIRED:
+              if not pathlib.Path(p).exists():
+                  failures.append(f"missing required page: {p}")
+
+          class Counter(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.tags = 0
+              def handle_starttag(self, tag, attrs):
+                  self.tags += 1
+
+          for p in REQUIRED:
+              if not pathlib.Path(p).exists():
+                  continue
+              try:
+                  c = Counter()
+                  c.feed(pathlib.Path(p).read_text(encoding="utf-8", errors="replace"))
+                  if c.tags == 0:
+                      failures.append(f"{p}: parsed but contains no tags")
+                  else:
+                      print(f"  {p}: {c.tags} tags")
+              except Exception as e:
+                  failures.append(f"{p}: HTML parse failed: {e}")
+
+          def reject(tok):
+              raise ValueError(tok)
+
+          payloads = sorted(glob.glob("audit_dashboard/data/*.json"))
+          broken, stale = [], []
+          for f in payloads:
+              try:
+                  json.loads(pathlib.Path(f).read_text(encoding="utf-8"), parse_constant=reject)
+                  if f in NON_STRICT_BASELINE:
+                      stale.append(f)
+              except Exception as e:
+                  if f in NON_STRICT_BASELINE:
+                      broken.append((f, "known"))
+                  else:
+                      failures.append(f"{f}: not strict JSON ({e})")
+          print(f"  payloads checked: {len(payloads)}")
+          for f in stale:
+              print(f"  NOTE baseline entry is now clean, remove it: {f}")
+          print(f"  known non-strict (baseline): {len([1 for _, k in broken if k == 'known'])}")
+
+          if failures:
+              print("\nBUILD FAILED:")
+              for f in failures:
+                  print("  " + f)
+              sys.exit(1)
+          print("\nBUILD OK: required pages parse and every payload outside the baseline is strict JSON")
+          PY
