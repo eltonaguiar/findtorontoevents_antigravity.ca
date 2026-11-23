@@ -13,7 +13,7 @@ does not make the hurdle detectable — the interval is still ±1.645 hurdles wi
 
 - `tools/r4b_power.py` — power/MDE/confirm/refute arithmetic for the frozen universe. Reads **only
   the universe's monthly volatility**; it never runs the momentum rule, so it consumes no trial.
-- `tests/test_r4b_power.py` — 9 tests, arithmetic-only, offline.
+- `tests/test_r4b_power.py` — 10 tests, arithmetic-only, offline.
 - `reports/r4b_power_2026-11-23.md` — the analysis and the numbers.
 - `docs/preregistration/ETF_TREND_FORWARD_2026-11-23_AMENDMENT-1_PROPOSED.md` — **PROPOSED, not in
   force**. I will not amend a frozen rule on my own authority.
@@ -31,9 +31,15 @@ confirmation instrument. Its trial-count-1 property is unchanged and still the r
 
 ## Verification
 
-- `python3 -m pytest tests/test_r4b_power.py -q` → 9 passed; the suite also re-derives the central
-  finding (`confirm_threshold > 4× hurdle`, `power_confirm(36 bp) < 0.20`) so the tool, not just the
-  report, asserts it.
+- `python3 -m pytest tests/test_r4b_power.py -q` → 10 passed; the suite also re-derives the central
+  finding (`confirm_threshold > 2.5× hurdle`, `power_confirm(36 bp) < 0.20`) so the tool, not just
+  the report, asserts it.
+- **A unit bug the tests caught, disclosed because it is the useful kind.** The first version
+  compared the ANNUAL hurdle (0.0432) against a MONTHLY standard error and printed a CONFIRM
+  threshold of 506 bp/month instead of 110 bp/month, with 0% power at every realistic effect. Two
+  assertions failed on the first run, and a third now pins the boundary (`threshold < annual
+  hurdle`). Fixed via `monthly_hurdle()`; the published numbers were computed independently of the
+  tool and are unchanged.
 - Sensitivity: the conclusion holds at ρ = 0.3, 0.5 and 0.7.
 - `python3 tools/r4b_power.py` reproduces every number in the report.
 
