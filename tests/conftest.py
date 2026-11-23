@@ -119,6 +119,18 @@ os.environ.setdefault("HF_QUALITY_GATE_ENABLED", "0")
 # patch get_cached_vix, so this default does not weaken them.
 os.environ.setdefault("EQUITY_VIX_GATE_ENABLED", "0")
 os.environ.setdefault("ETF_VIX_GATE_ENABLED", "0")
+# 2026-11-23: `ETF_VIX_GATE_ENABLED` above is read by the per-class gate
+# (quality_gates.py ~6440), but M-098 "etf_vix_gate" (~9246, fires at VIX>=25)
+# reads a DIFFERENT set of names: ETF_VIX_GATE_DISABLED / ETF_VIX_GATE /
+# ETF_VIX_GATE_THRESHOLD / ETF_VIX_GATE_ENFORCE. Setting only ..._ENABLED left
+# M-098 enforcing, so the high-VIX fix documented above did NOT actually work:
+# on 2026-11-23 (VIX>25) seven test_etf_iwm_gld_kill cases still failed, and
+# tracing passes_active_gate landed on the M-098 `return False`.
+# Evidence that this is the right layer: test_m001_cot_stale_gate.py and
+# test_m002_ctf_weekly_cap.py each already set ETF_VIX_GATE_DISABLED=1 by hand.
+# test_m098_etf_vix_gate.py sets it back to "0" via monkeypatch (which overrides
+# setdefault), so its own enforcement/shadow coverage is unaffected.
+os.environ.setdefault("ETF_VIX_GATE_DISABLED", "1")
 # The legacy combined VIX+YC gate (VIX_REGIME_GATE_ENABLED / YC_REGIME_GATE_ENABLED,
 # default ON) is the second network VIX path with the same high-VIX-day problem.
 # VIX_REGIME_ACTIVE_GATE_ENABLED itself stays at its default so the M-045
