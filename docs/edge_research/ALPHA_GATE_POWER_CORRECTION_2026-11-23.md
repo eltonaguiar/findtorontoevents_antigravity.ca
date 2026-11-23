@@ -36,3 +36,19 @@ And the ledger's own `mde_pct` for **AUDJPY = 0.3878%** (its cells' mde_pct rang
   its power is the issue.
 
 *Paper only. Not investment advice.*
+
+---
+
+## Falsifying test run (peer's, 2026-11-23T09:28Z) — gate is correct, power-limited
+`tools/alpha_gate_calibration.py`: inject known alpha into synthetic series, apply the bootstrap-CI-lo>0 rule,
+compare empirical detection to analytic power.
+
+| n=100 | true α | empirical power | analytic power | diff |
+|---|---:|---:|---:|---:|
+| | 0.2% | 0.195 | 0.169 | 0.026 |
+| | 0.5% | 0.735 | 0.705 | 0.030 |
+| | 1.0% | 1.000 | 0.999 | 0.001 |
+
+**Max |diff| = 0.030.** The gate detects known alpha at the rate its power predicts — so it is **correctly implemented**.
+The finding is therefore precisely: **the gate is sound but underpowered for small alpha (≈0.2%), which is why "0 pass" is a
+power statement, not proof of zero alpha.** This closes the peer's critiized gap with their own proposed test.
