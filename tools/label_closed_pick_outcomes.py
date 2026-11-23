@@ -13,7 +13,7 @@ import argparse, json
 from collections import Counter, defaultdict
 from pathlib import Path
 
-BARRIER_VALUES = (2.0, 2.5, 2.7, 3.0, 3.75, 5.0)  # observed exact TP/SL quantisations
+BARRIER_VALUES = (-5.0, -3.75, -3.0, -2.7, -2.5, -2.0, 2.0, 2.5, 2.7, 3.0, 3.75, 5.0)  # observed exact TP/SL quantisations
 
 
 def basis(r):
