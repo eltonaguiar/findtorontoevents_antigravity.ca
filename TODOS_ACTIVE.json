@@ -126,9 +126,11 @@
   },
   {
    "id": 18,
-   "title": "Meme Coin Scanner: recover ejaguiar1_memecoin credential",
-   "status": "blocked",
-   "blocker": "findcryptopairs/api/meme_scanner.php connects to a SEPARATE MySQL account, ejaguiar1_memecoin, whose password was the literal placeholder 'testing123'. That password is not in the server .env under DB_MEMECOIN_PASSWORD or DB_STOCKS_PASSWORD (patched to try both; still access-denied). Needs the ejaguiar1_memecoin password from the host control panel."
+   "title": "Meme Coin Scanner: recover ejaguiar1_memecoin credential (DONE)",
+   "status": "done",
+   "detail": "UNBLOCKED without ever obtaining a memecoin password. The premise was wrong: the mc_* tables do not need a separate MySQL account at all. Every other prefixed family on this host lives in ejaguiar1_stocks under the one working account (fx_* in findforex2, mf_* in findmutualfunds2, cp_* in findcryptopairs). Evidence that mc_* was there too: check_dead_data.php, now connected to ejaguiar1_stocks, reported this system as 'No timestamp!' rather than 'Table not found'. Replaced the single hardcoded placeholder connection with an ordered candidate list (working account first, dedicated-DB variants after), so it self-heals. VERIFIED LIVE: action=winners -> {\"ok\":true,\"count\":0,\"winners\":[]}, action=stats -> {\"ok\":true,...}, action=leaderboard -> {\"ok\":true,...}. All 7 monitored systems now serve real JSON.",
+   "evidence": "findcryptopairs/api/meme_scanner.php",
+   "closed_at": "2026-11-23T05:40:00+00:00"
   },
   {
    "id": 19,

@@ -76,12 +76,39 @@ if (!function_exists('_mc_cred')) {
 }
 
 $mc_default_pass = _mc_cred('DB_STOCKS_PASSWORD', 'testing123');
-$mc_pass = _mc_cred('DB_MEMECOIN_PASSWORD', $mc_default_pass);
+$mc_meme_pass = _mc_cred('DB_MEMECOIN_PASSWORD', $mc_default_pass);
 $mc_host = _mc_cred('DB_MEMECOIN_HOST', 'mysql.50webs.com');
-$mc_user = _mc_cred('DB_MEMECOIN_USER', 'ejaguiar1_memecoin');
-$mc_db   = _mc_cred('DB_MEMECOIN_NAME', 'ejaguiar1_memecoin');
 
-$conn = new mysqli($mc_host, $mc_user, $mc_pass, $mc_db);
+// 2026-11-23: the previous login ('ejaguiar1_memecoin' + placeholder 'testing123')
+// never authenticated, so this endpoint always answered "Database connection failed".
+// The mc_* tables do NOT need a separate account: every other prefixed family on
+// this host (fx_* in findforex2, mf_* in findmutualfunds2, cp_* in findcryptopairs)
+// lives inside ejaguiar1_stocks under the one working account. Proof that mc_* is
+// there too: check_dead_data.php now connects to ejaguiar1_stocks and reports this
+// system as "No timestamp!" rather than "Table not found" -- i.e. the table exists.
+// Try the working account first, then fall back to the dedicated-DB variants.
+$mc_candidates = array(
+    array('user' => 'ejaguiar1_stocks',   'pass' => $mc_default_pass, 'db' => 'ejaguiar1_stocks'),
+    array('user' => 'ejaguiar1_stocks',   'pass' => $mc_default_pass, 'db' => 'ejaguiar1_memecoin'),
+    array('user' => 'ejaguiar1_memecoin', 'pass' => $mc_meme_pass,    'db' => 'ejaguiar1_memecoin'),
+    array('user' => 'ejaguiar1_memecoin', 'pass' => $mc_default_pass, 'db' => 'ejaguiar1_memecoin'),
+);
+
+$conn = null;
+$mc_connected_as = '';
+foreach ($mc_candidates as $mc_try) {
+    $mc_try_conn = @new mysqli($mc_host, $mc_try['user'], $mc_try['pass'], $mc_try['db']);
+    if ($mc_try_conn && !$mc_try_conn->connect_error) {
+        $conn = $mc_try_conn;
+        $mc_connected_as = $mc_try['user'] . '@' . $mc_try['db'];
+        break;
+    }
+    if ($mc_try_conn) { @$mc_try_conn->close(); }
+}
+if ($conn === null) {
+    echo json_encode(array('ok' => false, 'error' => 'Database connection failed'));
+    exit;
+}
 if ($conn->connect_error) {
     echo json_encode(array('ok' => false, 'error' => 'Database connection failed'));
     exit;
