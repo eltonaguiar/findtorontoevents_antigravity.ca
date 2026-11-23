@@ -176,3 +176,15 @@ def test_cross_system_consensus_runs_and_maps_kimi_signals():
     # KIMI uses signal:BUY - must be mapped to LONG, so kimi must contribute picks
     assert d["per_system"]["kimi"].get("n_picks", 0) >= 1
     assert "caveat" in d and "NOT a recommendation" in d["caveat"]
+
+
+# ── closed-picks outcome labeller ──────────────────────────────────
+def test_outcome_labeller_splits_realised_and_would_hit():
+    r = subprocess.run([sys.executable, str(ROOT / "tools/label_closed_pick_outcomes.py"),
+                        "--out", "/tmp/outcome_test.json"], cwd=ROOT, capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    d = json.load(open("/tmp/outcome_test.json"))
+    assert d["REALISED"] > 0 and d["WOULD_HIT"] > 0
+    assert d["REALISED"] + d["WOULD_HIT"] == d["total"]
+    # the defect: most WOULD_HIT rows sit exactly on a barrier
+    assert d["would_hit_pct_on_barrier"] >= 50.0

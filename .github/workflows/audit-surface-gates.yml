@@ -27,6 +27,14 @@ jobs:
         run: python tools/verify_forward_benchmark.py || true
       - name: TOM forward harness (refuses pre-freeze)
         run: python tools/tom_forward_clock.py
+      - name: Closed-picks outcome basis (REALISED vs WOULD_HIT)
+        run: python tools/label_closed_pick_outcomes.py
+      - name: Incubator admissibility gate (expect 0 admissible)
+        run: python tools/validate_incubator.py || true
+      - name: Cross-system consensus (coverage panel)
+        run: python tools/cross_system_consensus.py
+      - name: LB ranking (operator basis)
+        run: python tools/rank_on_lower_bound.py || true
       - name: Rebuild rankings + show pass/fail
         run: |
           python tools/build_asset_class_rankings.py --ticket-usd 25000 --out reports/asset_class_rankings.json || true
