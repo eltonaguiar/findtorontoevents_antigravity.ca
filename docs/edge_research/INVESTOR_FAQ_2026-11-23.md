@@ -15,9 +15,13 @@ ETFs mostly don't. In a sheltered account the tiny fee edge of a sub-0.05% index
 the ETF. (The old "MF beats ETF" framing is **retracted** — see F4: it's a fee effect within tracking noise.)
 
 ## Q: Lump sum or dollar-cost average?
-In **this** window, DCA won: $10k lump in SPY ended **$17,174** vs DCA **$19,003** (lump −9.6% vs DCA), because DCA bought
-the 2022 dip. **But that is period-dependent** — in a steady rising market lump-sum usually wins. Honest rule: DCA reduces
-*regret/timing risk*; it is not systematically superior. If a lump sum would keep you awake, DCA over 6–12 months.
+**Lump-sum wins historically — DCA is a behavioural device, not a return strategy.** A rigorous audit on **SPY, 1993–2026,
+346–46 monthly start dates** (same total, same terminal date) found DCA beats lump-sum only **~20–22% of the time** over
+5–20y holds and **6.5%** over 30y; 36-month DCA **never** beat lump-sum in any 30-year start (46/46) and ended **27% lower**.
+Mechanism: markets trend up, so later money buys fewer shares.
+**My own earlier note ("DCA won") was a single-window artifact** — the 2021–26 window contained the 2022 dip, one of the ~20%
+of starts where DCA wins. **Correct rule:** invest the lump sum now if you have it; use DCA only because you *don't* have the
+lump sum, or to manage panic risk — not because it earns more. (Credited: operator audit `8ae518e`, `dca_vs_lumpsum.py`.)
 
 ## Q: How bad can it get, and how long to recover?
 - SPY **max drawdown −24.5%** (peak 2022-01-03 → trough 2022-10-12), **recovered 2023-12-13** — **~14 months after the
