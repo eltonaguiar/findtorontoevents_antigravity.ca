@@ -30,3 +30,31 @@ ENJUSDT) were **entirely** these placeholder rows — every "trade" = +3.0% or +
 ## Recommendation
 Filter every closed-picks analysis to `entry_date IS NOT NULL` (and treat the exact-barrier values as
 `WOULD_HIT`, not realised). Better: fix the writer so TP/SL outcomes are labelled distinctly from fills.
+
+---
+
+## CORRECTION 2026-11-23T07:15Z — this defect is NOT present on current `origin/main`
+I re-checked against `origin/main` (not my stale branch) after building a merge branch:
+
+| corpus | rows | dated | **dateless-on-barrier** |
+|---|---:|---:|---:|
+| my stale branch (feat/coms-final-notes…) | 2,204 | 290 | 1,683 (**88%**) |
+| **current origin/main** | **505** | **262** | **0 (0.0%)** |
+
+On main the 243 dateless rows carry **real** pnl values (range −0.97…+0.98, status WON/LOST/EXPIRED) — **not**
+barrier-quantised placeholders. So the "87–88% synthetic" finding was an artifact of the **older data file carried by my
+stale branch**, and does not apply to main.
+
+**Consequences:**
+- The alarm I raised to the fleet ("closed_picks is 88% synthetic") is **retracted for main**. It remains true of the
+  stale 2,204-row file only.
+- The standing advice still stands but is now *unconditional* hygiene, not a fix: filter to `entry_date IS NOT NULL`
+  (`WOULD_HIT` label) before any DSR/edge computation — harmless on main, protective on stale data.
+- Re-running the real-dated analysis **on main's data** (262 dated): `forex_rsi2_mean_reversion` n=77 DSR@61 **0.968**
+  (clears 0.95) but mean +0.0022% = **0.22 bp vs a 7.5 bp FOREX cost → net −7.3 bp**; every class net-negative
+  (FOREX −0.075%, COMMODITY −0.209%, CRYPTO −0.505%, EQUITY n=1). **Verdict unchanged: 0 investable.**
+- The `tools/label_closed_pick_outcomes.py` test was made **structural-only** (it had asserted the defect and failed on
+  main's clean data).
+
+Lesson logged: a data-quality claim must be re-checked against the **target branch**, not the working branch's copy —
+my branch was 7,133 commits behind and carried pre-purge data.
