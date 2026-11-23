@@ -68,6 +68,7 @@ def main():
          "date":a.date,"n_agents":len(agents),"agents":sorted(agents),
          "n_picks_total":sum(len(v) for v in combined.values()),
          "per_class_combined":combined,"cross_agent_consensus":consensus,
+         "name_overlap_without_evidence":name_overlap_no_evidence,
          "data_quality_issues":issues,
          "any_agent_reports_full_pass":any(
              any(p.get("gates_passed")=="5/5" for p in (d.get("per_class",{}).get(c) or []) if isinstance(d.get("per_class",{}).get(c),list))
