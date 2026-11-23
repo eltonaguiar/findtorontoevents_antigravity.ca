@@ -18,11 +18,11 @@ Real data 2021-11-15→2026-11-13 (1,254 daily returns). Tool: `tools/fund_deep_
 | instrument | MER | net CAGR | **CAGR 95% CI** | vol | **Sharpe(rf)** | Sortino(rf) | max DD |
 |---|---:|---:|---|---:|---:|---:|---:|
 | Fidelity 500 Index (FXAIX) MF | 0.015% | 11.66% | **[0.1, 25.4]** | 17.2% | **0.506** | 0.501 | −24.5% |
-| SPDR S&P 500 (SPY) ETF | 0.0945% | 11.49% | [−0.0, 25.2] | 17.3% | 0.498 | 0.491 | −24.5% |
-| Fidelity ZERO Total Mkt (FZROX) MF | 0.00% | 10.74% | [−0.8, 25.0] | 17.6% | 0.450 | 0.446 | −25.1% |
-| Vanguard Total Mkt (VTI) ETF | 0.03% | 10.50% | [−1.0, 24.8] | 17.7% | 0.438 | 0.431 | −25.4% |
-| Vanguard Total Stock (VTSAX) MF | 0.04% | 10.48% | [−1.0, 24.8] | 17.6% | 0.439 | 0.433 | −25.4% |
-| Vanguard Total Bond (BND) ETF | 0.03% | −0.32% | [−4.6, 4.3] | 6.1% | −0.648 | −0.634 | −17.3% |
+| SPDR S&P 500 (SPY) ETF | 0.0945% | 11.49% | [−0.0, 25.2] | 17.3% | 0.498 | 0.714 | −24.5% |
+| Fidelity ZERO Total Mkt (FZROX) MF | 0.00% | 10.74% | [−0.8, 25.0] | 17.6% | 0.450 | 0.641 | −25.1% |
+| Vanguard Total Mkt (VTI) ETF | 0.03% | 10.50% | [−1.0, 24.8] | 17.7% | 0.438 | 0.625 | −25.4% |
+| Vanguard Total Stock (VTSAX) MF | 0.04% | 10.48% | [−1.0, 24.8] | 17.6% | 0.439 | 0.624 | −25.4% |
+| Vanguard Total Bond (BND) ETF | 0.03% | −0.32% | [−4.6, 4.3] | 6.1% | −0.648 | −0.889 | −17.3% |
 | iShares 0-3mo T-bill (SGOV) ETF | 0.09% | 3.81% | [3.6, 4.3] | 0.2% | n/a (cash) | n/a | −0.03% |
 
 **Read the CIs first: every equity fund's 5-yr CAGR CI spans roughly 0→25%.** They **overlap enormously**, so **no fund
@@ -78,7 +78,7 @@ fund-vs-ETF gap against the **spread across several ETFs tracking the same index
 1. **Fee drag is real and deterministic.** Same index ⇒ lower MER strictly lowers cost. FXAIX 0.015% vs SPY 0.0945% =
    **7.95 bp/yr** structural fee advantage; VOO/IVV at 0.03% sit near FXAIX. **Buy the cheapest same-index vehicle.**
 2. **The *out-performance magnitude* is not proven.** My corrected numbers already show overlapping bootstrap CIs
-   (FXAIX [0.1,25.4] vs SPY [−0.0,25.2]); the observed +0.17 pp/yr exceeds the 0.08 pp/yr fee gap by tracking noise.
+   (FXAIX [0.1,25.4] vs SPY [−0.0,25.2]); the observed +0.17 pp/yr (~17bp) EXCEEDS the 7.95bp/yr fee gap (fee UNDER-predicts; excess unattributed, within noise).
    **Do not claim the fund "beat" the ETF; claim it is structurally cheaper.**
 3. **Their ETF-spread test is the right one and I could not run it** — my data has only SPY, no VOO/IVV. So I state the
    **fee ordering** (a cost fact), not a measured vehicle edge. If VOO/IVV series are supplied, run the spread test before
@@ -86,3 +86,11 @@ fund-vs-ETF gap against the **spread across several ETFs tracking the same index
 
 **Net effect on the recommendation:** unchanged. Choose on **cost and tax** (deterministic), not on trailing returns
 (indistinguishable). This is now stated without the over-strong "mutual fund beats ETF" framing.
+
+
+---
+## CORRECTION 2026-11-23T10:41Z — Sortino convention fixed (peer-reviewed)
+My Sortino divided downside deviation by the COUNT OF NEGATIVE DAYS; the standard (Sortino–Price) divides by **N (all
+periods)**. My version **understated Sortino by ~30%**. Corrected values (excess-of-cash): FXAIX **0.722** (was 0.501),
+SPY 0.714, FZROX 0.641, VTSAX 0.624, VTI 0.625, BND −0.889. Sharpe was unaffected. Also clarified: the fee gap
+(7.95bp/yr) **under-predicts** the observed ~17bp/yr gap (the excess is unattributed tracking noise, still within CIs).

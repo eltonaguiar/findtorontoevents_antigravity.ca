@@ -4,11 +4,13 @@
 Fixes vs v1:
   * Sharpe/Sortino now EXCESS OF CASH (SGOV daily return = risk-free), not (ret-fee)/vol.
   * SGOV relabelled: excess-of-cash Sharpe is ~undefined/0 by construction (it IS cash).
-  * True MONTHLY rebalancing for multi-fund portfolios (sleeve-value drift + reset at month start),
+  * True rebalancing every 21 trading days for multi-fund portfolios (sleeve-value drift +
+    reset keyed to BAR COUNT, not calendar month start -- labelled accordingly),
     plus the old daily-rebalanced number for contrast.
   * Block-bootstrap (21-day blocks, 2000 draws) 5-95% CI on CAGR.
   * Split sample: first ~3y vs last ~2y.
-  * FXAIX vs SPY arithmetic stated honestly (fee gap over-predicts; magnitude within noise).
+  * FXAIX vs SPY arithmetic stated honestly: the fee gap UNDER-predicts (7.95bp/yr of fees vs
+    +16.7bp/yr observed), and the excess is unattributed. Magnitude stays within noise.
 Source: 2026-11-15_AM_profitability-plan/copilot-financial-review/market_prices.csv
 """
 import csv, json, math, random, statistics as st
@@ -46,7 +48,10 @@ def excess_metrics(r, rf, mer):
     n=min(len(r),len(rf)); ex=[r[i]-rf[i] for i in range(n)]  # daily excess-of-cash
     mu=st.mean(ex); sd=st.pstdev(ex)
     sharpe=mu/sd*math.sqrt(ANN) if sd else None
-    neg=[x for x in ex if x<0]; dsd=math.sqrt(sum(x*x for x in neg)/len(neg)) if neg else 0
+    # Downside deviation divides by n, not by the count of negative days. Dividing by
+    # len(neg) inflates dsd by 1/sqrt(share of negatives) and understates Sortino by ~30%
+    # (0.501 vs 0.722 for FXAIX on the 2021-2026 sample).
+    neg=[x for x in ex if x<0]; dsd=math.sqrt(sum(x*x for x in neg)/len(ex)) if neg else 0
     sortino=mu/dsd*math.sqrt(ANN) if dsd else None
     return {"sharpe_excess":round(sharpe,3) if sharpe is not None else None,
             "sortino_excess":round(sortino,3) if sortino is not None else None}
@@ -76,7 +81,7 @@ def monthly_rebalance(ret, weights, dates):
         for c in weights: sleeve[c]*=(1+ret[c][i])
         total=sum(sleeve.values())
         out.append(total/prev_total-1); prev_total=total
-        # reset at month boundary (rough: every 21 trading days)
+        # reset every 21 trading days (bar-count cadence; not calendar month start)
         if (i+1)%21==0:
             for c in weights: sleeve[c]=weights[c]*total
     return out
