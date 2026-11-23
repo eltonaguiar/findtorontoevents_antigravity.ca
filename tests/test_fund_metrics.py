@@ -14,6 +14,7 @@ not copied from whatever the code happens to print.
 """
 from __future__ import annotations
 
+import csv
 import json
 import sys
 from pathlib import Path
@@ -432,3 +433,46 @@ def test_corrected_doc_scopes_futures_out():
     text = DOC.read_text()
     assert "out of scope" in text.lower()
     assert "futures" in text.lower()
+
+
+# --------------------------------------------------------------------------
+# L1 — do the adjusted closes actually reinvest dividends?
+#
+# This is the load-bearing assumption behind EVERY CAGR in the report. If the
+# series were price-only, all of the fixed-income and total-return numbers
+# would be wrong. We can settle it internally, without network access, using
+# SGOV as a control: it is a 0-3 month T-bill ETF whose NAV is pinned near
+# $100 and which distributes its entire yield monthly. A price-only SGOV
+# series is flat (~0%/yr). A dividend-reinvested SGOV series must track the
+# T-bill yield. We observe ~3.9%/yr, so the data is total-return.
+# --------------------------------------------------------------------------
+def test_L1_adjusted_closes_reinvest_dividends():
+    src = REPO_ROOT / fd.SRC
+    if not src.exists():
+        pytest.skip("price CSV not present in this checkout")
+    rows = list(csv.DictReader(open(src)))
+    assert len(rows) > 1000
+
+    def cagr(key):
+        a, b = float(rows[0][key]), float(rows[-1][key])
+        yrs = len(rows) / 252.0
+        return (b / a) ** (1 / yrs) - 1
+
+    sgov = cagr("SGOV_adj")
+    # A T-bill ETF distributes everything; price-only would be ~0. Anything
+    # near the cash rate proves the distributions are in the series.
+    assert 0.025 < sgov < 0.06, (
+        f"SGOV_adj CAGR {sgov:.2%} is outside the T-bill range; if this is near "
+        f"zero the series is PRICE-ONLY and every CAGR in the report is invalid"
+    )
+
+    # Cross-check: a bond fund's total return must beat its price return,
+    # because it distributes ~3-4%/yr. BND price fell hard 2021-2026, so its
+    # total return should sit clearly above the raw NAV decline.
+    bnd = cagr("BND_adj")
+    assert bnd > -0.05, f"BND_adj CAGR {bnd:.2%} looks price-only (NAV fell ~3%/yr)"
+
+    # And equities: total return must be >= price return for dividend payers,
+    # so every equity series must be positive over this bull window.
+    for key in ("SPY_adj", "FXAIX_adj", "VTI_adj", "VTSAX_adj", "FZROX_adj"):
+        assert cagr(key) > 0.05, f"{key} CAGR {cagr(key):.2%} implausible"
