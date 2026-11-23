@@ -21,5 +21,11 @@
     "1.0": 27,
     "1.5": 15
   },
-  "CORRECTION": "Earlier reports/sr_star_table.json used cross-cell sigma (0.649) = expected max ACROSS strategies; the tribunal DSR uses sr0=K/sqrt(n) per strategy. Do not mix them. The tribunal bar is far lower and falls with n."
+  "CORRECTION": "Earlier reports/sr_star_table.json used cross-cell sigma (0.649) = expected max ACROSS strategies; the tribunal DSR uses sr0=K/sqrt(n) per strategy. Do not mix them. The tribunal bar is far lower and falls with n.",
+  "verification": {
+    "method": "closed-form sr0=K/sqrt(n) vs real deflated_sharpe() on synthetic unit-sd returns shifted to target per-trade SR",
+    "max_abs_diff": "0.013 (finite-sample skew/kurt in synthetic data)",
+    "key_check": "n=100, SR=0.5 -> REAL DSR=0.9516 (passes 0.95); closed-form 0.9600",
+    "conclusion": "frontier validated; the 'n>=100 with SR>=0.50' criterion is confirmed by the production function, not just algebra"
+  }
 }
