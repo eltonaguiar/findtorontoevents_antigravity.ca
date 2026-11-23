@@ -2887,7 +2887,27 @@
    "frozen": true,
    "notes": "Registered AFTER H-228's result, and that is declared rather than dressed up: this adds NO new evidence, because the motivating series is H-228's own. H-228 keeps its verdict under its pre-registered flat 1.0 bp/day drag. H-229 exists to accrue FORWARD observations under a cost model with a stated holding period, judged by tools/funding_carry_forward.py. Kill criteria are in the pod spec and were written before the first observation. Measured break-even: at 42.64 bp retail taker the sleeve beats a 3.5% T-bill only from a 180-day hold; at a 90-day hold it needs <=28.4 bp round trip (14.2 bp/side)."
   }
- ],
+ ,
+  {
+    "id": "R4b",
+    "asset_class": "ETF",
+    "family": "timeseries_momentum_12m",
+    "description": "ETF 12-month absolute momentum on a frozen 20-ETF universe: hold the top 5 names whose 252-day return is positive, equal weight, monthly rebalance on the last trading day, no shorts, no leverage, unallocated cash earns the T-bill hurdle. Forward-only; never backtested.",
+    "test_statistic": "net annualised return on committed capital vs the 4.32% T-bill hurdle (HURDLE_TBILL_APR), one-sided 95% bound",
+    "acceptance_criteria": {
+      "kill": "net annualised <= 4.32% AND one-sided 95% upper bound <= 4.32%",
+      "confirm": "one-sided 95% lower bound > 4.32%",
+      "confirm_earliest_months": 60
+    },
+    "economic_prior": "ETF has the best measured risk-adjusted profile of any measurable class in our own data (16.2% median vol, -25.9% max DD, Sharpe 0.44) and the lowest measured cost (~1-2 bp), so a small gross edge is not immediately eaten.",
+    "status": "PRE_REGISTERED",
+    "registered_at": "2026-11-23",
+    "data_sample_lock": "frozen 20 ETFs: SPY QQQ IWM DIA EFA EEM TLT IEF SHY TIP TLH LQD HYG JNK GLD SLV XLE XLF XLK XLV; first record the first month-end after 2026-11-23 (2026-11-30)",
+    "result": null,
+    "kill_reason": null,
+    "provenance": "docs/preregistration/ETF_TREND_FORWARD_2026-11-23.md (row R4b of notes/per-asset-class-plan-copilot-2026-11-23). Registered here for the same FK reason. NOTE: the filed pre-registration freezes 20 tickers while the operator directive and several bus notes say '24 liquid ETFs' - the filed 20 governs, because changing the universe post-registration would be a new trial."
+  }
+],
  "fork2_new_signals": [
   {
    "id": "H-006",

@@ -140,3 +140,35 @@ formatting with the two new rows inserted textually before the array's closing b
 Verified that every pre-existing row is content-identical and that the shape is now
 additive. Note also that upstream held **137** rows where my local tree held 130 — the
 insertion is applied to upstream's own copy, never to my stale local one.
+
+## 7. Correction to §6, and to the "H-201 was blocked" claim
+
+Two statements of mine above were wrong. Recorded here, not deleted.
+
+**1. §6 describes an edit that did not survive.** The follow-up commit `b4bbf1480b7` ran
+`git checkout <parent> -- reports/hypothesis_registry.json` to restore the original
+formatting. That restored the formatting **and silently removed R4b**, because that file
+version predated my insert. An assertion in the insert script then fired
+(`AssertionError: already present`), and because the shell was not fail-fast the commit and
+push proceeded anyway with the file in that state. Net effect on `main`: formatting
+restored, 138 rows, **R4b not registered**. The commit that fixes this re-inserts R4b on
+top of upstream's own copy and is verified below.
+
+**2. "H-201 was structurally blocked" was half wrong.** I checked H-201 against **my local
+tree's** registry, which held 130 rows and no H-201, and reported that as the estate's
+state. Upstream's registry held **138 rows and already contained H-201**. Only **R4b** was
+ever absent from the real registry. This is the stale-local-copy hazard: the local tree is
+169 commits behind `origin/main`, so any "is X registered?" question must be asked of
+`git show origin/main:...`, never of the working tree.
+
+**Verified after the fix:**
+
+```
+base rows 138 -> 139, only R4b added, every pre-existing row content-identical,
+formatting untouched (additive diff), no duplicate ids
+validate(R4b row) -> no errors ; validate(H-9999 row) -> dangling FK (gate still works)
+```
+
+**What this changes about the finding:** forward recording for **H-201 was possible all
+along** — it has simply never been attempted; the ledger holds zero rows for it because no
+adapter emits any. R4b's first legitimate record cannot exist before 2026-11-30 regardless.
