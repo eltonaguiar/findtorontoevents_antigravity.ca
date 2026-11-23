@@ -238,6 +238,46 @@ Rules:
   original errors happened: a verdict was adjusted to match the happy story instead
   of the evidence. Record the disagreement instead.
 
+## Retiring a claim
+
+A claim is retired when reality has moved, not when the claim becomes
+inconvenient. B11 said `tools/capacity_model.py:49` could not be checked because
+the file was absent from main. PR #1095 put the file on main, so the absence
+checks that supported B11 no longer hold. That is a resolved claim.
+
+Deleting it would erase the record that the gap ever existed. Rewriting it to
+assert the opposite would silently change an evidentiary claim after the fact -
+the exact thing this whole system exists to prevent. So retirement is explicit
+and visible instead:
+
+```json
+"retired": true,
+"retired_reason": "Resolved by PR #1095 (merge 8e3cefd5ca0c): ...",
+"superseded_by": "B11-resolved",
+"retired_at": "2026-11-23"
+```
+
+What retirement does and does not change:
+
+- The claim stays in the manifest, with its original `checks` untouched. The
+  check history is the record of what was checked when the claim was live, and
+  retiring preserves it.
+- Its checks are still executed and their raw output still printed, in the
+  engine's output and in the report's trailing "Retired claims" section.
+- Its verdict is reported as RETIRED, never VERIFIED / NOT LANDED / PARTIALLY.
+- It is excluded from the agree/disagree counts and can never be a `--strict`
+  violation.
+- Retirement requires a written `retired_reason`. A `retired` claim without one
+  is a manifest error and the engine exits 2 - an unexplained retirement is
+  indistinguishable from a cover-up.
+- The count of retired claims is visible in every report and in the summary
+  line, so a retirement cannot be forgotten.
+
+If the underlying proposition is still worth asserting, add a new active claim
+for it. B11-resolved does exactly that: it asserts the positive now-true
+proposition (the file is on main, the merge is an ancestor of main) rather than
+editing B11's historical evidence.
+
 ## The tally constraint
 
 `tests/test_edge_research_tally_consistency.py` discovers every markdown file under

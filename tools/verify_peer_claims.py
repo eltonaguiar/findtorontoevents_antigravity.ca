@@ -29,7 +29,7 @@ Polarity lives in the manifest (`claims/verification_claims.json`), not in this
 code, so a reader can audit the logic without opening the script.
 
 Verdict vocabulary (fixed):
-    VERIFIED / NOT LANDED / PARTIALLY / UNVERIFIABLE
+    VERIFIED / NOT LANDED / PARTIALLY / UNVERIFIABLE / RETIRED
 
 Verdict derivation rule (per claim, after dropping SKIPped checks and folding each
 outcome through its polarity into a supporting/refuting tally):
@@ -78,7 +78,27 @@ disagrees with `expected_verdict`, or (b) a FAIL of a *supporting* check inside 
 claim that the hand report recorded as VERIFIED (a claimed-to-have-landed object
 that did not).  A FAIL inside a claim the hand report recorded as NOT LANDED /
 PARTIALLY is the expected evidence for that verdict, not a violation.  A claim
-whose every check SKIPped is UNVERIFIABLE and never a violation.
+whose every check SKIPped is UNVERIFIABLE and never a violation.  A retired claim
+is never a violation.
+
+Retirement (2026-11-23, Block 42)
+---------------------------------
+A claim is retired when reality has moved, not when the claim becomes
+inconvenient.  A claim may declare:
+
+    "retired": true,
+    "retired_reason": "<why - REQUIRED; an unexplained retirement exits 2>",
+    "superseded_by": "<claim id, or a PR/commit reference>",
+    "retired_at": "YYYY-MM-DD"
+
+A retired claim's checks are STILL EXECUTED and its raw check output is STILL
+PRINTED - an audit trail with the checks deleted would be worth nothing.  But its
+verdict is reported as RETIRED (never VERIFIED / NOT LANDED / PARTIALLY), it is
+excluded from the agree/disagree tallies, it never counts as a --strict
+violation, and it is listed in its own trailing report section so its existence
+cannot be forgotten.  Deleting the claim would erase the record that the gap
+existed; rewriting it would silently change an evidentiary claim after the fact.
+Retirement keeps the history and stops the claim counting as evidence either way.
 
 Stdlib only - no imports from this repository, so it runs both as
 `python3 tools/verify_peer_claims.py` and `python -m tools.verify_peer_claims`.
@@ -99,7 +119,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERDICT_VOCAB = ("VERIFIED", "NOT LANDED", "PARTIALLY", "UNVERIFIABLE")
+VERDICT_VOCAB = ("VERIFIED", "NOT LANDED", "PARTIALLY", "UNVERIFIABLE", "RETIRED")
+RETIRED_VERDICT = "RETIRED"
 MANUAL_SUFFIX = " (manual judgement required)"
 SHALLOW_SUFFIX = " [SHALLOW CLONE - results unreliable]"
 EXIT_ENV_ERROR = 2
@@ -438,7 +459,7 @@ def normalize_verdict(text) -> str | None:
     if not isinstance(text, str):
         return None
     cleaned = text.replace(MANUAL_SUFFIX, "").strip().upper()
-    for token in ("NOT LANDED", "VERIFIED", "PARTIALLY", "UNVERIFIABLE"):
+    for token in ("NOT LANDED", "VERIFIED", "PARTIALLY", "UNVERIFIABLE", RETIRED_VERDICT):
         if cleaned.startswith(token):
             return token
     return None
@@ -503,6 +524,11 @@ def run_claim(root, ref: str, repo: str | None, claim: dict, extras=None,
     `shallow=True` (only reachable via --allow-shallow) appends SHALLOW_SUFFIX to
     every check that depends on the object graph and to the claim's verdict, so a
     reader cannot mistake a degraded NOT LANDED for a real one.
+
+    A `retired` claim still runs, records and reports every check - the raw
+    evidence stays on the record - but its verdict is RETIRED, it agrees with
+    nothing in the tally, and `retired` tells the report and --strict to leave it
+    out of the counts.
     """
     checks = []
     for chk in claim.get("checks", []):
@@ -522,11 +548,16 @@ def run_claim(root, ref: str, repo: str | None, claim: dict, extras=None,
                        "polarity": polarity, "ref": chk.get("ref") or ref,
                        "params": {k: v for k, v in chk.items() if k != "kind"}})
     manual = bool(claim.get("manual"))
+    retired = bool(claim.get("retired"))
     computed = derive_verdict([(c["status"], c["polarity"]) for c in checks], manual=manual)
     if shallow and any(c["kind"] in SHALLOW_SENSITIVE_KINDS for c in checks):
         suffix = MANUAL_SUFFIX if computed.endswith(MANUAL_SUFFIX) else ""
         base = computed[:len(computed) - len(suffix)] if suffix else computed
         computed = base + SHALLOW_SUFFIX + suffix
+    if retired:
+        # Retirement overrides the derived verdict outright: the checks above are
+        # kept as the audit trail, but the claim no longer counts as evidence.
+        computed = RETIRED_VERDICT
     expected = claim.get("expected_verdict", "")
     supporting, refuting = tally([(c["status"], c["polarity"]) for c in checks])
     return {
@@ -536,12 +567,17 @@ def run_claim(root, ref: str, repo: str | None, claim: dict, extras=None,
         "summary": claim.get("summary"),
         "manual": manual,
         "manual_reason": claim.get("manual_reason"),
+        "retired": retired,
+        "retired_reason": claim.get("retired_reason"),
+        "superseded_by": claim.get("superseded_by"),
+        "retired_at": claim.get("retired_at"),
         "checks": checks,
         "supporting": supporting,
         "refuting": refuting,
         "computed_verdict": computed,
         "expected_verdict": expected,
-        "agree": normalize_verdict(computed) == normalize_verdict(expected),
+        # A retired claim agrees with nothing: it is out of the tally by design.
+        "agree": (not retired) and normalize_verdict(computed) == normalize_verdict(expected),
         "any_fail": any(c["status"] == STATUS_FAIL for c in checks),
         "any_skip": any(c["status"] == STATUS_SKIP for c in checks),
         "unresolved_ref_skip": any(c["status"] == STATUS_SKIP and "cannot resolve" in c["detail"]
@@ -550,10 +586,14 @@ def run_claim(root, ref: str, repo: str | None, claim: dict, extras=None,
 
 
 def strict_violations(results) -> list[dict]:
-    """Violations under --strict: non-manual disagreement, or a supporting FAIL on an expected-VERIFIED claim."""
+    """Violations under --strict: non-manual disagreement, or a supporting FAIL on an expected-VERIFIED claim.
+
+    A retired claim is skipped first: it has no expected verdict left to disagree
+    with, and its refuting checks are the historical record, not a live failure.
+    """
     bad = []
     for r in results:
-        if r["manual"]:
+        if r.get("retired") or r["manual"]:
             continue
         # Nothing was decidable (every check SKIPped) - that is not a disagreement.
         if normalize_verdict(r["computed_verdict"]) == "UNVERIFIABLE":
@@ -588,6 +628,17 @@ def validate_claims(claims) -> list[str]:
         if cid in seen:
             problems.append(f"{where}: duplicate id {cid!r}")
         seen.add(cid)
+        # Retirement is explicit and explained or it is refused: a claim that
+        # silently stops counting is indistinguishable from a cover-up.
+        if c.get("retired"):
+            if not str(c.get("retired_reason") or "").strip():
+                problems.append(
+                    f"{where} ({cid}): retired claim has no retired_reason - retirement "
+                    f"must state why (an unexplained retirement is indistinguishable "
+                    f"from a cover-up)")
+            for opt in ("superseded_by", "retired_at"):
+                if opt in c and not str(c.get(opt) or "").strip():
+                    problems.append(f"{where} ({cid}): {opt} is present but empty")
         if c.get("group") not in ("A", "B"):
             problems.append(f"{where} ({cid}): group must be 'A' or 'B'")
         if not isinstance(c.get("checks"), list):
@@ -617,12 +668,21 @@ def _cell(value) -> str:
 
 
 def build_report(meta: dict, results) -> str:
-    """Deterministic markdown report - same meta+results always give the same bytes."""
+    """Deterministic markdown report - same meta+results always give the same bytes.
+
+    Retired claims are kept out of the main table and the counts (they are no
+    longer evidence either way) but are always rendered again in their own
+    trailing section with their full check output, so a retirement is visible
+    rather than silently absorbed.
+    """
+    active = [r for r in results if not r.get("retired")]
+    retired = [r for r in results if r.get("retired")]
+    n_manual = sum(1 for r in active if r["manual"])
     lines = [
         "# Peer claim verification - generated report",
         "",
         "Generated by `tools/verify_peer_claims.py`. Verdict vocabulary is fixed: "
-        "**VERIFIED** / **NOT LANDED** / **PARTIALLY** / **UNVERIFIABLE**.",
+        "**VERIFIED** / **NOT LANDED** / **PARTIALLY** / **UNVERIFIABLE** / **RETIRED**.",
         "",
         f"- generated_utc: `{meta['generated_utc']}`",
         f"- checked-out HEAD at report time: `{meta.get('head_at_report', '')}`",
@@ -635,14 +695,15 @@ def build_report(meta: dict, results) -> str:
         lines.append(f"- extra remotes: `{meta['extra_remotes']}`")
     lines += [
         f"- claims file: `{meta['claims_path']}` (sha256 `{meta['claims_sha256']}`)",
-        f"- claims: {meta['n_claims']} total, {meta['n_agree']} agree with the hand report, "
+        f"- claims: {meta['n_claims']} total, {len(active)} active, {len(retired)} retired "
+        f"(of the active: {meta['n_agree']} agree with the hand report, "
         f"{meta['n_disagree']} disagree ({meta['n_disagree_nonmanual']} non-manual), "
-        f"{meta['n_manual']} manual",
+        f"{n_manual} manual)",
         "",
         "| id | group | claimant | mechanical result | expected (hand report) | checks | notes |",
         "|----|-------|----------|-------------------|------------------------|--------|-------|",
     ]
-    for r in results:
+    for r in active:
         counts = {}
         for c in r["checks"]:
             counts[c["status"]] = counts.get(c["status"], 0) + 1
@@ -666,9 +727,9 @@ def build_report(meta: dict, results) -> str:
         )
 
     lines += ["", "## Claims that still require a human judgement", ""]
-    manual = [r for r in results if r["manual"]]
+    manual = [r for r in active if r["manual"]]
     if not manual:
-        lines.append("None - every claim in this manifest was decided by ref checks.")
+        lines.append("None - every active claim in this manifest was decided by ref checks.")
     for r in manual:
         lines += [
             f"### {r['id']} - {r['group']} - {r['claimant']}",
@@ -681,6 +742,31 @@ def build_report(meta: dict, results) -> str:
             lines.append(f"  - {c['kind']} [{c['polarity']}, ref {c['ref']}] -> "
                          f"{c['status']}: {c['detail']}")
         lines.append("")
+
+    lines += ["", "## Retired claims", ""]
+    if not retired:
+        lines.append("None - every claim in this manifest is still active.")
+    else:
+        lines.append(
+            f"{len(retired)} claim(s) retired. Their checks still run and are printed below "
+            "as the historical record, but they count as neither supporting nor refuting "
+            "evidence and can never be a strict violation.")
+    for r in retired:
+        lines += [
+            "",
+            f"### {r['id']} - {r['group']} - {r['claimant']} (RETIRED)",
+            "",
+            f"- Claim: {r['summary']}",
+            f"- Retired at: {r['retired_at'] or '(no date recorded)'}",
+            f"- Superseded by: {r['superseded_by'] or '(not recorded)'}",
+            f"- Reason: {r['retired_reason'] or '(NO REASON RECORDED)'}",
+            f"- Historical verdict (hand report): **{r['expected_verdict']}**",
+            f"- Checks re-run now ({len(r['checks'])}; supporting {r['supporting']}, "
+            f"refuting {r['refuting']}) - kept as the audit trail, not as evidence:",
+        ]
+        for c in r["checks"]:
+            lines.append(f"  - {c['kind']} [{c['polarity']}, ref {c['ref']}] -> "
+                         f"{c['status']}: {c['detail']}")
 
     lines += [
         "## What this run does NOT verify",
@@ -832,7 +918,11 @@ def main(argv: list[str] | None = None) -> int:
                for claim in claims]
 
     violations = strict_violations(results)
-    n_disagree = sum(1 for r in results if not r["agree"])
+    # Retired claims are still run and printed, but they are out of every count:
+    # they are neither agreeing nor disagreeing evidence any more.
+    active = [r for r in results if not r.get("retired")]
+    retired_results = [r for r in results if r.get("retired")]
+    n_disagree = sum(1 for r in active if not r["agree"])
     meta = {
         "generated_utc": _now_utc(),
         "origin_main": tip,
@@ -842,15 +932,21 @@ def main(argv: list[str] | None = None) -> int:
         "claims_path": str(claims_path.relative_to(root)) if claims_path.is_relative_to(root) else str(claims_path),
         "claims_sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
         "n_claims": len(results),
-        "n_agree": sum(1 for r in results if r["agree"]),
+        "n_active": len(active),
+        "n_retired": len(retired_results),
+        "n_agree": sum(1 for r in active if r["agree"]),
         "n_disagree": n_disagree,
-        "n_disagree_nonmanual": sum(1 for r in results if not r["agree"] and not r["manual"]),
-        "n_manual": sum(1 for r in results if r["manual"]),
+        "n_disagree_nonmanual": sum(1 for r in active if not r["agree"] and not r["manual"]),
+        "n_manual": sum(1 for r in active if r["manual"]),
     }
 
     for r in results:
+        # The DISAGREE marker is meaningless for a retired claim (it agrees with
+        # nothing by design), so it is suppressed rather than printed misleadingly.
+        marker = "" if r.get("retired") or r["agree"] else "  <-- DISAGREE"
         print(f"[{r['id']}] {r['computed_verdict']}  (hand: {r['expected_verdict']})"
-              f"{'' if r['agree'] else '  <-- DISAGREE'}{'  [manual]' if r['manual'] else ''}"
+              f"{marker}{'  [manual]' if r['manual'] else ''}"
+              f"{'  [RETIRED: ' + str(r.get('retired_reason') or 'no reason') + ']' if r.get('retired') else ''}"
               f"  [supporting={r['supporting']} refuting={r['refuting']}]")
         for c in r["checks"]:
             print(f"    {c['status']:<4} {c['polarity']:<8} {c['kind']} (ref {c['ref']}): {c['detail']}")
@@ -882,9 +978,16 @@ def main(argv: list[str] | None = None) -> int:
         json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         print(f"[verify_peer_claims] json written: {json_path}")
 
-    print(f"[verify_peer_claims] {meta['n_claims']} claims: {meta['n_agree']} agree, "
-          f"{meta['n_disagree']} disagree ({meta['n_disagree_nonmanual']} non-manual), "
-          f"{meta['n_manual']} manual; strict violations: {len(violations)}")
+    # n active / retired first, then the tallies, which only ever describe the
+    # active set.  With nothing retired it reads as it always did plus a "0 retired".
+    summary = (f"{meta['n_claims']} claims: {meta['n_active']} active "
+               f"({meta['n_agree']} agree, {meta['n_disagree']} disagree "
+               f"({meta['n_disagree_nonmanual']} non-manual), "
+               f"{meta['n_manual']} manual), {meta['n_retired']} retired")
+    if retired_results:
+        summary += f" ({', '.join(str(r['id']) for r in retired_results)})"
+    summary += f"; strict violations: {len(violations)}"
+    print(f"[verify_peer_claims] {summary}")
     for v in violations:
         print(f"  VIOLATION [{v['id']}] {v['why']}: mechanical {v['computed']} vs hand {v['expected']}",
               file=sys.stderr)

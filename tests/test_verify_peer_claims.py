@@ -281,6 +281,12 @@ def test_manifest_declares_polarity_and_absence_checks_refute():
 
     Exception: B5-typo asserts non-existence, so its `commit_absent` check is `supports`
     there - a PASS is evidence FOR that claim. Any other absence check must refute.
+
+    Retired claims are exempt from the absence rule only: a retired claim's checks are
+    a frozen historical record of what was checked when the claim was live, and they
+    are no longer evidence either way (Block 42 - see `## Retiring a claim` in
+    docs/VERIFICATION.md). Their polarity must still be well-formed, and every ACTIVE
+    claim is held to the same rule as before.
     """
     manifest = Path(__file__).resolve().parent.parent / "claims" / "verification_claims.json"
     claims = json.loads(manifest.read_text(encoding="utf-8"))["claims"]
@@ -290,6 +296,8 @@ def test_manifest_declares_polarity_and_absence_checks_refute():
         for chk in claim["checks"]:
             n_checks += 1
             assert chk.get("polarity") in vpc.POLARITIES, (claim["id"], chk)
+            if claim.get("retired"):
+                continue
             if chk["kind"] in absence_kinds and claim["id"] != "B5-typo":
                 assert chk["polarity"] == vpc.POLARITY_REFUTES, (claim["id"], chk)
     assert n_checks >= 40
@@ -527,3 +535,116 @@ def test_shallow_strict_violations_are_marked_but_still_counted(tmp_path):
     assert proc.returncode == 1, (proc.returncode, proc.stderr)
     assert "strict violations: 2" in proc.stdout
     assert "VIOLATION [S1]" in proc.stderr
+
+
+# --------------------------------------------------------------------------- #
+# claim retirement (Block 42: a resolved claim is not a still-true claim)
+# --------------------------------------------------------------------------- #
+def _retired_claim_manifest(tmp_path: Path, *, reason: str | None = "resolved by a later PR"):
+    """One retired claim whose check would DISAGREE (expected VERIFIED, evidence refutes)."""
+    claim = {"id": "RET1", "group": "B", "claimant": "peer", "summary": "retired claim",
+             "checks": [{"kind": "commit_exists", "sha": "0000000", "polarity": "supports"}],
+             "manual": False, "expected_verdict": "VERIFIED", "retired": True}
+    if reason is not None:
+        claim["retired_reason"] = reason
+    claims = tmp_path / "claims.json"
+    claims.write_text(json.dumps({"claims": [claim]}), encoding="utf-8")
+    return claims
+
+
+def _run_main(tmp_path: Path, capsys, claims: Path, *extra):
+    """Drive main() with --ref HEAD so nothing depends on origin/main in the host repo."""
+    out = tmp_path / "report.md"
+    rc = vpc.main(["--claims", str(claims), "--out", str(out), "--ref", "HEAD",
+                   "--allow-dirty-ref", "--allow-shallow", *extra])
+    captured = capsys.readouterr()
+    report = out.read_text(encoding="utf-8") if out.exists() else ""
+    return rc, captured, report
+
+
+def test_retired_claim_is_listed_but_excluded_from_tallies(tmp_path, capsys):
+    """A retired claim with refuting evidence is not in the disagree count, but IS reported.
+
+    Its checks are still executed and their raw output still printed - a retirement
+    that deleted the evidence would be indistinguishable from a cover-up.
+    """
+    claims = _retired_claim_manifest(tmp_path)
+    rc, captured, report = _run_main(tmp_path, capsys, claims)
+    assert rc == 0
+    assert "0 disagree" in captured.out
+    assert "1 retired" in captured.out
+    # The claim itself is still printed, marked RETIRED, with its check output.
+    assert "[RET1] RETIRED" in captured.out
+    assert "commit_exists" in captured.out and "FAIL" in captured.out
+    # ... and it is not in the main table, only in the trailing retired section.
+    assert "| RET1 |" not in report
+    assert "## Retired claims" in report
+    assert "### RET1 - B - peer (RETIRED)" in report
+    assert "resolved by a later PR" in report
+    assert "commit_exists" in report.split("## Retired claims")[1]
+
+
+def test_retired_claim_cannot_be_a_strict_violation(tmp_path, capsys):
+    """Retirement removes a claim from --strict; the same claim un-retired is still a violation."""
+    claims = _retired_claim_manifest(tmp_path)
+    rc, captured, _ = _run_main(tmp_path, capsys, claims, "--strict")
+    assert rc == 0
+    assert "strict violations: 0" in captured.out
+
+    # Positive control: without the retirement flag the same evidence IS a violation.
+    data = json.loads(claims.read_text(encoding="utf-8"))
+    data["claims"][0].pop("retired")
+    data["claims"][0].pop("retired_reason")
+    claims.write_text(json.dumps(data), encoding="utf-8")
+    rc, captured, _ = _run_main(tmp_path, capsys, claims, "--strict")
+    assert rc == 1
+    assert "strict violations: 1" in captured.out
+
+
+def test_retirement_requires_a_reason(tmp_path, capsys):
+    """An unexplained retirement exits 2 and writes no report."""
+    claims = _retired_claim_manifest(tmp_path, reason=None)
+    rc, captured, report = _run_main(tmp_path, capsys, claims)
+    assert rc == 2
+    assert "retired_reason" in captured.err
+    assert report == ""
+    # The schema check names it too.
+    problems = vpc.validate_claims(json.loads(claims.read_text(encoding="utf-8"))["claims"])
+    assert any("retired_reason" in p for p in problems)
+
+
+def test_retired_verdict_never_reports_verified_or_not_landed(tmp_path):
+    """Whatever the checks say, a retired claim's verdict is RETIRED - never a live verdict."""
+    repo, first = _repo_with_origin_main(tmp_path)
+    base = {"id": "RET2", "group": "B", "claimant": "peer", "summary": "s",
+            "manual": False, "expected_verdict": "VERIFIED", "retired": True,
+            "retired_reason": "resolved"}
+    cases = [
+        # would derive VERIFIED
+        [{"kind": "commit_ancestor_of_main", "sha": first, "polarity": "supports"}],
+        # would derive NOT LANDED
+        [{"kind": "commit_exists", "sha": "0000000", "polarity": "supports"}],
+        # would derive PARTIALLY
+        [{"kind": "commit_ancestor_of_main", "sha": first, "polarity": "supports"},
+         {"kind": "commit_exists", "sha": "0000000", "polarity": "supports"}],
+    ]
+    for checks in cases:
+        claim = dict(base, checks=checks)
+        result = vpc.run_claim(repo, "origin/main", None, claim, {})
+        assert result["computed_verdict"] == vpc.RETIRED_VERDICT
+        assert vpc.normalize_verdict(result["computed_verdict"]) == vpc.RETIRED_VERDICT
+        assert not result["computed_verdict"].startswith(("VERIFIED", "NOT LANDED", "PARTIALLY"))
+        assert result["agree"] is False
+        assert vpc.strict_violations([result]) == []
+        # every check still ran and is on the record
+        assert len(result["checks"]) == len(checks)
+        assert all(c["status"] in (vpc.STATUS_PASS, vpc.STATUS_FAIL) for c in result["checks"])
+
+
+def test_argument_parsing_produces_exit_zero():
+    """--help parses cleanly and exits 0 (the CLI's happy path for argument handling)."""
+    proc = subprocess.run([sys.executable, str(TOOLS / "verify_peer_claims.py"), "--help"],
+                          capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    for flag in ("--claims", "--ref", "--remote-map", "--strict", "--allow-shallow"):
+        assert flag in proc.stdout
