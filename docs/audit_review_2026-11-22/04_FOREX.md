@@ -30,6 +30,7 @@ The premise that `fx_prices` ends 2026-02-09 is a repo-data claim and is UNMEASU
 
 ## 6 Cost reality
 [SRC: _raw/audit3_audit3_ledger.json] Flat constant 0.02 pct, the lowest of any class. Retail FX spreads can exceed 2 bp, and measured slippage is UNMEASURED. The verdict is WEAK on a CI that straddles zero, so cost is not what decides it.
+[SRC: docs/edge_research/22_FINAL_SYNTHESIS_2026-11-22.md] Since this dossier: FX cost was measured at the Sunday reopen (USD-major median **7.533 bp** round trip, upper bound). M3 triaged the three FX research rows: FX carry is cost-irrelevant (break-even **468.5 bp**, ~60× the measured cost), FX mean-reversion is already scheduled for a weekday run (break-even 4.3038 bp, clustered CI includes zero even at 1 bp), and FX momentum is blocked on provenance (gross −26.88 bp exists only in Markdown).
 
 ## 7 What would change the verdict
 [SRC: _raw/audit3_audit3_ledger.json] One experiment: verify `fx_prices` coverage end date and join the unmatched FOREX rows. Gate: at least 400 priced rows and a net CI lower bound above zero. Falsifier: if the extra rows come in at PF below one, the class gets worse, not better.

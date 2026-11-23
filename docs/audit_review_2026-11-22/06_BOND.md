@@ -26,6 +26,7 @@ The central question is answered yes: the ledger has 37 rows with a real CI, tho
 
 ## 6 Cost reality
 [SRC: _raw/audit3_audit3_ledger.json] Flat constant 0.05 pct and measured slippage is UNMEASURED. TLT spreads are small, so 5 bp is plausible.
+[SRC: reports/equity_cost_measurement/class_cost_20261122.json] M3 (2026-11-22) measured the bond ETFs as context: TLT round-trip upper bound **2.51 bp**, AGG **1.05 bp**, SHY **0.61 bp** (1-min bars 2026-11-16..20). This confirms "TLT spreads are small" but is deliberately NOT used to move the class verdict: bond momentum's break-even cost is **0 bp/side**, so it loses at free trading and cheaper fills cannot help it. The measurement is recorded and refused as a deciding input.
 
 ## 7 What would change the verdict
 [SRC: _raw/audit3_audit3_ledger.json] One experiment: accumulate more than 100 BOND rows with intrabar-honest resolution. Gate: net CI lower bound above zero. Falsifier: if intrabar-honest WR stays near 8 pct the class is harmful.

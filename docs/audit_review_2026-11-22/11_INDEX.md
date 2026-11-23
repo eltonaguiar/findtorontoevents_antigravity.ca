@@ -26,6 +26,7 @@ The contradiction is structural: the program lists INDEX as one of the classes, 
 ## 6 Cost reality
 UNMEASURED: no INDEX trades.
 [SRC: _raw/audit3_audit3_ledger.json] Index ETFs are already costed at 0.05 pct under ETF.
+[SRC: reports/equity_cost_measurement/class_cost_20261122.json] M3 (2026-11-22) measured the four names INDEX would be re-bucketed into, under both labels, and got the SAME per-name round-trip upper bounds: SPY 8.31, QQQ 12.07, IWM 7.75, DIA 5.59 bp (median 8.03 bp, 1-min bars 2026-11-16..20). That identity is the measurement of the alias claim: there is no INDEX cost distinct from ETF cost, so any INDEX number would be an ETF number wearing a second name. Live NBBO `BLOCKED_NO_LIVE_NBBO` (Tiingo IEX HTTP 429), commission `COMMISSION_UNKNOWN`.
 
 ## 7 What would change the verdict
 [SRC: _raw/audit3_audit3_ledger.json] One experiment: define INDEX as ETF rows whose underlying is a broad index (SPY, QQQ, IWM, DIA) and re-bucket without copying, then compare to ETF. Gate: no symbol appears in two buckets. Falsifier: if re-bucketing leaves ETF unchanged except for those symbols, INDEX is an alias.

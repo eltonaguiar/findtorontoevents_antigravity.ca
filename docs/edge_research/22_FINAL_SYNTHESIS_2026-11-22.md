@@ -12,7 +12,7 @@
 
 # Part 1 — THE ONE-LINE ANSWER
 
-**Nothing in this programme is investable today: zero of fourteen strategy rows clears a 4.32% T-bill after cost with a positive CI on excess return; funding carry is the one item that is marginal and unresolved (it needs a 16.398-day hold to amortise a 45.524 bp round trip while a positive-funding episode typically lasts about two days); and the rest is either confidently dead or genuinely unknown.**
+**Nothing in this programme is investable today: zero of fourteen strategy rows clears a 4.32% T-bill after cost with a positive CI on excess return; funding carry, the last row that looked marginal, is now NOT_INVESTABLE because only 2.89% of funding episodes last the 16.398 days needed to amortise a 45.524 bp round trip (median episode under two days); and the rest is either confidently dead or genuinely unknown.**
 
 ---
 
@@ -115,7 +115,7 @@ No row has a positive CI on excess return with cost paid. The closest candidates
 2. **FX mean-reversion (row 2)** — missing: a *weekday* FX spread. Cost is now measured at the Sunday reopen (upper bound ~7.5–8 bp, ABOVE the 4.3038 bp break-even → KILL at measured cost), but a thin-book upper bound cannot close it; the clustered CI also includes zero at every cost tested. Only a weekday measurement below ~2.6 bp could.
 3. **Commodity momentum (row 8)** — missing: roll-adjusted, back-adjusted continuous futures series with commission charged.
 4. **Bond momentum (row 9)** — missing: measured ETF cost and a declared, reconciled dividend-adjustment method.
-5. **Funding carry (row 10)** — missing: a funding regime persisting ≥ 16.4 days (or maker fills at ≤ 5.4–6.5 bp pair round trip), 27–32× more capacity, and a survivorship-clean universe.
+5. **Funding carry (row 10)** — now NOT_INVESTABLE: only 82/2,838 (2.89%) of episodes last ≥ 16.4 days, and at $29,438 capacity the ceiling (~$699–1,837/yr) is below the $1,272 T-bill. Would need a regime where ≥16.4-day episodes are frequent (none measured), maker fills at ≤ 5.4–6.5 bp pair round trip, 27–32× more capacity, and a survivorship-clean universe.
 6. **Commodity term-structure carry (row 11)** — missing: a second-month contract series.
 
 ### How many verdicts moved, and why
@@ -124,13 +124,26 @@ No row has a positive CI on excess return with cost paid. The closest candidates
 - **Moved from KILL to UNKNOWN on the commodity data-integrity finding: 1 row covering 3 variants** — commodity momentum V1/V2/V3, because buffy's roll-artifact objection was substantiated and two independent witnesses closed it NO CANDIDATE.
 - **Moved from KILL to UNKNOWN on source provenance: 1** — FX momentum, whose decisive number exists only in Markdown.
 - **Not moved, and why:** equity breakout (killed on null and alpha, not cost), FX carry (break-even 468.5 bp, so cost cannot reverse it), 12-1 momentum (null-percentile kill), crypto intraday mean-rev (zero-cost kill at measured cost), cross-venue basis (cost-honest kill), and N1 R1/R2/R3 (null-percentile kills).
-- **Already not KILL, still UNKNOWN:** funding carry (was MARGINAL) and commodity term-structure carry (was BLOCKED_DATA).
+- **Already not KILL, still UNKNOWN:** commodity term-structure carry (was BLOCKED_DATA). Funding carry, previously here, is now NOT_INVESTABLE (measurement-driven, 2026-11-22).
 
-Total: 4 KILL verdicts moved to UNKNOWN, 6 rows are UNKNOWN, and 8 remain NOT_INVESTABLE.
+Total: 4 KILL verdicts moved to UNKNOWN, 4 rows are UNKNOWN, and 10 are NOT_INVESTABLE.
+
+TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)
+
+> **Tally corrected 2026-11-22T23:20Z.** This document previously printed `0 INVESTABLE / 8 NOT_INVESTABLE / 6 UNKNOWN`
+> (and the `### UNKNOWN: 6` heading above listed six rows). Counting the 14-row table in Part 2 gives 10 NOT_INVESTABLE
+> (rows 1, 3, 4, 5, 6, 7, 9, 12, 13, 14) and 4 UNKNOWN (rows 2, 8, 10, 11), not 8/6. The 8/6 figure was wrong:
+> two rows (commodity momentum, bond momentum) were already relabelled out of UNKNOWN in later notes without the
+> count being recounted. The `### NOT_INVESTABLE: 8` and `### UNKNOWN: 6` headings above are superseded by this line;
+> the per-row verdicts in Part 2 are unchanged. No row became investable.
+
+**M1 EQUITY cost note (2026-11-22, third asset class measured).** Equity cost is no longer `UNMEASURED`. From 1-minute bars over 2026-11-16..20 (Tiingo IEX quota exhausted, so the independent yfinance path was used), the round-trip spread **upper bound** is **12.07 bp** (median 1-min high-low, 13-name breakout universe; per-name 5.24 bp KO to 21.0 bp NVDA), with Corwin-Schultz at **1.50 bp** and Roll structurally invalid. Per-side cost used for re-costing is therefore **6.04 bp**, not 25 bp. Top-of-book NBBO is `BLOCKED_NO_LIVE_NBBO` (Sunday) and commission is `COMMISSION_UNKNOWN` - neither is set to zero. Borrow is zero for this family (long-only by construction). At a $100k book, order/ADV is 2e-7..9e-6, so no impact beyond spread. **Provenance repaired 2026-11-22T23:10Z:** the first committed artifact had `n_symbols_with_data: 0` / `SKIPPED_OFFLINE_OR_NO_KEY` (a yfinance spread loop key-gated on `TIINGO_API_KEY` overwrote the good run), so 12.07 bp was unquotable from its own artifact; the gate is fixed and the artifact regenerated (`n_symbols_with_data = 13`, median 12.0749 bp, per-side 6.0375 bp, `provenance_self_check = PASS`). The "measured 6.04 bp" proof-bar row was also a duplicate of the 5 bp row and is corrected: **null 10.2nd percentile, excess CAGR -14.25% [-46.32%, +32.31%], CAGR +5.33%, required 28.54%, NOT_INVESTABLE**. **No verdict moved:** the D7 rule was already killed on cost-independent grounds (null 69.8th/71.4th percentile, selection-alpha CI-LB -0.285%/-0.296%), and the pod's 5-year break-even (14.58 bp/side) is above measured cost but the pod still fails the null at measured cost (10.2nd percentile, excess CAGR CI spans zero, CAGR below the 28.54% hurdle). This is a **measurement-driven** change to the cost row only; the verdicts are unchanged because measured cost is *lower* than assumed and the kills did not rest on cost. Recompute of the tally from the row verdicts: 0 INVESTABLE / 8 NOT_INVESTABLE / 6 UNKNOWN - unchanged.
 
 **M2 FOREX cost note (2026-11-22, second asset class measured).** FOREX cost is no longer `UNMEASURED`: live top-of-book was sampled from Tiingo at the Sunday 22:00Z reopen. Spreads (round trip, bp of mid) ranged from 1.95 (USD/CAD) to 16.7 (EUR/GBP), with the six USD majors at a median of 7.533 bp. This is **measurement** of a real book, but a thin one (frozen pairs, high variance), so it is recorded as a **Sunday-reopen upper bound**, `COMMISSION_UNKNOWN`. **No verdict moved:** it is not a representative session. Had it been representative, FX mean-reversion would have resolved to `NOT_INVESTABLE` at measured cost (7.5 bp > 4.3038 bp break-even) and FX carry stays `NOT_INVESTABLE` regardless (468.5 bp break-even). The arithmetic was re-run at 0/10/20 bp and reproduces the published figures; the 27-test momentum suite passed unchanged (no edit to `momentum_core.py`).
 
 **M2-residual FOREX cost scheduler (2026-11-22).** The remaining FOREX unknown was one weekday London/NY-overlap spread run, which only existed if a human re-ran it on a weekday. [`.github/workflows/fx-cost-overlap.yml`](.github/workflows/fx-cost-overlap.yml) now schedules it (weekdays, 13:00-16:00 UTC, six runs) and [`tools/fx_cost_sampler.py`](tools/fx_cost_sampler.py) `--overlap` mode measures, classifies and chains the FX mean-reversion re-run automatically. **A scheduled measurement is pending** - no overlap number exists yet. The sampler can write only `NOT_INVESTABLE` or `HUMAN_REVIEW_REQUIRED` (or `BLOCKED_NO_REPRESENTATIVE_SESSION` / `UNCHANGED_UNKNOWN`); `INVESTABLE` is unreachable by construction ([`updates/2026-11-22-m2-forex-cost-scheduler.md`](updates/2026-11-22-m2-forex-cost-scheduler.md)). A blocked run changes no verdict. Note: the window-clustered CI includes zero at every cost tested so far (at the Sunday upper bound 7.533 bp: [−10.85, +4.55]), so a representative cost alone may not close FX mean-reversion.
+
+**M3 COST TRIAGE (2026-11-22).** Every one of the six `UNKNOWN` rows was triaged by whether cost can change its answer ([`updates/2026-11-22-m3-cost-triage.md`](updates/2026-11-22-m3-cost-triage.md)). **Zero of the six are cost-addressable.** Commodity momentum and bond momentum are `COST_IRRELEVANT_ZERO_COST_KILL` (break-even **0 bp/side** - measuring their cost was **refused** as waste). FX mean-reversion is `ALREADY_SCHEDULED`. FX momentum and commodity term-structure carry are `BLOCKED_OTHER` (provenance; no second-month contract). Funding carry is `BLOCKED_OTHER` with its cost already measured (45.524 bp RT). Class spreads were measured as context ([`class_cost_20261122.json`](reports/equity_cost_measurement/class_cost_20261122.json)): ETF median RT upper bound **6.71 bp** (0.61-22.90, 37×), INDEX alias **8.03 bp**, MEME unusable (SHIB tick-truncated, 84.3% zero-range bars; only DOGE 6.79 bp quotable), PENNY blocked (no instrument). **Recomputed tally: 0 INVESTABLE / 8 NOT_INVESTABLE / 6 UNKNOWN** - unchanged. All moves this item are **interpretation-driven** (the same facts, labelled honestly: 2 rows carried as "unknown" are really "cost cannot matter"); no row moved on a new measurement.
 
 ---
 
