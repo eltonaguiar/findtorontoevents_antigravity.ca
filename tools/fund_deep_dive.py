@@ -127,7 +127,7 @@ def main():
     ports={"100% SPY":({"SPY_adj":1.0},MER["SPY_adj"]),
            "80/20 SPY/BND":({"SPY_adj":0.8,"BND_adj":0.2},0.8*MER["SPY_adj"]+0.2*MER["BND_adj"]),
            "60/40 SPY/BND":({"SPY_adj":0.6,"BND_adj":0.4},0.6*MER["SPY_adj"]+0.4*MER["BND_adj"])}
-    print("\nPortfolios (monthly vs daily rebalance, excess-of-cash Sharpe):")
+    print("\nPortfolios (21-trading-day vs daily rebalance, excess-of-cash Sharpe):")
     for name,(w,mer) in ports.items():
         mr=monthly_rebalance(ret,w,dates); dr=daily_rebalance(ret,w)
         rf2=rf_full[:len(mr)]
@@ -135,7 +135,7 @@ def main():
         out["portfolios"][name]={"monthly":{k:mm[k] for k in ("net_cagr_pct","vol_pct","max_dd_pct","sharpe_excess")},
                                   "daily":{k:dm[k] for k in ("net_cagr_pct","vol_pct","max_dd_pct","sharpe_excess")},
                                   "rebalance_effect_pp":round(mm["net_cagr_pct"]-dm["net_cagr_pct"],3)}
-        print(f"  {name:16s} monthly netCAGR {mm['net_cagr_pct']:.2f}% DD {mm['max_dd_pct']:.2f}%  | daily {dm['net_cagr_pct']:.2f}%  | effect {out['portfolios'][name]['rebalance_effect_pp']:+.2f}pp")
+        print(f"  {name:16s} 21d netCAGR {mm['net_cagr_pct']:.2f}% DD {mm['max_dd_pct']:.2f}%  | daily {dm['net_cagr_pct']:.2f}%  | effect {out['portfolios'][name]['rebalance_effect_pp']:+.2f}pp")
     Path("reports/fund_deep_dive.json").write_text(json.dumps(out,indent=2)+"\n")
     print("\nwrote reports/fund_deep_dive.json")
 
