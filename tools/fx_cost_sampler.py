@@ -714,6 +714,19 @@ def run_overlap(args) -> int:
             print(f"{p}: n=0 -> {s['verdict']}")
     print(f"decision cost: {agg['decision_cost_bp']} bp | "
           f"verdict: {decision['strategy_verdict']}")
+    # Chain outcome - the failure must be visible in the Actions log, not only
+    # in the committed artifact. stdout only: nothing here changes any value.
+    if chain is None:
+        why = ("dry run" if args.dry_run else
+               f"status {status}" + (f" ({block_reason})" if block_reason else ""))
+        print(f"strategy chain: NOT RUN - {why}")
+    elif chain.get("state") == "RAN":
+        print(f"strategy chain: RAN (cost applied "
+              f"{chain.get('cost_bp_round_trip')} bp round trip)")
+    else:
+        print(f"WARNING: strategy chain did NOT complete: {chain.get('state')}"
+              + (f" - {chain['error']}" if chain.get("error") else ""))
+        print("NOTE: cost measurement is unaffected; strategy verdict requires the chain.")
     return 0
 
 
