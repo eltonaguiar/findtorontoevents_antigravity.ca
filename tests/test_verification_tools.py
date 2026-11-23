@@ -180,17 +180,18 @@ def test_cross_system_consensus_runs_and_maps_kimi_signals():
 
 # ── closed-picks outcome labeller ──────────────────────────────────
 def test_outcome_labeller_splits_realised_and_would_hit():
-    """Structural invariant only — the barrier defect may already be purged on some bases."""
+    """Structural invariant only — barrier-quantisation is a DATA observation, not a code invariant.
+
+    On current origin/main the dateless rows are NOT on a barrier (0/243 measured 2026-11-23),
+    so asserting the defect here would fail on main. Assert the split is consistent instead.
+    """
     r = subprocess.run([sys.executable, str(ROOT / "tools/label_closed_pick_outcomes.py"),
                         "--out", "/tmp/outcome_test.json"], cwd=ROOT, capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
     d = json.load(open("/tmp/outcome_test.json"))
     assert d["total"] > 0
     assert d["REALISED"] + d["WOULD_HIT"] == d["total"]
-    # Assert the defect band ONLY if the corpus is large enough for it to be meaningful.
-    if d["WOULD_HIT"] > 100:
-        assert d["would_hit_pct_on_barrier"] >= 50.0, (
-            f"expected barrier-quantised placeholders in a large dateless corpus, got {d['would_hit_pct_on_barrier']}%")
+    assert d["REALISED"] > 0
 
 
 # ── shrinkage estimator ────────────────────────────────────────────
