@@ -1,37 +1,60 @@
-# Fund deep-dive: non-deterministic CAGRs, relative `SRC`, and a peer review that caught stale numbers
+# Fund deep-dive: relative `SRC`, a transcribed table, and a peer review that caught stale numbers
 
 **Date:** 2026-11-23 · **Branch:** `feat/fund-deep-dive-fixes-2026-11-23`
 
+> **ERRATUM.** An earlier version of this file claimed the generator produced
+> non-deterministic headline CAGRs "because a `set` is iterated before the
+> arithmetic". **That diagnosis was wrong and is withdrawn.** See
+> §"Withdrawn claim" below for the measurements that refute it and for what
+> actually happened.
+
 ## What was broken
 
-Three separate defects, all in the measurement layer, all of which meant the
-published "corrected" report could quote numbers the tool did not actually
-produce.
+Two real defects in the measurement layer, both of which let the published
+"corrected" report quote numbers the tool did not actually produce.
 
-### 1. Headline CAGRs flipped between runs
+### 0. Withdrawn claim — "headline CAGRs flipped between runs"
 
-The generator was not reproducible. On an unchanged CSV (md5
-`75c4f0ca7f29ea571d23be505456d6c0`) repeated runs produced **different
-`reports/fund_deep_dive.json` hashes** and two distinct value sets:
+I reported two "value sets" and blamed interpreter hash randomisation. It is
+tempting to leave this because the *symptom* I saw was real, but the *cause*
+was not, and the fix I shipped (pinning `PYTHONHASHSEED`) addressed nothing.
 
-| field | state A | state B |
-|---|---:|---:|
-| SPY net CAGR | 11.48% | 11.59% |
-| FXAIX net CAGR | 11.66% | 11.67% |
-| SGOV net CAGR | 3.81% | 3.90% |
+**What actually happened:** I was reading two different JSON fields in
+different sessions and treating them as one.
 
-**Cause:** interpreter hash randomisation. Some `set` is iterated before the
-arithmetic, so float accumulation order varies per process. Proven by pinning
-`PYTHONHASHSEED`: with it fixed the output is byte-stable; unset it alternates.
-A diff of two fixed seeds showed the only remaining difference was
-`generated_at`, which confirms the numeric flip comes from hash order and not
-from the data or the clock.
+| fund | `cagr_pct` (gross) | `net_cagr_pct` (net) | MER |
+|---|---:|---:|---:|
+| FZROX | 10.74% | 10.74% | 0.000% |
+| FXAIX | 11.67% | 11.66% | 0.015% |
+| VTSAX | 10.52% | 10.48% | 0.040% |
+| SPY | 11.59% | 11.48% | 0.0945% |
+| VTI | 10.53% | 10.49% | 0.030% |
+| BND | −0.29% | −0.32% | 0.030% |
+| SGOV | 3.90% | 3.81% | 0.090% |
 
-**Mitigation:** `PYTHONHASHSEED=0` is pinned in the test module before import,
-and a new guard test runs the generator twice in-process and asserts identical
-payloads (excluding `generated_at`), so any future regression is loud.
+The gap between the two columns is **exactly each fund's expense ratio**, and
+**FZROX has a 0.00% MER and is identical in both** — which is the tell. The
+"two value sets" were gross and net, not two runs.
 
-### 2. `SRC` was a relative path
+**Proof the generator is reproducible:** five consecutive runs produce an
+identical content hash once `generated_at` is dropped —
+`b72059a1ab55e7ee` on all five. And a diff across eight `PYTHONHASHSEED`
+values (0–7) shows no numeric difference whatsoever. The only run-to-run
+variation is the `generated_at` timestamp, which is expected.
+
+**What the misdiagnosis cost:** a commit message and this file both asserted a
+bug that does not exist, and the shipped "mitigation" was a no-op that would
+have quietly masked a future *real* determinism regression. The seed pin has
+been removed; the run-twice guard test is kept, with an honest docstring, as a
+forward-looking check.
+
+**What is worth keeping from this:** `cagr_pct` and `net_cagr_pct` sit
+adjacent in the payload and differ by roughly the MER, which makes them easy to
+confuse when reading output by eye. There is now a test,
+`test_net_cagr_is_exactly_gross_minus_the_fee`, that pins the A6 compounded
+relation `net = (1+gross)(1−mer)−1` for every fund.
+
+### 1. `SRC` was a relative path
 
 `SRC` was `"2026-11-15_AM.../market_prices.csv"`, resolved against the CWD. That
 made the tool impossible to sandbox: a test could not `chdir` into a temp dir
@@ -42,7 +65,7 @@ figures reached the document.
 **Fix:** `SRC` is now absolute, derived from `REPO_ROOT`. CWD is used only for
 output. Tests isolate freely.
 
-### 3. The document was transcribed, not generated
+### 2. The document was transcribed, not generated
 
 The "corrected" report's measured table had been copied by hand. It disagreed
 with the CI table further down the same file, and a peer review noticed the
@@ -88,8 +111,5 @@ returns −0.32%/yr, i.e. ~3pp/yr of distributions are in there.
 
 ## Still open
 
-- Defect #1 is **mitigated, not fixed** — the offending `set` iteration has not
-  been located. Pinning the seed makes it stable and the guard test makes it
-  visible, but the underlying order dependence should be removed.
 - Futures remain out of scope (adjusted closes cannot express roll yield).
 - Jurisdiction-dependent tax conclusions (E3–E6) need operator input.

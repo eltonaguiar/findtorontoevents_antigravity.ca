@@ -108,6 +108,19 @@ this window the **opposite** held: more frequent rebalancing **lowered** return,
 buying a falling bond sleeve. The harvesting effect is real but its **sign depends on the relative
 performance of the sleeves** — it is not a free lunch.
 
+The reviewer's arithmetic concern is fair and worth stating explicitly: the measured table shows
+**geometric** net CAGRs (FXAIX 11.66% − SPY 11.48% = 0.18pp), while the paired table shows the
+**arithmetic** annualised mean of the daily difference series (0.131pp). These are different
+estimands and are not expected to match:
+
+- geometric CAGRs: $(V_T/V_0)^{1/T} - 1$, compounded
+- paired figure: $\overline{r_A - r_B} \times 252$, an arithmetic average
+
+The paired figure is the right one for "is the difference distinguishable from zero", because it
+bootstraps the *difference* series and the two legs are near-perfectly correlated — resampling each
+fund separately would badly overstate the uncertainty. The geometric table is the right one for "what
+would I have earned". Neither is wrong; quoting one against the other is.
+
 ## Forward anchors (current, not trailing)
 
 Fetched 2026-11-23 via `--anchors`:

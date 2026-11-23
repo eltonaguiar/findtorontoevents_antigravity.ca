@@ -15,10 +15,6 @@ not copied from whatever the code happens to print.
 from __future__ import annotations
 
 import csv
-import os
-# Pin hash randomisation BEFORE importing the tool: set iteration order
-# leaks into float accumulation and flips headline CAGRs by ~0.1pp.
-os.environ.setdefault("PYTHONHASHSEED", "0")
 import json
 import sys
 from pathlib import Path
@@ -432,6 +428,33 @@ def test_corrected_doc_numbers_match_the_json(tmp_path, monkeypatch):
     assert f"+{net:.3f}" in doc or f"{net:.3f}" in doc
 
 
+def test_net_cagr_is_exactly_gross_minus_the_fee():
+    """Pin the gross/net relationship (A6, compounded).
+
+    These two fields sit next to each other in the payload and differ by
+    roughly the MER. Reading one where the other was meant is exactly what
+    caused a false "non-deterministic CAGRs" report, so assert the relation
+    explicitly rather than trusting the column names.
+    """
+    src = REPO_ROOT / fd.SRC
+    if not src.exists():
+        pytest.skip("price CSV not present in this checkout")
+    payload = json.loads((REPO_ROOT / "reports" / "fund_deep_dive.json").read_text()) \
+        if (REPO_ROOT / "reports" / "fund_deep_dive.json").exists() else None
+    if payload is None:
+        pytest.skip("no generated payload to check")
+
+    for key, m in payload["funds"].items():
+        gross, net = m["cagr_pct"] / 100.0, m["net_cagr_pct"] / 100.0
+        mer = fd.MER[key]
+        expected = (1 + gross) * (1 - mer) - 1          # A6: compounded
+        assert abs(net - expected) < 5e-4, (
+            f"{key}: net {net:.6f} != compounded gross-after-fee {expected:.6f}"
+        )
+        if mer == 0:
+            assert gross == pytest.approx(net), f"{key}: zero-fee fund must be unchanged"
+
+
 def test_corrected_doc_scopes_futures_out():
     """G1: futures must be explicitly excluded, not silently omitted."""
     text = DOC.read_text()
@@ -485,10 +508,14 @@ def test_L1_adjusted_closes_reinvest_dividends():
 def test_generator_is_byte_stable_across_runs(tmp_path, monkeypatch):
     """Two in-process runs must agree exactly (ignoring generated_at).
 
-    Rationale: this was NOT true. Headline values flipped between two stable
-    states (SPY 11.48 vs 11.59) depending on interpreter hash seed, i.e. a set
-    was iterated somewhere before the arithmetic. Pinning the seed hides it,
-    this test makes it visible if it ever leaks into the numbers again.
+    This is a forward-looking guard only. An earlier commit claimed the tool
+    was non-reproducible and blamed hash randomisation; that diagnosis was
+    WRONG (see updates/2026-11-23-...-erratum). The apparent "two value sets"
+    were `cagr_pct` (gross) and `net_cagr_pct` (net) read in different
+    sessions. Content was in fact stable all along: 5 runs, identical
+    content-sha once `generated_at` is dropped.
+
+    Keep the guard so a REAL regression of this kind cannot slip through.
     """
     outs = []
     for i in range(2):
@@ -501,3 +528,30 @@ def test_generator_is_byte_stable_across_runs(tmp_path, monkeypatch):
         payload.pop("generated_at", None)
         outs.append(json.dumps(payload, sort_keys=True))
     assert outs[0] == outs[1], "generator output is not reproducible"
+
+
+def test_paired_diff_estimand_is_arithmetic_mean_times_252():
+    """`net_point_pct` is an ARITHMETIC annualised mean difference, NOT a
+    difference of geometric CAGRs. A peer reviewer compared it against the
+    geometric table, found 0.18pp vs 0.131pp, and concluded there was an
+    arithmetic error. There was not - the two are different estimands.
+
+    Pin that here so nobody "fixes" the paired figure to match the table.
+    """
+    import statistics as st
+    a = [0.0010, -0.0004, 0.0012, 0.0003] * 20      # 80 obs, block must fit
+    b = [0.0002, -0.0009, 0.0005, -0.0001] * 20
+    res = fd.bootstrap_pair_diff(a, b, block=21, n_boot=50)
+    d = [x - y for x, y in zip(a, b)]
+    assert res["point_pct"] == pytest.approx(st.mean(d) * 252 * 100, abs=1e-9)
+
+    # and it must NOT equal the difference of the two geometric CAGRs
+    def cagr(r):
+        nav = 1.0
+        for x in r:
+            nav *= 1 + x
+        return nav ** (252 / len(r)) - 1
+    geo_gap = (cagr(a) - cagr(b)) * 100
+    assert abs(res["point_pct"] - geo_gap) > 1e-6, (
+        "if these ever coincide the estimand changed - update the doc note"
+    )
