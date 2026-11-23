@@ -35,6 +35,8 @@ jobs:
         run: python tools/cross_system_consensus.py
       - name: LB ranking (operator basis)
         run: python tools/rank_on_lower_bound.py || true
+      - name: Invariant — 0 investable (fails if any pick passes all 5 gates)
+        run: python tools/assert_no_investable.py
       - name: Rebuild rankings + show pass/fail
         run: |
           python tools/build_asset_class_rankings.py --ticket-usd 25000 --out reports/asset_class_rankings.json || true

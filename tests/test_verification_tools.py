@@ -200,3 +200,21 @@ def test_shrinkage_preserves_order_and_reports_B():
     # shrinkage is monotone -> raw and shrunk top-5 order must match
     assert strat["raw_top5"] == strat["shrunk_top5"]
     assert 0.0 < strat["meta"]["B"] <= 1.0
+
+
+# ── investable invariant guard ─────────────────────────────────────
+def test_investable_invariant_holds_today():
+    r = subprocess.run([sys.executable, str(ROOT / "tools/assert_no_investable.py"),
+                        "--out", "/tmp/inv_ok.json"], cwd=ROOT, capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_investable_invariant_fires_on_full_pass():
+    import json as _j
+    fake = {"picks": [{"symbol": "FAKE", "gates": {g: True for g in ("G1", "G2", "G3", "G4", "G5")}}]}
+    p = "/tmp/fake_full_pass.json"
+    _j.dump(fake, open(p, "w"))
+    r = subprocess.run([sys.executable, str(ROOT / "tools/assert_no_investable.py"),
+                        "--rankings", p, "--out", "/tmp/inv_fail.json"], cwd=ROOT, capture_output=True, text=True)
+    assert r.returncode == 1
+    assert "ALARM" in r.stderr or "ALARM" in r.stdout
