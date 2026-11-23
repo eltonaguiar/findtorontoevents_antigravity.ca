@@ -1,0 +1,931 @@
+{
+  "generated_utc": "2026-11-23T04:53:11Z",
+  "ref": "origin/main",
+  "origin_main": "99947f9917868d8cec6206e05e8d0a3dd46bb497",
+  "claims_sha256": "ec6750cd181e5321062fa4bf3b05ab6ed1485be3cb51a11c522f4d3159c2f957",
+  "claims": [
+    {
+      "id": "A1i",
+      "group": "A",
+      "claimant": "peer agent (defect raised against Zoo)",
+      "summary": "final/ranked-list-2026-11-23 tip 3a4f199132d does not contain docs/edge_research/24_EXECUTION_PLAN_2026-11-23.md; that file exists only at 086583427e1 on origin/plan/execution-2026-11-23, which is not an ancestor of 3a4f1991",
+      "manual": true,
+      "manual_reason": "The decisive parts are 'doc 24 is absent from the tree of 3a4f1991' and '086583427e1 is not an ancestor of 3a4f1991'. commit_ancestor_of_main only proves ancestry of origin/main, and the path-in-a-non-main-tree check needs the per-check ref plus a mapped remote (see --remote-map). Both were re-run by hand: git ls-tree 3a4f1991 -- docs/edge_research/ returns 15/22/23/26 only, and git merge-base --is-ancestor 086583427e1 3a4f1991 exits 1.",
+      "checks": [
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "3a4f199132d does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "3a4f199132d",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "086583427e1 does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "086583427e1",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 2,
+      "computed_verdict": "NOT LANDED (manual judgement required)",
+      "expected_verdict": "VERIFIED",
+      "agree": false,
+      "any_fail": true,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "A1ii",
+      "group": "A",
+      "claimant": "peer agent (defect raised against Zoo)",
+      "summary": "Underlying concern is resolved because doc 24 is on origin/main via PR #1072 (merge f67840d1ebe)",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "path_on_main",
+          "status": "PASS",
+          "detail": "docs/edge_research/24_EXECUTION_PLAN_2026-11-23.md on origin/main (blob ab7372bfc6cc) - sha matches prefix ab7372bfc6c",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "path": "docs/edge_research/24_EXECUTION_PLAN_2026-11-23.md",
+            "blob_prefix": "ab7372bfc6c",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "f67840d1ebe does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e f67840d1ebe^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "f67840d1ebe",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 1,
+      "refuting": 1,
+      "computed_verdict": "PARTIALLY",
+      "expected_verdict": "VERIFIED",
+      "agree": false,
+      "any_fail": true,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "A2",
+      "group": "A",
+      "claimant": "peer agent (defect raised against Zoo)",
+      "summary": "Local zoo/p0-recovery-2026-11-20 = 3ef08017bf3 while origin/zoo/p0-recovery-2026-11-20 = efb90f657c9, with 16 unpushed commits including a GROUNDBREAKING POD-EQUITY-BREAKOUT result",
+      "manual": true,
+      "manual_reason": "Ownership ('but NOT MINE') is a human judgement: the 16 unpushed commits are all authored by github-actions[bot], so under the repo rule 'only push your own changes' the branch is not mine to push. The sha/count facts and the author set are automatable; the ownership verdict is not. Note the local branch refs must exist in the clone - on a fresh clone only origin/* refs exist and the range check yields SKIP.",
+      "checks": [
+        {
+          "kind": "commit_exists",
+          "status": "FAIL",
+          "detail": "git cat-file -e 3ef08017bf3^{commit} -> rc=128 (object absent)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "3ef08017bf3",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_exists",
+          "status": "FAIL",
+          "detail": "git cat-file -e efb90f657c9^{commit} -> rc=128 (object absent)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "efb90f657c9",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "author_set",
+          "status": "SKIP",
+          "detail": "git log origin/zoo/p0-recovery-2026-11-20..zoo/p0-recovery-2026-11-20 failed: fatal: ambiguous argument 'origin/zoo/p0-recovery-2026-11-20..zoo/p0-recovery-2026-11-20': unknown revision or path not in the working tree.",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha_range": "origin/zoo/p0-recovery-2026-11-20..zoo/p0-recovery-2026-11-20",
+            "expect_authors": [
+              "eaguiar2015@users.noreply.github.com"
+            ],
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 2,
+      "computed_verdict": "NOT LANDED (manual judgement required)",
+      "expected_verdict": "VERIFIED",
+      "agree": false,
+      "any_fail": true,
+      "any_skip": true,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B1",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "Review repo 34_FINAL_PICKS_2026-11-23/KILOCODE_VSCODE/INVESTMENT_HUB_ASSESSMENT.md at f45f67e; also tools/validate_incubator.py",
+      "manual": true,
+      "manual_reason": "The two file halves are now mechanically checked against review/main (needs --remote-map '{\"review\": \"<review clone>\"}'). What stays human is the PARTIALLY boundary call: the first file is VERIFIED and the second is NOT LANDED anywhere, so whether the claim as a whole is PARTIALLY is a judgement.",
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "sha": "f45f67e",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_on_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "path": "34_FINAL_PICKS_2026-11-23/KILOCODE_VSCODE/INVESTMENT_HUB_ASSESSMENT.md",
+            "blob_prefix": "81829658f26",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "refutes",
+          "ref": "review/main",
+          "params": {
+            "path": "tools/validate_incubator.py",
+            "ref": "review/main",
+            "polarity": "refutes"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 0,
+      "computed_verdict": "UNVERIFIABLE (manual judgement required)",
+      "expected_verdict": "PARTIALLY",
+      "agree": false,
+      "any_fail": false,
+      "any_skip": true,
+      "unresolved_ref_skip": true
+    },
+    {
+      "id": "B2",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "Review main 74f0ff92a43f, range 3f1ab35..74f0ff9, files GITHUB_COPILOT_DEEPSEEK/copilot.md and picks.json",
+      "manual": true,
+      "manual_reason": "74f0ff9's ancestry and the two named paths are now mechanically checked against review/main. What stays human is the PARTIALLY boundary call: the sha is VERIFIED but both named paths are wrong (they live under 34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/).",
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "sha": "74f0ff92a43f",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "refutes",
+          "ref": "review/main",
+          "params": {
+            "path": "GITHUB_COPILOT_DEEPSEEK/copilot.md",
+            "ref": "review/main",
+            "polarity": "refutes"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "refutes",
+          "ref": "review/main",
+          "params": {
+            "path": "picks.json",
+            "ref": "review/main",
+            "polarity": "refutes"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 0,
+      "computed_verdict": "UNVERIFIABLE (manual judgement required)",
+      "expected_verdict": "PARTIALLY",
+      "agree": false,
+      "any_fail": false,
+      "any_skip": true,
+      "unresolved_ref_skip": true
+    },
+    {
+      "id": "B3",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "Main repo c0d48e28968 adds tools/edgar_pit_fundamentals.py, tests/test_edgar_pit_fundamentals.py, reports/pit_filing_lag.json, data/fundamentals_pit/*.json and updates/2026-11-23-edgar-pit-filing-lag-measured.md (COMS note also said LOCAL ONLY)",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "c0d48e28968 does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e c0d48e28968^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "c0d48e28968",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "c0d48e28968 does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "c0d48e28968",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- tools/edgar_pit_fundamentals.py -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "tools/edgar_pit_fundamentals.py",
+            "polarity": "refutes"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- tests/test_edgar_pit_fundamentals.py -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "tests/test_edgar_pit_fundamentals.py",
+            "polarity": "refutes"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- reports/pit_filing_lag.json -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "reports/pit_filing_lag.json",
+            "polarity": "refutes"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- data/fundamentals_pit -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "data/fundamentals_pit",
+            "polarity": "refutes"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- updates/2026-11-23-edgar-pit-filing-lag-measured.md -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "updates/2026-11-23-edgar-pit-filing-lag-measured.md",
+            "polarity": "refutes"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 7,
+      "computed_verdict": "NOT LANDED",
+      "expected_verdict": "NOT LANDED",
+      "agree": true,
+      "any_fail": true,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B4",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "Main repo cd44a8cab33 and 378fdd23fad for tools/paired_bootstrap_vs_benchmark.py and alpha_engine/two_hurdle_gate.py",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "cd44a8cab33 does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e cd44a8cab33^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "cd44a8cab33",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "cd44a8cab33 does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "cd44a8cab33",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "378fdd23fad does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e 378fdd23fad^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "378fdd23fad",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "378fdd23fad does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "378fdd23fad",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- tools/paired_bootstrap_vs_benchmark.py -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "tools/paired_bootstrap_vs_benchmark.py",
+            "polarity": "refutes"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- alpha_engine/two_hurdle_gate.py -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "alpha_engine/two_hurdle_gate.py",
+            "polarity": "refutes"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 6,
+      "computed_verdict": "NOT LANDED",
+      "expected_verdict": "NOT LANDED",
+      "agree": true,
+      "any_fail": true,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B5",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "Review repo a3f6a6b, 41a6e19 and 3f1ab35 landed on review main; one note says 41a6e19, another 41e6e19",
+      "manual": true,
+      "manual_reason": "The negative half (41e6e19 does not exist) and the three positive shas against review/main are now mechanical. The mechanical result is PARTIALLY, not VERIFIED, because taken literally '41e6e19 landed' is refuted; the hand report's VERIFIED rests on the human judgement that 41e6e19 is a typo for 41a6e19.",
+      "checks": [
+        {
+          "kind": "commit_absent",
+          "status": "PASS",
+          "detail": "41e6e19 does not exist in this clone (git cat-file -e -> rc=128)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "sha": "41e6e19",
+            "polarity": "refutes"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "sha": "a3f6a6b",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "sha": "41a6e19",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "sha": "3f1ab35",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 1,
+      "computed_verdict": "NOT LANDED (manual judgement required)",
+      "expected_verdict": "VERIFIED",
+      "agree": false,
+      "any_fail": false,
+      "any_skip": true,
+      "unresolved_ref_skip": true
+    },
+    {
+      "id": "B6",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "Main repo 0266a3067ed, a766c5e06fd and 487a165cb1b; workflow .github/workflows/etf-trend-forward-month-end.yml on main; branch pr/h201-pit-universe-2026-11-23",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "0266a3067ed does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e 0266a3067ed^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "0266a3067ed",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "0266a3067ed does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "0266a3067ed",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "a766c5e06fd does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e a766c5e06fd^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "a766c5e06fd",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "a766c5e06fd does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "a766c5e06fd",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "487a165cb1b does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e 487a165cb1b^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "487a165cb1b",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "487a165cb1b does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "487a165cb1b",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- .github/workflows/etf-trend-forward-month-end.yml -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": ".github/workflows/etf-trend-forward-month-end.yml",
+            "polarity": "refutes"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 7,
+      "computed_verdict": "NOT LANDED",
+      "expected_verdict": "NOT LANDED",
+      "agree": true,
+      "any_fail": true,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B7",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "The commodity TSMOM v3 work was restored to origin/main: tools/vol_target_vs_hold.py is present on main and 4daf025ed1d is landed there.",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "4daf025ed1d does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e 4daf025ed1d^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "4daf025ed1d",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_on_main",
+          "status": "FAIL",
+          "detail": "git ls-tree origin/main -- tools/vol_target_vs_hold.py -> empty (ABSENT from origin/main)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "path": "tools/vol_target_vs_hold.py",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 2,
+      "computed_verdict": "NOT LANDED",
+      "expected_verdict": "NOT LANDED",
+      "agree": true,
+      "any_fail": true,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B7-context",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "The commodity TSMOM v3 commit 4daf025ed1d exists on a real origin ref (origin/research/commodity-tsmom-v3-2026-11-22), i.e. the work was pushed even though it was never landed to main.",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "4daf025ed1d does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "4daf025ed1d",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 1,
+      "computed_verdict": "NOT LANDED",
+      "expected_verdict": "VERIFIED",
+      "agree": false,
+      "any_fail": true,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B8",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "5093eb796f8 for pre-registration docs; tools/per_class_edge_harness.py and tools/vol_target_vs_hold.py on main",
+      "manual": true,
+      "manual_reason": "The mechanical checks are all decidable, but the PARTIALLY label is a human PASS-FAIL boundary call: one of the three sub-claims holds (harness on main) while two do not (5093eb796f8 unreachable, vol_target_vs_hold.py absent). Whether that mix is 'PARTIALLY' or 'NOT LANDED' is judgement.",
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "5093eb796f8 does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e 5093eb796f8^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "5093eb796f8",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_on_any_origin_ref",
+          "status": "FAIL",
+          "detail": "5093eb796f8 does not resolve to a commit",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "5093eb796f8",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_on_main",
+          "status": "PASS",
+          "detail": "tools/per_class_edge_harness.py on origin/main (blob b5990946f68f) - sha matches prefix b5990946",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "path": "tools/per_class_edge_harness.py",
+            "blob_prefix": "b5990946",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- tools/vol_target_vs_hold.py -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "tools/vol_target_vs_hold.py",
+            "polarity": "refutes"
+          }
+        }
+      ],
+      "supporting": 1,
+      "refuting": 3,
+      "computed_verdict": "PARTIALLY (manual judgement required)",
+      "expected_verdict": "PARTIALLY",
+      "agree": true,
+      "any_fail": true,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B9",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "PRs #1067 and #1068 are OPEN",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "pr_state",
+          "status": "SKIP",
+          "detail": "gh unavailable or unauthorised (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "number": 1067,
+            "expect_state": "OPEN",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "pr_state",
+          "status": "SKIP",
+          "detail": "gh unavailable or unauthorised (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "number": 1068,
+            "expect_state": "OPEN",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 0,
+      "computed_verdict": "UNVERIFIABLE",
+      "expected_verdict": "VERIFIED",
+      "agree": false,
+      "any_fail": false,
+      "any_skip": true,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B10",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "Review repo d18179d for 35_TOP_GAINERS_HARVEST_2026-11-23/",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "sha": "d18179d",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "path_on_main",
+          "status": "SKIP",
+          "detail": "cannot resolve review/main in this clone",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "path": "35_TOP_GAINERS_HARVEST_2026-11-23/",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 0,
+      "computed_verdict": "UNVERIFIABLE",
+      "expected_verdict": "VERIFIED",
+      "agree": false,
+      "any_fail": false,
+      "any_skip": true,
+      "unresolved_ref_skip": true
+    },
+    {
+      "id": "B11",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "Main repo tools/capacity_model.py:49 contains HURDLE_TBILL_APR = 0.0432",
+      "manual": true,
+      "manual_reason": "The provenance gap itself is mechanical (the file is absent from origin/main, so the cited line cannot be verified there), but whether that makes the claim 'NOT LANDED' versus 'UNVERIFIABLE' is a human call - the report chose NOT LANDED. The 4.32% hurdle cannot be reproduced from the repository until tools/capacity_model.py is restored to main or the value is re-cited to a source that exists.",
+      "checks": [
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- tools/capacity_model.py -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "tools/capacity_model.py",
+            "polarity": "refutes"
+          }
+        },
+        {
+          "kind": "path_absent_from_main",
+          "status": "PASS",
+          "detail": "git ls-tree origin/main -- tests/test_capacity_model.py -> empty (absent)",
+          "polarity": "refutes",
+          "ref": "origin/main",
+          "params": {
+            "path": "tests/test_capacity_model.py",
+            "polarity": "refutes"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 2,
+      "computed_verdict": "NOT LANDED (manual judgement required)",
+      "expected_verdict": "NOT LANDED",
+      "agree": true,
+      "any_fail": false,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B12",
+      "group": "B",
+      "claimant": "Zoo (my own claims)",
+      "summary": "My claims: PR #1074 merge 692cdea41a6ff753eac68ba89aea936a4cc3a47e, PR #1076 merge 69c5243c5bfdf768b7a795f0a8f6042b51f18748",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "692cdea41a6 does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e 692cdea41a6^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "692cdea41a6",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "FAIL",
+          "detail": "69c5243c5bf does not resolve to a commit in /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca (git cat-file -e 69c5243c5bf^{commit} -> non-zero)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "69c5243c5bf",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "pr_state",
+          "status": "SKIP",
+          "detail": "gh unavailable or unauthorised (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "number": 1074,
+            "expect_state": "MERGED",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "pr_state",
+          "status": "SKIP",
+          "detail": "gh unavailable or unauthorised (gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "number": 1076,
+            "expect_state": "MERGED",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 0,
+      "refuting": 2,
+      "computed_verdict": "NOT LANDED",
+      "expected_verdict": "VERIFIED",
+      "agree": false,
+      "any_fail": true,
+      "any_skip": true,
+      "unresolved_ref_skip": false
+    }
+  ],
+  "strict_violations": [
+    {
+      "id": "A1ii",
+      "why": "disagreement",
+      "computed": "PARTIALLY",
+      "expected": "VERIFIED"
+    },
+    {
+      "id": "B7-context",
+      "why": "disagreement",
+      "computed": "NOT LANDED",
+      "expected": "VERIFIED"
+    },
+    {
+      "id": "B12",
+      "why": "disagreement",
+      "computed": "NOT LANDED",
+      "expected": "VERIFIED"
+    }
+  ]
+}
