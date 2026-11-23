@@ -101,3 +101,37 @@ def test_no_pick_passes_without_holding_and_prereg():
                        dsr_n_trials=362, pre_recorded=False, kill_rule="k"))
     assert p.verdict != "PASS"
     assert p.gates["G2"] is False and p.gates["G5"] is False
+
+
+# ── DSR frontier regression (G3 criteria) ─────────────────────────
+def test_dsr_frontier_matches_production_function():
+    """sr0=K/sqrt(n): n=100, SR=0.5 must clear 0.95 in the REAL function."""
+    import random
+    from alpha_engine.audit3_tribunal import deflated_sharpe
+
+    def make(n, sr, seed=1):
+        rng = random.Random(seed)
+        x = [rng.gauss(0, 1) for _ in range(n)]
+        m = sum(x) / n
+        s = (sum((v - m) ** 2 for v in x) / n) ** 0.5
+        return [(v - m) / s + sr for v in x]
+
+    r = deflated_sharpe(make(100, 0.5), 658)
+    assert r is not None
+    assert 0.93 <= r["dsr"] <= 0.985, r["dsr"]  # 0.9516 measured; band tolerates skew noise
+
+
+def test_dsr_rises_with_n_at_fixed_sharpe():
+    import random
+    from alpha_engine.audit3_tribunal import deflated_sharpe
+
+    def make(n, sr, seed=2):
+        rng = random.Random(seed)
+        x = [rng.gauss(0, 1) for _ in range(n)]
+        m = sum(x) / n
+        s = (sum((v - m) ** 2 for v in x) / n) ** 0.5
+        return [(v - m) / s + sr for v in x]
+
+    small = deflated_sharpe(make(60, 0.45), 658)["dsr"]
+    big = deflated_sharpe(make(300, 0.45), 658)["dsr"]
+    assert big > small, (small, big)
