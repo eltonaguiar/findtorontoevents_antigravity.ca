@@ -236,10 +236,12 @@ def main():
         # canonical: the rule the cells actually carry
         sample = next((v for v in cells.values() if isinstance(v, dict)), {})
         if cells_source == "audit3_ledger":
-            # A ledger cell's `passed` is not the alpha gate: on the 2026-11-23 copy two
-            # cells carry passed=true with verdict WEAK/KILL. Only PROVEN/CANDIDATE count,
-            # so the rule_counts below are reported for transparency and NOT used as the
-            # canonical pass count. (This overwrite is what printed "2" beside "0".)
+            # Two counting rules disagree in this ledger: 2 cells carry `alpha_gate.passed ==
+            # true` (status "proven", alpha_ci_lo ~0.175) while holding WEAK verdicts, because
+            # their n (63, 27) is far under required_n (922, 295). A cell is positive here only
+            # when its VERDICT is PROVEN/CANDIDATE, so the rule counts are reported for
+            # transparency and never used as the canonical count. A rule count previously
+            # overwrote the verdict count, printing 2 beside a check that said 0.
             field_passed = rule_counts.get("passed", 0)
         elif isinstance(sample.get("alpha_gate"), dict):
             cells_pass = rule_counts["alpha_gate.passed"]
