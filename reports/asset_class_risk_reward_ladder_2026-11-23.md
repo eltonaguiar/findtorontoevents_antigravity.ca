@@ -1,0 +1,169 @@
+# The ladder: what is stable, what pays, and what could actually be proven
+
+**2026-11-23 · paper only · zero capital sanctioned · not investment advice**
+
+The right way to run money is boring-first: hold something stable, prove the small improvement on
+it, then climb. This memo orders everything the programme has measured into that ladder, states
+what each rung is worth, and says exactly what evidence would promote it. Every number below comes
+from an artifact in this repo; the claim IDs are in `reports/claim_register.json`.
+
+---
+
+## Tier 0 — Buyable now, and the only thing here that is *measured* rather than hoped for
+
+**Volatility-targeted 60/40.** C-014, 2005-01-03..2026-11-20, SPY/TLT, 5 bp/unit turnover, leverage
+from *yesterday's* realised 60-day vol, cap 2x:
+
+| | CAGR | vol | Sharpe | max DD | certainty equiv |
+|---|---|---|---|---|---|
+| plain 60/40 | 7.85% | 10.87% | 0.750 | −31.42% | 7.55% |
+| 60/40 vol-target 10% | **9.28%** | **10.53%** | **0.895** | **−22.37%** | **8.87%** |
+
+That is +1.43 pp CAGR, lower vol, and a drawdown cut by 9 pp — from a rule with no forecast in it.
+C-008 reproduces the same mechanism on SPY alone (maxDD 21.0% → 11.4%, CAGR 8.38% → 6.64%): the
+drawdown half is real and repeatable, the return half is not free.
+
+**Read it correctly:** this is risk control, not alpha. It does not beat buy-and-hold SPY on
+absolute return (7.31% vs 10.30% when applied to a single asset — C-014), and its drawdown benefit
+is **granularity-dependent**: daily rebalancing gave −22.37% vs −31.42%, monthly gave −33.72% vs
+−28.45% (C-020). Rebalance frequency must travel with the number or the claim is not reproducible.
+
+**Why it is Tier 0:** it is the only rung where the evidence is 20 years of data, the mechanism is
+arithmetic (constant risk instead of constant weights), and the cost is 5 bp/unit — orders of
+magnitude below every cost floor in this programme. It is also the honest answer to "give me
+something relatively stable": the stability is the deliverable, the +1.43 pp is the bonus.
+
+**What would promote it:** an out-of-sample window never touched (e.g. 2015-2026 held out before
+looking), plus the rebalance-frequency convention stated up front. Nothing else is missing.
+
+**HRP as the risk-only variant** (C-020): vol 8.87 vs 10.28 and maxDD −17.79 vs −28.45 versus
+60/40, but its certainty equivalent does **not** beat 60/40 — 0 of 5 paired bootstraps exclude zero
+(HRP −1.93, CI [−4.82, +0.93]). Sell it as lower risk, never as higher return.
+
+---
+
+## Tier 1 — One cell with a real number, blocked on time not on skill
+
+**EQUITY H-201, cross-sectional 6-month momentum, top 3 of a broad universe.** CI-LB
+**+7.246 bp/day** over 3,744 days, 179 trades. Cost is irrelevant here: the floor is a **614 bp**
+round trip (30.7x the assumed 10 bp) — C-017.
+
+It is `NOT_PROVEN` for two arithmetic reasons, not for a bad result (C-019, C-024):
+- **Multiplicity:** DSR 0.9469 against a 0.95 bar; it holds to N=28 against 29 declared. The
+  effective trial count is ~25 (band 20-30), so the pass boundary sits *inside* the uncertainty
+  band — unresolvable at this sample size.
+- **Data margin:** needs 0.073872 daily Sharpe, has 0.073600 — **76.7 more trading days**.
+
+And the honest ceiling: on a survivorship-free universe it may not survive. The 44-name PIT
+universe meets the count bar but is `PARTIAL_NON_DELISTING_AWARE`, so the pod caps its verdict at
+`CANDIDATE_SURVIVORSHIP_FLAGGED`. The vol-matched CI-LB is **−0.533**: when scaled to SPY's
+volatility the excess goes *negative*, which is what a beta proxy looks like (C-022).
+
+**What would promote it:** 77 forward trading days at the same effect size (running now, day 15 of
+a 20-day gate), and a non-overlapping second universe. Both are already specified; neither can be
+hurried.
+
+---
+
+## Tier 2 — Positive numbers that are not edge
+
+**ETF and INDEX** both have positive CI-LB and **negative excess versus their own benchmark**
+(C-016). They are the asset class doing the work, not the signal. Their cost floors (165 bp, 73 bp)
+are comfortable, which is exactly why the failure cannot be blamed on cost.
+
+**FUTURES** is the opposite: CI-LB 0.186 bp/day against an 18 bp floor (**1.8x**) — cost binds
+immediately. Its MDE is 4.32 bp/day, so the cell is at its own detection limit.
+
+---
+
+## Tier 3 — Real mechanism, zero allocation
+
+**Delta-neutral funding carry.** 1.9252 bp/day measured across 5 coins, 2,152 days (C-010/C-013/
+C-018). The construction was corrected to a quantity-matched book: net delta is zero by algebra,
+rehedge drag is **0.0 bp/day**, and cash crossings are 111 / 71 / 32 days for taker / maker-entry /
+maker-both. On paper that is the best risk-adjusted thing in the programme.
+
+It stays at **0%** for two reasons that are not statistical:
+1. **The fee tier.** The whole result rests on VIP0 maker 2 bp / taker 5 bp; adverse-selection
+   budget survives only to ~5 bp/fill (73 days) and is worse than taker above ~7 bp/fill.
+2. **Funding decay.** The carry's sign is persistent, not iid (P(neg|neg)=0.666), and the obvious
+   overlay is priced and dead: exiting on negative funding avoids 1,738 bp and costs 15,440 bp.
+
+**CRYPTO momentum** is the high-vol cell: 43% vol, MDE 11.48 bp/day, **632 years** of daily data to
+detect a 1.92 bp/day effect. BTC buy-and-hold did 49.1% CAGR with Sharpe 0.911 — but with an −83%
+drawdown, and that is beta, not a pick (C-005).
+
+---
+
+## Tier 4 — Untouchable, and the reason is arithmetic
+
+**PENNY_STOCK**: MDE 19.73 bp/day, **1,572 years** of daily data to detect a tradable effect, and
+its universe is a seed list with no volume history, so a liquidity haircut would refine a number
+that cannot be trusted.
+
+**COMMODITY**: `DATA_INTEGRITY_FAIL`, not an economic refutation — CL=F has a negative print and 55
+moves >8%, NG=F has 25 roll spikes. **MEME**: cost unmeasurable (SHIB had 53 distinct highs across
+7,135 bars and 84.3% zero-range bars). You cannot prove anything about a class whose price series
+is not a price series.
+
+---
+
+## The one table that decides everything
+
+MDE versus CI-LB, per class (from `reports/2026-11-22-cost-floor-and-power.md`):
+
+| class | MDE (bp/day) | CI-LB | at detection limit? |
+|---|---|---|---|
+| EQUITY | 7.17 | 7.246 | **yes — CI-LB ≈ MDE** |
+| CRYPTO | 11.48 | 8.452 | yes |
+| ETF | 4.86 | 2.007 | yes |
+| INDEX | 4.63 | 1.613 | yes |
+| FUTURES | 4.32 | 0.186 | yes |
+| BOND / FOREX / COMMODITY / PENNY | 1.98 / 2.50 / 2.60 / 19.73 | negative | no — already negative |
+
+**18 of 40 cells have a CI lower bound below their own detection limit.** If the true effect is
+1.92 bp/day (twice the cash hurdle), the years of daily data needed are: BOND 15.8, FOREX 26.2,
+COMMODITY 27.2, MUTUAL_FUND 73.7, FUTURES 75.4, INDEX 89.7, ETF 95.5, EQUITY 207.5, CRYPTO 632.7,
+PENNY 1,572.
+
+**That is the answer to "find us an edge": more years will not do it.** The response is more
+independent observations per year — event-driven / per-trade sampling (H-201's n=179 trades, not
+15,000 daily means) — or a question whose effect is larger than 1.9 bp/day.
+
+---
+
+## How a quant would actually prove the next thing
+
+The programme's failure mode has been claiming a win that a paired test could not support, so the
+proof standard is fixed and non-negotiable:
+
+1. **Pre-register before the first run** (rule M-107). H-232 is the model: registered, committed
+   (`b9ff7faab3e`), *then* run — and it came back negative (−1.826 bp/day, CI [−2.754, −0.922]),
+   which is what an honest test looks like.
+2. **Paired bootstrap CI on the DIFFERENCE vs the class's own benchmark.** A positive CI-LB alone
+   is how ETF and INDEX got called signals while underperforming their own index.
+3. **Cost at measured levels, with the floor disclosed.** k* = cost multiple at which CI-LB hits
+   zero; if k* < 1.5 the cell is a cost question, not an edge question.
+4. **Multiplicity charged at the effective trial count (~25), not at 1.** The family has already
+   been charged; a new cell raises N.
+5. **A pre-registered kill rule** on forward rows only, CI-LB ≤ 0.
+6. **Report the vol-matched number beside the raw one, always.** H-201's raw +7.246 and matched
+   −0.533 are the same cell.
+
+## What to do, in order
+
+1. **Compute nothing new on the stable tier.** Ship the vol-target 60/40 *as risk control*, state
+   the rebalance frequency, and hold it. It is the only thing that passes a test today.
+2. **Let H-201's clock run.** Day 15 of a 20-day gate; 77 days to a verdict. Five more sessions
+   before it is even allowed an opinion. Buying delisting-aware data is what would let that
+   verdict be a PASS instead of a flagged candidate.
+3. **Do not touch crypto carry until the venue fee tier is a measured number**, not a published
+   assumption.
+4. **Stop testing PENNY, MEME and COMMODITY** until their price series pass a data-integrity gate.
+   Effort there produces noise with a p-value attached.
+
+**The honest summary a fund manager should take from this:** the stable rung is real and the
+improvement is small; the profitable-looking rungs are either beta, blocked on time, or blocked on
+data; and the largest remaining lever is not a better model, it is a delisting-aware universe plus a
+measured venue fee tier. Buying those two datasets is worth more than any further backtest in this
+repo.
