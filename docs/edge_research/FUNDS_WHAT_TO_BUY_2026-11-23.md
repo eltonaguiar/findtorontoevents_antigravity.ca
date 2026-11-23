@@ -94,3 +94,17 @@ My Sortino divided downside deviation by the COUNT OF NEGATIVE DAYS; the standar
 periods)**. My version **understated Sortino by ~30%**. Corrected values (excess-of-cash): FXAIX **0.722** (was 0.501),
 SPY 0.714, FZROX 0.641, VTSAX 0.624, VTI 0.625, BND −0.889. Sharpe was unaffected. Also clarified: the fee gap
 (7.95bp/yr) **under-predicts** the observed ~17bp/yr gap (the excess is unattributed tracking noise, still within CIs).
+
+---
+
+## CORRECTION 2026-11-23T21:36Z — the value "+0.11%→+2.89%" is UNCONFIRMED (yfinance default is adjusted)
+On verifying the toolchain, **yfinance 1.3.0's `history()["Close"]` is already adjusted** (auto_adjust None→True). The
+value pipeline's price fetch used `history(period="5d")` **with the default**, so its prices were **already total-return** —
+**not** price-only. Therefore my claim that the +0.11% value result is a price-only artifact that "corrects to +2.89%" is
+**not established**: it only holds if the value *backtest* used raw prices, which I have not confirmed.
+
+**What stands:** the *measured dividend drag* on a genuinely raw feed is real — **~2.78%/yr** for a value universe (VTV 2.78,
+DVY 3.78, VBR 2.23, SPY 1.94). That is the cost **if** a pipeline uses raw Close.
+**What is retracted:** the specific "+0.11% → +2.89%" correction, pending proof of which price source the value test used.
+The genuine raw-price exposure in the repo is **62 files** that explicitly use `auto_adjust=False` or raw Stooq/chart-API
+Close (see `updates/2026-11-23-repo-total-return-audit.md`), not the value pipeline's default path.
