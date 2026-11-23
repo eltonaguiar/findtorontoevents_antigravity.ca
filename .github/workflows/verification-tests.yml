@@ -109,8 +109,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install pytest
-        run: python3 -m pip install --quiet 'pytest>=7,<9'
+      - name: Install test dependencies
+        # pymysql is imported at module scope by tools/prediction_market_consensus_pilot.py,
+        # which tests/test_pmc_promotion_consistency.py imports to check its PROMOTION_CRITERIA
+        # mirror the state file's. Without it that guard errors instead of asserting.
+        run: python3 -m pip install --quiet 'pytest>=7,<9' pymysql
 
       - name: Run verification test suites
         run: |

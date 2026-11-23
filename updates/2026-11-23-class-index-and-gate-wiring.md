@@ -79,3 +79,14 @@ fetch, so the whole tree, including `verified_strategies/paper_pilot/` and the
 three `tools/` files, is present in the checkout. The guard therefore reads its
 real inputs in CI and needed no "skip with a reason" fallback. (Other workflows
 in the repo do use sparse checkout, but not this gate.)
+
+**Second finding, from the first CI run:** the guard failed in CI with
+`ModuleNotFoundError: No module named 'pymysql'` in
+`test_generator_constants_match_state_file`. That test imports
+`tools/prediction_market_consensus_pilot.py` to compare its `PROMOTION_CRITERIA`
+with the state file, and that module does `import pymysql` at module scope. The
+gate installed only pytest, so the dependency was present locally but absent in
+CI. The fix installs `pymysql` in the gate's setup step: the guard now runs
+rather than errors, which is the point of wiring it in at all. Installing the
+dependency was chosen over skipping the import test, because a skip is a guard
+that does not guard.
