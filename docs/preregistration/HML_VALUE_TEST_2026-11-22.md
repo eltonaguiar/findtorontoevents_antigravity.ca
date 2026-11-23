@@ -132,16 +132,24 @@ to `INVESTABLE`.
 
 ## 6. Expected result, recorded before running
 
-**PEAD has decayed since 2005/06** according to three independent sources. The same
-post-publication decay logic applies to the value premium, which has been widely known
-and traded for decades.
+**PEAD has decayed since 2005/06**, and the same post-publication decay logic is expected
+to apply to the value premium, which has been widely known and traded for decades.
 
-**Status of that claim: OPERATOR-SUPPLIED PREMISE, sources not yet named.** As written,
-"three independent sources" is unfalsifiable — a reader cannot tell whether the decay
-holds, and a null result could always be explained away by the premise. Before this
-document is treated as complete, the three sources must be **named and read**, and the
-claim restated with what each one actually measures (sample period, universe, anomaly
-definition). Until then the reasoning below is a prior, not evidence.
+The three sources below were **located and read on 2026-11-22** rather than assumed. They
+are listed with what each one actually measures, because only the first is PEAD-specific
+— the other two support the decay mechanism, not the PEAD-specific date.
+
+| # | Source | What it actually measures | Relevance |
+|---|---|---|---|
+| 1 | **Martineau, C. (2022)**, "Rest in Peace Post-Earnings Announcement Drift", *Critical Finance Review* **11(3-4), 613-646** | PEAD directly. Abstract: *"For large stocks, PEAD have been non-existent since 2006"* | **Direct.** The only source that names 2006, and it names it for **large caps** — exactly our universe |
+| 2 | **Chordia, T., Subrahmanyam, A. & Tong, Q. (2014)**, "Have capital market anomalies attenuated in the recent era of high liquidity and trading activity?", *Journal of Accounting and Economics* **58, 41-58** | Anomalies broadly, not PEAD. *"the majority of the anomalies have attenuated… approximately halved after decimalization"* | Supports the decay **mechanism** post-~2001. Not PEAD-specific |
+| 3 | **Richardson, S., Tuna, I. & Wysocki, C. (2010)**, "Accounting anomalies and fundamental analysis: A review of recent research advances", *Journal of Accounting and Economics* **50(2-3), 410-454** | A review of accounting anomalies incl. PEAD, documenting post-publication attenuation | Supports decay of **this family** pre-2010. A review, not new empirics |
+
+**One caveat taken from source 1, and worth keeping:** Martineau finds PEAD *non-existent
+for large stocks since 2006* but **still present in microcaps** (disappearing there only
+more recently). The expected null therefore applies to a **large-cap** test. A microcap
+extension would be a different test with a different prior, and must not inherit this
+one.
 
 Therefore: **a null result on a large-cap universe after 2006 is the expected outcome,
 not a failure of the test.** It would corroborate the decay story rather than contradict
