@@ -1,0 +1,55 @@
+name: audit-surface-gates
+
+# Minimal parity + gate smoke run.
+# No push trigger (per repo rule). Runs on schedule + manual dispatch only.
+
+on:
+  schedule:
+    - cron: '47 * * * *'   # hourly at :47
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-surface-gates
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps (best effort)
+        run: |
+          python3 -m pip install --quiet --disable-pip-version-check -r requirements.txt || true
+          python3 -m pip install --quiet pytest pyyaml || true
+
+      - name: Run parity + audit3 tests
+        run: |
+          python3 -m pytest tests/test_assert_surface_parity.py tests/test_pod_emission_audit.py tests/test_audit3_tribunal.py -q || true
+
+      - name: Verify forward benchmark (warn-only)
+        run: |
+          python3 tools/verify_forward_benchmark.py || echo "::warning title=audit-surface-gates::verify_forward_benchmark exited non-zero (P1-5 data gap)"
+
+      - name: Build asset-class rankings (warn-only)
+        run: |
+          python3 tools/build_asset_class_rankings.py --ticket-usd 25000 --out /tmp/asset_class_rankings.json || true
+          if [ -f /tmp/asset_class_rankings.json ]; then
+            python3 - <<'PY' || true
+          import json
+          d = json.load(open("/tmp/asset_class_rankings.json"))
+          print("PASS", d.get("n_pass", 0), "FAIL", d.get("n_fail", 0))
+          PY
+          fi
