@@ -124,7 +124,7 @@ def round_trip_cost_bp(ticket_usd: float, side: str, asset_class: str | None = N
 
 
 def gate_pick(p: Pick) -> Pick:
-    cost = round_trip_cost_bp(p.ticket_usd, p.side)
+    cost = round_trip_cost_bp(p.ticket_usd, p.side, p.asset_class, p.symbol)
     g = {}
 
     # G1: gross > 2x measured RT cost
