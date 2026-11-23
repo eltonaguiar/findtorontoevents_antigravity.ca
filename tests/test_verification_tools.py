@@ -135,3 +135,18 @@ def test_dsr_rises_with_n_at_fixed_sharpe():
     small = deflated_sharpe(make(60, 0.45), 658)["dsr"]
     big = deflated_sharpe(make(300, 0.45), 658)["dsr"]
     assert big > small, (small, big)
+
+
+# ── cross-agent picks aggregator ───────────────────────────────────
+def test_aggregate_agent_picks_runs_on_review_drop():
+    r = subprocess.run([sys.executable, str(ROOT / "tools/aggregate_agent_picks.py"),
+                        "--root", "/home/eaguiar2015/antigravity_review_Nov192026",
+                        "--date", "2026-11-23",
+                        "--out", "/tmp/rollup_test.json"],
+                       cwd=ROOT, capture_output=True, text=True)
+    # exit 0 if the drop exists; 2 only if the folder is absent (tolerate both in CI)
+    assert r.returncode in (0, 2), r.stdout + r.stderr
+    if r.returncode == 0:
+        d = json.load(open("/tmp/rollup_test.json"))
+        assert d["n_agents"] >= 1
+        assert "per_class_combined" in d
