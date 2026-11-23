@@ -74,12 +74,16 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        # Full history, not a shallow clone. verify_peer_claims refuses shallow
-        # clones by default because ancestry/object checks silently invert
-        # verdicts there (defect 1 above). fetch-depth: 0 keeps the gate honest.
+        # fetch-depth: 0 (full history), NOT the default depth-1 clone.
+        # verify_peer_claims refuses shallow clones by default because ancestry
+        # and object-existence checks silently invert verdicts there (defect 1
+        # above). A full fetch of this ~500MB history is slow, but checkout runs
+        # once and the 10-minute timeout covers it; the tests themselves are ~2s.
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          # Submodules are not needed and each one adds a fetch.
+          submodules: false
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v6
