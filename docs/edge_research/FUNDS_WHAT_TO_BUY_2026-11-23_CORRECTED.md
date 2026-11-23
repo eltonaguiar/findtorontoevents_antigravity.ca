@@ -121,6 +121,35 @@ bootstraps the *difference* series and the two legs are near-perfectly correlate
 fund separately would badly overstate the uncertainty. The geometric table is the right one for "what
 would I have earned". Neither is wrong; quoting one against the other is.
 
+## The glide path (D6/D7) — bonds were pure drag in this window
+
+`python3 tools/fund_glide_path.py` walks the equity allocation from 100/0 down to 40/60:
+
+| equity/bond | CAGR (gross) | CAGR (net) | vol | Sharpe | max DD |
+|---|---:|---:|---:|---:|---:|
+| 100/0 | 11.59% | 11.48% | 17.33% | **0.443** | −24.50% |
+| 90/10 | 10.61% | 10.51% | 15.91% | 0.421 | −23.52% |
+| 80/20 | 9.59% | 9.50% | 14.49% | 0.393 | −22.61% |
+| 70/30 | 8.54% | 8.46% | 13.07% | 0.356 | −21.74% |
+| 60/40 | 7.45% | 7.37% | 11.66% | 0.306 | −20.92% |
+| 50/50 | 6.31% | 6.24% | 10.28% | 0.236 | −20.09% |
+| 40/60 | 5.11% | 5.06% | 8.95% | 0.139 | −19.26% |
+
+**Sharpe falls monotonically as bonds are added.** In this window every bond allocation
+*reduced* risk-adjusted return, because BND's excess return over cash was negative
+(Sharpe −0.68). Adding a negatively-performing sleeve lowers volatility less than it lowers
+return — the diversification benefit was smaller than the drag.
+
+Quarterly rebalancing is worse at every mix (60/40: 6.71% net vs 7.37% buy-and-hold), with
+0.17 turnover — consistent with the rebalancing table above: rebalancing kept buying the
+falling sleeve.
+
+**Read this against the forward anchors, not on its own.** On a forward BND YTM of 4.11%
+versus a 4.12% cash rate, a bond sleeve is roughly neutral-to-positive going forward, so this
+table's monotonic Sharpe decline is a statement about the *past five years of rising rates*,
+not a general law. This is the SPY/BND line only — it is not the efficient frontier over all
+assets, and a point further left may exist.
+
 ## Forward anchors (current, not trailing)
 
 Fetched 2026-11-23 via `--anchors`:
