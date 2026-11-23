@@ -23,16 +23,18 @@ def main():
     out = {"generated_at": __import__("datetime").datetime.now(__import__("datetime").UTC).isoformat(),
            "source": "riseoftheclaw/data/signal_tracking.json (trade-level)",
            "symbol": "AUDJPY=X", "n": n,
-           "mean_pct": round(st.mean(pn), 4), "median_pct": round(st.median(pn), 4),
-           "sd_pct": round(st.pstdev(pn), 4), "min_pct": round(min(pn), 4), "max_pct": round(max(pn), 4),
+           "mean_pct": round(st.mean(pn)*100, 4), "median_pct": round(st.median(pn)*100, 4),
+           "sd_pct": round(st.pstdev(pn)*100, 4), "min_pct": round(min(pn)*100, 4), "max_pct": round(max(pn)*100, 4),
            "wins": w, "losses": sum(1 for x in pn if x < 0), "zeros": sum(1 for x in pn if x == 0),
-           "mean_excl_top3_pct": round(st.mean(pn[:-3]), 4) if n > 3 else None,
-           "trimmed10_pct": round(st.mean(pn[k:n - k]), 4) if n > 2 * k else None,
+           "mean_excl_top3_pct": round(st.mean(pn[:-3])*100, 4) if n > 3 else None,
+           "trimmed10_pct": round(st.mean(pn[k:n - k])*100, 4) if n > 2 * k else None,
            "sign_test_p_two_sided": round(p_sign, 4) if p_sign is not None else None,
            "audit3_aggregate_reference": {"n": 34, "net_expectancy_pct": 0.576, "dsr": 0.8148, "verdict": "WEAK"},
            "finding": ("CONFLICT: trade-level AUDJPY is a LOSING pattern ({} wins/{}; mean {:.2f}%, median {:.2f}%, "
                        "sign p~{}) with one +{:.2f}% outlier - it does NOT corroborate the audit3 +0.576% aggregate."
                        ).format(w, n, st.mean(pn) * 100, st.median(pn) * 100, p_sign, max(pn) * 100)}
+    out["outlier_flag"] = ("one value >100% (%.0f%%) is implausible for AUDJPY - likely a data error or "
+                           "different instrument; it dominates the mean" % (max(pn)*100)) if max(pn) > 1.0 else None
     Path("reports/audjpy_tradelevel_check.json").write_text(json.dumps(out, indent=2) + "\n")
     print(json.dumps({k: out[k] for k in ("n", "mean_pct", "median_pct", "wins", "losses", "max_pct",
                                           "mean_excl_top3_pct", "trimmed10_pct", "sign_test_p_two_sided")}, indent=1))
