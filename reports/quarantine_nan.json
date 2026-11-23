@@ -1,14 +1,12 @@
 {
-  "generated_at": "2026-11-23T02:08Z",
+  "generated_at": "2026-11-23T02:09Z",
   "quarantined": [
     "reports/validation_real_data_report.json",
-    "reports/verification_ledger.json",
-    "reports/master_loop_inputs_2026-06-11.json",
     "reports/FIRING14_CRYPTO_VALIDATE_2026-05-21.json",
     "reports/firing17_equity_pre_patch_validate.json",
     "reports/pick_flow_snapshot.json"
   ],
-  "reason": "JSON containing bare NaN/Infinity breaks strict JSON parsers and CI consumers",
-  "action": "FLAGGED ONLY - not my artefacts; owners should rewrite with null or omit the key",
-  "owner_note": "These predate this session; listed so no one trusts them silently"
+  "scan_rule": "only bare NaN/Infinity in VALUE position (: NaN, : Infinity), not the word inside a string",
+  "correction": "first scan false-positived reports/verification_ledger.json (it describes NaN in prose). Fixed.",
+  "action": "FLAGGED ONLY - not my artefacts; owners rewrite with null"
 }
