@@ -70,10 +70,60 @@ Moving-block bootstrap (21-day blocks, 1,000 draws, fixed seed), 90% intervals o
 Equity CAGR intervals span ~25 percentage points. **Ranking equity funds on 5-year CAGR is not
 supported by this data.** Only the cash series is tight.
 
-## Does a mutual fund beat the ETF? — the honest answer
+## Step 0 — the account wrapper decides this, not the fund
 
-Paired bootstrap on the *difference* series (the correct test; separate intervals prove nothing
-for two near-identical series):
+**(plan item E10.)** The original document asked "mutual fund or ETF?" first. That is the wrong
+first question. Whether the fee edge in the next section is worth anything, and whether the cheaper
+fund is even *purchasable*, depends on which account the money sits in. Answer this first.
+
+### The two facts that reorder everything
+
+1. **ETF vs MF is a tax question in a taxable account and a cost question everywhere else.** ETFs
+   create and redeem in kind, so they rarely distribute capital gains; a mutual fund must sell
+   securities to meet redemptions and distributes the gains to every holder. In a taxable account
+   that difference can exceed the MER gap. In a tax-sheltered account it is worth **exactly zero** —
+   so the only thing left to compare is the expense ratio.
+2. **The funds named in this report may not be available to you at all.** FXAIX, FZROX and VTSAX are
+   US-domiciled mutual funds. They are generally **not purchasable by Canadian residents**, and
+   FZROX is a Fidelity loss-leader that is only offered in US Fidelity accounts. If you are
+   investing from Canada, most of the fund-specific conclusions here do not apply as written — the
+   transferable conclusion is the *method*, not the ticker.
+
+### What the wrapper implies
+
+| account | tax on distributions | does the fee edge survive? | what to optimise |
+|---|---|---|---|
+| US taxable brokerage | **yes**, MFs distribute gains | yes — and the ETF's in-kind structure often beats the fee edge | tax efficiency, then MER |
+| US Roth IRA / 401(k) / traditional IRA | no | yes, undiluted | **MER only** — FZROX/FXAIX win outright |
+| Canadian TFSA | no Canadian tax on growth | yes, but see withholding below | MER only, *and* avoid US-domiciled holdings |
+| Canadian RRSP | deferred | yes, undiluted | MER only; US-domiciled is *preferred* here |
+| Canadian taxable | yes | yes — but the MF's distributions can swamp it | tax efficiency, then MER |
+
+### The Canadian withholding wrinkle (flag, not advice)
+
+US-domiciled funds pay US dividend withholding to non-residents. Under the Canada–US treaty an
+**RRSP is exempt**; a **TFSA is not**, so roughly 15% of the US dividend is lost permanently inside a
+TFSA. This inverts the naive answer twice over: in a TFSA you want Canadian-domiciled (or
+swap-based) exposure even at a higher MER, while in an RRSP the US-domiciled fund is the efficient
+choice. **I have not verified this against current CRA/IRS guidance in this session** — treat it as a
+question to confirm with a tax professional, not a conclusion.
+
+### Why this is section zero and not a footnote
+
+Four of the five original "what should I buy" recommendations are conditional on a US tax-sheltered
+account. If you are in a Canadian taxable account the ranking changes; if you are in a TFSA the
+*domicile* decision can outweigh the MER decision entirely. Leading with the fund comparison invites
+the reader to apply a conclusion that was never computed for their situation.
+
+> **Unresolved (plan items E3–E6):** which jurisdiction applies has not been confirmed by the
+> operator. Everything below is computed for a **US-domiciled, USD, tax-ignorant** holder. The
+> numbers are correct for that holder and not necessarily for any other.
+
+## Step 1 — does a mutual fund beat the ETF? (only asked after the wrapper)
+
+Given a tax-sheltered US wrapper, the fee comparison is the whole comparison. Paired bootstrap on the
+*difference* series (the correct test; separate intervals prove nothing for two near-identical
+series):
 
 | pair | gross | fee advantage | **net** | distinguishable from zero? |
 |---|---:|---:|---:|---|
@@ -184,7 +234,8 @@ requires contract-level data.** Treat any futures conclusion from this dataset a
 
 ## Bottom line
 
-1. **Order of decision:** account wrapper (taxable vs registered) → then vehicle. Not the reverse.
+1. **Order of decision:** account wrapper (Step 0) → then vehicle (Step 1). Not the reverse, and
+   not optional: four of the five recommendations are conditional on a US tax-sheltered account.
 2. **Core holding:** broad low-cost index. Same beta everywhere; choose the lowest total cost you can actually access.
 3. **MF vs ETF is a tax-and-minimum question, not a return question.** The fee edge is real (~0.08pp/yr); the return edge is unmeasurable here.
 4. **Risk:** 100% equity returned ~11.5%/yr with a −24.5% drawdown. If you cannot hold through that, a 60/40 is defensible — and on *current* yields more defensible than the trailing numbers suggest.
@@ -200,6 +251,10 @@ requires contract-level data.** Treat any futures conclusion from this dataset a
 ## Still open
 
 Plan: `docs/edge_research/FUND_DEEP_DIVE_TODO_2026-11-23.md` (173 items, 15 sections).
-Blocked on operator input: **E3/E4/E5/E6** (jurisdiction — Canadian vs US account wrapper) and
-**G3–G7** (futures contract-level data). Peer review of *these* corrected numbers (J1–J5, M1–M5) has
-not yet been run.
+
+- **E3–E6 (blocked, needs operator):** jurisdiction — Canadian TFSA/RRSP vs US Roth/IRA vs taxable.
+  Step 0 above is written jurisdiction-agnostic on purpose; the ranking below it is not.
+- **G3–G7 (blocked):** futures need contract-level data (front-month settlements + roll dates).
+- Peer review of the *corrected* numbers was run against a local model and found one real
+  inconsistency (the two-estimand question, now documented). An external review has not been done.
+- The Canadian withholding statement in Step 0 is flagged as unverified — confirm before relying on it.

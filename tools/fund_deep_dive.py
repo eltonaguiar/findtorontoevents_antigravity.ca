@@ -31,6 +31,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SRC = str(REPO_ROOT / "2026-11-15_AM_profitability-plan"
                   / "copilot-financial-review" / "market_prices.csv")
 ANN = 252
+RET_FOR_TEST = None   # set by tests that need the loader output
 CASH_KEY = "SGOV_adj"
 # expense ratios (MER), decimal per year
 MER = {"FZROX_adj": 0.0000, "FXAIX_adj": 0.00015, "VTSAX_adj": 0.0004,
@@ -263,6 +264,13 @@ def portfolio(ret, weights, rebal=None, merblend=0.0, spread_bp=0.0):
     `spread_bp` charges a round-trip cost on the traded fraction at each
     rebalance: cost = turnover * spread. Turnover is the one-way weight change,
     sum(|w_drifted - w_target|)/2. (plan item D3)
+
+    `merblend` is accepted so call sites can say what the blended expense ratio
+    is, but it deliberately charges NOTHING: the fee is applied by metrics(),
+    which every caller runs on the returned series. Charging it here as well
+    would double-count the MER. (An earlier commit message claimed this note
+    already existed; it did not. It does now, and
+    test_portfolio_does_not_double_charge_the_fee pins the behaviour.)
     """
     cols = list(weights)
     n = min(len(ret[c]) for c in cols)

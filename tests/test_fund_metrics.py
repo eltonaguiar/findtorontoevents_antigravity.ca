@@ -555,3 +555,48 @@ def test_paired_diff_estimand_is_arithmetic_mean_times_252():
     assert abs(res["point_pct"] - geo_gap) > 1e-6, (
         "if these ever coincide the estimand changed - update the doc note"
     )
+
+
+# --------------------------------------------------------------------------
+# E10 — the account WRAPPER must be decided before the fund vehicle
+# --------------------------------------------------------------------------
+def test_E10_wrapper_section_precedes_the_fund_comparison():
+    """Leading with "MF or ETF?" invites the reader to apply a conclusion that
+    was never computed for their account type. Four of the five recommendations
+    are conditional on a US tax-sheltered wrapper, so Step 0 must come first.
+    """
+    text = DOC.read_text()
+    i_wrapper = text.find("Step 0")
+    i_fund = text.find("Step 1")
+    assert i_wrapper != -1, "missing the account-wrapper section"
+    assert i_fund != -1, "missing the Step 1 fund comparison"
+    assert i_wrapper < i_fund, "wrapper decision must precede the fund comparison"
+
+
+def test_E10_jurisdiction_is_declared_unresolved():
+    """The numbers are computed for a US tax-ignorant holder. Saying so is not
+    optional - the whole ranking is conditional on it."""
+    text = DOC.read_text()
+    assert "E3" in text and "jurisdiction" in text.lower()
+    assert "US-domiciled" in text
+    # the withholding claim is unverified and must be flagged as such
+    assert "not verified" in text.lower() or "unverified" in text.lower()
+
+
+def test_portfolio_does_not_double_charge_the_fee():
+    """`merblend` is a label, not a charge - metrics() applies the MER.
+
+    portfolio() accepted merblend and ignored it while every caller also ran
+    metrics(..., mer) on the result. Applying it in both places would charge
+    the expense ratio twice. Pin the current intent so a future "fix" that
+    starts using merblend fails here instead of quietly halving every return.
+    """
+    if fd.RET_FOR_TEST is None:
+        if not (REPO_ROOT / fd.SRC).exists():
+            pytest.skip("price CSV not present")
+        _, _, ret = fd.load()
+        fd.RET_FOR_TEST = ret
+    w = {"SPY_adj": 0.6, "BND_adj": 0.4}
+    a, _ = fd.portfolio(fd.RET_FOR_TEST, w, rebal=21, merblend=0.0, spread_bp=5.0)
+    b, _ = fd.portfolio(fd.RET_FOR_TEST, w, rebal=21, merblend=0.01, spread_bp=5.0)
+    assert a == pytest.approx(b), "merblend must not affect portfolio() output"
