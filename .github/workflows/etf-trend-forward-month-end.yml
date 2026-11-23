@@ -35,6 +35,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install price dependencies
+        run: pip install "yfinance>=0.2.30" pandas
+
+      # The committed cache does not refresh itself; without this step the clock would sit
+      # at whatever date the cache was last touched and never record another month.
+      # Refreshed in-run only -- the CSVs are deliberately NOT committed here, so a research
+      # cron does not push daily churn into files the other desks' tools read.
+      - name: Refresh the frozen universe (append-only)
+        run: python3 tools/etf_trend_price_refresh.py
+
       - name: Verify the frozen 20-ETF universe has price data
         run: |
           python3 -c "import sys; sys.path.insert(0,'tools'); import etf_trend_forward_clock as m; have=[s for s in m.UNIVERSE if m.load_closes(s)]; print(f'universe series present: {len(have)}/{len(m.UNIVERSE)}'); sys.exit(0 if len(have)==len(m.UNIVERSE) else 1)"
