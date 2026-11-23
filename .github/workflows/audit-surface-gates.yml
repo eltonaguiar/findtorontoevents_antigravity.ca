@@ -18,7 +18,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest requests || true
       - name: Unit tests (parity + pod + tribunal)
-        run: python -m pytest tests/test_assert_surface_parity.py tests/test_pod_emission_audit.py tests/test_audit3_tribunal.py -q
+        run: python -m pytest tests/test_assert_surface_parity.py tests/test_pod_emission_audit.py tests/test_audit3_tribunal.py tests/test_verification_tools.py -q
       - name: Gate schema validator
         run: python tools/validate_gate_reports.py
       - name: Two-hurdle kill (informational until P1-5 data)
