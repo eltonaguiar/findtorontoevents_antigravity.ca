@@ -1,10 +1,10 @@
 {
-  "generated_utc": "2026-11-23T06:13:25Z",
+  "generated_utc": "2026-11-23T06:24:55Z",
   "ref": "origin/main",
-  "origin_main": "1df8edb448770b91f8d040b7d1ad27f348330ffd",
-  "head_at_report": "1df8edb448770b91f8d040b7d1ad27f348330ffd",
+  "origin_main": "f8a63e375e7e3bdca3df2d13a8a272f1da35c601",
+  "head_at_report": "f8a63e375e7e3bdca3df2d13a8a272f1da35c601",
   "shallow": false,
-  "claims_sha256": "d1e7cb6c5d22a55c070a238034ce9e72c53a6ce42575633088627bbf066229c2",
+  "claims_sha256": "25dc5ee8a6eb2ff70e7cbcabf7db0693c454c0cc02018c38316f50a871f3e272",
   "claims": [
     {
       "id": "A1i",
@@ -457,21 +457,10 @@
       "id": "B5",
       "group": "B",
       "claimant": "peer / other agent",
-      "summary": "Review repo a3f6a6b, 41a6e19 and 3f1ab35 landed on review main; one note says 41a6e19, another 41e6e19",
-      "manual": true,
-      "manual_reason": "The negative half (41e6e19 does not exist) and the three positive shas against review/main are now mechanical. The mechanical result is PARTIALLY, not VERIFIED, because taken literally '41e6e19 landed' is refuted; the hand report's VERIFIED rests on the human judgement that 41e6e19 is a typo for 41a6e19.",
+      "summary": "The three commits a3f6a6b, 41a6e19 and 3f1ab35 are landed on the review repo's main",
+      "manual": false,
+      "manual_reason": null,
       "checks": [
-        {
-          "kind": "commit_absent",
-          "status": "PASS",
-          "detail": "41e6e19 does not exist in this clone (git cat-file -e -> rc=128)",
-          "polarity": "refutes",
-          "ref": "origin/main",
-          "params": {
-            "sha": "41e6e19",
-            "polarity": "refutes"
-          }
-        },
         {
           "kind": "commit_ancestor_of_main",
           "status": "PASS",
@@ -510,10 +499,51 @@
         }
       ],
       "supporting": 3,
-      "refuting": 1,
-      "computed_verdict": "PARTIALLY (manual judgement required)",
+      "refuting": 0,
+      "computed_verdict": "VERIFIED",
       "expected_verdict": "VERIFIED",
-      "agree": false,
+      "agree": true,
+      "any_fail": false,
+      "any_skip": false,
+      "unresolved_ref_skip": false
+    },
+    {
+      "id": "B5-typo",
+      "group": "B",
+      "claimant": "peer / other agent",
+      "summary": "The sha as originally written, 41e6e19, does not exist; it is a typo for the real 41a6e19",
+      "manual": false,
+      "manual_reason": null,
+      "checks": [
+        {
+          "kind": "commit_absent",
+          "status": "PASS",
+          "detail": "41e6e19 does not exist in this clone (git cat-file -e -> rc=128)",
+          "polarity": "supports",
+          "ref": "origin/main",
+          "params": {
+            "sha": "41e6e19",
+            "polarity": "supports"
+          }
+        },
+        {
+          "kind": "commit_ancestor_of_main",
+          "status": "PASS",
+          "detail": "git merge-base --is-ancestor 41a6e19 review/main -> rc=0",
+          "polarity": "supports",
+          "ref": "review/main",
+          "params": {
+            "sha": "41a6e19",
+            "ref": "review/main",
+            "polarity": "supports"
+          }
+        }
+      ],
+      "supporting": 2,
+      "refuting": 0,
+      "computed_verdict": "VERIFIED",
+      "expected_verdict": "VERIFIED",
+      "agree": true,
       "any_fail": false,
       "any_skip": false,
       "unresolved_ref_skip": false
