@@ -53,3 +53,20 @@ drawdown tolerance); we cannot *predict*. The question "which fund should I buy"
 out of scope. Not investment advice.
 
 *Paper only.*
+
+---
+
+## More measured facts (v2, 2026-11-23T10:39Z)
+- **Volatility drag:** SPY arithmetic mean 12.46%/yr but geometric (actual) 11.59% — **0.88 pp/yr lost to volatility** at 17.3% vol. Plan on the *geometric* number, never the average.
+- **Diversification works:** SPY–BND correlation **0.21** over this window — bonds moved largely independently, which is why 60/40 cut the drawdown.
+- **Drawdowns are common, not rare:** SPY spent **24.2% of trading days more than 10% below its high**, and **3.0% of days more than 20% below**. Expect to be "underwater" a meaningful fraction of the time.
+- **Staying invested is the whole game:** buy-and-hold returned **+72.6%**; **missing the best 10 days** dropped it to **+16.8%**. Timing out is far more costly than a drawdown.
+- **Fee compounding (per $100k, 7% gross):**
+  | MER | 10y | 20y | 30y |
+  |---|---:|---:|---:|
+  | 0.03% | $196,164 | $384,804 | **$754,849** |
+  | 0.50% | $187,714 | $352,365 | $661,437 |
+  | 1.80% | $166,019 | $275,623 | **$457,585** |
+- **Rolling 12-month SPY returns:** worst **−19.7%**, best **+43.6%**, median **+18.1%** — a wide band; single years tell you nothing.
+
+**Takeaways for the plan:** hold the cheap index fund; expect frequent >10% underwater periods and occasional >20% ones; **do not time out** (missing 10 days cut 72.6%→16.8%); the fee is worth more than any timing attempt.
