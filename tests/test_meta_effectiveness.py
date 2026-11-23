@@ -121,21 +121,27 @@ def test_per_class_skill_picks_best():
 # ---------------------------------------------------------------------------
 # 5. Empty state — no portfolios.
 # ---------------------------------------------------------------------------
-def test_empty_state_exits_clean(tmp_path, capsys):
-    # Point to an empty data dir (no pf_portfolios.json present).
-    rc = me.main([
-        "--asof", "2026-05-30",
-        "--out", str(tmp_path / "report.md"),
-        "--json", str(tmp_path / "pf_meta.json"),
-        "--dry-run",
-    ])
-    # Inject a missing data dir by monkey-patching DATA_DIR — easier: use real
-    # default path; if pf_portfolios.json is absent it should write empty JSON.
-    # Either way exit code 0.
-    assert rc == 0
-    # The JSON path passed should contain empty arrays if it was written.
-    target = tmp_path / "pf_meta.json"
-    if target.exists():
+def test_empty_state_exits_clean(tmp_path, capsys, monkeypatch):
+        # 2026-11-23: this test used to hope the REAL data dir had no portfolios
+        # ("easier: use real default path"), so it only passed while
+        # pf_portfolios.json was absent locally — i.e. it silently asserted live
+        # state. `load_from_json(data_dir: Path = DATA_DIR)` binds its default at
+        # def time, so patching DATA_DIR cannot take effect either. Simulate the
+        # documented "no data yet" condition directly (main()'s FileNotFoundError
+        # branch, which must still write an empty payload and exit 0).
+        def _no_data(*_args, **_kwargs):
+            raise FileNotFoundError("pf_portfolios.json (simulated empty state)")
+
+        monkeypatch.setattr(me, "load_from_json", _no_data)
+        rc = me.main([
+            "--asof", "2026-05-30",
+            "--out", str(tmp_path / "report.md"),
+            "--json", str(tmp_path / "pf_meta.json"),
+            "--dry-run",
+        ])
+        assert rc == 0
+        target = tmp_path / "pf_meta.json"
+        assert target.exists(), "empty-state path must still write the JSON payload"
         payload = json.loads(target.read_text())
         assert payload["rank_by_sharpe"] == []
         assert payload["per_class_skill"] == []
