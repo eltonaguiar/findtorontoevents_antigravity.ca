@@ -381,3 +381,54 @@ def test_out_flag_writes_where_asked(tmp_path, monkeypatch):
     fd.main(["--out", str(target)])
     assert target.exists()
     assert json.loads(target.read_text())["schema_version"] >= 2
+
+
+# --------------------------------------------------------------------------
+# K1 — the corrected document must not drift from the JSON
+# --------------------------------------------------------------------------
+DOC = REPO_ROOT / "docs" / "edge_research" / "FUNDS_WHAT_TO_BUY_2026-11-23_CORRECTED.md"
+
+
+def test_corrected_doc_exists_and_lists_the_refutations():
+    assert DOC.exists(), f"missing {DOC}"
+    text = DOC.read_text()
+    # the four review claims that were wrong must stay marked as refuted
+    assert text.count("REFUTED") >= 3
+    assert "markdown-mangled" in text
+    assert "unit error" in text.lower()
+    # the missed defects must be recorded
+    assert "Sortino denominator" in text
+    assert "population stdev" in text
+
+
+def test_corrected_doc_numbers_match_the_json(tmp_path, monkeypatch):
+    """K1: catch doc drift. Every headline figure quoted in the doc must appear
+    in the generated JSON."""
+    src = REPO_ROOT / fd.SRC
+    if not src.exists() or not DOC.exists():
+        pytest.skip("data or doc not present in this checkout")
+    monkeypatch.setattr(fd, "SRC", str(src))
+    monkeypatch.chdir(tmp_path)
+    fd.main([])
+    payload = json.loads((tmp_path / "reports" / "fund_deep_dive.json").read_text())
+    # the markdown uses U+2212 MINUS in tables; normalise before comparing
+    doc = DOC.read_text().replace("\u2212", "-")
+
+    f = payload["funds"]
+    # Sharpe values quoted in the doc
+    for key in ("FXAIX_adj", "SPY_adj"):
+        assert f"{f[key]['sharpe']:.3f}" in doc, key
+    # net CAGR quoted for FXAIX
+    assert f"{f['FXAIX_adj']['net_cagr_pct']:.2f}%" in doc
+    # BND sharpe is the dramatic correction
+    assert f"{f['BND_adj']['sharpe']:.3f}" in doc
+    # paired net gap
+    net = payload["paired_diffs"]["FXAIX - SPY (same index)"]["net_point_pct"]
+    assert f"+{net:.3f}" in doc or f"{net:.3f}" in doc
+
+
+def test_corrected_doc_scopes_futures_out():
+    """G1: futures must be explicitly excluded, not silently omitted."""
+    text = DOC.read_text()
+    assert "out of scope" in text.lower()
+    assert "futures" in text.lower()
