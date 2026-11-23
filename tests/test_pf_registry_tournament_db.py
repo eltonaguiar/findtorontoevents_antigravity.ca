@@ -97,7 +97,8 @@ def test_tournament_loader_transforms_db_rows():
     fake_pymysql.connect.return_value = fake_conn
     fake_pymysql.cursors.DictCursor = MagicMock()
 
-    with patch.dict(sys.modules, {"tools.db_env": fake_db_env, "pymysql": fake_pymysql}):
+    with patch.dict(sys.modules, {"tools.db_env": fake_db_env, "pymysql": fake_pymysql}), \
+         patch.object(__import__("tools"), "db_env", fake_db_env, create=True):
         rows, meta = mod._load_tournament_picks_rows(days=90)
 
     assert meta["loaded"] == 2
