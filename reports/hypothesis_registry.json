@@ -3213,6 +3213,65 @@
    "data_sample_lock": "intraday crypto bars with volume/liquidation proxy; event definition frozen before first run",
    "result": null,
    "provenance": "Investment Hub 'Deploy These' list. The '475%' figure is relative-without-base and rejected as evidence."
+  },
+  {
+   "id": "H-248",
+   "asset_class": "CRYPTO",
+   "family": "ensemble",
+   "description": "Cross-system consensus. A pick is CONSENSUS when >=2 DISTINCT systems out of {alpha_engine, ml_battleground/system_f_clawsofdoom, mercury2} emit the same symbol and the same direction with entry timestamps inside a fixed 24h window. Claim: consensus picks outperform single-system picks on the SAME ledgers over the SAME period.",
+   "test_statistic": "cluster-level mean net pnl_pct difference (consensus minus single-system control) with a block-bootstrap 95% CI. Window (24h), min_systems (2), the three systems and the field mapping were frozen BEFORE the first run and must not be retuned after seeing results.",
+   "acceptance_criteria": {
+    "mean_diff_gt_0": true,
+    "ci_lb_gt_0": true,
+    "survives_2x_cost": true,
+    "survives_N_4987_deflation": true
+   },
+   "economic_prior": "Independent systems agreeing could indicate a stronger signal. But these three share upstream data (the same exchange OHLCV) and correlated features, so agreement may be redundant rather than independent confirmation. The honest prior is that consensus adds no information.",
+   "status": "REFUTED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "closed ledgers only: alpha_engine/data/closed_picks.json, ml_battleground/system_f_clawsofdoom/data/closed_picks.json, mercury2/data/closed_picks.json",
+   "result": {
+    "verdict": "REFUTED",
+    "measured_at": "2026-11-23",
+    "consensus": {
+     "n": 26,
+     "mean_pct": -1.031054,
+     "median_pct": -1.600742,
+     "ci95": [
+      -1.958418,
+      -0.078869
+     ],
+     "win_rate": 0.3462
+    },
+    "single_control": {
+     "n": 803,
+     "mean_pct": -0.269652,
+     "median_pct": -0.28,
+     "ci95": [
+      -0.588775,
+      0.056274
+     ],
+     "win_rate": 0.3861
+    },
+    "mean_diff_pct": -0.761402,
+    "mean_diff_ci95": [
+     -1.740535,
+     0.276123
+    ],
+    "criteria": {
+     "mean_diff_gt_0": false,
+     "ci_lb_gt_0": false,
+     "survives_2x_cost": false
+    },
+    "clusters_total": 829,
+    "rows_usable": 1355,
+    "rows_rejected": 1880,
+    "limitation": "alpha_engine contributes only 327 of 2,204 rows because 1,874 lack a timestamp, so this is effectively a claws-vs-mercury2 test. Consensus arming n=26 is small.",
+    "artifact": "audit_dashboard/data/pumpwatch_consensus.json",
+    "panel": "audit_dashboard/pumpwatch_consensus.html"
+   },
+   "provenance": "Derived from reports/PUMPWATCH_CROSS_SYSTEM_SPEC_2026-11-23.md (todo 10), whose step 2 requires pre-registration under M-107 before measurement. Frozen before the first run.",
+   "symbol_normalization": "upper-case; strip trailing quote asset (USDT/USDC/BUSD/USD) and suffixes -PERP/PERP/=X/=F; keep leading alphabetic base. Applied identically to both arms. Fixed pre-run."
   }
  ],
  "fork2_new_signals": [
