@@ -70,7 +70,11 @@ def rebalanced_book(rets: pd.DataFrame, weights: dict[str, float], freq: str | N
     out = []
     prev_bucket = None
     for d, row in rets.iterrows():
-        bucket = "daily" if freq is None else d.to_period(freq)
+        # BUGFIX 2026-11-23: freq=None used to set bucket to the CONSTANT string "daily", so the
+        # branch fired once and the book then DRIFTED with weights never reset - it was a
+        # never-rebalanced book labelled "daily". Using the timestamp as the bucket makes
+        # freq=None a genuine daily reset, which is what was pre-registered.
+        bucket = d if freq is None else d.to_period(freq)
         if bucket != prev_bucket:
             transacted = float((cur - tgt).abs().sum()) if prev_bucket is not None else 1.0
             cost = transacted * cost_bp / 1e4

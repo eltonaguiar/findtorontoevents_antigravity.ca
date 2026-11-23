@@ -26,8 +26,9 @@ drawdown half is real and repeatable, the return half is not free.
 **Read it correctly:** this is risk control, not alpha. It does not beat buy-and-hold SPY on
 absolute return (7.31% vs 10.30% when applied to a single asset — C-014), and its drawdown benefit
 is **granularity-dependent**. The −22.37% vs −31.42% pair above is the **monthly**-rebalanced basis
-(verified against the artifact); a **daily** reset gives −21.60% vs −26.82%, with plain CAGR 8.43%
-and vol-target 9.54%. Rebalance frequency must travel with the number.
+(verified against the artifact); a genuine **daily** reset gives −22.03% vs −30.04% on the full
+sample, plain CAGR 8.16% and vol-target 9.39%. Rebalance frequency must travel with the number — an
+earlier version of this memo quoted a “daily” figure that was in fact a never-rebalanced book.
 
 ### H-233: I tested this properly and it failed on the return half
 
@@ -36,17 +37,23 @@ it in the registry, and ran it before looking — then reported the verdict the 
 
 | window | plain CE | vol-target CE | ΔCE | 95% CI | plain CAGR → VT | max DD plain → VT |
 |---|---|---|---|---|---|---|
-| A 2005-2015 | 6.70% | 9.07% | **+2.38pp** | [−0.22, +4.90] | — | −26.82% → −21.60% |
-| B 2016-2026 | 9.51% | 9.15% | **−0.35pp** | [−3.35, +2.66] | 9.97% → **9.58%** | −26.39% → −19.10% |
-| FULL (diagnostic) | 8.09% | 9.11% | +1.02pp | [−1.03, +3.00] | 8.43% → 9.54% | −26.82% → −21.60% |
+| A 2005-2015 | 7.64% | 9.67% | **+2.03pp** | [−0.81, +4.84] | 7.94% → 10.15% | −30.04% → −21.12% |
+| B 2016-2026 | 8.05% | 8.28% | **+0.23pp** | [−2.52, +2.89] | 8.38% → 8.63% | −27.29% → −22.03% |
+| FULL (diagnostic) | 7.84% | 8.98% | +1.14pp | [−0.87, +3.09] | 8.16% → 9.39% | −30.04% → −22.03% |
 
-**Verdict: `REFUTED_OOS`.** The sign flips between sub-periods, both CIs contain zero, and in the
-holdout window vol targeting *lowered* CAGR as well as CE. The pre-registered kill rule fired, and
-I did not switch to the monthly basis — which would have passed (+1.32pp) — because that switch was
-excluded in advance.
+**Verdict: `REFUTED_OOS`, on criterion 2 only.** With the basis bug fixed (see below) the point
+estimate is **positive in both windows** (+2.03pp and +0.23pp) and the sign now agrees — but the CI
+contains zero in every window, including the full sample (+1.14pp, [−0.87, +3.09]). So this is a
+**power** failure, not a sign flip: the effect is roughly a fifth of the interval width. The
+pre-registered rule still fires, because criterion 2 (CI lower bound > 0) was written in advance and
+I am not moving it. I also do not switch to the monthly basis: its point estimate is larger
+(+1.32pp) but it was never bootstrapped, so calling it a pass would be an overclaim.
 
-**What survives, and it is not nothing:** the drawdown reduction appears in **both** windows (−26.82
-→ −21.60 and −26.39 → −19.10) and criterion 3 passed. So the honest tier-0 recommendation is now
+**What survives, and it is not nothing:** the drawdown reduction appears in **both** windows (−30.04
+→ −21.12 and −27.29 → −22.03) and criterion 3 passed. H-235 then tested it outside this sample:
+it held in all three books tested (−9.21 → −8.99 pre-2005, −30.04 → −22.03 US 2005-2026,
+−42.61 → −28.22 non-US), though the pre-2005 margin is 0.22pp and therefore says nothing, and in
+the ex-US book the drawdown gain cost real return (CAGR 2.95% → 1.35%). So the honest tier-0 recommendation is now
 **"risk control only — no demonstrated return gain"**. It reduces drawdown; it does not reliably pay
 you for it. C-014's "raises CAGR" does not generalise, and this memo's earlier claim that the stable
 rung had a +1.43 pp tailwind is **withdrawn**. The full-sample daily ΔCE CI [−1.03, +3.00] also
