@@ -1,0 +1,56 @@
+name: ETF Trend Forward Clock (month-end)
+
+# R4b of the per-asset-class plan. Pre-registration:
+#   docs/preregistration/ETF_TREND_FORWARD_2026-11-23.md
+#
+# Runs daily, but the tool itself decides whether a month has COMPLETED: it records
+# only once the price cache contains a date in a month after the candidate. So the
+# daily cron is a no-op for ~20 days out of each month and cannot fire early.
+#
+# Deliberately NOT triggered on push: this workflow writes an append-only, hash-chained
+# ledger. A push trigger would let code changes re-run the recorder on the same month.
+
+on:
+  schedule:
+    - cron: '40 22 * * 2-6'   # Tue-Sat 22:40 UTC, after the US close
+  workflow_dispatch: {}
+
+concurrency:
+  group: etf-trend-forward-month-end
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  month-end:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Verify the frozen 20-ETF universe has price data
+        run: |
+          python3 -c "import sys; sys.path.insert(0,'tools'); import etf_trend_forward_clock as m; have=[s for s in m.UNIVERSE if m.load_closes(s)]; print(f'universe series present: {len(have)}/{len(m.UNIVERSE)}'); sys.exit(0 if len(have)==len(m.UNIVERSE) else 1)"
+
+      - name: Show ledger state before
+        run: python3 tools/etf_trend_forward_clock.py --stats
+
+      - name: Record month-end (no-op unless a month has completed)
+        run: python3 tools/etf_trend_forward_clock.py --month-end-check
+
+      - name: Show ledger state after
+        if: always()
+        run: python3 tools/etf_trend_forward_clock.py --stats
+
+      - name: Commit the ledger record
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: 'auto: ETF trend forward clock month-end record [skip ci]'
+          file_pattern: 'reports/etf_trend_forward/positions.jsonl'
