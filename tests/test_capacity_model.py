@@ -101,3 +101,7 @@ class GrossFundingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_deliberately_broken_gate_probe():
+    assert 1 == 2, "intentional failure to prove the CI gate is wired"
