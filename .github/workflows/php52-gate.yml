@@ -1,0 +1,47 @@
+name: PHP 5.2 gate (served surfaces)
+
+# WHY: the production host runs PHP 5.2.17. A closure in
+# investments/goldmines/kimi/kimi_goldmine_api.php shipped to production and could not
+# compile, so every ?action= request 500'd at the parser while the HTML page still
+# rendered. tools/validate_php52.py already existed; nothing was gating with it.
+#
+# This workflow gates only SERVED PHP. It is read-only: no secrets, no commits, no deploys.
+
+on:
+  pull_request:
+    paths:
+      - 'investments/**/*.php'
+      - 'tools/validate_php52.py'
+      - 'tests/test_php52_goldmines.py'
+      - '.github/workflows/php52-gate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'investments/**/*.php'
+      - 'tools/validate_php52.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php52:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fail if any served PHP uses a 5.3+ construct
+        run: |
+          set -euo pipefail
+          echo "Validating investments/ against the production PHP 5.2.17 constraints"
+          python3 tools/validate_php52.py investments
+
+      - name: Regression tests for the goldmine API defect
+        run: |
+          set -euo pipefail
+          python3 -m pytest tests/test_php52_goldmines.py -q

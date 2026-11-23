@@ -1,0 +1,104 @@
+{
+ "note": "My 5 pre-registrations only. The shared reports/hypothesis_registry.json carries other agents' entries, so it is NOT pushed; these entries live there on the phase2 branch.",
+ "registered_at": "2026-11-23",
+ "registered_by": "copilot-cli-deepseek-flash",
+ "rule": "M-107 -- pre-register before any backtest",
+ "count": 5,
+ "hypotheses": [
+  {
+   "id": "H-243",
+   "asset_class": "CRYPTO",
+   "family": "funding_carry",
+   "description": "Funding Rate Arbitrage, pre-registered from the Investment Hub 'Deploy These' list (claim: 88/100 grade A). Market-neutral: harvest perpetual funding when the annualised rate exceeds the round-trip cost by a margin.",
+   "test_statistic": "mean net bp per 8h funding cycle on delta-neutral BTC/ETH perp+spot, block-bootstrap 95% CI; Jensen alpha vs buy-and-hold BTC",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "net_of_round_trip_cost": true,
+    "survives_N_4987_deflation": true
+   },
+   "economic_prior": "Funding carry is a real, documented risk premium paid by leveraged longs. It is also crowded and capacity-limited. Unlike the other four, this one has an actual mechanism.",
+   "status": "PENDING",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "perp funding history + spot/perp closes, >=24 months, alpha_engine/funding_rate_arb.py as the reference implementation",
+   "result": null,
+   "provenance": "Investment Hub live-vs-research.html listed it as 'Deploy These'. M-107 requires pre-registration before any test, so its 88/100 grade is NOT evidence -- this entry is the test."
+  },
+  {
+   "id": "H-244",
+   "asset_class": "MULTI",
+   "family": "pairs_trading",
+   "description": "Pairs Trading, pre-registered from the same list (claim: 79/100 grade B+). Trade the spread of cointegrated pairs, market-neutral.",
+   "test_statistic": "mean net bp per trade on the spread, block-bootstrap 95% CI; cointegration half-life gate",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "net_of_2x_round_trip_cost": true,
+    "survives_N_4987_deflation": true
+   },
+   "economic_prior": "Statistical arbitrage is well documented historically but has decayed materially as capital entered. The claim says 'correlation breakdown = more opportunities', which is unfalsifiable as stated -- hence a formal test.",
+   "status": "PENDING",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "daily closes for a cointegration-screened universe; pairs selected on a training window only",
+   "result": null,
+   "provenance": "Investment Hub 'Deploy These' list, 79/100 B+. Not evidence."
+  },
+  {
+   "id": "H-245",
+   "asset_class": "EQUITY",
+   "family": "value_quality",
+   "description": "Betting Against Beta, pre-registered from the same list (claim: 77/100 labelled 'A-', '+13% in forward test'). Long low-beta / short high-beta, beta-neutralised.",
+   "test_statistic": "mean net bp on the BAB portfolio, block-bootstrap 95% CI; Jensen alpha vs SPY",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "alpha_vs_spy_gt_0": true,
+    "survives_N_4987_deflation": true
+   },
+   "economic_prior": "BAB is a real published anomaly (Frazzini-Pedersen) driven by leverage-constrained investors. NOTE the hub's own grading is internally inconsistent here: 77/100 is labelled A- while 79/100 is labelled B+, so the letter grade cannot be a function of the score. '+13% in forward test' has no stated n or window.",
+   "status": "PENDING",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "US equity panel with beta and market cap; point-in-time universe required to avoid survivorship bias",
+   "result": null,
+   "provenance": "Investment Hub 'Deploy These' list. Grade non-monotonic (77=A- vs 79=B+); figure has no n."
+  },
+  {
+   "id": "H-246",
+   "asset_class": "EQUITY",
+   "family": "value_quality",
+   "description": "Quality Minus Junk, pre-registered from the same list (claim: 75/100 grade B+). Long high-quality / short junk.",
+   "test_statistic": "mean net bp on the QMJ portfolio, block-bootstrap 95% CI; Jensen alpha vs SPY",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "alpha_vs_spy_gt_0": true,
+    "survives_N_4987_deflation": true
+   },
+   "economic_prior": "QMJ is a documented quality premium. BUT this estate has ALREADY measured the same factor family: the HML value test returned KILL -- gross +0.11%/yr, net +0.02%/yr against a 4.32% hurdle, SE 6.65% (reports/hml_result.json). QMJ is therefore pre-judged as likely-failing by the nearest available evidence, and the hub grades it B+/75 on a page titled 'Deploy These'.",
+   "status": "PENDING",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "US equity panel with quality composites; point-in-time fundamentals (tools/edgar_pit_fundamentals.py, median filing lag 35d)",
+   "result": null,
+   "provenance": "Investment Hub 'Deploy These' list. CONTRADICTED by same-family HML KILL measured 2026-11-23 -- 1 of the 5 'Deploy These' strategies already fails on data we hold."
+  },
+  {
+   "id": "H-247",
+   "asset_class": "CRYPTO",
+   "family": "mean_reversion",
+   "description": "Flash Crash Reversal, pre-registered from the same list (claim: 71/100 grade B, '+475% expectancy improvement'). Buy sharp drawdowns / liquidation cascades and exit on reversion.",
+   "test_statistic": "mean net bp per event-triggered trade, block-bootstrap 95% CI; explicit event definition (e.g. N-sigma move within M hours) fixed in advance",
+   "acceptance_criteria": {
+    "mean_gt_0": true,
+    "ci_lb_gt_0": true,
+    "survives_2x_cost": true,
+    "survives_N_4987_deflation": true
+   },
+   "economic_prior": "Liquidation cascades do produce overshoot, but the edge is competing with every other bot watching the same feed, and '+475% expectancy improvement' is a RELATIVE figure with no base -- 475% of what, over what n, versus what denominator? Not usable as evidence.",
+   "status": "PENDING",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "intraday crypto bars with volume/liquidation proxy; event definition frozen before first run",
+   "result": null,
+   "provenance": "Investment Hub 'Deploy These' list. The '475%' figure is relative-without-base and rejected as evidence."
+  }
+ ]
+}

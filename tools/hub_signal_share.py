@@ -34,7 +34,14 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
+
+# AGENTS.md import gotcha: run as `python3 tools/hub_signal_share.py` there is no parent
+# package, so `audit_trail.*` is not importable unless REPO ROOT is on sys.path.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 DEFAULT_INPUT = Path("audit_dashboard/data/dashboard_data.json")
 OUT = Path("reports/hub_signal_share_2026-11-23.json")
@@ -80,10 +87,68 @@ def aggregate(systems: list[dict]) -> dict:
     }
 
 
+def aggregate_by_family(systems: list[dict]) -> dict:
+    """Family-level attribution (operator condition iii).
+
+    Uses audit_trail.strategy_family to map each SYSTEM name to a family. This is a JUDGEMENT,
+    not a measurement, and every bucket says so. Crucially this is still name-level: the
+    dashboard `systems` aggregate carries no per-pick `strategy`, so a scanner whose name says
+    nothing about its internal family lands in `unknown` rather than being guessed.
+    """
+    try:
+        from audit_trail.strategy_family import family_of, is_claim_family
+    except ImportError:
+        from strategy_family import family_of, is_claim_family  # type: ignore
+
+    live = [s for s in systems if (s.get("resolved_picks") or 0) > 0]
+    total = sum(s.get("resolved_picks", 0) for s in live)
+
+    fams: dict[str, dict] = {}
+    for s in live:
+        fam, prov = family_of(None, s.get("name") or "")
+        b = fams.setdefault(fam, {"systems": 0, "resolved": 0, "wins": 0,
+                                  "gross_win": 0.0, "gross_loss": 0.0,
+                                  "provenance": set(), "examples": []})
+        b["systems"] += 1
+        b["resolved"] += s.get("resolved_picks", 0) or 0
+        b["wins"] += s.get("wins", 0) or 0
+        b["gross_win"] += s.get("gross_win", 0) or 0
+        b["gross_loss"] += abs(s.get("gross_loss", 0) or 0)
+        b["provenance"].add(prov)
+        if len(b["examples"]) < 6:
+            b["examples"].append(s.get("name"))
+
+    rows = []
+    for fam, b in sorted(fams.items(), key=lambda kv: -kv[1]["resolved"]):
+        rows.append({
+            "family": fam,
+            "is_claim_family": is_claim_family(fam),
+            "systems": b["systems"],
+            "resolved": b["resolved"],
+            "share_pct": round(100 * b["resolved"] / total, 4) if total else None,
+            "win_rate_pct": round(100 * b["wins"] / b["resolved"], 2) if b["resolved"] else None,
+            "profit_factor": round(b["gross_win"] / b["gross_loss"], 4) if b["gross_loss"] else None,
+            "provenance": sorted(b["provenance"]),
+            "examples": b["examples"],
+        })
+
+    claim = sum(r["resolved"] for r in rows if r["is_claim_family"])
+    return {
+        "resolved_signals_total": total,
+        "claim_families": ["momentum", "breakout", "trend_following"],
+        "claim_family_resolved": claim,
+        "claim_family_share_pct": round(100 * claim / total, 4) if total else None,
+        "verdict": "REFUTED" if total and 100 * claim / total < 80 else "NOT REFUTED",
+        "by_family": rows,
+    }
+
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", default=str(DEFAULT_INPUT))
     ap.add_argument("--out", default=str(OUT))
+    ap.add_argument("--by-family", action="store_true", help="attribute by strategy FAMILY (name->family judgement)")
     args = ap.parse_args()
 
     p = Path(args.input)
@@ -108,6 +173,8 @@ def main() -> int:
             100 * (mb["resolved"] + ic["resolved"]) / agg["resolved_signals_total"], 4
         )
 
+    byfam = aggregate_by_family(systems) if args.by_family else None
+
     out = {
         "claim_under_test": (
             "live-vs-research.html: 'strategies that FAILED forward testing "
@@ -127,7 +194,8 @@ def main() -> int:
             "through system names; cannot see momentum logic inside a differently-named "
             "scanner. Family attribution is lost at resolved-history level."
         ),
-        "reproduce": "python3 tools/hub_signal_share.py",
+        "by_family": byfam,
+        "reproduce": "python3 tools/hub_signal_share.py --by-family",
     }
 
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
@@ -140,6 +208,14 @@ def main() -> int:
     print(f"momentum|breakout : {mb['resolved']} = {mb['share_pct']}%")
     print(f"ichimoku          : {ic['resolved']} = {ic['share_pct']}%  ({ic['systems']} systems)")
     print(f"combined          : {combined}%  -> {out['verdict']} (claim: 80%+)")
+    if byfam:
+        print("\n--- BY FAMILY (name->family is a JUDGEMENT, see strategy_family_mapping.json) ---")
+        for r in byfam["by_family"]:
+            mark = "*" if r["is_claim_family"] else " "
+            print(f" {mark} {r['family']:16s} sys={r['systems']:3d} resolved={r['resolved']:6d} "
+                  f"share={str(r['share_pct']):>7s}% WR={str(r['win_rate_pct']):>6s}% PF={r['profit_factor']}")
+        print(f"\n   claim families (momentum+breakout+trend) = {byfam['claim_family_resolved']} "
+              f"= {byfam['claim_family_share_pct']}%  -> {byfam['verdict']} (claim: 80%+)")
     print(f"written           : {args.out}")
     return 0
 
