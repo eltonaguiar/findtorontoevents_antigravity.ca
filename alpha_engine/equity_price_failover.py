@@ -449,7 +449,11 @@ def _adapter_yfinance_quote(ticker: str) -> Optional[dict]:
         return None
     t = _normalize_ticker(ticker)
     try:
-        hist = yf.Ticker(t).history(period="5d")
+        # auto_adjust=True -> ["Close"] is total-return-adjusted (avoids the price-only
+        # dividend omission documented in VALUE_TOTALRETURN_CHECK.md). NOTE: the Stooq CSV
+        # path above still returns raw Close; it is a short-lived current-price snapshot only
+        # and must not be used to compute holding-period returns.
+        hist = yf.Ticker(t).history(period="5d", auto_adjust=True)
         if hist is None or hist.empty:
             return None
         price = float(hist["Close"].iloc[-1])

@@ -124,7 +124,11 @@ def fetch_prices_via_yfinance(tickers: list[str]) -> dict[str, float | None]:
     for t in tickers:
         try:
             ticker = yf.Ticker(t)
-            hist = ticker.history(period="5d")
+            # auto_adjust=True: with it, ["Close"] is total-return-adjusted. A raw Close
+            # feed silently drops dividends (~2.8%/yr for a value universe - see
+            # CONTEST/ROUND_01_2026-11-23/VALUE_TOTALRETURN_CHECK.md). For a 5-day current
+            # price this is numerically identical unless an ex-date falls inside it.
+            hist = ticker.history(period="5d", auto_adjust=True)
             if not hist.empty:
                 out[t] = float(hist["Close"].iloc[-1])
             else:
