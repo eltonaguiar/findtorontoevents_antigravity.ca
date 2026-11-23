@@ -38,6 +38,10 @@ $systems = array(
         'table' => 'sports_picks',
         'timestamp_col' => 'generated_at',
         'max_age_hours' => 48,
+        // Served from a static JSON file, not a database table. Checking it for
+        // rows produced a permanent false 'Table does not exist' CRITICAL alert.
+        'db_backed' => false,
+        'source' => 'static JSON feed (no database)',
         'url' => '/live-monitor/api/sports_picks.php'
     ),
     'stock_intel' => array(
@@ -52,6 +56,10 @@ $systems = array(
         'table' => 'penny_stocks',
         'timestamp_col' => 'last_updated',
         'max_age_hours' => 72,
+        // penny_stocks.php proxies the Yahoo Finance screener and touches no
+        // database at all, so every freshness query against it was a false alarm.
+        'db_backed' => false,
+        'source' => 'Yahoo Finance screener proxy (no database)',
         'url' => '/findstocks/portfolio2/api/penny_stocks.php'
     ),
     'forex_insights' => array(
@@ -89,6 +97,18 @@ foreach ($systems as $key => $config) {
         'is_stale' => false
     );
     
+    // Systems with no database behind them cannot be assessed for data freshness.
+    // Saying so is the correct answer; querying a non-existent table and raising
+    // CRITICAL is a false alarm (see the db_backed note in the config above).
+    if (isset($config['db_backed']) && $config['db_backed'] === false) {
+        $result['status'] = 'NOT_DB_BACKED';
+        $result['is_stale'] = false;
+        $result['source'] = isset($config['source']) ? $config['source'] : 'no database';
+        $results[] = $result;
+        echo "  ℹ️ Not database-backed (" . $result['source'] . ") - skipped\n\n";
+        continue;
+    }
+
     // Check if table exists
     $table_check = $conn->query("SHOW TABLES LIKE '{$config['table']}'");
     if ($table_check->num_rows === 0) {
@@ -118,30 +138,81 @@ foreach ($systems as $key => $config) {
         continue;
     }
     
-    // Get last update timestamp
-    $sql = "SELECT MAX({$config['timestamp_col']}) as last_update FROM {$config['table']}";
-    $query_result = $conn->query($sql);
-    
-    if (!$query_result) {
-        $result['status'] = 'QUERY_ERROR';
+    // Auto-detect the timestamp column instead of trusting a hardcoded name.
+    // Every remaining false alarm in this checker came from schema drift: it asked
+    // for 'timestamp' on fxp_price_history and 'last_updated' on tables that never
+    // had those columns, then reported the resulting SQL error as data staleness.
+    $ts_candidates = array(
+        $config['timestamp_col'], 'created_at', 'updated_at', 'pick_date',
+        'price_date', 'scan_date', 'snapshot_date', 'trade_date', 'as_of_date',
+        'bar_date', 'end_date', 'generated_at', 'scan_time', 'timestamp',
+        'last_updated', 'date'
+    );
+    $available_cols = array();
+    $cols_result = $conn->query("SHOW COLUMNS FROM {$config['table']}");
+    if ($cols_result) {
+        while ($col = $cols_result->fetch_assoc()) {
+            $available_cols[] = $col['Field'];
+        }
+    }
+    // Only consider columns that actually exist, in preference order.
+    $present_candidates = array();
+    foreach ($ts_candidates as $cand) {
+        if (in_array($cand, $available_cols) && !in_array($cand, $present_candidates)) {
+            $present_candidates[] = $cand;
+        }
+    }
+    if (count($present_candidates) === 0) {
+        $result['status'] = 'NO_TIMESTAMP_COLUMN';
         $result['is_stale'] = true;
-        $alerts[] = "⚠️ ERROR: {$config['name']} - Query failed: " . $conn->error;
+        $result['available_columns'] = array_slice($available_cols, 0, 8);
+        $alerts[] = "⚠️ WARNING: {$config['name']} - no recognised timestamp column in '{$config['table']}'";
         $results[] = $result;
-        echo "  ❌ Query error!\n\n";
+        echo "  ⚠️ No timestamp column (has: " . implode(', ', array_slice($available_cols, 0, 6)) . ")\n\n";
         continue;
     }
-    
-    $row = $query_result->fetch_assoc();
-    if (!$row || !$row['last_update']) {
-        $result['status'] = 'NO_TIMESTAMP';
+
+    // Try each candidate until one actually holds a value. A column can exist and
+    // still be entirely NULL (e.g. created_at on rows written by a different path),
+    // in which case reporting "no timestamp" while a populated date column sits
+    // right next to it would be another false alarm.
+    $ts_col = null;
+    $last_value = null;
+    $tried_cols = array();
+    $last_query_error = null;
+    foreach ($present_candidates as $cand) {
+        $tried_cols[] = $cand;
+        $try_sql = "SELECT MAX({$cand}) as last_update FROM {$config['table']}";
+        $try_result = $conn->query($try_sql);
+        if (!$try_result) {
+            $last_query_error = $conn->error;
+            continue;
+        }
+        $try_row = $try_result->fetch_assoc();
+        if ($try_row && $try_row['last_update']) {
+            $ts_col = $cand;
+            $last_value = $try_row['last_update'];
+            break;
+        }
+    }
+
+    if ($ts_col === null) {
+        $result['status'] = ($last_query_error === null) ? 'NO_TIMESTAMP' : 'QUERY_ERROR';
         $result['is_stale'] = true;
-        $alerts[] = "⚠️ WARNING: {$config['name']} - No valid timestamp found";
+        $result['timestamp_columns_tried'] = $tried_cols;
+        if ($last_query_error === null) {
+            $alerts[] = "⚠️ WARNING: {$config['name']} - all date columns are NULL (" . implode(', ', $tried_cols) . ")";
+            echo "  ⚠️ All date columns NULL (tried: " . implode(', ', $tried_cols) . ")\n\n";
+        } else {
+            $alerts[] = "⚠️ ERROR: {$config['name']} - Query failed: " . $last_query_error;
+            echo "  ❌ Query error!\n\n";
+        }
         $results[] = $result;
-        echo "  ⚠️ No timestamp!\n\n";
         continue;
     }
-    
-    $last_update_ts = strtotime($row['last_update']);
+    $result['timestamp_col_used'] = $ts_col;
+
+    $last_update_ts = strtotime($last_value);
     $hours_ago = ($now - $last_update_ts) / 3600;
     
     $result['last_update'] = $row['last_update'];

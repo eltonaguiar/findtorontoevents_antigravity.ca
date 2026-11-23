@@ -147,6 +147,14 @@
    "detail": "Measured US equity round-trip cost = 0.9756bp (CS spread 0.7696 + SEC 0.206; zero commission/ECN, FX avoided; 191 names, 356,271 1-min bars). Repo charges 5.0bp or 25.0bp -> 5-25x too high. Built tools/cost_sensitivity.py to separate SIGN flips from VERDICT flips. HML worked through: breakeven cost 6.16bp sits inside [0.98,25] so the SIGN flips, but at the cheapest cost HML nets +0.09%/yr vs a 4.32% hurdle -> verdict does NOT flip. Assessment ROBUSTLY-KILLED. Conclusion: hurdle-based KILLs are robust to the cost model; sign-based judgements are not. Recommended rule: require breakeven_cost_bp > cost_high_bp. VERIFIED INDEPENDENTLY: components recompose to 0.975600bp exactly, and recomputing median(cs_bp) over the 65 usable symbols from per_symbol gives 0.769640 + SEC 0.206 = 0.9756bp, matching the stored total. Ratios: 5.0bp constant is 5.13x the measurement, 25.0bp is 25.63x. FINAL MEASURED ROUND-TRIP = 0.9756 bp.",
    "evidence": "updates/2026-11-23-equity-cost-model-sensitivity.md",
    "closed_at": "2026-11-23T05:30:00+00:00"
+  },
+  {
+   "id": 21,
+   "title": "Fix dead-data checker false alarms (non-DB systems + column detection)",
+   "status": "done",
+   "detail": "After connectivity was restored the checker still produced 4 broken verdicts out of 7, none of them about dead data. (a) penny_stocks.php uses NO database (Yahoo screener proxy) and Sports Betting serves a static JSON file, so 'table does not exist' was a permanent false CRITICAL -- both now declared db_backed=false and reported as skipped. (b) Schema drift: asked for 'timestamp' on fxp_price_history (has price_date) and 'last_updated' elsewhere. Replaced the hardcoded name with SHOW COLUMNS + a preference list, taking the first column that exists AND holds a value (a column can exist and be all-NULL, as mc_winners.created_at is). (c) A config typo could masquerade as data staleness because QUERY_ERROR set is_stale=true; errors are now reported as errors. VERIFIED LIVE: zero false alarms, and Forex changed from a false alarm into a REAL finding (2,694 records, 4685h stale). Checker now reports 0 active / 5 stale, with the 5 backed by real row counts whose newest rows are 108-239 days old.",
+   "evidence": "updates/2026-11-23-dead-data-checker-column-autodetect.md",
+   "closed_at": "2026-11-23T05:45:00+00:00"
   }
  ]
 }
