@@ -36,6 +36,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import statistics
 import sys
@@ -62,6 +63,12 @@ PACE_SECONDS = 0.16          # ~6 req/s, under SEC's 10 req/s ceiling
 # filed 2022 (its IPO-year 10-K). Treating those as "late filings" overstates
 # look-ahead exposure by ~18x, so they are flagged and excluded from the PIT series.
 ARTIFACT_LAG_DAYS = 180
+# A NEGATIVE lag (filed before the period end) is an EDGAR mis-tag: the filing
+# claims to report a period that had not ended yet. Measured on the 480-name run:
+# exactly 1 record in 30,333 (0.003%) -- ROP, period_end 2009-12-31 filed
+# 2009-11-02 as a 10-Q. It is a LOOK-AHEAD LEAK (as_of would return future data),
+# so the usable window is [0, ARTIFACT_LAG_DAYS] inclusive. The smallest genuine
+# lag observed is 16d, so nothing legitimate is lost by requiring >= 0.
 
 
 def _get(url: str, retries: int = 4) -> dict | None:
@@ -84,7 +91,8 @@ def _get(url: str, retries: int = 4) -> dict | None:
     return None
 
 
-def cik_map(limit: int | None = None, tickers: list[str] | None = None) -> dict[str, int]:
+def cik_map(limit: int | None = None, tickers: list[str] | None = None,
+            sample: int | None = None, seed: int = 20261123) -> dict[str, int]:
     d = _get(TICKERS_URL)
     if not d:
         return {}
@@ -98,10 +106,30 @@ def cik_map(limit: int | None = None, tickers: list[str] | None = None) -> dict[
         return {t: out[t] for t in tickers if t in out}
     syms = sorted(p.name for p in EARNINGS.iterdir()
                   if p.is_dir() and p.name.isupper() and 1 <= len(p.name) <= 5)
-    picked = {t: out[t] for t in syms if t in out}
+    picked = {k: v for k, v in ((t, out.get(t)) for t in syms) if v is not None}
+    if sample:
+        # `--limit` takes the alphabetically-first N, which is a BIASED subset (A-C
+        # names only). Rank by sha256(ticker+seed) instead: deterministic, replayable,
+        # and spread across the alphabet. Same seed -> same sample forever.
+        ranked = sorted(picked, key=lambda t: hashlib.sha256(
+            f"{t}:{seed}".encode()).hexdigest())
+        return {t: picked[t] for t in ranked[:sample]}
     if limit:
         picked = dict(sorted(picked.items())[:limit])
     return picked
+
+
+def is_usable(lag_days: int | None) -> bool:
+    """The PIT usability rule, in ONE place.
+
+    Recompute from `lag_days` rather than trusting a stored `usable_for_pit` flag.
+    Measured failure: after tightening the rule to exclude negative lags, a report
+    run over the cached store still printed the stale `range -59..176d`, because
+    the flag had been written under the old rule. A cached derived field silently
+    outlives the rule that produced it -- the same class of defect as a hard-coded
+    promotion list in a dashboard.
+    """
+    return lag_days is not None and 0 <= lag_days <= ARTIFACT_LAG_DAYS
 
 
 def pit_history(companyfacts: dict) -> list[dict]:
@@ -133,7 +161,7 @@ def pit_history(companyfacts: dict) -> list[dict]:
         except ValueError:
             r["lag_days"] = None
         r["usable_for_pit"] = (r["lag_days"] is not None
-                               and r["lag_days"] <= ARTIFACT_LAG_DAYS)
+                               and 0 <= r["lag_days"] <= ARTIFACT_LAG_DAYS)
     return rows
 
 
@@ -148,13 +176,17 @@ def as_of(ticker: str, asof: str) -> dict | None:
         return None
     d = json.loads(p.read_text())
     usable = [r for r in d["history"]
-              if r.get("usable_for_pit") and r["filed"] <= asof]
+              if is_usable(r.get("lag_days")) and r["filed"] <= asof]
     return usable[-1] if usable else None
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=25)
+    ap.add_argument("--sample", type=int, default=None,
+                    help="deterministic random sample of N tickers (preferred over "
+                         "--limit, which is an alphabetical prefix and therefore biased)")
+    ap.add_argument("--seed", type=int, default=20261123)
     ap.add_argument("--tickers", default=None)
     ap.add_argument("--report", action="store_true")
     a = ap.parse_args()
@@ -163,7 +195,7 @@ def main() -> int:
         return report()
 
     tickers = [t.strip().upper() for t in a.tickers.split(",")] if a.tickers else None
-    cmap = cik_map(a.limit, tickers)
+    cmap = cik_map(a.limit, tickers, sample=a.sample, seed=a.seed)
     if not cmap:
         print("::error:: could not resolve any CIK")
         return 2
@@ -208,11 +240,11 @@ def report() -> int:
         if not h:
             continue
         total += len(h)
-        artifacts += sum(1 for r in h if not r.get("usable_for_pit"))
+        artifacts += sum(1 for r in h if not is_usable(r.get("lag_days")))
         # genuine late filers: public LATER than the 90d proxy but not an artefact
         genuine_late += sum(1 for r in h
-                            if r.get("usable_for_pit") and r["lag_days"] > 90)
-        ls = [r["lag_days"] for r in h if r.get("usable_for_pit")]
+                            if is_usable(r.get("lag_days")) and r["lag_days"] > 90)
+        ls = [r["lag_days"] for r in h if is_usable(r.get("lag_days"))]
         if not ls:
             continue
         lags.extend(ls)
@@ -235,7 +267,8 @@ def report() -> int:
         "n_periods_usable_for_pit": n,
         "n_artifacts_excluded": artifacts,
         "artifact_rule": f"lag > {ARTIFACT_LAG_DAYS}d treated as XBRL-adoption / "
-                         f"pre-IPO artefact, not a late filing",
+                         f"pre-IPO artefact, not a late filing; lag < 0 treated as "
+                         f"an EDGAR mis-tag and excluded as a look-ahead leak",
         "lag_days": {"median": statistics.median(lags), "p10": pct(0.10),
                      "p25": pct(0.25), "p75": pct(0.75), "p90": pct(0.90),
                      "min": min(lags), "max": max(lags),

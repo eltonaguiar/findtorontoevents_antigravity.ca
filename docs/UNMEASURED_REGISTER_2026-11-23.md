@@ -80,8 +80,16 @@ support a promotion.**
 
 ## Priority order, by what it unblocks
 
-1. **PIT 2a (filing dates)** — no blocker, ~1 day, and it is the only gap that improves a
-   measurement we already trust enough to kill a strategy with.
+1. **PIT 2a (filing dates)** — ~~no blocker, ~1 day~~ **MEASURED 2026-11-23.**
+   `tools/edgar_pit_fundamentals.py` + `tools/pit_lookahead_audit.py`.
+   **480 tickers / 30,332 PIT-usable periods. Look-ahead audit: 0 exclusion, 0 visibility
+   violations.** Median filing lag **35d**, p10 25d, **p90 54d** (a 90d proxy is look-ahead
+   on 0.6% and wastes 55d on the median period). Two defects found on the way: one negative
+   lag (−59d, ROP, an EDGAR mis-tag that would have leaked future data) and a cached
+   `usable_for_pit` flag that outlived the rule that produced it.
+   **Remaining:** `hml_pit_backtest.py` still uses the 90d constant — changing it alters a
+   pre-registered test's inputs, so it needs its own preregistration (backlog B5).
+   Note this does NOT rescue HML: that died on gross return, not look-ahead.
 2. **T3 verification** — until the ledger writes a row, every future "measured" result rests
    on a pipeline that has never been observed working.
 3. **Capacity coefficient** — needed before any family that *passes* can be sized. Not
