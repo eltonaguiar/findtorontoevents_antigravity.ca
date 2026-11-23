@@ -221,3 +221,60 @@ def test_portfolio_nav_conserves_weights():
     r = {"A": [0.0] * 10, "B": [0.0] * 10}
     out, _ = fd.portfolio(r, {"A": 0.6, "B": 0.4}, rebal=3)
     assert all(abs(x) < 1e-12 for x in out)
+
+
+# --------------------------------------------------------------------------
+# B1 / B3 / B4 — bootstrap determinism, ordering, and the paired test
+# --------------------------------------------------------------------------
+def test_bootstrap_is_deterministic_for_a_fixed_seed():
+    import random as _r
+    r = [(_r.Random(7).random() - 0.5) * 0.02 for _ in range(300)]
+    a = fd.bootstrap_stats(r, block=21, n_boot=50, seed=12345)
+    b = fd.bootstrap_stats(r, block=21, n_boot=50, seed=12345)
+    assert a == b
+
+
+def test_bootstrap_interval_brackets_the_point_estimate():
+    import random as _r
+    rng = _r.Random(11)
+    r = [rng.gauss(0.0004, 0.01) for _ in range(500)]
+    bs = fd.bootstrap_stats(r, block=21, n_boot=200, seed=999)
+    lo, hi = bs["cagr_ci_pct"]
+    assert lo < hi
+    point = fd._cagr_of(r) * 100
+    # a 90% interval should contain the point estimate in a well-behaved case
+    assert lo <= point <= hi
+
+
+def test_bootstrap_returns_none_when_series_is_shorter_than_a_block():
+    assert fd.bootstrap_stats([0.01] * 5, block=21) is None
+
+
+def test_paired_diff_of_identical_series_is_zero_and_not_distinguishable():
+    r = [0.001, -0.002, 0.003, -0.001] * 50
+    d = fd.bootstrap_pair_diff(r, r, block=21, n_boot=100, seed=1)
+    assert d["point_pct"] == pytest.approx(0.0, abs=1e-9)
+    assert d["distinguishable_from_zero"] is False
+
+
+def test_paired_diff_detects_a_large_constant_gap():
+    """A 1bp/day advantage (~2.5pp/yr) must be distinguishable from zero."""
+    a = [0.001] * 300
+    b = [0.0] * 300
+    d = fd.bootstrap_pair_diff(a, b, block=21, n_boot=200, seed=1)
+    assert d["point_pct"] > 1.0
+    assert d["distinguishable_from_zero"] is True
+
+
+def test_paired_diff_uses_the_difference_not_separate_legs():
+    """B3: for two identical series plus small noise, the paired CI must be much
+    narrower than either series' own CAGR interval."""
+    import random as _r
+    rng = _r.Random(3)
+    base = [rng.gauss(0.0004, 0.01) for _ in range(600)]
+    noisy = [x + rng.gauss(0, 0.00005) for x in base]
+    paired = fd.bootstrap_pair_diff(noisy, base, block=21, n_boot=200, seed=5)
+    solo = fd.bootstrap_stats(noisy, block=21, n_boot=200, seed=5)
+    paired_width = paired["ci_pct"][1] - paired["ci_pct"][0]
+    solo_width = solo["cagr_ci_pct"][1] - solo["cagr_ci_pct"][0]
+    assert paired_width < solo_width

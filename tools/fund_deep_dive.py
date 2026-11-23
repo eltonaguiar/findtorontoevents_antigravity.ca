@@ -20,7 +20,7 @@ This is a BUYING analysis (beta), not an edge claim.
   A7     vol used the population stdev; now the sample stdev.
 Paper only. Zero capital. Not investment advice.
 """
-import csv, json, math, statistics as st
+import csv, json, math, random, statistics as st
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -110,6 +110,86 @@ def add_ratios(m, rf):
     return m
 
 
+def _mdd_of(rs):
+    eq = 1.0
+    peak = 1.0
+    mdd = 0.0
+    for x in rs:
+        eq *= (1 + x)
+        peak = max(peak, eq)
+        mdd = min(mdd, eq / peak - 1)
+    return mdd
+
+
+def _cagr_of(rs, ann=ANN):
+    n = len(rs)
+    return (math.prod(1 + x for x in rs)) ** (ann / n) - 1 if n else 0.0
+
+
+def _vol_of(rs, ann=ANN):
+    return st.stdev(rs) * math.sqrt(ann) if len(rs) > 1 else 0.0
+
+
+def _pct(sorted_xs, lo=0.05, hi=0.95):
+    k = len(sorted_xs)
+    return round(sorted_xs[int(lo * k)] * 100, 3), round(sorted_xs[min(k - 1, int(hi * k))] * 100, 3)
+
+
+def bootstrap_stats(r, block=21, n_boot=1000, seed=20261123):
+    """Moving-block bootstrap (B1/B2). Blocks preserve short-range dependence
+    that an i.i.d. bootstrap would destroy."""
+    n = len(r)
+    if n <= block or block < 1:
+        return None
+    rng = random.Random(seed)
+    nblocks = n // block + 1
+    hi = n - block
+    cagrs, vols, mdds = [], [], []
+    for _ in range(n_boot):
+        samp = []
+        for _ in range(nblocks):
+            j = rng.randrange(0, hi + 1)
+            samp.extend(r[j:j + block])
+        samp = samp[:n]
+        cagrs.append(_cagr_of(samp))
+        vols.append(_vol_of(samp))
+        mdds.append(_mdd_of(samp))
+    return {"cagr_ci_pct": _pct(sorted(cagrs)),
+            "vol_ci_pct": _pct(sorted(vols)),
+            "mdd_ci_pct": _pct(sorted(mdds)),
+            "n_boot": n_boot, "block": block}
+
+
+def bootstrap_pair_diff(a, b, block=21, n_boot=1000, seed=20261123):
+    """B3: bootstrap the DIFFERENCE series, in the same blocks.
+
+    Resampling each fund separately and comparing intervals is the wrong test --
+    the two series are near-perfectly correlated (same index), so the paired
+    difference has far less variance than either leg. This returns a CI on the
+    annualised arithmetic difference in percentage points.
+    """
+    d = [x - y for x, y in zip(a, b)]
+    n = len(d)
+    if n <= block or block < 1:
+        return None
+    rng = random.Random(seed)
+    nblocks = n // block + 1
+    hi = n - block
+    diffs = []
+    for _ in range(n_boot):
+        samp = []
+        for _ in range(nblocks):
+            j = rng.randrange(0, hi + 1)
+            samp.extend(d[j:j + block])
+        samp = samp[:n]
+        diffs.append(st.mean(samp) * ANN)
+    lo, hi_ = _pct(sorted(diffs))
+    point = round(st.mean(d) * ANN * 100, 3)
+    # B4: indistinguishable from zero when the interval straddles it.
+    return {"point_pct": point, "ci_pct": (lo, hi_),
+            "distinguishable_from_zero": not (lo <= 0.0 <= hi_)}
+
+
 def portfolio(ret, weights, rebal=None, merblend=0.0, spread_bp=0.0):
     """Portfolio daily returns with genuine periodic rebalancing.
 
@@ -193,6 +273,31 @@ def main():
         print(f"{LABEL[c][:33]:34s}{m['cagr_pct']:8.2f}{m['net_cagr_pct']:9.2f}"
               f"{m['vol_pct']:7.2f}{str(m['ret_vol']):>9s}{label:>14s}"
               f"{str(m['sortino']):>9s}{m['max_dd_pct']:8.2f}")
+
+    # B1/B2: every CAGR needs an interval. A 5y point estimate from ~1,254
+    # draws is not a precise number.
+    print("\nBootstrap 90% intervals (moving block, 21d, 1000 draws):")
+    for c in ret:
+        bs = bootstrap_stats(ret[c])
+        if bs:
+            out["funds"][c]["bootstrap"] = bs
+            lo, hi = bs["cagr_ci_pct"]
+            print(f"  {LABEL[c][:30]:31s} CAGR {out['funds'][c]['cagr_pct']:6.2f}%"
+                  f"  [{lo:6.2f}, {hi:6.2f}]")
+
+    # B3/B4: the paired difference is the correct test; separate intervals
+    # overlap for same-index vehicles and prove nothing.
+    print("\nPaired difference (annualised pp, 90% CI):")
+    out["paired_diffs"] = {}
+    for label, (a, b) in (("FXAIX - SPY (same index)", ("FXAIX_adj", "SPY_adj")),
+                          ("FZROX - VTI (total market)", ("FZROX_adj", "VTI_adj")),
+                          ("VTI - VTSAX (same portfolio)", ("VTI_adj", "VTSAX_adj"))):
+        pd_ = bootstrap_pair_diff(ret[a], ret[b])
+        if pd_:
+            out["paired_diffs"][label] = pd_
+            lo, hi = pd_["ci_pct"]
+            verdict = "distinguishable" if pd_["distinguishable_from_zero"] else "NOT distinguishable from zero"
+            print(f"  {label:28s} {pd_['point_pct']:+6.3f}  [{lo:+.3f}, {hi:+.3f}]  {verdict}")
 
     print("\nPortfolios (MONTHLY-rebalanced 21d, net of blended MER):")
     ports = {
