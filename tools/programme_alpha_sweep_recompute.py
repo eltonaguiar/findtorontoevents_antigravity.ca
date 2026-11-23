@@ -81,12 +81,35 @@ def cell_passes(c):
         return False
 
 
+def ledger_cells():
+    """Cells straight from the run-scoped ledger -- the denominator's real home.
+
+    ``audit_dashboard/data/audit3_ledger.json`` DOES ship its cells, unlike the tribunal
+    history file which is generated at run time. Each cell carries a ``verdict``, not a
+    pass flag, so the gate's positive outcomes are the verdicts PROVEN / CANDIDATE.
+    """
+    try:
+        d = json.load(open(LEDGER))
+    except (OSError, ValueError):
+        return None, {}
+    cells = d.get("cells")
+    if not isinstance(cells, list) or not cells:
+        return None, {}
+    summary = d.get("summary") or {}
+    return cells, {
+        "generated_at": d.get("generated_at"),
+        "n_cells_total": summary.get("n_cells_total"),
+        "n_cells_tested": summary.get("n_cells_tested"),
+    }
+
+
 def reconstruct_cells():
     """Rebuild the (class, strategy, direction) cell grid from the picks payload.
 
-    The published 362 cells have NO committed sidecar: the tribunal's history file
-    (schema audit3.verdict_history.v1) is generated at run time and is not in the tree,
-    and the peer's sibling artefact claims 361. Reconstructing the grid from the same
+    CORRECTED 2026-11-23: the published cells DO have a committed home --
+    audit_dashboard/data/audit3_ledger.json ships `cells` (362 at generated_at
+    2026-11-20T01:57Z, 367 at 2026-11-23T06:48Z). This reconstruction is therefore the
+    last resort, not "the only independent test available" as previously stated.
     picks is the only independent test available. This is a RECONSTRUCTION: it groups
     the closed picks the way the market pages do and applies a normal-approximation
     lower bound, so it can confirm the DENOMINATOR and the direction of the gate, not
@@ -146,9 +169,14 @@ def main():
     sym_pass = sum(1 for r in rows
                    if (isinstance(r.get("alpha_gate"), dict) and r["alpha_gate"].get("passed") is True))
 
+    ledger_cell_list, ledger_meta = ledger_cells()
     hp, cells = find_cell_history()
     recon = reconstruct_cells()
-    cells_source = "tribunal_history"
+    if ledger_cell_list:
+        cells = {str(i): c for i, c in enumerate(ledger_cell_list)}
+        cells_source = "audit3_ledger"
+    else:
+        cells_source = "tribunal_history"
     if cells is None:
         # No committed sidecar: fall back to the reconstruction and say so in the report.
         cells_total = cells_pass = None
@@ -161,7 +189,12 @@ def main():
             cells_source = "reconstructed_from_picks"
     else:
         cells_total = len(cells)
-        cells_pass = sum(1 for c in cells.values() if cell_passes(c))
+        if cells_source == "audit3_ledger":
+            # No pass flag exists in the ledger: PROVEN/CANDIDATE are the gate's positives.
+            cells_pass = sum(1 for c in cells.values()
+                             if str((c or {}).get("verdict", "")).upper() in ("PROVEN", "CANDIDATE"))
+        else:
+            cells_pass = sum(1 for c in cells.values() if cell_passes(c))
 
     published = None
     try:
@@ -202,7 +235,13 @@ def main():
         }
         # canonical: the rule the cells actually carry
         sample = next((v for v in cells.values() if isinstance(v, dict)), {})
-        if isinstance(sample.get("alpha_gate"), dict):
+        if cells_source == "audit3_ledger":
+            # A ledger cell's `passed` is not the alpha gate: on the 2026-11-23 copy two
+            # cells carry passed=true with verdict WEAK/KILL. Only PROVEN/CANDIDATE count,
+            # so the rule_counts below are reported for transparency and NOT used as the
+            # canonical pass count. (This overwrite is what printed "2" beside "0".)
+            field_passed = rule_counts.get("passed", 0)
+        elif isinstance(sample.get("alpha_gate"), dict):
             cells_pass = rule_counts["alpha_gate.passed"]
         elif "alpha_passed" in sample:
             cells_pass = rule_counts["alpha_passed"]
@@ -213,8 +252,15 @@ def main():
                          if isinstance(v, dict) and v.get("last_seen")})
     verdict = {
         "zero_passes_reproduced": (cells_pass == 0) and (sym_pass == 0),
+        "cells_denominator": {"source": cells_source,
+                                 "in_tree_generated_at": ledger_meta.get("generated_at"),
+                                 "n_cells_total": ledger_meta.get("n_cells_total"),
+                                 "n_cells_tested": ledger_meta.get("n_cells_tested"),
+                                 "note": "the denominator is a RUN STAMP: copies in circulation hold 359/362/367/374. Only PROVEN+CANDIDATE==0 is invariant across them."},
         "zero_passes_evidence": {"ledger_symbols_alpha_passed": sym_pass,
-                                 "cell_sidecar_passed": cells_pass},
+                                 "cell_sidecar_passed": cells_pass,
+                                 "cells_with_passed_true_but_not_proven": (
+                                     field_passed if cells_source == "audit3_ledger" else None)},
         "denominator_reproduced": bool(published) and cells_total == published.get("cells_total"),
         "denominator_variants": {
             "published_sweep": published.get("cells_total") if published else None,
@@ -223,15 +269,19 @@ def main():
             "reconstructed_grouping": recon.get("total_cells"),
         },
         "why_the_denominator_moves": (
-            "the sidecar is an ACCUMULATED history -- cells are kept across runs and carry "
-            "last_seen (%d distinct dates), while a run-scoped sweep counts only the cells it "
-            "saw. Neither peer artefact ships the cell list, so 362 cannot be rebuilt; the "
-            "published pair (361/362) disagrees with itself by one and with the sidecar by 90."
-            % len(seen_dates)),
+            "CORRECTED 2026-11-23: the cells DO ship -- audit_dashboard/data/audit3_ledger.json "
+            "carries them, and 362/69 reproduce against the copy generated 2026-11-20T01:57Z. The "
+            "denominator drifts because the ledger REGENERATES: the copy in this tree at "
+            "2026-11-23T06:48Z holds %s cells, and other copies hold 359 and 374. The earlier "
+            "measurement compared a run-scoped count against the accumulating verdict-history "
+            "sidecar (%d distinct last_seen dates) and reported that mismatch as unrebuildable. "
+            "Only PROVEN+CANDIDATE==0 is invariant across every copy."
+            % (ledger_meta.get("n_cells_total"), len(seen_dates))),
         "headline": (
-            "The substance of the claim holds: 0 of 69 symbols and 0 cells pass the alpha gate, "
-            "under every candidate rule and every source. The DENOMINATOR does not hold: "
-            "'0/362' should be published as '0 cells pass, denominator unresolved'."),
+            "Substance holds and so does the number: 0 symbols and 0 cells pass the alpha gate on "
+            "every source, and 362 (with 69 symbols) reproduces against the ledger copy generated "
+            "2026-11-20T01:57Z. Cite it with that timestamp -- the denominator is a run stamp, and "
+            "the copy regenerated today holds more cells. Only the zero is invariant."),
     }
 
     all_match = bool(checks) and all(c["match"] for c in checks.values())

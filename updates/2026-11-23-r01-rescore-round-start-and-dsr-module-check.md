@@ -45,8 +45,12 @@ gap (0.9327 vs 0.9295). The peer's 0.800 and 0.968 sit *between* the two impleme
 "the 658 floor reproduces" holds only against the peer's own `_rows` helper, which is not in the
 tree.
 
-Same disease as the `0/362` denominator: a number published as reproduced without the code that
-reproduces it. Same fix — commit the helper, or name the module and wiring.
+**Correction (2026-11-23, later):** the `0/362` comparison in this sentence was wrong and is
+withdrawn — 362 reproduces from `audit_dashboard/data/audit3_ledger.json`, which ships its cells;
+my recompute had measured against the accumulating verdict-history sidecar instead. The DSR case
+here does not need that analogy: it stands on its own, because the peer table implies four
+mutually inconsistent `n_trials` (442 / 16 / 2 / 254 under `statistical_rigor`), so it cannot come
+from any single wiring in this repo. See `reports/dsr_wiring_matrix_2026-11-23.json`.
 
 ## 3. What is established
 

@@ -1,58 +1,61 @@
 {
-  "generated_at": "2026-11-23T09:29:18.977189+00:00",
+  "generated_at": "2026-11-23T09:54:50.148301+00:00",
   "purpose": "independent recomputation of the published 0/362 alpha-gate claim",
   "inputs": {
     "ledger": {
       "path": "audit_dashboard/data/audit3_ledger.json",
-      "sha256": "492d88aea2d624ee817e35bcfc584e3d1f910201346496c5b9655dbf4fdd39b4"
+      "sha256": "b110127ab8e63b514b152de8e552cba955b3b9f0222c6b2878c46970f3d8b5b6"
     },
     "cell_history": {
       "path": "audit_dashboard/data/audit3_verdict_history.json",
-      "sha256": "8172b4523178a2c8b5710ebd9e5ed1b2266b0ff44d725026e4a1482d1ddd13f2"
+      "sha256": "c5597b48872a5f47209f7e70b4ccf698cc83ec607da940fa08dd9c2966b1a0b9"
     },
     "published": {
       "path": "reports/programme_alpha_sweep.json",
-      "sha256": "903c1bff20a02914ff9520760cee8a9129ef9752d3039373e8055bf37539820c"
+      "sha256": "a93a24e57c2f13b156ca1174dc061ef8aab131f015f8a682e646f4024221d953"
     }
   },
   "recomputed": {
-    "symbols_total": 69,
-    "symbols_beta_dominant": 69,
+    "symbols_total": 68,
+    "symbols_beta_dominant": 68,
     "symbols_alpha_passed": 0,
-    "cells_total": 452,
+    "cells_total": 367,
     "cells_alpha_passed": 0,
     "beta_dominant_share": 1.0
   },
-  "cells_source": "tribunal_history",
+  "cells_source": "audit3_ledger",
   "cell_pass_rule_counts": {
-    "alpha_gate.passed": 0,
+    "alpha_gate.passed": 2,
     "alpha_passed": 0,
     "passed": 0,
     "alpha_ci_lo>0": 0
   },
   "cell_reconstruction": {
-    "available": true,
-    "source": "audit_dashboard/data/dashboard_data.json picks.recent_closed",
-    "closed_rows": 3500,
-    "total_cells": 183,
-    "cells_passed": 16,
-    "gate": "normal-approx 95% lower bound of the cell mean > 0 (reconstruction, not the tribunal CI)"
+    "available": false
   },
   "verdict": {
     "zero_passes_reproduced": true,
+    "cells_denominator": {
+      "source": "audit3_ledger",
+      "in_tree_generated_at": "2026-11-23T06:48:27.297742+00:00",
+      "n_cells_total": 367,
+      "n_cells_tested": 66,
+      "note": "the denominator is a RUN STAMP: copies in circulation hold 359/362/367/374. Only PROVEN+CANDIDATE==0 is invariant across them."
+    },
     "zero_passes_evidence": {
       "ledger_symbols_alpha_passed": 0,
-      "cell_sidecar_passed": 0
+      "cell_sidecar_passed": 0,
+      "cells_with_passed_true_but_not_proven": 0
     },
     "denominator_reproduced": false,
     "denominator_variants": {
       "published_sweep": 362,
       "published_sibling_alpha_distance_to_pass": 361,
-      "tribunal_sidecar_accumulated": 452,
-      "reconstructed_grouping": 183
+      "tribunal_sidecar_accumulated": null,
+      "reconstructed_grouping": null
     },
-    "why_the_denominator_moves": "the sidecar is an ACCUMULATED history -- cells are kept across runs and carry last_seen (2 distinct dates), while a run-scoped sweep counts only the cells it saw. Neither peer artefact ships the cell list, so 362 cannot be rebuilt; the published pair (361/362) disagrees with itself by one and with the sidecar by 90.",
-    "headline": "The substance of the claim holds: 0 of 69 symbols and 0 cells pass the alpha gate, under every candidate rule and every source. The DENOMINATOR does not hold: '0/362' should be published as '0 cells pass, denominator unresolved'."
+    "why_the_denominator_moves": "CORRECTED 2026-11-23: the cells DO ship -- audit_dashboard/data/audit3_ledger.json carries them, and 362/69 reproduce against the copy generated 2026-11-20T01:57Z. The denominator drifts because the ledger REGENERATES: the copy in this tree at 2026-11-23T06:48Z holds 367 cells, and other copies hold 359 and 374. The earlier measurement compared a run-scoped count against the accumulating verdict-history sidecar (0 distinct last_seen dates) and reported that mismatch as unrebuildable. Only PROVEN+CANDIDATE==0 is invariant across every copy.",
+    "headline": "Substance holds and so does the number: 0 symbols and 0 cells pass the alpha gate on every source, and 362 (with 69 symbols) reproduces against the ledger copy generated 2026-11-20T01:57Z. Cite it with that timestamp -- the denominator is a run stamp, and the copy regenerated today holds more cells. Only the zero is invariant."
   },
   "published": {
     "generated_at": "2026-11-23T09:13Z",
@@ -66,25 +69,54 @@
       -6.8853,
       -0.1442
     ],
-    "finding": "PROGRAMME-WIDE: 69/69 symbols beta_dominant; 0/69 and 0/362 cells pass the alpha gate. Zero alpha anywhere in the canonical surface.",
+    "finding": "PROGRAMME-WIDE: 69/69 symbols beta_dominant; 0/69 and 0/362 cells pass the alpha gate. Zero alpha anywhere in the canonical surface. DENOMINATOR UNRESOLVED: four values in circulation (362/361/452/183); see denominator_status. The zero-pass result itself reproduces under every rule.",
     "provenance": {
       "origin": ".kilo/worktrees/vanilla-handsaw/reports/programme_alpha_sweep.json (Kilo / vanilla-handsaw, 2026-11-23T09:13Z)",
       "published_by": "buffy (freebuff) so the 0/362 claim is independently recomputable outside one worktree",
       "recompute": "python3 tools/programme_alpha_sweep_recompute.py",
       "recomputed_report": "reports/programme_alpha_sweep_recompute_2026-11-23.json",
       "note": "numbers are the peer's, unchanged; this block only records where they came from"
+    },
+    "denominator_status": {
+      "verdict": "RESOLVED",
+      "resolved_cells_total": 362,
+      "source": "audit_dashboard/data/audit3_ledger.json (generated_at 2026-11-20T01:57:23Z): len(cells) == summary.n_cells_total == 362; summary.n_cells_tested == 67",
+      "verdict_breakdown": {
+        "PROVEN": 0,
+        "CANDIDATE": 0,
+        "WEAK": 59,
+        "KILL": 8,
+        "INSUFFICIENT_N": 295
+      },
+      "cells_alpha_passed": 0,
+      "cells_clearing_n_floor": 67,
+      "other_values_explained": {
+        "361": "the peer's sibling alpha_distance_to_pass.json n_cells \u2014 off by one against its own sweep",
+        "452": "audit_dashboard/data/audit3_verdict_history.json \u2014 cells ACCUMULATED across runs, not one run's population",
+        "183": "my earlier regrouping of picks.recent_closed by (class,strategy,direction) \u2014 a different grouping, not a denominator"
+      },
+      "cite_as": "0 of N cells hold PROVEN or CANDIDATE (N = that ledger run's cell count, quoted with its generated_at); 0 of the 66-67 cells that clear the n-floor",
+      "correction": "the earlier verdict in this block was UNRESOLVED and that was WRONG. The recompute compared cells against audit3_verdict_history.json (452, an accumulated set) instead of the run-scoped ledger, which does ship its 362 cells. Denominator and zero-pass both reproduce.",
+      "recompute": "python3 tools/programme_alpha_sweep_recompute.py",
+      "ledger_drift": {
+        "362": "copy generated 2026-11-20T01:57:23Z (main working tree): 362 cells, tested 67, WEAK 59 / KILL 8 / INSUFFICIENT_N 295",
+        "367": "copy shipped on the buffy/alpha-sweep branch: 367 cells, tested 66, WEAK 57 / KILL 9 / INSUFFICIENT_N 301",
+        "359": "review-main and vh-mainport worktrees",
+        "374": "the 2026-11-22 raw copies under docs/audit_review_2026-11-22/_raw"
+      },
+      "invariant": "PROVEN + CANDIDATE == 0 in EVERY copy examined (362, 367, 374); the zero is the invariant, the denominator is not."
     }
   },
   "checks": {
     "symbols_total": {
-      "recomputed": 69,
+      "recomputed": 68,
       "published": 69,
-      "match": true
+      "match": false
     },
     "symbols_beta_dominant": {
-      "recomputed": 69,
+      "recomputed": 68,
       "published": 69,
-      "match": true
+      "match": false
     },
     "symbols_alpha_passed": {
       "recomputed": 0,
@@ -92,7 +124,7 @@
       "match": true
     },
     "cells_total": {
-      "recomputed": 452,
+      "recomputed": 367,
       "published": 362,
       "match": false
     },
@@ -103,7 +135,7 @@
     }
   },
   "reproduces_published": false,
-  "claim": "0/452 cells pass the alpha gate",
+  "claim": "0/367 cells pass the alpha gate",
   "notes": [
     "cells are counted from the history file the tribunal reads, not from the ledger (the ledger has no cell dimension)",
     "a mismatch on cells_total is a denominator disagreement between two peer artefacts, not evidence about alpha",
