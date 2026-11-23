@@ -18,7 +18,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest requests || true
       - name: Unit tests (parity + pod + tribunal)
-        run: python -m pytest tests/test_assert_surface_parity.py tests/test_pod_emission_audit.py tests/test_audit3_tribunal.py tests/test_verification_tools.py -q
+        run: python -m pytest tests/test_assert_surface_parity.py tests/test_pod_emission_audit.py tests/test_audit3_tribunal.py tests/test_verification_tools.py tests/test_unit_sanity.py -q
       - name: Gate schema validator
         run: python tools/validate_gate_reports.py
       - name: Two-hurdle kill (informational until P1-5 data)
@@ -35,6 +35,8 @@ jobs:
         run: python tools/cross_system_consensus.py
       - name: LB ranking (operator basis)
         run: python tools/rank_on_lower_bound.py || true
+      - name: No-overclaim lint
+        run: python tools/lint_no_overclaim.py
       - name: Invariant — 0 investable (fails if any pick passes all 5 gates)
         run: python tools/assert_no_investable.py --ledger audit_dashboard/data/audit3_ledger.json
       - name: Rebuild rankings + show pass/fail
