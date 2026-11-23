@@ -39,7 +39,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
           # FULL history is REQUIRED, not an optimisation. `git cat-file -e`,
@@ -71,7 +71,7 @@ jobs:
         # the objects that B1/B2/B5/B10 cite as `review/main`. Without it those
         # checks SKIP and the claims read UNVERIFIABLE. Deliberately plain: small
         # docs repo, so no blob filter, no sparse checkout, full history.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: eltonaguiar/antigravity_review_Nov192026
           path: .review
@@ -79,7 +79,7 @@ jobs:
           token: ${{ github.token }}
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
