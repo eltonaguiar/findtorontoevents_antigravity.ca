@@ -1,0 +1,87 @@
+{
+  "generated_at": "2026-11-23T09:26:50.605761+00:00",
+  "symbol": "AUDJPY",
+  "proposed_by": "buffy (freebuff), 2026-11-23",
+  "why": "Kilo reconciled AUDJPY by audit3's own fields (beta_dominant, alpha_gate, recency). That settles whether the aggregate is alpha; it does not settle whether the two trade-level samples are the same trades. A pick-id join does.",
+  "populations": {
+    "P1_audit3": {
+      "source": "audit3_ledger",
+      "trade_level_ids": false,
+      "n": 34,
+      "wins": 23,
+      "wr": 0.6765,
+      "net_expectancy_pct": 0.576,
+      "net_ci_pct": [
+        0.1374,
+        0.942
+      ],
+      "dsr": 0.8148,
+      "beta_dominant": true,
+      "alpha_gate": {
+        "alpha_ci_lo": -0.1467,
+        "passed": false
+      },
+      "recent_ok": false,
+      "mean_cost_pct": 0.02,
+      "verdict": "WEAK",
+      "provenance_id": "b5363b282409b564"
+    },
+    "P2_riseoftheclaw": {
+      "n": 24,
+      "stats_pct": {
+        "n": 24,
+        "mean_pct": -2.4471,
+        "median_pct": -5.205,
+        "wins": 2,
+        "losses": 21
+      }
+    },
+    "P3_copy_trader": {
+      "n": 32,
+      "stats_pct": {
+        "n": 32,
+        "mean_pct": 0.4938,
+        "median_pct": 0.8708,
+        "wins": 19,
+        "losses": 12
+      },
+      "buckets": {
+        "active": 1,
+        "recent_closed": 31
+      }
+    }
+  },
+  "join": {
+    "method": "pick id, then embedded timestamp, then symbol",
+    "p1_has_trade_ids": false,
+    "p2_id_count": 24,
+    "p3_id_count": 32,
+    "id_shapes": {
+      "p2_id": [
+        "1382",
+        "1385",
+        "1391",
+        "1401",
+        "1403",
+        "1405"
+      ],
+      "p3_id": [
+        "consensus",
+        "kimi",
+        "multi"
+      ]
+    },
+    "shared_ids": [],
+    "shared_id_count": 0,
+    "shared_signal_ids": [],
+    "shared_signal_id_count": 0,
+    "p2_embedded_timestamps": 24,
+    "p3_embedded_timestamps": 28,
+    "shared_timestamps": [],
+    "shared_timestamp_count": 0,
+    "overlap_p2_p3": "NONE",
+    "p1_reconcilable_by_id": false,
+    "p1_vs_p2_count_gap": 10
+  },
+  "finding": "THREE DISJOINT POPULATIONS, not one contradictory population. P2 (n=24) and P3 (n=32) share ZERO pick ids and ZERO embedded timestamps, and their id spaces are structurally different (['1382', '1385', '1391', '1401', '1403', '1405'] vs ['consensus', 'kimi', 'multi']). P1 publishes no trade ids at all, so it cannot be joined by id. The 'conflict' Kilo reported between +0.576% and -2.45% was never a contradiction inside one dataset: it compares an aggregate over one set with trades from two other sets. Kilo's field-level conclusion (beta_dominant, alpha_gate false, recent_ok false) is the operative one and stands."
+}
