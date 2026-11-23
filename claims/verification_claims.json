@@ -59,19 +59,21 @@
       "expected_verdict": "PARTIALLY"
     },
     {
-      "id": "B2",
-      "group": "B",
-      "claimant": "peer / other agent",
-      "summary": "Review main 74f0ff92a43f, range 3f1ab35..74f0ff9, files GITHUB_COPILOT_DEEPSEEK/copilot.md and picks.json",
-      "checks": [
-        {"kind": "commit_ancestor_of_main", "sha": "74f0ff92a43f", "ref": "review/main", "polarity": "supports"},
-        {"kind": "path_absent_from_main", "path": "GITHUB_COPILOT_DEEPSEEK/copilot.md", "ref": "review/main", "polarity": "refutes"},
-        {"kind": "path_absent_from_main", "path": "picks.json", "ref": "review/main", "polarity": "refutes"}
-      ],
-      "manual": true,
-      "manual_reason": "74f0ff9's ancestry and the two named paths are now mechanically checked against review/main. What stays human is the PARTIALLY boundary call: the sha is VERIFIED but both named paths are wrong (they live under 34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/).",
-      "expected_verdict": "PARTIALLY"
-    },
+    "id": "B2",
+    "group": "B",
+    "claimant": "peer / other agent",
+    "summary": "Review main 74f0ff92a43f, range 3f1ab35..74f0ff9, files GITHUB_COPILOT_DEEPSEEK/copilot.md and picks.json",
+    "checks": [
+      {"kind": "commit_ancestor_of_main", "sha": "74f0ff92a43f", "ref": "review/main", "polarity": "supports"},
+      {"kind": "path_on_main", "path": "34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/copilot.md", "ref": "review/main", "polarity": "supports"},
+      {"kind": "path_on_main", "path": "34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/picks.json", "ref": "review/main", "polarity": "supports"},
+      {"kind": "path_absent_from_main", "path": "GITHUB_COPILOT_DEEPSEEK/copilot.md", "ref": "review/main", "polarity": "refutes"},
+      {"kind": "path_absent_from_main", "path": "picks.json", "ref": "review/main", "polarity": "refutes"}
+    ],
+    "manual": true,
+    "manual_reason": "74f0ff9's ancestry and the named files are now mechanically checked against review/main: both files DO exist, but under 34_FINAL_PICKS_2026-11-23/GITHUB_COPILOT_DEEPSEEK/, not at the repo root the claim names. What stays human is the PARTIALLY boundary call: the sha and the files are VERIFIED at their real location while the claimed root paths are wrong.",
+    "expected_verdict": "PARTIALLY"
+  },
     {
       "id": "B3",
       "group": "B",

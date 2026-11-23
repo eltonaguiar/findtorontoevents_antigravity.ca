@@ -63,12 +63,21 @@ git fetch origin --prune
 python3 tools/verify_peer_claims.py --strict
 ```
 
-When claims point at a second repository (the review repo), map it in so `review/main` resolves:
+When claims point at a second repository (the review repo
+`eltonaguiar/antigravity_review_Nov192026`), map it in so `review/main` resolves:
 
 ```sh
+git clone https://github.com/eltonaguiar/antigravity_review_Nov192026 /tmp/review_probe
 python3 tools/verify_peer_claims.py --strict \
-  --remote-map '{"review": "/path/to/review_clone"}'
+  --remote-map '{"review": "/tmp/review_probe"}'
 ```
+
+The mapped path may be a normal (non-bare) checkout: the engine runs
+`git -C <path> merge-base --is-ancestor ...` / `git -C <path> ls-tree ...` inside it,
+so an ordinary clone directory is all `review/main` needs. Without the mapping,
+every check on `review/main` SKIPs and those claims read UNVERIFIABLE (never FAIL).
+The weekly workflow gets the same effect from a second checkout into `.review`
+(see "The weekly workflow" below).
 
 ### Flags
 
@@ -169,10 +178,18 @@ local `git cat-file` success is not evidence of landing
 and object-existence checks all need objects and refs outside HEAD, and a depth-1
 clone silently inverts VERIFIED claims into NOT LANDED. `filter: blob:none` and a
 sparse checkout (`tools`, `claims`, `updates`, `reports`) keep it inside the job's
-10-minute timeout: the commit graph is what the checks need, not every blob. It
-runs `tools/verify_peer_claims.py` without `--strict`, prints a summary (raising
-`::warning::` annotations for violations instead of failing), and commits the two
-generated files back to `main` with a `[skip ci]` message.
+10-minute timeout: the commit graph is what the checks need, not every blob.
+
+A second `actions/checkout@v4` step checks out the review repo
+(`eltonaguiar/antigravity_review_Nov192026`, public) into `.review` with
+`fetch-depth: 0` - a plain full checkout, since it is a small docs repo - and the
+verification step is passed
+`--remote-map '{"review": "${{ github.workspace }}/.review"}'`. That is what makes
+B1/B2/B5/B10 resolvable in CI; without it their `review/main` checks SKIP and the
+claims read UNVERIFIABLE. It runs `tools/verify_peer_claims.py` without `--strict`,
+prints a summary (raising `::warning::` annotations for violations instead of
+failing), and commits the two generated files back to `main` with a `[skip ci]`
+message.
 
 What it does NOT do:
 
@@ -251,5 +268,7 @@ re-derive them because they are settled (`docs/edge_research/28_PROGRAMME_STATUS
 | do not re-derive the verdicts | `[SRC: docs/edge_research/28_PROGRAMME_STATUS_INDEX_2026-11-23.md:163]` |
 | settled triple and discovery in the tally test | `[SRC: tests/test_edge_research_tally_consistency.py:134-149]` |
 | workflow idioms (cron, concurrency, commit guard, retry loop) | `[SRC: .github/workflows/crypto-intraday-sim.yml:17-91]` |
+| review-repo checkout into `.review` and the `--remote-map` it feeds | `[SRC: .github/workflows/peer-claim-verification.yml:69-78]` |
+| mapped remote resolved with `git -C <path>` | `[SRC: tools/verify_peer_claims.py:139-150]` |
 
 For the workflow's cron, concurrency group and steps, `.github/workflows/peer-claim-verification.yml` is the source of truth.
