@@ -88,9 +88,13 @@ def test_commission_monotone_nonincreasing():
 
 
 def test_round_trip_cost_arithmetic():
-    from tools.pick_gate import round_trip_cost_bp
-    c = round_trip_cost_bp(25000, "LONG")
-    assert abs(c["total_rt_bp"] - (12.07 + 2 * 0.4)) < 1e-6
+    """Costs follow COST_OF_RECORD by class, plus ticket commission."""
+    from tools.pick_gate import round_trip_cost_bp, cod_cost_bp
+    assert cod_cost_bp("EQUITY") == 12.0749
+    assert cod_cost_bp("CRYPTO", "BTC") == 20.0
+    assert cod_cost_bp("CRYPTO", "WIF") == 52.0
+    c = round_trip_cost_bp(25000, "LONG", "EQUITY")
+    assert abs(c["total_rt_bp"] - (12.0749 + 2 * 0.4)) < 1e-6
 
 
 def test_no_pick_passes_without_holding_and_prereg():

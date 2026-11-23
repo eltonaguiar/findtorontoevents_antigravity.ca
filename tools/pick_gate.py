@@ -22,11 +22,31 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 
-# Measured market-structure inputs (2026-11-23 measurement, 13 names).
-SPREAD_BP_PER_SIDE = 6.04
-SPREAD_BP_ROUND_TRIP = 12.07  # measured round-trip, 13 names (≈ 2 x 6.04, rounded)
+# COST OF RECORD — canonical, from the operator's COST_OF_RECORD.md
+# (antigravity_review_Nov192026/34_FINAL_PICKS_2026-11-23/COST_OF_RECORD.md).
+# The only admissible round-trip costs, in bp. Never label a value not in this
+# table "measured" without an artifact that reconciles to it.
+COST_OF_RECORD = {
+    "BOND": 0.6144,           # bond ETF (TLT/SHY class)
+    "BOND_ETF": 0.6144,
+    "ETF": 6.7122,
+    "INDEX": 8.0325,
+    "EQUITY": 12.0749,        # direct equity, spread + impact @0.008% ADV
+    "STOCKS": 12.0749,
+    "EQUITY_SPREAD_ONLY": 4.98,   # LOWER BOUND only - not admissible as the gate cost
+    "FOREX": 7.533,           # upper bound (thin Sunday reopen)
+    "FOREX_WEEKDAY": 4.98,
+    "CRYPTO_MAJOR": 20.0,
+    "CRYPTO": 52.0,           # default to alt band (conservative) unless major
+    "CRYPTO_ALT": 52.0,
+    "COMMODITY": 20.0,        # 10/side ASSUMED -> 20 RT, never "measured"
+}
 TBIL_YIELD_PCT = 4.3          # risk-free hurdle for G4
 DSR_PASS = 0.95               # G3 deflation threshold (Bailey/Lopez de Prado band)
+
+# Back-compat aliases (default to the conservative alt/crypto figure previously used).
+SPREAD_BP_PER_SIDE = COST_OF_RECORD["CRYPTO"] / 2.0
+SPREAD_BP_ROUND_TRIP = COST_OF_RECORD["CRYPTO"]
 
 # IBKR commission per side, measured, not scale-invariant.
 IBKR_BP_PER_SIDE = {
@@ -79,13 +99,23 @@ GLOSSARY = {
 }
 
 
-def round_trip_cost_bp(ticket_usd: float, side: str) -> dict:
-    """Measured round-trip cost in bp at a given ticket, broken out.
+def cod_cost_bp(asset_class: str | None, symbol: str | None = None) -> float:
+    """Canonical round-trip cost (bp) for a class, from COST_OF_RECORD."""
+    ac = (asset_class or "").upper()
+    if ac == "CRYPTO":
+        return COST_OF_RECORD["CRYPTO_MAJOR"] if (symbol or "").upper() in ("BTC", "ETH") else COST_OF_RECORD["CRYPTO_ALT"]
+    return COST_OF_RECORD.get(ac, COST_OF_RECORD["COMMODITY"])
 
-    Long-only cash-secured: spread paid both ways + commission both ways.
+
+def round_trip_cost_bp(ticket_usd: float, side: str, asset_class: str | None = None,
+                       symbol: str | None = None) -> dict:
+    """Round-trip cost in bp at a given ticket, broken out.
+
+    The spread component is the COST OF RECORD for the class; commission is added
+    from the ticket-size ladder. Long-only cash-secured: paid both ways.
     """
     comm_side = ibkr_commission_bp(ticket_usd)
-    spread = SPREAD_BP_ROUND_TRIP
+    spread = cod_cost_bp(asset_class, symbol)
     commission = 2.0 * comm_side
     total = spread + commission
     return {"spread_bp": spread, "commission_bp": round(commission, 4),
