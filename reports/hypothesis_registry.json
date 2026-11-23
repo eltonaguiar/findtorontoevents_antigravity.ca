@@ -4511,6 +4511,29 @@
     "verdict": "PRE_REGISTERED - not run.",
     "operator_note": "Requires minute bars and point-in-time constituent weights, which we may not have. Check data availability before declaring this testable - a BLOCKED_DATA status is the honest outcome if we lack the bars, not a backtest on daily closes."
    }
+  },
+  {
+   "id": "H-233",
+   "asset_class": "PORTFOLIO",
+   "family": "vol_targeting_overlay",
+   "description": "Volatility-targeted 60/40 (SPY 60 / TLT 40) scaled to a 10% annualised vol target from YESTERDAY's realised 60-day vol only, cap 2x, 5 bp per unit turnover, retains a positive certainty-equivalent advantage over plain 60/40 on a window disjoint from the development period (2016-01-01..2026-11-20). Replication of C-014, which had independent_runs=0.",
+   "test_statistic": "delta certainty equivalent (annualised, risk aversion 1) in Window B, paired bootstrap 95% CI, 10000 resamples, block length 20",
+   "acceptance_criteria": {
+    "delta_ce_positive": true,
+    "ci_lower_bound_gt": "0",
+    "maxdd_not_worse": true,
+    "sign_agreement_across_windows": true,
+    "validation": "two-window replication; NOT a virgin holdout because C-014 already used 2005-2026 in aggregate"
+   },
+   "economic_prior": "Constant-risk rather than constant-weight exposure raises realised risk efficiency when vol clusters (2005-2026 vol clustering is persistent). This is a risk-overlay mechanism, not a forecast, so it does not consume an alpha feature family.",
+   "status": "PRE_REGISTERED",
+   "registered_at": "2026-11-23",
+   "data_sample_lock": "2005-01-03..2026-11-20 daily closes, SPY/TLT, frozen at registration",
+   "result": {
+    "verdict": "PRE_REGISTERED - not run at filing time.",
+    "operator_note": "Pre-registration ahead of the run per rule M-107. Result labels are restricted to REPLICATED / REFUTED_OOS / INCONCLUSIVE. The cited evidence script tools/vol_target_vs_hold.py was found MISSING from the tree at registration time, so the implementation is an independent reimplementation from the documented spec; any divergence from the C-014 numbers is disclosed rather than reconciled after the fact.",
+    "prereg_doc": "plans/2026-11-23-prereg-H-233-vol-target-replication.md"
+   }
   }
  ]
 }
