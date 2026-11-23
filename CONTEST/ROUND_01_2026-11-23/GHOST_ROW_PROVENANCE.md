@@ -87,3 +87,44 @@ So: **ghost rows are either ignored (display) or excluded (aggregates). Neither 
 **Note on the page's own text:** the /audit footer already states the position this measurement supports: "22,947 ghost rows remain quarantined out of the canonical view" [SRC: audit_dashboard/template.html:913]. Quarantine in the view, not removal from the raw table, matches what I measured.
 
 **Programme tally:** not restated here.
+
+---
+
+## Amendments (2026-11-23, Block 55)
+
+Block 54 named three exposures it could not verify. Each is now resolved against `origin/main`. **The original verdict stands** ("confined to display/audit"), with one material caveat and one now-closed `UNMEASURED`. Nothing here changes a result, a ledger, or a label.
+
+### A. The `edge_extractor` path: untracked, unscheduled, ungated
+
+- **Untracked, and not gitignored — simply never committed.** `git cat-file -e origin/main:reports/edge_per_class.json` → **exit 128** ("path does not exist in origin/main"); `git check-ignore -v reports/edge_per_class.json` → **exit 1** (no rule matches). `reports/edge_report_mysql.md`, the sibling output, is likewise absent (`git cat-file -e origin/main:reports/edge_report_mysql.md` → exit 128). So the file is untracked by omission, not by an ignore rule.
+- **Every `edge_per_class` hit, classified.** Two are **writers**: [`tools/edge_extractor.py:175`](tools/edge_extractor.py:175) (`out_json = ... / "edge_per_class.json"`) and [`tools/edge_scanner.py:76`](tools/edge_scanner.py:76) (a Windows-path `json_path` that is written at :77-78). **No hit reads the JSON as a file.** [`tools/hc_health_monitor.py:49`](tools/hc_health_monitor.py:49) and [`tools/_hc_noncrypto_diagnostic.py:33`](tools/_hc_noncrypto_diagnostic.py:33) define a function *named* `passes_validated_edge_per_class`, but it consumes dashboard picks (`p.get("score")`, `trust_score`, `strat_fwd_wr`), not the JSON. The remaining hits ([`DAILY_IDEAS_PROMPTS.MD:1028`](DAILY_IDEAS_PROMPTS.MD:1028), `reports/*.md`, `CONTEST/...` itself) are **doc/comment**. **No gating consumer exists.**
+- **Not scheduled.** `grep -rn 'edge_extractor' .github/` → exit 1 (no hits); same for `edge_scanner` and for `edge_per_class`/`edge_report_mysql` in `.github/`. Neither producer runs in CI, so its output cannot affect pass/fail.
+- **It does not filter ghosts.** The query is [`tools/edge_extractor.py:46`](tools/edge_extractor.py:46): `SELECT asset_class, strategy, pnl_pct, direction, confidence, entry_time, exit_time FROM bt_backtest_trades` — no `WHERE`, no ghost predicate. Aggregation is per asset class ([`tools/edge_extractor.py:53`](tools/edge_extractor.py:53)) and per `(asset_class, strategy)` ([`tools/edge_extractor.py:110`](tools/edge_extractor.py:110)), emitting `win_rate`, `profit_factor`, `sharpe`, `expectancy` ([`tools/edge_extractor.py:95`](tools/edge_extractor.py:95)). It *counts* duplicates ([`tools/edge_extractor.py:146`](tools/edge_extractor.py:146)) but does not exclude them.
+- **Consequence for the verdict: confirms it, with a caveat.** The path cannot change a verdict, a promotion, `money_ready`, a CI check, or an allocation. The caveat is real but confined to a human reader: the Markdown sibling ([`tools/edge_extractor.py:177`](tools/edge_extractor.py:177)) prints `WR=…, PF=…, Sharpe=…` per asset class computed over ghost-inflated rows. Ghost rows are ~22,947 concentrated duplicates, so a per-class WR there is not a performance estimate. It is a presentation hazard, not a gate.
+
+### B. The `cot_lag_corrector` question: closed on strategy, empty intersection
+
+- **What it reads.** [`tools/cot_lag_corrector.py:124`](tools/cot_lag_corrector.py:124) queries `bt_backtest_trades` (primary) with `WHERE (strategy = %s OR source_table = %s) AND status IN ('TP','SL','CLOSED','TIME')` bound to `MULTI_ASSET_COT_SOURCE` ([:80](tools/cot_lag_corrector.py:80), `= "multi_asset_cot"`) at [:129-134](tools/cot_lag_corrector.py:129); it falls back to `raw_picks` `WHERE source_system = %s` ([:157](tools/cot_lag_corrector.py:157)) only when the first returns nothing.
+- **Does it gate?** Yes, this is a gating path: [`audit_trail/quality_gates.py:8425`](audit_trail/quality_gates.py:8425) calls it for `COMMODITY` picks only, and [:8429-8434](audit_trail/quality_gates.py:8429) `return False` (reject) when `COT_MATCH_GATE_ENABLED=1`; the default is `shadow` ([:8422](audit_trail/quality_gates.py:8422)), which tags `_cot_shadow_reject` without rejecting ([:8436](audit_trail/quality_gates.py:8436)).
+- **Set comparison against the 10 ghost cohorts** (`db_health.json` `top_cohorts`, e.g. [:88-96](audit_dashboard/data/db_health.json:88)):
+
+| Set | Members |
+|---|---|
+| Ghost cohorts' `strategy` (10/10) | `{meta_strategy}` |
+| Ghost cohorts' `asset_class` (10/10) | `{MEMECOIN}` |
+| Ghost cohorts' `symbol` | `{DOGEUSDT, WIFUSDT, PEPEUSDT, FLOKIUSDT, BONKUSDT, SHIBUSDT, ORDIUSDT}` |
+| Corrector's `strategy` / `source_table` | `{multi_asset_cot}` |
+| Corrector's asset class (gate scope) | `{COMMODITY}` |
+
+  `{meta_strategy} ∩ {multi_asset_cot} = ∅`; `{MEMECOIN} ∩ {COMMODITY} = ∅`. **The intersection is empty on both `strategy` and `asset_class`.**
+- **Residual, stated not worked around.** The corrector's `source_table = 'multi_asset_cot'` disjunct could in principle select a row whose `strategy` is not `multi_asset_cot`; ruling that out fully needs DB access (the ghosts are crypto-perp symbols while COT is commodity futures, but that is an inference, not a measurement). Even then, the gate is `COMMODITY`-scoped ([:8425](audit_trail/quality_gates.py:8425)) and in `shadow` by default, so it tags rather than rejects. Block 54's `UNMEASURED` becomes: **empty by static set comparison; a DB-verified source_table cross-check remains outstanding.**
+
+### C. The live recount is a snapshot, not a census
+
+- **`dbpasses.txt` is not tracked.** `git cat-file -e origin/main:dbpasses.txt` → **exit 128**; it exists only on disk at `/home/eaguiar2015/dbpasses.txt` (mode `-rw-------`, no value printed). `git check-ignore -v dbpasses.txt` → exit 1, i.e. it is not gitignored either; it is simply outside the repo. `.gitignore` covers `.env`-style files ([:71](.gitignore:71)) but names no `dbpasses.txt`.
+- **Provenance of 22,947.** It is `checks.ghost_rows.data.total_ghost_rows` in [`audit_dashboard/data/db_health.json:84`](audit_dashboard/data/db_health.json:84), from a file with `generated_at` **2026-11-23T18:43:46Z** ([:2](audit_dashboard/data/db_health.json:2)). The `db_health.json:69` citation in Block 54 was correct at its base commit `31b340e`; the file is regenerated hourly by [`audit-dashboard.yml:264`](.github/workflows/audit-dashboard.yml:264) and has been refreshed since, so the number now sits at line 84. Sum of the 10 cohorts' `n` = 22,947 = `total_ghost_rows`.
+- **Consequence.** If `bt_backtest_trades` has grown since 18:43Z, the true count is ≥ 22,947; independently, the per-class `LIMIT 500000` sample and the top-10 cohort cap mean the snapshot understates. Deletions since would push the other way. The net error direction is unquantified and its magnitude unknown; what is unaffected is *where* ghosts go, which is what the verdict rests on.
+
+### Amended bottom line
+
+Unchanged: ghosts are display-only or excluded from aggregates, and the forward/walk-forward results are not a ghost-row artifact. Added: the `edge_extractor` output is provably untracked, unscheduled and unread by anything that gates (its Markdown is a human-facing hazard only); the `cot_lag_corrector` gate's intersection with the ghost cohorts is empty on strategy and asset class; and 22,947 is a timestamped snapshot whose error direction is unquantified.
