@@ -52,3 +52,22 @@ compare empirical detection to analytic power.
 **Max |diff| = 0.030.** The gate detects known alpha at the rate its power predicts — so it is **correctly implemented**.
 The finding is therefore precisely: **the gate is sound but underpowered for small alpha (≈0.2%), which is why "0 pass" is a
 power statement, not proof of zero alpha.** This closes the peer's critiized gap with their own proposed test.
+
+---
+
+## What "get more n" actually means — required trades for 80% power
+Inverted power (`n = (2.80·σ/α)²`, σ = per-trade return vol):
+
+| α per trade | required n @ σ=2% | @ σ=5% |
+|---|---:|---:|
+| 1.0% | 32 | 196 |
+| 0.5% | 126 | 784 |
+| 0.2% | **784** | 4,900 |
+| 0.1% | 3,136 | 19,600 |
+
+**Procurement implication (the honest one):** AUDJPY has n≈34 → its MDE is ~0.39%, so it can only *see* alpha above ~0.4%.
+To rule a 0.2% alpha in or out it needs ~**784 closed trades**; to see 0.5% it needs ~126. So the real data requirement is
+**hundreds of trades per class×direction cell**, not "a few more." This is the concrete number behind every "needs more n"
+statement in the programme, and it should gate any promise of a fast verdict.
+
+*Paper only. Not investment advice.*
