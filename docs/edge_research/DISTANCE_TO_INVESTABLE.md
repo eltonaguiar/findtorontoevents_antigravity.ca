@@ -50,3 +50,13 @@ everything else.
 - Trial count **conflated**: registry 108 vs cells 362 vs symbols 658 vs copilot 146 — every claim must state which.
 - BH over bootstrap p-values yields 21 "survivors" that **all sit at the p=0.0005 resolution floor** — saturation, not signal.
 - EQUITY/ETF universe is **survivorship-biased** (0 delisted names) → treat those backtests as upward-biased.
+
+---
+
+## Addendum 2026-11-23T02:58Z — canonical costs adopted
+The operator's `COST_OF_RECORD.md` (in `antigravity_review_Nov192026/34_FINAL_PICKS_2026-11-23/`) is now the only
+admissible cost input. My earlier costs were both wrong: **12.87 bp** was a crypto-calibrated figure applied to all
+classes, and **2.0/1.0/10.0 bp** mislabelled Copilot's 4.98 bp spread-only *lower bound* as "measured".
+Canonical round trips: **direct equity 12.0749 · ETF 6.7122 · FOREX 7.533 · bond-ETF 0.6144 · crypto 20/52 bp**.
+Restated tops: CVX 168.8, SOFF 29.6, ENJ 89.1, AUDJPY 55.1, TLT −11.8 bp. **Zero verdict or rank flips; 0/69 pass; all classes DEAD.**
+See `reports/picks_at_cost_of_record.json` and `reports/COST_OF_RECORD_adopted.json`.
