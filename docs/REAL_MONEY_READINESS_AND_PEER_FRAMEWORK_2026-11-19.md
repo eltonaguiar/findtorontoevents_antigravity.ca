@@ -59,6 +59,29 @@ data and no fundamentals coverage, so we cannot even measure them honestly; (3) 
 PENNY class has n=4 — below every statistical floor we use. "Cheap price per share" is not a
 valuation signal.
 
+### 2b. Update (2026-11-23): fund deep-dive corroborates the index answer, with a tax nuance
+
+A peer ran 5 years of real daily data (2021–2026) and found:
+
+| Fund | MER | Net CAGR | MaxDD | vs |
+|---|---:|---:|---:|---|
+| FXAIX (index MF) | 0.015% | **11.66%** | −24.5% | SPY ETF 11.49%, −24.5% |
+| FZROX (index MF) | 0.00% | **10.74%** | – | VTI ETF 10.50% |
+
+The durable edge is exactly the **fee gap** (~0.08pp/yr for FXAIX vs SPY), not tracking luck; fee drag
+over 5 years per $100k: FZROX $0, FXAIX ~$75, VTSAX ~$200, SPY ~$472 (arithmetic checks: ER × 5 ×
+$100k). Portfolios: 100% SPY 11.49%/−24.5% DD · 80/20 9.28%/−22.4% · 60/40 6.98%/−20.6% · SGOV 3.81%
+(its Sharpe 15.9 is a near-zero-variance artifact = the cash hurdle, not alpha).
+
+**Genuine gap in my original §2.1/§3:** I did not mention that mutual funds can distribute capital
+gains while ETFs are in-kind. In a **taxable** account prefer the ETF (SPY/VOO/VTI); in a
+**tax-sheltered** account the index MF's fee edge is clean (FXAIX 0.015% or FZROX 0.00%). Tax was not
+modelled in their study either — flagged, not resolved.
+
+**Reproducibility caveat:** this 5-year series is **not in our committed artifacts** (our
+`stock_ohlcv` ETF history is ~6 months). The fee arithmetic is verifiable independent of the series;
+the 11.66% vs 11.49% comparison is not, until the returns series ships.
+
 ## 3. What $2,000 realistically produces
 
 - **Index route:** market return − 0.015–0.05% fee. At a 7–8% nominal market return that is

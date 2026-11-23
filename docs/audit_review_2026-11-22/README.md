@@ -31,6 +31,7 @@ Verdict vocabulary, per surface:
 | 10 | MEMECOIN | absent [SRC: _raw/audit3_audit3_ledger.json] | MONITORING [SRC: _raw/audit_data_dashboard_data.json] | INSUFFICIENT_DATA [SRC: _raw/audit_data_money_ready_verdict.json] | NO, leaning |
 | 11 | INDEX | absent [SRC: _raw/audit3_audit3_ledger.json] | absent [SRC: _raw/audit_data_dashboard_data.json] | absent [SRC: _raw/audit_data_money_ready_verdict.json] | alias, not a class |
 | 12 | SPORTS | absent [SRC: _raw/audit3_audit3_ledger.json] | absent [SRC: _raw/audit_data_dashboard_data.json] | absent [SRC: _raw/audit_data_money_ready_verdict.json] | out of scope |
+| 13 | PREDICTION_MARKET | INSUFFICIENT_N [SRC: _raw/audit3_audit3_ledger.json] | absent [SRC: _raw/audit_data_dashboard_data.json] | absent [SRC: _raw/audit_data_money_ready_verdict.json] | UNMEASURED |
 
 Full n and PF per class are in each dossier's section 3 and in `_MANIFEST.json`. `/audit2` is not a
 separate verdict column because it re-serves the ledger [SRC: _raw/audit2_audit2.js:154].
