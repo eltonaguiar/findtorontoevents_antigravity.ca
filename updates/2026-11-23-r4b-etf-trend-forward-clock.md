@@ -1,5 +1,13 @@
 # R4b — the only row the programme can still prove, and the clock is now armed
 
+> **Corrected 2026-11-23 (trial count).** These documents originally cited "146
+> pre-registered trials" as a settled number. Commit `487a165cb1b` withdrew it: it was
+> never derived, and the only 146 in `reports/*.json` is `by_status.OPEN` — a pick-status
+> tally, not a trial count. The contested set is 120 pre-declared / 108 in worktrees / 362
+> scored cells (conservative bound) / 658 rejected as a unit error. The argument that
+> backfilling is expensive does not depend on 146; it depends on the fact that the count is
+> already large and rising.
+
 **Date:** 2026-11-23
 **Pre-registration:** `docs/preregistration/ETF_TREND_FORWARD_2026-11-23.md`
 **Clock:** `tools/etf_trend_forward_clock.py`
@@ -17,13 +25,16 @@ the only row where a small gross edge is not instantly eaten.
 
 ## The design decision that matters: forward only
 
-The programme has spent **146 pre-registered trials**; **0/55 strategies survive
+The programme's trial count is **contested** — 146 is WITHDRAWN as never derived (C1/C2,
+commit 487a165cb1b); 120 are pre-declared and 362 scored cells is the conservative bound.
+**0/55 strategies survive
 deflation** at SR\* = 1.014, σ_SR = 0.439. Every further backtest raises the bar for the
 next one. HML demonstrated the trap today: 186 names, 44 months, gross **+0.11%/yr** — the
 premium was absent, and no re-slicing of history will conjure it.
 
 A family tested **once, forward**, keeps its trial count at 1, so its deflation bar stays
-near nominal rather than inheriting 146 trials of debt. That is the only remaining route
+near nominal rather than inheriting the programme's accumulated trial debt. That is the only
+remaining route
 to a result that means anything.
 
 ## Frozen and cannot be re-tuned after the fact
@@ -42,7 +53,8 @@ to a result that means anything.
 ```
 $ python3 tools/etf_trend_forward_clock.py
 ::error:: refusing to record 2026-11-19 -- it precedes CLOCK_START 2026-11-23.
-Backfilling converts trial count 1 into many and inherits the 146-trial deflation debt.
+Backfilling converts trial count 1 into many and inherits the deflation debt (and the count
+itself is contested — see the trial-count note above).
 ```
 
 It also refuses to duplicate a date, stamps `created_at` itself (never from a caller),

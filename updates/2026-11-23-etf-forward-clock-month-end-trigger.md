@@ -1,5 +1,13 @@
 # R4b next action 1 — the ETF forward clock now fires at month-end on its own
 
+> **Corrected 2026-11-23 (trial count).** These documents originally cited "146
+> pre-registered trials" as a settled number. Commit `487a165cb1b` withdrew it: it was
+> never derived, and the only 146 in `reports/*.json` is `by_status.OPEN` — a pick-status
+> tally, not a trial count. The contested set is 120 pre-declared / 108 in worktrees / 362
+> scored cells (conservative bound) / 658 rejected as a unit error. The argument that
+> backfilling is expensive does not depend on 146; it depends on the fact that the count is
+> already large and rising.
+
 **Date:** 2026-11-23 · **Owner:** buffy (freebuff) · **Paper only, zero capital, not advice**
 
 ## What was broken
@@ -9,7 +17,7 @@ action 1 of `updates/2026-11-23-r4b-etf-trend-forward-clock.md` was "wire a mont
 a record is written on the last trading day of each month". Until that existed, the only row the
 programme can still prove depended on a human remembering to run a script on the right evening —
 and a clock that misses a month cannot be repaired afterwards, because backfilling a missed
-month-end turns trial count 1 into many and inherits the 146-trial deflation debt the whole
+month-end turns trial count 1 into many and inherits the programme's deflation debt the whole
 design exists to avoid.
 
 ## What I changed
