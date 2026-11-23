@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# pre-commit — refuse commits that touch another agent's files, and amends of another agent's commit.
+#
+# WHY: on 2026-11-23 another agent landed a 24-file commit onto HEAD in the gap between my
+# `git add` and my `git commit --amend`, so the amend rewrote THEIR commit and folded my file
+# into it. Author identity cannot catch this: every agent in this clone commits as
+# github-actions[bot]. Ownership is declared by path in tools/agent_ownership.json instead.
+#
+# The decision logic lives in tools/git_guard_check.py (unit-tested in tests/test_git_guard.py);
+# this script only detects the operation and relays the verdict.
+set -u
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+# Identity must be explicit; say so instead of pretending to enforce.
+if [ -z "${AGENT_ID:-}" ] && ! git config --get agent.id >/dev/null 2>&1; then
+  echo "[guard] NOTE: no AGENT_ID set - ownership guard is ADVISORY for this commit." >&2
+fi
+PY="${PYTHON:-python3}"
+GUARD="$ROOT/tools/git_guard_check.py"
+[ -f "$GUARD" ] || exit 0          # a clone without the guard must not block work
+command -v "$PY" >/dev/null 2>&1 || exit 0
+
+amend=0
+
+# 1. reflog action, when git sets it ("commit (amend)")
+case "${GIT_REFLOG_ACTION:-}" in *amend*) amend=1 ;; esac
+
+# 2. the actual git command line — the reliable signal on Linux/macOS/Git-Bash
+if [ "$amend" -eq 0 ]; then
+  for pid in "${PPID:-0}" "$$"; do
+    if ps -o args= -p "$pid" 2>/dev/null | grep -q -- '--amend'; then amend=1; break; fi
+  done
+fi
+
+# 3. some git versions pass the operation as $2 to pre-commit
+case "${2:-}" in *amend*) amend=1 ;; esac
+
+if [ "$amend" -eq 1 ]; then
+  "$PY" "$GUARD" --mode amend || exit 1
+else
+  "$PY" "$GUARD" --mode commit || exit 1
+fi
+
+exit 0

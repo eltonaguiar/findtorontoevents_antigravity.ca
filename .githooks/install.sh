@@ -20,6 +20,11 @@ echo "[install] core.hooksPath = .githooks"
 chmod +x .githooks/pre-push 2>/dev/null || true
 echo "[install] pre-push hook is executable"
 
+# pre-commit: refuses commits that touch another agent's files, and amends of another
+# agent's commit. Added 2026-11-23 after an amend race rewrote another agent's commit.
+chmod +x .githooks/pre-commit 2>/dev/null || true
+echo "[install] pre-commit ownership guard is executable"
+
 # Suggest AGENT_ID
 if [ -z "${AGENT_ID:-}" ]; then
     echo ""
