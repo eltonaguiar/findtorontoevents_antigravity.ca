@@ -35,7 +35,7 @@ Cost basis is attached to every PF. `n` and the per-row notes are below the tabl
 | Funding carry (delta-neutral perp) | Crypto | [`funding_carry_20261122.json`](reports/funding_carry_20261122.json), [`funding_carry_20261122_2x.json`](reports/funding_carry_20261122_2x.json) | 5 symbols (always-on by hold period); 214 episodes (BTC) | **pair round trip 45.524 bp @1x, 91.048 bp @2x** (stated) | n/a (PF not reported) | net APR: −158.07% (1d), −47.82% (3d), −15.60% (7d), −3.73% (14d), **+2.42% (30d)**, +6.24% (90d) | −61.23 (1d), +0.555 (30d), +0.740 (90d) | not stated | −1077.4% (1d), −24.19% (30d), −17.11% (90d) | not stated | not stated | **MARGINAL** (survivor; survivorship audit: UNSAFE) | gross +7.93% APR vs pair cost 45.5 bp; break-even hold ≈16.4d (median) vs median episode 2.33d |
 | FX carry | FX | [`fx_carry_20261122.json`](reports/fx_carry_20261122.json) | 95 months, 11 currencies | cost sweep 0–10 bp/month (stated); **PF not reported** | n/a (no PF) | CAGR **+3.38%** (gross) | **−0.126** vs rf (4.32%) | −0.63 | −11.71% | **98.2** | −3.04% [−8.28%, +2.29%] | **KILL** | Sharpe −0.126 vs rf; vol 7.43%; worst month −7.55%; break-even 468.5 bp |
 | Cross-venue basis | Crypto | [`cross_venue_basis_20261122.json`](reports/cross_venue_basis_20261122.json) | 720 minutes, 3-way overlap | threshold is cost-derived: Binance↔KuCoin 40.48 bp (stated) | n/a (no PF) | n/a | n/a | −0.087 (Binance↔KuCoin) | n/a | n/a | n/a | **KILL** | Binance↔KuCoin median **−0.2427 bp** vs 40.48 bp threshold; **0.00%** of minutes above threshold (all 3 pairs) |
-| Commodity term-structure carry | Commodity futures | [`commodity_carry_20261122.json`](reports/commodity_carry_20261122.json) | n/a | n/a (cost UNMEASURED) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | **BLOCKED_DATA** | zero second-month contract series on disk; roll yield cannot be computed from one front-month series |
+| Commodity term-structure carry | Commodity futures | [`commodity_carry_20261122.json`](reports/commodity_carry_20261122.json) | n/a | n/a (cost UNMEASURED) [corrected 2026-11-23: front-month futures spread measured, 6.3182 bp RT median, 7/7 names, upper bound; roll cost still UNMEASURED, so the row's verdict is unchanged] | n/a | n/a | n/a | n/a | n/a | n/a | n/a | **BLOCKED_DATA** | zero second-month contract series on disk; roll yield cannot be computed from one front-month series |
 | 12-1 momentum (long/short) | Multi-asset (79 sym) | [`momentum_12_1_20261122.json`](reports/momentum_12_1_20261122.json) | 48 monthly rebalances | **5 bp/side base, 15 bp/side stress** (stated) | n/a (PF not reported) | CAGR **−25.45%** (L/S base) | **−0.70** vs rf | −1.52 | −82.35% | **1.6** | −42.09% [−72.6%, −0.003%] (CI from doc) | **KILL** (L/S) | CAGR −25.45%, maxDD −82.3%, null pct 1.6. Long-only +12.12% vs SPY 16.64%, null pct 41.4, excess −4.5% (CI spans zero); ex-crypto +2.08%, null pct 85.4 |
 | Crypto intraday mean-reversion | Crypto | [`crypto_meanrev_intraday_20261122.json`](reports/crypto_meanrev_intraday_20261122.json) | 5,400 trades, 4h bars, 10 symbols | **20 bp base; 0 bp gross row** (stated) | **0.691 @20bp; 0.815 @0bp** | net **−0.4473%**/trade @20bp | −2.55 (ann) | +0.47 | −92.09% | **0.0** | −50.23% [−72.37%, −30.37%] | **KILL** | break-even cost **0 bp**; PF 0.815 even at zero cost; all 10 symbols negative |
 
@@ -73,7 +73,7 @@ For every row: did the source state a cost basis for its PF, did I trace one, or
 | Funding carry | no PF | **(b) traced** | no PF; costs are explicit (`pair_round_trip_bp`). |
 | FX carry | no PF | **(b) traced** | cost sweep 0–10 bp/month explicit; no PF computed. |
 | Cross-venue basis | no PF | **(b) traced** | threshold is built from measured round-trip cost. |
-| Commodity carry | no PF | **(c) UNKNOWN** | cost `UNMEASURED`; test not runnable. |
+| Commodity carry | no PF | **(c) UNKNOWN** | cost `UNMEASURED`; test not runnable. [corrected 2026-11-23: front-month futures spread measured at 6.3182 bp RT median (7/7 names, upper bound); roll cost still UNMEASURED, so the test remains not runnable] |
 | 12-1 momentum | no PF | **(a) stated** | `cost_bp_side` 5.0 / 15.0 per variant; no PF computed. |
 | Crypto intraday mean-rev | yes | **(a) stated** | `pf` sits beside `cost_sweep` keys `0bp`…`60bp`. |
 
@@ -188,3 +188,14 @@ Reported, not silently resolved:
 - `funding_carry_20261122.json`: `"pair_round_trip_bp": 45.52381668506905` and `"aggregate_mean_breakeven_days_at_median": 16.398025378162416`.
 - `momentum_12_1_20261122.json`: `"item48_null": {"percentile": 1.6, …}` for the long/short variant.
 - `crypto_meanrev_intraday_20261122.json`: `"breakeven_cost_bp": 0.0` and `"cost_sweep": {"0bp": {"pf": 0.8153830397211412, …}`.
+
+---
+
+## 9. Programme tally (settled)
+
+TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)
+
+Settled tally for the 14-row set, as of 2026-11-23 [SRC: docs/edge_research/23_DEFINITIVE_ANSWER_2026-11-22.md].
+This line changes no class verdict above: the per-strategy KILL / MARGINAL / BLOCKED_DATA entries in section 2 are
+the reason for each verdict, not a separate count. The row-level accounting that reconciles the 14 rows is in
+doc 23, "The final accounting".

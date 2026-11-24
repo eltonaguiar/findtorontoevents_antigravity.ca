@@ -62,3 +62,21 @@ def test_forward_gate_reasons_override_from_sidecar():
         "eligible": False, "reasons": ["net PF CI-LB 0.9213 <= 1.0"]}}}}
     s = build_status(_ledger(), fwd, now=NOW)
     assert "PF CI-LB" in s["forward"]["blocked"][0]["reason"]
+
+
+def test_stale_after_lets_a_consumer_detect_staleness_between_rebuilds():
+    """The file is a static snapshot; a frozen boolean cannot go stale on its own."""
+    from datetime import datetime, timedelta, timezone
+    build = datetime(2026, 11, 23, 6, 48, tzinfo=timezone.utc)
+    ledger = {"generated_at": build.isoformat(), "coverage": {}, "summary": {},
+              "persistence": {}, "verdict_churn": {}, "denylist_hits": {},
+              "forward_gate": {}}
+    s = build_status(ledger, None, now=build)
+    assert s["stale"] is False and s["age_hours"] == 0.0
+    after = datetime.fromisoformat(s["stale_after"])
+    assert after == build + timedelta(hours=STALE_HOURS)
+    # 4.5 hours later the snapshot still says stale=False, but stale_after is in the future
+    later = build + timedelta(hours=4.5)
+    assert later < after
+    # 13 hours later the consumer can tell it is stale even without a rebuild
+    assert build + timedelta(hours=13) > after

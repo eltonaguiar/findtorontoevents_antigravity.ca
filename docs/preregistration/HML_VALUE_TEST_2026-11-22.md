@@ -211,6 +211,9 @@ that holds in only one of the two cases is **not** a pass.
 Passing the kill rule is **not** a promotion. A survivor goes to forward observation, not
 to `INVESTABLE`.
 
+> **Provenance gap (recorded 2026-11-23).** This document cites `tools/capacity_model.py:49` for the 4.32% policy rate, but that file is absent from `origin/main` (verified with `git ls-tree origin/main -- tools/capacity_model.py`, which returns nothing; `tests/test_capacity_model.py` is absent too). The 4.32% hurdle is therefore not reproducible from the repository as of that date. This changes neither the binding test (at most 4.32% at the gross-signal level) nor the KILL verdict, which is driven by the gross signal, not by the cost model. See `docs/edge_research/29_NEXT_STEPS_2026-11-23.md` item 2 and `updates/2026-11-23-peer-claim-verification.md` (B11).
+> Update 2026-11-23: `tools/capacity_model.py` and `tests/test_capacity_model.py` have since been ported to main from `origin/push/phase2-round-2026-11-22` (commit `1c15c5d7d07`), so the cited constant is now reproducible from a clean clone of main; see `updates/2026-11-23-capacity-model-ported.md`.
+
 ## 6. Expected result, recorded before running
 
 **PEAD has decayed since 2005/06** according to three independent sources. The same

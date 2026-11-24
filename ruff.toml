@@ -1,0 +1,10 @@
+# Style gate for the CI "changed Python files" step.
+#
+# Deliberately conservative: only rules that are almost never a matter of taste, so the gate
+# catches real breakage (syntax errors, broken format strings, bad __all__/except) without
+# arguing about style across 5,800 existing files.
+target-version = "py311"
+line-length = 120
+
+[lint]
+select = ["E9", "F63", "F7"]

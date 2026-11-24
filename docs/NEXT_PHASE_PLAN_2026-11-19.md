@@ -18,7 +18,7 @@ runs, class labels that are wrong, and a DSR whose trial count is unpublished.
 | Money-ready classes | 0 | `/audit` 0/11, `/audit3` 0/9 |
 | Proven / candidate strategy cells | 0 / 0 | audit3 18:32Z |
 | Selection alpha (the one decisive number) | **−0.2763%/trade, CI [−0.506, −0.043], n=3,192** | ledger `selection_alpha.overall` |
-| Class with positive point estimate | EQUITY +0.184%/trade, PF 1.089, n=939, `required_n` 7,389 | ledger classes |
+| Class with positive point estimate | EQUITY **+0.106%/trade, PF 1.050, n=956, CI [−0.480, +0.693]** (was +0.184/n=939 on 11-19; drifting) | ledger classes 2026-11-23 |
 | Confirmed by all three reviews | CRYPTO KILL (n=6,740), COMMODITY KILL | ledger classes |
 | Forward rows | 430, all H-119; POD-EQUITY-BREAKOUT **0** | `forward_gate`, prod run |
 | Paper sleeves live | core-beta $1,400, etf-rotation $400, random control $400 | `sleeve_summary.json` |
