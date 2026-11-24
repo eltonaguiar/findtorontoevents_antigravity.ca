@@ -42,6 +42,26 @@ fall below 0.1348, which needs about **2,083 rows** at the same variance. At the
 observed rate (430 rows accrued by 2026-11-22) that is roughly 24 days of the
 same accrual.
 
+## Concentration: the +0.1348 is not a broad edge
+
+Breaking the same 430 rows down by symbol and by month:
+
+```
+total sum = +57.97 over 430 rows
+  BAT-USD     +31.08  = 54% of total
+  NEARUSDT    +22.09  = 38% of total
+  WIFUSDT     +19.45  = 34% of total
+symbols: 109; positive-total symbols: 39
+months: 6; best month 2026-10 +58.85, worst 2026-07 -34.60
+```
+
+Only 39 of 109 symbols have a positive total, and three symbols account for more
+than the whole net gain (everything else sums negative). Month by month it swings
+from +58.85 to -34.60. The positive mean therefore rests on a handful of names and
+one good month - the shape that usually does not survive out of sample. It makes
+"more rows could help" weaker, not stronger: the new rows would have to arrive
+with the same concentration to reproduce it.
+
 ## Bottom line
 
 - Classes with >=100 forward rows: **1** (CRYPTO).

@@ -42,8 +42,31 @@ target  : total=14  INVESTABLE=0 NOT_INVESTABLE=11 UNKNOWN=3
 
 Neither matches. `segments` has 14-shape numerator but only 6 rows; `cells` has
 374 rows and 307 unknowns. **No scope in this ledger produces 14 rows with the
-`0 / 11 / 3` split.** This is recorded as a confirmed dead end: the tally comes
-from an artifact or a filter not present in this checkout.
+`0 / 11 / 3` split.**
+
+### Third pass: the source was found in a sibling worktree
+
+The tally is not derived from this ledger at all. It belongs to the
+`docs/edge_research/` document set, which lives on a different branch and is
+checked out at `.kilo/worktrees/vh-hotfix`. It is stated verbatim at
+`docs/edge_research/28_PROGRAMME_STATUS_INDEX_2026-11-23.md:7`:
+
+```
+TALLY: 0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)
+```
+
+Its rows are **class × strategy slots**, not ledger classes: the index table
+(`:54-64`) lists CRYPTO, EQUITY, ETF, BOND, COMMODITY, FOREX, FUTURES, MEME,
+PENNY_STOCK, INDEX and SPORTS, with FUTURES explicitly marked "no row in the
+14-row set". It is enforced by
+`tests/test_edge_research_tally_consistency.py:139`, which scans every
+markdown document under `docs/` for a stated tally and fails any that
+disagrees with the settled figure.
+
+**Correction:** the earlier "confirmed dead end" was wrong. The tally is not
+missing - it is in a different repository scope than the audit3 ledger, which is
+why 7 classes could never reconcile to 14 rows. This checkout's ledger and that
+tally are simply different populations, and neither contradicts the other.
 
 **Conclusion: the 14-row tally is not derivable from this ledger's `classes`, `segments`, or `cells` scopes.** 7 + 6 = 13, one short of 14, and the union is only 7 because all 6 segment classes are already class rows. I could force 14 by counting FUTURES in classes and then double-counting something, but that would be constructing a number to match a claim rather than measuring it.
 

@@ -20,6 +20,11 @@ name: CI Tests
       - 'alpha_engine/**/*.py'
       - 'audit_trail/*.py'
       - 'audit_trail/**/*.py'
+      # 2026-11-24: tests under tests/ import from tools/ (e.g. the verdict
+      # audit, cost headroom and coverage tools), so a tools-only change could
+      # previously land without running the suite that covers it.
+      - 'tools/*.py'
+      - 'tools/**/*.py'
       - 'audit_dashboard/template.html'
       - 'audit_dashboard/dashboard_enhancements.js'
       - 'tests/**'
@@ -39,6 +44,9 @@ name: CI Tests
       - 'alpha_engine/**/*.py'
       - 'audit_trail/*.py'
       - 'audit_trail/**/*.py'
+      # 2026-11-24: mirror the push filter - tests import from tools/.
+      - 'tools/*.py'
+      - 'tools/**/*.py'
       - 'audit_dashboard/template.html'
       - 'audit_dashboard/dashboard_enhancements.js'
       - 'tests/**'
