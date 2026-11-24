@@ -1,0 +1,85 @@
+{
+ "generated_at": "2026-11-22T22:36:10.531321+00:00",
+ "hypothesis": "H-232",
+ "item": 15,
+ "question": "does inverse-vol POSITION SIZING inside the top-3 basket help, holding selection, exposure, lookback, rebalance and cost fixed?",
+ "params": {
+  "lookback": 126,
+  "top_k": 3,
+  "rebal_days": 21,
+  "cost_bps_per_side": 10,
+  "exposure": 1.0,
+  "universe": [
+   "AAPL",
+   "AMZN",
+   "GOOGL",
+   "JNJ",
+   "JPM",
+   "META",
+   "MSFT",
+   "NVDA",
+   "UNH",
+   "XOM"
+  ],
+  "n_names": 10
+ },
+ "window": [
+  "2012-01-03",
+  "2026-11-20"
+ ],
+ "n_days": 3744,
+ "h232_invvol": {
+  "boot_ci_lb_bps": 5.675,
+  "boot_ci_ub_bps": 13.931,
+  "boot_ci_lb_2x_cost_bps": 5.365,
+  "split_half_bps": [
+   8.306,
+   11.083
+  ],
+  "dsr_n30": 0.8491,
+  "dsr_n29_for_comparison": 0.8685,
+  "expected_max_sr_n30": 0.04838,
+  "sr_daily": 0.06547,
+  "excess_vs_spy_bps": 3.958,
+  "mean_daily_bps": 9.695
+ },
+ "h201_equal_weight_same_days": {
+  "mean_daily_bps": 11.521,
+  "boot_ci_lb_bps": 7.246,
+  "excess_vs_spy_bps": 5.784
+ },
+ "paired_difference_invvol_minus_equal": {
+  "mean_bps": -1.826,
+  "ci_lb_bps": -2.754,
+  "ci_ub_bps": -0.922,
+  "t": -4.23,
+  "excludes_zero": true
+ },
+ "selection_vs_sizing_control": {
+  "random_top3_same_sizing_mean_bps": 8.011,
+  "random_p05_bps": 6.177,
+  "random_p95_bps": 9.96,
+  "observed_percentile": 92.4,
+  "n_draws": 2000
+ },
+ "vol_match": {
+  "strategy_vol_pct": 23.51,
+  "bench_vol_pct": 16.56,
+  "leverage_to_match": 0.704,
+  "matched_excess_bps": 1.091,
+  "matched_ci_lb_bps": -1.329,
+  "matched_halves_bps": [
+   0.384,
+   1.798
+  ],
+  "cagr_pct": 24.18,
+  "bench_cagr_pct": 13.97,
+  "levered_cagr_pct": 17.15,
+  "mdd_pct": -35.05,
+  "bench_mdd_pct": -33.72,
+  "levered_mdd_pct": -25.5,
+  "risk_adj_pass": false
+ },
+ "gates_passed": false,
+ "verdict": "FAILS"
+}

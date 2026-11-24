@@ -1,0 +1,268 @@
+{
+  "generated_by": "tools/risk_parity_vs_6040.py",
+  "window": {
+    "start": "2006-03-31",
+    "end": "2026-11-30"
+  },
+  "n_months": 249,
+  "assumptions": {
+    "rebalance": "month-end, weights from data through t held t+1",
+    "cost_bp_per_unit_turnover": 5.0,
+    "risk_free": "^IRX/12",
+    "ce": "excess mean*12 - 0.5*var*12 (risk aversion 1)",
+    "mdd": "month-end, not intraday"
+  },
+  "correlation": {
+    "SPY": {
+      "SPY": 1.0,
+      "TLT": -0.079,
+      "GLD": 0.103,
+      "DBC": 0.448
+    },
+    "TLT": {
+      "SPY": -0.079,
+      "TLT": 1.0,
+      "GLD": 0.241,
+      "DBC": -0.318
+    },
+    "GLD": {
+      "SPY": 0.103,
+      "TLT": 0.241,
+      "GLD": 1.0,
+      "DBC": 0.314
+    },
+    "DBC": {
+      "SPY": 0.448,
+      "TLT": -0.318,
+      "GLD": 0.314,
+      "DBC": 1.0
+    }
+  },
+  "results": {
+    "60_40_static": {
+      "label": "60/40 static",
+      "n_months": 249,
+      "cagr_pct": 7.91,
+      "vol_pct": 10.28,
+      "sharpe_vs_rf": 0.63,
+      "mdd_month_end_pct": -28.45,
+      "ce_pct": 5.95,
+      "total_return_pct": 385.06
+    },
+    "ew4_static": {
+      "label": "equal weight 4",
+      "n_months": 249,
+      "cagr_pct": 6.89,
+      "vol_pct": 9.78,
+      "sharpe_vs_rf": 0.559,
+      "mdd_month_end_pct": -24.91,
+      "ce_pct": 4.99,
+      "total_return_pct": 298.25
+    },
+    "risk_parity_invvol": {
+      "label": "risk parity (inverse vol, 12m)",
+      "n_months": 237,
+      "cagr_pct": 7.08,
+      "vol_pct": 9.45,
+      "sharpe_vs_rf": 0.611,
+      "mdd_month_end_pct": -17.15,
+      "ce_pct": 5.32,
+      "total_return_pct": 285.83
+    },
+    "risk_parity_erc": {
+      "label": "risk parity (ERC, 24m)",
+      "n_months": 225,
+      "cagr_pct": 8.55,
+      "vol_pct": 10.52,
+      "sharpe_vs_rf": 0.701,
+      "mdd_month_end_pct": -17.31,
+      "ce_pct": 6.82,
+      "total_return_pct": 365.37
+    },
+    "hrp": {
+      "label": "HRP (36m)",
+      "n_months": 213,
+      "cagr_pct": 8.25,
+      "vol_pct": 8.87,
+      "sharpe_vs_rf": 0.779,
+      "mdd_month_end_pct": -17.79,
+      "ce_pct": 6.52,
+      "total_return_pct": 308.73
+    },
+    "risk_parity_erc_cost10": {
+      "label": "risk parity (ERC, 24m) @10bp",
+      "n_months": 225,
+      "cagr_pct": 8.5,
+      "vol_pct": 10.52,
+      "sharpe_vs_rf": 0.696,
+      "mdd_month_end_pct": -17.32,
+      "ce_pct": 6.77,
+      "total_return_pct": 361.39
+    },
+    "hrp_cost10": {
+      "label": "HRP (36m) @10bp",
+      "n_months": 213,
+      "cagr_pct": 8.22,
+      "vol_pct": 8.87,
+      "sharpe_vs_rf": 0.775,
+      "mdd_month_end_pct": -17.8,
+      "ce_pct": 6.48,
+      "total_return_pct": 306.38
+    },
+    "6040_voltarget10": {
+      "label": "60/40 + vol target 10%",
+      "n_months": 249,
+      "cagr_pct": 8.71,
+      "vol_pct": 11.18,
+      "sharpe_vs_rf": 0.655,
+      "mdd_month_end_pct": -33.72,
+      "ce_pct": 6.69,
+      "total_return_pct": 465.76
+    },
+    "erc_voltarget10": {
+      "label": "ERC + vol target 10%",
+      "n_months": 225,
+      "cagr_pct": 9.2,
+      "vol_pct": 10.93,
+      "sharpe_vs_rf": 0.734,
+      "mdd_month_end_pct": -20.49,
+      "ce_pct": 7.42,
+      "total_return_pct": 420.64
+    },
+    "hrp_voltarget10": {
+      "label": "HRP + vol target 10%",
+      "n_months": 213,
+      "cagr_pct": 9.33,
+      "vol_pct": 11.16,
+      "sharpe_vs_rf": 0.729,
+      "mdd_month_end_pct": -21.27,
+      "ce_pct": 7.51,
+      "total_return_pct": 387.41
+    }
+  },
+  "combined_book": {
+    "method": "long-only max certainty-equivalent, full-sample weights (IN-SAMPLE, reported as arithmetic not as a strategy)",
+    "weights_pct": {
+      "SPY": 81.44,
+      "TLT": 0.0,
+      "GLD": 18.56,
+      "DBC": 0.0
+    },
+    "sleeves_at_zero": [
+      "TLT",
+      "DBC"
+    ],
+    "interpretation": "The optimiser drives 2 of 4 assets to zero (TLT, DBC). But TLT of the zeroed assets are DIVERSIFIERS (|corr to SPY| < 0.30), including TLT at -0.079 \u2014 the single most valuable correlation in a 60/40. Zeroing it is error maximisation in mean returns, not a finding about diversification: the optimiser is told TLT's realised excess return over THIS sample, and this sample is a rate-hiking era. A risk-based allocator that never sees expected returns keeps TLT and does better on CE and drawdown. So the honest combined book is risk-allocated, not return-optimised \u2014 and the failed per-class sleeves still earn zero, because they have neither positive excess return nor a useful correlation.",
+    "sleeves_at_zero_are_diversifiers": [
+      "TLT"
+    ]
+  },
+  "paired_ce_bootstrap_vs_60_40": {
+    "risk_parity_erc": {
+      "n_months": 225,
+      "n_boot": 5000,
+      "common_window": [
+        "2008-03-31",
+        "2026-11-30"
+      ],
+      "ce_a_pp_on_common": 6.82,
+      "ce_b_pp_on_common": 6.45,
+      "ce_diff_point_pp": 0.365,
+      "ce_diff_boot_mean_pp": 0.381,
+      "ci90_pp": [
+        -2.706,
+        3.404
+      ],
+      "excludes_zero": false,
+      "pct_bootstrap_positive": 58.7
+    },
+    "hrp": {
+      "n_months": 213,
+      "n_boot": 5000,
+      "common_window": [
+        "2009-03-31",
+        "2026-11-30"
+      ],
+      "ce_a_pp_on_common": 6.52,
+      "ce_b_pp_on_common": 8.44,
+      "ce_diff_point_pp": -1.925,
+      "ce_diff_boot_mean_pp": -1.908,
+      "ci90_pp": [
+        -4.821,
+        0.925
+      ],
+      "excludes_zero": false,
+      "pct_bootstrap_positive": 13.4
+    },
+    "hrp_voltarget10": {
+      "n_months": 213,
+      "n_boot": 5000,
+      "common_window": [
+        "2009-03-31",
+        "2026-11-30"
+      ],
+      "ce_a_pp_on_common": 7.51,
+      "ce_b_pp_on_common": 8.44,
+      "ce_diff_point_pp": -0.929,
+      "ce_diff_boot_mean_pp": -0.904,
+      "ci90_pp": [
+        -4.38,
+        2.61
+      ],
+      "excludes_zero": false,
+      "pct_bootstrap_positive": 33.5
+    },
+    "erc_voltarget10": {
+      "n_months": 225,
+      "n_boot": 5000,
+      "common_window": [
+        "2008-03-31",
+        "2026-11-30"
+      ],
+      "ce_a_pp_on_common": 7.42,
+      "ce_b_pp_on_common": 6.45,
+      "ce_diff_point_pp": 0.967,
+      "ce_diff_boot_mean_pp": 0.978,
+      "ci90_pp": [
+        -2.662,
+        4.558
+      ],
+      "excludes_zero": false,
+      "pct_bootstrap_positive": 67.6
+    },
+    "6040_voltarget10": {
+      "n_months": 249,
+      "n_boot": 5000,
+      "common_window": [
+        "2006-03-31",
+        "2026-11-30"
+      ],
+      "ce_a_pp_on_common": 6.69,
+      "ce_b_pp_on_common": 5.95,
+      "ce_diff_point_pp": 0.748,
+      "ce_diff_boot_mean_pp": 0.765,
+      "ci90_pp": [
+        -0.904,
+        2.394
+      ],
+      "excludes_zero": false,
+      "pct_bootstrap_positive": 78.0
+    }
+  },
+  "verdict": {
+    "strategies_with_ci_excluding_zero": [],
+    "n_strategies_with_ci_excluding_zero": 0,
+    "baseline_ce_pct": 5.95,
+    "best_ce_strategy": "hrp_voltarget10",
+    "best_ce_pct": 7.51,
+    "point_estimate_beats_6040": true,
+    "bootstrap_ci90_of_difference_pp": [
+      -4.38,
+      2.61
+    ],
+    "bootstrap_excludes_zero": false,
+    "beats_6040_after_cost": false,
+    "ce_diff_point_pp_on_common": -0.929,
+    "basis": "CE is the yardstick because Sharpe can be raised by deleveraging. A point estimate alone does not qualify as 'beats': the claim requires a paired-bootstrap 90% CI on the CE DIFFERENCE that excludes zero."
+  }
+}

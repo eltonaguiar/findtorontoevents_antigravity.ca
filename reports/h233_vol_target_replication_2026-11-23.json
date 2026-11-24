@@ -1,0 +1,276 @@
+{
+  "hypothesis": "H-233",
+  "prereg": "plans/2026-11-23-prereg-H-233-vol-target-replication.md",
+  "question": "does the vol-target 60/40 advantage replicate on a disjoint window?",
+  "assumptions": {
+    "target": 0.1,
+    "lookback": 60,
+    "cap": 2.0,
+    "cost_bp_per_unit": 5.0,
+    "signal_lag_days": 1,
+    "windows": {
+      "A_development": [
+        "2005-01-03",
+        "2015-12-31"
+      ],
+      "B_holdout": [
+        "2016-01-01",
+        "2026-11-20"
+      ],
+      "FULL_reproduction": [
+        "2005-01-03",
+        "2026-11-20"
+      ]
+    }
+  },
+  "data_disclosure": "holdout is NOT virgin: C-014 already used 2005-2026 in aggregate",
+  "evaluations": {
+    "60/40 daily": {
+      "rebalance": "daily",
+      "mean_leverage": 1.195,
+      "max_leverage": 2.0,
+      "mean_annual_turnover": 3.73,
+      "windows": {
+        "A_development": {
+          "plain": {
+            "label": "60/40 daily plain",
+            "n_days": 2768,
+            "cagr_pct": 7.94,
+            "vol_pct": 10.85,
+            "sharpe": 0.758,
+            "max_drawdown_pct": -30.04,
+            "ce_pct": 7.64,
+            "total_return_pct": 131.4
+          },
+          "vol_target": {
+            "label": "60/40 daily vol-target 10%",
+            "n_days": 2768,
+            "cagr_pct": 10.15,
+            "vol_pct": 10.4,
+            "sharpe": 0.981,
+            "max_drawdown_pct": -21.12,
+            "ce_pct": 9.67,
+            "total_return_pct": 189.22
+          },
+          "delta_ce": {
+            "n_days": 2768,
+            "delta_ce_pct": 2.033,
+            "ci95_low_pct": -0.8123,
+            "ci95_high_pct": 4.8369,
+            "n_boot": 10000,
+            "block": 20,
+            "seed": 233,
+            "p_boot_le_zero": 0.0822
+          },
+          "delta_cagr_pp": 2.21,
+          "delta_sharpe": 0.223,
+          "delta_maxdd_pp": 8.92,
+          "maxdd_not_worse": true
+        },
+        "B_holdout": {
+          "plain": {
+            "label": "60/40 daily plain",
+            "n_days": 2738,
+            "cagr_pct": 8.38,
+            "vol_pct": 11.36,
+            "sharpe": 0.766,
+            "max_drawdown_pct": -27.29,
+            "ce_pct": 8.05,
+            "total_return_pct": 139.78
+          },
+          "vol_target": {
+            "label": "60/40 daily vol-target 10%",
+            "n_days": 2738,
+            "cagr_pct": 8.63,
+            "vol_pct": 10.72,
+            "sharpe": 0.826,
+            "max_drawdown_pct": -22.03,
+            "ce_pct": 8.28,
+            "total_return_pct": 145.78
+          },
+          "delta_ce": {
+            "n_days": 2738,
+            "delta_ce_pct": 0.2282,
+            "ci95_low_pct": -2.5217,
+            "ci95_high_pct": 2.8852,
+            "n_boot": 10000,
+            "block": 20,
+            "seed": 233,
+            "p_boot_le_zero": 0.4192
+          },
+          "delta_cagr_pp": 0.25,
+          "delta_sharpe": 0.06,
+          "delta_maxdd_pp": 5.26,
+          "maxdd_not_worse": true
+        },
+        "FULL_reproduction": {
+          "plain": {
+            "label": "60/40 daily plain",
+            "n_days": 5506,
+            "cagr_pct": 8.16,
+            "vol_pct": 11.11,
+            "sharpe": 0.762,
+            "max_drawdown_pct": -30.04,
+            "ce_pct": 7.84,
+            "total_return_pct": 454.85
+          },
+          "vol_target": {
+            "label": "60/40 daily vol-target 10%",
+            "n_days": 5506,
+            "cagr_pct": 9.39,
+            "vol_pct": 10.56,
+            "sharpe": 0.903,
+            "max_drawdown_pct": -22.03,
+            "ce_pct": 8.98,
+            "total_return_pct": 610.84
+          },
+          "delta_ce": {
+            "n_days": 5506,
+            "delta_ce_pct": 1.1355,
+            "ci95_low_pct": -0.8675,
+            "ci95_high_pct": 3.0924,
+            "n_boot": 10000,
+            "block": 20,
+            "seed": 233,
+            "p_boot_le_zero": 0.1281
+          },
+          "delta_cagr_pp": 1.23,
+          "delta_sharpe": 0.141,
+          "delta_maxdd_pp": 8.01,
+          "maxdd_not_worse": true
+        }
+      }
+    },
+    "60/40 monthly": {
+      "rebalance": "every M",
+      "mean_leverage": 1.203,
+      "max_leverage": 2.0,
+      "mean_annual_turnover": 3.73,
+      "windows": {
+        "A_development": {
+          "plain": {
+            "label": "60/40 monthly plain",
+            "n_days": 2768,
+            "cagr_pct": 7.57,
+            "vol_pct": 10.49,
+            "sharpe": 0.748,
+            "max_drawdown_pct": -31.42,
+            "ce_pct": 7.3,
+            "total_return_pct": 122.91
+          },
+          "vol_target": {
+            "label": "60/40 monthly vol-target 10%",
+            "n_days": 2768,
+            "cagr_pct": 9.96,
+            "vol_pct": 10.37,
+            "sharpe": 0.968,
+            "max_drawdown_pct": -22.37,
+            "ce_pct": 9.5,
+            "total_return_pct": 183.71
+          },
+          "delta_ce": {
+            "n_days": 2768,
+            "delta_ce_pct": 2.1978,
+            "ci95_low_pct": -0.5588,
+            "ci95_high_pct": 4.9396,
+            "n_boot": 10000,
+            "block": 20,
+            "seed": 233,
+            "p_boot_le_zero": 0.0627
+          },
+          "delta_cagr_pp": 2.39,
+          "delta_sharpe": 0.22,
+          "delta_maxdd_pp": 9.05,
+          "maxdd_not_worse": true
+        },
+        "B_holdout": {
+          "plain": {
+            "label": "60/40 monthly plain",
+            "n_days": 2738,
+            "cagr_pct": 8.12,
+            "vol_pct": 11.24,
+            "sharpe": 0.751,
+            "max_drawdown_pct": -27.66,
+            "ce_pct": 7.81,
+            "total_return_pct": 133.54
+          },
+          "vol_target": {
+            "label": "60/40 monthly vol-target 10%",
+            "n_days": 2738,
+            "cagr_pct": 8.59,
+            "vol_pct": 10.7,
+            "sharpe": 0.824,
+            "max_drawdown_pct": -22.27,
+            "ce_pct": 8.25,
+            "total_return_pct": 144.87
+          },
+          "delta_ce": {
+            "n_days": 2738,
+            "delta_ce_pct": 0.4367,
+            "ci95_low_pct": -2.2732,
+            "ci95_high_pct": 3.0746,
+            "n_boot": 10000,
+            "block": 20,
+            "seed": 233,
+            "p_boot_le_zero": 0.3641
+          },
+          "delta_cagr_pp": 0.47,
+          "delta_sharpe": 0.073,
+          "delta_maxdd_pp": 5.39,
+          "maxdd_not_worse": true
+        },
+        "FULL_reproduction": {
+          "plain": {
+            "label": "60/40 monthly plain",
+            "n_days": 5506,
+            "cagr_pct": 7.84,
+            "vol_pct": 10.87,
+            "sharpe": 0.749,
+            "max_drawdown_pct": -31.42,
+            "ce_pct": 7.55,
+            "total_return_pct": 420.58
+          },
+          "vol_target": {
+            "label": "60/40 monthly vol-target 10%",
+            "n_days": 5506,
+            "cagr_pct": 9.28,
+            "vol_pct": 10.53,
+            "sharpe": 0.895,
+            "max_drawdown_pct": -22.37,
+            "ce_pct": 8.87,
+            "total_return_pct": 594.74
+          },
+          "delta_ce": {
+            "n_days": 5506,
+            "delta_ce_pct": 1.322,
+            "ci95_low_pct": -0.6325,
+            "ci95_high_pct": 3.2412,
+            "n_boot": 10000,
+            "block": 20,
+            "seed": 233,
+            "p_boot_le_zero": 0.0895
+          },
+          "delta_cagr_pp": 1.44,
+          "delta_sharpe": 0.146,
+          "delta_maxdd_pp": 9.05,
+          "maxdd_not_worse": true
+        }
+      }
+    }
+  },
+  "data": {
+    "start": "2005-01-03",
+    "end": "2026-11-20",
+    "rows": 5507
+  },
+  "verdict": {
+    "label": "REFUTED_OOS",
+    "criteria": {
+      "1_delta_ce_positive": true,
+      "2_ci_low_above_zero": false,
+      "3_maxdd_not_worse": true,
+      "4_sign_agreement": true
+    },
+    "kill_rule_applied": "criterion 2 failing => REFUTED_OOS per pre-registration"
+  }
+}

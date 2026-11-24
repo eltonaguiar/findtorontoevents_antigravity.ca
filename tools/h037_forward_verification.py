@@ -159,6 +159,21 @@ def _check_kill_switch(metrics: dict, state: dict) -> bool:
     return False
 
 
+def _r4(x) -> float | None:
+    """Round to 4 dp, preserving nan/None as "not evaluable".
+
+    ``round(nan, 4)`` is nan and ``nan`` compares False against every
+    threshold, so a nan must never be allowed to look like a measured value.
+    Returning None makes the downstream gate logic explicit.
+    """
+    if x is None:
+        return None
+    xf = float(x)
+    if xf != xf:  # nan
+        return None
+    return round(xf, 4)
+
+
 def _compute_north_star_metrics(trades: list[dict]) -> dict:
     """Compute DSR, PBO, WFE, FDR for north-star validation."""
     if len(trades) < 10:
@@ -203,11 +218,11 @@ def _compute_north_star_metrics(trades: list[dict]) -> dict:
     fdr_q = sum(1 for r in rejected if r) / max(sum(rejected), 1) if any(rejected) else 0.0
 
     return {
-        "dsr": round(dsr, 4),
-        "pbo": round(pbo, 4),
-        "wfe": round(wfe, 4),
-        "fdr_q": round(fdr_q, 4),
-        "sharpe_obs": round(sharpe_obs, 4),
+        "dsr": _r4(dsr),
+        "pbo": _r4(pbo),
+        "wfe": _r4(wfe),
+        "fdr_q": _r4(fdr_q),
+        "sharpe_obs": _r4(sharpe_obs),
     }
 
 
@@ -232,25 +247,39 @@ def _check_tier2_promotion(metrics: dict, state: dict) -> bool:
         trades = _load_closed_picks()
         ns_metrics = _compute_north_star_metrics(trades)
 
-        # Check north-star gates
+        # Check north-star gates.
+        #
+        # Every gate FAILS CLOSED on a missing/nan statistic. A gate written as
+        # `if value is not None and value < threshold` silently passes when the
+        # value is nan (`nan < 0.95` is False), which is how an uncomputable
+        # metric becomes an unnoticed promotion. nan means "we could not
+        # measure this", and an unmeasured gate is not a passed gate.
         ns_pass = True
         ns_reasons = []
 
-        if ns_metrics["dsr"] is not None and ns_metrics["dsr"] < 0.95:
-            ns_pass = False
-            ns_reasons.append(f"DSR {ns_metrics['dsr']} < 0.95")
+        def _unmeasurable(name: str, value) -> bool:
+            return value is None or (isinstance(value, float) and value != value)
 
-        if ns_metrics["pbo"] is not None and ns_metrics["pbo"] >= 0.05:
-            ns_pass = False
-            ns_reasons.append(f"PBO {ns_metrics['pbo']} >= 0.05")
-
-        if ns_metrics["wfe"] is not None and ns_metrics["wfe"] < 0.60:
-            ns_pass = False
-            ns_reasons.append(f"WFE {ns_metrics['wfe']:.1%} < 60%")
-
-        if ns_metrics["fdr_q"] is not None and ns_metrics["fdr_q"] > 0.10:
-            ns_pass = False
-            ns_reasons.append(f"FDR q {ns_metrics['fdr_q']} > 0.10")
+        for _name, _thr, _cmp in (
+            ("DSR", 0.95, "lt"),
+            ("PBO", 0.05, "ge"),
+            ("WFE", 0.60, "lt"),
+            ("FDR q", 0.10, "gt"),
+        ):
+            _key = {"DSR": "dsr", "PBO": "pbo", "WFE": "wfe",
+                    "FDR q": "fdr_q"}[_name]
+            _val = ns_metrics.get(_key)
+            if _unmeasurable(_name, _val):
+                ns_pass = False
+                ns_reasons.append(f"{_name} NOT EVALUABLE (nan/None)")
+                continue
+            _fails = (_val < _thr if _cmp == "lt"
+                      else _val >= _thr if _cmp == "ge"
+                      else _val > _thr)
+            if _fails:
+                ns_pass = False
+                _fmt = (f"{_val:.1%}" if _name == "WFE" else f"{_val}")
+                ns_reasons.append(f"{_name} {_fmt} fails gate ({_cmp} {_thr})")
 
         if ns_pass:
             state["status"] = "PROMOTED"
