@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:41:46.535158+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:42:19.540978+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 113 of 1000.** open 269 | claimed 3 | blocked_no_data 615
+**Worked 136 of 1000.** open 0 | claimed 3 | blocked_no_data 861
 
 ## Done condition (identical for every cell)
 
@@ -10,7 +10,7 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 27/50 worked
+## BTCUSDT - 34/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -51,21 +51,21 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `BTCUSDT/bb_meanrev/1w` | killed | `results/cells/BTCUSDT_bb_meanrev_1w.json` |
 | [-] `BTCUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/BTCUSDT_vwap_reversion_15m.json` |
 | [x] `BTCUSDT/vwap_reversion/1h` | killed | `results/cells/BTCUSDT_vwap_reversion_1h.json` |
-| [ ] `BTCUSDT/vwap_reversion/4h` | open | `results/cells/BTCUSDT_vwap_reversion_4h.json` |
-| [ ] `BTCUSDT/vwap_reversion/1d` | open | `results/cells/BTCUSDT_vwap_reversion_1d.json` |
-| [ ] `BTCUSDT/vwap_reversion/1w` | open | `results/cells/BTCUSDT_vwap_reversion_1w.json` |
-| [ ] `BTCUSDT/momentum_12_1/15m` | open | `results/cells/BTCUSDT_momentum_12_1_15m.json` |
-| [ ] `BTCUSDT/momentum_12_1/1h` | open | `results/cells/BTCUSDT_momentum_12_1_1h.json` |
-| [ ] `BTCUSDT/momentum_12_1/4h` | open | `results/cells/BTCUSDT_momentum_12_1_4h.json` |
-| [ ] `BTCUSDT/momentum_12_1/1d` | open | `results/cells/BTCUSDT_momentum_12_1_1d.json` |
-| [ ] `BTCUSDT/momentum_12_1/1w` | open | `results/cells/BTCUSDT_momentum_12_1_1w.json` |
-| [ ] `BTCUSDT/gap_fade/15m` | open | `results/cells/BTCUSDT_gap_fade_15m.json` |
-| [ ] `BTCUSDT/gap_fade/1h` | open | `results/cells/BTCUSDT_gap_fade_1h.json` |
-| [ ] `BTCUSDT/gap_fade/4h` | open | `results/cells/BTCUSDT_gap_fade_4h.json` |
-| [ ] `BTCUSDT/gap_fade/1d` | open | `results/cells/BTCUSDT_gap_fade_1d.json` |
-| [ ] `BTCUSDT/gap_fade/1w` | open | `results/cells/BTCUSDT_gap_fade_1w.json` |
+| [x] `BTCUSDT/vwap_reversion/4h` | killed | `results/cells/BTCUSDT_vwap_reversion_4h.json` |
+| [x] `BTCUSDT/vwap_reversion/1d` | killed | `results/cells/BTCUSDT_vwap_reversion_1d.json` |
+| [x] `BTCUSDT/vwap_reversion/1w` | killed | `results/cells/BTCUSDT_vwap_reversion_1w.json` |
+| [-] `BTCUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/BTCUSDT_momentum_12_1_15m.json` |
+| [x] `BTCUSDT/momentum_12_1/1h` | killed | `results/cells/BTCUSDT_momentum_12_1_1h.json` |
+| [x] `BTCUSDT/momentum_12_1/4h` | killed | `results/cells/BTCUSDT_momentum_12_1_4h.json` |
+| [x] `BTCUSDT/momentum_12_1/1d` | killed | `results/cells/BTCUSDT_momentum_12_1_1d.json` |
+| [x] `BTCUSDT/momentum_12_1/1w` | killed | `results/cells/BTCUSDT_momentum_12_1_1w.json` |
+| [-] `BTCUSDT/gap_fade/15m` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_15m.json` |
+| [-] `BTCUSDT/gap_fade/1h` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1h.json` |
+| [-] `BTCUSDT/gap_fade/4h` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_4h.json` |
+| [-] `BTCUSDT/gap_fade/1d` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1d.json` |
+| [-] `BTCUSDT/gap_fade/1w` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 14/50 worked
+## ETHUSDT - 18/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -106,21 +106,21 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `ETHUSDT/bb_meanrev/1w` | killed | `results/cells/ETHUSDT_bb_meanrev_1w.json` |
 | [-] `ETHUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_15m.json` |
 | [-] `ETHUSDT/vwap_reversion/1h` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_1h.json` |
-| [ ] `ETHUSDT/vwap_reversion/4h` | open | `results/cells/ETHUSDT_vwap_reversion_4h.json` |
-| [ ] `ETHUSDT/vwap_reversion/1d` | open | `results/cells/ETHUSDT_vwap_reversion_1d.json` |
-| [ ] `ETHUSDT/vwap_reversion/1w` | open | `results/cells/ETHUSDT_vwap_reversion_1w.json` |
-| [ ] `ETHUSDT/momentum_12_1/15m` | open | `results/cells/ETHUSDT_momentum_12_1_15m.json` |
-| [ ] `ETHUSDT/momentum_12_1/1h` | open | `results/cells/ETHUSDT_momentum_12_1_1h.json` |
-| [ ] `ETHUSDT/momentum_12_1/4h` | open | `results/cells/ETHUSDT_momentum_12_1_4h.json` |
-| [ ] `ETHUSDT/momentum_12_1/1d` | open | `results/cells/ETHUSDT_momentum_12_1_1d.json` |
-| [ ] `ETHUSDT/momentum_12_1/1w` | open | `results/cells/ETHUSDT_momentum_12_1_1w.json` |
-| [ ] `ETHUSDT/gap_fade/15m` | open | `results/cells/ETHUSDT_gap_fade_15m.json` |
-| [ ] `ETHUSDT/gap_fade/1h` | open | `results/cells/ETHUSDT_gap_fade_1h.json` |
-| [ ] `ETHUSDT/gap_fade/4h` | open | `results/cells/ETHUSDT_gap_fade_4h.json` |
-| [ ] `ETHUSDT/gap_fade/1d` | open | `results/cells/ETHUSDT_gap_fade_1d.json` |
-| [ ] `ETHUSDT/gap_fade/1w` | open | `results/cells/ETHUSDT_gap_fade_1w.json` |
+| [-] `ETHUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_4h.json` |
+| [x] `ETHUSDT/vwap_reversion/1d` | killed | `results/cells/ETHUSDT_vwap_reversion_1d.json` |
+| [x] `ETHUSDT/vwap_reversion/1w` | killed | `results/cells/ETHUSDT_vwap_reversion_1w.json` |
+| [-] `ETHUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/ETHUSDT_momentum_12_1_15m.json` |
+| [-] `ETHUSDT/momentum_12_1/1h` | blocked_no_data | `results/cells/ETHUSDT_momentum_12_1_1h.json` |
+| [-] `ETHUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/ETHUSDT_momentum_12_1_4h.json` |
+| [x] `ETHUSDT/momentum_12_1/1d` | killed | `results/cells/ETHUSDT_momentum_12_1_1d.json` |
+| [x] `ETHUSDT/momentum_12_1/1w` | killed | `results/cells/ETHUSDT_momentum_12_1_1w.json` |
+| [-] `ETHUSDT/gap_fade/15m` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_15m.json` |
+| [-] `ETHUSDT/gap_fade/1h` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1h.json` |
+| [-] `ETHUSDT/gap_fade/4h` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_4h.json` |
+| [-] `ETHUSDT/gap_fade/1d` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1d.json` |
+| [-] `ETHUSDT/gap_fade/1w` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1w.json` |
 
-## SOLUSDT - 14/50 worked
+## SOLUSDT - 18/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -161,21 +161,21 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `SOLUSDT/bb_meanrev/1w` | killed | `results/cells/SOLUSDT_bb_meanrev_1w.json` |
 | [-] `SOLUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/SOLUSDT_vwap_reversion_15m.json` |
 | [-] `SOLUSDT/vwap_reversion/1h` | blocked_no_data | `results/cells/SOLUSDT_vwap_reversion_1h.json` |
-| [ ] `SOLUSDT/vwap_reversion/4h` | open | `results/cells/SOLUSDT_vwap_reversion_4h.json` |
-| [ ] `SOLUSDT/vwap_reversion/1d` | open | `results/cells/SOLUSDT_vwap_reversion_1d.json` |
-| [ ] `SOLUSDT/vwap_reversion/1w` | open | `results/cells/SOLUSDT_vwap_reversion_1w.json` |
-| [ ] `SOLUSDT/momentum_12_1/15m` | open | `results/cells/SOLUSDT_momentum_12_1_15m.json` |
-| [ ] `SOLUSDT/momentum_12_1/1h` | open | `results/cells/SOLUSDT_momentum_12_1_1h.json` |
-| [ ] `SOLUSDT/momentum_12_1/4h` | open | `results/cells/SOLUSDT_momentum_12_1_4h.json` |
-| [ ] `SOLUSDT/momentum_12_1/1d` | open | `results/cells/SOLUSDT_momentum_12_1_1d.json` |
-| [ ] `SOLUSDT/momentum_12_1/1w` | open | `results/cells/SOLUSDT_momentum_12_1_1w.json` |
-| [ ] `SOLUSDT/gap_fade/15m` | open | `results/cells/SOLUSDT_gap_fade_15m.json` |
-| [ ] `SOLUSDT/gap_fade/1h` | open | `results/cells/SOLUSDT_gap_fade_1h.json` |
-| [ ] `SOLUSDT/gap_fade/4h` | open | `results/cells/SOLUSDT_gap_fade_4h.json` |
-| [ ] `SOLUSDT/gap_fade/1d` | open | `results/cells/SOLUSDT_gap_fade_1d.json` |
-| [ ] `SOLUSDT/gap_fade/1w` | open | `results/cells/SOLUSDT_gap_fade_1w.json` |
+| [-] `SOLUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/SOLUSDT_vwap_reversion_4h.json` |
+| [x] `SOLUSDT/vwap_reversion/1d` | killed | `results/cells/SOLUSDT_vwap_reversion_1d.json` |
+| [x] `SOLUSDT/vwap_reversion/1w` | killed | `results/cells/SOLUSDT_vwap_reversion_1w.json` |
+| [-] `SOLUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/SOLUSDT_momentum_12_1_15m.json` |
+| [-] `SOLUSDT/momentum_12_1/1h` | blocked_no_data | `results/cells/SOLUSDT_momentum_12_1_1h.json` |
+| [-] `SOLUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/SOLUSDT_momentum_12_1_4h.json` |
+| [x] `SOLUSDT/momentum_12_1/1d` | killed | `results/cells/SOLUSDT_momentum_12_1_1d.json` |
+| [x] `SOLUSDT/momentum_12_1/1w` | killed | `results/cells/SOLUSDT_momentum_12_1_1w.json` |
+| [-] `SOLUSDT/gap_fade/15m` | blocked_no_data | `results/cells/SOLUSDT_gap_fade_15m.json` |
+| [-] `SOLUSDT/gap_fade/1h` | blocked_no_data | `results/cells/SOLUSDT_gap_fade_1h.json` |
+| [-] `SOLUSDT/gap_fade/4h` | blocked_no_data | `results/cells/SOLUSDT_gap_fade_4h.json` |
+| [-] `SOLUSDT/gap_fade/1d` | blocked_no_data | `results/cells/SOLUSDT_gap_fade_1d.json` |
+| [-] `SOLUSDT/gap_fade/1w` | blocked_no_data | `results/cells/SOLUSDT_gap_fade_1w.json` |
 
-## XRPUSDT - 14/50 worked
+## XRPUSDT - 18/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -216,21 +216,21 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `XRPUSDT/bb_meanrev/1w` | killed | `results/cells/XRPUSDT_bb_meanrev_1w.json` |
 | [-] `XRPUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/XRPUSDT_vwap_reversion_15m.json` |
 | [-] `XRPUSDT/vwap_reversion/1h` | blocked_no_data | `results/cells/XRPUSDT_vwap_reversion_1h.json` |
-| [ ] `XRPUSDT/vwap_reversion/4h` | open | `results/cells/XRPUSDT_vwap_reversion_4h.json` |
-| [ ] `XRPUSDT/vwap_reversion/1d` | open | `results/cells/XRPUSDT_vwap_reversion_1d.json` |
-| [ ] `XRPUSDT/vwap_reversion/1w` | open | `results/cells/XRPUSDT_vwap_reversion_1w.json` |
-| [ ] `XRPUSDT/momentum_12_1/15m` | open | `results/cells/XRPUSDT_momentum_12_1_15m.json` |
-| [ ] `XRPUSDT/momentum_12_1/1h` | open | `results/cells/XRPUSDT_momentum_12_1_1h.json` |
-| [ ] `XRPUSDT/momentum_12_1/4h` | open | `results/cells/XRPUSDT_momentum_12_1_4h.json` |
-| [ ] `XRPUSDT/momentum_12_1/1d` | open | `results/cells/XRPUSDT_momentum_12_1_1d.json` |
-| [ ] `XRPUSDT/momentum_12_1/1w` | open | `results/cells/XRPUSDT_momentum_12_1_1w.json` |
-| [ ] `XRPUSDT/gap_fade/15m` | open | `results/cells/XRPUSDT_gap_fade_15m.json` |
-| [ ] `XRPUSDT/gap_fade/1h` | open | `results/cells/XRPUSDT_gap_fade_1h.json` |
-| [ ] `XRPUSDT/gap_fade/4h` | open | `results/cells/XRPUSDT_gap_fade_4h.json` |
-| [ ] `XRPUSDT/gap_fade/1d` | open | `results/cells/XRPUSDT_gap_fade_1d.json` |
-| [ ] `XRPUSDT/gap_fade/1w` | open | `results/cells/XRPUSDT_gap_fade_1w.json` |
+| [-] `XRPUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/XRPUSDT_vwap_reversion_4h.json` |
+| [x] `XRPUSDT/vwap_reversion/1d` | killed | `results/cells/XRPUSDT_vwap_reversion_1d.json` |
+| [x] `XRPUSDT/vwap_reversion/1w` | killed | `results/cells/XRPUSDT_vwap_reversion_1w.json` |
+| [-] `XRPUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/XRPUSDT_momentum_12_1_15m.json` |
+| [-] `XRPUSDT/momentum_12_1/1h` | blocked_no_data | `results/cells/XRPUSDT_momentum_12_1_1h.json` |
+| [-] `XRPUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/XRPUSDT_momentum_12_1_4h.json` |
+| [x] `XRPUSDT/momentum_12_1/1d` | killed | `results/cells/XRPUSDT_momentum_12_1_1d.json` |
+| [x] `XRPUSDT/momentum_12_1/1w` | killed | `results/cells/XRPUSDT_momentum_12_1_1w.json` |
+| [-] `XRPUSDT/gap_fade/15m` | blocked_no_data | `results/cells/XRPUSDT_gap_fade_15m.json` |
+| [-] `XRPUSDT/gap_fade/1h` | blocked_no_data | `results/cells/XRPUSDT_gap_fade_1h.json` |
+| [-] `XRPUSDT/gap_fade/4h` | blocked_no_data | `results/cells/XRPUSDT_gap_fade_4h.json` |
+| [-] `XRPUSDT/gap_fade/1d` | blocked_no_data | `results/cells/XRPUSDT_gap_fade_1d.json` |
+| [-] `XRPUSDT/gap_fade/1w` | blocked_no_data | `results/cells/XRPUSDT_gap_fade_1w.json` |
 
-## DOGEUSDT - 14/50 worked
+## DOGEUSDT - 18/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -271,19 +271,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `DOGEUSDT/bb_meanrev/1w` | killed | `results/cells/DOGEUSDT_bb_meanrev_1w.json` |
 | [-] `DOGEUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/DOGEUSDT_vwap_reversion_15m.json` |
 | [-] `DOGEUSDT/vwap_reversion/1h` | blocked_no_data | `results/cells/DOGEUSDT_vwap_reversion_1h.json` |
-| [ ] `DOGEUSDT/vwap_reversion/4h` | open | `results/cells/DOGEUSDT_vwap_reversion_4h.json` |
-| [ ] `DOGEUSDT/vwap_reversion/1d` | open | `results/cells/DOGEUSDT_vwap_reversion_1d.json` |
-| [ ] `DOGEUSDT/vwap_reversion/1w` | open | `results/cells/DOGEUSDT_vwap_reversion_1w.json` |
-| [ ] `DOGEUSDT/momentum_12_1/15m` | open | `results/cells/DOGEUSDT_momentum_12_1_15m.json` |
-| [ ] `DOGEUSDT/momentum_12_1/1h` | open | `results/cells/DOGEUSDT_momentum_12_1_1h.json` |
-| [ ] `DOGEUSDT/momentum_12_1/4h` | open | `results/cells/DOGEUSDT_momentum_12_1_4h.json` |
-| [ ] `DOGEUSDT/momentum_12_1/1d` | open | `results/cells/DOGEUSDT_momentum_12_1_1d.json` |
-| [ ] `DOGEUSDT/momentum_12_1/1w` | open | `results/cells/DOGEUSDT_momentum_12_1_1w.json` |
-| [ ] `DOGEUSDT/gap_fade/15m` | open | `results/cells/DOGEUSDT_gap_fade_15m.json` |
-| [ ] `DOGEUSDT/gap_fade/1h` | open | `results/cells/DOGEUSDT_gap_fade_1h.json` |
-| [ ] `DOGEUSDT/gap_fade/4h` | open | `results/cells/DOGEUSDT_gap_fade_4h.json` |
-| [ ] `DOGEUSDT/gap_fade/1d` | open | `results/cells/DOGEUSDT_gap_fade_1d.json` |
-| [ ] `DOGEUSDT/gap_fade/1w` | open | `results/cells/DOGEUSDT_gap_fade_1w.json` |
+| [-] `DOGEUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/DOGEUSDT_vwap_reversion_4h.json` |
+| [x] `DOGEUSDT/vwap_reversion/1d` | killed | `results/cells/DOGEUSDT_vwap_reversion_1d.json` |
+| [x] `DOGEUSDT/vwap_reversion/1w` | killed | `results/cells/DOGEUSDT_vwap_reversion_1w.json` |
+| [-] `DOGEUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/DOGEUSDT_momentum_12_1_15m.json` |
+| [-] `DOGEUSDT/momentum_12_1/1h` | blocked_no_data | `results/cells/DOGEUSDT_momentum_12_1_1h.json` |
+| [-] `DOGEUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/DOGEUSDT_momentum_12_1_4h.json` |
+| [x] `DOGEUSDT/momentum_12_1/1d` | killed | `results/cells/DOGEUSDT_momentum_12_1_1d.json` |
+| [x] `DOGEUSDT/momentum_12_1/1w` | killed | `results/cells/DOGEUSDT_momentum_12_1_1w.json` |
+| [-] `DOGEUSDT/gap_fade/15m` | blocked_no_data | `results/cells/DOGEUSDT_gap_fade_15m.json` |
+| [-] `DOGEUSDT/gap_fade/1h` | blocked_no_data | `results/cells/DOGEUSDT_gap_fade_1h.json` |
+| [-] `DOGEUSDT/gap_fade/4h` | blocked_no_data | `results/cells/DOGEUSDT_gap_fade_4h.json` |
+| [-] `DOGEUSDT/gap_fade/1d` | blocked_no_data | `results/cells/DOGEUSDT_gap_fade_1d.json` |
+| [-] `DOGEUSDT/gap_fade/1w` | blocked_no_data | `results/cells/DOGEUSDT_gap_fade_1w.json` |
 
 ## ADAUSDT - 2/50 worked
 
@@ -326,19 +326,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ADAUSDT/bb_meanrev/1w` | blocked_no_data | `results/cells/ADAUSDT_bb_meanrev_1w.json` |
 | [-] `ADAUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/ADAUSDT_vwap_reversion_15m.json` |
 | [-] `ADAUSDT/vwap_reversion/1h` | blocked_no_data | `results/cells/ADAUSDT_vwap_reversion_1h.json` |
-| [ ] `ADAUSDT/vwap_reversion/4h` | open | `results/cells/ADAUSDT_vwap_reversion_4h.json` |
-| [ ] `ADAUSDT/vwap_reversion/1d` | open | `results/cells/ADAUSDT_vwap_reversion_1d.json` |
-| [ ] `ADAUSDT/vwap_reversion/1w` | open | `results/cells/ADAUSDT_vwap_reversion_1w.json` |
-| [ ] `ADAUSDT/momentum_12_1/15m` | open | `results/cells/ADAUSDT_momentum_12_1_15m.json` |
-| [ ] `ADAUSDT/momentum_12_1/1h` | open | `results/cells/ADAUSDT_momentum_12_1_1h.json` |
-| [ ] `ADAUSDT/momentum_12_1/4h` | open | `results/cells/ADAUSDT_momentum_12_1_4h.json` |
-| [ ] `ADAUSDT/momentum_12_1/1d` | open | `results/cells/ADAUSDT_momentum_12_1_1d.json` |
-| [ ] `ADAUSDT/momentum_12_1/1w` | open | `results/cells/ADAUSDT_momentum_12_1_1w.json` |
-| [ ] `ADAUSDT/gap_fade/15m` | open | `results/cells/ADAUSDT_gap_fade_15m.json` |
-| [ ] `ADAUSDT/gap_fade/1h` | open | `results/cells/ADAUSDT_gap_fade_1h.json` |
-| [ ] `ADAUSDT/gap_fade/4h` | open | `results/cells/ADAUSDT_gap_fade_4h.json` |
-| [ ] `ADAUSDT/gap_fade/1d` | open | `results/cells/ADAUSDT_gap_fade_1d.json` |
-| [ ] `ADAUSDT/gap_fade/1w` | open | `results/cells/ADAUSDT_gap_fade_1w.json` |
+| [-] `ADAUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/ADAUSDT_vwap_reversion_4h.json` |
+| [-] `ADAUSDT/vwap_reversion/1d` | blocked_no_data | `results/cells/ADAUSDT_vwap_reversion_1d.json` |
+| [-] `ADAUSDT/vwap_reversion/1w` | blocked_no_data | `results/cells/ADAUSDT_vwap_reversion_1w.json` |
+| [-] `ADAUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/ADAUSDT_momentum_12_1_15m.json` |
+| [-] `ADAUSDT/momentum_12_1/1h` | blocked_no_data | `results/cells/ADAUSDT_momentum_12_1_1h.json` |
+| [-] `ADAUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/ADAUSDT_momentum_12_1_4h.json` |
+| [-] `ADAUSDT/momentum_12_1/1d` | blocked_no_data | `results/cells/ADAUSDT_momentum_12_1_1d.json` |
+| [-] `ADAUSDT/momentum_12_1/1w` | blocked_no_data | `results/cells/ADAUSDT_momentum_12_1_1w.json` |
+| [-] `ADAUSDT/gap_fade/15m` | blocked_no_data | `results/cells/ADAUSDT_gap_fade_15m.json` |
+| [-] `ADAUSDT/gap_fade/1h` | blocked_no_data | `results/cells/ADAUSDT_gap_fade_1h.json` |
+| [-] `ADAUSDT/gap_fade/4h` | blocked_no_data | `results/cells/ADAUSDT_gap_fade_4h.json` |
+| [-] `ADAUSDT/gap_fade/1d` | blocked_no_data | `results/cells/ADAUSDT_gap_fade_1d.json` |
+| [-] `ADAUSDT/gap_fade/1w` | blocked_no_data | `results/cells/ADAUSDT_gap_fade_1w.json` |
 
 ## LINKUSDT - 2/50 worked
 
@@ -381,19 +381,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `LINKUSDT/bb_meanrev/1w` | blocked_no_data | `results/cells/LINKUSDT_bb_meanrev_1w.json` |
 | [-] `LINKUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/LINKUSDT_vwap_reversion_15m.json` |
 | [-] `LINKUSDT/vwap_reversion/1h` | blocked_no_data | `results/cells/LINKUSDT_vwap_reversion_1h.json` |
-| [ ] `LINKUSDT/vwap_reversion/4h` | open | `results/cells/LINKUSDT_vwap_reversion_4h.json` |
-| [ ] `LINKUSDT/vwap_reversion/1d` | open | `results/cells/LINKUSDT_vwap_reversion_1d.json` |
-| [ ] `LINKUSDT/vwap_reversion/1w` | open | `results/cells/LINKUSDT_vwap_reversion_1w.json` |
-| [ ] `LINKUSDT/momentum_12_1/15m` | open | `results/cells/LINKUSDT_momentum_12_1_15m.json` |
-| [ ] `LINKUSDT/momentum_12_1/1h` | open | `results/cells/LINKUSDT_momentum_12_1_1h.json` |
-| [ ] `LINKUSDT/momentum_12_1/4h` | open | `results/cells/LINKUSDT_momentum_12_1_4h.json` |
-| [ ] `LINKUSDT/momentum_12_1/1d` | open | `results/cells/LINKUSDT_momentum_12_1_1d.json` |
-| [ ] `LINKUSDT/momentum_12_1/1w` | open | `results/cells/LINKUSDT_momentum_12_1_1w.json` |
-| [ ] `LINKUSDT/gap_fade/15m` | open | `results/cells/LINKUSDT_gap_fade_15m.json` |
-| [ ] `LINKUSDT/gap_fade/1h` | open | `results/cells/LINKUSDT_gap_fade_1h.json` |
-| [ ] `LINKUSDT/gap_fade/4h` | open | `results/cells/LINKUSDT_gap_fade_4h.json` |
-| [ ] `LINKUSDT/gap_fade/1d` | open | `results/cells/LINKUSDT_gap_fade_1d.json` |
-| [ ] `LINKUSDT/gap_fade/1w` | open | `results/cells/LINKUSDT_gap_fade_1w.json` |
+| [-] `LINKUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/LINKUSDT_vwap_reversion_4h.json` |
+| [-] `LINKUSDT/vwap_reversion/1d` | blocked_no_data | `results/cells/LINKUSDT_vwap_reversion_1d.json` |
+| [-] `LINKUSDT/vwap_reversion/1w` | blocked_no_data | `results/cells/LINKUSDT_vwap_reversion_1w.json` |
+| [-] `LINKUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/LINKUSDT_momentum_12_1_15m.json` |
+| [-] `LINKUSDT/momentum_12_1/1h` | blocked_no_data | `results/cells/LINKUSDT_momentum_12_1_1h.json` |
+| [-] `LINKUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/LINKUSDT_momentum_12_1_4h.json` |
+| [-] `LINKUSDT/momentum_12_1/1d` | blocked_no_data | `results/cells/LINKUSDT_momentum_12_1_1d.json` |
+| [-] `LINKUSDT/momentum_12_1/1w` | blocked_no_data | `results/cells/LINKUSDT_momentum_12_1_1w.json` |
+| [-] `LINKUSDT/gap_fade/15m` | blocked_no_data | `results/cells/LINKUSDT_gap_fade_15m.json` |
+| [-] `LINKUSDT/gap_fade/1h` | blocked_no_data | `results/cells/LINKUSDT_gap_fade_1h.json` |
+| [-] `LINKUSDT/gap_fade/4h` | blocked_no_data | `results/cells/LINKUSDT_gap_fade_4h.json` |
+| [-] `LINKUSDT/gap_fade/1d` | blocked_no_data | `results/cells/LINKUSDT_gap_fade_1d.json` |
+| [-] `LINKUSDT/gap_fade/1w` | blocked_no_data | `results/cells/LINKUSDT_gap_fade_1w.json` |
 
 ## SPY - 2/50 worked
 
@@ -436,19 +436,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `SPY/bb_meanrev/1w` | blocked_no_data | `results/cells/SPY_bb_meanrev_1w.json` |
 | [-] `SPY/vwap_reversion/15m` | blocked_no_data | `results/cells/SPY_vwap_reversion_15m.json` |
 | [-] `SPY/vwap_reversion/1h` | blocked_no_data | `results/cells/SPY_vwap_reversion_1h.json` |
-| [ ] `SPY/vwap_reversion/4h` | open | `results/cells/SPY_vwap_reversion_4h.json` |
-| [ ] `SPY/vwap_reversion/1d` | open | `results/cells/SPY_vwap_reversion_1d.json` |
-| [ ] `SPY/vwap_reversion/1w` | open | `results/cells/SPY_vwap_reversion_1w.json` |
-| [ ] `SPY/momentum_12_1/15m` | open | `results/cells/SPY_momentum_12_1_15m.json` |
-| [ ] `SPY/momentum_12_1/1h` | open | `results/cells/SPY_momentum_12_1_1h.json` |
-| [ ] `SPY/momentum_12_1/4h` | open | `results/cells/SPY_momentum_12_1_4h.json` |
-| [ ] `SPY/momentum_12_1/1d` | open | `results/cells/SPY_momentum_12_1_1d.json` |
-| [ ] `SPY/momentum_12_1/1w` | open | `results/cells/SPY_momentum_12_1_1w.json` |
-| [ ] `SPY/gap_fade/15m` | open | `results/cells/SPY_gap_fade_15m.json` |
-| [ ] `SPY/gap_fade/1h` | open | `results/cells/SPY_gap_fade_1h.json` |
-| [ ] `SPY/gap_fade/4h` | open | `results/cells/SPY_gap_fade_4h.json` |
-| [ ] `SPY/gap_fade/1d` | open | `results/cells/SPY_gap_fade_1d.json` |
-| [ ] `SPY/gap_fade/1w` | open | `results/cells/SPY_gap_fade_1w.json` |
+| [-] `SPY/vwap_reversion/4h` | blocked_no_data | `results/cells/SPY_vwap_reversion_4h.json` |
+| [-] `SPY/vwap_reversion/1d` | blocked_no_data | `results/cells/SPY_vwap_reversion_1d.json` |
+| [-] `SPY/vwap_reversion/1w` | blocked_no_data | `results/cells/SPY_vwap_reversion_1w.json` |
+| [-] `SPY/momentum_12_1/15m` | blocked_no_data | `results/cells/SPY_momentum_12_1_15m.json` |
+| [-] `SPY/momentum_12_1/1h` | blocked_no_data | `results/cells/SPY_momentum_12_1_1h.json` |
+| [-] `SPY/momentum_12_1/4h` | blocked_no_data | `results/cells/SPY_momentum_12_1_4h.json` |
+| [-] `SPY/momentum_12_1/1d` | blocked_no_data | `results/cells/SPY_momentum_12_1_1d.json` |
+| [-] `SPY/momentum_12_1/1w` | blocked_no_data | `results/cells/SPY_momentum_12_1_1w.json` |
+| [-] `SPY/gap_fade/15m` | blocked_no_data | `results/cells/SPY_gap_fade_15m.json` |
+| [-] `SPY/gap_fade/1h` | blocked_no_data | `results/cells/SPY_gap_fade_1h.json` |
+| [-] `SPY/gap_fade/4h` | blocked_no_data | `results/cells/SPY_gap_fade_4h.json` |
+| [-] `SPY/gap_fade/1d` | blocked_no_data | `results/cells/SPY_gap_fade_1d.json` |
+| [-] `SPY/gap_fade/1w` | blocked_no_data | `results/cells/SPY_gap_fade_1w.json` |
 
 ## QQQ - 2/50 worked
 
@@ -491,19 +491,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `QQQ/bb_meanrev/1w` | blocked_no_data | `results/cells/QQQ_bb_meanrev_1w.json` |
 | [-] `QQQ/vwap_reversion/15m` | blocked_no_data | `results/cells/QQQ_vwap_reversion_15m.json` |
 | [-] `QQQ/vwap_reversion/1h` | blocked_no_data | `results/cells/QQQ_vwap_reversion_1h.json` |
-| [ ] `QQQ/vwap_reversion/4h` | open | `results/cells/QQQ_vwap_reversion_4h.json` |
-| [ ] `QQQ/vwap_reversion/1d` | open | `results/cells/QQQ_vwap_reversion_1d.json` |
-| [ ] `QQQ/vwap_reversion/1w` | open | `results/cells/QQQ_vwap_reversion_1w.json` |
-| [ ] `QQQ/momentum_12_1/15m` | open | `results/cells/QQQ_momentum_12_1_15m.json` |
-| [ ] `QQQ/momentum_12_1/1h` | open | `results/cells/QQQ_momentum_12_1_1h.json` |
-| [ ] `QQQ/momentum_12_1/4h` | open | `results/cells/QQQ_momentum_12_1_4h.json` |
-| [ ] `QQQ/momentum_12_1/1d` | open | `results/cells/QQQ_momentum_12_1_1d.json` |
-| [ ] `QQQ/momentum_12_1/1w` | open | `results/cells/QQQ_momentum_12_1_1w.json` |
-| [ ] `QQQ/gap_fade/15m` | open | `results/cells/QQQ_gap_fade_15m.json` |
-| [ ] `QQQ/gap_fade/1h` | open | `results/cells/QQQ_gap_fade_1h.json` |
-| [ ] `QQQ/gap_fade/4h` | open | `results/cells/QQQ_gap_fade_4h.json` |
-| [ ] `QQQ/gap_fade/1d` | open | `results/cells/QQQ_gap_fade_1d.json` |
-| [ ] `QQQ/gap_fade/1w` | open | `results/cells/QQQ_gap_fade_1w.json` |
+| [-] `QQQ/vwap_reversion/4h` | blocked_no_data | `results/cells/QQQ_vwap_reversion_4h.json` |
+| [-] `QQQ/vwap_reversion/1d` | blocked_no_data | `results/cells/QQQ_vwap_reversion_1d.json` |
+| [-] `QQQ/vwap_reversion/1w` | blocked_no_data | `results/cells/QQQ_vwap_reversion_1w.json` |
+| [-] `QQQ/momentum_12_1/15m` | blocked_no_data | `results/cells/QQQ_momentum_12_1_15m.json` |
+| [-] `QQQ/momentum_12_1/1h` | blocked_no_data | `results/cells/QQQ_momentum_12_1_1h.json` |
+| [-] `QQQ/momentum_12_1/4h` | blocked_no_data | `results/cells/QQQ_momentum_12_1_4h.json` |
+| [-] `QQQ/momentum_12_1/1d` | blocked_no_data | `results/cells/QQQ_momentum_12_1_1d.json` |
+| [-] `QQQ/momentum_12_1/1w` | blocked_no_data | `results/cells/QQQ_momentum_12_1_1w.json` |
+| [-] `QQQ/gap_fade/15m` | blocked_no_data | `results/cells/QQQ_gap_fade_15m.json` |
+| [-] `QQQ/gap_fade/1h` | blocked_no_data | `results/cells/QQQ_gap_fade_1h.json` |
+| [-] `QQQ/gap_fade/4h` | blocked_no_data | `results/cells/QQQ_gap_fade_4h.json` |
+| [-] `QQQ/gap_fade/1d` | blocked_no_data | `results/cells/QQQ_gap_fade_1d.json` |
+| [-] `QQQ/gap_fade/1w` | blocked_no_data | `results/cells/QQQ_gap_fade_1w.json` |
 
 ## IWM - 2/50 worked
 
@@ -546,19 +546,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `IWM/bb_meanrev/1w` | blocked_no_data | `results/cells/IWM_bb_meanrev_1w.json` |
 | [-] `IWM/vwap_reversion/15m` | blocked_no_data | `results/cells/IWM_vwap_reversion_15m.json` |
 | [-] `IWM/vwap_reversion/1h` | blocked_no_data | `results/cells/IWM_vwap_reversion_1h.json` |
-| [ ] `IWM/vwap_reversion/4h` | open | `results/cells/IWM_vwap_reversion_4h.json` |
-| [ ] `IWM/vwap_reversion/1d` | open | `results/cells/IWM_vwap_reversion_1d.json` |
-| [ ] `IWM/vwap_reversion/1w` | open | `results/cells/IWM_vwap_reversion_1w.json` |
-| [ ] `IWM/momentum_12_1/15m` | open | `results/cells/IWM_momentum_12_1_15m.json` |
-| [ ] `IWM/momentum_12_1/1h` | open | `results/cells/IWM_momentum_12_1_1h.json` |
-| [ ] `IWM/momentum_12_1/4h` | open | `results/cells/IWM_momentum_12_1_4h.json` |
-| [ ] `IWM/momentum_12_1/1d` | open | `results/cells/IWM_momentum_12_1_1d.json` |
-| [ ] `IWM/momentum_12_1/1w` | open | `results/cells/IWM_momentum_12_1_1w.json` |
-| [ ] `IWM/gap_fade/15m` | open | `results/cells/IWM_gap_fade_15m.json` |
-| [ ] `IWM/gap_fade/1h` | open | `results/cells/IWM_gap_fade_1h.json` |
-| [ ] `IWM/gap_fade/4h` | open | `results/cells/IWM_gap_fade_4h.json` |
-| [ ] `IWM/gap_fade/1d` | open | `results/cells/IWM_gap_fade_1d.json` |
-| [ ] `IWM/gap_fade/1w` | open | `results/cells/IWM_gap_fade_1w.json` |
+| [-] `IWM/vwap_reversion/4h` | blocked_no_data | `results/cells/IWM_vwap_reversion_4h.json` |
+| [-] `IWM/vwap_reversion/1d` | blocked_no_data | `results/cells/IWM_vwap_reversion_1d.json` |
+| [-] `IWM/vwap_reversion/1w` | blocked_no_data | `results/cells/IWM_vwap_reversion_1w.json` |
+| [-] `IWM/momentum_12_1/15m` | blocked_no_data | `results/cells/IWM_momentum_12_1_15m.json` |
+| [-] `IWM/momentum_12_1/1h` | blocked_no_data | `results/cells/IWM_momentum_12_1_1h.json` |
+| [-] `IWM/momentum_12_1/4h` | blocked_no_data | `results/cells/IWM_momentum_12_1_4h.json` |
+| [-] `IWM/momentum_12_1/1d` | blocked_no_data | `results/cells/IWM_momentum_12_1_1d.json` |
+| [-] `IWM/momentum_12_1/1w` | blocked_no_data | `results/cells/IWM_momentum_12_1_1w.json` |
+| [-] `IWM/gap_fade/15m` | blocked_no_data | `results/cells/IWM_gap_fade_15m.json` |
+| [-] `IWM/gap_fade/1h` | blocked_no_data | `results/cells/IWM_gap_fade_1h.json` |
+| [-] `IWM/gap_fade/4h` | blocked_no_data | `results/cells/IWM_gap_fade_4h.json` |
+| [-] `IWM/gap_fade/1d` | blocked_no_data | `results/cells/IWM_gap_fade_1d.json` |
+| [-] `IWM/gap_fade/1w` | blocked_no_data | `results/cells/IWM_gap_fade_1w.json` |
 
 ## AAPL - 2/50 worked
 
@@ -601,19 +601,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `AAPL/bb_meanrev/1w` | blocked_no_data | `results/cells/AAPL_bb_meanrev_1w.json` |
 | [-] `AAPL/vwap_reversion/15m` | blocked_no_data | `results/cells/AAPL_vwap_reversion_15m.json` |
 | [-] `AAPL/vwap_reversion/1h` | blocked_no_data | `results/cells/AAPL_vwap_reversion_1h.json` |
-| [ ] `AAPL/vwap_reversion/4h` | open | `results/cells/AAPL_vwap_reversion_4h.json` |
-| [ ] `AAPL/vwap_reversion/1d` | open | `results/cells/AAPL_vwap_reversion_1d.json` |
-| [ ] `AAPL/vwap_reversion/1w` | open | `results/cells/AAPL_vwap_reversion_1w.json` |
-| [ ] `AAPL/momentum_12_1/15m` | open | `results/cells/AAPL_momentum_12_1_15m.json` |
-| [ ] `AAPL/momentum_12_1/1h` | open | `results/cells/AAPL_momentum_12_1_1h.json` |
-| [ ] `AAPL/momentum_12_1/4h` | open | `results/cells/AAPL_momentum_12_1_4h.json` |
-| [ ] `AAPL/momentum_12_1/1d` | open | `results/cells/AAPL_momentum_12_1_1d.json` |
-| [ ] `AAPL/momentum_12_1/1w` | open | `results/cells/AAPL_momentum_12_1_1w.json` |
-| [ ] `AAPL/gap_fade/15m` | open | `results/cells/AAPL_gap_fade_15m.json` |
-| [ ] `AAPL/gap_fade/1h` | open | `results/cells/AAPL_gap_fade_1h.json` |
-| [ ] `AAPL/gap_fade/4h` | open | `results/cells/AAPL_gap_fade_4h.json` |
-| [ ] `AAPL/gap_fade/1d` | open | `results/cells/AAPL_gap_fade_1d.json` |
-| [ ] `AAPL/gap_fade/1w` | open | `results/cells/AAPL_gap_fade_1w.json` |
+| [-] `AAPL/vwap_reversion/4h` | blocked_no_data | `results/cells/AAPL_vwap_reversion_4h.json` |
+| [-] `AAPL/vwap_reversion/1d` | blocked_no_data | `results/cells/AAPL_vwap_reversion_1d.json` |
+| [-] `AAPL/vwap_reversion/1w` | blocked_no_data | `results/cells/AAPL_vwap_reversion_1w.json` |
+| [-] `AAPL/momentum_12_1/15m` | blocked_no_data | `results/cells/AAPL_momentum_12_1_15m.json` |
+| [-] `AAPL/momentum_12_1/1h` | blocked_no_data | `results/cells/AAPL_momentum_12_1_1h.json` |
+| [-] `AAPL/momentum_12_1/4h` | blocked_no_data | `results/cells/AAPL_momentum_12_1_4h.json` |
+| [-] `AAPL/momentum_12_1/1d` | blocked_no_data | `results/cells/AAPL_momentum_12_1_1d.json` |
+| [-] `AAPL/momentum_12_1/1w` | blocked_no_data | `results/cells/AAPL_momentum_12_1_1w.json` |
+| [-] `AAPL/gap_fade/15m` | blocked_no_data | `results/cells/AAPL_gap_fade_15m.json` |
+| [-] `AAPL/gap_fade/1h` | blocked_no_data | `results/cells/AAPL_gap_fade_1h.json` |
+| [-] `AAPL/gap_fade/4h` | blocked_no_data | `results/cells/AAPL_gap_fade_4h.json` |
+| [-] `AAPL/gap_fade/1d` | blocked_no_data | `results/cells/AAPL_gap_fade_1d.json` |
+| [-] `AAPL/gap_fade/1w` | blocked_no_data | `results/cells/AAPL_gap_fade_1w.json` |
 
 ## MSFT - 2/50 worked
 
@@ -655,20 +655,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `MSFT/bb_meanrev/1d` | blocked_no_data | `results/cells/MSFT_bb_meanrev_1d.json` |
 | [-] `MSFT/bb_meanrev/1w` | blocked_no_data | `results/cells/MSFT_bb_meanrev_1w.json` |
 | [-] `MSFT/vwap_reversion/15m` | blocked_no_data | `results/cells/MSFT_vwap_reversion_15m.json` |
-| [ ] `MSFT/vwap_reversion/1h` | open | `results/cells/MSFT_vwap_reversion_1h.json` |
-| [ ] `MSFT/vwap_reversion/4h` | open | `results/cells/MSFT_vwap_reversion_4h.json` |
-| [ ] `MSFT/vwap_reversion/1d` | open | `results/cells/MSFT_vwap_reversion_1d.json` |
-| [ ] `MSFT/vwap_reversion/1w` | open | `results/cells/MSFT_vwap_reversion_1w.json` |
-| [ ] `MSFT/momentum_12_1/15m` | open | `results/cells/MSFT_momentum_12_1_15m.json` |
-| [ ] `MSFT/momentum_12_1/1h` | open | `results/cells/MSFT_momentum_12_1_1h.json` |
-| [ ] `MSFT/momentum_12_1/4h` | open | `results/cells/MSFT_momentum_12_1_4h.json` |
-| [ ] `MSFT/momentum_12_1/1d` | open | `results/cells/MSFT_momentum_12_1_1d.json` |
-| [ ] `MSFT/momentum_12_1/1w` | open | `results/cells/MSFT_momentum_12_1_1w.json` |
-| [ ] `MSFT/gap_fade/15m` | open | `results/cells/MSFT_gap_fade_15m.json` |
-| [ ] `MSFT/gap_fade/1h` | open | `results/cells/MSFT_gap_fade_1h.json` |
-| [ ] `MSFT/gap_fade/4h` | open | `results/cells/MSFT_gap_fade_4h.json` |
-| [ ] `MSFT/gap_fade/1d` | open | `results/cells/MSFT_gap_fade_1d.json` |
-| [ ] `MSFT/gap_fade/1w` | open | `results/cells/MSFT_gap_fade_1w.json` |
+| [-] `MSFT/vwap_reversion/1h` | blocked_no_data | `results/cells/MSFT_vwap_reversion_1h.json` |
+| [-] `MSFT/vwap_reversion/4h` | blocked_no_data | `results/cells/MSFT_vwap_reversion_4h.json` |
+| [-] `MSFT/vwap_reversion/1d` | blocked_no_data | `results/cells/MSFT_vwap_reversion_1d.json` |
+| [-] `MSFT/vwap_reversion/1w` | blocked_no_data | `results/cells/MSFT_vwap_reversion_1w.json` |
+| [-] `MSFT/momentum_12_1/15m` | blocked_no_data | `results/cells/MSFT_momentum_12_1_15m.json` |
+| [-] `MSFT/momentum_12_1/1h` | blocked_no_data | `results/cells/MSFT_momentum_12_1_1h.json` |
+| [-] `MSFT/momentum_12_1/4h` | blocked_no_data | `results/cells/MSFT_momentum_12_1_4h.json` |
+| [-] `MSFT/momentum_12_1/1d` | blocked_no_data | `results/cells/MSFT_momentum_12_1_1d.json` |
+| [-] `MSFT/momentum_12_1/1w` | blocked_no_data | `results/cells/MSFT_momentum_12_1_1w.json` |
+| [-] `MSFT/gap_fade/15m` | blocked_no_data | `results/cells/MSFT_gap_fade_15m.json` |
+| [-] `MSFT/gap_fade/1h` | blocked_no_data | `results/cells/MSFT_gap_fade_1h.json` |
+| [-] `MSFT/gap_fade/4h` | blocked_no_data | `results/cells/MSFT_gap_fade_4h.json` |
+| [-] `MSFT/gap_fade/1d` | blocked_no_data | `results/cells/MSFT_gap_fade_1d.json` |
+| [-] `MSFT/gap_fade/1w` | blocked_no_data | `results/cells/MSFT_gap_fade_1w.json` |
 
 ## NVDA - 2/50 worked
 
@@ -710,20 +710,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `NVDA/bb_meanrev/1d` | blocked_no_data | `results/cells/NVDA_bb_meanrev_1d.json` |
 | [-] `NVDA/bb_meanrev/1w` | blocked_no_data | `results/cells/NVDA_bb_meanrev_1w.json` |
 | [-] `NVDA/vwap_reversion/15m` | blocked_no_data | `results/cells/NVDA_vwap_reversion_15m.json` |
-| [ ] `NVDA/vwap_reversion/1h` | open | `results/cells/NVDA_vwap_reversion_1h.json` |
-| [ ] `NVDA/vwap_reversion/4h` | open | `results/cells/NVDA_vwap_reversion_4h.json` |
-| [ ] `NVDA/vwap_reversion/1d` | open | `results/cells/NVDA_vwap_reversion_1d.json` |
-| [ ] `NVDA/vwap_reversion/1w` | open | `results/cells/NVDA_vwap_reversion_1w.json` |
-| [ ] `NVDA/momentum_12_1/15m` | open | `results/cells/NVDA_momentum_12_1_15m.json` |
-| [ ] `NVDA/momentum_12_1/1h` | open | `results/cells/NVDA_momentum_12_1_1h.json` |
-| [ ] `NVDA/momentum_12_1/4h` | open | `results/cells/NVDA_momentum_12_1_4h.json` |
-| [ ] `NVDA/momentum_12_1/1d` | open | `results/cells/NVDA_momentum_12_1_1d.json` |
-| [ ] `NVDA/momentum_12_1/1w` | open | `results/cells/NVDA_momentum_12_1_1w.json` |
-| [ ] `NVDA/gap_fade/15m` | open | `results/cells/NVDA_gap_fade_15m.json` |
-| [ ] `NVDA/gap_fade/1h` | open | `results/cells/NVDA_gap_fade_1h.json` |
-| [ ] `NVDA/gap_fade/4h` | open | `results/cells/NVDA_gap_fade_4h.json` |
-| [ ] `NVDA/gap_fade/1d` | open | `results/cells/NVDA_gap_fade_1d.json` |
-| [ ] `NVDA/gap_fade/1w` | open | `results/cells/NVDA_gap_fade_1w.json` |
+| [-] `NVDA/vwap_reversion/1h` | blocked_no_data | `results/cells/NVDA_vwap_reversion_1h.json` |
+| [-] `NVDA/vwap_reversion/4h` | blocked_no_data | `results/cells/NVDA_vwap_reversion_4h.json` |
+| [-] `NVDA/vwap_reversion/1d` | blocked_no_data | `results/cells/NVDA_vwap_reversion_1d.json` |
+| [-] `NVDA/vwap_reversion/1w` | blocked_no_data | `results/cells/NVDA_vwap_reversion_1w.json` |
+| [-] `NVDA/momentum_12_1/15m` | blocked_no_data | `results/cells/NVDA_momentum_12_1_15m.json` |
+| [-] `NVDA/momentum_12_1/1h` | blocked_no_data | `results/cells/NVDA_momentum_12_1_1h.json` |
+| [-] `NVDA/momentum_12_1/4h` | blocked_no_data | `results/cells/NVDA_momentum_12_1_4h.json` |
+| [-] `NVDA/momentum_12_1/1d` | blocked_no_data | `results/cells/NVDA_momentum_12_1_1d.json` |
+| [-] `NVDA/momentum_12_1/1w` | blocked_no_data | `results/cells/NVDA_momentum_12_1_1w.json` |
+| [-] `NVDA/gap_fade/15m` | blocked_no_data | `results/cells/NVDA_gap_fade_15m.json` |
+| [-] `NVDA/gap_fade/1h` | blocked_no_data | `results/cells/NVDA_gap_fade_1h.json` |
+| [-] `NVDA/gap_fade/4h` | blocked_no_data | `results/cells/NVDA_gap_fade_4h.json` |
+| [-] `NVDA/gap_fade/1d` | blocked_no_data | `results/cells/NVDA_gap_fade_1d.json` |
+| [-] `NVDA/gap_fade/1w` | blocked_no_data | `results/cells/NVDA_gap_fade_1w.json` |
 
 ## JPM - 2/50 worked
 
@@ -765,20 +765,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `JPM/bb_meanrev/1d` | blocked_no_data | `results/cells/JPM_bb_meanrev_1d.json` |
 | [-] `JPM/bb_meanrev/1w` | blocked_no_data | `results/cells/JPM_bb_meanrev_1w.json` |
 | [-] `JPM/vwap_reversion/15m` | blocked_no_data | `results/cells/JPM_vwap_reversion_15m.json` |
-| [ ] `JPM/vwap_reversion/1h` | open | `results/cells/JPM_vwap_reversion_1h.json` |
-| [ ] `JPM/vwap_reversion/4h` | open | `results/cells/JPM_vwap_reversion_4h.json` |
-| [ ] `JPM/vwap_reversion/1d` | open | `results/cells/JPM_vwap_reversion_1d.json` |
-| [ ] `JPM/vwap_reversion/1w` | open | `results/cells/JPM_vwap_reversion_1w.json` |
-| [ ] `JPM/momentum_12_1/15m` | open | `results/cells/JPM_momentum_12_1_15m.json` |
-| [ ] `JPM/momentum_12_1/1h` | open | `results/cells/JPM_momentum_12_1_1h.json` |
-| [ ] `JPM/momentum_12_1/4h` | open | `results/cells/JPM_momentum_12_1_4h.json` |
-| [ ] `JPM/momentum_12_1/1d` | open | `results/cells/JPM_momentum_12_1_1d.json` |
-| [ ] `JPM/momentum_12_1/1w` | open | `results/cells/JPM_momentum_12_1_1w.json` |
-| [ ] `JPM/gap_fade/15m` | open | `results/cells/JPM_gap_fade_15m.json` |
-| [ ] `JPM/gap_fade/1h` | open | `results/cells/JPM_gap_fade_1h.json` |
-| [ ] `JPM/gap_fade/4h` | open | `results/cells/JPM_gap_fade_4h.json` |
-| [ ] `JPM/gap_fade/1d` | open | `results/cells/JPM_gap_fade_1d.json` |
-| [ ] `JPM/gap_fade/1w` | open | `results/cells/JPM_gap_fade_1w.json` |
+| [-] `JPM/vwap_reversion/1h` | blocked_no_data | `results/cells/JPM_vwap_reversion_1h.json` |
+| [-] `JPM/vwap_reversion/4h` | blocked_no_data | `results/cells/JPM_vwap_reversion_4h.json` |
+| [-] `JPM/vwap_reversion/1d` | blocked_no_data | `results/cells/JPM_vwap_reversion_1d.json` |
+| [-] `JPM/vwap_reversion/1w` | blocked_no_data | `results/cells/JPM_vwap_reversion_1w.json` |
+| [-] `JPM/momentum_12_1/15m` | blocked_no_data | `results/cells/JPM_momentum_12_1_15m.json` |
+| [-] `JPM/momentum_12_1/1h` | blocked_no_data | `results/cells/JPM_momentum_12_1_1h.json` |
+| [-] `JPM/momentum_12_1/4h` | blocked_no_data | `results/cells/JPM_momentum_12_1_4h.json` |
+| [-] `JPM/momentum_12_1/1d` | blocked_no_data | `results/cells/JPM_momentum_12_1_1d.json` |
+| [-] `JPM/momentum_12_1/1w` | blocked_no_data | `results/cells/JPM_momentum_12_1_1w.json` |
+| [-] `JPM/gap_fade/15m` | blocked_no_data | `results/cells/JPM_gap_fade_15m.json` |
+| [-] `JPM/gap_fade/1h` | blocked_no_data | `results/cells/JPM_gap_fade_1h.json` |
+| [-] `JPM/gap_fade/4h` | blocked_no_data | `results/cells/JPM_gap_fade_4h.json` |
+| [-] `JPM/gap_fade/1d` | blocked_no_data | `results/cells/JPM_gap_fade_1d.json` |
+| [-] `JPM/gap_fade/1w` | blocked_no_data | `results/cells/JPM_gap_fade_1w.json` |
 
 ## XLE - 2/50 worked
 
@@ -820,20 +820,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `XLE/bb_meanrev/1d` | blocked_no_data | `results/cells/XLE_bb_meanrev_1d.json` |
 | [-] `XLE/bb_meanrev/1w` | blocked_no_data | `results/cells/XLE_bb_meanrev_1w.json` |
 | [-] `XLE/vwap_reversion/15m` | blocked_no_data | `results/cells/XLE_vwap_reversion_15m.json` |
-| [ ] `XLE/vwap_reversion/1h` | open | `results/cells/XLE_vwap_reversion_1h.json` |
-| [ ] `XLE/vwap_reversion/4h` | open | `results/cells/XLE_vwap_reversion_4h.json` |
-| [ ] `XLE/vwap_reversion/1d` | open | `results/cells/XLE_vwap_reversion_1d.json` |
-| [ ] `XLE/vwap_reversion/1w` | open | `results/cells/XLE_vwap_reversion_1w.json` |
-| [ ] `XLE/momentum_12_1/15m` | open | `results/cells/XLE_momentum_12_1_15m.json` |
-| [ ] `XLE/momentum_12_1/1h` | open | `results/cells/XLE_momentum_12_1_1h.json` |
-| [ ] `XLE/momentum_12_1/4h` | open | `results/cells/XLE_momentum_12_1_4h.json` |
-| [ ] `XLE/momentum_12_1/1d` | open | `results/cells/XLE_momentum_12_1_1d.json` |
-| [ ] `XLE/momentum_12_1/1w` | open | `results/cells/XLE_momentum_12_1_1w.json` |
-| [ ] `XLE/gap_fade/15m` | open | `results/cells/XLE_gap_fade_15m.json` |
-| [ ] `XLE/gap_fade/1h` | open | `results/cells/XLE_gap_fade_1h.json` |
-| [ ] `XLE/gap_fade/4h` | open | `results/cells/XLE_gap_fade_4h.json` |
-| [ ] `XLE/gap_fade/1d` | open | `results/cells/XLE_gap_fade_1d.json` |
-| [ ] `XLE/gap_fade/1w` | open | `results/cells/XLE_gap_fade_1w.json` |
+| [-] `XLE/vwap_reversion/1h` | blocked_no_data | `results/cells/XLE_vwap_reversion_1h.json` |
+| [-] `XLE/vwap_reversion/4h` | blocked_no_data | `results/cells/XLE_vwap_reversion_4h.json` |
+| [-] `XLE/vwap_reversion/1d` | blocked_no_data | `results/cells/XLE_vwap_reversion_1d.json` |
+| [-] `XLE/vwap_reversion/1w` | blocked_no_data | `results/cells/XLE_vwap_reversion_1w.json` |
+| [-] `XLE/momentum_12_1/15m` | blocked_no_data | `results/cells/XLE_momentum_12_1_15m.json` |
+| [-] `XLE/momentum_12_1/1h` | blocked_no_data | `results/cells/XLE_momentum_12_1_1h.json` |
+| [-] `XLE/momentum_12_1/4h` | blocked_no_data | `results/cells/XLE_momentum_12_1_4h.json` |
+| [-] `XLE/momentum_12_1/1d` | blocked_no_data | `results/cells/XLE_momentum_12_1_1d.json` |
+| [-] `XLE/momentum_12_1/1w` | blocked_no_data | `results/cells/XLE_momentum_12_1_1w.json` |
+| [-] `XLE/gap_fade/15m` | blocked_no_data | `results/cells/XLE_gap_fade_15m.json` |
+| [-] `XLE/gap_fade/1h` | blocked_no_data | `results/cells/XLE_gap_fade_1h.json` |
+| [-] `XLE/gap_fade/4h` | blocked_no_data | `results/cells/XLE_gap_fade_4h.json` |
+| [-] `XLE/gap_fade/1d` | blocked_no_data | `results/cells/XLE_gap_fade_1d.json` |
+| [-] `XLE/gap_fade/1w` | blocked_no_data | `results/cells/XLE_gap_fade_1w.json` |
 
 ## GLD - 2/50 worked
 
@@ -875,20 +875,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `GLD/bb_meanrev/1d` | blocked_no_data | `results/cells/GLD_bb_meanrev_1d.json` |
 | [-] `GLD/bb_meanrev/1w` | blocked_no_data | `results/cells/GLD_bb_meanrev_1w.json` |
 | [-] `GLD/vwap_reversion/15m` | blocked_no_data | `results/cells/GLD_vwap_reversion_15m.json` |
-| [ ] `GLD/vwap_reversion/1h` | open | `results/cells/GLD_vwap_reversion_1h.json` |
-| [ ] `GLD/vwap_reversion/4h` | open | `results/cells/GLD_vwap_reversion_4h.json` |
-| [ ] `GLD/vwap_reversion/1d` | open | `results/cells/GLD_vwap_reversion_1d.json` |
-| [ ] `GLD/vwap_reversion/1w` | open | `results/cells/GLD_vwap_reversion_1w.json` |
-| [ ] `GLD/momentum_12_1/15m` | open | `results/cells/GLD_momentum_12_1_15m.json` |
-| [ ] `GLD/momentum_12_1/1h` | open | `results/cells/GLD_momentum_12_1_1h.json` |
-| [ ] `GLD/momentum_12_1/4h` | open | `results/cells/GLD_momentum_12_1_4h.json` |
-| [ ] `GLD/momentum_12_1/1d` | open | `results/cells/GLD_momentum_12_1_1d.json` |
-| [ ] `GLD/momentum_12_1/1w` | open | `results/cells/GLD_momentum_12_1_1w.json` |
-| [ ] `GLD/gap_fade/15m` | open | `results/cells/GLD_gap_fade_15m.json` |
-| [ ] `GLD/gap_fade/1h` | open | `results/cells/GLD_gap_fade_1h.json` |
-| [ ] `GLD/gap_fade/4h` | open | `results/cells/GLD_gap_fade_4h.json` |
-| [ ] `GLD/gap_fade/1d` | open | `results/cells/GLD_gap_fade_1d.json` |
-| [ ] `GLD/gap_fade/1w` | open | `results/cells/GLD_gap_fade_1w.json` |
+| [-] `GLD/vwap_reversion/1h` | blocked_no_data | `results/cells/GLD_vwap_reversion_1h.json` |
+| [-] `GLD/vwap_reversion/4h` | blocked_no_data | `results/cells/GLD_vwap_reversion_4h.json` |
+| [-] `GLD/vwap_reversion/1d` | blocked_no_data | `results/cells/GLD_vwap_reversion_1d.json` |
+| [-] `GLD/vwap_reversion/1w` | blocked_no_data | `results/cells/GLD_vwap_reversion_1w.json` |
+| [-] `GLD/momentum_12_1/15m` | blocked_no_data | `results/cells/GLD_momentum_12_1_15m.json` |
+| [-] `GLD/momentum_12_1/1h` | blocked_no_data | `results/cells/GLD_momentum_12_1_1h.json` |
+| [-] `GLD/momentum_12_1/4h` | blocked_no_data | `results/cells/GLD_momentum_12_1_4h.json` |
+| [-] `GLD/momentum_12_1/1d` | blocked_no_data | `results/cells/GLD_momentum_12_1_1d.json` |
+| [-] `GLD/momentum_12_1/1w` | blocked_no_data | `results/cells/GLD_momentum_12_1_1w.json` |
+| [-] `GLD/gap_fade/15m` | blocked_no_data | `results/cells/GLD_gap_fade_15m.json` |
+| [-] `GLD/gap_fade/1h` | blocked_no_data | `results/cells/GLD_gap_fade_1h.json` |
+| [-] `GLD/gap_fade/4h` | blocked_no_data | `results/cells/GLD_gap_fade_4h.json` |
+| [-] `GLD/gap_fade/1d` | blocked_no_data | `results/cells/GLD_gap_fade_1d.json` |
+| [-] `GLD/gap_fade/1w` | blocked_no_data | `results/cells/GLD_gap_fade_1w.json` |
 
 ## TLT - 2/50 worked
 
@@ -930,20 +930,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `TLT/bb_meanrev/1d` | blocked_no_data | `results/cells/TLT_bb_meanrev_1d.json` |
 | [-] `TLT/bb_meanrev/1w` | blocked_no_data | `results/cells/TLT_bb_meanrev_1w.json` |
 | [-] `TLT/vwap_reversion/15m` | blocked_no_data | `results/cells/TLT_vwap_reversion_15m.json` |
-| [ ] `TLT/vwap_reversion/1h` | open | `results/cells/TLT_vwap_reversion_1h.json` |
-| [ ] `TLT/vwap_reversion/4h` | open | `results/cells/TLT_vwap_reversion_4h.json` |
-| [ ] `TLT/vwap_reversion/1d` | open | `results/cells/TLT_vwap_reversion_1d.json` |
-| [ ] `TLT/vwap_reversion/1w` | open | `results/cells/TLT_vwap_reversion_1w.json` |
-| [ ] `TLT/momentum_12_1/15m` | open | `results/cells/TLT_momentum_12_1_15m.json` |
-| [ ] `TLT/momentum_12_1/1h` | open | `results/cells/TLT_momentum_12_1_1h.json` |
-| [ ] `TLT/momentum_12_1/4h` | open | `results/cells/TLT_momentum_12_1_4h.json` |
-| [ ] `TLT/momentum_12_1/1d` | open | `results/cells/TLT_momentum_12_1_1d.json` |
-| [ ] `TLT/momentum_12_1/1w` | open | `results/cells/TLT_momentum_12_1_1w.json` |
-| [ ] `TLT/gap_fade/15m` | open | `results/cells/TLT_gap_fade_15m.json` |
-| [ ] `TLT/gap_fade/1h` | open | `results/cells/TLT_gap_fade_1h.json` |
-| [ ] `TLT/gap_fade/4h` | open | `results/cells/TLT_gap_fade_4h.json` |
-| [ ] `TLT/gap_fade/1d` | open | `results/cells/TLT_gap_fade_1d.json` |
-| [ ] `TLT/gap_fade/1w` | open | `results/cells/TLT_gap_fade_1w.json` |
+| [-] `TLT/vwap_reversion/1h` | blocked_no_data | `results/cells/TLT_vwap_reversion_1h.json` |
+| [-] `TLT/vwap_reversion/4h` | blocked_no_data | `results/cells/TLT_vwap_reversion_4h.json` |
+| [-] `TLT/vwap_reversion/1d` | blocked_no_data | `results/cells/TLT_vwap_reversion_1d.json` |
+| [-] `TLT/vwap_reversion/1w` | blocked_no_data | `results/cells/TLT_vwap_reversion_1w.json` |
+| [-] `TLT/momentum_12_1/15m` | blocked_no_data | `results/cells/TLT_momentum_12_1_15m.json` |
+| [-] `TLT/momentum_12_1/1h` | blocked_no_data | `results/cells/TLT_momentum_12_1_1h.json` |
+| [-] `TLT/momentum_12_1/4h` | blocked_no_data | `results/cells/TLT_momentum_12_1_4h.json` |
+| [-] `TLT/momentum_12_1/1d` | blocked_no_data | `results/cells/TLT_momentum_12_1_1d.json` |
+| [-] `TLT/momentum_12_1/1w` | blocked_no_data | `results/cells/TLT_momentum_12_1_1w.json` |
+| [-] `TLT/gap_fade/15m` | blocked_no_data | `results/cells/TLT_gap_fade_15m.json` |
+| [-] `TLT/gap_fade/1h` | blocked_no_data | `results/cells/TLT_gap_fade_1h.json` |
+| [-] `TLT/gap_fade/4h` | blocked_no_data | `results/cells/TLT_gap_fade_4h.json` |
+| [-] `TLT/gap_fade/1d` | blocked_no_data | `results/cells/TLT_gap_fade_1d.json` |
+| [-] `TLT/gap_fade/1w` | blocked_no_data | `results/cells/TLT_gap_fade_1w.json` |
 
 ## EURUSD - 2/50 worked
 
@@ -985,20 +985,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `EURUSD/bb_meanrev/1d` | blocked_no_data | `results/cells/EURUSD_bb_meanrev_1d.json` |
 | [-] `EURUSD/bb_meanrev/1w` | blocked_no_data | `results/cells/EURUSD_bb_meanrev_1w.json` |
 | [-] `EURUSD/vwap_reversion/15m` | blocked_no_data | `results/cells/EURUSD_vwap_reversion_15m.json` |
-| [ ] `EURUSD/vwap_reversion/1h` | open | `results/cells/EURUSD_vwap_reversion_1h.json` |
-| [ ] `EURUSD/vwap_reversion/4h` | open | `results/cells/EURUSD_vwap_reversion_4h.json` |
-| [ ] `EURUSD/vwap_reversion/1d` | open | `results/cells/EURUSD_vwap_reversion_1d.json` |
-| [ ] `EURUSD/vwap_reversion/1w` | open | `results/cells/EURUSD_vwap_reversion_1w.json` |
-| [ ] `EURUSD/momentum_12_1/15m` | open | `results/cells/EURUSD_momentum_12_1_15m.json` |
-| [ ] `EURUSD/momentum_12_1/1h` | open | `results/cells/EURUSD_momentum_12_1_1h.json` |
-| [ ] `EURUSD/momentum_12_1/4h` | open | `results/cells/EURUSD_momentum_12_1_4h.json` |
-| [ ] `EURUSD/momentum_12_1/1d` | open | `results/cells/EURUSD_momentum_12_1_1d.json` |
-| [ ] `EURUSD/momentum_12_1/1w` | open | `results/cells/EURUSD_momentum_12_1_1w.json` |
-| [ ] `EURUSD/gap_fade/15m` | open | `results/cells/EURUSD_gap_fade_15m.json` |
-| [ ] `EURUSD/gap_fade/1h` | open | `results/cells/EURUSD_gap_fade_1h.json` |
-| [ ] `EURUSD/gap_fade/4h` | open | `results/cells/EURUSD_gap_fade_4h.json` |
-| [ ] `EURUSD/gap_fade/1d` | open | `results/cells/EURUSD_gap_fade_1d.json` |
-| [ ] `EURUSD/gap_fade/1w` | open | `results/cells/EURUSD_gap_fade_1w.json` |
+| [-] `EURUSD/vwap_reversion/1h` | blocked_no_data | `results/cells/EURUSD_vwap_reversion_1h.json` |
+| [-] `EURUSD/vwap_reversion/4h` | blocked_no_data | `results/cells/EURUSD_vwap_reversion_4h.json` |
+| [-] `EURUSD/vwap_reversion/1d` | blocked_no_data | `results/cells/EURUSD_vwap_reversion_1d.json` |
+| [-] `EURUSD/vwap_reversion/1w` | blocked_no_data | `results/cells/EURUSD_vwap_reversion_1w.json` |
+| [-] `EURUSD/momentum_12_1/15m` | blocked_no_data | `results/cells/EURUSD_momentum_12_1_15m.json` |
+| [-] `EURUSD/momentum_12_1/1h` | blocked_no_data | `results/cells/EURUSD_momentum_12_1_1h.json` |
+| [-] `EURUSD/momentum_12_1/4h` | blocked_no_data | `results/cells/EURUSD_momentum_12_1_4h.json` |
+| [-] `EURUSD/momentum_12_1/1d` | blocked_no_data | `results/cells/EURUSD_momentum_12_1_1d.json` |
+| [-] `EURUSD/momentum_12_1/1w` | blocked_no_data | `results/cells/EURUSD_momentum_12_1_1w.json` |
+| [-] `EURUSD/gap_fade/15m` | blocked_no_data | `results/cells/EURUSD_gap_fade_15m.json` |
+| [-] `EURUSD/gap_fade/1h` | blocked_no_data | `results/cells/EURUSD_gap_fade_1h.json` |
+| [-] `EURUSD/gap_fade/4h` | blocked_no_data | `results/cells/EURUSD_gap_fade_4h.json` |
+| [-] `EURUSD/gap_fade/1d` | blocked_no_data | `results/cells/EURUSD_gap_fade_1d.json` |
+| [-] `EURUSD/gap_fade/1w` | blocked_no_data | `results/cells/EURUSD_gap_fade_1w.json` |
 
 ## USDJPY - 2/50 worked
 
@@ -1040,20 +1040,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `USDJPY/bb_meanrev/1d` | blocked_no_data | `results/cells/USDJPY_bb_meanrev_1d.json` |
 | [-] `USDJPY/bb_meanrev/1w` | blocked_no_data | `results/cells/USDJPY_bb_meanrev_1w.json` |
 | [-] `USDJPY/vwap_reversion/15m` | blocked_no_data | `results/cells/USDJPY_vwap_reversion_15m.json` |
-| [ ] `USDJPY/vwap_reversion/1h` | open | `results/cells/USDJPY_vwap_reversion_1h.json` |
-| [ ] `USDJPY/vwap_reversion/4h` | open | `results/cells/USDJPY_vwap_reversion_4h.json` |
-| [ ] `USDJPY/vwap_reversion/1d` | open | `results/cells/USDJPY_vwap_reversion_1d.json` |
-| [ ] `USDJPY/vwap_reversion/1w` | open | `results/cells/USDJPY_vwap_reversion_1w.json` |
-| [ ] `USDJPY/momentum_12_1/15m` | open | `results/cells/USDJPY_momentum_12_1_15m.json` |
-| [ ] `USDJPY/momentum_12_1/1h` | open | `results/cells/USDJPY_momentum_12_1_1h.json` |
-| [ ] `USDJPY/momentum_12_1/4h` | open | `results/cells/USDJPY_momentum_12_1_4h.json` |
-| [ ] `USDJPY/momentum_12_1/1d` | open | `results/cells/USDJPY_momentum_12_1_1d.json` |
-| [ ] `USDJPY/momentum_12_1/1w` | open | `results/cells/USDJPY_momentum_12_1_1w.json` |
-| [ ] `USDJPY/gap_fade/15m` | open | `results/cells/USDJPY_gap_fade_15m.json` |
-| [ ] `USDJPY/gap_fade/1h` | open | `results/cells/USDJPY_gap_fade_1h.json` |
-| [ ] `USDJPY/gap_fade/4h` | open | `results/cells/USDJPY_gap_fade_4h.json` |
-| [ ] `USDJPY/gap_fade/1d` | open | `results/cells/USDJPY_gap_fade_1d.json` |
-| [ ] `USDJPY/gap_fade/1w` | open | `results/cells/USDJPY_gap_fade_1w.json` |
+| [-] `USDJPY/vwap_reversion/1h` | blocked_no_data | `results/cells/USDJPY_vwap_reversion_1h.json` |
+| [-] `USDJPY/vwap_reversion/4h` | blocked_no_data | `results/cells/USDJPY_vwap_reversion_4h.json` |
+| [-] `USDJPY/vwap_reversion/1d` | blocked_no_data | `results/cells/USDJPY_vwap_reversion_1d.json` |
+| [-] `USDJPY/vwap_reversion/1w` | blocked_no_data | `results/cells/USDJPY_vwap_reversion_1w.json` |
+| [-] `USDJPY/momentum_12_1/15m` | blocked_no_data | `results/cells/USDJPY_momentum_12_1_15m.json` |
+| [-] `USDJPY/momentum_12_1/1h` | blocked_no_data | `results/cells/USDJPY_momentum_12_1_1h.json` |
+| [-] `USDJPY/momentum_12_1/4h` | blocked_no_data | `results/cells/USDJPY_momentum_12_1_4h.json` |
+| [-] `USDJPY/momentum_12_1/1d` | blocked_no_data | `results/cells/USDJPY_momentum_12_1_1d.json` |
+| [-] `USDJPY/momentum_12_1/1w` | blocked_no_data | `results/cells/USDJPY_momentum_12_1_1w.json` |
+| [-] `USDJPY/gap_fade/15m` | blocked_no_data | `results/cells/USDJPY_gap_fade_15m.json` |
+| [-] `USDJPY/gap_fade/1h` | blocked_no_data | `results/cells/USDJPY_gap_fade_1h.json` |
+| [-] `USDJPY/gap_fade/4h` | blocked_no_data | `results/cells/USDJPY_gap_fade_4h.json` |
+| [-] `USDJPY/gap_fade/1d` | blocked_no_data | `results/cells/USDJPY_gap_fade_1d.json` |
+| [-] `USDJPY/gap_fade/1w` | blocked_no_data | `results/cells/USDJPY_gap_fade_1w.json` |
 
 ## GBPUSD - 2/50 worked
 
@@ -1095,18 +1095,18 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `GBPUSD/bb_meanrev/1d` | blocked_no_data | `results/cells/GBPUSD_bb_meanrev_1d.json` |
 | [-] `GBPUSD/bb_meanrev/1w` | blocked_no_data | `results/cells/GBPUSD_bb_meanrev_1w.json` |
 | [-] `GBPUSD/vwap_reversion/15m` | blocked_no_data | `results/cells/GBPUSD_vwap_reversion_15m.json` |
-| [ ] `GBPUSD/vwap_reversion/1h` | open | `results/cells/GBPUSD_vwap_reversion_1h.json` |
-| [ ] `GBPUSD/vwap_reversion/4h` | open | `results/cells/GBPUSD_vwap_reversion_4h.json` |
-| [ ] `GBPUSD/vwap_reversion/1d` | open | `results/cells/GBPUSD_vwap_reversion_1d.json` |
-| [ ] `GBPUSD/vwap_reversion/1w` | open | `results/cells/GBPUSD_vwap_reversion_1w.json` |
-| [ ] `GBPUSD/momentum_12_1/15m` | open | `results/cells/GBPUSD_momentum_12_1_15m.json` |
-| [ ] `GBPUSD/momentum_12_1/1h` | open | `results/cells/GBPUSD_momentum_12_1_1h.json` |
-| [ ] `GBPUSD/momentum_12_1/4h` | open | `results/cells/GBPUSD_momentum_12_1_4h.json` |
-| [ ] `GBPUSD/momentum_12_1/1d` | open | `results/cells/GBPUSD_momentum_12_1_1d.json` |
-| [ ] `GBPUSD/momentum_12_1/1w` | open | `results/cells/GBPUSD_momentum_12_1_1w.json` |
-| [ ] `GBPUSD/gap_fade/15m` | open | `results/cells/GBPUSD_gap_fade_15m.json` |
-| [ ] `GBPUSD/gap_fade/1h` | open | `results/cells/GBPUSD_gap_fade_1h.json` |
-| [ ] `GBPUSD/gap_fade/4h` | open | `results/cells/GBPUSD_gap_fade_4h.json` |
-| [ ] `GBPUSD/gap_fade/1d` | open | `results/cells/GBPUSD_gap_fade_1d.json` |
-| [ ] `GBPUSD/gap_fade/1w` | open | `results/cells/GBPUSD_gap_fade_1w.json` |
+| [-] `GBPUSD/vwap_reversion/1h` | blocked_no_data | `results/cells/GBPUSD_vwap_reversion_1h.json` |
+| [-] `GBPUSD/vwap_reversion/4h` | blocked_no_data | `results/cells/GBPUSD_vwap_reversion_4h.json` |
+| [-] `GBPUSD/vwap_reversion/1d` | blocked_no_data | `results/cells/GBPUSD_vwap_reversion_1d.json` |
+| [-] `GBPUSD/vwap_reversion/1w` | blocked_no_data | `results/cells/GBPUSD_vwap_reversion_1w.json` |
+| [-] `GBPUSD/momentum_12_1/15m` | blocked_no_data | `results/cells/GBPUSD_momentum_12_1_15m.json` |
+| [-] `GBPUSD/momentum_12_1/1h` | blocked_no_data | `results/cells/GBPUSD_momentum_12_1_1h.json` |
+| [-] `GBPUSD/momentum_12_1/4h` | blocked_no_data | `results/cells/GBPUSD_momentum_12_1_4h.json` |
+| [-] `GBPUSD/momentum_12_1/1d` | blocked_no_data | `results/cells/GBPUSD_momentum_12_1_1d.json` |
+| [-] `GBPUSD/momentum_12_1/1w` | blocked_no_data | `results/cells/GBPUSD_momentum_12_1_1w.json` |
+| [-] `GBPUSD/gap_fade/15m` | blocked_no_data | `results/cells/GBPUSD_gap_fade_15m.json` |
+| [-] `GBPUSD/gap_fade/1h` | blocked_no_data | `results/cells/GBPUSD_gap_fade_1h.json` |
+| [-] `GBPUSD/gap_fade/4h` | blocked_no_data | `results/cells/GBPUSD_gap_fade_4h.json` |
+| [-] `GBPUSD/gap_fade/1d` | blocked_no_data | `results/cells/GBPUSD_gap_fade_1d.json` |
+| [-] `GBPUSD/gap_fade/1w` | blocked_no_data | `results/cells/GBPUSD_gap_fade_1w.json` |
 
