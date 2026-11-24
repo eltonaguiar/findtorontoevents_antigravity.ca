@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:48:35.737804+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T02:58:27.167337+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 106 of 1000.** open 0 | claimed 3 | blocked_no_data 891
+**Worked 107 of 1000.** open 0 | claimed 0 | blocked_no_data 893
 
 ## Done condition (identical for every cell)
 
@@ -10,13 +10,13 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 34/50 worked
+## BTCUSDT - 35/50 worked
 
 | cell | status | artifact |
 |---|---|---|
-| [~] `BTCUSDT/trend_pullback/15m` | claimed | `results/cells/BTCUSDT_trend_pullback_15m.json` |
-| [~] `BTCUSDT/trend_pullback/1h` | claimed | `results/cells/BTCUSDT_trend_pullback_1h.json` |
-| [~] `BTCUSDT/trend_pullback/4h` | claimed | `results/cells/BTCUSDT_trend_pullback_4h.json` |
+| [-] `BTCUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_15m.json` |
+| [x] `BTCUSDT/trend_pullback/1h` | killed | `results/cells/BTCUSDT_trend_pullback_1h.json` |
+| [-] `BTCUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_4h.json` |
 | [x] `BTCUSDT/trend_pullback/1d` | killed | `results/cells/BTCUSDT_trend_pullback_1d.json` |
 | [x] `BTCUSDT/trend_pullback/1w` | killed | `results/cells/BTCUSDT_trend_pullback_1w.json` |
 | [-] `BTCUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/BTCUSDT_rsi2_pullback_15m.json` |
