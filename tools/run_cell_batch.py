@@ -20,6 +20,39 @@ GEN = REPO_ROOT / "tools" / "gen_1000_todos.py"
 MEASURE = REPO_ROOT / "tools" / "measure_cell.py"
 
 
+LEDGER = REPO_ROOT / "1000_TODOS.json"
+
+
+def claim_measurable(owner):
+    """Pick the first OPEN cell that can actually be measured, then claim it.
+
+    The ledger is symbol-major, so plain --claim walks 15m/4h/1h horizons for
+    every symbol before reaching a second 1d cell. Those horizons have no bar
+    source (only a 3-month BTC 1h cache), so ~550 of 914 open cells could only
+    ever return bars=0. Ordering by measurability lifts the yield from 8% to
+    roughly 60% without touching the shared generator on main.
+
+    Claiming still goes through --set, the same writer the generator uses, so
+    the owner/claimed_at fields are set the same way --claim would set them.
+    """
+    d = json.loads(LEDGER.read_text())
+    cells = d["cells"] if isinstance(d, dict) else d
+    for c in cells:
+        if c.get("status") != "open":
+            continue
+        h = c["horizon"]
+        ok = h in ("1d", "1w") or (h == "1h" and c["symbol"] == "BTCUSDT")
+        if not ok:
+            continue
+        subprocess.run([sys.executable, str(GEN), "--set", c["key"], "--status",
+                        "claimed", "--owner", owner,
+                        "--note", "claimed by measurable-first order"],
+                       capture_output=True, text=True, cwd=REPO_ROOT)
+        c["status"], c["owner"] = "claimed", owner
+        return c
+    return None
+
+
 def claim(owner):
     p = subprocess.run([sys.executable, str(GEN), "--claim", "--owner", owner],
                        capture_output=True, text=True, cwd=REPO_ROOT)
@@ -55,13 +88,16 @@ def measure(cell):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--n", type=int, default=10)
+    ap.add_argument("--measurable-first", action="store_true",
+                    help="skip cells whose horizon has no bar source")
     ap.add_argument("--owner", default="copilot")
     args = ap.parse_args(argv)
 
     done = killed = blocked = insuff = 0
     rows = []
     for i in range(args.n):
-        cell = claim(args.owner)
+        cell = (claim_measurable(args.owner) if args.measurable_first
+                else claim(args.owner))
         if cell is None:
             print("  no claimable cell returned; stopping")
             break
