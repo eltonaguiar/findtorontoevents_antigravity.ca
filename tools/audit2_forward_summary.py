@@ -185,3 +185,27 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+def merge_gate(payload: dict, ledger: dict | None) -> dict:
+    """Fold the audit3 ledger's ``forward_gate`` (per-hypothesis and per-pod) into an
+    audit2 sidecar ``payload`` in place, and return it.
+
+    - No ledger (or no forward_gate) -> no-op; ``gate_enforced`` is False and no
+      hypothesis gains a ``gate`` key.
+    - With a ledger -> each matching hypothesis gets its gate dict; each pod's verdict
+      is attached to the pod's ``hypothesis_id`` (creating the entry if needed).
+    """
+    out = payload
+    fg = (ledger or {}).get("forward_gate") or {}
+    out["gate_enforced"] = bool(fg.get("enforced")) if fg else False
+    if not fg:
+        return out
+    byh = out.setdefault("by_hypothesis", {})
+    for hid, gate in (fg.get("hypotheses") or {}).items():
+        byh.setdefault(hid, {})["gate"] = dict(gate)
+    for _pid, pod in (fg.get("pods") or {}).items():
+        hid = (pod or {}).get("hypothesis_id")
+        if hid:
+            byh.setdefault(hid, {})["gate"] = dict(pod)
+    return out
