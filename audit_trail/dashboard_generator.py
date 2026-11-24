@@ -5036,6 +5036,109 @@ def _filter_valid_resolved_picks(picks):
     return [pick for pick in picks if _is_valid_resolved_pick(pick)]
 
 
+# N6 (Block 59): the compact projection of an excluded row that the coverage
+# summary needs (audit_trail.excluded_cohorts.summarize_excluded_rows reads
+# exactly these keys). Kept deliberately small: every excluded row is shipped in
+# the payload, so an extra field here costs ~6k copies.
+_EXCLUDED_COHORT_ROW_FIELDS = (
+    "symbol",
+    "asset_class",
+    "direction",
+    "pnl_pct",
+    "won",
+    "closed_at",
+)
+
+
+def _stamp_excluded_cohort_row(pick, reason) -> dict:
+    """Copy one excluded row, stamp its reason, derive a missing asset class.
+
+    Never mutates ``pick``: the same row object is still in use by the metrics
+    book, so a reason stamped in place would leak into a scored surface.
+    """
+    row: dict = {}
+    if isinstance(pick, dict):
+        for key in _EXCLUDED_COHORT_ROW_FIELDS:
+            value = pick.get(key)
+            if value is not None:
+                row[key] = value
+        if row.get("closed_at") is None:
+            ts = pick.get("timestamp") or pick.get("exit_timestamp")
+            if ts:
+                row["closed_at"] = ts
+        if row.get("direction") is None:
+            direction = pick.get("signal_type") or pick.get("signal")
+            if direction:
+                row["direction"] = direction
+        if not str(row.get("asset_class") or "").strip():
+            # _coerce_asset_class is the existing UNKNOWN-trap around
+            # _derive_asset_class: it re-derives with full pick context but
+            # returns "UNKNOWN" when nothing is derivable. Calling
+            # _derive_asset_class directly would label a truly classless row
+            # EQUITY (its final default), which is a guess, not a measurement.
+            row["asset_class"] = _coerce_asset_class(pick)
+    row["exclude_reason"] = str(reason or "invalid_row")
+    return row
+
+
+def _collect_excluded_cohort_rows(
+    *,
+    pre_filter_rows=None,
+    valid_rows=None,
+    mirror_rows=None,
+    auto_expired_rows=None,
+) -> dict:
+    """Materialise the rows each exclusion stage dropped, keyed by cohort.
+
+    Returns the ``Mapping[cohort, rows]`` shape ``summarize_excluded_rows``
+    expects (a flat list is silently summarised as zero rows). Rows shared by
+    two cohorts are stamped once and reused, so the summariser's identity-based
+    overlap rule counts them once in ``total``.
+
+    ``exclude_reason`` comes from the branch that dropped the row:
+    the caller's validity predicate is attributed by
+    ``resolved_closed_view.default_exclusion_reason`` (falling back to
+    ``invalid_row``), the mirror-dedupe branch stamps ``mirror_duplicate``, and
+    the auto-expiry stage stamps whatever that classifier calls it
+    (``auto_expired``).
+    """
+    from alpha_engine.resolved_closed_view import default_exclusion_reason
+
+    stamped: dict[int, dict] = {}
+
+    def _row(pick, reason) -> dict:
+        ident = id(pick)
+        if ident not in stamped:
+            stamped[ident] = _stamp_excluded_cohort_row(pick, reason)
+        return stamped[ident]
+
+    kept_ids = {id(p) for p in (valid_rows or [])}
+    # Mirror rows are claimed first: the mirror branch runs LAST, so a row that
+    # reached it was a duplicate of a row already kept, and "mirror_duplicate"
+    # is the more specific reason. Each row object carries exactly one
+    # exclude_reason (the summariser counts reasons per row), so the claim
+    # order decides it. In the live flow mirror rows are always valid and
+    # never appear in the integrity pass at all.
+    mirror_out = [
+        _row(p, "mirror_duplicate") for p in (mirror_rows or [])
+    ]
+    mirror_ids = {id(p) for p in (mirror_rows or [])}
+    integrity_rows = [
+        _row(p, default_exclusion_reason(p) or "invalid_row")
+        for p in (pre_filter_rows or [])
+        if id(p) not in kept_ids and id(p) not in mirror_ids
+    ]
+    expired_out = [
+        _row(p, default_exclusion_reason(p) or "auto_expired")
+        for p in (auto_expired_rows or [])
+    ]
+    return {
+        "integrity_excluded": integrity_rows,
+        "mirror_duplicate": mirror_out,
+        "auto_expired": expired_out,
+    }
+
+
 def _compound_equal_weight_capped_sequence(
     picks: list[dict], max_pnl_pct: float = 500.0
 ) -> float:
@@ -14985,12 +15088,14 @@ def generate():
     total_active = len(active)
     total_closed = len(closed)
     resolved_closed = _filter_valid_resolved_picks(closed)
+    _valid_pre_dedupe = resolved_closed  # N6: pre-mirror view, for exclude attribution
     invalid_closed_count = total_closed - len(resolved_closed)
 
     # DEDUPLICATE mirrored trades for headline metrics (critical fix for inflated WR/PnL)
     seen = set()
     deduped_closed = []
     mirror_dupe_count = 0
+    _mirror_rows = []  # N6 (Block 59): rows this branch drops, for the coverage summary
     for p in resolved_closed:
         key = (
             str(p.get("symbol", "")).upper(),
@@ -15000,11 +15105,27 @@ def generate():
         )
         if key in seen:
             mirror_dupe_count += 1
+            _mirror_rows.append(p)
             continue
         seen.add(key)
         deduped_closed.append(p)
 
     resolved_closed = deduped_closed  # Use deduplicated list for headline stats
+    # N6 (Block 59): materialise every excluded row with its reason so audit3 can
+    # attribute the unscored gap per class instead of reporting only counts.
+    # Additive: nothing below reads this block, and every row is a copy.
+    _excluded_cohort_rows = _collect_excluded_cohort_rows(
+        pre_filter_rows=closed,
+        valid_rows=_valid_pre_dedupe,
+        mirror_rows=_mirror_rows,
+        # all_closed_including_expired also holds the rows that SURVIVED the
+        # expiry split; passing it whole would label every kept row
+        # "auto_expired". The _auto_expired flag (stamped on every row at the
+        # split) is the same test _is_valid_resolved_pick uses.
+        auto_expired_rows=[
+            p for p in all_closed_including_expired if p.get("_auto_expired")
+        ],
+    )
     _exit_norm_changed = _apply_issue186_exit_normalization(resolved_closed)
     if _exit_norm_changed:
         log.info(
@@ -17248,6 +17369,11 @@ def generate():
         # audit_dashboard/data/resolved_closed_picks_net.json (fetched by the
         # audit3 workflow so both surfaces score the identical book).
         "resolved_closed_picks_net": resolved_closed_picks_net,
+        # N6 (Block 59): the rows the closed book dropped (integrity, mirror
+        # duplicate, auto-expired), each stamped with its reason and class.
+        # audit3's payload_coverage reads this to fill coverage.excluded_summary.
+        # Additive: no other key, count or verdict is computed from it.
+        "_excluded_cohort_rows": _excluded_cohort_rows,
 
         # ── Opt A: TA-baseline panel (TradingView 6-strategy benchmark) ──
         # Per reports/tradingview_backtest_benchmark_2026-05-11.md.
