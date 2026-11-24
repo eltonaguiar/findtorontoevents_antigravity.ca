@@ -521,6 +521,11 @@ def load_rows(path: str, drops: dict[str, int] | None = None
     if not rows:
         raise ValueError(f"no closed-pick list found in {path}")
 
+    try:
+        from alpha_engine.resolved_closed_view import is_performance_scored_row
+    except Exception:  # pragma: no cover - import cycle guard
+        is_performance_scored_row = None
+
     seen: set[str] = set()
     clean: list[dict] = []
     drop = drops if drops is not None else {}
@@ -535,6 +540,9 @@ def load_rows(path: str, drops: dict[str, int] | None = None
         status = str(r.get("status") or "").upper()
         if status in ("OPEN", "PENDING", ""):
             drop["not_closed"] = drop.get("not_closed", 0) + 1
+            continue
+        if is_performance_scored_row is not None and not is_performance_scored_row(r):
+            drop["not_performance_scored"] = drop.get("not_performance_scored", 0) + 1
             continue
         key = str(r.get("id") or "") or (
             f"{r.get('strategy')}|{r.get('symbol')}|{r.get('direction')}|"
@@ -1137,61 +1145,70 @@ def apply_harm_gate(bucket: list[dict]) -> None:
                 f"negative but harm q={q:.3f} > {FDR_Q}: not proven, keep observing")
 
 
-def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> None:
-    """G8 — selection alpha must be proven positive before promotion.
+def apply_selection_alpha_gate(bucket: list[dict], alpha: dict | None) -> dict:
+    """G8 — selection alpha must be proven positive *at the strategy's own scope*.
 
-    A cell (or class) that is profitable purely because the underlying rose
-    (market beta) must not reach PROVEN_T2. This gate looks up the
-    direction-adjusted selection alpha measured by
-    ``alpha_engine/audit3_selection_alpha.py`` and requires its bootstrap 95% CI
-    lower bound to be strictly positive.
+    A cell that is profitable only because its class rose (market beta) must not
+    reach PROVEN_T2. The measurement must match the claim's scope:
 
-    * PROVEN_T2 without a positive-alpha proof is demoted to CANDIDATE and
-      flagged ``beta_dominant``.
-    * CANDIDATE without a positive-alpha proof keeps its verdict but is flagged
-      ``beta_dominant`` (it still needs forward paper to prove the edge is skill).
+    * ``by_strategy`` key ``"<CLASS>/<strategy>/<DIR>"`` — same-scope evidence;
+      its CI lower bound must be > 0.
+    * ``by_slice`` / ``by_class`` — a *class proxy*; it can never prove a
+      strategy-level edge, only flag beta dominance.
+    * nothing — unmeasured.
 
-    Fail-open only when the alpha sidecar is absent or empty — library callers
-    and unit tests that pass no alpha keep the pre-gate behaviour. The published
-    ledger always passes alpha (``audit3-ledger.yml`` runs the alpha sidecar).
+    PROVEN_T2 without same-scope proof is demoted to CANDIDATE and flagged
+    ``beta_dominant``. Fail-open only when the alpha sidecar is absent/empty
+    (library callers and unit tests); the published ledger always passes alpha.
+
+    Returns a summary dict (``demoted`` count) so callers can assert on it.
     """
     if not isinstance(alpha, dict):
-        return
+        return {"demoted": 0, "n_cells": len(bucket), "scope": None}
     by_class = alpha.get("by_class") or {}
     by_slice = alpha.get("by_slice") or {}
-    if not by_class and not by_slice:
-        return
+    by_strategy = alpha.get("by_strategy") or {}
+    if not by_class and not by_slice and not by_strategy:
+        return {"demoted": 0, "n_cells": len(bucket), "scope": None}
 
-    def _alpha_lo(ac: Any, direction: Any) -> float | None:
-        ac = str(ac or "").strip().upper()
-        d = str(direction or "").strip().upper()
-        # Finest measurement first (class x direction slice), then the class
-        # aggregate, then "no measurement". by_class/by_slice are keyed uppercase
-        # by audit3_selection_alpha (via _class -> .upper()).
-        slice_entry = by_slice.get(f"{ac}/{d}")
-        if slice_entry and slice_entry.get("n"):
-            lo = (slice_entry.get("alpha_ci") or [None, None])[0]
-            if lo is not None:
-                return lo
-        cls_entry = by_class.get(ac)
-        if cls_entry and cls_entry.get("n"):
-            lo = (cls_entry.get("alpha_ci") or [None, None])[0]
-            if lo is not None:
-                return lo
-        return None
+    def _lo(entry):
+        if not entry or not entry.get("n"):
+            return None
+        return (entry.get("alpha_ci") or [None, None])[0]
 
+    demoted = 0
     for c in bucket:
-        lo = _alpha_lo(c.get("asset_class"), c.get("direction"))
-        alpha_proven = lo is not None and lo > 0
-        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven)}
+        ac = str(c.get("asset_class") or "").strip().upper()
+        d = str(c.get("direction") or "").strip().upper()
+        strat = str(c.get("strategy") or "").strip()
+        s_lo = _lo(by_strategy.get(f"{ac}/{strat}/{d}")) if strat else None
+        if s_lo is not None:
+            lo, scope = s_lo, "strategy"
+        else:
+            prox = by_slice.get(f"{ac}/{d}")
+            if _lo(prox) is not None:
+                lo, scope = _lo(prox), "class_proxy"
+            elif _lo(by_class.get(ac)) is not None:
+                lo, scope = _lo(by_class.get(ac)), "class_proxy"
+            else:
+                lo, scope = None, "unmeasured"
+
+        alpha_proven = scope == "strategy" and lo is not None and lo > 0
+        status = ("proven" if alpha_proven
+                  else ("unmeasured" if lo is None else "unproven"))
+        c["alpha_gate"] = {"alpha_ci_lo": lo, "passed": bool(alpha_proven),
+                           "scope": scope, "status": status}
         if not alpha_proven:
             c["beta_dominant"] = True
-            if c["verdict"] == "PROVEN_T2":
+            if c.get("verdict") == "PROVEN_T2":
                 c["verdict"] = "CANDIDATE"
-                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0"
-                       if lo is not None else
-                       "selection alpha unavailable for this class")
-                c["reasons"].append(f"G8 selection-alpha gate: {why} — beta-dominant")
+                demoted += 1
+                why = (f"selection alpha CI lower bound {lo:+.4f} not > 0 ({scope})"
+                       if lo is not None
+                       else f"selection alpha unavailable at strategy scope ({scope})")
+                c.setdefault("reasons", []).append(
+                    f"G8 selection-alpha gate: {why} — beta-dominant")
+    return {"demoted": demoted, "n_cells": len(bucket)}
 
 
 # ─────────────────────────────────────────────── N1 repeated looks ──
@@ -1476,8 +1493,9 @@ def _denylist_hit_summary() -> dict[str, Any]:
 
 
 #: Sidecar fields passed straight through into report["selection_alpha"].
-ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "generated_at",
-                          "schema", "source", "note")
+ALPHA_PASSTHROUGH_KEYS = ("covered", "n_universe", "overall", "by_class",
+                          "by_slice", "bar_coverage", "missing",
+                          "generated_at", "schema", "source", "note")
 
 
 def build_report(rows: list[dict], source: str, source_generated_at: str | None,
