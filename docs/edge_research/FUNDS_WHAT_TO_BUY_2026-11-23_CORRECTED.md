@@ -53,6 +53,40 @@ Cash hurdle **R_f = 3.81%/yr** (SGOV trailing net CAGR).
 Note how the correction bites: BND's Sharpe goes from a harmless −0.02 to **−0.68** — over the
 window it destroyed value *against cash*, which the original table hid.
 
+## If you spend in CAD — the largest term in this report
+
+`python3 tools/fund_cad_view.py` (artifact: `reports/fund_cad_view.json`). USD/CAD went
+**1.2545 → 1.4248** over the window, i.e. CAD weakened about **2.59%/yr**.
+
+| fund | USD net CAGR | CAD net CAGR | FX effect | CAD Sharpe | CAD vol | CAD max DD |
+|---|---:|---:|---:|---:|---:|---:|
+| SPY | 11.48% | **14.37%** | +2.89 | 0.429 | 18.35% | −22.61% |
+| FXAIX | 11.66% | **14.55%** | +2.89 | 0.443 | 18.19% | −22.57% |
+| VTI | 10.49% | 13.36% | +2.87 | 0.368 | 18.62% | −24.09% |
+| BND | −0.32% | 2.27% | +2.59 | −0.494 | 8.56% | −13.27% |
+| SGOV | 3.81% | 6.50% | +2.69 | n/a (cash) | 6.05% | −6.33% |
+
+**The currency effect is roughly 33x the fee edge.** This entire report spends most of its length
+resolving a 0.0795pp/yr question while, for a CAD holder, the unhedged currency exposure was worth
+~2.9pp/yr — and it went the *favourable* way. Ranking FXAIX against SPY to two decimals while
+leaving currency unmentioned would be measuring the wrong thing carefully.
+
+Three things this does **not** say:
+
+1. **It is not a forecast.** CAD weakening over this window was a windfall. A CAD holder of unhedged
+   USD assets is running a currency position; the same series reversed would subtract a similar
+   amount. Nothing here predicts CAD.
+2. **The CAD cash hurdle rose too — to 6.50%.** Holding T-bills via SGOV also gained from the FX
+   move, which is why the CAD Sharpe ratios stay close to the USD ones. The *excess* return is what
+   matters, and it barely changed. Adding FX to both the asset and the benchmark largely cancels in
+   the ratio.
+3. **Hedging is approximated, not measured.** A hedged share class removes the FX term and pays
+   forward points; the tool uses an assumed carry of −1.0%/yr (a parameter, not a data point) and
+   labels the output as approximate.
+
+The practical reading: **decide currency exposure deliberately, then pick the cheapest vehicle for
+it.** The vehicle choice is a rounding error next to the currency decision.
+
 ## Precision — the point estimates are far less certain than they look
 
 Moving-block bootstrap (21-day blocks, 1,000 draws, fixed seed), 90% intervals on CAGR:
@@ -124,7 +158,8 @@ fund is even *purchasable*, depends on which account the money sits in. Answer t
      higher fee.
    - **Currency.** A CAD-based investor's return is CAD/USD-sensitive. Unhedged versus hedged share
      classes move that exposure, and currency moves can swamp a 0.2–0.5% fee advantage in a single
-     year. Nothing here models it.
+     year. **This is now measured rather than just flagged** — see "If you spend in CAD" below,
+     where over this window the FX term was about 33x the fee edge.
 
 ### What the wrapper implies
 

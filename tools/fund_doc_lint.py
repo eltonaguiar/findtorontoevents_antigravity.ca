@@ -41,6 +41,7 @@ SOURCES = [
     REPO_ROOT / "reports" / "fund_forward_anchors.json",
     REPO_ROOT / "reports" / "fund_glide_path.json",
     REPO_ROOT / "reports" / "fund_block_sensitivity.json",
+    REPO_ROOT / "reports" / "fund_cad_view.json",
 ]
 
 # numbers that legitimately have no JSON source: dates, plan item ids, spans,

@@ -65,10 +65,13 @@ jobs:
         # arithmetic ones. This is the check that catches that class.
         run: python3 tools/fund_doc_lint.py --strict
 
-      - name: Glide path and block sensitivity regenerate
+      - name: Glide path, block sensitivity and CAD artifacts regenerate
         run: |
           python3 tools/fund_glide_path.py --json /tmp/g.json
           python3 tools/fund_block_sensitivity.py --json /tmp/b.json --n-boot 300
+          # network-dependent; tolerated failure so a flaky FX source does not
+          # fail the build on unrelated PRs, but a successful run must parse.
+          python3 tools/fund_cad_view.py --json /tmp/c.json || echo "CAD view skipped (FX unavailable)"
 
       - name: Two runs must agree on content
         run: |
