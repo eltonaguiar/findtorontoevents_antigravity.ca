@@ -153,7 +153,8 @@ def sma(xs, n):
     return out
 
 
-def signals(closes, strategy):
+def signals(closes, strategy, opens=None):
+    """opens only needed by gap_fade; every other signal is close-only."""
     """Boolean entry signal per bar, evaluated on the close."""
     if strategy == "trend_pullback":
         # v2. v1 was `close>SMA50 AND RSI14<35`, whose conjunction is EMPTY:
@@ -310,7 +311,7 @@ def main(argv=None):
         return 0
 
     h = HORIZON_BARS.get(args.horizon, 1)
-    sig = signals(closes, args.strategy)
+    sig = signals(closes, args.strategy, opens)
     rs = trades(sig, opens, h)
     n = len(rs)
 

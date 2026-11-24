@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:35:27.527729+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:38:56.706839+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 18 of 1000.** open 966 | claimed 3 | blocked_no_data 13
+**Worked 32 of 1000.** open 936 | claimed 4 | blocked_no_data 28
 
 ## Done condition (identical for every cell)
 
@@ -10,7 +10,7 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 18/50 worked
+## BTCUSDT - 28/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -48,41 +48,41 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `BTCUSDT/bb_meanrev/1h` | killed | `results/cells/BTCUSDT_bb_meanrev_1h.json` |
 | [-] `BTCUSDT/bb_meanrev/4h` | blocked_no_data | `results/cells/BTCUSDT_bb_meanrev_4h.json` |
 | [x] `BTCUSDT/bb_meanrev/1d` | done | `results/cells/BTCUSDT_bb_meanrev_1d.json` |
-| [ ] `BTCUSDT/bb_meanrev/1w` | open | `results/cells/BTCUSDT_bb_meanrev_1w.json` |
-| [ ] `BTCUSDT/vwap_reversion/15m` | open | `results/cells/BTCUSDT_vwap_reversion_15m.json` |
-| [ ] `BTCUSDT/vwap_reversion/1h` | open | `results/cells/BTCUSDT_vwap_reversion_1h.json` |
-| [ ] `BTCUSDT/vwap_reversion/4h` | open | `results/cells/BTCUSDT_vwap_reversion_4h.json` |
-| [ ] `BTCUSDT/vwap_reversion/1d` | open | `results/cells/BTCUSDT_vwap_reversion_1d.json` |
-| [ ] `BTCUSDT/vwap_reversion/1w` | open | `results/cells/BTCUSDT_vwap_reversion_1w.json` |
-| [ ] `BTCUSDT/momentum_12_1/15m` | open | `results/cells/BTCUSDT_momentum_12_1_15m.json` |
-| [ ] `BTCUSDT/momentum_12_1/1h` | open | `results/cells/BTCUSDT_momentum_12_1_1h.json` |
-| [ ] `BTCUSDT/momentum_12_1/4h` | open | `results/cells/BTCUSDT_momentum_12_1_4h.json` |
-| [ ] `BTCUSDT/momentum_12_1/1d` | open | `results/cells/BTCUSDT_momentum_12_1_1d.json` |
-| [ ] `BTCUSDT/momentum_12_1/1w` | open | `results/cells/BTCUSDT_momentum_12_1_1w.json` |
-| [ ] `BTCUSDT/gap_fade/15m` | open | `results/cells/BTCUSDT_gap_fade_15m.json` |
-| [ ] `BTCUSDT/gap_fade/1h` | open | `results/cells/BTCUSDT_gap_fade_1h.json` |
-| [ ] `BTCUSDT/gap_fade/4h` | open | `results/cells/BTCUSDT_gap_fade_4h.json` |
-| [ ] `BTCUSDT/gap_fade/1d` | open | `results/cells/BTCUSDT_gap_fade_1d.json` |
-| [ ] `BTCUSDT/gap_fade/1w` | open | `results/cells/BTCUSDT_gap_fade_1w.json` |
+| [x] `BTCUSDT/bb_meanrev/1w` | done | `results/cells/BTCUSDT_bb_meanrev_1w.json` |
+| [-] `BTCUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/BTCUSDT_vwap_reversion_15m.json` |
+| [x] `BTCUSDT/vwap_reversion/1h` | killed | `results/cells/BTCUSDT_vwap_reversion_1h.json` |
+| [-] `BTCUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/BTCUSDT_vwap_reversion_4h.json` |
+| [x] `BTCUSDT/vwap_reversion/1d` | killed | `results/cells/BTCUSDT_vwap_reversion_1d.json` |
+| [x] `BTCUSDT/vwap_reversion/1w` | done | `results/cells/BTCUSDT_vwap_reversion_1w.json` |
+| [-] `BTCUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/BTCUSDT_momentum_12_1_15m.json` |
+| [x] `BTCUSDT/momentum_12_1/1h` | killed | `results/cells/BTCUSDT_momentum_12_1_1h.json` |
+| [-] `BTCUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/BTCUSDT_momentum_12_1_4h.json` |
+| [x] `BTCUSDT/momentum_12_1/1d` | killed | `results/cells/BTCUSDT_momentum_12_1_1d.json` |
+| [x] `BTCUSDT/momentum_12_1/1w` | done | `results/cells/BTCUSDT_momentum_12_1_1w.json` |
+| [-] `BTCUSDT/gap_fade/15m` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_15m.json` |
+| [x] `BTCUSDT/gap_fade/1h` | done | `results/cells/BTCUSDT_gap_fade_1h.json` |
+| [-] `BTCUSDT/gap_fade/4h` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_4h.json` |
+| [x] `BTCUSDT/gap_fade/1d` | done | `results/cells/BTCUSDT_gap_fade_1d.json` |
+| [x] `BTCUSDT/gap_fade/1w` | done | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 0/50 worked
+## ETHUSDT - 4/50 worked
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `ETHUSDT/trend_pullback/15m` | open | `results/cells/ETHUSDT_trend_pullback_15m.json` |
-| [ ] `ETHUSDT/trend_pullback/1h` | open | `results/cells/ETHUSDT_trend_pullback_1h.json` |
-| [ ] `ETHUSDT/trend_pullback/4h` | open | `results/cells/ETHUSDT_trend_pullback_4h.json` |
-| [ ] `ETHUSDT/trend_pullback/1d` | open | `results/cells/ETHUSDT_trend_pullback_1d.json` |
-| [ ] `ETHUSDT/trend_pullback/1w` | open | `results/cells/ETHUSDT_trend_pullback_1w.json` |
-| [ ] `ETHUSDT/rsi2_pullback/15m` | open | `results/cells/ETHUSDT_rsi2_pullback_15m.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1h` | open | `results/cells/ETHUSDT_rsi2_pullback_1h.json` |
-| [ ] `ETHUSDT/rsi2_pullback/4h` | open | `results/cells/ETHUSDT_rsi2_pullback_4h.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1d` | open | `results/cells/ETHUSDT_rsi2_pullback_1d.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1w` | open | `results/cells/ETHUSDT_rsi2_pullback_1w.json` |
-| [ ] `ETHUSDT/vol_compression/15m` | open | `results/cells/ETHUSDT_vol_compression_15m.json` |
-| [ ] `ETHUSDT/vol_compression/1h` | open | `results/cells/ETHUSDT_vol_compression_1h.json` |
-| [ ] `ETHUSDT/vol_compression/4h` | open | `results/cells/ETHUSDT_vol_compression_4h.json` |
-| [ ] `ETHUSDT/vol_compression/1d` | open | `results/cells/ETHUSDT_vol_compression_1d.json` |
+| [-] `ETHUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/ETHUSDT_trend_pullback_15m.json` |
+| [-] `ETHUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/ETHUSDT_trend_pullback_1h.json` |
+| [-] `ETHUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/ETHUSDT_trend_pullback_4h.json` |
+| [~] `ETHUSDT/trend_pullback/1d` | claimed | `results/cells/ETHUSDT_trend_pullback_1d.json` |
+| [x] `ETHUSDT/trend_pullback/1w` | done | `results/cells/ETHUSDT_trend_pullback_1w.json` |
+| [-] `ETHUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_15m.json` |
+| [-] `ETHUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_1h.json` |
+| [-] `ETHUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_4h.json` |
+| [x] `ETHUSDT/rsi2_pullback/1d` | done | `results/cells/ETHUSDT_rsi2_pullback_1d.json` |
+| [x] `ETHUSDT/rsi2_pullback/1w` | done | `results/cells/ETHUSDT_rsi2_pullback_1w.json` |
+| [-] `ETHUSDT/vol_compression/15m` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_15m.json` |
+| [-] `ETHUSDT/vol_compression/1h` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_1h.json` |
+| [-] `ETHUSDT/vol_compression/4h` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_4h.json` |
+| [x] `ETHUSDT/vol_compression/1d` | done | `results/cells/ETHUSDT_vol_compression_1d.json` |
 | [ ] `ETHUSDT/vol_compression/1w` | open | `results/cells/ETHUSDT_vol_compression_1w.json` |
 | [ ] `ETHUSDT/breakout/15m` | open | `results/cells/ETHUSDT_breakout_15m.json` |
 | [ ] `ETHUSDT/breakout/1h` | open | `results/cells/ETHUSDT_breakout_1h.json` |
