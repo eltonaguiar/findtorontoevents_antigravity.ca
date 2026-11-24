@@ -22,9 +22,14 @@ env:
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
   DISCORD_ML_CHANNEL_ID: '1469431505439948920'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   predict-and-track:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     permissions:
       contents: write
 
@@ -70,6 +75,7 @@ jobs:
           python tp_sl_tracker.py || echo "No active picks to track"
 
       - name: "Step 2: Run live predictions (threshold=adaptive)"
+        id: scanner
         if: ${{ github.event.inputs.mode != 'dashboard-only' }}
         env:
           ASTERDEX_API_KEY: ${{ secrets.ASTERDEX_API_KEY }}
@@ -77,9 +83,28 @@ jobs:
         run: |
           cd claude_gainer_ml
           if ! ls models/*.joblib >/dev/null 2>&1; then
-            echo "::warning::No model .joblib files in claude_gainer_ml/models/ — skipping scanner (gitignored artifacts, training run not landed yet)"
+            echo "::error::No model .joblib files in claude_gainer_ml/models/ — scanner SKIPPED (scanner_ran=false, reason=no_models). Fail-open by design: job stays green but predictions are a NO-OP. Status recorded in updates/data/dashboard_status.json."
+            echo "scanner_ran=false" >> "$GITHUB_OUTPUT"
+            echo "reason=no_models" >> "$GITHUB_OUTPUT"
+            cd ..
+            python3 -c "
+          import json, os
+          p = 'updates/data/dashboard_status.json'
+          os.makedirs(os.path.dirname(p), exist_ok=True)
+          try:
+              d = json.load(open(p))
+          except Exception:
+              d = {}
+          d['scanner_ran'] = False
+          d['reason'] = 'no_models'
+          d['message'] = 'NO-OP scan: no model .joblib files - scanner skipped'
+          json.dump(d, open(p, 'w'), indent=2)
+          print('NO-OP recorded in ' + p + ': scanner_ran=false reason=no_models')
+          "
             exit 0
           fi
+          echo "scanner_ran=true" >> "$GITHUB_OUTPUT"
+          echo "reason=" >> "$GITHUB_OUTPUT"
           python live_scanner.py
 
       - name: "Step 3: Self-improvement + ML feedback loop"
@@ -117,6 +142,15 @@ jobs:
       - name: "Step 5: Write dashboard status (complete)"
         run: |
           PICKS=$(python3 -c "import json; d=json.load(open('claude_gainer_ml/tracker/claude_live_picks.json')); print(len([p for p in d.get('picks',d) if isinstance(d,dict) and p.get('status')=='ACTIVE'] if isinstance(d,dict) else d))" 2>/dev/null || echo "0")
+          SCANNER_RAN="${{ steps.scanner.outputs.scanner_ran }}"
+          SCANNER_REASON="${{ steps.scanner.outputs.reason }}"
+          if [ "$SCANNER_RAN" = "true" ]; then
+            REASON_JSON=null
+          else
+            SCANNER_RAN=false
+            SCANNER_REASON="${SCANNER_REASON:-not_run}"
+            REASON_JSON="\"$SCANNER_REASON\""
+          fi
           echo '{
             "status": "idle",
             "message": "Last scan complete '"$PICKS"' active picks",
@@ -124,7 +158,9 @@ jobs:
             "timestamp": "'$(date -u -Iseconds)'",
             "triggered_by": "${{ github.event.inputs.refresh_source || 'github_actions' }}",
             "run_id": "${{ github.run_id }}",
-            "active_picks": '"$PICKS"'
+            "active_picks": '"$PICKS"',
+            "scanner_ran": '"$SCANNER_RAN"',
+            "reason": '"$REASON_JSON"'
           }' > updates/data/dashboard_status.json
 
       - name: "Step 6: Commit results"
@@ -305,6 +341,7 @@ jobs:
   # Weekly retrain job
   weekly-retrain:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     permissions:
       contents: write
     if: contains(github.event.schedule || '', '0 6 * * 0') # Only Sunday 6 AM UTC

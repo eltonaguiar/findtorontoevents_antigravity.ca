@@ -15,9 +15,14 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-dashboard:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
@@ -66,8 +71,19 @@ jobs:
           sleep 5
         done
         
+    - name: Include BESTIEJOB page in Pages publish
+      run: |
+        # peaceiris publishes ./dashboard (keep_files=false), which wipes other
+        # gh-pages paths. Include the rights-gated BESTIEJOB page so it persists.
+        if [ -d docs/bestiejob ]; then
+          mkdir -p dashboard/bestiejob
+          cp -r docs/bestiejob/. dashboard/bestiejob/
+          touch dashboard/bestiejob/.nojekyll
+          echo "Included docs/bestiejob in Pages publish"
+        fi
+
     - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./dashboard

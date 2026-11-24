@@ -9,42 +9,20 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   trust-tuner:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.GH_PAT || github.token }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          update-environment: true
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: pip install requests
-
-      - name: Run adaptive trust tuner
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-        run: python alpha_engine/adaptive_trust_tuner.py
-
-      - name: Commit trust adjustments
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add alpha_engine/data/trust_adjustments.json
-          if git diff --cached --quiet; then
-            echo "No changes to trust adjustments"
-          else
-            git commit -m "Trust tuner update $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
-            git pull --rebase origin main
-            bash .github/scripts/safe_push.sh
-          fi
-
+    uses: ./.github/workflows/gha-scan-job.yml
+    with:
+      python-version: '3.11'
+      pip-packages: 'requests'
+      run-command: 'python alpha_engine/adaptive_trust_tuner.py'
+      commit-paths: 'alpha_engine/data/trust_adjustments.json'
+      commit-message: 'Trust tuner update [skip ci]'
+      fetch-depth: 1
+      timeout-minutes: 10
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}

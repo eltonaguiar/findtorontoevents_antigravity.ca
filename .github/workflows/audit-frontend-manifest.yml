@@ -1,4 +1,5 @@
 name: Audit Frontend Manifest
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 # Regenerates audit_dashboard/audit_frontend_manifest.json — a machine-checkable
 # catalog of every button / tab / filter / ?Guide concept on findtorontoevents.ca/audit.
@@ -18,6 +19,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   manifest:
@@ -46,6 +51,6 @@ jobs:
             echo "No changes to commit — manifest already up to date."
           else
             git commit -m "chore: refresh audit frontend manifest [skip ci]"
-            git pull --rebase origin main || true
-            git push || echo "push failed (non-fatal)"
+            # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+            bash .github/scripts/safe_push.sh
           fi

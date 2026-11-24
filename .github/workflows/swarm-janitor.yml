@@ -1,4 +1,5 @@
 name: swarm-janitor
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 # Daily session-DB cleanup for the multi-engine swarm. Marks idle sessions
 # older than 168h (7d) expired and vacuums the SQLite file.
@@ -16,9 +17,14 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   janitor:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
@@ -43,8 +49,8 @@ jobs:
               git config user.email "swarm-janitor@noreply.local"
               git add swarm_runs/_janitor.log
               git commit -m "chore: weekly session cleanup [skip ci]" || echo "nothing to commit"
-              git pull --rebase origin main
-              git push origin HEAD:main || echo "push skipped (no changes)"
+              # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+              bash .github/scripts/safe_push.sh
             fi
           fi
 

@@ -23,6 +23,10 @@ on:
           - 'validate'
           - 'meta'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   #  JOB 1: Regime Detection + Position Sizing 
   regime:
@@ -34,6 +38,8 @@ jobs:
         with:
           update-environment: true
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
@@ -71,6 +77,8 @@ jobs:
         with:
           update-environment: true
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install TA-Lib C library
         run: |
@@ -108,6 +116,8 @@ jobs:
         with:
           update-environment: true
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
@@ -136,6 +146,8 @@ jobs:
         with:
           update-environment: true
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
@@ -231,6 +243,8 @@ jobs:
         with:
           update-environment: true
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
@@ -261,6 +275,7 @@ jobs:
   #  JOB 6: Summary 
   summary:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     needs: [regime, alphas, bundles, intelligence]
     if: always()
     steps:

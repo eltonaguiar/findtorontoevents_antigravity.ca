@@ -1,0 +1,96 @@
+{
+  "schema": "paper.sleeves.config.v1",
+  "note": "$2,000 plan: 70% core beta / 20% ETF rotation / 10% paper sandbox. Only buy_hold sleeves are enabled here; signal sleeves are added with their own pre-registered rules.",
+  "sleeves": [
+    {
+      "id": "core-beta",
+      "kind": "buy_hold",
+      "symbol": "SPY",
+      "asset_class": "EQUITY",
+      "capital": 1400
+    },
+    {
+      "id": "etf-rotation",
+      "kind": "rotation",
+      "capital": 400,
+      "universe": [
+        "SPY",
+        "QQQ",
+        "IWM",
+        "EFA",
+        "EEM",
+        "TLT",
+        "IEF",
+        "SHY",
+        "GLD",
+        "DBC",
+        "VNQ",
+        "LQD",
+        "HYG",
+        "TIP"
+      ],
+      "rules": {
+        "lookback_days": 189,
+        "top_n": 5,
+        "absolute_filter": true,
+        "min_positive_pct": 0.0,
+        "weights": "equal",
+        "rebalance": "monthly"
+      },
+      "preregistered_at": "2026-11-19",
+      "thesis": "Top-5 long-only asset-class ETFs by 9-month (189d) momentum, monthly, absolute filter (negative momentum -> cash). Universe = the 14 liquid asset-class ETFs studied in reports/TACTICAL_ROTATION_EDGE_2026-07-04.md. EVIDENCE STATUS (2026-11-20): the 'Sharpe 0.88 / MaxDD -19%' claim is RETRACTED - a pre-registered 576-cell grid found 0/576 cells meeting both bars at lag>=1 (reports/TAA_SETTLE_2026-11-19.md). Honest 1-day-lag figures: Sharpe 0.82 vs SPY 0.69, MaxDD -20.9% vs -52.9%, CAGR 8.94% vs SPY 10.79%. Survives only as DRAWDOWN CONTROL (38% MaxDD cut, ~0.54%/yr CAGR give-up), not alpha. Forward n=0.",
+      "spec_source": "reports/TACTICAL_ROTATION_EDGE_2026-07-04.md + PR #962 lag reproduction"
+    },
+    {
+      "id": "etf-rotation-random",
+      "kind": "rotation_random",
+      "capital": 400,
+      "seed": 7,
+      "universe": [
+        "SPY",
+        "QQQ",
+        "IWM",
+        "EFA",
+        "EEM",
+        "TLT",
+        "IEF",
+        "SHY",
+        "GLD",
+        "DBC",
+        "VNQ",
+        "LQD",
+        "HYG",
+        "TIP"
+      ],
+      "rules": {
+        "top_n": 5,
+        "rebalance": "monthly"
+      },
+      "preregistered_at": "2026-11-19",
+      "thesis": "Control arm: 3 pseudo-random sector ETFs on the same rebalance dates. If etf-rotation cannot beat this, its momentum selection adds nothing."
+    },
+    {
+      "id": "etf-hold",
+      "kind": "hold",
+      "capital": 400,
+      "universe": [
+        "SPY",
+        "QQQ",
+        "IWM",
+        "EFA",
+        "EEM",
+        "TLT",
+        "IEF",
+        "SHY",
+        "GLD",
+        "DBC",
+        "VNQ",
+        "LQD",
+        "HYG",
+        "TIP"
+      ],
+      "preregistered_at": "2026-11-19",
+      "thesis": "Beta-matched control (buffy's requirement): equal-weight the SAME 14 asset-class ETFs, bought once at the start and held. The rotation arm must beat this over the same dates, or its momentum selection adds nothing beyond sector/asset beta. A random-entry arm tests timing only; this tests selection and exposure."
+    }
+  ]
+}

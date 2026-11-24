@@ -1,0 +1,63 @@
+# Opt-in deploy of the BESTIEJOB discovery page to GitHub Pages.
+#
+# SAFETY:
+#  - Manual dispatch only (never runs on push), so it cannot interfere with the
+#    automated gh-pages publishes from live_tracker.yml.
+#  - Writes ONLY into the `bestiejob/` subfolder of gh-pages; every other path is
+#    preserved. Pulls with --rebase and retries to avoid clobbering concurrent runs.
+#  - Uses a dedicated concurrency group.
+#  - Never commits secrets; the payload is the already rights-gated public JSON.
+name: Deploy BESTIEJOB page
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "bestiejob-page"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Publish bestiejob/ into gh-pages (rebase-safe)
+        run: |
+          set -euo pipefail
+          git config user.name "bestiejob-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch --depth=1 origin gh-pages
+          git worktree add --detach /tmp/ghp origin/gh-pages
+          cd /tmp/ghp
+          rm -rf bestiejob
+          cp -r "$GITHUB_WORKSPACE/docs/bestiejob" bestiejob
+          touch bestiejob/.nojekyll
+          git add -A bestiejob
+          if git diff --cached --quiet; then
+            echo "No changes to deploy."; exit 0
+          fi
+          git commit -m "deploy(bestiejob): refresh discovery page [skip ci]"
+          for i in 1 2 3; do
+            if git push origin HEAD:gh-pages; then
+              echo "Deployed bestiejob/ to gh-pages (attempt $i)."; exit 0
+            fi
+            git pull --rebase origin gh-pages
+          done
+          echo "Failed to push after retries"; exit 1
+
+      - name: Validate deployed JSON is rights-gated
+        run: |
+          python3 - <<'PY'
+          import json
+          d = json.load(open("docs/bestiejob/data/verified_leads.json"))
+          bad = [x for x in d if not x.get("redistribute")]
+          assert not bad, f"{len(bad)} non-redistributable rows in public feed"
+          print(f"OK: {len(d)} public rows, all redistribute=true")
+          PY

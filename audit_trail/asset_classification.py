@@ -14,6 +14,12 @@ from enum import Enum
 from typing import Optional
 import re
 
+try:
+    from alpha_engine.mutual_fund_nav import is_mutual_fund as _is_mutual_fund
+except ImportError:  # pragma: no cover
+    def _is_mutual_fund(symbol):  # type: ignore[misc]
+        return False
+
 
 class AssetClass(Enum):
     """Standardized asset type classifications."""
@@ -26,6 +32,7 @@ class AssetClass(Enum):
     FUTURES = "FUTURES"
     MICRO_FUTURES = "MICRO_FUTURES"
     BOND = "BOND"  # Fixed income (TLT,IEF,SHY,AGG,BND,LQD,HYG,JNK)
+    MUTUAL_FUND = "MUTUAL_FUND"  # Daily-NAV funds (VFIAX, FXAIX, SWPPX, ...)
     UNKNOWN = "UNKNOWN"
 
 
@@ -187,6 +194,20 @@ DEFAULT_CONFIGS: dict[AssetClass, AssetConfig] = {
         trend_weight=0.50,
         volume_weight=0.25,
         display_name="Bond/Fixed Income"
+    ),
+    AssetClass.MUTUAL_FUND: AssetConfig(
+        default_tp_pct=0.10,
+        default_sl_pct=0.05,
+        atr_mult_tp=2.0,
+        atr_mult_sl=1.5,
+        max_position_pct=0.15,
+        volatility_factor=0.3,
+        min_risk_reward_ratio=1.5,
+        max_sl_distance_pct=0.08,
+        momentum_weight=0.25,
+        trend_weight=0.50,
+        volume_weight=0.25,
+        display_name="Mutual Fund (NAV)"
     ),
     AssetClass.UNKNOWN: AssetConfig(
         default_tp_pct=0.10,
@@ -438,6 +459,8 @@ def classify_asset(
     metadata: Optional[dict] = None
 ) -> AssetClass:
     """Convenience function to classify a symbol."""
+    if _is_mutual_fund(symbol):
+        return AssetClass.MUTUAL_FUND
     return get_classifier().classify(symbol, category, metadata)
 
 
@@ -624,7 +647,8 @@ def classify_symbol(
 
 # For backward compatibility - set of valid asset classes
 ASSET_CLASSES = {
-    "CRYPTO", "FOREX", "EQUITY", "ETF", "FUTURES", "COMMODITY", "BOND", "UNKNOWN"
+    "CRYPTO", "FOREX", "EQUITY", "ETF", "FUTURES", "COMMODITY", "BOND",
+    "MUTUAL_FUND", "UNKNOWN"
 }
 
 

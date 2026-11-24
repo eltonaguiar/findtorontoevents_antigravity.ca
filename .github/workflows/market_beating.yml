@@ -19,6 +19,10 @@ permissions:
   contents: write
   actions: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   market-beating:
     # Pin to 24.04: ubuntu-latest now resolves to 26.04, whose system Python is
@@ -30,6 +34,7 @@ jobs:
     # 24.04 ships Python 3.12, which has wheels for both pins. Revisit when the
     # numpy/pandas pins move to versions with cp314 wheels.
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-24.04' }}
+    timeout-minutes: 30
     steps:
     - name: Checkout code
       uses: actions/checkout@v6

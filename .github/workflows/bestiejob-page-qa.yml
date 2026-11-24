@@ -1,0 +1,59 @@
+name: BESTIEJOB page QA
+
+on:
+  pull_request:
+    paths:
+      - 'docs/bestiejob/**'
+      - 'tests/bestiejob-page.spec.ts'
+      - 'playwright.bestiejob.config.ts'
+      - '.github/workflows/bestiejob-page-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/bestiejob/**'
+      - 'tests/bestiejob-page.spec.ts'
+      - 'playwright.bestiejob.config.ts'
+      - '.github/workflows/bestiejob-page-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bestiejob-page-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright test package
+        run: npm install --no-save @playwright/test@1.58.2
+      - name: Detect system Chrome
+        run: |
+          if [ -x /usr/bin/google-chrome ]; then
+            echo "CHROME_PATH=/usr/bin/google-chrome" >> "$GITHUB_ENV"
+            echo "Using system Chrome"
+          elif [ -x /usr/bin/chromium-browser ]; then
+            echo "CHROME_PATH=/usr/bin/chromium-browser" >> "$GITHUB_ENV"
+            echo "Using system Chromium"
+          else
+            echo "No system browser; will download Chromium"
+          fi
+      - name: Install Chromium (only if no system browser)
+        if: env.CHROME_PATH == ''
+        run: npx playwright install chromium
+      - name: Run page QA
+        run: npx playwright test --config playwright.bestiejob.config.ts
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bestiejob-playwright-report
+          path: test-results
+          if-no-files-found: ignore

@@ -1,4 +1,5 @@
 name: Daily Per-Class Scrutiny Engine
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   schedule:
@@ -56,5 +57,6 @@ jobs:
           if [ -n "$REPORT" ]; then
             git add "$REPORT"
             git diff --staged --quiet || git commit -m "chore(audit): daily scrutiny engine report [skip ci]"
-            git push || echo "::warning::push failed (concurrent commit)"
+            # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+            bash .github/scripts/safe_push.sh
           fi

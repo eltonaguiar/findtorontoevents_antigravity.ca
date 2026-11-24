@@ -120,6 +120,13 @@
       description: 'Per-AI pick attribution & performance',
       url: 'data/ai_leaderboard/ai_leaderboard_index.json',
       extract: function(json) { return json && (json.generated_at || json.as_of); }
+    },
+    {
+      id: 'theory-tracker',
+      label: 'Theory / Hypothesis Tracker',
+      description: 'Theory portfolios & h0XX hypothesis harness rows',
+      url: 'data/theory_tracker.json',
+      extract: function(json) { return json && json.generated_at; }
     }
   ];
 
@@ -146,10 +153,20 @@
     panel.id = 'data-freshness-panel';
     panel.style.cssText = 'max-width:1180px;margin:0 auto 12px;padding:12px 18px;background:linear-gradient(135deg,rgba(15,23,42,0.95),rgba(30,41,59,0.9));border:1px solid #334155;border-radius:10px;color:#e2e8f0;font-size:13px';
 
+    // 2026-11-16: a source that failed to load (HTTP error, or a body the
+    // browser's JSON.parse rejects) carries no timestamp and used to be skipped
+    // by this verdict entirely — so the panel printed "ALL SOURCES CURRENT"
+    // directly above a tile reading "No data available" (seen live on
+    // money_ready_verdict.json while it shipped bare NaN tokens). Missing is
+    // not current: count it as a problem, and name it as a loading failure.
+    var hasMissing = results.some(function(r) { return !r.timestamp; });
     var hasStale = results.some(function(r) { return r.freshness && r.freshness.level === 'red'; });
-    var headerIcon = hasStale ? '&#x26A0;' : '&#x2705;';
-    var headerColor = hasStale ? '#ef4444' : '#22c55e';
-    var headerText = hasStale ? 'DATA FRESHNESS — STALE SOURCES DETECTED' : 'DATA FRESHNESS — ALL SOURCES CURRENT';
+    var hasProblem = hasStale || hasMissing;
+    var headerIcon = hasProblem ? '&#x26A0;' : '&#x2705;';
+    var headerColor = hasStale ? '#ef4444' : (hasMissing ? '#f59e0b' : '#22c55e');
+    var headerText = hasStale ? 'DATA FRESHNESS — STALE SOURCES DETECTED'
+                   : (hasMissing ? 'DATA FRESHNESS — SOURCE NOT LOADING'
+                   : 'DATA FRESHNESS — ALL SOURCES CURRENT');
 
     var html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">' +
       '<span style="font-size:15px;font-weight:700;color:' + headerColor + '">' + headerIcon + ' ' + esc(headerText) + '</span>' +
@@ -163,9 +180,10 @@
       var est = r.timestamp ? fmtEST(r.timestamp) : 'no data';
       var age = ageText(f.ageMs);
       var isStale = f.level === 'red';
+      var isMissing = !r.timestamp;
 
       html += '<div style="background:rgba(0,0,0,0.3);border:1px solid ' + f.color + '30;border-radius:8px;padding:10px 12px;position:relative' +
-        (isStale ? ';border-left:3px solid ' + f.color : '') + '">' +
+        ((isStale || isMissing) ? ';border-left:3px solid ' + f.color : '') + '">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
         '<span style="font-size:12px;font-weight:700;color:' + f.color + '">' + esc(r.label) + '</span>' +
         '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + f.color +
@@ -175,6 +193,7 @@
         (r.timestamp ? esc(est) + ' EST' : 'No data available') + '</div>' +
         '<div style="font-size:10px;color:#64748b;margin-top:2px">' + esc(age) + '</div>' +
         (isStale ? '<div style="font-size:9px;color:#fca5a5;margin-top:4px;padding:3px 6px;background:rgba(239,68,68,0.1);border-radius:4px">&#x26A0; Data is over 3 days old — may not reflect current state</div>' : '') +
+        (isMissing ? '<div style="font-size:9px;color:#fcd34d;margin-top:4px;padding:3px 6px;background:rgba(245,158,11,0.12);border-radius:4px">&#x26A0; No timestamp — file missing, unreachable, or not valid JSON. Treated as unverified, not current.</div>' : '') +
         '</div>';
     });
 
@@ -435,6 +454,54 @@
     return null;
   }
 
+  // ── Market-hours staleness (2026-11-15) ───────────────────────
+  // ETF/BOND/EQUITY/COMMODITY/FUTURES are fed by weekday-only crons
+  // (etf-bond-scanner.yml runs 13:35 and 14:00 UTC Mon-Fri). Judged in raw
+  // wall-clock time every one of them manufactures a false "STALE — check that
+  // class's scanner" alarm each weekend: Friday 14:00 UTC + 72h lands exactly on
+  // Monday 14:00 UTC, so the alarm fires before the next run is even due. For
+  // these classes the age excludes Sat/Sun, so the 72h budget measures trading
+  // silence. CRYPTO (and anything unlisted) trades 24/7 and keeps wall-clock age.
+  // Whole weekend days are subtracted rather than exact hours, which slightly
+  // over-credits a partially-elapsed weekend — deliberately, because the failure
+  // this guards against is a false alarm, not a missed one.
+  var MARKET_CLASSES = { ETF: 1, BOND: 1, EQUITY: 1, COMMODITY: 1, FUTURES: 1,
+                         INDEX_STOCK: 1, STOCKS: 1, PENNY_STOCK: 1 };
+
+  function marketAgeMs(isoStr, assetClass) {
+    var start = new Date(isoStr).getTime();
+    if (!isFinite(start)) return Infinity;
+    var ms = Date.now() - start;
+    if (ms < 0) ms = 0;
+    if (!MARKET_CLASSES[String(assetClass || '').toUpperCase()]) return ms;
+    var DAY = 86400000;
+    var excluded = 0;
+    var t = new Date(start);
+    t.setHours(0, 0, 0, 0);
+    // Cap the walk: beyond ~3 months the pick is stale under any calendar.
+    while (t.getTime() < Date.now() && excluded < 90 * DAY) {
+      var dow = t.getDay();
+      if (dow === 0 || dow === 6) excluded += DAY;
+      t = new Date(t.getTime() + DAY);
+    }
+    return Math.max(0, ms - excluded);
+  }
+
+  function marketFreshness(isoStr, assetClass) {
+    var f = freshnessLevel(isoStr);
+    if (!isoStr || !MARKET_CLASSES[String(assetClass || '').toUpperCase()]) return f;
+    var age = marketAgeMs(isoStr, assetClass);
+    var lvl = age < 24 * HOUR ? 'green' : (age < 72 * HOUR ? 'yellow' : 'red');
+    if (lvl === f.level) return f;
+    var map = {
+      green:  { label: 'FRESH', color: '#22c55e', bg: 'rgba(34,197,94,0.12)' },
+      yellow: { label: 'AGING', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+      red:    { label: 'STALE', color: '#ef4444', bg: 'rgba(239,68,68,0.12)' }
+    };
+    var m = map[lvl];
+    return { level: lvl, ageMs: age, label: m.label, color: m.color, bg: m.bg };
+  }
+
   function assetClassStaleness(D) {
     var groups = [['active', (D.picks && D.picks.active) || []],
                   ['active_raw', (D.picks && D.picks.active_raw) || []],
@@ -470,16 +537,17 @@
     }
     var rows = assetClassStaleness(D);
     if (!rows.length) { host.innerHTML = '<div style="font-size:11px;color:#94a3b8">Asset-class staleness: no timestamped picks in payload.</div>'; return; }
-    var stale = rows.filter(function(r) { return freshnessLevel(r.ts).level === 'red'; });
+    var stale = rows.filter(function(r) { return marketFreshness(r.ts, r.assetClass).level === 'red'; });
     var head = stale.length
       ? '<strong style="color:#f87171">&#x26A0; ' + stale.length + ' stale asset-class row(s)</strong>'
       : '<strong style="color:#22c55e">&#x2713; All asset-class rows fresh (&lt;72h)</strong>';
     var body = '<div style="font-size:11px;color:#94a3b8;margin:4px 0 6px">' + head +
-      ' &middot; newest timestamped pick per class &middot; anything over 72h is tagged STALE for follow-up</div>';
+      ' &middot; newest timestamped pick per class &middot; over 72h of *open-market* silence is tagged STALE ' +
+      '(market-hours classes exclude Sat/Sun; CRYPTO ages in wall-clock time)</div>';
     body += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
     rows.sort(function(a, b) { return (b.ts || '').localeCompare(a.ts || ''); });
     rows.forEach(function(r) {
-      var f = freshnessLevel(r.ts);
+      var f = marketFreshness(r.ts, r.assetClass);
       var isStale = f.level === 'red';
       var txt = esc(r.assetClass) + ' <span style="opacity:0.7">' + esc(r.group) + '</span> n=' + r.n + ' &middot; ' + esc(ageText(f.ageMs));
       body += '<span title="' + esc(r.assetClass + ' / ' + r.group + ' — newest ' + fmtEST(r.ts) + ' EST, n=' + r.n) + '" style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;background:' +
@@ -490,7 +558,7 @@
     if (stale.length) {
       body += '<div style="font-size:10px;color:#fca5a5;margin-top:6px">Stale: ' +
         esc(stale.map(function(s) { return s.assetClass + '/' + s.group; }).join(', ')) +
-        ' — no new picks in >72h. Actionable: check that class\'s scanner/emitter is still running.</div>';
+        ' — no new picks in >72h of trading time. Actionable: check that class\'s scanner/emitter is still running.</div>';
     }
     host.innerHTML = body;
   }
@@ -561,7 +629,7 @@
         esc(ageText(dashboardFresh.ageMs)) + ' old (' + esc(fmtEST(D.generated_at)) + ' EST). ' +
         'The information shown may not reflect current market conditions. ' +
         '<a href="#" onclick="location.reload();return false" style="color:#fbbf24;text-decoration:underline;font-weight:600">Reload page</a> or check ' +
-        '<a href="https://github.com/eaguiar2015/findtorontoevents_antigravity.ca/actions" target="_blank" style="color:#fbbf24;text-decoration:underline;font-weight:600">workflow status</a>.</div>';
+        '<a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions" target="_blank" style="color:#fbbf24;text-decoration:underline;font-weight:600">workflow status</a>.</div>';
 
       var header = document.querySelector('.header');
       if (header && header.nextSibling) {

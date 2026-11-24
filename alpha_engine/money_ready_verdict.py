@@ -49,6 +49,15 @@ except ImportError:
     np = None  # type: ignore[assignment]
     print("WARN: numpy unavailable; statistical gates degraded", file=sys.stderr)
 
+# Every PF this module publishes carries its denominator and cost treatment
+# (2026-11-20): CRYPTO was quoted as 0.26 / 0.83 / 1.31 from three populations
+# and no reader could tell which was the class figure.
+try:
+    from alpha_engine.pf_basis import format_pf as _pf_label
+except Exception:  # pragma: no cover - optional import
+    def _pf_label(value, n=None, **_kw):
+        return f"PF {value} (n={n})" if value is not None else f"PF n/a (n={n})"
+
 # Lazy imports to avoid ModuleNotFoundError when ci_gate scripts import this
 # module from a different sys.path context (e.g. GHA runners).
 def _get_eagle_gates():
@@ -173,11 +182,14 @@ MIN_N_STRATEGY = 20       # minimum per-strategy picks for SPA inclusion
 # and applies Benjamini-Hochberg FDR (+ reports Bonferroni) across the
 # strategy family. If ZERO strategies survive FDR, the class edge is not
 # multiplicity-robust and cannot be MONEY_READY.
-# Shadow-first (default OFF, mirrors the MDD/ML gates): when off it only
-# stamps `_fdr_recommend`; set MONEY_READY_FDR_GATE=1 to hard-enforce.
+# ENFORCED BY DEFAULT (2026-11-19): the gate was shadow-only, so a MONEY_READY
+# verdict could be issued with zero multiplicity control while the docstring said
+# otherwise. Set MONEY_READY_FDR_GATE=0 to go back to shadow mode (stamps
+# `_fdr_recommend` only). Every existing consumer already reads the stamped
+# recommendation, so turning it on can only downgrade, never promote.
 FDR_Q = 0.10              # Benjamini-Hochberg false-discovery-rate level
 _FDR_GATE_ENFORCE: bool = (
-    os.environ.get("MONEY_READY_FDR_GATE", "0").strip().lower()
+    os.environ.get("MONEY_READY_FDR_GATE", "1").strip().lower()
     in ("1", "true", "yes", "on")
 )
 
@@ -187,12 +199,13 @@ _FDR_GATE_ENFORCE: bool = (
 # is_single_source_artifact). A class whose ENTIRE profitable edge rests on
 # single-source strategies is a feed idiosyncrasy, not a class-level edge.
 # This gate checks whether any *profitable* strategy (mean pnl>0, n>=
-# MIN_N_STRATEGY) draws from >=2 source_systems. Shadow-first (default OFF):
-# stamps `_single_source_recommend`; set MONEY_READY_SINGLE_SOURCE_GATE=1 to
-# hard-downgrade MONEY_READY -> NOT_READY when every profitable sleeve is
-# single-source.
+# MIN_N_STRATEGY) draws from >=2 source_systems. ENFORCED BY DEFAULT
+# (2026-11-19): hard-downgrades MONEY_READY -> NOT_READY when every profitable
+# sleeve is single-source. Set MONEY_READY_SINGLE_SOURCE_GATE=0 for shadow mode.
+# The default flipped because the two sleeves that carried the CRYPTO "edge"
+# were 100% single-source, i.e. the shipped default promoted feed idiosyncrasies.
 _SINGLE_SOURCE_GATE_ENFORCE: bool = (
-    os.environ.get("MONEY_READY_SINGLE_SOURCE_GATE", "0").strip().lower()
+    os.environ.get("MONEY_READY_SINGLE_SOURCE_GATE", "1").strip().lower()
     in ("1", "true", "yes", "on")
 )
 # M-070: a class whose resolved picks are dominated by ONE symbol is not a
@@ -223,7 +236,7 @@ MAX_SYMBOL_CONCENTRATION_BY_CLASS: dict[str, float] = {
 # 2026-05-28 Tier-1: the full set of asset classes /audit tracks. Every one
 # must appear in money_ready_verdict.json even at n=0 (as INSUFFICIENT_DATA)
 # so downstream consumers never assume a class is absent. Ref: action #9.
-CANONICAL_ASSET_CLASSES = ("CRYPTO", "EQUITY", "COMMODITY", "ETF", "FOREX", "BOND", "FUTURES")
+CANONICAL_ASSET_CLASSES = ("CRYPTO", "EQUITY", "COMMODITY", "ETF", "FOREX", "BOND", "FUTURES", "MUTUAL_FUND")
 
 
 def _is_class_policy_frozen(asset_class: str) -> bool:
@@ -261,6 +274,7 @@ SLIPPAGE_BPS: dict[str, float] = {
     "ETF": 8.0,
     "FOREX": 5.0,     # tight spreads
     "BOND": 8.0,
+    "MUTUAL_FUND": 8.0,
     "FUTURES": 10.0,
 }
 DEFAULT_SLIPPAGE_BPS: float = 10.0
@@ -284,6 +298,7 @@ CLASS_WR_FLOORS: dict[str, float] = {
     "FUTURES": 0.40,
     "ETF": 0.45,
     "BOND": 0.45,
+    "MUTUAL_FUND": 0.45,
     "EQUITY": 0.52,
     "CRYPTO": 0.50,
 }
@@ -296,10 +311,27 @@ DEFAULT_WR_FLOOR: float = MIN_WR
 # tested per class.  nb_trials=1 applies zero correction and is statistically
 # meaningless for real-money readiness.
 # Values derived from live closed-picks source-system counts (2026-05-17).
+# 2026-11-21: EQUITY / ETF / BOND / FUTURES were absent, so their DSR was
+# SKIPPED (never passed) after the missing-baseline fix earlier the same day.
+# The values below are measured, not assumed: the number of distinct strategy
+# cells the class has been tested on in the canonical registry view
+# `by_asset_class_strategy_policy_clean_net` (refresh + drift report:
+# `python3 tools/dsr_trial_baseline_report.py --strict`). A baseline must be
+# >= 2 (1 applies no correction) and <= the number of tested cells (more trials
+# than were run over-deflates). MUTUAL_FUND has no tested cell, so it stays
+# absent and its DSR stays explicitly skipped.
+# The three original values predate that measurement and are LOWER bounds on the
+# current search space (the registry now shows COMMODITY 9, CRYPTO 629, FOREX 18
+# cells); they are left unchanged here because raising them would flip live
+# verdicts and needs its own sign-off. The report tool prints the gap.
 NB_TRIALS_BY_CLASS: dict[str, int] = {
-    "COMMODITY": 3,   # 3 eligible source systems with >=20 picks
-    "CRYPTO": 14,     # per verdict JSON n_strategies_tested: 14
-    "FOREX": 6,       # 6 eligible source systems with >=20 picks
+    "COMMODITY": 3,   # 3 eligible source systems with >=20 picks (legacy lower bound)
+    "CRYPTO": 14,     # per verdict JSON n_strategies_tested: 14 (legacy lower bound)
+    "FOREX": 6,       # 6 eligible source systems with >=20 picks (legacy lower bound)
+    "EQUITY": 19,     # measured 2026-11-21: 19 strategy cells
+    "ETF": 12,        # measured 2026-11-21: 12 strategy cells
+    "BOND": 2,        # measured 2026-11-21: 2 strategy cells
+    "FUTURES": 3,     # measured 2026-11-21: 3 strategy cells
 }
 
 
@@ -456,6 +488,31 @@ def _load_picks(*, ci_mode: bool = False) -> list[dict]:
 
 
 PF_REGISTRY_PATH = REPO_ROOT / "audit_dashboard/data/pf_registry.json"
+AUDIT3_LEDGER_PATH = REPO_ROOT / "audit_dashboard/data/audit3_ledger.json"
+
+
+# Sleeve plausibility guard (2026-11-16 audit). A profit factor this high on a
+# small cohort is almost always a resolution artifact rather than edge: the
+# registry carried "ADX Trend Confirmation" at PF 56.7 (BTCUSDT 91 wins / 0
+# losses) and the resolver ledger carried "GainerPredictor1hStrategy" at PF 120
+# (48/49 wins, all AVAXUSDT). Both reached the top of the Money-Ready sleeve
+# list as if actionable. Flag them as policy_blocked so the UI can never
+# promote them, and rank non-blocked sleeves first.
+_PF_IMPLAUSIBLE = 5.0
+_PLAUSIBLE_MIN_N = 100
+# A >=95% win rate on a directional trade is a labeling signature (TP-first or
+# untouched-SL fills), not an edge, regardless of cohort size. The resolver
+# sleeve path below hardcodes is_single_source=False, so it needs this guard
+# independently of the registry's single-source flag.
+_WR_IMPLAUSIBLE_PCT = 95.0
+_WR_PLAUSIBLE_MIN_N = 1000
+
+
+def _is_implausible(n: int, pf: float, wr: float) -> bool:
+    """True when PF/WR is too extreme for the cohort size to be credible."""
+    if pf > _PF_IMPLAUSIBLE and n < _PLAUSIBLE_MIN_N:
+        return True
+    return wr >= _WR_IMPLAUSIBLE_PCT and n < _WR_PLAUSIBLE_MIN_N
 
 
 def _top_money_ready_sleeves(reg: dict, asset_class: str, min_n: int = 30) -> list[dict]:
@@ -477,18 +534,25 @@ def _top_money_ready_sleeves(reg: dict, asset_class: str, min_n: int = 30) -> li
         pf_raw = r.get("profit_factor")
         pf = float(pf_raw) if pf_raw is not None else 0.0
         single = bool(r.get("is_single_source_artifact", False))
+        implausible = _is_implausible(n, pf, wr)
         if n >= min_n and wr >= 50.0 and pf >= 1.5:
+            note_parts = []
+            if single:
+                note_parts.append("single-source")
+            if implausible:
+                note_parts.append("implausible-stats")
             sleeves.append({
                 "strategy": r.get("strategy", "unknown"),
                 "n": n,
                 "wr": round(wr, 2),
                 "pf": round(pf, 4),
                 "is_single_source": single,
+                "implausible_pf": implausible,
                 "source": "policy_clean",
-                "policy_blocked": False,
-                "note": r.get("note", "") or ("single-source" if single else ""),
+                "policy_blocked": single or implausible,
+                "note": r.get("note", "") or "; ".join(note_parts),
             })
-    sleeves.sort(key=lambda s: s["pf"], reverse=True)
+    sleeves.sort(key=lambda s: (s["policy_blocked"], -s["pf"]))
     return sleeves[:5]
 
 
@@ -572,9 +636,12 @@ def _top_sleeves_from_outcomes(asset_class: str, min_n: int = 30) -> list[dict]:
         pf = gw / gl
         if n < min_n or wr < 50.0 or pf < 1.5:
             continue
+        implausible = _is_implausible(n, pf, wr)
         note_parts = ["resolver_grade"]
         if strat in blocked:
             note_parts.append("policy-blocked")
+        if implausible:
+            note_parts.append("implausible-stats")
         if strat.startswith("ml_enhanced") and ac == "CRYPTO":
             note_parts.append("ml_enhanced-family")
         sleeves.append({
@@ -583,11 +650,12 @@ def _top_sleeves_from_outcomes(asset_class: str, min_n: int = 30) -> list[dict]:
             "wr": round(wr, 2),
             "pf": round(pf, 4),
             "is_single_source": False,
+            "implausible_pf": implausible,
             "source": "resolver_grade",
-            "policy_blocked": strat in blocked,
+            "policy_blocked": (strat in blocked) or implausible,
             "note": "; ".join(note_parts),
         })
-    sleeves.sort(key=lambda s: s["pf"], reverse=True)
+    sleeves.sort(key=lambda s: (s["policy_blocked"], -s["pf"]))
     return sleeves[:5]
 
 
@@ -602,9 +670,79 @@ def _merge_top_sleeves(
             merged.append(s)
             seen.add(s.get("strategy"))
     merged.sort(
-        key=lambda x: (x.get("policy_blocked", False), -x.get("pf", 0)),
+        key=lambda x: (
+            x.get("policy_blocked", False),
+            x.get("implausible_pf", False),
+            -x.get("pf", 0),
+        ),
     )
     return merged[:5]
+
+
+_AUDIT3_CELL_INDEX: dict[str, dict[tuple[str, str], str]] | None = None
+
+
+def _audit3_cell_index(ledger_path: Path | None = None) -> dict[tuple[str, str], str]:
+    """(asset_class, strategy) -> tribunal verdict from the audit3 ledger.
+
+    The /audit3 tribunal is the only surface that scores sleeves with DSR,
+    FDR multiplicity, cost stress and split-half stability. Fail-open: a
+    missing/corrupt ledger returns {} and sleeves are marked NOT_SCORED.
+    """
+    global _AUDIT3_CELL_INDEX
+    path = ledger_path or AUDIT3_LEDGER_PATH
+    cache_key = str(path)
+    if _AUDIT3_CELL_INDEX is not None and cache_key in _AUDIT3_CELL_INDEX:
+        return _AUDIT3_CELL_INDEX[cache_key]
+    index: dict[tuple[str, str], str] = {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            ledger = json.load(f)
+        for cell in ledger.get("cells") or []:
+            ac = str(cell.get("asset_class") or "").upper()
+            strat = str(cell.get("strategy") or "")
+            verdict = str(cell.get("verdict") or "")
+            if not (ac and strat and verdict):
+                continue
+            prev = index.get((ac, strat))
+            # Keep the strongest claim per (class, strategy) across directions
+            # so a LONG CANDIDATE is not hidden by a SHORT INSUFFICIENT_N.
+            rank = {"PROVEN_T2": 5, "CANDIDATE": 4, "WEAK": 3, "KILL": 2,
+                    "INSUFFICIENT_N": 1}
+            if prev is None or rank.get(verdict, 0) > rank.get(prev, 0):
+                index[(ac, strat)] = verdict
+    except Exception:
+        index = {}
+    if _AUDIT3_CELL_INDEX is None:
+        _AUDIT3_CELL_INDEX = {}
+    _AUDIT3_CELL_INDEX[cache_key] = index
+    return index
+
+
+def _audit3_cross_mark(
+    sleeves: list[dict], asset_class: str, ledger_path: Path | None = None,
+) -> list[dict]:
+    """Stamp each sleeve with the audit3 tribunal's independent verdict.
+
+    Root cause this fixes (2026-11-19): resolver-grade sleeves are selected
+    post-hoc from MySQL at_pick_outcomes with a WR>=50 & PF>=1.5 filter over
+    ~277 strategies — survivorship display with no multiplicity correction.
+    Several headline sleeves (Multi-Timeframe Trend Alignment PF 11.8,
+    AuditEnsemble PF 10.1) never appear in the audit3 payload at all, so
+    nothing independent ever scored them. A sleeve is only
+    `tribunal_corroborated` when audit3 rates it PROVEN_T2 or CANDIDATE.
+    """
+    index = _audit3_cell_index(ledger_path)
+    ac = asset_class.upper()
+    for s in sleeves:
+        verdict = index.get((ac, str(s.get("strategy") or ""))) or "NOT_SCORED"
+        s["audit3_verdict"] = verdict
+        s["tribunal_corroborated"] = verdict in ("PROVEN_T2", "CANDIDATE")
+        note = s.get("note") or ""
+        tag = f"audit3:{verdict}"
+        if tag not in note:
+            s["note"] = f"{note}; {tag}" if note else tag
+    return sleeves
 
 
 def _load_dashboard_health() -> dict[str, dict]:
@@ -680,14 +818,23 @@ def _net_pnl(pick: dict) -> float:
     that the "REAL gross" verdict can survive while the "real money" verdict
     does not (a 7bp gross COMMODITY win is a net loss after the 12bp
     round-trip). `deduct_slippage` is the M-069-corrected fraction-unit
-    deduction. Fail-open: if the import is unavailable, fall back to gross.
+    deduction. Fail SAFE: if the import is unavailable, deduct the widest
+    charter round-trip (12bp) rather than falling back to gross.
     """
     gross = float(pick.get("pnl_pct") or 0)
     try:
         from alpha_engine.charter_slippage import deduct_slippage
         return deduct_slippage(gross, pick.get("asset_class"))
     except Exception:
-        return gross
+        # Fail SAFE (2026-11-16 audit): an unavailable slippage model must never
+        # silently promote a gross-only verdict. Deduct the widest round-trip in
+        # the charter table (COMMODITY 6bp one-way -> 12bp round-trip = 0.0012).
+        print(
+            "WARN: charter_slippage unavailable; applying conservative "
+            "12bp round-trip deduction",
+            file=sys.stderr,
+        )
+        return gross - 0.0012
 
 
 def _class_stats(picks: list[dict]) -> dict[str, dict]:
@@ -776,6 +923,9 @@ def _class_stats(picks: list[dict]) -> dict[str, dict]:
             # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
             "wr_pct": round(wr * 100, 2),
             "pf": round(pf, 4),
+            "pf_n": n,
+            "pf_basis": "net",
+            "pf_label": _pf_label(pf, n, basis="net"),
             "returns": returns,
             "picks": ps,
             "top_symbol": top_symbol,
@@ -880,32 +1030,81 @@ def _json_safe(obj):
 # DSR gate (per-class aggregate — treat all class picks as one strategy)
 # ---------------------------------------------------------------------------
 
-def _dsr_gate(returns: list[float]) -> dict[str, Any]:
+# Classes already warned about a missing trial-count baseline (once per
+# process, so a per-class loop does not repeat the same line six times).
+_DSR_BASELINE_WARNED: set[str] = set()
+
+
+def _dsr_gate(returns: list[float], asset_class: str = "") -> dict[str, Any]:
+    # M-061a / P0.5 (2026-11-20): the class aggregate is not one trial. It is the
+    # best of NB_TRIALS_BY_CLASS evaluated systems, and that count can only grow.
+    _cls = str(asset_class or "").upper()
+    _local_trials = NB_TRIALS_BY_CLASS.get(_cls)
+    if _local_trials is None:
+        # No recorded trial count for this class means no baseline to deflate
+        # against. Before 2026-11-21 this lookup defaulted to 1, which applies
+        # ZERO multiple-testing correction -- so EQUITY/ETF/BOND (no entry in
+        # NB_TRIALS_BY_CLASS) published a confident-looking DSR that had never
+        # been deflated, and the classes with no trial accounting were the ones
+        # most likely to look clean. A missing baseline is not a pass.
+        if _cls not in _DSR_BASELINE_WARNED:
+            _DSR_BASELINE_WARNED.add(_cls)
+            print(
+                "[money_ready_verdict] WARNING: DSR gate SKIPPED for "
+                f"{_cls or '(no asset_class)'} -- no n_trials baseline in "
+                "NB_TRIALS_BY_CLASS. Add the class's real trial count to assess it.",
+                file=sys.stderr,
+            )
+        return {
+            "ok": None,
+            "skipped": True,
+            "note": (
+                f"no n_trials baseline for {_cls or '(no asset_class)'} in "
+                "NB_TRIALS_BY_CLASS -- DSR skipped (defaulting to nb_trials=1 "
+                "would report an undeflated number as a pass)"
+            ),
+            "dsr_score": None,
+            "nb_trials": None,
+        }
+    try:
+        from alpha_engine.trial_counter import effective_n_trials
+    except ImportError:
+        try:
+            sys.path.insert(0, str(REPO_ROOT / "alpha_engine"))
+            from trial_counter import effective_n_trials
+        except ImportError:
+            def effective_n_trials(local, family="GLOBAL"):
+                return max(int(local or 0), 1)
+    nb_trials = effective_n_trials(_local_trials, family=_cls or "GLOBAL")
+
     try:
         try:
             from alpha_engine.deflated_sharpe import returns_stats, sharpe_variance, deflated_sharpe_ratio
         except ImportError:
             from deflated_sharpe import returns_stats, sharpe_variance, deflated_sharpe_ratio
     except ImportError:
-        return {"ok": None, "note": "deflated_sharpe not importable", "dsr_score": None}
+        return {"ok": None, "note": "deflated_sharpe not importable", "dsr_score": None,
+                "nb_trials": nb_trials}
 
     arr = np.array(returns, dtype=float)
     if len(arr) < 10:
-        return {"ok": None, "note": f"n={len(arr)} too small for DSR", "dsr_score": None}
+        return {"ok": None, "note": f"n={len(arr)} too small for DSR", "dsr_score": None,
+                "nb_trials": nb_trials}
 
     mu, sd = arr.mean(), arr.std()
     if sd == 0:
-        return {"ok": False, "note": "zero variance returns", "dsr_score": 0.0}
+        return {"ok": False, "note": "zero variance returns", "dsr_score": 0.0,
+                "nb_trials": nb_trials}
 
     sr = mu / sd * np.sqrt(252)  # annualised daily SR approximation
     stats = returns_stats(list(returns))
     horizon = len(arr)
     sr_var = sharpe_variance(sr, horizon, stats["skewness"], stats["kurtosis"])
-    # nb_trials=1 — we're testing the class aggregate, not a selected-best strategy
+    # nb_trials was hoisted above; the old code passed nb_trials=1 (zero correction).
     dsr = deflated_sharpe_ratio(
         estimated_sharpe=sr,
         sr_variance=sr_var,
-        nb_trials=1,
+        nb_trials=nb_trials,
         backtest_horizon=horizon,
         skew=stats["skewness"],
         kurtosis=stats["kurtosis"],
@@ -921,8 +1120,10 @@ def _dsr_gate(returns: list[float]) -> dict[str, Any]:
             "ok": None,
             "note": "deflated_sharpe non-finite (degenerate sr_variance/moments inputs)",
             "dsr_score": None,
+            "nb_trials": nb_trials,
         }
-    return {"ok": dsr_f >= DSR_THRESHOLD, "dsr_score": round(dsr_f, 4), "note": ""}
+    return {"ok": dsr_f >= DSR_THRESHOLD, "dsr_score": round(dsr_f, 4), "note": "",
+            "nb_trials": nb_trials}
 
 
 # ---------------------------------------------------------------------------
@@ -1145,6 +1346,12 @@ def _single_source_gate(picks: list[dict]) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 # P1-A (2026-06-12): when intrabar n>=30, promotion gates use honest ledger.
+# Set MONEY_READY_INTRABAR_TRUTH=0 to judge strictly on the policy-clean rows
+# (used by unit tests, which must not be gated on a live artifact).
+_INTRABAR_TRUTH_ENABLED: bool = (
+    os.environ.get("MONEY_READY_INTRABAR_TRUTH", "1").strip().lower()
+    in ("1", "true", "yes", "on")
+)
 MIN_INTRABAR_N_FOR_SIZING = 30
 
 
@@ -1173,10 +1380,22 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
              asset_class: str = "", top_symbol_share: float = 0.0,
              top_source_share: float = 0.0,
              avg_win: float = 0.0, avg_loss: float = 0.0,
+             published_pf: float | None = None,
              mdd_cvar_gate_ok: bool | None = None,
              fdr_gate_ok: bool | None = None,
              single_source_gate_ok: bool | None = None,
              recency_ok: bool = True) -> str:
+    def _watch_label() -> str:
+        # 2026-11-20: WATCH means "near miss", and a book whose PUBLISHED
+        # profit factor is below 1.0 is not a near miss - it loses money
+        # gross. COMMODITY was rendered WATCH next to "PF 0.29" because the
+        # gates were fed the intrabar sizing PF (1.0306) while the page
+        # printed the policy-clean one (0.2897). The label must agree with
+        # the number the reader sees.
+        if published_pf is not None and published_pf < 1.0:
+            return "NOT_READY"
+        return "WATCH"
+
     n_ok = n >= MIN_N_CLASS
     if not n_ok:
         return "INSUFFICIENT_DATA"
@@ -1199,13 +1418,13 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
             asset_class.upper(), MAX_SYMBOL_CONCENTRATION
         )
         if top_symbol_share > _conc_cap:
-            return "WATCH"
+            return _watch_label()
         # 2026-05-28 Tier-0: source-concentration cap (mirrors symbol cap).
         _src_conc_cap = MAX_SOURCE_CONCENTRATION_BY_CLASS.get(
             asset_class.upper(), MAX_SOURCE_CONCENTRATION
         )
         if top_source_share > _src_conc_cap:
-            return "WATCH"
+            return _watch_label()
         # P1/#7: Net-of-cost slippage promotion gate.
         # When enabled, block MONEY_READY if post-slippage expectancy is negative.
         if _SLIPPAGE_GATE_ENABLED and avg_win > 0 and avg_loss > 0:
@@ -1241,7 +1460,7 @@ def _verdict(n: int, wr: float, pf: float, dsr: dict, pbo: dict, spa: dict,
     if pf < 1.0:
         return "NOT_READY"
     if wr_ok or pf_ok:
-        return "WATCH"
+        return _watch_label()
     return "NOT_READY"
 
 
@@ -1403,13 +1622,16 @@ def _simple_wf_oos_ratio(picks: list[dict], train_frac: float = 0.6) -> dict[str
     is_pf = _pf(train)
     oos_pf = _pf(oos)
     ratio = (oos_pf / is_pf) if is_pf > 0 and is_pf != float("inf") else None
-    ok = (ratio is not None) and (ratio >= 0.85)
+    # 2026-11-16 audit: a ratio >= 0.85 alone passes even when BOTH IS and OOS
+    # are unprofitable (e.g. IS 0.5 / OOS 0.45). Require the OOS leg to be
+    # actually profitable, not just "not much worse than IS".
+    ok = (ratio is not None) and (ratio >= 0.85) and (oos_pf >= 1.0)
     return {
         "ratio": round(ratio, 4) if ratio is not None else None,
         "is_pf": round(is_pf, 4) if is_pf not in (0, float("inf")) else is_pf,
         "oos_pf": round(oos_pf, 4) if oos_pf not in (0, float("inf")) else oos_pf,
         "ok": ok,
-        "note": f"train_frac={train_frac}; target OOS/IS >=0.85",
+        "note": f"train_frac={train_frac}; target OOS/IS >=0.85 and OOS PF >=1.0",
     }
 
 
@@ -1514,7 +1736,12 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
 
     results: dict[str, dict] = {}
     global _INTRABAR_TRUTH_CACHE
-    _INTRABAR_TRUTH_CACHE = {} if ci_mode else _intrabar_truth_map()
+    # Escape hatch for unit tests and for a deliberately policy-only run: without
+    # this, a synthetic fixture is judged against a live intrabar artifact and can
+    # never produce the verdict its own numbers imply.
+    _INTRABAR_TRUTH_CACHE = (
+        {} if (ci_mode or not _INTRABAR_TRUTH_ENABLED) else _intrabar_truth_map()
+    )
     for ac, stats in class_stats.items():
         if asset_class and ac != asset_class.upper():
             continue
@@ -1539,7 +1766,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
                 pf = float(h.get("pf") or h.get("profit_factor") or 0)
                 data_source = "dashboard_fallback"
 
-        dsr = _dsr_gate(returns)
+        dsr = _dsr_gate(returns, asset_class=ac)
         pbo = _pbo_gate(ac_picks) if not _CI_MODE else {"ok": None, "note": "skipped in CI mode", "pbo": None}
         spa = _spa_gate(ac_picks) if not _CI_MODE else {"ok": None, "note": "skipped in CI mode", "spa_p": None, "n_spa_pass": 0}
         fdr = _fdr_gate(ac_picks) if not _CI_MODE else {"ok": None, "n_tested": 0, "n_fdr_pass": 0, "n_bonferroni_pass": 0, "min_p": None, "fdr_q": FDR_Q, "note": "skipped in CI mode"}
@@ -1577,6 +1804,7 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         )
 
         verdict = _verdict(_sizing_n, _sizing_wr, _sizing_pf, dsr, pbo, spa, asset_class=ac,
+                           published_pf=pf,   # the PF the page prints (policy-clean)
                            top_symbol_share=top_symbol_share,
                            top_source_share=top_source_share,
                            avg_win=avg_win, avg_loss=avg_loss,
@@ -1593,7 +1821,9 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
         wf_oos = _simple_wf_oos_ratio(ac_picks) if not _CI_MODE else {"ratio": None, "ok": None, "note": "skipped in CI mode"}
         reg_sleeves = _top_money_ready_sleeves(full_reg, ac) if full_reg else []
         outcome_sleeves = _top_sleeves_from_outcomes(ac) if not ci_mode else []
-        top_sleeves = _merge_top_sleeves(reg_sleeves, outcome_sleeves)
+        top_sleeves = _audit3_cross_mark(
+            _merge_top_sleeves(reg_sleeves, outcome_sleeves), ac,
+        )
 
         # OVERALL/110 transparency: machine-readable daily-vs-honest-intrabar divergence.
         # The verdict already GATES on honest intrabar via _sizing_metrics_from_intrabar
@@ -1626,15 +1856,39 @@ def money_ready_verdict(asset_class: str | None = None, n_boot: int = 500, ci_mo
             "policy_clean_wr_pct": round(_policy_wr * 100, 2),
             "policy_clean_pf": round(_policy_pf, 4) if _policy_pf != float("inf") else None,
             "n_resolved": _sizing_n,
-            "wr": round(_sizing_wr, 4),
+            # 2026-11-19 fix: this used to be `_sizing_wr`, i.e. the HONEST-INTRABAR
+            # overlay, published under the name "wr". The persisted file showed
+            # COMMODITY wr=0.4052 with sizing_source=intrabar_truth, so every reader
+            # (and every unit test) got a number that belonged to a different row set
+            # than the class being described — the same class of bug as the ETF
+            # 1.9%-vs-43.1% contradiction. "wr" now means the class's own resolved
+            # rows; the overlay is published separately and the basis is explicit.
+            "wr": round(wr, 4),
             # ENH#131 schema note: "wr" is a FRACTION (0.472); "wr_pct" is PERCENT (47.2) — matches pf_registry win_rate_pct units.
-            "wr_pct": round(_sizing_wr * 100, 2),
-            "pf": round(_sizing_pf, 4) if _sizing_pf != float("inf") else None,
+            "wr_pct": round(wr * 100, 2),
+            "pf": round(pf, 4) if pf != float("inf") else None,
+            # PF alone cannot be compared across surfaces; these can.
+            "pf_label": _pf_label(pf, n, basis="net"),
+            "policy_clean_pf_label": _pf_label(
+                _policy_pf if _policy_pf != float("inf") else None,
+                _policy_n,
+                basis="net",
+            ),
+            "n": n,
             "n_ok": _sizing_n >= MIN_N_CLASS,
-            "wr_ok": _sizing_wr >= wr_floor,
+            # Descriptive, matches `wr` above. The gate uses `sizing_wr_ok`.
+            "wr_ok": wr >= wr_floor,
+            "policy_wr_ok": wr >= wr_floor,
+            "sizing_wr": round(_sizing_wr, 4),
+            "sizing_pf": round(_sizing_pf, 4) if _sizing_pf != float("inf") else None,
+            "sizing_wr_ok": _sizing_wr >= wr_floor,
+            "verdict_basis": _sizing_source,
             "pf_ok": _sizing_pf >= MIN_PF,
             "dsr_ok": dsr.get("ok"),
             "dsr_score": dsr.get("dsr_score"),
+            "dsr_nb_trials": dsr.get("nb_trials"),
+            "dsr_skipped": bool(dsr.get("skipped")),
+            "dsr_note": dsr.get("note"),
             "pbo_ok": pbo.get("ok"),
             "pbo": pbo.get("pbo"),
             "spa_ok": spa.get("ok"),
@@ -1816,7 +2070,21 @@ def main() -> None:
                # ENH#131: explicit unit declarations — "wr" stays a fraction (existing
                # consumers depend on it); "wr_pct" is the additive percent twin matching
                # pf_registry's win_rate_pct convention.
-               "units": {"wr": "fraction", "wr_pct": "percent"}}
+               # 2026-11-16 audit: mdd/expectancy/bootstrap were bare numbers with no
+               # unit contract (CRYPTO mdd=1.0009 read as "1.0%" by any naive renderer
+               # when it is a 100.09% wipeout). Declare every non-wr unit explicitly;
+               # additive only, no field values changed.
+               "units": {
+                   "wr": "fraction",
+                   "wr_pct": "percent",
+                   "mdd": "fraction (1.0 = 100% drawdown; >1 = compounding path hit 0)",
+                   "cvar_95": "percent per trade (negative = loss)",
+                   "expectancy": "percent per trade",
+                   "bootstrap_ci_lower": "percent per trade",
+                   "bootstrap_ci_upper": "percent per trade",
+                   "policy_clean_wr_pct": "percent",
+                   "pf": "ratio",
+               }}
         out.update(results)
         print(json.dumps(_json_safe(out), indent=2, allow_nan=False))
     else:

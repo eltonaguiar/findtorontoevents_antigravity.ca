@@ -22,6 +22,14 @@ on:
         type: choice
         options: ['true', 'false']
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# 2026-11-16 least-privilege (S3 batch): explicit token scopes
+permissions:
+  contents: write
+
 jobs:
   odds-refresh:
     # Playwright Betway step -> chromium is unsupported on ubuntu 26.04; pin the

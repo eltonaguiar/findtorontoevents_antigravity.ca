@@ -1,4 +1,5 @@
 name: Swarm Pick Review (resolve + weekly + patterns + tournament promotion)
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   schedule:
@@ -8,6 +9,12 @@ on:
 
 permissions:
   contents: write
+
+# 2026-11-16: churn-quartet serialize (pattern proven on branch-large-file-dup-guard) —
+# 6 cancelled of last 8 runs; one named group, no cancel-loop / pending churn.
+concurrency:
+  group: swarm-pick-review
+  cancel-in-progress: false
 
 jobs:
   refresh:
@@ -74,8 +81,8 @@ jobs:
             git add audit_dashboard/data/swarm_picks.json                     audit_dashboard/data/swarm_leaderboard.json                     audit_dashboard/data/swarm_pattern_tags.json                     audit_dashboard/data/ai_leaderboard/                     reports/swarm_review/
             if ! git diff --cached --quiet; then
               git commit -m "chore(swarm-review): nightly resolver + leaderboard + patterns [skip ci]"
-              git pull --rebase origin main
-              git push origin HEAD:main
+              # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+              bash .github/scripts/safe_push.sh
             else
               echo "No changes to commit."
             fi

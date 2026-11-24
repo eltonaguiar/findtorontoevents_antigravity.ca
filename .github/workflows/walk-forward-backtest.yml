@@ -20,6 +20,10 @@ permissions:
 env:
   GH_PAT: ${{ secrets.GH_PAT }}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   walk-forward:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}

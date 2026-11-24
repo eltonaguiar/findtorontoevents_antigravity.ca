@@ -15,6 +15,7 @@ Usage:
 """
 from __future__ import annotations
 
+import re
 from typing import Any
 
 # ── Constants ────────────────────────────────────────────────────────────────
@@ -24,6 +25,16 @@ FOREX_CODES: frozenset[str] = frozenset({
     "SEK", "NOK", "DKK", "SGD", "HKD", "CNH", "CNY", "MXN",
     "ZAR", "TRY", "INR",
 })
+
+# Mutual funds price once daily at NAV; symbol universe lives in
+# alpha_engine/mutual_fund_nav.py so classification and the NAV loader agree.
+try:
+    from alpha_engine.mutual_fund_nav import MUTUAL_FUND_SYMBOLS, is_mutual_fund
+except ImportError:  # pragma: no cover - defensive for partial checkouts
+    MUTUAL_FUND_SYMBOLS: frozenset[str] = frozenset()
+
+    def is_mutual_fund(symbol: object) -> bool:  # type: ignore[misc]
+        return False
 
 BOND_SYMBOLS: frozenset[str] = frozenset({
     # Core rates / investment grade (2→14 expansion 2026-05-17)
@@ -94,6 +105,17 @@ FOREX_STRATEGY_HINTS: tuple[str, ...] = (
 # Stablecoin suffixes that unambiguously indicate crypto pairs
 _CRYPTO_SUFFIXES: tuple[str, ...] = ("USDT", "BUSD", "USDC", "DAI", "TUSD", "USDP")
 
+# Explicit quote-currency pairs written as BASE[-/]USD (2026-11-19).
+# ``normalize_symbol`` strips the separator, so ADA-USD becomes ADAUSD and none of
+# ``_CRYPTO_SUFFIXES`` match — bare ``USD`` is a fiat quote, not a stablecoin
+# ticker. Such a symbol fell through every branch to the ``return "equity"``
+# fallback at the end of normalize_asset_class(), which is how 209 crypto
+# MeanReversionBB picks (ADA-USD, AVAX-USD, BTC-USD, DOGE-USD, DOT-USD, ETH-USD,
+# LINK-USD, SOL-USD, XRP-USD) were written to at_pick_outcomes with
+# asset_class='equity' and inflated the EQUITY book with a +3%/-2% crypto grid.
+# A fiat base (EUR-USD, GBP-USD) is still FOREX and is excluded below.
+_PAIR_USD_RE = re.compile(r"^([A-Z0-9]+)[-/]USD$")
+
 _UNKNOWN_CATEGORY_TOKENS: frozenset[str] = frozenset({
     "", "unknown", "none", "null", "nan",
 })
@@ -104,6 +126,8 @@ _CAT_MAP: dict[str, str] = {
     "forex": "forex", "fx": "forex",
     "etf": "etf",
     "bond": "bond",
+    "mutual_fund": "mutual_fund", "mutualfund": "mutual_fund",
+    "mutual_funds": "mutual_fund", "nav_fund": "mutual_fund",
     "commodity": "commodity", "futures": "futures",
     "equity": "equity", "stock": "equity", "stocks": "equity", "penny": "equity",
 }
@@ -114,6 +138,7 @@ _LOWER_TO_UPPER: dict[str, str] = {
     "equity": "EQUITY",
     "etf": "ETF",
     "bond": "BOND",
+    "mutual_fund": "MUTUAL_FUND",
     "futures": "FUTURES",
     "commodity": "COMMODITY",
     "unknown": "UNKNOWN",
@@ -133,6 +158,14 @@ def asset_class_from_symbol(symbol: str | None) -> str:
     Returns one of: crypto, forex, futures, bond, etf, equity, unknown.
     """
     sym = normalize_symbol(symbol)
+    raw = (symbol or "").upper().strip()
+
+    # ── Explicit crypto quote pair, e.g. ADA-USD ──
+    # Checked on the RAW symbol because normalize_symbol() removes the separator
+    # that makes the quote unambiguous. Fiat bases stay forex.
+    _pair = _PAIR_USD_RE.match(raw)
+    if _pair and _pair.group(1) not in FOREX_CODES:
+        return "crypto"
 
     # ── Futures suffix (=F) ──
     if sym.endswith("=F"):
@@ -162,6 +195,10 @@ def asset_class_from_symbol(symbol: str | None) -> str:
     # ── Known ETF symbols ──
     if sym_core in ETF_SYMBOLS:
         return "etf"
+
+    # ── Mutual funds (daily NAV, checked before equity/ETF guesses) ──
+    if sym_core in MUTUAL_FUND_SYMBOLS:
+        return "mutual_fund"
 
     # ── Known commodity symbols ──
     if sym_core in COMMODITY_SYMBOLS:
@@ -219,6 +256,14 @@ def normalize_asset_class(pick: dict[str, Any]) -> str:
     # Strip suffix for further checks
     sym_core = sym[:-2] if sym.endswith(("=X", "=F")) else sym
 
+    # ── Explicit crypto quote pair (BASE-USD / BASE/USD) ──
+    # Must beat the category/asset_class field: upstream labels have been
+    # observed corrupt (see incident #48 in alpha_engine/outcome_resolver.py),
+    # and a separator + USD quote cannot be an equity ticker.
+    _pair = _PAIR_USD_RE.match(str(pick.get("symbol") or "").upper().strip())
+    if _pair and _pair.group(1) not in FOREX_CODES:
+        return "crypto"
+
     # ── Stablecoin suffixes → crypto (unambiguous) ──
     if sym_core.endswith(_CRYPTO_SUFFIXES):
         return "crypto"
@@ -249,6 +294,8 @@ def normalize_asset_class(pick: dict[str, Any]) -> str:
         return "commodity"
     if sym_core in ETF_SYMBOLS:
         return "etf"
+    if sym_core in MUTUAL_FUND_SYMBOLS:
+        return "mutual_fund"
     if sym_core in EQUITY_SYMBOLS:
         return "equity"
 

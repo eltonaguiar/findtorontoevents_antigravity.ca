@@ -1,0 +1,134 @@
+name: audit3 Health Monitor
+
+# Monitors the artifacts the audit3 merge depends on: the denylist is armed,
+# the ledger was built from the canonical full-book view (not the export slice),
+# the forward-observation ledger is fresh, and the strategy freeze manifest is
+# present. Read-only: it never commits and never edits data.
+#
+# Cron fires twice a day at :20; workflow_dispatch for an immediate check.
+
+on:
+  schedule:
+    - cron: "20 5,17 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit3-health
+  cancel-in-progress: true
+
+jobs:
+  health:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Hard failure: the emission gate must be armed against a live ledger.
+      - name: Denylist is armed (fail loudly if stale/missing)
+        run: python3 tools/audit3_denylist_health.py --max-age-days 2 --min-strategy-kills 1
+
+      # Hard failure: the ledger must exist and parse.
+      - name: Ledger integrity + coverage mode
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          p = "audit_dashboard/data/audit3_ledger.json"
+          try:
+              d = json.load(open(p))
+          except Exception as exc:
+              print(f"::error title=audit3-health::ledger unreadable: {exc}")
+              sys.exit(1)
+          classes = d.get("classes") or []
+          if not classes:
+              print("::error title=audit3-health::ledger has no class rows")
+              sys.exit(1)
+          cov = d.get("coverage") or {}
+          mode = ((cov.get("denominator") or {}).get("mode")) or "unknown"
+          print(f"ledger generated_at={d.get('generated_at')} classes={len(classes)} "
+                f"coverage_mode={mode} scored={cov.get('scored_rows')}")
+          if mode != "canonical":
+              print("::warning title=audit3-health::ledger scored the export slice, "
+                    "not the canonical full-book view")
+          summary = d.get("summary") or {}
+          print("verdicts:", {k: summary.get(k) for k in
+                ("n_proven", "n_candidate", "n_weak", "n_kill")})
+          PY
+
+      # Hard failure past 24h, warning past 12h. The denylist watchdog guards
+      # staleness at 3 days; this is the faster, earlier alarm for the published
+      # ledger the dashboards read.
+      - name: Ledger freshness (warn 12h, fail 24h)
+        run: |
+          python3 - <<'PY'
+          import datetime, json, sys
+          d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
+          g = d.get("generated_at")
+          if not g:
+              print("::error title=audit3-health::ledger has no generated_at")
+              sys.exit(1)
+          dt = datetime.datetime.fromisoformat(g.replace("Z", "+00:00"))
+          age_h = (datetime.datetime.now(datetime.timezone.utc) - dt).total_seconds() / 3600
+          print(f"ledger age {age_h:.1f}h (generated_at {g})")
+          if age_h > 24:
+              print("::error title=audit3-health::ledger older than 24h")
+              sys.exit(1)
+          if age_h > 12:
+              print("::warning title=audit3-health::ledger older than 12h")
+          PY
+
+      # Warning-only: the forward clock is the gate for promotion.
+      - name: Forward-observation freshness
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("reports/forward_observations.jsonl")
+          if not p.exists():
+              print("::warning title=audit3-health::no forward_observations.jsonl")
+              raise SystemExit(0)
+          rows = [json.loads(l) for l in p.read_text().splitlines() if l.strip()]
+          pods = {}
+          for r in rows:
+              pods[r.get("hypothesis_id") or "?"] = pods.get(r.get("hypothesis_id") or "?", 0) + 1
+          bench = sum(1 for r in rows if r.get("benchmark_leg_ret") is not None)
+          intr = sum(1 for r in rows if r.get("intrabar_first_touch") is True)
+          print(f"forward rows={len(rows)} hypotheses={pods} "
+                f"benchmark_leg={bench}/{len(rows)} intrabar={intr}/{len(rows)}")
+          if len(rows) == 0:
+              print("::warning title=audit3-health::forward ledger is empty")
+          PY
+
+      # Warning-only: the weekly denylist review, reported automatically. The
+      # scanner persists alpha_engine/data/audit3_denylist_hits.jsonl; if it is
+      # absent the scan simply has not run since the logger moved there.
+      - name: Denylist denial summary
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("alpha_engine/data/audit3_denylist_hits.jsonl")
+          if not p.exists():
+              print("::warning title=audit3-health::no denylist hits committed yet")
+              raise SystemExit(0)
+          rows = [json.loads(l) for l in p.read_text().splitlines() if l.strip()]
+          from collections import Counter
+          by_s = Counter(r.get("strategy") or "?" for r in rows)
+          by_c = Counter(r.get("asset_class") or "?" for r in rows)
+          print(f"denial rows: {len(rows)} | first {rows[0].get('ts')} | last {rows[-1].get('ts')}")
+          print("top strategies:", by_s.most_common(5))
+          print("by class:", dict(by_c))
+          PY
+
+      # Warning-only: freeze is intentional, but it should be visible.
+      - name: Strategy freeze status
+        continue-on-error: true
+        run: python3 tools/strategy_freeze_gate.py --json || true

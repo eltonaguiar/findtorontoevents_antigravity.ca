@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   audit-impact:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
@@ -36,6 +40,10 @@ jobs:
         run: python battleground/alpha_vs_beta_benchmark.py
 
       - name: Commit results
+        if: always()
+        timeout-minutes: 5
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -46,13 +54,18 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
-          else
-            git commit -m "Audit impact tracker update $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
-
-            for i in 1 2 3; do
-              bash .github/scripts/safe_push.sh && break
-              echo "Push attempt $i failed, retrying..."
-              sleep 5
-            done
+            exit 0
           fi
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "Audit impact tracker update $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          for i in 1 2 3; do
+            if bash .github/scripts/safe_push.sh; then
+              exit 0
+            fi
+            echo "Push attempt $i failed, retrying..."
+            sleep 5
+          done
+          echo "::error::Failed to push audit impact tracker results after 3 attempts"
+          exit 1
 

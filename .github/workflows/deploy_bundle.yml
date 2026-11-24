@@ -16,9 +16,14 @@ on:
         - paper
         - live
       
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   validate:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     name: Validate Strategies
     
     steps:
@@ -67,6 +72,7 @@ jobs:
   deploy:
     needs: validate
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     name: Deploy to ${{ github.event.inputs.mode }}
     
     steps:
@@ -81,6 +87,10 @@ jobs:
         python deploy_prod_bundle.py --mode $DEPLOY_MODE --bundle $BUNDLE
         
     - name: Notify deployment
+      # v1 KEPT deliberately (2026-11-16 pin sweep): v2+ moved the incoming-webhook
+      # auth from the SLACK_WEBHOOK_URL env to the `webhook` input and reworked the
+      # `payload` semantics — the v2/v3/v4 majors are breaking for this step's
+      # env-based usage, so the major bump is NOT documented-compatible here.
       uses: slackapi/slack-github-action@v1
       if: always()
       with:

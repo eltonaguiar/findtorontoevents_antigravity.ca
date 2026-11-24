@@ -59,7 +59,7 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
           EQUITY_PEAD_ENABLED: "1"
         run: |
-          python tools/pead_shadow_runner.py || echo "pead_shadow_runner exited non-zero (fail-open)"
+          python tools/pead_shadow_runner.py || echo "::error::pead_shadow_runner exited non-zero (fail-open — this run produced NO shadow data)"
 
       - name: Commit shadow log
         env:
@@ -78,6 +78,12 @@ jobs:
             exit 0
           fi
           git commit -m "chore(pead-shadow): collect H-002 shadow picks + earnings cache $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
-          bash .github/scripts/safe_push.sh
+          # 2026-11-16: outer retry — safe_push's 8 inner retries exhaust in the nightly
+          # commit-storm window (49/50 scheduled runs died here; manual runs never raced).
+          for i in 1 2 3; do
+            bash .github/scripts/safe_push.sh && break
+            echo "::warning::safe_push attempt $i failed; backing off 120s"
+            [ $i -lt 3 ] && sleep 120
+          done
 
 # re-registered 2026-05-23 after stripped-history reset (4aaa6ff848f)

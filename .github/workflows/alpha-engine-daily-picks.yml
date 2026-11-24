@@ -38,6 +38,10 @@ on:
           - 'picks'
           - 'quick'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   generate-picks:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
@@ -271,7 +275,7 @@ jobs:
         # Run the existing PHP-based daily refresh too (cascade)
         curl -s --max-time 30 \
           "https://findtorontoevents.ca/findstocks/api/daily_refresh.php?key=stocksrefresh2026" \
-          > /dev/null 2>&1 || true
+          > /dev/null 2>&1 || echo "::warning::Trigger existing portfolio refresh (PHP daily refresh curl) failed (previously silenced)"
         echo "PHP daily refresh triggered."
 
 # re-registered 2026-05-23 after stripped-history reset (4aaa6ff848f)

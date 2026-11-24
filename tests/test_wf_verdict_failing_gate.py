@@ -19,6 +19,21 @@ from datetime import datetime, timezone
 
 from audit_trail.quality_gates import passes_active_gate
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _disable_unrelated_vix_gate(monkeypatch):
+    """These tests target wf_verdict gating, not the VIX regime gate.
+
+    The per-class VIX gate (added after these fixtures were written) rejects
+    EQUITY/ETF picks whenever live VIX > 22/25, which masked the gate under
+    test. Pin it off so the result does not depend on today's market regime.
+    """
+    monkeypatch.setenv("VIX_REGIME_ACTIVE_GATE_ENABLED", "0")
+    monkeypatch.setenv("EQUITY_VIX_GATE_ENABLED", "0")
+    monkeypatch.setenv("ETF_VIX_GATE_ENABLED", "0")
+
 
 def _base_pick(**overrides):
     """Construct a pick that would otherwise pass all active-gate checks."""

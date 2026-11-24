@@ -1,0 +1,60 @@
+name: Kalshi snapshot (sports markets cache)
+
+# Restores snapshot persistence. Before 2026-11-18 data/kalshi_snapshots/ held
+# exactly one file (2026-04-26) because tools/kalshi_sports_fetch.py writes
+# snapshots but nothing scheduled it. tools/verify_kalshi_picks.py reads that
+# directory first, so pick verification was resolving against a 7-month-old
+# market. The verifier also gained a 24h staleness guard (KALSHI_MAX_SNAPSHOT_
+# AGE_HOURS) so a dead cache can never be silently trusted again — this job
+# keeps the cache fresh; that guard makes its absence safe.
+
+on:
+  schedule:
+    # Every 6h at :20, off the alpha-engine-live and gap-channel slots.
+    - cron: '20 */6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: kalshi-snapshot
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install requests
+        run: python -m pip install --quiet requests
+
+      - name: Fetch Kalshi sports markets
+        run: |
+          set -o pipefail
+          python tools/kalshi_sports_fetch.py --sport all
+
+      - name: Report snapshot inventory
+        run: |
+          echo "snapshots on disk:"
+          ls -la data/kalshi_snapshots/ | tail -5
+
+      - name: Commit snapshot (only when changed)
+        run: |
+          set -o pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/kalshi_snapshots/
+          if git diff --cached --quiet; then
+            echo "no snapshot change"
+            exit 0
+          fi
+          git commit -m "chore(kalshi): refresh sports market snapshot [skip ci]"
+          git pull --rebase --autostash origin main
+          git push

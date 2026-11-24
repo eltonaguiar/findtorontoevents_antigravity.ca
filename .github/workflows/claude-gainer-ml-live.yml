@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
@@ -33,12 +37,31 @@ jobs:
         run: pip install -r claude_gainer_ml/requirements.txt
 
       - name: Run live scanner
+        id: scanner
         run: |
           cd claude_gainer_ml
           if ! ls models/*.joblib >/dev/null 2>&1; then
-            echo "::warning::No model .joblib files in claude_gainer_ml/models/ — skipping scanner (gitignored artifacts, training run not landed yet)"
+            echo "::error::No model .joblib files in claude_gainer_ml/models/ — scanner SKIPPED (scanner_ran=false, reason=no_models). Fail-open by design: job stays green but this run is a NO-OP. Status recorded in updates/data/antigravity_ml_performance.json."
+            echo "scanner_ran=false" >> "$GITHUB_OUTPUT"
+            echo "reason=no_models" >> "$GITHUB_OUTPUT"
+            python3 -c "
+          import json, os, datetime
+          p = '../updates/data/antigravity_ml_performance.json'
+          os.makedirs(os.path.dirname(p), exist_ok=True)
+          try:
+              d = json.load(open(p))
+          except Exception:
+              d = {}
+          d['scanner_ran'] = False
+          d['reason'] = 'no_models'
+          d['scanner_skip_ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+          json.dump(d, open(p, 'w'), indent=2)
+          print('NO-OP recorded in ' + p + ': scanner_ran=false reason=no_models')
+          "
             exit 0
           fi
+          echo "scanner_ran=true" >> "$GITHUB_OUTPUT"
+          echo "reason=" >> "$GITHUB_OUTPUT"
           python live_scanner.py --top 200 --max-picks 10 --no-discord
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
@@ -65,6 +88,14 @@ jobs:
           active = [p for p in picks_data.get('picks', []) if p.get('status') == 'ACTIVE']
           perf_data['active_picks'] = active
           perf_data['last_run'] = picks_data.get('updated_at', perf_data.get('last_run', ''))
+
+          # 1b) Scanner run status (visible no-op gating — from step `scanner` outputs)
+          scanner_ran = '${{ steps.scanner.outputs.scanner_ran }}' == 'true'
+          perf_data['scanner_ran'] = scanner_ran
+          if scanner_ran:
+              perf_data.pop('reason', None)
+          else:
+              perf_data['reason'] = '${{ steps.scanner.outputs.reason }}' or 'no_models'
 
           # 2) Build scorecard from claude_performance.json
           if os.path.exists(perf_src):

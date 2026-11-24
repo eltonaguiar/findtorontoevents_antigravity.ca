@@ -11,23 +11,39 @@ name: CI Tests
     # cancelled it via concurrency — ~18/19 runs cancelled, CI never a gate.
     # Mirror the pull_request paths so only code-relevant pushes run CI.
     paths:
-      - 'paper_trading/**'
-      - 'alpha_engine/**'
-      - 'audit_trail/**'
+      # Python only. The hourly scanners commit **/data/*.json under these
+      # same dirs, so the dir-wide globs re-triggered this suite every few
+      # minutes and each new run cancelled the previous one.
+      - 'paper_trading/*.py'
+      - 'paper_trading/**/*.py'
+      - 'alpha_engine/*.py'
+      - 'alpha_engine/**/*.py'
+      - 'audit_trail/*.py'
+      - 'audit_trail/**/*.py'
       - 'audit_dashboard/template.html'
       - 'audit_dashboard/dashboard_enhancements.js'
       - 'tests/**'
+      - 'conftest.py'
+      - 'pytest.ini'
       - 'requirements.txt'
       - 'alpha_engine/requirements.txt'
       - '.github/workflows/ci-tests.yml'
   pull_request:
     paths:
-      - 'paper_trading/**'
-      - 'alpha_engine/**'
-      - 'audit_trail/**'
+      # Python only. The hourly scanners commit **/data/*.json under these
+      # same dirs, so the dir-wide globs re-triggered this suite every few
+      # minutes and each new run cancelled the previous one.
+      - 'paper_trading/*.py'
+      - 'paper_trading/**/*.py'
+      - 'alpha_engine/*.py'
+      - 'alpha_engine/**/*.py'
+      - 'audit_trail/*.py'
+      - 'audit_trail/**/*.py'
       - 'audit_dashboard/template.html'
       - 'audit_dashboard/dashboard_enhancements.js'
       - 'tests/**'
+      - 'conftest.py'
+      - 'pytest.ini'
       - 'requirements.txt'
       - 'alpha_engine/requirements.txt'
       - '.github/workflows/ci-tests.yml'
@@ -39,7 +55,11 @@ permissions:
 # Storm-commit repo: a newer push supersedes the in-flight test run.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Supersede only on pull_request. On main this used to kill the in-flight
+  # suite whenever another commit landed, so a red main reported as
+  # "cancelled" instead of failing (4 of the last 20 runs). main runs now
+  # queue and are allowed to finish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:

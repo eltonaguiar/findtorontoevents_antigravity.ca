@@ -1,4 +1,5 @@
 name: FRED Macro Refresh
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   schedule:
@@ -10,6 +11,10 @@ on:
 # non-fatal warnings the sidecar tolerates — the push was the real failure.)
 permissions:
   contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   refresh:
@@ -40,6 +45,6 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add tools/data/fred_macro_context.json
             git diff --cached --quiet || git commit -m "auto: FRED macro context refresh $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
-            git pull --rebase origin main
-            git push origin HEAD:main
+            # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+            bash .github/scripts/safe_push.sh
           fi

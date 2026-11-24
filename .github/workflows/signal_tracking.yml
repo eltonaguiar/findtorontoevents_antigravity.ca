@@ -19,9 +19,14 @@ permissions:
   contents: write
   actions: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   track-and-validate:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -35,6 +40,8 @@ jobs:
       with:
         update-environment: true
         python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: requirements.txt
         
     - name: Cache pip packages
       uses: actions/cache@v5

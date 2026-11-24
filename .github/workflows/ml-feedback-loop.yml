@@ -7,6 +7,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   feedback-check:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
@@ -53,7 +57,7 @@ jobs:
 
       - name: Trigger bootstrap retrain
         if: steps.check_trigger.outputs.trigger == 'true'
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           event-type: ml-retrain-triggered
           client-payload: '{"reason": "feedback-loop-degradation"}'

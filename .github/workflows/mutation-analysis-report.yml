@@ -10,6 +10,10 @@ name: Mutation analysis report
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   report:
     runs-on: ubuntu-latest

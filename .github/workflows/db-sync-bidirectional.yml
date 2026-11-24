@@ -32,6 +32,10 @@ env:
   SYNC_SCRIPT_DIR: "_sync_tmp"
   DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   bidirectional-sync:
     name: "Bi-directional user data sync"

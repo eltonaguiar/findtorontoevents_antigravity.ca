@@ -122,6 +122,17 @@ def _extract_signals(data: Any, source: str) -> List[Dict]:
         if confidence > 1.0:
             confidence = confidence / 100.0
 
+        # Guard: a probability must be in [0, 1]. A negative value, or a value
+        # still > 1 after the /100 normalization, is an impossible odds feed —
+        # drop it instead of letting it skew the weighted consensus.
+        # 2026-11-16 audit (negative-probability / impossible-odds guard).
+        if not (0.0 <= confidence <= 1.0):
+            logger.warning(
+                "Dropping %s signal %s %s: impossible confidence %s",
+                source, symbol, direction, confidence,
+            )
+            continue
+
         signals.append({
             "symbol": symbol,
             "direction": direction,

@@ -206,7 +206,12 @@ def test_prepare_prediction_market_consensus_signal_preserves_pm_source_lineage(
     assert prepared["source_count"] == 2
     assert prepared["agreement_count"] == 2
     assert prepared["pm_source_systems"] == ["kalshi_signal_agent", "polymarket_prediction"]
-    assert prepared["high_conviction"] is True
+    # 2026-11-16 pm_high_conviction alias-gate fix (data-quality finding): a
+    # `consensus_data.high_conviction` claim must NOT skip the criteria gate.
+    # This row has source_count 2 (< 3) and no forward track record, so it
+    # cannot hold the label — previously the claim short-circuited to True
+    # (that skip was the bypass; see tests/test_pm_high_conviction_alias.py).
+    assert prepared["high_conviction"] is False
 
 
 def test_pre_score_active_candidate_keeps_valid_zero_score_pick_alive(monkeypatch) -> None:
@@ -301,15 +306,17 @@ def test_compute_verified_alpha_summary_segments_pm_and_curated_copy_rows() -> N
 
     summary = dashboard_generator._compute_verified_alpha_summary(active, smart, closed)
 
-    assert summary["active_count"] == 2
-    assert summary["smart_count"] == 1
-    assert summary["unique_sources"] == 2
-    assert summary["source_mix"]["pm_whale_signals"] == 1
+    # Prediction-market rows stay out of Verified Alpha. The curated copy row remains.
+    assert dashboard_generator._is_verified_alpha_pick(active[0]) is False
+    assert dashboard_generator._is_verified_alpha_pick(active[1]) is True
+    assert summary["active_count"] == 1
+    assert summary["smart_count"] == 0
+    assert summary["unique_sources"] == 1
+    assert "pm_whale_signals" not in summary["source_mix"]
     assert summary["source_mix"]["multi_asset_copytrader"] == 1
-    assert summary["realized"]["trades"] == 2
-    assert summary["realized"]["win_rate"] == 50.0
-    assert summary["audited"]["covered_active_picks"] == 2
-    assert summary["audited"]["weighted_wr_pct"] is not None
+    assert summary["realized"]["trades"] == 1
+    assert summary["realized"]["win_rate"] == 0.0
+    assert summary["audited"]["covered_active_picks"] == 1
 
 
 def test_collect_system_stats_uses_audited_wr_for_verified_alpha_without_realized_closes() -> None:
@@ -321,18 +328,18 @@ def test_collect_system_stats_uses_audited_wr_for_verified_alpha_without_realize
                 "entry_price": 68000.0,
                 "take_profit": 72000.0,
                 "stop_loss": 66000.0,
-                "strategy": "copy_pm_elpolloloco",
+                "strategy": "forex_rsi2_mean_reversion",
                 "timestamp": "2026-03-26T18:40:16+00:00",
                 "history_wr_bayes": 0.68,
                 "history_trades": 48,
             },
-            "pm_whale_signals",
+            "multi_asset_copytrader",
             "OPEN",
         )
     ]
 
     systems = dashboard_generator.collect_system_stats(active, [], [])
-    row = next(s for s in systems if s["name"] == "pm_whale_signals")
+    row = next(s for s in systems if s["name"] == "multi_asset_copytrader")
 
     assert row["resolved_picks"] == 0
     assert row["win_rate_basis"] == "audited"

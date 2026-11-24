@@ -1,0 +1,181 @@
+diff --git a/alpha_engine/audit3_edge_hunt.py b/alpha_engine/audit3_edge_hunt.py
+index c8d3f0f8afc..bc5132d97f0 100644
+--- a/alpha_engine/audit3_edge_hunt.py
++++ b/alpha_engine/audit3_edge_hunt.py
+@@ -66,6 +66,7 @@ if str(REPO_ROOT) not in sys.path:  # direct invocation
+ from alpha_engine.audit3_tribunal import (  # noqa: E402
+     SLIPPAGE_PCT,
+     DEFAULT_SLIPPAGE_PCT,
++    PROVEN_MIN_NET_CI_LO_PCT,
+     benjamini_hochberg,
+     binom_sf,
+     bootstrap_mean_ci,
+@@ -165,6 +166,25 @@ def required_n(effect_pct: float, sd_pct: float, z: float = POWER_Z) -> int | No
+     return int(math.ceil((z * sd_pct / abs(effect_pct)) ** 2))
+ 
+ 
++def required_n_mde(mde_pct: float, sd_pct: float, z: float = POWER_Z) -> int | None:
++    """Sample size for 80% power to detect a PRE-DECLARED minimum effect.
++
++    `mde_pct` is the minimum detectable effect the study commits to detect
++    *before* looking at the data (e.g. the tribunal's PROVEN net-CI lower
++    bound, 0.05 %/trade). It must NEVER be the cell's observed mean: plugging
++    an observed near-zero mean inflates n to infinity, and an observed lucky
++    mean collapses it -- the circular trap `required_n` falls into when its
++    callers pass the observed mean. Use `required_n` only when the effect size
++    is itself the hypothesis; use this helper to size a pre-registered gate.
++
++    Returns None when `mde_pct` or `sd_pct` is falsy/zero (no variance, no
++    effect, or degenerate input), signalling "sample size is not well-defined".
++    """
++    if not mde_pct or not sd_pct or mde_pct == 0 or sd_pct == 0:
++        return None
++    return int(math.ceil((z * sd_pct / abs(mde_pct)) ** 2))
++
++
+ # ─────────────────────────────────────────────────────── §A beta accounting ──
+ def beta_accounting(rows: list[dict], klass: str = "CRYPTO") -> dict[str, Any]:
+     """Is the long/short split one market move counted twice?"""
+@@ -419,6 +439,42 @@ def gate_provenance(rows: list[dict]) -> dict[str, Any]:
+ 
+ 
+ # ────────────────────────────────────────────────────────────────── report ──
++def power_analysis(rows: list[dict], mde_pct: float = PROVEN_MIN_NET_CI_LO_PCT,
++                   z: float = POWER_Z) -> dict[str, Any]:
++    """Per-class realized net-pnl SD and the pre-declared-MDE sample size.
++
++    For each asset class with >= 5 net-pnl observations, report the population
++    standard deviation (statistics.pstdev) of net pnl and the sample size that
++    80% power would need to detect `mde_pct` against that SD. The MDE is fixed
++    up front (the tribunal's PROVEN net-CI lower bound), so `required_n_mde`
++    never sees an observed cell mean -- it is non-circular by construction.
++    """
++    classes: dict[str, list[float]] = defaultdict(list)
++    for r in rows:
++        v = net_pnl(r)
++        if v is not None:
++            classes[_class(r)].append(v)
++    per_class = {}
++    for klass in sorted(classes):
++        vals = classes[klass]
++        if len(vals) < 5:
++            continue
++        sd = statistics.pstdev(vals)
++        per_class[klass] = {
++            "n": len(vals),
++            "net_pnl_sd_pct": round(sd, 4),
++            "required_n": required_n_mde(mde_pct, sd, z=z),
++        }
++    return {
++        "mde_pct": mde_pct,
++        "z": z,
++        "note": ("mde_pct is pre-declared (the tribunal's PROVEN net-CI lower "
++                 "bound), never the observed cell mean, to avoid the circular "
++                 "observed-mean trap in required_n"),
++        "by_asset_class": per_class,
++    }
++
++
+ def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
+     _PIT_ROWS.clear()
+     beta = beta_accounting(rows, "CRYPTO")
+@@ -434,6 +490,8 @@ def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
+     beta_only = bool(beta.get("available") and abs(beta.get("residual_selection_alpha_pct") or 0)
+                      < SLIPPAGE_PCT.get("CRYPTO", 0.15))
+ 
++    power = power_analysis(rows)
++
+     if pit_ok:
+         headline = ("A point-in-time gate beats its own past: prior-record filter "
+                     "discriminates without leakage")
+@@ -457,6 +515,7 @@ def build_report(rows: list[dict], source: str = "") -> dict[str, Any]:
+         "pit_replay": pit,
+         "battery": bat,
+         "gate_provenance": prov,
++        "power_analysis": power,
+         "limitations": [
+             "No per-symbol price series for the ledger window, so M1b selection "
+             "alpha vs same-symbol buy-and-hold is still not computed; beta is "
+diff --git a/alpha_engine/audit3_tribunal.py b/alpha_engine/audit3_tribunal.py
+index f89de6974b6..b85be9962d7 100644
+--- a/alpha_engine/audit3_tribunal.py
++++ b/alpha_engine/audit3_tribunal.py
+@@ -27,7 +27,12 @@ G5  Stability        chronological split-half: both halves net expectancy > 0.
+ G6  Concentration    no single symbol > 60% of a cell's trades, no single
+                      source system > 90% (report-only at 60%).
+ G7  Cost realism      slippage is deducted BEFORE every statistic. A 7bp gross
+-                     win is a net loss on COMMODITY (12bp round trip).
++                      win is a net loss on COMMODITY (12bp round trip).
++G8  Harm only         KILL needs the net CI entirely below zero AND a harm
++                      p-value surviving BH q <= 0.10; PF is a watch, never a kill.
++G9  Cost stress       the net-expectancy bootstrap CI at 2x the class slippage
++                      must still have a positive lower bound to reach PROVEN_T2
++                      or CANDIDATE; otherwise demote (CANDIDATE / WEAK).
+ 
+ Verdicts
+ --------
+@@ -717,6 +722,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
+     # assumption.
+     nets_2x = [float(r["pnl_pct"]) - 2.0 * _cost_pct(r) for r in rows]
+     boot_2x = bootstrap_mean_ci(nets_2x) if n >= 2 else {"ci_lo": None, "ci_hi": None}
++    stress_2x_ok = bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0)
+     stable, halves = split_half_ok(nets)
+     # Edge test (2026-11-19): expectancy, not P(win). A trend cell at WR 35% with
+     # a 2.5 payoff is positive expectancy and cannot be judged by "won more often
+@@ -773,6 +779,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
+               and stable and top_sym_share <= MAX_SYMBOL_SHARE
+               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
+             verdict = "PROVEN_T2"
++            if not stress_2x_ok:
++                verdict = "CANDIDATE"
++                reasons.append("2x-cost stress: net CI lower bound <= 0 at 2x slippage")
+             if top_src_share > MAX_SOURCE_SHARE:
+                 # A single emitter can be PROVEN on the ledger; it is not
+                 # sizing-eligible until an independent source replicates it.
+@@ -783,6 +792,9 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
+               and expect_ci_positive
+               and (not apply_source_gate or top_src_share <= MAX_SOURCE_SHARE)):
+             verdict = "CANDIDATE"
++            if not stress_2x_ok:
++                verdict = "WEAK"
++                reasons.append("2x-cost stress: net CI lower bound <= 0 at 2x slippage")
+         else:
+             verdict = "WEAK"
+             if wr < 0.5:
+@@ -814,7 +826,7 @@ def evaluate_cell(rows: list[dict], n_trials: int, label: dict[str, Any],
+         "harm_q": None,   # filled after BH across the killed cells
+         "net_ci_pct_2x": [round(boot_2x["ci_lo"], 4) if boot_2x.get("ci_lo") is not None else None,
+                           round(boot_2x["ci_hi"], 4) if boot_2x.get("ci_hi") is not None else None],
+-        "stress_2x_ok": bool(boot_2x.get("ci_lo") is not None and boot_2x["ci_lo"] > 0),
++        "stress_2x_ok": stress_2x_ok,
+         "dsr": None,
+         "split_half": ({"stable": stable, **{k: round(v, 4) for k, v in halves.items()}}
+                        if halves else None),
+@@ -1197,8 +1209,9 @@ def build_report(rows: list[dict], source: str, source_generated_at: str | None,
+                               f"{PROVEN_MIN_NET_CI_LO_PCT}%/trade, stable halves, no symbol > "
+                               f"{MAX_SYMBOL_SHARE:.0%}, source share <= {MAX_SOURCE_SHARE:.0%}, "
+                               f"BH q <= {FDR_Q}, DSR >= {DSR_THRESHOLD}",
+-            "cost_stress": "net CI is also reported at 2x the class slippage constant "
+-                           "(report-only; never changes a verdict)",
++            "cost_stress": "net CI lower bound at 2x the class slippage must stay "
++                           "positive to reach PROVEN_T2 or CANDIDATE (G9); otherwise "
++                           "the cell demotes one tier",
+             "multiplicity": "Benjamini-Hochberg across tested cells; Bonferroni "
+                             f"alpha/m = {0.05 / max(1, len(tested)):.6f}",
+             "stability": "chronological split-half, both halves net mean > 0",
+diff --git a/tests/test_audit3_expectancy_gates.py b/tests/test_audit3_expectancy_gates.py
+index 7244fb87208..11d1d76903d 100644
+--- a/tests/test_audit3_expectancy_gates.py
++++ b/tests/test_audit3_expectancy_gates.py
+@@ -60,7 +60,10 @@ def test_expectancy_primary_promotes_low_win_rate_cell():
+     # strictly positive (never 0) and small; this synthetic cell still has a few
+     # non-positive resamples, so the floor is the bound, not the value.
+     assert 0 < cell["p_value"] < 0.01
+-    assert cell["verdict"] == "PROVEN_T2"
++    # G9 cost-stress gate: at 2x the class slippage this thin edge's net CI lower
++    # bound rounds to -0.0, so PROVEN_T2 demotes one tier to CANDIDATE.
++    assert cell["verdict"] == "CANDIDATE"
++    assert cell["stress_2x_ok"] is False
+     # Same evidence without a pre-registered pod: forward paper, not sizing.
+     bare = build_report(rows, "x.json", None, confirmatory={"pods": []})
+     assert bare["cells"][0]["verdict"] == "CANDIDATE"

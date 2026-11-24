@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-nav="side">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+<meta name="description" content="{{ site.description }}">
+<script>
+  // Apply saved preferences before first paint (no flash).
+  (function () {
+    try {
+      var t = localStorage.getItem('sg-theme'); if (t) document.documentElement.dataset.theme = t;
+      var n = localStorage.getItem('sg-nav'); if (n) document.documentElement.dataset.nav = n;
+      var tp = localStorage.getItem('sg-tocpanel'); if (tp) document.documentElement.dataset.tocpanel = tp;
+    } catch (e) {}
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,340;9..144,420&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+<div class="bg" aria-hidden="true"><div class="bg-glow bg-glow-a"></div><div class="bg-glow bg-glow-b"></div><div class="bg-grid"></div></div>
+
+<header class="topbar">
+  <button class="icon-btn nav-burger" id="navBurger" aria-label="Open navigation">☰</button>
+  <a class="wordmark" href="{{ '/' | relative_url }}">ServiceNow<span class="wordmark-thin"> / ITOM Field Guide</span></a>
+  <div class="topbar-controls">
+    <div class="seg" role="group" aria-label="Menu position">
+      <button type="button" id="navTopBtn" title="Menu on top">Top</button>
+      <button type="button" id="navSideBtn" title="Menu on the left">Side</button>
+    </div>
+    <div class="seg" role="group" aria-label="Colour theme">
+      <button type="button" id="themeDarkBtn" title="Dark mode">Dark</button>
+      <button type="button" id="themeLightBtn" title="Light mode">Light</button>
+    </div>
+  </div>
+</header>
+
+<nav class="topnav" aria-label="Guides">
+  <a href="{{ '/docs/modules/itom-overview/itom-overview-guide/' | relative_url }}">Overview</a>
+  <a href="{{ '/docs/modules/discovery/discovery-guide/' | relative_url }}">Discovery</a>
+  <a href="{{ '/docs/modules/service-mapping/service-mapping-guide/' | relative_url }}">Service Mapping</a>
+  <a href="{{ '/docs/modules/event-management/event-management-guide/' | relative_url }}">Event Mgmt</a>
+  <a href="{{ '/docs/modules/health-log-analytics/health-log-analytics-guide/' | relative_url }}">Log Analytics</a>
+  <a href="{{ '/docs/modules/reliability-stack/reliability-stack-guide/' | relative_url }}">Reliability</a>
+  <a href="{{ '/docs/modules/cloud-accelerate/cloud-accelerate-guide/' | relative_url }}">Cloud</a>
+  <a href="{{ '/docs/modules/agent-client-collector/acc-guide/' | relative_url }}">ACC</a>
+  <a href="{{ '/docs/modules/itom-ai/itom-ai-guide/' | relative_url }}">AI</a>
+  <a href="{{ '/labs/LAB-00-ORIENTATION/' | relative_url }}">Labs</a>
+  <a href="{{ '/docs/getting-started/' | relative_url }}">Start here</a>
+</nav>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar">
+    <div class="side-group">
+      <p class="side-label">Start here</p>
+      <a href="{{ '/' | relative_url }}">Home <span class="side-sub">What this guide is</span></a>
+      <a href="{{ '/docs/00-methodology/' | relative_url }}">Methodology <span class="side-sub">Orient → Model → Practise → Prove → Teach</span></a>
+      <a href="{{ '/docs/01-ELI5/' | relative_url }}">ELI5 <span class="side-sub">ITOM in plain English</span></a>
+      <a href="{{ '/docs/02-family-map/' | relative_url }}">Family map <span class="side-sub">Visibility · AIOps · Cloud · AI</span></a>
+      <a href="{{ '/docs/09-coverage-map/' | relative_url }}">Coverage map <span class="side-sub">Every pillar and subtopic, checked</span></a>
+      <a href="{{ '/docs/06-study-plan/' | relative_url }}">Study plan <span class="side-sub">95-minute loops and 3-day ramp</span></a>
+    </div>
+    <div class="side-group">
+      <p class="side-label">ITOM Visibility</p>
+      <a href="{{ '/docs/modules/itom-overview/itom-overview-guide/' | relative_url }}">ITOM overview <span class="side-sub">How the products fit together</span></a>
+      <a href="{{ '/docs/modules/cmdb/cmdb-guide/' | relative_url }}">CMDB foundation <span class="side-sub">Tables · CSDM · IRE · Service Graph Connectors</span></a>
+      <a href="{{ '/docs/modules/discovery/discovery-guide/' | relative_url }}">Discovery <span class="side-sub">Horizontal discovery · MID Server · CMDB</span></a>
+      <a href="{{ '/docs/modules/service-mapping/service-mapping-guide/' | relative_url }}">Service Mapping <span class="side-sub">Top-down service maps</span></a>
+      <a href="{{ '/docs/modules/visibility-suite/visibility-suite-guide/' | relative_url }}">Visibility suite <span class="side-sub">Certificates · tags · firewalls · content</span></a>
+    </div>
+    <div class="side-group">
+      <p class="side-label">ITOM AIOps</p>
+      <a href="{{ '/docs/modules/event-management/event-management-guide/' | relative_url }}">Event Management <span class="side-sub">Events → alerts → incidents</span></a>
+      <a href="{{ '/docs/modules/health-log-analytics/health-log-analytics-guide/' | relative_url }}">Health Log Analytics <span class="side-sub">Logs · anomaly detection</span></a>
+      <a href="{{ '/docs/modules/reliability-stack/reliability-stack-guide/' | relative_url }}">Reliability stack <span class="side-sub">SRM · SLO · observability · synthetic</span></a>
+      <a href="{{ '/docs/modules/metric-intelligence/metric-intelligence-guide/' | relative_url }}">Metric Intelligence <span class="side-sub">Metric anomalies</span></a>
+    </div>
+    <div class="side-group">
+      <p class="side-label">Cloud &amp; agents</p>
+      <a href="{{ '/docs/modules/cloud-accelerate/cloud-accelerate-guide/' | relative_url }}">Cloud Accelerate <span class="side-sub">Catalog · accounts · governance</span></a>
+      <a href="{{ '/docs/modules/agent-client-collector/acc-guide/' | relative_url }}">Agent Client Collector <span class="side-sub">Agent-based telemetry</span></a>
+      <a href="{{ '/docs/modules/itom-ai/itom-ai-guide/' | relative_url }}">AI in ITOM <span class="side-sub">Otto · Now Assist · MCP</span></a>
+    </div>
+    <div class="side-group">
+      <p class="side-label">Automation &amp; assurance</p>
+      <a href="{{ '/docs/modules/automation-remediation/automation-remediation-guide/' | relative_url }}">Automation &amp; remediation <span class="side-sub">Alerts · cloud · tags · LEAP · Ansible</span></a>
+      <a href="{{ '/docs/modules/resilience-security/resilience-security-guide/' | relative_url }}">Resilience · security · compliance <span class="side-sub">Backups · change · audits</span></a>
+    </div>
+    <div class="side-group">
+      <p class="side-label">Reference</p>
+      <a href="{{ '/docs/03-licensing-prerequisites/' | relative_url }}">Licensing &amp; prerequisites <span class="side-sub">Subscriptions, plugins, PDI limits</span></a>
+      <a href="{{ '/docs/04-roles-tables/' | relative_url }}">Roles &amp; tables <span class="side-sub">The records behind the screens</span></a>
+      <a href="{{ '/docs/05-common-mistakes/' | relative_url }}">Common mistakes <span class="side-sub">What breaks and why</span></a>
+      <a href="{{ '/docs/07-glossary/' | relative_url }}">Glossary <span class="side-sub">Every term, defined</span></a>
+      <a href="{{ '/docs/08-source-ladder/' | relative_url }}">Official sources <span class="side-sub">Where the facts come from</span></a>
+    </div>
+    <div class="side-group">
+      <p class="side-label">Labs</p>
+      <a href="{{ '/labs/LAB-00-ORIENTATION/' | relative_url }}">Lab 00 · Orientation <span class="side-sub">Read the platform safely</span></a>
+      <a href="{{ '/labs/LAB-01-DISCOVERY/' | relative_url }}">Lab 01 · Discovery <span class="side-sub">Find, verify, break, fix</span></a>
+      <a href="{{ '/labs/LAB-02-EVENT-TO-INCIDENT/' | relative_url }}">Lab 02 · Event → incident <span class="side-sub">Rules, binding, automation</span></a>
+      <a href="{{ '/labs/LAB-03-SERVICE-MAPPING/' | relative_url }}">Lab 03 · Service Mapping <span class="side-sub">Entry point to service map</span></a>
+      <a href="{{ '/labs/LAB-04-HLA-LOG-ANOMALY/' | relative_url }}">Lab 04 · Log anomaly <span class="side-sub">HLA mapping and alerts</span></a>
+    </div>
+    <div class="side-group">
+      <p class="side-label">Getting started</p>
+      <a href="{{ '/docs/getting-started/' | relative_url }}">Track overview</a>
+      <a href="{{ '/docs/getting-started/foundation/' | relative_url }}">Foundation</a>
+      <a href="{{ '/docs/getting-started/discovery/' | relative_url }}">Discovery start</a>
+      <a href="{{ '/docs/getting-started/event-management/' | relative_url }}">Event Management start</a>
+      <a href="{{ '/docs/getting-started/service-mapping/' | relative_url }}">Service Mapping start</a>
+      <a href="{{ '/docs/getting-started/cloud-accelerate/' | relative_url }}">Cloud Accelerate start</a>
+      <a href="{{ '/docs/getting-started/itom-ai/' | relative_url }}">AI start</a>
+    </div>
+    <div class="side-group">
+      <p class="side-label">Repository</p>
+      <a href="https://github.com/eltonaguiar/ServiceNowLearning_ITOM">GitHub source</a>
+      <a href="https://github.com/eltonaguiar/ServiceNowLearning_ITOM/blob/main/research/05_MERGE_HANDOFF.md">Merge handoff</a>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <main class="content" id="content">
+{{ content }}
+    <footer class="page-footer">
+      <p>ServiceNow ITOM Field Guide — a working notebook, not product documentation. Facts are paraphrased from official ServiceNow sources and must be verified on your own instance. ServiceNow, the ServiceNow logo, and product names are trademarks of ServiceNow, Inc.</p>
+    </footer>
+  </main>
+</div>
+
+<aside class="toc-panel" id="tocPanel" aria-label="Table of Contents">
+  <div class="toc-panel-head">
+    <span>Table of Contents</span>
+    <button type="button" id="tocHide" aria-label="Hide the table of contents">✕</button>
+  </div>
+  <nav id="tocFloat"></nav>
+</aside>
+<button type="button" class="toc-show" id="tocShow" aria-label="Show the table of contents">☰ Contents</button>
+
+<script src="{{ '/assets/js/site.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tts.js' | relative_url }}"></script>
+<script src="https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js?v=20261119"></script>
+<script>
+  mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+
+  function enhanceMermaid() {
+    var content = document.getElementById('content');
+    if (!content) return;
+    var diagrams = [].slice.call(content.querySelectorAll('.mermaid'));
+    if (!diagrams.length) return;
+
+    diagrams.forEach(function (d) {
+      var p = d.parentElement;
+      if (p && p.classList && p.classList.contains('mermaid-scroll')) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'mermaid-scroll';
+      p.insertBefore(wrap, d);
+      wrap.appendChild(d);
+    });
+
+    if (diagrams.length < 2) return;
+    if (document.querySelector('.mermaid-slideshow-btn')) return;
+
+    var idx = 0;
+    var overlay = document.createElement('div');
+    overlay.className = 'mm-overlay';
+    overlay.innerHTML =
+      '<div class="mm-bar">' +
+        '<button type="button" data-mm="prev" aria-label="Previous diagram">&#9664;</button>' +
+        '<span class="mm-count"></span>' +
+        '<button type="button" data-mm="next" aria-label="Next diagram">&#9654;</button>' +
+        '<button type="button" data-mm="close" aria-label="Close">Close &times;</button>' +
+      '</div><div class="mm-stage"></div>';
+    document.body.appendChild(overlay);
+    var stage = overlay.querySelector('.mm-stage');
+    var count = overlay.querySelector('.mm-count');
+
+    function show(n) {
+      idx = (n % diagrams.length + diagrams.length) % diagrams.length;
+      stage.innerHTML = '';
+      var clone = diagrams[idx].cloneNode(true);
+      clone.removeAttribute('data-processed');
+      stage.appendChild(clone);
+      stage.scrollTop = 0; stage.scrollLeft = 0;
+      count.textContent = (idx + 1) + ' / ' + diagrams.length + '  (scroll to pan, arrows to change)';
+    }
+    function open(n) { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; show(n); }
+    function close() { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+    overlay.querySelector('[data-mm="prev"]').addEventListener('click', function () { show(idx - 1); });
+    overlay.querySelector('[data-mm="next"]').addEventListener('click', function () { show(idx + 1); });
+    overlay.querySelector('[data-mm="close"]').addEventListener('click', close);
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('open')) return;
+      if (e.key === 'ArrowLeft') show(idx - 1);
+      else if (e.key === 'ArrowRight') show(idx + 1);
+      else if (e.key === 'Escape') close();
+    });
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mermaid-slideshow-btn';
+    btn.textContent = '\u25B6 View diagrams as slideshow (' + diagrams.length + ')';
+    btn.addEventListener('click', function () { open(0); });
+    var firstWrap = diagrams[0].parentElement;
+    firstWrap.parentNode.insertBefore(btn, firstWrap);
+
+    if (diagrams.length >= 6) {
+      btn.classList.add('slideshow-default');
+      setTimeout(function () { open(0); }, 800);
+    }
+
+    diagrams.forEach(function (d, i) {
+      d.style.cursor = 'zoom-in';
+      d.addEventListener('click', function () { open(i); });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('pre code, code').forEach(function (codeEl) {
+      var text = codeEl.textContent.trim();
+      if (/^(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|gantt|pie|mindmap|requirementDiagram|block-beta|C4Context|stateDiagram-v2)/.test(text)) {
+        var preEl = codeEl.parentElement;
+        var container = preEl && preEl.tagName === 'PRE' ? preEl : codeEl;
+        var mermaidDiv = document.createElement('div');
+        mermaidDiv.className = 'mermaid';
+        mermaidDiv.textContent = text;
+        container.parentNode.replaceChild(mermaidDiv, container);
+      }
+    });
+    window.mermaid.run({ nodes: document.querySelectorAll('.mermaid') })
+      .then(function () { enhanceMermaid(); })
+      .catch(function (err) {
+        console.warn('Mermaid render warning:', err);
+        enhanceMermaid();
+      });
+    window.addEventListener('load', function () { setTimeout(enhanceMermaid, 900); });
+  });
+</script>
+<style>
+  .mermaid-scroll { overflow: auto; max-height: 80vh; padding: 4px; border: 1px solid rgba(255,255,255,.08); border-radius: 8px; }
+  .mermaid-scroll svg { max-width: none; }
+  .mermaid-scroll .mermaid { margin: 0; }
+  .mermaid-slideshow-btn { display: inline-block; margin: .4rem 0 .8rem; padding: .45rem .9rem; font: inherit; font-size: .85rem; color: #e8f0e8; background: #1f3a2a; border: 1px solid #4cc38a; border-radius: 6px; cursor: pointer; }
+  .mermaid-slideshow-btn:hover { background: #2a4d38; }
+  .mm-overlay { position: fixed; inset: 0; z-index: 9999; display: none; flex-direction: column; background: rgba(4,8,6,.96); }
+  .mm-overlay.open { display: flex; }
+  .mm-bar { display: flex; align-items: center; gap: .6rem; padding: .6rem .9rem; border-bottom: 1px solid rgba(255,255,255,.12); color: #e8f0e8; }
+  .mm-bar button { font: inherit; color: #e8f0e8; background: #1f3a2a; border: 1px solid #4cc38a; border-radius: 6px; padding: .35rem .7rem; cursor: pointer; }
+  .mm-bar button:hover { background: #2a4d38; }
+  .mm-count { flex: 1; font-size: .85rem; opacity: .85; }
+  .mm-stage { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 1.25rem; }
+  .mm-stage svg { max-width: none; height: auto; }
+  .mm-stage .mermaid { margin: 0; }
+</style>
+</body>
+</html>

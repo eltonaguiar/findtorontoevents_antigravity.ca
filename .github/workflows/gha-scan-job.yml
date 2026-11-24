@@ -1,0 +1,115 @@
+name: GHA scan job (reusable)
+
+# Reusable scan job — extracts the checkout -> setup-python -> pip -> run ->
+# commit/push pattern shared by ~180 scanner workflows.
+#
+# Canonical v1 interface (2026-11-16). Callers keep their own triggers,
+# concurrency group and cancel-in-progress; this file only owns the job body.
+#
+# Canary conversions: consensus-outcome-tracker.yml, adaptive-trust-tuner.yml.
+# Design + conversion plan: reports/gha_rollout_approach.md (section 2).
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version for setup-python'
+        type: string
+        default: '3.11'
+      pip-packages:
+        description: 'Space-separated pip packages to install'
+        type: string
+        default: 'requests'
+      run-command:
+        description: 'Shell command that performs the scan (required)'
+        type: string
+        required: true
+      commit-paths:
+        description: 'Paths to commit/push (empty = read-only scan, no commit)'
+        type: string
+        default: ''
+      commit-message:
+        description: 'Commit message when commit-paths is set'
+        type: string
+        default: 'chore(gha): scan update [skip ci]'
+      fetch-depth:
+        description: 'checkout fetch-depth'
+        type: number
+        default: 1
+      timeout-minutes:
+        description: 'Job timeout'
+        type: number
+        default: 30
+      pre-run:
+        description: 'Optional shell hook run before the scan command'
+        type: string
+        default: ''
+    secrets:
+      GH_PAT:
+        required: false
+      MYSQL_PASSWORD:
+        required: false
+      FRED_API_KEY:
+        required: false
+    outputs:
+      changed:
+        description: 'true if the run produced a commit'
+        value: ${{ jobs.scan.outputs.changed }}
+
+jobs:
+  scan:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: ${{ inputs.fetch-depth }}
+          token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install dependencies
+        run: pip install ${{ inputs.pip-packages }}
+
+      - name: Pre-run hook
+        if: ${{ inputs.pre-run != '' }}
+        run: ${{ inputs.pre-run }}
+
+      - name: Run scan
+        id: run
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          AUDIT_DB_HOST: mysql.50webs.com
+          AUDIT_DB_PORT: '3306'
+          AUDIT_DB_USER: ejaguiar1_stocks
+          AUDIT_DB_NAME: ejaguiar1_stocks
+          AUDIT_DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: ${{ inputs.run-command }}
+
+      - name: Commit and push
+        id: commit
+        if: ${{ inputs.commit-paths != '' }}
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ${{ inputs.commit-paths }}
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+            git commit -m "${{ inputs.commit-message }}"
+            bash .github/scripts/safe_push.sh
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi

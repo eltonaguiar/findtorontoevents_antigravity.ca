@@ -1,4 +1,5 @@
 name: POC Picks Checkpoint (2-week reminder)
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 # Durable self-executing reminder: on the POC measurement window, resolve the
 # open poc_picks (fetch current prices, compute pnl, update DB) and commit the
@@ -22,6 +23,7 @@ concurrency:
 jobs:
   checkpoint:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
       DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
@@ -52,4 +54,5 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add reports/POC_CHECKPOINT_VERDICT.md || true
           git commit -m "chore(poc): 2-week checkpoint verdict $(date -u +%Y-%m-%d) [skip ci]" || echo "no change"
-          git push || echo "push skipped"
+          # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+          bash .github/scripts/safe_push.sh

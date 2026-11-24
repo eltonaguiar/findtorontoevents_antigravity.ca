@@ -66,7 +66,7 @@ class ProbabilisticSharpeAnalyzer:
         self.config = config or ProbabilisticSharpeConfig()
 
     def calculate_probabilistic_sharpe(self, returns: np.ndarray,
-                                     benchmark_returns: Optional[np.ndarray] = None) -> Dict[str, Any]:
+                                     benchmark_returns: Optional[np.ndarray] = None, n_trials: int | None = None) -> Dict[str, Any]:
         """
         Calculate probabilistic Sharpe ratio with confidence intervals
 
@@ -81,6 +81,8 @@ class ProbabilisticSharpeAnalyzer:
                 'is_significant': bool
             }
         """
+        if n_trials is None:
+            n_trials = int(getattr(self.config, "N_TRIALS", 1) or 1)
         if len(returns) < self.config.MIN_OBSERVATIONS:
             return {'error': f'Need at least {self.config.MIN_OBSERVATIONS} observations'}
 
@@ -100,7 +102,11 @@ class ProbabilisticSharpeAnalyzer:
         sharpe_ci_lower, sharpe_ci_upper = self._bootstrap_sharpe_ci(returns)
 
         # Expected maximum Sharpe (deflated Sharpe)
-        expected_max_sharpe = self._calculate_expected_max_sharpe(len(returns))
+        # 2026-11-20: this used the SAMPLE LENGTH as the number of trials, which is
+        # not a multiplicity correction at all. n_trials is now an explicit input.
+        expected_max_sharpe = self._calculate_expected_max_sharpe(
+            n_trials=n_trials, n_obs=len(returns)
+        )
 
         # Statistical significance test
         sharpe_p_value = self._sharpe_significance_test(returns)
@@ -114,8 +120,15 @@ class ProbabilisticSharpeAnalyzer:
             'expected_max_sharpe': float(expected_max_sharpe),
             'sharpe_p_value': sharpe_p_value,
             'is_significant': is_significant,
-            'deflated_sharpe': sharpe_ratio - expected_max_sharpe,
-            'sharpe_skill': max(0, sharpe_ratio - expected_max_sharpe)
+            # Probability that the true Sharpe exceeds the expected maximum,
+            # i.e. an actual DSR in [0,1] rather than a Sharpe-unit difference.
+            'deflated_sharpe': float(stats.norm.cdf(
+                (sharpe_ratio - expected_max_sharpe) / max(1.0 / np.sqrt(len(returns)), 1e-12)
+            )),
+            'sharpe_skill': max(0.0, sharpe_ratio - expected_max_sharpe),
+            'n_trials': int(n_trials),
+            'deprecated': True,
+            'use_instead': 'alpha_engine.deflated_sharpe.deflated_sharpe_ratio',
         }
 
     def _annualize_sharpe(self, mean_return: float, volatility: float) -> float:
@@ -171,12 +184,26 @@ class ProbabilisticSharpeAnalyzer:
 
         return ci_lower, ci_upper
 
-    def _calculate_expected_max_sharpe(self, n: int) -> float:
-        """Calculate expected maximum Sharpe ratio (deflated Sharpe)"""
-        # Bailey and Lopez de Prado (2014) deflated Sharpe ratio
-        # E[max(SR)] ≈ sqrt(2/n * ln(N)) where N is number of trials
-        # For single strategy, use conservative estimate
-        return np.sqrt(2/n * np.log(n))
+    def _calculate_expected_max_sharpe(self, n_trials: int, n_obs: int) -> float:
+        """Bailey & Lopez de Prado expected maximum Sharpe over ``n_trials``.
+
+        E[max SR] ~= sd_sr * ((1-g)Z^-1(1-1/N) + g Z^-1(1-1/(N e))), g = 0.5772.
+
+        The previous body was ``sqrt(2/n * log(n))`` with ``n`` = SAMPLE LENGTH:
+        it grew with the data instead of with the number of trials, so a longer
+        backtest of one strategy looked like more multiplicity, and the output was
+        a Sharpe-unit quantity that callers read as a probability (hence DSR
+        1.0282 on pure noise).
+        """
+        n_trials = max(int(n_trials), 1)
+        n_obs = max(int(n_obs), 2)
+        if n_trials == 1:
+            return 0.0
+        sd_sr = 1.0 / np.sqrt(n_obs)      # sd of the Sharpe estimate
+        euler = 0.5772156649
+        z1 = stats.norm.ppf(1 - 1.0 / n_trials)
+        z2 = stats.norm.ppf(1 - 1.0 / (n_trials * np.e))
+        return float(sd_sr * ((1 - euler) * z1 + euler * z2))
 
     def _sharpe_significance_test(self, returns: np.ndarray) -> float:
         """Test if Sharpe ratio is statistically significant"""

@@ -12,6 +12,10 @@ concurrency:
   group: discord-bot
   cancel-in-progress: false  # was true — bot runs 6h but kept getting killed by the next cron trigger
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   run-bot:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}

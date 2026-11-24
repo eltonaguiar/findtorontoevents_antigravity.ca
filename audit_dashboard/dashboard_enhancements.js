@@ -25,6 +25,19 @@
       .replace(/'/g, '&#39;');
   }
 
+  /**
+   * Format a profit factor. A PF of 999 / Infinity is the zero-loss sentinel
+   * (no losing trades in the cohort), not a real profit factor — rendering it
+   * as "999.00" or "∞" reads as a massive edge. Show "n/a" instead so the
+   * cohort is not quoted as edge. 2026-11-16 audit: strategy_perf_by_class
+   * has 356 cells with PF>=999 and zero losses.
+   */
+  function fmtPF(value) {
+    const n = Number(value);
+    if (value == null || !isFinite(n) || n >= 999) return 'n/a';
+    return n.toFixed(2);
+  }
+
   function isWin(p) {
     const rl = p._resolved_live || '';
     const st = p.status || '';
@@ -152,13 +165,17 @@
       const ac = htmlEscape(p.asset_class || '?');
       const stage = htmlEscape(p.stage || 'OPPORTUNITY');
       const stageColor = stage === 'OPPORTUNITY' ? '#fbbf24' : (stage === 'OPEN' ? '#22c55e' : '#94a3b8');
-      const srcRows = (p.source_strategies || []).map(function (s) {
+      // 2026-10-18: payload can contain NULL entries inside source_strategies
+      // (verified live: ADAUSDT LONG has source_strategies[0] === null), and the
+      // un-guarded `s.name` below threw "Cannot read properties of null (reading
+      // 'name')" — killing the whole Operator Review panel. Skip falsy entries.
+      const srcRows = (p.source_strategies || []).filter(Boolean).map(function (s) {
         const sn = htmlEscape(s.name || s.cite || '?');
         const co = (s.cohort_n != null) ? 'cohort n=' + htmlEscape(String(s.cohort_n)) : '';
         const wr = (s.net_wr_pct != null) ? 'WR ' + htmlEscape(String(s.net_wr_pct)) + '%'
                 : (s.wr_pct != null ? 'WR ' + htmlEscape(String(s.wr_pct)) + '%' : '');
-        const pfc = (s.net_pf != null) ? 'PF ' + htmlEscape(String(s.net_pf))
-                  : (s.pf != null ? 'PF ' + htmlEscape(String(s.pf)) : '');
+        const pfc = (s.net_pf != null || s.pf != null)
+                  ? 'PF ' + htmlEscape(fmtPF(s.net_pf != null ? s.net_pf : s.pf)) : '';
         const meta = [co, wr, pfc].filter(Boolean).join(' · ');
         let note = '';
         if (s.note) note = '<div style="font-size:10px;color:#94a3b8;margin-top:2px">' + htmlEscape(s.note) + '</div>';
@@ -740,10 +757,12 @@
     const pnl = pick('pnl_integrity');
     if (pnl) {
       cards.push({
-        title: 'PnL Integrity (sampled)',
+        title: 'Sign consistency (sampled)',
         value: (100 - pnl.mismatch_pct).toFixed(1) + '%',
         sub: htmlEscape((pnl.gt1pct_mismatch || 0).toLocaleString()) + ' / ' +
-             htmlEscape((pnl.sampled || 0).toLocaleString()) + ' mismatch >1pp',
+             htmlEscape((pnl.sampled || 0).toLocaleString()) + ' sign mismatch; magnitude ' +
+             htmlEscape((pnl.naive_magnitude_mismatch || 0).toLocaleString()) +
+             ' (' + htmlEscape(String(pnl.naive_magnitude_mismatch_pct != null ? pnl.naive_magnitude_mismatch_pct : '?')) + '%)',
         color: tierColor(pnl.tier),
       });
     }
@@ -826,9 +845,8 @@
               'Failing checks: <strong>' + htmlEscape(_redList) + '</strong>. ' +
               'Ghost rows: ' + htmlEscape(_ghostLive) + '. ' +
               'Downstream panels (Top-N backtest, asset-class WR/PF, smart-picks scoring) read from the same DB and inherit this corruption.</span><br>';
-      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: <code>tools/cleanup_ghost_rows.py</code> shipped (2026-05-31: quarantined from canonical view — live raw count in the DB Health tile). <code>tools/db_health_check.py</code> emitting hourly; <code>forward_validator.py</code> writes canonical statuses. ' +
-              'Ghost rows, status mismatch, non-canonical statuses, and _bak tables all cleared as of 2026-05-31 DB audit. ' +
-              'See <a href="/updates/2026-05-31-pr1-data-integrity-repair.md" style="color:#fde68a;text-decoration:underline">PR #1 data integrity repair</a> and <a href="/updates/2026-05-31-incidents-enhancements-audit-summary.md" style="color:#fde68a;text-decoration:underline">incidents audit summary</a> for the full fix log.</span>';
+      html += '<span style="color:#fde68a;font-size:12px;">Remediation status: the May 2026 cleanup did not clear the raw table. Live ghost count is the tile above (' + htmlEscape(_ghostLive) + '). Do not trade, and do not cite a cleared-ghost claim, while that count is above zero. ' +
+              '<code>tools/cleanup_ghost_rows.py</code> is dry-run first. See <a href="/updates/2026-11-16-audit-truth-layer-fixes.md" style="color:#fde68a;text-decoration:underline">2026-11-16 truth-layer note</a>.</span>';
       html += '</div>';
     } else if (payload.overall && payload.overall.harness_healthy === false) {
       var _failedN = payload.overall.checks_failed != null ? payload.overall.checks_failed : '?';
@@ -1088,7 +1106,7 @@
       const byClass = mr.by_class || {};
       const rows = Object.keys(byClass).sort().map(function (cls) {
         const v = byClass[cls] || {};
-        const pf = v.pf != null ? Number(v.pf).toFixed(2) : '—';
+        const pf = v.pf != null ? fmtPF(v.pf) : '—';
         const wr = v.wr != null ? (Number(v.wr) <= 1 ? (Number(v.wr) * 100).toFixed(1) : Number(v.wr).toFixed(1)) : '—';
         return '<span style="margin-right:12px"><b>' + htmlEscape(cls) + '</b> PF ' + pf + ' WR ' + wr + '%</span>';
       }).join('');

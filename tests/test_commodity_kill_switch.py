@@ -252,3 +252,20 @@ class TestFeedHygieneIntegration(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+# --- audit3 denylist isolation (2026-11-19) ---------------------------------
+# These tests exercise feed-hygiene rules against synthetic BTC/CRYPTO fixtures.
+# The audit3 denylist now vetoes BTC (a KILL symbol) and CRYPTO (a KILL class),
+# so the fixture would be rejected before the rule under test is reached. The
+# denylist has its own tests in tests/test_audit3_enforcement.py; disable it here
+# and restore the environment when the module finishes.
+import os as _os
+
+
+def setUpModule():
+    _os.environ["AUDIT3_DENYLIST_DISABLED"] = "1"
+
+
+def tearDownModule():
+    _os.environ.pop("AUDIT3_DENYLIST_DISABLED", None)

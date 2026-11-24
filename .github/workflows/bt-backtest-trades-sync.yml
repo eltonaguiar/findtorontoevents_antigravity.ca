@@ -43,6 +43,10 @@ on:
     # Sunday 04:00 UTC — conservative for 30M-row table
     - cron: "24 4 * * 0"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   sync:
     runs-on: ubuntu-latest

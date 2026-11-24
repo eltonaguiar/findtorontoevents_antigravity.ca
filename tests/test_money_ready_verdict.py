@@ -1,5 +1,7 @@
 """Tests for M-061: money_ready_verdict() unified edge verdict."""
 import random
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from unittest.mock import patch
 from alpha_engine.money_ready_verdict import _rolling_mdd, _mdd_cvar_gate
@@ -20,24 +22,34 @@ def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
     that arises when all wins precede all losses in a sequential list.
     """
     syms = symbols or ["AAA", "BBB", "CCC", "DDD", "EEE"]
+    # 2026-11-19: fixtures must carry the two things the verdict legitimately needs,
+    # or every verdict test is really testing those two instead of its own gate.
+    #   (a) One source system caps a class at WATCH/NOT_READY by design (a single
+    #       feed is not a class-level edge), so the default sample spreads over three.
+    #   (b) Recency `None` is treated as NOT_READY, so every row gets a timestamp
+    #       inside the recency window.
+    srcs = source_system or [
+        strategy + "_src_a", strategy + "_src_b", strategy + "_src_c",
+    ]
+    now = datetime.now(timezone.utc)
+
+    def _stamp(i):
+        return (now - timedelta(days=i % 10, hours=i % 24)).isoformat()
+
     picks = []
     for i in range(n_won):
-        src = source_system or strategy
-        if isinstance(src, list):
-            src = src[i % len(src)]
+        src = srcs[i % len(srcs)] if isinstance(srcs, list) else srcs
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "WON", "pnl_pct": win_pnl, "symbol": syms[i % len(syms)],
-            "source_system": src,
+            "source_system": src, "closed_at": _stamp(i),
         })
     for i in range(n_lost):
-        src = source_system or strategy
-        if isinstance(src, list):
-            src = src[i % len(src)]
+        src = srcs[i % len(srcs)] if isinstance(srcs, list) else srcs
         picks.append({
             "strategy": strategy, "asset_class": asset_class,
             "status": "LOST", "pnl_pct": loss_pnl, "symbol": syms[i % len(syms)],
-            "source_system": src,
+            "source_system": src, "closed_at": _stamp(i),
         })
     rng = random.Random(42)
     rng.shuffle(picks)
@@ -45,6 +57,30 @@ def _make_picks(n_won, n_lost, asset_class="COMMODITY", strategy="test_strat",
     rng = random.Random(42)
     rng.shuffle(picks)
     return picks
+
+
+@pytest.fixture(autouse=True)
+def _isolate_from_live_state_and_unrelated_gates(monkeypatch):
+    """Judge fixtures on their own rows, with unrelated gates held in shadow.
+
+    Three separate leaks made these tests report the wrong thing (2026-11-19):
+
+    1. money_ready_verdict() overlaid the LIVE intrabar artifact, so a 47%-WR
+       fixture was reported as wr=0.4052 and could never reach the verdict its own
+       numbers imply. Covered for real in test_money_ready_wr_semantics.py.
+    2. MONEY_READY_FDR_GATE and MONEY_READY_SINGLE_SOURCE_GATE now default to ON.
+       Every fixture here is one strategy from one source, so the single-source
+       gate correctly forces NOT_READY — which is not what these tests are about
+       (symbol/source concentration, WR floors, ML quarantine). Those two gates
+       and their defaults are tested in test_money_ready_fdr_gate.py.
+
+    Holding them in shadow here is isolation, not a weakened assertion: each test
+    still asserts the verdict its own mechanism produces.
+    """
+    import alpha_engine.money_ready_verdict as mrv
+    monkeypatch.setattr(mrv, "_INTRABAR_TRUTH_ENABLED", False)
+    monkeypatch.setattr(mrv, "_FDR_GATE_ENFORCE", False)
+    monkeypatch.setattr(mrv, "_SINGLE_SOURCE_GATE_ENFORCE", False)
 
 
 class TestMoneyReadyVerdict:
@@ -706,3 +742,210 @@ class TestQ2RegistryMddPreferred:
         result = _mdd_cvar_gate(returns, "COMMODITY", registry_mdd=None)
         assert result["mdd_source"] == "recompute"
         assert result["mdd"] < 0.20
+
+
+class TestSleevePlausibilityGuard:
+    """2026-11-16 audit: single-source / implausible-PF sleeves must never be
+    presented as actionable Money-Ready candidates.
+
+    Live evidence: ADX Trend Confirmation (BTCUSDT 91W/0L, PF 56.7) and
+    GainerPredictor1hStrategy (48/49 wins on AVAXUSDT, PF 120) were both
+    ranked as top sleeves with policy_blocked=False.
+    """
+
+    def _reg(self, rows):
+        return {"by_asset_class_strategy_policy_clean_net": rows}
+
+    def test_single_source_artifact_is_policy_blocked(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "ADX Trend Confirmation",
+            "n": 213, "win_rate_pct": 97.18, "profit_factor": 56.73,
+            "is_single_source_artifact": True,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert len(sleeves) == 1
+        assert sleeves[0]["policy_blocked"] is True
+        assert sleeves[0]["is_single_source"] is True
+        # ADX is 97.18% WR, which is itself implausible at n=213 (the WR guard
+        # covers n<1000), so it is flagged on both axes.
+        assert sleeves[0]["implausible_pf"] is True
+
+    def test_high_wr_large_n_is_policy_blocked(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "resolver_grade_sleeve",
+            "n": 394, "win_rate_pct": 97.5, "profit_factor": 11.0,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert sleeves[0]["implausible_pf"] is True
+        assert sleeves[0]["policy_blocked"] is True
+
+    def test_moderate_wr_large_n_not_flagged(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "realistic_sleeve",
+            "n": 1200, "win_rate_pct": 87.0, "profit_factor": 11.7,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert sleeves[0]["implausible_pf"] is False
+        assert sleeves[0]["policy_blocked"] is False
+
+    def test_implausible_pf_small_n_is_policy_blocked(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "GainerPredictor1hStrategy",
+            "n": 49, "win_rate_pct": 97.96, "profit_factor": 120.0,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert sleeves[0]["implausible_pf"] is True
+        assert sleeves[0]["policy_blocked"] is True
+
+    def test_implausible_pf_large_n_is_not_blocked_by_pf_guard(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "CRYPTO", "strategy": "big_n_sleeve",
+            "n": 500, "win_rate_pct": 70.0, "profit_factor": 25.0,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "CRYPTO")
+        assert sleeves[0]["implausible_pf"] is False
+        assert sleeves[0]["policy_blocked"] is False
+
+    def test_plausible_clean_sleeve_stays_actionable(self):
+        from alpha_engine.money_ready_verdict import _top_money_ready_sleeves
+        reg = self._reg([{
+            "asset_class": "EQUITY", "strategy": "stocks_rsi2_pullback",
+            "n": 140, "win_rate_pct": 58.0, "profit_factor": 1.8,
+            "is_single_source_artifact": False,
+        }])
+        sleeves = _top_money_ready_sleeves(reg, "EQUITY")
+        assert sleeves[0]["policy_blocked"] is False
+        assert sleeves[0]["implausible_pf"] is False
+
+    def test_merge_ranks_blocked_sleeves_last(self):
+        from alpha_engine.money_ready_verdict import _merge_top_sleeves
+        registry = [
+            {"strategy": "artifact", "pf": 120.0, "policy_blocked": True,
+             "implausible_pf": True},
+            {"strategy": "clean", "pf": 1.9, "policy_blocked": False,
+             "implausible_pf": False},
+        ]
+        merged = _merge_top_sleeves(registry, [])
+        assert merged[0]["strategy"] == "clean"
+        assert merged[-1]["strategy"] == "artifact"
+
+    def test_merge_implausible_outranks_nothing_but_sorts_after_clean(self):
+        from alpha_engine.money_ready_verdict import _merge_top_sleeves
+        reg = [{"strategy": "clean_high_pf", "pf": 9.0,
+                "policy_blocked": False, "implausible_pf": False}]
+        out = [{"strategy": "resolver_artifact", "pf": 120.0,
+                "policy_blocked": True, "implausible_pf": True}]
+        merged = _merge_top_sleeves(reg, out)
+        assert merged[0]["strategy"] == "clean_high_pf"
+        assert merged[1]["strategy"] == "resolver_artifact"
+
+
+class TestAudit3CrossMark:
+    """Sleeves must carry the audit3 tribunal's independent verdict
+    (2026-11-19: headline sleeves with PF>10 were absent from audit3 cells)."""
+
+    def _ledger(self, tmp_path, cells):
+        import json
+        p = tmp_path / "audit3_ledger.json"
+        p.write_text(json.dumps({"cells": cells}), encoding="utf-8")
+        return p
+
+    def _fresh(self):
+        import alpha_engine.money_ready_verdict as mrv
+        mrv._AUDIT3_CELL_INDEX = None
+        return mrv
+
+    def test_sleeve_absent_from_ledger_is_not_scored(self, tmp_path):
+        mrv = self._fresh()
+        path = self._ledger(tmp_path, [
+            {"asset_class": "CRYPTO", "strategy": "other", "verdict": "WEAK"},
+        ])
+        sleeves = mrv._audit3_cross_mark(
+            [{"strategy": "Multi-Timeframe Trend Alignment", "pf": 11.77,
+              "note": "resolver_grade"}],
+            "CRYPTO", ledger_path=path,
+        )
+        assert sleeves[0]["audit3_verdict"] == "NOT_SCORED"
+        assert sleeves[0]["tribunal_corroborated"] is False
+        assert "audit3:NOT_SCORED" in sleeves[0]["note"]
+
+    def test_candidate_cell_corroborates(self, tmp_path):
+        mrv = self._fresh()
+        path = self._ledger(tmp_path, [
+            {"asset_class": "ETF", "strategy": "rs-breakout-scout",
+             "direction": "LONG", "verdict": "CANDIDATE"},
+        ])
+        sleeves = mrv._audit3_cross_mark(
+            [{"strategy": "rs-breakout-scout", "pf": 1.59}],
+            "ETF", ledger_path=path,
+        )
+        assert sleeves[0]["audit3_verdict"] == "CANDIDATE"
+        assert sleeves[0]["tribunal_corroborated"] is True
+
+    def test_strongest_verdict_wins_across_directions(self, tmp_path):
+        mrv = self._fresh()
+        path = self._ledger(tmp_path, [
+            {"asset_class": "EQUITY", "strategy": "donchian-stock-breakout",
+             "direction": "SHORT", "verdict": "INSUFFICIENT_N"},
+            {"asset_class": "EQUITY", "strategy": "donchian-stock-breakout",
+             "direction": "LONG", "verdict": "WEAK"},
+        ])
+        sleeves = mrv._audit3_cross_mark(
+            [{"strategy": "donchian-stock-breakout", "pf": 1.69}],
+            "EQUITY", ledger_path=path,
+        )
+        assert sleeves[0]["audit3_verdict"] == "WEAK"
+        assert sleeves[0]["tribunal_corroborated"] is False
+
+    def test_missing_ledger_fails_open(self, tmp_path):
+        mrv = self._fresh()
+        sleeves = mrv._audit3_cross_mark(
+            [{"strategy": "x", "pf": 2.0}],
+            "CRYPTO", ledger_path=tmp_path / "nope.json",
+        )
+        assert sleeves[0]["audit3_verdict"] == "NOT_SCORED"
+
+
+class TestWatchRequiresPublishedPfAtLeastOne:
+    """WATCH must never be shown next to a losing headline PF.
+
+    2026-11-20: COMMODITY rendered as WATCH with policy_clean_pf 0.2897 because
+    _verdict() was handed the intrabar sizing PF (1.0306) while the published
+    field was the policy-clean one. The two must agree.
+    """
+
+    def _v(self, **kw):
+        from alpha_engine.money_ready_verdict import _verdict
+        base = dict(n=120, wr=0.62, pf=1.03,                      # wr_ok, pf_ok False
+                    dsr={"ok": False}, pbo={"ok": None}, spa={"ok": None},
+                    asset_class="")
+        base.update(kw)
+        return _verdict(**base)
+
+    def test_commodity_shaped_case_is_not_watch(self):
+        # sizing pf above 1.0 passes the internal guard, published pf does not
+        assert self._v(pf=1.0306, published_pf=0.2897) == "NOT_READY"
+
+    def test_watch_survives_when_published_pf_is_healthy(self):
+        assert self._v(pf=1.03, published_pf=1.21) == "WATCH"
+
+    def test_absent_published_pf_keeps_old_behaviour(self):
+        assert self._v(pf=1.03) == "WATCH"
+
+    def test_exactly_one_point_zero_is_still_watch(self):
+        # < 1.0 loses money; == 1.0 is break-even and stays a near miss
+        assert self._v(pf=1.03, published_pf=1.0) == "WATCH"
+
+    def test_money_ready_branch_is_untouched(self):
+        v = self._v(wr=0.62, pf=1.9, published_pf=1.9,
+                    dsr={"ok": True}, pbo={"ok": True}, spa={"ok": True})
+        assert v == "MONEY_READY"

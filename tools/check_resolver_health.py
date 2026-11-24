@@ -65,6 +65,14 @@ DB_NAME = os.getenv("AUDIT_DB_NAME", os.getenv("DB_NAME", "ejaguiar1_stocks"))
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
+try:
+    from audit_trail.quality_gates import evaluate_open_bloat_gate
+except ImportError:  # direct-script invocation without repo root on sys.path
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+    from audit_trail.quality_gates import evaluate_open_bloat_gate
+
 ALERT_THRESHOLD_DEFAULT = 1_000_000  # Alert if OPEN picks > 1M
 
 MAX_HOLD_HOURS_BY_CLASS: dict[str, int] = {
@@ -134,7 +142,11 @@ def check_open_picks_count(conn) -> dict:
         )
         live_total = int(cur.fetchone()["cnt"])
 
-    status = "RED" if live_total > ALERT_THRESHOLD_DEFAULT else "GREEN"
+    # 2026-11-16: absolute OPEN-bloat gate — 91,855 OPEN vs 21 ACTIVE scored GREEN under
+    # the 1M absolute alone (the threshold tested the wrong count). Bloat gate caps RED.
+    active_est = max(live_total - open_only, 0)
+    bloat = evaluate_open_bloat_gate(open_only, active_est)
+    status = "RED" if (live_total > ALERT_THRESHOLD_DEFAULT or bloat["tier"] == "FAIL") else "GREEN"
     return {
         "check": "open_picks_count",
         "value": open_only,

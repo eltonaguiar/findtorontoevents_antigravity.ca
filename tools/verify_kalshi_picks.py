@@ -27,15 +27,70 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 REPORTS_DIR = REPO / "reports"
 SNAP_DIR = REPO / "data" / "kalshi_snapshots"
+# A snapshot is a cache, not a time machine. On 2026-11-18 this directory held
+# exactly one file, dated 2026-04-26, and every pick was resolved against it
+# because the loader took the newest *.json unconditionally. A stale snapshot is
+# now ignored (and the live-fetch fallback used) rather than silently trusted.
+# Override with KALSHI_MAX_SNAPSHOT_AGE_HOURS (0 disables the age check).
+MAX_SNAPSHOT_AGE_HOURS = float(
+    os.environ.get("KALSHI_MAX_SNAPSHOT_AGE_HOURS", "24")
+)
+
+
+def snapshot_age_hours(path: "Path | str") -> float:
+    """Age of a snapshot in hours, from the most trustworthy stamp available.
+
+    Do NOT lead with st_mtime. A git checkout resets every file's mtime to the
+    checkout time, so in CI (and in any fresh worktree) a 7-month-old committed
+    snapshot reports 0h old — proven 2026-11-18, when the 2026-04-26 file
+    measured "0h" in a clean `git worktree` while being 4,230h old on the
+    long-lived checkout. That makes an mtime-only guard silently useless
+    exactly where it runs.
+
+    Order: filename stamp (`<YYYYMMDD>T<HHMMSS>Z.json`, what the fetcher writes)
+    -> an in-file timestamp field -> st_mtime as a last resort.
+    """
+    # Accept str as well as Path: glob() returns str, and a caller (or a QA
+    # harness) passing one used to crash on `path.name` instead of measuring.
+    path = Path(path)
+    now = datetime.now(timezone.utc)
+    m = re.search(r"(\d{8}T\d{6}Z)", path.name)
+    if m:
+        try:
+            ts = datetime.strptime(m.group(1), "%Y%m%dT%H%M%SZ").replace(
+                tzinfo=timezone.utc
+            )
+            return (now - ts).total_seconds() / 3600.0
+        except ValueError:
+            pass
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            for key in ("generated_at", "as_of", "fetched_at", "timestamp", "stamp"):
+                raw = data.get(key)
+                if not raw:
+                    continue
+                try:
+                    dt = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+                except ValueError:
+                    continue
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return (now - dt).total_seconds() / 3600.0
+    except (OSError, ValueError):
+        pass
+    return (time.time() - path.stat().st_mtime) / 3600.0
 PICKS_DEFAULT = REPO / "data" / "goldmine" / "sports_picks.json"
 SPORTS_HTML = REPO / "live-monitor" / "sports-betting.html"
 TARGET_SPORTS = {"ufc", "mma", "tennis", "golf", "nba"}
@@ -196,13 +251,24 @@ def fetch_or_load_snapshot(snapshot: Path | None,
     if snapshot and snapshot.exists():
         data = read_json(snapshot)
         return data if isinstance(data, dict) else None
-    # try latest in SNAP_DIR
+    # try latest in SNAP_DIR — but only if it is fresh enough to describe the
+    # current market. An aged-out cache falls through to the live fetch.
     if SNAP_DIR.exists():
         cands = sorted(SNAP_DIR.glob("*.json"))
         if cands:
-            data = read_json(cands[-1])
-            if isinstance(data, dict):
-                return data
+            latest = cands[-1]
+            age_h = snapshot_age_hours(latest)
+            if MAX_SNAPSHOT_AGE_HOURS <= 0 or age_h <= MAX_SNAPSHOT_AGE_HOURS:
+                data = read_json(latest)
+                if isinstance(data, dict):
+                    return data
+            else:
+                print(
+                    f"[verify] ignoring stale snapshot {latest.name} "
+                    f"({age_h:.1f}h old > {MAX_SNAPSHOT_AGE_HOURS:.0f}h limit); "
+                    f"falling back to a live Kalshi fetch",
+                    file=sys.stderr,
+                )
     # fall back to live fetch
     fetcher = REPO / "tools" / "kalshi_sports_fetch.py"
     if not fetcher.exists():

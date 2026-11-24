@@ -31,6 +31,14 @@ for the full Hermes cron schedule.
 
 from __future__ import annotations
 
+try:
+    from audit_trail.quality_gates import evaluate_open_bloat_gate
+except ImportError:  # direct-script invocation without repo root on sys.path
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+    from audit_trail.quality_gates import evaluate_open_bloat_gate
+
 import argparse
 import json
 import os
@@ -169,6 +177,18 @@ def check_pnl_integrity() -> dict:
     }
 
 
+def ghost_row_verdict(total_ghosts: int) -> dict:
+    """Yellow/red ghost counts must fail the check. A non-zero count is not a pass."""
+    n = int(total_ghosts or 0)
+    if n == 0:
+        tier, passed = "green", True
+    elif n < 1000:
+        tier, passed = "yellow", False
+    else:
+        tier, passed = "red", False
+    return {"tier": tier, "threshold_pass": passed}
+
+
 def check_ghost_rows() -> dict:
     """Freebuff 1.2 + my F2 + Kimi goldmine. Constant-pnl cohorts (n>1000,
     distinct_entries<5). Runs PER asset_class to fit shared-host /tmp budget
@@ -235,8 +255,7 @@ def check_ghost_rows() -> dict:
         "top_cohorts": cohorts[:15],
         "per_class_errors": per_class_errors,
         "per_class_sample": per_class_sample,
-        "tier": "green" if total_ghosts < 1000 else "yellow" if total_ghosts < 100000 else "red",
-        "threshold_pass": total_ghosts < 100000,
+        **ghost_row_verdict(total_ghosts),
     }
 
 
@@ -329,8 +348,11 @@ def check_open_bloat() -> dict:
 
     # Tier: red if either table has suspect counts or validator is frozen
     any_suspect = bbt_suspect_count or tp_suspect_count
-    out["tier"] = "red" if (out["validator_frozen"] or any_suspect) else "green"
-    out["threshold_pass"] = not out["validator_frozen"] and not any_suspect
+    # 2026-11-16: OPEN-bloat leg (91,855 OPEN vs 21 ACTIVE was green here too)
+    bloat_fail = evaluate_open_bloat_gate(tp_open, tp_active)["tier"] == "FAIL"
+    out["open_bloat"] = {"open": tp_open, "active": tp_active, "fail": bloat_fail}
+    out["tier"] = "red" if (out["validator_frozen"] or any_suspect or bloat_fail) else "green"
+    out["threshold_pass"] = not out["validator_frozen"] and not any_suspect and not bloat_fail
     return out
 
 

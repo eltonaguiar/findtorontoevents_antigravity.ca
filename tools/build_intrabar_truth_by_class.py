@@ -28,6 +28,18 @@ OUT_DEFAULT = os.path.join(REPO_ROOT, "audit_dashboard", "data", "intrabar_truth
 _KEEP = ("host", "user", "password", "database", "port", "connect_timeout")
 
 
+def _wilson_ci_pct(p_pct: float, n: int, z: float = 1.96):
+    """95% Wilson interval for a win rate given as a percent. Returns (lo, hi)."""
+    if not n or p_pct is None:
+        return (None, None)
+    p = max(0.0, min(1.0, p_pct / 100.0))
+    den = 1.0 + z * z / n
+    center = (p + z * z / (2 * n)) / den
+    half = z * ((p * (1.0 - p) / n + z * z / (4.0 * n * n)) ** 0.5) / den
+    return (round(100.0 * max(0.0, center - half), 2),
+            round(100.0 * min(1.0, center + half), 2))
+
+
 def _verdict(n: int, wr: float, pf: float) -> str:
     if n < 100:
         return "INSUFFICIENT_N"
@@ -100,6 +112,16 @@ def build() -> dict:
         meta["day_concentration"] = conc          # max fraction of decisive rows on one day
         meta["n_distinct_days"] = n_days          # distinct resolution days
         meta["single_regime_warning"] = bool(total and (conc > 0.60 or n_days < 5))
+        # 2026-11-16 audit: the nominal n assumes i.i.d. trades, but resolutions
+        # cluster by day (MEMECOIN 74.5%, EQUITY 41.6%, COMMODITY 35.4% on a
+        # single day), so the honest upper bound on independent observations is
+        # one per resolution day. Publish that floor and the CI computed on it —
+        # additive keys; the headline wr_pct/n are unchanged.
+        n_eff = n_days
+        meta["n_eff_lower"] = n_eff
+        ci_lo, ci_hi = _wilson_ci_pct(meta.get("wr_pct"), n_eff)
+        meta["wr_ci95_eff_lower"] = ci_lo
+        meta["wr_ci95_eff_upper"] = ci_hi
     # Cleanest single strategy per class (n>=10) — forward-track candidates, NOT sized.
     cur.execute(
         """

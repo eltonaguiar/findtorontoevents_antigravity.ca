@@ -1,4 +1,5 @@
 name: Sidecar Status Markdown Update
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 # Renders docs/SIDECAR_STATUS.md from
 # audit_dashboard/data/dashboard_data.json::sidecar_promotion_status so
@@ -16,6 +17,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   render:
@@ -62,8 +67,8 @@ jobs:
           else
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git pull --rebase --no-recurse-submodules origin main
             git add docs/SIDECAR_STATUS.md
             git commit -m "chore(sidecar): refresh SIDECAR_STATUS.md $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
-            git push origin HEAD:main
+            # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+            bash .github/scripts/safe_push.sh
           fi

@@ -1,4 +1,5 @@
 name: H-004 — Inventory Surprise + Roll Yield Backtest (real EIA data)
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   # Weekly on Monday 06:00 UTC — after weekend EIA/USDA data updates
@@ -15,9 +16,14 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   h004-backtest:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
 
@@ -116,7 +122,7 @@ jobs:
           git config user.email "h004-backtest@findtorontoevents.ca"
           git add reports/h004_inventory_roll_yield_*.json reports/hypothesis_registry.json 2>/dev/null || true
           git diff --staged --quiet || git commit -m "chore(H-004): weekly backtest $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
-          git pull --rebase origin main || true
-          git push origin main || echo "Push failed — report is local"
+          # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+          bash .github/scripts/safe_push.sh
 
 # re-registered 2026-05-23 after stripped-history reset (4aaa6ff848f)

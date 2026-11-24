@@ -589,6 +589,12 @@ def merge_into_active_picks(consensus_picks: list[dict[str, Any]]) -> int:
         merged_pick["entry_price"] = merged_pick.get("entry_price")
         merged_pick["take_profit"] = merged_pick.get("take_profit")
         merged_pick["stop_loss"] = merged_pick.get("stop_loss")
+        # Hard shadow pin (2026-11-16 audit): prediction-market picks are
+        # research/shadow only and must never reach sizing until explicitly
+        # promoted. Force the flags here so a producer cannot forget them.
+        merged_pick["forward_test_only"] = True
+        merged_pick["sizing_allowed"] = False
+        merged_pick["shadow"] = True
 
         active_picks.append(merged_pick)
         existing_keys.add(key)

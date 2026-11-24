@@ -821,9 +821,14 @@ jobs:
           DB_PASS: ${{ secrets.MYSQL_PASSWORD }}
           DB_NAME: ejaguiar1_stocks
         run: |
+          # 2026-11-16: one retry — failures cluster on transient MySQL '(2013, Lost connection)'
           if ! python sync_all_picks_to_mysql.py 2>&1; then
-            echo "::error::Full MySQL sync failed — live picks data integrity at risk. Investigate immediately."
-            exit 1
+            echo "::warning::MySQL sync attempt 1 failed (transient class?); retrying once after 60s"
+            sleep 60
+            if ! python sync_all_picks_to_mysql.py 2>&1; then
+              echo "::error::Full MySQL sync failed twice — live picks data integrity at risk. Investigate immediately."
+              exit 1
+            fi
           fi
 
       - name: Warn on MySQL sync failure
@@ -833,6 +838,7 @@ jobs:
 
       #  Commit results to git 
       - name: Commit results
+        timeout-minutes: 30
         if: steps.mode.outputs.mode != 'report'
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}

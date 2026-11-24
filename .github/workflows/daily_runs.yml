@@ -5,9 +5,14 @@ on:
     - cron: '10 0 * * *'  # Daily at midnight UTC
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   run-daily:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     env:
       SM_API_BASE: ${{ secrets.SM_API_BASE }}
       SM_ADMIN_KEY: ${{ secrets.SM_ADMIN_KEY }}

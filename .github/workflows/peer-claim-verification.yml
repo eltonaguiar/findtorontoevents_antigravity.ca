@@ -1,0 +1,150 @@
+name: Peer claim verification (weekly)
+
+# Re-runs the deterministic half of the peer-claim verification report
+# (updates/2026-11-23-peer-claim-verification.md) once a week and commits the
+# regenerated report + JSON back to main.
+#
+# What this can NOT do: sweep the COMS bus. The broker is 192.168.2.52:1883 -
+# an RFC-1918 LAN address, anonymous, no TLS - and this job runs on a
+# GitHub-hosted ubuntu-latest runner, which cannot reach it. Claims that exist
+# only as COMS messages are neither confirmed nor refuted here; collecting and
+# transcribing them into claims/verification_claims.json stays a manual step
+# (see docs/VERIFICATION.md, R2).
+#
+# No push: trigger. Generated-data workflows in this repo removed push triggers
+# after a cancel-cascade incident (queued runs cancelling each other); the cron
+# and workflow_dispatch are the only mechanisms.
+
+on:
+  schedule:
+    # Slot moved off feature-stability-check.yml's '23 6 * * 1' (Block 28), then
+    # off '31 6 * * 1' on 2026-11-23 (Block 39): stale-branch-cleanup.yml already
+    # held that exact cron, and it DELETES merged branches - it can race this
+    # job's branch-containment checks. Minute 18 is the only minute in Monday
+    # hour 6 with no scheduled job at all (see updates/2026-11-23-cron-collision-audit.md).
+    - cron: '18 6 * * 1'   # Mondays 06:18 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  # pr_state checks run `gh pr view`; without a token gh is installed but
+  # unauthenticated and every PR-state check SKIPs (B9 then reads UNVERIFIABLE
+  # where a local authenticated run reads VERIFIED).
+  pull-requests: read
+
+concurrency:
+  group: peer-claim-verification
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          # FULL history is REQUIRED, not an optimisation. `git cat-file -e`,
+          # `git merge-base --is-ancestor` and `git branch -r --contains` all need
+          # objects and refs outside HEAD; in a depth-1 clone every sha that is
+          # not HEAD "does not resolve", so genuinely landed commits are reported
+          # as NOT LANDED (a silent inversion - the first real dispatch went green
+          # with 10/16 claims wrong). The engine refuses to run in a shallow clone
+          # unless --allow-shallow is passed, so this can never regress silently.
+          #
+          # fetch-depth: 0 = every commit of every branch (needed: a sha may land
+          # on a non-main origin ref), but NOT every blob. filter blob:none keeps
+          # it to the commit graph; a plain full checkout of this repo exceeded
+          # the job's 10-minute timeout fetching all history. checkout fetches
+          # on-demand the few blobs it needs for the files below.
+          fetch-depth: 0
+          filter: 'blob:none'
+          # Only the four trees this job reads or writes; everything else stays
+          # out of the working copy (git add of generated files needs --sparse).
+          sparse-checkout: |
+            tools
+            claims
+            updates
+            reports
+          sparse-checkout-cone-mode: true
+
+      - name: Checkout review repo
+        # The review repo (eltonaguiar/antigravity_review_Nov192026, public) holds
+        # the objects that B1/B2/B5/B10 cite as `review/main`. Without it those
+        # checks SKIP and the claims read UNVERIFIABLE. Deliberately plain: small
+        # docs repo, so no blob filter, no sparse checkout, full history.
+        uses: actions/checkout@v5
+        with:
+          repository: eltonaguiar/antigravity_review_Nov192026
+          path: .review
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Check gh availability (non-fatal)
+        # pr_state checks need gh; the engine SKIPs them when it is absent or
+        # unauthorised, so a missing gh degrades coverage but must not fail the job.
+        run: |
+          if command -v gh >/dev/null 2>&1; then
+            echo "gh present: $(gh --version | head -n1)"
+          else
+            echo "gh not available - PR-state checks will SKIP"
+          fi
+
+      - name: Run verification
+        # Deliberately NOT --strict. A weekly job that exits non-zero on a
+        # legitimate new disagreement goes red forever and gets ignored; the
+        # next step surfaces violations as ::warning:: annotations instead.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p reports
+          # Absolute path: the engine resolves the mapped ref with `git -C <path>`,
+          # and the verification step must not depend on its own cwd.
+          python3 tools/verify_peer_claims.py \
+            --remote-map '{"review": "${{ github.workspace }}/.review"}' \
+            --out updates/peer-claim-verification-latest.md \
+            --json-out reports/peer_claim_verification_latest.json
+
+      - name: Summarise (warn, do not fail)
+        run: |
+          python3 - <<'PY'
+          import json
+          d = json.load(open("reports/peer_claim_verification_latest.json"))
+          print(f"ref={d.get('ref')} origin_main={d.get('origin_main')} "
+                f"claims={len(d.get('claims', []))}")
+          for c in d.get("claims", []):
+              print(f"{c['id']}: {c['computed_verdict']} (hand: {c['expected_verdict']})"
+                    f"{'' if c['agree'] else '  DISAGREE'}")
+          for v in d.get("strict_violations", []):
+              print(f"::warning title=peer-claim-verification::{v['id']} {v['why']}: "
+                    f"mechanical {v['computed']} vs hand {v['expected']}")
+          PY
+
+      - name: Commit report + JSON ([skip ci])
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p reports
+          # --sparse: updates/ and reports/ are inside the sparse cone, but the
+          # flag keeps this working if the cone is ever narrowed.
+          git add --sparse updates/peer-claim-verification-latest.md \
+                  reports/peer_claim_verification_latest.json
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore(verification): weekly peer-claim verification refresh [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*5))
+          done
+          echo "::error title=peer-claim-verification::could not push the weekly refresh"
+          exit 1

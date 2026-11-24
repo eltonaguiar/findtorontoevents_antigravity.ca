@@ -757,6 +757,17 @@ def load_active_picks() -> list[dict]:
 
 
 def save_active_picks(picks: list[dict]):
+    # audit3 denylist (2026-11-19): never persist a pick the tribunal proved
+    # harmful. Fail-open — a missing or stale ledger denies nothing.
+    try:
+        from alpha_engine.audit3_denylist import denied_reason as _a3_denied
+    except ImportError:  # pragma: no cover
+        _a3_denied = None
+    if _a3_denied is not None and isinstance(picks, list):
+        _a3_blocked = [p for p in picks if _a3_denied(p)]
+        if _a3_blocked:
+            print(f"  [AUDIT3 DENYLIST] dropped {len(_a3_blocked)} killed pick(s) at write")
+            picks = [p for p in picks if not _a3_denied(p)]
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     # -- Core whitelist kill-list filter --
@@ -780,6 +791,23 @@ def save_active_picks(picks: list[dict]):
         _removed = _before - len(picks)
         if _removed:
             print(f"  [BLOCKED_SYMBOLS] Filtered {_removed} blocked picks before save")
+    except Exception:
+        pass  # fail-open: never let a missing import crash the save
+
+    # -- Retired-strategy blocklist (defense-in-depth) --
+    # Emitters such as multi_asset write straight to active_picks.json without
+    # passing through feed_hygiene.is_valid_active_pick, so retired/paper-only
+    # strategies (e.g. forex_rsi2_mean_reversion, futures_momentum) can still land
+    # here. Block at the canonical save path so no retired strategy emits a row.
+    # Fail-open on a missing import; the ingest-side check in feed_hygiene remains
+    # the primary enforcement.
+    try:
+        from alpha_engine.strategy_blocklist import is_blocked_pick as _is_blocked_pick
+        _before = len(picks)
+        picks = [p for p in picks if not _is_blocked_pick(p)]
+        _removed = _before - len(picks)
+        if _removed:
+            print(f"  [BLOCKLIST] Filtered {_removed} retired/blocked-strategy picks before save")
     except Exception:
         pass  # fail-open: never let a missing import crash the save
 

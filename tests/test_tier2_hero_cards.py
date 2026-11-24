@@ -290,14 +290,25 @@ def test_tier2_payload_staleness_detection():
 # ── Template integration test ─────────────────────────────────────────────────
 
 
-def test_template_html_includes_tier2_hero_section():
-    """Template must contain the tier2-hero-section mount and renderer hook."""
+def test_tier2_hero_panel_is_retired_and_renderer_is_null_guarded():
+    """The visible panel was retired 2026-11-19 (external review A6).
+
+    The mount was removed on purpose ("dead tiles out") and
+    ``getTier2ProvenStrategies`` returns null so a stale payload cannot
+    re-promote cards. The renderer must stay present and null-guarded rather
+    than being resurrected as a visible section.
+    """
     template = (ROOT / "audit_dashboard" / "template.html").read_text(
         encoding="utf-8", errors="replace"
     )
-    assert 'id="tier2-hero-section"' in template, "tier2 hero section mount missing"
-    assert 'renderTier2Heroes' in template, "renderTier2Heroes JS function missing"
-    assert 'tier2-hero-cards-grid' in template, "tier2 cards grid mount missing"
+    assert 'id="tier2-hero-section"' not in template, \
+        "retired tier2 hero mount reappeared in template.html"
+    assert "renderTier2Heroes" in template, "renderTier2Heroes JS function missing"
+    m = re.search(r"function getTier2ProvenStrategies\(\).*?^\}",
+                  template, re.DOTALL | re.MULTILINE)
+    assert m is not None, "getTier2ProvenStrategies function not found"
+    assert "return null;" in m.group(0), \
+        "retired tier2 panel must keep the null data guard"
 
 
 def test_template_html_renders_full_strategy_names_no_truncation():

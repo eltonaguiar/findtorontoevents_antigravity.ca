@@ -5,9 +5,14 @@ on:
     - cron: '44 */2 * * *'  # Every 2 hours (reduced from */30 to ease queue pressure)
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   scan:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
     permissions:
       contents: write
 

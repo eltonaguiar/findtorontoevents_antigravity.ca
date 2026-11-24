@@ -1,0 +1,117 @@
+name: audit3 evidence registry
+
+# P1 of the audit3 v2 plan: register the backtest evidence that already exists
+# (repo JSONs + three read-only MySQL tables) so /audit3 can see it.
+#
+# Deliberately separate from audit3-ledger.yml:
+#   * weekly, off-minute cron (Mondays 05:41) — the ledger stays 6-hourly/lite
+#   * own concurrency group, so it can never queue behind the ledger or the
+#     ~35min audit-dashboard build
+#   * no `push:` trigger, so it cannot create a commit/deploy loop
+#   * read-only DB access; no scanner runs, no new backtests manufactured in CI
+#
+# Outputs (committed + deployed):
+#   audit_dashboard/data/audit3_evidence.json -> /audit3/audit3_evidence.json
+#   audit_dashboard/audit3.html               -> /audit3/index.html
+#
+# Secrets required: DB_PASS_BACKTESTS (or MYSQL_PASSWORD), plus the 50webs FTP
+# trio used by audit3-ledger.yml. Missing DB credentials do not fail the job —
+# the registry is still built from the repo JSONs and says so in `db.error`.
+
+on:
+  schedule:
+    - cron: '41 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: audit3-evidence
+  cancel-in-progress: false
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install MySQL driver
+        run: python3 -m pip install --quiet 'pymysql>=1.1'
+
+      - name: Build evidence registry
+        env:
+          DB_HOST_BACKTESTS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_USER_BACKTESTS: ${{ secrets.DB_USER_BACKTESTS || 'ejaguiar1_backtests' }}
+          DB_PASS_BACKTESTS: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD }}
+          DB_NAME_BACKTESTS: ${{ secrets.DB_NAME_BACKTESTS || 'ejaguiar1_backtests' }}
+        run: |
+          python3 alpha_engine/audit3_evidence.py \
+            --out audit_dashboard/data/audit3_evidence.json
+          python3 - <<'PY'
+          import json
+          d = json.load(open("audit_dashboard/data/audit3_evidence.json"))
+          assert d["schema"] == "audit3.evidence.v1", d.get("schema")
+          s = d["summary"]
+          assert s["n_records"] >= 40, s
+          print("evidence summary:", json.dumps(s))
+          print("db:", json.dumps(d["db"])[:400])
+          PY
+
+      - name: Commit registry (data only, [skip ci])
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/audit3_evidence.json
+          if git diff --cached --quiet; then
+            echo "registry unchanged"
+            exit 0
+          fi
+          git commit -m "chore(audit3): refresh evidence registry [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*5))
+          done
+          echo "::error title=audit3-evidence::could not push registry after 3 attempts"
+          exit 1
+
+      - name: Deploy registry + page to findtorontoevents.ca
+        env:
+          FTP_HOST: ${{ secrets.FTP_SERVER_50WEBS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
+        run: |
+          if [ -z "$FTP_HOST" ] || [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning title=audit3-evidence::FTP credentials absent — registry committed but not deployed"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import ftplib, os
+          host, user, pwd = os.environ["FTP_HOST"], os.environ["FTP_USER"], os.environ["FTP_PASS"]
+          ftp = ftplib.FTP(host, timeout=120)
+          ftp.login(user, pwd)
+          ftp.cwd("findtorontoevents.ca")
+          try:
+              ftp.mkd("audit3")
+          except ftplib.error_perm:
+              pass  # already exists
+          ftp.cwd("audit3")
+          for local, remote in [
+              ("audit_dashboard/data/audit3_evidence.json", "audit3_evidence.json"),
+              ("audit_dashboard/audit3.html", "index.html"),
+          ]:
+              with open(local, "rb") as f:
+                  ftp.storbinary(f"STOR {remote}", f)
+              print(f"uploaded {local} -> /findtorontoevents.ca/audit3/{remote}")
+          ftp.quit()
+          PY

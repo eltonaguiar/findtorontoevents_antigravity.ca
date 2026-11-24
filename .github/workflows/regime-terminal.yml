@@ -53,7 +53,8 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Commit regime state data
-        timeout-minutes: 15
+        if: always()
+        timeout-minutes: 5
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
@@ -65,14 +66,19 @@ jobs:
           git add alpha_engine/data/hmm_regime.json || echo "No hmm_regime.json changes"
           if git diff --staged --quiet; then
             echo "No changes to commit"
-          else
-            git commit -m "Regime Terminal scan: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
-            # Handle concurrent pushes with rebase (preserves other commits)
-            for i in 1 2 3; do
-              git pull --rebase origin main || true
-              bash .github/scripts/safe_push.sh && break
-              echo "Push attempt $i failed, retrying in 5s..."
-              sleep 5
-            done
+            exit 0
           fi
+          bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          git commit -m "Regime Terminal scan: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+          git remote set-url origin "https://x-access-token:${TOKEN_FOR_PUSH}@github.com/${GITHUB_REPOSITORY}.git"
+          for i in 1 2 3; do
+            git pull --rebase origin main || true
+            if bash .github/scripts/safe_push.sh; then
+              exit 0
+            fi
+            echo "Push attempt $i failed, retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::Failed to push regime state after 3 attempts"
+          exit 1
 

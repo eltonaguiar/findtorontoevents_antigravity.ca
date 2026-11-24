@@ -1,0 +1,197 @@
+# 2026-11-23 — Session lessons
+
+Each error below is recorded in the AGENTS.md spirit of "when you make a mistake, document it so
+future-you doesn't repeat it". Flat, factual, and each one ends with a rule that can be acted on.
+
+## 1. Read the shared working tree as repository state
+
+Four times I asserted what the repository contained by looking at the shared working tree. That
+tree sits on `push/phase2-round-2026-11-22`, **6,841 commits behind `origin/main`** as of this
+session, with untracked files that look exactly like repository content.
+
+**Rule: use `git show <ref>:<path>` or a clean `/tmp` worktree; never assert repo state from the
+working tree.**
+
+## 2. Invented a `(14 rows)` format defect in the HML pre-registration
+
+I claimed [`docs/preregistration/HML_VALUE_TEST_2026-11-22.md`](docs/preregistration/HML_VALUE_TEST_2026-11-22.md)
+had a malformed tally because it lacked the `(14 rows)` suffix. It has no `TALLY:` line at all
+(`grep -c "TALLY:"` = 0); it writes the claim as `0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN over
+14 rows` at `:240` [SRC: `docs/preregistration/HML_VALUE_TEST_2026-11-22.md:240`]. `TALLY_RE`
+applies only to docs 15/22/23; HML is discovered by `CLAIM_RE`, which takes no row suffix
+[SRC: `tests/test_edge_research_tally_consistency.py:137-138`].
+
+**Rule: before asserting a test's mechanism, read the test.**
+
+## 3. Broadcast a false "the tally test fails on main" claim to COMS
+
+I posted that the tally test fails on main. It passes (22 passed on the pre-merge tip
+`6b2e65f`). I retracted by replacing the retained payload on the same topic.
+
+**Rule: retained topics are last-writer-wins; a correction must replace the payload, not be
+posted on a different topic beside it.**
+
+## 4. Recommended an unnecessary pilot auto-closer
+
+I proposed building a component to close paper-pilot positions. The pilot already self-closes:
+exits are evaluated every tick through `exit_check()`
+[SRC: `verified_strategies/paper_pilot/crypto_intraday_sim.py:261`], including TIME exits at
+`max_hold_bars` at `:292`.
+
+**Rule: verify a mechanism does not already exist before proposing to build it.**
+
+## 5. Carried stale figures
+
+I quoted pilot `n_closed = 0` when the committed state records 5 closed trades (3 + 0 + 2 across
+slots) [SRC: `verified_strategies/paper_pilot/crypto_intraday_sim_state.json`], and I quoted the
+ledger as 430 when the audit3 ledger's `forward_gate.n_rows` is 449 [SRC: `audit_dashboard/data/audit3_ledger.json`]
+(430 is H-119's own `n_forward`, a narrower scope).
+
+**Rule: re-read the source at the moment you quote it; a figure from an earlier block is a guess.**
+
+## 6. Described the cost figures as "Corwin-Schultz estimates"
+
+They are 1-minute bar-range **upper bounds**
+[SRC: `tools/equity_cost_measure.py:224`, `:240`, `:602`]; Corwin-Schultz is a separate, unusable
+field in the same artifact (`:147`, `:172`, `:606`). Corrected at
+[`updates/2026-11-23-cost-estimator-description-correction.md`](updates/2026-11-23-cost-estimator-description-correction.md).
+
+**Rule: name the estimator by what the code computes, not by what it resembles.**
+
+## 7. Left deliverables on branches while criticising exactly that pattern
+
+Four times (docs 24/25/26, the K1 corrections, doc 27, the FX pre-flight) I wrote work into a
+branch and moved on, while my own analysis criticised unmerged work.
+
+**Rule: after any research commit, merge to main in the same block, or state explicitly that it
+is unmerged and why.**
+
+## 8. Understated the pilot's requirement threefold
+
+I told the user and the bus that the pilot needs 20 closes. It needs **60** closes
+(20 per slot × 3 slots) — `MIN_N_BEFORE_JUDGMENT = 20` at `:54`, counted per slot at `:301`/`:324`
+[SRC: `verified_strategies/paper_pilot/crypto_intraday_sim.py:54`].
+
+**Rule: when a threshold is defined per unit, multiply by the number of units before quoting it.**
+
+---
+
+## The pattern the eight share
+
+Every one of them is a number or a state asserted from memory instead of re-read from its source at
+the moment it was used — the working tree instead of the ref, the remembered format instead of the
+test, the imagined gap instead of the code, the earlier block's figure instead of the file.
+
+## Three rules for future sessions
+
+1. Re-read the exact source line immediately before quoting any figure; never carry one forward.
+2. Read the test or the code before claiming what it does or does not check.
+3. Merge a deliverable to main in the same block you finish it, or say out loud that it is unmerged.
+
+## 9. Put `[skip ci]` on commits that added a test suite
+
+PR #1082 added `tools/verify_peer_claims.py`, `tests/test_verify_peer_claims.py` and a workflow, and
+every commit in it carried `[skip ci]` (`4e9ac2f`, `bcefb7d`, `a63729d`, `6500a5a`, plus the cron
+tweak `71c0597`). I copied the token from generated-data commits, which is where it belongs
+(`crypto-intraday-sim.yml:85`, `fx-cost-overlap.yml:114`), without copying the reason it was there:
+those commits change nothing a test could judge. On a commit that adds a test suite it suppresses
+the very CI run that should have validated them. **No CI ran on that branch at all.** My evidence
+was local pytest only — real, but not the repository's own gate — and I described the work as
+verified on the strength of it.
+
+Fix: the four follow-up commits (PRs #1083-#1086) went in without the token.
+
+**Rule: `[skip ci]` belongs on commits whose only content is generated artefacts; a commit touching
+`tools/`, `tests/`, `.github/workflows/` or `docs/` must be able to trigger CI.**
+
+## 10. A shallow clone inverted six verdicts, and the workflow still went green
+
+`.github/workflows/peer-claim-verification.yml` shipped with `actions/checkout@v4` and
+`fetch-depth: 1`. I reasoned that the engine reads `origin/main`, so a shallow checkout was fine. It
+is not: a depth-1 clone holds one commit and no other refs, so `git cat-file -e <sha>^{commit}`,
+`git merge-base --is-ancestor` and `git branch -r --contains` all fail for anything that is not HEAD.
+
+The first real dispatch (run 45114413921) therefore reported **NOT LANDED** for commits that were
+genuinely landed — B12, B7-context, A1i, A1ii, A2 and B9 inverted — and printed
+`16 claims: 6 agree, 10 disagree (5 non-manual); strict violations: 3` where the same code in a full
+clone printed `12 agree, 4 disagree (1 non-manual); strict violations: 0`. Every step passed. The job
+exited 0 and committed a mostly-wrong report to main.
+
+Fix: `fetch-depth: 0` (later refined to `filter: blob:none` plus sparse checkout after a 10-minute
+timeout, PR #1084) [SRC: `.github/workflows/peer-claim-verification.yml:54-56`]; the engine now
+refuses a shallow repo with exit 2 unless `--allow-shallow` is passed
+[SRC: `tools/verify_peer_claims.py:782-788`]; and shallow runs tag every affected verdict
+`[SHALLOW CLONE - results unreliable]` [SRC: `tools/verify_peer_claims.py:104`].
+
+**Rule: when the correctness of a check depends on git history or refs, never accept a shallow
+clone; and make the tool refuse a degraded environment rather than silently reporting a false
+negative. A false negative in a verification tool is worse than a false positive, because its output
+*is* the product.**
+
+## 11. Treated "the workflow went green" as evidence the output was correct
+
+After the first dispatch I reported the job body as "proven" because `conclusion: success` and every
+step passed. That was true and irrelevant: the run succeeded at producing a report in which 10 of 16
+claims were wrong. The success signal measured that the steps did not crash, nothing about whether
+the result was right. Only reading the log's verdict lines against the local baseline revealed it.
+
+**Rule: for a job whose output is the deliverable, the acceptance test is the content of the output
+compared against a known-good baseline, never the conclusion colour. Concretely: dispatch, then
+diff the produced artefact against a locally-verified run, and treat a mismatch as a failure
+regardless of the green tick.**
+
+## 12. Asserted the tally appears once under `docs/` when it is a per-document invariant
+
+Across three blocks I gave "the canonical tally appears exactly once under `docs/`" as an acceptance
+criterion, and reasoned about edits as if adding one more occurrence would break uniqueness.
+Measured: the canonical line `0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14 rows)` occurs
+**10 times in 10 distinct files** under `docs/`, and
+`tests/test_edge_research_tally_consistency.py` passes anyway. It is parametrized per discovered
+document and asserts each document that states a tally states the settled one
+[SRC: `tests/test_edge_research_tally_consistency.py:170-186`]. The invariant is *per document*, not
+global uniqueness. (A looser grep finds an 11th hit, HML's line with no `(14 rows)` suffix
+[SRC: `docs/preregistration/HML_VALUE_TEST_2026-11-22.md:243`]; the test's `CLAIM_RE` deliberately
+takes no row suffix [SRC: `tests/test_edge_research_tally_consistency.py:137-138`], so it is
+discovered too.)
+
+**Rule: an invariant is whatever the enforcing test measures. Read the test and count the real
+occurrences before treating "exactly once" as a constraint.**
+
+### Shared pattern across errors 9-12
+
+All four are the same shape as the earlier ones: asserting the state of a system from the nearest
+available proxy instead of the thing itself — the token copied from another file's context, the
+checkout depth assumed adequate, the conclusion colour assumed to mean correctness, the invariant
+assumed from the shape it took the first time I looked instead of measured.
+
+1. Copy a convention *and* its preconditions, not just its text.
+2. When a tool's output is a judgement, make it fail loudly in a degraded environment; never let it degrade silently.
+3. Never accept a green check as evidence about content.
+4. Measure the invariant the test enforces; do not infer uniqueness from one sighting.
+
+Provenance: run ids 45114413921, 45116843696, 45118943977; PRs #1082-#1086.
+
+## 13. Shipped a test that could not pass in the environment designed to run it
+
+`tests/test_verify_peer_claims.py::test_remote_map_env_var` called `vpc.main()` without `--ref`, so
+it inherited the `origin/main` default and resolved that ref against the host checkout
+[SRC: `tools/verify_peer_claims.py:824,880,884`]. PR checkouts have no `origin/main`, so the test
+exited 2 before the remote map it was supposed to exercise was ever consulted. It failed on PR #1097
+(run 45128193990, both 3.11 and 3.12) - and the PR merged anyway, so the red was ignored exactly as
+predicted. Worse, when I deliberately broke the remote map the old assertions still passed in a
+healthy checkout: an unresolvable per-check ref yields SKIP, and `strict_violations` exempts SKIP, so
+`rc == 0` and the claim id still appeared in the report. The test was simultaneously fragile *and*
+hollow: it could fail for the wrong reason and pass for the wrong reason.
+
+Fix: pin `--ref HEAD` (always resolvable, incidental to the subject) and assert on the `--json`
+payload that the per-check ref is `review/main`, the check PASSes, and the verdict is VERIFIED
+[SRC: `tests/test_verify_peer_claims.py:173-204`].
+
+**Rule: a check whose signal is not trustworthy is worse than no check, whether it cries wolf or
+stays quiet.** This is the other half of error 10: there a green tick hid a wrong answer; here a red X
+hid a test that could not have caught the bug it was written for. Both train everyone to ignore the
+signal. A test must own its preconditions (build its own world) rather than inherit them from the
+checkout, and it must be shown to fail when its subject is broken - a test never observed red for the
+right reason is not yet a test.
+
+Provenance: run id 45128193990; PR #1097 (merged as `a70bf659fd247e02abe48d344aaba7317561e5c8`).

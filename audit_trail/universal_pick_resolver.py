@@ -25,6 +25,44 @@ from collections import defaultdict
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from audit_trail.pnl_ingest_sanity import apply_pnl_clamp_to_pick
+
+# 2026-11-16: mutual funds resolve on daily NAV instead of intraday OHLCV.
+try:
+    from alpha_engine.mutual_fund_nav import (
+        fetch_nav as _mf_fetch_nav,
+        is_mutual_fund as _mf_is_mutual_fund,
+    )
+except ImportError:  # pragma: no cover
+    def _mf_is_mutual_fund(symbol):  # type: ignore[misc]
+        return False
+
+    def _mf_fetch_nav(symbol):  # type: ignore[misc]
+        return None
+# 2026-11-16: binary prediction-market contracts settle on outcome, not on a
+# spot TP/SL (see audit_trail/pm_contract_resolver.py).
+try:
+    from audit_trail.pm_contract_resolver import (
+        classify_pick_kind as _pm_classify_kind,
+        is_contract_pick as _pm_is_contract_pick,
+        load_market_outcomes as _pm_load_market_outcomes,
+        resolve_contract_pick as _pm_resolve_contract_pick,
+    )
+
+    _PM_CONTRACT_RESOLVER = True
+except ImportError:
+    _PM_CONTRACT_RESOLVER = False
+
+    def _pm_is_contract_pick(pick):  # type: ignore[misc]
+        return False
+
+    def _pm_classify_kind(pick):  # type: ignore[misc]
+        return "spot_derived"
+
+    def _pm_load_market_outcomes():  # type: ignore[misc]
+        return {}
+
+    def _pm_resolve_contract_pick(pick, markets=None):  # type: ignore[misc]
+        return dict(pick)
 from alpha_engine.asset_class import normalize_asset_class
 from audit_trail.asset_classification import classify_asset
 from audit_trail.reverse_split_symbols import should_adjust_for_split
@@ -36,6 +74,7 @@ RESOLVER_SOURCE_ID = "universal_pick_resolver"  # EAGLE2 2026-06-02: source prov
 # slower than crypto. 24-48h was biased against forex/bonds (5-14 days to
 # resolve TP/SL). Per-class hold window prevents premature TIME_EXIT closes
 # from masking true win rate on slow markets while preserving crypto cadence.
+# 2026-11-16: mutual funds settle on daily NAV; allow a week before time-exit.
 MAX_HOLD_HOURS_BY_CLASS = {
     "CRYPTO": 48,
     "EQUITY": 96,
@@ -44,6 +83,7 @@ MAX_HOLD_HOURS_BY_CLASS = {
     "FUTURES": 96,
     "FOREX": 72,  # EAGLE2 2026-06-02: unified to 72h (was 120)
     "BOND": 120,
+    "MUTUAL_FUND": 168,
 }
 
 
@@ -190,6 +230,14 @@ SYSTEM_SOURCES = [
     # ── Multi-Asset (forex + equity + crypto institutional) ──
     ("multi_asset",              "multi_asset/data/active_picks.json"),
     ("multi_asset_institutional","multi_asset/data/institutional_picks.json"),
+    # ── Multi-asset copytrader (forward-test, CTI) ──
+    ("multi_asset_copytrader",   "copy_trader_intel/data/multi_asset_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/forex_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/futures_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/stocks_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/commodity_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "copy_trader_intel/data/bond_copytrader_picks.json"),
+    ("multi_asset_copytrader",   "multi_asset/data/multi_asset_picks.json"),
     # ── Rapid Fire (NOW.py) ──
     ("rapid_fire",               "rapid_fire_data/active_picks.json"),
     # ── Stock & Multi-Asset competitions ──
@@ -216,6 +264,13 @@ SYSTEM_SOURCES = [
     ("pm_momentum_signals",      "prediction_market_agents/data/momentum_signals.json"),
     ("pm_whale_signals",         "prediction_market_agents/data/whale_signals.json"),
     ("pm_kalshi_signals",        "prediction_market_agents/data/kalshi_signals.json"),
+    ("pm_kalshi_re_signals",     "alpha_engine/data/kalshi_signals.json"),
+    ("pm_polymarket_re_signals",  "alpha_engine/data/polymarket_signals.json"),
+    # ── Kalshi + Polymarket macro contracts (Fed/GDP/CPI/indices/yields) ──
+    # Binary contracts settle on outcome (pm_contract_resolver), not price TP/SL.
+    # Read the tracked alpha_engine mirror: the agents/data envelope name matches
+    # the `**/data/*_signals.json` gitignore and would not be committed by CI.
+    ("pm_macro_expansion",       "alpha_engine/data/pm_macro_expansion_picks.json"),
     # ── AI Challenge Curators ──
     ("ai_challenge_claude",          "audit_dashboard/data/ai_challenge_claude_active_picks.json"),
     ("ai_challenge_grok",            "audit_dashboard/data/ai_challenge_grok_active_picks.json"),
@@ -323,6 +378,7 @@ _PREDICTION_MARKET_SYSTEMS = {
     "pm_momentum_signals",
     "pm_whale_signals",
     "pm_kalshi_signals",
+    "pm_macro_expansion",
 }
 
 
@@ -820,27 +876,64 @@ def _parse_timestamp(ts_str):
 # Scoring/quality fields to preserve when resolving picks
 # These are CRITICAL for quality analysis and must NOT be lost
 _SCORING_FIELDS = [
-    "elite_score", "method_a_score", "ml_composite_score", "antigravity_score",
-    "elite_grade", "method_a_grade", "ml_composite_grade", "ag_grade",
-    "elite_breakdown", "method_a_breakdown", "ml_composite_breakdown",
-    "trust_score", "trust_tier", "Trust Tier", "Trust Score",
-    "consensus_pct", "consensus_votes", "high_conviction",
-    "forward_wr", "forward_trades", "forward_status",
-    "confidence", "signal_probability", "tp_probability",
-    "risk_reward", "risk_reward_ratio", "atrValue",
-    "rsi_at_entry", "volume_ratio", "regime", "market_regime",
-    "enrichment", "ml_features", "signal_sources", "source_count",
-    "grade", "Score", "quality_score", "conviction_tier",
-    # Copy trader specific
-    "whale_score", "institutional_score", "hf_conviction_tier",
-    # Prediction market specific
-    "pm_consensus", "pm_confidence", "prediction_market_sources",
-    # C5 (crypto_edge_artifact_audit_2026_05_17.md §C5): preserve original
-    # signal timestamps so analytics can distinguish signal_time from the
-    # run-time stamp written into pick["timestamp"] by _extract_pick_fields.
-    # Without these, age_hours / staleness metrics read run-time as entry age.
-    "signal_time", "entry_time", "closed_at", "opened_at", "resolved_at",
-]
+    "elite_score",
+    "method_a_score",
+    "ml_composite_score",
+    "antigravity_score",
+    "elite_grade",
+    "method_a_grade",
+    "ml_composite_grade",
+    "ag_grade",
+    "elite_breakdown",
+    "method_a_breakdown",
+    "ml_composite_breakdown",
+    "trust_score",
+    "trust_tier",
+    "consensus_pct",
+    "consensus_votes",
+    "high_conviction",
+    "forward_wr",
+    "forward_trades",
+    "forward_status",
+    "confidence",
+    "signal_probability",
+    "tp_probability",
+    "risk_reward",
+    "risk_reward_ratio",
+    "rsi_at_entry",
+    "volume_ratio",
+    "regime",
+    "market_regime",
+    "enrichment",
+    "ml_features",
+    "signal_sources",
+    "source_count",
+    "grade",
+    "quality_score",
+    "conviction_tier",
+    "whale_score",
+    "institutional_score",
+    "hf_conviction_tier",
+    "pm_consensus",
+    "pm_confidence",
+    "prediction_market_sources",
+    "timestamp",
+    "signal_time",
+    "signal_time_utc",
+    "signal_time_est",
+    "ingest_time_utc",
+    "ingest_time_est",
+    "verification_state",
+    "bias_controls",
+    "entry_time",
+    "closed_at",
+    "opened_at",
+    "resolved_at",
+    "market_id",
+    "contract_side",
+    "resolution_date",
+    "pm_resolution_status",
+]  # preserved through resolution; 2026-11-16 added the PM identity fields
 
 
 def _extract_pick_fields(raw, system_name):
@@ -1169,13 +1262,23 @@ def _write_outcomes_to_mysql(resolved_picks: list) -> int:
                     _xp = pick.get("exit_price")
                     _ip = pick.get("entry_price")
                     _er = str(pick.get("exit_reason", "") or "").upper()
-                    if _er in ("TP_HIT", "SL_HIT", "TAKE_PROFIT", "STOP_LOSS") and _xp is not None and _ip is not None:
+                    if _er in ("TP_HIT", "SL_HIT", "TAKE_PROFIT", "STOP_LOSS",
+                               "TIME_EXIT", "EXPIRED", "TIME", "TIMEOUT", "MAX_HOLD") and _xp is not None and _ip is not None:
                         try:
                             if abs(float(_xp) - float(_ip)) < 1e-12:
                                 unverifiable += 1
                                 continue
                         except (TypeError, ValueError):
                             pass
+                    # 2026-11-16 ghost-rows root cause: the upstream settle path forces
+                    # pnl=0.0 on TIME_EXPIRED closes (fabricated "flat 0%") — the constant-
+                    # pnl cohorts behind the 22,947 ghost count. Time exits with no exit
+                    # price are unmeasurable: resolve as unknown (skip), matching
+                    # tools/resolve_stale_open_picks.py NULL semantics + summary_picks
+                    # resolved_unknown. Measured time-exits (real MTM) still persist.
+                    if status == "EXPIRED" and resolution_method == "TIME_EXPIRED" and _xp is None:
+                        unverifiable += 1
+                        continue
                     pnl_raw = float(pick.get("pnl_pct", pick.get("pnl", 0)) or 0)
                     pnl_pct = round(max(-100.0, min(100.0, pnl_raw)), 4)
 
@@ -1368,6 +1471,39 @@ def main():
             orig_sym = pick["symbol"]
             norm_sym = _normalize_symbol(orig_sym)
             current_price = prices.get(norm_sym) or prices.get(orig_sym)
+            # ── Mutual funds price once daily at NAV (2026-11-16) ──
+            # An intraday OHLCV request returns nothing for a MUTUALFUND ticker,
+            # so without this the class could never be resolved. Use the daily NAV
+            # and record the source; TP/SL are evaluated against NAV closes.
+            if current_price is None and _mf_is_mutual_fund(orig_sym):
+                _nav = _mf_fetch_nav(orig_sym)
+                if _nav and _nav.get("nav"):
+                    current_price = float(_nav["nav"])
+                    pick["price_source"] = "mutual_fund_nav"
+                    pick["nav_date"] = _nav.get("nav_date")
+
+            # ── Binary prediction-market contracts (2026-11-16) ──
+            # "Will X happen?" has no spot price and no meaningful TP/SL.
+            # Settle from the market outcome (payout 1.0 / 0.0); keep it OPEN
+            # while live; expire with pnl_pct=None if the deadline passed
+            # without an outcome. Never resolve one on price geometry.
+            if _PM_CONTRACT_RESOLVER and _pm_is_contract_pick(pick):
+                _pm_row = _pm_resolve_contract_pick(pick, _pm_load_market_outcomes())
+                _pm_status = str(_pm_row.get("status", "OPEN")).upper()
+                if _pm_status in ("WON", "LOST", "EXPIRED"):
+                    _pm_row["_resolver_version"] = RESOLVER_VERSION
+                    _pm_row["_resolver_source"] = RESOLVER_SOURCE_ID
+                    newly_resolved.append(_pm_row)
+                    resolved_ids.add(pick_id)
+                    log.info(
+                        "  CONTRACT %s %s %s -> %s pnl=%s",
+                        system_name, pick.get("symbol"), pick.get("contract_side"),
+                        _pm_status, _pm_row.get("pnl_pct"),
+                    )
+                continue
+
+            if _is_prediction_market_pick(system_name, pick):
+                pick.setdefault("pm_pick_kind", _pm_classify_kind(pick))
 
             if current_price is None:
                 stats[system_name]["no_price"] += 1
@@ -1419,7 +1555,11 @@ def main():
                     )
                 continue
 
-            if (not pick["entry_price"] or pick["entry_price"] == 0) and _is_prediction_market_pick(system_name, pick):
+            if (
+                (not pick["entry_price"] or pick["entry_price"] == 0)
+                and _is_prediction_market_pick(system_name, pick)
+                and not _pm_is_contract_pick(pick)
+            ):
                 _snapshot_prediction_market_entry(pick, current_price)
 
             if not pick["entry_price"] or pick["entry_price"] == 0:

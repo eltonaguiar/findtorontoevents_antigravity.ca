@@ -851,6 +851,11 @@ def classify_rows(rows):
 # ---------------------------------------------------------------------------
 # Aggregation
 # ---------------------------------------------------------------------------
+# Cohorts at or above this size with zero recorded losses are treated as
+# resolution artifacts, never as evidence of edge (2026-11-16 audit).
+IMPOSSIBLE_WINRATE_MIN_N = 30
+
+
 def _blank_stat():
     return {
         "n": 0,
@@ -896,6 +901,15 @@ def _finalize(stat):
     out["pf_undefined_reason"] = (
         None if pf is not None else
         ("no_losses" if gp > 0 else "no_trades")
+    )
+    # 2026-11-16 audit: a cohort with this many closes and ZERO losses is a
+    # resolution artifact (fixed-TP labelling or stops never evaluated in path
+    # order), not an edge. Live examples: ADX Trend Confirmation / BTCUSDT
+    # 91W-0L, GainerPredictor1hStrategy / AVAXUSDT 48W-0L. Flag at EVERY
+    # aggregation level (class / strategy / symbol / date) so downstream
+    # surfaces can quarantine instead of promoting.
+    out["impossible_winrate"] = bool(
+        n >= IMPOSSIBLE_WINRATE_MIN_N and stat["losses"] == 0 and stat["wins"] >= IMPOSSIBLE_WINRATE_MIN_N
     )
     return out
 
@@ -1098,6 +1112,11 @@ def main():
             "dropped_spot_flicker": cls["dropped_flicker"],
             "dropped_duplicate_reemissions": cls["dropped_dup"],
             "dropped_policy_excluded": dropped_policy,
+            # 2026-11-16 audit guard: symbol-level cohorts with >=30 closes and
+            # zero losses (resolution artifacts, not edge).
+            "impossible_winrate_cohorts": sum(
+                1 for r in css if r.get("impossible_winrate")
+            ),
         },
         "policy_excluded_count": len(POLICY_EXCLUDED),
         "canonical_view": "by_asset_class_policy_clean_net",

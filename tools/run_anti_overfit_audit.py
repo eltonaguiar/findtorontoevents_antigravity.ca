@@ -42,6 +42,7 @@ DATA_PATH = REPO_ROOT / "audit_dashboard" / "data" / "dashboard_data.json"
 sys.path.insert(0, str(REPO_ROOT))
 
 from alpha_engine.anti_overfit_validator import (  # noqa: E402
+    align_returns_by_period,
     cpcv_pbo,
     deflated_sharpe,
     reality_check_pvalue,
@@ -66,30 +67,44 @@ def _system_returns(picks: list[dict[str, Any]], source_system: str) -> dict[str
     rows = [p for p in picks if p.get("source_system") == source_system]
     flat = np.array([p["pnl_pct"] / 100.0 for p in rows], dtype=np.float64)
     by_strategy: dict[str, list[float]] = defaultdict(list)
+    # Timestamped series: PBO rows must be shared calendar periods, so the exit
+    # time travels with every return (2026-11-20).
+    series: dict[str, list[tuple[Any, float]]] = defaultdict(list)
     for p in rows:
         strat = p.get("strategy") or "unspecified"
-        by_strategy[strat].append(p["pnl_pct"] / 100.0)
+        ret = p["pnl_pct"] / 100.0
+        by_strategy[strat].append(ret)
+        series[strat].append((p.get("closed_at") or p.get("timestamp"), ret))
     return {
         "n_picks": len(rows),
         "flat_returns": flat,
         "by_strategy": {k: np.array(v, dtype=np.float64) for k, v in by_strategy.items()},
+        "series_by_strategy": dict(series),
     }
 
 
-def _build_pbo_matrix(by_strategy: dict[str, np.ndarray], min_obs: int = 30) -> np.ndarray | None:
-    """Build a (T x S) matrix of equal-length per-strategy returns for PBO.
+def _build_pbo_matrix(
+    series_by_strategy: dict[str, list[tuple[Any, float]]],
+    min_obs: int = 30,
+    n_folds: int = 8,
+) -> tuple[np.ndarray | None, list[Any], dict]:
+    """Build a (T x S) matrix whose rows are SHARED calendar periods.
 
-    We trim/pad each strategy series to the shortest length >= ``min_obs`` so
-    the matrix is rectangular. Strategies with < ``min_obs`` picks are dropped.
+    Was ``cols = [v[:T] for v in eligible.values()]``: each strategy's own first
+    T picks stacked onto the same rows. Two strategies that traded in different
+    months were therefore compared as if row 0 happened at the same time, so the
+    CPCV split mixed eras and the PBO logit measured the calendar rather than
+    the selection process (fixed 2026-11-20).
+
+    Now delegates to :func:`align_returns_by_period`, which aggregates each
+    strategy's returns by exit timestamp onto one day/week/month grid and zero-
+    fills periods where a strategy held nothing.
     """
-    eligible = {k: v for k, v in by_strategy.items() if len(v) >= min_obs}
-    if len(eligible) < 2:
-        return None
-    T = min(len(v) for v in eligible.values())
-    if T < min_obs:
-        return None
-    cols = [v[:T] for v in eligible.values()]
-    return np.column_stack(cols)
+    return align_returns_by_period(
+        series_by_strategy,
+        min_obs=min_obs,
+        min_rows=max(2 * n_folds, 16),
+    )
 
 
 def _annualized_sharpe(returns: np.ndarray, periods_per_year: int = 252) -> float:
@@ -131,15 +146,19 @@ def _audit_one(source_system: str, picks: list[dict[str, Any]],
     else:
         dsr_err = None
 
-    M = _build_pbo_matrix(info["by_strategy"])
+    M, periods, align_info = _build_pbo_matrix(info["series_by_strategy"])
     if M is None:
         pbo: float | None = None
-        pbo_note = "skipped (need >= 2 strategies with >= 30 picks each)"
+        pbo_note = (
+            "skipped (need >= 2 strategies with >= 30 timestamped picks; "
+            f"{align_info.get('note') or align_info.get('n_cols')} columns)"
+        )
     else:
         try:
-            pbo = cpcv_pbo(M, n_folds=8, n_test_groups=2)
+            pbo = cpcv_pbo(M, n_folds=8, n_test_groups=2, period_index=periods)
             pbo_note = (
-                f"matrix={M.shape[0]}x{M.shape[1]} (T x strategies)"
+                f"matrix={M.shape[0]}x{M.shape[1]} aligned by exit ts "
+                f"({align_info['period']}, coverage {align_info['coverage_pct']}%)"
             )
         except Exception as exc:  # pragma: no cover
             pbo = float("nan")
@@ -152,6 +171,7 @@ def _audit_one(source_system: str, picks: list[dict[str, Any]],
         "annualized_sharpe": sr,
         "pbo": pbo,
         "pbo_note": pbo_note,
+        "pbo_alignment": align_info,
         "reality_check_p": rc_p,
         "reality_check_err": rc_err,
         "deflated_sharpe": dsr,
@@ -187,6 +207,26 @@ def _print_report(result: dict[str, Any]) -> None:
     print(f"  -> {' | '.join(verdict)}")
 
 
+def _gate_failures(results: list[dict[str, Any]], dsr_threshold: float) -> list[str]:
+    """Systems whose DSR failed the threshold, as human-readable lines.
+
+    A skipped system is a failure too: "insufficient sample" is not a pass.
+    """
+    bad: list[str] = []
+    for r in results:
+        name = r.get("source_system")
+        if "skipped" in r:
+            bad.append(f"{name}: SKIPPED ({r['skipped']}) -- cannot certify")
+            continue
+        dsr = r.get("deflated_sharpe")
+        if dsr is None or (isinstance(dsr, float) and math.isnan(dsr)):
+            bad.append(f"{name}: DSR unavailable ({r.get('deflated_sharpe_err') or 'nan'})")
+            continue
+        if float(dsr) < dsr_threshold:
+            bad.append(f"{name}: DSR {float(dsr):.4f} < {dsr_threshold:.2f}")
+    return bad
+
+
 def _autopick_top(picks: list[dict[str, Any]], k: int) -> list[str]:
     counts: dict[str, int] = defaultdict(int)
     for p in picks:
@@ -206,6 +246,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="bootstrap replications for Reality Check (default 1000)")
     ap.add_argument("--json", action="store_true",
                     help="emit machine-readable JSON instead of the text report")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 2 when any audited system fails the DSR threshold")
+    ap.add_argument("--dsr-threshold", type=float, default=0.95,
+                    help="DSR floor for --gate (default 0.95, Lopez de Prado AFML)")
     args = ap.parse_args(argv)
 
     picks = _load_closed_picks()
@@ -235,6 +279,25 @@ def main(argv: list[str] | None = None) -> int:
         for r in results:
             _print_report(r)
             print()
+    if args.gate:
+        failures = _gate_failures(results, args.dsr_threshold)
+        audited = sum(1 for r in results if "skipped" not in r)
+        if failures:
+            passing = max(0, audited - len(failures))
+            print(
+                f"\nANTI-OVERFIT GATE: FAIL -- {len(failures)}/{len(results)} systems "
+                f"below DSR {args.dsr_threshold:.2f} "
+                f"({passing}/{audited} audited systems pass)",
+                file=sys.stderr,
+            )
+            for f in failures:
+                print(f"  - {f}", file=sys.stderr)
+            return 2
+        print(
+            f"\nANTI-OVERFIT GATE: PASS -- {audited}/{len(results)} systems at "
+            f"DSR >= {args.dsr_threshold:.2f}",
+            file=sys.stderr,
+        )
     return 0
 
 

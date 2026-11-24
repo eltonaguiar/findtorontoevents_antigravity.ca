@@ -1,0 +1,62 @@
+name: pod emission audit
+
+# Rejects pod manifests that list strategies no system emits. On 2026-11-20,
+# 15 of 23 registered strategies had zero rows in trading_picks and
+# at_signal_outcomes — the forward clock could never accrue, and every
+# "0 forward rows" investigation chased an emitter that never existed.
+#
+# Rollout: warn-only today (the current manifest has 15 phantoms). Flip
+# --strict on once the manifest is amended, so a new phantom fails the job.
+
+on:
+  schedule:
+    - cron: '10 5 * * *'
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - 'reports/audit3_confirmatory.json'
+      - 'tools/pod_emission_audit.py'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+      DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+    steps:
+      # No `ref: main` here: on pull_request that checked out main's tree, where
+      # this tool does not exist yet, so the audit failed on its own PR run
+      # (2026-11-20T01:40). Default checkout uses the PR head / triggering ref.
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python3 -m pip install --quiet 'pymysql>=1.1' pytest
+      - name: Audit manifest strategies against emission tables
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "::warning title=pod-emission::no DB secret — audit skipped"; exit 0
+          fi
+          # Strict on NEW phantoms only: the 15 known ones live in
+          # reports/pod_emission_baseline.json, so this can fail the job from
+          # day one without blocking on existing debt.
+          python3 tools/pod_emission_audit.py --out reports/pod_emission_audit.json --strict
+          python3 - <<'PY'
+          import json
+          d = json.load(open("reports/pod_emission_audit.json"))
+          if d["n_phantom"]:
+              print(f"::warning title=pod-emission::{d['n_phantom']} of "
+                    f"{d['n_strategies']} manifest strategies are phantom (0 rows in both tables)")
+              for r in d["phantom"][:10]:
+                  print(f"  {r['pod']}: {r['strategy']}")
+          else:
+              print(f"all {d['n_strategies']} manifest strategies are emitted")
+          PY
+      - name: Test the audit itself
+        run: python3 -m pytest tests/test_pod_emission_audit.py -q

@@ -1,0 +1,31 @@
+{
+  "schema": "value_screener.picks.v1",
+  "generated_at": "2026-11-19T21:00:00Z",
+  "source": "alpha_engine/value_screener.py (Magic Formula x Piotroski x Acquirer's Multiple x SafetyGate)",
+  "note": "Methodology built; no picks emitted yet because the weekly screener (tools/value_screener_runner.py) has not run with live fundamentals + prices. Universe gates + SafetyGate are hard exclusions — zero rows emitted is correct until a ticker passes all gates. File exists so the dashboard does not 404 on the missing artifact.",
+  "universe_gates": {
+    "min_market_cap_usd": 300000000,
+    "min_operating_history_years": 5,
+    "max_10k_filing_age_days": 540,
+    "excluded_asset_classes": ["Financial", "Utilities"]
+  },
+  "composite": {
+    "value_weight": 0.45,
+    "quality_weight": 0.55,
+    "value_magic_formula_pct": 0.40,
+    "value_acquirers_multiple_pct": 0.35,
+    "value_fcf_yield_pct": 0.25,
+    "quality_piotroski_f": 0.50,
+    "quality_roic_stability": 0.30,
+    "quality_debt_to_equity": 0.20
+  },
+  "safety_gate": {
+    "altman_z_double_prime_min": 1.10,
+    "beneish_m_max": -1.78,
+    "beneish_m_placeholder": -2.5
+  },
+  "picks": [],
+  "n_emitted": 0,
+  "n_screened": 0,
+  "status": "methodology_built_zero_emitted"
+}

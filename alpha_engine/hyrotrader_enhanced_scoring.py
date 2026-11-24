@@ -11,13 +11,23 @@ Usage: python alpha_engine/hyrotrader_enhanced_scoring.py
 
 from __future__ import annotations
 import json
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-import numpy as np
-import pandas as pd
+try:
+    import numpy as np
+    import pandas as pd
+except ImportError as _dep_exc:  # env-delta class failure — must stay LOUD
+    print(
+        f"::error::hyro_enhanced_scoring: missing dependency ({_dep_exc}) — "
+        f"pip install numpy pandas",
+        file=sys.stderr,
+        flush=True,
+    )
+    sys.exit(2)
 
 # Project paths
 _REPO = Path(__file__).resolve().parents[1]
@@ -607,12 +617,25 @@ def main():
     else:
         print("\n[ML] No ML rankings found — run hyro_ml_pick_optimizer.py first")
     
-    # Load existing picks
+    # Load existing picks (env/secrets-delta class: hyro_quan_bridge soft-fails
+    # upstream, so this file can be missing or stale — fail LOUD, not cryptic)
+    if not _PICKS_PATH.exists():
+        raise FileNotFoundError(
+            f"{_PICKS_PATH} not found — upstream tools/hyro_quan_bridge.py "
+            f"did not produce it (its own failure is tolerated non-fatal upstream)"
+        )
     with open(_PICKS_PATH, encoding="utf-8") as f:
         data = json.load(f)
     
     picks = data.get("picks", [])
     print(f"\nLoaded {len(picks)} hyrotrader picks")
+    if not picks:
+        print(
+            "::warning::hyro_enhanced_scoring: 0 input picks — hyrotrader_picks.json "
+            "is empty or stale (upstream hyro_quan_bridge soft-fail?) — output will "
+            "not refresh /audit Hyro rankings",
+            flush=True,
+        )
     
     enhanced_picks = []
     
@@ -797,5 +820,32 @@ def main():
     print(f"Actionable short-term entries: {output_data['enhancement_summary']['actionable_short_term']}")
 
 
+def _run_cli() -> int:
+    # Exit-code / stderr contract (LOUD-but-nonfatal — the workflow gates on
+    # this step's outcome but tolerates it):
+    #   0 = completed (per-pick issues stay warnings)
+    #   2 = env/secrets/input-delta class failure (::error:: annotation, clean)
+    #   unexpected crash = (::error:: annotation + re-raise, traceback preserved)
+    try:
+        main()
+    except (FileNotFoundError, json.JSONDecodeError, OSError) as exc:
+        print(
+            f"::error::hyro_enhanced_scoring failed (env/input class): "
+            f"{type(exc).__name__}: {exc}",
+            file=sys.stderr,
+            flush=True,
+        )
+        return 2
+    except Exception as exc:
+        print(
+            f"::error::hyro_enhanced_scoring failed (unexpected): "
+            f"{type(exc).__name__}: {exc}",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise
+    return 0
+
+
 if __name__ == "__main__":
-    main()
+    sys.exit(_run_cli())

@@ -2,6 +2,7 @@
 # It runs every 30 minutes to catch and recover from transient failures
 
 name: actions-failure-guardian
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   workflow_dispatch:
@@ -57,8 +58,12 @@ jobs:
             git config user.name "Hermes Agent"
             git config user.email "hermes@agent.com"
             git add reports/actions_failure_guardian.json
-            git pull --rebase origin main
-            git commit -m "Update actions failure guardian status [skip ci]" && git push origin HEAD:main || echo "No changes to push"
+            if git commit -m "Update actions failure guardian status [skip ci]"; then
+              # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+              bash .github/scripts/safe_push.sh
+            else
+              echo "No changes to push"
+            fi
           fi
 
       - name: Notify on critical failures

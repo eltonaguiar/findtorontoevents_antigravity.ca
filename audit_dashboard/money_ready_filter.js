@@ -96,12 +96,21 @@
 
   function classPassesIntrabarSizingGate(cls) {
     var mv = window._moneyReadyVerdictCache;
-    if (!mv || !mv.classes) return true;
+    if (!mv || !mv.classes) return false;
     var c = mv.classes[String(cls || '').toUpperCase()];
-    if (!c) return true;
-    if (c.sizing_source === 'intrabar_truth') {
-      return c.wr_ok === true && c.pf_ok === true;
-    }
+    if (!c) return false;
+    if (c.sizing_allowed === false || c.verdict !== 'MONEY_READY') return false;
+    if (c.sizing_source !== 'intrabar_truth') return false;
+    return c.wr_ok === true && c.pf_ok === true;
+  }
+
+  function fiveGatesPass(edge) {
+    if (!edge) return false;
+    if (!(Number(edge.n) >= 100)) return false;
+    if (!(Number(edge.dsr) > 0.95)) return false;
+    if (!(Number(edge.pbo) < 0.05)) return false;
+    if (!(Number(edge.wfe) > 0.60)) return false;
+    if (!(Number(edge.sharpe) > 0.5)) return false;
     return true;
   }
 
@@ -143,7 +152,7 @@
     if (!pick) return null;
     var strategy = String(pick.strategy || '').trim();
     var edge = SUPREME_EDGE_REAL[strategy];
-    if (!edge) return null;
+    if (!edge || !fiveGatesPass(edge)) return null;
     var cls = String(pick.asset_class || '').toUpperCase().trim();
     if (BLOCKED_CLASSES.has(cls)) return null;
     if (edge.class_hint && cls && cls !== edge.class_hint) {
@@ -207,7 +216,7 @@
         banner = document.createElement('div');
         banner.id = 'money-ready-banner';
         banner.style.cssText = 'background:linear-gradient(90deg,rgba(250,204,21,0.18),rgba(34,197,94,0.12));border:1px solid rgba(250,204,21,0.5);color:#fde68a;padding:10px 16px;border-radius:8px;margin:8px 16px;font-size:13px;line-height:1.5;';
-        banner.innerHTML = '💰 <strong>MONEY READY FILTER ACTIVE</strong> — DSR-verified on HISTORICAL backtest only — NOT forward-validated; forward paper-pilot refutes several entries. NOT a sizing signal. Hover each pick for the full edge-evidence justification. Surviving strategies: ' + Object.keys(SUPREME_EDGE_REAL).map(function(s){return '<code style="background:rgba(167,139,250,0.12);color:#c4b5fd;padding:1px 5px;border-radius:3px">'+s+'</code>';}).join(', ') + '. <a href="/audit_dashboard/anti_overfit.html" style="color:#06b6d4">DSR audit →</a> <a href="/audit_dashboard/research_sidecars.html" style="color:#06b6d4">Research sidecars →</a> <a href="/reports/supreme_edge_5agent_synthesis_2026-05-12.md" style="color:#06b6d4">5-agent synthesis →</a> &middot; NFA. Click again to disable.';
+        banner.innerHTML = '<strong>MONEY READY FILTER</strong> is fail-closed. A pick shows only if its sleeve has DSR&gt;0.95, PBO&lt;0.05, WFE&gt;60%, live Sharpe&gt;0.5, and n&ge;100, and the class verdict is MONEY_READY. The old historical list does not pass. Not a sizing signal. NFA. Click again to disable.';
         var anchor = document.getElementById('btn-money-ready');
         if (anchor && anchor.parentNode) anchor.parentNode.parentNode.insertBefore(banner, anchor.parentNode.nextSibling);
       }

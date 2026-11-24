@@ -36,6 +36,12 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
 .err{color:#fca5a5;padding:14px;background:rgba(239,68,68,0.08);border:1px solid #ef4444;border-radius:8px}
 .dsr-bar{display:inline-block;width:50px;height:8px;background:#1f2937;border-radius:4px;overflow:hidden;vertical-align:middle;margin-right:6px}
 .dsr-fill{height:100%;background:linear-gradient(90deg,#ef4444 0%,#fbbf24 50%,#22c55e 100%);transition:width 0.3s}
+.pub{display:inline-block;padding:1px 7px;border-radius:10px;font-size:0.72em;font-weight:700;white-space:nowrap}
+.pub-publishable{background:rgba(34,197,94,0.18);color:#86efac;border:1px solid rgba(34,197,94,0.5)}
+.pub-probation{background:rgba(239,68,68,0.14);color:#fca5a5;border:1px solid rgba(239,68,68,0.45)}
+.pub-unrated{background:rgba(148,163,184,0.16);color:#cbd5e1;border:1px solid rgba(148,163,184,0.4)}
+.pub-note{font-size:0.82em;color:#94a3b8;margin:0 0 10px;line-height:1.5}
+.pub-note label{cursor:pointer;color:#cbd5e1}
 </style>
 </head>
 <body>
@@ -66,48 +72,145 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
 <div class="meta" id="last-updated"></div>
 </div>
 
+<div class="section" id="gate-coverage-section">
+<h2>Merge-hybrid gate coverage</h2>
+<div class="meta">What the publish gate actually opened, from <span class="code">audit_dashboard/data/hybrid_gate_report.json</span> &mdash; written and committed by the gate itself, so a passing step stays auditable after the job log expires.</div>
+<div id="gate-coverage"><em>Loading...</em></div>
+</div>
+
 <div class="section" id="data-section">
 <h2>Per-strategy verdicts</h2>
+<div class="pub-note" id="pub-note"></div>
 <div id="content"><em>Loading...</em></div>
 </div>
 
 <script>
-(async function() {
+(function() {
   const root = document.getElementById('content');
   const kpiRow = document.getElementById('kpi-row');
+  const pubNote = document.getElementById('pub-note');
   const lastUpd = document.getElementById('last-updated');
-  try {
-    const r = await fetch('/audit_dashboard/data/anti_overfit_audit.json?ts=' + Date.now());
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
+  let DATA = null;
+  // Display rule only. The default is to show every row: a demoted strategy
+  // that silently disappears is a deleted strategy wearing a filter.
+  let hideProbation = false;
 
-    // KPI row
-    const vc = d.verdict_counts || {};
-    kpiRow.innerHTML =
-      '<div class="kpi"><div class="kpi-label">Strategies audited</div><div class="kpi-value">' + (d.n_strategies_audited||0) + '</div></div>' +
-      '<div class="kpi"><div class="kpi-label">Min n threshold</div><div class="kpi-value">' + (d.min_n_threshold||20) + '</div></div>' +
-      '<div class="kpi"><div class="kpi-label">Edge likely real</div><div class="kpi-value kpi-real">' + (vc.EDGE_LIKELY_REAL||0) + '</div></div>' +
-      '<div class="kpi"><div class="kpi-label">Undetermined</div><div class="kpi-value kpi-undet">' + (vc.UNDETERMINED||0) + '</div></div>' +
-      '<div class="kpi"><div class="kpi-label">Overfit likely</div><div class="kpi-value kpi-overfit">' + (vc.OVERFIT_LIKELY||0) + '</div></div>';
-    // Count n<100 for KPI
-    const nLt100 = (d.strategies||[]).filter(s => (s.n||0) < 100).length;
-    if (nLt100 > 0) {
-      kpiRow.innerHTML += '<div class="kpi"><div class="kpi-label">Insufficient n (&lt;100)</div><div class="kpi-value" style="color:#fb923c">' + nLt100 + '</div></div>';
+  // Gate coverage: newest entry answers "how many artifacts were gated on the
+  // last publish?", the last clean entry answers "when was the least coverage
+  // sufficient?". Entries carry no timestamps by design (a retry rewrites
+  // identical bytes), so run ids stand in for time.
+  (async function() {
+    const box = document.getElementById('gate-coverage');
+    try {
+      const g = await fetch('/audit_dashboard/data/hybrid_gate_report.json?ts=' + Date.now());
+      if (!g.ok) throw new Error('HTTP ' + g.status);
+      const gr = await g.json();
+      const entries = gr.entries || [];
+      if (!entries.length) {
+        box.innerHTML = '<em>Report exists but holds no entries yet.</em>';
+        return;
+      }
+      const last = entries[entries.length - 1];
+      // 'staged' counts the whole staged set before the merge; 'rev-range'
+      // counts only the JSON that merge touched. Different populations, so a
+      // clean run from the other phase is not comparable to the newest entry --
+      // a rev-range count of 1 beside a staged 46 reads as a regression when the
+      // gate is in fact clean.
+      let lastClean = null;
+      for (let i = entries.length - 1; i >= 0; i--) {
+        if (entries[i].verdict === 'clean' && entries[i].phase === last.phase) {
+          lastClean = entries[i];
+          break;
+        }
+      }
+      const paths = last.inspected_paths || [];
+      const trunc = last.inspected_paths_truncated
+        ? ' <span class="meta">(+' + last.inspected_paths_truncated + ' more, counted but not listed)</span>' : '';
+      const skipped = last.skipped || [];
+      box.innerHTML =
+        '<div class="kpi-row">' +
+          '<div class="kpi"><div class="kpi-label">Last run gated</div><div class="kpi-value">' + (last.inspected || 0) + '</div>' +
+            '<div class="meta" style="margin:0">' + escapeHTML(last.phase || '?') + ' &middot; ' +
+            (last.verdict === 'clean' ? '<span class="verdict-real">clean</span>'
+                                      : '<span class="verdict-overfit">' + escapeHTML(last.verdict || '?') + '</span>') + '</div></div>' +
+          '<div class="kpi"><div class="kpi-label">Last clean ' + escapeHTML(last.phase || '?') + ' run gated</div><div class="kpi-value kpi-real">' + (lastClean ? lastClean.inspected : '\u2014') + '</div>' +
+            '<div class="meta" style="margin:0">' + (lastClean ? escapeHTML((lastClean.phase || '?') + ' &middot; run ' + (lastClean.run_id || '?')) : 'none in ' + entries.length + ' retained entries') + '</div></div>' +
+          '<div class="kpi"><div class="kpi-label">Skipped (over cap)</div><div class="kpi-value ' + (skipped.length ? 'kpi-overfit' : '') + '">' + skipped.length + '</div>' +
+            '<div class="meta" style="margin:0">not gated</div></div>' +
+          '<div class="kpi"><div class="kpi-label">Findings</div><div class="kpi-value ' + ((last.findings || 0) ? 'kpi-overfit' : '') + '">' + (last.findings || 0) + '</div>' +
+            '<div class="meta" style="margin:0">contradictions</div></div>' +
+        '</div>' +
+        '<div class="meta">Newest entry: run <span class="code">' + escapeHTML(String(last.run_id || '?')) + '</span>' +
+          (last.rev_range ? ' &middot; <span class="code">' + escapeHTML(last.rev_range) + '</span>' : '') +
+          ' &middot; ' + (gr.entries || []).length + ' entries retained</div>' +
+        (skipped.length
+          ? '<div class="meta">Excluded from gating: ' + skipped.map(s => escapeHTML(s.path) + ' (' + s.mb + ' MB)').join(', ') + '</div>'
+          : '') +
+        (paths.length
+          ? '<details style="margin-top:8px"><summary style="cursor:pointer;color:#a78bfa;font-size:0.85em">' +
+            paths.length + ' inspected path(s)' + trunc + '</summary><div class="meta" style="font-family:Consolas,Menlo,monospace;font-size:0.78em;white-space:pre-wrap">' +
+            paths.map(escapeHTML).join('\n') + '</div></details>'
+          : '');
+    } catch (e) {
+      box.innerHTML = '<div class="meta">Gate report unavailable (' + escapeHTML(e.message || e) + ') &mdash; either nothing is committed yet, or it failed to load.</div>';
     }
-    lastUpd.textContent = 'Generated: ' + (d.generated_at || 'unknown');
+  })();
 
-    // Sort: n>=100 first (descending by n), then n<100 (descending by n)
-    const strategies = (d.strategies||[]).slice().sort((a, b) => {
-      const aOk = (a.n||0) >= 100, bOk = (b.n||0) >= 100;
-      if (aOk !== bOk) return aOk ? -1 : 1;
-      return (b.n||0) - (a.n||0);
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
+  }
 
-    // Count insufficient-n
-    const insufficientCount = strategies.filter(s => (s.n||0) < 100).length;
+  // Snapshots generated before the label existed still have to say something
+  // honest, so derive it with the same rule the generator uses.
+  function labelOf(s) {
+    if (s.publication_label) return s.publication_label;
+    return (s.dsr != null && s.dsr >= 0.95) ? 'PUBLISHABLE' : 'UNRATED';
+  }
 
-    // Table
-    const rows = strategies.map(s => {
+  function renderKpis(d, strategies) {
+    const vc = d.verdict_counts || {};
+    const counts = { PUBLISHABLE: 0, PROBATION: 0, UNRATED: 0 };
+    strategies.forEach(function(s) { const l = labelOf(s); counts[l] = (counts[l] || 0) + 1; });
+    let html =
+      '<div class="kpi"><div class="kpi-label">Strategies audited</div><div class="kpi-value">' + (d.n_strategies_audited || strategies.length) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">Min n threshold</div><div class="kpi-value">' + (d.min_n_threshold || 20) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">Publishable</div><div class="kpi-value kpi-real">' + counts.PUBLISHABLE + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">On probation</div><div class="kpi-value kpi-overfit">' + counts.PROBATION + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">Undetermined</div><div class="kpi-value kpi-undet">' + (vc.UNDETERMINED || 0) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-label">Overfit likely</div><div class="kpi-value kpi-overfit">' + (vc.OVERFIT_LIKELY || 0) + '</div></div>';
+    const nLt100 = strategies.filter(function(s) { return (s.n || 0) < 100; }).length;
+    if (nLt100 > 0) {
+      html += '<div class="kpi"><div class="kpi-label">Insufficient n (&lt;100)</div><div class="kpi-value" style="color:#fb923c">' + nLt100 + '</div></div>';
+    }
+    kpiRow.innerHTML = html;
+  }
+
+  function renderTable(d) {
+    const strategies = (d.strategies || []).slice().sort(function(a, b) {
+      const aOk = (a.n || 0) >= 100, bOk = (b.n || 0) >= 100;
+      if (aOk !== bOk) return aOk ? -1 : 1;
+      return (b.n || 0) - (a.n || 0);
+    });
+    const probation = strategies.filter(function(s) { return labelOf(s) === 'PROBATION'; }).length;
+    const threshold = d.publication_dsr_threshold != null ? d.publication_dsr_threshold : 0.95;
+    const shown = hideProbation
+      ? strategies.filter(function(s) { return labelOf(s) !== 'PROBATION'; })
+      : strategies;
+
+    pubNote.innerHTML =
+      '&#128274; <strong>' + probation + ' of ' + strategies.length + '</strong> strategies are ' +
+      '<span class="pub pub-probation">PROBATION</span> &mdash; DSR below the ' + threshold +
+      ' publication floor. The label is a display rule, not a filter: those rows keep their n, their DSR and their place below. ' +
+      '<label><input type="checkbox" id="hide-probation"' + (hideProbation ? ' checked' : '') + '> hide PROBATION rows</label>';
+
+    const insufficientCount = strategies.filter(function(s) { return (s.n || 0) < 100; }).length;
+    const insufBanner = insufficientCount > 0
+      ? '<div style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.35);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.82em;color:#fdba74">&#9888; <strong>' + insufficientCount + ' strategy(ies) with n &lt; 100</strong> &mdash; DSR values are unreliable below n=100 (Bailey-Lopez de Prado). These rows are sorted last. Do not base sizing decisions on their DSR/verdict.</div>'
+      : '';
+
+    const rows = shown.map(function(s) {
       const vClass = s.verdict === 'EDGE_LIKELY_REAL' ? 'verdict-real' :
                      s.verdict === 'UNDETERMINED' ? 'verdict-undet' :
                      s.verdict === 'OVERFIT_LIKELY' ? 'verdict-overfit' : 'verdict-err';
@@ -115,33 +218,47 @@ th{color:#a78bfa;background:rgba(167,139,250,0.06);font-weight:700;position:stic
       const dsrBar = s.dsr != null
         ? '<span class="dsr-bar"><span class="dsr-fill" style="width:' + dsrPct + '%"></span></span>' + s.dsr.toFixed(4)
         : '<em>n/a</em>';
-      const nBadge = (s.n||0) < 100
-        ? '<span class="insufficient-n" title="DSR unreliable below n=100 — awaiting more closed trades">&#9888; insufficient n</span>'
+      const nBadge = (s.n || 0) < 100
+        ? '<span class="insufficient-n" title="DSR unreliable below n=100 &mdash; awaiting more closed trades">&#9888; insufficient n</span>'
         : '';
-      return '<tr><td><span class="' + vClass + '">' + (s.verdict||'?') + '</span></td>' +
-             '<td><span class="code">' + escapeHTML(s.strategy||'?') + '</span>' + nBadge + '</td>' +
-             '<td class="num">' + (s.n||0) + '</td>' +
-             '<td class="num">' + (s.wr_pct||0).toFixed(1) + '%</td>' +
-             '<td class="num">' + (s.pf!=null?s.pf.toFixed(2):'-') + '</td>' +
-             '<td class="num">' + (s.sharpe!=null?s.sharpe.toFixed(3):'-') + '</td>' +
+      const lab = labelOf(s);
+      const lClass = lab === 'PUBLISHABLE' ? 'pub-publishable' : lab === 'PROBATION' ? 'pub-probation' : 'pub-unrated';
+      const lTitle = s.publication_reason || (lab === 'PUBLISHABLE'
+        ? 'DSR meets the publication floor'
+        : lab === 'PROBATION'
+          ? 'DSR is below the publication floor: kept visible, not publishable'
+          : 'no label in this snapshot');
+      return '<tr><td><span class="pub ' + lClass + '" title="' + escapeHTML(lTitle) + '">' + escapeHTML(lab) + '</span></td>' +
+             '<td><span class="' + vClass + '">' + (s.verdict || '?') + '</span></td>' +
+             '<td><span class="code">' + escapeHTML(s.strategy || '?') + '</span>' + nBadge + '</td>' +
+             '<td class="num">' + (s.n || 0) + '</td>' +
+             '<td class="num">' + (s.wr_pct || 0).toFixed(1) + '%</td>' +
+             '<td class="num">' + (s.pf != null ? s.pf.toFixed(2) : '-') + '</td>' +
+             '<td class="num">' + (s.sharpe != null ? s.sharpe.toFixed(3) : '-') + '</td>' +
              '<td class="num">' + dsrBar + '</td></tr>';
     }).join('');
 
-    const insufBanner = insufficientCount > 0
-      ? '<div style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.35);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.82em;color:#fdba74">&#9888; <strong>' + insufficientCount + ' strategy(ies) with n &lt; 100</strong> &mdash; DSR values are unreliable below n=100 (Bailey-Lopez de Prado). These rows are sorted last. Do not base sizing decisions on their DSR/verdict.</div>'
-      : '';
+    root.innerHTML = insufBanner + '<table><thead><tr><th>Publication</th><th>Verdict</th><th>Strategy</th><th class="num">n</th><th class="num">WR</th><th class="num">PF</th><th class="num">Sharpe</th><th class="num">DSR</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="8"><em>' + (hideProbation ? 'every row here is on probation &mdash; untick to see them' : 'no strategies above min_n') + '</em></td></tr>') +
+      '</tbody></table>';
 
-    root.innerHTML = insufBanner + '<table><thead><tr><th>Verdict</th><th>Strategy</th><th class="num">n</th><th class="num">WR</th><th class="num">PF</th><th class="num">Sharpe</th><th class="num">DSR</th></tr></thead><tbody>' + (rows||'<tr><td colspan="7"><em>no strategies above min_n</em></td></tr>') + '</tbody></table>';
-  } catch(e) {
-    root.innerHTML = '<div class="err">Failed to load anti_overfit_audit.json: ' + escapeHTML(String(e)) + '</div>';
-    kpiRow.innerHTML = '<div class="kpi"><div class="kpi-label">Load failed</div></div>';
+    const cb = document.getElementById('hide-probation');
+    if (cb) cb.addEventListener('change', function() { hideProbation = this.checked; renderTable(DATA); });
   }
 
-  function escapeHTML(s) {
-    return String(s).replace(/[&<>"']/g, c => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[c]));
-  }
+  (async function load() {
+    try {
+      const r = await fetch('/audit_dashboard/data/anti_overfit_audit.json?ts=' + Date.now());
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      DATA = await r.json();
+      lastUpd.textContent = 'Generated: ' + (DATA.generated_at || 'unknown');
+      renderKpis(DATA, (DATA.strategies || []));
+      renderTable(DATA);
+    } catch (e) {
+      root.innerHTML = '<div class="err">Failed to load anti_overfit_audit.json: ' + escapeHTML(String(e)) + '</div>';
+      kpiRow.innerHTML = '<div class="kpi"><div class="kpi-label">Load failed</div></div>';
+    }
+  })();
 })();
 </script>
 </div>

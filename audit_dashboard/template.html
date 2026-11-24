@@ -829,6 +829,8 @@ a:hover { text-decoration: underline; }
   <a href="#" id="jump-to-active" onclick="event.preventDefault(); document.querySelector('[data-tab=active]').click(); document.getElementById('tab-active').scrollIntoView({behavior:'smooth',block:'start'});" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(251,191,36,0.2),rgba(245,158,11,0.1));border:1px solid rgba(251,191,36,0.4);border-radius:20px;color:#fbbf24;font-weight:700;font-size:13px;text-decoration:none;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px" onmouseover="this.style.background='linear-gradient(135deg,rgba(251,191,36,0.35),rgba(245,158,11,0.1))';this.style.boxShadow='0 0 16px rgba(251,191,36,0.2)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(251,191,36,0.2),rgba(245,158,11,0.1))';this.style.boxShadow='none'">&#x2728; Jump to Active Picks</a>
   <a href="research_index.html" id="research-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(96,165,250,0.2),rgba(59,130,246,0.1));border:1px solid rgba(96,165,250,0.4);border-radius:20px;color:#60a5fa;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="Per-asset-class research runs (sourced + backtested + multi-AI consensus picks)">&#x1F4D6; Research</a>
   <a href="edge_stability.html" id="edge-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(16,185,129,0.1));border:1px solid rgba(34,197,94,0.4);border-radius:20px;color:#22c55e;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="Per-asset-class edge stability across 7d/30d/90d/all-time windows">&#x1F4CA; Edge Stability</a>
+  <a href="/audit3/" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(248,113,113,0.18),rgba(220,38,38,0.10));border:1px solid rgba(248,113,113,0.45);border-radius:20px;color:#fca5a5;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="audit3 — the strict kill tribunal: what is PROVEN, CANDIDATE, WEAK or KILL, with coverage and cost gates">&#x2696;&#xFE0F; Kill Tribunal</a>
+  <a href="/audit2/" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(76,194,255,0.18),rgba(14,116,144,0.10));border:1px solid rgba(76,194,255,0.45);border-radius:20px;color:#7dd3fc;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="audit2 — candidate pods, the forward-evidence clock, and the measurement methodology">&#x1F4DA; Candidates &amp; Method</a>
   <a href="ai_leaderboard.html" id="ai-leaderboard-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(124,58,237,0.1));border:1px solid rgba(167,139,250,0.4);border-radius:20px;color:#a78bfa;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="Per-AI pick attribution: which AI engine picks best, per asset class and horizon">&#x1F3C6; AI Leaderboard</a>
   <a href="pick_funnel.html" id="pick-funnel-link" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;margin-left:8px;padding:6px 18px;background:linear-gradient(135deg,rgba(244,114,182,0.2),rgba(217,70,239,0.1));border:1px solid rgba(244,114,182,0.4);border-radius:20px;color:#f472b6;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:0.5px" title="Pick funnel: how raw signals get filtered into Smart Picks / High Conviction / Money Ready per asset class (with leakage flags)">&#x1F50D; Pick Funnel</a>
 </div>
@@ -854,7 +856,7 @@ a:hover { text-decoration: underline; }
   </div>
   <div style="margin-top:5px;color:#94a3b8;font-size:0.88em">
     <strong style="color:#86efac">&#x2705; DATA QUALITY IMPROVEMENTS (2026-05-31):</strong>
-    Ghost rows: quarantined from the canonical view on 2026-05-31 (raw-table count is live in the DB Health tile above; rows persist per the 2026-11-14 MASTER_AUDIT, quarantine-not-delete policy). Status-PnL mismatches: cleared from the canonical view 2026-05-31 (live sampled count in DB Health tile). Non-canonical statuses (WON/CLOSED_SL/CLOSED_TP/FLAT): all 0. Backup tables: removed.
+    Ghost rows are not cleared. The DB Health tile reads live <code>db_health.json</code> (2026-11-16: 22,947 rows, 10 MEMECOIN/meta_strategy cohorts). A non-zero count fails the check. Do not cite the 2026-05-31 cleared-ghost claim. Status-PnL sign contradictions: none in that file. Non-canonical statuses: 0. Backup tables: removed.
     at_raw_picks UNKNOWN: 3 (was thousands). FOREX: PR #6 policy-gate shipped (all blocked except cta_cross_asset_tsmom SHORT).
     BOND: now emitting (78 raw picks). See <code>updates/2026-05-31-pr1-data-integrity-repair.md</code>.
   </div>
@@ -877,7 +879,7 @@ a:hover { text-decoration: underline; }
 <div id="ml-calibration-inversion-banner" style="max-width:1180px;margin:8px auto 0;padding:9px 14px;background:linear-gradient(135deg,rgba(168,85,247,0.12),rgba(239,68,68,0.10));border:1px solid rgba(168,85,247,0.55);border-radius:10px;color:#fbcfe8;font-size:0.80em;line-height:1.5">
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <span style="font-weight:700;color:#a855f7;letter-spacing:0.4px;font-size:0.95em">&#x1F4CF; ML CALIBRATION INVERTED</span>
-    <span style="color:#fde68a;font-weight:600">High confidence != high win rate.</span>
+    <span style="color:#fde68a;font-weight:600">High confidence != high win rate.</span> <span style="color:#94a3b8;font-size:0.92em">(static measurement 2026-05-15)</span>
     <span style="color:#cbd5e1">CRYPTO conf&ge;0.90 &rarr; <strong style="color:#fca5a5">14.4% WR</strong>; conf 0.50-0.60 &rarr; <strong style="color:#86efac">60.3% WR</strong>.</span>
     <span style="color:#94a3b8">&middot;</span>
     <span style="color:#cbd5e1">EQUITY 0.85-0.90 &rarr; <strong style="color:#fca5a5">20% WR (worst band)</strong>; &gt;0.90 recovers.</span>
@@ -898,7 +900,7 @@ a:hover { text-decoration: underline; }
     <span style="color:#cbd5e1;font-size:0.95em;font-weight:600">Phenomenal performance across <strong style="color:#22c55e">ALL</strong> asset classes &mdash; sustainable, hedge-fund-grade.</span>
   </div>
   <div style="color:#94a3b8;font-size:0.78em;margin:4px 0 6px;font-style:italic">Sports betting tracked at <a href="/live-monitor/sports-betting.html" style="color:#a5b4fc;text-decoration:underline">/live-monitor/sports-betting.html</a> (separate KPIs).</div>
-  <div style="color:#cbd5e1;font-size:0.86em;font-weight:600;margin:2px 0 4px;line-height:1.45">0/6 money-ready. Honest intrabar-true (first-touch, SL-wins-ties): <strong style="color:#ef4444">CRYPTO 32.9% PF0.74</strong> (only class n&ge;100, FAIL) &middot; <strong style="color:#fbbf24">EQUITY 60% PF2.13 n=72</strong> (closest, INSUFF-N) &middot; COMMODITY 42% PF1.77 n=81. Bottleneck = clean-trade <em>supply</em>, not strategy supply. Cleanest leads (forward-track only, not sized): COMMODITY <code>futures_momentum</code> n57 63%/PF2.6, FOREX <code>forex_rsi2</code> n19 63%/PF2.4. Source: <code>intrabar_truth_by_class.json</code>.</div>
+  <div style="color:#cbd5e1;font-size:0.86em;font-weight:600;margin:2px 0 4px;line-height:1.45">0/10 money-ready &mdash; COMMODITY is the only WATCH; the other 9 classes are NOT_READY or INSUFFICIENT_DATA (live <code>money_ready_verdict.json</code>, 2026-11-16T04:07Z). Honest intrabar-true (first-touch, SL-wins-ties), snapshot 2026-11-16T04:03Z &mdash; the per-class tiles below auto-update, this sentence does not: <strong style="color:#ef4444">CRYPTO 35.8% PF0.92 n=3716</strong> FAIL &middot; <strong style="color:#ef4444">FOREX 32.2% PF0.66 n=612</strong> FAIL &middot; <strong style="color:#fbbf24">EQUITY 59.2% PF0.94 n=250</strong> (high WR, PF&lt;1 = net-negative) &middot; <strong style="color:#fbbf24">COMMODITY 40.2% PF1.03 n=229</strong> breakeven &middot; FUTURES 42.3% PF1.09 n=52 INSUFF-N. Bottleneck = clean-trade <em>supply</em>, not strategy supply. Do not quote retired June sleeve figures; they are not in current JSON. <code>strategy_perf_by_class.json</code> now has <code>futures_momentum</code> n=681 WR 37.3% PF 0.25 and <code>forex_rsi2_mean_reversion</code> n=1091 WR 39.8% PF 0.38. Source for the class line: <code>intrabar_truth_by_class.json</code>. Research ledger, not a money book.</div>
   <details style="margin-top:2px">
     <summary style="cursor:pointer;color:#94a3b8;font-size:0.8em">&#x25B8; Per-class audit notes &amp; disputes (click to expand)</summary>
   <div id="major-goal-classes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px 14px;font-size:0.82em;line-height:1.5;color:#bae6fd;margin-top:6px">
@@ -908,7 +910,7 @@ a:hover { text-decoration: underline; }
     <span data-mg-class="COMMODITY"><strong style="color:#ef4444">COMMODITY</strong> &mdash; FAIL+INSUFF-N (policy-clean n=3 only; FUTURES proxy n=11 WR 9.09% PF 0.475). <strong style="color:#fca5a5">CT=F DSR=1.0 was FALSIFIED 2026-05-13</strong> (6.33&times; over-emission); pilot now <code>SHADOW_INSUFFICIENT_N</code> dsr=null.</span>
     <span data-mg-class="FOREX"><strong style="color:#ef4444">FOREX</strong> &mdash; BLOCKED (PR #6 consolidation 2026-05-31: all FOREX strategies blocked except cta_cross_asset_tsmom SHORT). Policy-clean net PF 0.29 / WR 46.1% / PnL -1026% (raw resolved cohort PF 9.67 is outlier-skewed; 7.6% WR on 12,673 resolved). Hard disable default ON in <code>non_crypto_policy.py</code>. forex_carry added to allowlist on probation. <code>recent_exits.json</code> cleaned of stale entries.</span>
     <span data-mg-class="BOND"><strong style="color:#94a3b8">BOND</strong> &mdash; ACCUMULATING (at_raw_picks: 78 rows, up from 2). Backtests PF 1.29&ndash;1.62 (bond_tlt_ief_v3, bond_hyg_lqd_v1) are orphan; universe limited to 5 symbols. First production emissions detected 2026-05-31.</span>
-    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health GREEN: ghost rows 0, status mismatch 0, non-canonical statuses 0.</span>
+    <span id="major-goal-asof" style="color:#a5b4fc">Per-class notes above are static (historical snapshot); JS auto-updates live metrics on page load from <code>money_ready_verdict.json</code>, <code>pf_registry.by_asset_class_policy_clean_net</code>, and the honest intrabar-true ledger <code>intrabar_truth_by_class.json</code>. DB health (live <code>data/db_health.json</code>, 2026-11-16T03:52Z): not 5/5. The ghost-row check fails while <strong>22,947 ghost rows remain quarantined out of the canonical view</strong> (quarantine-not-delete per the 2026-11-14 MASTER_AUDIT; live count is in the DB Health tile above). This footer is static and does not update itself.</span>
   </div>
 <div id="kill-switch-panel" style="max-width:1180px;margin:0 auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(251,146,60,0.06));border:1px solid rgba(239,68,68,0.3);border-radius:12px;color:#fde68a;font-size:0.85em">
   <details open>
@@ -920,8 +922,7 @@ a:hover { text-decoration: underline; }
       <div><strong style="color:#22c55e">Survivors:</strong> <span id="ks-survivors">-</span> strategies</div>
       <div><strong style="color:#fbbf24">Kill Rate:</strong> <span id="ks-kill-rate">-</span>%</div>
       <div><strong style="color:#60a5fa">Evaluated:</strong> <span id="ks-evaluated">-</span> / <span id="ks-total">-</span></div>
-      <div><strong style="color:#34d399">WR Lift:</strong> +<span id="ks-wr-lift">-</span> pp</div>
-      <div><strong style="color:#34d399">PF Lift:</strong> +<span id="ks-pf-lift">-</span></div>
+      <div><strong style="color:#34d399">WR Lift (descriptive):</strong> +<span id="ks-wr-lift">-</span> pp</div>
       <div><strong style="color:#a78bfa">PnL Saved:</strong> <span id="ks-pnl-saved">-</span>%</div>
       <div><strong style="color:#94a3b8">Verdict:</strong> <span id="ks-verdict">-</span></div>
     </div>
@@ -940,9 +941,15 @@ a:hover { text-decoration: underline; }
     document.getElementById('ks-total').textContent = ks.total_strategies || 0;
     var imp = ks.impact || {};
     document.getElementById('ks-wr-lift').textContent = (imp.wr_lift_pp || 0).toFixed(2);
-    document.getElementById('ks-pf-lift').textContent = (imp.pf_lift || 0).toFixed(4);
+    // The PF-lift tile was removed 2026-11-19 (external review A6b): it read
+    // "PF Lift: +-0.0220" next to a POSITIVE verdict, because the verdict keyed
+    // off the win-rate lift alone. Removing 42 "losers" is not an improvement if
+    // profit factor falls — so the verdict now has to survive that check.
     document.getElementById('ks-pnl-saved').textContent = (imp.pnl_damage_removed || 0).toFixed(0);
-    document.getElementById('ks-verdict').textContent = imp.verdict || 'N/A';
+    var _pf = (imp.pf_lift === undefined || imp.pf_lift === null) ? null : Number(imp.pf_lift);
+    document.getElementById('ks-verdict').textContent = (_pf !== null && _pf <= 0)
+      ? 'NOT MEASURED (PF lift <= 0)'
+      : (imp.verdict || 'N/A');
     var strats = ks.killed_strategies || [];
     if (strats.length > 0) {
       document.getElementById('ks-strategies').innerHTML = '<strong>Killed strategies (' + strats.length + '):</strong> ' + strats.join(', ');
@@ -958,26 +965,32 @@ a:hover { text-decoration: underline; }
      crypto_rsi5070_us is the project's strongest HONEST money-ready lead — honest
      intrabar first-touch (NOT a daily-resolution artifact, cf. FOREX consensus which
      collapsed 2.88->1.02 under honest first-touch). It does NOT pass the promotion gate
-     (net CI-LB 0.95 < 1.15 at n=108); it is tracked forward ONLY, never sized, and is
-     auto-eligible for probation when net CI-LB>1.15 at n>=150 (~Jun-25). Live values are
-     fetched from data/crypto_rsi5070_us_forward_status.json (refreshed hourly by the
-     audit-dashboard workflow). Static text below is the 2026-06-13 fallback. -->
+     (net CI-LB 0.95 < 1.15 at n=108); it is tracked forward ONLY, never sized.
+     2026-11-19 reconciliation (external review v3, "H-119 two vintages"): the
+     "auto-eligible for probation when net CI-LB>1.15 at n>=150 (~Jun-25)" note is
+     RETIRED. n is now 431, so the n>=150 gate was met long ago; ~Jun-25 passed without
+     a promotion, and the ONLY failing gate left is net_ci_lb_gt_1.15 (0.9158). The
+     card used to show the June numbers unlabelled next to live overlays, so a reader
+     could not tell which vintage was current. Fallback text below is now the
+     2026-11-19 snapshot, labelled as such, and the sidecar overwrites it on load.
+     Live values come from data/crypto_rsi5070_us_forward_status.json. -->
 <div id="rsi5070-forward-card" style="max-width:1180px;margin:0 auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(251,191,36,0.10),rgba(96,165,250,0.06));border:1px solid rgba(251,191,36,0.4);border-radius:12px;color:#fde68a;font-size:0.85em">
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span style="font-size:1.0em;font-weight:700;color:#fbbf24;letter-spacing:0.3px">&#x1F52C; FORWARD-TRACKING CANDIDATE</span>
     <span id="rsi5070-status-badge" style="background:rgba(251,191,36,0.18);color:#fde68a;border:1px solid rgba(251,191,36,0.45);padding:1px 8px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:0.4px">SHADOW TRACKING</span>
     <span style="color:#94a3b8;font-size:0.85em">conditional exception &mdash; <strong>NOT a live signal, NOT sized</strong></span>
+    <span id="rsi5070-vintage" style="color:#94a3b8;font-size:0.78em;font-style:italic">figures: 2026-11-19 snapshot (sidecar overlay pending)</span>
   </div>
   <div id="rsi5070-body" style="margin-top:8px;line-height:1.55;color:#e0f2fe">
     <strong style="color:#a5b4fc"><code>crypto_rsi5070_us</code></strong> &mdash; CRYPTO &and; Wilder RSI(14,1h)&isin;[50,70] &and; US session. The project's strongest <em>honest</em> money-ready lead: honest intrabar first-touch (<strong>not</strong> a daily-resolution artifact).
     <div style="margin-top:6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 14px;font-size:0.92em;color:#cbd5e1">
-      <span>net PF <strong id="rsi5070-netpf" style="color:#fde68a">1.36</strong> @16bp</span>
-      <span>net CI-LB <strong id="rsi5070-cilb" style="color:#fca5a5">0.95</strong> <span style="color:#94a3b8">(bar 1.15)</span></span>
-      <span>n <strong id="rsi5070-n">108</strong> <span style="color:#94a3b8">(gate 150)</span></span>
-      <span>IS/OOS net <strong id="rsi5070-isoos" style="color:#86efac">1.44 / 1.30</strong></span>
-      <span>top-sym <strong id="rsi5070-conc">RENDERUSDT 5.6%</strong></span>
+      <span>net PF <strong id="rsi5070-netpf" style="color:#fde68a">1.12</strong> @16bp</span>
+      <span>net CI-LB <strong id="rsi5070-cilb" style="color:#fca5a5">0.92</strong> <span style="color:#94a3b8">(bar 1.15)</span></span>
+      <span>n <strong id="rsi5070-n">431</strong> <span style="color:#94a3b8">(gate 150 &mdash; met)</span></span>
+      <span>IS/OOS net <strong id="rsi5070-isoos" style="color:#86efac">1.08 / 1.16</strong></span>
+      <span>top-sym <strong id="rsi5070-conc">JUPUSDT 5.1%</strong></span>
     </div>
-    <div id="rsi5070-verdict" style="margin-top:6px;font-size:0.9em;color:#fbbf24">Below the promotion bar (net CI-LB 0.95 &lt; 1.15, n 108 &lt; 150) but survives cost + holds the time-split + diversified &mdash; the only candidate to pass all three robustness axes. Re-evaluated at the n&ge;150 gate (~2026-06-25). Refs: <code>reports/CRYPTO_RSI5070_US_LEAD_CANDIDATE_2026-06-13.md</code>, hypothesis <code>H-119</code>.</div>
+    <div id="rsi5070-verdict" style="margin-top:6px;font-size:0.9em;color:#fbbf24">Below the promotion bar on <strong>one</strong> gate: net CI-LB 0.92 &lt; 1.15. It survives cost, holds the time-split (IS 1.08 / OOS 1.16) and is diversified (top symbol 5.1%). The n&ge;150 gate is <strong>already met</strong> (431 &ge; 150) &mdash; the earlier "re-evaluate at the n&ge;150 gate (~2026-06-25)" note is retired, since that date passed without a promotion. Forward-shadow only, never sized. Refs: <code>reports/CRYPTO_RSI5070_US_LEAD_CANDIDATE_2026-06-13.md</code>, hypothesis <code>H-119</code>.</div>
   </div>
 </div>
 <script>
@@ -1002,13 +1015,22 @@ a:hover { text-decoration: underline; }
         cilb.textContent = Number(d.net_ci_lb).toFixed(2);
         cilb.style.color = (d.net_ci_lb > 1.15) ? '#86efac' : '#fca5a5';
       }
-      set('rsi5070-n', d.n + (d.n_gate ? '' : ''));
+      set('rsi5070-n', d.n_gate ? d.n + ' / gate ' + d.n_gate : d.n);
       if (d.is_net_pf != null && d.oos_net_pf != null) set('rsi5070-isoos', Number(d.is_net_pf).toFixed(2) + ' / ' + Number(d.oos_net_pf).toFixed(2));
       if (d.top_symbol) set('rsi5070-conc', d.top_symbol + ' ' + (d.top_symbol_pct != null ? d.top_symbol_pct + '%' : ''));
       var v = document.getElementById('rsi5070-verdict');
-      if (v && d.verdict) v.textContent = d.verdict + (d.generated_at ? '  [live ' + String(d.generated_at).slice(0,16).replace('T',' ') + 'Z]' : '');
+      if (v && d.verdict) v.textContent = d.verdict;
+      // Name the vintage so the static fallback and the live sidecar can never be
+      // mistaken for each other again (external review v3, "H-119 two vintages").
+      var vt = document.getElementById('rsi5070-vintage');
+      if (vt) vt.textContent = d.generated_at
+        ? 'live \u00b7 sidecar ' + String(d.generated_at).slice(0,16).replace('T',' ') + 'Z'
+        : 'live \u00b7 sidecar (undated)';
     })
-    .catch(function(){ /* leave static 2026-06-13 fallback intact */ });
+    .catch(function(){
+      var vt = document.getElementById('rsi5070-vintage');
+      if (vt) vt.textContent = '2026-11-19 snapshot \u2014 sidecar unreachable, values may be stale';
+    });
 })();
 </script>
 <div id="audit-surface-truth-mount" style="margin:8px 0"></div>
@@ -1030,6 +1052,37 @@ a:hover { text-decoration: underline; }
         + '<div style="margin-top:6px;font-size:11px;color:#fca5a5"><strong>Top KILL candidates:</strong> ' + kills + '</div>'
         + '<div style="margin-top:4px;font-size:11px;color:#94a3b8">Full report: <code>reports/strategy_tribunal_*.json</code>. Apply via workflow_dispatch + TRIBUNAL_APPLY secret.</div>';
     }).catch(function(){ var el = document.getElementById('strategy-tribunal-body'); if (el) el.textContent = 'Tribunal JSON unavailable.'; });
+  })();
+  </script>
+  <details id="theory-tracker-panel" style="margin:8px 0;padding:10px 14px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.35);border-radius:8px;color:#c4b5fd;font-size:12px;line-height:1.5">
+    <summary style="cursor:pointer;font-weight:700;color:#a78bfa">&#x1F9EA; Theory / Hypothesis Tracker</summary>
+    <div id="theory-tracker-body" style="margin-top:8px;color:#e5e7eb">Loading theory tracker&hellip;</div>
+  </details>
+  <script>
+  (function(){
+    function esc(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    fetch('./data/theory_tracker.json?' + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      var el = document.getElementById('theory-tracker-body');
+      if (!el) return;
+      var rows = (j && j.theories) || [];
+      if (!rows.length) { el.textContent = 'No theory / hypothesis rows yet — sidecar empty or not built (tools/build_theory_tracker_sidecar.py).'; return; }
+      var body = rows.map(function(t){
+        return '<tr>'
+          + '<td style="padding:4px 10px;font-weight:600;color:#e0e7ff">' + esc(t.name) + '</td>'
+          + '<td style="padding:4px 10px">' + (t.hypothesis ? esc(t.hypothesis) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px">' + (t.status ? esc(t.status) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px;text-align:right">' + (t.n == null ? '&mdash;' : esc(t.n)) + '</td>'
+          + '<td style="padding:4px 10px">' + (t.verdict ? esc(t.verdict) : '&mdash;') + '</td>'
+          + '<td style="padding:4px 10px">' + (t.last_updated ? esc(t.last_updated) : '&mdash;') + '</td>'
+          + '</tr>';
+      }).join('');
+      el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:0.86em">'
+        + '<thead><tr style="border-bottom:1px solid rgba(148,163,184,0.3);color:#94a3b8;text-align:left">'
+        + '<th style="padding:4px 10px">Theory</th><th style="padding:4px 10px">Hypothesis</th><th style="padding:4px 10px">Status</th>'
+        + '<th style="padding:4px 10px;text-align:right">n</th><th style="padding:4px 10px">Verdict</th><th style="padding:4px 10px">Updated</th>'
+        + '</tr></thead><tbody>' + body + '</tbody></table>'
+        + '<div style="margin-top:4px;font-size:11px;color:#94a3b8">Source: <code>data/theory_tracker.json</code> &middot; built by <code>tools/build_theory_tracker_sidecar.py</code> from <code>alpha_engine/data/theory_portfolios.json</code> + newest <code>reports/h0XX_*.json</code>.</div>';
+    }).catch(function(){ var el = document.getElementById('theory-tracker-body'); if (el) el.textContent = 'Theory tracker JSON unavailable.'; });
   })();
   </script>
   <script src="audit_surface_truth_banner.js"></script>
@@ -1076,7 +1129,7 @@ a:hover { text-decoration: underline; }
     function tier(pf, wr, n){
       pf = Number(pf || 0); wr = Number(wr || 0); n = Number(n || 0);
       if (n < 100) return { label: 'Building', color: '#94a3b8' };
-      if (pf >= 2.0 && wr >= 55) return { label: 'T1 (Renaissance)', color: '#22c55e' };
+      if (pf >= 2.0 && wr >= 55) return { label: 'T1', color: '#22c55e' };
       if (pf >= 1.5 && wr >= 50) return { label: 'T2 (Institutional)', color: '#22c55e' };
       if (pf >= 1.2 && wr >= 45) return { label: 'T3 (Retail)', color: '#06b6d4' };
       if (pf < 1.0) return { label: 'Sub-floor', color: '#ef4444' };
@@ -1136,14 +1189,30 @@ a:hover { text-decoration: underline; }
             var sleeves = c.top_sleeves || [];
             if (sleeves.length) {
               var s0 = sleeves[0];
-              sleeveTxt = ' <span style="color:#a5b4fc;font-size:11px">Top: <code>' + (s0.strategy || '?') + '</code> (n=' + s0.n + ', PF=' + s0.pf + (s0.is_single_source ? ', &#x26a0; single-src' : '') + ')</span>';
+              if (s0.policy_blocked) {
+                // 2026-11-16: every candidate failed the plausibility guard
+                // (single-source registry artifact, PF>5 on n<100, or WR>=95%).
+                // Say so instead of headlining an artifact as "Top".
+                sleeveTxt = ' <span style="color:#fca5a5;font-size:11px" title="' + (s0.note || 'artifact') + '">No credible sleeve &mdash; top candidate flagged ' + (s0.note || 'artifact') + '</span>';
+              } else {
+                var a3v = s0.audit3_verdict || 'NOT_SCORED';
+                var a3Badge;
+                if (s0.tribunal_corroborated) {
+                  a3Badge = ' <span title="Independently scored by the /audit3 kill tribunal (DSR, FDR, cost stress)" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.4);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">AUDIT3 ' + a3v + '</span>';
+                } else if (a3v === 'NOT_SCORED') {
+                  a3Badge = ' <span title="This sleeve never reached the /audit3 tribunal payload — resolver-grade selection display (post-hoc WR/PF filter over ~277 strategies, no multiplicity correction). Do not size on it." style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.4);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">&#x26a0; UNVERIFIED (not in audit3)</span>';
+                } else {
+                  a3Badge = ' <span title="The /audit3 tribunal independently rates this sleeve ' + a3v + ' after DSR/FDR/cost-stress — the headline PF here is selection-biased" style="background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.35);padding:1px 5px;border-radius:6px;font-size:9px;font-weight:700">AUDIT3 ' + a3v + '</span>';
+                }
+                sleeveTxt = ' <span style="color:#a5b4fc;font-size:11px">Top: <code>' + (s0.strategy || '?') + '</code> (n=' + s0.n + ', PF=' + s0.pf + (s0.is_single_source ? ', &#x26a0; single-src' : '') + ')</span>' + a3Badge;
+              }
             }
             if (!span.dataset.mgStatic) span.dataset.mgStatic = span.innerHTML;
             var liveLine = '<strong style="color:' + (COLOR[key] || '#94a3b8') + '">' + key + '</strong> &mdash; ' +
               '<span style="font-weight:700;color:' + (ready ? '#22c55e' : '#fca5a5') + '">' + raw.replace(/_/g, ' ') + '</span>' + frozenBadge + gateBadges + ' ' +
               '<span style="color:#cbd5e1">(PF ' + pf + ', WR ' + wr + ', n=' + n + ' ' + cohortLabel + ')</span>' + discoveryLine + sleeveTxt;
             span.innerHTML = liveLine +
-              '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML)</summary>' +
+              '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML, 2026-05/06 — not live)</summary>' +
               '<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.45">' + span.dataset.mgStatic + '</div></details>';
           });
           var asof = document.getElementById('major-goal-asof');
@@ -1188,7 +1257,7 @@ a:hover { text-decoration: underline; }
                 String(label).replace(/"/g, '&quot;') + '">' + cRow.tier + ' single-symbol</span>';
       }
       span.innerHTML = html +
-        '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML)</summary>' +
+        '<details style="margin-top:4px"><summary style="cursor:pointer;color:#94a3b8;font-size:10px">Forensic snapshot (static HTML, 2026-05/06 — not live)</summary>' +
         '<div style="font-size:11px;color:#94a3b8;margin-top:4px;line-height:1.45">' + span.dataset.mgStatic + '</div></details>';
     });
     var asof = document.getElementById('major-goal-asof');
@@ -1203,7 +1272,7 @@ a:hover { text-decoration: underline; }
   })();
   </script>
   <div style="font-size:0.74em;color:#94a3b8;margin-top:6px;border-top:1px solid rgba(148,163,184,0.2);padding-top:6px">
-    <strong>Tier definitions:</strong> T1 PF&gt;2/WR&gt;55/MDD&lt;10 (Renaissance). T2 PF&gt;1.5/WR&gt;50/MDD&lt;20 (Institutional). T3 PF&gt;1.2/WR&gt;48/MDD&lt;30 (Retail-OK). Source: <code>asset_class_health</code> in <code>audit_dashboard/data/dashboard_data.json</code> (post-resolver-v2 noise filter, generated 2026-05-05T01:37Z). Resolver v2 shipped 2026-04-28; v2.1 bug bundle 2026-05-02. Historical re-resolve (<code>re_resolve_historical_v2.py</code>) pending — pre-fix labels still in closed_picks for picks closed before 2026-04-28.
+    <strong>Tier definitions:</strong> T1 PF&gt;2/WR&gt;55/MDD&lt;10. T2 PF&gt;1.5/WR&gt;50/MDD&lt;20 (Institutional). T3 PF&gt;1.2/WR&gt;48/MDD&lt;30 (Retail-OK). Source: <code>asset_class_health</code> in <code>audit_dashboard/data/dashboard_data.json</code> (post-resolver-v2 noise filter, generated 2026-05-05T01:37Z). Resolver v2 shipped 2026-04-28; v2.1 bug bundle 2026-05-02. Historical re-resolve (<code>re_resolve_historical_v2.py</code>) pending — pre-fix labels still in closed_picks for picks closed before 2026-04-28.
   </div>
   <!-- PF contradiction disclosure (Tier-A #2, 2026-05-04) — resolves AHF-05 from
        audit hyperfocus swarm: hf_stats vs asset_class_health show different PF
@@ -1258,15 +1327,12 @@ a:hover { text-decoration: underline; }
     var rows = classes.sort().map(function(cls){
       var r = by_class[cls] || {};
       var sharpe = r.oos_sharpe;
-      var color = pickColor(sharpe);
-      // N_INSUFFICIENT: flag Sharpe values that are small-sample arithmetic artifacts.
-      // BOND has n=11 total; 2-pick test folds produce std≈0 → Sharpe→∞.
-      // Trigger: folds ≤ 10 AND worst_fold_wr === 0 (indicates degenerate fold).
-      var sharpeInsufficient = (r.folds != null && r.folds <= 10 && r.worst_fold_wr === 0);
-      var sharpeCell = fmt(sharpe, 3);
-      if (sharpeInsufficient) {
-        sharpeCell += ' <span title="N_INSUFFICIENT: Sharpe is an artifact of small test folds (n&lt;50 total picks; some folds have n=2, std≈0 → Sharpe→∞). Not indicative of real OOS edge." style="color:#f59e0b;font-size:0.8em;cursor:help">⚠ N_INSUF</span>';
-      }
+      var sharpeFinite = sharpe != null && isFinite(sharpe);
+      // |Sharpe| > 5 on a class walk-forward is a small-sample scale bug
+      // (BOND oos_sharpe -65.6), not an edge. Do not print it.
+      var sharpeUnusable = !sharpeFinite || Math.abs(sharpe) > 5 || (r.folds != null && r.folds <= 10 && r.worst_fold_wr === 0);
+      var color = sharpeUnusable ? '#94a3b8' : pickColor(sharpe);
+      var sharpeCell = sharpeUnusable ? 'n/a' : fmt(sharpe, 3);
       return ''
         + '<tr>'
         + '<td style="padding:6px 10px;font-weight:600;color:#e0e7ff">' + cls + '</td>'
@@ -1422,22 +1488,13 @@ a:hover { text-decoration: underline; }
 })();
 </script>
 
-<!-- TIER-2 PROVEN HERO CARDS — promotes 4 buried high-edge strategies from
-     the alphabetical systems[] grid into a featured panel above the fold.
-     Data source: window.DASHBOARD_DATA.tier2_proven_strategies (computed in
-     audit_trail/dashboard_generator.py via _compute_tier2_proven_strategies).
-     Tier badges follow docs/PERFORMANCE_CHARTER.md s2 — strategies that
-     drop out of Tier-2 at recompute time get an honest "Building" / "Tier 3"
-     / "Below Tier 3" badge instead of a fake Tier-2 stamp. -->
-<div id="tier2-hero-section" style="max-width:1180px;margin:8px auto 12px;padding:14px 20px;background:linear-gradient(135deg,rgba(167,139,250,0.10),rgba(34,211,238,0.06));border:1px solid rgba(167,139,250,0.4);border-radius:12px;color:#e0e7ff;display:none">
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-    <span style="font-size:1.05em;font-weight:700;color:#a78bfa;letter-spacing:0.4px">&#x1F3C6; TIER-2 PROVEN</span>
-    <span style="color:#cbd5e1;font-size:0.92em;font-weight:500">Buried high-edge strategies promoted from the alphabetical systems grid. Tier badges per <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/docs/PERFORMANCE_CHARTER.md" target="_blank" rel="noopener" style="color:#a5b4fc">CHARTER &sect;2</a>.</span>
-    <span id="tier2-hero-meta" style="margin-left:auto;font-size:0.78em;color:#94a3b8"></span>
-  </div>
-  <div id="tier2-hero-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px"></div>
-  <div id="tier2-hero-flagged" style="margin-top:10px;font-size:0.78em;color:#fbbf24;display:none"></div>
-</div>
+<!-- TIER-2 "PROVEN" HERO PANEL RETIRED 2026-11-19 (external review v2/v3, A6).
+     It shipped three cards under the word PROVEN while the header read "0/3 clear
+     strict Tier-2": signal_validation was dead (WR 4.9% / PF 0.08 / MDD 127% /
+     n=102), mega_mutation was a Tier-3 paper floor and rl_agent had n=0. Nothing
+     is rendered here until a card can actually clear the bar; the payload keeps
+     tier2_proven_strategies with cards=[] and retired=true so downstream code
+     sees the retirement instead of four empty slots. -->
 
 <!-- Opt A: TA-baseline panel (TradingView 6-strategy benchmark vs our Tier-2 systems).
      Data source: window.DASHBOARD_DATA.ta_baseline (computed in
@@ -1479,8 +1536,9 @@ a:hover { text-decoration: underline; }
     <span style="color:var(--text-dim);font-weight:400">+</span>
     <span style="color:var(--blue)">Non-Crypto</span>
     <span style="color:var(--text);font-weight:600">Performance</span>
+    <span id="auditPopulationInline" class="small" style="color:#94a3b8;font-weight:400;margin-left:10px">population: —</span>
     <span id="perf-conviction-bar" style="display:flex;gap:4px;margin-left:auto;align-items:center"></span>
-    <button id="perf-help-btn" onclick="document.getElementById('perf-help-overlay').style.display='flex'" title="How to find edge: the exact filters, definitions, and what to avoid (based on 4,618 closed-pick analysis)" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;cursor:pointer;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;margin-left:6px;white-space:nowrap">? Guide</button>
+    <button id="perf-help-btn" onclick="document.getElementById('perf-help-overlay').style.display='flex'" title="How to find edge: the exact filters, definitions, and what to avoid (based on a historical analysis cohort of ~4,618 closed picks; the live population is printed next to the section title)" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;cursor:pointer;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;margin-left:6px;white-space:nowrap">? Guide</button>
   </h3>
 
   <!-- Help popup overlay -->
@@ -1495,7 +1553,7 @@ a:hover { text-decoration: underline; }
       <div style="font-size:12px;line-height:1.8;margin-bottom:18px;color:#cbd5e1">
         <strong style="color:#22c55e">PROVEN</strong> &mdash; A pick qualifies as PROVEN when its <em>strategy</em> has: (1) &ge;5 closed trades, (2) &ge;55% win rate after Bayesian shrink, (3) Profit Factor &ge;1.5, and (4) confidence &ge;0.7. Manually vetted systems (e.g., alpha_engine, battleground+) can also earn PROVEN status.<br>
         <strong style="color:#f59e0b">Smart Picks</strong> &mdash; An AI-curated basket. Every active pick is scored on 6 dimensions: <em>Regime match (25%)</em>, <em>Quality score (35%)</em>, <em>Freshness (15%)</em>, <em>TP upside remaining (15%)</em>, <em>Higher-timeframe alignment (10%)</em>, plus a <em>Proven Winner Boost (+8&ndash;15 pts)</em>. Only the top-ranked picks make it in.<br>
-        <strong style="color:#22d3ee">Verified Alpha</strong> &mdash; Signals that are auditable and verifiable: prediction-market consensus (Polymarket/Kalshi), audited copy-trader clones, or any strategy with &ge;55% forward win rate on &ge;5 trades.<br>
+        <strong style="color:#fbbf24">SHADOW</strong> &mdash; Prediction-market consensus (Polymarket/Kalshi) is not Verified Alpha and not PROVEN. PBO 0.603 fails the money-ready bar. Copy-trader rows are auditable only, not sized.<br>
         <strong style="color:#a855f7">High Conviction</strong> &mdash; The strictest preset. It applies shared hard gates (score &ge;40, trust tier, forward WR, regime alignment, consensus) <em>plus</em> per-asset-class floors. If a row shows here, it passed every single gate.<br>
         <strong style="color:#94a3b8">Trust Tiers</strong> &mdash; <span style="color:#22c55e">PROVEN</span> = elite edge. <span style="color:#4ade80">DEVELOPING</span> = good edge. <span style="color:#fbbf24">WATCH</span> = marginal. <span style="color:#f87171">SANDBOX</span> = unproven/new. <span style="color:#ef4444">PROBATION</span> = broken/banned system.
       </div>
@@ -1515,7 +1573,21 @@ a:hover { text-decoration: underline; }
         <span style="color:#94a3b8;display:block;margin-top:8px"><strong>Real-money posture as of 2026-05-31:</strong> COMMODITY/EQUITY are <code>REHAB</code> (STABLE_EDGE per <a href="/audit/edge_stability.html">edge-stability</a> sidecar); CRYPTO has DSR-verified ML sleeves (see <a href="/audit/anti_overfit.html">anti-overfit audit</a>); FOREX is <code>BLOCKED</code> (PR #6 hard-gate, PF 0.29 / WR 46.1%); FUTURES remain <code>BLOCKED</code>; ETF/BOND/INDEX_STOCK are sample-size-thin. NFA.</span>
       </div>
 
-      <h4 style="color:#fbbf24;margin:0 0 8px">&#x1F3AF; Where Our Edge Actually Is (Closed-Pick Data, n=4,618)</h4>
+      <h4 style="color:#fbbf24;margin:0 0 8px">&#x1F3AF; Where Our Edge Actually Is (historical analysis cohort, n&asymp;4,618)</h4>
+      <div id="auditPopulation" class="small" style="color:#94a3b8;margin:-2px 0 10px 4px">population: —</div>
+      <script>
+      (function(){
+        var ids = ['auditPopulation','auditPopulationInline'];
+        function show(t){ for(var i=0;i<ids.length;i++){ var n=document.getElementById(ids[i]); if(n) n.textContent=t; } }
+        fetch('data/denominator.json',{cache:'no-store'}).then(function(r){
+          if(!r.ok) throw new Error('HTTP '+r.status); return r.json();
+        }).then(function(d){
+          var t='population: '+(d.population_label||'unknown');
+          if(!d.complete && d.notes && d.notes.length) t+=' — incomplete: '+d.notes.join('; ');
+          show(t);
+        }).catch(function(e){ show('population unavailable ('+e.message+')'); });
+      })();
+      </script>
       <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:12px;margin-bottom:18px;font-size:12px;line-height:1.6">
         <strong style="color:#fca5a5">&#x26A0;&#xFE0F; POST-HOC SEGMENT WARNING</strong> &mdash; the numbers below (82% WR / PF 11+ etc.) were surfaced by scanning ALL closed-pick confidence-band slices for the best-looking cell, after the fact. <strong>This is post-hoc segment-search and IS NOT an actionable forward signal.</strong> Multiple-testing correction (Bonferroni / Benjamini-Hochberg) is not applied; the implicit search-space &gt;50 cells means an 82% WR cell can arise from pure noise on a true null. Treat these as <em>historical pattern descriptors</em>, not predictive filters. The DSR-verified strategies above (Bailey-Lopez de Prado AFML eq 14.5) are the methodology-clean version. INC #1 (P0) — opencode/ring-2.6-1t + 3-engine swarm, codified 2026-05-26.<br><br>
         <strong style="color:#22c55e">Crypto Confidence 0.85&ndash;0.90</strong> &mdash; <em>(post-hoc cell)</em> <strong>82% WR</strong>, PF <strong>11.8</strong> (n from per-class audit). Crypto &gt;0.90 hits an overfit cliff (47% WR).<br>
@@ -3336,7 +3408,10 @@ function getEmbeddedSmartSnapshotSummary() {
 // floor or fail other thresholds get an honest "Building" / "Below Tier 3"
 // badge so we never fake-promote.
 function getTier2ProvenStrategies() {
-  return (window.DASHBOARD_DATA || {}).tier2_proven_strategies || (D || {}).tier2_proven_strategies || null;
+  // Panel RETIRED 2026-11-19 (external review A6): see the comment where the
+  // #tier2-hero-section markup used to be. Returning null keeps the renderer's
+  // data guard authoritative, so no card can be re-promoted from a stale payload.
+  return null;
 }
 
 function _tier2BadgeStyle(tier) {
@@ -3627,10 +3702,11 @@ function isVerifiedAlphaPick(pick) {
     forward_wr = forward_wr / 100.0;
   }
   
-  // Prediction market sources
-  var pmSources = ['pm_whale_signals', 'pm_kalshi_signals', 'pm_momentum_signals', 
+  // Prediction markets stay shadow (PBO 0.603). Not Verified Alpha.
+  var pmSources = ['pm_whale_signals', 'pm_kalshi_signals', 'pm_momentum_signals',
                    'prediction_market_consensus', 'polymarket_signals', 'pm_high_conviction'];
-  if (pmSources.indexOf(source) !== -1) return true;
+  if (pmSources.indexOf(source) !== -1) return false;
+  if (strategy.indexOf('copy_pm_') === 0) return false;
   
   // Copy trader sources with audit trail
   var copySources = ['copy_trader_intel', 'copy_trader_highscore', 'copy_trader_consensus', 
@@ -3638,7 +3714,6 @@ function isVerifiedAlphaPick(pick) {
   if (copySources.indexOf(source) !== -1) return true;
   
   // Verified copy strategy prefixes
-  if (strategy.indexOf('copy_pm_') === 0) return true;
   if (strategy.indexOf('clone_hl_') === 0) return true;
   if (strategy.indexOf('copy_hl_') === 0) return true;
   if (strategy.indexOf('hs_') === 0) return true;
@@ -4610,27 +4685,9 @@ async function fetchStockPrices(picks) {
     }
   }
 
-  // Tier 6: FMP - capped at 5 to avoid 429
-  {
-    const missing6 = uniqueSymbols.filter(s => !priceMap[symbolMap[s] || s]).slice(0, 5);
-    if (missing6.length > 0) {
-      try {
-        const FMP_KEY = 'iF4K10WedJZINDhUWGXlGAiA57rn4sRD';
-        for (const sym of missing6) {
-          try {
-            const r = await fetch(`https://financialmodelingprep.com/stable/profile?symbol=${sym}&apikey=${FMP_KEY}`, {signal: AbortSignal.timeout(8000)});
-            if (r.ok) {
-              const data = await r.json();
-              const entry = Array.isArray(data) ? data[0] : data;
-              if (entry?.price) { priceMap[symbolMap[entry.symbol || sym] || sym] = entry.price; }
-            }
-          } catch(e) { /* skip individual */ }
-          await new Promise(r => setTimeout(r, 200));
-        }
-        if (Object.keys(priceMap).length > 0) console.log(`[STOCKS] FMP: ${Object.keys(priceMap).length}/${uniqueSymbols.length} prices`);
-      } catch(e) { console.warn('[STOCKS] FMP failed:', e.message); }
-    }
-  }
+  // Tier 6 (FMP) removed 2026-11-19: it shipped a hardcoded API key in the
+  // public HTML, readable by every visitor. FMP needs a server-side proxy;
+  // the remaining tiers (1-5, 7) cover the fallback chain without a secret.
 
   // Tier 7: Google Finance scrape via allorigins proxy (last resort, up to 3)
   {
@@ -4916,7 +4973,7 @@ function renderAssetClassQuality(hasFilters, activePicks, smartRows, f) {
   const summary = D.asset_class_summary || D.assetClassSummary || {};
   const smartByAsset = D.smart_picks_by_asset || D.smartPicksByAsset || {};
   const enforceMin = 10;
-  const classes = ['CRYPTO', 'EQUITY', 'FOREX', 'COMMODITY', 'FUTURES', 'BOND', 'ETF'];
+  const classes = ['CRYPTO', 'EQUITY', 'FOREX', 'COMMODITY', 'FUTURES', 'BOND', 'ETF', 'MUTUAL_FUND'];
   const targetAsset = ((f || {}).asset || '').toUpperCase();
   const visible = targetAsset ? classes.filter(a => a === targetAsset) : classes;
   const activeFallback = {};
@@ -5098,7 +5155,7 @@ function recomputePickAgeHours(pick, nowMs) {
 
 function isNonCryptoAssetClass(assetClass) {
   const ac = String(assetClass || '').toUpperCase();
-  return ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF';
+  return ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF' || ac === 'MUTUAL_FUND';
 }
 
 function isResolvedPick(pick) {
@@ -5206,7 +5263,7 @@ function getResolvedTradePnl(pick) {
   if (pick && pick.net_pnl_pct == null && typeof window !== 'undefined' && window.ValidationMetrics && window.ValidationMetrics.calculateNetPnL) {
     var ac = (pick.asset_class || pick.category || 'CRYPTO').toUpperCase();
     // Only apply cost adjustment for non-crypto assets; crypto costs are handled elsewhere or already in gross
-    if (ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF') {
+    if (ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF' || ac === 'MUTUAL_FUND') {
       // 2026-04-17 defensive: calculateNetPnL was returning {netPnlPct: NaN} for
       // some symbols, poisoning the totalPnl sum and producing NaN% on every
       // non-crypto tile. Validate the result; fall back to gross pnl on failure.
@@ -5487,7 +5544,7 @@ function renderSummary() {
   const totalPnl = closedPicks.length > 0 ? outcomeStats.totalPnl : (statsFiltered ? 0 : s.total_pnl_pct);
   const winPnl = outcomeStats.winPnl;
   const lossPnl = outcomeStats.lossPnl;
-  const profitFactor = lossPnl > 0 ? winPnl / lossPnl : (winPnl > 0 ? Infinity : 0);
+  const profitFactor = lossPnl > 0 ? winPnl / lossPnl : null;
   const avgWin = outcomeStats.avgWin;
   const avgLoss = outcomeStats.avgLoss;
   const expectancy = closedPicks.length > 0 ? outcomeStats.expectancy : 0;
@@ -5527,6 +5584,14 @@ function renderSummary() {
   const usingInstitutionalPnl = !statsFiltered && purgedPnl != null;
   const displayPnl = statsFiltered ? totalPnl : (usingInstitutionalPnl ? purgedPnl : rawTotalPnl);
   const displayPF = statsFiltered ? profitFactor : (s.profit_factor || 0);
+  // P0.11 (2026-11-20): publish the denominator with the headline.
+  const _headlineDenom = (s.headline_denominator != null) ? s.headline_denominator : resolved;
+  const _headlineExcluded = (s.closed_excluded_from_headline != null) ? s.closed_excluded_from_headline : null;
+  const _headlineZeroShare = (s.zero_pnl_share_pct != null) ? s.zero_pnl_share_pct : null;
+  const _headlineWrTip = cardTips.winRate + ' - Scored: ' + fmt(_headlineDenom) + ' picks'
+    + (_headlineExcluded != null ? '; excluded from headline: ' + fmt(_headlineExcluded) : '')
+    + (_headlineZeroShare != null ? '; flat share: ' + fmt(_headlineZeroShare) + '%' : '')
+    + '. Click for drill-down by system, month, and score tier.';
   const displayExpectancy = statsFiltered ? expectancy : (s.expectancy || 0);
   const displayAvgWin = statsFiltered ? avgWin : (s.avg_win || 0);
   const displayAvgLoss = statsFiltered ? avgLoss : (s.avg_loss || 0);
@@ -5554,7 +5619,7 @@ function renderSummary() {
     const sortedPnls = closedPicks.map(p => p.pnl_pct || 0).sort((a, b) => a - b);
     medianPnl = sortedPnls.length > 0 ? (sortedPnls.length % 2 === 1 ? sortedPnls[Math.floor(sortedPnls.length / 2)] : (sortedPnls[sortedPnls.length / 2 - 1] + sortedPnls[sortedPnls.length / 2]) / 2) : null;
     // Win/Loss ratio
-    winLossRatio = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? Infinity : 0);
+    winLossRatio = avgLoss > 0 ? avgWin / avgLoss : null;
     // Sharpe per trade (on capped returns)
     const cappedMean = cappedPnls.length > 0 ? cappedPnls.reduce((a, b) => a + b, 0) / cappedPnls.length : 0;
     const cappedStd = cappedPnls.length > 1 ? Math.sqrt(cappedPnls.reduce((s, v) => s + (v - cappedMean) ** 2, 0) / (cappedPnls.length - 1)) : 0;
@@ -5635,7 +5700,7 @@ function renderSummary() {
     { label: 'Active Picks', value: _activePicksValue, tip: cardTips.active + (_hasRawPool ? ('\n\nFull candidate pool: ' + _rawPoolCount + ' picks. ' + (_rawPoolCount - totalActive) + ' filtered out by backend quality gates (BANNED trust, blocked systems, staleness, GC=F band, etc). Click Show All Picks on Active tab to view full pool.') : ''),
       sub: _activePicksSub },
     { label: 'Closed Picks', value: statsFiltered ? totalClosed : (s.total_closed_picks || 0), tip: cardTips.closed },
-    { label: 'Win Rate', value: fmt(Math.min(displayWinRate, 100)) + '%', cls: displayWinRate >= 50 ? 'positive' : 'negative', tip: cardTips.winRate + ' - Click for drill-down by system, month, and score tier.', clickable: true, clickFn: 'showWrDrillDown' },
+    { label: 'Win Rate', value: fmt(Math.min(displayWinRate, 100)) + '%' + (_headlineExcluded ? ' <span class="muted">(' + fmt(_headlineDenom) + ' scored, ' + fmt(_headlineExcluded) + ' excluded)</span>' : ''), cls: displayWinRate >= 50 ? 'positive' : 'negative', tip: _headlineWrTip, clickable: true, clickFn: 'showWrDrillDown' },
     // Smart Picks WR - embedded from dashboard_payload.json so /audit stays on one runtime artifact
     (function() {
       var spSummary = getEmbeddedSmartSnapshotSummary();
@@ -5765,10 +5830,29 @@ function renderSummary() {
       var v = s.total_pnl_pct_compounded_rolling_100;
       var has = (v !== null && v !== undefined && !Number.isNaN(v));
       return {
-        label: 'Rolling 100',
+        label: 'Rolling 100 (n=' + Math.min(100, displayWins + displayLosses + displayFlat) + ')',
         value: has ? fmtPct(v) : '—',
         cls: has ? (v >= 0 ? 'positive' : 'negative') : '',
         tip: 'Last 100 closed trades compounded equal-weight, ±10% per-trade cap. Bounded headline metric for recent performance. (summary.total_pnl_pct_compounded_rolling_100)'
+      };
+    })(),
+    // 2026-11-15: whole-ledger compound rendered next to the rolling-100 headline,
+    // so one bad week can never read as "this system never made money".
+    (function() {
+      var v = s.total_pnl_pct_compounded_ew;
+      var has = (v !== null && v !== undefined && !Number.isNaN(v));
+      var r100 = s.total_pnl_pct_compounded_rolling_100;
+      var r100ok = (r100 !== null && r100 !== undefined && !Number.isNaN(r100));
+      var gap = (has && r100ok) ? (r100 - v) : null;
+      return {
+        label: 'Whole ledger',
+        value: has ? fmtPct(v) : '\u2014',
+        cls: has ? (v >= 0 ? 'positive' : 'negative') : '',
+        tip: 'Equal-weight geometric compound of EVERY capped closed trade, all-time.\n\n'
+          + 'Read this against Rolling 100 (the bounded headline, last 100 trades): a system whose whole-ledger '
+          + 'compound is positive while Rolling 100 is deeply negative is having a bad stretch, not proving it never worked.\n\n'
+          + (gap != null ? 'Rolling-100 minus whole-ledger: ' + fmtPct(gap) + '\n\n' : '')
+          + 'Source: summary.total_pnl_pct_compounded_ew'
       };
     })(),
     (function() {
@@ -5804,9 +5888,9 @@ function renderSummary() {
         sub: '<span style="font-size:9px;color:var(--text-dim)">' + String(conc.top1_source_system || '').replace(/</g, '') + '</span>'
       }];
     })() : []),
-    { label: 'Median Trade', value: medianPnl != null ? fmtPct(medianPnl) : '\u2014', cls: medianPnl != null ? (medianPnl >= 0 ? 'positive' : 'negative') : '', tip: 'Median PnL per trade. Unlike average, the median is NOT affected by outliers. If median is negative but total PnL is positive, a few big winners are masking many small losses. This is the most honest single metric.' },
-    { label: 'Profit Factor', value: displayPF === Infinity ? '\u221e' : displayPF != null ? fmt(displayPF, 2) : '\u2014', cls: displayPF >= 1.0 ? 'positive' : 'negative', tip: cardTips.profitFactor },
-    { label: 'Expectancy', value: displayExpectancy != null ? (displayExpectancy >= 0 ? '+' : '') + fmt(displayExpectancy, 2) + '%' : '\u2014', cls: displayExpectancy >= 0 ? 'positive' : 'negative', tip: cardTips.expectancy },
+    { label: 'Median Trade (n=' + (displayWins + displayLosses + displayFlat) + ')', value: medianPnl != null ? fmtPct(medianPnl) : '\u2014', cls: medianPnl != null ? (medianPnl >= 0 ? 'positive' : 'negative') : '', tip: 'Median PnL per trade. Unlike average, the median is NOT affected by outliers. If median is negative but total PnL is positive, a few big winners are masking many small losses. This is the most honest single metric.' },
+    { label: 'Profit Factor (n=' + (displayWins + displayLosses + displayFlat) + ')', value: (displayPF != null && isFinite(displayPF)) ? fmt(displayPF, 2) : 'n/a', cls: (displayPF != null && isFinite(displayPF) && displayPF >= 1.0) ? 'positive' : ((displayPF != null && isFinite(displayPF)) ? 'negative' : ''), tip: cardTips.profitFactor },
+    { label: 'Expectancy (n=' + (displayWins + displayLosses + displayFlat) + ')', value: displayExpectancy != null ? (displayExpectancy >= 0 ? '+' : '') + fmt(displayExpectancy, 2) + '%' : '\u2014', cls: displayExpectancy >= 0 ? 'positive' : 'negative', tip: cardTips.expectancy },
     { label: 'Avg Win / Loss', value: `+${fmt(displayAvgWin, 2)}% / -${fmt(displayAvgLoss, 2)}%`, tip: cardTips.avgWinLoss,
       sub: winLossRatio != null ? `<span style="color:var(--text-dim);font-size:10px">W/L Ratio: <span style="color:${winLossRatio >= 1 ? 'var(--green)' : 'var(--red)'}; font-weight:600">${fmt(winLossRatio, 2)}</span></span>` : '' },
     { label: 'W / L / F', value: `${displayWins} / ${displayLosses} / ${displayFlat}`, tip: cardTips.wl },
@@ -6377,6 +6461,7 @@ function renderNonCryptoPanel() {
     {key: 'FOREX', label: 'Forex', icon: '\u{1F4B1}', color: 'var(--blue)', borderColor: 'rgba(96,165,250,0.3)'},
     {key: 'COMMODITY', label: 'Commodities', icon: '\u{1F6E2}', color: 'var(--orange)', borderColor: 'rgba(251,146,60,0.3)'},
     {key: 'FUTURES', label: 'Futures', icon: '\u{1F4CA}', color: 'var(--yellow)', borderColor: 'rgba(245,158,11,0.3)'},
+    {key: 'MUTUAL_FUND', label: 'Mutual Funds', icon: '\u{1F3E6}', color: 'var(--cyan)', borderColor: 'rgba(34,211,238,0.3)'},
     {key: 'ETF', label: 'ETFs', icon: '\u{1F4E6}', color: 'var(--cyan)', borderColor: 'rgba(34,211,238,0.3)'},
     {key: 'BOND', label: 'Bonds', icon: '\u{1F4DC}', color: 'var(--purple)', borderColor: 'rgba(168,85,247,0.3)'}
   ];
@@ -6515,8 +6600,8 @@ function renderNonCryptoPanel() {
       var grossWins = catClosed.reduce(function(s,p){ var pnl = getResolvedTradePnl(p); return pnl > FLAT_PNL_THRESHOLD ? s + pnl : s; }, 0);
       var grossLosses = Math.abs(catClosed.reduce(function(s,p){ var pnl = getResolvedTradePnl(p); return pnl < -FLAT_PNL_THRESHOLD ? s + pnl : s; }, 0));
       var profitFactor = grossLosses > 0 ? (grossWins / grossLosses) : (grossWins > 0 ? Infinity : null);
-      var pfColor = profitFactor === null ? 'var(--text-dim)' : profitFactor === Infinity ? 'var(--green)' : profitFactor >= 1.5 ? 'var(--green)' : profitFactor >= 1.0 ? 'var(--yellow)' : 'var(--red)';
-      var pfDisplay = profitFactor === null ? '—' : profitFactor === Infinity ? '∞' : fmt(profitFactor, 2);
+      var pfColor = profitFactor === null || profitFactor === Infinity ? 'var(--text-dim)' : profitFactor >= 1.5 ? 'var(--green)' : profitFactor >= 1.0 ? 'var(--yellow)' : 'var(--red)';
+      var pfDisplay = profitFactor === null || profitFactor === Infinity ? 'n/a' : fmt(profitFactor, 2);
 
       // Find top strategy. Require min 5 closed trades so a 1W/0L lucky strategy
       // doesn't outrank a 50W/30L durable one. Falls back to most-traded if no
@@ -6554,7 +6639,8 @@ function renderNonCryptoPanel() {
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Open positions in this category after quality gates (published picks.active). Not a strategy count. Unrelated to any ?active= URL on this page." style="cursor:help;text-decoration:underline dotted">Active</span><span class="nc-val">' + serverActiveCount + '</span></div>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl">Closed</span><span class="nc-val">' + serverClosedCount + '</span></div>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Wins / Losses / Flat (breakeven) trades. A win is any trade with positive PnL. A loss is negative PnL. Flat means exactly 0% PnL." style="cursor:help;text-decoration:underline dotted">W / L / F</span><span class="nc-val">' + wins + ' / ' + losses + ' / ' + flat + '</span></div>';
-      var _pfNote = serverClosedCount < 30 ? ' <span style="font-size:9px;color:var(--text-dim)" title="Small sample size — PF unreliable below n=30">(n=' + serverClosedCount + ')</span>' : '';
+      // Always publish the denominator; the small-sample caveat stays n<30 (2026-11-20).
+      var _pfNote = ' <span style="font-size:9px;color:var(--text-dim)"' + (serverClosedCount < 30 ? ' title="Small sample size — PF unreliable below n=30"' : '') + '>(n=' + serverClosedCount + ')</span>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Profit Factor = Gross Wins / Gross Losses. n=' + serverClosedCount + ' closed trades. Above 1.0 = profitable. Above 1.5 = strong. PF on small samples (n<30) can be dominated by single outlier trades. \'—\' = no resolved wins or losses (only flat picks)." style="cursor:help;text-decoration:underline dotted">Profit Factor</span><span class="nc-val" style="color:' + pfColor + '">' + pfDisplay + _pfNote + '</span></div>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="SUM of per-trade % returns — NOT a portfolio return. Overstates reality because it assumes a fixed notional re-bet every trade with no compounding. Reference only; the bold Compound Return row below is the honest figure." style="cursor:help;text-decoration:underline dotted">&Sigma; Trade % (sum)</span><span class="nc-val" style="color:' + pnlColor + '">' + pnlDisplay + '</span></div>';
       var avgPnl = resolved > 0 ? totalPnl / resolved : 0;
@@ -6912,8 +6998,8 @@ function renderCryptoPanel() {
     var grossWins = catClosed.reduce(function(s, p) { var pv = Number(p.pnl_pct || 0); return pv > FLAT_PNL_THRESHOLD ? s + pv : s; }, 0);
     var grossLosses = Math.abs(catClosed.reduce(function(s, p) { var pv = Number(p.pnl_pct || 0); return pv < -FLAT_PNL_THRESHOLD ? s + pv : s; }, 0));
     var pf = grossLosses > 0 ? grossWins / grossLosses : (grossWins > 0 ? Infinity : null);
-    var pfColor = pf === null ? 'var(--text-dim)' : pf === Infinity ? 'var(--green)' : pf >= 1.5 ? 'var(--green)' : pf >= 1.0 ? 'var(--yellow)' : 'var(--red)';
-    var pfDisplay = pf === null ? '—' : pf === Infinity ? '∞' : fmt(pf, 2);
+    var pfColor = pf === null || pf === Infinity ? 'var(--text-dim)' : pf >= 1.5 ? 'var(--green)' : pf >= 1.0 ? 'var(--yellow)' : 'var(--red)';
+    var pfDisplay = pf === null || pf === Infinity ? 'n/a' : fmt(pf, 2);
 
     cardsHtml += '<div class="nc-card" style="border-color:' + cat.borderColor + '">';
     cardsHtml += '<div class="nc-header">';
@@ -6932,7 +7018,7 @@ function renderCryptoPanel() {
       cardsHtml += '<div class="nc-row"><span class="nc-lbl">Active</span><span class="nc-val">' + catActive.length + '</span></div>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl">Closed</span><span class="nc-val">' + resolved + '</span></div>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Wins / Losses / Flat (breakeven) trades" style="cursor:help;text-decoration:underline dotted">W / L / F</span><span class="nc-val">' + wins + ' / ' + losses + ' / ' + flat + '</span></div>';
-      var _cpfNote = resolved < 30 ? ' <span style="font-size:9px;color:var(--text-dim)" title="Small sample — PF unreliable below n=30">(n=' + resolved + ')</span>' : '';
+      var _cpfNote = ' <span style="font-size:9px;color:var(--text-dim)"' + (resolved < 30 ? ' title="Small sample — PF unreliable below n=30"' : '') + '>(n=' + resolved + ')</span>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="Profit Factor = Gross Wins / Gross Losses. n=' + resolved + ' closed trades. PF on small samples (n<30) can be dominated by single outlier trades." style="cursor:help;text-decoration:underline dotted">Profit Factor</span><span class="nc-val" style="color:' + pfColor + '">' + pfDisplay + _cpfNote + '</span></div>';
       cardsHtml += '<div class="nc-row"><span class="nc-lbl" title="SUM of per-trade % returns — NOT a portfolio return. Inflated vs reality because it assumes you re-bet a fixed notional every trade and never compound. Shown for reference only; the bold Compound Return row below is the honest figure." style="cursor:help;text-decoration:underline dotted">&Sigma; Trade % (sum)</span><span class="nc-val" style="color:' + pnlColor + '">' + fmtPct(totalPnl) + '</span></div>';
       var avgPnlC = resolved > 0 ? totalPnl / resolved : 0;
@@ -7570,6 +7656,7 @@ function getAcMiniBadge(pick) {
   if (ac === 'EQUITY') return '<span class="ac-mini ac-mini-eq" title="Equity">EQ</span>';
   if (ac === 'COMMODITY') return '<span class="ac-mini ac-mini-cmd" title="Commodity">CMD</span>';
   if (ac === 'FUTURES') return '<span class="ac-mini ac-mini-fut" title="Futures">FUT</span>';
+  if (ac === 'MUTUAL_FUND') return '<span class="ac-mini ac-mini-mf" title="Mutual Fund (NAV)">MF</span>';
   if (ac === 'BOND') return '<span class="ac-mini ac-mini-bnd" title="Bond">BND</span>';
   if (ac === 'ETF') return '<span class="ac-mini ac-mini-etf" title="ETF">ETF</span>';
   if (pick.source_system === 'inverse_mutations') return '<span class="ac-mini ac-mini-inv" title="Inverse LOSER Strategy Mutation - reversing a historically poor strategy to capture alpha">INV</span>';
@@ -7595,7 +7682,7 @@ function populateFilters() {
     if (ac && ac !== 'STOCK') assetSet[ac === 'STOCK' ? 'EQUITY' : ac] = true;
   });
   // Preferred order
-  var assetOrder = ['CRYPTO','EQUITY','FOREX','COMMODITY','FUTURES','ETF'];
+  var assetOrder = ['CRYPTO','EQUITY','FOREX','COMMODITY','FUTURES','ETF','MUTUAL_FUND'];
   var assetSel = el('f-asset');
   // 2026-04-06: Clear existing options first to prevent duplicates (dropdown was
   // being populated twice, causing every option to appear 2x). Keep only the "All" default.
@@ -9628,6 +9715,16 @@ const _TRUST_DEMOTED = {
   'multi_timeframe_ema_stack': {w: 0.15, reason: '-7.87% avg PnL, worst strategy (Mar 16 v97 audit)'},
 };
 function getTrustTier(p) {
+  // 2026-11-16 audit: dashboard_generator.py now re-checks PROVEN against the
+  // pick's resolved ledger (n>=20, WR>=50%, PF>=1.5). Respect that verdict —
+  // the name lookups below must not re-promote a pick the ledger rejected.
+  if (p && p.trust_tier_demoted_from === 'PROVEN') {
+    return {
+      tier: String(p.trust_tier || 'WATCH').toUpperCase(),
+      weight: 0.3,
+      reason: p.trust_tier_demote_reason || 'demoted: ledger check failed'
+    };
+  }
   const sys = (p.source_system || '').toLowerCase();
   const strat = (p.strategy || '').toLowerCase();
   // 1. PROBATION - system-level blocks (broken/garbage systems)
@@ -10164,7 +10261,7 @@ function computeScore(p) {
   // Systems with 0 closed non-crypto trades (goldmine_stocks, contrarian_consensus) are unproven.
   let ncQualityMult = 1.0;
   const _pickAc = ((p.asset_class || '') + '').toUpperCase();
-  const _isNonCrypto = _pickAc === 'EQUITY' || _pickAc === 'FOREX' || _pickAc === 'COMMODITY' || _pickAc === 'FUTURES' || _pickAc === 'ETF';
+  const _isNonCrypto = _pickAc === 'EQUITY' || _pickAc === 'FOREX' || _pickAc === 'COMMODITY' || _pickAc === 'FUTURES' || _pickAc === 'ETF' || _pickAc === 'MUTUAL_FUND';
   if (_isNonCrypto && D.systems) {
     const _ncSys = D.systems.find(s => s.name === p.source_system);
     const _ncClosedAll = _ncSys ? (_ncSys.closed_picks || 0) : 0;
@@ -10299,7 +10396,7 @@ function renderPicks() {
       const age = p.age_hours ?? 999;
       const pnl = p.pnl_pct ?? 0;
       const ac = ((p.asset_class || '') + '').toUpperCase();
-      const isNonCrypto = ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF';
+      const isNonCrypto = ac === 'FOREX' || ac === 'EQUITY' || ac === 'COMMODITY' || ac === 'FUTURES' || ac === 'BOND' || ac === 'ETF' || ac === 'MUTUAL_FUND';
       const maxAge = isNonCrypto ? 336 : 72;
       if (age > maxAge && Math.abs(pnl) < 1) return false;
       return true;
@@ -10924,7 +11021,7 @@ function renderPicks() {
     consensusTierHtml += `</div>`;
     consensusTierHtml += `<table style="width:100%;border-collapse:collapse;font-size:12px">`;
     consensusTierHtml += `<thead><tr style="border-bottom:1px solid var(--border)">`;
-    consensusTierHtml += `<th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Tier<span class="metric-tip" tabindex="0" role="img" aria-label="Tier definition" data-metric-tooltip="Performance tier per docs/PERFORMANCE_CHARTER.md s2. T1=Renaissance: PF>2 / WR>55 / MDD<10 / n>=200. T2=Institutional: PF>1.5 / WR>50 / MDD<20 / n>=100. T3=Retail-OK: PF>1.2 / WR>48 / MDD<30. Strategies dropping below T2 at recompute show honest 'Building' or 'Below T3' badges, not stale T2 stamps.">&#9432;</span></th>`;
+    consensusTierHtml += `<th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Tier<span class="metric-tip" tabindex="0" role="img" aria-label="Tier definition" data-metric-tooltip="Performance tier per docs/PERFORMANCE_CHARTER.md s2. T1: PF>2 / WR>55 / MDD<10 / n>=200. T2=Institutional: PF>1.5 / WR>50 / MDD<20 / n>=100. T3=Retail-OK: PF>1.2 / WR>48 / MDD<30. Strategies dropping below T2 at recompute show honest 'Building' or 'Below T3' badges, not stale T2 stamps.">&#9432;</span></th>`;
     consensusTierHtml += `<th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Symbol</th>`;
     consensusTierHtml += `<th style="text-align:left;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Direction</th>`;
     consensusTierHtml += `<th style="text-align:center;padding:6px 8px;color:var(--text-dim);font-size:10px;text-transform:uppercase">Systems</th>`;
@@ -11499,7 +11596,7 @@ function renderOverview() {
       const gridData = grid || (function() {
         const active = D.picks?.active || [];
         const TFS = ['SCALP','INTRADAY','SWING','POSITION'];
-        const ACS = ['CRYPTO','EQUITY','FOREX','COMMODITY','BOND','ETF','FUTURES'];
+        const ACS = ['CRYPTO','EQUITY','FOREX','COMMODITY','BOND','ETF','FUTURES','MUTUAL_FUND'];
         const cells = {}, tots = {}, empties = [];
         let hasUnk = false;
         active.forEach(p => {
@@ -11605,7 +11702,7 @@ function renderOverview() {
 
     if (openStatsRows.length > 0) {
       const osRows = openStatsRows.map(s => {
-        const wlRatio = s.losers > 0 ? (s.winners / s.losers).toFixed(1) : s.winners > 0 ? '\u221e' : '0';
+        const wlRatio = s.losers > 0 ? (s.winners / s.losers).toFixed(1) : 'n/a';
         return `<tr>
           <td>${sysLink(s.name)}</td>
           <td class="num">${s.total}</td>
@@ -13006,9 +13103,9 @@ function renderVerifiedAlpha() {
 
   var html = '';
   html += '<div style="padding:8px 0">';
-  html += '<h2 style="margin-bottom:8px;color:#22d3ee">Verified Alpha <span style="font-size:12px;color:var(--text-dim);font-weight:400">Prediction markets + auditable pro-trader rows only</span></h2>';
+  html += '<h2 style="margin-bottom:8px;color:#fbbf24">Shadow book <span style="font-size:12px;color:var(--text-dim);font-weight:400">Prediction markets stay shadow. Not PROVEN. Not sized.</span></h2>';
   html += '<div style="background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.28);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#c9f9ff">';
-  html += '<strong>Root-cause fix:</strong> this cohort is separated from the legacy all-systems headline so verified PM and audited copy sources can be judged on their own edge.<br>';
+  html += '<strong>Shadow only:</strong> prediction-market rows are separated so they are not read as a proven edge. Do not size them.<br>';
   html += esc(summary.status_note);
   html += '</div>';
   html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:14px">';
@@ -13036,7 +13133,7 @@ function renderVerifiedAlpha() {
     '<th style="padding:8px 10px">Score<span class="metric-tip" tabindex="0" role="img" aria-label="Dashboard Score definition" data-metric-tooltip="Dashboard Score 0-100. Composite of regime match (25%), quality (35%), freshness (15%), TP-upside (15%), HTF alignment (10%), plus Proven-Winner Boost (+8 to +15). Computed in browser from window.DASHBOARD_DATA. Score >=50 + Trust>=PROBATION is the HIGH CONVICTION baseline.">&#9432;</span></th>' +
     '<th style="padding:8px 10px">Trust<span class="metric-tip" tabindex="0" role="img" aria-label="Trust score definition" data-metric-tooltip="Trust score 0-10 from permutation_stats. Tiers: ELITE >=8 (institutional), TRUSTED >=7 (high conviction), PROBATION 5-6 (watch), WATCH <5 (low confidence). Inputs: tier_weight + freshness bonus + strategy edge bonus + regime alignment.">&#9432;</span></th>' +
     '<th style="padding:8px 10px">Source</th><th style="padding:8px 10px">Strategy</th>' +
-    '<th style="padding:8px 10px">Audited WR<span class="metric-tip" tabindex="0" role="img" aria-label="Audited WR definition" data-metric-tooltip="Audited Win Rate from closed-trade ledger (post-resolver-v2 noise filter, 5bp threshold for non-CRYPTO / 0.1bp for CRYPTO). Charter T2 floor is WR>50%; T1 (Renaissance) WR>55%. Differs from headline asset_class_health PF/WR which may include open mark-to-market.">&#9432;</span></th>' +
+    '<th style="padding:8px 10px">Audited WR<span class="metric-tip" tabindex="0" role="img" aria-label="Audited WR definition" data-metric-tooltip="Audited Win Rate from closed-trade ledger (post-resolver-v2 noise filter, 5bp threshold for non-CRYPTO / 0.1bp for CRYPTO). Charter T2 floor is WR>50%; T1 WR>55%. Differs from headline asset_class_health PF/WR which may include open mark-to-market.">&#9432;</span></th>' +
     '<th style="padding:8px 10px">Live PnL</th><th style="padding:8px 10px">Entry</th><th style="padding:8px 10px">TP</th><th style="padding:8px 10px">SL</th><th style="padding:8px 10px">Picked (EST)</th></tr></thead><tbody>';
 
   rows.forEach(function(p, idx) {
@@ -17874,8 +17971,8 @@ async function init() {
   function updateAge() {
     const mins = Math.floor((Date.now() - genAt.getTime()) / 60000);
     const ageText = mins < 1 ? 'just now' : mins < 60 ? mins + 'm ago' : Math.floor(mins/60) + 'h ' + (mins%60) + 'm ago';
-    const ageColor = mins > 60 ? 'var(--red)' : mins > 15 ? 'var(--yellow)' : 'var(--green)';
-    const staleWarn = mins > 60 ? ' \u2014 DATA STALE! Check workflow status.' : '';
+    const ageColor = mins > 150 ? 'var(--red)' : mins > 90 ? 'var(--yellow)' : 'var(--green)';
+    const staleWarn = mins > 150 ? ' \u2014 DATA STALE vs 150m publish SLA. Check the hourly schedule, not a 60m false alarm.' : '';
     const sourceMeta = getAuditDataSourceMeta();
     const sourceBadge = ' <span style="color:' + sourceMeta.color + ';font-size:10px;" title="' + String(_auditDataSourceNote || '').replace(/"/g, '&quot;') + '">' + sourceMeta.label + '</span>';
     const freshBadge = freshLoaded ? ' <span style="color:#22c55e;font-size:10px;" title="Fresh data fetched from same-origin site JSON on page load">\u26a1 LIVE</span>' : '';

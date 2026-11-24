@@ -1,4 +1,5 @@
 name: Beta Portfolio Refresh (monthly)
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 # Diversified beta-harvesting tracker (reports/BETA_PORTFOLIO_DEPLOYMENT_2026-07-04.md).
 # Monthly: refresh diversifier-ETF prices, recompute inverse-vol + crash-guard target
@@ -20,6 +21,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
       DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
@@ -91,4 +93,5 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add audit_dashboard/data/beta_portfolio_status.json || true
           git commit -m "chore(beta): monthly portfolio status $(date -u +%Y-%m-%d) [skip ci]" || echo "no change"
-          git push || echo "push skipped"
+          # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+          bash .github/scripts/safe_push.sh

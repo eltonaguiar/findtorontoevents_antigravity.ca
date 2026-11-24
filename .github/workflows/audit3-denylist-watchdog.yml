@@ -1,0 +1,48 @@
+name: audit3 denylist watchdog
+
+# Independent staleness watchdog for the audit3 kill denylist. The denylist
+# fails OPEN (a missing/stale ledger denies nothing), so a dead audit3-ledger
+# cron is silent non-enforcement unless a *separate* job turns it into a red
+# build. This job checks the committed ledger on its own schedule, so it still
+# fires (and fails loudly) even when audit3-ledger.yml stops running.
+#
+# Ledger is refreshed by audit3-ledger.yml every 6h and committed. This job
+# fails when the committed ledger is older than 3 days (~12 missed runs), far
+# inside the 14-day fail-open threshold it guards against.
+
+on:
+  schedule:
+    - cron: '45 * * * *'   # hourly, offset from audit3-ledger's '23 */6 * * *'
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - 'tools/audit3_denylist_health.py'
+      - 'alpha_engine/audit3_denylist.py'
+      - '.github/workflows/audit3-denylist-watchdog.yml'
+
+concurrency:
+  group: audit3-denylist-watchdog
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Assert the denylist ledger is armed and recent
+        run: |
+          python3 tools/audit3_denylist_health.py \
+            --ledger audit_dashboard/data/audit3_ledger.json \
+            --max-age-days 3 \
+            --min-strategy-kills 1

@@ -6,9 +6,17 @@ on:
     - cron: '50 9 * * *'
   workflow_dispatch:
   push:
+    # 2026-11-16 security fix: this workflow carries secrets.DB_STOCKS_PASSWORD — without a
+    # branches filter, ANY branch push touching these paths ran pushed-commit code with the
+    # prod DB password (executed 2x from feat/finpredict-final-v001). Default-branch only.
+    branches: [main]
     paths:
       - 'schemas/baseline_*.json'
       - '.github/workflows/schema-drift-watchdog.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   drift-check:

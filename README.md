@@ -4,6 +4,25 @@ Monorepo for **findtorontoevents.ca**, including the **live signal audit** at [f
 
 ---
 
+<table>
+<tr><td>
+
+## 📊 **[INDEPENDENT AUDIT + PICKS SUMMARY →](https://eltonaguiar.github.io/antigravity_review_Nov192026/)**
+
+### **https://eltonaguiar.github.io/antigravity_review_Nov192026/**
+
+One page covering this repository from the outside: **top pick per asset class with the number that killed it**, the
+overall ranking and why nothing currently earns real capital, what each agent filed on 2026-11-23, forward-test status,
+and the rules every pick is now held to. **Four agents, three different ranking keys, 0 endorsed picks.**
+
+*Sources audited: this repo's `docs/edge_research/`, `reports/`, `verified_strategies/paper_pilot/`, and the cost
+measurements. Companion repo: [antigravity_review_Nov192026](https://github.com/eltonaguiar/antigravity_review_Nov192026).*
+
+</td></tr>
+</table>
+
+---
+
 ## What `/audit` is
 
 A **read-mostly dashboard** fed by `audit_dashboard/data/dashboard_data.json`, regenerated on a schedule (see `.github/workflows/audit-dashboard.yml`). It aggregates:

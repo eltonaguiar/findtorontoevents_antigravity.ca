@@ -24,6 +24,10 @@ env:
   PYTHONUNBUFFERED: 1
   SKIP_CONFIRM: true
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   clear-channel:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}

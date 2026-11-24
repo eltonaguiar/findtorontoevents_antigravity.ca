@@ -39,6 +39,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+from audit_trail.forward_validation import apply_ledger_validation as _apply_ledger_fv
+
 
 def _float(v: Any, default: float = 0.0) -> float:
     """Coerce arbitrary input to float; return default on failure or falsy."""
@@ -76,6 +78,22 @@ _CLOSED_PICKS_PATHS = [
 # ---------------------------------------------------------------------------
 PROVEN_WR  = 0.55
 PROVEN_N   = 10
+
+# 2026-11-16 audit: prediction-market sources used to receive synthetic forward
+# stats when their ledger was empty (n=max(source_count,5), wr=max(...,0.50)),
+# which fed fabricated numbers into trust scoring and Smart Picks. An empty
+# ledger now stays empty; the pick is tagged instead.
+PM_SOURCES = frozenset({
+    "polymarket_signals",
+    "pm_polymarket_re_signals",
+    "pm_kalshi_signals",
+    "pm_kalshi_re_signals",
+    "pm_whale_signals",
+    "pm_momentum_signals",
+    "prediction_market_consensus",
+    "prediction_market_agents",
+    "kalshi_signals",
+})
 WATCH_WR   = 0.45
 WATCH_N    = 5
 MONITOR_WR = 0.35
@@ -179,8 +197,16 @@ def _load_closed() -> list:
 
 
 def _build_strategy_stats(closed: list) -> dict[str, dict]:
-    """Compute per-strategy WR, n, avg_pnl from closed picks."""
-    stats: dict[str, dict] = defaultdict(lambda: {"wins": 0, "total": 0, "pnl_sum": 0.0})
+    """Compute per-strategy n / WR / PF / avg_pnl from closed picks.
+
+    2026-11-16: adds resolved-only n and profit factor so `forward_validated`
+    can be decided from the ledger instead of emitter booleans. `n` stays the
+    raw closed count for back-compat; `resolved_n` / `pf` are the honest ones.
+    """
+    stats: dict[str, dict] = defaultdict(
+        lambda: {"wins": 0, "total": 0, "pnl_sum": 0.0,
+                 "resolved": 0, "gross_win": 0.0, "gross_loss": 0.0}
+    )
     for p in closed:
         s = _strategy_key(p)
         if not s:
@@ -190,14 +216,30 @@ def _build_strategy_stats(closed: list) -> dict[str, dict]:
         stats[s]["pnl_sum"] += float(pnl) if pnl is not None else 0.0
         if _is_won(p):
             stats[s]["wins"] += 1
-    return {
-        s: {
-            "n":       d["total"],
-            "wr":      d["wins"] / d["total"] if d["total"] > 0 else 0.0,
-            "avg_pnl": d["pnl_sum"] / d["total"] if d["total"] > 0 else 0.0,
+        try:
+            v = float(pnl) if pnl is not None else 0.0
+        except (TypeError, ValueError):
+            v = 0.0
+        if abs(v) > 0.01:
+            stats[s]["resolved"] += 1
+            if v > 0:
+                stats[s]["gross_win"] += v
+            else:
+                stats[s]["gross_loss"] += v
+    out = {}
+    for s, d in stats.items():
+        resolved = d["resolved"]
+        out[s] = {
+            "n":          d["total"],
+            "resolved_n": resolved,
+            "wr":         d["wins"] / d["total"] if d["total"] > 0 else 0.0,
+            "ledger_wr":  (d["gross_win"] / (d["gross_win"] + abs(d["gross_loss"])) * 100.0)
+                          if resolved > 0 else 0.0,
+            "pf":         (d["gross_win"] / abs(d["gross_loss"]))
+                          if d["gross_loss"] < 0 else None,
+            "avg_pnl":    d["pnl_sum"] / d["total"] if d["total"] > 0 else 0.0,
         }
-        for s, d in stats.items()
-    }
+    return out
 
 
 def _assign_trust_tier(wr: float, n: int) -> str:
@@ -325,6 +367,8 @@ def stamp_picks(picks: list, strategy_stats: dict, dry_run: bool = False) -> dic
         "quality_scored": 0,
         "trust_breakdown": {},
         "conviction_breakdown": {},
+        "forward_validated_promoted": 0,
+        "forward_validated_demoted": 0,
     }
 
     # Import conviction classifier (lazy to avoid circular imports)
@@ -373,21 +417,27 @@ def stamp_picks(picks: list, strategy_stats: dict, dry_run: bool = False) -> dic
         wr  = stats.get("wr", 0.0)
         avg = stats.get("avg_pnl", 0.0)
 
-        # FIX 2026-05-04: PM sources have no closed picks — use their own quality signals
+        # 2026-11-16 audit: the 2026-05-04 PM shortcut is removed. It handed
+        # prediction-market sources synthetic forward stats (n>=5, wr>=50%) when
+        # they had no closed picks, so an unvalidated source could pass trust
+        # gates and Smart Picks on numbers nobody measured. An empty ledger now
+        # keeps n=0 -> UNKNOWN, and the gap is tagged for the payload.
         source = str(p.get("source_system", "") or "").lower()
-        if source in {"pm_kalshi_signals", "pm_whale_signals", "polymarket_signals",
-                      "prediction_market_consensus"}:
-            if n == 0:  # Only override if no closed-pick stats exist
-                # Use PM-specific quality fields if available
-                pm_wr = _float(p.get("consensus_wr", p.get("profile_crypto_wr", 0.55)))
-                pm_n = _int(p.get("consensus_trades", p.get("source_count", 10)))
-                n = max(pm_n, 5)  # Minimum 5 to avoid Gate 4 block
-                wr = max(pm_wr, 0.50)  # Minimum 50% WR for PM consensus
-                avg = _float(p.get("consensus_pnl", 0.0))
+        if source in PM_SOURCES and n == 0:
+            p["pm_stats_source"] = "insufficient_ledger"
+            p["pm_stats_fabricated"] = False
 
         p["strat_fwd_wr"]     = round(wr, 3)
         p["strat_fwd_trades"] = n
         p["strat_fwd_avg_pnl"] = round(avg, 4)
+
+        # 2026-11-16: decide forward_validated from the strategy ledger, not
+        # only from what the emitter happened to set (several emitters hardcode
+        # False, which left 11 of 789 active picks flagged while 38 had a
+        # 20+ trade strategy history).
+        _led_change = _apply_ledger_fv(p, stats)
+        if _led_change:
+            summary["forward_validated_" + _led_change] += 1
 
         # 3. Stamp trust tier
         trust = _assign_trust_tier(wr, n)

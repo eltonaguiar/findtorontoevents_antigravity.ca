@@ -58,6 +58,21 @@ class TestAnonymousStrategyRejection(unittest.TestCase):
             _base_pick(strategy="Alpha_Engine", source_system="alpha_engine")
         ))
 
+    def test_prediction_market_self_named_accepted(self):
+        # PM consensus legitimately names its strategy after its source system.
+        # Without the exemption every PM pick was rejected at ingest and never
+        # reached active_picks.json (2026-11-16 audit).
+        self.assertTrue(is_valid_active_pick(_base_pick(
+            strategy="prediction_market_consensus",
+            source_system="prediction_market_consensus",
+        )))
+
+    def test_polymarket_self_named_accepted(self):
+        self.assertTrue(is_valid_active_pick(_base_pick(
+            strategy="polymarket_momentum",
+            source_system="polymarket_momentum",
+        )))
+
 
 class TestEnsureEntryTime(unittest.TestCase):
     def test_passthrough_when_entry_time_present(self):
@@ -137,3 +152,20 @@ class TestNormalizeForexPnl(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# --- audit3 denylist isolation (2026-11-19) ---------------------------------
+# These tests exercise feed-hygiene rules against synthetic BTC/CRYPTO fixtures.
+# The audit3 denylist now vetoes BTC (a KILL symbol) and CRYPTO (a KILL class),
+# so the fixture would be rejected before the rule under test is reached. The
+# denylist has its own tests in tests/test_audit3_enforcement.py; disable it here
+# and restore the environment when the module finishes.
+import os as _os
+
+
+def setUpModule():
+    _os.environ["AUDIT3_DENYLIST_DISABLED"] = "1"
+
+
+def tearDownModule():
+    _os.environ.pop("AUDIT3_DENYLIST_DISABLED", None)

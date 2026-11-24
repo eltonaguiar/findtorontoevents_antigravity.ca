@@ -19,6 +19,7 @@ class DashboardPayloadHealth:
     payload_stale: bool
     generated_at: str | None
     missing_systems: list[str] = field(default_factory=list)
+    optional_missing: list[str] = field(default_factory=list)
     bad_numeric_systems: list[str] = field(default_factory=list)
     problems: list[dict[str, str]] = field(default_factory=list)
 
@@ -36,9 +37,34 @@ class DashboardPayloadHealth:
                 f"MISSING system rows ({len(self.missing_systems)}): "
                 f"{self.missing_systems[:40]}{tail}"
             )
+        if self.optional_missing:
+            lines.append(
+                f"OPTIONAL sources with no rows yet (warning, not failure): {self.optional_missing}"
+            )
         if self.bad_numeric_systems:
             lines.append(f"BAD numeric fields: {self.bad_numeric_systems}")
         return lines
+
+
+# Sources that are registered so the dashboard can display them, but whose
+# producers are best-effort (network / API-key dependent, run with `|| echo
+# warning` in audit-dashboard.yml). A registered source that has produced zero
+# rows yet cannot emit a payload row, so its absence is a WARNING, not a broken
+# feed. Do NOT add healthy sources here — this exists so the Feed Health gate
+# fails only on real wiring regressions. Review after 7 consecutive days of rows.
+_OPTIONAL_SYSTEMS: set[str] = {
+    "pm_kalshi_re_signals",      # alpha_engine/kalshi_signals.py
+    "pm_polymarket_re_signals",  # alpha_engine/polymarket_signals.py
+    # Dead-by-design / ephemeral prediction-market sources. These are in
+    # dashboard_generator._GHOST_SYSTEMS (pm_momentum_signals) or produced only
+    # inside the audit-dashboard job and never committed (pm_whale_signals /
+    # pm_kalshi_signals, gitignored `**/data/*_signals.json`), so they cannot
+    # emit a payload row on most runs. Requiring them failed Feed Health every
+    # hour (MISSING system rows ['pm_momentum_signals'], run 19:39Z 2026-11-16).
+    "pm_momentum_signals",       # prediction_market_agents/momentum_signals.json (GHOST)
+    "pm_whale_signals",          # prediction_market_agents/whale_signals.json (ephemeral)
+    "pm_kalshi_signals",         # prediction_market_agents/kalshi_signals.json (ephemeral)
+}
 
 
 def check_dashboard_payload(
@@ -107,9 +133,15 @@ def check_dashboard_payload(
         if isinstance(row, (list, tuple)) and row and isinstance(row[0], str):
             registered.append(row[0])
 
-    missing = sorted(
-        n for n in set(registered) if n not in names_in_payload and n not in _HIDDEN_SYSTEMS and n not in _GHOST_SYSTEMS
-    )
+    missing: list[str] = []
+    optional_missing: list[str] = []
+    for n in sorted(set(registered)):
+        if n in names_in_payload or n in _HIDDEN_SYSTEMS or n in _GHOST_SYSTEMS:
+            continue
+        if n in _OPTIONAL_SYSTEMS:
+            optional_missing.append(n)
+            continue
+        missing.append(n)
     for n in missing:
         problems.append({"system": n, "reason": "missing_from_payload"})
 
@@ -135,6 +167,7 @@ def check_dashboard_payload(
         payload_stale=payload_stale,
         generated_at=str(generated_at) if generated_at is not None else None,
         missing_systems=missing,
+        optional_missing=optional_missing,
         bad_numeric_systems=bad_numeric,
         problems=problems,
     )

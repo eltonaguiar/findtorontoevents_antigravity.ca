@@ -107,6 +107,8 @@ jobs:
         with:
           update-environment: true
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Auto-regenerate predictable + scanner AI-Challenge picks
         # Round 6+ (2026-04-18): LLM tournament ended, but predictable &
@@ -122,12 +124,21 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          python copy_trader_intel/polymarket_scraper.py || echo "Polymarket wallet scan failed (non-fatal)"
-          python alpha_engine/polymarket_signals.py || echo "Polymarket reverse-engineering failed (non-fatal)"
-          python alpha_engine/kalshi_signals.py || echo "Kalshi scan failed (non-fatal)"
-          python alpha_engine/prediction_market_consensus.py || echo "Prediction market consensus failed (non-fatal)"
+          python copy_trader_intel/polymarket_scraper.py || echo "::warning::Polymarket wallet scan failed (non-fatal — output stale until next green run)"
+          python alpha_engine/polymarket_signals.py || echo "::warning::Polymarket reverse-engineering failed (non-fatal — output stale until next green run)"
+          python alpha_engine/kalshi_signals.py || echo "::warning::Kalshi scan failed (non-fatal — output stale until next green run)"
+          python alpha_engine/prediction_market_consensus.py || echo "::warning::Prediction market consensus failed (non-fatal — output stale until next green run)"
           python -m prediction_market_agents.orchestrator || echo "Prediction market agents failed (non-fatal)"
           python alpha_engine/combined_confidence_strategy.py || echo "Combined confidence strategy failed (non-fatal)"
+
+      # 2026-11-16: binary prediction-market contracts settle on the market outcome,
+      # not on spot TP/SL. The resolver reads data/pm_market_outcomes.json; this step
+      # produces it from the Kalshi/Polymarket settled-market APIs. Fail-open: a feed
+      # outage leaves contract picks EXPIRED-without-P&L rather than fake results.
+      - name: Ingest settled prediction-market outcomes
+        run: python -m audit_trail.pm_outcome_ingest || echo "::warning::PM outcome ingest failed (non-fatal - contract picks stay unresolved)"
+        env:
+          PYTHONPATH: ${{ github.workspace }}
 
       - name: Resolve active picks (TP/SL/time exits) across all systems
         id: resolve_active_picks
@@ -265,8 +276,12 @@ jobs:
           PYTHONUTF8: '1'
         run: |
           pip install pymysql -q 2>/dev/null || true
-          python tools/anti_overfit_audit_sidecar.py --min-n 20 || echo "::warning title=anti-overfit sidecar failed::see log; audit_dashboard/data/anti_overfit_audit.json will go stale (INCIDENT_OVERALL #45)"
-        continue-on-error: true
+          python tools/anti_overfit_audit_sidecar.py --min-n 20
+          # A later writer can re-emit rows without labels (measured 2026-11-20:
+          # 4 of 81 rows, while the counts still said 74). Re-stamp after the
+          # sidecar so a refresh can never publish an unlabelled row.
+          python tools/apply_dsr_probation_labels.py --apply
+          python tools/apply_dsr_probation_labels.py --check
 
       - name: Run research sidecars (Agent C external-research — 4 academically-backed)
         id: research_sidecars
@@ -951,6 +966,14 @@ jobs:
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           # Block conflict-marker commits on staged payload files (issue #141)
           bash .github/scripts/assert_no_conflict_markers.sh || exit 1
+          # A generated payload that contradicts itself is a hybrid, not fresh
+          # output: a declared row count that no longer matches its own rows, or a
+          # row repeated verbatim. Catch it before it becomes a commit.
+          python3 tools/detect_merge_hybrid.py --staged \
+            --report audit_dashboard/data/hybrid_gate_report.json || exit 1
+          # Commit the audit trail with the payload it describes.
+          [ -f audit_dashboard/data/hybrid_gate_report.json ] && \
+            git add audit_dashboard/data/hybrid_gate_report.json || true
           git commit -m "chore(audit-dashboard): refresh payload [skip ci]"
           # ---------------------------------------------------------------------------
           # PHASE 2: Push with merge — commit-first-then-merge (replaces rebase)
@@ -1011,6 +1034,38 @@ jobs:
               bash .github/scripts/assert_no_conflict_markers.sh || exit 1
               git commit --amend --no-edit
             fi
+            # The pull above is a LINE-BASED three-way merge of generated JSON
+            # (-X ours, resolved hunk by hunk), so it can hybridise this payload:
+            # 2026-11-20T20:46 produced 81 rows / 77 labelled from two 80-row
+            # sides, one strategy emitted twice, four rows stripped of labels
+            # they already carried on main. The sidecar step far above verified
+            # the labels *before* this commit and pull, so nothing caught it and
+            # the hybrid was pushed. Verify again here, then commit the repair
+            # as part of this same push.
+            if [ -f audit_dashboard/data/anti_overfit_audit.json ]; then
+              python3 tools/apply_dsr_probation_labels.py --apply || exit 1
+              python3 tools/apply_dsr_probation_labels.py --check || exit 1
+              if ! git diff --quiet -- audit_dashboard/data/anti_overfit_audit.json; then
+                git add audit_dashboard/data/anti_overfit_audit.json
+                git commit -m "chore(audit-dashboard): re-stamp publication labels after merge [skip ci]" || true
+              fi
+            fi
+            # A line-based merge can hybridise ANY generated artifact, not just the
+            # labelled one above. Bound the check to the directories this job
+            # commits, so another bot's payload can never block a clean run.
+            python3 tools/detect_merge_hybrid.py --rev-range HEAD^..HEAD \
+              --under audit_dashboard/data alpha_engine/data audit_trail/data \
+                      copy_trader_intel/data prediction_market_agents/data \
+                      ml_gatekeeper/data reports \
+              --report audit_dashboard/data/hybrid_gate_report.json || exit 1
+            # Commit the post-merge entry before the push, so the trail describes
+            # THIS run. The entry carries no timestamp: a retry that sees the same
+            # numbers writes identical bytes and this guard creates no commit.
+            if [ -f audit_dashboard/data/hybrid_gate_report.json ] \
+               && ! git diff --quiet -- audit_dashboard/data/hybrid_gate_report.json; then
+              git add audit_dashboard/data/hybrid_gate_report.json
+              git commit -m "chore(audit-dashboard): hybrid gate report [skip ci]" || true
+            fi
             # Verify publish consistency (advisory check — non-fatal by design)
             python3 .github/scripts/verify_dashboard_publish_consistency.py || true
             # Push attempt (sanitize output to avoid leaking PAT in error messages).
@@ -1045,6 +1100,17 @@ jobs:
             echo "ERROR: All push attempts failed — another workflow likely has the lock"
             exit 1
           fi
+
+      # 2026-11-16: the FTP deploy below globs audit_dashboard/data/*.json straight
+      # to the live site, bypassing deploy_audit_files.py's sanitizer. One bare
+      # `NaN`/`Infinity` (which Python emits by default) makes browser JSON.parse
+      # reject the whole document, so the panel shows "no data" on an HTTP-200 file
+      # that has a healthy byte count. Rewrite non-finite floats to null first, then
+      # assert every sidecar is browser-parseable before publishing.
+      - name: Enforce strict JSON on audit data sidecars
+        run: |
+          python3 tools/sanitize_audit_json.py --report
+          python3 tools/sanitize_audit_json.py --check
 
       - name: Deploy to all 3 FTP sites in parallel
         # 2026-04-27: ADDED `if: always()` so FTP deploy runs even when the
@@ -1192,7 +1258,7 @@ jobs:
               ftp_upload(ftp, "audit_dashboard/index.html", f"/{SITE_ROOT}/audit", "index.html", label)
               ftp_upload(ftp, "audit_dashboard/dashboard_enhancements.js", f"/{SITE_ROOT}/audit", "dashboard_enhancements.js", label)
               # 2026-05-19: index.html <script src>s these 3 too — never deployed -> 404
-              for jsf in ["money_ready_filter.js", "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:
+              for jsf in ["money_ready_filter.js", "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js", "excess_column.js", "forward_clock.js"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{jsf}", f"/{SITE_ROOT}/audit", jsf, label)
                   except Exception as e:
@@ -1261,7 +1327,7 @@ jobs:
 
               # HTML pages
               ftp.cwd(f"/{SITE_ROOT}/audit")
-              for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
+              for page in ["claudes_test.html", "audit2.html", "trading_blueprint.html", "funds.html",
                            "kimi_top_picks.html", "antigravity_picks.html", "portfolio_history.html",
                            "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                            "real_money.html", "research_sidecars.html", "research_index.html",
@@ -1271,6 +1337,13 @@ jobs:
                              "opencode_paper_trading.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)
+                  except Exception:
+                      pass
+              # audit2 loads audit2.js + audit2_forward.json relative to its own URL
+              for a2 in ["audit2.js", "audit2_forward.json", "denominator.json"]:
+                  try:
+                      _a2src = "audit_dashboard/" + a2 if a2.endswith(".js") else "audit_dashboard/data/" + a2
+                      ftp_upload(ftp, _a2src, f"/{SITE_ROOT}/audit", a2, label)
                   except Exception:
                       pass
 
@@ -1329,7 +1402,7 @@ jobs:
               ftp_upload(ftp, "audit_dashboard/index.html", "/audit", "index.html", label)
               # 2026-05-19: index.html <script src>s these 4 — never deployed -> 404
               for jsf in ["dashboard_enhancements.js", "money_ready_filter.js",
-                          "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:
+                          "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js", "excess_column.js", "forward_clock.js"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{jsf}", "/audit", jsf, label)
                   except Exception as e:
@@ -1386,7 +1459,7 @@ jobs:
 
               # HTML pages
               ftp.cwd("/audit")
-              for page in ["claudes_test.html", "trading_blueprint.html", "funds.html",
+              for page in ["claudes_test.html", "audit2.html", "trading_blueprint.html", "funds.html",
                             "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                             "real_money.html", "research_sidecars.html", "research_index.html",
                             "ai_leaderboard.html", "ai-tournament.html", "summary.html",
@@ -1395,6 +1468,13 @@ jobs:
                              "opencode_paper_trading.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", "/audit", page, label)
+                  except Exception:
+                      pass
+              # audit2 loads audit2.js + audit2_forward.json relative to its own URL
+              for a2 in ["audit2.js", "audit2_forward.json", "denominator.json"]:
+                  try:
+                      _a2src = "audit_dashboard/" + a2 if a2.endswith(".js") else "audit_dashboard/data/" + a2
+                      ftp_upload(ftp, _a2src, "/audit", a2, label)
                   except Exception:
                       pass
 
@@ -1435,12 +1515,12 @@ jobs:
               ftp_upload(ftp, "audit_dashboard/index.html", f"/{SITE_ROOT}/audit", "index.html", label)
               # 2026-05-19: index.html <script src>s these 4 — never deployed -> 404
               for jsf in ["dashboard_enhancements.js", "money_ready_filter.js",
-                          "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js"]:
+                          "hc_filter.js", "validation_metrics.js", "dashboard_freshness.js", "excess_column.js", "forward_clock.js"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{jsf}", f"/{SITE_ROOT}/audit", jsf, label)
                   except Exception as e:
                       print(f"  [{label}] Failed {jsf}: {e}")
-              for page in ["funds.html", "claudes_test.html", "trading_blueprint.html",
+              for page in ["funds.html", "claudes_test.html", "audit2.html", "trading_blueprint.html",
                             "paper_pilot.html", "crypto_paper_pilot.html", "anti_overfit.html", "edge_stability.html",
                             "real_money.html", "research_sidecars.html", "research_index.html",
                             "ai_leaderboard.html", "ai-tournament.html", "summary.html",
@@ -1449,6 +1529,13 @@ jobs:
                              "opencode_paper_trading.html"]:
                   try:
                       ftp_upload(ftp, f"audit_dashboard/{page}", f"/{SITE_ROOT}/audit", page, label)
+                  except Exception:
+                      pass
+              # audit2 loads audit2.js + audit2_forward.json relative to its own URL
+              for a2 in ["audit2.js", "audit2_forward.json", "denominator.json"]:
+                  try:
+                      _a2src = "audit_dashboard/" + a2 if a2.endswith(".js") else "audit_dashboard/data/" + a2
+                      ftp_upload(ftp, _a2src, f"/{SITE_ROOT}/audit", a2, label)
                   except Exception:
                       pass
 
@@ -1542,6 +1629,25 @@ jobs:
           # Non-fatal: don't exit(1) even if some fail
           PYEOF
 
+      - name: Anti-overfit GATE (blocking — fails only on regression vs the previous audit)
+        id: anti_overfit_gate
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          # Runs AFTER commit + deploy on purpose: a gate that fails before the
+          # dashboard is published would take the whole hourly refresh down with
+          # it, and the artifact this judges would not exist yet. Here it can
+          # fail the job without withholding data.
+          #
+          # 2026-11-21: this used to fail whenever ANY strategy sat below DSR
+          # 0.95. 74 of 80 always do, so the job was red every hour and a real
+          # failure was indistinguishable from the expected verdict (see
+          # updates/2026-11-20-anti-overfit-dsr-gate-never-passes.md). It now
+          # fails when the pass rate falls more than 1pp versus the previous
+          # audit, or the scored population shrinks by more than 25%. The
+          # absolute number is still printed on every run, pass or fail.
+          python tools/anti_overfit_audit_sidecar.py --check-only --gate \
+            --dsr-threshold 0.95 --regression-tolerance 1.0 --coverage-tolerance 0.25
       - name: Verify URLs
         if: always()
         run: |

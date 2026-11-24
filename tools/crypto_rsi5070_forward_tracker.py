@@ -40,7 +40,7 @@ from tools.pf_ci_lower import effective_n, pf_ci_lower  # noqa: E402
 
 OUT_PATH = os.path.join(REPO, "audit_dashboard", "data", "crypto_rsi5070_us_forward_status.json")
 CRYPTO_RT_BP = 16.0          # crypto round-trip cost convention (master loop §0)
-N_GATE = 150                 # pre-registered honest-n gate (~2026-06-25 ETA)
+N_GATE = 150                 # pre-registered honest-n gate (date ETA retired 2026-11-19)
 CI_LB_BAR = 1.15
 NEFF_BAR = 80
 CONC_BAR = 0.35
@@ -99,7 +99,11 @@ def compute_status(limit: int = 4000) -> dict:
         "cost_assumption_bp_rt": CRYPTO_RT_BP,
         "n": n,
         "n_gate": N_GATE,
-        "gate_eta": "~2026-06-25",
+        # `gate_eta: "~2026-06-25"` retired 2026-11-19 (external review v3, "H-119 two
+        # vintages"). That date passed with no promotion, and n had long cleared the
+        # gate, so the field read as "wait until Jun-25" on a card already showing
+        # n=431. A calendar date is not a gate; report whether the gate is met.
+        "n_gate_met": n >= N_GATE,
     }
     if n < 20:
         base.update({"status": "INSUFFICIENT_N", "note": f"n={n} too small to score"})
@@ -173,7 +177,9 @@ def compute_status(limit: int = 4000) -> dict:
             f"IS/OOS {is_pf}/{oos_pf}, top-symbol {top_sym} {round(conc*100,1)}%. "
             + ("Clears the promotion gate." if promotable
                else "Below the promotion bar (net CI-LB>1.15 AND n_eff>=80 AND n>=150 AND OOS>=1.0 AND conc<35%); "
-                    f"failing: {', '.join(failing)}. Re-run at the n>=150 gate (~2026-06-25).")
+                    f"failing: {', '.join(failing)}. The n>={N_GATE} gate is "
+                    + ("met" if n >= N_GATE else "still open")
+                    + "; never sized.")
         ),
     })
     return base

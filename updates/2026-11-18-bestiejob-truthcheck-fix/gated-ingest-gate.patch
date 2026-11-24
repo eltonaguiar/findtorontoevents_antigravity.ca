@@ -1,0 +1,65 @@
+diff --git a/tools/jobs_merge_inbox.py b/tools/jobs_merge_inbox.py
+index 6b7d11e..708dfb8 100755
+--- a/tools/jobs_merge_inbox.py
++++ b/tools/jobs_merge_inbox.py
+@@ -56,6 +56,10 @@ from jobs_consolidate import (  # noqa: E402
+     render,
+ )
+ 
++# Single source of truth for signup-gated / paywall aggregator traps. Same
++# import build_site.py uses; the merger previously did not consult it at all.
++from job_source_truth import domain_is_gated  # noqa: E402
++
+ INBOX = ROOT / "inbox"
+ # The board is a technical ServiceNow/Salesforce listing, and every scanner that
+ # feeds it rejects sales/marketing roles. The merger used to accept them, so a
+@@ -342,7 +346,7 @@ def main() -> int:
+         if not NAME_RE.match(path.name):
+             print(f"skip {path.name}: name must be <model>--<YYYY-MM-DD>--v<N>.md")
+             continue
+-        added = dup = bad = listing = 0
++        added = dup = bad = listing = gated = 0
+         for row in parse_inbox_file(path):
+             key = normalise_url(row["url"])
+             if key in known:
+@@ -351,14 +355,28 @@ def main() -> int:
+             if is_listing_url(row["url"]):
+                 listing += 1
+                 continue
++            # Signup-gated / paywall aggregator traps (jobleads.com,
++            # theladders.com, …). tools/job_source_truth.py is the single
++            # source of truth for that blocklist; until 2026-11-18 only
++            # build_site.py consulted it, and that merely *labelled* the row
++            # and swapped in a cross-ref — so a harvest could re-merge a
++            # paywall link and turn `truth-check.yml` red on the next run
++            # (13 rows in README, 15 consecutive hourly failures). Drop at
++            # ingest instead: a gated URL is not a posting.
++            if domain_is_gated(row["url"]):
++                gated += 1
++                continue
+             if EXCL.search(row.get("title") or ""):
+                 bad += 1
+                 continue
+             known.add(key)
+             incoming.append(row)
+             added += 1
+-        per_file[path.name] = {"added": added, "duplicate": dup, "bad": bad, "listing": listing}
++        per_file[path.name] = {"added": added, "duplicate": dup, "bad": bad,
++                               "listing": listing, "gated": gated}
+         extra = f", {listing} listing page(s)" if listing else ""
++        if gated:
++            extra += f", {gated} signup-gated link(s)"
+         print(f"{path.name}: +{added} new, {dup} duplicate{extra}")
+ 
+     if not args.rebuild:
+@@ -414,6 +432,10 @@ def main() -> int:
+ 
+     off_board = sum(v["bad"] for v in per_file.values())
+     listing_pages = sum(v["listing"] for v in per_file.values())
++    gated_rows = sum(v.get("gated", 0) for v in per_file.values())
++    if gated_rows:
++        print(f"\nskipped          : {gated_rows} rows on signup-gated/paywall "
++              f"domains (see tools/job_source_truth.py)")
+     if listing_pages:
+         print(f"\nskipped          : {listing_pages} rows that are aggregator listing pages, not postings")
+     if off_board:

@@ -1,0 +1,366 @@
+name: audit3 ledger
+
+# audit3 is deliberately independent of audit-dashboard.yml and the audit2 work:
+#   * its own concurrency group, so it never queues behind the ~35min build
+#   * an off-minute 6-hourly cron (audit-dashboard owns :10 hourly)
+#   * no `push:` trigger, so it cannot create a commit/deploy loop
+#   * stdlib-only compute (~5 seconds on 3.5k closed picks)
+#   * reads the live snapshot over HTTP instead of re-running the scanner
+#
+# Outputs (committed + deployed):
+#   audit_dashboard/data/audit3_verdict_history.json -> committed only; feeds the
+#     N1 repeated-looks gate (a CANDIDATE/PROVEN_T2 must persist across runs)
+#   audit_dashboard/data/audit3_ledger.json   -> /audit3/audit3_ledger.json
+#   audit_dashboard/audit3.html               -> /audit3/index.html
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: audit3-ledger
+  cancel-in-progress: false
+
+jobs:
+  ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Fetch live closed-pick ledger
+        run: |
+          mkdir -p /tmp/audit3
+          url="https://findtorontoevents.ca/audit/data/dashboard_data.json"
+          ok=0
+          for i in 1 2 3 4; do
+            if curl -fsS --max-time 180 -o /tmp/audit3/dashboard_data.json "$url"; then ok=1; break; fi
+            echo "fetch attempt $i failed; sleeping $((i*10))s"
+            sleep $((i*10))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::error title=audit3::live dashboard_data.json unreachable"
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, os
+          p = "/tmp/audit3/dashboard_data.json"
+          d = json.load(open(p))
+          rows = (d.get("picks") or {}).get("recent_closed") or []
+          print(f"source generated_at={d.get('generated_at')} bytes={os.path.getsize(p)} closed={len(rows)}")
+          assert len(rows) >= 100, f"only {len(rows)} closed rows — refusing to publish a thin ledger"
+          PY
+
+      # A2: fetch the canonical resolved view so audit3 scores the SAME rows /audit
+      # counts. Optional by design — when it is absent or hashes differently the
+      # tribunal falls back to the export slice and says so (mode=payload_slice)
+      # instead of implying the two denominators match.
+      - name: Fetch canonical resolved view (optional)
+        continue-on-error: true
+        run: |
+          url="https://findtorontoevents.ca/audit/data/resolved_closed_picks_net.json"
+          if curl -fsS --max-time 180 -o /tmp/audit3/resolved_closed_picks_net.json "$url"; then
+            python3 - <<'PY'
+          import json
+          v = json.load(open("/tmp/audit3/resolved_closed_picks_net.json"))
+          print("canonical view:", v.get("schema"), "rows:", len(v.get("rows") or []),
+                "sha:", str(v.get("rows_sha256"))[:12])
+          PY
+          else
+            echo "::warning title=audit3::canonical view unreachable — checking whether the payload declared it"
+            python3 - <<'PY'
+          import json, sys
+          d = json.load(open("/tmp/audit3/dashboard_data.json"))
+          block = d.get("resolved_closed_picks_net")
+          if isinstance(block, dict) and block.get("rows_file"):
+            # The payload declares a canonical view but we could not fetch it.
+            # Scoring the export slice here would silently understate coverage
+            # (21.4% vs 53.5%) — fail the run instead.
+            print("::error title=audit3::payload declares canonical view "
+                  f"{block.get('rows_file')} but it was not fetched; refusing to score the slice")
+            sys.exit(1)
+          print("payload carries no canonical block (legacy snapshot); scoring the slice")
+          PY
+          fi
+
+            # Bounded daily-bar backfill, immediately before the gate that consumes it.
+      # Measuring selection alpha needs a bar at or after each pick's exit, so
+      # freshness is a prerequisite of the gate. Without it the tables drift stale
+      # within days and whole asset classes silently revert to "unmeasured" — which
+      # is what happened when equity_daily_ohlcv stopped 2026-06-18 while equity
+      # picks kept closing (coverage sat at 2228/3500 picks until a manual backfill
+      # took it to 3173/3500). Bounded --since (4 days, inside the 5-day
+      # TOLERANCE_MS) plus upsert-only writes means it can never rewrite stored
+      # history; continue-on-error means a vendor outage warns instead of failing
+      # the run and losing the ledger.
+      - name: Backfill price tables (bounded, best-effort)
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret — skipping price backfill"
+            exit 0
+          fi
+          SINCE="$(date -u -d '4 days ago' +%F)"
+          echo "backfilling daily bars since $SINCE"
+          # pymysql is REQUIRED, not optional: both tools resolve credentials through
+          # tools/db_env and die with ModuleNotFoundError without it. The first
+          # version of this step installed only yfinance+pandas, so on run
+          # 44583198861 it printed "backfilling daily bars since ...", wrote ZERO
+          # rows, and still exited 0 — the alpha step's pymysql install happens
+          # later, so it could not help. Failures are ::error annotated (not
+          # ::warning) so a silent no-op is visible instead of blending in.
+          python3 -m pip install --quiet --disable-pip-version-check yfinance pandas pymysql \
+            || { echo "::error title=audit3 backfill::vendor install failed, gates may go stale"; exit 0; }
+          python3 -c "import pymysql, yfinance" \
+            || { echo "::error title=audit3 backfill::DB/vendor deps missing, gates may go stale"; exit 0; }
+          python3 tools/backfill_daily_ohlcv.py --tables equity,etf,futures \
+            --since "$SINCE" --apply --batch-size 25 --pause 0.5 \
+            || echo "::error title=audit3 backfill::equity/etf/futures backfill failed (see log)"
+          python3 tools/fx_backfill.py --since "$SINCE" --apply \
+            || echo "::error title=audit3 backfill::fx backfill failed (see log)"
+          # Staleness alarm: freshness is the whole point of this step, so print the
+          # last bar each gate will read. A table older than the 5-day TOLERANCE_MS
+          # means a class is about to go unmeasured again.
+          python3 - <<'CHECK'
+          import sys
+          sys.path.insert(0, ".")
+          from datetime import date
+          try:
+              from tools.db_env import get_stocks_creds
+              import pymysql
+              keep = ("host", "user", "password", "database", "port", "connect_timeout")
+              c = pymysql.connect(read_timeout=60, **{k: v for k, v in get_stocks_creds().items() if k in keep})
+              cur = c.cursor()
+              for t in ("equity_daily_ohlcv", "etf_daily_ohlcv", "futures_daily_ohlcv", "fx_prices"):
+                  cur.execute(f"SELECT MAX(trade_date) FROM `{t}`")
+                  last = cur.fetchone()[0]
+                  age = (date.today() - last).days if last else 9999
+                  flag = "::warning title=audit3 backfill::" + t + " STALE" if age > 5 else ""
+                  print(f"  {t:22s} last_bar={last} age_days={age} {flag}")
+              c.close()
+          except Exception as exc:
+              print(f"::warning title=audit3 backfill::freshness check failed {type(exc).__name__}: {exc}")
+          CHECK
+
+# Optional: selection alpha (M1b) needs per-symbol OHLC, so it only runs
+      # when DB credentials exist. A missing secret must never block the ledger.
+      - name: Selection alpha (optional — needs the price tables)
+        continue-on-error: true
+        env:
+          DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+        run: |
+          if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
+            echo "no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret — skipping selection alpha; the page states it is unavailable"
+            exit 0
+          fi
+          # 2026-11-19: the driver was never installed, so this step died with
+          # ModuleNotFoundError and `|| true` swallowed it. G8 then always reported
+          # available=false and G9 always reported "unmeasured" on the live page.
+          python3 -m pip install --quiet --disable-pip-version-check pymysql
+          set +e
+          python3 alpha_engine/audit3_selection_alpha.py \
+            --picks /tmp/audit3/dashboard_data.json \
+            --out /tmp/audit3/selection_alpha.json
+          rc=$?
+          if [ "$rc" -ne 0 ] || [ ! -s /tmp/audit3/selection_alpha.json ]; then
+            # require_alpha (main 6abfa22364e) makes the published path fail closed:
+            # an unavailable sidecar demotes EVERY PROVEN_T2 to CANDIDATE. That is the
+            # right policy, but it must not look like "nothing proven today", so the
+            # failure is an ::error annotation (still continue-on-error: the ledger
+            # publishes either way).
+            echo "::error title=audit3::selection alpha unavailable (rc=$rc) — every PROVEN_T2 will be demoted by require_alpha; see bar coverage on /audit3"
+            exit 0
+          fi
+          echo "selection alpha written: $(wc -c < /tmp/audit3/selection_alpha.json) bytes"
+
+      - name: Build audit2 pods sidecar
+        run: python3 tools/build_audit2_pods.py
+
+      - name: Build audit2 forward summary
+        run: python3 tools/audit2_forward_summary.py
+
+      - name: Build audit3 ledger
+        run: |
+          alpha_arg=""
+          if [ -f /tmp/audit3/selection_alpha.json ]; then
+            alpha_arg="--alpha /tmp/audit3/selection_alpha.json"
+          fi
+          history_arg=""
+          if [ -f audit_dashboard/data/audit3_verdict_history.json ]; then
+            history_arg="--history audit_dashboard/data/audit3_verdict_history.json --history-write --persistence-runs 2 --prev-ledger audit_dashboard/data/audit3_ledger.json --max-churn 0.30"
+          fi
+          # $history_arg already carries --history/--history-write/
+          # --prev-ledger/--max-churn. They were duplicated here by a merge,
+          # and argparse rejects a repeated option string ("conflicting option
+          # string: --history"), which broke the 2026-11-19T23:45 build.
+          # 2026-11-20: the sleeve gate ran only when invoked by hand, so an
+          # implausible PF could sit on the page indefinitely. Probe the CLI for
+          # the flag rather than assuming it: this file and audit3_tribunal.py
+          # are owned separately, and an unreachable option would abort the build.
+          sleeves_arg=""
+          if python3 -m alpha_engine.audit3_tribunal --help 2>&1 | grep -q -- "--sleeves"; then
+            sleeves_arg="--sleeves /tmp/audit3/dashboard_data.json"
+          else
+            echo "::warning title=audit3::sleeve gate NOT wired — audit3_tribunal has no --sleeves; apply reports/patches/2026-11-20-sleeve-gate-on-main.patch"
+          fi
+          python3 -m alpha_engine.audit3_tribunal \
+            --picks /tmp/audit3/dashboard_data.json \
+            --out audit_dashboard/data/audit3_ledger.json $alpha_arg $history_arg $sleeves_arg
+          python3 - <<'PY'
+          import json
+          d = json.load(open("audit_dashboard/data/audit3_ledger.json"))
+          assert d["schema"] == "audit3.v1"
+          s = d["summary"]
+          assert s["n_rows"] >= 100, s
+          cov = d["coverage"]
+          assert cov["scored_rows"] == s["n_rows"], cov
+          assert cov["statement"], cov
+          print("audit3 summary:", json.dumps(s))
+          print("audit3 coverage:", cov["statement"])
+          print("selection alpha:", d["selection_alpha"]["available"])
+          sl = d.get("sleeves")
+          if sl is None:
+              print("::warning title=audit3::no 'sleeves' block — implausible-PF gate is inert")
+          else:
+              rankable = [x for x in sl if x.get("rankable")]
+              bad = [x for x in rankable if float(x.get("pf") or 0) > 25.0]
+              assert not bad, f"implausible-PF sleeve published as rankable: {bad}"
+              print(f"sleeves: {len(sl)} | rankable: {len(rankable)} | "
+                    f"flagged: {len(sl) - len(rankable)}")
+          PY
+
+      # Fail-open is the right runtime behaviour and the wrong CI behaviour: if the
+      # ledger stops loading or goes stale, enforcement silently disappears. This
+      # step turns that into a red build.
+      - name: Assert the denylist is armed and recent
+        run: |
+          python3 tools/audit3_denylist_health.py \
+            --ledger audit_dashboard/data/audit3_ledger.json \
+            --max-age-days 2 \
+            --min-strategy-kills 1
+
+      - name: Build shared denominator sidecar
+        continue-on-error: true
+        run: |
+          dash=audit_dashboard/data/dashboard_data.json
+          [ -f /tmp/audit3/dashboard_data.json ] && dash=/tmp/audit3/dashboard_data.json
+          python3 tools/build_denominator.py --dashboard "$dash" \
+            --ledger audit_dashboard/data/audit3_ledger.json
+
+      - name: Commit ledger (data only, [skip ci])
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit_dashboard/data/audit3_ledger.json audit_dashboard/data/audit3_verdict_history.json audit_dashboard/data/denominator.json
+          if git diff --cached --quiet; then
+            echo "ledger unchanged"
+            exit 0
+          fi
+          git commit -m "chore(audit3): refresh kill-tribunal ledger [skip ci]"
+          for i in 1 2 3 4 5; do
+            # autostash keeps rebase legal even if a later step wrote files.
+            git -c rebase.autoStash=true pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*10))
+          done
+          echo "::error title=audit3::could not push ledger after 5 attempts"
+          exit 1
+
+      # After the ledger and the forward sidecar exist: this contract reports
+      # both, so building it earlier published the previous ledger (age 1.03h
+      # on the first deployed copy).
+      - name: Build public status contract
+        run: python3 tools/write_public_status.py
+
+      - name: Resolve forward paper book from bars
+        run: |
+          python3 tools/forward_book.py --resolve --publish
+      - name: Deploy /audit3 to findtorontoevents.ca
+        env:
+          # 50webs secret names as they actually exist in this repo (2026-11-19 audit).
+          FTP_HOST: ${{ secrets.FTP_SERVER_50WEBS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
+        run: |
+          if [ -z "$FTP_HOST" ] || [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
+            echo "::warning title=audit3::FTP credentials absent — page committed but not deployed"
+            exit 0
+          fi
+          python3 - <<'PY'
+          import ftplib, os, sys
+          host, user, pwd = os.environ["FTP_HOST"], os.environ["FTP_USER"], os.environ["FTP_PASS"]
+          ftp = ftplib.FTP(host, timeout=120)
+          ftp.login(user, pwd)
+          ftp.cwd("findtorontoevents.ca")
+          try:
+              ftp.mkd("audit3")
+          except ftplib.error_perm:
+              pass  # already exists
+          ftp.cwd("audit3")
+          for local, remote in [
+              ("audit_dashboard/audit3.html", "index.html"),
+              ("audit_dashboard/data/audit3_ledger.json", "audit3_ledger.json"),
+              ("audit_dashboard/data/audit3_public_status.json", "status.json"),
+              ("audit_dashboard/data/forward_book.json", "forward_book.json"),
+          ]:
+              with open(local, "rb") as f:
+                  ftp.storbinary(f"STOR {remote}", f)
+              print(f"uploaded {local} -> /findtorontoevents.ca/audit3/{remote}")
+          # audit2: the candidate/methodology library. Reads ../audit3/audit3_ledger.json,
+          # so no data upload is needed here.
+          ftp.cwd("..")
+          try:
+              ftp.mkd("audit2")
+          except ftplib.error_perm:
+              pass  # already exists
+          ftp.cwd("audit2")
+          for local, remote in [
+              ("audit_dashboard/audit2.html", "index.html"),
+              ("audit_dashboard/audit2.js", "audit2.js"),
+              ("audit_dashboard/data/audit2_forward.json", "audit2_forward.json"),
+              ("audit_dashboard/data/audit2_pods.json", "audit2_pods.json"),
+          ]:
+              with open(local, "rb") as f:
+                  ftp.storbinary(f"STOR {remote}", f)
+              print(f"uploaded {local} -> /findtorontoevents.ca/audit2/{remote}")
+          # 2026-11-20: /audit/data/audit3_ledger.json was written by NO workflow in
+          # this file. /audit rendered a ledger frozen at 2026-11-19T21:02:25 while
+          # /audit3 kept rebuilding every 6h, so /audit drifted to a 223-minute build
+          # gap and assert_surface_parity.py exited 2 (RED). Uploading the same bytes
+          # here is what makes all surfaces agree on ONE ledger.
+          ftp.cwd("..")
+          ftp.cwd("audit")
+          try:
+              ftp.mkd("data")
+          except ftplib.error_perm:
+              pass  # already exists
+          ftp.cwd("data")
+          with open("audit_dashboard/data/audit3_ledger.json", "rb") as f:
+              ftp.storbinary("STOR audit3_ledger.json", f)
+          print("uploaded audit_dashboard/data/audit3_ledger.json -> /findtorontoevents.ca/audit/data/audit3_ledger.json")
+          with open("audit_dashboard/data/denominator.json", "rb") as f:
+              ftp.storbinary("STOR denominator.json", f)
+          print("uploaded denominator.json -> /findtorontoevents.ca/audit/data/denominator.json")
+          # 2026-11-22: /audit/audit3.html was never written by ANY workflow -- the
+          # page only ever landed at /audit3/index.html, so the /audit URL 404'd.
+          # Its data fetches are absolute (/audit3/*.json), so a copy here works.
+          # This block (not deploy_audit_files.py) is used because every --only
+          # group invoked in CI is audit_data/updates/pick_funnel/incidents/
+          # ai_tournament/ai_leaderboard -- "healthchecks" is never run.
+          ftp.cwd("..")
+          with open("audit_dashboard/audit3.html", "rb") as f:
+              ftp.storbinary("STOR audit3.html", f)
+          print("uploaded audit_dashboard/audit3.html -> /findtorontoevents.ca/audit/audit3.html")
+          ftp.quit()
+          PY

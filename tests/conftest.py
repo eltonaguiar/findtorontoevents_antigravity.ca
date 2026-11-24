@@ -108,3 +108,51 @@ os.environ.setdefault("CRYPTO_SIZED_LONG_BLOCK", "0")
 # Tests that specifically test the HF gate set HF_QUALITY_GATE_ENABLED=1; the
 # rest default to OFF here.
 os.environ.setdefault("HF_QUALITY_GATE_ENABLED", "0")
+# Per-class hard VIX gates (2026-05-28) reach the network (yfinance ^VIX) and
+# reject EQUITY when VIX>22 / ETF when VIX>25. Tests that fixture EQUITY picks
+# for OTHER gates therefore go red on any high-VIX day: on 2026-11-16 VIX was
+# 23.96 and main's CI Tests failed 14 gate tests (passes_active_gate returned
+# False with _hf_quality_gate_reason=equity_vix_gate_high_vix).
+# Use the per-class kill-switches, not VIX_REGIME_ACTIVE_GATE_ENABLED — disabling
+# the whole active gate would also skip the M-045 EQUITY_VIX_FILTER check that
+# tests/test_quality_gates.py exercises. VIX-gate suites set their own env and
+# patch get_cached_vix, so this default does not weaken them.
+os.environ.setdefault("EQUITY_VIX_GATE_ENABLED", "0")
+os.environ.setdefault("ETF_VIX_GATE_ENABLED", "0")
+# The legacy combined VIX+YC gate (VIX_REGIME_GATE_ENABLED / YC_REGIME_GATE_ENABLED,
+# default ON) is the second network VIX path with the same high-VIX-day problem.
+# VIX_REGIME_ACTIVE_GATE_ENABLED itself stays at its default so the M-045
+# EQUITY_VIX_FILTER check inside it remains reachable.
+os.environ.setdefault("VIX_REGIME_GATE_ENABLED", "0")
+os.environ.setdefault("YC_REGIME_GATE_ENABLED", "0")
+
+
+# ---------------------------------------------------------------------------
+# audit3 cost-table isolation (2026-11-19)
+# `load_rows` -> `_apply_measured_costs` updates the module-global
+# SLIPPAGE_PCT / STRATEGY_SLIPPAGE_PCT from whatever payload it loads. That is
+# correct for one ledger build per process, but it leaks across tests: a test
+# that loads a measured-cost payload changes the cost every later test sees,
+# which flipped `test_alpha_is_normalised_by_hold_time` (2.85 alone, 2.9003 in
+# the suite). Snapshot and restore around every test so order cannot matter.
+import pytest as _pytest
+
+
+@_pytest.fixture(autouse=True)
+def _restore_audit3_cost_tables():
+    try:
+        from alpha_engine import audit3_tribunal as _t
+    except Exception:
+        yield
+        return
+    class_snapshot = dict(getattr(_t, "SLIPPAGE_PCT", {}) or {})
+    strat_snapshot = dict(getattr(_t, "STRATEGY_SLIPPAGE_PCT", {}) or {})
+    try:
+        yield
+    finally:
+        if hasattr(_t, "SLIPPAGE_PCT"):
+            _t.SLIPPAGE_PCT.clear()
+            _t.SLIPPAGE_PCT.update(class_snapshot)
+        if hasattr(_t, "STRATEGY_SLIPPAGE_PCT"):
+            _t.STRATEGY_SLIPPAGE_PCT.clear()
+            _t.STRATEGY_SLIPPAGE_PCT.update(strat_snapshot)

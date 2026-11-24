@@ -1,4 +1,5 @@
 name: AI-Model Portfolios — Daily EOD
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 # Risk-managed paper portfolios per AI-tournament model (design §7).
 # Runs after US equity close (22:00 UTC, Mon-Fri). Schedule only — no effect
@@ -117,7 +118,6 @@ jobs:
 
       - name: Commit PF JSON snapshots
         if: ${{ !inputs.dry_run }}
-        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -126,5 +126,6 @@ jobs:
             echo "no PF JSON changes to commit"
           else
             git commit -m "chore(portfolios): daily PF snapshot [skip ci]"
-            git push
+            # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+            bash .github/scripts/safe_push.sh
           fi

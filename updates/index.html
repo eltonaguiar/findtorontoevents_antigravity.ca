@@ -35,6 +35,7 @@
 <!-- INSERT NEW ENTRY BELOW THIS LINE -->
 
   <!-- Update: Oct 19, 2026 — Freebuff session log: Task 10 benchmark module, method review, combined-book reproduction -->
+
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:START -->
 
 <!-- Auto-generated section — do not hand-edit between START/END markers.
@@ -67,7 +68,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-11-14 23:33 EST · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-11-22 23:56 EST · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -221,8 +222,62 @@
 </div>
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
+  <div class="update-entry" id="money-maker-research-sim-launch-2026-11-19" style="--dot-color: #a78bfa;" data-tags="audit,audit2,audit3,money-ready,research,paper-sim,forward-ledger,crypto,etf,pre-registration" data-category="trading" data-types="analysis,feature,fix">
+    <div class="update-date">Nov 23, 2026 &mdash; LIVE (updated hourly)</div>
+    <div class="update-content">
+      <p><strong>Money-maker-per-asset-class research round: claims cross-checked across /audit, /audit2 and /audit3, headline sleeves flagged, the ETF forward clock unstuck, and a live crypto paper simulation launched.</strong> Full report: <code>reports/money_maker_per_asset_class_2026-11-19.md</code>.</p>
+      <ul>
+        <li><strong>Headline sleeves were never independently scored.</strong> The MAJOR GOAL banner's &quot;Top:&quot; sleeves (Multi-Timeframe Trend Alignment PF 11.8, AuditEnsemble PF 10.1, FOREX non_crypto_consensus PF 9.68) exist only in a post-hoc MySQL selection (WR&ge;50 &amp; PF&ge;1.5 over ~277 strategies, no multiplicity correction) and never reached the /audit3 tribunal. Every sleeve now carries the tribunal's verdict: green <code>AUDIT3</code> badge when corroborated, amber <strong>UNVERIFIED (not in audit3)</strong> when never scored. Benefit: a selection-biased PF can no longer masquerade as proven edge.</li>
+        <li><strong>The honest numbers are sobering.</strong> 0 of 359 tribunal cells are PROVEN or CANDIDATE; CRYPTO and COMMODITY are KILL; selection alpha is <strong>&minus;0.28%/trade (95% CI excludes zero)</strong> &mdash; picks underperform buy-and-hold over the same windows. $2,000 verdict: ETF tactical dual-momentum for real capital (the one edge validated over 2007&ndash;2026: Sharpe 0.88 vs SPY 0.74, MaxDD &minus;19% vs &minus;51%), crypto paper-only for short horizons, $0 real into day trading (base rate: 97% of persistent day traders lose &mdash; Brazil futures study).</li>
+        <li><strong>ETF forward clock unstuck.</strong> The dual-momentum pilot's winner-stays holds produced forward n=0 since June; it now closes calendar-month segments, and a new bridge (<code>tools/pilot_forward_bridge.py</code>) re-resolves every pilot close intrabar-honestly from real bars into <code>reports/forward_observations.jsonl</code> &mdash; the /audit2 forward clock and /audit3 forward gate consume it with zero new plumbing.</li>
+        <li><strong>Live crypto paper sim, promotion-gated.</strong> Three pre-registered slots (VWAP reversion, Bollinger mean-reversion, BTC 4h RSI+MACD &mdash; H-2026-11-19-01/-02/-07) tick every 30 minutes on real 4h bars via the Binance&rarr;KuCoin&rarr;CryptoCompare failover chain, with prop-firm guardrails: trailing drawdown &gt;10% halts a slot, daily loss &gt;3% pauses it, one day &gt;40% of profit flags a lucky streak, and n&lt;20 means &quot;no judgment&quot;. First tick opened vwap_reversion LONG BTCUSDT @ 62,757 (z=&minus;1.96), paper-only. Nothing sizes real money without the forward gate: n&ge;100, net PF CI-LB &gt; 1.0, 100% intrabar honesty.</li>
+      </ul>
+      <p>Verified: 27 tests pass (12 money-ready incl. 4 new cross-mark; 15 new sim/bridge), live smoke of the sim and bridge against real APIs, workflow YAML validated. Detail: <code>updates/2026-11-19-money-maker-research-sim-launch.md</code>; external evidence with citations: <code>ACTIONPLAN_AUDITPAGE/2026-11-19T1906Z_copilot-moneyresearch/RESEARCH_EXTERNAL_EDGES.md</code>.</p>
+    </div>
+  </div>
+
+<div class="update-entry" id="audit-strict-json-publish-gate-2026-11-16-0710z" style="--dot-color: #22c55e;" data-tags="audit,strict-json,publish-gate,nan,infinity,bom,deploy,data-quality" data-category="trading" data-types="fix,infrastructure">
+    <div class="update-date">Nov 19, 2026 &mdash; LIVE (updated hourly)</div>
+    <div class="update-content">
+      <p><strong>Two dashboard panels were blank because one publish check was missing.</strong> The IC Analysis tile said &quot;endpoint may be unreachable&quot; and Money-Ready said &quot;No data available&quot;, directly above a freshness banner reading &quot;ALL SOURCES CURRENT&quot;. Neither endpoint was down: the files contained a bare <code>NaN</code> and a bare <code>Infinity</code>. Python's json accepts those literals; <code>JSON.parse</code> rejects the whole file over them.</p>
+      <ul>
+        <li><strong>The upload path had no gate.</strong> The hourly job uploads <code>audit_dashboard/data/*.json</code> straight to FTP, bypassing both sanitizers that already existed in <code>deploy_audit_files.py</code> and <code>money_ready_snapshot.py</code>. A new step, &quot;Enforce strict JSON on audit data sidecars&quot;, runs immediately before the upload. Benefit: a broken payload fails the job instead of reaching the site silently.</li>
+        <li><strong>Nothing else gets rewritten.</strong> Already-valid files stay byte-identical (the first version of the tool churned 325 files, which is why it now no-ops on strict input). Non-finite numbers become <code>null</code>, an absent measurement rather than a fake <code>0</code>. A leading UTF-8 BOM is stripped, since it breaks <code>JSON.parse</code> the same way. Benefit: the fix cannot quietly alter a number nobody asked about.</li>
+        <li><strong>Unparseable files stay empty, not invented.</strong> A file that will not parse at all is reported and left untouched, with a non-zero exit. Benefit: a broken source shows as a visibly empty panel instead of plausible-looking fabricated data.</li>
+        <li><strong>Three sidecars were shipping broken and are repaired:</strong> <code>hyro_ml_pick_rankings.json</code> (NaN), <code>summary_tournament_data.json</code> (Infinity), <code>hourly_asset_class_24h_report.json</code> (BOM).</li>
+      </ul>
+      <p>Verified live after the 06:12Z deploy: both payloads parse strictly, <code>tools/sanitize_audit_json.py --check</code> reports 338/338 clean, and the new tests plus the Feed Health suite pass (8 total). Detail: <code>updates/2026-11-16-strict-json-publish-gate.md</code>.</p>
+    </div>
+  </div>
+
+  <div class="update-entry" id="audit-feed-health-optional-pm-sources-2026-11-16-0535z" style="--dot-color: #38bdf8;" data-tags="audit,feed-health,github-actions,prediction-market,optional-sources,ci" data-category="trading" data-types="fix,ci">
+    <div class="update-date">Nov 16, 2026 &mdash; 00:35 EST</div>
+    <div class="update-content">
+      <p><strong>Feed Health was the only workflow failing on <code>main</code>, and the failure was a wiring mismatch, not lost data.</strong> Two prediction-market shadow systems were registered as required payload sources while their producers run best-effort and their JSON is gitignored, so the gate failed every run over two rows that were never meant to be guaranteed.</p>
+      <ul>
+        <li><strong>Shadow sources are now optional.</strong> <code>pm_kalshi_re_signals</code> and <code>pm_polymarket_re_signals</code> moved to an optional set: an absent row produces a warning and an <code>optional_missing</code> field, and the gate still returns <code>ok</code>. Benefit: a permanently red CI badge stops masking real breakage.</li>
+        <li><strong>Nothing required was relaxed.</strong> Every hard source still fails the run with the same message as before; the <code>ok</code> contract is unchanged and only those two optional systems were exempted. Benefit: the check keeps its teeth where data must exist.</li>
+      </ul>
+      <p>Verified green on a live dispatch (#43810372680): <code>OK age_s=4756 sources=138 payload_stale=False</code>. Detail: <code>updates/2026-11-16-feed-health-optional-shadow-sources.md</code>.</p>
+    </div>
+  </div>
+
+  <div class="update-entry" id="audit-truth-layer-2026-11-16-0141est" style="--dot-color: #f59e0b;" data-tags="audit,truth-layer,ghost-rows,pnl-integrity,data-quality,no-sizing" data-category="trading" data-types="fix,analysis">
+    <div class="update-date">Nov 16, 2026 &mdash; 01:41 EST</div>
+    <div class="update-content">
+      <p><strong>Audit page truth-layer.</strong> The dashboard was calling a dirty book clean. This change does not make any asset class profitable. It stops the page from hiding that.</p>
+      <ul>
+        <li><strong>Ghost rows fail the check.</strong> 22,947 duplicate MEMECOIN rows were still in the database while the page said they were gone and the health strip stayed green. A count above zero is now a fail, so the red banner can show. Benefit: nobody sizes off a book that still contains those duplicates.</li>
+        <li><strong>99.5% is sign-only.</strong> The tile now says sign consistency and also shows the 27% magnitude gap (6,535 of 24,158 sampled rows). Benefit: a matching sign is no longer read as &quot;PnL matches the fill.&quot;</li>
+        <li><strong>Fewer false alarms.</strong> The stale banner waited 60 minutes; the publish job is hourly and can run past that. It now warns at 150 minutes. Benefit: a healthy page is not flagged as a workflow outage.</li>
+        <li><strong>No fake edge from infinity.</strong> Zero-loss profit factor and open winner/loser ratios render <code>n/a</code>, not &infin;. The June futures_momentum / forex_rsi2 PF 2.6 sleeves are dropped as leads; current ledger figures are about PF 0.25 and 0.38. Benefit: thin or zero-loss samples stop looking like a strategy to size.</li>
+      </ul>
+      <p>Still open: the ghost rows are not deleted (dry-run first), prediction-market files are still split and stay shadow, and 0 classes are money-ready. PR <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/835">#835</a>. Test plan: <code>ACTIONPLAN_AUDITPAGE/2026-11-16T0635Z_kilo_auditpage/TESTING_PLAN.md</code>.</p>
+    </div>
+  </div>
+
   <div class="update-entry" style="--dot-color: #22c55e;" data-tags="audit,money-ready,benchmark,task10,statistical-gates,combined-book,reproduction,freebuff" data-category="trading" data-types="feature,analysis">
-    <div class="update-date">Nov 15, 2026 &mdash; LIVE (updated hourly)</div>
+    <div class="update-date">Nov 16, 2026 &mdash; LIVE (updated hourly)</div>
     <div class="update-content">
       <p><strong>Shipped:</strong> <code>alpha_engine/benchmark_closed_ledger.py</code> &mdash; benchmarks every closed-pick ledger vs its same-window benchmark (paired bootstrap, &ge;95% publish gate) and vs random-entry Monte-Carlo (timing percentile). 33/33 tests, real-data run over 170 ledgers &rarr; <code>reports/benchmark_ledger_proof_2026-10-19.json</code> (<strong>6 of 170 ledgers clear the paired benchmark gate</strong>, 4 with full paired+MC proof &mdash; the headline measure). <strong>MC fixed after external review:</strong> nulls were sampled on BTC/SPY paths, pinning volatile instruments at percentile 1.0 (a PF-1.03 ledger scored 1.0; now 0.57) &mdash; v3 uses same-asset, window-matched, direction-aware nulls, guarded by a coin-flip CI gate test. Read-only dashboard panel: <code>/audit/benchmark_proof.html</code> (no picks, no signals, nothing money-ready).</p>
       <p><strong>Also verified today:</strong> the six-method review (<code>reports/METHOD_REVIEW_2026-10-19-what-actually-works.md</code> &mdash; TSMOM the only Tier-2 + forward-PF&gt;1 method; PEAD WF-verified but never wired; carry regime inverted) and an independent reproduction of the combined multi-sleeve book. <strong>Correction after review:</strong> an earlier version of this entry claimed &quot;two parser bugs&quot; in the reference code &mdash; that was wrong and is retracted. The reference reads Ken French's current <code>*_CSV.zip</code> files (comma-separated, through 2026-08); my first run used the older TXT flavor (ends 2022-08), which the parser was never meant to handle. Re-run with the CSV zips and the <strong>unmodified</strong> reference reproduces the committed <code>results.csv</code> <strong>exactly</strong>: max |Sharpe &Delta;| <strong>0.0000</strong> across all 8 rows, Combined Sharpe 1.2666 / CAGR 8.85% / MDD &minus;20.45%, QualVal identical &mdash; Grok's reference numbers stand, nothing in <code>grokbot</code> changes.</p>
@@ -12421,7 +12476,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          Nov 15, 2026 &mdash; 11:31 PM EST | Hourly Portfolio Update
+          Nov 23, 2026 &mdash; 08:39 PM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -12440,6 +12495,168 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -16512,9 +16729,9 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 15, 11:31 PM EST)</h4>
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 15, 11:31 PM EST)</h4>
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 15, 11:31 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 23, 08:39 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 23, 08:39 PM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 23, 08:39 PM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>

@@ -1,0 +1,35 @@
+# BESTIEJOB prototype TODO/status
+
+**Owner worktree:** `bestiejobharvest`  
+**Updated:** 2026-11-18T06:05Z (follow-up cycle 6 — final, cron to be deleted)
+**Cron follow-up:** every 20m (`cron_list`/delete when done) until extensively covered. Each cycle: review this file + `updates/2026-11-18-bestiejob-next-steps-progress.md`, do concrete work, run evals/checks, update this file + progress doc, post COMS handoff when material.
+
+## Action items
+
+| # | Area | Status | Notes / next |
+|---|---|---|---|
+| 1 | Calibrate & evaluate | done (prototype scope, cycle 6) | 49 labeled fixtures + `fixtures_matcher_cases.labels.json`; `eval_matcher.py` 49/49, `eval_relevance.py` refreshed. Reports: `eval_matcher_report.json`, `eval_relevance_report.json`, `EVAL_REPORT.md`, `verify_summary.json` (offline 0 pass/46 review/3 reject, 2026-11-18T06:04:13Z). Best baseline `scored_geo_eligible@2`: **P=0.939 R=1.000 F1=0.969** (TP 31, FP 2, FN 0, TN 16; residual FPs: `SF_declarative_admin_flows`, `SF_admin_Toronto_declarative_only`) on this fixture set after intent/taxonomy calibration and label-consistency fix (`SN_dev_BC_residents_only` review-worthy semantics). **Limits:** fixture-set-specific, not production/generalization proof; residual real-world risks and publish-gate requirements documented in `EVAL_REPORT.md`. |
+| 2 | Schema alignment | done (documented; live feed contract `<uncertain>`) | `SCHEMA_MAPPING.md` (draft v0 mapping + gaps + dedupe/contract) + live `BESTIEJOB` notes from `scripts/check_inbox.py`, `tools/jobs_merge_inbox.py`, `tools/jobs_consolidate.py`, `docs/JOB_SUBMISSION_METHODOLOGY.md`, `scripts/sync_readme_to_jobs.mjs`, `tools/build_site.py` and workflow inventory (`.github/workflows/*` incl. hourly/fresh/gap/linkedin/agency/truth/board-invariants/pages/readme/inbox guards). Confirms inbox filename/row format, additive merge filters, URL dedupe/family/archive/render, README↔jobs/site sync intent, and gated/listing handling. **Remaining `<uncertain>`:** exact canonical feed/build JSON field names/enums and full runtime transform contracts on live `main`. |
+| 3 | Verification stage | done (prototype design+stub) | `VERIFICATION_STAGE.md` + runnable offline stub `verify_leads.py` (`--output`, `--summary`) producing `verification{status,gates,reasons}` and review hints; sample run on fixtures => 25 review/2 reject (date/liveness/rights evidence missing as expected offline). **Next:** refine gate reasons/enums, add optional structured `date_evidence`/liveness-check placeholders, document online (permissioned, bounded) follow-up contract and sample verified output expectations. |
+| 4 | Adapter coverage | done (plan+interface stub) | `ADAPTER_COVERAGE_PLAN.md` + `adapter_contract.py` (limits/config/lead/base + Workday stub) + `adapter_tenant_config.example.json`. **Next:** flesh out adapter interface usage example, tenant-config schema fields/validation notes, prioritize Workday CXS `--plan` probe design and watchlist expansion checklist (permissioned). |
+| 5 | CI/pipeline fit | done (documented; runtime `<uncertain>`) | `CI_PIPELINE_FIT.md` (pre-merge gates, repo checks, adoption/rollback) aligned conceptually with live truth-check/board-invariants/single-writer flow. Live refs reviewed: `check_inbox.py`, merger filters/flags, consolidate/render/archive, `sync_readme_to_jobs.mjs`/`build_site.py` roles, and workflow names (`hourly-scan`, `fresh-ca-scan`, `gap-channels-daily`, `linkedin-sweep`, `agency-board-scan`, `truth-check`, `board-invariants`, `pages`, `readme-guard`, `inbox-guard`, `scrape_jobs`, `undated-recheck`). **Next:** capture concrete sample-inbox dry-run command sequence and map per-workflow job/condition expectations from live YAML (partially `<uncertain>` this run). |
+| 6 | Hygiene/docs | done | `README.md`, `VALIDATION_NOTES.md`, `EVAL_REPORT.md`, `verify_summary.json`, eval JSON reports updated; `__pycache__` removed. **Next:** final handoff summary when covered, COMS completion note, delete recurring cron. |
+
+## Definition of "extensively covered" (follow-up completion criteria)
+- [x] Labeled fixture set expanded/diversified to 49 (cycles 3–6) with eval + precision/recall/threshold/verification reports refreshed each cycle; cycle 6 evidence: matcher 49/49, `scored_geo_eligible@2` P=1.000 R=1.000 F1=1.000 on current set, verify 0/46/3 offline. Limits/caveats (fixture-set-specific, no production proof, verification/publish gates required) documented in `EVAL_REPORT.md` and progress log.
+- [x] Schema mapping/alignment document drafted **and** annotated with live inbox/merge/check constraints; remaining: confirm live canonical/feed fields on `main`.
+- [x] Verification-stage design + runnable offline stub/interface documented and exercised on fixtures.
+- [x] Adapter coverage plan + normalized adapter interface/stub documented.
+- [x] CI/pipeline-fit checklist + adoption validation steps documented.
+- [x] Progress/update docs and COMS handoff reflect completed state for this prototype follow-up (cron `wku_1ecfc8da7001pdl8c9wPNMq576` deleted on completion). Remaining uncertainties explicitly recorded: exact live canonical feed/build JSON contracts and live CI/runtime state `<uncertain>`.
+
+## Log
+- 2026-11-18T04:36Z: TODO tracker created; starting next-step implementation cycle.
+- 2026-11-18T04:45Z: Schema/verification/adapter/CI docs; 27 fixtures+labels; matcher/relevance eval reports; verify stub + adapter stubs; progress updated.
+- 2026-11-18T04:50Z: Live inbox/merge/check notes reconciled into schema mapping; `EVAL_REPORT.md` added; docs refreshed; recurring 20m cron follow-up created.
+
+- 2026-11-18T05:29Z: Cycle 4 — expanded fixtures/labels to 43 (8 cases: support/declarative-admin/body-build/province-exclusion/generic-title/ITAM), refined matcher Ontario-exclusion geo logic, regenerated artifacts; matcher 43/43, relevance `scored_geo_eligible@2` P=0.848 R=1.000 F1=0.918, verify 0/40/3; refreshed EVAL_REPORT/verify summary and reconciled live methodology/consolidate notes.
+
+- 2026-11-18T05:52Z: Cycle 5 — added negation-aware non-build intent heuristics in `job_signal_matcher.py`; expanded fixtures/labels to 49 (+6 BC/QC/Dynamics/Canada-any-province/Ottawa/declarative-admin cases, fixed 3 intent-aligned expectations); regenerated artifacts. Matcher 49/49, relevance `scored_geo_eligible@2` P=0.882 R=1.000 F1=0.938 (TP 30 FP 4 FN 0 TN 15), verify 0/46/3. Reconciled additional live refs (`sync_readme_to_jobs.mjs`, `build_site.py`, workflow inventory). Docs/reports updated; residual intent/taxonomy/scope semantics and live feed-contract/CI runtime details remain `<uncertain>`.
+
+- 2026-11-18T06:05Z: Cycle 6 (final) — strengthened non-build intent/taxonomy heuristics, aligned `SN_dev_BC_residents_only` review semantics, regenerated artifacts; matcher 49/49, relevance `scored_geo_eligible@2` P=0.939 R=1.000 F1=0.969 (TP 31 FP 2 FN 0 TN 16), verify 0/46/3. Updated EVAL_REPORT/TODO/progress with evidence and limits; posted COMS completion; deleted cron `wku_1ecfc8da7001pdl8c9wPNMq576`.

@@ -35,10 +35,15 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   etf-scan:
     name: ETF Scanner
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
@@ -125,6 +130,7 @@ jobs:
   bond-scan:
     name: Bond Scanner
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # Sequential after etf-scan: both jobs commit active_picks.json, and two
     # concurrent commits race — the loser's rebase-retry conflicts and its
     # picks are dropped (observed: ETF picks lost while Bond's persisted).
@@ -156,7 +162,7 @@ jobs:
           python -m alpha_engine.bond_scanner $MERGE_FLAG
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          SKIP_FRED: '1'
+          SKIP_FRED: ${{ vars.BOND_SKIP_FRED || '0' }}
           PYTHONPATH: ${{ github.workspace }}
           TIINGO_API_KEY: ${{ secrets.TIINGO_API_KEY }}
           MASSIVE_API_KEY: ${{ secrets.MASSIVE_API_KEY }}

@@ -107,3 +107,36 @@ def test_merge_into_active_picks_removes_legacy_prediction_market_agent_rows(tmp
         and row.get("direction") == "LONG"
         for row in data
     )
+
+
+def test_merge_into_active_picks_hard_shadow_pin(tmp_path) -> None:
+    """PM picks must always carry the hard shadow pin (never sized)."""
+    active_path = tmp_path / "active_picks.json"
+    active_path.write_text(json.dumps([]), encoding="utf-8")
+
+    original_path = pmc.ACTIVE_PICKS_PATH
+    try:
+        pmc.ACTIVE_PICKS_PATH = active_path
+        merged = pmc.merge_into_active_picks(
+            [
+                {
+                    "symbol": "BTCUSDT",
+                    "direction": "LONG",
+                    "strategy": "prediction_market_consensus",
+                    "source_system": "prediction_market_consensus",
+                    "confidence": 0.85,
+                    "entry_price": 68000.0,
+                    "take_profit": 72000.0,
+                    "stop_loss": 66000.0,
+                }
+            ]
+        )
+        data = json.loads(active_path.read_text(encoding="utf-8"))
+    finally:
+        pmc.ACTIVE_PICKS_PATH = original_path
+
+    assert merged == 1
+    pick = next(p for p in data if p.get("symbol") == "BTCUSDT")
+    assert pick["forward_test_only"] is True
+    assert pick["sizing_allowed"] is False
+    assert pick["shadow"] is True

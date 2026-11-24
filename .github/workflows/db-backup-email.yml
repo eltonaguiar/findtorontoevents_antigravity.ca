@@ -17,6 +17,10 @@ env:
   BACKUP_SCRIPT_PATH: "_db_bkp_runner_tmp.php"   # Remote path on server (avoid "backup" in URL  triggers ModSecurity)
   DATABASES: "ejaguiar1_deals ejaguiar1_events ejaguiar1_favcreators ejaguiar1_memecoin ejaguiar1_news ejaguiar1_sportsbet ejaguiar1_stocks ejaguiar1_tvmoviestrailers"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backup-source-site:
     name: "Backup findtorontoevents.ca databases"
@@ -191,7 +195,7 @@ jobs:
         # To re-enable: provision SendGrid/Mailgun/AWS-SES creds, or use a 50webs
         # allowlisted recipient. Then remove the `if: false` line below.
         if: false
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v24
         with:
           server_address: mail.50webs.com
           server_port: 465

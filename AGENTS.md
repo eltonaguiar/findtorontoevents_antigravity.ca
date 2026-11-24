@@ -402,15 +402,25 @@ Before sending any response, you MUST check for these patterns:
 - `tests/favcreators-guest-9000.spec.ts` — will fail due to `index-` vs `main-*` asset naming mismatch (known, see Gotchas)
 - Audit dashboard tests: first 3 pass (page load, summary cards, tab navigation); later tests that need live MySQL data will timeout
 
+## Commits and CI
+
+**`[skip ci]` belongs ONLY on commits whose sole content is generated artefacts** (data refreshes, dashboards, reports).
+
+- A commit touching `tools/`, `tests/`, `.github/workflows/`, `docs/`, or any hand-written source **MUST be able to trigger CI** — do not add the token.
+- **Why (2026-11-23):** in this session PR #1082 added a test suite with `[skip ci]` on every commit, so no CI ran and the tests were never validated by the repo's own gate. The evidence was local-only.
+- The canonical correct pattern is in [`crypto-intraday-sim.yml`](.github/workflows/crypto-intraday-sim.yml:85) and [`fx-cost-overlap.yml`](.github/workflows/fx-cost-overlap.yml:114) — for *data* commits.
+
 ## Audit Dashboard Push Trigger — Path Registry
 
-> **⚠️ 2026-05-19: The `push:` trigger was REMOVED from `audit-dashboard.yml`** (4-AI consensus — Grok + swarm deepseek/xai/kilo). Push-triggered runs queued faster than the ~35-min job could drain, causing infinite cancel-cascade waste. The hourly cron at `:10` guarantees a full refresh within the hour; use `workflow_dispatch` for immediate redeploys.
+> **⚠️ 2026-05-19: The `push:` trigger was REMOVED from `audit-dashboard.yml`** (4-AI consensus — Grok + swarm deepseek/xai/kilo). Push-triggered runs queued faster than the ~35-min job could drain, causing infinite cancel-cascade waste. The scheduled cron at `:10` guarantees a full refresh within its interval; use `workflow_dispatch` for immediate redeploys.
 >
-> **This registry is now documentation-only** — it records which files the audit-dashboard pipeline depends on, but changes to these files no longer auto-trigger a workflow run via push. The hourly cron picks up all changes.
+> **2026-11-23 correction:** the cron is `10 */3 * * *` (every 3 hours), **not hourly** as earlier text said. It was widened from hourly to 3-hourly on 2026-11-16 because the measured runtime is 63-125 min, longer than a 60-min interval, which caused ~43% of fires to be dropped. Verified against [`audit-dashboard.yml`](.github/workflows/audit-dashboard.yml:13).
+>
+> **This registry is now documentation-only** — it records which files the audit-dashboard pipeline depends on, but changes to these files no longer auto-trigger a workflow run via push. The scheduled cron picks up all changes.
 
 **When adding a new pipeline dependency** (a script invoked by audit-dashboard, or a downstream workflow that consumes its outputs like `dashboard_data.json`), add its path to this table so future maintainers understand the dependency graph.
 
-### Current pipeline dependency paths (last audited 2026-05-27)
+### Current pipeline dependency paths (last audited 2026-11-23)
 
 | Path | What it is |
 |------|------------|
@@ -459,14 +469,24 @@ Before sending any response, you MUST check for these patterns:
 | `tools/cross_db_consistency.py` | Cross-DB strategy key consistency audit |
 | `.github/workflows/db-freshness-guardian.yml` | Hourly DB freshness CI gate |
 | `.github/workflows/cross-db-audit.yml` | Daily cross-DB consistency audit |
-| `.github/workflows/audit-dashboard.yml` | The workflow file itself |
-| .github/workflows/pick-funnel-nightly.yml | Downstream consumer: fetches dashboard_data.json from live site → build_nav_surface_matrix.py (added 2026-05-27) |
+| `.github/workflows/audit-dashboard.yml` | The workflow file itself. Cron is `10 */3 * * *` (every 3h), not hourly — see the correction note above. |
+| `.github/workflows/pick-funnel-nightly.yml` | Downstream consumer: fetches dashboard_data.json from live site → build_nav_surface_matrix.py (added 2026-05-27) |
 | `audit_dashboard/benchmark_proof.html` | Read-only ledger-benchmark panel (`/audit/benchmark_proof.html`, added 2026-10-19): paired-bootstrap-vs-benchmark headline + random-entry MC timing (same-asset nulls, coin-flip CI gate). Reads `data/benchmark_ledger_proof.json` client-side. NOT MONEY-READY — no picks/signals/verdicts. Deployed via the `audit-dashboard.yml` per-site HTML page lists (all 3 sites) and `tools/deploy_audit_files.py`. |
 | `audit_dashboard/data/benchmark_ledger_proof.json` | Sidecar snapshot consumed by `benchmark_proof.html`. Regenerate manually: `python3 -m alpha_engine.benchmark_closed_ledger --picks audit_dashboard/data/dashboard_data.json --fetch SPY BTC-USD --fetch-picks --out reports/benchmark_ledger_proof_YYYY-MM-DD.json`, then copy to `audit_dashboard/data/benchmark_ledger_proof.json`. Auto-deploys with the `data/*.json` glob. |
 | `alpha_engine/benchmark_closed_ledger.py` + `tests/test_benchmark_closed_ledger.py` | Task 10 module: per-ledger Wilson/compound/PF, paired bootstrap vs same-window benchmark, random-entry MC timing (same-asset, direction-aware nulls; MC fix 2026-10-19 after external review). 33 deterministic tests incl. the coin-flip MC gate. |
 | `audit_dashboard/data/wired_in_childlike_active_picks.json` | Shadow monitoring cards from `wired_in_childlike` (2026-11-15). Registered in `JSON_PICK_SOURCES` and `universal_pick_resolver.SYSTEM_SOURCES`. Paper-only. Spec under `WIRED_IN/2026-11-15T0150Z_childlike-airport/`. |
+| `verified_strategies/paper_pilot/crypto_intraday_sim.py` | Live crypto intraday PAPER sim (2026-11-19): 3 pre-registered slots (H-2026-11-19-01/-02/-07) on real 4h bars, prop-firm guardrails. Run by `.github/workflows/crypto-intraday-sim.yml` (cron :07/:37). Paper-only; promotion only via the audit3 forward gate. |
+| `tools/pilot_forward_bridge.py` + `tools/crypto_bars.py` | Bridge: re-resolves paper-pilot CLOSE rows intrabar-honestly from real bars into `reports/forward_observations.jsonl` (validated, idempotent). Feeds the /audit2 forward clock + /audit3 forward gate. |
+| `.github/workflows/crypto-intraday-sim.yml` | 30-min cron ticking the crypto sim + bridge; commits sim state/log + forward ledger with `[skip ci]`. |
+| `docs/VERIFICATION.md` | How to reproduce the peer-claim verification report; the R1-R4 flow. |
+| `tools/verify_peer_claims.py` | Deterministic peer-claim checker (stdlib-only; exits 2 on a shallow clone). |
+| `claims/verification_claims.json` | The 16-claim manifest with per-check polarity. |
+| `.github/workflows/peer-claim-verification.yml` | Weekly cron `18 6 * * 1`; commits `updates/peer-claim-verification-latest.md` + `reports/peer_claim_verification_latest.json` with `[skip ci]`. |
+| `tests/test_verify_peer_claims.py` | 33 tests covering the peer-claim checker. |
 
-> **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the hourly cron.
+> **Note:** All workflow-invoked scripts and downstream consumers are now listed above. The `push:` trigger was removed 2026-05-19; this table documents the dependency graph. Changes are picked up by the 3-hourly cron.
+>
+> **Audit status 2026-11-23:** all 59 paths in the table above were re-checked with `git ls-tree origin/main` and exist on main. Three entries an earlier brief flagged as missing (`.github/workflows/gha-quality-framework.yml`, `.github/workflows/audit-review-doc-lint.yml`, `docs/audit_review_2026-11-22/**`) are not present on main and are also not in this table — they were aspirational and never landed, so there is nothing to mark here, but do not assume they exist.
 
 ### Safety rules for updating paths
 

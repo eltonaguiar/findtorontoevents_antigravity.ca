@@ -99,12 +99,26 @@ def _clear_flags(monkeypatch):
     ):
         monkeypatch.delenv(flag, raising=False)
     # NS-E defaulted ON 2026-05-15 (FOREX class-wide halt). Disable here so
-    # trust-tier logic under test is reachable for FOREX picks.
+    # trust-tier logic under test is reachable for FOREX picks. (Contract note:
+    # the code default flipped OFF on 2026-06-05 with the forex_carry_g10 re-enable;
+    # this env pin keeps the tests isolated from either default.)
     monkeypatch.setenv("FOREX_HARD_DISABLE", "0")
     # FOREX smart gate blocks LONG picks; disable for trust-tier isolation tests.
     monkeypatch.setenv("FOREX_SHORT_ONLY_GATE_DISABLED", "1")
     # M-078 FOREX session gate is time-dependent; disable for isolation tests.
     monkeypatch.setenv("FOREX_SESSION_GATE_DISABLED", "1")
+    # FOREX directional gate (2026-05-17) blocks low-conviction FOREX LONGs —
+    # same isolation family as the two gates above.
+    monkeypatch.setenv("FOREX_DIRECTIONAL_GATE_ENABLED", "0")
+    monkeypatch.setenv("FOREX_SYMBOL_GATE_ENABLED", "0")
+    # Matrix CSV gates (alpha_engine/matrix_symbol_gates.py, 2026-05-18) allow-only
+    # `alpha_engine -> USDJPY=X` and therefore block EVERY _build_pick fixture symbol
+    # (AAPL/EURUSD=X/HG=F/SPY/TLT/ES=F). They postdate this file's fixtures
+    # (2026-04-29) and fire AFTER the Q4=A trust-tier bypass, so without this pin the
+    # picks fail on the matrix gate before the trust-tier contract can be asserted
+    # (the bypass itself works — it is not what fails). Same isolation pattern as
+    # tests/test_quality_gates.py and tests/test_commodity_subclass_kill.py.
+    monkeypatch.setenv("MATRIX_SYMBOL_GATES", "0")
     yield
 
 

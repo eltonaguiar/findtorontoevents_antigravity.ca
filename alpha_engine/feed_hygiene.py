@@ -187,6 +187,25 @@ def is_valid_active_pick(pick: dict) -> bool:
     if not pick.get("symbol"):
         return False
 
+    # 4b. audit3 kill tribunal (2026-11-19): a KILL cell is a denylist entry,
+    # not a dashboard row. Direction-aware, strategy+symbol scope, fail-open on a
+    # missing/stale ledger. Bypass with AUDIT3_DENYLIST_DISABLED=1.
+    try:
+        from alpha_engine.audit3_denylist import denied_reason as _audit3_denied
+    except ImportError:  # pragma: no cover
+        _audit3_denied = None
+    if _audit3_denied is not None:
+        _reason = _audit3_denied(pick)
+        if _reason:
+            # Persist *why* the gate dropped the pick so the weekly shadow
+            # review can count real denials. Never blocks emission.
+            try:
+                from alpha_engine.audit3_denylist_hits import record as _record_hit
+                _record_hit(pick, _reason)
+            except Exception:
+                pass
+            return False
+
     # 4a. Must have a non-anonymous strategy name (2026-04-20 additional-fixes
     # audit: 211 closed picks had strategy == "", "unknown", or mirrored the
     # source_system, which breaks per-strategy attribution, blocklist checks,
@@ -196,7 +215,16 @@ def is_valid_active_pick(pick: dict) -> bool:
     if not strat_raw or strat_raw.lower() in _ANONYMOUS_STRATEGY_SENTINELS:
         return False
     sys_raw = str(pick.get("source_system") or "").strip()
-    if strat_raw.lower() == sys_raw.lower() and strat_raw != "":
+    # Prediction-market consensus legitimately names its strategy after its
+    # source system ("prediction_market_consensus" / "prediction_market_agents").
+    # That is a real named strategy, not an anonymous mirror — without this
+    # exemption every PM pick was rejected at ingest and never reached
+    # active_picks.json (2026-11-16 audit).
+    is_pm_source = any(
+        token in sys_raw.lower()
+        for token in ("prediction_market", "polymarket", "kalshi")
+    )
+    if strat_raw.lower() == sys_raw.lower() and strat_raw != "" and not is_pm_source:
         # Self-named strategy (strategy == source_system) — anonymous by convention.
         return False
 

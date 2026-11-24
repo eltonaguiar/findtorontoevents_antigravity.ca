@@ -4,6 +4,14 @@ on:
     - cron: '50 */2 * * *'  # Every 2 hours (reduced from */15 to ease queue pressure)
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+# 2026-11-16 least-privilege (S3 batch): explicit token scopes
+permissions:
+  contents: write
+
 jobs:
   scan:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}

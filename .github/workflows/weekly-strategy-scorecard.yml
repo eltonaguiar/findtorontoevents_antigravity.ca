@@ -4,6 +4,10 @@ on:
     - cron: '11 0 * * 0'  # Sunday midnight UTC
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   scorecard:
     runs-on: ubuntu-latest

@@ -1,5 +1,6 @@
 # Regenerate GitHub Actions fleet summary (JSON + HTML) and deploy to findtorontoevents.ca
 name: gha-summary-report
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   workflow_dispatch:
@@ -9,6 +10,10 @@ on:
 permissions:
   contents: write
   actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   generate-and-publish:
@@ -54,8 +59,8 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add reports/gha_actions_summary.json reports/gha_actions_summary.html
             git diff --staged --quiet || git commit -m "Update GHA actions summary [skip ci]"
-            git pull --rebase origin main
-            git push origin HEAD:main || echo "No push needed"
+            # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
+            bash .github/scripts/safe_push.sh
           fi
 
       - name: Deploy summary HTML to findtorontoevents.ca

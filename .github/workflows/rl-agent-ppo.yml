@@ -13,6 +13,10 @@ on:
           - predict
           - both
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   rl-agent:
     if: false # DEPRECATED 2026-03-16: rl_agent is stale/abandoned, disabled to stop stale picks

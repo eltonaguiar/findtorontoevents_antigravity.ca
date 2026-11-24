@@ -13,6 +13,11 @@ Sources:
   - Audit events and filter logs
 """
 
+try:
+    from audit_trail.headline_basis import headline_basis as _headline_basis
+except ImportError:  # direct-script invocation
+    from headline_basis import headline_basis as _headline_basis
+
 import glob
 import json
 import logging
@@ -38,6 +43,13 @@ try:
 except Exception:  # pragma: no cover - optional import
     def load_risk_policy(*args, **kwargs):
         return {}
+
+# A PF without its denominator is not a measurement (2026-11-20).
+try:
+    from alpha_engine.pf_basis import format_pf as _pf_label
+except Exception:  # pragma: no cover - optional import
+    def _pf_label(value, n=None, **_kw):
+        return f"PF {value} (n={n})" if value is not None else f"PF n/a (n={n})"
 
 try:
     from alpha_engine.money_ready_verdict import money_ready_verdict as _money_ready_verdict
@@ -655,6 +667,27 @@ except ImportError:
     def normalize_system_name(s):
         return s
 
+
+# ── Ledger-backed PROVEN gate (2026-11-16 audit) ──
+# get_tier() is a *name* lookup: a source keeps PROVEN long after its ledger
+# turned negative (live case: ml_bg_system_f -> alias claws_of_doom -> PROVEN,
+# 97 rows at WR 20.6% / PF 0.31). Before the tier is written onto a pick, the
+# published rule (n>=20, WR>=50%, PF>=1.5 from resolved rows) is re-checked.
+try:
+    from audit_trail.proven_gate import check_pick_proven, demoted_tier
+
+    _PROVEN_GATE_AVAILABLE = True
+except ImportError:
+    _PROVEN_GATE_AVAILABLE = False
+
+    def check_pick_proven(pick, stats=None):  # type: ignore[misc]
+        return True, "gate_unavailable", {}
+
+    def demoted_tier(stats):  # type: ignore[misc]
+        return "WATCH"
+
+
+_PROVEN_DEMOTIONS: list[dict] = []
 
 _EQUITY_SYMBOLS = {
     "SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "TSLA", "META", "NVDA", "AMD", "NFLX",
@@ -4092,6 +4125,14 @@ JSON_PICK_SOURCES = [
     ),
     ("pm_whale_signals", "prediction_market_agents/data/whale_signals.json", None),
     ("pm_kalshi_signals", "prediction_market_agents/data/kalshi_signals.json", None),
+    # Kalshi + Polymarket macro binary contracts (Fed/GDP/CPI/indices/yields).
+    # Outcome-resolved via pm_contract_resolver; flat mirror from
+    # tools/pm_macro_expansion.py. Shadow/forward-test only.
+    (
+        "pm_macro_expansion",
+        "alpha_engine/data/pm_macro_expansion_picks.json",
+        None,
+    ),
     # ── ML Gatekeeper & Consensus (Mercury-validated, Apr 2026) ──
     (
         "ml_gatekeeper",
@@ -4291,6 +4332,27 @@ JSON_PICK_SOURCES.append((
     "audit_dashboard/data/wired_in_childlike_closed_picks.json",
 ))
 
+# ── Prediction-market reverse-engineered signals (feed-trace audit 2026-11-16) ──
+# alpha_engine/polymarket_signals.py + alpha_engine/kalshi_signals.py write
+# alpha_engine/data/polymarket_signals.json + kalshi_signals.json (FTP-deployed,
+# gitignored). Read only by universal_pick_resolver.py before this registry
+# gap fix — their picks never reached the dashboard. NEW distinct keys on
+# purpose: the existing "polymarket_signals" key maps the copy_trader_intel
+# file and must not be repointed (double-ingest risk). Schema:
+# {updated_at, source, pick_count, picks: [...]} — _extract_picks() already
+# handles the `picks` key. Paper-only (shadow prediction markets); outcomes
+# settle via universal resolver.
+JSON_PICK_SOURCES.append((
+    "pm_polymarket_re_signals",
+    "alpha_engine/data/polymarket_signals.json",
+    None,
+))
+JSON_PICK_SOURCES.append((
+    "pm_kalshi_re_signals",
+    "alpha_engine/data/kalshi_signals.json",
+    None,
+))
+
 PORTFOLIO_SOURCES = [
     ("paper_trading", "paper_trading/data/portfolios.json"),
     ("kimi_algorithms", "KIMI_RISEOFTHECLAW/data/portfolio_state.json"),
@@ -4305,6 +4367,8 @@ PORTFOLIO_SOURCES = [
 _PAPER_ONLY_SYSTEMS = {
     "kimi_claw_research",  # Frozen Feb 2026 research portfolio — unrealized paper gains counted as "wins"
     "wired_in_childlike",  # 2026-11-15 shadow cards — display for monitoring, do not count as forward-tested wins
+    "pm_polymarket_re_signals",  # 2026-11-16 RE'd Polymarket signals — shadow PM feed, paper-only
+    "pm_kalshi_re_signals",  # 2026-11-16 RE'd Kalshi signals — shadow PM feed, paper-only
 }
 
 # ── Hidden/inactive systems ──
@@ -4432,7 +4496,6 @@ _GHOST_SYSTEMS = {
     "abc_forward_c",
     "funding_rate_arb",
     "momentum_scalp",
-    "pm_momentum_signals",
     "pumpwatch_mutations",
     "strategy_health",
     "live_spike_trader",
@@ -4971,6 +5034,109 @@ def _is_valid_resolved_pick(pick: dict) -> bool:
 def _filter_valid_resolved_picks(picks):
     """Filter a pick list down to realized, metric-safe resolved trades."""
     return [pick for pick in picks if _is_valid_resolved_pick(pick)]
+
+
+# N6 (Block 59): the compact projection of an excluded row that the coverage
+# summary needs (audit_trail.excluded_cohorts.summarize_excluded_rows reads
+# exactly these keys). Kept deliberately small: every excluded row is shipped in
+# the payload, so an extra field here costs ~6k copies.
+_EXCLUDED_COHORT_ROW_FIELDS = (
+    "symbol",
+    "asset_class",
+    "direction",
+    "pnl_pct",
+    "won",
+    "closed_at",
+)
+
+
+def _stamp_excluded_cohort_row(pick, reason) -> dict:
+    """Copy one excluded row, stamp its reason, derive a missing asset class.
+
+    Never mutates ``pick``: the same row object is still in use by the metrics
+    book, so a reason stamped in place would leak into a scored surface.
+    """
+    row: dict = {}
+    if isinstance(pick, dict):
+        for key in _EXCLUDED_COHORT_ROW_FIELDS:
+            value = pick.get(key)
+            if value is not None:
+                row[key] = value
+        if row.get("closed_at") is None:
+            ts = pick.get("timestamp") or pick.get("exit_timestamp")
+            if ts:
+                row["closed_at"] = ts
+        if row.get("direction") is None:
+            direction = pick.get("signal_type") or pick.get("signal")
+            if direction:
+                row["direction"] = direction
+        if not str(row.get("asset_class") or "").strip():
+            # _coerce_asset_class is the existing UNKNOWN-trap around
+            # _derive_asset_class: it re-derives with full pick context but
+            # returns "UNKNOWN" when nothing is derivable. Calling
+            # _derive_asset_class directly would label a truly classless row
+            # EQUITY (its final default), which is a guess, not a measurement.
+            row["asset_class"] = _coerce_asset_class(pick)
+    row["exclude_reason"] = str(reason or "invalid_row")
+    return row
+
+
+def _collect_excluded_cohort_rows(
+    *,
+    pre_filter_rows=None,
+    valid_rows=None,
+    mirror_rows=None,
+    auto_expired_rows=None,
+) -> dict:
+    """Materialise the rows each exclusion stage dropped, keyed by cohort.
+
+    Returns the ``Mapping[cohort, rows]`` shape ``summarize_excluded_rows``
+    expects (a flat list is silently summarised as zero rows). Rows shared by
+    two cohorts are stamped once and reused, so the summariser's identity-based
+    overlap rule counts them once in ``total``.
+
+    ``exclude_reason`` comes from the branch that dropped the row:
+    the caller's validity predicate is attributed by
+    ``resolved_closed_view.default_exclusion_reason`` (falling back to
+    ``invalid_row``), the mirror-dedupe branch stamps ``mirror_duplicate``, and
+    the auto-expiry stage stamps whatever that classifier calls it
+    (``auto_expired``).
+    """
+    from alpha_engine.resolved_closed_view import default_exclusion_reason
+
+    stamped: dict[int, dict] = {}
+
+    def _row(pick, reason) -> dict:
+        ident = id(pick)
+        if ident not in stamped:
+            stamped[ident] = _stamp_excluded_cohort_row(pick, reason)
+        return stamped[ident]
+
+    kept_ids = {id(p) for p in (valid_rows or [])}
+    # Mirror rows are claimed first: the mirror branch runs LAST, so a row that
+    # reached it was a duplicate of a row already kept, and "mirror_duplicate"
+    # is the more specific reason. Each row object carries exactly one
+    # exclude_reason (the summariser counts reasons per row), so the claim
+    # order decides it. In the live flow mirror rows are always valid and
+    # never appear in the integrity pass at all.
+    mirror_out = [
+        _row(p, "mirror_duplicate") for p in (mirror_rows or [])
+    ]
+    mirror_ids = {id(p) for p in (mirror_rows or [])}
+    integrity_rows = [
+        _row(p, default_exclusion_reason(p) or "invalid_row")
+        for p in (pre_filter_rows or [])
+        if id(p) not in kept_ids and id(p) not in mirror_ids
+    ]
+    expired_out = [
+        _row(p, default_exclusion_reason(p) or "auto_expired")
+        for p in (auto_expired_rows or [])
+    ]
+    return {
+        "integrity_excluded": integrity_rows,
+        "mirror_duplicate": mirror_out,
+        "auto_expired": expired_out,
+    }
 
 
 def _compound_equal_weight_capped_sequence(
@@ -5573,7 +5739,7 @@ _TRACK_RECORD_CLOSED_SOURCES = {
 }
 # Non-crypto asset classes that should always have reserved closed-pick slots.
 # Without reservation, high-frequency crypto picks crowd them out of the 1000 cap.
-_NON_CRYPTO_ASSET_CLASSES = {"EQUITY", "ETF", "FOREX", "FUTURES", "COMMODITY", "BOND"}
+_NON_CRYPTO_ASSET_CLASSES = {"EQUITY", "ETF", "FOREX", "FUTURES", "COMMODITY", "BOND", "MUTUAL_FUND"}
 
 
 def _track_stats_key(strategy: str, symbol: str) -> str:
@@ -6025,6 +6191,8 @@ def compute_asset_class_health(ac_breakdown: dict) -> dict:
             # Aliases expected by template.html and hc_filter.js (contract fix 2026-05-16)
             "wr_pct": wr,
             "pf": pf,
+            "pf_n": n,
+            "pf_label": _pf_label(pf, n),
             "pnl_pct": round(pnl, 2),
             # Q2 (2026-05-19): class-level max drawdown as a fraction
             # (0.20 = 20%). Third tier-certification leg alongside pf/wr.
@@ -6035,7 +6203,7 @@ def compute_asset_class_health(ac_breakdown: dict) -> dict:
         }
     # Guarantee all 6 canonical trading classes always appear so dashboard
     # consumers and tests never need to guard against a missing key.
-    _CANONICAL = {"CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND"}
+    _CANONICAL = {"CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND", "MUTUAL_FUND"}
     _stub = {
         "status": "insufficient_data",
         "sample_tier": "insufficient",
@@ -6047,6 +6215,8 @@ def compute_asset_class_health(ac_breakdown: dict) -> dict:
         "profit_factor": None,
         "wr_pct": 0.0,
         "pf": None,
+        "pf_n": 0,
+        "pf_label": _pf_label(None, 0),
         "pnl_pct": 0.0,
         "max_drawdown_pct": None,
         "min_display_n": min_display_n,
@@ -6208,7 +6378,7 @@ def _build_resolution_coverage(
     (``RESOLUTION_GATE_PCT``) is surfaced so the dashboard can show a
     visual cue when a class falls below it.
     """
-    _CANONICAL = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND", "FUTURES"]
+    _CANONICAL = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "ETF", "BOND", "FUTURES", "MUTUAL_FUND"]
     gate_pct = 80.0
     out: dict[str, dict] = {}
     for cls in _CANONICAL:
@@ -6388,6 +6558,8 @@ def _build_readiness_payload(asset_class_health: dict, generated_at: str) -> dic
             by_class[ac_upper] = {
                 "n": n,
                 "pf": round(pf, 2) if pf is not None else None,
+                "pf_n": n,
+                "pf_label": _pf_label(pf, n),
                 "wr": round(wr, 1),
                 "gate_state": gate_state,
                 "sizing_allowed": sizing_allowed,
@@ -6552,16 +6724,16 @@ def _is_verified_alpha_pick(pick: dict) -> bool:
     source = str((pick or {}).get("source_system", "") or "").strip().lower()
     strategy = str((pick or {}).get("strategy", "") or "").strip().lower()
 
-    # Prediction market sources
-    if source in _VERIFIED_ALPHA_PM_SOURCES:
-        return True
+    # Prediction markets stay shadow. Do not badge them Verified Alpha.
+    if source in _VERIFIED_ALPHA_PM_SOURCES or strategy.startswith("copy_pm_"):
+        return False
 
     # Copy trader sources with audit trail
     if source in _VERIFIED_ALPHA_COPY_SOURCES:
         return True
 
     # Strategy prefixes indicating verified copy trading
-    if any(strategy.startswith(prefix) for prefix in _VERIFIED_ALPHA_COPY_PREFIXES):
+    if any(strategy.startswith(prefix) for prefix in _VERIFIED_ALPHA_COPY_PREFIXES if prefix != "copy_pm_"):
         return True
 
     # Curated multi-asset strategies
@@ -6754,7 +6926,7 @@ def _should_reserve_closed_pick_for_track_record(pick: dict) -> bool:
 
 
 _NC_ASSET_CLASSES = frozenset(
-    {"FOREX", "EQUITY", "STOCK", "COMMODITY", "FUTURES", "ETF", "BOND"}
+    {"FOREX", "EQUITY", "STOCK", "COMMODITY", "FUTURES", "ETF", "BOND", "MUTUAL_FUND"}
 )
 _NC_ALIAS_MAP = {
     "FX": "FOREX",
@@ -6771,7 +6943,7 @@ def _normalize_nc_asset(value) -> str:
     return _NC_ALIAS_MAP.get(ac, ac)
 
 
-_PER_ASSET_CLASSES = ("CRYPTO", "EQUITY", "FOREX", "COMMODITY", "FUTURES", "BOND", "ETF")
+_PER_ASSET_CLASSES = ("CRYPTO", "EQUITY", "FOREX", "COMMODITY", "FUTURES", "BOND", "ETF", "MUTUAL_FUND")
 
 
 def _normalize_per_asset_class(value) -> str:
@@ -6832,9 +7004,12 @@ def _build_per_asset_quality_summary(
         avg_fwr = _mean(fwr_vals)
         active_count = len(class_active)
         smart_count = len(class_smart)
+        # 2026-11-16: a class with zero picks must NOT report a green
+        # thresholdPass (BOND showed pass=true on an empty book). Empty =
+        # unproven; this is what makes MUTUAL_FUND's debut verdict honest.
         threshold_pass = (
-            active_count == 0
-            or (
+            active_count > 0
+            and (
                 smart_count > 0
                 and avg_score >= min_score
                 and (avg_fwr == 0.0 or avg_fwr >= min_fwr)
@@ -7262,13 +7437,24 @@ def _prepare_prediction_market_consensus_signal(raw_pick: dict) -> dict:
     if not pick.get("source_systems"):
         pick["source_systems"] = list(deduped_sources)
 
-    if pick.get("high_conviction") is None:
+    # pm_high_conviction alias gate — SAME validation for every row (fix
+    # 2026-11-16): previously `if pick.get("high_conviction") is None` plus a
+    # `consensus_data.high_conviction` OR-alias let rows SKIP these criteria and
+    # still land in the virtual pm_high_conviction tier, so alias rows bypassed
+    # the gate that source-derived rows pass. Upstream labels can now CONFIRM a
+    # gate-passing row only; an explicit upstream False opts out.
+    # fwd_wr normalisation: producers emit WR as a 0..1 fraction (see
+    # alpha_engine/prediction_market_consensus._pick_first_wr_fraction) while
+    # these criteria are stated in percent — compare in percent either way.
+    if pick.get("high_conviction") is not False:
         fwd_wr = _float(
             pick.get("forward_wr")
             or pick.get("strat_fwd_wr")
             or consensus_data.get("forward_wr")
             or 0
         )
+        if 0 < fwd_wr <= 1.5:
+            fwd_wr *= 100.0
         fwd_trades = int(
             _float(
                 pick.get("forward_trades")
@@ -7283,13 +7469,10 @@ def _prepare_prediction_market_consensus_signal(raw_pick: dict) -> dict:
             or 0
         )
         pick["high_conviction"] = bool(
-            consensus_data.get("high_conviction")
-            or (
-                source_count >= 3
-                and fwd_wr >= 55
-                and fwd_trades >= 8
-                and consensus_bias >= 0
-            )
+            source_count >= 3
+            and fwd_wr >= 55
+            and fwd_trades >= 8
+            and consensus_bias >= 0
         )
 
     pick["source_system"] = "prediction_market_consensus"
@@ -8366,7 +8549,11 @@ def _normalize_pick(raw, source_system: str, status: str = "OPEN") -> dict:
         "exit_reason": str(exit_reason) if exit_reason else "",
         "timestamp": ts,
         "signal_time": entry_ts or ts,
-        "entry_time": entry_ts,
+        # 2026-11-20: entry_time must never be blank when the pick carries ANY
+        # creation timestamp. 45.5% of resolved picks had it empty, which made
+        # regime / hedge / path analysis impossible for half the book. Prefer the
+        # entry-specific fields (derived above), else fall back to the pick ts.
+        "entry_time": entry_ts or ts or "",
         # 2026-05-20: resolved_at fallback chain — fixes quan_engine_scalp + similar emitters
         # that write only closed_at/exit_time. Harness reads resolved_at; without this fallback,
         # 5,293 quan_engine_scalp closed picks invisible to edge_stability_harness. (peer freebuff
@@ -8474,6 +8661,31 @@ def _normalize_pick(raw, source_system: str, status: str = "OPEN") -> dict:
         "regime": raw.get("regime") or raw.get("sentinel_regime"),
         "has_conflict": raw.get("has_conflict", False),
         "_source_score_breakdown": source_score_meta["_source_score_breakdown"],
+        # Timestamp / verification / bias-audit metadata (copytrader/multi-asset forward-only)
+        "signal_time_utc": str(
+            raw.get("signal_time_utc")
+            or raw.get("signal_timestamp")
+            or raw.get("source_open_time")
+            or raw.get("open_time")
+            or ""
+        ),
+        "signal_time_est": str(raw.get("signal_time_est") or ""),
+        "ingest_time_utc": str(
+            raw.get("ingest_time_utc")
+            or raw.get("timestamp")
+            or raw.get("generated_at")
+            or ""
+        ),
+        "ingest_time_est": str(raw.get("ingest_time_est") or ""),
+        "verification_state": str(
+            raw.get("verification_state")
+            or (
+                "verified_forward"
+                if raw.get("forward_validated")
+                else ("forward_test_only" if raw.get("forward_test_only") else "")
+            )
+        ),
+        "bias_controls": raw.get("bias_controls") if isinstance(raw.get("bias_controls"), dict) else {},
         # Leverage safety gate
         "max_safe_leverage": raw.get("max_safe_leverage", 2),
         "leverage_factors": raw.get("leverage_factors", {}),
@@ -11082,8 +11294,13 @@ def collect_audit_events(limit=50):
 
     # Source 3: crypto_signal_engine audit
     cse = _safe_json(ROOT / "crypto_signal_engine/data/audit.json")
-    if cse and cse.get("new_picks"):
-        for pick in cse["new_picks"][-20:]:
+    new_picks = cse.get("new_picks") if isinstance(cse, dict) else None
+    # The file sometimes stores a count (int), not rows. An int is truthy
+    # and then [-20:] crashes the whole dashboard generate step.
+    if isinstance(new_picks, list):
+        for pick in new_picks[-20:]:
+            if not isinstance(pick, dict):
+                continue
             events.append(
                 {
                     "event_type": "CSE_NEW_PICK",
@@ -14230,7 +14447,7 @@ def compute_non_crypto_performance(active: list, closed: list) -> dict:
 
 
 # B2 (2026-05-02): Asset-Class × Timeframe coverage grid
-_AC_TF_GRID_ASSET_CLASSES = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "BOND", "ETF", "FUTURES"]
+_AC_TF_GRID_ASSET_CLASSES = ["CRYPTO", "EQUITY", "FOREX", "COMMODITY", "BOND", "ETF", "FUTURES", "MUTUAL_FUND"]
 _AC_TF_GRID_TIMEFRAMES = ["SCALP", "INTRADAY", "SWING", "POSITION"]
 
 
@@ -14757,19 +14974,68 @@ def generate():
     except Exception as _spr_exc:
         log.warning("  Sidecar promotion status computation failed (non-fatal): %s", _spr_exc)
         sidecar_promotion_status = {}
-    # Tier-2 hero-card promotion surface — surfaces 4 buried-but-high-edge
-    # strategies (signal_validation, mega_mutation, rl_agent, claude_gainer)
-    # as hero cards above the alphabetical /audit systems grid.
-    # See `_compute_tier2_proven_strategies` for honest CHARTER §2 tiering.
+    # Tier-2 "PROVEN" hero panel RETIRED 2026-11-19 (external review v2/v3, A6).
+    # Of the four cards, one was dead (signal_validation WR 4.9% / PF 0.08 / n=102),
+    # one was a Tier-3 paper floor (mega_mutation, and audit3 scores it
+    # INSUFFICIENT_N at n=19), one had n=0 (rl_agent), and the header read
+    # "0/3 clear strict Tier-2". A panel labelled PROVEN that contains no proven
+    # strategy teaches readers to trust the word, so the payload now says so
+    # explicitly instead of shipping empty cards. `_compute_tier2_proven_strategies`
+    # is kept for its CHARTER tiering helpers but is no longer called.
+    tier2_proven_strategies = {
+        "cards": [],
+        "flagged_dropouts": [],
+        "promotion_targets": list(_TIER2_PROMOTION_TARGETS),
+        "retired": True,
+        "retired_on": "2026-11-19",
+        "retired_reason": (
+            "0/3 cards cleared strict Tier-2; the panel was labelled PROVEN "
+            "while containing a dead strategy, a paper floor and an empty card"
+        ),
+    }
+
+    # ── Canonical resolved view (review action A2) ──────────────────────────
+    # /audit and audit3 were reporting the same class two different ways (ETF:
+    # n=52/WR 1.9% vs n=584/WR 43.1%) because neither published its denominator.
+    # Build the resolved book once, attribute every exclusion, apply realised
+    # per-class cost, and publish it both inside the payload (counts + hash) and
+    # as a rows sidecar that audit3 scores directly. The validity predicate is
+    # THIS module's own — the view never re-implements the rules.
     try:
-        tier2_proven_strategies = _compute_tier2_proven_strategies(systems, closed)
-    except Exception as _t2_exc:
-        log.warning("  Tier-2 hero card computation failed (non-fatal): %s", _t2_exc)
-        tier2_proven_strategies = {
-            "cards": [],
-            "flagged_dropouts": [],
-            "promotion_targets": list(_TIER2_PROMOTION_TARGETS),
-            "error": str(_t2_exc),
+        from alpha_engine.resolved_closed_view import (
+            build_view as _build_canonical_view,
+            payload_block as _canonical_payload_block,
+            write_view as _write_canonical_view,
+        )
+        _canonical_view = _build_canonical_view(
+            closed,
+            generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            validity=_is_valid_resolved_pick,
+            source="audit_trail/dashboard_generator.py",
+        )
+        resolved_closed_picks_net = _canonical_payload_block(_canonical_view)
+        _canonical_path = (
+            ROOT / "audit_dashboard" / "data" / resolved_closed_picks_net["rows_file"]
+        )
+        try:
+            _write_canonical_view(_canonical_path, _canonical_view)
+        except Exception as _cw_exc:
+            log.warning("  canonical view sidecar not written (non-fatal): %s", _cw_exc)
+        log.info(
+            "  canonical resolved view: %d kept / %d input rows, sha=%s",
+            resolved_closed_picks_net["counts"]["kept_rows"],
+            resolved_closed_picks_net["counts"]["input_rows"],
+            str(resolved_closed_picks_net.get("rows_sha256"))[:12],
+        )
+    except Exception as _cv_exc:
+        log.warning("  canonical resolved view failed (non-fatal): %s", _cv_exc)
+        resolved_closed_picks_net = {
+            "schema": None,
+            "error": str(_cv_exc),
+            "note": (
+                "no canonical denominator this run — audit3 will report "
+                "mode=payload_slice instead of pretending the books match"
+            ),
         }
     bundles = collect_bundles()
     leaderboard = collect_strategy_leaderboard(active, closed)
@@ -14822,12 +15088,14 @@ def generate():
     total_active = len(active)
     total_closed = len(closed)
     resolved_closed = _filter_valid_resolved_picks(closed)
+    _valid_pre_dedupe = resolved_closed  # N6: pre-mirror view, for exclude attribution
     invalid_closed_count = total_closed - len(resolved_closed)
 
     # DEDUPLICATE mirrored trades for headline metrics (critical fix for inflated WR/PnL)
     seen = set()
     deduped_closed = []
     mirror_dupe_count = 0
+    _mirror_rows = []  # N6 (Block 59): rows this branch drops, for the coverage summary
     for p in resolved_closed:
         key = (
             str(p.get("symbol", "")).upper(),
@@ -14837,11 +15105,27 @@ def generate():
         )
         if key in seen:
             mirror_dupe_count += 1
+            _mirror_rows.append(p)
             continue
         seen.add(key)
         deduped_closed.append(p)
 
     resolved_closed = deduped_closed  # Use deduplicated list for headline stats
+    # N6 (Block 59): materialise every excluded row with its reason so audit3 can
+    # attribute the unscored gap per class instead of reporting only counts.
+    # Additive: nothing below reads this block, and every row is a copy.
+    _excluded_cohort_rows = _collect_excluded_cohort_rows(
+        pre_filter_rows=closed,
+        valid_rows=_valid_pre_dedupe,
+        mirror_rows=_mirror_rows,
+        # all_closed_including_expired also holds the rows that SURVIVED the
+        # expiry split; passing it whole would label every kept row
+        # "auto_expired". The _auto_expired flag (stamped on every row at the
+        # split) is the same test _is_valid_resolved_pick uses.
+        auto_expired_rows=[
+            p for p in all_closed_including_expired if p.get("_auto_expired")
+        ],
+    )
     _exit_norm_changed = _apply_issue186_exit_normalization(resolved_closed)
     if _exit_norm_changed:
         log.info(
@@ -14893,9 +15177,13 @@ def generate():
     # Until then, the metric should be read with the disclaimer:
     #   "fictitious sequential reinvestment of 1 unit on every trade"
     _MAX_PNL_COMPOUND = 10  # bumped from 2% (2026-06-04): 2% destroyed edge at scale; 10% loss-protective
+    # 2026-11-16 audit: keep the value BEFORE the -99/9999 display clamp so the
+    # payload can say a -1356% compounded figure was floored (it was shown as
+    # -99% with no indication).
     total_pnl_pct_compounded_ew = _compound_equal_weight_capped_sequence(
         resolved_closed, float(_MAX_PNL_COMPOUND)
     )
+    _compounded_ew_pre_floor = total_pnl_pct_compounded_ew
     # Hard sanity ceiling so the summary card doesn't show absurd numbers
     # while the redesign lands. 9999% is well above any realistic portfolio
     # return but visually communicates "uncapped".
@@ -16321,7 +16609,23 @@ def generate():
         pick["has_conflict"] = (
             _normalize_symbol(pick.get("symbol", "")) in conflict_symbols
         )
-        pick["trust_tier"] = get_tier(pick.get("source_system", ""))
+        _tier_from_registry = get_tier(pick.get("source_system", ""))
+        if _tier_from_registry == "PROVEN" and _PROVEN_GATE_AVAILABLE:
+            _proven_ok, _proven_reason, _proven_stats = check_pick_proven(pick)
+            if not _proven_ok:
+                _tier_from_registry = demoted_tier(_proven_stats)
+                pick["trust_tier_demoted_from"] = "PROVEN"
+                pick["trust_tier_demote_reason"] = _proven_reason
+                if len(_PROVEN_DEMOTIONS) < 500:
+                    _PROVEN_DEMOTIONS.append(
+                        {
+                            "symbol": pick.get("symbol"),
+                            "strategy": pick.get("strategy"),
+                            "source_system": pick.get("source_system"),
+                            "reason": _proven_reason,
+                        }
+                    )
+        pick["trust_tier"] = _tier_from_registry
         # ── Backfill antigravity_score for picks that skip production_scanner ──
         # Only ~4/61 picks currently have it because only production_scanner
         # emits antigravity_score/antigravity_safe/antigravity_tooltip at
@@ -16879,6 +17183,42 @@ def generate():
         log.debug("PCG-5 shadow hook failed (non-critical): %s", _pcg5_err)
     # ──────────────────────────────────────────────────────────────────────────
 
+    # 2026-11-16 audit: single labelled view of the four P&L totals, plus
+    # counts of resolved rows whose outcome contradicts their own geometry
+    # (stale exits beyond the planned stop, clamped losses, zeros on EXPIRED).
+    from audit_trail.pnl_totals_audit import (
+        build_pnl_headline,
+        compute_resolver_anomalies,
+    )
+
+    # 2026-11-16: why forward_validated was rare — count what the ledger says
+    # now that the stamper promotes/demotes from it.
+    _fv_audit = {"validated": 0, "unvalidated": 0, "by_basis": {}, "by_class": {}}
+    for _p in final_active_picks:
+        _is_fv = _p.get("forward_validated") is True
+        _basis = str(
+            _p.get("forward_validated_basis") or ("emitter" if _is_fv else "unvalidated")
+        )
+        _bucket = "validated" if _is_fv else "unvalidated"
+        _fv_audit[_bucket] += 1
+        _fv_audit["by_basis"][_basis] = _fv_audit["by_basis"].get(_basis, 0) + 1
+        _klass = str(_p.get("asset_class") or "UNKNOWN").upper()
+        _fv_audit["by_class"].setdefault(_klass, {"validated": 0, "unvalidated": 0})
+        _fv_audit["by_class"][_klass][_bucket] += 1
+
+    _pnl_headline = build_pnl_headline(
+        headline=total_pnl_pct_compounded_rolling_100,
+        rolling_100=total_pnl_pct_compounded_rolling_100,
+        sum_raw=total_pnl,
+        compounded_ew=total_pnl_pct_compounded_ew,
+        compounded_ew_pre_floor=_compounded_ew_pre_floor,
+        geomean_annualized=total_pnl_pct_geomean_annualized,
+    )
+    try:
+        _resolver_anomalies = compute_resolver_anomalies(all_closed_including_expired)
+    except Exception:
+        _resolver_anomalies = {}
+
     payload = {
         "generated_at": now,
         "metadata": {
@@ -16901,6 +17241,21 @@ def generate():
             "total_resolved": total_resolved,
             "zero_pnl_count": zero_pnl_count,
             "flat_count": zero_pnl_count,
+            # P0.11 (2026-11-20): the headline WR/PF denominator was previously
+            # unstated while ~59% of closed picks sat outside it.
+            **_headline_basis(total_closed, total_resolved, zero_pnl_count),
+            # 2026-11-16 audit: labelled P&L basis + resolver anomaly counts.
+            # total_pnl_pct (rolling-100) is the headline; the other three were
+            # previously unlabelled, which made -77.67 / -1356.44 / -99.0 / -99.9
+            # look like four competing claims about the same book.
+            "pnl_headline": _pnl_headline,
+            "resolver_anomalies": _resolver_anomalies,
+            "forward_validation_audit": _fv_audit,
+            "proven_badge_audit": {
+                "rule": "PROVEN requires n>=20, WR>=50%, PF>=1.5 from resolved rows",
+                "demoted_from_proven_this_run": len(_PROVEN_DEMOTIONS),
+                "examples": _PROVEN_DEMOTIONS[:10],
+            },
             "auto_expired_excluded": len(all_closed_including_expired) - total_closed,
             "overall_win_rate": overall_wr,
             # total_pnl_pct is now compounded equal-weight (replaces raw additive sum).
@@ -17010,6 +17365,15 @@ def generate():
         "cross_asset_correlation": cross_asset_correlation,
         "sidecar_promotion_status": sidecar_promotion_status,
         "tier2_proven_strategies": tier2_proven_strategies,
+        # A2: one published denominator. Counts + row hash here; the rows live in
+        # audit_dashboard/data/resolved_closed_picks_net.json (fetched by the
+        # audit3 workflow so both surfaces score the identical book).
+        "resolved_closed_picks_net": resolved_closed_picks_net,
+        # N6 (Block 59): the rows the closed book dropped (integrity, mirror
+        # duplicate, auto-expired), each stamped with its reason and class.
+        # audit3's payload_coverage reads this to fill coverage.excluded_summary.
+        # Additive: no other key, count or verdict is computed from it.
+        "_excluded_cohort_rows": _excluded_cohort_rows,
 
         # ── Opt A: TA-baseline panel (TradingView 6-strategy benchmark) ──
         # Per reports/tradingview_backtest_benchmark_2026-05-11.md.
@@ -17067,6 +17431,33 @@ def generate():
         ),
         "smart_picks_feed": smart_picks_feed,
         "smart_picks_snapshot_summary": smart_picks_snapshot_summary,
+        # A5 (2026-11-19): ONE smart-picks definition. The page carried two numbers
+        # that could not be reconciled: the live feed (0 picks, 0 scored) and a
+        # historical snapshot (95 picks, 68.4% WR). Both are true and they describe
+        # different things, so publish one object that names which is which instead
+        # of two keys a renderer can freely confuse.
+        "smart_picks": {
+            "definition": (
+                "Smart Picks = picks clearing SMART_PICKS_MIN_SCORE in the current "
+                "feed. The history figure is a batch-resolution snapshot: each batch "
+                "is priced at resolution, not at fill, so it is not comparable to the "
+                "live count and must not be quoted as a forward win rate."
+            ),
+            "now": {
+                "n_picks": len((smart_picks_feed or {}).get("picks") or []),
+                "total_scored": (smart_picks_feed or {}).get("total_scored"),
+                "metric_type": "live_feed",
+                "generated_at": (smart_picks_feed or {}).get("generated_at"),
+            },
+            "history": {
+                "n_picks": (smart_picks_snapshot_summary or {}).get("total_picks"),
+                "resolved_batches": (smart_picks_snapshot_summary or {}).get("resolved_batches"),
+                "win_rate_pct": (smart_picks_snapshot_summary or {}).get("win_rate"),
+                "metric_type": (smart_picks_snapshot_summary or {}).get("metric_type") or "snapshot",
+                "comparable_to_live_feed": False,
+                "caveat": "batch-resolution pricing, not execution fills",
+            },
+        },
         "verified_alpha": verified_alpha_summary,
         "research_reports": research_reports,
         "pcg5_shadow_summary": _pcg5_shadow_summary,
@@ -18257,6 +18648,21 @@ def generate():
             log.info("  [sports-filter] dropped %d SPORTS picks from active feed", _before - _after)
     except Exception as _e:  # noqa: BLE001
         log.warning("sports filter failed (non-fatal): %s", _e)
+
+    # -- Intraday stop (measured 2026-11-19) ----------------------------------
+    # CRYPTO/ETF INTRADAY rows lose to simply holding the same instrument after
+    # costs (reports/alpha_slice_scan_2026-11-19.json, BH-corrected q<=0.10), so
+    # they stay in the payload as shadow rows and leave the money path. Nothing
+    # is deleted: each pick carries money_path / shadow / shadow_reason.
+    try:
+        from alpha_engine.intraday_stop import annotate_buckets as _annotate_buckets
+    except ImportError:  # direct script execution
+        from intraday_stop import annotate_buckets as _annotate_buckets
+    payload["intraday_stop"] = _annotate_buckets(payload.get("picks") or {})
+    _stop = payload["intraday_stop"]
+    if _stop["shadow"]:
+        log.info("  [intraday-stop] %d shadow rows kept, %d on the money path",
+                 _stop["shadow"], _stop["money_path"])
 
     # ── ML feature persistence + edge analytics (optional, soft-fail) ──
     # Persists ML/technical fields needed for post-hoc edge validation and

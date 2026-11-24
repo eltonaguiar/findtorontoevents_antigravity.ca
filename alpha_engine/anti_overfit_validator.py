@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import math
 import os
+from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
 import numpy as np
@@ -57,6 +58,7 @@ def cpcv_pbo(
     strategy_returns_matrix: np.ndarray,
     n_folds: int = 10,
     n_test_groups: int = 2,
+    period_index: Sequence | None = None,
 ) -> float:
     """Probability of Backtest Overfitting via Combinatorial Purged CV.
 
@@ -71,6 +73,14 @@ def cpcv_pbo(
             returns for ``S`` candidate strategies over ``T`` observations.
         n_folds: total CPCV folds N (default 10, AFML 12.4 recommendation).
         n_test_groups: folds held out per combinatorial split k (default 2).
+        period_index: optional real timestamps, one per row, in the same order
+            as the matrix rows. When supplied these are used as the fold
+            ``pred_times``/``eval_times`` and the purge embargo is derived from
+            the median spacing between rows, so purging drops a genuinely
+            adjacent period instead of assuming a daily grid (2026-11-20).
+            Supply it whenever the rows were built from real event times --
+            otherwise the internal synthetic daily index claims a calendar the
+            data never had.
 
     Returns:
         PBO estimate in ``[0, 1]``. Values < 0.5 = selection edge survives
@@ -94,7 +104,20 @@ def cpcv_pbo(
     import pandas as pd  # local import keeps module import-cost low
 
     idx = pd.RangeIndex(T)
-    times = pd.date_range(start="2000-01-01", periods=T, freq="D")
+    if period_index is None:
+        times = pd.date_range(start="2000-01-01", periods=T, freq="D")
+        embargo_days = int(os.environ.get("CPCV_EMBARGO_DAYS", "2"))
+    else:
+        if len(period_index) != T:
+            raise ValueError(
+                f"period_index has {len(period_index)} periods but the matrix "
+                f"has {T} rows"
+            )
+        times = pd.DatetimeIndex(pd.to_datetime(list(period_index)))
+        if times.is_monotonic_increasing is not True:
+            raise ValueError("period_index must be sorted ascending")
+        gaps = np.diff(times.asi8).astype("float64") / 86_400_000_000_000.0
+        embargo_days = max(1, int(round(float(np.median(gaps))))) if gaps.size else 1
     pred_times = pd.Series(times, index=idx)
     eval_times = pd.Series(times, index=idx)
 
@@ -116,7 +139,7 @@ def cpcv_pbo(
         cv = CombPurgedKFoldCV(
             n_splits=n_folds,
             n_test_splits=n_test_groups,
-            embargo_td=pd.Timedelta(days=int(os.environ.get("CPCV_EMBARGO_DAYS", "2"))),
+            embargo_td=pd.Timedelta(days=embargo_days),
         )
         # CombPurgedKFoldCV.split requires a pandas DataFrame as X.
         X_df = pd.DataFrame(M, index=idx)
@@ -148,6 +171,174 @@ def cpcv_pbo(
         return float("nan")
     # PBO = fraction of splits where IS-best ranked at-or-below OOS median
     return float(np.mean([1.0 if l <= 0 else 0.0 for l in logits]))
+
+
+def _parse_exit_ts(value: object) -> "datetime | None":
+    """Best-effort parse of a closed-pick timestamp into naive UTC.
+
+    Accepts ISO-8601 (with or without ``Z``), ``YYYY-MM-DD[ HH:MM:SS]``,
+    ``YYYY/MM/DD``, epoch seconds, and ``datetime``. Returns ``None`` rather
+    than guessing when the string is unparseable -- an invented timestamp is
+    worse than a dropped row, because it silently joins the wrong period.
+    """
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        dt = value
+    elif isinstance(value, (int, float)) and not isinstance(value, bool):
+        try:
+            return datetime.fromtimestamp(float(value), tz=timezone.utc).replace(tzinfo=None)
+        except (OverflowError, OSError, ValueError):
+            return None
+    else:
+        s = str(value).strip().replace("Z", "+00:00")
+        try:
+            dt = datetime.fromisoformat(s)
+        except ValueError:
+            dt = None
+            for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y/%m/%d", "%m/%d/%Y"):
+                try:
+                    dt = datetime.strptime(s, fmt)
+                    break
+                except ValueError:
+                    continue
+            if dt is None:
+                return None
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
+
+def _period_floor(dt: datetime, period: str) -> datetime:
+    if period == "D":
+        return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    if period == "W":
+        d = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        return d - timedelta(days=d.weekday())
+    if period == "M":
+        return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    raise ValueError(f"Unknown period {period!r}; expected 'D', 'W' or 'M'")
+
+
+def align_returns_by_period(
+    series_by_strategy: dict[str, Sequence[tuple[object, float]]],
+    min_obs: int = 30,
+    period: str = "auto",
+    min_rows: int = 16,
+) -> tuple[np.ndarray | None, list[datetime], dict]:
+    """Build a ``(T x S)`` matrix whose rows are the SAME calendar periods.
+
+    PBO compares strategies *against each other, period by period*. Slicing each
+    strategy's own pick sequence (``v[:T]`` or ``v[-T:]``) does not do that: two
+    strategies that traded in different months end up stacked as if row 0 of one
+    happened at the same time as row 0 of the other, so the in-sample/out-of-
+    sample blocks mix eras and the PBO logit measures the calendar, not the
+    selection process.
+
+    This aggregates each strategy's pick returns onto a shared period grid
+    (day -> week -> month, escalating until there are enough rows for CPCV). A
+    strategy with no pick in a period gets ``0.0`` -- no position, no P&L -- which
+    is the truthful value and keeps every column on the same clock.
+
+    Returns ``(matrix, periods, info)``. ``matrix`` is ``None`` when fewer than 2
+    strategies clear ``min_obs`` timestamped picks.
+    """
+    info: dict = {
+        "requested_period": period,
+        "period": None,
+        "n_rows": 0,
+        "n_cols": 0,
+        "n_strategies_input": len(series_by_strategy or {}),
+        "dropped_below_min_obs": [],
+        "dropped_untimestamped_picks": 0,
+        "coverage_pct": 0.0,
+        "escalated_from": [],
+        "min_rows_required": int(min_rows),
+    }
+
+    eligible = {
+        str(k): v for k, v in (series_by_strategy or {}).items()
+        if v is not None and len(v) >= min_obs
+    }
+    info["dropped_below_min_obs"] = sorted(
+        str(k) for k, v in (series_by_strategy or {}).items()
+        if v is None or len(v) < min_obs
+    )
+    if len(eligible) < 2:
+        info["note"] = (
+            f"only {len(eligible)} strategy(ies) with >= {min_obs} observations; "
+            "PBO needs >= 2"
+        )
+        return None, [], info
+
+    parsed: dict[str, list[tuple[datetime, float]]] = {}
+    dropped = 0
+    for name, rows in eligible.items():
+        kept: list[tuple[datetime, float]] = []
+        for row in rows:
+            try:
+                ts, ret = row
+            except (TypeError, ValueError):
+                continue
+            dt = _parse_exit_ts(ts)
+            if dt is None:
+                dropped += 1
+                continue
+            try:
+                kept.append((dt, float(ret)))
+            except (TypeError, ValueError):
+                continue
+        if len(kept) < min_obs:
+            info["dropped_below_min_obs"].append(name)
+            continue
+        parsed[name] = kept
+    info["dropped_untimestamped_picks"] = dropped
+    if len(parsed) < 2:
+        info["note"] = (
+            f"only {len(parsed)} strategy(ies) left after timestamp parsing; "
+            f"{dropped} picks had no usable exit timestamp"
+        )
+        return None, [], info
+
+    names = sorted(parsed)
+    ladder = ["D", "W", "M"] if period == "auto" else [period]
+    periods: list[datetime] = []
+    buckets: dict[str, dict[datetime, list[float]]] = {}
+    chosen = ladder[-1]
+    for step in ladder:
+        chosen = step
+        buckets = {name: {} for name in names}
+        for name in names:
+            for dt, ret in parsed[name]:
+                buckets[name].setdefault(_period_floor(dt, step), []).append(ret)
+        periods = sorted({d for b in buckets.values() for d in b})
+        if len(periods) >= info["min_rows_required"]:
+            break
+        if step != ladder[-1]:
+            info["escalated_from"].append(step)
+
+    if len(periods) < 2:
+        info["note"] = f"{len(periods)} distinct {chosen} periods; need >= 2"
+        return None, [], info
+
+    matrix = np.zeros((len(periods), len(names)), dtype=np.float64)
+    row_of = {d: i for i, d in enumerate(periods)}
+    for j, name in enumerate(names):
+        for d, vals in buckets[name].items():
+            matrix[row_of[d], j] = float(np.mean(vals))
+
+    filled = int(np.count_nonzero(matrix))
+    info.update({
+        "period": chosen,
+        "n_rows": int(matrix.shape[0]),
+        "n_cols": int(matrix.shape[1]),
+        "coverage_pct": round(100.0 * filled / matrix.size, 2) if matrix.size else 0.0,
+        "strategies": names,
+        # Zero cells are real information (strategy flat that period) -- this is
+        # what lets every column share one clock.
+        "empty_cell_policy": "0.0 (no position that period)",
+    })
+    return matrix, periods, info
 
 
 def _sharpe_per_col(block: np.ndarray) -> np.ndarray:

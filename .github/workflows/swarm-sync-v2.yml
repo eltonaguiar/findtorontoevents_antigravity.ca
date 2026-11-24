@@ -1,4 +1,5 @@
 name: Swarm State Sync
+run-name: "${{ github.workflow }} · ${{ github.event_name }} · ${{ github.sha }}"
 
 on:
   schedule:
@@ -22,6 +23,7 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Configure git
         run: |
@@ -104,7 +106,27 @@ jobs:
                 exit 1
               fi
 
-              git push origin main
+              # 2026-11-16: routed through retry loop — bare push dropped data on non-FF
+              # (safe_push.sh not used here: its -X theirs auto-resolution would defeat
+              # the abort-on-conflict guard above for state files)
+              push_ok=false
+              for i in 1 2 3; do
+                if git push origin main; then
+                  push_ok=true
+                  break
+                fi
+                [ "$i" -lt 3 ] || break
+                if ! git pull --rebase origin main; then
+                  echo 'ERROR: rebase conflict — aborting sync to avoid corrupting state files'
+                  git rebase --abort 2>/dev/null || true
+                  exit 1
+                fi
+                sleep $((5 * i))
+              done
+              if [ "$push_ok" != true ]; then
+                echo 'ERROR: push failed after 3 attempts'
+                exit 1
+              fi
               echo 'PUSHED OK'
             fi
           else

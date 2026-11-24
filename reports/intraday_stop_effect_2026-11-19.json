@@ -1,0 +1,77 @@
+{
+ "policy_id": "intraday-stop-2026-11-19",
+ "evidence": "reports/alpha_slice_scan_2026-11-19.json",
+ "rule": "rows whose (asset_class, trade_timeframe) is in SHADOW_ONLY stay in the payload as shadow rows and are excluded from the money path",
+ "slices": {
+  "class_tf:CRYPTO/INTRADAY": {
+   "alpha_pct": -0.155,
+   "alpha_ci": [
+    -0.26,
+    -0.053
+   ],
+   "n": 1581,
+   "q": 0.015
+  },
+  "class_tf:ETF/INTRADAY": {
+   "alpha_pct": -0.265,
+   "alpha_ci": [
+    -0.488,
+    -0.033
+   ],
+   "n": 256,
+   "q": 0.073
+  }
+ },
+ "reversal": "re-run tools/alpha_slice_scan.py; a slice that turns positive and survives BH is removed from SHADOW_ONLY",
+ "rows_scored": 2475,
+ "money_path": {
+  "n": 638,
+  "mean_alpha_pct": -0.0159
+ },
+ "shadow": {
+  "n": 1837,
+  "mean_alpha_pct": -0.1705
+ },
+ "book_mean_alpha_pct_without_stop": -0.1306,
+ "book_mean_alpha_pct_with_stop": -0.0159,
+ "improvement_pct_per_pick": 0.1147,
+ "per_class": {
+  "CRYPTO": {
+   "kept": {
+    "n": 388,
+    "mean_alpha_pct": -0.1894
+   },
+   "shadow": {
+    "n": 1581,
+    "mean_alpha_pct": -0.1552
+   },
+   "mean_alpha_pct_with_stop": -0.1894,
+   "mean_alpha_pct_without_stop": -0.1619
+  },
+  "EQUITY": {
+   "kept": {
+    "n": 240,
+    "mean_alpha_pct": 0.114
+   },
+   "shadow": {
+    "n": 0,
+    "mean_alpha_pct": null
+   },
+   "mean_alpha_pct_with_stop": 0.114,
+   "mean_alpha_pct_without_stop": 0.114
+  },
+  "ETF": {
+   "kept": {
+    "n": 10,
+    "mean_alpha_pct": 3.5997
+   },
+   "shadow": {
+    "n": 256,
+    "mean_alpha_pct": -0.2647
+   },
+   "mean_alpha_pct_with_stop": 3.5997,
+   "mean_alpha_pct_without_stop": -0.1194
+  }
+ },
+ "note": "alpha is pick net return minus the direction-adjusted hold over the same window, in percent per pick; positive means the pick beat doing nothing. Mean alpha is not a portfolio return."
+}

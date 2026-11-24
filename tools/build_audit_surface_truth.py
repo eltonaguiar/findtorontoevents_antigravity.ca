@@ -173,6 +173,7 @@ def build_report() -> dict:
                 "policy_clean_n": pc.get("n"),
                 "policy_clean_pf": pc.get("pf") or pc.get("profit_factor"),
                 "policy_clean_wr_pct": pc.get("win_rate_pct") or pc.get("wr") or pc.get("wr_pct"),
+                **display_metrics(block, pc),
                 "tier2_pass": (
                     int(block.get("n_resolved") or 0) >= TIER2["min_n"]
                     and float(block.get("wr") or 0) >= TIER2["min_wr"]
@@ -271,6 +272,33 @@ def build_report() -> dict:
             "luxalgo bulk CRYPTO without dedupe (use isolated forward pilot)",
         ],
     }
+
+
+
+#: Policy-clean cohorts below this n are too thin to override the raw verdict.
+POLICY_CLEAN_MIN_N = 20
+
+
+def display_metrics(block: dict, pc: dict) -> dict:
+    """Pick the number the bridge should *show* for a class.
+
+    `pf` comes from money_ready_verdict's own cohort; `policy_clean_pf` comes
+    from the pf_registry policy-clean net view, which is the charter's basis.
+    When they disagree the policy-clean figure is the one that matches the rest
+    of the audit (COMMODITY: raw 1.0418 / WATCH vs policy-clean 0.469 / KILL-ish).
+    """
+    raw_pf = block.get("pf")
+    pc_pf = pc.get("pf") or pc.get("profit_factor")
+    pc_n = int(pc.get("n") or 0)
+    if pc_pf is not None and pc_n >= POLICY_CLEAN_MIN_N:
+        verdict = block.get("verdict")
+        if float(pc_pf) < 1.0 and verdict in ("WATCH", "READY", "MONEY_READY"):
+            verdict = "NOT_READY"
+        return {"display_pf": round(float(pc_pf), 4),
+                "pf_basis": "policy_clean_net",
+                "display_verdict": verdict}
+    return {"display_pf": raw_pf, "pf_basis": "raw",
+            "display_verdict": block.get("verdict")}
 
 
 def _bridge_action(ac: str, block: dict, pc: dict) -> str:

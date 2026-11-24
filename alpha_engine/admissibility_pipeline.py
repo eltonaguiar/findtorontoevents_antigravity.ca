@@ -110,6 +110,48 @@ SIZING_SCHEDULE = {
     "full": 0.02,        # 2.0%
 }
 
+# Prediction-market shadow pin (2026-11-16 audit). PM families carry PBO 0.603
+# and their PnL is currently derived from spot-proxy TP/SL on top of binary
+# contract odds, so a contract's true payoff is not represented. Until that is
+# rebuilt on contract prices and an owner explicitly lifts the pin, no PM
+# strategy may leave shadow sizing. Kill-switch: PREDICTION_MARKETS_SHADOW_ONLY=0
+# (read at call time so the switch is not frozen at import — see PR #845).
+PREDICTION_MARKETS_SHADOW_ONLY_DEFAULT = True
+_PM_NAME_TOKENS = (
+    "polymarket", "kalshi", "prediction_market", "copy_pm",
+    "pm_momentum", "pm_whale", "pm_kalshi",
+)
+
+
+def prediction_markets_shadow_only() -> bool:
+    """Env-overridable pin state, evaluated per call (not at import)."""
+    raw = os.environ.get("PREDICTION_MARKETS_SHADOW_ONLY")
+    if raw is None or raw == "":
+        return PREDICTION_MARKETS_SHADOW_ONLY_DEFAULT
+    return raw.strip().lower() not in ("0", "false", "no", "off")
+
+
+def is_prediction_market_strategy(strategy_name: str) -> bool:
+    """True for the PM families (polymarket/kalshi/consensus/wallet-copy)."""
+    s = (strategy_name or "").strip().lower()
+    return any(tok in s for tok in _PM_NAME_TOKENS)
+
+
+def apply_prediction_market_shadow_pin(verdict: "AdmissibilityVerdict",
+                                       strategy_name: str) -> "AdmissibilityVerdict":
+    """Force PM verdicts to shadow sizing. Idempotent; non-PM verdicts untouched."""
+    if not prediction_markets_shadow_only() or not is_prediction_market_strategy(strategy_name):
+        return verdict
+    if verdict.recommended_sizing != "shadow":
+        verdict.warnings.append(
+            f"Prediction-market shadow pin: '{verdict.recommended_sizing}' -> "
+            f"'shadow' (PREDICTION_MARKETS_SHADOW_ONLY=1; binary payoff not "
+            f"modelled on contract prices)")
+    verdict.recommended_sizing = "shadow"
+    verdict.shadow_pin = True
+    return verdict
+
+
 ROOT = Path(__file__).resolve().parent.parent
 HYPOTHESIS_REGISTRY = ROOT / "audit_trail" / "data" / "hypothesis_registry.json"
 ADMISSIBILITY_LOG = ROOT / "audit_trail" / "data" / "admissibility_log.json"
@@ -146,6 +188,7 @@ class AdmissibilityVerdict:
     warnings: List[str] = field(default_factory=list)
     recommended_sizing: str = "shadow"
     evaluated_at: str = ""
+    shadow_pin: bool = False
 
 
 class AdmissibilityPipeline:
@@ -731,6 +774,10 @@ class AdmissibilityPipeline:
             verdict.tier = TIER_INCUBATOR
         else:
             verdict.tier = TIER_REJECTED
+
+        # 2026-11-16: prediction markets never leave shadow sizing while the
+        # binary-payoff model is missing (see PREDICTION_MARKETS_SHADOW_ONLY).
+        apply_prediction_market_shadow_pin(verdict, strategy_name)
 
         # Log the verdict
         self._log_verdict(strategy_name, verdict)

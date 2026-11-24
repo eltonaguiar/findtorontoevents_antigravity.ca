@@ -2,16 +2,21 @@ name: Daily Prices yfinance Refresh
 # Replaces the DEAD fetch_prices.php (HTTP 404) that froze daily_prices at 2026-04-29.
 on:
   schedule:
-    - cron: "49 22 * * 1-5"   # weekdays 22:40 UTC (after US close)
+    # 2026-11-16: moved 22:49 -> 08:33 UTC. Evidence: 48/50 scheduled 22:4x runs failed
+    # (42-52s exit 1 = EOD data not settled at 22:49 UTC = 17:49 ET) while every 08:2x-08:3x
+    # UTC run succeeded. Morning fetch returns the settled prior session close.
+    - cron: "33 8 * * 1-5"
   workflow_dispatch: {}
 permissions:
   contents: read
 concurrency:
   group: daily-prices-yf-refresh
   cancel-in-progress: false
+  queue: max
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       PYTHONPATH: ${{ github.workspace }}
       DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
@@ -27,4 +32,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install --quiet pymysql yfinance pandas
-      - run: python3 tools/refresh_daily_prices_yf.py --days 30
+      - name: Refresh daily prices (yfinance, retry x3)
+        run: |
+          for i in 1 2 3; do
+            python3 tools/refresh_daily_prices_yf.py --days 30 && exit 0
+            echo "::warning::yf refresh attempt $i failed (settled-data window?); waiting 240s"
+            [ $i -lt 3 ] && sleep 240
+          done
+          echo "::error::daily-prices-yf-refresh: all 3 attempts failed — daily_prices STALE"
+          exit 1

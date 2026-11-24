@@ -1,0 +1,460 @@
+[
+  {
+    "id": "itom",
+    "name": "ServiceNow IT Operations Management (ITOM)",
+    "app": "ITOM",
+    "confidence": "verify",
+    "why": "ITOM provides the foundation for discovering, mapping, and monitoring the technology that drives your business. ITOM combines Discovery, Dependency Mapping, and Event Management to give operators a unified view of the IT infrastructure. It identifies Configuration Items (CIs), automatically discovers dependencies, and correlates events from monitoring tools to deliver a unified operational picture. ITOM enables automatic CMDB population, service dependency visualization, and event correlation to reduce mean time to resolve.",
+    "primary_table": "alm_alert",
+    "tables": [
+      "alm_alert",
+      "em_event",
+      "alm_rule",
+      "discovery_plan",
+      "cmdb_ci",
+      "discovery_source",
+      "discovery_result"
+    ],
+    "roles": [
+      "sn_itom.admin",
+      "sn_itom.user",
+      "sn_itom.reader",
+      "itil"
+    ],
+    "breadcrumbs": [
+      "All > IT Operations Management > Home",
+      "All > IT Operations Management > Discovery",
+      "All > IT Operations Management > Dependency Mapping",
+      "All > IT Operations Management > Event Management",
+      "All > IT Operations Management > Alerts > All",
+      "All > IT Operations Management > Dashboards",
+      "All > CMDB > CI List",
+      "All > IT Operations Management > Correlation Rules"
+    ],
+    "guided_setup": {
+      "available": true,
+      "path": "All > IT Operations Management > Guided Setup",
+      "confidence": "verify"
+    },
+    "oob": {
+      "flows": [
+        "Discovery run \u2192 CI population",
+        "Event correlation \u2192 incident creation",
+        "Dependency mapping \u2192 service map",
+        "Alert \u2192 event \u2192 incident pipeline"
+      ],
+      "playbooks": [
+        "Incident response playbook",
+        "Alert correlation playbook",
+        "CMDB reconciliation playbook"
+      ],
+      "integrations": [
+        "SNMP/MID Server discovery",
+        "SSH/WMI collectors",
+        "NNMi alert integration",
+        "Netcool event integration",
+        "ServiceNow EM integration",
+        "REST Message outbound",
+        "Email inbound"
+      ],
+      "metrics": [
+        "Discovery success rate",
+        "Event correlation accuracy",
+        "Dependency map coverage",
+        "Mean time to acknowledge",
+        "SLA breach count"
+      ],
+      "dashboards": [
+        "ITOM Operations dashboard",
+        "Discovery dashboard",
+        "Event correlation dashboard",
+        "Dependency map dashboard",
+        "Alert summary dashboard"
+      ]
+    },
+    "fields": {
+      "critical": [
+        {
+          "field": "alm_alert.sys_id",
+          "why": "Unique identifier for the alert record"
+        },
+        {
+          "field": "alm_alert.source",
+          "why": "Identifies the monitoring system or integration source"
+        },
+        {
+          "field": "alm_alert.severity",
+          "why": "Drives priority and escalation routing (Critical, Major, Minor, Warning)"
+        },
+        {
+          "field": "alm_alert.ci",
+          "why": "Affected Configuration Item; links alert to CMDB CI"
+        },
+        {
+          "field": "em_event.sys_id",
+          "why": "Unique identifier for the event record"
+        },
+        {
+          "field": "em_event.source",
+          "why": "Integration source name where the event originated"
+        },
+        {
+          "field": "em_event.severity",
+          "why": "Event severity level"
+        },
+        {
+          "field": "alm_rule.sys_id",
+          "why": "Unique identifier for the correlation rule"
+        },
+        {
+          "field": "alm_rule.name",
+          "why": "Human-readable rule name for identification"
+        },
+        {
+          "field": "discovery_plan.sys_id",
+          "why": "Unique identifier for the discovery plan"
+        },
+        {
+          "field": "discovery_plan.schedule",
+          "why": "When discovery runs (cron expression)"
+        },
+        {
+          "field": "cmdb_ci.asset_tag",
+          "why": "Human key; must be unique and sticker-aligned"
+        },
+        {
+          "field": "cmdb_ci.serial_number",
+          "why": "Manufacturer serial; warranty link"
+        },
+        {
+          "field": "cmdb_ci.model",
+          "why": "CI model/manufacturer information"
+        }
+      ],
+      "useful": [
+        "alm_alert.clear_state",
+        "em_event.state",
+        "discovery_plan.status",
+        "cmdb_ci.location",
+        "discovery_source.name"
+      ],
+      "optional": [
+        "alm_alert.comments",
+        "em_event.additional_info",
+        "cmdb_ci.depreciation_fields"
+      ],
+      "related_lists": [
+        "alm_alert > em_event",
+        "em_event > alm_alert",
+        "cmdb_ci > alm_asset",
+        "cmdb_ci > cmdb_rel_ci",
+        "discovery_plan > discovery_result"
+      ]
+    },
+    "must_know": [
+      "ITOM is a scoped application (com.snc.itom); cross-scope access may be required for global table access.",
+      "Discovery populates the CMDB by discovering CIs and their relationships.",
+      "Events from monitoring tools are normalized and correlated via correlation rules.",
+      "Correlation rules can auto-create incidents from repeated high-severity events.",
+      "Dependency Mapping visualizes CI relationships for service impact analysis."
+    ],
+    "mistakes": [
+      "Running discovery without valid credentials",
+      "Ignoring territory/region constraints on discovery sources",
+      "Creating correlation rules with conditions that fire too frequently",
+      "Not merging duplicate CIs after discovery runs",
+      "Testing the portal as admin instead of actual operations users"
+    ],
+    "labs": [],
+    "timebox_min": {
+      "orient": 10,
+      "model": 25,
+      "practice": 45,
+      "prove": 15
+    },
+    "quiz": [
+      "What is the primary table for ITOM alerts?",
+      "What table stores raw events from integrations?",
+      "What is the difference between Discovery and Dependency Mapping?",
+      "How do correlation rules reduce alert volume?",
+      "What does ITOM stand for?"
+    ]
+  },
+  {
+    "id": "itsm",
+    "name": "ServiceNow IT Service Management (ITSM)",
+    "app": "ITSM",
+    "confidence": "high",
+    "why": "ITSM is ServiceNow's flagship application for managing IT services. ITSM covers Incident, Problem, Change, Change Task, Knowledge, and Configuration Management. It is the reference implementation of the platform\u2014every other module follows the same patterns.",
+    "primary_table": "incident",
+    "tables": [
+      "incident",
+      "problem",
+      "change_request",
+      "change_task",
+      "task",
+      "task_sla",
+      "cmdb_ci",
+      "kb_knowledge"
+    ],
+    "roles": [
+      "itil",
+      "sn_incident.read",
+      "sn_incident.write",
+      "sn_change.write",
+      "sn_problem.write",
+      "admin"
+    ],
+    "breadcrumbs": [
+      "All > Incident > All",
+      "All > Problem > All",
+      "All > Change > All",
+      "All > Change > Tasks > All",
+      "All > Knowledge > All",
+      "All > CMDB > CI List",
+      "All > Service Catalog > All",
+      "All > ITSM > Administration > ..."
+    ],
+    "guided_setup": {
+      "available": true,
+      "path": "All > ITSM > Guided Setup",
+      "confidence": "verify"
+    },
+    "oob": {
+      "flows": [
+        "Incident assignment / escalation",
+        "Problem \u2192 known error \u2192 fix task",
+        "Change approval flow (CAB / manager approvals)",
+        "Knowledge article approval"
+      ],
+      "playbooks": [
+        "Incident response playbook",
+        "Change management playbook",
+        "Major incident management playbook"
+      ],
+      "integrations": [
+        "Email (inbound/outbound)",
+        "Discovery (MID Server)",
+        "Remote Table (external CMDB)",
+        "REST Message (outbound API)",
+        "Event Management (alerts \u2192 incidents)"
+      ],
+      "metrics": [
+        "Mean time to resolve (MTTR)",
+        "First contact resolution rate",
+        "Change success rate",
+        "Incident volume by priority",
+        "SLA breach %"
+      ],
+      "dashboards": [
+        "Incident Overview",
+        "Service Desk Dashboard",
+        "Change Management Dashboard",
+        "Problem Overview"
+      ]
+    },
+    "fields": {
+      "critical": [
+        {
+          "field": "incident.number",
+          "why": "Auto-number; the only identifier users quote. Never edit by hand."
+        },
+        {
+          "field": "incident.caller_id",
+          "why": "Who is affected. Wrong caller = wrong SLA, wrong comms, wrong reports."
+        },
+        {
+          "field": "incident.short_description",
+          "why": "Mandatory by dictionary on OOB; the searchable summary."
+        },
+        {
+          "field": "incident.assignment_group",
+          "why": "Routing. If this is empty, nothing else you configure will get the ticket worked."
+        },
+        {
+          "field": "incident.state",
+          "why": "Drives SLA pause/resume, close rules, and reporting. Changing state order breaks automation."
+        },
+        {
+          "field": "incident.impact + urgency",
+          "why": "These compute priority. Priority is usually derived, not typed."
+        },
+        {
+          "field": "incident.close_code + close_notes",
+          "why": "Enforced at close by OOB UI policy; blank closes corrupt reporting."
+        }
+      ],
+      "useful": [
+        "incident.category / subcategory",
+        "incident.cmdb_ci",
+        "incident.assigned_to",
+        "problem.caused_by",
+        "change_request.implementation_plan"
+      ],
+      "optional": [
+        "incident.location",
+        "incident.department",
+        "change_request.backout_plan",
+        "problem.workaround"
+      ],
+      "related_lists": [
+        "incident > Task SLA",
+        "incident > Affected CIs",
+        "incident > Approvers",
+        "change_request > Change Tasks",
+        "problem > Related Incidents"
+      ]
+    },
+    "must_know": [
+      "incident extends task. Everything you learn about 'task' fields applies to incident, problem, change, and catalog tasks.",
+      "Priority = f(impact, urgency) through a matrix (Data Lookup), not something agents type.",
+      "An SLA is a task_sla record attached to the incident; the SLA definition decides start/pause/stop conditions.",
+      "Closing requires close_code + close_notes in OOB; that is a UI policy, so it is invisible in the dictionary."
+    ],
+    "mistakes": [
+      "Adding a custom field when an unused OOB field already exists",
+      "Editing state choices without checking SLA and flow conditions",
+      "Testing as admin only \u2014 admin bypasses ACLs",
+      "Making assignment_group optional 'to go faster'",
+      "Deleting demo users, which breaks OOB flow references"
+    ],
+    "labs": [
+      "labs/LAB-01-REST-MESSAGE.md"
+    ],
+    "timebox_min": {
+      "orient": 10,
+      "model": 25,
+      "practice": 40,
+      "prove": 10
+    },
+    "quiz": [
+      "Which fields determine priority, and where is that matrix defined?",
+      "What record type implements an SLA on a given incident?",
+      "Name three things that break if you reorder state values."
+    ]
+  },
+  {
+    "id": "csm",
+    "name": "ServiceNow Customer Service Management (CSM)",
+    "app": "CSM",
+    "confidence": "high",
+    "why": "ITSM pointed outward: cases, accounts, entitlements, SLAs against paying customers, and a portal that customers actually use. CSM includes a customer-facing portal, agent workspace, and entitlement-based SLAs.",
+    "primary_table": "sn_customerservice_case",
+    "tables": [
+      "sn_customerservice_case",
+      "customer_account",
+      "sn_customerservice_consumer",
+      "sn_customerservice_entitlement",
+      "sn_customerservice_sla",
+      "sn_customerservice_product"
+    ],
+    "roles": [
+      "sn_customerservice_agent",
+      "sn_customerservice_manager",
+      "sn_customerservice.customer",
+      "admin"
+    ],
+    "breadcrumbs": [
+      "All > Customer Service > Cases > All",
+      "All > Customer Service > Accounts",
+      "All > Customer Service > Consumers",
+      "All > Customer Service > Administration > Entitlements",
+      "All > Customer Service > Administration > Case Types",
+      "All > Customer Service > Customer Service Portal",
+      "All > Customer Service > Administration > ..."
+    ],
+    "guided_setup": {
+      "available": true,
+      "path": "All > Customer Service > Guided Setup",
+      "confidence": "verify"
+    },
+    "oob": {
+      "flows": [
+        "Case assignment / escalation",
+        "Entitlement validation on create",
+        "Customer satisfaction survey",
+        "Case \u2192 work order"
+      ],
+      "playbooks": [
+        "CSM playbooks (case types)",
+        "Agent assist / recommended actions"
+      ],
+      "integrations": [
+        "Email, chat, messaging spokes (Twilio/WhatsApp)",
+        "Salesforce / ERP account sync",
+        "CSM portal + Knowledge"
+      ],
+      "metrics": [
+        "First contact resolution",
+        "CSAT",
+        "Case backlog by account",
+        "Entitlement breach count"
+      ],
+      "dashboards": [
+        "CSM Manager dashboard",
+        "Agent workspace analytics"
+      ]
+    },
+    "fields": {
+      "critical": [
+        {
+          "field": "sn_customerservice_case.account",
+          "why": "Everything (entitlement, SLA, reporting) hangs off the account."
+        },
+        {
+          "field": "sn_customerservice_case.contact",
+          "why": "Who reported it; drives auth and comms."
+        },
+        {
+          "field": "sn_customerservice_case.entitlement",
+          "why": "Decides whether service is included."
+        },
+        {
+          "field": "sn_customerservice_case.case_type",
+          "why": "Selects workflow and required fields."
+        },
+        {
+          "field": "sn_customerservice_case.priority",
+          "why": "Contractual, not internal, promise."
+        }
+      ],
+      "useful": [
+        "sn_customerservice_case.product",
+        "sn_customerservice_case.channel",
+        "sn_customerservice_case.short_description",
+        "sn_customerservice_case.assignment_group"
+      ],
+      "optional": [
+        "sn_customerservice_case.billing_fields",
+        "sn_customerservice_case.special_handling_notes"
+      ],
+      "related_lists": [
+        "sn_customerservice_case > sn_customerservice_sla",
+        "customer_account > sn_customerservice_case",
+        "sn_customerservice_case > sn_customerservice_product"
+      ]
+    },
+    "must_know": [
+      "Entitlement checks are the CSM-specific twist; without them SLAs are guesses.",
+      "External users are real users with ACLs \u2014 test as the customer, not as admin.",
+      "Case types are the CSM equivalent of catalog items: they define what an agent can even do."
+    ],
+    "mistakes": [
+      "Skipping entitlement setup",
+      "Testing the portal as admin",
+      "One case type for every request"
+    ],
+    "labs": [],
+    "timebox_min": {
+      "orient": 10,
+      "model": 25,
+      "practice": 40,
+      "prove": 10
+    },
+    "quiz": [
+      "What decides if service is included?",
+      "Where do customer-visible SLAs come from?",
+      "What selects the case workflow?"
+    ]
+  }
+]

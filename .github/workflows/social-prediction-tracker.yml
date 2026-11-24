@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   track-predictions:
     # Playwright chromium is unsupported on ubuntu 26.04; pin the last supported

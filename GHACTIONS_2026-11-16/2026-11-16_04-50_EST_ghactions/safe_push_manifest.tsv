@@ -1,0 +1,25 @@
+file	line	before	after	mode
+.github/workflows/ai-model-portfolios-daily.yml	129	git push	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/ai-model-portfolios-daily.yml	120	continue-on-error: true on "Commit PF JSON snapshots" step	removed — commit/push failures now surface	safe_push
+.github/workflows/incidents-enhancements-nightly.yml	58-59	git pull --rebase origin main + git push	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/ai-leaderboard-freshness.yml	132-133	git pull --rebase origin main + git push origin HEAD:main	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/fred-macro-refresh.yml	43-44	git pull --rebase origin main + git push origin HEAD:main	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/monthly-calibrator-refit.yml	61-62	git pull --rebase origin main + git push origin HEAD:main	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/sidecar-status-update.yml	65,68	git pull --rebase --no-recurse-submodules origin main + git push origin HEAD:main	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/stocksunify2-pull.yml	46-47	git pull --rebase origin main + git push origin HEAD:main	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/swarm-pick-review.yml	77-78	git pull --rebase origin main + git push origin HEAD:main	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/swarm-sync-v2.yml	107	git push origin main	3-attempt retry loop around `git push origin main` (rebase-abort guard between attempts) + exit 1 on final failure	retry-loop
+.github/workflows/actions-failure-guardian.yml	60-61	git pull --rebase origin main; git commit ... && git push origin HEAD:main || echo "No changes to push"	if git commit ...; then bash .github/scripts/safe_push.sh; else echo "No changes to push"; fi	safe_push
+.github/workflows/gha-summary-report.yml	57-58	git pull --rebase origin main; git push origin HEAD:main || echo "No push needed"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/swarm-janitor.yml	46-47	git pull --rebase origin main; git push origin HEAD:main || echo "push skipped (no changes)"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/h004-backtest.yml	119-120	git pull --rebase origin main || true; git push origin main || echo "Push failed — report is local"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/ml-gatekeeper-train-ab.yml	170-171	git pull --rebase origin main || true; git push origin HEAD:main || echo "push failed (non-fatal; artifact uploaded)"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/audit-frontend-manifest.yml	49-50	git pull --rebase origin main || true; git push || echo "push failed (non-fatal)"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/beta-portfolio-refresh.yml	94	git push || echo "push skipped"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/poc-picks-checkpoint.yml	55	git push || echo "push skipped"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/daily-scrutiny-engine.yml	59	git push || echo "::warning::push failed (concurrent commit)"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/ab_analysis.yml	131-132	git pull --rebase origin main || true; git push || echo "push failed (non-fatal)"	bash .github/scripts/safe_push.sh	safe_push
+.github/workflows/swarm-pick-review.yml	14-16 (new block after permissions)	no concurrency block	concurrency: group: swarm-pick-review / cancel-in-progress: false	concurrency
+.github/workflows/blacklist-reconciler.yml	13-15	cancel-in-progress: false already present	unchanged — verified serialized	concurrency
+.github/workflows/rsi5070-forward-snapshot.yml	51-58	cancel-in-progress: false already present	unchanged — verified serialized	concurrency
+.github/workflows/sign-coherence-gate.yml	28-30	cancel-in-progress: false already present	unchanged — verified serialized	concurrency

@@ -49,6 +49,7 @@ jobs:
   # Job 1: Run directly in WSL (bypasses GitHub Actions queue entirely)
   wsl-direct:
     runs-on: windows-latest
+    timeout-minutes: 30
     if: github.event.inputs.use_wsl_direct == 'true'
     
     steps:
@@ -177,13 +178,13 @@ jobs:
 
       - name: Commit results
         if: success()
-        # Bumped 5 -> 15 (2026-11-16): the push retry loop below is designed to
-        # run up to ~12 min worst case (exponential backoff capped ~97s x 10
-        # attempts), but the step capped at 5 min, so under push contention the
-        # step timed out mid-retry and turned a NON-FATAL push failure (warning +
-        # self-heal next cycle) into a RED job failure. 15 min lets all retries
-        # finish and exit clean; real failures still surface via the retry loop.
-        timeout-minutes: 15
+        # 15m budget. Previously this step had a 5m cap while its inline retry
+        # loop ran ~12m (RED timeouts). The inline loop also had NO per-op
+        # timeout, so on 2026-11-16 a single `git pull --rebase` HUNG the whole
+        # step to the cap (run 43799911205). Now we delegate to safe_push.sh
+        # whose git ops are each capped at 90s — realistic push finish is 2-5m,
+        # worst case bounded; a genuine stall can no longer hang the step.
+        timeout-minutes: 30
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
@@ -195,52 +196,16 @@ jobs:
             exit 0
           fi
           git commit -m "ALPHA ENGINE [$(date -u '+%Y-%m-%d %H:%M UTC')] [skip ci]"
-          # safe_push.sh handles shallow repos via --deepen=150 internally;
-          # workflow-level `git fetch --unshallow` was blowing up disk on
-          # ubuntu-latest runners (.git is 37GB). See PR for chronic-failure
-          # context.
-          # Commit-first-then-rebase pattern (replaces safe_push.sh nested retry).
-          # 2026-04-20: bumped retries 5→10 and widened exponential backoff from
-          # `i*5 + RANDOM%10` (max ~35s per attempt, ~2 min total) to
-          # `min(i*i*3, 90) + RANDOM%15` (caps at 90s per attempt, ~6-8 min total)
-          # after observing repeated "Commit results" failures in
-          # ALPHA ENGINE - Dynamic Runner. 40+ workflows all push main at
-          # overlapping cadences; short backoff exhausts while the contention
-          # window is still active. Keeps the job well within GHA time limits.
-          push_ok=false
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            delay=$((i * i * 3 + RANDOM % 15))
-            [ $delay -gt 90 ] && delay=$((90 + RANDOM % 15))
-            git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
-              echo "Rebase failed on attempt $i (next delay ${delay}s)"
-              git rebase --abort 2>/dev/null || true
-              sleep "$delay"
-              continue
-            }
-            # `set -e` (GHA default) exits the step on a failed `$(...)` assignment
-            # BEFORE `push_rc=$?` runs, making the retry loop dead code on push failure.
-            # Same shape fix as audit-dashboard.yml in PR #440.
-            push_rc=0
-            push_output=$(git push origin main 2>&1) || push_rc=$?
-            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
-            if [ $push_rc -eq 0 ]; then
-              echo "Pushed successfully on attempt $i"
-              push_ok=true
-              break
-            fi
-            echo "Push attempt $i failed, retrying in ${delay}s..."
-            sleep "$delay"
-          done
-          if [ "$push_ok" = false ]; then
-            echo "WARNING: All 10 push attempts failed — another workflow may have held the lock longer than ~8 min. Data was generated successfully; next cycle will self-heal."
-            # Non-fatal: data was generated and committed locally. The next
-            # scheduled cycle will fully re-generate the data and push it.
-            # This is safe ONLY because each cycle re-generates from scratch
-            # (fetch-depth:1 shallow clone means unpushed commits are lost on
-            # the next checkout). Do NOT change to incremental generation
-            # without also making push failures fatal again.
-            # Making this fatal caused ~85% of Alpha Engine runs to fail
-            # (26 failures + 19 cancellations in last 50 runs), wasting
-            # compute and masking real errors in noise.
-            echo "::warning::Alpha Engine push failed after 10 retries — data self-heals next cycle"
+          # Use the repo's hardened push helper. safe_push.sh:
+          #   - caps every git network op at 90s (GIT_NET_TIMEOUT) so a stalled
+          #     fetch/push can NEVER hang the step (the old inline loop called
+          #     `git pull --rebase ... 2>/dev/null` with NO timeout and on
+          #     2026-11-16 hung the full 15-min step -> RED, run 43799911205);
+          #   - deepens the shallow clone (--deepen=150, capped at 90s) so rebase
+          #     has a merge base, falling back to merge if deepen stalls;
+          #   - fails fast on auth / permanent rejections instead of burning clock.
+          # Non-fatal by design: on failure we warn and self-heal next cycle
+          # (each cycle re-generates from scratch on the fetch-depth:1 clone).
+          if ! bash .github/scripts/safe_push.sh; then
+            echo "::warning::Alpha Engine push failed after safe_push.sh retries — data self-heals next cycle"
           fi
