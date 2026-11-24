@@ -120,9 +120,23 @@ def main(argv=None):
             "kills": len([r for r in ms if r.get("verdict") == "KILL"]),
             "passes": len([r for r in ms if r.get("verdict") == "PASS"]),
             "median_net": round(st.median(nets), 2) if nets else None,
+            "median_gross": (round(st.median([r["gross_mean_bp"] for r in ms]), 2)
+                             if ms and all(r.get("gross_mean_bp") is not None for r in ms)
+                             else None),
+            "pct_gross_positive": (round(100.0 * sum(1 for r in ms
+                                    if (r.get("gross_mean_bp") or 0) > 0) / len(ms), 0)
+                                   if ms else None),
             "best": max(ms, key=lambda r: r["net_mean_bp"]) if ms else None,
             "worst": min(ms, key=lambda r: r["net_mean_bp"]) if ms else None,
         })
+    for p in per:
+        mg = p.get("median_gross")
+        if mg is None:
+            p["diagnosis"] = "not measured"
+        elif mg <= 0:
+            p["diagnosis"] = "SIGNAL problem (no gross edge)"
+        else:
+            p["diagnosis"] = "COST problem (gross edge < 26bp)"
     per.sort(key=lambda p: (p["median_net"] is None, -(p["median_net"] or 0)))
 
     lines = ["# Final findings per asset class — cell sweep 2026-11-24", "",
@@ -134,16 +148,22 @@ def main(argv=None):
              "have zero measured cells and therefore no findings.** The table's "
              "`in ledger` column makes this explicit; the `measured` column would otherwise "
              "read as 'measured and empty', which is a different and false claim.", "",
+             "**Cross-reference:** `30_COST_STRUCTURE_2026-11-24/COST_VS_SIGNAL.md` "
+             "splits this null into a *signal* problem (median gross <= 0) and a *cost* "
+             "problem (gross edge exists but is below the 26bp round-turn). The "
+             "`diagnosis` column below carries that verdict per class, so this table and "
+             "that document cannot be read as disagreeing.", "",
              "**Headline: 0 PASS across all measured classes.** Not one cell met the "
              "pre-declared bar (CI excluding zero *and* DSR > 0.95 at 1000 trials).", "",
-             "| asset class | in ledger | resolved | measured | KILL | PASS | median net bp | best cell |",
-             "|---|---:|---:|---:|---:|---:|---:|---|"]
+             "| asset class | in ledger | resolved | measured | KILL | PASS | median net bp | median gross bp | diagnosis | best cell |",
+             "|---|---:|---:|---:|---:|---:|---:|---:|---|---|"]
     for p in per:
         best = p["best"]
         bcell = f"`{best['cell']}` {fmt(best['net_mean_bp'])}" if best else "—"
         lines.append(f"| **{p['class']}** | {p['cells']} | {p.get('cells_resolved', 0)} | "
                      f"{p['measured']} | {p['kills']} | {p['passes']} | "
-                     f"{fmt(p['median_net'])} | {bcell} |")
+                     f"{fmt(p['median_net'])} | {fmt(p.get('median_gross'))} | "
+                     f"{p.get('diagnosis','')} | {bcell} |")
 
     lines += ["", "## Per-class commentary", ""]
     for p in per:
