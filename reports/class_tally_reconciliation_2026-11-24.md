@@ -28,6 +28,23 @@ The settled programme tally is `0 INVESTABLE / 11 NOT_INVESTABLE / 3 UNKNOWN (14
 | `len(cells)` | 374 |
 | **any of these equal to 14?** | **no** |
 
+### Second pass: do segments or cells reproduce `0 / 11 / 3`?
+
+`segments` and `cells` were each evaluated against the exact tally shape
+(INVESTABLE = count of `INVESTABLE`, NOT_INVESTABLE = `KILL` + `WEAK`,
+UNKNOWN = `INSUFFICIENT_N`):
+
+```
+segments: total=6   INVESTABLE=0 NOT_INVESTABLE=6  UNKNOWN=0    (WEAK 4, KILL 2)
+cells   : total=374 INVESTABLE=0 NOT_INVESTABLE=67 UNKNOWN=307  (WEAK 57, KILL 10, INSUFFICIENT_N 307)
+target  : total=14  INVESTABLE=0 NOT_INVESTABLE=11 UNKNOWN=3
+```
+
+Neither matches. `segments` has 14-shape numerator but only 6 rows; `cells` has
+374 rows and 307 unknowns. **No scope in this ledger produces 14 rows with the
+`0 / 11 / 3` split.** This is recorded as a confirmed dead end: the tally comes
+from an artifact or a filter not present in this checkout.
+
 **Conclusion: the 14-row tally is not derivable from this ledger's `classes`, `segments`, or `cells` scopes.** 7 + 6 = 13, one short of 14, and the union is only 7 because all 6 segment classes are already class rows. I could force 14 by counting FUTURES in classes and then double-counting something, but that would be constructing a number to match a claim rather than measuring it.
 
 The tally therefore comes from a different artifact than this ledger, or from a version of it that included one more row. **I cannot verify it from what is committed here, and I am not changing it.**
