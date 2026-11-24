@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T00:46:21.938476+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:25:24.153452+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 2 of 1000.** open 995 | claimed 0 | blocked_no_data 3
+**Worked 17 of 1000.** open 981 | claimed 0 | blocked_no_data 2
 
 ## Done condition (identical for every cell)
 
@@ -10,19 +10,19 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 2/50 worked
+## BTCUSDT - 5/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [-] `BTCUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_15m.json` |
 | [x] `BTCUSDT/trend_pullback/1h` | killed | `results/cells/BTCUSDT_trend_pullback_1h.json` |
 | [x] `BTCUSDT/trend_pullback/4h` | killed | `results/cells/BTCUSDT_trend_pullback_4h.json` |
-| [-] `BTCUSDT/trend_pullback/1d` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_1d.json` |
+| [x] `BTCUSDT/trend_pullback/1d` | killed | `results/cells/BTCUSDT_trend_pullback_1d.json` |
 | [-] `BTCUSDT/trend_pullback/1w` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_1w.json` |
 | [ ] `BTCUSDT/rsi2_pullback/15m` | open | `results/cells/BTCUSDT_rsi2_pullback_15m.json` |
 | [ ] `BTCUSDT/rsi2_pullback/1h` | open | `results/cells/BTCUSDT_rsi2_pullback_1h.json` |
 | [ ] `BTCUSDT/rsi2_pullback/4h` | open | `results/cells/BTCUSDT_rsi2_pullback_4h.json` |
-| [ ] `BTCUSDT/rsi2_pullback/1d` | open | `results/cells/BTCUSDT_rsi2_pullback_1d.json` |
+| [x] `BTCUSDT/rsi2_pullback/1d` | killed | `results/cells/BTCUSDT_rsi2_pullback_1d.json` |
 | [ ] `BTCUSDT/rsi2_pullback/1w` | open | `results/cells/BTCUSDT_rsi2_pullback_1w.json` |
 | [ ] `BTCUSDT/vol_compression/15m` | open | `results/cells/BTCUSDT_vol_compression_15m.json` |
 | [ ] `BTCUSDT/vol_compression/1h` | open | `results/cells/BTCUSDT_vol_compression_1h.json` |
@@ -32,7 +32,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `BTCUSDT/breakout/15m` | open | `results/cells/BTCUSDT_breakout_15m.json` |
 | [ ] `BTCUSDT/breakout/1h` | open | `results/cells/BTCUSDT_breakout_1h.json` |
 | [ ] `BTCUSDT/breakout/4h` | open | `results/cells/BTCUSDT_breakout_4h.json` |
-| [ ] `BTCUSDT/breakout/1d` | open | `results/cells/BTCUSDT_breakout_1d.json` |
+| [x] `BTCUSDT/breakout/1d` | killed | `results/cells/BTCUSDT_breakout_1d.json` |
 | [ ] `BTCUSDT/breakout/1w` | open | `results/cells/BTCUSDT_breakout_1w.json` |
 | [ ] `BTCUSDT/donchian/15m` | open | `results/cells/BTCUSDT_donchian_15m.json` |
 | [ ] `BTCUSDT/donchian/1h` | open | `results/cells/BTCUSDT_donchian_1h.json` |
@@ -65,19 +65,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `BTCUSDT/gap_fade/1d` | open | `results/cells/BTCUSDT_gap_fade_1d.json` |
 | [ ] `BTCUSDT/gap_fade/1w` | open | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 0/50 worked
+## ETHUSDT - 3/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [ ] `ETHUSDT/trend_pullback/15m` | open | `results/cells/ETHUSDT_trend_pullback_15m.json` |
 | [ ] `ETHUSDT/trend_pullback/1h` | open | `results/cells/ETHUSDT_trend_pullback_1h.json` |
 | [ ] `ETHUSDT/trend_pullback/4h` | open | `results/cells/ETHUSDT_trend_pullback_4h.json` |
-| [ ] `ETHUSDT/trend_pullback/1d` | open | `results/cells/ETHUSDT_trend_pullback_1d.json` |
+| [x] `ETHUSDT/trend_pullback/1d` | killed | `results/cells/ETHUSDT_trend_pullback_1d.json` |
 | [ ] `ETHUSDT/trend_pullback/1w` | open | `results/cells/ETHUSDT_trend_pullback_1w.json` |
 | [ ] `ETHUSDT/rsi2_pullback/15m` | open | `results/cells/ETHUSDT_rsi2_pullback_15m.json` |
 | [ ] `ETHUSDT/rsi2_pullback/1h` | open | `results/cells/ETHUSDT_rsi2_pullback_1h.json` |
 | [ ] `ETHUSDT/rsi2_pullback/4h` | open | `results/cells/ETHUSDT_rsi2_pullback_4h.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1d` | open | `results/cells/ETHUSDT_rsi2_pullback_1d.json` |
+| [x] `ETHUSDT/rsi2_pullback/1d` | killed | `results/cells/ETHUSDT_rsi2_pullback_1d.json` |
 | [ ] `ETHUSDT/rsi2_pullback/1w` | open | `results/cells/ETHUSDT_rsi2_pullback_1w.json` |
 | [ ] `ETHUSDT/vol_compression/15m` | open | `results/cells/ETHUSDT_vol_compression_15m.json` |
 | [ ] `ETHUSDT/vol_compression/1h` | open | `results/cells/ETHUSDT_vol_compression_1h.json` |
@@ -87,7 +87,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ETHUSDT/breakout/15m` | open | `results/cells/ETHUSDT_breakout_15m.json` |
 | [ ] `ETHUSDT/breakout/1h` | open | `results/cells/ETHUSDT_breakout_1h.json` |
 | [ ] `ETHUSDT/breakout/4h` | open | `results/cells/ETHUSDT_breakout_4h.json` |
-| [ ] `ETHUSDT/breakout/1d` | open | `results/cells/ETHUSDT_breakout_1d.json` |
+| [x] `ETHUSDT/breakout/1d` | killed | `results/cells/ETHUSDT_breakout_1d.json` |
 | [ ] `ETHUSDT/breakout/1w` | open | `results/cells/ETHUSDT_breakout_1w.json` |
 | [ ] `ETHUSDT/donchian/15m` | open | `results/cells/ETHUSDT_donchian_15m.json` |
 | [ ] `ETHUSDT/donchian/1h` | open | `results/cells/ETHUSDT_donchian_1h.json` |
@@ -120,19 +120,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ETHUSDT/gap_fade/1d` | open | `results/cells/ETHUSDT_gap_fade_1d.json` |
 | [ ] `ETHUSDT/gap_fade/1w` | open | `results/cells/ETHUSDT_gap_fade_1w.json` |
 
-## SOLUSDT - 0/50 worked
+## SOLUSDT - 3/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [ ] `SOLUSDT/trend_pullback/15m` | open | `results/cells/SOLUSDT_trend_pullback_15m.json` |
 | [ ] `SOLUSDT/trend_pullback/1h` | open | `results/cells/SOLUSDT_trend_pullback_1h.json` |
 | [ ] `SOLUSDT/trend_pullback/4h` | open | `results/cells/SOLUSDT_trend_pullback_4h.json` |
-| [ ] `SOLUSDT/trend_pullback/1d` | open | `results/cells/SOLUSDT_trend_pullback_1d.json` |
+| [x] `SOLUSDT/trend_pullback/1d` | killed | `results/cells/SOLUSDT_trend_pullback_1d.json` |
 | [ ] `SOLUSDT/trend_pullback/1w` | open | `results/cells/SOLUSDT_trend_pullback_1w.json` |
 | [ ] `SOLUSDT/rsi2_pullback/15m` | open | `results/cells/SOLUSDT_rsi2_pullback_15m.json` |
 | [ ] `SOLUSDT/rsi2_pullback/1h` | open | `results/cells/SOLUSDT_rsi2_pullback_1h.json` |
 | [ ] `SOLUSDT/rsi2_pullback/4h` | open | `results/cells/SOLUSDT_rsi2_pullback_4h.json` |
-| [ ] `SOLUSDT/rsi2_pullback/1d` | open | `results/cells/SOLUSDT_rsi2_pullback_1d.json` |
+| [x] `SOLUSDT/rsi2_pullback/1d` | killed | `results/cells/SOLUSDT_rsi2_pullback_1d.json` |
 | [ ] `SOLUSDT/rsi2_pullback/1w` | open | `results/cells/SOLUSDT_rsi2_pullback_1w.json` |
 | [ ] `SOLUSDT/vol_compression/15m` | open | `results/cells/SOLUSDT_vol_compression_15m.json` |
 | [ ] `SOLUSDT/vol_compression/1h` | open | `results/cells/SOLUSDT_vol_compression_1h.json` |
@@ -142,7 +142,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SOLUSDT/breakout/15m` | open | `results/cells/SOLUSDT_breakout_15m.json` |
 | [ ] `SOLUSDT/breakout/1h` | open | `results/cells/SOLUSDT_breakout_1h.json` |
 | [ ] `SOLUSDT/breakout/4h` | open | `results/cells/SOLUSDT_breakout_4h.json` |
-| [ ] `SOLUSDT/breakout/1d` | open | `results/cells/SOLUSDT_breakout_1d.json` |
+| [x] `SOLUSDT/breakout/1d` | killed | `results/cells/SOLUSDT_breakout_1d.json` |
 | [ ] `SOLUSDT/breakout/1w` | open | `results/cells/SOLUSDT_breakout_1w.json` |
 | [ ] `SOLUSDT/donchian/15m` | open | `results/cells/SOLUSDT_donchian_15m.json` |
 | [ ] `SOLUSDT/donchian/1h` | open | `results/cells/SOLUSDT_donchian_1h.json` |
@@ -175,19 +175,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SOLUSDT/gap_fade/1d` | open | `results/cells/SOLUSDT_gap_fade_1d.json` |
 | [ ] `SOLUSDT/gap_fade/1w` | open | `results/cells/SOLUSDT_gap_fade_1w.json` |
 
-## XRPUSDT - 0/50 worked
+## XRPUSDT - 3/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [ ] `XRPUSDT/trend_pullback/15m` | open | `results/cells/XRPUSDT_trend_pullback_15m.json` |
 | [ ] `XRPUSDT/trend_pullback/1h` | open | `results/cells/XRPUSDT_trend_pullback_1h.json` |
 | [ ] `XRPUSDT/trend_pullback/4h` | open | `results/cells/XRPUSDT_trend_pullback_4h.json` |
-| [ ] `XRPUSDT/trend_pullback/1d` | open | `results/cells/XRPUSDT_trend_pullback_1d.json` |
+| [x] `XRPUSDT/trend_pullback/1d` | killed | `results/cells/XRPUSDT_trend_pullback_1d.json` |
 | [ ] `XRPUSDT/trend_pullback/1w` | open | `results/cells/XRPUSDT_trend_pullback_1w.json` |
 | [ ] `XRPUSDT/rsi2_pullback/15m` | open | `results/cells/XRPUSDT_rsi2_pullback_15m.json` |
 | [ ] `XRPUSDT/rsi2_pullback/1h` | open | `results/cells/XRPUSDT_rsi2_pullback_1h.json` |
 | [ ] `XRPUSDT/rsi2_pullback/4h` | open | `results/cells/XRPUSDT_rsi2_pullback_4h.json` |
-| [ ] `XRPUSDT/rsi2_pullback/1d` | open | `results/cells/XRPUSDT_rsi2_pullback_1d.json` |
+| [x] `XRPUSDT/rsi2_pullback/1d` | killed | `results/cells/XRPUSDT_rsi2_pullback_1d.json` |
 | [ ] `XRPUSDT/rsi2_pullback/1w` | open | `results/cells/XRPUSDT_rsi2_pullback_1w.json` |
 | [ ] `XRPUSDT/vol_compression/15m` | open | `results/cells/XRPUSDT_vol_compression_15m.json` |
 | [ ] `XRPUSDT/vol_compression/1h` | open | `results/cells/XRPUSDT_vol_compression_1h.json` |
@@ -197,7 +197,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XRPUSDT/breakout/15m` | open | `results/cells/XRPUSDT_breakout_15m.json` |
 | [ ] `XRPUSDT/breakout/1h` | open | `results/cells/XRPUSDT_breakout_1h.json` |
 | [ ] `XRPUSDT/breakout/4h` | open | `results/cells/XRPUSDT_breakout_4h.json` |
-| [ ] `XRPUSDT/breakout/1d` | open | `results/cells/XRPUSDT_breakout_1d.json` |
+| [x] `XRPUSDT/breakout/1d` | killed | `results/cells/XRPUSDT_breakout_1d.json` |
 | [ ] `XRPUSDT/breakout/1w` | open | `results/cells/XRPUSDT_breakout_1w.json` |
 | [ ] `XRPUSDT/donchian/15m` | open | `results/cells/XRPUSDT_donchian_15m.json` |
 | [ ] `XRPUSDT/donchian/1h` | open | `results/cells/XRPUSDT_donchian_1h.json` |
@@ -230,19 +230,19 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XRPUSDT/gap_fade/1d` | open | `results/cells/XRPUSDT_gap_fade_1d.json` |
 | [ ] `XRPUSDT/gap_fade/1w` | open | `results/cells/XRPUSDT_gap_fade_1w.json` |
 
-## DOGEUSDT - 0/50 worked
+## DOGEUSDT - 3/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [ ] `DOGEUSDT/trend_pullback/15m` | open | `results/cells/DOGEUSDT_trend_pullback_15m.json` |
 | [ ] `DOGEUSDT/trend_pullback/1h` | open | `results/cells/DOGEUSDT_trend_pullback_1h.json` |
 | [ ] `DOGEUSDT/trend_pullback/4h` | open | `results/cells/DOGEUSDT_trend_pullback_4h.json` |
-| [ ] `DOGEUSDT/trend_pullback/1d` | open | `results/cells/DOGEUSDT_trend_pullback_1d.json` |
+| [x] `DOGEUSDT/trend_pullback/1d` | killed | `results/cells/DOGEUSDT_trend_pullback_1d.json` |
 | [ ] `DOGEUSDT/trend_pullback/1w` | open | `results/cells/DOGEUSDT_trend_pullback_1w.json` |
 | [ ] `DOGEUSDT/rsi2_pullback/15m` | open | `results/cells/DOGEUSDT_rsi2_pullback_15m.json` |
 | [ ] `DOGEUSDT/rsi2_pullback/1h` | open | `results/cells/DOGEUSDT_rsi2_pullback_1h.json` |
 | [ ] `DOGEUSDT/rsi2_pullback/4h` | open | `results/cells/DOGEUSDT_rsi2_pullback_4h.json` |
-| [ ] `DOGEUSDT/rsi2_pullback/1d` | open | `results/cells/DOGEUSDT_rsi2_pullback_1d.json` |
+| [x] `DOGEUSDT/rsi2_pullback/1d` | killed | `results/cells/DOGEUSDT_rsi2_pullback_1d.json` |
 | [ ] `DOGEUSDT/rsi2_pullback/1w` | open | `results/cells/DOGEUSDT_rsi2_pullback_1w.json` |
 | [ ] `DOGEUSDT/vol_compression/15m` | open | `results/cells/DOGEUSDT_vol_compression_15m.json` |
 | [ ] `DOGEUSDT/vol_compression/1h` | open | `results/cells/DOGEUSDT_vol_compression_1h.json` |
@@ -252,7 +252,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `DOGEUSDT/breakout/15m` | open | `results/cells/DOGEUSDT_breakout_15m.json` |
 | [ ] `DOGEUSDT/breakout/1h` | open | `results/cells/DOGEUSDT_breakout_1h.json` |
 | [ ] `DOGEUSDT/breakout/4h` | open | `results/cells/DOGEUSDT_breakout_4h.json` |
-| [ ] `DOGEUSDT/breakout/1d` | open | `results/cells/DOGEUSDT_breakout_1d.json` |
+| [x] `DOGEUSDT/breakout/1d` | killed | `results/cells/DOGEUSDT_breakout_1d.json` |
 | [ ] `DOGEUSDT/breakout/1w` | open | `results/cells/DOGEUSDT_breakout_1w.json` |
 | [ ] `DOGEUSDT/donchian/15m` | open | `results/cells/DOGEUSDT_donchian_15m.json` |
 | [ ] `DOGEUSDT/donchian/1h` | open | `results/cells/DOGEUSDT_donchian_1h.json` |
