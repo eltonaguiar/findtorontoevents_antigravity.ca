@@ -90,7 +90,7 @@ ADX_SYMBOL = "SPY"
 def _fetch_closes(symbol: str, start: str, end: str) -> pd.Series:
     """Daily close series via yfinance."""
     df = yf.download(symbol, start=start, end=end, progress=False,
-                     auto_adjust=False, threads=False)
+                     auto_adjust=True, threads=False)
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
     return df["Close"].dropna()
@@ -99,7 +99,7 @@ def _fetch_closes(symbol: str, start: str, end: str) -> pd.Series:
 def _compute_adx(symbol: str, start: str, end: str, period: int = 14) -> pd.Series:
     """Average Directional Index — trend-strength proxy."""
     df = yf.download(symbol, start=start, end=end, progress=False,
-                     auto_adjust=False, threads=False)
+                     auto_adjust=True, threads=False)
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
     high, low, close = df["High"], df["Low"], df["Close"]
