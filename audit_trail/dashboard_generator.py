@@ -64,6 +64,7 @@ except Exception:  # pragma: no cover - optional import
     _HAS_PENDING_SPA = False
 
 from audit_trail.pnl_ingest_sanity import clamp_pnl_pct_for_pick
+from audit_trail.excluded_cohorts import coverage_excluded_summary
 from alpha_engine import config as _ae_config  # SSO for FOREX kill-switch
 
 try:
@@ -17205,6 +17206,14 @@ def generate():
             "big_mover_monitor_3pct": big_mover_monitor_3pct,
             "concentration_summary": concentration_summary,
             "probation_quarantine": probation_quarantine_summary,
+        },
+        # Coverage honesty (2026-11-24): the auto-expired cohort is dropped
+        # before every metric, so its size and realised PnL were unmeasurable
+        # from the payload. summarize_excluded() had no caller in the
+        # generator; tools/excluded_cohorts_report.py flagged the gap.
+        # Additive only - no existing key or count changes.
+        "coverage": {
+            "excluded_summary": coverage_excluded_summary(auto_expired),
         },
         "systems": systems,
         "system_clean_metrics": system_clean_metrics if system_clean_metrics else {},
