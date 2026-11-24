@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import json
 import re
+
+import pytest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -136,4 +138,55 @@ def test_observation_log_records_the_zero_total_trap():
         "the observation log must keep the 'total: 0 is indistinguishable from "
         "the un-wired default' warning so the Block 59/60 trap cannot be "
         "forgotten"
+    )
+
+
+LEDGER = ROOT / "audit_dashboard" / "data" / "audit3_ledger.json"
+
+
+def test_snapshot_stamp_exists_and_names_the_limitation():
+    """Block 63: the json must say WHEN it was captured and that it is not live.
+
+    The integers above are a point-in-time read of a table that refreshes
+    hourly. Without a stamp a reader cannot tell a snapshot from live state --
+    and an earlier claim that this block 'cannot drift' was exactly that error.
+    """
+    snap = _block()["snapshot"]
+    assert snap.get("captured_at_ref"), "snapshot.captured_at_ref must name the ref"
+    assert snap.get("ledger_generated_at"), (
+        "snapshot.ledger_generated_at must name the ledger timestamp"
+    )
+    note = snap.get("note", "")
+    assert ("hourly" in note or "not live" in note), (
+        "snapshot.note must say the figures are not live / refresh hourly"
+    )
+    assert "check_excluded_summary.py" in note, (
+        "snapshot.note must point at the live-state checker"
+    )
+
+
+def test_prose_states_the_figures_are_a_snapshot_not_live():
+    assert "snapshot, not live" in _text().lower(), (
+        "the prose must call the figures a snapshot, not live, so they cannot "
+        "be mistaken for current state"
+    )
+
+
+@pytest.mark.skipif(not LEDGER.exists(), reason="audit3 ledger not present in this checkout")
+def test_snapshot_is_within_tolerance_of_the_current_ledger():
+    """A snapshot may be stale; wild drift means the finding changed.
+
+    Tolerance is 5% of the live ``covered`` count: the metric moves by tens as
+    the display universe refills, so a 2% band would be noise, but a collapse
+    or doubling means the COVERAGE-LIMITED story needs a fresh read.
+    """
+    data = json.loads(LEDGER.read_text(encoding="utf-8"))
+    live = data.get("selection_alpha", {}).get("covered")
+    if not isinstance(live, int) or live <= 0:
+        pytest.skip("ledger carries no usable selection_alpha.covered")
+    snap = _block()["coverage"]["covered"]
+    assert abs(snap - live) / live <= 0.05, (
+        f"snapshot covered={snap} is more than 5% from the live ledger "
+        f"covered={live}; re-read the ledger and update the snapshot (and its "
+        "captured_at_ref) in the same commit"
     )

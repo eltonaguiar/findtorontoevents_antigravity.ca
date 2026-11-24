@@ -62,12 +62,25 @@ table; it carries the different limit that 6,111 rows are unscored by outcome.
 - **Date skew (measured):** the universe is recency-filled; 62% of its 3,500 rows closed in
   Oct–Nov 2026, against a closed window starting 2026-02-17. Older picks are under-sampled.
 
+**These figures are a snapshot, not live.** They were captured from the ledger at
+`ce214306b5caf` (`generated_at` `2026-11-23T18:31:33Z`) and the ledger refreshes hourly. By
+2026-11-24 the same fields had moved to `covered` 3,188, `scored_rows` 8,933,
+`total_closed_picks` 15,057 (at `origin/main:audit_dashboard/data/audit3_ledger.json`) -- the
+drift is expected and the shape of the finding (a ~21% covered slice, CRYPTO at 24.2%) is
+unaffected. For live state run [`tools/check_excluded_summary.py`](tools/check_excluded_summary.py);
+for freshness guidance see the `## Observation log`.
+
 ## Machine-readable
 
 ```json
 {
   "generated": "2026-11-23",
   "source_report": "CONTEST/ROUND_01_2026-11-23/COVERAGE_BIAS.md",
+  "snapshot": {
+    "captured_at_ref": "ce214306b5caf6e52d231f13930cc99f0b7349d2",
+    "ledger_generated_at": "2026-11-23T18:31:33.087120+00:00",
+    "note": "Point-in-time. The ledger refreshes hourly; these integers are not live. Use tools/check_excluded_summary.py for live state."
+  },
   "coverage": {"covered": 3190, "universe": 3500, "scored_rows": 8886, "total_closed_picks": 14997},
   "rates": {"covered_of_universe": 0.9114, "scored_of_closed": 0.5925, "covered_of_scored": 0.3590, "covered_of_closed": 0.2127},
   "label": "COVERAGE-LIMITED",
@@ -126,3 +139,10 @@ re-derives it. Earlier entries are never edited.
 - **What flips the label.** A run whose payload has a `repo_sha` descending from
   `188759ab`, carries `_excluded_cohort_rows`, and yields `total > 0` with a
   non-empty real-class `by_class`.
+- **2026-11-24T02:55Z -- freshness correction.** An earlier claim that this
+  document's json block "cannot drift" was wrong: the block is internally
+  self-consistent but was never freshness-checked, and the ledger has since
+  moved (3,190->3,188 covered, 8,886->8,933 scored, 14,997->15,057 closed). The
+  `snapshot` block and the "snapshot, not live" prose now make the staleness
+  explicit, and the test asserts the stamp exists (with a 5%-tolerance drift
+  check that skips when the ledger is absent). The finding is unchanged.
