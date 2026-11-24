@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:33:22.742494+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:33:30.944779+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 57 of 1000.** open 909 | claimed 0 | blocked_no_data 34
+**Worked 62 of 1000.** open 897 | claimed 0 | blocked_no_data 41
 
 ## Done condition (identical for every cell)
 
@@ -65,7 +65,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `BTCUSDT/gap_fade/1d` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1d.json` |
 | [-] `BTCUSDT/gap_fade/1w` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 12/50 worked
+## ETHUSDT - 17/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -101,18 +101,18 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `ETHUSDT/ma_cross/1w` | killed | `results/cells/ETHUSDT_ma_cross_1w.json` |
 | [-] `ETHUSDT/bb_meanrev/15m` | blocked_no_data | `results/cells/ETHUSDT_bb_meanrev_15m.json` |
 | [-] `ETHUSDT/bb_meanrev/1h` | blocked_no_data | `results/cells/ETHUSDT_bb_meanrev_1h.json` |
-| [ ] `ETHUSDT/bb_meanrev/4h` | open | `results/cells/ETHUSDT_bb_meanrev_4h.json` |
-| [ ] `ETHUSDT/bb_meanrev/1d` | open | `results/cells/ETHUSDT_bb_meanrev_1d.json` |
-| [ ] `ETHUSDT/bb_meanrev/1w` | open | `results/cells/ETHUSDT_bb_meanrev_1w.json` |
-| [ ] `ETHUSDT/vwap_reversion/15m` | open | `results/cells/ETHUSDT_vwap_reversion_15m.json` |
-| [ ] `ETHUSDT/vwap_reversion/1h` | open | `results/cells/ETHUSDT_vwap_reversion_1h.json` |
-| [ ] `ETHUSDT/vwap_reversion/4h` | open | `results/cells/ETHUSDT_vwap_reversion_4h.json` |
-| [ ] `ETHUSDT/vwap_reversion/1d` | open | `results/cells/ETHUSDT_vwap_reversion_1d.json` |
-| [ ] `ETHUSDT/vwap_reversion/1w` | open | `results/cells/ETHUSDT_vwap_reversion_1w.json` |
-| [ ] `ETHUSDT/momentum_12_1/15m` | open | `results/cells/ETHUSDT_momentum_12_1_15m.json` |
-| [ ] `ETHUSDT/momentum_12_1/1h` | open | `results/cells/ETHUSDT_momentum_12_1_1h.json` |
-| [ ] `ETHUSDT/momentum_12_1/4h` | open | `results/cells/ETHUSDT_momentum_12_1_4h.json` |
-| [ ] `ETHUSDT/momentum_12_1/1d` | open | `results/cells/ETHUSDT_momentum_12_1_1d.json` |
+| [-] `ETHUSDT/bb_meanrev/4h` | blocked_no_data | `results/cells/ETHUSDT_bb_meanrev_4h.json` |
+| [x] `ETHUSDT/bb_meanrev/1d` | killed | `results/cells/ETHUSDT_bb_meanrev_1d.json` |
+| [x] `ETHUSDT/bb_meanrev/1w` | killed | `results/cells/ETHUSDT_bb_meanrev_1w.json` |
+| [-] `ETHUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_15m.json` |
+| [-] `ETHUSDT/vwap_reversion/1h` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_1h.json` |
+| [-] `ETHUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_4h.json` |
+| [x] `ETHUSDT/vwap_reversion/1d` | killed | `results/cells/ETHUSDT_vwap_reversion_1d.json` |
+| [x] `ETHUSDT/vwap_reversion/1w` | killed | `results/cells/ETHUSDT_vwap_reversion_1w.json` |
+| [-] `ETHUSDT/momentum_12_1/15m` | blocked_no_data | `results/cells/ETHUSDT_momentum_12_1_15m.json` |
+| [-] `ETHUSDT/momentum_12_1/1h` | blocked_no_data | `results/cells/ETHUSDT_momentum_12_1_1h.json` |
+| [-] `ETHUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/ETHUSDT_momentum_12_1_4h.json` |
+| [x] `ETHUSDT/momentum_12_1/1d` | killed | `results/cells/ETHUSDT_momentum_12_1_1d.json` |
 | [ ] `ETHUSDT/momentum_12_1/1w` | open | `results/cells/ETHUSDT_momentum_12_1_1w.json` |
 | [ ] `ETHUSDT/gap_fade/15m` | open | `results/cells/ETHUSDT_gap_fade_15m.json` |
 | [ ] `ETHUSDT/gap_fade/1h` | open | `results/cells/ETHUSDT_gap_fade_1h.json` |
