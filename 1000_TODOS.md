@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:39:11.406393+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:40:33.168488+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 46 of 1000.** open 879 | claimed 3 | blocked_no_data 72
+**Worked 58 of 1000.** open 759 | claimed 3 | blocked_no_data 180
 
 ## Done condition (identical for every cell)
 
@@ -10,7 +10,7 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 4/50 worked
+## BTCUSDT - 8/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -19,13 +19,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [~] `BTCUSDT/trend_pullback/4h` | claimed | `results/cells/BTCUSDT_trend_pullback_4h.json` |
 | [x] `BTCUSDT/trend_pullback/1d` | killed | `results/cells/BTCUSDT_trend_pullback_1d.json` |
 | [x] `BTCUSDT/trend_pullback/1w` | killed | `results/cells/BTCUSDT_trend_pullback_1w.json` |
-| [ ] `BTCUSDT/rsi2_pullback/15m` | open | `results/cells/BTCUSDT_rsi2_pullback_15m.json` |
-| [ ] `BTCUSDT/rsi2_pullback/1h` | open | `results/cells/BTCUSDT_rsi2_pullback_1h.json` |
-| [ ] `BTCUSDT/rsi2_pullback/4h` | open | `results/cells/BTCUSDT_rsi2_pullback_4h.json` |
+| [-] `BTCUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/BTCUSDT_rsi2_pullback_15m.json` |
+| [x] `BTCUSDT/rsi2_pullback/1h` | killed | `results/cells/BTCUSDT_rsi2_pullback_1h.json` |
+| [x] `BTCUSDT/rsi2_pullback/4h` | killed | `results/cells/BTCUSDT_rsi2_pullback_4h.json` |
 | [x] `BTCUSDT/rsi2_pullback/1d` | killed | `results/cells/BTCUSDT_rsi2_pullback_1d.json` |
-| [ ] `BTCUSDT/rsi2_pullback/1w` | open | `results/cells/BTCUSDT_rsi2_pullback_1w.json` |
-| [ ] `BTCUSDT/vol_compression/15m` | open | `results/cells/BTCUSDT_vol_compression_15m.json` |
-| [ ] `BTCUSDT/vol_compression/1h` | open | `results/cells/BTCUSDT_vol_compression_1h.json` |
+| [x] `BTCUSDT/rsi2_pullback/1w` | killed | `results/cells/BTCUSDT_rsi2_pullback_1w.json` |
+| [-] `BTCUSDT/vol_compression/15m` | blocked_no_data | `results/cells/BTCUSDT_vol_compression_15m.json` |
+| [x] `BTCUSDT/vol_compression/1h` | killed | `results/cells/BTCUSDT_vol_compression_1h.json` |
 | [ ] `BTCUSDT/vol_compression/4h` | open | `results/cells/BTCUSDT_vol_compression_4h.json` |
 | [ ] `BTCUSDT/vol_compression/1d` | open | `results/cells/BTCUSDT_vol_compression_1d.json` |
 | [ ] `BTCUSDT/vol_compression/1w` | open | `results/cells/BTCUSDT_vol_compression_1w.json` |
@@ -65,7 +65,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `BTCUSDT/gap_fade/1d` | open | `results/cells/BTCUSDT_gap_fade_1d.json` |
 | [ ] `BTCUSDT/gap_fade/1w` | open | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 3/50 worked
+## ETHUSDT - 5/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -73,13 +73,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ETHUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/ETHUSDT_trend_pullback_1h.json` |
 | [-] `ETHUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/ETHUSDT_trend_pullback_4h.json` |
 | [x] `ETHUSDT/trend_pullback/1d` | killed | `results/cells/ETHUSDT_trend_pullback_1d.json` |
-| [ ] `ETHUSDT/trend_pullback/1w` | open | `results/cells/ETHUSDT_trend_pullback_1w.json` |
-| [ ] `ETHUSDT/rsi2_pullback/15m` | open | `results/cells/ETHUSDT_rsi2_pullback_15m.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1h` | open | `results/cells/ETHUSDT_rsi2_pullback_1h.json` |
-| [ ] `ETHUSDT/rsi2_pullback/4h` | open | `results/cells/ETHUSDT_rsi2_pullback_4h.json` |
+| [x] `ETHUSDT/trend_pullback/1w` | killed | `results/cells/ETHUSDT_trend_pullback_1w.json` |
+| [-] `ETHUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_15m.json` |
+| [-] `ETHUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_1h.json` |
+| [-] `ETHUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_4h.json` |
 | [x] `ETHUSDT/rsi2_pullback/1d` | killed | `results/cells/ETHUSDT_rsi2_pullback_1d.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1w` | open | `results/cells/ETHUSDT_rsi2_pullback_1w.json` |
-| [ ] `ETHUSDT/vol_compression/15m` | open | `results/cells/ETHUSDT_vol_compression_15m.json` |
+| [x] `ETHUSDT/rsi2_pullback/1w` | killed | `results/cells/ETHUSDT_rsi2_pullback_1w.json` |
+| [-] `ETHUSDT/vol_compression/15m` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_15m.json` |
 | [ ] `ETHUSDT/vol_compression/1h` | open | `results/cells/ETHUSDT_vol_compression_1h.json` |
 | [ ] `ETHUSDT/vol_compression/4h` | open | `results/cells/ETHUSDT_vol_compression_4h.json` |
 | [ ] `ETHUSDT/vol_compression/1d` | open | `results/cells/ETHUSDT_vol_compression_1d.json` |
@@ -120,7 +120,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ETHUSDT/gap_fade/1d` | open | `results/cells/ETHUSDT_gap_fade_1d.json` |
 | [ ] `ETHUSDT/gap_fade/1w` | open | `results/cells/ETHUSDT_gap_fade_1w.json` |
 
-## SOLUSDT - 3/50 worked
+## SOLUSDT - 5/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -128,13 +128,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `SOLUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/SOLUSDT_trend_pullback_1h.json` |
 | [-] `SOLUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/SOLUSDT_trend_pullback_4h.json` |
 | [x] `SOLUSDT/trend_pullback/1d` | killed | `results/cells/SOLUSDT_trend_pullback_1d.json` |
-| [ ] `SOLUSDT/trend_pullback/1w` | open | `results/cells/SOLUSDT_trend_pullback_1w.json` |
-| [ ] `SOLUSDT/rsi2_pullback/15m` | open | `results/cells/SOLUSDT_rsi2_pullback_15m.json` |
-| [ ] `SOLUSDT/rsi2_pullback/1h` | open | `results/cells/SOLUSDT_rsi2_pullback_1h.json` |
-| [ ] `SOLUSDT/rsi2_pullback/4h` | open | `results/cells/SOLUSDT_rsi2_pullback_4h.json` |
+| [x] `SOLUSDT/trend_pullback/1w` | killed | `results/cells/SOLUSDT_trend_pullback_1w.json` |
+| [-] `SOLUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/SOLUSDT_rsi2_pullback_15m.json` |
+| [-] `SOLUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/SOLUSDT_rsi2_pullback_1h.json` |
+| [-] `SOLUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/SOLUSDT_rsi2_pullback_4h.json` |
 | [x] `SOLUSDT/rsi2_pullback/1d` | killed | `results/cells/SOLUSDT_rsi2_pullback_1d.json` |
-| [ ] `SOLUSDT/rsi2_pullback/1w` | open | `results/cells/SOLUSDT_rsi2_pullback_1w.json` |
-| [ ] `SOLUSDT/vol_compression/15m` | open | `results/cells/SOLUSDT_vol_compression_15m.json` |
+| [x] `SOLUSDT/rsi2_pullback/1w` | killed | `results/cells/SOLUSDT_rsi2_pullback_1w.json` |
+| [-] `SOLUSDT/vol_compression/15m` | blocked_no_data | `results/cells/SOLUSDT_vol_compression_15m.json` |
 | [ ] `SOLUSDT/vol_compression/1h` | open | `results/cells/SOLUSDT_vol_compression_1h.json` |
 | [ ] `SOLUSDT/vol_compression/4h` | open | `results/cells/SOLUSDT_vol_compression_4h.json` |
 | [ ] `SOLUSDT/vol_compression/1d` | open | `results/cells/SOLUSDT_vol_compression_1d.json` |
@@ -175,7 +175,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SOLUSDT/gap_fade/1d` | open | `results/cells/SOLUSDT_gap_fade_1d.json` |
 | [ ] `SOLUSDT/gap_fade/1w` | open | `results/cells/SOLUSDT_gap_fade_1w.json` |
 
-## XRPUSDT - 3/50 worked
+## XRPUSDT - 5/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -183,13 +183,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `XRPUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/XRPUSDT_trend_pullback_1h.json` |
 | [-] `XRPUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/XRPUSDT_trend_pullback_4h.json` |
 | [x] `XRPUSDT/trend_pullback/1d` | killed | `results/cells/XRPUSDT_trend_pullback_1d.json` |
-| [ ] `XRPUSDT/trend_pullback/1w` | open | `results/cells/XRPUSDT_trend_pullback_1w.json` |
-| [ ] `XRPUSDT/rsi2_pullback/15m` | open | `results/cells/XRPUSDT_rsi2_pullback_15m.json` |
-| [ ] `XRPUSDT/rsi2_pullback/1h` | open | `results/cells/XRPUSDT_rsi2_pullback_1h.json` |
-| [ ] `XRPUSDT/rsi2_pullback/4h` | open | `results/cells/XRPUSDT_rsi2_pullback_4h.json` |
+| [x] `XRPUSDT/trend_pullback/1w` | killed | `results/cells/XRPUSDT_trend_pullback_1w.json` |
+| [-] `XRPUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/XRPUSDT_rsi2_pullback_15m.json` |
+| [-] `XRPUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/XRPUSDT_rsi2_pullback_1h.json` |
+| [-] `XRPUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/XRPUSDT_rsi2_pullback_4h.json` |
 | [x] `XRPUSDT/rsi2_pullback/1d` | killed | `results/cells/XRPUSDT_rsi2_pullback_1d.json` |
-| [ ] `XRPUSDT/rsi2_pullback/1w` | open | `results/cells/XRPUSDT_rsi2_pullback_1w.json` |
-| [ ] `XRPUSDT/vol_compression/15m` | open | `results/cells/XRPUSDT_vol_compression_15m.json` |
+| [x] `XRPUSDT/rsi2_pullback/1w` | killed | `results/cells/XRPUSDT_rsi2_pullback_1w.json` |
+| [-] `XRPUSDT/vol_compression/15m` | blocked_no_data | `results/cells/XRPUSDT_vol_compression_15m.json` |
 | [ ] `XRPUSDT/vol_compression/1h` | open | `results/cells/XRPUSDT_vol_compression_1h.json` |
 | [ ] `XRPUSDT/vol_compression/4h` | open | `results/cells/XRPUSDT_vol_compression_4h.json` |
 | [ ] `XRPUSDT/vol_compression/1d` | open | `results/cells/XRPUSDT_vol_compression_1d.json` |
@@ -230,7 +230,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XRPUSDT/gap_fade/1d` | open | `results/cells/XRPUSDT_gap_fade_1d.json` |
 | [ ] `XRPUSDT/gap_fade/1w` | open | `results/cells/XRPUSDT_gap_fade_1w.json` |
 
-## DOGEUSDT - 3/50 worked
+## DOGEUSDT - 5/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -238,13 +238,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `DOGEUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/DOGEUSDT_trend_pullback_1h.json` |
 | [-] `DOGEUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/DOGEUSDT_trend_pullback_4h.json` |
 | [x] `DOGEUSDT/trend_pullback/1d` | killed | `results/cells/DOGEUSDT_trend_pullback_1d.json` |
-| [ ] `DOGEUSDT/trend_pullback/1w` | open | `results/cells/DOGEUSDT_trend_pullback_1w.json` |
-| [ ] `DOGEUSDT/rsi2_pullback/15m` | open | `results/cells/DOGEUSDT_rsi2_pullback_15m.json` |
-| [ ] `DOGEUSDT/rsi2_pullback/1h` | open | `results/cells/DOGEUSDT_rsi2_pullback_1h.json` |
-| [ ] `DOGEUSDT/rsi2_pullback/4h` | open | `results/cells/DOGEUSDT_rsi2_pullback_4h.json` |
+| [x] `DOGEUSDT/trend_pullback/1w` | killed | `results/cells/DOGEUSDT_trend_pullback_1w.json` |
+| [-] `DOGEUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/DOGEUSDT_rsi2_pullback_15m.json` |
+| [-] `DOGEUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/DOGEUSDT_rsi2_pullback_1h.json` |
+| [-] `DOGEUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/DOGEUSDT_rsi2_pullback_4h.json` |
 | [x] `DOGEUSDT/rsi2_pullback/1d` | killed | `results/cells/DOGEUSDT_rsi2_pullback_1d.json` |
-| [ ] `DOGEUSDT/rsi2_pullback/1w` | open | `results/cells/DOGEUSDT_rsi2_pullback_1w.json` |
-| [ ] `DOGEUSDT/vol_compression/15m` | open | `results/cells/DOGEUSDT_vol_compression_15m.json` |
+| [x] `DOGEUSDT/rsi2_pullback/1w` | killed | `results/cells/DOGEUSDT_rsi2_pullback_1w.json` |
+| [-] `DOGEUSDT/vol_compression/15m` | blocked_no_data | `results/cells/DOGEUSDT_vol_compression_15m.json` |
 | [ ] `DOGEUSDT/vol_compression/1h` | open | `results/cells/DOGEUSDT_vol_compression_1h.json` |
 | [ ] `DOGEUSDT/vol_compression/4h` | open | `results/cells/DOGEUSDT_vol_compression_4h.json` |
 | [ ] `DOGEUSDT/vol_compression/1d` | open | `results/cells/DOGEUSDT_vol_compression_1d.json` |
@@ -293,13 +293,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ADAUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/ADAUSDT_trend_pullback_1h.json` |
 | [-] `ADAUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/ADAUSDT_trend_pullback_4h.json` |
 | [-] `ADAUSDT/trend_pullback/1d` | blocked_no_data | `results/cells/ADAUSDT_trend_pullback_1d.json` |
-| [ ] `ADAUSDT/trend_pullback/1w` | open | `results/cells/ADAUSDT_trend_pullback_1w.json` |
-| [ ] `ADAUSDT/rsi2_pullback/15m` | open | `results/cells/ADAUSDT_rsi2_pullback_15m.json` |
-| [ ] `ADAUSDT/rsi2_pullback/1h` | open | `results/cells/ADAUSDT_rsi2_pullback_1h.json` |
-| [ ] `ADAUSDT/rsi2_pullback/4h` | open | `results/cells/ADAUSDT_rsi2_pullback_4h.json` |
+| [-] `ADAUSDT/trend_pullback/1w` | blocked_no_data | `results/cells/ADAUSDT_trend_pullback_1w.json` |
+| [-] `ADAUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/ADAUSDT_rsi2_pullback_15m.json` |
+| [-] `ADAUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/ADAUSDT_rsi2_pullback_1h.json` |
+| [-] `ADAUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/ADAUSDT_rsi2_pullback_4h.json` |
 | [x] `ADAUSDT/rsi2_pullback/1d` | killed | `results/cells/ADAUSDT_rsi2_pullback_1d.json` |
-| [ ] `ADAUSDT/rsi2_pullback/1w` | open | `results/cells/ADAUSDT_rsi2_pullback_1w.json` |
-| [ ] `ADAUSDT/vol_compression/15m` | open | `results/cells/ADAUSDT_vol_compression_15m.json` |
+| [-] `ADAUSDT/rsi2_pullback/1w` | blocked_no_data | `results/cells/ADAUSDT_rsi2_pullback_1w.json` |
+| [-] `ADAUSDT/vol_compression/15m` | blocked_no_data | `results/cells/ADAUSDT_vol_compression_15m.json` |
 | [ ] `ADAUSDT/vol_compression/1h` | open | `results/cells/ADAUSDT_vol_compression_1h.json` |
 | [ ] `ADAUSDT/vol_compression/4h` | open | `results/cells/ADAUSDT_vol_compression_4h.json` |
 | [ ] `ADAUSDT/vol_compression/1d` | open | `results/cells/ADAUSDT_vol_compression_1d.json` |
@@ -348,13 +348,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `LINKUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/LINKUSDT_trend_pullback_1h.json` |
 | [-] `LINKUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/LINKUSDT_trend_pullback_4h.json` |
 | [-] `LINKUSDT/trend_pullback/1d` | blocked_no_data | `results/cells/LINKUSDT_trend_pullback_1d.json` |
-| [ ] `LINKUSDT/trend_pullback/1w` | open | `results/cells/LINKUSDT_trend_pullback_1w.json` |
-| [ ] `LINKUSDT/rsi2_pullback/15m` | open | `results/cells/LINKUSDT_rsi2_pullback_15m.json` |
-| [ ] `LINKUSDT/rsi2_pullback/1h` | open | `results/cells/LINKUSDT_rsi2_pullback_1h.json` |
-| [ ] `LINKUSDT/rsi2_pullback/4h` | open | `results/cells/LINKUSDT_rsi2_pullback_4h.json` |
+| [-] `LINKUSDT/trend_pullback/1w` | blocked_no_data | `results/cells/LINKUSDT_trend_pullback_1w.json` |
+| [-] `LINKUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/LINKUSDT_rsi2_pullback_15m.json` |
+| [-] `LINKUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/LINKUSDT_rsi2_pullback_1h.json` |
+| [-] `LINKUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/LINKUSDT_rsi2_pullback_4h.json` |
 | [x] `LINKUSDT/rsi2_pullback/1d` | killed | `results/cells/LINKUSDT_rsi2_pullback_1d.json` |
-| [ ] `LINKUSDT/rsi2_pullback/1w` | open | `results/cells/LINKUSDT_rsi2_pullback_1w.json` |
-| [ ] `LINKUSDT/vol_compression/15m` | open | `results/cells/LINKUSDT_vol_compression_15m.json` |
+| [-] `LINKUSDT/rsi2_pullback/1w` | blocked_no_data | `results/cells/LINKUSDT_rsi2_pullback_1w.json` |
+| [-] `LINKUSDT/vol_compression/15m` | blocked_no_data | `results/cells/LINKUSDT_vol_compression_15m.json` |
 | [ ] `LINKUSDT/vol_compression/1h` | open | `results/cells/LINKUSDT_vol_compression_1h.json` |
 | [ ] `LINKUSDT/vol_compression/4h` | open | `results/cells/LINKUSDT_vol_compression_4h.json` |
 | [ ] `LINKUSDT/vol_compression/1d` | open | `results/cells/LINKUSDT_vol_compression_1d.json` |
@@ -403,13 +403,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `SPY/trend_pullback/1h` | blocked_no_data | `results/cells/SPY_trend_pullback_1h.json` |
 | [-] `SPY/trend_pullback/4h` | blocked_no_data | `results/cells/SPY_trend_pullback_4h.json` |
 | [-] `SPY/trend_pullback/1d` | blocked_no_data | `results/cells/SPY_trend_pullback_1d.json` |
-| [ ] `SPY/trend_pullback/1w` | open | `results/cells/SPY_trend_pullback_1w.json` |
-| [ ] `SPY/rsi2_pullback/15m` | open | `results/cells/SPY_rsi2_pullback_15m.json` |
-| [ ] `SPY/rsi2_pullback/1h` | open | `results/cells/SPY_rsi2_pullback_1h.json` |
-| [ ] `SPY/rsi2_pullback/4h` | open | `results/cells/SPY_rsi2_pullback_4h.json` |
+| [-] `SPY/trend_pullback/1w` | blocked_no_data | `results/cells/SPY_trend_pullback_1w.json` |
+| [-] `SPY/rsi2_pullback/15m` | blocked_no_data | `results/cells/SPY_rsi2_pullback_15m.json` |
+| [-] `SPY/rsi2_pullback/1h` | blocked_no_data | `results/cells/SPY_rsi2_pullback_1h.json` |
+| [-] `SPY/rsi2_pullback/4h` | blocked_no_data | `results/cells/SPY_rsi2_pullback_4h.json` |
 | [x] `SPY/rsi2_pullback/1d` | killed | `results/cells/SPY_rsi2_pullback_1d.json` |
-| [ ] `SPY/rsi2_pullback/1w` | open | `results/cells/SPY_rsi2_pullback_1w.json` |
-| [ ] `SPY/vol_compression/15m` | open | `results/cells/SPY_vol_compression_15m.json` |
+| [-] `SPY/rsi2_pullback/1w` | blocked_no_data | `results/cells/SPY_rsi2_pullback_1w.json` |
+| [-] `SPY/vol_compression/15m` | blocked_no_data | `results/cells/SPY_vol_compression_15m.json` |
 | [ ] `SPY/vol_compression/1h` | open | `results/cells/SPY_vol_compression_1h.json` |
 | [ ] `SPY/vol_compression/4h` | open | `results/cells/SPY_vol_compression_4h.json` |
 | [ ] `SPY/vol_compression/1d` | open | `results/cells/SPY_vol_compression_1d.json` |
@@ -458,13 +458,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `QQQ/trend_pullback/1h` | blocked_no_data | `results/cells/QQQ_trend_pullback_1h.json` |
 | [-] `QQQ/trend_pullback/4h` | blocked_no_data | `results/cells/QQQ_trend_pullback_4h.json` |
 | [-] `QQQ/trend_pullback/1d` | blocked_no_data | `results/cells/QQQ_trend_pullback_1d.json` |
-| [ ] `QQQ/trend_pullback/1w` | open | `results/cells/QQQ_trend_pullback_1w.json` |
-| [ ] `QQQ/rsi2_pullback/15m` | open | `results/cells/QQQ_rsi2_pullback_15m.json` |
-| [ ] `QQQ/rsi2_pullback/1h` | open | `results/cells/QQQ_rsi2_pullback_1h.json` |
-| [ ] `QQQ/rsi2_pullback/4h` | open | `results/cells/QQQ_rsi2_pullback_4h.json` |
+| [-] `QQQ/trend_pullback/1w` | blocked_no_data | `results/cells/QQQ_trend_pullback_1w.json` |
+| [-] `QQQ/rsi2_pullback/15m` | blocked_no_data | `results/cells/QQQ_rsi2_pullback_15m.json` |
+| [-] `QQQ/rsi2_pullback/1h` | blocked_no_data | `results/cells/QQQ_rsi2_pullback_1h.json` |
+| [-] `QQQ/rsi2_pullback/4h` | blocked_no_data | `results/cells/QQQ_rsi2_pullback_4h.json` |
 | [x] `QQQ/rsi2_pullback/1d` | killed | `results/cells/QQQ_rsi2_pullback_1d.json` |
-| [ ] `QQQ/rsi2_pullback/1w` | open | `results/cells/QQQ_rsi2_pullback_1w.json` |
-| [ ] `QQQ/vol_compression/15m` | open | `results/cells/QQQ_vol_compression_15m.json` |
+| [-] `QQQ/rsi2_pullback/1w` | blocked_no_data | `results/cells/QQQ_rsi2_pullback_1w.json` |
+| [-] `QQQ/vol_compression/15m` | blocked_no_data | `results/cells/QQQ_vol_compression_15m.json` |
 | [ ] `QQQ/vol_compression/1h` | open | `results/cells/QQQ_vol_compression_1h.json` |
 | [ ] `QQQ/vol_compression/4h` | open | `results/cells/QQQ_vol_compression_4h.json` |
 | [ ] `QQQ/vol_compression/1d` | open | `results/cells/QQQ_vol_compression_1d.json` |
@@ -513,13 +513,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `IWM/trend_pullback/1h` | blocked_no_data | `results/cells/IWM_trend_pullback_1h.json` |
 | [-] `IWM/trend_pullback/4h` | blocked_no_data | `results/cells/IWM_trend_pullback_4h.json` |
 | [-] `IWM/trend_pullback/1d` | blocked_no_data | `results/cells/IWM_trend_pullback_1d.json` |
-| [ ] `IWM/trend_pullback/1w` | open | `results/cells/IWM_trend_pullback_1w.json` |
-| [ ] `IWM/rsi2_pullback/15m` | open | `results/cells/IWM_rsi2_pullback_15m.json` |
-| [ ] `IWM/rsi2_pullback/1h` | open | `results/cells/IWM_rsi2_pullback_1h.json` |
-| [ ] `IWM/rsi2_pullback/4h` | open | `results/cells/IWM_rsi2_pullback_4h.json` |
+| [-] `IWM/trend_pullback/1w` | blocked_no_data | `results/cells/IWM_trend_pullback_1w.json` |
+| [-] `IWM/rsi2_pullback/15m` | blocked_no_data | `results/cells/IWM_rsi2_pullback_15m.json` |
+| [-] `IWM/rsi2_pullback/1h` | blocked_no_data | `results/cells/IWM_rsi2_pullback_1h.json` |
+| [-] `IWM/rsi2_pullback/4h` | blocked_no_data | `results/cells/IWM_rsi2_pullback_4h.json` |
 | [x] `IWM/rsi2_pullback/1d` | killed | `results/cells/IWM_rsi2_pullback_1d.json` |
-| [ ] `IWM/rsi2_pullback/1w` | open | `results/cells/IWM_rsi2_pullback_1w.json` |
-| [ ] `IWM/vol_compression/15m` | open | `results/cells/IWM_vol_compression_15m.json` |
+| [-] `IWM/rsi2_pullback/1w` | blocked_no_data | `results/cells/IWM_rsi2_pullback_1w.json` |
+| [-] `IWM/vol_compression/15m` | blocked_no_data | `results/cells/IWM_vol_compression_15m.json` |
 | [ ] `IWM/vol_compression/1h` | open | `results/cells/IWM_vol_compression_1h.json` |
 | [ ] `IWM/vol_compression/4h` | open | `results/cells/IWM_vol_compression_4h.json` |
 | [ ] `IWM/vol_compression/1d` | open | `results/cells/IWM_vol_compression_1d.json` |
@@ -568,13 +568,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `AAPL/trend_pullback/1h` | blocked_no_data | `results/cells/AAPL_trend_pullback_1h.json` |
 | [-] `AAPL/trend_pullback/4h` | blocked_no_data | `results/cells/AAPL_trend_pullback_4h.json` |
 | [-] `AAPL/trend_pullback/1d` | blocked_no_data | `results/cells/AAPL_trend_pullback_1d.json` |
-| [ ] `AAPL/trend_pullback/1w` | open | `results/cells/AAPL_trend_pullback_1w.json` |
-| [ ] `AAPL/rsi2_pullback/15m` | open | `results/cells/AAPL_rsi2_pullback_15m.json` |
-| [ ] `AAPL/rsi2_pullback/1h` | open | `results/cells/AAPL_rsi2_pullback_1h.json` |
-| [ ] `AAPL/rsi2_pullback/4h` | open | `results/cells/AAPL_rsi2_pullback_4h.json` |
+| [-] `AAPL/trend_pullback/1w` | blocked_no_data | `results/cells/AAPL_trend_pullback_1w.json` |
+| [-] `AAPL/rsi2_pullback/15m` | blocked_no_data | `results/cells/AAPL_rsi2_pullback_15m.json` |
+| [-] `AAPL/rsi2_pullback/1h` | blocked_no_data | `results/cells/AAPL_rsi2_pullback_1h.json` |
+| [-] `AAPL/rsi2_pullback/4h` | blocked_no_data | `results/cells/AAPL_rsi2_pullback_4h.json` |
 | [x] `AAPL/rsi2_pullback/1d` | killed | `results/cells/AAPL_rsi2_pullback_1d.json` |
-| [ ] `AAPL/rsi2_pullback/1w` | open | `results/cells/AAPL_rsi2_pullback_1w.json` |
-| [ ] `AAPL/vol_compression/15m` | open | `results/cells/AAPL_vol_compression_15m.json` |
+| [-] `AAPL/rsi2_pullback/1w` | blocked_no_data | `results/cells/AAPL_rsi2_pullback_1w.json` |
+| [-] `AAPL/vol_compression/15m` | blocked_no_data | `results/cells/AAPL_vol_compression_15m.json` |
 | [ ] `AAPL/vol_compression/1h` | open | `results/cells/AAPL_vol_compression_1h.json` |
 | [ ] `AAPL/vol_compression/4h` | open | `results/cells/AAPL_vol_compression_4h.json` |
 | [ ] `AAPL/vol_compression/1d` | open | `results/cells/AAPL_vol_compression_1d.json` |
@@ -623,13 +623,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `MSFT/trend_pullback/1h` | blocked_no_data | `results/cells/MSFT_trend_pullback_1h.json` |
 | [-] `MSFT/trend_pullback/4h` | blocked_no_data | `results/cells/MSFT_trend_pullback_4h.json` |
 | [-] `MSFT/trend_pullback/1d` | blocked_no_data | `results/cells/MSFT_trend_pullback_1d.json` |
-| [ ] `MSFT/trend_pullback/1w` | open | `results/cells/MSFT_trend_pullback_1w.json` |
-| [ ] `MSFT/rsi2_pullback/15m` | open | `results/cells/MSFT_rsi2_pullback_15m.json` |
-| [ ] `MSFT/rsi2_pullback/1h` | open | `results/cells/MSFT_rsi2_pullback_1h.json` |
-| [ ] `MSFT/rsi2_pullback/4h` | open | `results/cells/MSFT_rsi2_pullback_4h.json` |
+| [-] `MSFT/trend_pullback/1w` | blocked_no_data | `results/cells/MSFT_trend_pullback_1w.json` |
+| [-] `MSFT/rsi2_pullback/15m` | blocked_no_data | `results/cells/MSFT_rsi2_pullback_15m.json` |
+| [-] `MSFT/rsi2_pullback/1h` | blocked_no_data | `results/cells/MSFT_rsi2_pullback_1h.json` |
+| [-] `MSFT/rsi2_pullback/4h` | blocked_no_data | `results/cells/MSFT_rsi2_pullback_4h.json` |
 | [x] `MSFT/rsi2_pullback/1d` | killed | `results/cells/MSFT_rsi2_pullback_1d.json` |
-| [ ] `MSFT/rsi2_pullback/1w` | open | `results/cells/MSFT_rsi2_pullback_1w.json` |
-| [ ] `MSFT/vol_compression/15m` | open | `results/cells/MSFT_vol_compression_15m.json` |
+| [-] `MSFT/rsi2_pullback/1w` | blocked_no_data | `results/cells/MSFT_rsi2_pullback_1w.json` |
+| [-] `MSFT/vol_compression/15m` | blocked_no_data | `results/cells/MSFT_vol_compression_15m.json` |
 | [ ] `MSFT/vol_compression/1h` | open | `results/cells/MSFT_vol_compression_1h.json` |
 | [ ] `MSFT/vol_compression/4h` | open | `results/cells/MSFT_vol_compression_4h.json` |
 | [ ] `MSFT/vol_compression/1d` | open | `results/cells/MSFT_vol_compression_1d.json` |
@@ -678,13 +678,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `NVDA/trend_pullback/1h` | blocked_no_data | `results/cells/NVDA_trend_pullback_1h.json` |
 | [-] `NVDA/trend_pullback/4h` | blocked_no_data | `results/cells/NVDA_trend_pullback_4h.json` |
 | [-] `NVDA/trend_pullback/1d` | blocked_no_data | `results/cells/NVDA_trend_pullback_1d.json` |
-| [ ] `NVDA/trend_pullback/1w` | open | `results/cells/NVDA_trend_pullback_1w.json` |
-| [ ] `NVDA/rsi2_pullback/15m` | open | `results/cells/NVDA_rsi2_pullback_15m.json` |
-| [ ] `NVDA/rsi2_pullback/1h` | open | `results/cells/NVDA_rsi2_pullback_1h.json` |
-| [ ] `NVDA/rsi2_pullback/4h` | open | `results/cells/NVDA_rsi2_pullback_4h.json` |
+| [-] `NVDA/trend_pullback/1w` | blocked_no_data | `results/cells/NVDA_trend_pullback_1w.json` |
+| [-] `NVDA/rsi2_pullback/15m` | blocked_no_data | `results/cells/NVDA_rsi2_pullback_15m.json` |
+| [-] `NVDA/rsi2_pullback/1h` | blocked_no_data | `results/cells/NVDA_rsi2_pullback_1h.json` |
+| [-] `NVDA/rsi2_pullback/4h` | blocked_no_data | `results/cells/NVDA_rsi2_pullback_4h.json` |
 | [x] `NVDA/rsi2_pullback/1d` | killed | `results/cells/NVDA_rsi2_pullback_1d.json` |
-| [ ] `NVDA/rsi2_pullback/1w` | open | `results/cells/NVDA_rsi2_pullback_1w.json` |
-| [ ] `NVDA/vol_compression/15m` | open | `results/cells/NVDA_vol_compression_15m.json` |
+| [-] `NVDA/rsi2_pullback/1w` | blocked_no_data | `results/cells/NVDA_rsi2_pullback_1w.json` |
+| [-] `NVDA/vol_compression/15m` | blocked_no_data | `results/cells/NVDA_vol_compression_15m.json` |
 | [ ] `NVDA/vol_compression/1h` | open | `results/cells/NVDA_vol_compression_1h.json` |
 | [ ] `NVDA/vol_compression/4h` | open | `results/cells/NVDA_vol_compression_4h.json` |
 | [ ] `NVDA/vol_compression/1d` | open | `results/cells/NVDA_vol_compression_1d.json` |
@@ -733,13 +733,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `JPM/trend_pullback/1h` | blocked_no_data | `results/cells/JPM_trend_pullback_1h.json` |
 | [-] `JPM/trend_pullback/4h` | blocked_no_data | `results/cells/JPM_trend_pullback_4h.json` |
 | [-] `JPM/trend_pullback/1d` | blocked_no_data | `results/cells/JPM_trend_pullback_1d.json` |
-| [ ] `JPM/trend_pullback/1w` | open | `results/cells/JPM_trend_pullback_1w.json` |
-| [ ] `JPM/rsi2_pullback/15m` | open | `results/cells/JPM_rsi2_pullback_15m.json` |
-| [ ] `JPM/rsi2_pullback/1h` | open | `results/cells/JPM_rsi2_pullback_1h.json` |
-| [ ] `JPM/rsi2_pullback/4h` | open | `results/cells/JPM_rsi2_pullback_4h.json` |
+| [-] `JPM/trend_pullback/1w` | blocked_no_data | `results/cells/JPM_trend_pullback_1w.json` |
+| [-] `JPM/rsi2_pullback/15m` | blocked_no_data | `results/cells/JPM_rsi2_pullback_15m.json` |
+| [-] `JPM/rsi2_pullback/1h` | blocked_no_data | `results/cells/JPM_rsi2_pullback_1h.json` |
+| [-] `JPM/rsi2_pullback/4h` | blocked_no_data | `results/cells/JPM_rsi2_pullback_4h.json` |
 | [x] `JPM/rsi2_pullback/1d` | killed | `results/cells/JPM_rsi2_pullback_1d.json` |
-| [ ] `JPM/rsi2_pullback/1w` | open | `results/cells/JPM_rsi2_pullback_1w.json` |
-| [ ] `JPM/vol_compression/15m` | open | `results/cells/JPM_vol_compression_15m.json` |
+| [-] `JPM/rsi2_pullback/1w` | blocked_no_data | `results/cells/JPM_rsi2_pullback_1w.json` |
+| [-] `JPM/vol_compression/15m` | blocked_no_data | `results/cells/JPM_vol_compression_15m.json` |
 | [ ] `JPM/vol_compression/1h` | open | `results/cells/JPM_vol_compression_1h.json` |
 | [ ] `JPM/vol_compression/4h` | open | `results/cells/JPM_vol_compression_4h.json` |
 | [ ] `JPM/vol_compression/1d` | open | `results/cells/JPM_vol_compression_1d.json` |
@@ -788,13 +788,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `XLE/trend_pullback/1h` | blocked_no_data | `results/cells/XLE_trend_pullback_1h.json` |
 | [-] `XLE/trend_pullback/4h` | blocked_no_data | `results/cells/XLE_trend_pullback_4h.json` |
 | [-] `XLE/trend_pullback/1d` | blocked_no_data | `results/cells/XLE_trend_pullback_1d.json` |
-| [ ] `XLE/trend_pullback/1w` | open | `results/cells/XLE_trend_pullback_1w.json` |
-| [ ] `XLE/rsi2_pullback/15m` | open | `results/cells/XLE_rsi2_pullback_15m.json` |
-| [ ] `XLE/rsi2_pullback/1h` | open | `results/cells/XLE_rsi2_pullback_1h.json` |
-| [ ] `XLE/rsi2_pullback/4h` | open | `results/cells/XLE_rsi2_pullback_4h.json` |
+| [-] `XLE/trend_pullback/1w` | blocked_no_data | `results/cells/XLE_trend_pullback_1w.json` |
+| [-] `XLE/rsi2_pullback/15m` | blocked_no_data | `results/cells/XLE_rsi2_pullback_15m.json` |
+| [-] `XLE/rsi2_pullback/1h` | blocked_no_data | `results/cells/XLE_rsi2_pullback_1h.json` |
+| [-] `XLE/rsi2_pullback/4h` | blocked_no_data | `results/cells/XLE_rsi2_pullback_4h.json` |
 | [x] `XLE/rsi2_pullback/1d` | killed | `results/cells/XLE_rsi2_pullback_1d.json` |
-| [ ] `XLE/rsi2_pullback/1w` | open | `results/cells/XLE_rsi2_pullback_1w.json` |
-| [ ] `XLE/vol_compression/15m` | open | `results/cells/XLE_vol_compression_15m.json` |
+| [-] `XLE/rsi2_pullback/1w` | blocked_no_data | `results/cells/XLE_rsi2_pullback_1w.json` |
+| [-] `XLE/vol_compression/15m` | blocked_no_data | `results/cells/XLE_vol_compression_15m.json` |
 | [ ] `XLE/vol_compression/1h` | open | `results/cells/XLE_vol_compression_1h.json` |
 | [ ] `XLE/vol_compression/4h` | open | `results/cells/XLE_vol_compression_4h.json` |
 | [ ] `XLE/vol_compression/1d` | open | `results/cells/XLE_vol_compression_1d.json` |
@@ -843,13 +843,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `GLD/trend_pullback/1h` | blocked_no_data | `results/cells/GLD_trend_pullback_1h.json` |
 | [-] `GLD/trend_pullback/4h` | blocked_no_data | `results/cells/GLD_trend_pullback_4h.json` |
 | [-] `GLD/trend_pullback/1d` | blocked_no_data | `results/cells/GLD_trend_pullback_1d.json` |
-| [ ] `GLD/trend_pullback/1w` | open | `results/cells/GLD_trend_pullback_1w.json` |
-| [ ] `GLD/rsi2_pullback/15m` | open | `results/cells/GLD_rsi2_pullback_15m.json` |
-| [ ] `GLD/rsi2_pullback/1h` | open | `results/cells/GLD_rsi2_pullback_1h.json` |
-| [ ] `GLD/rsi2_pullback/4h` | open | `results/cells/GLD_rsi2_pullback_4h.json` |
+| [-] `GLD/trend_pullback/1w` | blocked_no_data | `results/cells/GLD_trend_pullback_1w.json` |
+| [-] `GLD/rsi2_pullback/15m` | blocked_no_data | `results/cells/GLD_rsi2_pullback_15m.json` |
+| [-] `GLD/rsi2_pullback/1h` | blocked_no_data | `results/cells/GLD_rsi2_pullback_1h.json` |
+| [-] `GLD/rsi2_pullback/4h` | blocked_no_data | `results/cells/GLD_rsi2_pullback_4h.json` |
 | [x] `GLD/rsi2_pullback/1d` | killed | `results/cells/GLD_rsi2_pullback_1d.json` |
-| [ ] `GLD/rsi2_pullback/1w` | open | `results/cells/GLD_rsi2_pullback_1w.json` |
-| [ ] `GLD/vol_compression/15m` | open | `results/cells/GLD_vol_compression_15m.json` |
+| [-] `GLD/rsi2_pullback/1w` | blocked_no_data | `results/cells/GLD_rsi2_pullback_1w.json` |
+| [-] `GLD/vol_compression/15m` | blocked_no_data | `results/cells/GLD_vol_compression_15m.json` |
 | [ ] `GLD/vol_compression/1h` | open | `results/cells/GLD_vol_compression_1h.json` |
 | [ ] `GLD/vol_compression/4h` | open | `results/cells/GLD_vol_compression_4h.json` |
 | [ ] `GLD/vol_compression/1d` | open | `results/cells/GLD_vol_compression_1d.json` |
@@ -898,13 +898,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `TLT/trend_pullback/1h` | blocked_no_data | `results/cells/TLT_trend_pullback_1h.json` |
 | [-] `TLT/trend_pullback/4h` | blocked_no_data | `results/cells/TLT_trend_pullback_4h.json` |
 | [-] `TLT/trend_pullback/1d` | blocked_no_data | `results/cells/TLT_trend_pullback_1d.json` |
-| [ ] `TLT/trend_pullback/1w` | open | `results/cells/TLT_trend_pullback_1w.json` |
-| [ ] `TLT/rsi2_pullback/15m` | open | `results/cells/TLT_rsi2_pullback_15m.json` |
-| [ ] `TLT/rsi2_pullback/1h` | open | `results/cells/TLT_rsi2_pullback_1h.json` |
-| [ ] `TLT/rsi2_pullback/4h` | open | `results/cells/TLT_rsi2_pullback_4h.json` |
+| [-] `TLT/trend_pullback/1w` | blocked_no_data | `results/cells/TLT_trend_pullback_1w.json` |
+| [-] `TLT/rsi2_pullback/15m` | blocked_no_data | `results/cells/TLT_rsi2_pullback_15m.json` |
+| [-] `TLT/rsi2_pullback/1h` | blocked_no_data | `results/cells/TLT_rsi2_pullback_1h.json` |
+| [-] `TLT/rsi2_pullback/4h` | blocked_no_data | `results/cells/TLT_rsi2_pullback_4h.json` |
 | [x] `TLT/rsi2_pullback/1d` | killed | `results/cells/TLT_rsi2_pullback_1d.json` |
-| [ ] `TLT/rsi2_pullback/1w` | open | `results/cells/TLT_rsi2_pullback_1w.json` |
-| [ ] `TLT/vol_compression/15m` | open | `results/cells/TLT_vol_compression_15m.json` |
+| [-] `TLT/rsi2_pullback/1w` | blocked_no_data | `results/cells/TLT_rsi2_pullback_1w.json` |
+| [-] `TLT/vol_compression/15m` | blocked_no_data | `results/cells/TLT_vol_compression_15m.json` |
 | [ ] `TLT/vol_compression/1h` | open | `results/cells/TLT_vol_compression_1h.json` |
 | [ ] `TLT/vol_compression/4h` | open | `results/cells/TLT_vol_compression_4h.json` |
 | [ ] `TLT/vol_compression/1d` | open | `results/cells/TLT_vol_compression_1d.json` |
@@ -953,13 +953,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `EURUSD/trend_pullback/1h` | blocked_no_data | `results/cells/EURUSD_trend_pullback_1h.json` |
 | [-] `EURUSD/trend_pullback/4h` | blocked_no_data | `results/cells/EURUSD_trend_pullback_4h.json` |
 | [-] `EURUSD/trend_pullback/1d` | blocked_no_data | `results/cells/EURUSD_trend_pullback_1d.json` |
-| [ ] `EURUSD/trend_pullback/1w` | open | `results/cells/EURUSD_trend_pullback_1w.json` |
-| [ ] `EURUSD/rsi2_pullback/15m` | open | `results/cells/EURUSD_rsi2_pullback_15m.json` |
-| [ ] `EURUSD/rsi2_pullback/1h` | open | `results/cells/EURUSD_rsi2_pullback_1h.json` |
-| [ ] `EURUSD/rsi2_pullback/4h` | open | `results/cells/EURUSD_rsi2_pullback_4h.json` |
+| [-] `EURUSD/trend_pullback/1w` | blocked_no_data | `results/cells/EURUSD_trend_pullback_1w.json` |
+| [-] `EURUSD/rsi2_pullback/15m` | blocked_no_data | `results/cells/EURUSD_rsi2_pullback_15m.json` |
+| [-] `EURUSD/rsi2_pullback/1h` | blocked_no_data | `results/cells/EURUSD_rsi2_pullback_1h.json` |
+| [-] `EURUSD/rsi2_pullback/4h` | blocked_no_data | `results/cells/EURUSD_rsi2_pullback_4h.json` |
 | [x] `EURUSD/rsi2_pullback/1d` | killed | `results/cells/EURUSD_rsi2_pullback_1d.json` |
-| [ ] `EURUSD/rsi2_pullback/1w` | open | `results/cells/EURUSD_rsi2_pullback_1w.json` |
-| [ ] `EURUSD/vol_compression/15m` | open | `results/cells/EURUSD_vol_compression_15m.json` |
+| [-] `EURUSD/rsi2_pullback/1w` | blocked_no_data | `results/cells/EURUSD_rsi2_pullback_1w.json` |
+| [-] `EURUSD/vol_compression/15m` | blocked_no_data | `results/cells/EURUSD_vol_compression_15m.json` |
 | [ ] `EURUSD/vol_compression/1h` | open | `results/cells/EURUSD_vol_compression_1h.json` |
 | [ ] `EURUSD/vol_compression/4h` | open | `results/cells/EURUSD_vol_compression_4h.json` |
 | [ ] `EURUSD/vol_compression/1d` | open | `results/cells/EURUSD_vol_compression_1d.json` |
@@ -1008,13 +1008,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `USDJPY/trend_pullback/1h` | blocked_no_data | `results/cells/USDJPY_trend_pullback_1h.json` |
 | [-] `USDJPY/trend_pullback/4h` | blocked_no_data | `results/cells/USDJPY_trend_pullback_4h.json` |
 | [-] `USDJPY/trend_pullback/1d` | blocked_no_data | `results/cells/USDJPY_trend_pullback_1d.json` |
-| [ ] `USDJPY/trend_pullback/1w` | open | `results/cells/USDJPY_trend_pullback_1w.json` |
-| [ ] `USDJPY/rsi2_pullback/15m` | open | `results/cells/USDJPY_rsi2_pullback_15m.json` |
-| [ ] `USDJPY/rsi2_pullback/1h` | open | `results/cells/USDJPY_rsi2_pullback_1h.json` |
-| [ ] `USDJPY/rsi2_pullback/4h` | open | `results/cells/USDJPY_rsi2_pullback_4h.json` |
+| [-] `USDJPY/trend_pullback/1w` | blocked_no_data | `results/cells/USDJPY_trend_pullback_1w.json` |
+| [-] `USDJPY/rsi2_pullback/15m` | blocked_no_data | `results/cells/USDJPY_rsi2_pullback_15m.json` |
+| [-] `USDJPY/rsi2_pullback/1h` | blocked_no_data | `results/cells/USDJPY_rsi2_pullback_1h.json` |
+| [-] `USDJPY/rsi2_pullback/4h` | blocked_no_data | `results/cells/USDJPY_rsi2_pullback_4h.json` |
 | [x] `USDJPY/rsi2_pullback/1d` | killed | `results/cells/USDJPY_rsi2_pullback_1d.json` |
-| [ ] `USDJPY/rsi2_pullback/1w` | open | `results/cells/USDJPY_rsi2_pullback_1w.json` |
-| [ ] `USDJPY/vol_compression/15m` | open | `results/cells/USDJPY_vol_compression_15m.json` |
+| [-] `USDJPY/rsi2_pullback/1w` | blocked_no_data | `results/cells/USDJPY_rsi2_pullback_1w.json` |
+| [-] `USDJPY/vol_compression/15m` | blocked_no_data | `results/cells/USDJPY_vol_compression_15m.json` |
 | [ ] `USDJPY/vol_compression/1h` | open | `results/cells/USDJPY_vol_compression_1h.json` |
 | [ ] `USDJPY/vol_compression/4h` | open | `results/cells/USDJPY_vol_compression_4h.json` |
 | [ ] `USDJPY/vol_compression/1d` | open | `results/cells/USDJPY_vol_compression_1d.json` |
@@ -1063,13 +1063,13 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `GBPUSD/trend_pullback/1h` | blocked_no_data | `results/cells/GBPUSD_trend_pullback_1h.json` |
 | [-] `GBPUSD/trend_pullback/4h` | blocked_no_data | `results/cells/GBPUSD_trend_pullback_4h.json` |
 | [-] `GBPUSD/trend_pullback/1d` | blocked_no_data | `results/cells/GBPUSD_trend_pullback_1d.json` |
-| [ ] `GBPUSD/trend_pullback/1w` | open | `results/cells/GBPUSD_trend_pullback_1w.json` |
-| [ ] `GBPUSD/rsi2_pullback/15m` | open | `results/cells/GBPUSD_rsi2_pullback_15m.json` |
-| [ ] `GBPUSD/rsi2_pullback/1h` | open | `results/cells/GBPUSD_rsi2_pullback_1h.json` |
-| [ ] `GBPUSD/rsi2_pullback/4h` | open | `results/cells/GBPUSD_rsi2_pullback_4h.json` |
+| [-] `GBPUSD/trend_pullback/1w` | blocked_no_data | `results/cells/GBPUSD_trend_pullback_1w.json` |
+| [-] `GBPUSD/rsi2_pullback/15m` | blocked_no_data | `results/cells/GBPUSD_rsi2_pullback_15m.json` |
+| [-] `GBPUSD/rsi2_pullback/1h` | blocked_no_data | `results/cells/GBPUSD_rsi2_pullback_1h.json` |
+| [-] `GBPUSD/rsi2_pullback/4h` | blocked_no_data | `results/cells/GBPUSD_rsi2_pullback_4h.json` |
 | [x] `GBPUSD/rsi2_pullback/1d` | killed | `results/cells/GBPUSD_rsi2_pullback_1d.json` |
-| [ ] `GBPUSD/rsi2_pullback/1w` | open | `results/cells/GBPUSD_rsi2_pullback_1w.json` |
-| [ ] `GBPUSD/vol_compression/15m` | open | `results/cells/GBPUSD_vol_compression_15m.json` |
+| [-] `GBPUSD/rsi2_pullback/1w` | blocked_no_data | `results/cells/GBPUSD_rsi2_pullback_1w.json` |
+| [-] `GBPUSD/vol_compression/15m` | blocked_no_data | `results/cells/GBPUSD_vol_compression_15m.json` |
 | [ ] `GBPUSD/vol_compression/1h` | open | `results/cells/GBPUSD_vol_compression_1h.json` |
 | [ ] `GBPUSD/vol_compression/4h` | open | `results/cells/GBPUSD_vol_compression_4h.json` |
 | [ ] `GBPUSD/vol_compression/1d` | open | `results/cells/GBPUSD_vol_compression_1d.json` |
