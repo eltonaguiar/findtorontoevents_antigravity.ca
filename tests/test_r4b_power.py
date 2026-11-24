@@ -75,7 +75,22 @@ def test_power_increases_with_the_effect():
     assert ps[-1] > 0.75
 
 
-def test_analyse_reports_the_frozen_universe_only():
+def test_analyse_reports_the_frozen_universe_only(tmp_path, monkeypatch):
+    # CI has no data/cache/asset_class_review (gitignored). Synthesize a minimal cache so the
+    # test exercises analyse() end-to-end without depending on a local/committed data dump.
+    import csv as _csv
+    cache = tmp_path / "asset_class_review"
+    cache.mkdir()
+    for sym in power.clock.UNIVERSE:
+        with (cache / f"{sym}_5y.csv").open("w", newline="") as f:
+            w = _csv.writer(f)
+            w.writerow(["Date", "Close"])
+            px = 100.0
+            for m in range(48):  # 48 monthly closes -> 47 returns (>= 36 required)
+                y, mo = 2020 + m // 12, m % 12 + 1
+                px *= 1.0 + 0.03 * ((m % 5) - 2)  # deterministic returns ~+/-4-8% (realistic monthly sigma)
+                w.writerow([f"{y}-{mo:02d}-01", f"{px:.6f}"])
+    monkeypatch.setattr(power.clock, "CACHE", cache)
     d = power.analyse()
     assert d["universe"] == 20
     assert d["top_k"] == power.clock.TOP_K
