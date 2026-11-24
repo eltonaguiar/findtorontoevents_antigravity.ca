@@ -82,3 +82,40 @@ def test_applies_to_entries_are_named_in_the_body_text():
             f"applies_to entry {entry!r} is in the json but not in the document body, "
             "so the label and the prose have drifted apart"
         )
+
+
+def _excluded_class_entry() -> str:
+    entries = [e for e in _block()["unmeasured"]
+               if e.startswith("class composition of the 6,111 unscoreable rows")]
+    assert len(entries) == 1, (
+        "exactly one 'class composition' entry must stay in unmeasured so the "
+        "INSTRUMENTED marker has a single home"
+    )
+    return entries[0]
+
+
+def test_excluded_class_composition_is_marked_instrumented():
+    """Block 59 wired the path; the marker must survive any doc edit."""
+    entry = _excluded_class_entry()
+    assert "INSTRUMENTED" in entry, (
+        "the excluded-row class composition is now instrumented "
+        "(coverage.excluded_summary); the entry must say so rather than "
+        "claiming it is still unmeasured"
+    )
+
+
+def test_excluded_class_entry_carries_no_invented_integer():
+    """The marker must not smuggle in a count the next live build has to match.
+
+    The only integers allowed are the ones already in the shared phrase
+    '6,111 unscoreable rows' and the dated marker '2026-11-24'; a 'total: N'
+    would be a fabricated measurement.
+    """
+    entry = _excluded_class_entry()
+    stripped = entry.replace("6,111", "").replace("2026-11-24", "")
+    assert not re.search(r"\d", stripped), (
+        f"no invented integer may appear in the INSTRUMENTED entry: {entry!r}"
+    )
+    assert "total" not in entry.lower(), (
+        "the entry must not assert a total count before the live build produces one"
+    )

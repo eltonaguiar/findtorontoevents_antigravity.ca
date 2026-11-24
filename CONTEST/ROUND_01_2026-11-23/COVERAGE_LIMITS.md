@@ -46,8 +46,17 @@ table; it carries the different limit that 6,111 rows are unscored by outcome.
 - **Outcome selection among the 6,111 unscoreable rows: `UNMEASURED`.** The exclusion reasons are
   known (auto-expired timeouts with no win/loss, fabricated breakeven fallbacks, cancels, mirror
   duplicates, integrity rejections), and some of them are outcome-determined by construction, but
-  the class composition, strategy mix and date distribution of those rows are not shipped, so the
+  the class composition, strategy mix and date distribution of those rows were not shipped, so the
   net direction of that selection on any verdict cannot be stated.
+- **Class composition of the excluded rows: now `INSTRUMENTED` (2026-11-24), awaiting its first
+  live build.** The generator materialises every dropped row (integrity rejections, mirror
+  duplicates, auto-expired) with an `exclude_reason` and a derived `asset_class`, and publishes
+  them under `_excluded_cohort_rows` in `dashboard_data.json`; audit3's `coverage.excluded_summary`
+  then reports `total`, `by_reason` and `by_class_and_reason` from them. No real count is quoted
+  here until that live payload exists. Still genuinely unknown: the **net direction** of the
+  selection — whether the retained book is flattered by what was dropped. That needs the
+  retained-vs-excluded PnL comparison (`audit_trail.excluded_cohorts.bias_report`), which only the
+  live rows can supply.
 - **Alpha of the 310 price-missing rows inside the universe: `UNMEASURED`** (no benchmark can be
   computed for them by definition).
 - **Date skew (measured):** the universe is recency-filled; 62% of its 3,500 rows closed in
@@ -65,7 +74,7 @@ table; it carries the different limit that 6,111 rows are unscored by outcome.
   "applies_to": ["classes[]", "selection_alpha.by_class", "selection_alpha.by_slice", "selection_alpha.by_strategy", "selection_alpha.overall", "selection_alpha.gate", "segments", "cells"],
   "class_gate_uncovered": ["CRYPTO", "FOREX", "FUTURES"],
   "unmeasured": [
-    "class composition of the 6,111 unscoreable rows",
+    "class composition of the 6,111 unscoreable rows: INSTRUMENTED - awaiting first live build after 2026-11-24 (coverage.excluded_summary in dashboard_data.json)",
     "strategy mix of the 6,111 unscoreable rows",
     "date distribution of the 6,111 unscoreable rows",
     "split of invalid_row (5,917) between no-outcome and discarded-outcome branches",
