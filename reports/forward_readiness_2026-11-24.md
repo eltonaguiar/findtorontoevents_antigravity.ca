@@ -16,16 +16,31 @@ Only CRYPTO clears the count threshold. Every other class has **zero** forward r
 
 Clearing 100 rows does not make a class INVESTABLE. The bar is a forward CI whose lower bound stays above zero after 2x cost. CRYPTO's 430 rows carry `entry_px`, `exit_px`, `side` and `slippage_bps` but no `pnl_pct`, so the net return was computed per row as `(exit/entry - 1) * 100` (sign-flipped for SHORT) minus `slippage_bps / 100`, then bootstrapped (4,000 resamples, seed 0):
 
+**Correction (2026-11-24, later the same session):** the first run of this
+section reported `mean net pct = -0.0252`. That was wrong: the per-row return
+already had `slippage_bps` deducted, and the script then subtracted it a second
+time. The figures below are recomputed with cost applied exactly once.
+
 ```
-rows measured    : 430
-mean net pct     : -0.0252
-CI net           : (-0.3099, 0.2687)
-mean net 2x cost : -0.1852
-CI net 2x cost   : (-0.4699, 0.1087)
-positive mean?   : False | CI lo > 0? False
+1x cost (measured)   n=430 mean=+0.1348 sd=3.1389 CI=(-0.1619,+0.4315)  rows for CI lo>0: 2083
+2x cost              n=430 mean=-0.0252 sd=3.1389 CI=(-0.3219,+0.2715)  rows for CI lo>0: None
+3x cost              n=430 mean=-0.1852 sd=3.1389 CI=(-0.4819,+0.1115)  rows for CI lo>0: None
 ```
 
-CRYPTO's forward mean is **negative**, and its 95% CI straddles zero both at 1x and at 2x cost. It therefore fails the INVESTABLE bar on evidence quality, not on sample size.
+Read this carefully:
+
+- At the **measured** cost the forward mean is **positive** (+0.1348%) but the
+  95% CI still straddles zero, so the edge is not yet distinguishable from none.
+- At **2x** cost the mean goes **negative** (-0.0252%). The 1x result is
+  therefore fragile: it survives only at today's measured spread.
+- At **3x** cost it is clearly negative.
+
+So CRYPTO fails the INVESTABLE bar on evidence quality today (CI contains zero),
+and the sign of its forward edge depends on cost. Unlike the backtest, more rows
+*could* help here, because the mean is positive at 1x: the CI half-width must
+fall below 0.1348, which needs about **2,083 rows** at the same variance. At the
+observed rate (430 rows accrued by 2026-11-22) that is roughly 24 days of the
+same accrual.
 
 ## Bottom line
 
