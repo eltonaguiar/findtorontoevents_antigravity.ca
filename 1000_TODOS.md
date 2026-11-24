@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:28:26.046140+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:33:22.742494+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 53 of 1000.** open 921 | claimed 0 | blocked_no_data 26
+**Worked 57 of 1000.** open 909 | claimed 0 | blocked_no_data 34
 
 ## Done condition (identical for every cell)
 
@@ -65,7 +65,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `BTCUSDT/gap_fade/1d` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1d.json` |
 | [-] `BTCUSDT/gap_fade/1w` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 8/50 worked
+## ETHUSDT - 12/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -89,18 +89,18 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ETHUSDT/breakout/4h` | blocked_no_data | `results/cells/ETHUSDT_breakout_4h.json` |
 | [x] `ETHUSDT/breakout/1d` | killed | `results/cells/ETHUSDT_breakout_1d.json` |
 | [x] `ETHUSDT/breakout/1w` | killed | `results/cells/ETHUSDT_breakout_1w.json` |
-| [ ] `ETHUSDT/donchian/15m` | open | `results/cells/ETHUSDT_donchian_15m.json` |
-| [ ] `ETHUSDT/donchian/1h` | open | `results/cells/ETHUSDT_donchian_1h.json` |
-| [ ] `ETHUSDT/donchian/4h` | open | `results/cells/ETHUSDT_donchian_4h.json` |
-| [ ] `ETHUSDT/donchian/1d` | open | `results/cells/ETHUSDT_donchian_1d.json` |
-| [ ] `ETHUSDT/donchian/1w` | open | `results/cells/ETHUSDT_donchian_1w.json` |
-| [ ] `ETHUSDT/ma_cross/15m` | open | `results/cells/ETHUSDT_ma_cross_15m.json` |
-| [ ] `ETHUSDT/ma_cross/1h` | open | `results/cells/ETHUSDT_ma_cross_1h.json` |
-| [ ] `ETHUSDT/ma_cross/4h` | open | `results/cells/ETHUSDT_ma_cross_4h.json` |
-| [ ] `ETHUSDT/ma_cross/1d` | open | `results/cells/ETHUSDT_ma_cross_1d.json` |
-| [ ] `ETHUSDT/ma_cross/1w` | open | `results/cells/ETHUSDT_ma_cross_1w.json` |
-| [ ] `ETHUSDT/bb_meanrev/15m` | open | `results/cells/ETHUSDT_bb_meanrev_15m.json` |
-| [ ] `ETHUSDT/bb_meanrev/1h` | open | `results/cells/ETHUSDT_bb_meanrev_1h.json` |
+| [-] `ETHUSDT/donchian/15m` | blocked_no_data | `results/cells/ETHUSDT_donchian_15m.json` |
+| [-] `ETHUSDT/donchian/1h` | blocked_no_data | `results/cells/ETHUSDT_donchian_1h.json` |
+| [-] `ETHUSDT/donchian/4h` | blocked_no_data | `results/cells/ETHUSDT_donchian_4h.json` |
+| [x] `ETHUSDT/donchian/1d` | killed | `results/cells/ETHUSDT_donchian_1d.json` |
+| [x] `ETHUSDT/donchian/1w` | killed | `results/cells/ETHUSDT_donchian_1w.json` |
+| [-] `ETHUSDT/ma_cross/15m` | blocked_no_data | `results/cells/ETHUSDT_ma_cross_15m.json` |
+| [-] `ETHUSDT/ma_cross/1h` | blocked_no_data | `results/cells/ETHUSDT_ma_cross_1h.json` |
+| [-] `ETHUSDT/ma_cross/4h` | blocked_no_data | `results/cells/ETHUSDT_ma_cross_4h.json` |
+| [x] `ETHUSDT/ma_cross/1d` | killed | `results/cells/ETHUSDT_ma_cross_1d.json` |
+| [x] `ETHUSDT/ma_cross/1w` | killed | `results/cells/ETHUSDT_ma_cross_1w.json` |
+| [-] `ETHUSDT/bb_meanrev/15m` | blocked_no_data | `results/cells/ETHUSDT_bb_meanrev_15m.json` |
+| [-] `ETHUSDT/bb_meanrev/1h` | blocked_no_data | `results/cells/ETHUSDT_bb_meanrev_1h.json` |
 | [ ] `ETHUSDT/bb_meanrev/4h` | open | `results/cells/ETHUSDT_bb_meanrev_4h.json` |
 | [ ] `ETHUSDT/bb_meanrev/1d` | open | `results/cells/ETHUSDT_bb_meanrev_1d.json` |
 | [ ] `ETHUSDT/bb_meanrev/1w` | open | `results/cells/ETHUSDT_bb_meanrev_1w.json` |
