@@ -1,0 +1,67 @@
+name: sol-breakout-forward
+
+# Advances the ONLY open thread from the 1000-cell sweep.
+#
+# SOLUSDT/breakout/1d is pre-registered (docs/edge_research/PREREG_sol_breakout20_2026-11-24.md)
+# and was positive in all three sequential in-sample folds. It needs 30 OUT-OF-SAMPLE trades
+# before any verdict. That clock only advances when something runs it, so this runs it daily.
+#
+# The script counts only trades ENTERED after the registration date. Nothing here can
+# retroactively promote in-sample data, which is the entire point of the registration.
+
+on:
+  schedule:
+    - cron: '17 6 * * *'      # daily, off the hour to avoid the top-of-hour rush
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sol-breakout-forward
+  cancel-in-progress: false
+
+jobs:
+  advance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: python3 -m pip install --quiet yfinance
+
+      - name: Advance the forward clock
+        run: python3 tools/sol_breakout_forward.py --refresh
+
+      - name: Report progress
+        run: |
+          echo "### Forward clock" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          python3 tools/sol_breakout_forward.py >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f reports/forward_obs_sol_breakout20.jsonl ]; then
+            echo "forward observations: $(wc -l < reports/forward_obs_sol_breakout20.jsonl)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "forward observations: 0 (no completed post-registration trade yet)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Commit new observations
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -z "$(git status --porcelain reports/forward_obs_sol_breakout20.jsonl 2>/dev/null)" ]; then
+            echo "no new forward trades; nothing to commit"
+            exit 0
+          fi
+          git add reports/forward_obs_sol_breakout20.jsonl
+          # [skip ci] because this workflow commits to the branch it runs on
+          git commit -m "data(forward): sol breakout20 observation(s) [skip ci]"
+          git push
