@@ -66,3 +66,14 @@ a signal source to review, not a class to size.
 Read the eight canonical names as the sizing universe, and the thirteen dossiers as the
 review universe: the review is a superset on purpose, because a name that looks like a
 class must be investigated before it can be dismissed.
+
+## Coverage caveats (2026-11-24)
+
+Three rows carry a coverage caveat in their dossier: **CRYPTO** (row 01), **FOREX**
+(row 04) and **FUTURES** (row 07). These are exactly the classes whose measured price
+coverage leaves the class gate at `alpha_coverage_ok = false` [SRC: alpha_engine/audit3_tribunal.py:1264],
+at CRYPTO 24.2%, FOREX 46.8% and FUTURES 83.3% [SRC: CONTEST/ROUND_01_2026-11-23/COVERAGE_LIMITS.md].
+Their dossiers' measured statistics describe the priced subset of each class, not the
+full closed-pick population, so their verdicts above are verdicts about that subset.
+No verdict in the table changed to add this note; the aggregate and its unmeasured list
+are in `CONTEST/ROUND_01_2026-11-23/COVERAGE_LIMITS.md`.
