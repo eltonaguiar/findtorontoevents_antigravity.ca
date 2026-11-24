@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:41:06.036746+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:43:24.824973+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 51 of 1000.** open 904 | claimed 4 | blocked_no_data 41
+**Worked 66 of 1000.** open 889 | claimed 4 | blocked_no_data 41
 
 ## Done condition (identical for every cell)
 
@@ -120,7 +120,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `ETHUSDT/gap_fade/1d` | done | `results/cells/ETHUSDT_gap_fade_1d.json` |
 | [x] `ETHUSDT/gap_fade/1w` | done | `results/cells/ETHUSDT_gap_fade_1w.json` |
 
-## SOLUSDT - 4/50 worked
+## SOLUSDT - 19/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -137,42 +137,42 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SOLUSDT/vol_compression/15m` | open | `results/cells/SOLUSDT_vol_compression_15m.json` |
 | [ ] `SOLUSDT/vol_compression/1h` | open | `results/cells/SOLUSDT_vol_compression_1h.json` |
 | [ ] `SOLUSDT/vol_compression/4h` | open | `results/cells/SOLUSDT_vol_compression_4h.json` |
-| [ ] `SOLUSDT/vol_compression/1d` | open | `results/cells/SOLUSDT_vol_compression_1d.json` |
-| [ ] `SOLUSDT/vol_compression/1w` | open | `results/cells/SOLUSDT_vol_compression_1w.json` |
+| [x] `SOLUSDT/vol_compression/1d` | killed | `results/cells/SOLUSDT_vol_compression_1d.json` |
+| [x] `SOLUSDT/vol_compression/1w` | done | `results/cells/SOLUSDT_vol_compression_1w.json` |
 | [ ] `SOLUSDT/breakout/15m` | open | `results/cells/SOLUSDT_breakout_15m.json` |
 | [ ] `SOLUSDT/breakout/1h` | open | `results/cells/SOLUSDT_breakout_1h.json` |
 | [ ] `SOLUSDT/breakout/4h` | open | `results/cells/SOLUSDT_breakout_4h.json` |
-| [ ] `SOLUSDT/breakout/1d` | open | `results/cells/SOLUSDT_breakout_1d.json` |
-| [ ] `SOLUSDT/breakout/1w` | open | `results/cells/SOLUSDT_breakout_1w.json` |
+| [x] `SOLUSDT/breakout/1d` | done | `results/cells/SOLUSDT_breakout_1d.json` |
+| [x] `SOLUSDT/breakout/1w` | done | `results/cells/SOLUSDT_breakout_1w.json` |
 | [ ] `SOLUSDT/donchian/15m` | open | `results/cells/SOLUSDT_donchian_15m.json` |
 | [ ] `SOLUSDT/donchian/1h` | open | `results/cells/SOLUSDT_donchian_1h.json` |
 | [ ] `SOLUSDT/donchian/4h` | open | `results/cells/SOLUSDT_donchian_4h.json` |
-| [ ] `SOLUSDT/donchian/1d` | open | `results/cells/SOLUSDT_donchian_1d.json` |
-| [ ] `SOLUSDT/donchian/1w` | open | `results/cells/SOLUSDT_donchian_1w.json` |
+| [x] `SOLUSDT/donchian/1d` | done | `results/cells/SOLUSDT_donchian_1d.json` |
+| [x] `SOLUSDT/donchian/1w` | done | `results/cells/SOLUSDT_donchian_1w.json` |
 | [ ] `SOLUSDT/ma_cross/15m` | open | `results/cells/SOLUSDT_ma_cross_15m.json` |
 | [ ] `SOLUSDT/ma_cross/1h` | open | `results/cells/SOLUSDT_ma_cross_1h.json` |
 | [ ] `SOLUSDT/ma_cross/4h` | open | `results/cells/SOLUSDT_ma_cross_4h.json` |
-| [ ] `SOLUSDT/ma_cross/1d` | open | `results/cells/SOLUSDT_ma_cross_1d.json` |
-| [ ] `SOLUSDT/ma_cross/1w` | open | `results/cells/SOLUSDT_ma_cross_1w.json` |
+| [x] `SOLUSDT/ma_cross/1d` | done | `results/cells/SOLUSDT_ma_cross_1d.json` |
+| [x] `SOLUSDT/ma_cross/1w` | done | `results/cells/SOLUSDT_ma_cross_1w.json` |
 | [ ] `SOLUSDT/bb_meanrev/15m` | open | `results/cells/SOLUSDT_bb_meanrev_15m.json` |
 | [ ] `SOLUSDT/bb_meanrev/1h` | open | `results/cells/SOLUSDT_bb_meanrev_1h.json` |
 | [ ] `SOLUSDT/bb_meanrev/4h` | open | `results/cells/SOLUSDT_bb_meanrev_4h.json` |
-| [ ] `SOLUSDT/bb_meanrev/1d` | open | `results/cells/SOLUSDT_bb_meanrev_1d.json` |
-| [ ] `SOLUSDT/bb_meanrev/1w` | open | `results/cells/SOLUSDT_bb_meanrev_1w.json` |
+| [x] `SOLUSDT/bb_meanrev/1d` | done | `results/cells/SOLUSDT_bb_meanrev_1d.json` |
+| [x] `SOLUSDT/bb_meanrev/1w` | done | `results/cells/SOLUSDT_bb_meanrev_1w.json` |
 | [ ] `SOLUSDT/vwap_reversion/15m` | open | `results/cells/SOLUSDT_vwap_reversion_15m.json` |
 | [ ] `SOLUSDT/vwap_reversion/1h` | open | `results/cells/SOLUSDT_vwap_reversion_1h.json` |
 | [ ] `SOLUSDT/vwap_reversion/4h` | open | `results/cells/SOLUSDT_vwap_reversion_4h.json` |
-| [ ] `SOLUSDT/vwap_reversion/1d` | open | `results/cells/SOLUSDT_vwap_reversion_1d.json` |
-| [ ] `SOLUSDT/vwap_reversion/1w` | open | `results/cells/SOLUSDT_vwap_reversion_1w.json` |
+| [x] `SOLUSDT/vwap_reversion/1d` | done | `results/cells/SOLUSDT_vwap_reversion_1d.json` |
+| [x] `SOLUSDT/vwap_reversion/1w` | done | `results/cells/SOLUSDT_vwap_reversion_1w.json` |
 | [ ] `SOLUSDT/momentum_12_1/15m` | open | `results/cells/SOLUSDT_momentum_12_1_15m.json` |
 | [ ] `SOLUSDT/momentum_12_1/1h` | open | `results/cells/SOLUSDT_momentum_12_1_1h.json` |
 | [ ] `SOLUSDT/momentum_12_1/4h` | open | `results/cells/SOLUSDT_momentum_12_1_4h.json` |
-| [ ] `SOLUSDT/momentum_12_1/1d` | open | `results/cells/SOLUSDT_momentum_12_1_1d.json` |
-| [ ] `SOLUSDT/momentum_12_1/1w` | open | `results/cells/SOLUSDT_momentum_12_1_1w.json` |
+| [x] `SOLUSDT/momentum_12_1/1d` | done | `results/cells/SOLUSDT_momentum_12_1_1d.json` |
+| [x] `SOLUSDT/momentum_12_1/1w` | done | `results/cells/SOLUSDT_momentum_12_1_1w.json` |
 | [ ] `SOLUSDT/gap_fade/15m` | open | `results/cells/SOLUSDT_gap_fade_15m.json` |
 | [ ] `SOLUSDT/gap_fade/1h` | open | `results/cells/SOLUSDT_gap_fade_1h.json` |
 | [ ] `SOLUSDT/gap_fade/4h` | open | `results/cells/SOLUSDT_gap_fade_4h.json` |
-| [ ] `SOLUSDT/gap_fade/1d` | open | `results/cells/SOLUSDT_gap_fade_1d.json` |
+| [x] `SOLUSDT/gap_fade/1d` | done | `results/cells/SOLUSDT_gap_fade_1d.json` |
 | [ ] `SOLUSDT/gap_fade/1w` | open | `results/cells/SOLUSDT_gap_fade_1w.json` |
 
 ## XRPUSDT - 0/50 worked
