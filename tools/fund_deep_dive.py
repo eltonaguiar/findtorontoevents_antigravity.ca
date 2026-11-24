@@ -331,7 +331,11 @@ def main(argv=None):
     dates, ser, ret = load()
     out = {"schema_version": 2,
            "generated_at": datetime.now(timezone.utc).isoformat(),
-           "source": SRC, "period": [dates[0], dates[-1]],
+           # repo-relative, NOT absolute: an absolute path makes the
+           # committed artifact "stale" in every other checkout, which the
+           # staleness gate correctly (but confusingly) reports.
+           "source": str(Path(SRC).resolve().relative_to(REPO_ROOT)),
+           "period": [dates[0], dates[-1]],
            "n_days": len(ret[list(ret)[0]]),
            "corrections": ["A1/A2 excess-of-cash Sharpe+Sortino", "A4 SGOV cash-labelled",
                            "A5 Sortino all-N denominator", "A6 compounded net CAGR",
