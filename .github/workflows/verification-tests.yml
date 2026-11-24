@@ -63,6 +63,9 @@ name: Verification Tests
       - 'alpha_engine/audit3_tribunal.py'
       - 'tests/test_excluded_cohorts_summary.py'
       - 'tests/test_excluded_rows_wiring.py'
+      # The live-state checker: distinguishes an absent key from a zero total.
+      - 'tools/check_excluded_summary.py'
+      - 'tests/test_check_excluded_summary.py'
       # The tally test recursively globs every markdown file under docs/ (see
       # tests/test_edge_research_tally_consistency.py SEARCH_DIR), so a docs edit
       # can flip the tally invariant.
@@ -95,6 +98,8 @@ name: Verification Tests
       - 'alpha_engine/audit3_tribunal.py'
       - 'tests/test_excluded_cohorts_summary.py'
       - 'tests/test_excluded_rows_wiring.py'
+      - 'tools/check_excluded_summary.py'
+      - 'tests/test_check_excluded_summary.py'
       - 'docs/**'
       - '.github/workflows/verification-tests.yml'
   workflow_dispatch:
@@ -156,4 +161,5 @@ jobs:
             tests/test_dossier_coverage_caveats.py \
             tests/test_excluded_cohorts_summary.py \
             tests/test_excluded_rows_wiring.py \
+            tests/test_check_excluded_summary.py \
             -q
