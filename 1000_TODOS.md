@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T00:46:09.987147+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T00:46:21.938476+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 2 of 1000.** open 996 | claimed 0 | blocked_no_data 2
+**Worked 2 of 1000.** open 995 | claimed 0 | blocked_no_data 3
 
 ## Done condition (identical for every cell)
 
@@ -14,7 +14,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `BTCUSDT/trend_pullback/15m` | open | `results/cells/BTCUSDT_trend_pullback_15m.json` |
+| [-] `BTCUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_15m.json` |
 | [x] `BTCUSDT/trend_pullback/1h` | killed | `results/cells/BTCUSDT_trend_pullback_1h.json` |
 | [x] `BTCUSDT/trend_pullback/4h` | killed | `results/cells/BTCUSDT_trend_pullback_4h.json` |
 | [-] `BTCUSDT/trend_pullback/1d` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_1d.json` |
