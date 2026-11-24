@@ -60,3 +60,30 @@ pre-registered failure is information, an unregistered success is noise.
 
 Nothing here is a finding, an edge, or advice. It is one hypothesis with a written specification and
 a written failure condition, which is the minimum required before forward data can mean anything.
+
+---
+
+## CORRECTION 2026-11-24: the GitHub cron does NOT fire
+
+`.github/workflows/sol-breakout-forward.yml` was added on the branch
+`research/cells-copilot-2026-11-24`. **GitHub only runs `schedule:` triggers from the
+DEFAULT branch.** Verified: `gh workflow run sol-breakout-forward.yml` returns
+`HTTP 404: Not Found` — the workflow is not even registered with Actions, because it has
+never existed on `main`.
+
+So the earlier claim that "the only open thread is now running on its own" was **wrong**.
+The forward clock has never advanced automatically, and would not have.
+
+### Two ways to actually fix it
+
+1. **Move the workflow to `main`.** This is the correct fix and the only one that gives a
+   real daily cron. It requires a merge to `main`, which this session is not permitted to
+   do unilaterally. A PR containing ONLY this workflow file is the minimal path.
+2. **Run it locally** via `tmux`/`nohup` on this host, or a user crontab entry. Works
+   today, dies on reboot, and depends on this machine staying up.
+
+### Status
+
+- Workflow file: correct and locally validated (YAML parses, 6 steps, script dry-runs).
+- Registration with Actions: **not possible from a feature branch**.
+- Forward clock: still **0/30**, advanced only when run by hand.
