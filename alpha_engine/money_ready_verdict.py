@@ -329,7 +329,7 @@ NB_TRIALS_BY_CLASS: dict[str, int] = {
     "CRYPTO": 14,     # per verdict JSON n_strategies_tested: 14 (legacy lower bound)
     "FOREX": 6,       # 6 eligible source systems with >=20 picks (legacy lower bound)
     "EQUITY": 19,     # measured 2026-11-21: 19 strategy cells
-    "ETF": 12,        # measured 2026-11-21: 12 strategy cells
+    "ETF": 11,        # current registry has 11 ETF cells; 3 regime_* cells were reclassified to CRYPTO/EQUITY/FOREX in 3efd57d. Baseline must not exceed tested cells.
     "BOND": 2,        # measured 2026-11-21: 2 strategy cells
     "FUTURES": 3,     # measured 2026-11-21: 3 strategy cells
 }
