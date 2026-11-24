@@ -347,6 +347,51 @@ and the relevant economics (roll yield, contango/backwardation, margin, financin
 this dataset. Doing this properly needs front-month settlements and roll dates. **Out of scope —
 requires contract-level data.** Treat any futures conclusion from this dataset as invalid.
 
+## The answer for a Canadian resident (the decision this report now makes)
+
+Per `docs/edge_research/JURISDICTION_DECISION_2026-11-24.md`, this report answers for a Canadian
+resident. The US-domiciled funds above are unusable for that holder on PFIC grounds, so the
+recommendation is tested on funds a Canadian can actually buy —
+`python3 tools/fund_cad_home.py` (artifact `reports/fund_cad_home.json`).
+
+TSX-listed, priced in CAD, cash hurdle = CASH.TO net 3.17%/yr:
+
+| ticker | MER | gross CAGR | net CAGR | vol | Sharpe | max DD | what it is |
+|---|---:|---:|---:|---:|---:|---:|---|
+| VFV.TO | 0.09% | 14.31% | **14.21%** | 15.35% | **0.719** | −22.19% | S&P 500, CAD, unhedged |
+| ZSP.TO | 0.09% | 14.31% | 14.21% | 15.41% | 0.717 | −22.25% | S&P 500, CAD, unhedged |
+| VUN.TO | 0.17% | 13.10% | 12.90% | 15.85% | 0.615 | −23.67% | US total market, CAD |
+| XEQT.TO | 0.20% | 12.62% | 12.39% | 13.53% | 0.682 | −19.06% | all-equity, CAD |
+| ZAG.TO | 0.09% | 0.63% | 0.54% | 6.62% | −0.397 | −15.46% | aggregate bond, CAD |
+| CASH.TO | 0.11% | 3.28% | 3.17% | 0.59% | n/a (cash) | −0.80% | high-interest savings, CAD |
+
+**The wrapper costs nothing for the core holding — it is cheaper.** VFV.TO/ZSP.TO at 0.09% are
+*below* SPY's 0.0945%, so a Canadian gets S&P 500 exposure, in CAD, without PFIC, at a lower fee
+than the US-listed ETF this report spent its length comparing. The cost only appears in the other
+sleeves:
+
+| CAD-listed | vs US-listed | wrapper cost |
+|---|---|---:|
+| VFV.TO / ZSP.TO | SPY | −0.0045 pp/yr (**cheaper**) |
+| VUN.TO | VTI | +0.1400 pp/yr |
+| ZAG.TO | BND | +0.0600 pp/yr |
+| CASH.TO | SGOV | +0.0200 pp/yr |
+
+So the Canadian answer is: **VFV.TO or ZSP.TO as the core**, accept ~0.14pp of wrapper cost if you
+want total-market breadth (VUN) rather than the S&P 500, and expect the bond sleeve (ZAG) to have
+been a drag in this window (Sharpe −0.397) for the same reason BND was — the trailing window, not a
+law.
+
+Two things this table does **not** settle:
+
+- **A CAD-listed unhedged fund embeds USD exposure inside a CAD wrapper.** That is a different
+  exposure from holding a USD fund and converting at the broker, and the two should not be
+  conflated. VFV's 14.21% is partly the same currency windfall measured in "If you spend in CAD".
+- **MER is not total cost.** Withholding on the fund's own US dividends is levied inside the ETF
+  (a Canadian-domiciled fund is generally not a PFIC and not subject to the TFSA withholding
+  problem, which is precisely its advantage), but the fund still pays US withholding at the fund
+  level. That drag is not modelled here and is the next thing to measure.
+
 ## Decision table
 
 | vehicle | type | MER | minimum | tax efficiency (taxable) | fractional | best fit |
