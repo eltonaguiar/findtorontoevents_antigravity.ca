@@ -29,3 +29,12 @@ Sunday-reopen-specific, so **4.98 is the better central estimate**, but I **gate
 verdict is trustworthy either way. At either cost AUDJPY's +51 bp gross survives; the blocker is DSR/n, not cost.
 
 *Paper only. Not investment advice.*
+
+---
+
+## Wrapper addendum 2026-11-24 — the beta rows must name the Canadian wrapper
+The ETF / MUTUAL_FUND / BOND rows above are **beta**, and for a Canadian investor the *vehicle* is decided separately:
+**Canadian-listed, CAD-traded** low-MER index ETF (VFV/XUS or XEQT/VEQT) by default — no FX conversion cost and **not
+US-situs** (no US estate-tax exposure); US-listed VOO only in an RRSP (treaty-exempt withholding) with cheap FX. See
+`US_VS_CAD_WRAPPER_DECISION_2026-11-24.md`. This does not change any mechanism verdict — it changes *what you buy* to
+capture the beta, not *whether* there is alpha (there is none above the detection floor).
