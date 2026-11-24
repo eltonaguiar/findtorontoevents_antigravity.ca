@@ -23,6 +23,11 @@ MEASURE = REPO_ROOT / "tools" / "measure_cell.py"
 LEDGER = REPO_ROOT / "1000_TODOS.json"
 
 
+NON_CRYPTO = {"SPY","QQQ","IWM","AAPL","MSFT","NVDA","JPM","XLE","GLD","TLT",
+              "EURUSD","USDJPY","GBPUSD"}
+ONLY_SYMBOLS = None   # set by --only-symbols
+
+
 def claim_measurable(owner):
     """Pick the first OPEN cell that can actually be measured, then claim it.
 
@@ -43,6 +48,8 @@ def claim_measurable(owner):
         h = c["horizon"]
         ok = h in ("1d", "1w") or (h == "1h" and c["symbol"] == "BTCUSDT")
         if not ok:
+            continue
+        if ONLY_SYMBOLS is not None and c["symbol"] not in ONLY_SYMBOLS:
             continue
         subprocess.run([sys.executable, str(GEN), "--set", c["key"], "--status",
                         "claimed", "--owner", owner,
@@ -88,11 +95,17 @@ def measure(cell):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--n", type=int, default=10)
+    ap.add_argument("--only-symbols", default=None,
+                    help="comma list, or 'non-crypto' to fill EQUITY/FOREX coverage")
     ap.add_argument("--measurable-first", action="store_true",
                     help="skip cells whose horizon has no bar source")
     ap.add_argument("--owner", default="copilot")
     args = ap.parse_args(argv)
 
+    global ONLY_SYMBOLS
+    if args.only_symbols:
+        ONLY_SYMBOLS = (NON_CRYPTO if args.only_symbols == "non-crypto"
+                        else set(args.only_symbols.split(",")))
     done = killed = blocked = insuff = 0
     rows = []
     for i in range(args.n):

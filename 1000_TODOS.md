@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:43:24.824973+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:51:03.158381+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 66 of 1000.** open 889 | claimed 4 | blocked_no_data 41
+**Worked 84 of 1000.** open 871 | claimed 4 | blocked_no_data 41
 
 ## Done condition (identical for every cell)
 
@@ -395,40 +395,40 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `LINKUSDT/gap_fade/1d` | open | `results/cells/LINKUSDT_gap_fade_1d.json` |
 | [ ] `LINKUSDT/gap_fade/1w` | open | `results/cells/LINKUSDT_gap_fade_1w.json` |
 
-## SPY - 0/50 worked
+## SPY - 12/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [ ] `SPY/trend_pullback/15m` | open | `results/cells/SPY_trend_pullback_15m.json` |
 | [ ] `SPY/trend_pullback/1h` | open | `results/cells/SPY_trend_pullback_1h.json` |
 | [ ] `SPY/trend_pullback/4h` | open | `results/cells/SPY_trend_pullback_4h.json` |
-| [ ] `SPY/trend_pullback/1d` | open | `results/cells/SPY_trend_pullback_1d.json` |
-| [ ] `SPY/trend_pullback/1w` | open | `results/cells/SPY_trend_pullback_1w.json` |
+| [x] `SPY/trend_pullback/1d` | killed | `results/cells/SPY_trend_pullback_1d.json` |
+| [x] `SPY/trend_pullback/1w` | done | `results/cells/SPY_trend_pullback_1w.json` |
 | [ ] `SPY/rsi2_pullback/15m` | open | `results/cells/SPY_rsi2_pullback_15m.json` |
 | [ ] `SPY/rsi2_pullback/1h` | open | `results/cells/SPY_rsi2_pullback_1h.json` |
 | [ ] `SPY/rsi2_pullback/4h` | open | `results/cells/SPY_rsi2_pullback_4h.json` |
-| [ ] `SPY/rsi2_pullback/1d` | open | `results/cells/SPY_rsi2_pullback_1d.json` |
-| [ ] `SPY/rsi2_pullback/1w` | open | `results/cells/SPY_rsi2_pullback_1w.json` |
+| [x] `SPY/rsi2_pullback/1d` | done | `results/cells/SPY_rsi2_pullback_1d.json` |
+| [x] `SPY/rsi2_pullback/1w` | done | `results/cells/SPY_rsi2_pullback_1w.json` |
 | [ ] `SPY/vol_compression/15m` | open | `results/cells/SPY_vol_compression_15m.json` |
 | [ ] `SPY/vol_compression/1h` | open | `results/cells/SPY_vol_compression_1h.json` |
 | [ ] `SPY/vol_compression/4h` | open | `results/cells/SPY_vol_compression_4h.json` |
-| [ ] `SPY/vol_compression/1d` | open | `results/cells/SPY_vol_compression_1d.json` |
-| [ ] `SPY/vol_compression/1w` | open | `results/cells/SPY_vol_compression_1w.json` |
+| [x] `SPY/vol_compression/1d` | killed | `results/cells/SPY_vol_compression_1d.json` |
+| [x] `SPY/vol_compression/1w` | done | `results/cells/SPY_vol_compression_1w.json` |
 | [ ] `SPY/breakout/15m` | open | `results/cells/SPY_breakout_15m.json` |
 | [ ] `SPY/breakout/1h` | open | `results/cells/SPY_breakout_1h.json` |
 | [ ] `SPY/breakout/4h` | open | `results/cells/SPY_breakout_4h.json` |
-| [ ] `SPY/breakout/1d` | open | `results/cells/SPY_breakout_1d.json` |
-| [ ] `SPY/breakout/1w` | open | `results/cells/SPY_breakout_1w.json` |
+| [x] `SPY/breakout/1d` | killed | `results/cells/SPY_breakout_1d.json` |
+| [x] `SPY/breakout/1w` | done | `results/cells/SPY_breakout_1w.json` |
 | [ ] `SPY/donchian/15m` | open | `results/cells/SPY_donchian_15m.json` |
 | [ ] `SPY/donchian/1h` | open | `results/cells/SPY_donchian_1h.json` |
 | [ ] `SPY/donchian/4h` | open | `results/cells/SPY_donchian_4h.json` |
-| [ ] `SPY/donchian/1d` | open | `results/cells/SPY_donchian_1d.json` |
-| [ ] `SPY/donchian/1w` | open | `results/cells/SPY_donchian_1w.json` |
+| [x] `SPY/donchian/1d` | killed | `results/cells/SPY_donchian_1d.json` |
+| [x] `SPY/donchian/1w` | done | `results/cells/SPY_donchian_1w.json` |
 | [ ] `SPY/ma_cross/15m` | open | `results/cells/SPY_ma_cross_15m.json` |
 | [ ] `SPY/ma_cross/1h` | open | `results/cells/SPY_ma_cross_1h.json` |
 | [ ] `SPY/ma_cross/4h` | open | `results/cells/SPY_ma_cross_4h.json` |
-| [ ] `SPY/ma_cross/1d` | open | `results/cells/SPY_ma_cross_1d.json` |
-| [ ] `SPY/ma_cross/1w` | open | `results/cells/SPY_ma_cross_1w.json` |
+| [x] `SPY/ma_cross/1d` | done | `results/cells/SPY_ma_cross_1d.json` |
+| [x] `SPY/ma_cross/1w` | done | `results/cells/SPY_ma_cross_1w.json` |
 | [ ] `SPY/bb_meanrev/15m` | open | `results/cells/SPY_bb_meanrev_15m.json` |
 | [ ] `SPY/bb_meanrev/1h` | open | `results/cells/SPY_bb_meanrev_1h.json` |
 | [ ] `SPY/bb_meanrev/4h` | open | `results/cells/SPY_bb_meanrev_4h.json` |
@@ -945,25 +945,25 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `TLT/gap_fade/1d` | open | `results/cells/TLT_gap_fade_1d.json` |
 | [ ] `TLT/gap_fade/1w` | open | `results/cells/TLT_gap_fade_1w.json` |
 
-## EURUSD - 0/50 worked
+## EURUSD - 6/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [ ] `EURUSD/trend_pullback/15m` | open | `results/cells/EURUSD_trend_pullback_15m.json` |
 | [ ] `EURUSD/trend_pullback/1h` | open | `results/cells/EURUSD_trend_pullback_1h.json` |
 | [ ] `EURUSD/trend_pullback/4h` | open | `results/cells/EURUSD_trend_pullback_4h.json` |
-| [ ] `EURUSD/trend_pullback/1d` | open | `results/cells/EURUSD_trend_pullback_1d.json` |
-| [ ] `EURUSD/trend_pullback/1w` | open | `results/cells/EURUSD_trend_pullback_1w.json` |
+| [x] `EURUSD/trend_pullback/1d` | killed | `results/cells/EURUSD_trend_pullback_1d.json` |
+| [x] `EURUSD/trend_pullback/1w` | done | `results/cells/EURUSD_trend_pullback_1w.json` |
 | [ ] `EURUSD/rsi2_pullback/15m` | open | `results/cells/EURUSD_rsi2_pullback_15m.json` |
 | [ ] `EURUSD/rsi2_pullback/1h` | open | `results/cells/EURUSD_rsi2_pullback_1h.json` |
 | [ ] `EURUSD/rsi2_pullback/4h` | open | `results/cells/EURUSD_rsi2_pullback_4h.json` |
-| [ ] `EURUSD/rsi2_pullback/1d` | open | `results/cells/EURUSD_rsi2_pullback_1d.json` |
-| [ ] `EURUSD/rsi2_pullback/1w` | open | `results/cells/EURUSD_rsi2_pullback_1w.json` |
+| [x] `EURUSD/rsi2_pullback/1d` | done | `results/cells/EURUSD_rsi2_pullback_1d.json` |
+| [x] `EURUSD/rsi2_pullback/1w` | done | `results/cells/EURUSD_rsi2_pullback_1w.json` |
 | [ ] `EURUSD/vol_compression/15m` | open | `results/cells/EURUSD_vol_compression_15m.json` |
 | [ ] `EURUSD/vol_compression/1h` | open | `results/cells/EURUSD_vol_compression_1h.json` |
 | [ ] `EURUSD/vol_compression/4h` | open | `results/cells/EURUSD_vol_compression_4h.json` |
-| [ ] `EURUSD/vol_compression/1d` | open | `results/cells/EURUSD_vol_compression_1d.json` |
-| [ ] `EURUSD/vol_compression/1w` | open | `results/cells/EURUSD_vol_compression_1w.json` |
+| [x] `EURUSD/vol_compression/1d` | killed | `results/cells/EURUSD_vol_compression_1d.json` |
+| [x] `EURUSD/vol_compression/1w` | done | `results/cells/EURUSD_vol_compression_1w.json` |
 | [ ] `EURUSD/breakout/15m` | open | `results/cells/EURUSD_breakout_15m.json` |
 | [ ] `EURUSD/breakout/1h` | open | `results/cells/EURUSD_breakout_1h.json` |
 | [ ] `EURUSD/breakout/4h` | open | `results/cells/EURUSD_breakout_4h.json` |
