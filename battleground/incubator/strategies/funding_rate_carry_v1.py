@@ -47,12 +47,8 @@ FUNDING_ENTRY_THRESHOLD = 0.0003   # |rate| must exceed this to signal
 DRIFT_THRESHOLD = 0.0001           # |drift| must exceed this (0.01%)
 FUNDING_HISTORY_LIMIT = 30         # periods for SMA
 
-try:  # normal case: imported as part of the package
-    from .api_helpers import fetch_current_price as _fetch_price_fallback
-    from .api_helpers import fetch_funding_rate as _fetch_funding_fallback
-except ImportError:  # run as a plain script: api_helpers sits beside this file
-    from api_helpers import fetch_current_price as _fetch_price_fallback
-    from api_helpers import fetch_funding_rate as _fetch_funding_fallback
+from api_helpers import fetch_funding_rate as _fetch_funding_fallback
+from api_helpers import fetch_current_price as _fetch_price_fallback
 
 # Risk parameters for the hedged position
 # Since this is market-neutral, TP/SL are based on yield thresholds

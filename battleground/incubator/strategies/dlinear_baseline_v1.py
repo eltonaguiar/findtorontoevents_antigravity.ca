@@ -58,10 +58,7 @@ logger = logging.getLogger(__name__)
 # ── Configuration ────────────────────────────────────────────────────
 SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "ENAUSDT", "JUPUSDT", "WIFUSDT", "STXUSDT", "RENDERUSDT"]
 
-try:  # imported as part of the package
-    from .api_helpers import fetch_klines as _fetch_klines_fallback
-except ImportError:  # run as a plain script
-    from api_helpers import fetch_klines as _fetch_klines_fallback
+from api_helpers import fetch_klines as _fetch_klines_fallback
 
 KLINE_INTERVAL = "4h"
 KLINE_LIMIT = 200               # 200 candles context (~33 days)

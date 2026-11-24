@@ -196,10 +196,6 @@ jobs:
           SM_ADMIN_KEY: livetrader2026
         run: |
           echo "=== ON-CHAIN ANALYTICS  $(date -u) ==="
-          # onchain_analytics.py imports mysql.connector and web3; without these the
-          # step printed a ModuleNotFoundError on every run even though it is
-          # continue-on-error (the error lines made the run look broken).
-          pip install --quiet mysql-connector-python web3
           cd scripts && python onchain_analytics.py
 
       - name: Portfolio Optimizer

@@ -67,24 +67,9 @@ jobs:
 
       - name: Fetch branch refs
         run: |
-          set -uo pipefail
-          # This is one un-retried network call against a 48k-file repo, and GitHub
-          # returned 503 for it, failing the whole guard on a transient error. Retry,
-          # then degrade to a warning: the guard's contract is "fail on findings",
-          # not "fail on a flaky fetch".
-          ok=0
-          for attempt in 1 2 3 4; do
-            if git fetch --prune --no-tags --depth=1 origin \
-                 '+refs/heads/*:refs/remotes/origin/*'; then
-              ok=1
-              break
-            fi
-            echo "fetch attempt $attempt/4 failed; retrying in $((attempt*10))s"
-            sleep $((attempt*10))
-          done
-          if [ "$ok" -ne 1 ]; then
-            echo "::warning::could not fetch all branch refs (transient upstream error); scanning the refs that are available"
-          fi
+          set -euo pipefail
+          git fetch --prune --no-tags --depth=1 origin \
+            '+refs/heads/*:refs/remotes/origin/*'
 
       - name: Scan for duplicated large blobs across non-main branches
         id: scan

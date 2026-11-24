@@ -53,10 +53,7 @@ logger = logging.getLogger(__name__)
 # ── Configuration ────────────────────────────────────────────────────
 SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "ENAUSDT", "JUPUSDT", "WIFUSDT", "STXUSDT", "RENDERUSDT", "NEARUSDT"]
 
-try:  # imported as part of the package
-    from .api_helpers import fetch_klines as _fetch_klines_fallback
-except ImportError:  # run as a plain script
-    from api_helpers import fetch_klines as _fetch_klines_fallback
+from api_helpers import fetch_klines as _fetch_klines_fallback
 
 # Volatility regime detection
 VOL_PERIOD = 20           # ATR calculation period

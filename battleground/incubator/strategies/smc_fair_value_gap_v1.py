@@ -56,10 +56,7 @@ logger = logging.getLogger(__name__)
 # ── Configuration ────────────────────────────────────────────────────
 SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "ENAUSDT", "JUPUSDT", "WIFUSDT", "STXUSDT", "RENDERUSDT"]
 
-try:  # imported as part of the package
-    from .api_helpers import fetch_klines as _fetch_klines_fallback
-except ImportError:  # run as a plain script
-    from api_helpers import fetch_klines as _fetch_klines_fallback
+from api_helpers import fetch_klines as _fetch_klines_fallback
 
 # Analysis parameters
 KLINE_INTERVAL = "15m"      # 15-minute candles for SMC analysis

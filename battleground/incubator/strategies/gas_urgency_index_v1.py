@@ -59,14 +59,8 @@ SYMBOLS = [
     "JUPUSDT", "WIFUSDT", "STXUSDT", "RENDERUSDT",
 ]
 
-try:  # imported as part of the package
-    from .api_helpers import fetch_klines as _fetch_klines_fallback
-except ImportError:  # run as a plain script
-    from api_helpers import fetch_klines as _fetch_klines_fallback
-try:  # imported as part of the package
-    from .api_helpers import fetch_current_price as _fetch_price_fallback
-except ImportError:  # run as a plain script
-    from api_helpers import fetch_current_price as _fetch_price_fallback
+from api_helpers import fetch_klines as _fetch_klines_fallback
+from api_helpers import fetch_current_price as _fetch_price_fallback
 
 # Gas urgency thresholds
 GAS_URGENCY_THRESHOLD = 2.0       # minimum ratio to generate signal

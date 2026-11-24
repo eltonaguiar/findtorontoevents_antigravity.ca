@@ -52,18 +52,11 @@ logger = logging.getLogger(__name__)
 # ── Configuration ────────────────────────────────────────────────────
 SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "ENAUSDT", "JUPUSDT", "WIFUSDT", "STXUSDT", "RENDERUSDT"]
 
-try:  # imported as part of the package
-    from .api_helpers import (
-        fetch_current_price as _fetch_price_fallback,
-        fetch_futures_klines as _fetch_futures_klines_fallback,
-        fetch_funding_rate_single as _fetch_funding_single_fallback,
-    )
-except ImportError:  # run as a plain script
-    from api_helpers import (
-        fetch_current_price as _fetch_price_fallback,
-        fetch_futures_klines as _fetch_futures_klines_fallback,
-        fetch_funding_rate_single as _fetch_funding_single_fallback,
-    )
+from api_helpers import (
+    fetch_current_price as _fetch_price_fallback,
+    fetch_futures_klines as _fetch_futures_klines_fallback,
+    fetch_funding_rate_single as _fetch_funding_single_fallback,
+)
 
 # Binance futures-specific endpoints (OI hist & L/S ratio have no alternative)
 BINANCE_OI_HIST_URL = "https://fapi.binance.com/futures/data/openInterestHist"

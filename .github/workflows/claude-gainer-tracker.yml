@@ -83,7 +83,7 @@ jobs:
         run: |
           cd claude_gainer_ml
           if ! ls models/*.joblib >/dev/null 2>&1; then
-            echo "::warning::No model .joblib files in claude_gainer_ml/models/ — scanner SKIPPED (scanner_ran=false, reason=no_models). Fail-open by design: job stays green but predictions are a NO-OP. Status recorded in updates/data/dashboard_status.json."
+            echo "::error::No model .joblib files in claude_gainer_ml/models/ — scanner SKIPPED (scanner_ran=false, reason=no_models). Fail-open by design: job stays green but predictions are a NO-OP. Status recorded in updates/data/dashboard_status.json."
             echo "scanner_ran=false" >> "$GITHUB_OUTPUT"
             echo "reason=no_models" >> "$GITHUB_OUTPUT"
             cd ..

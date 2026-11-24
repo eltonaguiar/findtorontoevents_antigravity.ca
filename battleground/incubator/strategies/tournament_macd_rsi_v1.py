@@ -49,10 +49,7 @@ try:
 except ImportError:
     requests = None  # type: ignore
 
-try:  # imported as part of the package
-    from .api_helpers import fetch_klines as _fetch_klines_fallback
-except ImportError:  # run as a plain script
-    from api_helpers import fetch_klines as _fetch_klines_fallback
+from api_helpers import fetch_klines as _fetch_klines_fallback
 
 logger = logging.getLogger(__name__)
 

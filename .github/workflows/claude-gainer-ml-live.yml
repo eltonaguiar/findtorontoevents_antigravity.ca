@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   scan:
-    runs-on: [self-hosted, gx10]
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
@@ -41,7 +41,7 @@ jobs:
         run: |
           cd claude_gainer_ml
           if ! ls models/*.joblib >/dev/null 2>&1; then
-            echo "::warning::No model .joblib files in claude_gainer_ml/models/ — scanner SKIPPED (scanner_ran=false, reason=no_models). Fail-open by design: job stays green but this run is a NO-OP. Status recorded in updates/data/antigravity_ml_performance.json."
+            echo "::error::No model .joblib files in claude_gainer_ml/models/ — scanner SKIPPED (scanner_ran=false, reason=no_models). Fail-open by design: job stays green but this run is a NO-OP. Status recorded in updates/data/antigravity_ml_performance.json."
             echo "scanner_ran=false" >> "$GITHUB_OUTPUT"
             echo "reason=no_models" >> "$GITHUB_OUTPUT"
             python3 -c "
