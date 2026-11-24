@@ -8,13 +8,14 @@ answers, so a cron check is a single fetch.
 Schema (stable):
   schema, generated_at, ledger_generated_at, coverage{scored,total,valid,mode},
   verdicts{proven,candidate,weak,kill}, persistence{on,churn}, denials{n,by_class},
-  forward{rows,enforced,eligible_pods,blocked[hypothesis,reason]}, stale(bool)
+  forward{rows,enforced,eligible_pods,blocked[hypothesis,reason]}, stale(bool),
+  stale_after(ISO) -- compare to your clock; 'stale' is frozen at build time
 """
 from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -46,9 +47,15 @@ def build_status(ledger: dict, forward: dict | None = None,
 
     gen = ledger.get("generated_at")
     age_h = None
+    stale_after = None
     try:
         dt = datetime.fromisoformat(str(gen).replace("Z", "+00:00"))
         age_h = round((now - dt).total_seconds() / 3600.0, 2)
+        # The file is a static snapshot rebuilt only by the ledger workflow, so a
+        # boolean computed at build time is frozen until the next build and can
+        # never go true between runs. Publish the moment it SHOULD be considered
+        # stale instead, so any consumer can compare it to its own clock.
+        stale_after = (dt + timedelta(hours=STALE_HOURS)).isoformat()
     except (TypeError, ValueError):
         pass
 
@@ -58,6 +65,9 @@ def build_status(ledger: dict, forward: dict | None = None,
         "ledger_generated_at": gen,
         "age_hours": age_h,
         "stale": bool(age_h is None or age_h > STALE_HOURS),
+        "stale_after": stale_after,
+        "stale_note": ("'stale' is evaluated at build time and is frozen between rebuilds; "
+                       "consumers must compare stale_after to their own clock."),
         "coverage": {
             "mode": (cov.get("denominator") or {}).get("mode"),
             "scored": cov.get("scored_rows"),

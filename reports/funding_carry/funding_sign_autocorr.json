@@ -1,0 +1,167 @@
+{
+  "generated_by": "tools/funding_carry_sign_autocorr.py",
+  "cache": "/home/eaguiar2015/findtorontoevents_antigravity.ca/reports/funding_carry/funding_cache.json",
+  "coins": [
+    "BNB/USDT:USDT",
+    "BTC/USDT:USDT",
+    "ETH/USDT:USDT",
+    "SOL/USDT:USDT",
+    "XRP/USDT:USDT"
+  ],
+  "n_days": 2152,
+  "window": [
+    "2021-01-01",
+    "2026-11-22"
+  ],
+  "reconstruction": {
+    "mean_bp_day": 1.925187,
+    "prior_reported_bp_day": 1.925187091078067,
+    "matches_prior_within_1pct": true,
+    "note": "If this is false the sign statistics below are still valid (they are scale-free) but the drag table is not comparable."
+  },
+  "q1_sign_clustering": {
+    "pct_days_negative": 26.812,
+    "sign_autocorrelation": {
+      "lag1": 0.5428,
+      "lag2": 0.4296,
+      "lag3": 0.3726,
+      "lag4": 0.3582,
+      "lag5": 0.3374,
+      "lag6": 0.3101,
+      "lag7": 0.3082,
+      "lag8": 0.2873,
+      "lag9": 0.2871,
+      "lag10": 0.2372
+    },
+    "carry_autocorrelation": {
+      "lag1": 0.6153,
+      "lag2": 0.4036,
+      "lag3": 0.3282,
+      "lag4": 0.3254,
+      "lag5": 0.2895
+    },
+    "p_negative_given_yesterday_negative": 0.6655,
+    "p_negative_given_yesterday_positive": 0.1226,
+    "mean_bp_day_after_negative": -2.3075,
+    "mean_bp_day_after_positive": 3.4777,
+    "streaks": {
+      "n_negative_streaks": 193,
+      "longest_streak_days": 27,
+      "median_streak_days": 2,
+      "p90_streak_days": 6
+    },
+    "mdd_bp_total": -1045.89,
+    "mdd_bp_inside_negative_days": -1738.1,
+    "mdd_bp_outside_negative_days": 0.0,
+    "exit_on_negative_signal": {
+      "regime_switches": 193,
+      "carry_avoided_bp": 1738.1,
+      "exit_reentry_cost_bp": 15440.0,
+      "net_bp": -13701.9,
+      "verdict": "NOT TRADEABLE",
+      "note": "Stepping out of the carry on a negative-funding signal pays 2 round trips per switch to avoid a mean of about 2.3 bp/day. It is a sizing signal, not a timing edge."
+    }
+  },
+  "q2_holding_period_drag": {
+    "roundtrip_bp": 40.0,
+    "table": [
+      {
+        "holding_days": 30,
+        "drag_bp_day": 1.3333,
+        "net_bp_day": 0.5919,
+        "ann_pct": 2.16,
+        "ci_lo_bp": -0.3661,
+        "ci_hi_bp": 1.5433,
+        "verdict": "CI-LB FAIL"
+      },
+      {
+        "holding_days": 60,
+        "drag_bp_day": 0.6667,
+        "net_bp_day": 1.2585,
+        "ann_pct": 4.594,
+        "ci_lo_bp": 0.3005,
+        "ci_hi_bp": 2.2099,
+        "verdict": "PASS"
+      },
+      {
+        "holding_days": 90,
+        "drag_bp_day": 0.4444,
+        "net_bp_day": 1.4807,
+        "ann_pct": 5.405,
+        "ci_lo_bp": 0.5228,
+        "ci_hi_bp": 2.4322,
+        "verdict": "PASS"
+      },
+      {
+        "holding_days": 120,
+        "drag_bp_day": 0.3333,
+        "net_bp_day": 1.5919,
+        "ann_pct": 5.81,
+        "ci_lo_bp": 0.6339,
+        "ci_hi_bp": 2.5433,
+        "verdict": "PASS"
+      },
+      {
+        "holding_days": 180,
+        "drag_bp_day": 0.2222,
+        "net_bp_day": 1.703,
+        "ann_pct": 6.216,
+        "ci_lo_bp": 0.745,
+        "ci_hi_bp": 2.6544,
+        "verdict": "PASS"
+      },
+      {
+        "holding_days": 365,
+        "drag_bp_day": 0.1096,
+        "net_bp_day": 1.8156,
+        "ann_pct": 6.627,
+        "ci_lo_bp": 0.8576,
+        "ci_hi_bp": 2.767,
+        "verdict": "PASS"
+      }
+    ],
+    "note": "drag_bp_day = roundtrip_bp / holding_days. Assumes one venue, free internal spot<->perp transfers, and no margin top-up cost. The margin-rebalancing cost remains UNMEASURED by anyone on the bus."
+  },
+  "flat_drag_sweep": [
+    {
+      "drag_bp_day": 0.0,
+      "net_bp_day": 1.9252,
+      "ci_lo_bp": 0.9672,
+      "verdict": "PASS"
+    },
+    {
+      "drag_bp_day": 0.25,
+      "net_bp_day": 1.6752,
+      "ci_lo_bp": 0.7172,
+      "verdict": "PASS"
+    },
+    {
+      "drag_bp_day": 0.5,
+      "net_bp_day": 1.4252,
+      "ci_lo_bp": 0.4672,
+      "verdict": "PASS"
+    },
+    {
+      "drag_bp_day": 1.0,
+      "net_bp_day": 0.9252,
+      "ci_lo_bp": -0.0328,
+      "verdict": "CI-LB FAIL"
+    },
+    {
+      "drag_bp_day": 1.5,
+      "net_bp_day": 0.4252,
+      "ci_lo_bp": -0.5328,
+      "verdict": "CI-LB FAIL"
+    },
+    {
+      "drag_bp_day": 2.0,
+      "net_bp_day": -0.0748,
+      "ci_lo_bp": -1.0328,
+      "verdict": "CI-LB FAIL"
+    }
+  ],
+  "headline_ci": [
+    0.9672,
+    2.8766
+  ]
+}

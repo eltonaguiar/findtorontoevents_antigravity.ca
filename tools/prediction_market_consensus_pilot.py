@@ -6,7 +6,12 @@ Tracks every new `prediction_market_consensus` pick in a forward-test pilot.
 - Ingests new picks from `at_raw_picks`
 - Resolves open picks via `at_pick_outcomes` and `at_raw_picks.status`
 - Maintains running stats: total_picks, wins, losses, wr, pf, avg_pnl, max_drawdown
-- Sets promotion_ready only when forward n>=50 AND WR>=60% AND PF>=1.5
+- Sets promotion_ready only when the LIVE forward gate is cleared: forward rows
+  (resolved at/after pilot start) >= min_forward_n AND WR >= min_wr AND PF >= min_pf
+  AND max drawdown <= max_drawdown_pct, using the same thresholds as
+  `prediction_market_consensus_state.json` (the file the dashboard reads).
+  Backfilled history ingested before the pilot started is excluded: it inflates
+  n and is not a forward sample.
 
 Usage:
     python tools/prediction_market_consensus_pilot.py --dry-run
@@ -26,10 +31,16 @@ import pymysql
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PILOT_PATH = REPO_ROOT / "verified_strategies" / "paper_pilot" / "prediction_market_consensus_pilot.json"
 
+# Single source of truth for the promotion gate. Mirrors "promotion_criteria" in
+# prediction_market_consensus_state.json (written by tools/pmc_pilot_monitor.py /
+# tools/track_pmc_paper_pilot.py, read by the dashboard). This used to be
+# min_forward_n 50 with no drawdown cap, which disagreed with the 150 / 15% cap
+# the state file and dashboard enforce.
 PROMOTION_CRITERIA = {
-    "min_forward_n": 50,
+    "min_forward_n": 150,
     "min_wr_pct": 60.0,
     "min_pf": 1.5,
+    "max_drawdown_pct": 15.0,
 }
 
 
@@ -101,6 +112,32 @@ def recalculate_stats(picks: list) -> dict:
         "pf": round(pf, 4),
         "avg_pnl": round(avg_pnl, 4),
         "max_drawdown": round(mdd, 2),
+    }
+
+
+def forward_stats(picks: list, start_iso: str) -> dict:
+    """Stats over forward picks only: resolved at/after the pilot start date.
+
+    `resolved` in the main stats block counts every resolved pick ever ingested,
+    including backfilled history from before the pilot started. A promotion gate
+    must not be fed that; this mirrors the state file's `forward_n`.
+    """
+    start_date = (start_iso or "")[:10]
+    fwd = [
+        p for p in picks
+        if p.get("resolved_at") and p["resolved_at"][:10] >= start_date
+        and p["status"] in ("WON", "LOST", "EXPIRED", "CLOSED", "FLAT")
+    ]
+    base = recalculate_stats(fwd)
+    return {
+        "n": base["resolved"],
+        "wins": base["wins"],
+        "losses": base["losses"],
+        "flats": base["flats"],
+        "wr": base["wr"],
+        "pf": base["pf"],
+        "avg_pnl": base["avg_pnl"],
+        "max_drawdown": base["max_drawdown"],
     }
 
 
@@ -245,12 +282,21 @@ def update_pilot(pilot: dict, dry_run: bool = False) -> dict:
         # 3. Recalculate stats
         pilot["stats"] = recalculate_stats(pilot["picks"])
 
-        # 4. Promotion gate
-        s = pilot["stats"]
+        # 4. Promotion gate -- evaluated on the forward sample, with the same
+        #    thresholds as the state file, so this flag and the dashboard agree.
+        s = forward_stats(pilot["picks"], pilot.get("pilot_started_at", ""))
+        pilot["promotion_gate"] = {
+            "forward_n": s["n"],
+            "forward_wr": s["wr"],
+            "forward_pf": s["pf"],
+            "forward_max_drawdown": s["max_drawdown"],
+            "criteria": PROMOTION_CRITERIA,
+        }
         pilot["promotion_ready"] = (
-            s["resolved"] >= PROMOTION_CRITERIA["min_forward_n"]
+            s["n"] >= PROMOTION_CRITERIA["min_forward_n"]
             and s["wr"] >= PROMOTION_CRITERIA["min_wr_pct"]
             and s["pf"] >= PROMOTION_CRITERIA["min_pf"]
+            and s["max_drawdown"] <= PROMOTION_CRITERIA["max_drawdown_pct"]
         )
 
         # 5. Persist or preview

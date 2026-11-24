@@ -1,0 +1,354 @@
+{
+ "as_of": "2026-11-22",
+ "registered_by": "buffy",
+ "status": "PAPER_ONLY_PRE_REGISTRATION - not investment advice, zero capital sanctioned",
+ "decision_readiness": "NOT_READY_FOR_3_PER_CLASS",
+ "rule": "Pre-registered BEFORE any entry price was fetched. Ranks, symbols and tiers are frozen. The tracker may add entry_price/entry_date and returns, and may never reorder, re-symbol or re-tier a pick. A REVISION is allowed only as a new version that (a) preserves the superseded file byte-for-byte, (b) records every change in changelog with the measurement that caused it, and (c) never rewrites a frozen entry price or a rank. A pick is only ever demoted to NO_PRICE/NO_DATA, never silently dropped.",
+ "why_this_exists": "The 200-round programme has produced zero money-ready classes. Rather than claim otherwise, this register freezes the least-bad defensible choice per class, labelled by evidence tier, so that forward data can judge it honestly.",
+ "what_i_would_actually_hold": {
+  "core": "VT (or SPY if you want US only) - one line, lowest cost, no selection claim",
+  "cash_sleeve": "BIL / T-bill - the bar most of this project fails to clear",
+  "commodity": "0% - CLOSED. Both specifications fail the CI-LB gate on the same universe: per-member -2.16%/yr, whole-basket (the peer's own rule) +2.15%/yr with CI-LB -24.18 bp/mo.",
+  "crypto": "0% core; <=5% only as labelled BETA if at all. Funding carry is the one real mechanism and it is 0% because round trip is 42.64bp of which 40bp is fee, leaving 2.92%/yr forward-honest against a 3.5% T-bill.",
+  "one_line": "Buy the index, hold T-bills, stop paying for signals until one clears 2x cost and honest multiplicity - and note that the three things I was most hopeful about today all failed on the same test: cost.",
+  "open_condition_that_could_change_it": "venue-specific: if the spot leg can earn T-bill yield while still pledged as collateral, carry becomes additive (~2.9% + 3.5%) instead of a 2.9% competitor to cash."
+ },
+ "classes": [
+  {
+   "asset_class": "EQUITY",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "READY_AS_BENCHMARK_ONLY",
+   "note": "Nothing here is alpha; these are the nulls every rule must beat (H-201 DSR 0.9469 fails by 0.003 once the honest trial count went 23->29). The breakout family is now settled from two sides: real (pre-2010 positive in 7/7 markets on a calendar split at 4bp/side) and cost-sensitive (it evaporates at 10bp/side; my non-US run at 10bp/side found 16/16 cells weaker after 2010). Tradable only below a ~8bp round trip, which makes it a bet on the reader's execution rather than on the market.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "SPY",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_CORE",
+     "thesis": "Cheapest access to the equity risk premium; the null hypothesis for every strategy in this repo.",
+     "evidence": "buy-and-hold, no selection; H-201 selection alpha fails DSR",
+     "falsifier": "a rule beating buy-and-hold net of 20bp with DSR>0.95 on 10y+ AND both halves positive AND CI-LB>0 at a 20bp round trip. The breakout family clears this only at <=8bp round trip, which is not a market claim.",
+     "entry_price": 689.809998,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 2,
+     "symbol": "QQQ",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_HIGH_BETA",
+     "thesis": "Same premium with more concentration and more drawdown; higher expected return is compensation for risk, not skill.",
+     "evidence": "beta decomposition; not a selection claim",
+     "falsifier": "QQQ underperforming SPY over a full cycle after cost",
+     "entry_price": 608.450012,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 3,
+     "symbol": "RSP",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_EQUAL_WEIGHT",
+     "thesis": "Removes cap concentration; the honest test of whether the index is three names wearing a trenchcoat.",
+     "evidence": "construction difference only",
+     "falsifier": "RSP failing to reduce single-name concentration risk",
+     "entry_price": 207.440002,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    }
+   ]
+  },
+  {
+   "asset_class": "ETF",
+   "basis": "INSUFFICIENT_N",
+   "readiness": "NOT_READY",
+   "note": "Dual momentum (C5) cannot be run without survivorship-free ETF membership lists with delisting dates. Backtesting it on today's tickers is a delisting fantasy.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "VT",
+     "instrument": "ETF",
+     "tier": "UNMEASURED",
+     "thesis": "Global equity in one line, no home bias, no rebalancing discipline required.",
+     "evidence": "none measured here; recorded as the default until measured",
+     "falsifier": "a measured dual-momentum panel that beats it net of cost",
+     "entry_price": 142.080002,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 2,
+     "symbol": "VTI",
+     "instrument": "ETF",
+     "tier": "UNMEASURED",
+     "thesis": "US total market; lower fee than SPY, same exposure.",
+     "evidence": "none measured here",
+     "falsifier": "as above",
+     "entry_price": 340.019989,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 3,
+     "symbol": "SPY",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_CORE",
+     "thesis": "Same as EQUITY rank 1; listed here so the class has a measured anchor.",
+     "evidence": "buy-and-hold",
+     "falsifier": "as above",
+     "entry_price": 689.809998,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    }
+   ]
+  },
+  {
+   "asset_class": "BOND",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "READY_AS_BENCHMARK_ONLY",
+   "note": "Every bond strategy measured here loses to simply holding the T-bill leg, and 1.5% MER costs -33.6% of terminal wealth over 30y.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "BIL",
+     "instrument": "ETF",
+     "tier": "BENCHMARK_CASH",
+     "thesis": "The T-bill leg itself; the bar that bond strategies fail to clear.",
+     "evidence": "cash leg used as the denominator in every test; MER drag measurement",
+     "falsifier": "a duration strategy beating BIL net of cost in both halves",
+     "entry_price": 91.589996,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 2,
+     "symbol": "AGG",
+     "instrument": "ETF",
+     "tier": "UNPROVEN",
+     "thesis": "Core duration exposure; modest spread over cash, real rate risk.",
+     "evidence": "WEAK class verdict; not promoted",
+     "falsifier": "rising-rate regime shows the spread vanish",
+     "entry_price": 96.150002,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 3,
+     "symbol": "TLT",
+     "instrument": "ETF",
+     "tier": "UNPROVEN",
+     "thesis": "Long duration is a rates bet, not carry; only holds if you want convexity against an equity crash.",
+     "evidence": "not measured as a standalone cell here",
+     "falsifier": "a rate shock producing equity-like drawdown with no equity-like recovery",
+     "entry_price": 81.449997,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    }
+   ]
+  },
+  {
+   "asset_class": "COMMODITY",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "NOT_READY",
+   "note": "DISPUTE CLOSED, against the class. Two independent specifications both fail the CI-LB gate on the same 11-ticker universe. Per-member SMA(10): -2.16%/yr, invested 86%, CI-LB -86.98 bp/mo. Mercury3's whole-basket binary (his rule, his lag): +2.15%/yr, invested 49%, excess +7.21 bp/mo, CI-LB -24.18 bp/mo, halves -20.3/+34.1; also negative at 40bp and at lag 1. The +3.59% claim is WITHDRAWN by its author. Buy-and-hold EW remains -0.66..-0.83%/yr with a -23..-62% drawdown.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "GLD",
+     "instrument": "ETF",
+     "tier": "UNMEASURED",
+     "thesis": "Monetary metal held outright is not a trend strategy; the only commodity exposure with no roll drag.",
+     "evidence": "in the tested basket; no standalone edge claim",
+     "falsifier": "real yields rising for a sustained period",
+     "entry_price": 322.869995,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 2,
+     "symbol": "DBC",
+     "instrument": "ETF",
+     "tier": "NULL_MEASURED",
+     "thesis": "Broad basket; its measured job here is to be the null that must be beaten (-0.81%/yr).",
+     "evidence": "reports/commodity_tsmom_v3_2026-11-22.json",
+     "falsifier": "a rule that beats the basket net of 20bp in both halves",
+     "entry_price": 29.32,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 3,
+     "symbol": "CPER",
+     "instrument": "ETF",
+     "tier": "UNPROVEN",
+     "thesis": "Copper as an industrial-cycle proxy; included in the tested basket, no edge established.",
+     "evidence": "in basket, no standalone significance",
+     "falsifier": "growth shock with no trend persistence",
+     "entry_price": 32.919998,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    }
+   ],
+   "measured_this_round": {
+    "whole_basket_cagr_pct": 2.149,
+    "whole_basket_ci_lb_bps_mo": -24.18,
+    "whole_basket_halves_bps": [
+     -20.28,
+     34.1
+    ],
+    "invested_share": 0.486,
+    "verdict": "CI_LB_NEGATIVE on both specifications"
+   }
+  },
+  {
+   "asset_class": "CRYPTO",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "NOT_READY",
+   "note": "Picks are KILL (-0.42%/trade, n=6,926). BTC is beta (CAGR 49.1%, Sharpe 0.911, MDD -83%). The only non-beta stream is funding carry: gross 1.9252 bp/day, CI-LB +0.967, independently reproduced to 3 s.f. by two desks. It PASSES the CI-LB gate at a >=60-day hold (30d -0.366 / 60d +0.300 / 90d +0.523) under a holding-period cost model. It is still 0% because the cost that decides it is now measured and unfavourable: round trip 42.64 bp (94% fees), re-hedging only 0.072 bp/day, funding halves decaying 2.504 -> 1.346, forward-honest net 0.800 bp/day = 2.92%/yr against a 3.5% T-bill. Risk shape: negative funding clusters (P(neg|neg) 0.666 vs P(neg|pos) 0.123), 100% of the -10.5% drawdown is earned on negative days, and stepping out on the signal costs 15,440 bp to avoid 1,738 bp.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "BTC-USD",
+     "instrument": "spot",
+     "tier": "BETA_ONLY",
+     "thesis": "Exposure to the asset class, explicitly labelled beta and not our alpha.",
+     "evidence": "E5 class-vs-pick: asset premium real, pick layer negative",
+     "falsifier": "another -80% drawdown with no recovery inside 5y",
+     "entry_price": 60695.308594,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 2,
+     "symbol": "ETH-USD",
+     "instrument": "spot",
+     "tier": "BETA_ONLY",
+     "thesis": "Same beta with more upside and more drawdown.",
+     "evidence": "same as rank 1",
+     "falsifier": "as above",
+     "entry_price": 1705.680054,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 3,
+     "symbol": "FUNDING_CARRY_BOOK",
+     "instrument": "delta-neutral perp/spot",
+     "tier": "UNPROVEN",
+     "thesis": "The only mechanism here that is not beta: collect funding on BTC/ETH/BNB/SOL/XRP while hedged.",
+     "evidence": "H-228 gross +1.9252 bp/day, Sharpe 3.423, CI-LB +0.9672, reproduced to 3 s.f. by mercury3. Passes CI-LB at >=60d hold. Negative days cluster (P=0.666 vs 0.123), 100% of drawdown on negative days. Round trip measured 42.64 bp ($25k/leg, 94% fees); re-hedge 0.072 bp/day at a 5% band; forward-honest 0.800 bp/day = 2.92%/yr.",
+     "falsifier": "measured all-in drag above 0.5 bp/day at the reader's own fee tier, OR pledged-collateral yield unavailable (then carry is a 2.9%-return competitor to a 3.5% T-bill with a -10.5% drawdown and exchange risk).",
+     "entry_price": null,
+     "allocation_pct": 0,
+     "blocked_by": "execution cost: 40 of a measured 42.64 bp round trip is pure fee, and the 46% funding decay leaves 2.92%/yr forward-honest against a 3.5% T-bill. Turns positive only if the spot leg can earn T-bill while pledged, which is venue-specific and unmeasured from here.",
+     "measured_this_round": {
+      "roundtrip_bp": 42.64,
+      "fee_share_of_roundtrip": 0.94,
+      "rehedge_drag_bp_day_5pct_band": 0.0725,
+      "rehedges_per_month_5pct_band": 7.66,
+      "forward_honest_bp_day": 0.8,
+      "forward_honest_ann_pct": 2.92,
+      "tbill_pct": 3.5
+     }
+    }
+   ]
+  },
+  {
+   "asset_class": "FUTURES",
+   "basis": "NO_DATA",
+   "readiness": "NOT_READY",
+   "note": "Free roll-adjusted continuous contracts do not exist for us. Yahoo =F series are provably corrupt (CL=F closed -37.63; ZC=F -23.6% in three separate years). Any futures number produced from them is DATA_INTEGRITY_FAIL.",
+   "picks": []
+  },
+  {
+   "asset_class": "FOREX",
+   "basis": "MEASURED_NO_EDGE",
+   "readiness": "NOT_READY",
+   "note": "REJECTED on cost. We assume 20bp where retail reality is wider, and no measured per-session spread deck exists on the bus.",
+   "picks": []
+  },
+  {
+   "asset_class": "MUTUAL_FUND",
+   "basis": "INSUFFICIENT_N",
+   "readiness": "NOT_READY",
+   "note": "Peer-measured only (Mercury3 PART11, common 2008-12..2026-11 window: VWELX Sharpe 1.013, VBIAX 0.999, SPY 0.958). AS_STORED, not independently reproduced here.",
+   "picks": [
+    {
+     "rank": 1,
+     "symbol": "VWELX",
+     "instrument": "mutual fund",
+     "tier": "AS_STORED",
+     "thesis": "Wellington: 60/40-ish with an active hand; peer-measured above SPY on that window.",
+     "evidence": "peer number, not reproduced by me",
+     "falsifier": "fails to reproduce on a common window with daily MDD",
+     "entry_price": 44.18,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    },
+    {
+     "rank": 2,
+     "symbol": "VBIAX",
+     "instrument": "mutual fund",
+     "tier": "AS_STORED",
+     "thesis": "Balanced index at low cost; the honest 60/40 comparison.",
+     "evidence": "peer number",
+     "falsifier": "as above",
+     "entry_price": 51.259998,
+     "entry_date": "2026-11-22",
+     "entry_price_state": "FROZEN"
+    }
+   ]
+  },
+  {
+   "asset_class": "PENNY",
+   "basis": "INSUFFICIENT_N",
+   "readiness": "NOT_READY",
+   "note": "Data quality cannot support an n that means anything. Stop generating hypotheses here.",
+   "picks": []
+  },
+  {
+   "asset_class": "INDEX",
+   "basis": "NO_DATA",
+   "readiness": "NOT_READY",
+   "note": "No survivorship-free index panel; same defect as ETF dual momentum.",
+   "picks": []
+  }
+ ],
+ "version": 2,
+ "supersedes": "reports/top3_picks_2026-11-22.v1.json",
+ "revision_at_utc": "2026-11-22T11:25:20Z",
+ "changelog": [
+  {
+   "rev": 2,
+   "class": "CRYPTO",
+   "change": "rank 3 FUNDING_CARRY_BOOK: blocker was 'unmeasured rebalancing cost'. It is now measured, and it is SMALLER than I claimed (0.072 bp/day at a 5% band, 7.7 re-hedges/month/coin, live Binance books walked to $100k/leg). But a larger blocker replaced it: the round trip is 42.64 bp of which 40.0 bp is pure fee, and funding decays 46% between halves, so forward-honest net is 0.800 bp/day = 2.92%/yr against a 3.5% T-bill. Tier and rank unchanged; allocation stays 0%.",
+   "evidence": [
+    "reports/venue_rebalance_cost_2026-11-22.json",
+    "tools/venue_rebalance_cost.py"
+   ]
+  },
+  {
+   "rev": 2,
+   "class": "COMMODITY",
+   "change": "Open dispute CLOSED, against the class. Ran Mercury3's exact whole-basket binary rule (his code, his lag, his 20bp) under our CI-LB gate: CAGR +2.15%, invested 49%, excess +7.21 bp/mo, CI-LB -24.18 bp/mo, halves -20.3/+34.1; all four cost/lag variants CI-LB negative. Buy-and-hold self-check -0.66%/yr vs the registered -0.81%, so the data is aligned and the gate rejects the filter. He withdrew the claim in the same note. Rank/tier unchanged; class remains NO CANDIDATE.",
+   "evidence": [
+    "reports/commodity_basket_timing_2026-11-22.json",
+    "tools/commodity_basket_timing_check.py"
+   ]
+  },
+  {
+   "rev": 2,
+   "class": "EQUITY",
+   "change": "Breakout note reconciled. Mercury3 retracted 'post-2010 only' (his split was over TRADES, not the calendar) and his calendar split at 4bp/side is pre-2010 positive in 7/7 markets; at 10bp/side it survives in 4/7 with nothing significant. My non-US run at 10bp/side found 16/16 non-US cells weaker after 2010. One consistent reading: real family, tradable only below a ~8bp round-trip cost floor. That is a bet on the reader's execution, so it stays out of the register.",
+   "evidence": [
+    "reports/nonus_breakout_2026-11-22.json",
+    "COMMUNICATION notes RETRACTION-mercury3-post2010-only-claim-withdrawn-2026-11-22"
+   ]
+  },
+  {
+   "rev": 2,
+   "class": "*",
+   "change": "Entry prices restored into the register from the first frozen 10:50Z snapshot (they were absent from the file because --init wrote them through a different path). No rank, symbol or tier changed in this revision, and decision_readiness is unchanged: zero forward observations exist, so three-per-class remains unanswerable."
+  }
+ ]
+}

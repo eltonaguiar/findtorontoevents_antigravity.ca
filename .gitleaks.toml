@@ -46,6 +46,14 @@ paths = [
   '''(?:^|/)signal_aggregator/dashboard_data\.json$''',
   '''(?:^|/)tools/data/dsr_audit_results\.json$''',
   '''(?:^|/)copy_trader_intel/data/.*\.json$''',
+  # Generated DSR aggregates (2026-11-22). gitleaks' generic-api-key rule fires on
+  # the JSON field literally named "key", whose value is a STRATEGY identifier
+  # (e.g. "key": "crypto_liquidity_wick_reversal_v1"), and on numeric rows near it.
+  # Both files are written by tools/deflated_sharpe.py from audit_dashboard data;
+  # no credential is in scope anywhere in that pipeline. Scoped to these two
+  # artefacts only -- not to .json generally.
+  '''(?:^|/)tools/deflated_sharpe_results\.json$''',
+  '''(?:^|/)reports/deflated_sharpe_corrected_.*\.json$''',
   # Source files audited 2026-11-15 with non-secret identifier/model/channel strings
   '''(?:^|/)quan_engine/failover_system\.py$''',
   '''(?:^|/)tools/publish_hf_findings\.py$''',

@@ -1,0 +1,918 @@
+{
+ "generated_utc": "2026-11-22T22:49:21Z",
+ "task": "M1 - EQUITY/ETF cost measurement",
+ "sources": {
+  "intraday_bars": "Tiingo IEX 1-min bars: https://api.tiingo.com/iex/<SYM>/prices?startDate=<day>&endDate=<day>&resampleFreq=1min",
+  "top_of_book": "Tiingo IEX: https://api.tiingo.com/iex/?tickers=<universe>",
+  "daily_bars": "data/cache/asset_class_review/*_5y.csv (2021-11-22..2026-11-19)",
+  "sample_day": "2026-11-20",
+  "session_note": "2026-11-22 is a Sunday; the US regular session is closed."
+ },
+ "spread": {
+  "status": "SKIPPED_OFFLINE_OR_NO_KEY"
+ },
+ "top_of_book": {
+  "status": "SKIPPED_OFFLINE_OR_NO_KEY"
+ },
+ "commission": {
+  "status": "COMMISSION_UNKNOWN",
+  "evidence_searched": [
+   "tools/data/transaction_costs.json (EQUITY note: 'commission-free broker + typical bid-ask spread' - an unsourced ASSUMPTION, 10bp RT)",
+   "no broker statement, no fill-level commission field in the repo"
+  ],
+  "why_not_zero": "a zero-commission claim needs a broker confirmation or fill data; neither exists here, and PFOF fill quality is exactly where a 'zero' commission hides"
+ },
+ "borrow": {
+  "status": "ZERO_FOR_THIS_FAMILY",
+  "reason": "the pod family is LONG-ONLY by construction: backtest_symbol() skips any signal whose direction is not LONG/BUY, so no short leg and no borrow",
+  "hypothetical_short_leg": "BORROW_UNKNOWN - no borrow rate is in the repo"
+ },
+ "impact": {
+  "adv": {
+   "AAPL": {
+    "median_daily_dollar_volume_usd": 11118752135.498047,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "AMZN": {
+    "median_daily_dollar_volume_usd": 8002326279.130554,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "DIS": {
+    "median_daily_dollar_volume_usd": 990033844.7341919,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "GOOGL": {
+    "median_daily_dollar_volume_usd": 4691775138.259506,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "JNJ": {
+    "status": "no cached data"
+   },
+   "JPM": {
+    "median_daily_dollar_volume_usd": 1761940866.2254333,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "KO": {
+    "median_daily_dollar_volume_usd": 873926051.5739441,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "META": {
+    "median_daily_dollar_volume_usd": 6816858316.799927,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "MSFT": {
+    "median_daily_dollar_volume_usd": 8519059354.357147,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "NVDA": {
+    "median_daily_dollar_volume_usd": 24433423973.432922,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "PG": {
+    "status": "no cached data"
+   },
+   "QQQ": {
+    "median_daily_dollar_volume_usd": 20143713966.94336,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "SPY": {
+    "median_daily_dollar_volume_usd": 34625654328.68347,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "WMT": {
+    "median_daily_dollar_volume_usd": 1201503495.1648712,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "XLE": {
+    "median_daily_dollar_volume_usd": 1519314662.8162384,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "XLF": {
+    "median_daily_dollar_volume_usd": 1685144860.9449387,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "XLK": {
+    "median_daily_dollar_volume_usd": 1242744686.6607666,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "XLV": {
+    "median_daily_dollar_volume_usd": 1223311876.7196655,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   },
+   "XLY": {
+    "status": "no cached data"
+   },
+   "XOM": {
+    "median_daily_dollar_volume_usd": 1716948947.7329254,
+    "window": "2021-11-22..2026-11-19",
+    "n_bars": 1254
+   }
+  },
+  "order_sizing": "one unit per signal, equal weight, no leverage; a $100k book over 13 names is ~$7.7k/name",
+  "order_to_adv": {
+   "AAPL": 6.925237568177062e-07,
+   "AMZN": 9.622202009034552e-07,
+   "DIS": 7.777511891088254e-06,
+   "GOOGL": 1.6411698713371089e-06,
+   "JNJ": null,
+   "JPM": 4.3701807180938706e-06,
+   "KO": 8.81081412567147e-06,
+   "META": 1.1295525947816165e-06,
+   "MSFT": 9.038556582026592e-07,
+   "NVDA": 3.1514207785091455e-07,
+   "PG": null,
+   "QQQ": 3.8225324349998257e-07,
+   "SPY": 2.223784690653893e-07,
+   "WMT": 6.408637204125153e-06,
+   "XLE": 5.068074565756572e-06,
+   "XLF": 4.569340107462485e-06,
+   "XLK": 6.195962921949613e-06,
+   "XLV": 6.294388329366751e-06,
+   "XLY": null,
+   "XOM": 4.484699449082134e-06
+  },
+  "note": "if order/ADV is ~1e-5 or smaller, market impact is negligible and 'spread plus nothing' is justified with numbers"
+ },
+ "cost_curve": {
+  "d7_donchian_N20": {
+   "N": 20,
+   "universe": [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "DIA",
+    "XLK",
+    "XLF",
+    "XLV",
+    "XLE",
+    "GLD",
+    "TLT",
+    "SOXX",
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "JPM"
+   ],
+   "n_trades": 390,
+   "bars_in_market": 7482,
+   "bars_available": 18810,
+   "exposure_pct": 39.77671451355662,
+   "rows": [
+    {
+     "cost_bp_per_side": 0,
+     "cost_bp_round_trip": 0,
+     "n": 390,
+     "net_pct_per_trade": 1.2169606613482407,
+     "total_net_pct": 474.6146579258139,
+     "median_net_pct": -1.3498985569278001,
+     "wr_pct": 39.743589743589745,
+     "pf": 1.5952046185849171,
+     "t": 2.684697991229106,
+     "sharpe_ann": 0.4927048715358179,
+     "max_drawdown": -0.7702933505370028,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 1,
+     "cost_bp_round_trip": 2,
+     "n": 390,
+     "net_pct_per_trade": 1.1969606613482406,
+     "total_net_pct": 466.81465792581383,
+     "median_net_pct": -1.3698985569278004,
+     "wr_pct": 39.48717948717949,
+     "pf": 1.5819821669100411,
+     "t": 2.640576630917347,
+     "sharpe_ann": 0.48460757000119037,
+     "max_drawdown": -0.7738286081086532,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 2,
+     "cost_bp_round_trip": 4,
+     "n": 390,
+     "net_pct_per_trade": 1.1769606613482408,
+     "total_net_pct": 459.0146579258138,
+     "median_net_pct": -1.3898985569278002,
+     "wr_pct": 39.48717948717949,
+     "pf": 1.5689101013340057,
+     "t": 2.5964552706055883,
+     "sharpe_ann": 0.47651026846656297,
+     "max_drawdown": -0.7773101630377856,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 3,
+     "cost_bp_round_trip": 6,
+     "n": 390,
+     "net_pct_per_trade": 1.1569606613482406,
+     "total_net_pct": 451.2146579258138,
+     "median_net_pct": -1.4098985569278002,
+     "wr_pct": 39.23076923076923,
+     "pf": 1.5559775524707227,
+     "t": 2.552333910293829,
+     "sharpe_ann": 0.46841296693193546,
+     "max_drawdown": -0.7807388203694146,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 4,
+     "cost_bp_round_trip": 8,
+     "n": 390,
+     "net_pct_per_trade": 1.1369606613482406,
+     "total_net_pct": 443.41465792581386,
+     "median_net_pct": -1.4298985569278004,
+     "wr_pct": 38.717948717948715,
+     "pf": 1.543171544212017,
+     "t": 2.5082125499820704,
+     "sharpe_ann": 0.460315665397308,
+     "max_drawdown": -0.7841153732411987,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 5,
+     "cost_bp_round_trip": 10,
+     "n": 390,
+     "net_pct_per_trade": 1.1169606613482406,
+     "total_net_pct": 435.61465792581384,
+     "median_net_pct": -1.4498985569278002,
+     "wr_pct": 38.46153846153846,
+     "pf": 1.5305045438639617,
+     "t": 2.4640911896703113,
+     "sharpe_ann": 0.4522183638626805,
+     "max_drawdown": -0.7874406030571817,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 6,
+     "cost_bp_round_trip": 12,
+     "n": 390,
+     "net_pct_per_trade": 1.0969606613482406,
+     "total_net_pct": 427.8146579258138,
+     "median_net_pct": -1.4698985569278,
+     "wr_pct": 38.46153846153846,
+     "pf": 1.5179775896522116,
+     "t": 2.4199698293585525,
+     "sharpe_ann": 0.444121062328053,
+     "max_drawdown": -0.790715279659032,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 8,
+     "cost_bp_round_trip": 16,
+     "n": 390,
+     "net_pct_per_trade": 1.0569606613482405,
+     "total_net_pct": 412.2146579258138,
+     "median_net_pct": -1.5098985569278003,
+     "wr_pct": 38.205128205128204,
+     "pf": 1.4933470273928726,
+     "t": 2.3317271087350346,
+     "sharpe_ann": 0.42792645925879813,
+     "max_drawdown": -0.7971159957853539,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 10,
+     "cost_bp_round_trip": 20,
+     "n": 390,
+     "net_pct_per_trade": 1.0169606613482405,
+     "total_net_pct": 396.6146579258138,
+     "median_net_pct": -1.5498985569278003,
+     "wr_pct": 37.69230769230769,
+     "pf": 1.4692230256399885,
+     "t": 2.2434843881115167,
+     "sharpe_ann": 0.41173185618954317,
+     "max_drawdown": -0.8033234554589805,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 12,
+     "cost_bp_round_trip": 24,
+     "n": 390,
+     "net_pct_per_trade": 0.9769606613482406,
+     "total_net_pct": 381.0146579258138,
+     "median_net_pct": -1.5898985569278004,
+     "wr_pct": 37.69230769230769,
+     "pf": 1.4456424882610244,
+     "t": 2.155241667487999,
+     "sharpe_ann": 0.39553725312028826,
+     "max_drawdown": -0.8093434180726263,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 15,
+     "cost_bp_round_trip": 30,
+     "n": 390,
+     "net_pct_per_trade": 0.9169606613482406,
+     "total_net_pct": 357.6146579258138,
+     "median_net_pct": -1.6498985569278,
+     "wr_pct": 37.69230769230769,
+     "pf": 1.4112601272289333,
+     "t": 2.022877586552722,
+     "sharpe_ann": 0.3712453485164059,
+     "max_drawdown": -0.8180339880414907,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 20,
+     "cost_bp_round_trip": 40,
+     "n": 390,
+     "net_pct_per_trade": 0.8169606613482405,
+     "total_net_pct": 318.61465792581384,
+     "median_net_pct": -1.7498985569278,
+     "wr_pct": 37.17948717948718,
+     "pf": 1.356399313765007,
+     "t": 1.8022707849939277,
+     "sharpe_ann": 0.33075884084326856,
+     "max_drawdown": -0.8316576595147389,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    },
+    {
+     "cost_bp_per_side": 25,
+     "cost_bp_round_trip": 50,
+     "n": 390,
+     "net_pct_per_trade": 0.7169606613482405,
+     "total_net_pct": 279.6146579258138,
+     "median_net_pct": -1.8498985569278001,
+     "wr_pct": 36.92307692307692,
+     "pf": 1.3044125969453482,
+     "t": 1.5816639834351334,
+     "sharpe_ann": 0.2902723331701313,
+     "max_drawdown": -0.8442737770993685,
+     "avg_bars_held": 19.184615384615384,
+     "ann_vol": 0.3244420429312773
+    }
+   ],
+   "break_even_bp_per_side": null
+  },
+  "d7_donchian_N55": {
+   "N": 55,
+   "universe": [
+    "SPY",
+    "QQQ",
+    "IWM",
+    "DIA",
+    "XLK",
+    "XLF",
+    "XLV",
+    "XLE",
+    "GLD",
+    "TLT",
+    "SOXX",
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "JPM"
+   ],
+   "n_trades": 268,
+   "bars_in_market": 5340,
+   "bars_available": 18810,
+   "exposure_pct": 28.38915470494418,
+   "rows": [
+    {
+     "cost_bp_per_side": 0,
+     "cost_bp_round_trip": 0,
+     "n": 268,
+     "net_pct_per_trade": 1.3714476522697607,
+     "total_net_pct": 367.5479708082959,
+     "median_net_pct": -1.4311352954103433,
+     "wr_pct": 41.04477611940298,
+     "pf": 1.7407191783901959,
+     "t": 2.5266915149495563,
+     "sharpe_ann": 0.5488856335842972,
+     "max_drawdown": -0.5783208817860424,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 1,
+     "cost_bp_round_trip": 2,
+     "n": 268,
+     "net_pct_per_trade": 1.3514476522697607,
+     "total_net_pct": 362.18797080829586,
+     "median_net_pct": -1.4511352954103434,
+     "wr_pct": 40.67164179104478,
+     "pf": 1.7252776767895597,
+     "t": 2.489844443014031,
+     "sharpe_ann": 0.5408811627949691,
+     "max_drawdown": -0.5816732259321417,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 2,
+     "cost_bp_round_trip": 4,
+     "n": 268,
+     "net_pct_per_trade": 1.3314476522697607,
+     "total_net_pct": 356.8279708082959,
+     "median_net_pct": -1.4711352954103432,
+     "wr_pct": 40.67164179104478,
+     "pf": 1.7100229646049123,
+     "t": 2.452997371078506,
+     "sharpe_ann": 0.532876692005641,
+     "max_drawdown": -0.5849995981086177,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 3,
+     "cost_bp_round_trip": 6,
+     "n": 268,
+     "net_pct_per_trade": 1.3114476522697605,
+     "total_net_pct": 351.46797080829583,
+     "median_net_pct": -1.4911352954103432,
+     "wr_pct": 40.67164179104478,
+     "pf": 1.6949600906883242,
+     "t": 2.41615029914298,
+     "sharpe_ann": 0.5248722212163127,
+     "max_drawdown": -0.5883001942676518,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 4,
+     "cost_bp_round_trip": 8,
+     "n": 268,
+     "net_pct_per_trade": 1.2914476522697607,
+     "total_net_pct": 346.1079708082959,
+     "median_net_pct": -1.5111352954103434,
+     "wr_pct": 39.92537313432836,
+     "pf": 1.6800410559121437,
+     "t": 2.3793032272074552,
+     "sharpe_ann": 0.5168677504269847,
+     "max_drawdown": -0.5915752089227366,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 5,
+     "cost_bp_round_trip": 10,
+     "n": 268,
+     "net_pct_per_trade": 1.2714476522697606,
+     "total_net_pct": 340.74797080829586,
+     "median_net_pct": -1.5311352954103434,
+     "wr_pct": 39.55223880597015,
+     "pf": 1.665278391865274,
+     "t": 2.34245615527193,
+     "sharpe_ann": 0.5088632796376565,
+     "max_drawdown": -0.5948248351589466,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 6,
+     "cost_bp_round_trip": 12,
+     "n": 268,
+     "net_pct_per_trade": 1.2514476522697606,
+     "total_net_pct": 335.38797080829585,
+     "median_net_pct": -1.5511352954103432,
+     "wr_pct": 39.55223880597015,
+     "pf": 1.6506973173811537,
+     "t": 2.3056090833364045,
+     "sharpe_ann": 0.5008588088483283,
+     "max_drawdown": -0.5980492646431396,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 8,
+     "cost_bp_round_trip": 16,
+     "n": 268,
+     "net_pct_per_trade": 1.2114476522697606,
+     "total_net_pct": 324.6679708082959,
+     "median_net_pct": -1.5911352954103433,
+     "wr_pct": 39.17910447761194,
+     "pf": 1.6220661883694323,
+     "t": 2.2319149394653546,
+     "sharpe_ann": 0.4848498672696722,
+     "max_drawdown": -0.6044232929925155,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.3160031773267928
+    },
+    {
+     "cost_bp_per_side": 10,
+     "cost_bp_round_trip": 20,
+     "n": 268,
+     "net_pct_per_trade": 1.1714476522697606,
+     "total_net_pct": 313.9479708082958,
+     "median_net_pct": -1.6311352954103433,
+     "wr_pct": 38.80597014925373,
+     "pf": 1.5940692203412763,
+     "t": 2.1582207955943034,
+     "sharpe_ann": 0.4688409256910159,
+     "max_drawdown": -0.6106987993245198,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 12,
+     "cost_bp_round_trip": 24,
+     "n": 268,
+     "net_pct_per_trade": 1.1314476522697605,
+     "total_net_pct": 303.2279708082958,
+     "median_net_pct": -1.6711352954103433,
+     "wr_pct": 38.80597014925373,
+     "pf": 1.5667490991687332,
+     "t": 2.084526651723253,
+     "sharpe_ann": 0.45283198411235953,
+     "max_drawdown": -0.6168772669423199,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 15,
+     "cost_bp_round_trip": 30,
+     "n": 268,
+     "net_pct_per_trade": 1.0714476522697607,
+     "total_net_pct": 287.14797080829584,
+     "median_net_pct": -1.731135295410343,
+     "wr_pct": 38.43283582089552,
+     "pf": 1.5269965201622098,
+     "t": 1.973985435916677,
+     "sharpe_ann": 0.4288185717443752,
+     "max_drawdown": -0.6259662120900995,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 20,
+     "cost_bp_round_trip": 40,
+     "n": 268,
+     "net_pct_per_trade": 0.9714476522697605,
+     "total_net_pct": 260.3479708082959,
+     "median_net_pct": -1.831135295410343,
+     "wr_pct": 38.059701492537314,
+     "pf": 1.46372411394174,
+     "t": 1.7897500762390506,
+     "sharpe_ann": 0.38879621779773454,
+     "max_drawdown": -0.640649662038294,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    },
+    {
+     "cost_bp_per_side": 25,
+     "cost_bp_round_trip": 50,
+     "n": 268,
+     "net_pct_per_trade": 0.8714476522697606,
+     "total_net_pct": 233.54797080829584,
+     "median_net_pct": -1.9311352954103431,
+     "wr_pct": 37.6865671641791,
+     "pf": 1.4040002757571288,
+     "t": 1.6055147165614243,
+     "sharpe_ann": 0.3487738638510939,
+     "max_drawdown": -0.6547709184713558,
+     "avg_bars_held": 19.925373134328357,
+     "ann_vol": 0.31600317732679284
+    }
+   ],
+   "break_even_bp_per_side": null
+  },
+  "pod_vt_pattern_sweep": {
+   "strategy": "POD-EQUITY-BREAKOUT / VTPatternSweepStrategy (real code)",
+   "universe": [
+    "SPY",
+    "QQQ",
+    "XLK",
+    "XLF",
+    "XLE",
+    "XLV",
+    "XLY",
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "GOOGL",
+    "META",
+    "AMZN"
+   ],
+   "n_trades": 276,
+   "window_note": "cached 5y daily bars only (2021-11..2026-11), which is NOT the all-history window of the published 25bp run",
+   "rows": [
+    {
+     "cost_bp_per_side": 0,
+     "cost_bp_round_trip": 0,
+     "n": 276,
+     "net_pct_per_trade": 0.2916764879710808,
+     "total_net_pct": 80.50271068001831,
+     "median_net_pct": -1.681920328727329,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.162765229088336,
+     "t": 1.0869403156747581,
+     "sharpe_ann": 0.31903845437620354,
+     "max_drawdown": -0.622252472068134,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 1,
+     "cost_bp_round_trip": 2,
+     "n": 276,
+     "net_pct_per_trade": 0.27167648797108085,
+     "total_net_pct": 74.9827106800184,
+     "median_net_pct": -1.7019203287273288,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.1505755442804217,
+     "t": 1.0124097751272099,
+     "sharpe_ann": 0.29716226842817234,
+     "max_drawdown": -0.6318073987173807,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 2,
+     "cost_bp_round_trip": 4,
+     "n": 276,
+     "net_pct_per_trade": 0.25167648797108094,
+     "total_net_pct": 69.46271068001838,
+     "median_net_pct": -1.721920328727329,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.1385502189157137,
+     "t": 0.9378792345796617,
+     "sharpe_ann": 0.27528608248014114,
+     "max_drawdown": -0.6411224967600198,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 3,
+     "cost_bp_round_trip": 6,
+     "n": 276,
+     "net_pct_per_trade": 0.23167648797108065,
+     "total_net_pct": 63.94271068001831,
+     "median_net_pct": -1.741920328727329,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.126685951047732,
+     "t": 0.8633486940321122,
+     "sharpe_ann": 0.2534098965321096,
+     "max_drawdown": -0.6502037392325187,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 4,
+     "cost_bp_round_trip": 8,
+     "n": 276,
+     "net_pct_per_trade": 0.21167648797108082,
+     "total_net_pct": 58.42271068001828,
+     "median_net_pct": -1.7619203287273288,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.1149795265888545,
+     "t": 0.7888181534845644,
+     "sharpe_ann": 0.23153371058407848,
+     "max_drawdown": -0.6590569515727835,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 5,
+     "cost_bp_round_trip": 10,
+     "n": 276,
+     "net_pct_per_trade": 0.19167648797108075,
+     "total_net_pct": 52.90271068001828,
+     "median_net_pct": -1.781920328727329,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.1034278164074138,
+     "t": 0.7142876129370157,
+     "sharpe_ann": 0.20965752463604712,
+     "max_drawdown": -0.6676878152387045,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 6,
+     "cost_bp_round_trip": 12,
+     "n": 276,
+     "net_pct_per_trade": 0.17167648797108076,
+     "total_net_pct": 47.382710680018384,
+     "median_net_pct": -1.8019203287273289,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.0920277735391424,
+     "t": 0.6397570723894673,
+     "sharpe_ann": 0.18778133868801586,
+     "max_drawdown": -0.6761018712386875,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 8,
+     "cost_bp_round_trip": 16,
+     "n": 276,
+     "net_pct_per_trade": 0.13167648797108086,
+     "total_net_pct": 36.34271068001829,
+     "median_net_pct": -1.8419203287273291,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.0696708967495836,
+     "t": 0.49069599129437086,
+     "sharpe_ann": 0.14402896679195343,
+     "max_drawdown": -0.6923010426111333,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 10,
+     "cost_bp_round_trip": 20,
+     "n": 276,
+     "net_pct_per_trade": 0.09167648797108074,
+     "total_net_pct": 25.302710680018325,
+     "median_net_pct": -1.8819203287273287,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.047886064602369,
+     "t": 0.3416349101992735,
+     "sharpe_ann": 0.10027659489589073,
+     "max_drawdown": -0.7076961135852289,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 12,
+     "cost_bp_round_trip": 24,
+     "n": 276,
+     "net_pct_per_trade": 0.05167648797108087,
+     "total_net_pct": 14.262710680018323,
+     "median_net_pct": -1.921920328727329,
+     "wr_pct": 38.768115942028984,
+     "pf": 1.0266515991044647,
+     "t": 0.19257382910417709,
+     "sharpe_ann": 0.05652422299982833,
+     "max_drawdown": -0.7223266967815292,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 15,
+     "cost_bp_round_trip": 30,
+     "n": 276,
+     "net_pct_per_trade": -0.0083235120289193,
+     "total_net_pct": -2.297289319981768,
+     "median_net_pct": -1.9819203287273288,
+     "wr_pct": 38.768115942028984,
+     "pf": 0.9957870631411891,
+     "t": -0.031017792538468848,
+     "sharpe_ann": -0.009104334844265684,
+     "max_drawdown": -0.7429210670167558,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 20,
+     "cost_bp_round_trip": 40,
+     "n": 276,
+     "net_pct_per_trade": -0.10832351202891924,
+     "total_net_pct": -29.89728931998169,
+     "median_net_pct": -2.081920328727329,
+     "wr_pct": 38.768115942028984,
+     "pf": 0.9468203365777403,
+     "t": -0.4036704952762108,
+     "sharpe_ann": -0.11848526458442199,
+     "max_drawdown": -0.7739305654382165,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    },
+    {
+     "cost_bp_per_side": 25,
+     "cost_bp_round_trip": 50,
+     "n": 276,
+     "net_pct_per_trade": -0.20832351202891916,
+     "total_net_pct": -57.49728931998165,
+     "median_net_pct": -2.181920328727329,
+     "wr_pct": 38.768115942028984,
+     "pf": 0.900711652526688,
+     "t": -0.7763231980139527,
+     "sharpe_ann": -0.22786619432457828,
+     "max_drawdown": -0.8012255534652,
+     "avg_bars_held": 10.597826086956522,
+     "ann_vol": 0.21739129110485053
+    }
+   ],
+   "break_even_bp_per_side": 14.583824398554036
+  }
+ },
+ "survivorship": {
+  "tool": "tools/pit_universe.py",
+  "n_symbols_on_disk": 79,
+  "universe_at_start": 15,
+  "universe_at_end": 35,
+  "symbols_lost": [
+   "AUDUSD_X",
+   "CL_F",
+   "ES_F",
+   "EURGBP_X",
+   "EURJPY_X",
+   "EURUSD_X",
+   "GBPJPY_X",
+   "GBPUSD_X",
+   "GC_F",
+   "HG_F",
+   "JPY_X",
+   "NG_F",
+   "NQ_F",
+   "NZDUSD_X",
+   "SI_F",
+   "USDCAD_X",
+   "USDCHF_X",
+   "YM_F",
+   "ZC_F",
+   "ZS_F"
+  ],
+  "note": "first/last close censoring only; it cannot remove delisting-with-poor-returns bias, so a zero gap is a LOWER BOUND on survivorship, not evidence of none"
+ },
+ "spread_aggregate": {
+  "universe": "POD_UNIVERSE",
+  "n_symbols_with_data": 0,
+  "range_upper_bound_rt_bp_median": null,
+  "corwin_schultz_rt_bp_median": null,
+  "measured_cost_per_side_used_bp": null,
+  "basis": "half the median 1-min bar range = a rigorous UPPER bound on per-side spread; the true NBBO is tighter but was not measurable with markets closed"
+ },
+ "proof_bar": {
+  "measured": {
+   "status": "no measured cost available"
+  },
+  "5bp": {
+   "cost_bp_per_side": 5.0,
+   "n_trades": 276,
+   "window": "2022-12-22..2026-11-18",
+   "years": 3.91,
+   "observed_sharpe_ann": 0.20965752463604712,
+   "null": {
+    "shuffles": 500,
+    "mean_sharpe": 0.5682044305114528,
+    "p95_sharpe": 1.0541662762568769,
+    "observed_percentile": 10.2,
+    "gate_95": false
+   },
+   "cagr": 0.06882776734001927,
+   "spy_cagr_same_window": 0.19577647267957476,
+   "excess_cagr_point": -0.1269487053395555,
+   "excess_cagr_boot_ci95": [
+    -0.45233233820569796,
+    0.34538321154944174
+   ],
+   "boot_resamples": 10000,
+   "hurdle": {
+    "rf": 0.0432,
+    "hurdle_sharpe": 1.114,
+    "ann_vol": 0.21739129110485053,
+    "required_return": 0.2853738982908035,
+    "beats_hurdle": "False"
+   },
+   "verdict": "NOT_INVESTABLE"
+  },
+  "25bp": {
+   "cost_bp_per_side": 25.0,
+   "n_trades": 276,
+   "window": "2022-12-22..2026-11-18",
+   "years": 3.91,
+   "observed_sharpe_ann": -0.22786619432457828,
+   "null": {
+    "shuffles": 500,
+    "mean_sharpe": 0.2397996198455342,
+    "p95_sharpe": 0.7238702797628849,
+    "observed_percentile": 6.8,
+    "gate_95": false
+   },
+   "cagr": -0.19473602688376812,
+   "spy_cagr_same_window": 0.19577647267957476,
+   "excess_cagr_point": -0.3905124995633429,
+   "excess_cagr_boot_ci95": [
+    -0.6364630389040437,
+    -0.03297253527429822
+   ],
+   "boot_resamples": 10000,
+   "hurdle": {
+    "rf": 0.0432,
+    "hurdle_sharpe": 1.114,
+    "ann_vol": 0.21739129110485053,
+    "required_return": 0.2853738982908035,
+    "beats_hurdle": "False"
+   },
+   "verdict": "NOT_INVESTABLE"
+  }
+ }
+}

@@ -1,0 +1,1098 @@
+{
+  "generated_by": "tools/nonus_breakout_test.py",
+  "question": "is the US post-2010 daily-breakout edge a ZIRP artefact or a family effect?",
+  "rule": {
+    "regime": "month-end close > 10-month SMA, applied to the following month",
+    "entry": "close > prior-N-day high, next-open fill",
+    "exit": "close < prior-N-day low or regime off, next-open fill",
+    "cost_bps_per_side": 10.0,
+    "looks": [
+      10,
+      20,
+      30,
+      40
+    ]
+  },
+  "markets": {
+    "^GSPC": {
+      "name": "US S&P 500 (control)",
+      "first": "1980-01-02",
+      "last": "2026-11-20",
+      "n_bars": 11819,
+      "cells": {
+        "look10|breakout+10m_regime": {
+          "all": {
+            "n": 299,
+            "mean_bp": 16.888,
+            "median_bp": -57.123,
+            "t_stat": 0.87,
+            "win_rate_pct": 42.1,
+            "avg_days": 25.3
+          },
+          "pre_2010": {
+            "n": 179,
+            "mean_bp": 6.673,
+            "median_bp": -76.306,
+            "t_stat": 0.25,
+            "win_rate_pct": 40.2,
+            "avg_days": 24.3
+          },
+          "post_2010": {
+            "n": 120,
+            "mean_bp": 32.126,
+            "median_bp": -35.966,
+            "t_stat": 1.14,
+            "win_rate_pct": 45.0,
+            "avg_days": 26.7
+          }
+        },
+        "look10|breakout_only": {
+          "all": {
+            "n": 365,
+            "mean_bp": 26.801,
+            "median_bp": -67.688,
+            "t_stat": 1.27,
+            "win_rate_pct": 42.7,
+            "avg_days": 27.8
+          },
+          "pre_2010": {
+            "n": 238,
+            "mean_bp": 11.601,
+            "median_bp": -81.87,
+            "t_stat": 0.43,
+            "win_rate_pct": 39.9,
+            "avg_days": 26.2
+          },
+          "post_2010": {
+            "n": 127,
+            "mean_bp": 55.285,
+            "median_bp": -25.834,
+            "t_stat": 1.68,
+            "win_rate_pct": 48.0,
+            "avg_days": 30.7
+          }
+        },
+        "look20|breakout+10m_regime": {
+          "all": {
+            "n": 156,
+            "mean_bp": 69.461,
+            "median_bp": -48.908,
+            "t_stat": 1.93,
+            "win_rate_pct": 43.6,
+            "avg_days": 50.5
+          },
+          "pre_2010": {
+            "n": 91,
+            "mean_bp": 59.925,
+            "median_bp": -76.5,
+            "t_stat": 1.19,
+            "win_rate_pct": 39.6,
+            "avg_days": 48.7
+          },
+          "post_2010": {
+            "n": 65,
+            "mean_bp": 82.812,
+            "median_bp": -8.181,
+            "t_stat": 1.64,
+            "win_rate_pct": 49.2,
+            "avg_days": 53.2
+          }
+        },
+        "look20|breakout_only": {
+          "all": {
+            "n": 187,
+            "mean_bp": 106.729,
+            "median_bp": -62.299,
+            "t_stat": 2.35,
+            "win_rate_pct": 43.9,
+            "avg_days": 56.7
+          },
+          "pre_2010": {
+            "n": 120,
+            "mean_bp": 66.987,
+            "median_bp": -76.371,
+            "t_stat": 1.16,
+            "win_rate_pct": 40.8,
+            "avg_days": 53.2
+          },
+          "post_2010": {
+            "n": 67,
+            "mean_bp": 177.91,
+            "median_bp": -8.181,
+            "t_stat": 2.46,
+            "win_rate_pct": 49.3,
+            "avg_days": 62.9
+          }
+        },
+        "look30|breakout+10m_regime": {
+          "all": {
+            "n": 103,
+            "mean_bp": 129.489,
+            "median_bp": -31.578,
+            "t_stat": 2.21,
+            "win_rate_pct": 46.6,
+            "avg_days": 80.5
+          },
+          "pre_2010": {
+            "n": 59,
+            "mean_bp": 125.122,
+            "median_bp": -56.233,
+            "t_stat": 1.5,
+            "win_rate_pct": 45.8,
+            "avg_days": 78.4
+          },
+          "post_2010": {
+            "n": 44,
+            "mean_bp": 135.344,
+            "median_bp": -1.274,
+            "t_stat": 1.68,
+            "win_rate_pct": 47.7,
+            "avg_days": 83.2
+          }
+        },
+        "look30|breakout_only": {
+          "all": {
+            "n": 128,
+            "mean_bp": 139.028,
+            "median_bp": -103.153,
+            "t_stat": 2.14,
+            "win_rate_pct": 42.2,
+            "avg_days": 85.9
+          },
+          "pre_2010": {
+            "n": 82,
+            "mean_bp": 110.885,
+            "median_bp": -159.26,
+            "t_stat": 1.31,
+            "win_rate_pct": 40.2,
+            "avg_days": 80.0
+          },
+          "post_2010": {
+            "n": 46,
+            "mean_bp": 189.196,
+            "median_bp": -58.49,
+            "t_stat": 1.88,
+            "win_rate_pct": 45.7,
+            "avg_days": 96.5
+          }
+        },
+        "look40|breakout+10m_regime": {
+          "all": {
+            "n": 79,
+            "mean_bp": 206.04,
+            "median_bp": 20.471,
+            "t_stat": 2.28,
+            "win_rate_pct": 51.9,
+            "avg_days": 109.1
+          },
+          "pre_2010": {
+            "n": 44,
+            "mean_bp": 206.223,
+            "median_bp": -35.925,
+            "t_stat": 1.52,
+            "win_rate_pct": 47.7,
+            "avg_days": 112.2
+          },
+          "post_2010": {
+            "n": 35,
+            "mean_bp": 205.81,
+            "median_bp": 111.113,
+            "t_stat": 1.82,
+            "win_rate_pct": 57.1,
+            "avg_days": 105.2
+          }
+        },
+        "look40|breakout_only": {
+          "all": {
+            "n": 94,
+            "mean_bp": 246.287,
+            "median_bp": -34.772,
+            "t_stat": 2.36,
+            "win_rate_pct": 47.9,
+            "avg_days": 120.3
+          },
+          "pre_2010": {
+            "n": 60,
+            "mean_bp": 200.298,
+            "median_bp": -122.754,
+            "t_stat": 1.51,
+            "win_rate_pct": 41.7,
+            "avg_days": 113.3
+          },
+          "post_2010": {
+            "n": 34,
+            "mean_bp": 327.445,
+            "median_bp": 137.48,
+            "t_stat": 1.91,
+            "win_rate_pct": 58.8,
+            "avg_days": 132.7
+          }
+        }
+      }
+    },
+    "^FTSE": {
+      "name": "UK FTSE 100",
+      "first": "1984-01-03",
+      "last": "2026-11-20",
+      "n_bars": 10835,
+      "cells": {
+        "look10|breakout+10m_regime": {
+          "all": {
+            "n": 254,
+            "mean_bp": 5.422,
+            "median_bp": -56.534,
+            "t_stat": 0.26,
+            "win_rate_pct": 41.3,
+            "avg_days": 22.7
+          },
+          "pre_2010": {
+            "n": 141,
+            "mean_bp": 28.386,
+            "median_bp": -56.534,
+            "t_stat": 0.85,
+            "win_rate_pct": 41.1,
+            "avg_days": 24.1
+          },
+          "post_2010": {
+            "n": 113,
+            "mean_bp": -23.231,
+            "median_bp": -65.656,
+            "t_stat": -1.1,
+            "win_rate_pct": 41.6,
+            "avg_days": 21.0
+          }
+        },
+        "look10|breakout_only": {
+          "all": {
+            "n": 345,
+            "mean_bp": 10.696,
+            "median_bp": -76.419,
+            "t_stat": 0.53,
+            "win_rate_pct": 40.0,
+            "avg_days": 25.6
+          },
+          "pre_2010": {
+            "n": 198,
+            "mean_bp": 35.085,
+            "median_bp": -75.291,
+            "t_stat": 1.12,
+            "win_rate_pct": 39.4,
+            "avg_days": 27.0
+          },
+          "post_2010": {
+            "n": 147,
+            "mean_bp": -22.154,
+            "median_bp": -78.175,
+            "t_stat": -1.0,
+            "win_rate_pct": 40.8,
+            "avg_days": 23.6
+          }
+        },
+        "look20|breakout+10m_regime": {
+          "all": {
+            "n": 143,
+            "mean_bp": 9.492,
+            "median_bp": -78.819,
+            "t_stat": 0.27,
+            "win_rate_pct": 38.5,
+            "avg_days": 42.0
+          },
+          "pre_2010": {
+            "n": 78,
+            "mean_bp": 79.792,
+            "median_bp": -11.937,
+            "t_stat": 1.44,
+            "win_rate_pct": 46.2,
+            "avg_days": 45.5
+          },
+          "post_2010": {
+            "n": 65,
+            "mean_bp": -74.867,
+            "median_bp": -129.654,
+            "t_stat": -1.96,
+            "win_rate_pct": 29.2,
+            "avg_days": 37.7
+          }
+        },
+        "look20|breakout_only": {
+          "all": {
+            "n": 176,
+            "mean_bp": 44.371,
+            "median_bp": -63.142,
+            "t_stat": 1.16,
+            "win_rate_pct": 39.2,
+            "avg_days": 51.8
+          },
+          "pre_2010": {
+            "n": 100,
+            "mean_bp": 106.077,
+            "median_bp": -26.007,
+            "t_stat": 1.76,
+            "win_rate_pct": 44.0,
+            "avg_days": 55.8
+          },
+          "post_2010": {
+            "n": 76,
+            "mean_bp": -36.822,
+            "median_bp": -80.613,
+            "t_stat": -0.98,
+            "win_rate_pct": 32.9,
+            "avg_days": 46.5
+          }
+        },
+        "look30|breakout+10m_regime": {
+          "all": {
+            "n": 98,
+            "mean_bp": 0.568,
+            "median_bp": -51.725,
+            "t_stat": 0.01,
+            "win_rate_pct": 44.9,
+            "avg_days": 62.7
+          },
+          "pre_2010": {
+            "n": 50,
+            "mean_bp": 102.086,
+            "median_bp": 47.324,
+            "t_stat": 1.28,
+            "win_rate_pct": 60.0,
+            "avg_days": 73.3
+          },
+          "post_2010": {
+            "n": 48,
+            "mean_bp": -105.18,
+            "median_bp": -213.679,
+            "t_stat": -1.9,
+            "win_rate_pct": 29.2,
+            "avg_days": 51.7
+          }
+        },
+        "look30|breakout_only": {
+          "all": {
+            "n": 124,
+            "mean_bp": 38.833,
+            "median_bp": -91.182,
+            "t_stat": 0.7,
+            "win_rate_pct": 41.9,
+            "avg_days": 74.6
+          },
+          "pre_2010": {
+            "n": 68,
+            "mean_bp": 113.589,
+            "median_bp": 15.303,
+            "t_stat": 1.31,
+            "win_rate_pct": 50.0,
+            "avg_days": 82.9
+          },
+          "post_2010": {
+            "n": 56,
+            "mean_bp": -51.942,
+            "median_bp": -168.083,
+            "t_stat": -0.86,
+            "win_rate_pct": 32.1,
+            "avg_days": 64.4
+          }
+        },
+        "look40|breakout+10m_regime": {
+          "all": {
+            "n": 74,
+            "mean_bp": 28.333,
+            "median_bp": -104.304,
+            "t_stat": 0.4,
+            "win_rate_pct": 41.9,
+            "avg_days": 89.4
+          },
+          "pre_2010": {
+            "n": 37,
+            "mean_bp": 185.59,
+            "median_bp": 165.694,
+            "t_stat": 1.59,
+            "win_rate_pct": 59.5,
+            "avg_days": 106.4
+          },
+          "post_2010": {
+            "n": 37,
+            "mean_bp": -128.924,
+            "median_bp": -213.679,
+            "t_stat": -1.72,
+            "win_rate_pct": 24.3,
+            "avg_days": 72.5
+          }
+        },
+        "look40|breakout_only": {
+          "all": {
+            "n": 91,
+            "mean_bp": 87.411,
+            "median_bp": -181.712,
+            "t_stat": 1.06,
+            "win_rate_pct": 44.0,
+            "avg_days": 108.9
+          },
+          "pre_2010": {
+            "n": 50,
+            "mean_bp": 206.71,
+            "median_bp": 7.483,
+            "t_stat": 1.61,
+            "win_rate_pct": 50.0,
+            "avg_days": 117.6
+          },
+          "post_2010": {
+            "n": 41,
+            "mean_bp": -58.076,
+            "median_bp": -261.475,
+            "t_stat": -0.64,
+            "win_rate_pct": 36.6,
+            "avg_days": 98.4
+          }
+        }
+      }
+    },
+    "^GDAXI": {
+      "name": "Germany DAX",
+      "first": "1987-12-30",
+      "last": "2026-11-20",
+      "n_bars": 9837,
+      "cells": {
+        "look10|breakout+10m_regime": {
+          "all": {
+            "n": 224,
+            "mean_bp": 51.393,
+            "median_bp": -75.424,
+            "t_stat": 1.4,
+            "win_rate_pct": 43.8,
+            "avg_days": 25.7
+          },
+          "pre_2010": {
+            "n": 113,
+            "mean_bp": 95.861,
+            "median_bp": -55.225,
+            "t_stat": 1.53,
+            "win_rate_pct": 46.0,
+            "avg_days": 28.2
+          },
+          "post_2010": {
+            "n": 111,
+            "mean_bp": 6.123,
+            "median_bp": -77.2,
+            "t_stat": 0.16,
+            "win_rate_pct": 41.4,
+            "avg_days": 23.2
+          }
+        },
+        "look10|breakout_only": {
+          "all": {
+            "n": 308,
+            "mean_bp": 47.294,
+            "median_bp": -78.105,
+            "t_stat": 1.48,
+            "win_rate_pct": 42.5,
+            "avg_days": 27.0
+          },
+          "pre_2010": {
+            "n": 168,
+            "mean_bp": 59.665,
+            "median_bp": -80.453,
+            "t_stat": 1.2,
+            "win_rate_pct": 43.5,
+            "avg_days": 28.2
+          },
+          "post_2010": {
+            "n": 140,
+            "mean_bp": 32.449,
+            "median_bp": -77.2,
+            "t_stat": 0.86,
+            "win_rate_pct": 41.4,
+            "avg_days": 25.5
+          }
+        },
+        "look20|breakout+10m_regime": {
+          "all": {
+            "n": 116,
+            "mean_bp": 154.801,
+            "median_bp": -35.25,
+            "t_stat": 2.36,
+            "win_rate_pct": 44.8,
+            "avg_days": 50.0
+          },
+          "pre_2010": {
+            "n": 55,
+            "mean_bp": 306.369,
+            "median_bp": 11.866,
+            "t_stat": 2.62,
+            "win_rate_pct": 50.9,
+            "avg_days": 59.3
+          },
+          "post_2010": {
+            "n": 61,
+            "mean_bp": 18.141,
+            "median_bp": -52.39,
+            "t_stat": 0.29,
+            "win_rate_pct": 39.3,
+            "avg_days": 41.6
+          }
+        },
+        "look20|breakout_only": {
+          "all": {
+            "n": 158,
+            "mean_bp": 133.963,
+            "median_bp": -35.385,
+            "t_stat": 2.35,
+            "win_rate_pct": 45.6,
+            "avg_days": 53.2
+          },
+          "pre_2010": {
+            "n": 83,
+            "mean_bp": 194.933,
+            "median_bp": -35.385,
+            "t_stat": 2.17,
+            "win_rate_pct": 49.4,
+            "avg_days": 57.9
+          },
+          "post_2010": {
+            "n": 75,
+            "mean_bp": 66.489,
+            "median_bp": -52.39,
+            "t_stat": 0.99,
+            "win_rate_pct": 41.3,
+            "avg_days": 48.1
+          }
+        },
+        "look30|breakout+10m_regime": {
+          "all": {
+            "n": 81,
+            "mean_bp": 201.532,
+            "median_bp": -101.339,
+            "t_stat": 1.74,
+            "win_rate_pct": 44.4,
+            "avg_days": 74.0
+          },
+          "pre_2010": {
+            "n": 38,
+            "mean_bp": 451.35,
+            "median_bp": 23.311,
+            "t_stat": 2.03,
+            "win_rate_pct": 50.0,
+            "avg_days": 85.9
+          },
+          "post_2010": {
+            "n": 43,
+            "mean_bp": -19.237,
+            "median_bp": -159.87,
+            "t_stat": -0.22,
+            "win_rate_pct": 39.5,
+            "avg_days": 63.4
+          }
+        },
+        "look30|breakout_only": {
+          "all": {
+            "n": 103,
+            "mean_bp": 218.829,
+            "median_bp": -121.197,
+            "t_stat": 2.09,
+            "win_rate_pct": 45.6,
+            "avg_days": 82.9
+          },
+          "pre_2010": {
+            "n": 53,
+            "mean_bp": 332.591,
+            "median_bp": -93.823,
+            "t_stat": 1.87,
+            "win_rate_pct": 45.3,
+            "avg_days": 89.8
+          },
+          "post_2010": {
+            "n": 50,
+            "mean_bp": 98.241,
+            "median_bp": -152.534,
+            "t_stat": 0.94,
+            "win_rate_pct": 46.0,
+            "avg_days": 75.5
+          }
+        },
+        "look40|breakout+10m_regime": {
+          "all": {
+            "n": 58,
+            "mean_bp": 291.01,
+            "median_bp": -1.619,
+            "t_stat": 2.04,
+            "win_rate_pct": 48.3,
+            "avg_days": 108.4
+          },
+          "pre_2010": {
+            "n": 27,
+            "mean_bp": 568.754,
+            "median_bp": 177.882,
+            "t_stat": 2.08,
+            "win_rate_pct": 55.6,
+            "avg_days": 124.0
+          },
+          "post_2010": {
+            "n": 31,
+            "mean_bp": 49.104,
+            "median_bp": -90.597,
+            "t_stat": 0.45,
+            "win_rate_pct": 41.9,
+            "avg_days": 94.8
+          }
+        },
+        "look40|breakout_only": {
+          "all": {
+            "n": 77,
+            "mean_bp": 266.657,
+            "median_bp": -90.597,
+            "t_stat": 2.18,
+            "win_rate_pct": 49.4,
+            "avg_days": 112.8
+          },
+          "pre_2010": {
+            "n": 40,
+            "mean_bp": 407.331,
+            "median_bp": 194.943,
+            "t_stat": 1.98,
+            "win_rate_pct": 52.5,
+            "avg_days": 117.8
+          },
+          "post_2010": {
+            "n": 37,
+            "mean_bp": 114.577,
+            "median_bp": -130.994,
+            "t_stat": 0.94,
+            "win_rate_pct": 45.9,
+            "avg_days": 107.4
+          }
+        }
+      }
+    },
+    "^N225": {
+      "name": "Japan Nikkei 225",
+      "first": "1980-01-04",
+      "last": "2026-11-20",
+      "n_bars": 11528,
+      "cells": {
+        "look10|breakout+10m_regime": {
+          "all": {
+            "n": 232,
+            "mean_bp": 33.058,
+            "median_bp": -98.163,
+            "t_stat": 1.08,
+            "win_rate_pct": 40.9,
+            "avg_days": 24.8
+          },
+          "pre_2010": {
+            "n": 130,
+            "mean_bp": 39.603,
+            "median_bp": -86.248,
+            "t_stat": 0.99,
+            "win_rate_pct": 41.5,
+            "avg_days": 26.2
+          },
+          "post_2010": {
+            "n": 102,
+            "mean_bp": 24.717,
+            "median_bp": -108.994,
+            "t_stat": 0.53,
+            "win_rate_pct": 40.2,
+            "avg_days": 22.8
+          }
+        },
+        "look10|breakout_only": {
+          "all": {
+            "n": 361,
+            "mean_bp": 15.295,
+            "median_bp": -108.994,
+            "t_stat": 0.57,
+            "win_rate_pct": 37.1,
+            "avg_days": 26.1
+          },
+          "pre_2010": {
+            "n": 228,
+            "mean_bp": 0.028,
+            "median_bp": -111.138,
+            "t_stat": 0.0,
+            "win_rate_pct": 36.4,
+            "avg_days": 25.5
+          },
+          "post_2010": {
+            "n": 133,
+            "mean_bp": 41.465,
+            "median_bp": -108.448,
+            "t_stat": 0.95,
+            "win_rate_pct": 38.3,
+            "avg_days": 27.1
+          }
+        },
+        "look20|breakout+10m_regime": {
+          "all": {
+            "n": 118,
+            "mean_bp": 146.617,
+            "median_bp": 17.856,
+            "t_stat": 2.18,
+            "win_rate_pct": 50.8,
+            "avg_days": 48.7
+          },
+          "pre_2010": {
+            "n": 64,
+            "mean_bp": 176.356,
+            "median_bp": 73.095,
+            "t_stat": 1.9,
+            "win_rate_pct": 54.7,
+            "avg_days": 55.3
+          },
+          "post_2010": {
+            "n": 54,
+            "mean_bp": 111.37,
+            "median_bp": -46.003,
+            "t_stat": 1.14,
+            "win_rate_pct": 46.3,
+            "avg_days": 40.8
+          }
+        },
+        "look20|breakout_only": {
+          "all": {
+            "n": 182,
+            "mean_bp": 90.253,
+            "median_bp": -107.726,
+            "t_stat": 1.45,
+            "win_rate_pct": 41.2,
+            "avg_days": 53.0
+          },
+          "pre_2010": {
+            "n": 113,
+            "mean_bp": 77.006,
+            "median_bp": -40.992,
+            "t_stat": 1.07,
+            "win_rate_pct": 45.1,
+            "avg_days": 53.8
+          },
+          "post_2010": {
+            "n": 69,
+            "mean_bp": 111.949,
+            "median_bp": -146.643,
+            "t_stat": 0.97,
+            "win_rate_pct": 34.8,
+            "avg_days": 51.8
+          }
+        },
+        "look30|breakout+10m_regime": {
+          "all": {
+            "n": 79,
+            "mean_bp": 207.103,
+            "median_bp": -46.938,
+            "t_stat": 1.93,
+            "win_rate_pct": 43.0,
+            "avg_days": 74.4
+          },
+          "pre_2010": {
+            "n": 45,
+            "mean_bp": 215.134,
+            "median_bp": -43.465,
+            "t_stat": 1.4,
+            "win_rate_pct": 44.4,
+            "avg_days": 79.2
+          },
+          "post_2010": {
+            "n": 34,
+            "mean_bp": 196.473,
+            "median_bp": -46.938,
+            "t_stat": 1.34,
+            "win_rate_pct": 41.2,
+            "avg_days": 68.2
+          }
+        },
+        "look30|breakout_only": {
+          "all": {
+            "n": 117,
+            "mean_bp": 151.151,
+            "median_bp": -145.966,
+            "t_stat": 1.57,
+            "win_rate_pct": 39.3,
+            "avg_days": 83.4
+          },
+          "pre_2010": {
+            "n": 74,
+            "mean_bp": 135.812,
+            "median_bp": -85.578,
+            "t_stat": 1.15,
+            "win_rate_pct": 40.5,
+            "avg_days": 81.4
+          },
+          "post_2010": {
+            "n": 43,
+            "mean_bp": 177.547,
+            "median_bp": -200.253,
+            "t_stat": 1.06,
+            "win_rate_pct": 37.2,
+            "avg_days": 87.0
+          }
+        },
+        "look40|breakout+10m_regime": {
+          "all": {
+            "n": 57,
+            "mean_bp": 306.39,
+            "median_bp": -94.499,
+            "t_stat": 2.08,
+            "win_rate_pct": 42.1,
+            "avg_days": 108.1
+          },
+          "pre_2010": {
+            "n": 31,
+            "mean_bp": 376.386,
+            "median_bp": -118.975,
+            "t_stat": 1.63,
+            "win_rate_pct": 41.9,
+            "avg_days": 124.0
+          },
+          "post_2010": {
+            "n": 26,
+            "mean_bp": 222.933,
+            "median_bp": -46.938,
+            "t_stat": 1.3,
+            "win_rate_pct": 42.3,
+            "avg_days": 89.2
+          }
+        },
+        "look40|breakout_only": {
+          "all": {
+            "n": 82,
+            "mean_bp": 289.64,
+            "median_bp": -178.249,
+            "t_stat": 2.1,
+            "win_rate_pct": 41.5,
+            "avg_days": 122.5
+          },
+          "pre_2010": {
+            "n": 48,
+            "mean_bp": 315.746,
+            "median_bp": -152.638,
+            "t_stat": 1.66,
+            "win_rate_pct": 43.8,
+            "avg_days": 128.6
+          },
+          "post_2010": {
+            "n": 34,
+            "mean_bp": 252.783,
+            "median_bp": -200.253,
+            "t_stat": 1.27,
+            "win_rate_pct": 38.2,
+            "avg_days": 114.0
+          }
+        }
+      }
+    },
+    "^GSPTSE": {
+      "name": "Canada TSX Composite",
+      "first": "1980-01-02",
+      "last": "2026-11-20",
+      "n_bars": 11775,
+      "cells": {
+        "look10|breakout+10m_regime": {
+          "all": {
+            "n": 260,
+            "mean_bp": 49.206,
+            "median_bp": -35.578,
+            "t_stat": 2.39,
+            "win_rate_pct": 44.6,
+            "avg_days": 25.6
+          },
+          "pre_2010": {
+            "n": 157,
+            "mean_bp": 75.426,
+            "median_bp": -45.224,
+            "t_stat": 2.53,
+            "win_rate_pct": 46.5,
+            "avg_days": 25.8
+          },
+          "post_2010": {
+            "n": 103,
+            "mean_bp": 9.24,
+            "median_bp": -35.578,
+            "t_stat": 0.37,
+            "win_rate_pct": 41.7,
+            "avg_days": 25.4
+          }
+        },
+        "look10|breakout_only": {
+          "all": {
+            "n": 361,
+            "mean_bp": 45.933,
+            "median_bp": -50.157,
+            "t_stat": 2.2,
+            "win_rate_pct": 43.8,
+            "avg_days": 27.5
+          },
+          "pre_2010": {
+            "n": 225,
+            "mean_bp": 64.144,
+            "median_bp": -59.695,
+            "t_stat": 2.16,
+            "win_rate_pct": 44.4,
+            "avg_days": 27.6
+          },
+          "post_2010": {
+            "n": 136,
+            "mean_bp": 15.804,
+            "median_bp": -34.886,
+            "t_stat": 0.62,
+            "win_rate_pct": 42.6,
+            "avg_days": 27.3
+          }
+        },
+        "look20|breakout+10m_regime": {
+          "all": {
+            "n": 129,
+            "mean_bp": 142.066,
+            "median_bp": -23.894,
+            "t_stat": 2.78,
+            "win_rate_pct": 45.0,
+            "avg_days": 53.2
+          },
+          "pre_2010": {
+            "n": 76,
+            "mean_bp": 209.676,
+            "median_bp": -3.559,
+            "t_stat": 2.78,
+            "win_rate_pct": 48.7,
+            "avg_days": 53.6
+          },
+          "post_2010": {
+            "n": 53,
+            "mean_bp": 45.116,
+            "median_bp": -30.862,
+            "t_stat": 0.76,
+            "win_rate_pct": 39.6,
+            "avg_days": 52.6
+          }
+        },
+        "look20|breakout_only": {
+          "all": {
+            "n": 167,
+            "mean_bp": 173.221,
+            "median_bp": -10.708,
+            "t_stat": 3.32,
+            "win_rate_pct": 47.3,
+            "avg_days": 61.3
+          },
+          "pre_2010": {
+            "n": 104,
+            "mean_bp": 219.222,
+            "median_bp": -13.337,
+            "t_stat": 2.93,
+            "win_rate_pct": 48.1,
+            "avg_days": 61.2
+          },
+          "post_2010": {
+            "n": 63,
+            "mean_bp": 97.283,
+            "median_bp": -6.165,
+            "t_stat": 1.59,
+            "win_rate_pct": 46.0,
+            "avg_days": 61.4
+          }
+        },
+        "look30|breakout+10m_regime": {
+          "all": {
+            "n": 93,
+            "mean_bp": 178.357,
+            "median_bp": -51.049,
+            "t_stat": 2.39,
+            "win_rate_pct": 41.9,
+            "avg_days": 73.3
+          },
+          "pre_2010": {
+            "n": 54,
+            "mean_bp": 261.101,
+            "median_bp": -13.241,
+            "t_stat": 2.4,
+            "win_rate_pct": 48.1,
+            "avg_days": 74.1
+          },
+          "post_2010": {
+            "n": 39,
+            "mean_bp": 63.788,
+            "median_bp": -65.594,
+            "t_stat": 0.68,
+            "win_rate_pct": 33.3,
+            "avg_days": 72.2
+          }
+        },
+        "look30|breakout_only": {
+          "all": {
+            "n": 125,
+            "mean_bp": 187.369,
+            "median_bp": -36.927,
+            "t_stat": 2.29,
+            "win_rate_pct": 46.4,
+            "avg_days": 81.4
+          },
+          "pre_2010": {
+            "n": 80,
+            "mean_bp": 228.385,
+            "median_bp": -54.019,
+            "t_stat": 1.95,
+            "win_rate_pct": 46.2,
+            "avg_days": 77.6
+          },
+          "post_2010": {
+            "n": 45,
+            "mean_bp": 114.452,
+            "median_bp": -10.956,
+            "t_stat": 1.23,
+            "win_rate_pct": 46.7,
+            "avg_days": 88.2
+          }
+        },
+        "look40|breakout+10m_regime": {
+          "all": {
+            "n": 67,
+            "mean_bp": 300.002,
+            "median_bp": 54.101,
+            "t_stat": 2.98,
+            "win_rate_pct": 50.7,
+            "avg_days": 107.7
+          },
+          "pre_2010": {
+            "n": 39,
+            "mean_bp": 372.962,
+            "median_bp": 306.469,
+            "t_stat": 2.58,
+            "win_rate_pct": 53.8,
+            "avg_days": 106.8
+          },
+          "post_2010": {
+            "n": 28,
+            "mean_bp": 198.381,
+            "median_bp": -29.504,
+            "t_stat": 1.49,
+            "win_rate_pct": 46.4,
+            "avg_days": 108.9
+          }
+        },
+        "look40|breakout_only": {
+          "all": {
+            "n": 83,
+            "mean_bp": 355.672,
+            "median_bp": 150.09,
+            "t_stat": 3.03,
+            "win_rate_pct": 55.4,
+            "avg_days": 126.4
+          },
+          "pre_2010": {
+            "n": 53,
+            "mean_bp": 404.971,
+            "median_bp": 150.09,
+            "t_stat": 2.46,
+            "win_rate_pct": 56.6,
+            "avg_days": 119.7
+          },
+          "post_2010": {
+            "n": 30,
+            "mean_bp": 268.578,
+            "median_bp": 205.855,
+            "t_stat": 1.82,
+            "win_rate_pct": 53.3,
+            "avg_days": 138.1
+          }
+        }
+      }
+    }
+  }
+}

@@ -682,6 +682,19 @@ def payload_coverage(data: Any, scored_rows: list[dict],
             f"exceeded 100% ({share_of_valid}%)")
         share_of_valid = None
 
+    # N6 (Block 58): the cohorts above are counts; their rows are materialised by
+    # the publishing generator, so attribute each excluded row to a class and a
+    # reason instead of leaving "6,111 missing" unexplained. Additive: nothing
+    # above reads this block.
+    excluded_summary: dict[str, Any] | None = None
+    if isinstance(data, dict):
+        try:
+            from audit_trail.excluded_cohorts import summarize_excluded_rows
+            excluded_summary = summarize_excluded_rows(
+                data.get("_excluded_cohort_rows"))
+        except Exception:
+            excluded_summary = None
+
     cov_statement = _coverage_statement(scored, total, integrity, expired, overlap)
     if canonical_mode:
         cov_statement = (f"{cov_statement} This run scores the canonical resolved "
@@ -704,6 +717,7 @@ def payload_coverage(data: Any, scored_rows: list[dict],
         "unscored_rows": (max(0, total - scored) if total else None),
         "cohorts_overlap": overlap,
         "excluded_cohorts": excluded,
+        "excluded_summary": excluded_summary,
         "row_drops": dict(sorted((drops or {}).items())),
         "window": {"first_closed_at": stamps[0] if stamps else None,
                    "last_closed_at": stamps[-1] if stamps else None},

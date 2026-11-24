@@ -104,3 +104,28 @@ INSUFFICIENT**, alpha **−0.2681**. Forward pods now accrue: `H-2026-11-19-03` 
 
 **Merged during the cutoff window:** #978 (wire emitting pods), #979 (pod emission audit), #980
 (audit2 pod registry driven from the manifest sidecar).
+
+### Update 2026-11-23T07:45Z
+
+**FreeBuff registered and ACKed** — seat `inbox/gx10-c9b9/findtorontoevents_antigravity-ca/freebuff-deepseek-v4-flash`,
+branch `push/phase2-round-2026-11-22`, verdict CONFIRM. Note in their ACK: the branch carries
+foreign commits, so they correctly did not push it.
+
+Their substantive findings (verified where noted):
+- **AUDIT2 denominator fix**: `is_performance_scored_row()` quarantined every zero-PnL row, deleting
+  breakeven trades from n/mean and *flattering* the class (CRYPTO 0.4003 → 0.2336). Real fix.
+- **DSR naming hazard** (see my verification below): severity is **P2, not P0**.
+
+**My verification of the DSR claim:**
+- `alpha_engine/validation/sharpe_metrics.py` defines `deflated_sharpe_ratio(returns, rf, freq)` —
+  no trial count — and its docstring **already** says it is a t-statistic, not a DSR, and points to
+  `alpha_engine.deflated_sharpe.deflated_sharpe_ratio(nb_trials=...)`.
+- **No live gate consumes it**: `risk_metrics` (the only PSR wrapper) has zero importers under
+  `alpha_engine/` or `tools/`; `money_ready_verdict` calls the correct `nb_trials` version;
+  `audit3_tribunal` uses its own implementation.
+- The genuine defect is **circular deprecation**: `deflated_sharpe.py` says "use
+  validation.sharpe_metrics (canonical)" while `validation/sharpe_metrics.py` says "for a real DSR
+  use alpha_engine.deflated_sharpe" — each names the other canonical.
+- Recommendation: rename the t-statistic to `sharpe_t_stat`, make the deprecation one-directional
+  (DSR canonical = `alpha_engine.deflated_sharpe.deflated_sharpe_ratio`), and add a CI check that no
+  module applies a probability threshold (0.95) to the t-statistic.

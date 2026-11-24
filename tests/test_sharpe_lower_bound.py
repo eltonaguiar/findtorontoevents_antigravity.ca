@@ -41,9 +41,28 @@ class ReuseLo2002SETests(unittest.TestCase):
                 msg=f"SE mismatch at SR={sr_ann}, skew={skew}, kurt={kurt}, T={T}"
             )
 
-    def test_annual_trades_constant_matches(self) -> None:
+    def test_annual_trades_constant_is_owned_by_this_module(self) -> None:
+        """`deflated_sharpe.ANNUAL_TRADES` NO LONGER EXISTS -- removed 2026-11-22.
+
+        The hardcoded 6*365 = 2190 multiplier was DEFECT 3 of the deflation gate: it
+        annualised every per-trade Sharpe by sqrt(2190) = 46.8x regardless of the
+        strategy's real trade rate, which is what produced annualised Sharpes of 43.93
+        and 93.20. `tools/sharpe_lower_bound.py` imported it, so removing it broke
+        this tool at runtime (AttributeError).
+
+        The tool now owns its own `ANNUAL_TRADES` so its reported lower bounds do not
+        shift under a bug-fix commit. This test pins the new contract: the helper
+        returns the module's OWN constant, and that constant is still 6*365 (the
+        legacy value, retained deliberately -- see the module docstring's "KNOWN
+        DEFECTS RETAINED HERE").
+        """
         _, _, annual_trades = slb._load_deflated_sharpe_helpers()
-        self.assertEqual(annual_trades, ds.ANNUAL_TRADES)
+        self.assertEqual(annual_trades, slb.ANNUAL_TRADES)
+        self.assertEqual(slb.ANNUAL_TRADES, 6 * 365,
+                         "changing this silently shifts every reported Sharpe LB")
+        self.assertFalse(hasattr(ds, "ANNUAL_TRADES"),
+                         "deflated_sharpe.ANNUAL_TRADES was removed as defect 3; if "
+                         "it is back, it must be a measured rate, not a constant")
 
 
 class ComputeSharpeLBTests(unittest.TestCase):
