@@ -330,19 +330,31 @@ requires contract-level data.** Treat any futures conclusion from this dataset a
 
 ## Bottom line
 
-1. **Order of decision:** account wrapper (Step 0) → then vehicle (Step 1). Not the reverse, and
-   not optional: four of the five recommendations are conditional on a US tax-sheltered account.
-2. **Core holding:** broad low-cost index. Same beta everywhere; choose the lowest total cost you can actually access.
-3. **MF vs ETF is a tax-and-minimum question, not a return question.** The fee edge is real (~0.08pp/yr); the return edge is unmeasurable here.
-4. **Risk:** 100% equity returned ~11.5%/yr with a −24.5% drawdown. If you cannot hold through that, a 60/40 is defensible — and on *current* yields more defensible than the trailing numbers suggest.
-5. **Do not rank funds on 5-year CAGR.** The intervals overlap almost completely.
+1. **Currency exposure first, if you do not spend in USD.** Over this window it was worth ~2.9pp/yr
+   — about 33x the fee question. Pick hedged or unhedged deliberately; the vehicle choice is a
+   rounding error next to it. (And it is not a forecast: the same move reversed costs the same.)
+2. **Then the account wrapper (Step 0).** Four of the five recommendations are conditional on a US
+   tax-sheltered account.
+3. **Then the vehicle (Step 1).** Broad low-cost index. Same beta everywhere; choose the lowest total
+   cost you can actually access.
+4. **MF vs ETF is a tax-and-minimum question, not a return question.** The fee edge is real
+   (~0.08pp/yr); the return edge is unmeasurable here.
+5. **Risk:** 100% equity returned ~11.5%/yr in USD with a −24.5% drawdown. If you cannot hold through
+   that, a 60/40 is defensible — and on *current* yields more defensible than the trailing numbers
+   suggest, subject to duration risk.
+6. **Do not rank funds on 5-year CAGR.** The intervals overlap almost completely, and their width
+   moves ~29% depending on a block-length choice.
 
 ## What would change this answer
 
+- **CAD strengthening** instead of weakening — would subtract ~2.9pp/yr from an unhedged CAD
+  holder's return and could dominate everything else in this report
 - Cash falling well below ~2% (raises the equity hurdle back to favourable)
+- A sustained rise in yields from here: helps a bond sleeve's forward return but hits its price
+  first, over roughly BND's six-year duration
 - A sustained drop in the net gap making the fee advantage negative
-- Dividend reinvestment turning out to be *not* reflected in the adjusted closes (would invalidate every CAGR here — plan item L1, still open)
-- A tax regime where MF capital-gains distributions exceed the fee edge (plan items E2–E6, needs jurisdiction)
+- A tax regime where MF capital-gains distributions exceed the fee edge (plan items E2–E6, needs
+  jurisdiction)
 
 ## Still open
 
@@ -351,6 +363,11 @@ Plan: `docs/edge_research/FUND_DEEP_DIVE_TODO_2026-11-23.md` (173 items, 15 sect
 - **E3–E6 (blocked, needs operator):** jurisdiction — Canadian TFSA/RRSP vs US Roth/IRA vs taxable.
   Step 0 above is written jurisdiction-agnostic on purpose; the ranking below it is not.
 - **G3–G7 (blocked):** futures need contract-level data (front-month settlements + roll dates).
-- Peer review of the *corrected* numbers was run against a local model and found one real
-  inconsistency (the two-estimand question, now documented). An external review has not been done.
+- Peer reviews run: two rounds against a local model and one against a non-local model. They found
+  the two-estimand question, four Step 0 omissions, the forward-return overstatement, and one claim
+  that did not survive testing (block length). A second independent external review has not been run.
 - The Canadian withholding statement in Step 0 is flagged as unverified — confirm before relying on it.
+- Hedging cost in the CAD section is an assumed carry parameter, not a measured forward curve.
+- **Resolved since this report was first drafted:** L1 (dividends reinvested — proven via SGOV
+  control), the gross/net field confusion, the mislabelled bond yield, and currency (previously
+  "unmodelled", now measured).

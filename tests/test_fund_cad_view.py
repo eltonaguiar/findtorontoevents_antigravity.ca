@@ -65,3 +65,16 @@ def test_doc_states_the_caveats():
     # the benchmark moves with the asset, which is why Sharpe barely changes
     assert "hurdle rose" in text.lower() or "6.50%" in text
     assert "approximated, not measured" in text.lower() or "approximate" in text.lower()
+
+
+def test_bottom_line_leads_with_currency_not_the_vehicle():
+    """The report measured a 0.0795pp fee edge in detail while a ~2.9pp/yr
+    currency term went unmentioned. The summary must reflect the ranking the
+    evidence supports, not the order the investigation happened in.
+    """
+    text = DOC.read_text()
+    bl = text[text.index("## Bottom line"):text.index("## What would change")]
+    assert bl.lower().index("currency") < bl.lower().index("wrapper")
+    assert bl.lower().index("currency") < bl.lower().index("vehicle")
+    # and the reversal risk must be stated where the claim is made
+    assert "not a forecast" in bl.lower()
