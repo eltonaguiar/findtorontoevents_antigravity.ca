@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:34:19.253421+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:35:27.527729+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 12 of 1000.** open 976 | claimed 3 | blocked_no_data 9
+**Worked 18 of 1000.** open 966 | claimed 3 | blocked_no_data 13
 
 ## Done condition (identical for every cell)
 
@@ -10,7 +10,7 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 12/50 worked
+## BTCUSDT - 18/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -38,16 +38,16 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `BTCUSDT/donchian/1h` | killed | `results/cells/BTCUSDT_donchian_1h.json` |
 | [-] `BTCUSDT/donchian/4h` | blocked_no_data | `results/cells/BTCUSDT_donchian_4h.json` |
 | [x] `BTCUSDT/donchian/1d` | done | `results/cells/BTCUSDT_donchian_1d.json` |
-| [ ] `BTCUSDT/donchian/1w` | open | `results/cells/BTCUSDT_donchian_1w.json` |
-| [ ] `BTCUSDT/ma_cross/15m` | open | `results/cells/BTCUSDT_ma_cross_15m.json` |
-| [ ] `BTCUSDT/ma_cross/1h` | open | `results/cells/BTCUSDT_ma_cross_1h.json` |
-| [ ] `BTCUSDT/ma_cross/4h` | open | `results/cells/BTCUSDT_ma_cross_4h.json` |
-| [ ] `BTCUSDT/ma_cross/1d` | open | `results/cells/BTCUSDT_ma_cross_1d.json` |
-| [ ] `BTCUSDT/ma_cross/1w` | open | `results/cells/BTCUSDT_ma_cross_1w.json` |
-| [ ] `BTCUSDT/bb_meanrev/15m` | open | `results/cells/BTCUSDT_bb_meanrev_15m.json` |
-| [ ] `BTCUSDT/bb_meanrev/1h` | open | `results/cells/BTCUSDT_bb_meanrev_1h.json` |
-| [ ] `BTCUSDT/bb_meanrev/4h` | open | `results/cells/BTCUSDT_bb_meanrev_4h.json` |
-| [ ] `BTCUSDT/bb_meanrev/1d` | open | `results/cells/BTCUSDT_bb_meanrev_1d.json` |
+| [x] `BTCUSDT/donchian/1w` | done | `results/cells/BTCUSDT_donchian_1w.json` |
+| [-] `BTCUSDT/ma_cross/15m` | blocked_no_data | `results/cells/BTCUSDT_ma_cross_15m.json` |
+| [x] `BTCUSDT/ma_cross/1h` | done | `results/cells/BTCUSDT_ma_cross_1h.json` |
+| [-] `BTCUSDT/ma_cross/4h` | blocked_no_data | `results/cells/BTCUSDT_ma_cross_4h.json` |
+| [x] `BTCUSDT/ma_cross/1d` | done | `results/cells/BTCUSDT_ma_cross_1d.json` |
+| [x] `BTCUSDT/ma_cross/1w` | done | `results/cells/BTCUSDT_ma_cross_1w.json` |
+| [-] `BTCUSDT/bb_meanrev/15m` | blocked_no_data | `results/cells/BTCUSDT_bb_meanrev_15m.json` |
+| [x] `BTCUSDT/bb_meanrev/1h` | killed | `results/cells/BTCUSDT_bb_meanrev_1h.json` |
+| [-] `BTCUSDT/bb_meanrev/4h` | blocked_no_data | `results/cells/BTCUSDT_bb_meanrev_4h.json` |
+| [x] `BTCUSDT/bb_meanrev/1d` | done | `results/cells/BTCUSDT_bb_meanrev_1d.json` |
 | [ ] `BTCUSDT/bb_meanrev/1w` | open | `results/cells/BTCUSDT_bb_meanrev_1w.json` |
 | [ ] `BTCUSDT/vwap_reversion/15m` | open | `results/cells/BTCUSDT_vwap_reversion_15m.json` |
 | [ ] `BTCUSDT/vwap_reversion/1h` | open | `results/cells/BTCUSDT_vwap_reversion_1h.json` |

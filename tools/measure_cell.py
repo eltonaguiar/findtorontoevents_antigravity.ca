@@ -88,6 +88,26 @@ def load_bars(symbol, horizon):
                         f"cache:{cache.name} ({len(rows)} bars, 2 header rows skipped)")
         return [], [], "no 1h cache"
 
+    # Non-crypto symbols (equities, FX) come from yfinance. FX pairs need the
+    # "=X" suffix. Verified: SPY/AAPL/TLT 510 bars, EURUSD/USDJPY/GBPUSD 526.
+    if not symbol.endswith("USDT"):
+        try:
+            import yfinance as yf  # noqa: PLC0415
+            tick = symbol + "=X" if (len(symbol) == 6 and symbol.isalpha()) else symbol
+            h = yf.Ticker(tick).history(start="2022-01-01", end="2026-11-15")
+            if not len(h):
+                return [], [], f"yfinance:{tick} returned nothing"
+            cl = [float(v) for v in h["Close"]]
+            op = [float(v) for v in h["Open"]]
+            if resample_weekly:
+                wc, wo = [], []
+                for i in range(0, len(cl) - 4, 5):
+                    wo.append(op[i]); wc.append(cl[min(i + 4, len(cl) - 1)])
+                return wc, wo, f"yfinance:{tick} daily->1w ({len(wc)} bars from {len(cl)})"
+            return cl, op, f"yfinance:{tick} daily ({len(cl)} bars)"
+        except Exception as exc:  # noqa: BLE001
+            return [], [], f"yfinance failed: {str(exc)[:120]}"
+
     end = int(time.time() * 1000)
     start = end - 1000 * 24 * 3600 * 1000
     k = fetch_klines(symbol, interval, start, end)
