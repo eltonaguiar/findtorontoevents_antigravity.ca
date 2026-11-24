@@ -392,6 +392,38 @@ Two things this table does **not** settle:
   problem, which is precisely its advantage), but the fund still pays US withholding at the fund
   level. That drag is not modelled here and is the next thing to measure.
 
+### What the wrapper actually costs — and what it does not
+
+`tools/fund_wrapper_decomposition.py` (artifact `reports/fund_wrapper_decomp.json`) splits the gap
+between a CAD-listed fund and its US-listed equivalent into MER and everything else:
+
+| CAD-listed | vs | gap | MER effect | residual | predicted withholding | unexplained |
+|---|---|---:|---:|---:|---:|---:|
+| VFV.TO | SPY | −0.16 | +0.0045 | −0.1685 | −0.1500 | −0.0185 |
+| ZSP.TO | SPY | −0.16 | +0.0045 | −0.1645 | −0.1500 | −0.0145 |
+| VUN.TO | VTI | −0.46 | −0.1400 | −0.3150 | −0.1590 | −0.1560 |
+
+For the S&P 500 pair the residual lands within **2bp** of the predicted fund-level US withholding
+(15% × ~1.0% dividend yield). That is corroboration, not proof — the residual bundles withholding
+with tracking error and fund structure — but it says the wrapper's cost is **withholding, not MER**,
+which is the opposite of what the fee-focused half of this report implies.
+
+VUN's residual is **−0.156pp larger than predicted and I cannot yet explain it.** Candidates, none
+verified: total-market dividend yield differing from the large-cap figure used in the prediction;
+tracking error; or a cost component beyond the quoted MER. It is recorded as unexplained rather than
+assigned to the nearest plausible cause.
+
+### Two funds I wrongly treated as CAD-listed equivalents
+
+An earlier version of this decomposition paired ZAG.TO against BND and CASH.TO against SGOV, and
+reported residuals of −1.67pp and −3.31pp as if they were wrapper cost. They are not: **ZAG.TO holds
+Canadian aggregate bonds and CASH.TO holds CAD cash.** Neither is a CAD-listed version of the US
+fund, so differencing them measures the bond market and the currency, not the cost of the wrapper.
+Those pairs are now excluded and labelled, and the tool refuses to include them.
+
+This is the fourth error in this programme of the same species — not a wrong calculation, but the
+wrong things put on either side of a minus sign.
+
 ## Decision table
 
 | vehicle | type | MER | minimum | tax efficiency (taxable) | fractional | best fit |
