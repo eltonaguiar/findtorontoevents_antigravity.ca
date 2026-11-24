@@ -45,6 +45,7 @@ SOURCES = [
     REPO_ROOT / "reports" / "fund_withholding.json",
     REPO_ROOT / "reports" / "fund_cad_home.json",
     REPO_ROOT / "reports" / "fund_wrapper_decomp.json",
+    REPO_ROOT / "reports" / "fund_hedge_cost.json",
 ]
 
 # numbers that legitimately have no JSON source: dates, plan item ids, spans,

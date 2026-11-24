@@ -413,6 +413,22 @@ verified: total-market dividend yield differing from the large-cap figure used i
 tracking error; or a cost component beyond the quoted MER. It is recorded as unexplained rather than
 assigned to the nearest plausible cause.
 
+### The hedging carry, measured (it was 2x my assumption)
+
+The CAD sections used an **assumed** hedging carry of −1.0%/yr. Backlog H006 removed the
+assumption by holding the same index in hedged and unhedged wrappers and differencing them
+(`tools/fund_hedge_cost.py`, artifact `reports/fund_hedge_cost.json`):
+
+| pair | gap | minus FX effect | minus MER diff | **hedge cost** |
+|---|---:|---:|---:|---:|
+| VFV.TO − VSP.TO | +4.83 | −2.59 | −0.30 | **1.94 pp/yr** |
+| ZSP.TO − XSP.TO | +5.52 | −2.59 | −0.33 | **2.60 pp/yr** |
+
+**The measured carry is roughly 2x the assumption I used**, so every hedged-vs-unhedged
+comparison in this report understated the cost of hedging. Two caveats keep this honest: the
+window has a falling CAD, which flatters the unhedged side by design, and the MERs in the
+line above are **quoted, not fetched** (`mers_verified: false`).
+
 ### Two funds I wrongly treated as CAD-listed equivalents
 
 An earlier version of this decomposition paired ZAG.TO against BND and CASH.TO against SGOV, and
