@@ -55,6 +55,11 @@ name: Verification Tests
       - 'tests/test_coverage_limits_doc.py'
       - 'CONTEST/ROUND_01_2026-11-23/COVERAGE_LIMITS.md'
       - 'docs/audit_review_2026-11-22/**'
+      # The excluded-cohort summary: the summariser, the module that consumes it,
+      # and the synthetic-row test that pins both.
+      - 'audit_trail/excluded_cohorts.py'
+      - 'alpha_engine/audit3_tribunal.py'
+      - 'tests/test_excluded_cohorts_summary.py'
       # The tally test recursively globs every markdown file under docs/ (see
       # tests/test_edge_research_tally_consistency.py SEARCH_DIR), so a docs edit
       # can flip the tally invariant.
@@ -82,6 +87,9 @@ name: Verification Tests
       - 'tests/test_coverage_limits_doc.py'
       - 'CONTEST/ROUND_01_2026-11-23/COVERAGE_LIMITS.md'
       - 'docs/audit_review_2026-11-22/**'
+      - 'audit_trail/excluded_cohorts.py'
+      - 'alpha_engine/audit3_tribunal.py'
+      - 'tests/test_excluded_cohorts_summary.py'
       - 'docs/**'
       - '.github/workflows/verification-tests.yml'
   workflow_dispatch:
@@ -140,4 +148,5 @@ jobs:
             tests/test_pmc_promotion_consistency.py \
             tests/test_check_dossier_citations.py \
             tests/test_coverage_limits_doc.py \
+            tests/test_excluded_cohorts_summary.py \
             -q
