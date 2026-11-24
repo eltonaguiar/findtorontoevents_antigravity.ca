@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:35:02.099771+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:35:10.305823+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 64 of 1000.** open 885 | claimed 0 | blocked_no_data 51
+**Worked 68 of 1000.** open 873 | claimed 0 | blocked_no_data 59
 
 ## Done condition (identical for every cell)
 
@@ -120,7 +120,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ETHUSDT/gap_fade/1d` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1d.json` |
 | [-] `ETHUSDT/gap_fade/1w` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1w.json` |
 
-## SOLUSDT - 4/50 worked
+## SOLUSDT - 8/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -131,20 +131,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `SOLUSDT/trend_pullback/1w` | killed | `results/cells/SOLUSDT_trend_pullback_1w.json` |
 | [-] `SOLUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/SOLUSDT_rsi2_pullback_15m.json` |
 | [-] `SOLUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/SOLUSDT_rsi2_pullback_1h.json` |
-| [ ] `SOLUSDT/rsi2_pullback/4h` | open | `results/cells/SOLUSDT_rsi2_pullback_4h.json` |
+| [-] `SOLUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/SOLUSDT_rsi2_pullback_4h.json` |
 | [x] `SOLUSDT/rsi2_pullback/1d` | killed | `results/cells/SOLUSDT_rsi2_pullback_1d.json` |
-| [ ] `SOLUSDT/rsi2_pullback/1w` | open | `results/cells/SOLUSDT_rsi2_pullback_1w.json` |
-| [ ] `SOLUSDT/vol_compression/15m` | open | `results/cells/SOLUSDT_vol_compression_15m.json` |
-| [ ] `SOLUSDT/vol_compression/1h` | open | `results/cells/SOLUSDT_vol_compression_1h.json` |
-| [ ] `SOLUSDT/vol_compression/4h` | open | `results/cells/SOLUSDT_vol_compression_4h.json` |
-| [ ] `SOLUSDT/vol_compression/1d` | open | `results/cells/SOLUSDT_vol_compression_1d.json` |
-| [ ] `SOLUSDT/vol_compression/1w` | open | `results/cells/SOLUSDT_vol_compression_1w.json` |
-| [ ] `SOLUSDT/breakout/15m` | open | `results/cells/SOLUSDT_breakout_15m.json` |
-| [ ] `SOLUSDT/breakout/1h` | open | `results/cells/SOLUSDT_breakout_1h.json` |
-| [ ] `SOLUSDT/breakout/4h` | open | `results/cells/SOLUSDT_breakout_4h.json` |
+| [x] `SOLUSDT/rsi2_pullback/1w` | killed | `results/cells/SOLUSDT_rsi2_pullback_1w.json` |
+| [-] `SOLUSDT/vol_compression/15m` | blocked_no_data | `results/cells/SOLUSDT_vol_compression_15m.json` |
+| [-] `SOLUSDT/vol_compression/1h` | blocked_no_data | `results/cells/SOLUSDT_vol_compression_1h.json` |
+| [-] `SOLUSDT/vol_compression/4h` | blocked_no_data | `results/cells/SOLUSDT_vol_compression_4h.json` |
+| [x] `SOLUSDT/vol_compression/1d` | killed | `results/cells/SOLUSDT_vol_compression_1d.json` |
+| [x] `SOLUSDT/vol_compression/1w` | killed | `results/cells/SOLUSDT_vol_compression_1w.json` |
+| [-] `SOLUSDT/breakout/15m` | blocked_no_data | `results/cells/SOLUSDT_breakout_15m.json` |
+| [-] `SOLUSDT/breakout/1h` | blocked_no_data | `results/cells/SOLUSDT_breakout_1h.json` |
+| [-] `SOLUSDT/breakout/4h` | blocked_no_data | `results/cells/SOLUSDT_breakout_4h.json` |
 | [x] `SOLUSDT/breakout/1d` | killed | `results/cells/SOLUSDT_breakout_1d.json` |
-| [ ] `SOLUSDT/breakout/1w` | open | `results/cells/SOLUSDT_breakout_1w.json` |
-| [ ] `SOLUSDT/donchian/15m` | open | `results/cells/SOLUSDT_donchian_15m.json` |
+| [x] `SOLUSDT/breakout/1w` | killed | `results/cells/SOLUSDT_breakout_1w.json` |
+| [-] `SOLUSDT/donchian/15m` | blocked_no_data | `results/cells/SOLUSDT_donchian_15m.json` |
 | [ ] `SOLUSDT/donchian/1h` | open | `results/cells/SOLUSDT_donchian_1h.json` |
 | [ ] `SOLUSDT/donchian/4h` | open | `results/cells/SOLUSDT_donchian_4h.json` |
 | [ ] `SOLUSDT/donchian/1d` | open | `results/cells/SOLUSDT_donchian_1d.json` |
