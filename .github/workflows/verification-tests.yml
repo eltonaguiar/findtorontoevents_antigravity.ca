@@ -51,6 +51,9 @@ name: Verification Tests
       - 'tools/check_dossier_citations.py'
       - 'tools/dossier_citation_allowlist.txt'
       - 'tests/test_check_dossier_citations.py'
+      # The coverage-label guard: fails if COVERAGE_LIMITS.md and its json block drift.
+      - 'tests/test_coverage_limits_doc.py'
+      - 'CONTEST/ROUND_01_2026-11-23/COVERAGE_LIMITS.md'
       - 'docs/audit_review_2026-11-22/**'
       # The tally test recursively globs every markdown file under docs/ (see
       # tests/test_edge_research_tally_consistency.py SEARCH_DIR), so a docs edit
@@ -75,6 +78,9 @@ name: Verification Tests
       - 'tools/check_dossier_citations.py'
       - 'tools/dossier_citation_allowlist.txt'
       - 'tests/test_check_dossier_citations.py'
+      # The coverage-label guard: fails if COVERAGE_LIMITS.md and its json block drift.
+      - 'tests/test_coverage_limits_doc.py'
+      - 'CONTEST/ROUND_01_2026-11-23/COVERAGE_LIMITS.md'
       - 'docs/audit_review_2026-11-22/**'
       - 'docs/**'
       - '.github/workflows/verification-tests.yml'
@@ -133,4 +139,5 @@ jobs:
             tests/test_edge_research_tally_consistency.py \
             tests/test_pmc_promotion_consistency.py \
             tests/test_check_dossier_citations.py \
+            tests/test_coverage_limits_doc.py \
             -q

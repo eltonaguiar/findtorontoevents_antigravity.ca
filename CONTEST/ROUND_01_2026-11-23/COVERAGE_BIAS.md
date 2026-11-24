@@ -337,3 +337,131 @@ rows; the class composition of the 6,111 unscoreable rows. Cause: the canonical 
 file (`resolved_closed_picks_net.json`) and the full current `dashboard_data.json`
 are not shipped in the repo, and the price tables are live MySQL, so the selection-alpha
 join cannot be re-run offline from `origin/main`.
+
+---
+
+## Amendment
+
+**Block 57 · 2026-11-23 · appended only; nothing above is edited and the BIASED verdict stands.**
+
+Re-measured at `origin/main` = `ce214306b5caf6e52d231f13930cc99f0b7349d2`. Block 56 measured at
+`85c0c9c3d3c7`; `git diff --stat 85c0c9c3d3c7 origin/main -- audit_dashboard/data/audit3_ledger.json
+audit_dashboard/data/denominator.json docs/audit_review_2026-11-22/_raw/audit_data_dashboard_data.json
+alpha_engine/audit3_selection_alpha.py audit_trail/dashboard_generator.py` is empty, so every input
+below is the same file Block 56 read.
+
+### Re-verified figures
+
+| Figure | Block 56 | This measurement | Delta |
+|---|---|---|---|
+| `selection_alpha.covered` | 3,190 | 3,190 | none |
+| `selection_alpha.n_universe` | 3,500 | 3,500 | none |
+| `coverage.scored_rows` | 8,886 | 8,886 | none |
+| `coverage.total_closed_picks` | 14,997 | 14,997 | none |
+| covered / universe | 91.14% | 91.14% | none |
+| scored / closed | 59.25% | 59.25% | none |
+| covered / scored | 35.90% | 35.90% | none |
+| covered / closed | 21.27% | 21.27% | none |
+| scoreable but outside the 3,500 cap | 5,696 | **5,386** | **−310 (corrected)** |
+| `selection_alpha.by_strategy` cells | 39 | **38** | **−1 (corrected)** |
+
+The 11,807 non-covered total is right; its split was not. Measured: **6,111** unscoreable +
+**5,386** scoreable-but-outside-the-cap (8,886 − 3,500) + **310** price-missing inside the universe
+= 11,807. `5,696 = 5,386 + 310` counts the price-missing rows twice, and the nested diagram above
+is short by 310 for the same reason. `by_strategy` holds 38 cells at n ≥ 20, not 39.
+
+### 1. Exclusion-reason taxonomy in code
+
+There are two published taxonomies, and only one of them is a partition of the 6,111 gap.
+
+| Reason label | Where it is produced | Count at `origin/main` |
+|---|---|---|
+| `invalid_row` | [`build_view()`](alpha_engine/resolved_closed_view.py:200) — `drops[default_exclusion_reason(pick) or "invalid_row"] += 1` | 5,917 |
+| `mirror_duplicate` | [`build_view()`](alpha_engine/resolved_closed_view.py:204), key at [`dedupe_key()`](alpha_engine/resolved_closed_view.py:91) | 98 |
+| `non_performance_exit` | [`default_exclusion_reason()`](alpha_engine/resolved_closed_view.py:124), reason set at [63–73](alpha_engine/resolved_closed_view.py:63) | 43 |
+| `resolver_breakeven_fallback` | [`default_exclusion_reason()`](alpha_engine/resolved_closed_view.py:126) | 53 |
+| `integrity_excluded` (cohort) | [`dashboard_generator.py:17119`](audit_trail/dashboard_generator.py:17119) → `coverage.excluded_cohorts` | 6,013 |
+| `auto_expired` (cohort) | [`dashboard_generator.py:17138`](audit_trail/dashboard_generator.py:17138) → `coverage.excluded_cohorts` | 9,356 |
+| `no_numeric_pnl` | [`build_view()`](alpha_engine/resolved_closed_view.py:208) | 0 published |
+
+The four canonical reasons sum **exactly** to `coverage.unscored_rows` = 6,111
+([`coverage.denominator.canonical_excluded_by_reason`](audit_dashboard/data/audit3_ledger.json)).
+The two cohorts overlap and are **not** a partition (the ledger's own `coverage.statement` says so).
+`audit_dashboard/data/denominator.json` lists the same four reasons at **double** their per-block
+value (`invalid_row` 11,834 = 5,917 × 2, …): that file sums two blocks. Read one block, as
+[`METRIC_DEFINITIONS.md` §8](docs/audit_review_2026-11-22/METRIC_DEFINITIONS.md) already warns.
+
+### 2. Why each reason cannot be scored, mechanically
+
+- **`invalid_row`** (5,917) is the catch-all for a row the caller's validity predicate rejected
+  and the coarse classifier could not name ([`resolved_closed_view.py:106–135`](alpha_engine/resolved_closed_view.py:106)).
+  The predicate is [`_is_valid_resolved_pick()`](audit_trail/dashboard_generator.py:4924) with these
+  branches: paper-trade / `expired_no_pnl` / `_auto_expired`
+  ([4934–4938](audit_trail/dashboard_generator.py:4934)); missing `pnl_pct`
+  ([4940–4942](audit_trail/dashboard_generator.py:4940)); PnL corrupt against recorded prices
+  ([4948](audit_trail/dashboard_generator.py:4948)); impossible non-crypto move
+  ([4956](audit_trail/dashboard_generator.py:4956)); entry-vs-exit magnitude > 100×
+  ([4963](audit_trail/dashboard_generator.py:4963)); placeholder exit ≤ 0
+  ([4971–4978](audit_trail/dashboard_generator.py:4971)); historically blocked symbol/strategy
+  ([4985](audit_trail/dashboard_generator.py:4985)); non-performance exit reason
+  ([4989](audit_trail/dashboard_generator.py:4989)); `STALE*` or `INVALID_ENTRY`
+  ([4991](audit_trail/dashboard_generator.py:4991)); `RESOLVE_FAILED*`
+  ([4999](audit_trail/dashboard_generator.py:4999)); non-performance terminal status
+  ([5003](audit_trail/dashboard_generator.py:5003)); hold under 60 s
+  ([5013](audit_trail/dashboard_generator.py:5013), constant at [4890](audit_trail/dashboard_generator.py:4890));
+  unknown exit reason with no close marker ([5017–5030](audit_trail/dashboard_generator.py:5017)).
+  So `invalid_row` mixes both kinds: *no outcome exists* (missing PnL, expired markers) and
+  *an outcome exists but was discarded as untrustworthy* (corrupt price, placeholder exit,
+  micro-hold, blocked symbol). The split between those branches is **UNMEASURED** (see §4).
+- **`mirror_duplicate`** (98): an outcome exists, but the row is the same economic trade as another
+  row already counted, under the dashboard's own key of (symbol, direction, entry, PnL)
+  ([`dedupe_key()`](alpha_engine/resolved_closed_view.py:91)). Discarded as a copy, not lost.
+- **`non_performance_exit`** (43): the exit reason is `""`, `UNKNOWN`, `MANUAL`, `CANCELLED`,
+  `INVALID_ENTRY`, `NO_FILL`, `NOT_FILLED` or `STALE*` ([`resolved_closed_view.py:63–73`](alpha_engine/resolved_closed_view.py:63),
+  [:124](alpha_engine/resolved_closed_view.py:124)): a cancel, a non-fill or a stale exit.
+  **No trade outcome exists.**
+- **`resolver_breakeven_fallback`** (53): `RESOLVE_FAILED*` ([`resolved_closed_view.py:126`](alpha_engine/resolved_closed_view.py:126)):
+  no exit price was ever resolved and PnL was forced to 0. **No outcome exists**; the zero is fabricated.
+- **`auto_expired` cohort** (9,356, overlapping): the staleness pass stamps `status = EXPIRED`,
+  `exit_reason = "STALE (auto-expired >Nh)"` and `expired_no_pnl` when PnL is 0
+  ([`dashboard_generator.py:9738–9744`](audit_trail/dashboard_generator.py:9738)), and
+  [`_is_auto_expired_pick()`](audit_trail/dashboard_generator.py:4865) (0 PnL **and** a stale-ish
+  exit/status, patterns at [4526](audit_trail/dashboard_generator.py:4526)) splits them out at
+  [9764–9789](audit_trail/dashboard_generator.py:9764). A timeout is neither win nor loss: **no
+  outcome exists**.
+- **`integrity_excluded` cohort** (6,013, overlapping): ghost rows, WON-vs-PnL sign contradictions,
+  constant/zero PnL. Outcomes exist but are internally contradictory: discarded.
+
+### 3. Shipped artefacts searched for per-row / per-class exclusion counts
+
+Searched `audit_exports/`, `reports/`, `data/`, `audit_dashboard/data/`,
+`docs/audit_review_2026-11-22/_raw/` (5,316 JSON/JSONL files matched by content, plus a
+`git ls-files` check for the rows file). **No per-class or per-row counts of the excluded rows exist
+anywhere at `origin/main`.** What does exist is aggregate only:
+
+| Artefact | What it carries | Field |
+|---|---|---|
+| `audit_dashboard/data/audit3_ledger.json` | the four canonical reasons (5,917 / 98 / 43 / 53) | `coverage.denominator.canonical_excluded_by_reason` |
+| same | the two overlapping cohorts (6,013 / 9,356) | `coverage.excluded_cohorts` |
+| same | resolver anomalies over 24,353 scanned rows: stale exit beyond stop 46, clamped loss 23, expired zero-PnL **3,554**, closed rows missing `closed_at` 3 | `coverage.resolver_anomalies` |
+| same | 628 denylisted-strategy hits, by class CRYPTO 496 / COMMODITY 121 / FOREX 11 | `denylist_hits.by_class` |
+| `audit_dashboard/data/denominator.json` | the four reasons summed over two blocks (12,222) | `exclusion_reasons` |
+| `docs/.../_raw/audit_data_dashboard_data.json` | one snapshot earlier: 5,891 / 93 / 44 / 59 = 6,087 of 14,914 kept 8,827; `summary.integrity_excluded` 5,994, `auto_expired_excluded` 9,277 | `resolved_closed_picks_net.counts`, `summary` |
+| `reports/2026-11-21-audit123-collective-review.json` | prose review quoting the ledger, no counts of its own | — |
+
+`denylist_hits.by_class` is **not** the excluded set: it counts picks whose strategy hit the
+denylist, in a different population. The rows file itself (`resolved_closed_picks_net.json`,
+[`ROWS_FILENAME`](alpha_engine/resolved_closed_view.py:42)) is **not tracked** (`git ls-files` returns
+nothing), and the payload only ships it as `rows_embedded: false`
+([`payload_block()`](alpha_engine/resolved_closed_view.py:317)). `picks.recent_closed` ships only the
+3,500 kept rows.
+
+### 4. UNMEASURED
+
+The class composition, strategy mix and date distribution of the 6,111 unscoreable rows remain
+**UNMEASURED**: no shipped row carries an exclusion reason next to its asset class.
+The artefact that would measure them is a published `resolved_closed_picks_net.json` whose excluded
+rows keep `exclude_reason` + `asset_class` (or the generator wired to embed
+[`summarize_excluded()`](audit_trail/excluded_cohorts.py:31) output in the payload/sidecar, which is
+already written and tested but not called by [`dashboard_generator.py`](audit_trail/dashboard_generator.py:14902)).
+No distribution is inferred here.
