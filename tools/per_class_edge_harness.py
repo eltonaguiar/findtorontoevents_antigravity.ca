@@ -278,7 +278,6 @@ def segment_trades(pos: pd.Series, px: pd.Series, cost_bps: float) -> list[float
     return trades
 
 
-
 def monthly_trades(net: pd.Series) -> list[float]:
     """Trades for an always-invested portfolio: one bucket per calendar month.
 
@@ -567,6 +566,12 @@ def main() -> int:
     ap.add_argument("--out", default="reports/per_class_edge_2026-11-22.json")
     ap.add_argument("--md", default="reports/per_class_edge_2026-11-22.md")
     ap.add_argument("--n-trials", type=int, default=26)
+    # Added 2026-11-22: the summary statistics this harness emitted were enough
+    # for DSR but NOT for PBO block-length sensitivity (item 26) or White's
+    # Reality Check (item 27); both need the underlying T x N daily matrix, and
+    # a family-wide p-value cannot be reconstructed from per-cell summaries.
+    ap.add_argument("--series-out", default="reports/per_class_edge_series_2026-11-22.csv")
+    ap.add_argument("--excess-out", default="reports/per_class_edge_excess_2026-11-22.csv")
     args = ap.parse_args()
 
     print("fetching universes...")
@@ -581,6 +586,7 @@ def main() -> int:
 
     cells: list[dict] = []
     ret_series: dict[str, pd.Series] = {}
+    excess_series: dict[str, pd.Series] = {}
     event_returns: dict[str, np.ndarray] = {}
 
     def record(cell_id, cls, name, net: pd.Series, net2x: pd.Series,
@@ -619,6 +625,11 @@ def main() -> int:
             rec.update(extra)
         cells.append(rec)
         ret_series[cell_id] = net
+        # Excess is measured against the cell's OWN class benchmark, which is
+        # exactly what `excess_vs_bench_bps` summarises. Keeping only the
+        # summary is what made the family-wide test impossible; the vector is
+        # what White's Reality Check bootstrap needs.
+        excess_series[cell_id] = pd.Series(x - b, index=net.index[keep])
         print(f"  + {cell_id} {cls:9s} {name:22s} n={rec['n_trades']:4d} "
               f"PF={rec['profit_factor']} ci_lb={rec['boot_ci_lb_bps']}bps")
 
@@ -846,6 +857,13 @@ def main() -> int:
                   "min_trl_days": (None if math.isinf(min_trl(x, sr0))
                                    else round(min_trl(x, sr0), 1))})
 
+    # ---- persist the matrices the summary statistics were computed FROM
+    net_mat = pd.concat(ret_series, axis=1)      # columns are cell ids, ragged
+    exc_mat = pd.concat(excess_series, axis=1)
+    Path(args.series_out).parent.mkdir(parents=True, exist_ok=True)
+    net_mat.to_csv(args.series_out, float_format="%.10g")
+    exc_mat.to_csv(args.excess_out, float_format="%.10g")
+
     integrity = commodity_integrity()
     bad = {r["symbol"] for r in integrity if not r["usable"]}
     # Only the cells built ON the contaminated futures series are flagged. The
@@ -862,6 +880,15 @@ def main() -> int:
                    "end": str(max(r.index.max() for r in ret_series.values()).date())},
         "n_trials_declared": args.n_trials,
         "expected_max_sharpe_daily": round(sr0, 5),
+        "series_artifacts": {
+            "net_daily": args.series_out,
+            "excess_vs_bench_daily": args.excess_out,
+            "shape_net": [int(net_mat.shape[0]), int(net_mat.shape[1])],
+            "event_cells_without_time_axis": sorted(event_returns),
+            "usage": "columns are cell ids on a shared date index; NaN means the "
+                     "cell has no observation that date (ragged samples). Do NOT "
+                     "fill with 0 when computing statistics ACROSS cells.",
+        },
         "pbo_cscv": None if math.isnan(pbo) else round(pbo, 4),
         "cost_model_bps_round_trip": {"EQUITY": 20, "ETF": 20, "CRYPTO": 40,
                                       "FOREX": 10, "COMMODITY": 30, "BOND": 20},
@@ -890,6 +917,8 @@ def main() -> int:
               "Nothing else counts, whatever the PF looks like."]
     Path(args.md).write_text("\n".join(lines) + "\n")
     print(f"\nwrote {args.out} and {args.md} ({len(cells)} cells, PBO={out['pbo_cscv']})")
+    print(f"wrote {args.series_out} ({net_mat.shape[0]}x{net_mat.shape[1]}) and "
+          f"{args.excess_out} ({exc_mat.shape[0]}x{exc_mat.shape[1]})")
     return 0
 
 

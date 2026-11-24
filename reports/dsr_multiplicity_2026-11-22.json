@@ -1,0 +1,103 @@
+{
+  "generated_by": "tools/dsr_multiplicity_sensitivity.py",
+  "source_artifact": "reports/per_class_edge_2026-11-22.json",
+  "recovered_scale_sqrt_var_sr": 0.02279813,
+  "declared_sr0_at_n": {
+    "n": 29,
+    "sr0": 0.04695
+  },
+  "item_D25_trial_count": {
+    "declared": 29,
+    "hypotheses_with_a_cell": 26,
+    "hypothesis_range": [
+      "H-200",
+      "H-228"
+    ],
+    "hypotheses_without_a_cell": [
+      "H-202",
+      "H-203",
+      "H-204"
+    ],
+    "cells_per_hypothesis": {
+      "H-200": 10,
+      "H-201": 1,
+      "H-205": 1,
+      "H-206": 1,
+      "H-207": 1,
+      "H-208": 6,
+      "H-209": 1,
+      "H-210": 1,
+      "H-211": 1,
+      "H-212": 1,
+      "H-213": 1,
+      "H-214": 1,
+      "H-215": 1,
+      "H-216": 1,
+      "H-217": 1,
+      "H-218": 1,
+      "H-219": 1,
+      "H-220": 1,
+      "H-221": 1,
+      "H-222": 1,
+      "H-223": 1,
+      "H-224": 1,
+      "H-225": 1,
+      "H-226": 1,
+      "H-227": 1,
+      "H-228": 1
+    },
+    "verdict": "DECLARED_CONSERVATIVE",
+    "note": "29 declared vs 26 that produced a cell. Missing from the cell table: H-202, H-203, H-204. These are trials that were run but yielded NO admissible cell, so they still count as searches. Using 29 is the CONSERVATIVE direction (more trials lowers DSR), so the artifact is not flattering itself on this axis."
+  },
+  "reproduction_check": {
+    "formula": "Phi((SR-SR0)*sqrt(T-1)/sqrt(1+SR^2/2)); SR0 recovered from the artifact's expected_max_sharpe_daily",
+    "n_cells_checked": 40,
+    "worst_abs_residual": 0.137436,
+    "worst_cell": "H-228",
+    "tolerance": 0.05,
+    "reproduced": false,
+    "residual_cause": "skew/kurtosis of each cell's daily returns are not stored; the residual IS the non-normality effect",
+    "focus_cell": "H-201",
+    "focus_residual": 0.001364,
+    "cells_within_tolerance": 39
+  },
+  "item_D28_multiplicity_breakeven": {
+    "cell": "H-201",
+    "asset_class": "EQUITY",
+    "name": "xsmom_top3_6m",
+    "n_days": 3744,
+    "sr_daily": 0.0736,
+    "ann_sharpe": 1.168,
+    "stored_dsr": 0.9469,
+    "recomputed_dsr_at_declared": 0.948264,
+    "dsr_by_trial_count": {
+      "2": 0.999919,
+      "10": 0.989375,
+      "20": 0.96779,
+      "26": 0.95466,
+      "29": 0.948264,
+      "40": 0.926055,
+      "60": 0.890639,
+      "100": 0.834444,
+      "200": 0.740424,
+      "500": 0.596727,
+      "1000": 0.485119
+    },
+    "min_trials_still_passing": 28,
+    "sr_needed_daily_at_declared": 0.073872,
+    "sr_needed_ann_at_declared": 1.1727,
+    "sr_shortfall_daily": 0.000272,
+    "days_needed_at_observed_sr": 3820.7,
+    "years_needed_at_observed_sr": 15.16,
+    "margin_in_trials": 1,
+    "clears_at_26_trials": 0.95466,
+    "clears_at_3_fewer_trials": 0.95466,
+    "interpretation": "H-201 holds a 0.95 DSR for trial counts up to 28; the programme declared 29, so it FAILS by 1 trial(s) \u2014 at 26 trials the same data would have scored 0.9547 and passed. The verdict therefore turns on bookkeeping, not on the return series: the cell is NOT_PROVEN, not refuted. The data-side margin is independent of that and is small too: at the declared 29 trials it needed a daily Sharpe of 0.0739 versus 0.0736 observed, a shortfall of 0.0003/day, which is 76.7 more trading days of the same history (0.30 years) rather than more edge. Both margins are too small to carry a real-money decision, and that is the finding."
+  },
+  "what_would_have_to_be_true": {
+    "rule": "stated as a property of the data, never by moving the bar",
+    "days_needed_at_observed_sr": 3820.7,
+    "years_needed_at_observed_sr": 15.16,
+    "extra_days_beyond_observed_history": 76.7
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "generated_by": "tools/delta_drift_construction_check.py",
+  "question": "does a spot-long/perp-short book stay neutral without maintenance, and what does each construction cost?",
+  "window": {
+    "start": "2019-01-01",
+    "end": "2026-11-22"
+  },
+  "assumptions": {
+    "cost_per_retrade_bp": 10.66,
+    "cost_source": "measured 42.64 bp round trip / 4 leg-sides (mercury3, live books)",
+    "daily_bars": true
+  },
+  "constructions": [
+    {
+      "construction": "quantity_matched",
+      "n_days": 2883,
+      "max_abs_net_delta": 0.0,
+      "days_with_nonzero_delta": 0,
+      "retrades": 0,
+      "cost_bp_per_day": 0.0,
+      "note": "delta is identically zero because both legs hold the same coin quantity; price changes revalue both legs equally. What drifts is MARGIN, not delta, and topping up margin is an internal transfer on one venue."
+    },
+    {
+      "construction": "usd_notional_constant_band_2%",
+      "n_days": 2883,
+      "breach_days": 1125,
+      "breach_pct_of_days": 39.0,
+      "retrades": 1125,
+      "retrades_per_month": 8.2,
+      "cost_bp_per_day": 8.319,
+      "note": "this is the construction that costs something, and it costs far more than I estimated. It should be forbidden by spec rather than costed: no carry edge survives it."
+    },
+    {
+      "construction": "usd_notional_constant_band_5%",
+      "n_days": 2883,
+      "breach_days": 435,
+      "breach_pct_of_days": 15.1,
+      "retrades": 435,
+      "retrades_per_month": 3.2,
+      "cost_bp_per_day": 3.217,
+      "note": "this is the construction that costs something, and it costs far more than I estimated. It should be forbidden by spec rather than costed: no carry edge survives it."
+    },
+    {
+      "construction": "usd_notional_constant_band_10%",
+      "n_days": 2883,
+      "breach_days": 171,
+      "breach_pct_of_days": 5.9,
+      "retrades": 171,
+      "retrades_per_month": 1.2,
+      "cost_bp_per_day": 1.265,
+      "note": "this is the construction that costs something, and it costs far more than I estimated. It should be forbidden by spec rather than costed: no carry edge survives it."
+    }
+  ],
+  "verdict": {
+    "mercury3_right": true,
+    "my_0p072_estimate_described": "construction B at a 5% band, not the quantity-matched book",
+    "ratio_B_to_my_estimate": 44.7,
+    "what_changes_for_my_carry_model": "the rehedge term must be 0.0 for a quantity-matched book. My breakeven tools charged 0.072 bp/day, so removing it moves every crossing EARLIER - the flattering direction - which is exactly why it needs saying out loud.",
+    "reading": "quantity-matched is delta-neutral for free; constant-USD-notional is a different mandate whose maintenance cost exceeds the carry's entire gross. Charge 0.0 for the former, and refuse to model the latter."
+  }
+}
