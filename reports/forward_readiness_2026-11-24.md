@@ -62,6 +62,17 @@ one good month - the shape that usually does not survive out of sample. It makes
 "more rows could help" weaker, not stronger: the new rows would have to arrive
 with the same concentration to reproduce it.
 
+Removing just the three best symbols (BAT-USD, NEARUSDT, WIFUSDT) confirms it:
+
+```
+all       n=430 mean=+0.1348 CI=(-0.1619,+0.4315) clears0=False
+excl top3 n=395 mean=-0.0371 CI=(-0.3076,+0.2334) clears0=False
+```
+
+The mean goes **negative** once three names are dropped, so the positive figure
+is entirely theirs. Any "more rows could help" reading must first explain why
+future rows would resemble those three symbols.
+
 ## Bottom line
 
 - Classes with >=100 forward rows: **1** (CRYPTO).
