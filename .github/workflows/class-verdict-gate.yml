@@ -1,0 +1,52 @@
+name: Class Verdict Gate
+
+# Pins the per-class verdicts stored in the audit3 ledger so they cannot move
+# silently. A verdict change must arrive as a reviewed diff to
+# reports/verdict_baseline.json, not as an accident of a ledger refresh.
+#
+# Note: tools/class_verdict_audit.py currently reports 2 real mismatches
+# (COMMODITY n=50 stored KILL, BOND n=37 stored WEAK, both below the n<100
+# INSUFFICIENT_N floor). Those are known findings, documented in
+# reports/class_tally_reconciliation_2026-11-24.md, so this gate does NOT
+# assert zero mismatches - that would fail forever on a real defect. It
+# asserts the stored verdicts have not *changed*.
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/audit_review_2026-11-22/_raw/audit3_audit3_ledger.json'
+      - 'tools/class_verdict_audit.py'
+      - 'tools/verdict_drift_gate.py'
+      - 'reports/verdict_baseline.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test deps
+        run: python -m pip install --quiet pytest pyyaml
+      - name: Unit tests
+        run: |
+          python -m pytest tests/test_class_verdict_audit.py \
+            tests/test_class_cost_headroom.py \
+            tests/test_verdict_drift_gate.py \
+            tests/test_ledger_class_schema.py -q
+      - name: Verdict drift
+        run: python tools/verdict_drift_gate.py --baseline reports/verdict_baseline.json
+      - name: Report stored vs re-derived (informational)
+        run: python tools/class_verdict_audit.py || true

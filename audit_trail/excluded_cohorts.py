@@ -132,3 +132,32 @@ def split_auto_expired(rows: Iterable[Mapping[str, Any]]) -> tuple[list, list]:
             continue
         (auto if is_auto_expired(r) else real).append(r)
     return real, auto
+
+
+def coverage_excluded_summary(
+    rows: Iterable[Mapping[str, Any]],
+    reason: str = "auto_expired",
+) -> dict[str, Any]:
+    """Payload-sized view of one excluded cohort, for ``coverage.excluded_summary``.
+
+    ``reason`` is applied to every row. The dashboard generator stamps rows with
+    ``_auto_expired``, which :func:`summarize_excluded` does not read, so passing
+    the reason explicitly is what keeps this out of the ``unknown`` bucket.
+
+    Covers ONE cohort only. The mirror-duplicate and invalid-row exclusions are
+    counters by payload-assembly time, not rows, so they are not included here.
+    """
+    summary = summarize_excluded(rows, reason=reason)
+    by_reason = summary["by_reason"]
+    return {
+        "scope": f"{reason}_only",
+        "total": summary["total_excluded"],
+        "n_with_pnl": sum(b["n_with_pnl"] for b in by_reason.values()),
+        "by_reason": by_reason,
+        "note": (
+            "Cohort of auto-expired picks dropped before metrics. Reports the "
+            "full auto-expired cohort only, not the full set of rows the build "
+            "excludes. Compare its mean against the retained book to size "
+            "selection risk."
+        ),
+    }

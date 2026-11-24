@@ -47,9 +47,24 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--payload", required=True)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--coverage", action="store_true",
+                    help="print the payload's coverage.excluded_summary block")
     args = ap.parse_args(argv)
 
     payload = json.loads(Path(args.payload).read_text(encoding="utf-8"))
+
+    if args.coverage:
+        block = (payload.get("coverage") or {}).get("excluded_summary")
+        if not isinstance(block, dict):
+            print("payload has no coverage.excluded_summary "
+                  "(generator not wired for this artifact)", file=sys.stderr)
+            return 3
+        print(f"scope  {block.get('scope')}")
+        print(f"total  {block.get('total')}")
+        print(f"n_with_pnl  {block.get('n_with_pnl')}")
+        for _k, _v in (block.get("by_reason") or {}).items():
+            print(f"  {_k:<20}{_v.get('n'):>7}")
+        return 0
     rows = _closed_rows(payload)
     if not rows:
         # The export drops excluded rows, so only aggregate counts survive.
