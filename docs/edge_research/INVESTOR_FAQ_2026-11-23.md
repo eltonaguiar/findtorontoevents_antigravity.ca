@@ -4,9 +4,13 @@
 Real data 2021-11-15→2026-11-13 (1,254 daily returns). Tools: `tools/fund_deep_dive.py`, `tools/deployment_analysis.py`.
 
 ## Q: What should I hold?
-A broad, low-cost index fund — same beta as any "signal" in this programme, cheaper:
-- Tax-sheltered account (TFSA/RRSP/Roth/IRA): **FXAIX (0.015%)** or **FZROX (0.00%)** index mutual funds.
-- Taxable account: **SPY/VOO** (S&P 500) or **VTI** (total market) ETFs — more tax-efficient (fewer cap-gains distributions).
+A broad, low-cost index fund — same beta as any "signal" in this programme, cheaper. **For a Canadian investor the wrapper
+matters** (decided 2026-11-24, see `US_VS_CAD_WRAPPER_DECISION_2026-11-24.md`):
+- **Canadian TFSA / taxable:** a **Canadian-listed, CAD-traded** low-MER index ETF — **VFV/XUS** (S&P 500) or **XEQT/VEQT**
+  (all-in-one). Buys in CAD (no FX conversion cost) and is **not US-situs** (no US estate-tax exposure).
+- **RRSP only:** a **US-listed VOO** (0.03%) is best — the US–Canada treaty exempts US dividend withholding in an RRSP —
+  *if* you convert CAD→USD cheaply (Norbert's gambit) and watch the ~$60k USD US estate-tax threshold.
+- **US investor:** FXAIX (0.015%) / FZROX (0.00%) index mutual funds, or SPY/VOO/VTI ETFs.
 - Choose on **cost and tax** (deterministic), **not** trailing returns (statistically indistinguishable — CIs overlap).
 
 ## Q: Mutual fund or ETF?
