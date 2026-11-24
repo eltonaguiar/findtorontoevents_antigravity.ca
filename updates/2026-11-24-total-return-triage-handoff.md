@@ -23,3 +23,13 @@ equity Close had an unambiguous return-math bug, and it is fixed.
 ## Status
 No-market-data work is exhausted: the unambiguous fix is landed; the rest need per-file judgment (raw-intent) or new data
 (fundamentals for value, prices for PEAD, fills for the contest, crypto fee tier, delisting-aware prices).
+
+## Per-file vetting result (2026-11-24T00:17Z) — thread CLOSED
+Inspected the 5 machine-flagged "FIX" candidates; **none is an unambiguous return-math bug**:
+- `tools/audit_total_return.py` — my own scanner (matches the literal string, no actual use).
+- `tools/h035_futures_tsmom_research.py` — **futures**, no dividends → raw is correct.
+- `tools/backtest_bond_yield_curve.py` — **TNX/IRX yield indices**, not bond prices → raw is correct.
+- `alpha_engine/data/price_loader.py` — **already prefers `Adj Close`** when present → correct.
+- `tools/backfill_pick_features.py` — stores raw Close as a *feature* (intent unknown), not a return calc.
+
+**Conclusion:** the genuine return-math bug set was **1 file** (`equity_vix_regime_rotator.py`, fixed). The 43 `explicit_raw` files are legitimate (deliberate raw fetch + Adj Close, or non-dividend instruments like futures/yields). The total-return concern is **real but already handled**; no further bulk change is warranted. `reports/total_return_perfile_vetted.json`.
