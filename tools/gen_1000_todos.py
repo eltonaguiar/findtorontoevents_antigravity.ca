@@ -144,6 +144,7 @@ def write_all(cells: list[dict]) -> None:
 
 
 IMPOSSIBLE = {("rsi2_pullback", "1d"), ("ma_cross", "1d")}  # daily samples can't reach n>=30
+CRYPTO_DAILY = {"BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT"}  # symbols with daily bars in repo
 
 
 def _roundrobin_open(cells: list[dict]) -> list[dict]:
@@ -177,9 +178,13 @@ def main() -> int:
         # auto-resolve known-impossible cells first (cannot reach n>=30), then claim round-robin
         for c in cells:
             if c["status"] == "open" and (c["strategy"], c["horizon"]) in IMPOSSIBLE:
-                c["status"] = "killed"
-                c["note"] = ("INSUFFICIENT_TRADES: daily sample cannot reach n>=30 for "
-                             f"{c['strategy']} on {c['horizon']}")
+                if c["symbol"] in CRYPTO_DAILY:
+                    c["status"] = "killed"
+                    c["note"] = ("INSUFFICIENT_TRADES: daily sample cannot reach n>=30 for "
+                                 f"{c['strategy']} on {c['horizon']}")
+                else:
+                    c["status"] = "blocked_no_data"
+                    c["note"] = f"BLOCKED_NO_DATA: bars=0 for {c['symbol']} at {c['horizon']} (no daily bars in repo)"
                 c["owner"] = a.owner or "unassigned"
                 c["claimed_at"] = datetime.now(timezone.utc).isoformat()
         for c in _roundrobin_open(cells):
