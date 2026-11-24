@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:33:30.944779+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:35:02.099771+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 62 of 1000.** open 897 | claimed 0 | blocked_no_data 41
+**Worked 64 of 1000.** open 885 | claimed 0 | blocked_no_data 51
 
 ## Done condition (identical for every cell)
 
@@ -65,7 +65,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `BTCUSDT/gap_fade/1d` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1d.json` |
 | [-] `BTCUSDT/gap_fade/1w` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 17/50 worked
+## ETHUSDT - 18/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -113,24 +113,24 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ETHUSDT/momentum_12_1/1h` | blocked_no_data | `results/cells/ETHUSDT_momentum_12_1_1h.json` |
 | [-] `ETHUSDT/momentum_12_1/4h` | blocked_no_data | `results/cells/ETHUSDT_momentum_12_1_4h.json` |
 | [x] `ETHUSDT/momentum_12_1/1d` | killed | `results/cells/ETHUSDT_momentum_12_1_1d.json` |
-| [ ] `ETHUSDT/momentum_12_1/1w` | open | `results/cells/ETHUSDT_momentum_12_1_1w.json` |
-| [ ] `ETHUSDT/gap_fade/15m` | open | `results/cells/ETHUSDT_gap_fade_15m.json` |
-| [ ] `ETHUSDT/gap_fade/1h` | open | `results/cells/ETHUSDT_gap_fade_1h.json` |
-| [ ] `ETHUSDT/gap_fade/4h` | open | `results/cells/ETHUSDT_gap_fade_4h.json` |
-| [ ] `ETHUSDT/gap_fade/1d` | open | `results/cells/ETHUSDT_gap_fade_1d.json` |
-| [ ] `ETHUSDT/gap_fade/1w` | open | `results/cells/ETHUSDT_gap_fade_1w.json` |
+| [x] `ETHUSDT/momentum_12_1/1w` | killed | `results/cells/ETHUSDT_momentum_12_1_1w.json` |
+| [-] `ETHUSDT/gap_fade/15m` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_15m.json` |
+| [-] `ETHUSDT/gap_fade/1h` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1h.json` |
+| [-] `ETHUSDT/gap_fade/4h` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_4h.json` |
+| [-] `ETHUSDT/gap_fade/1d` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1d.json` |
+| [-] `ETHUSDT/gap_fade/1w` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1w.json` |
 
-## SOLUSDT - 3/50 worked
+## SOLUSDT - 4/50 worked
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `SOLUSDT/trend_pullback/15m` | open | `results/cells/SOLUSDT_trend_pullback_15m.json` |
-| [ ] `SOLUSDT/trend_pullback/1h` | open | `results/cells/SOLUSDT_trend_pullback_1h.json` |
-| [ ] `SOLUSDT/trend_pullback/4h` | open | `results/cells/SOLUSDT_trend_pullback_4h.json` |
+| [-] `SOLUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/SOLUSDT_trend_pullback_15m.json` |
+| [-] `SOLUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/SOLUSDT_trend_pullback_1h.json` |
+| [-] `SOLUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/SOLUSDT_trend_pullback_4h.json` |
 | [x] `SOLUSDT/trend_pullback/1d` | killed | `results/cells/SOLUSDT_trend_pullback_1d.json` |
-| [ ] `SOLUSDT/trend_pullback/1w` | open | `results/cells/SOLUSDT_trend_pullback_1w.json` |
-| [ ] `SOLUSDT/rsi2_pullback/15m` | open | `results/cells/SOLUSDT_rsi2_pullback_15m.json` |
-| [ ] `SOLUSDT/rsi2_pullback/1h` | open | `results/cells/SOLUSDT_rsi2_pullback_1h.json` |
+| [x] `SOLUSDT/trend_pullback/1w` | killed | `results/cells/SOLUSDT_trend_pullback_1w.json` |
+| [-] `SOLUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/SOLUSDT_rsi2_pullback_15m.json` |
+| [-] `SOLUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/SOLUSDT_rsi2_pullback_1h.json` |
 | [ ] `SOLUSDT/rsi2_pullback/4h` | open | `results/cells/SOLUSDT_rsi2_pullback_4h.json` |
 | [x] `SOLUSDT/rsi2_pullback/1d` | killed | `results/cells/SOLUSDT_rsi2_pullback_1d.json` |
 | [ ] `SOLUSDT/rsi2_pullback/1w` | open | `results/cells/SOLUSDT_rsi2_pullback_1w.json` |
