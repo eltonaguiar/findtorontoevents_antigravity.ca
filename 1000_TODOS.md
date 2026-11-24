@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:28:17.892179+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:28:26.046140+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 49 of 1000.** open 933 | claimed 0 | blocked_no_data 18
+**Worked 53 of 1000.** open 921 | claimed 0 | blocked_no_data 26
 
 ## Done condition (identical for every cell)
 
@@ -65,7 +65,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `BTCUSDT/gap_fade/1d` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1d.json` |
 | [-] `BTCUSDT/gap_fade/1w` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 4/50 worked
+## ETHUSDT - 8/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -75,20 +75,20 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `ETHUSDT/trend_pullback/1d` | killed | `results/cells/ETHUSDT_trend_pullback_1d.json` |
 | [x] `ETHUSDT/trend_pullback/1w` | killed | `results/cells/ETHUSDT_trend_pullback_1w.json` |
 | [-] `ETHUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_15m.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1h` | open | `results/cells/ETHUSDT_rsi2_pullback_1h.json` |
-| [ ] `ETHUSDT/rsi2_pullback/4h` | open | `results/cells/ETHUSDT_rsi2_pullback_4h.json` |
+| [-] `ETHUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_1h.json` |
+| [-] `ETHUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/ETHUSDT_rsi2_pullback_4h.json` |
 | [x] `ETHUSDT/rsi2_pullback/1d` | killed | `results/cells/ETHUSDT_rsi2_pullback_1d.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1w` | open | `results/cells/ETHUSDT_rsi2_pullback_1w.json` |
-| [ ] `ETHUSDT/vol_compression/15m` | open | `results/cells/ETHUSDT_vol_compression_15m.json` |
-| [ ] `ETHUSDT/vol_compression/1h` | open | `results/cells/ETHUSDT_vol_compression_1h.json` |
-| [ ] `ETHUSDT/vol_compression/4h` | open | `results/cells/ETHUSDT_vol_compression_4h.json` |
-| [ ] `ETHUSDT/vol_compression/1d` | open | `results/cells/ETHUSDT_vol_compression_1d.json` |
-| [ ] `ETHUSDT/vol_compression/1w` | open | `results/cells/ETHUSDT_vol_compression_1w.json` |
-| [ ] `ETHUSDT/breakout/15m` | open | `results/cells/ETHUSDT_breakout_15m.json` |
-| [ ] `ETHUSDT/breakout/1h` | open | `results/cells/ETHUSDT_breakout_1h.json` |
-| [ ] `ETHUSDT/breakout/4h` | open | `results/cells/ETHUSDT_breakout_4h.json` |
+| [x] `ETHUSDT/rsi2_pullback/1w` | killed | `results/cells/ETHUSDT_rsi2_pullback_1w.json` |
+| [-] `ETHUSDT/vol_compression/15m` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_15m.json` |
+| [-] `ETHUSDT/vol_compression/1h` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_1h.json` |
+| [-] `ETHUSDT/vol_compression/4h` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_4h.json` |
+| [x] `ETHUSDT/vol_compression/1d` | killed | `results/cells/ETHUSDT_vol_compression_1d.json` |
+| [x] `ETHUSDT/vol_compression/1w` | killed | `results/cells/ETHUSDT_vol_compression_1w.json` |
+| [-] `ETHUSDT/breakout/15m` | blocked_no_data | `results/cells/ETHUSDT_breakout_15m.json` |
+| [-] `ETHUSDT/breakout/1h` | blocked_no_data | `results/cells/ETHUSDT_breakout_1h.json` |
+| [-] `ETHUSDT/breakout/4h` | blocked_no_data | `results/cells/ETHUSDT_breakout_4h.json` |
 | [x] `ETHUSDT/breakout/1d` | killed | `results/cells/ETHUSDT_breakout_1d.json` |
-| [ ] `ETHUSDT/breakout/1w` | open | `results/cells/ETHUSDT_breakout_1w.json` |
+| [x] `ETHUSDT/breakout/1w` | killed | `results/cells/ETHUSDT_breakout_1w.json` |
 | [ ] `ETHUSDT/donchian/15m` | open | `results/cells/ETHUSDT_donchian_15m.json` |
 | [ ] `ETHUSDT/donchian/1h` | open | `results/cells/ETHUSDT_donchian_1h.json` |
 | [ ] `ETHUSDT/donchian/4h` | open | `results/cells/ETHUSDT_donchian_4h.json` |
