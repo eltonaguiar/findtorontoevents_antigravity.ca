@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-24T01:30:59.192294+00:00",
+ "generated_at": "2026-11-24T01:34:19.253421+00:00",
  "total": 1000,
  "grid": {
   "symbols": [
@@ -46,10 +46,10 @@
  },
  "done_condition": "Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap CI, permutation p, and DSR. Cell is DONE when a JSON artifact exists under results/cells/<symbol>_<strategy>_<horizon>.json carrying those five numbers plus git SHA. Cell is KILLED (also complete) when n<30 or CI includes 0 or permutation p>0.05. Cell is BLOCKED_NO_DATA only when the instrument has no bars at that horizon in the repo - and then the bar count must be recorded to prove it.",
  "counts": {
-  "open": 995,
+  "open": 976,
   "claimed": 3,
-  "done_or_killed": 2,
-  "blocked_no_data": 0
+  "done_or_killed": 12,
+  "blocked_no_data": 9
  },
  "cells": [
   {
@@ -112,209 +112,209 @@
    "symbol": "BTCUSDT",
    "strategy": "rsi2_pullback",
    "horizon": "15m",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "done",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:33:43.531843+00:00",
    "artifact": "results/cells/BTCUSDT_rsi2_pullback_15m.json",
-   "note": null
+   "note": "INSUFFICIENT_TRADES: n=3 from 1000 bars"
   },
   {
    "key": "BTCUSDT/rsi2_pullback/1h",
    "symbol": "BTCUSDT",
    "strategy": "rsi2_pullback",
    "horizon": "1h",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:33:43.838024+00:00",
    "artifact": "results/cells/BTCUSDT_rsi2_pullback_1h.json",
-   "note": null
+   "note": "measurement failed: ine 59, in load_bars\n    return ([float(r.get(\"close\") or r.get(\"Close\")) for r in rows],\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: could not convert string to float: 'BTC-USD'\n"
   },
   {
    "key": "BTCUSDT/rsi2_pullback/4h",
    "symbol": "BTCUSDT",
    "strategy": "rsi2_pullback",
    "horizon": "4h",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:17.583000+00:00",
    "artifact": "results/cells/BTCUSDT_rsi2_pullback_4h.json",
-   "note": null
+   "note": "BLOCKED_NO_DATA: 0 bars from no intraday source for 4h (would have to fake it from daily)"
   },
   {
    "key": "BTCUSDT/rsi2_pullback/1d",
    "symbol": "BTCUSDT",
    "strategy": "rsi2_pullback",
    "horizon": "1d",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "done",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:33:44.240560+00:00",
    "artifact": "results/cells/BTCUSDT_rsi2_pullback_1d.json",
-   "note": null
+   "note": "INSUFFICIENT_TRADES: n=3 from 1000 bars"
   },
   {
    "key": "BTCUSDT/rsi2_pullback/1w",
    "symbol": "BTCUSDT",
    "strategy": "rsi2_pullback",
    "horizon": "1w",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "done",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:33:44.654699+00:00",
    "artifact": "results/cells/BTCUSDT_rsi2_pullback_1w.json",
-   "note": null
+   "note": "INSUFFICIENT_TRADES: n=0 from 142 bars"
   },
   {
    "key": "BTCUSDT/vol_compression/15m",
    "symbol": "BTCUSDT",
    "strategy": "vol_compression",
    "horizon": "15m",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "killed",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:05.356221+00:00",
    "artifact": "results/cells/BTCUSDT_vol_compression_15m.json",
-   "note": null
+   "note": "n=57, net -63.84bp, CI [-113.89, -11.57], p=0.968, DSR=0.0"
   },
   {
    "key": "BTCUSDT/vol_compression/1h",
    "symbol": "BTCUSDT",
    "strategy": "vol_compression",
    "horizon": "1h",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:06.025042+00:00",
    "artifact": "results/cells/BTCUSDT_vol_compression_1h.json",
-   "note": null
+   "note": "measurement failed: cells/tools/measure_cell.py\", line 81, in load_bars\n    return ([float(r[ci]) for r in rows], [float(r[oi]) for r in rows],\n             ^^^^^^^^^^^^\nValueError: could not convert string to float: ''\n"
   },
   {
    "key": "BTCUSDT/vol_compression/4h",
    "symbol": "BTCUSDT",
    "strategy": "vol_compression",
    "horizon": "4h",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:17.681287+00:00",
    "artifact": "results/cells/BTCUSDT_vol_compression_4h.json",
-   "note": null
+   "note": "BLOCKED_NO_DATA: 0 bars from no intraday source for 4h (would have to fake it from daily)"
   },
   {
    "key": "BTCUSDT/vol_compression/1d",
    "symbol": "BTCUSDT",
    "strategy": "vol_compression",
    "horizon": "1d",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "killed",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:06.788517+00:00",
    "artifact": "results/cells/BTCUSDT_vol_compression_1d.json",
-   "note": null
+   "note": "n=57, net -63.84bp, CI [-113.89, -11.57], p=0.968, DSR=0.0"
   },
   {
    "key": "BTCUSDT/vol_compression/1w",
    "symbol": "BTCUSDT",
    "strategy": "vol_compression",
    "horizon": "1w",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "done",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:07.678158+00:00",
    "artifact": "results/cells/BTCUSDT_vol_compression_1w.json",
-   "note": null
+   "note": "INSUFFICIENT_TRADES: n=2 from 142 bars"
   },
   {
    "key": "BTCUSDT/breakout/15m",
    "symbol": "BTCUSDT",
    "strategy": "breakout",
    "horizon": "15m",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:17.792255+00:00",
    "artifact": "results/cells/BTCUSDT_breakout_15m.json",
-   "note": null
+   "note": "BLOCKED_NO_DATA: 0 bars from no intraday source for 15m (would have to fake it from daily)"
   },
   {
    "key": "BTCUSDT/breakout/1h",
    "symbol": "BTCUSDT",
    "strategy": "breakout",
    "horizon": "1h",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:08.563454+00:00",
    "artifact": "results/cells/BTCUSDT_breakout_1h.json",
-   "note": null
+   "note": "measurement failed: cells/tools/measure_cell.py\", line 81, in load_bars\n    return ([float(r[ci]) for r in rows], [float(r[oi]) for r in rows],\n             ^^^^^^^^^^^^\nValueError: could not convert string to float: ''\n"
   },
   {
    "key": "BTCUSDT/breakout/4h",
    "symbol": "BTCUSDT",
    "strategy": "breakout",
    "horizon": "4h",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:17.905087+00:00",
    "artifact": "results/cells/BTCUSDT_breakout_4h.json",
-   "note": null
+   "note": "BLOCKED_NO_DATA: 0 bars from no intraday source for 4h (would have to fake it from daily)"
   },
   {
    "key": "BTCUSDT/breakout/1d",
    "symbol": "BTCUSDT",
    "strategy": "breakout",
    "horizon": "1d",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "done",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:09.215998+00:00",
    "artifact": "results/cells/BTCUSDT_breakout_1d.json",
-   "note": null
+   "note": "INCONCLUSIVE: n=82, net -12.18bp, CI [-63.86, 40.05], p=0.314"
   },
   {
    "key": "BTCUSDT/breakout/1w",
    "symbol": "BTCUSDT",
    "strategy": "breakout",
    "horizon": "1w",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "done",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:09.745095+00:00",
    "artifact": "results/cells/BTCUSDT_breakout_1w.json",
-   "note": null
+   "note": "INSUFFICIENT_TRADES: n=10 from 142 bars"
   },
   {
    "key": "BTCUSDT/donchian/15m",
    "symbol": "BTCUSDT",
    "strategy": "donchian",
    "horizon": "15m",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:18.031819+00:00",
    "artifact": "results/cells/BTCUSDT_donchian_15m.json",
-   "note": null
+   "note": "BLOCKED_NO_DATA: 0 bars from no intraday source for 15m (would have to fake it from daily)"
   },
   {
    "key": "BTCUSDT/donchian/1h",
    "symbol": "BTCUSDT",
    "strategy": "donchian",
    "horizon": "1h",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "killed",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:18.157573+00:00",
    "artifact": "results/cells/BTCUSDT_donchian_1h.json",
-   "note": null
+   "note": "n=63, net -19.34bp, CI [-31.7, -7.07], p=0.078, DSR=0.0"
   },
   {
    "key": "BTCUSDT/donchian/4h",
    "symbol": "BTCUSDT",
    "strategy": "donchian",
    "horizon": "4h",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "blocked_no_data",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:18.681541+00:00",
    "artifact": "results/cells/BTCUSDT_donchian_4h.json",
-   "note": null
+   "note": "BLOCKED_NO_DATA: 0 bars from no intraday source for 4h (would have to fake it from daily)"
   },
   {
    "key": "BTCUSDT/donchian/1d",
    "symbol": "BTCUSDT",
    "strategy": "donchian",
    "horizon": "1d",
-   "status": "open",
-   "owner": null,
-   "claimed_at": null,
+   "status": "done",
+   "owner": "copilot",
+   "claimed_at": "2026-11-24T01:34:18.781598+00:00",
    "artifact": "results/cells/BTCUSDT_donchian_1d.json",
-   "note": null
+   "note": "INCONCLUSIVE: n=48, net 1.66bp, CI [-65.08, 76.07], p=0.214"
   },
   {
    "key": "BTCUSDT/donchian/1w",

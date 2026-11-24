@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:30:59.192294+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:34:19.253421+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 2 of 1000.** open 995 | claimed 3 | blocked_no_data 0
+**Worked 12 of 1000.** open 976 | claimed 3 | blocked_no_data 9
 
 ## Done condition (identical for every cell)
 
@@ -10,7 +10,7 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 2/50 worked
+## BTCUSDT - 12/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -19,25 +19,25 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [~] `BTCUSDT/trend_pullback/4h` | claimed | `results/cells/BTCUSDT_trend_pullback_4h.json` |
 | [x] `BTCUSDT/trend_pullback/1d` | killed | `results/cells/BTCUSDT_trend_pullback_1d.json` |
 | [x] `BTCUSDT/trend_pullback/1w` | done | `results/cells/BTCUSDT_trend_pullback_1w.json` |
-| [ ] `BTCUSDT/rsi2_pullback/15m` | open | `results/cells/BTCUSDT_rsi2_pullback_15m.json` |
-| [ ] `BTCUSDT/rsi2_pullback/1h` | open | `results/cells/BTCUSDT_rsi2_pullback_1h.json` |
-| [ ] `BTCUSDT/rsi2_pullback/4h` | open | `results/cells/BTCUSDT_rsi2_pullback_4h.json` |
-| [ ] `BTCUSDT/rsi2_pullback/1d` | open | `results/cells/BTCUSDT_rsi2_pullback_1d.json` |
-| [ ] `BTCUSDT/rsi2_pullback/1w` | open | `results/cells/BTCUSDT_rsi2_pullback_1w.json` |
-| [ ] `BTCUSDT/vol_compression/15m` | open | `results/cells/BTCUSDT_vol_compression_15m.json` |
-| [ ] `BTCUSDT/vol_compression/1h` | open | `results/cells/BTCUSDT_vol_compression_1h.json` |
-| [ ] `BTCUSDT/vol_compression/4h` | open | `results/cells/BTCUSDT_vol_compression_4h.json` |
-| [ ] `BTCUSDT/vol_compression/1d` | open | `results/cells/BTCUSDT_vol_compression_1d.json` |
-| [ ] `BTCUSDT/vol_compression/1w` | open | `results/cells/BTCUSDT_vol_compression_1w.json` |
-| [ ] `BTCUSDT/breakout/15m` | open | `results/cells/BTCUSDT_breakout_15m.json` |
-| [ ] `BTCUSDT/breakout/1h` | open | `results/cells/BTCUSDT_breakout_1h.json` |
-| [ ] `BTCUSDT/breakout/4h` | open | `results/cells/BTCUSDT_breakout_4h.json` |
-| [ ] `BTCUSDT/breakout/1d` | open | `results/cells/BTCUSDT_breakout_1d.json` |
-| [ ] `BTCUSDT/breakout/1w` | open | `results/cells/BTCUSDT_breakout_1w.json` |
-| [ ] `BTCUSDT/donchian/15m` | open | `results/cells/BTCUSDT_donchian_15m.json` |
-| [ ] `BTCUSDT/donchian/1h` | open | `results/cells/BTCUSDT_donchian_1h.json` |
-| [ ] `BTCUSDT/donchian/4h` | open | `results/cells/BTCUSDT_donchian_4h.json` |
-| [ ] `BTCUSDT/donchian/1d` | open | `results/cells/BTCUSDT_donchian_1d.json` |
+| [x] `BTCUSDT/rsi2_pullback/15m` | done | `results/cells/BTCUSDT_rsi2_pullback_15m.json` |
+| [-] `BTCUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/BTCUSDT_rsi2_pullback_1h.json` |
+| [-] `BTCUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/BTCUSDT_rsi2_pullback_4h.json` |
+| [x] `BTCUSDT/rsi2_pullback/1d` | done | `results/cells/BTCUSDT_rsi2_pullback_1d.json` |
+| [x] `BTCUSDT/rsi2_pullback/1w` | done | `results/cells/BTCUSDT_rsi2_pullback_1w.json` |
+| [x] `BTCUSDT/vol_compression/15m` | killed | `results/cells/BTCUSDT_vol_compression_15m.json` |
+| [-] `BTCUSDT/vol_compression/1h` | blocked_no_data | `results/cells/BTCUSDT_vol_compression_1h.json` |
+| [-] `BTCUSDT/vol_compression/4h` | blocked_no_data | `results/cells/BTCUSDT_vol_compression_4h.json` |
+| [x] `BTCUSDT/vol_compression/1d` | killed | `results/cells/BTCUSDT_vol_compression_1d.json` |
+| [x] `BTCUSDT/vol_compression/1w` | done | `results/cells/BTCUSDT_vol_compression_1w.json` |
+| [-] `BTCUSDT/breakout/15m` | blocked_no_data | `results/cells/BTCUSDT_breakout_15m.json` |
+| [-] `BTCUSDT/breakout/1h` | blocked_no_data | `results/cells/BTCUSDT_breakout_1h.json` |
+| [-] `BTCUSDT/breakout/4h` | blocked_no_data | `results/cells/BTCUSDT_breakout_4h.json` |
+| [x] `BTCUSDT/breakout/1d` | done | `results/cells/BTCUSDT_breakout_1d.json` |
+| [x] `BTCUSDT/breakout/1w` | done | `results/cells/BTCUSDT_breakout_1w.json` |
+| [-] `BTCUSDT/donchian/15m` | blocked_no_data | `results/cells/BTCUSDT_donchian_15m.json` |
+| [x] `BTCUSDT/donchian/1h` | killed | `results/cells/BTCUSDT_donchian_1h.json` |
+| [-] `BTCUSDT/donchian/4h` | blocked_no_data | `results/cells/BTCUSDT_donchian_4h.json` |
+| [x] `BTCUSDT/donchian/1d` | done | `results/cells/BTCUSDT_donchian_1d.json` |
 | [ ] `BTCUSDT/donchian/1w` | open | `results/cells/BTCUSDT_donchian_1w.json` |
 | [ ] `BTCUSDT/ma_cross/15m` | open | `results/cells/BTCUSDT_ma_cross_15m.json` |
 | [ ] `BTCUSDT/ma_cross/1h` | open | `results/cells/BTCUSDT_ma_cross_1h.json` |

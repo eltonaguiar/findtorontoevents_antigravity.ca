@@ -43,22 +43,49 @@ N_TRIALS = 1000          # the ledger size: every cell is a trial
 SEED = 20261124
 HORIZON_BARS = {"1d": 1, "1h": 1, "4h": 1, "1w": 1}   # bars to hold
 
+# No canonical implementation of these names existed in the repo, so they are
+# defined here and echoed into every artifact. Two agents using different
+# definitions under one key would make results incomparable.
+DEFINITIONS = {
+    "trend_pullback": "close>SMA50 and close<SMA10 (v1 close>SMA50 & RSI14<35 had an EMPTY conjunction)",
+    "breakout": "close > max(close, 20 bars)",
+    "donchian": "close == max(close, 56 bars)",
+    "rsi2_pullback": "RSI7 < 10",
+    "ma_cross": "SMA20 crosses above SMA50",
+    "bb_meanrev": "close < SMA20 - 2*stdev20",
+    "vol_compression": "stdev(returns,20) < 0.7 * stdev(returns,60)",
+    "momentum_12_1": "12-bar return > 0 (price[i-1]/price[i-13]-1)",
+    "gap_fade": "open < 0.98 * prior close",
+    "vwap_reversion": "close < SMA20 - 1*stdev20",
+}
+
 
 def load_bars(symbol, horizon):
     """Daily by default; 1h uses the committed cache if present."""
     from tools.crypto_bars import fetch_klines  # noqa: PLC0415
 
-    interval = {"1d": "1d", "1h": "1h", "4h": "4h"}.get(horizon, "1d")
+    # A 15m/4h cell measured on DAILY bars is a wrong artifact wearing the
+    # right label - the first version of this function silently defaulted to 1d
+    # and produced an identical n for 15m and 1d cells. Refuse instead.
+    if horizon in ("15m", "4h"):
+        return [], [], f"no intraday source for {horizon} (would have to fake it from daily)"
+    interval = {"1d": "1d", "1h": "1h"}.get(horizon, "1d")
     resample_weekly = horizon == "1w"
     if interval == "1h":
         cache = REPO_ROOT / "data/cache" / f"{symbol}_3mo_1h.csv"
         if cache.exists():
             import csv  # noqa: PLC0415
-            rows = list(csv.DictReader(open(cache)))
+            with open(cache) as fh:
+                lines = fh.read().splitlines()
+            # yfinance writes: row1 = Price,Close,High,Low,Open,Volume
+            #                   row2 = Ticker,BTC-USD,...   <- not data
+            hdr = lines[0].split(",")
+            ci, oi = hdr.index("Close"), hdr.index("Open")
+            rows = [r for r in csv.reader(lines[2:])
+                    if len(r) > max(ci, oi) and r[ci] and r[oi]]
             if rows:
-                return ([float(r.get("close") or r.get("Close")) for r in rows],
-                        [float(r.get("open") or r.get("Open")) for r in rows],
-                        f"cache:{cache.name}")
+                return ([float(r[ci]) for r in rows], [float(r[oi]) for r in rows],
+                        f"cache:{cache.name} ({len(rows)} bars, 2 header rows skipped)")
         return [], [], "no 1h cache"
 
     end = int(time.time() * 1000)
@@ -127,6 +154,48 @@ def signals(closes, strategy):
     if strategy == "rsi2_pullback":
         r = rsi(closes, 7)
         return [bool(r[i] is not None and r[i] < 10.0) for i in range(len(closes))]
+    if strategy == "ma_cross":
+        s20, s50 = sma(closes, 20), sma(closes, 50)
+        return [bool(i >= 50 and s20[i] and s50[i] and s20[i - 1] and s50[i - 1]
+                     and s20[i] > s50[i] and s20[i - 1] <= s50[i - 1])
+                for i in range(len(closes))]
+    if strategy == "bb_meanrev":
+        s20 = sma(closes, 20)
+        out = [False] * len(closes)
+        for i in range(20, len(closes)):
+            w = closes[i - 20:i]
+            m, sd = st.mean(w), st.stdev(w)
+            out[i] = bool(s20[i] and sd > 0 and closes[i] < m - 2 * sd)
+        return out
+    if strategy == "vol_compression":
+        out = [False] * len(closes)
+        for i in range(60, len(closes)):
+            w20 = closes[i - 20:i]
+            w60 = closes[i - 60:i]
+            r20 = [w20[j] / w20[j - 1] - 1 for j in range(1, len(w20))]
+            r60 = [w60[j] / w60[j - 1] - 1 for j in range(1, len(w60))]
+            if len(r20) > 2 and len(r60) > 2 and st.stdev(r60) > 0:
+                out[i] = st.stdev(r20) < 0.7 * st.stdev(r60)
+        return out
+    if strategy == "momentum_12_1":
+        out = [False] * len(closes)
+        for i in range(13, len(closes)):
+            m12 = closes[i - 1] / closes[i - 13] - 1
+            out[i] = m12 > 0
+        return out
+    if strategy == "gap_fade":
+        out = [False] * len(closes)
+        for i in range(1, len(closes)):
+            out[i] = opens[i] < closes[i - 1] * 0.98
+        return out
+    if strategy == "vwap_reversion":
+        s20 = sma(closes, 20)
+        out = [False] * len(closes)
+        for i in range(20, len(closes)):
+            w = closes[i - 20:i]
+            sd = st.stdev(w)
+            out[i] = bool(s20[i] and sd > 0 and closes[i] < s20[i] - sd)
+        return out
     if strategy == "donchian":
         s55 = sma(closes, 55)
         return [bool(i >= 55 and s55[i] and closes[i] == max(closes[i - 55:i + 1]))
@@ -251,9 +320,8 @@ def main(argv=None):
         "cell": f"{args.symbol}/{args.strategy}/{args.horizon}",
         "verdict": verdict,
         "n": n, "bars": bars, "bar_source": src,
-        "strategy_definition": {
-            "trend_pullback": "close>SMA50 and close<SMA10 (pullback within uptrend). v1 'close>SMA50 and RSI14<35' had an EMPTY conjunction and was discarded on signal-count grounds before measuring returns",
-        }.get(args.strategy, args.strategy),
+        "strategy_definition": DEFINITIONS.get(args.strategy, "UNDEFINED"),
+        "definitions_are_local": True,   # no canonical impl existed in the repo
         "execution": "signal on close i; entry open i+1; exit open i+1+h",
         "horizon_bars": h,
         "cost_bp_round_turn": COST_BP,
