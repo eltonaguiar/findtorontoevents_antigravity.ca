@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:37:09.528024+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:37:27.429599+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 40 of 1000.** open 955 | claimed 3 | blocked_no_data 2
+**Worked 40 of 1000.** open 949 | claimed 3 | blocked_no_data 8
 
 ## Done condition (identical for every cell)
 
@@ -179,7 +179,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `XRPUSDT/trend_pullback/15m` | open | `results/cells/XRPUSDT_trend_pullback_15m.json` |
+| [-] `XRPUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/XRPUSDT_trend_pullback_15m.json` |
 | [ ] `XRPUSDT/trend_pullback/1h` | open | `results/cells/XRPUSDT_trend_pullback_1h.json` |
 | [ ] `XRPUSDT/trend_pullback/4h` | open | `results/cells/XRPUSDT_trend_pullback_4h.json` |
 | [ ] `XRPUSDT/trend_pullback/1d` | open | `results/cells/XRPUSDT_trend_pullback_1d.json` |
@@ -234,7 +234,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `DOGEUSDT/trend_pullback/15m` | open | `results/cells/DOGEUSDT_trend_pullback_15m.json` |
+| [-] `DOGEUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/DOGEUSDT_trend_pullback_15m.json` |
 | [ ] `DOGEUSDT/trend_pullback/1h` | open | `results/cells/DOGEUSDT_trend_pullback_1h.json` |
 | [ ] `DOGEUSDT/trend_pullback/4h` | open | `results/cells/DOGEUSDT_trend_pullback_4h.json` |
 | [ ] `DOGEUSDT/trend_pullback/1d` | open | `results/cells/DOGEUSDT_trend_pullback_1d.json` |
@@ -289,7 +289,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `ADAUSDT/trend_pullback/15m` | open | `results/cells/ADAUSDT_trend_pullback_15m.json` |
+| [-] `ADAUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/ADAUSDT_trend_pullback_15m.json` |
 | [ ] `ADAUSDT/trend_pullback/1h` | open | `results/cells/ADAUSDT_trend_pullback_1h.json` |
 | [ ] `ADAUSDT/trend_pullback/4h` | open | `results/cells/ADAUSDT_trend_pullback_4h.json` |
 | [ ] `ADAUSDT/trend_pullback/1d` | open | `results/cells/ADAUSDT_trend_pullback_1d.json` |
@@ -344,7 +344,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `LINKUSDT/trend_pullback/15m` | open | `results/cells/LINKUSDT_trend_pullback_15m.json` |
+| [-] `LINKUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/LINKUSDT_trend_pullback_15m.json` |
 | [ ] `LINKUSDT/trend_pullback/1h` | open | `results/cells/LINKUSDT_trend_pullback_1h.json` |
 | [ ] `LINKUSDT/trend_pullback/4h` | open | `results/cells/LINKUSDT_trend_pullback_4h.json` |
 | [ ] `LINKUSDT/trend_pullback/1d` | open | `results/cells/LINKUSDT_trend_pullback_1d.json` |
@@ -399,7 +399,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `SPY/trend_pullback/15m` | open | `results/cells/SPY_trend_pullback_15m.json` |
+| [-] `SPY/trend_pullback/15m` | blocked_no_data | `results/cells/SPY_trend_pullback_15m.json` |
 | [ ] `SPY/trend_pullback/1h` | open | `results/cells/SPY_trend_pullback_1h.json` |
 | [ ] `SPY/trend_pullback/4h` | open | `results/cells/SPY_trend_pullback_4h.json` |
 | [ ] `SPY/trend_pullback/1d` | open | `results/cells/SPY_trend_pullback_1d.json` |
@@ -454,7 +454,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `QQQ/trend_pullback/15m` | open | `results/cells/QQQ_trend_pullback_15m.json` |
+| [-] `QQQ/trend_pullback/15m` | blocked_no_data | `results/cells/QQQ_trend_pullback_15m.json` |
 | [ ] `QQQ/trend_pullback/1h` | open | `results/cells/QQQ_trend_pullback_1h.json` |
 | [ ] `QQQ/trend_pullback/4h` | open | `results/cells/QQQ_trend_pullback_4h.json` |
 | [ ] `QQQ/trend_pullback/1d` | open | `results/cells/QQQ_trend_pullback_1d.json` |
