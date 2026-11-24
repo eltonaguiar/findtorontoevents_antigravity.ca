@@ -666,7 +666,7 @@
             '<span style="color:#888;">OLD: trained WITH <code>forward_wr</code>+<code>strat_fwd_wr</code>+<code>eb_forward_wr</code>+<code>age_hours</code> features. ' +
             'NEW: leakage-purged via <code>ML_GATE_DROP_LEAKAGE=1</code>. Hash-bucket split (md5 mod 2). ' +
             'Decision rule at 30d: one-sided z-test, p&lt;0.10, WR delta &ge;2pp. ' +
-            'Plan: <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/blob/main/reports/ml_gatekeeper_ab_sleeve_design_2026-05-12.md" target="_blank" rel="noopener" style="color:#06b6d4">design doc</a>.</span></details>' +
+            'Plan: <a href="/reports/ml_gatekeeper_ab_sleeve_design_2026-05-12.md" style="color:#06b6d4">design doc</a>.</span></details>' +
             '</div>';
     html += '<div class="enh-grid">';
     html += '<div class="enh-card">' +

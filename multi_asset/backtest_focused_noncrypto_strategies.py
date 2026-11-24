@@ -39,17 +39,6 @@ DATA_DIR = SCRIPT_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 OUT_FILE = DATA_DIR / "focused_noncrypto_backtest_results.json"
 
-
-def _json_safe(value):
-    """Recursively replace non-finite floats (NaN / +/-Infinity) with None."""
-    if isinstance(value, float) and not math.isfinite(value):
-        return None
-    if isinstance(value, dict):
-        return {k: _json_safe(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_json_safe(v) for v in value]
-    return value
-
 if str(SCRIPT_DIR.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR.parent))
 
@@ -387,13 +376,7 @@ def run_backtest() -> dict[str, Any]:
         )[:10],
     }
 
-    # A strategy with zero trades yields NaN sharpe/return; json.dumps would
-    # write a bare `NaN`, which no strict JSON consumer accepts. Sanitize to
-    # null and refuse non-finite floats outright (same guard as
-    # copy_trader_intel/multi_asset_bridge.py::_json_safe).
-    OUT_FILE.write_text(
-        json.dumps(_json_safe(result), indent=2, allow_nan=False), encoding="utf-8"
-    )
+    OUT_FILE.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(f"Wrote {OUT_FILE}")
     print(json.dumps(result["overall"], indent=2))
     return result

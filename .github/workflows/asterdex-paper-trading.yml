@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   trade:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     # 2026-05-13: 4m insufficient for large-repo checkout + deps + trade step on queue delay.
     timeout-minutes: 12
     concurrency:
@@ -187,7 +187,7 @@ jobs:
           fi
 
   daily-summary:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 30
     if: github.event.schedule == '0 0 * * *' || github.event_name == 'workflow_dispatch'
     needs: trade

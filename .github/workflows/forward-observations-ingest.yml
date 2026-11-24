@@ -49,66 +49,6 @@ jobs:
       - name: Install DB driver
         run: python3 -m pip install --quiet 'pymysql>=1.1'
 
-      # POD-EQUITY-BREAKOUT is the only pre_registered pod, so it is the only one
-      # that can mint a PROVEN_T2 verdict — and it had 0 forward rows 7.1d after
-      # registration because its emitter was never scheduled (reports/
-      # audit3_confirmatory.json). data/cache/asset_class_review/*_5y.csv is
-      # gitignored, so a clean runner has no bars to evaluate; refresh them here,
-      # then emit. Without these two steps the watchdog below fails by design.
-      - name: Refresh equity bar cache for the breakout pod
-        run: |
-          python3 -m pip install --quiet 'yfinance>=0.2.30' 'pandas>=2.0'
-          python3 - <<'PY'
-          import os
-
-          import pandas as pd
-          import yfinance as yf
-
-          OUT = "data/cache/asset_class_review"
-          os.makedirs(OUT, exist_ok=True)
-          # Liquid, long-history US names + the ETFs the pod declares. Widen this
-          # list to grow pod coverage; every symbol must have an equity/ETF
-          # ticker shape for emit_equity_breakout_pod._is_equity to accept it.
-          SYMBOLS = [
-              "SPY", "QQQ", "IWM", "DIA",
-              "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "AVGO",
-              "JPM", "BAC", "GS", "XOM", "CVX", "JNJ", "PFE", "UNH",
-              "WMT", "COST", "HD", "CAT", "DE", "BA", "GE",
-          ]
-          ok = 0
-          for sym in SYMBOLS:
-              try:
-                  df = yf.download(sym, period="5y", interval="1d",
-                                   auto_adjust=False, progress=False, threads=False)
-                  if df is None or df.empty:
-                      print(f"  {sym}: no data")
-                      continue
-                  if isinstance(df.columns, pd.MultiIndex):
-                      df.columns = [c[0] for c in df.columns]
-                  df = df.reset_index()
-                  df.columns = [str(c) for c in df.columns]
-                  keep = [c for c in ("Date", "Open", "High", "Low", "Close", "Volume")
-                          if c in df.columns]
-                  df[keep].to_csv(f"{OUT}/{sym}_5y.csv", index=False)
-                  ok += 1
-              except Exception as exc:  # noqa: BLE001 - one bad ticker must not stop the rest
-                  print(f"  {sym}: {type(exc).__name__}: {exc}")
-          print(f"cached {ok}/{len(SYMBOLS)} symbols")
-          assert ok >= 10, "too few symbols cached - the pod would emit on a tiny universe"
-          PY
-
-      - name: Emit POD-EQUITY-BREAKOUT rows
-        if: env.DB_PASS_STOCKS != '' || env.DB_PASSWORDS_JSON != ''
-        run: |
-          # One run per strategy, all four declared in the pod manifest. The
-          # writer is idempotent (deterministic id = strategy|symbol|signal-date)
-          # and stores the honest forward outcome recorded from the bars that
-          # followed each signal.
-          for strategy in donchian rs-breakout vol-contraction adx-trend; do
-            echo "=== emitting $strategy ==="
-            python3 tools/emit_equity_breakout_pod.py --strategy "$strategy" --apply
-          done
-
       - name: Ingest honest cohort into the forward ledger
         run: |
           if [ -z "$DB_PASS_STOCKS" ] && [ -z "$DB_PASSWORDS_JSON" ]; then
@@ -179,10 +119,10 @@ jobs:
             exit 0
           fi
           git commit -m "chore(forward): accrue forward observations from honest cohort [skip ci]"
-          # Bounded push via safe_push.sh: every git call is capped at 90s and retried
-          # with backoff, so a contended main fails this step instead of hanging past
-          # the job's timeout-minutes and silently losing the commit.
-          if ! bash .github/scripts/safe_push.sh; then
-            echo "::error title=forward-observations::ledger commit could not be pushed"
-            exit 1
-          fi
+          for i in 1 2 3; do
+            git pull --rebase --no-recurse-submodules origin main || true
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep $((i*5))
+          done
+          echo "::error title=forward-observations::ledger commit could not be pushed"
+          exit 1

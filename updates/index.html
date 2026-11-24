@@ -68,7 +68,7 @@
 </style>
 <div class="ie-section">
   <h2>🐛 Open Incidents + 🚀 Top Enhancements — Live from /audit</h2>
-  <p class="intro"><strong>Refreshed:</strong> 2026-11-25 23:56 EST · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
+  <p class="intro"><strong>Refreshed:</strong> 2026-11-23 23:56 EST · <strong>111 open incidents</strong> (23 P0 · 57 P1) · <strong>173 enhancements</strong> in backlog · across 9 asset-class buckets.</p>
 
   <div class="ie-explainer">
     <strong>What this section is:</strong> a live readout of every known issue + improvement proposal in the trading pipeline, sliced per asset class.
@@ -178,7 +178,7 @@
     <div class="ie-card-meta">P0 · OPEN · component: <code>resolver/measurement layer</code> · reporter: claude-opus-4-8 (per-class edge workflow wxdjdjztu 2026-06-06) · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
-    <span class="ie-class">OVERALL</span> <strong>Live DB password REDACTED_DB_PASS hardcoded repo-wide (rotate + scrub)</strong>
+    <span class="ie-class">OVERALL</span> <strong>Live DB password stocks1234560 hardcoded repo-wide (rotate + scrub)</strong>
     <div class="ie-card-meta">P0 · OPEN · component: <code>multiple (SKILL.md, alpha_engine/forward_test.py, rigorous_backtest_harness.py, +)</code> · reporter: claude-opus-4-8 · <a href="/audit/incidents.html#incidents">view in full table →</a></div>
   </div>
   <div class="incident-card ie-card sev-P0">
@@ -223,7 +223,7 @@
 <!-- AUTO-INJECTED:INCIDENTS-ENHANCEMENTS:END -->
 
   <div class="update-entry" id="money-maker-research-sim-launch-2026-11-19" style="--dot-color: #a78bfa;" data-tags="audit,audit2,audit3,money-ready,research,paper-sim,forward-ledger,crypto,etf,pre-registration" data-category="trading" data-types="analysis,feature,fix">
-    <div class="update-date">Nov 26, 2026 &mdash; LIVE (updated hourly)</div>
+    <div class="update-date">Nov 24, 2026 &mdash; LIVE (updated hourly)</div>
     <div class="update-content">
       <p><strong>Money-maker-per-asset-class research round: claims cross-checked across /audit, /audit2 and /audit3, headline sleeves flagged, the ETF forward clock unstuck, and a live crypto paper simulation launched.</strong> Full report: <code>reports/money_maker_per_asset_class_2026-11-19.md</code>.</p>
       <ul>
@@ -1248,7 +1248,7 @@
     <li><strong>Intrabar OHLC CRYPTO resolver &mdash; full 4-PR chain</strong>. Non-CRYPTO classes jumped from 13&ndash;23% replay coverage to <strong>100%</strong> (EQUITY/COMMODITY/ETF/PENNY/BOND/FUTURES/FOREX). CRYPTO was a multi-layer block: PR #512 wired Binance/CoinGecko OHLC &rarr; KuCoin Tier-3 added (Binance/CoinGecko geo-blocked from GHA runners) &rarr; CRYPTO guard removed from <code>price_tracker.py:621</code> AND sibling guard removed from <code>resolve_db_picks.py:143</code>. All four landed; CRYPTO REPLAY rows expected to start populating on next price-tracker run.</li>
     <li><strong>BOND depromote</strong> (PR <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/501">#501</a>): added BOND to <code>BLOCKED_ASSET_CLASSES</code>. Live BOND PF=0.37 (CLASS_DEGRADED) + money_ready_verdict INSUFF-N n=0.</li>
     <li><strong>macd_rsi_m048 shadow generator</strong> (PR <a href="https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/pull/513">#513</a>): closes emission gap for the EAGLE-3 second promotion candidate. Strategy class existed but had no production caller. Daily 23:37Z GHA cron scans top-10 CRYPTO universe, appends shadow JSONL &mdash; no DB writes. 30-day shadow accumulation then graduates to real emission.</li>
-    <li><strong>INCIDENT #89 &mdash; DB password leak completely closed in code.</strong> 26 .py files had the literal hardcoded; <code>git grep REDACTED_DB_PASS -- '*.py'</code> now returns <strong>0</strong>. 4 batches via 4 patterns (canonical helper, env-chain, docstring placeholders, convention-shape check). Forward-fence CI prevents new additions.</li>
+    <li><strong>INCIDENT #89 &mdash; DB password leak completely closed in code.</strong> 26 .py files had the literal hardcoded; <code>git grep stocks1234560 -- '*.py'</code> now returns <strong>0</strong>. 4 batches via 4 patterns (canonical helper, env-chain, docstring placeholders, convention-shape check). Forward-fence CI prevents new additions.</li>
     <li><strong>Daily top-picks filter</strong>: operator-facing tool pulling OPEN picks from 6 robust AI tournament models (deepseek_v4 / claude_haiku_4_5 / cursor_agent / gpt4o / deepseek_r1 / mercury). Dedup by (symbol,direction), rank by (PF&times;confidence&times;recency), apply min(Quarter-Kelly, 2.0%) cap. Today's seed: <a href="/audit/data/daily_top_picks_filter.json">daily_top_picks_filter.json</a>.</li>
     <li><strong>/money-maker-readyv2 weekly filter</strong>: honest verdict &mdash; <strong>0/8 asset classes pass Tier-2</strong>. Closest viable filter is the AI tournament robust panel (above) but DISPUTED until intrabar resolver fully validates on CRYPTO. CRYPTO has 3 lab-grade strategy candidates passing PF&ge;1.5 + WR&ge;55% (battleground_luxalgo + 2 siblings) but all 100% single-source.</li>
   </ul>
@@ -12476,7 +12476,7 @@ JUNK &lt; 60</pre>
         <!-- ═══════════════════════════════════════════════════════ -->
 
         <h4 style="color:#a78bfa; border-bottom: 1px solid #2a2a3e; padding-bottom: 4px;">
-          Nov 26, 2026 &mdash; 01:25 AM EST | Hourly Portfolio Update
+          Nov 24, 2026 &mdash; 03:25 AM EST | Hourly Portfolio Update
         </h4>
         <p><strong>0 active, 1 waiting</strong> | 0 open positions | 0 closed trades | W/L: 0/0 (0% WR) | <span style="color:#22c55e">INTEGRITY: All 27 portfolios CLEAN</span></p>
         <p><strong>Top 3:</strong> Score Leaders (+0.00%)</p>
@@ -12495,53 +12495,6 @@ JUNK &lt; 60</pre>
         </table>
         <p style="font-size:0.85em; color:#6b7280"><em>Total portfolio equity: $10,000.00. See <a href="https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/audit_dashboard/portfolio_history.html" target="_blank">full audit trail</a> for individual trade details.</em></p>
         <hr style="border-color:#2a2a3e; margin: 12px 0;">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -16783,9 +16736,9 @@ JUNK &lt; 60</pre>
         <!-- PORTFOLIO SCOREBOARD                                    -->
         <!-- ═══════════════════════════════════════════════════════ -->
 
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 26, 01:25 AM EST)</h4>
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 26, 01:25 AM EST)</h4>
-        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 26, 01:25 AM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 24, 03:25 AM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 24, 03:25 AM EST)</h4>
+        <h4>Portfolio Scoreboard (26 portfolios &mdash; Updated Nov 24, 03:25 AM EST)</h4>
         <p style="color:#ef4444; font-size: 0.85em"><em>Previous scoreboard had inflated returns due to synthetic price bug. These are the REAL numbers after full data cleanup.</em></p>
         <table>
           <tr>

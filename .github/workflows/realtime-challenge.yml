@@ -25,10 +25,7 @@ concurrency:
 jobs:
   cycle:
     runs-on: ubuntu-latest
-    # 12, not 10: the commit step below is bounded at 5 minutes so a hung push
-    # fails the STEP (conclusion=failure) instead of the JOB timing out first
-    # (conclusion=cancelled, which reads as "cancelled churn" and hides the cause).
-    timeout-minutes: 12
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,23 +36,12 @@ jobs:
           python-version: "3.11"
 
       - name: Mark open positions and open new slots
-        env:
-          # Bound via env, not interpolated into the script: a workflow_dispatch
-          # input is caller-controlled and must not reach the shell as source.
-          TAG: ${{ github.event.inputs.tag || 'buffy' }}
         run: |
+          TAG="${{ github.event.inputs.tag || 'buffy' }}"
           python3 tools/realtime_challenge.py cycle --tag "$TAG"
           python3 tools/realtime_challenge.py report --tag "$TAG"
 
-      # Was an inline `git push || { git pull --rebase --autostash; sleep 5; }` loop.
-      # On 2026-11-25T23:32 run 45722095341 the push was rejected (fetch first) and the
-      # unbounded `git pull --rebase` hung for 9m21s until the JOB's 10-min timeout killed
-      # it: conclusion=cancelled, commit b146370f never pushed. safe_push.sh bounds each
-      # git call and retries with backoff, so the same contention surfaces as a failure.
       - name: Commit the ledger
-        timeout-minutes: 5
-        env:
-          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config user.name "challenge-bot"
           git config user.email "challenge-bot@users.noreply.github.com"
@@ -65,6 +51,8 @@ jobs:
               echo "no change"
             else
               git commit -m "realtime-challenge: cycle [skip ci]"
-              bash .github/scripts/safe_push.sh
+              for i in 1 2 3; do
+                git push && break || { git pull --rebase --autostash; sleep 5; }
+              done
             fi
           fi

@@ -43,7 +43,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -157,38 +156,11 @@ def run_screeners(
     }
 
 
-def _json_safe(value: Any) -> Any:
-    """Replace non-finite floats (NaN / +/-Infinity) with ``None``.
-
-    yfinance returns NaN for a missing price or fundamental, and
-    ``json.dumps`` then writes the bare token ``NaN`` — which is not valid
-    JSON. The CI build gate (``ci.yml`` -> "deployable static tree is
-    consistent") rejects the payload, so a single unpriced ticker turned the
-    whole build red (2026-11-26: ``ueps_picks.json: not strict JSON (NaN)``).
-    """
-    if isinstance(value, float) and not math.isfinite(value):
-        return None
-    try:  # numpy scalars are not always float subclasses (e.g. float32)
-        import numpy as _np
-        if isinstance(value, _np.floating) and not _np.isfinite(value):
-            return None
-    except ImportError:
-        pass
-    if isinstance(value, dict):
-        return {k: _json_safe(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_json_safe(v) for v in value]
-    return value
-
-
 def write_payload(payload: dict[str, Any], path: Path = UEPS_PICKS_PATH) -> None:
     """Persist the payload as JSON at the dashboard-fetched path."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    # allow_nan=False makes the invariant explicit: this file is consumed by a
-    # strict-JSON gate, so emitting NaN again must fail here, not in CI.
     path.write_text(
-        json.dumps(_json_safe(payload), indent=2, default=str, allow_nan=False),
-        encoding="utf-8",
+        json.dumps(payload, indent=2, default=str), encoding="utf-8"
     )
     logger.info("Wrote %s (long=%d short=%d swing=%d)", path,
                 payload["summary"]["n_long"],

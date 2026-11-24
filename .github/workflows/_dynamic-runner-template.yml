@@ -41,10 +41,6 @@ jobs:
 
     steps:
       - name: Runner Info
-        env:
-          # `inputs.*` must never be interpolated straight into `run:` — a caller
-          # controls the value, so it is bound as an env var and read as "$VAR".
-          SELECTED_RUNNER: ${{ inputs.runner }}
         run: |
           echo "============================================"
           echo "  Runner Information"
@@ -52,7 +48,7 @@ jobs:
           echo "Runner Name: ${{ runner.name }}"
           echo "Runner OS: ${{ runner.os }}"
           echo "Runner Arch: ${{ runner.arch }}"
-          echo "Selected Runner: $SELECTED_RUNNER"
+          echo "Selected Runner: ${{ inputs.runner }}"
           echo "============================================"
 
       - name: Setup Python (Cloud)
@@ -77,8 +73,6 @@ jobs:
       # Your job steps here...
 
       - name: Example Step
-        env:
-          SELECTED_RUNNER: ${{ inputs.runner }}
         run: |
-          echo "Running on $SELECTED_RUNNER"
+          echo "Running on ${{ inputs.runner }}"
           echo "This is where your actual work would happen"

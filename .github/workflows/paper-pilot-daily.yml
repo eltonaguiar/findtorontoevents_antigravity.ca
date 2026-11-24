@@ -100,14 +100,10 @@ jobs:
             # non-fast-forward skip (was a single naive `git push`). Still annotates on
             # final failure (visibility preserved).
             _pushed=0
-            # Bounded push via safe_push.sh: every git call is capped at 90s and retried
-            # with backoff, so a contended main fails this step instead of hanging past
-            # the job's timeout-minutes and silently losing the commit.
-            if bash .github/scripts/safe_push.sh; then
-              _pushed=1
-            else
-              _pushed=0
-            fi
+            for i in 1 2 3 4 5; do
+              git pull --rebase --autostash origin main && git push origin HEAD:main && { _pushed=1; break; }
+              sleep $((i * 3))
+            done
             [ "$_pushed" = "1" ] || echo "::warning::paper-pilot push failed after 5 rebase-retry attempts (concurrent commit) — will retry next cycle"
           else
             echo "::warning::no status file at $STATUS"

@@ -18,10 +18,7 @@ permissions:
 
 jobs:
   run-bot:
-    # Runs on the self-hosted Linux fleet: GitHub caps a hosted job at 6 h, which is the only
-    # reason this workflow used to self-restart every cycle. Self-hosted has no such cap.
-    # Revert by restoring the ACTIONS_RUNNER_LABEL line if the gx10 boxes are unavailable.
-    runs-on: [self-hosted, Linux, gx10]
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 355  # 5h 55m (under GitHub's 6h limit)
 
     steps:

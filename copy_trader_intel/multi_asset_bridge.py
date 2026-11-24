@@ -19,7 +19,6 @@ Run: python copy_trader_intel/multi_asset_bridge.py
 """
 
 import json
-import math
 import os
 import sys
 from datetime import datetime, timezone
@@ -87,37 +86,11 @@ def load_json(path):
         return None
 
 
-def _json_safe(value):
-    """Recursively replace non-finite floats (NaN / +/-Infinity) with None.
-
-    yfinance and the backtest engines return NaN for a missing price/metric,
-    and ``json.dump`` writes it as the bare token ``NaN`` — invalid JSON. The
-    CI build gate rejected the resulting payload
-    (``forex_futures_picks.json: not strict JSON (NaN)``, run 45738440769), so
-    the writer now refuses to emit one. Same guard as
-    ``tools/run_ueps_pickers.py::_json_safe``.
-    """
-    if isinstance(value, float) and not math.isfinite(value):
-        return None
-    try:  # numpy scalars are not always float subclasses (e.g. float32)
-        import numpy as _np
-        if isinstance(value, _np.floating) and not _np.isfinite(value):
-            return None
-    except ImportError:
-        pass
-    if isinstance(value, dict):
-        return {k: _json_safe(v) for k, v in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_json_safe(v) for v in value]
-    return value
-
-
 def save_json(path, data):
-    """Save JSON with UTF-8 encoding, refusing non-finite floats."""
+    """Save JSON with UTF-8 encoding."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(_json_safe(data), f, indent=2, ensure_ascii=False,
-                  allow_nan=False)
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 def normalize_pick(raw, source_system):

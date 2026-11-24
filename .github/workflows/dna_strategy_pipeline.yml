@@ -113,7 +113,7 @@ jobs:
     name: Generate Active Picks
     needs: evolve-strategies
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
-    timeout-minutes: 45
+    timeout-minutes: 30
     outputs:
       picks_generated: ${{ steps.gen.outputs.picks_count }}
       regime_detected: ${{ steps.gen.outputs.regime }}
@@ -153,31 +153,25 @@ jobs:
       
       - name: Generate Picks
         id: gen
-        env:
-          # Dispatch inputs bound as env vars, never interpolated into `run:`
-          # (template-injection fix). Empty on scheduled runs, hence the defaults.
-          IN_SYMBOLS: ${{ github.event.inputs.symbols }}
-          IN_REGIME: ${{ github.event.inputs.regime }}
-          IN_MAX_PICKS: ${{ github.event.inputs.max_picks }}
         run: |
-          SYMBOLS="${IN_SYMBOLS:-BTC,ETH,SOL}"
-          REGIME="${IN_REGIME:-}"
-          MAX_PICKS="${IN_MAX_PICKS:-5}"
+          SYMBOLS="${{ github.event.inputs.symbols || 'BTC,ETH,SOL' }}"
+          REGIME="${{ github.event.inputs.regime || '' }}"
+          MAX_PICKS="${{ github.event.inputs.max_picks || '5' }}"
           
           # Convert comma-separated to space-separated
-          SYMBOLS_LIST=$(echo "$SYMBOLS" | tr ',' ' ')
+          SYMBOLS_LIST=$(echo $SYMBOLS | tr ',' ' ')
           
           if [ -n "$REGIME" ]; then
             python genome/generate_picks.py \
-              --symbols "$SYMBOLS_LIST" \
-              --regime "$REGIME" \
-              --max-picks "$MAX_PICKS" \
+              --symbols $SYMBOLS_LIST \
+              --regime $REGIME \
+              --max-picks $MAX_PICKS \
               --output genome/active_picks.json \
               --tier-filter
           else
             python genome/generate_picks.py \
-              --symbols "$SYMBOLS_LIST" \
-              --max-picks "$MAX_PICKS" \
+              --symbols $SYMBOLS_LIST \
+              --max-picks $MAX_PICKS \
               --output genome/active_picks.json \
               --tier-filter
           fi
@@ -207,8 +201,6 @@ jobs:
           "
       
       - name: Commit and push picks
-        env:
-          REGIME_DETECTED: ${{ steps.gen.outputs.regime }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -222,7 +214,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Update active picks - $(date -u +%Y-%m-%d_%H:%M:%S UTC) [${REGIME_DETECTED}] [skip ci]"
+            git commit -m "Update active picks - $(date -u +%Y-%m-%d_%H:%M:%S UTC) [${{ steps.gen.outputs.regime }}] [skip ci]"
             bash .github/scripts/safe_push.sh
           fi
 
@@ -251,11 +243,8 @@ jobs:
           pip install numpy pandas
       
       - name: Check Phoenix Candidates
-        env:
-          REGIME_DETECTED: ${{ needs.generate-picks.outputs.regime_detected }}
         run: |
           python -c "
-          import os
           import sys
           sys.path.insert(0, '.')
           from genome import StrategyRegistry, MarketRegime
@@ -265,7 +254,7 @@ jobs:
           phoenix = PhoenixRevivalTracker()
           
           # Check for revival candidates
-          regime = MarketRegime(os.environ.get('REGIME_DETECTED', ''))
+          regime = MarketRegime('${{ needs.generate-picks.outputs.regime_detected }}')
           candidates = phoenix.get_revival_candidates(
               current_regime=regime,
               min_score=0.6
@@ -287,14 +276,11 @@ jobs:
     
     steps:
       - name: Summary
-        env:
-          PICKS_GENERATED: ${{ needs.generate-picks.outputs.picks_generated }}
-          REGIME_DETECTED: ${{ needs.generate-picks.outputs.regime_detected }}
         run: |
           echo "## DNA Strategy Pipeline Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Picks Generated**: ${PICKS_GENERATED}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Market Regime**: ${REGIME_DETECTED}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Picks Generated**: ${{ needs.generate-picks.outputs.picks_generated }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Market Regime**: ${{ needs.generate-picks.outputs.regime_detected }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date -u +%Y-%m-%d_%H:%M:%S UTC)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "View active picks in \`genome/active_picks.json\`" >> $GITHUB_STEP_SUMMARY

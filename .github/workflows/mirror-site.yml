@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   mirror:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 90
 
     steps:
@@ -58,32 +58,6 @@ jobs:
         # Excluding that stray artifact lets the mirror exit 0 and actually upload.
         # Also dropping pure ballast that can never be served: .git objects
         # (4,796 paths in one run) and __pycache__/*.pyc (64).
-        # 2026-11-26: the download step then timed out at its 50-min cap
-        # (run 45740915469, 02:13Z-03:03Z) transferring quarantine backup
-        # trees. There are TWO of them on the server, and they are named
-        # differently -- this matters, because a pattern that only matches one
-        # of the two fixes nothing measurable:
-        #   /_QUARANTINE_2026-11-25/                     <- leading underscore
-        #   WINDOWSFIXER/MiracleBoot_v7_1_1 - Github code/
-        #       .git_QUARANTINE_2026-11-25/objects/...    <- DOT-git prefix
-        # The second tree is the expensive one: it is a git object store, so it
-        # is tens of thousands of tiny files, each costing a full FTP round
-        # trip at --parallel=4. A local replay (2026-11-26 03:14-03:26Z) showed
-        # the crawl was still inside .git_QUARANTINE_*/objects/ at the 150s
-        # budget with 356 MB scanned. Note that the existing `(^|/)\.git/`
-        # exclude does NOT cover it -- the path component is
-        # `.git_QUARANTINE_...`, not `.git`.
-        # The pattern below therefore allows ANY prefix before _QUARANTINE_ so
-        # both trees match:
-        #   (^|/)[^/]*_QUARANTINE_[^/]*/
-        # Measured after the fix: full tree enumerates in 143s, 948 dirs /
-        # 6540 files / 640.9 MB, 0 list errors, 0 subtrees budget-capped.
-        # Quarantined content is content we deliberately removed (see the
-        # security/2026-11-25-phishing-cleanup branch), so mirroring it would
-        # REPUBLISH it on torontoevent.net / tdotevent.ca. Excluded from all
-        # three mirror invocations -- including the two --reverse uploads,
-        # because the restore-cache can carry quarantine files downloaded by
-        # earlier runs straight onto the mirrors.
         timeout-minutes: 50
         env:
           SRC_HOST: ${{ secrets.FTP_HOST }}
@@ -114,7 +88,6 @@ jobs:
             --exclude='^audit/research/' \
             --exclude='^updates/' \
             --exclude='(^|/)node_modules/' \
-            --exclude='(^|/)[^/]*_QUARANTINE_[^/]*/' \
             --exclude='^favcreators_source/.git/' \
             --exclude='^cakephp/vendor/' \
             --exclude='^findevents/next/_next/static/chunks/' \
@@ -205,7 +178,6 @@ jobs:
             --exclude='^audit/research/' \
             --exclude='^updates/' \
             --exclude='(^|/)node_modules/' \
-            --exclude='(^|/)[^/]*_QUARANTINE_[^/]*/' \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
@@ -251,7 +223,6 @@ jobs:
             --exclude='^audit/research/' \
             --exclude='^updates/' \
             --exclude='(^|/)node_modules/' \
-            --exclude='(^|/)[^/]*_QUARANTINE_[^/]*/' \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \

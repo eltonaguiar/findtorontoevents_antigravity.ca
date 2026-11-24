@@ -33,20 +33,13 @@ jobs:
       
       - name: Install dependencies
         run: |
-          # picks_router imports numpy as well as requests; installing only
-          # requests killed the job at import time (run 45741959521).
-          pip install requests numpy
+          pip install requests
       
       - name: Send Closed Picks Summary
         env:
           DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
         run: |
-          # The script lives inside the signal_aggregator package and imports
-          # `from signal_aggregator.picks_router import ...`. Running it by path sets
-          # sys.path[0] to signal_aggregator/, so that import failed with
-          # "No module named 'signal_aggregator'" (run 45740823581). Pin the repo
-          # root on PYTHONPATH instead of changing the script.
-          PYTHONPATH="$PWD" python signal_aggregator/closed_picks_command.py ${{ github.event.inputs.days || '30' }}
+          python signal_aggregator/closed_picks_command.py ${{ github.event.inputs.days || '30' }}
       
       - name: Log result
         if: always()

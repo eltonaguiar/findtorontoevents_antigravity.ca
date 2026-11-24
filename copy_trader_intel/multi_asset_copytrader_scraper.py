@@ -166,11 +166,7 @@ COMMODITY_FUTURES = {
 INDEX_FUTURES = {
     "E-mini S&P 500": "ES=F", "E-mini Nasdaq": "NQ=F",
     "E-mini Dow": "YM=F", "E-mini Russell": "RTY=F",
-    # FDAX=F is the Eurex DAX future, which Yahoo does not carry: verified
-    # 2026-11-25 that it returns HTTP 404 "No data found, symbol may be
-    # delisted" on every fetch, while ^GDAXI returns 200 with data. The DAX
-    # leg had therefore never produced a single observation.
-    "Nikkei": "NKD=F", "DAX": "^GDAXI",
+    "Nikkei": "NKD=F", "DAX": "FDAX=F",
 }
 
 FUTURES_SYMBOLS = {

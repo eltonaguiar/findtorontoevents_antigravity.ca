@@ -100,9 +100,6 @@ UPLOADS = [
     ("audit_dashboard/data/tier_rating_algorithms.json",     "/findtorontoevents.ca/audit2/data/tier_rating_algorithms.json",      "ai_tournament"),
     ("audit_dashboard/data/money_ready_verdict.json",        "/findtorontoevents.ca/audit/data/money_ready_verdict.json",         "audit_data"),
     ("audit_dashboard/data/money_ready_verdict.json",        "/findtorontoevents.ca/audit2/data/money_ready_verdict.json",         "audit_data"),
-    # batch B / restored 2026-11-25: M-107 pre-registration registry -> ./data/ for the
-    # hypothesis-registry panel (workflow FTP lists cover the other 2 sites).
-    ("reports/hypothesis_registry.json",                     "/findtorontoevents.ca/audit/data/hypothesis_registry.json",           "audit_data"),
     ("audit_dashboard/data/audit_surface_truth.json",        "/findtorontoevents.ca/audit/data/audit_surface_truth.json",         "audit_data"),
     ("audit_dashboard/data/audit_surface_truth.json",        "/findtorontoevents.ca/audit2/data/audit_surface_truth.json",         "audit_data"),
     ("audit_dashboard/audit_surface_truth_banner.js",        "/findtorontoevents.ca/audit/audit_surface_truth_banner.js",         "audit_data"),

@@ -147,33 +147,14 @@ class ForwardTradeExecutor:
         
     @staticmethod
     def _symbol_to_yf(symbol: str) -> str:
-        """Normalise a pick symbol into the form yfinance/ccxt expect.
-
-        Only *crypto* quotes are rewritten (BTCUSDT -> BTC-USD). Equities,
-        ETFs, indices and futures are passed through untouched. The previous
-        version appended "-USD" to everything, so AAPL became AAPL-USD,
-        GC=F became GC=F-USD and ^GSPC became ^GSPC-USD: every non-crypto
-        lookup was a delisted symbol, which is why the hourly job logged ~42
-        "delisted" errors per run while still exiting green.
-        """
-        s = str(symbol).strip().upper()
-        # Already in yfinance crypto form (BTC-USD) - leave alone.
-        if s.endswith('-USD') and s.count('-') == 1:
-            return s
-        quoted = s.replace('/', '').replace('_', '')
-        # Stablecoin-quoted pairs are unambiguous crypto.
-        for quote in ('USDT', 'USDC', 'BUSD'):
-            if quoted.endswith(quote) and len(quoted) > len(quote):
-                return f"{quoted[:-len(quote)]}-USD"
-        # A bare "...USD" is crypto only if the base is not a fiat code:
-        # EURUSD/GBPUSD are FX pairs (EURUSD=X), BTCUSD is crypto (BTC-USD).
-        if quoted.endswith('USD') and len(quoted) > 3:
-            base = quoted[:-3]
-            fiat = ('EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD', 'CNY', 'HKD', 'SGD')
-            if base in fiat:
-                return f"{quoted}=X"
-            return f"{base}-USD"
-        return s
+        """Convert BTCUSDT/BTC/USDT format to yfinance BTC-USD format."""
+        s = symbol.replace('/', '').replace('-', '').upper()
+        # Strip trailing USDT/USD
+        for suffix in ('USDT', 'USD'):
+            if s.endswith(suffix):
+                base = s[:-len(suffix)]
+                return f"{base}-USD"
+        return f"{s}-USD"
 
     def fetch_current_price(self, symbol: str) -> Optional[float]:
         """Fetch current price using 7-exchange failover (no ccxt, no geo-block)."""

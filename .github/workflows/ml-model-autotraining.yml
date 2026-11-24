@@ -34,7 +34,7 @@ concurrency:
 
 jobs:
   check-and-train:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 45
     
     steps:
@@ -373,12 +373,6 @@ jobs:
         if: >
           steps.check.outputs.needs_training == 'true' &&
           steps.regression_gate.outputs.regression_passed != 'false'
-        env:
-          # Step outputs are bound as env, never interpolated into `run:`
-          # (template-injection fix).
-          TOTAL_RESOLVED: ${{ steps.check.outputs.total_resolved }}
-          NEW_SIGNALS: ${{ steps.check.outputs.new_signals }}
-          TRAIN_REASONS: ${{ steps.check.outputs.reasons }}
         run: |
           git config --local user.email "ml-bot@github.com"
           git config --local user.name "ML Training Bot"
@@ -390,9 +384,9 @@ jobs:
           git add alpha_engine/data/model_metadata_*.json 2>/dev/null || true
           git add reports/ 2>/dev/null || true
 
-          # Commit with detailed message (values arrive via env, never interpolated)
-          TOTAL="${TOTAL_RESOLVED}"
-          NEW="${NEW_SIGNALS}"
+          # Commit with detailed message
+          TOTAL="${{ steps.check.outputs.total_resolved }}"
+          NEW="${{ steps.check.outputs.new_signals }}"
 
           git diff --cached --quiet || git commit -m "Auto-retrain ML models
 
@@ -400,7 +394,7 @@ jobs:
           - New signals (6h): $NEW
           - Models: Consensus, Quality Predictor
           - Regression gate (A3.1): passed
-          - Triggered by: ${TRAIN_REASONS}
+          - Triggered by: ${{ steps.check.outputs.reasons }}
 
           [skip ci]"
           
@@ -427,16 +421,14 @@ jobs:
         if: steps.check.outputs.needs_training == 'true'
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_ML_ALERTS }}
-          TOTAL_RESOLVED: ${{ steps.check.outputs.total_resolved }}
-          NEW_SIGNALS: ${{ steps.check.outputs.new_signals }}
         run: |
           if [ -z "$DISCORD_WEBHOOK" ]; then
             echo "No Discord webhook configured"
             exit 0
           fi
           
-          TOTAL="${TOTAL_RESOLVED}"
-          NEW="${NEW_SIGNALS}"
+          TOTAL="${{ steps.check.outputs.total_resolved }}"
+          NEW="${{ steps.check.outputs.new_signals }}"
           
           curl -H "Content-Type: application/json" \
                -d "{
@@ -455,11 +447,8 @@ jobs:
       
       - name: Skip notification
         if: steps.check.outputs.needs_training != 'true'
-        env:
-          TOTAL_RESOLVED: ${{ steps.check.outputs.total_resolved }}
-          TRAIN_REASONS: ${{ steps.check.outputs.reasons }}
         run: |
           echo "Training not needed. Skipping."
-          echo "Total resolved: ${TOTAL_RESOLVED}"
-          echo "Reasons: ${TRAIN_REASONS}"
+          echo "Total resolved: ${{ steps.check.outputs.total_resolved }}"
+          echo "Reasons: ${{ steps.check.outputs.reasons }}"
 

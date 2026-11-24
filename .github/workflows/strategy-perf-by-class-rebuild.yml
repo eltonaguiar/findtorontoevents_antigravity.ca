@@ -51,11 +51,7 @@ jobs:
           git add audit_dashboard/data/strategy_perf_by_class.json
           if git diff --staged --quiet; then echo "no JSON change"; exit 0; fi
           git commit -m "chore(tracking): refresh strategy_perf_by_class.json [skip ci]"
-          # Bounded push via safe_push.sh: every git call is capped at 90s and retried
-          # with backoff, so a contended main fails this step instead of hanging past
-          # the job's timeout-minutes and silently losing the commit.
-          bash .github/scripts/safe_push.sh \
-            || echo "::warning::strategy_perf_by_class.json push failed after bounded retries"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin main && break; sleep 5; done
       - name: Summary
         if: always()
         run: |

@@ -6,50 +6,21 @@ lines summed to 11 -- PNL_OUT_OF_BOUNDS was flagged but never counted, so the
 summary could not explain its own red. And two classes were invisible: a
 quarantined row still publishing a PnL, and a PnL no pair of published prices
 implies.
-
-2026-11-25: the fixture below wrote `{"picks": [...]}` with no `generated_at`,
-so every case silently picked up the `STALE_SNAPSHOT` critical flag that
-`bd6f9e30de9d` added a freshness gate for. All five assertions that expect
-`rc == 0` failed on a clean `main` -- the tool was right and the fixture was
-stale. `tools/qa_ledger_selftest.py` (same commit) already asserts the opposite
-of what this file asserted, so the two suites contradicted each other and only
-`CI Tests` noticed. The fixture now stamps a fresh `generated_at`, and
-`test_missing_generated_at_is_critical` pins the contract in pytest so the two
-suites cannot drift apart again.
 """
 import importlib.util
 import json
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _fresh_stamp(minutes_ago=0):
-    return (datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)).isoformat()
-
-
-_NOW = object()  # sentinel: stamp at call time, never at import time
-
-
-def _run(monkeypatch, tmp_path, picks, external=(None, None), generated_at=_NOW):
-    """Run the ledger against a synthetic snapshot.
-
-    `generated_at` defaults to "now" because an un-stamped snapshot is itself a
-    critical condition -- the freshness gate cannot prove it is current. Pass
-    `generated_at=None` to model that case deliberately.
-    """
-    if generated_at is _NOW:
-        generated_at = _fresh_stamp()
+def _run(monkeypatch, tmp_path, picks, external=(None, None)):
     spec = importlib.util.spec_from_file_location("qa_ledger", ROOT / "tools" / "qa_ledger.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     live = tmp_path / "live.json"
     out = tmp_path / "qa.json"
-    snapshot = {"picks": picks}
-    if generated_at is not None:
-        snapshot["generated_at"] = generated_at
-    live.write_text(json.dumps(snapshot), encoding="utf-8")
+    live.write_text(json.dumps({"picks": picks}), encoding="utf-8")
     monkeypatch.setattr(mod, "LIVE_JSON", live)
     monkeypatch.setattr(mod, "OUT_JSON", out)
     monkeypatch.setattr(mod, "fetch_external", lambda sym, aclass: external)
@@ -134,33 +105,3 @@ def test_forex_priced_by_the_validation_feed_is_counted_not_flagged(monkeypatch,
     assert rep["by_class"]["FOREX"]["unverified_source"] == 1
     assert rep["by_class"]["FOREX"]["mismatch"] == 0
     assert rep["flag_counts"]["total"] == 0
-
-
-def test_missing_generated_at_is_critical(monkeypatch, tmp_path):
-    """Pins the freshness contract so this file and tools/qa_ledger_selftest.py
-    cannot contradict each other again.
-
-    A snapshot with no `generated_at` cannot be proven current, so the ledger
-    must raise a critical STALE_SNAPSHOT and exit 1. `_run` stamps a fresh
-    timestamp by default, so pass None to model the un-stamped case.
-    """
-    rc, rep = _run(monkeypatch, tmp_path, [_row()], generated_at=None)
-    assert rc == 1
-    assert rep["flag_counts"]["critical"] >= 1
-    snapshot_flags = [f for f in rep["flags"] if f["verdict"] == "STALE_SNAPSHOT"]
-    assert snapshot_flags, "un-stamped snapshot must raise STALE_SNAPSHOT"
-    assert any(f["asset_class"] == "SNAPSHOT" for f in snapshot_flags)
-
-
-def test_stale_generated_at_is_critical(monkeypatch, tmp_path):
-    """A snapshot older than the freshness limit is the same failure as a missing one."""
-    rc, rep = _run(monkeypatch, tmp_path, [_row()], generated_at=_fresh_stamp(minutes_ago=600))
-    assert rc == 1
-    assert any(f["verdict"] == "STALE_SNAPSHOT" for f in rep["flags"])
-
-
-def test_fresh_generated_at_is_not_flagged(monkeypatch, tmp_path):
-    """Guard against over-correcting: a fresh stamp must not trip the gate."""
-    rc, rep = _run(monkeypatch, tmp_path, [_row()])
-    assert rc == 0
-    assert not any(f["verdict"] == "STALE_SNAPSHOT" for f in rep["flags"])

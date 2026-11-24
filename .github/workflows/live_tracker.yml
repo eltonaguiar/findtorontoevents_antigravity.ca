@@ -12,8 +12,8 @@ on:
 
 permissions:
   contents: write
-  # pages: write / id-token: write removed 2026-11-25: this workflow no longer
-  # publishes Pages. deploy-riseoftheclaw.yml is the only Pages publisher.
+  pages: write
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -71,12 +71,20 @@ jobs:
           sleep 5
         done
         
-    # The peaceiris gh-pages publish and its BESTIEJOB staging step were REMOVED
-    # on 2026-11-25. Pages serves workflow artifacts from
-    # deploy-riseoftheclaw.yml, not the gh-pages branch, so every hourly green run
-    # here was publishing a 191 KB dashboard to a branch nothing reads
-    # (/dashboard, /live_picks.json and /bestiejob all 404ed while existing in
-    # the branch). dashboard/ and docs/bestiejob are now copied into _site by
-    # deploy-riseoftheclaw.yml. The 'Commit dashboard' step above stays: it is
-    # what that workflow reads.
+    - name: Include BESTIEJOB page in Pages publish
+      run: |
+        # peaceiris publishes ./dashboard (keep_files=false), which wipes other
+        # gh-pages paths. Include the rights-gated BESTIEJOB page so it persists.
+        if [ -d docs/bestiejob ]; then
+          mkdir -p dashboard/bestiejob
+          cp -r docs/bestiejob/. dashboard/bestiejob/
+          touch dashboard/bestiejob/.nojekyll
+          echo "Included docs/bestiejob in Pages publish"
+        fi
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dashboard
 
