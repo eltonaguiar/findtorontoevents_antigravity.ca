@@ -119,3 +119,21 @@ def test_excluded_class_entry_carries_no_invented_integer():
     assert "total" not in entry.lower(), (
         "the entry must not assert a total count before the live build produces one"
     )
+
+
+def test_observation_log_records_the_zero_total_trap():
+    """Block 61: the pre-wiring observation must stay on the record.
+
+    ``total: 0`` looks the same whether the summary is un-wired or genuinely
+    empty, so the doc has to keep saying so -- otherwise the next reader
+    concludes "no excluded rows exist" from a payload that never carried any.
+    """
+    text = _text()
+    assert "## Observation log" in text, (
+        "the dated observation log must not be deleted from COVERAGE_LIMITS.md"
+    )
+    assert "indistinguishable from the un-wired default" in text, (
+        "the observation log must keep the 'total: 0 is indistinguishable from "
+        "the un-wired default' warning so the Block 59/60 trap cannot be "
+        "forgotten"
+    )

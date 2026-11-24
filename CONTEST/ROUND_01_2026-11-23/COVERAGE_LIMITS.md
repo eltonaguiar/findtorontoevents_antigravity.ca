@@ -97,3 +97,32 @@ stop being dropped for having no win/loss. Fixing only price coverage (fresh bar
 FOREX, FUTURES) would raise `covered_of_universe` but would not remove the label, because the
 6,111-row outcome selection is upstream of prices. Until then every verdict drawn from this
 ledger is a verdict about 3,190 rows, and must say so.
+
+## Observation log
+
+Append-only record of what was measured on the excluded-cohort path, so nobody
+re-derives it. Earlier entries are never edited.
+
+- **2026-11-24T01:29Z — pre-wiring observation.** `coverage.excluded_summary` =
+  `total: 0`, `by_class: {}`, all `by_reason` zero, `overlap: false`. Deployed
+  payload `repo_sha = 325a7d8f`, no `_excluded_cohort_rows` key.
+  `merge-base --is-ancestor 188759ab 325a7d8f` = false. **`total: 0` at this ref
+  is indistinguishable from the un-wired default and must not be read as "no
+  excluded rows exist"** — the same ledger's `coverage.excluded_cohorts`
+  reports **6,025 integrity-excluded + 9,274 auto-expired** rows (overlapping,
+  not a partition).
+- **Observation method.** `audit_dashboard/data/dashboard_data.json` is
+  gitignored ([`.gitignore:222`](.gitignore:222)) and FTP-deployed, so a payload
+  refresh never appears as a git commit. Read
+  `https://findtorontoevents.ca/audit/data/dashboard_data.json` (or a
+  downloaded copy); the tracked observation surfaces are the audit3 ledger
+  (`audit_dashboard/data/audit3_ledger.json`) and sibling
+  `audit_dashboard/data/*.json` sidecars.
+- **One-command check.**
+  `python3 tools/check_excluded_summary.py --payload <url-or-path> --ledger <path>`.
+  It exits 0 only when the payload carries `_excluded_cohort_rows`, the reported
+  total is `>= --expect-min` (default 1), and `by_class` is non-empty; it
+  distinguishes an absent key from a zero total instead of conflating them.
+- **What flips the label.** A run whose payload has a `repo_sha` descending from
+  `188759ab`, carries `_excluded_cohort_rows`, and yields `total > 0` with a
+  non-empty real-class `by_class`.
