@@ -109,7 +109,10 @@ jobs:
           retention-days: 90
 
       - name: Commit status + ANCHOR the head sha
-        if: always()
+        # Only the default branch may be written by this bot. Committing [skip ci]
+        # to feature branches hides PR checks and re-creates conflicts on every
+        # main advance (observed 2026-11-24 on PRs #1067/#1046).
+        if: always() && github.ref == 'refs/heads/main' 
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
