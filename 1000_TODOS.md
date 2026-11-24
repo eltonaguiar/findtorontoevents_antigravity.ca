@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T00:55:14.235376+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T01:37:09.528024+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 0 of 1000.** open 997 | claimed 3 | blocked_no_data 0
+**Worked 40 of 1000.** open 955 | claimed 3 | blocked_no_data 2
 
 ## Done condition (identical for every cell)
 
@@ -10,7 +10,7 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 0/50 worked
+## BTCUSDT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -22,7 +22,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `BTCUSDT/rsi2_pullback/15m` | open | `results/cells/BTCUSDT_rsi2_pullback_15m.json` |
 | [ ] `BTCUSDT/rsi2_pullback/1h` | open | `results/cells/BTCUSDT_rsi2_pullback_1h.json` |
 | [ ] `BTCUSDT/rsi2_pullback/4h` | open | `results/cells/BTCUSDT_rsi2_pullback_4h.json` |
-| [ ] `BTCUSDT/rsi2_pullback/1d` | open | `results/cells/BTCUSDT_rsi2_pullback_1d.json` |
+| [x] `BTCUSDT/rsi2_pullback/1d` | killed | `results/cells/BTCUSDT_rsi2_pullback_1d.json` |
 | [ ] `BTCUSDT/rsi2_pullback/1w` | open | `results/cells/BTCUSDT_rsi2_pullback_1w.json` |
 | [ ] `BTCUSDT/vol_compression/15m` | open | `results/cells/BTCUSDT_vol_compression_15m.json` |
 | [ ] `BTCUSDT/vol_compression/1h` | open | `results/cells/BTCUSDT_vol_compression_1h.json` |
@@ -42,7 +42,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `BTCUSDT/ma_cross/15m` | open | `results/cells/BTCUSDT_ma_cross_15m.json` |
 | [ ] `BTCUSDT/ma_cross/1h` | open | `results/cells/BTCUSDT_ma_cross_1h.json` |
 | [ ] `BTCUSDT/ma_cross/4h` | open | `results/cells/BTCUSDT_ma_cross_4h.json` |
-| [ ] `BTCUSDT/ma_cross/1d` | open | `results/cells/BTCUSDT_ma_cross_1d.json` |
+| [x] `BTCUSDT/ma_cross/1d` | killed | `results/cells/BTCUSDT_ma_cross_1d.json` |
 | [ ] `BTCUSDT/ma_cross/1w` | open | `results/cells/BTCUSDT_ma_cross_1w.json` |
 | [ ] `BTCUSDT/bb_meanrev/15m` | open | `results/cells/BTCUSDT_bb_meanrev_15m.json` |
 | [ ] `BTCUSDT/bb_meanrev/1h` | open | `results/cells/BTCUSDT_bb_meanrev_1h.json` |
@@ -65,11 +65,11 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `BTCUSDT/gap_fade/1d` | open | `results/cells/BTCUSDT_gap_fade_1d.json` |
 | [ ] `BTCUSDT/gap_fade/1w` | open | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 0/50 worked
+## ETHUSDT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `ETHUSDT/trend_pullback/15m` | open | `results/cells/ETHUSDT_trend_pullback_15m.json` |
+| [-] `ETHUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/ETHUSDT_trend_pullback_15m.json` |
 | [ ] `ETHUSDT/trend_pullback/1h` | open | `results/cells/ETHUSDT_trend_pullback_1h.json` |
 | [ ] `ETHUSDT/trend_pullback/4h` | open | `results/cells/ETHUSDT_trend_pullback_4h.json` |
 | [ ] `ETHUSDT/trend_pullback/1d` | open | `results/cells/ETHUSDT_trend_pullback_1d.json` |
@@ -77,7 +77,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ETHUSDT/rsi2_pullback/15m` | open | `results/cells/ETHUSDT_rsi2_pullback_15m.json` |
 | [ ] `ETHUSDT/rsi2_pullback/1h` | open | `results/cells/ETHUSDT_rsi2_pullback_1h.json` |
 | [ ] `ETHUSDT/rsi2_pullback/4h` | open | `results/cells/ETHUSDT_rsi2_pullback_4h.json` |
-| [ ] `ETHUSDT/rsi2_pullback/1d` | open | `results/cells/ETHUSDT_rsi2_pullback_1d.json` |
+| [x] `ETHUSDT/rsi2_pullback/1d` | killed | `results/cells/ETHUSDT_rsi2_pullback_1d.json` |
 | [ ] `ETHUSDT/rsi2_pullback/1w` | open | `results/cells/ETHUSDT_rsi2_pullback_1w.json` |
 | [ ] `ETHUSDT/vol_compression/15m` | open | `results/cells/ETHUSDT_vol_compression_15m.json` |
 | [ ] `ETHUSDT/vol_compression/1h` | open | `results/cells/ETHUSDT_vol_compression_1h.json` |
@@ -97,7 +97,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ETHUSDT/ma_cross/15m` | open | `results/cells/ETHUSDT_ma_cross_15m.json` |
 | [ ] `ETHUSDT/ma_cross/1h` | open | `results/cells/ETHUSDT_ma_cross_1h.json` |
 | [ ] `ETHUSDT/ma_cross/4h` | open | `results/cells/ETHUSDT_ma_cross_4h.json` |
-| [ ] `ETHUSDT/ma_cross/1d` | open | `results/cells/ETHUSDT_ma_cross_1d.json` |
+| [x] `ETHUSDT/ma_cross/1d` | killed | `results/cells/ETHUSDT_ma_cross_1d.json` |
 | [ ] `ETHUSDT/ma_cross/1w` | open | `results/cells/ETHUSDT_ma_cross_1w.json` |
 | [ ] `ETHUSDT/bb_meanrev/15m` | open | `results/cells/ETHUSDT_bb_meanrev_15m.json` |
 | [ ] `ETHUSDT/bb_meanrev/1h` | open | `results/cells/ETHUSDT_bb_meanrev_1h.json` |
@@ -120,11 +120,11 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ETHUSDT/gap_fade/1d` | open | `results/cells/ETHUSDT_gap_fade_1d.json` |
 | [ ] `ETHUSDT/gap_fade/1w` | open | `results/cells/ETHUSDT_gap_fade_1w.json` |
 
-## SOLUSDT - 0/50 worked
+## SOLUSDT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
-| [ ] `SOLUSDT/trend_pullback/15m` | open | `results/cells/SOLUSDT_trend_pullback_15m.json` |
+| [-] `SOLUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/SOLUSDT_trend_pullback_15m.json` |
 | [ ] `SOLUSDT/trend_pullback/1h` | open | `results/cells/SOLUSDT_trend_pullback_1h.json` |
 | [ ] `SOLUSDT/trend_pullback/4h` | open | `results/cells/SOLUSDT_trend_pullback_4h.json` |
 | [ ] `SOLUSDT/trend_pullback/1d` | open | `results/cells/SOLUSDT_trend_pullback_1d.json` |
@@ -132,7 +132,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SOLUSDT/rsi2_pullback/15m` | open | `results/cells/SOLUSDT_rsi2_pullback_15m.json` |
 | [ ] `SOLUSDT/rsi2_pullback/1h` | open | `results/cells/SOLUSDT_rsi2_pullback_1h.json` |
 | [ ] `SOLUSDT/rsi2_pullback/4h` | open | `results/cells/SOLUSDT_rsi2_pullback_4h.json` |
-| [ ] `SOLUSDT/rsi2_pullback/1d` | open | `results/cells/SOLUSDT_rsi2_pullback_1d.json` |
+| [x] `SOLUSDT/rsi2_pullback/1d` | killed | `results/cells/SOLUSDT_rsi2_pullback_1d.json` |
 | [ ] `SOLUSDT/rsi2_pullback/1w` | open | `results/cells/SOLUSDT_rsi2_pullback_1w.json` |
 | [ ] `SOLUSDT/vol_compression/15m` | open | `results/cells/SOLUSDT_vol_compression_15m.json` |
 | [ ] `SOLUSDT/vol_compression/1h` | open | `results/cells/SOLUSDT_vol_compression_1h.json` |
@@ -152,7 +152,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SOLUSDT/ma_cross/15m` | open | `results/cells/SOLUSDT_ma_cross_15m.json` |
 | [ ] `SOLUSDT/ma_cross/1h` | open | `results/cells/SOLUSDT_ma_cross_1h.json` |
 | [ ] `SOLUSDT/ma_cross/4h` | open | `results/cells/SOLUSDT_ma_cross_4h.json` |
-| [ ] `SOLUSDT/ma_cross/1d` | open | `results/cells/SOLUSDT_ma_cross_1d.json` |
+| [x] `SOLUSDT/ma_cross/1d` | killed | `results/cells/SOLUSDT_ma_cross_1d.json` |
 | [ ] `SOLUSDT/ma_cross/1w` | open | `results/cells/SOLUSDT_ma_cross_1w.json` |
 | [ ] `SOLUSDT/bb_meanrev/15m` | open | `results/cells/SOLUSDT_bb_meanrev_15m.json` |
 | [ ] `SOLUSDT/bb_meanrev/1h` | open | `results/cells/SOLUSDT_bb_meanrev_1h.json` |
@@ -175,7 +175,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SOLUSDT/gap_fade/1d` | open | `results/cells/SOLUSDT_gap_fade_1d.json` |
 | [ ] `SOLUSDT/gap_fade/1w` | open | `results/cells/SOLUSDT_gap_fade_1w.json` |
 
-## XRPUSDT - 0/50 worked
+## XRPUSDT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -187,7 +187,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XRPUSDT/rsi2_pullback/15m` | open | `results/cells/XRPUSDT_rsi2_pullback_15m.json` |
 | [ ] `XRPUSDT/rsi2_pullback/1h` | open | `results/cells/XRPUSDT_rsi2_pullback_1h.json` |
 | [ ] `XRPUSDT/rsi2_pullback/4h` | open | `results/cells/XRPUSDT_rsi2_pullback_4h.json` |
-| [ ] `XRPUSDT/rsi2_pullback/1d` | open | `results/cells/XRPUSDT_rsi2_pullback_1d.json` |
+| [x] `XRPUSDT/rsi2_pullback/1d` | killed | `results/cells/XRPUSDT_rsi2_pullback_1d.json` |
 | [ ] `XRPUSDT/rsi2_pullback/1w` | open | `results/cells/XRPUSDT_rsi2_pullback_1w.json` |
 | [ ] `XRPUSDT/vol_compression/15m` | open | `results/cells/XRPUSDT_vol_compression_15m.json` |
 | [ ] `XRPUSDT/vol_compression/1h` | open | `results/cells/XRPUSDT_vol_compression_1h.json` |
@@ -207,7 +207,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XRPUSDT/ma_cross/15m` | open | `results/cells/XRPUSDT_ma_cross_15m.json` |
 | [ ] `XRPUSDT/ma_cross/1h` | open | `results/cells/XRPUSDT_ma_cross_1h.json` |
 | [ ] `XRPUSDT/ma_cross/4h` | open | `results/cells/XRPUSDT_ma_cross_4h.json` |
-| [ ] `XRPUSDT/ma_cross/1d` | open | `results/cells/XRPUSDT_ma_cross_1d.json` |
+| [x] `XRPUSDT/ma_cross/1d` | killed | `results/cells/XRPUSDT_ma_cross_1d.json` |
 | [ ] `XRPUSDT/ma_cross/1w` | open | `results/cells/XRPUSDT_ma_cross_1w.json` |
 | [ ] `XRPUSDT/bb_meanrev/15m` | open | `results/cells/XRPUSDT_bb_meanrev_15m.json` |
 | [ ] `XRPUSDT/bb_meanrev/1h` | open | `results/cells/XRPUSDT_bb_meanrev_1h.json` |
@@ -230,7 +230,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XRPUSDT/gap_fade/1d` | open | `results/cells/XRPUSDT_gap_fade_1d.json` |
 | [ ] `XRPUSDT/gap_fade/1w` | open | `results/cells/XRPUSDT_gap_fade_1w.json` |
 
-## DOGEUSDT - 0/50 worked
+## DOGEUSDT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -242,7 +242,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `DOGEUSDT/rsi2_pullback/15m` | open | `results/cells/DOGEUSDT_rsi2_pullback_15m.json` |
 | [ ] `DOGEUSDT/rsi2_pullback/1h` | open | `results/cells/DOGEUSDT_rsi2_pullback_1h.json` |
 | [ ] `DOGEUSDT/rsi2_pullback/4h` | open | `results/cells/DOGEUSDT_rsi2_pullback_4h.json` |
-| [ ] `DOGEUSDT/rsi2_pullback/1d` | open | `results/cells/DOGEUSDT_rsi2_pullback_1d.json` |
+| [x] `DOGEUSDT/rsi2_pullback/1d` | killed | `results/cells/DOGEUSDT_rsi2_pullback_1d.json` |
 | [ ] `DOGEUSDT/rsi2_pullback/1w` | open | `results/cells/DOGEUSDT_rsi2_pullback_1w.json` |
 | [ ] `DOGEUSDT/vol_compression/15m` | open | `results/cells/DOGEUSDT_vol_compression_15m.json` |
 | [ ] `DOGEUSDT/vol_compression/1h` | open | `results/cells/DOGEUSDT_vol_compression_1h.json` |
@@ -262,7 +262,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `DOGEUSDT/ma_cross/15m` | open | `results/cells/DOGEUSDT_ma_cross_15m.json` |
 | [ ] `DOGEUSDT/ma_cross/1h` | open | `results/cells/DOGEUSDT_ma_cross_1h.json` |
 | [ ] `DOGEUSDT/ma_cross/4h` | open | `results/cells/DOGEUSDT_ma_cross_4h.json` |
-| [ ] `DOGEUSDT/ma_cross/1d` | open | `results/cells/DOGEUSDT_ma_cross_1d.json` |
+| [x] `DOGEUSDT/ma_cross/1d` | killed | `results/cells/DOGEUSDT_ma_cross_1d.json` |
 | [ ] `DOGEUSDT/ma_cross/1w` | open | `results/cells/DOGEUSDT_ma_cross_1w.json` |
 | [ ] `DOGEUSDT/bb_meanrev/15m` | open | `results/cells/DOGEUSDT_bb_meanrev_15m.json` |
 | [ ] `DOGEUSDT/bb_meanrev/1h` | open | `results/cells/DOGEUSDT_bb_meanrev_1h.json` |
@@ -285,7 +285,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `DOGEUSDT/gap_fade/1d` | open | `results/cells/DOGEUSDT_gap_fade_1d.json` |
 | [ ] `DOGEUSDT/gap_fade/1w` | open | `results/cells/DOGEUSDT_gap_fade_1w.json` |
 
-## ADAUSDT - 0/50 worked
+## ADAUSDT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -297,7 +297,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ADAUSDT/rsi2_pullback/15m` | open | `results/cells/ADAUSDT_rsi2_pullback_15m.json` |
 | [ ] `ADAUSDT/rsi2_pullback/1h` | open | `results/cells/ADAUSDT_rsi2_pullback_1h.json` |
 | [ ] `ADAUSDT/rsi2_pullback/4h` | open | `results/cells/ADAUSDT_rsi2_pullback_4h.json` |
-| [ ] `ADAUSDT/rsi2_pullback/1d` | open | `results/cells/ADAUSDT_rsi2_pullback_1d.json` |
+| [x] `ADAUSDT/rsi2_pullback/1d` | killed | `results/cells/ADAUSDT_rsi2_pullback_1d.json` |
 | [ ] `ADAUSDT/rsi2_pullback/1w` | open | `results/cells/ADAUSDT_rsi2_pullback_1w.json` |
 | [ ] `ADAUSDT/vol_compression/15m` | open | `results/cells/ADAUSDT_vol_compression_15m.json` |
 | [ ] `ADAUSDT/vol_compression/1h` | open | `results/cells/ADAUSDT_vol_compression_1h.json` |
@@ -317,7 +317,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ADAUSDT/ma_cross/15m` | open | `results/cells/ADAUSDT_ma_cross_15m.json` |
 | [ ] `ADAUSDT/ma_cross/1h` | open | `results/cells/ADAUSDT_ma_cross_1h.json` |
 | [ ] `ADAUSDT/ma_cross/4h` | open | `results/cells/ADAUSDT_ma_cross_4h.json` |
-| [ ] `ADAUSDT/ma_cross/1d` | open | `results/cells/ADAUSDT_ma_cross_1d.json` |
+| [x] `ADAUSDT/ma_cross/1d` | killed | `results/cells/ADAUSDT_ma_cross_1d.json` |
 | [ ] `ADAUSDT/ma_cross/1w` | open | `results/cells/ADAUSDT_ma_cross_1w.json` |
 | [ ] `ADAUSDT/bb_meanrev/15m` | open | `results/cells/ADAUSDT_bb_meanrev_15m.json` |
 | [ ] `ADAUSDT/bb_meanrev/1h` | open | `results/cells/ADAUSDT_bb_meanrev_1h.json` |
@@ -340,7 +340,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `ADAUSDT/gap_fade/1d` | open | `results/cells/ADAUSDT_gap_fade_1d.json` |
 | [ ] `ADAUSDT/gap_fade/1w` | open | `results/cells/ADAUSDT_gap_fade_1w.json` |
 
-## LINKUSDT - 0/50 worked
+## LINKUSDT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -352,7 +352,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `LINKUSDT/rsi2_pullback/15m` | open | `results/cells/LINKUSDT_rsi2_pullback_15m.json` |
 | [ ] `LINKUSDT/rsi2_pullback/1h` | open | `results/cells/LINKUSDT_rsi2_pullback_1h.json` |
 | [ ] `LINKUSDT/rsi2_pullback/4h` | open | `results/cells/LINKUSDT_rsi2_pullback_4h.json` |
-| [ ] `LINKUSDT/rsi2_pullback/1d` | open | `results/cells/LINKUSDT_rsi2_pullback_1d.json` |
+| [x] `LINKUSDT/rsi2_pullback/1d` | killed | `results/cells/LINKUSDT_rsi2_pullback_1d.json` |
 | [ ] `LINKUSDT/rsi2_pullback/1w` | open | `results/cells/LINKUSDT_rsi2_pullback_1w.json` |
 | [ ] `LINKUSDT/vol_compression/15m` | open | `results/cells/LINKUSDT_vol_compression_15m.json` |
 | [ ] `LINKUSDT/vol_compression/1h` | open | `results/cells/LINKUSDT_vol_compression_1h.json` |
@@ -372,7 +372,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `LINKUSDT/ma_cross/15m` | open | `results/cells/LINKUSDT_ma_cross_15m.json` |
 | [ ] `LINKUSDT/ma_cross/1h` | open | `results/cells/LINKUSDT_ma_cross_1h.json` |
 | [ ] `LINKUSDT/ma_cross/4h` | open | `results/cells/LINKUSDT_ma_cross_4h.json` |
-| [ ] `LINKUSDT/ma_cross/1d` | open | `results/cells/LINKUSDT_ma_cross_1d.json` |
+| [x] `LINKUSDT/ma_cross/1d` | killed | `results/cells/LINKUSDT_ma_cross_1d.json` |
 | [ ] `LINKUSDT/ma_cross/1w` | open | `results/cells/LINKUSDT_ma_cross_1w.json` |
 | [ ] `LINKUSDT/bb_meanrev/15m` | open | `results/cells/LINKUSDT_bb_meanrev_15m.json` |
 | [ ] `LINKUSDT/bb_meanrev/1h` | open | `results/cells/LINKUSDT_bb_meanrev_1h.json` |
@@ -395,7 +395,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `LINKUSDT/gap_fade/1d` | open | `results/cells/LINKUSDT_gap_fade_1d.json` |
 | [ ] `LINKUSDT/gap_fade/1w` | open | `results/cells/LINKUSDT_gap_fade_1w.json` |
 
-## SPY - 0/50 worked
+## SPY - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -407,7 +407,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SPY/rsi2_pullback/15m` | open | `results/cells/SPY_rsi2_pullback_15m.json` |
 | [ ] `SPY/rsi2_pullback/1h` | open | `results/cells/SPY_rsi2_pullback_1h.json` |
 | [ ] `SPY/rsi2_pullback/4h` | open | `results/cells/SPY_rsi2_pullback_4h.json` |
-| [ ] `SPY/rsi2_pullback/1d` | open | `results/cells/SPY_rsi2_pullback_1d.json` |
+| [x] `SPY/rsi2_pullback/1d` | killed | `results/cells/SPY_rsi2_pullback_1d.json` |
 | [ ] `SPY/rsi2_pullback/1w` | open | `results/cells/SPY_rsi2_pullback_1w.json` |
 | [ ] `SPY/vol_compression/15m` | open | `results/cells/SPY_vol_compression_15m.json` |
 | [ ] `SPY/vol_compression/1h` | open | `results/cells/SPY_vol_compression_1h.json` |
@@ -427,7 +427,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SPY/ma_cross/15m` | open | `results/cells/SPY_ma_cross_15m.json` |
 | [ ] `SPY/ma_cross/1h` | open | `results/cells/SPY_ma_cross_1h.json` |
 | [ ] `SPY/ma_cross/4h` | open | `results/cells/SPY_ma_cross_4h.json` |
-| [ ] `SPY/ma_cross/1d` | open | `results/cells/SPY_ma_cross_1d.json` |
+| [x] `SPY/ma_cross/1d` | killed | `results/cells/SPY_ma_cross_1d.json` |
 | [ ] `SPY/ma_cross/1w` | open | `results/cells/SPY_ma_cross_1w.json` |
 | [ ] `SPY/bb_meanrev/15m` | open | `results/cells/SPY_bb_meanrev_15m.json` |
 | [ ] `SPY/bb_meanrev/1h` | open | `results/cells/SPY_bb_meanrev_1h.json` |
@@ -450,7 +450,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `SPY/gap_fade/1d` | open | `results/cells/SPY_gap_fade_1d.json` |
 | [ ] `SPY/gap_fade/1w` | open | `results/cells/SPY_gap_fade_1w.json` |
 
-## QQQ - 0/50 worked
+## QQQ - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -462,7 +462,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `QQQ/rsi2_pullback/15m` | open | `results/cells/QQQ_rsi2_pullback_15m.json` |
 | [ ] `QQQ/rsi2_pullback/1h` | open | `results/cells/QQQ_rsi2_pullback_1h.json` |
 | [ ] `QQQ/rsi2_pullback/4h` | open | `results/cells/QQQ_rsi2_pullback_4h.json` |
-| [ ] `QQQ/rsi2_pullback/1d` | open | `results/cells/QQQ_rsi2_pullback_1d.json` |
+| [x] `QQQ/rsi2_pullback/1d` | killed | `results/cells/QQQ_rsi2_pullback_1d.json` |
 | [ ] `QQQ/rsi2_pullback/1w` | open | `results/cells/QQQ_rsi2_pullback_1w.json` |
 | [ ] `QQQ/vol_compression/15m` | open | `results/cells/QQQ_vol_compression_15m.json` |
 | [ ] `QQQ/vol_compression/1h` | open | `results/cells/QQQ_vol_compression_1h.json` |
@@ -482,7 +482,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `QQQ/ma_cross/15m` | open | `results/cells/QQQ_ma_cross_15m.json` |
 | [ ] `QQQ/ma_cross/1h` | open | `results/cells/QQQ_ma_cross_1h.json` |
 | [ ] `QQQ/ma_cross/4h` | open | `results/cells/QQQ_ma_cross_4h.json` |
-| [ ] `QQQ/ma_cross/1d` | open | `results/cells/QQQ_ma_cross_1d.json` |
+| [x] `QQQ/ma_cross/1d` | killed | `results/cells/QQQ_ma_cross_1d.json` |
 | [ ] `QQQ/ma_cross/1w` | open | `results/cells/QQQ_ma_cross_1w.json` |
 | [ ] `QQQ/bb_meanrev/15m` | open | `results/cells/QQQ_bb_meanrev_15m.json` |
 | [ ] `QQQ/bb_meanrev/1h` | open | `results/cells/QQQ_bb_meanrev_1h.json` |
@@ -505,7 +505,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `QQQ/gap_fade/1d` | open | `results/cells/QQQ_gap_fade_1d.json` |
 | [ ] `QQQ/gap_fade/1w` | open | `results/cells/QQQ_gap_fade_1w.json` |
 
-## IWM - 0/50 worked
+## IWM - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -517,7 +517,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `IWM/rsi2_pullback/15m` | open | `results/cells/IWM_rsi2_pullback_15m.json` |
 | [ ] `IWM/rsi2_pullback/1h` | open | `results/cells/IWM_rsi2_pullback_1h.json` |
 | [ ] `IWM/rsi2_pullback/4h` | open | `results/cells/IWM_rsi2_pullback_4h.json` |
-| [ ] `IWM/rsi2_pullback/1d` | open | `results/cells/IWM_rsi2_pullback_1d.json` |
+| [x] `IWM/rsi2_pullback/1d` | killed | `results/cells/IWM_rsi2_pullback_1d.json` |
 | [ ] `IWM/rsi2_pullback/1w` | open | `results/cells/IWM_rsi2_pullback_1w.json` |
 | [ ] `IWM/vol_compression/15m` | open | `results/cells/IWM_vol_compression_15m.json` |
 | [ ] `IWM/vol_compression/1h` | open | `results/cells/IWM_vol_compression_1h.json` |
@@ -537,7 +537,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `IWM/ma_cross/15m` | open | `results/cells/IWM_ma_cross_15m.json` |
 | [ ] `IWM/ma_cross/1h` | open | `results/cells/IWM_ma_cross_1h.json` |
 | [ ] `IWM/ma_cross/4h` | open | `results/cells/IWM_ma_cross_4h.json` |
-| [ ] `IWM/ma_cross/1d` | open | `results/cells/IWM_ma_cross_1d.json` |
+| [x] `IWM/ma_cross/1d` | killed | `results/cells/IWM_ma_cross_1d.json` |
 | [ ] `IWM/ma_cross/1w` | open | `results/cells/IWM_ma_cross_1w.json` |
 | [ ] `IWM/bb_meanrev/15m` | open | `results/cells/IWM_bb_meanrev_15m.json` |
 | [ ] `IWM/bb_meanrev/1h` | open | `results/cells/IWM_bb_meanrev_1h.json` |
@@ -560,7 +560,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `IWM/gap_fade/1d` | open | `results/cells/IWM_gap_fade_1d.json` |
 | [ ] `IWM/gap_fade/1w` | open | `results/cells/IWM_gap_fade_1w.json` |
 
-## AAPL - 0/50 worked
+## AAPL - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -572,7 +572,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `AAPL/rsi2_pullback/15m` | open | `results/cells/AAPL_rsi2_pullback_15m.json` |
 | [ ] `AAPL/rsi2_pullback/1h` | open | `results/cells/AAPL_rsi2_pullback_1h.json` |
 | [ ] `AAPL/rsi2_pullback/4h` | open | `results/cells/AAPL_rsi2_pullback_4h.json` |
-| [ ] `AAPL/rsi2_pullback/1d` | open | `results/cells/AAPL_rsi2_pullback_1d.json` |
+| [x] `AAPL/rsi2_pullback/1d` | killed | `results/cells/AAPL_rsi2_pullback_1d.json` |
 | [ ] `AAPL/rsi2_pullback/1w` | open | `results/cells/AAPL_rsi2_pullback_1w.json` |
 | [ ] `AAPL/vol_compression/15m` | open | `results/cells/AAPL_vol_compression_15m.json` |
 | [ ] `AAPL/vol_compression/1h` | open | `results/cells/AAPL_vol_compression_1h.json` |
@@ -592,7 +592,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `AAPL/ma_cross/15m` | open | `results/cells/AAPL_ma_cross_15m.json` |
 | [ ] `AAPL/ma_cross/1h` | open | `results/cells/AAPL_ma_cross_1h.json` |
 | [ ] `AAPL/ma_cross/4h` | open | `results/cells/AAPL_ma_cross_4h.json` |
-| [ ] `AAPL/ma_cross/1d` | open | `results/cells/AAPL_ma_cross_1d.json` |
+| [x] `AAPL/ma_cross/1d` | killed | `results/cells/AAPL_ma_cross_1d.json` |
 | [ ] `AAPL/ma_cross/1w` | open | `results/cells/AAPL_ma_cross_1w.json` |
 | [ ] `AAPL/bb_meanrev/15m` | open | `results/cells/AAPL_bb_meanrev_15m.json` |
 | [ ] `AAPL/bb_meanrev/1h` | open | `results/cells/AAPL_bb_meanrev_1h.json` |
@@ -615,7 +615,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `AAPL/gap_fade/1d` | open | `results/cells/AAPL_gap_fade_1d.json` |
 | [ ] `AAPL/gap_fade/1w` | open | `results/cells/AAPL_gap_fade_1w.json` |
 
-## MSFT - 0/50 worked
+## MSFT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -627,7 +627,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `MSFT/rsi2_pullback/15m` | open | `results/cells/MSFT_rsi2_pullback_15m.json` |
 | [ ] `MSFT/rsi2_pullback/1h` | open | `results/cells/MSFT_rsi2_pullback_1h.json` |
 | [ ] `MSFT/rsi2_pullback/4h` | open | `results/cells/MSFT_rsi2_pullback_4h.json` |
-| [ ] `MSFT/rsi2_pullback/1d` | open | `results/cells/MSFT_rsi2_pullback_1d.json` |
+| [x] `MSFT/rsi2_pullback/1d` | killed | `results/cells/MSFT_rsi2_pullback_1d.json` |
 | [ ] `MSFT/rsi2_pullback/1w` | open | `results/cells/MSFT_rsi2_pullback_1w.json` |
 | [ ] `MSFT/vol_compression/15m` | open | `results/cells/MSFT_vol_compression_15m.json` |
 | [ ] `MSFT/vol_compression/1h` | open | `results/cells/MSFT_vol_compression_1h.json` |
@@ -647,7 +647,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `MSFT/ma_cross/15m` | open | `results/cells/MSFT_ma_cross_15m.json` |
 | [ ] `MSFT/ma_cross/1h` | open | `results/cells/MSFT_ma_cross_1h.json` |
 | [ ] `MSFT/ma_cross/4h` | open | `results/cells/MSFT_ma_cross_4h.json` |
-| [ ] `MSFT/ma_cross/1d` | open | `results/cells/MSFT_ma_cross_1d.json` |
+| [x] `MSFT/ma_cross/1d` | killed | `results/cells/MSFT_ma_cross_1d.json` |
 | [ ] `MSFT/ma_cross/1w` | open | `results/cells/MSFT_ma_cross_1w.json` |
 | [ ] `MSFT/bb_meanrev/15m` | open | `results/cells/MSFT_bb_meanrev_15m.json` |
 | [ ] `MSFT/bb_meanrev/1h` | open | `results/cells/MSFT_bb_meanrev_1h.json` |
@@ -670,7 +670,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `MSFT/gap_fade/1d` | open | `results/cells/MSFT_gap_fade_1d.json` |
 | [ ] `MSFT/gap_fade/1w` | open | `results/cells/MSFT_gap_fade_1w.json` |
 
-## NVDA - 0/50 worked
+## NVDA - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -682,7 +682,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `NVDA/rsi2_pullback/15m` | open | `results/cells/NVDA_rsi2_pullback_15m.json` |
 | [ ] `NVDA/rsi2_pullback/1h` | open | `results/cells/NVDA_rsi2_pullback_1h.json` |
 | [ ] `NVDA/rsi2_pullback/4h` | open | `results/cells/NVDA_rsi2_pullback_4h.json` |
-| [ ] `NVDA/rsi2_pullback/1d` | open | `results/cells/NVDA_rsi2_pullback_1d.json` |
+| [x] `NVDA/rsi2_pullback/1d` | killed | `results/cells/NVDA_rsi2_pullback_1d.json` |
 | [ ] `NVDA/rsi2_pullback/1w` | open | `results/cells/NVDA_rsi2_pullback_1w.json` |
 | [ ] `NVDA/vol_compression/15m` | open | `results/cells/NVDA_vol_compression_15m.json` |
 | [ ] `NVDA/vol_compression/1h` | open | `results/cells/NVDA_vol_compression_1h.json` |
@@ -702,7 +702,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `NVDA/ma_cross/15m` | open | `results/cells/NVDA_ma_cross_15m.json` |
 | [ ] `NVDA/ma_cross/1h` | open | `results/cells/NVDA_ma_cross_1h.json` |
 | [ ] `NVDA/ma_cross/4h` | open | `results/cells/NVDA_ma_cross_4h.json` |
-| [ ] `NVDA/ma_cross/1d` | open | `results/cells/NVDA_ma_cross_1d.json` |
+| [x] `NVDA/ma_cross/1d` | killed | `results/cells/NVDA_ma_cross_1d.json` |
 | [ ] `NVDA/ma_cross/1w` | open | `results/cells/NVDA_ma_cross_1w.json` |
 | [ ] `NVDA/bb_meanrev/15m` | open | `results/cells/NVDA_bb_meanrev_15m.json` |
 | [ ] `NVDA/bb_meanrev/1h` | open | `results/cells/NVDA_bb_meanrev_1h.json` |
@@ -725,7 +725,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `NVDA/gap_fade/1d` | open | `results/cells/NVDA_gap_fade_1d.json` |
 | [ ] `NVDA/gap_fade/1w` | open | `results/cells/NVDA_gap_fade_1w.json` |
 
-## JPM - 0/50 worked
+## JPM - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -737,7 +737,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `JPM/rsi2_pullback/15m` | open | `results/cells/JPM_rsi2_pullback_15m.json` |
 | [ ] `JPM/rsi2_pullback/1h` | open | `results/cells/JPM_rsi2_pullback_1h.json` |
 | [ ] `JPM/rsi2_pullback/4h` | open | `results/cells/JPM_rsi2_pullback_4h.json` |
-| [ ] `JPM/rsi2_pullback/1d` | open | `results/cells/JPM_rsi2_pullback_1d.json` |
+| [x] `JPM/rsi2_pullback/1d` | killed | `results/cells/JPM_rsi2_pullback_1d.json` |
 | [ ] `JPM/rsi2_pullback/1w` | open | `results/cells/JPM_rsi2_pullback_1w.json` |
 | [ ] `JPM/vol_compression/15m` | open | `results/cells/JPM_vol_compression_15m.json` |
 | [ ] `JPM/vol_compression/1h` | open | `results/cells/JPM_vol_compression_1h.json` |
@@ -757,7 +757,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `JPM/ma_cross/15m` | open | `results/cells/JPM_ma_cross_15m.json` |
 | [ ] `JPM/ma_cross/1h` | open | `results/cells/JPM_ma_cross_1h.json` |
 | [ ] `JPM/ma_cross/4h` | open | `results/cells/JPM_ma_cross_4h.json` |
-| [ ] `JPM/ma_cross/1d` | open | `results/cells/JPM_ma_cross_1d.json` |
+| [x] `JPM/ma_cross/1d` | killed | `results/cells/JPM_ma_cross_1d.json` |
 | [ ] `JPM/ma_cross/1w` | open | `results/cells/JPM_ma_cross_1w.json` |
 | [ ] `JPM/bb_meanrev/15m` | open | `results/cells/JPM_bb_meanrev_15m.json` |
 | [ ] `JPM/bb_meanrev/1h` | open | `results/cells/JPM_bb_meanrev_1h.json` |
@@ -780,7 +780,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `JPM/gap_fade/1d` | open | `results/cells/JPM_gap_fade_1d.json` |
 | [ ] `JPM/gap_fade/1w` | open | `results/cells/JPM_gap_fade_1w.json` |
 
-## XLE - 0/50 worked
+## XLE - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -792,7 +792,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XLE/rsi2_pullback/15m` | open | `results/cells/XLE_rsi2_pullback_15m.json` |
 | [ ] `XLE/rsi2_pullback/1h` | open | `results/cells/XLE_rsi2_pullback_1h.json` |
 | [ ] `XLE/rsi2_pullback/4h` | open | `results/cells/XLE_rsi2_pullback_4h.json` |
-| [ ] `XLE/rsi2_pullback/1d` | open | `results/cells/XLE_rsi2_pullback_1d.json` |
+| [x] `XLE/rsi2_pullback/1d` | killed | `results/cells/XLE_rsi2_pullback_1d.json` |
 | [ ] `XLE/rsi2_pullback/1w` | open | `results/cells/XLE_rsi2_pullback_1w.json` |
 | [ ] `XLE/vol_compression/15m` | open | `results/cells/XLE_vol_compression_15m.json` |
 | [ ] `XLE/vol_compression/1h` | open | `results/cells/XLE_vol_compression_1h.json` |
@@ -812,7 +812,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XLE/ma_cross/15m` | open | `results/cells/XLE_ma_cross_15m.json` |
 | [ ] `XLE/ma_cross/1h` | open | `results/cells/XLE_ma_cross_1h.json` |
 | [ ] `XLE/ma_cross/4h` | open | `results/cells/XLE_ma_cross_4h.json` |
-| [ ] `XLE/ma_cross/1d` | open | `results/cells/XLE_ma_cross_1d.json` |
+| [x] `XLE/ma_cross/1d` | killed | `results/cells/XLE_ma_cross_1d.json` |
 | [ ] `XLE/ma_cross/1w` | open | `results/cells/XLE_ma_cross_1w.json` |
 | [ ] `XLE/bb_meanrev/15m` | open | `results/cells/XLE_bb_meanrev_15m.json` |
 | [ ] `XLE/bb_meanrev/1h` | open | `results/cells/XLE_bb_meanrev_1h.json` |
@@ -835,7 +835,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XLE/gap_fade/1d` | open | `results/cells/XLE_gap_fade_1d.json` |
 | [ ] `XLE/gap_fade/1w` | open | `results/cells/XLE_gap_fade_1w.json` |
 
-## GLD - 0/50 worked
+## GLD - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -847,7 +847,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `GLD/rsi2_pullback/15m` | open | `results/cells/GLD_rsi2_pullback_15m.json` |
 | [ ] `GLD/rsi2_pullback/1h` | open | `results/cells/GLD_rsi2_pullback_1h.json` |
 | [ ] `GLD/rsi2_pullback/4h` | open | `results/cells/GLD_rsi2_pullback_4h.json` |
-| [ ] `GLD/rsi2_pullback/1d` | open | `results/cells/GLD_rsi2_pullback_1d.json` |
+| [x] `GLD/rsi2_pullback/1d` | killed | `results/cells/GLD_rsi2_pullback_1d.json` |
 | [ ] `GLD/rsi2_pullback/1w` | open | `results/cells/GLD_rsi2_pullback_1w.json` |
 | [ ] `GLD/vol_compression/15m` | open | `results/cells/GLD_vol_compression_15m.json` |
 | [ ] `GLD/vol_compression/1h` | open | `results/cells/GLD_vol_compression_1h.json` |
@@ -867,7 +867,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `GLD/ma_cross/15m` | open | `results/cells/GLD_ma_cross_15m.json` |
 | [ ] `GLD/ma_cross/1h` | open | `results/cells/GLD_ma_cross_1h.json` |
 | [ ] `GLD/ma_cross/4h` | open | `results/cells/GLD_ma_cross_4h.json` |
-| [ ] `GLD/ma_cross/1d` | open | `results/cells/GLD_ma_cross_1d.json` |
+| [x] `GLD/ma_cross/1d` | killed | `results/cells/GLD_ma_cross_1d.json` |
 | [ ] `GLD/ma_cross/1w` | open | `results/cells/GLD_ma_cross_1w.json` |
 | [ ] `GLD/bb_meanrev/15m` | open | `results/cells/GLD_bb_meanrev_15m.json` |
 | [ ] `GLD/bb_meanrev/1h` | open | `results/cells/GLD_bb_meanrev_1h.json` |
@@ -890,7 +890,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `GLD/gap_fade/1d` | open | `results/cells/GLD_gap_fade_1d.json` |
 | [ ] `GLD/gap_fade/1w` | open | `results/cells/GLD_gap_fade_1w.json` |
 
-## TLT - 0/50 worked
+## TLT - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -902,7 +902,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `TLT/rsi2_pullback/15m` | open | `results/cells/TLT_rsi2_pullback_15m.json` |
 | [ ] `TLT/rsi2_pullback/1h` | open | `results/cells/TLT_rsi2_pullback_1h.json` |
 | [ ] `TLT/rsi2_pullback/4h` | open | `results/cells/TLT_rsi2_pullback_4h.json` |
-| [ ] `TLT/rsi2_pullback/1d` | open | `results/cells/TLT_rsi2_pullback_1d.json` |
+| [x] `TLT/rsi2_pullback/1d` | killed | `results/cells/TLT_rsi2_pullback_1d.json` |
 | [ ] `TLT/rsi2_pullback/1w` | open | `results/cells/TLT_rsi2_pullback_1w.json` |
 | [ ] `TLT/vol_compression/15m` | open | `results/cells/TLT_vol_compression_15m.json` |
 | [ ] `TLT/vol_compression/1h` | open | `results/cells/TLT_vol_compression_1h.json` |
@@ -922,7 +922,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `TLT/ma_cross/15m` | open | `results/cells/TLT_ma_cross_15m.json` |
 | [ ] `TLT/ma_cross/1h` | open | `results/cells/TLT_ma_cross_1h.json` |
 | [ ] `TLT/ma_cross/4h` | open | `results/cells/TLT_ma_cross_4h.json` |
-| [ ] `TLT/ma_cross/1d` | open | `results/cells/TLT_ma_cross_1d.json` |
+| [x] `TLT/ma_cross/1d` | killed | `results/cells/TLT_ma_cross_1d.json` |
 | [ ] `TLT/ma_cross/1w` | open | `results/cells/TLT_ma_cross_1w.json` |
 | [ ] `TLT/bb_meanrev/15m` | open | `results/cells/TLT_bb_meanrev_15m.json` |
 | [ ] `TLT/bb_meanrev/1h` | open | `results/cells/TLT_bb_meanrev_1h.json` |
@@ -945,7 +945,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `TLT/gap_fade/1d` | open | `results/cells/TLT_gap_fade_1d.json` |
 | [ ] `TLT/gap_fade/1w` | open | `results/cells/TLT_gap_fade_1w.json` |
 
-## EURUSD - 0/50 worked
+## EURUSD - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -957,7 +957,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `EURUSD/rsi2_pullback/15m` | open | `results/cells/EURUSD_rsi2_pullback_15m.json` |
 | [ ] `EURUSD/rsi2_pullback/1h` | open | `results/cells/EURUSD_rsi2_pullback_1h.json` |
 | [ ] `EURUSD/rsi2_pullback/4h` | open | `results/cells/EURUSD_rsi2_pullback_4h.json` |
-| [ ] `EURUSD/rsi2_pullback/1d` | open | `results/cells/EURUSD_rsi2_pullback_1d.json` |
+| [x] `EURUSD/rsi2_pullback/1d` | killed | `results/cells/EURUSD_rsi2_pullback_1d.json` |
 | [ ] `EURUSD/rsi2_pullback/1w` | open | `results/cells/EURUSD_rsi2_pullback_1w.json` |
 | [ ] `EURUSD/vol_compression/15m` | open | `results/cells/EURUSD_vol_compression_15m.json` |
 | [ ] `EURUSD/vol_compression/1h` | open | `results/cells/EURUSD_vol_compression_1h.json` |
@@ -977,7 +977,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `EURUSD/ma_cross/15m` | open | `results/cells/EURUSD_ma_cross_15m.json` |
 | [ ] `EURUSD/ma_cross/1h` | open | `results/cells/EURUSD_ma_cross_1h.json` |
 | [ ] `EURUSD/ma_cross/4h` | open | `results/cells/EURUSD_ma_cross_4h.json` |
-| [ ] `EURUSD/ma_cross/1d` | open | `results/cells/EURUSD_ma_cross_1d.json` |
+| [x] `EURUSD/ma_cross/1d` | killed | `results/cells/EURUSD_ma_cross_1d.json` |
 | [ ] `EURUSD/ma_cross/1w` | open | `results/cells/EURUSD_ma_cross_1w.json` |
 | [ ] `EURUSD/bb_meanrev/15m` | open | `results/cells/EURUSD_bb_meanrev_15m.json` |
 | [ ] `EURUSD/bb_meanrev/1h` | open | `results/cells/EURUSD_bb_meanrev_1h.json` |
@@ -1000,7 +1000,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `EURUSD/gap_fade/1d` | open | `results/cells/EURUSD_gap_fade_1d.json` |
 | [ ] `EURUSD/gap_fade/1w` | open | `results/cells/EURUSD_gap_fade_1w.json` |
 
-## USDJPY - 0/50 worked
+## USDJPY - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -1012,7 +1012,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `USDJPY/rsi2_pullback/15m` | open | `results/cells/USDJPY_rsi2_pullback_15m.json` |
 | [ ] `USDJPY/rsi2_pullback/1h` | open | `results/cells/USDJPY_rsi2_pullback_1h.json` |
 | [ ] `USDJPY/rsi2_pullback/4h` | open | `results/cells/USDJPY_rsi2_pullback_4h.json` |
-| [ ] `USDJPY/rsi2_pullback/1d` | open | `results/cells/USDJPY_rsi2_pullback_1d.json` |
+| [x] `USDJPY/rsi2_pullback/1d` | killed | `results/cells/USDJPY_rsi2_pullback_1d.json` |
 | [ ] `USDJPY/rsi2_pullback/1w` | open | `results/cells/USDJPY_rsi2_pullback_1w.json` |
 | [ ] `USDJPY/vol_compression/15m` | open | `results/cells/USDJPY_vol_compression_15m.json` |
 | [ ] `USDJPY/vol_compression/1h` | open | `results/cells/USDJPY_vol_compression_1h.json` |
@@ -1032,7 +1032,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `USDJPY/ma_cross/15m` | open | `results/cells/USDJPY_ma_cross_15m.json` |
 | [ ] `USDJPY/ma_cross/1h` | open | `results/cells/USDJPY_ma_cross_1h.json` |
 | [ ] `USDJPY/ma_cross/4h` | open | `results/cells/USDJPY_ma_cross_4h.json` |
-| [ ] `USDJPY/ma_cross/1d` | open | `results/cells/USDJPY_ma_cross_1d.json` |
+| [x] `USDJPY/ma_cross/1d` | killed | `results/cells/USDJPY_ma_cross_1d.json` |
 | [ ] `USDJPY/ma_cross/1w` | open | `results/cells/USDJPY_ma_cross_1w.json` |
 | [ ] `USDJPY/bb_meanrev/15m` | open | `results/cells/USDJPY_bb_meanrev_15m.json` |
 | [ ] `USDJPY/bb_meanrev/1h` | open | `results/cells/USDJPY_bb_meanrev_1h.json` |
@@ -1055,7 +1055,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `USDJPY/gap_fade/1d` | open | `results/cells/USDJPY_gap_fade_1d.json` |
 | [ ] `USDJPY/gap_fade/1w` | open | `results/cells/USDJPY_gap_fade_1w.json` |
 
-## GBPUSD - 0/50 worked
+## GBPUSD - 2/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -1067,7 +1067,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `GBPUSD/rsi2_pullback/15m` | open | `results/cells/GBPUSD_rsi2_pullback_15m.json` |
 | [ ] `GBPUSD/rsi2_pullback/1h` | open | `results/cells/GBPUSD_rsi2_pullback_1h.json` |
 | [ ] `GBPUSD/rsi2_pullback/4h` | open | `results/cells/GBPUSD_rsi2_pullback_4h.json` |
-| [ ] `GBPUSD/rsi2_pullback/1d` | open | `results/cells/GBPUSD_rsi2_pullback_1d.json` |
+| [x] `GBPUSD/rsi2_pullback/1d` | killed | `results/cells/GBPUSD_rsi2_pullback_1d.json` |
 | [ ] `GBPUSD/rsi2_pullback/1w` | open | `results/cells/GBPUSD_rsi2_pullback_1w.json` |
 | [ ] `GBPUSD/vol_compression/15m` | open | `results/cells/GBPUSD_vol_compression_15m.json` |
 | [ ] `GBPUSD/vol_compression/1h` | open | `results/cells/GBPUSD_vol_compression_1h.json` |
@@ -1087,7 +1087,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `GBPUSD/ma_cross/15m` | open | `results/cells/GBPUSD_ma_cross_15m.json` |
 | [ ] `GBPUSD/ma_cross/1h` | open | `results/cells/GBPUSD_ma_cross_1h.json` |
 | [ ] `GBPUSD/ma_cross/4h` | open | `results/cells/GBPUSD_ma_cross_4h.json` |
-| [ ] `GBPUSD/ma_cross/1d` | open | `results/cells/GBPUSD_ma_cross_1d.json` |
+| [x] `GBPUSD/ma_cross/1d` | killed | `results/cells/GBPUSD_ma_cross_1d.json` |
 | [ ] `GBPUSD/ma_cross/1w` | open | `results/cells/GBPUSD_ma_cross_1w.json` |
 | [ ] `GBPUSD/bb_meanrev/15m` | open | `results/cells/GBPUSD_bb_meanrev_15m.json` |
 | [ ] `GBPUSD/bb_meanrev/1h` | open | `results/cells/GBPUSD_bb_meanrev_1h.json` |

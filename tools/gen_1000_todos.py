@@ -143,6 +143,20 @@ def write_all(cells: list[dict]) -> None:
     MD_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+IMPOSSIBLE = {("rsi2_pullback", "1d"), ("ma_cross", "1d")}  # daily samples can't reach n>=30
+
+
+def _roundrobin_open(cells: list[dict]) -> list[dict]:
+    """Order open cells round-robin across SYMBOLS instead of symbol-major."""
+    si = {s: i for i, s in enumerate(SYMBOLS)}
+    hi = {h: i for i, h in enumerate(HORIZONS)}
+    sti = {s: i for i, s in enumerate(STRATEGIES)}
+    def depth(c):
+        return sti[c["strategy"]] * len(HORIZONS) + hi[c["horizon"]]
+    return sorted([c for c in cells if c["status"] == "open"],
+                  key=lambda c: (depth(c), si[c["symbol"]], c["key"]))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--claim", action="store_true", help="print first unclaimed cell as JSON")
@@ -160,15 +174,27 @@ def main() -> int:
                       if k in ("status", "owner", "claimed_at", "note")})
 
     if a.claim:
+        # auto-resolve known-impossible cells first (cannot reach n>=30), then claim round-robin
         for c in cells:
-            if c["status"] == "open":
-                c["status"] = "claimed"
-                c["claimed_at"] = datetime.now(timezone.utc).isoformat()
+            if c["status"] == "open" and (c["strategy"], c["horizon"]) in IMPOSSIBLE:
+                c["status"] = "killed"
+                c["note"] = ("INSUFFICIENT_TRADES: daily sample cannot reach n>=30 for "
+                             f"{c['strategy']} on {c['horizon']}")
                 c["owner"] = a.owner or "unassigned"
-                print(json.dumps(c, indent=1))
-                break
+                c["claimed_at"] = datetime.now(timezone.utc).isoformat()
+        for c in _roundrobin_open(cells):
+            if (c["strategy"], c["horizon"]) in IMPOSSIBLE:
+                continue
+            c["status"] = "claimed"
+            c["claimed_at"] = datetime.now(timezone.utc).isoformat()
+            c["owner"] = a.owner or "unassigned"
+            print(json.dumps(c, indent=1))
+            break
         else:
-            print(json.dumps({"exhausted": True, "total": len(cells)}))
+            if open([x for x in cells if x["status"] == "open"]):
+                print(json.dumps({"exhausted": False, "note": "only impossible cells remain"}))
+            else:
+                print(json.dumps({"exhausted": True, "total": len(cells)}))
         write_all(cells)
         return 0
 
