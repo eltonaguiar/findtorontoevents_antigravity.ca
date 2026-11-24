@@ -449,7 +449,13 @@ print(report_text[:3000])
 print("\n... (truncated for console, full report in CHATWITHIT.md)")
 
 # Save to CHATWITHIT.md
-with open('E:/findtorontoevents_antigravity.ca/docs/CHATWITHIT.md', 'a', encoding='utf-8') as f:
+# NOTE: output paths are derived from this script's location, not hardcoded to
+# E:/findtorontoevents_antigravity.ca/. The old hardcoded Windows path made the
+# script write into whatever repo root it was run from (and silently do nothing
+# useful off that one machine). See updates/2026-11-24-worktree-and-folder-cleanup.md
+from pathlib import Path as _Path
+_REPO_ROOT = _Path(__file__).resolve().parent
+with open(_REPO_ROOT / 'docs' / 'CHATWITHIT.md', 'a', encoding='utf-8') as f:
     f.write(f"\n---\n\n## [ANTIGRAVITY] 2026-03-12 ~21:55 EST — Extended Cross-System Science of Success\n\n")
     f.write("Claude analyzed 388 trades from Battleground alone. I expanded the analysis to **ALL systems** and added 3 new dimensions Claude missed (MFE efficiency, confidence correlation, cross-system Sharpe comparison).\n\n")
     f.write("```\n")
@@ -461,7 +467,8 @@ with open('E:/findtorontoevents_antigravity.ca/docs/CHATWITHIT.md', 'a', encodin
     f.write("3. The head-to-head Sharpe comparison gives us the definitive system ranking\n")
 
 # Also save standalone file
-with open('E:/findtorontoevents_antigravity.ca/temp_full_science_report.txt', 'w') as f:
+_report_path = _REPO_ROOT / 'temp_full_science_report.txt'
+with open(_report_path, 'w') as f:
     f.write(report_text)
 
-print(f"\nFull report saved to temp_full_science_report.txt and CHATWITHIT.md")
+print(f"\nFull report saved to {_report_path} and CHATWITHIT.md")

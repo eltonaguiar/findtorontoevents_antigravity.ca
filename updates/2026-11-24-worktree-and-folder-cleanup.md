@@ -211,3 +211,46 @@ Deliberately kept:
 Whatever script writes `cqp_vote_*.txt` into the repo root should get those paths in `.gitignore`,
 and its `$.ci_run_id` / `$.regime_label` redirects should be quoted (`"$CI_RUN_ID"`), otherwise the
 junk returns and gets committed again.
+
+---
+
+## Pass 3 — stop the junk from coming back
+
+### generator bug 1: `temp_full_science.py` wrote to a hardcoded Windows path
+Both write sites used `open('E:/findtorontoevents_antigravity.ca/...')` for `docs/CHATWITHIT.md`
+and `temp_full_science_report.txt`. On Windows that lands in the repo root; anywhere else it
+silently creates a bogus `E:/` tree. Replaced with paths derived from
+`Path(__file__).resolve().parent`, so output follows the checkout instead of one machine's drive
+layout. Verified with `py_compile`.
+
+### generator bug 2: no live generator for the other junk — so gitignore it at the root
+`rg --no-ignore` over the whole tree (including gitignored dirs) found **zero** code that writes
+`cqp_vote_*` or references `CI_RUN_ID`. The files came from ad-hoc shell loops run with
+CWD = repo root, e.g. `llm ... > cqp_vote_$model.txt` and `> $.ci_run_id` with `$CI_RUN_ID`
+unset (unset var → literal `$.ci_run_id` filename). There is no script to patch, so the durable
+fix is a root-anchored ignore block:
+
+```
+/\$.*
+/=*
+/⚠️*
+/ *
+/cqp_vote_*.txt
+/temp_full_science_report.txt
+```
+
+Verification — `git check-ignore -v` against synthetic probes:
+- ` TestProbe` → matched `/ *` (leading-space names; these were tracked once)
+- `=2` → matched `/=*`
+- `$.ci_run_id` → matched `/\$.*`
+- `cqp_vote_probe.txt` → matched `/cqp_vote_*.txt`
+- `temp_full_science_report.txt` → matched the exact path
+- `⚠️probe` → matched after widening `/⚠️` to `/⚠️*`
+
+Negative controls (must NOT be ignored, and were not):
+- `reports/cqp_vote_probe.txt` — `reports/CONSENSUS_QUICK_PICKS_2026-06-02.md` documents raw votes
+  at `reports/cqp_vote_*.txt`, so the subdir name must stay usable.
+- `tools/clean_git_history_comprehensive.sh` — no subdirectory file is swallowed.
+
+All six probes were deleted after the check. Every pattern is `/`-anchored so it can only ever
+match the repo root.

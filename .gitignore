@@ -712,3 +712,17 @@ references/grokbot/.git/
 updates/bestiejob-leads-internal.json
 .todo_wakeup_state.json
 reports/todo_wakeup.log
+
+# ── 2026-11-24: zero-byte junk from shell-redirect accidents (repo root only) ──
+# Ad-hoc commands run with CWD = repo root left these committed: `> =2` where `2>`
+# was meant, `> $.ci_run_id` with $CI_RUN_ID unset (so `$` was a literal filename),
+# and per-model vote dumps from `llm ... > cqp_vote_$model.txt`.
+# Every pattern is anchored with a leading / so it matches the repo root only and
+# never swallows a legitimately-named file in a subdirectory.
+# Context: updates/2026-11-24-worktree-and-folder-cleanup.md
+/\$.*
+/=*
+/⚠️*
+/ *
+/cqp_vote_*.txt
+/temp_full_science_report.txt
