@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T01:51:03.158381+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T02:51:01.963387+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 84 of 1000.** open 871 | claimed 4 | blocked_no_data 41
+**Worked 104 of 1000.** open 851 | claimed 4 | blocked_no_data 41
 
 ## Done condition (identical for every cell)
 
@@ -835,35 +835,35 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `XLE/gap_fade/1d` | open | `results/cells/XLE_gap_fade_1d.json` |
 | [ ] `XLE/gap_fade/1w` | open | `results/cells/XLE_gap_fade_1w.json` |
 
-## GLD - 0/50 worked
+## GLD - 10/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [ ] `GLD/trend_pullback/15m` | open | `results/cells/GLD_trend_pullback_15m.json` |
 | [ ] `GLD/trend_pullback/1h` | open | `results/cells/GLD_trend_pullback_1h.json` |
 | [ ] `GLD/trend_pullback/4h` | open | `results/cells/GLD_trend_pullback_4h.json` |
-| [ ] `GLD/trend_pullback/1d` | open | `results/cells/GLD_trend_pullback_1d.json` |
-| [ ] `GLD/trend_pullback/1w` | open | `results/cells/GLD_trend_pullback_1w.json` |
+| [x] `GLD/trend_pullback/1d` | killed | `results/cells/GLD_trend_pullback_1d.json` |
+| [x] `GLD/trend_pullback/1w` | done | `results/cells/GLD_trend_pullback_1w.json` |
 | [ ] `GLD/rsi2_pullback/15m` | open | `results/cells/GLD_rsi2_pullback_15m.json` |
 | [ ] `GLD/rsi2_pullback/1h` | open | `results/cells/GLD_rsi2_pullback_1h.json` |
 | [ ] `GLD/rsi2_pullback/4h` | open | `results/cells/GLD_rsi2_pullback_4h.json` |
-| [ ] `GLD/rsi2_pullback/1d` | open | `results/cells/GLD_rsi2_pullback_1d.json` |
-| [ ] `GLD/rsi2_pullback/1w` | open | `results/cells/GLD_rsi2_pullback_1w.json` |
+| [x] `GLD/rsi2_pullback/1d` | done | `results/cells/GLD_rsi2_pullback_1d.json` |
+| [x] `GLD/rsi2_pullback/1w` | done | `results/cells/GLD_rsi2_pullback_1w.json` |
 | [ ] `GLD/vol_compression/15m` | open | `results/cells/GLD_vol_compression_15m.json` |
 | [ ] `GLD/vol_compression/1h` | open | `results/cells/GLD_vol_compression_1h.json` |
 | [ ] `GLD/vol_compression/4h` | open | `results/cells/GLD_vol_compression_4h.json` |
-| [ ] `GLD/vol_compression/1d` | open | `results/cells/GLD_vol_compression_1d.json` |
-| [ ] `GLD/vol_compression/1w` | open | `results/cells/GLD_vol_compression_1w.json` |
+| [x] `GLD/vol_compression/1d` | killed | `results/cells/GLD_vol_compression_1d.json` |
+| [x] `GLD/vol_compression/1w` | done | `results/cells/GLD_vol_compression_1w.json` |
 | [ ] `GLD/breakout/15m` | open | `results/cells/GLD_breakout_15m.json` |
 | [ ] `GLD/breakout/1h` | open | `results/cells/GLD_breakout_1h.json` |
 | [ ] `GLD/breakout/4h` | open | `results/cells/GLD_breakout_4h.json` |
-| [ ] `GLD/breakout/1d` | open | `results/cells/GLD_breakout_1d.json` |
-| [ ] `GLD/breakout/1w` | open | `results/cells/GLD_breakout_1w.json` |
+| [x] `GLD/breakout/1d` | done | `results/cells/GLD_breakout_1d.json` |
+| [x] `GLD/breakout/1w` | done | `results/cells/GLD_breakout_1w.json` |
 | [ ] `GLD/donchian/15m` | open | `results/cells/GLD_donchian_15m.json` |
 | [ ] `GLD/donchian/1h` | open | `results/cells/GLD_donchian_1h.json` |
 | [ ] `GLD/donchian/4h` | open | `results/cells/GLD_donchian_4h.json` |
-| [ ] `GLD/donchian/1d` | open | `results/cells/GLD_donchian_1d.json` |
-| [ ] `GLD/donchian/1w` | open | `results/cells/GLD_donchian_1w.json` |
+| [x] `GLD/donchian/1d` | done | `results/cells/GLD_donchian_1d.json` |
+| [x] `GLD/donchian/1w` | done | `results/cells/GLD_donchian_1w.json` |
 | [ ] `GLD/ma_cross/15m` | open | `results/cells/GLD_ma_cross_15m.json` |
 | [ ] `GLD/ma_cross/1h` | open | `results/cells/GLD_ma_cross_1h.json` |
 | [ ] `GLD/ma_cross/4h` | open | `results/cells/GLD_ma_cross_4h.json` |
@@ -890,35 +890,35 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [ ] `GLD/gap_fade/1d` | open | `results/cells/GLD_gap_fade_1d.json` |
 | [ ] `GLD/gap_fade/1w` | open | `results/cells/GLD_gap_fade_1w.json` |
 
-## TLT - 0/50 worked
+## TLT - 10/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [ ] `TLT/trend_pullback/15m` | open | `results/cells/TLT_trend_pullback_15m.json` |
 | [ ] `TLT/trend_pullback/1h` | open | `results/cells/TLT_trend_pullback_1h.json` |
 | [ ] `TLT/trend_pullback/4h` | open | `results/cells/TLT_trend_pullback_4h.json` |
-| [ ] `TLT/trend_pullback/1d` | open | `results/cells/TLT_trend_pullback_1d.json` |
-| [ ] `TLT/trend_pullback/1w` | open | `results/cells/TLT_trend_pullback_1w.json` |
+| [x] `TLT/trend_pullback/1d` | killed | `results/cells/TLT_trend_pullback_1d.json` |
+| [x] `TLT/trend_pullback/1w` | done | `results/cells/TLT_trend_pullback_1w.json` |
 | [ ] `TLT/rsi2_pullback/15m` | open | `results/cells/TLT_rsi2_pullback_15m.json` |
 | [ ] `TLT/rsi2_pullback/1h` | open | `results/cells/TLT_rsi2_pullback_1h.json` |
 | [ ] `TLT/rsi2_pullback/4h` | open | `results/cells/TLT_rsi2_pullback_4h.json` |
-| [ ] `TLT/rsi2_pullback/1d` | open | `results/cells/TLT_rsi2_pullback_1d.json` |
-| [ ] `TLT/rsi2_pullback/1w` | open | `results/cells/TLT_rsi2_pullback_1w.json` |
+| [x] `TLT/rsi2_pullback/1d` | done | `results/cells/TLT_rsi2_pullback_1d.json` |
+| [x] `TLT/rsi2_pullback/1w` | done | `results/cells/TLT_rsi2_pullback_1w.json` |
 | [ ] `TLT/vol_compression/15m` | open | `results/cells/TLT_vol_compression_15m.json` |
 | [ ] `TLT/vol_compression/1h` | open | `results/cells/TLT_vol_compression_1h.json` |
 | [ ] `TLT/vol_compression/4h` | open | `results/cells/TLT_vol_compression_4h.json` |
-| [ ] `TLT/vol_compression/1d` | open | `results/cells/TLT_vol_compression_1d.json` |
-| [ ] `TLT/vol_compression/1w` | open | `results/cells/TLT_vol_compression_1w.json` |
+| [x] `TLT/vol_compression/1d` | done | `results/cells/TLT_vol_compression_1d.json` |
+| [x] `TLT/vol_compression/1w` | done | `results/cells/TLT_vol_compression_1w.json` |
 | [ ] `TLT/breakout/15m` | open | `results/cells/TLT_breakout_15m.json` |
 | [ ] `TLT/breakout/1h` | open | `results/cells/TLT_breakout_1h.json` |
 | [ ] `TLT/breakout/4h` | open | `results/cells/TLT_breakout_4h.json` |
-| [ ] `TLT/breakout/1d` | open | `results/cells/TLT_breakout_1d.json` |
-| [ ] `TLT/breakout/1w` | open | `results/cells/TLT_breakout_1w.json` |
+| [x] `TLT/breakout/1d` | killed | `results/cells/TLT_breakout_1d.json` |
+| [x] `TLT/breakout/1w` | done | `results/cells/TLT_breakout_1w.json` |
 | [ ] `TLT/donchian/15m` | open | `results/cells/TLT_donchian_15m.json` |
 | [ ] `TLT/donchian/1h` | open | `results/cells/TLT_donchian_1h.json` |
 | [ ] `TLT/donchian/4h` | open | `results/cells/TLT_donchian_4h.json` |
-| [ ] `TLT/donchian/1d` | open | `results/cells/TLT_donchian_1d.json` |
-| [ ] `TLT/donchian/1w` | open | `results/cells/TLT_donchian_1w.json` |
+| [x] `TLT/donchian/1d` | killed | `results/cells/TLT_donchian_1d.json` |
+| [x] `TLT/donchian/1w` | done | `results/cells/TLT_donchian_1w.json` |
 | [ ] `TLT/ma_cross/15m` | open | `results/cells/TLT_ma_cross_15m.json` |
 | [ ] `TLT/ma_cross/1h` | open | `results/cells/TLT_ma_cross_1h.json` |
 | [ ] `TLT/ma_cross/4h` | open | `results/cells/TLT_ma_cross_4h.json` |
