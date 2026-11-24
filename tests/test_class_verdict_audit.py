@@ -32,7 +32,15 @@ def row(**kw):
 
 
 def test_insufficient_n_wins():
-    assert rederive(row(n=37)) == "INSUFFICIENT_N"
+    # The gate is WR_MIN_N=20 (audit3_tribunal.py:155), not required_n and not
+    # 100. FUTURES in the ledger has n=4 and is the only INSUFFICIENT_N class.
+    assert rederive(row(n=4)) == "INSUFFICIENT_N"
+
+
+def test_n_above_the_gate_is_evaluated_not_dropped():
+    # BOND has n=37 in the real ledger and is stored WEAK, not INSUFFICIENT_N.
+    # A tool that demanded required_n (831 for BOND) would wrongly disagree.
+    assert rederive(row(n=37, net_ci_pct=[-0.3388, 0.1688], pf=0.806)) == "WEAK"
 
 
 def test_negative_ci_and_low_pf_is_kill():

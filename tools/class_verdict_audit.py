@@ -25,7 +25,13 @@ ROOT = Path(__file__).resolve().parent.parent
 LEDGER = (ROOT / "docs" / "audit_review_2026-11-22" / "_raw"
           / "audit3_audit3_ledger.json")
 
-MIN_N = 100
+# The real gate is NOT required_n: that is a per-class power figure (COMMODITY
+# 24, BOND 831, EQUITY 22,569) answering "how many rows to detect the declared
+# floor", and only CRYPTO and COMMODITY clear it. The verdict gate is the flat
+# WR_MIN_N in alpha_engine/audit3_tribunal.py:155, mirrored here because that
+# module is heavy to import. tests/test_verdict_ladder_constants.py keeps them
+# in lockstep, and tests/test_ledger_class_schema.py pins required_n as a field.
+MIN_N = 20
 PF_KILL_FLOOR = 0.8
 CONCENTRATION_CAP = 0.60
 
