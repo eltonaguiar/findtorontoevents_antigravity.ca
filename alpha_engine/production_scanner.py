@@ -6771,6 +6771,34 @@ def main():
     except Exception as _shadow_sz_err:
         print(f"  [SHADOW] Sizing override enforcement skipped (non-fatal): {_shadow_sz_err}")
 
+    # 6y. PROVENANCE — record the picks BEFORE their outcome can exist.
+    #   This is the gate the whole programme is blocked on. Every artifact we have
+    #   either lacks created_at (10,968 resolved picks -> the skill-vs-hindsight
+    #   test is impossible) or is 100% backfilled (430/430 H-119 rows). Without a
+    #   record written at emit time, no result -- positive or negative -- is
+    #   falsifiable in the one direction that counts.
+    #
+    #   Append-only hash chain: tools/provenance_ledger.py. created_at is stamped
+    #   here (callers cannot supply it), TP/SL are fixed now, and prev_sha256 links
+    #   to the previous record. See updates/2026-11-22-provenance-ledger-emit-time-recording.md
+    #
+    #   Fail-safe: emit_picks never raises. A provenance write must never be able to
+    #   stop picks from being produced.
+    #
+    #   2026-11-22: the mapping moved to alpha_engine/provenance_hook.py so a SECOND
+    #   callsite (smart_picks_engine) could share it. This path was the only emitter,
+    #   so every pick that reached the dashboard another way was invisible to the
+    #   ledger -- 3,500 of 3,500 closed dashboard picks were dashboard_only
+    #   (reports/provenance/reconciliation.json). One shared hook, not two copies.
+    try:
+        try:
+            from alpha_engine.provenance_hook import emit_picks as _prov_emit
+        except ImportError:                        # run as a bare script
+            from provenance_hook import emit_picks as _prov_emit
+        _prov_emit(active, default_source="alpha_engine", label="PROVENANCE")
+    except Exception as _prov_err:
+        print(f"  [PROVENANCE] skipped (non-fatal): {_prov_err}")
+
     # 7. Write premium_signals.json
     write_premium_signals(market_ctx, active, track)
 

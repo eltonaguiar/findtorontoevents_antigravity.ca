@@ -1,0 +1,143 @@
+name: provenance-verify
+
+# Provenance ledger integrity gate (round 32).
+#
+# WHY: every refutation in this programme is robust and every promotion is blocked
+# by one thing -- no artifact records when a pick was created relative to when its
+# outcome became known. resolved_closed_picks_net.json has no created_at (10,968
+# picks, test impossible); forward_observations.jsonl has it and returns 430/430
+# BACKFILLED. tools/provenance_ledger.py now records picks at emit time in an
+# append-only hash chain, wired into alpha_engine/production_scanner.py section 6y.
+#
+# THIS JOB is the out-of-band anchor. A hash chain alone only proves internal
+# consistency: someone can edit a record, re-hash it, re-link the rest, and verify()
+# will pass. That limitation is proven in --selftest rather than asserted. Anchoring
+# the head sha to a git commit subject makes a later silent rewrite detectable,
+# because the anchored value no longer matches.
+#
+# Design notes:
+#  * Runs hourly and on demand. Cheap (no network, no keys).
+#  * FAILS the job on a broken chain -- this one must be able to go red.
+#  * Commits status.json + the ledger with [skip ci]; own concurrency group; no push
+#    trigger (AGENTS.md 2026-05-19 precedent).
+
+on:
+  schedule:
+    # :53 past each hour, clear of :10 :17 :23 :35 :41 and the etf 05/35 marks.
+    - cron: '53 * * * *'
+  # Run on pushes that touch the ledger so a bad emit is caught immediately.
+  push:
+    paths:
+      - 'reports/provenance/**'
+      - 'tools/provenance_ledger.py'
+      - 'tools/provenance_resolver.py'
+      - 'tools/provenance_reconcile.py'
+      # the shared emit mapping: a change here changes what every emitter writes
+      - 'alpha_engine/provenance_hook.py'
+      - '.github/workflows/provenance-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provenance-verify
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Selftest (proves tamper detection works)
+        run: python3 tools/provenance_ledger.py --selftest
+
+      - name: Verify chain and write status
+        id: verify
+        run: python3 tools/provenance_ledger.py --status
+
+      # Must come BEFORE the resolver selftest: the selftest builds a DataFrame to
+      # prove the pessimistic tie-break, so it needs pandas. Verified in CI --
+      # run 45081996584 failed with ModuleNotFoundError: No module named 'pandas'
+      # when this step sat after the selftest instead of before it.
+      #
+      # It is also required for --resolve at all: without yfinance/pandas the
+      # resolver could never resolve anything on a runner, so pct_forward would
+      # have stayed null forever even once the ledger filled.
+      - name: Install resolver deps
+        run: pip install --quiet --disable-pip-version-check pandas yfinance
+
+      - name: Resolver selftest (pessimistic tie-break, no-mutation)
+        run: python3 tools/provenance_resolver.py --selftest
+
+      - name: Resolve any new picks (never blocks)
+        run: |
+          # Resolving needs market data; a network hiccup must not fail the gate.
+          python3 tools/provenance_resolver.py --resolve \
+            || echo "::notice::resolver could not run this pass (no data / empty ledger)"
+
+      - name: Resolution status
+        if: always()
+        run: python3 tools/provenance_resolver.py --status || true
+
+      # BLOCKING. Tolerant of "not yet measurable" (empty ledger, or n_resolved <
+      # MIN_RESOLVED) so it cannot fire before there is data; fails on a broken
+      # resolution chain, pct_forward below 95% once judgeable, or a resolver that
+      # has picks pending past MAX_DAYS + grace (the silent-no-op case).
+      - name: Provenance gate (blocking)
+        if: always()
+        run: python3 tools/provenance_resolver.py --gate
+
+      - name: Show head
+        if: always()
+        run: python3 tools/provenance_ledger.py --head
+
+      - name: Upload status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance-status
+          path: reports/provenance/
+          retention-days: 90
+
+      - name: Commit status + ANCHOR the head sha
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          HEAD_SHA=$(python3 -c "import json;print(json.load(open('reports/provenance/status.json')).get('head_sha256') or 'none')")
+          N=$(python3 -c "import json;print(json.load(open('reports/provenance/status.json')).get('n_records') or 0)")
+          git add reports/provenance/ || true
+          if git diff --cached --quiet; then
+            echo "no change to provenance status"
+          else
+            # The head sha goes in the SUBJECT so a silent rewrite of history is
+            # detectable by reading the log: the anchored value stops matching.
+            git commit -m "chore(provenance): chain n=${N} head=${HEAD_SHA:0:16} [skip ci]"
+            # A bare `git push` from a fetch-depth:1 checkout races with every other
+            # run and with human pushes to the same branch. Verified in CI: run
+            # 45082447638 failed exactly here with "Updates were rejected because the
+            # remote contains work that you do not have locally". Deepen, rebase and
+            # retry instead. (Not using .github/scripts/safe_push.sh: it defaults to
+            # "origin main", which is the wrong ref for a feature branch.)
+            ok=0
+            for i in 1 2 3 4 5; do
+              if git push; then ok=1; echo "pushed on attempt $i"; break; fi
+              echo "::warning::push attempt $i rejected; fetching deeper and rebasing"
+              git fetch --deepen=50 origin "${GITHUB_REF_NAME}" || true
+              git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+              sleep $((i * 3))
+            done
+            if [ "$ok" -ne 1 ]; then
+              echo "::error::could not push provenance status after 5 attempts"
+              exit 1
+            fi
+          fi

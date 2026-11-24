@@ -171,3 +171,31 @@ change made it harder to call something profitable.*
 CANDIDATE, alpha −0.2681; forward rows faber_taa 12, etf_dual_momentum 1, H-119 430.
 
 **Unchanged conclusion:** repair and measurement, not signal. Nothing is money-ready.
+
+### 9.1 Correction — FX (2026-11-23)
+
+My earlier note that `fx_prices` ends 2026-02-09 and left 211 forex picks unmeasurable was wrong:
+`stock_ohlcv` carries `AUDJPY=X` through 2026-11-23, and `trading_picks` holds **64,082** `=X` rows
+with **46,249** open (`exit_price IS NULL`). FX is blocked by the **resolver** (entries never closed),
+not by missing prices. Corollary: the FX/carry path can be unblocked with a resolver fix, which is
+cheaper than procuring data.
+### 9.2 Addendum — EQUITY drift and a second class table (2026-11-23)
+
+audit3 now reports EQUITY **+0.106%/trade, PF 1.050, n=956, CI [−0.480, +0.693]** — down from +0.184 at
+n=939 on 11-19. A peer's 505-row COD-cost table shows EQUITY −0.148% at n=8. Different populations,
+same decision: **no class is investable; EQUITY is least-bad, not proven.** Do not fund on the point
+estimate, and any EQUITY work must carry the CI and the drift.
+### 9.3 Addendum — AUDJPY is UNRECONCILED, not a lead (2026-11-23)
+
+I had called FOREX/AUDJPY LONG "the only cell whose net CI is entirely above zero" (n≈33, CI [0.242, 0.942]).
+Three populations now disagree:
+
+| Population | n | mean | median | notes |
+|---|---:|---:|---:|---|
+| `at_signal_outcomes`, all closed AUDJPY=X | **282** | **−0.37%** | −0.50% | wins 104/282; range −85.9% … +68.1%; trimmed mean −0.31% |
+| audit3 symbol bucket | ~34 | +0.576% | – | DSR 0.815 |
+| riseoftheclaw `signal_tracking` | 24 | −2.45% | −5.21% | 2 wins/24; one +142% dominates |
+
+The **broadest** sample is negative. The positive bucket is a selected subset, so AUDJPY is
+**unreconciled and not actionable** until the three populations are joined on pick id. This supersedes my
+"only positive CI cell" statement; the correct reading is that bucket-level positivity can be selection.
