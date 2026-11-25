@@ -89,7 +89,7 @@ Reproducer:
 python3 -c "
 import pymysql
 c = pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',
-                    password='stocks1234560',database='ejaguiar1_stocks')
+                    password='REDACTED_DB_PASS',database='ejaguiar1_stocks')
 cur = c.cursor()
 cur.execute(\"SELECT COUNT(*) FROM trading_picks WHERE strategy LIKE '%commodity_term_structure%' AND closed_at IS NOT NULL\")
 print(cur.fetchone())  # (0,)

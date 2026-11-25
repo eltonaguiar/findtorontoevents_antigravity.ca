@@ -57,7 +57,7 @@ python3 -c "import json; print(json.load(open('audit_dashboard/data/pick_summary
 python3 -c "import json; print(json.load(open('audit_dashboard/data/money_ready_verdict.json'))['classes']['EQUITY'])"
 
 # Claims 2,3,4,5 — DB queries
-# host=mysql.50webs.com user=ejaguiar1_stocks password=stocks1234560 db=ejaguiar1_stocks
+# host=mysql.50webs.com user=ejaguiar1_stocks password=REDACTED_DB_PASS db=ejaguiar1_stocks
 # SELECT MAX(opened_at), MAX(created_at), MAX(closed_at), COUNT(*) FROM at_signal_outcomes;
 # SHOW TABLES LIKE '%forward%';
 # SELECT COUNT(*), SUM(CASE WHEN status IN ('WON','LOST','EXPIRED') THEN 1 ELSE 0 END) FROM at_raw_picks;

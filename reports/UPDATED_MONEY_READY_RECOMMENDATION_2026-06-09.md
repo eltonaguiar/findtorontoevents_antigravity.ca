@@ -79,7 +79,7 @@ Three independent recent audits converge: **the measurement layer is broken, not
 10. **Wire `apply_emitter_discipline`** into intake OR migrate its FOREX kill-list into `BANNED_SOURCES` — it's coded but orphaned (zero importers) so its FOREX kills never run. Mutate only on the direction/regime axis of a single forward-paper pair; never expand coverage.
 
 ### P0 — Security (DB password leak, INCIDENT #89)
-11. **26 files hardcode `stocks1234560`.** Create `alpha_engine/db_credentials.py` helper (env → aliases → `~/dbpasses.txt` → FATAL), refactor the 26 sites, add `.github/workflows/db-secret-scan.yml`, operator rotates password last. Ready-to-execute ~2h plan (`HANDOFF_CLAUDE_CLI_2026-06-03.md` §6).
+11. **26 files hardcode `REDACTED_DB_PASS`.** Create `alpha_engine/db_credentials.py` helper (env → aliases → `~/dbpasses.txt` → FATAL), refactor the 26 sites, add `.github/workflows/db-secret-scan.yml`, operator rotates password last. Ready-to-execute ~2h plan (`HANDOFF_CLAUDE_CLI_2026-06-03.md` §6).
 
 ### Display quality (peer-owned file — FLAG ONLY)
 12. **picks-now dividend-yield double-multiply** (`picks_now_professional.py` ~line 491, `if div_yield: div_yield *= 100`): yfinance already returns yield as percent → GOOGL 24%, SBUX 260%, PLD 296% shown live, and it wrongly gave 14/20 picks a +5 score bonus. A peer agent is mid-edit on this file and fixed only the FMP fallback path — **the primary yfinance path still needs the fix.** Also: STRONG_BUY labels on negative-upside picks (MU −22%), incoherent "safest" bucket (ARB-USD, no data). *Not edited — peer owns the file.*

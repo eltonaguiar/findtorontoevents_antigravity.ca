@@ -237,7 +237,7 @@ audit (open ticket against `copy_trader_intel`).
 ```python
 import pymysql
 conn = pymysql.connect(host='mysql.50webs.com', user='ejaguiar1_stocks',
-                      password='stocks1234560', database='ejaguiar1_stocks')
+                      password='REDACTED_DB_PASS', database='ejaguiar1_stocks')
 cur = conn.cursor()
 # Group A
 cur.execute("""SELECT COUNT(*) FROM trading_picks

@@ -20,7 +20,7 @@
 | Trail-only aggressive TP="—" | confusing | "Trail" badge with tooltip |
 | Non-CRYPTO intrabar replay coverage | 13–23% | **100%** |
 | CRYPTO intrabar replay coverage | 0% | pending validation (chain of 4 PRs needed; just unblocked) |
-| `git grep stocks1234560 -- '*.py'` | 26 .py files | **0** |
+| `git grep REDACTED_DB_PASS -- '*.py'` | 26 .py files | **0** |
 
 ---
 

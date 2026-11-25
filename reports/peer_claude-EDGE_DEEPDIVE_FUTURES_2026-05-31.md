@@ -123,7 +123,7 @@ Top symbols (raw): ZC=F (516), NG=F (397), SI=F (386), ZW=F (318), ZS=F (314), H
 ```bash
 python3 -c "
 import pymysql
-c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password='stocks1234560',database='ejaguiar1_stocks',connect_timeout=15)
+c=pymysql.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',password='REDACTED_DB_PASS',database='ejaguiar1_stocks',connect_timeout=15)
 cur=c.cursor()
 cur.execute(\"SELECT direction, status, COUNT(*) FROM at_raw_picks WHERE asset_class='FUTURES' AND status IN ('WON','LOST') GROUP BY direction, status\")
 print(cur.fetchall())

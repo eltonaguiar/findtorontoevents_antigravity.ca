@@ -147,8 +147,8 @@ python3 -c "from tools.db_env import get_backups_creds; print(get_backups_creds(
 3. **Config import:** `python3 -c "from alpha_engine.config import BLACKLISTED_STRATEGIES; assert 'forex_rsi2_mean_reversion' in BLACKLISTED_STRATEGIES"`
 4. **DB backup round-trip:** `python3 tools/safe_db_archive.py --source-table trading_picks --where "id < 10" --purpose test_dry_run` → should print counts, perform zero writes.
 5. **Trust score dry-run:** `python3 tools/backfill_trust_score.py --source mysql` → should print preview, not write.
-6. **repair_data_integrity dry-run:** `DB_PASS_STOCKS=stocks1234560 python3 tools/repair_data_integrity.py` → should report pass/fail for 11 checks, not write.
-7. **at_local_picks dry-run:** `DB_PASS_STOCKS=stocks1234560 python3 tools/at_local_picks_dedup.py` → should count duplicates, not delete.
+6. **repair_data_integrity dry-run:** `DB_PASS_STOCKS=REDACTED_DB_PASS python3 tools/repair_data_integrity.py` → should report pass/fail for 11 checks, not write.
+7. **at_local_picks dry-run:** `DB_PASS_STOCKS=REDACTED_DB_PASS python3 tools/at_local_picks_dedup.py` → should count duplicates, not delete.
 8. **Template sanity:** Open `audit_dashboard/template.html` in browser; verify SUPREME EDGE block shows yellow ⚠ caveat after CRYPTO ML strategy names.
 
 ---

@@ -37,15 +37,32 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
 # --- Source FTP creds -------------------------------------------------------
+# Priority:
+#   1. exported FTP_USER / FTP_PASS (CI, or `export` in your shell)
+#   2. $REPO_ROOT/.env.deploy  (gitignored, the supported local store)
+#   3. C:/windows_env_backup_2026-04-14.md  (legacy operator note — may hold a
+#      PRE-ROTATION password; only used as a last resort, with a warning)
 if [ -z "${FTP_USER:-}" ] || [ -z "${FTP_PASS:-}" ]; then
-  ENV_FILE="C:/windows_env_backup_2026-04-14.md"
-  if [ -f "$ENV_FILE" ]; then
-    FTP_USER="$(grep -E '^FTP_USER=' "$ENV_FILE" | head -1 | cut -d'=' -f2)"
-    FTP_PASS="$(grep -E '^FTP_PASS=' "$ENV_FILE" | head -1 | cut -d'=' -f2)"
+  DEPLOY_ENV="$REPO_ROOT/.env.deploy"
+  if [ -f "$DEPLOY_ENV" ]; then
+    FTP_USER="${FTP_USER:-$(grep -E '^FTP_USER=' "$DEPLOY_ENV" | head -1 | cut -d'=' -f2-)}"
+    FTP_PASS="${FTP_PASS:-$(grep -E '^FTP_PASS=' "$DEPLOY_ENV" | head -1 | cut -d'=' -f2-)}"
   fi
 fi
 if [ -z "${FTP_USER:-}" ] || [ -z "${FTP_PASS:-}" ]; then
-  echo "FTP_USER + FTP_PASS not set. Export both or place them in $ENV_FILE." >&2
+  ENV_FILE="C:/windows_env_backup_2026-04-14.md"
+  if [ -f "$ENV_FILE" ]; then
+    echo "WARNING: falling back to $ENV_FILE — that note may hold a pre-rotation password." >&2
+    FTP_USER="${FTP_USER:-$(grep -E '^FTP_USER=' "$ENV_FILE" | head -1 | cut -d'=' -f2-)}"
+    FTP_PASS="${FTP_PASS:-$(grep -E '^FTP_PASS=' "$ENV_FILE" | head -1 | cut -d'=' -f2-)}"
+  fi
+fi
+if [ -z "${FTP_USER:-}" ] || [ -z "${FTP_PASS:-}" ]; then
+  cat >&2 <<'MSG'
+FTP_USER + FTP_PASS not set. Do one of:
+  export FTP_USER=... FTP_PASS=...            # current values: ~/dbpasses.txt
+  printf 'FTP_USER=%s\nFTP_PASS=%s\n' "$USER" "$PASS" > .env.deploy   # gitignored
+MSG
   exit 2
 fi
 FTP_HOST="${FTP_HOST:-ftps2.50webs.com}"

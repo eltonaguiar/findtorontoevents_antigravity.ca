@@ -189,7 +189,7 @@ The 7-row policy-clean cohort is not representative. **Raw 90d is the operative 
 python3 -c "
 import mysql.connector
 c=mysql.connector.connect(host='mysql.50webs.com',user='ejaguiar1_stocks',
-  password='stocks1234560',database='ejaguiar1_stocks')
+  password='REDACTED_DB_PASS',database='ejaguiar1_stocks')
 cur=c.cursor(dictionary=True)
 cur.execute(\"\"\"SELECT source_system,strategy,COUNT(*) n,
   SUM(status='WON') w, SUM(status='LOST') l
