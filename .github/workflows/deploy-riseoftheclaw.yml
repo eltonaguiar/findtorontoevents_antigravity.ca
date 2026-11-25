@@ -617,9 +617,19 @@ jobs:
           path: '_site'
           retention-days: 1
 
+      # The artifact is uploaded and its URL issued before GitHub's Pages API
+      # can see it; deploy-pages@v4 then reports "Found 0 artifact(s)". A delay
+      # here is the difference between a red deploy and a green one.
+      - name: Wait for Pages artifact to propagate
+        run: sleep 20
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Wait before Pages retry
+        if: failure()
+        run: sleep 30
 
       - name: Retry Deploy to GitHub Pages
         if: failure()
