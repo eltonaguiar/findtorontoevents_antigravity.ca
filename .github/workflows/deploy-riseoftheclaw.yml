@@ -617,11 +617,18 @@ jobs:
           path: '_site'
           retention-days: 1
 
+      - name: Wait for Pages artifact to register
+        run: sleep 45
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
       - name: Retry Deploy to GitHub Pages
+        if: failure()
+        run: sleep 30
+
+      - name: Retry Deploy to GitHub Pages (2)
         if: failure()
         uses: actions/deploy-pages@v4
 
