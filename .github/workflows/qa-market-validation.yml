@@ -9,7 +9,11 @@ name: QA Market Validation
 
 on:
   schedule:
-    - cron: '13 * * * *'        # every hour
+    # :30, not :13. picks-now-live-pnl.yml writes the snapshot at :25, so checking
+    # at :13 validated a ~50-minute-old file and the 0.5pp per-class tolerance
+    # could never apply (it was measuring market drift, not bad data -- 8 of 8
+    # "mismatches" on 2026-11-25). At :30 the snapshot is ~5 minutes old.
+    - cron: '30 * * * *'
   push:
     branches: [main]
     paths:

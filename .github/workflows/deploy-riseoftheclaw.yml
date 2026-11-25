@@ -15,6 +15,8 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  # actions: read -- the artifact assertion below lists this run's artifacts.
+  actions: read
 
 # One concurrent deployment.
 #
@@ -393,6 +395,26 @@ jobs:
           cp hub/js/*.js _site/hub/js/ 2>/dev/null || true
           cp hub/data/*.json _site/hub/data/ 2>/dev/null || true
 
+          # Alpha Engine live dashboard + BESTIEJOB page. Both used to be published
+          # by live_tracker.yml (peaceiris -> gh-pages branch), which Pages does not
+          # serve, so they 404ed. Same deployer, one publisher (2026-11-25).
+          # `if` blocks, not `[ -f x ] && cp`: steps run under bash -e, where a
+          # false test as the last command fails the step.
+          mkdir -p _site/dashboard _site/bestiejob
+          if [ -f alpha_engine/live_dashboard.html ]; then
+            cp alpha_engine/live_dashboard.html _site/dashboard/index.html
+          fi
+          if [ -f dashboard/big_mover_widget.html ]; then
+            cp dashboard/big_mover_widget.html _site/
+          fi
+          if [ -f dashboard/live_picks.json ]; then
+            cp dashboard/live_picks.json _site/
+          fi
+          if [ -d docs/bestiejob ]; then
+            cp -r docs/bestiejob/. _site/bestiejob/
+            touch _site/bestiejob/.nojekyll
+          fi
+
           # Cross-aggregation data + consensus dashboard
           mkdir -p _site/cross_aggregation/data
           cp cross_aggregation/consensus_dashboard.html _site/cross_aggregation/index.html 2>/dev/null || true
@@ -612,25 +634,55 @@ jobs:
           echo " All HTML files passed JavaScript syntax validation"
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        id: upload
+        uses: actions/upload-pages-artifact@v4
         with:
           path: '_site'
           retention-days: 1
 
-      - name: Wait for Pages artifact to register
-        run: sleep 45
+      # ROOT CAUSE OF THE 56-of-100 FAILURES (measured 2026-11-25): an artifact
+      # visibility race, not a missing upload.
+      #
+      # Run 45708138189: step 14 "Upload artifact" succeeded, step 15
+      # "Deploy to GitHub Pages" ran ONE SECOND later and failed with
+      #   Fetching artifact metadata for "github-pages" in this workflow run
+      #   Found 0 artifact(s)
+      # ...while that run's `github-pages` artifact (46,515,216 bytes, created
+      # 21:55:45) is present and unexpired in the run's artifact list. deploy-pages
+      # looked before the ~46 MB artifact was indexed.
+      #
+      # The old `Retry Deploy to GitHub Pages` (if: failure()) could not help: it
+      # fired immediately, saw the same not-yet-indexed state, and on other failure
+      # modes re-deployed an artifact the first call had already claimed. It also
+      # turned one red step into two, which is why every failure looked identical.
+      #
+      # Waiting for the artifact to actually be addressable closes the race; the
+      # retry step is deleted.
+      - name: Wait for the pages artifact to be addressable
+        id: artifact
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          for i in $(seq 1 15); do
+            n=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+                  --jq '[.artifacts[] | select(.name=="github-pages")] | length' 2>/dev/null || echo 0)
+            echo "attempt $i/15: $n 'github-pages' artifact(s) visible"
+            if [ "${n:-0}" -ge 1 ]; then
+              echo "artifact is addressable; deploying"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::no 'github-pages' artifact after 75s; not calling deploy-pages (its 'No artifacts named github-pages' error would only mask this)"
+          exit 1
 
       - name: Deploy to GitHub Pages
         id: deployment
+        if: steps.artifact.outcome == 'success'
         uses: actions/deploy-pages@v4
-
-      - name: Retry Deploy to GitHub Pages
-        if: failure()
-        run: sleep 30
-
-      - name: Retry Deploy to GitHub Pages (2)
-        if: failure()
-        uses: actions/deploy-pages@v4
+        # NOTE: deliberately no `retry` step. A second deploy-pages after a failed
+        # first one either sees the same stale artifact index or claims an artifact
+        # the first call consumed; neither can succeed.
 
       - name: Verify deployment
         run: |

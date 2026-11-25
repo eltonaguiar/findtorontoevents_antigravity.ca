@@ -30,17 +30,50 @@ jobs:
           echo "Hub uses client-side JS (hub/js/consensus_engine.js, hub/js/quality_scorer.js)"
           echo "Ensuring hub data directory has latest winning combos..."
 
-          # Export winning combos if signal_recorder exists
-          if [ -f signal_recorder/export_hub_combos.py ]; then
-            pip install pandas 2>/dev/null || true
-            PYTHONPATH=. python signal_recorder/export_hub_combos.py || echo "::warning::Combo export failed — check signal_recorder module"
+          # A missing exporter is a FAILURE, not a warning. With the old
+          # `|| echo "::warning::..."`, this job reported success hourly while
+          # hub/data/systems_manifest.json sat at generated_at 2026-03-02.
+          if [ ! -f signal_recorder/export_hub_combos.py ]; then
+            echo "::error::signal_recorder/export_hub_combos.py is missing — hub data cannot refresh"
+            exit 1
           fi
+          pip install pandas 2>/dev/null || true
+          PYTHONPATH=. python signal_recorder/export_hub_combos.py
 
       - name: Commit Updates
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add hub/data/
-          git commit -m "Sync hub data $(date +%H:%M) [skip ci]" || echo "No changes"
+          if git diff --cached --quiet; then
+            echo "::error::hub data unchanged this run — the export produced nothing, and a green run here is what let hub/data serve March data for months"
+            exit 1
+          fi
+          git commit -m "Sync hub data $(date +%H:%M) [skip ci]"
           bash .github/scripts/safe_push.sh
+
+      - name: Assert the hub manifest is fresh
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          from datetime import datetime, timezone
+
+          p = "hub/data/systems_manifest.json"
+          try:
+              gen = json.load(open(p)).get("generated_at")
+          except FileNotFoundError:
+              print(f"::error::{p} is missing")
+              sys.exit(1)
+          if not gen:
+              print(f"::error::{p} has no generated_at")
+              sys.exit(1)
+          ts = datetime.fromisoformat(str(gen).replace("Z", "+00:00"))
+          if ts.tzinfo is None:
+              ts = ts.replace(tzinfo=timezone.utc)
+          age_d = (datetime.now(timezone.utc) - ts).total_seconds() / 86400
+          print(f"hub manifest generated_at={gen} age={age_d:.1f}d (limit 7d)")
+          if age_d > 7:
+              print(f"::error::hub manifest is {age_d:.1f} days stale")
+              sys.exit(1)
+          PY
 
