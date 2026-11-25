@@ -56,7 +56,10 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install pymysql arch numpy pandas
+        # pytest is required: two downstream steps run `python -m pytest`. Without it
+        # they die with "No module named pytest" -- which reads as a gate failure but
+        # is actually a missing-tool failure. PyYAML is needed by the anti-overfit tools.
+        run: pip install pymysql arch numpy pandas pytest pyyaml
 
       - name: Syntax check
         run: |

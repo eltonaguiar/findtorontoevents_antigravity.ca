@@ -180,6 +180,22 @@ Every claim below was executed, not assumed.
 9. **The scorecard generator works** — wrote `scorecard.json` + `scorecard.md`, exit 0,
    both plain and `--strict`.
 10. **`py_compile`** clean on all tools.
+11. **The whole job was re-run inside a clean venv that contains only the packages the
+    workflow installs.** This is the check that caught the one defect this doc's first
+    draft missed. Building `/tmp/civenv` with exactly `pymysql arch numpy pandas pytest
+    pyyaml` and re-running steps 3-7 gave:
+    ```
+    anti-overfit tests   27 passed in 3.92s
+    profit program tests 22 passed in 0.65s
+    py_compile           OK
+    PBO/CSCV gate        All hard gates passed.  (exit 0)
+    ```
+    The first CI run of this PR failed at `Run anti-overfit tests (blocking on PR)` with
+    `/opt/hostedtoolcache/Python/3.11.18/x64/bin/python: No module named pytest`. The
+    workflow's `Install dependencies` step shipped `pymysql arch numpy pandas` and had
+    **never included `pytest`**, so the two steps that run `python -m pytest` could not
+    start. Locally the tests passed because the host already had pytest installed. See
+    lesson 6.
 
 ### Known non-blocking behaviour
 
@@ -217,3 +233,15 @@ becomes useful once the dashboard pipeline has produced the file.
    under it daily. A stale baseline converts a useful gate into a permanent red.
 5. **A gate that is red on unchanged content is worse than no gate** — it teaches
    reviewers to ignore red. Hold it back instead.
+6. **"It passes locally" proves nothing about CI — run it in a venv with only the
+   workflow's declared packages.** A green local test just means *your machine* has the
+   dependency. `validation-gates.yml` declared `pymysql arch numpy pandas` and ran
+   `python -m pytest`, so on a fresh runner it died with `No module named pytest`. The
+   job failed, but not for any reason related to the change — the classic
+   green-here/red-there trap. The fast local proxy for a CI environment:
+   ```
+   python3 -m venv /tmp/civenv
+   /tmp/civenv/bin/pip install <exactly the workflow's pip install line>
+   PATH=/tmp/civenv/bin:$PATH python -m pytest <the workflow's test files>
+   ```
+   If that fails, CI will fail the same way.
