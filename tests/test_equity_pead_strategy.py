@@ -67,7 +67,8 @@ class TestPEADSignals:
         with patch("alpha_engine.equity_pead_strategy.yf", create=True) as mock_yf, \
              patch("alpha_engine.equity_pead_strategy._HAS_YFINANCE", True), \
              patch("alpha_engine.equity_pead_strategy._load_cache", return_value={}), \
-             patch("alpha_engine.equity_pead_strategy._save_cache"):
+             patch("alpha_engine.equity_pead_strategy._save_cache"), \
+             patch("alpha_engine.equity_pead_strategy._load_repo_earnings", return_value=None):
             mock_yf.Ticker.return_value = mock_ticker
             result = equity_pead_signals(symbols=["AAPL"])
 
@@ -185,7 +186,9 @@ class TestPEADSignals:
         for surprise in [5.0, 10.0, 15.0]:
             with patch("alpha_engine.equity_pead_strategy.yf", create=True) as mock_yf, \
                  patch("alpha_engine.equity_pead_strategy._load_cache", return_value={}), \
-                 patch("alpha_engine.equity_pead_strategy._save_cache"):
+                 patch("alpha_engine.equity_pead_strategy._save_cache"), \
+                 patch("alpha_engine.equity_pead_strategy._HAS_YFINANCE", True), \
+                 patch("alpha_engine.equity_pead_strategy._load_repo_earnings", return_value=None):
                 mock_yf.Ticker.return_value = make_ticker(surprise)
                 result = equity_pead_signals(symbols=["AAPL"])
                 if result:

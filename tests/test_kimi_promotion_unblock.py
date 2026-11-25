@@ -140,21 +140,31 @@ def test_equity_kimi_pick_with_low_score_is_blocked_post_prune():
     )
 
 
-def test_equity_kimi_pick_score_0_still_passes():
-    """Regression guard: EQUITY kimi pick with score=0 still passes.
+def test_equity_kimi_pick_blocked_regardless_of_score_0():
+    """2026-06-12 SUPERSEDES the 2026-04-29 promotion: kimi is BLOCKED.
 
-    raw_active_score == 0 hits the `> 0` short-circuit in the existing
-    floor check, so this was already passing — but if a future refactor
-    changes the semantics, this test will break.
+    `kimi_riseoftheclaw` was added to BLOCKED_SOURCE_SYSTEMS (quality_gates.py,
+    entry dated 2026-06-12) on measured evidence:
+      * 138K+ picks at 28.4% WR, PF 0.69
+      * produced 76% of all system picks, 99.4% of them duplicates
+        (866 distinct out of 141K)
+      * dormant since March (0 intrabar-resolved rows) yet ingestion-ACTIVE,
+        with NULL timestamps bypassing dedup
+    A source-level block precedes the non-crypto raw-score floor, so the score is
+    irrelevant -- even score=0 must be rejected. This test previously asserted the
+    opposite (that score=0 "still passes"), pinning the superseded promotion.
     """
     pick = _build_pick("EQUITY", "kimi_riseoftheclaw", score=0)
-    assert passes_active_gate(pick) is True
+    assert passes_active_gate(pick) is False
 
 
-def test_equity_kimi_pick_high_score_passes():
-    """EQUITY kimi pick with score=70 (above floor) passes (sanity)."""
+def test_equity_kimi_pick_blocked_regardless_of_high_score():
+    """Same 2026-06-12 BLOCKED_SOURCE_SYSTEMS entry: a high score cannot lift a
+    source-level block, so score=70 (well above the >=55 floor) is still
+    rejected. This test previously asserted it passed.
+    """
     pick = _build_pick("EQUITY", "kimi_riseoftheclaw", score=70)
-    assert passes_active_gate(pick) is True
+    assert passes_active_gate(pick) is False
 
 
 def test_forex_kimi_pick_score_50_blocked_post_prune():

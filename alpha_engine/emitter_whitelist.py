@@ -33,7 +33,15 @@ HARDCODED_TOXIC_PAIRS: frozenset[Pair] = frozenset({
     ("COMMODITY", "cta_replicator"),
     ("FOREX", "multi_asset_copytrader"),
     ("FOREX", "forex_rsi2_mean_reversion"),
-    ("EQUITY", "multi_asset_copytrader"),
+    # 2026-11-23: ("EQUITY", "multi_asset_copytrader") REMOVED here to match the
+    # decision recorded in audit_trail/quality_gates.py:2709, which dropped it
+    # from BLOCKED_ASSET_STRATEGY_PAIRS on 2026-05-19: "insufficient policy-clean
+    # picks (n=1, n=25, n=2) -- below 30-pick floor required for a block verdict.
+    # 2-engine swarm consensus (DeepSeek+Cerebras). Re-evaluate when n>=30."
+    # Keeping the hardcoded copy here silently re-imposed a block that had been
+    # ruled out, and contradicted tests/test_eagle2_phase0_gates.py. Operator
+    # decision 2026-11-23: the removal is correct; the toxic entry goes.
+    # (The FOREX twin above is left alone -- not covered by that decision.)
     ("EQUITY", "regime_terminal"),
     # 2026-06-09: cta_replicator EQUITY dead-weight quarantine (per-class, NOT global).
     # pf_registry policy_clean_net (2026-06-06): EQUITY cta_replicator n=6 WR=0.0% PF=0.0
