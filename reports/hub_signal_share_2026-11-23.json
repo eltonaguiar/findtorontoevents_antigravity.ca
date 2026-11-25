@@ -1,0 +1,195 @@
+{
+ "claim_under_test": "live-vs-research.html: 'strategies that FAILED forward testing (momentum, breakout, Ichimoku) are generating 80%+ of our signals'",
+ "measured_combined_share_pct": 0.6052,
+ "verdict": "REFUTED",
+ "input": {
+  "path": "audit_dashboard/data/dashboard_data.json",
+  "sha256": "888591a6a2889b6f88fcf54a77768b7e097f86aa2113b095934e910a3e5e699a",
+  "bytes": 25804703,
+  "generated_at": "2026-11-22T04:00:19.374930+00:00"
+ },
+ "aggregation": {
+  "systems_total": 133,
+  "systems_with_resolved": 43,
+  "resolved_signals_total": 8757,
+  "momentum_or_breakout": {
+   "systems": 2,
+   "resolved": 53,
+   "share_pct": 0.6052,
+   "win_rate_pct": 5.66,
+   "profit_factor": 0.1627,
+   "system_names": [
+    "breakout_b_ml",
+    "breakout_c_spike"
+   ]
+  },
+  "ichimoku": {
+   "systems": 0,
+   "resolved": 0,
+   "share_pct": 0.0,
+   "win_rate_pct": null,
+   "profit_factor": null,
+   "system_names": []
+  },
+  "everything_else": {
+   "systems": 41,
+   "resolved": 8704,
+   "share_pct": 99.3948,
+   "win_rate_pct": 40.56,
+   "profit_factor": 0.8686,
+   "system_names": [
+    "aggregated_picks",
+    "ai_challenge_predictable",
+    "ai_challenge_scanner",
+    "alpha_engine",
+    "battleground",
+    "contrarian_evolver",
+    "copy_trader_clones",
+    "copy_trader_highscore",
+    "copy_trader_intel",
+    "crypto_signal_engine",
+    "dna_winner_picks",
+    "forex_futures_orphan",
+    "goldmine_stocks",
+    "kimi_riseoftheclaw",
+    "kimi_signal_tracking",
+    "luxalgo_filters",
+    "macd_dna_mutations",
+    "mape_evolver",
+    "mega_mutation",
+    "mercury2_fast"
+   ]
+  }
+ },
+ "limitation": "Matches SYSTEM NAMES, not strategy families. Refutes the claim as expressed through system names; cannot see momentum logic inside a differently-named scanner. Family attribution is lost at resolved-history level.",
+ "by_family": {
+  "resolved_signals_total": 8757,
+  "claim_families": [
+   "momentum",
+   "breakout",
+   "trend_following"
+  ],
+  "claim_family_resolved": 60,
+  "claim_family_share_pct": 0.6852,
+  "verdict": "REFUTED",
+  "by_family": [
+   {
+    "family": "unknown",
+    "is_claim_family": false,
+    "systems": 31,
+    "resolved": 8036,
+    "share_pct": 91.7666,
+    "win_rate_pct": 40.59,
+    "profit_factor": 0.8755,
+    "provenance": [
+     "unmapped"
+    ],
+    "examples": [
+     "aggregated_picks",
+     "ai_challenge_predictable",
+     "ai_challenge_scanner",
+     "alpha_engine",
+     "battleground",
+     "crypto_signal_engine"
+    ]
+   },
+   {
+    "family": "ml_composite",
+    "is_claim_family": false,
+    "systems": 4,
+    "resolved": 618,
+    "share_pct": 7.0572,
+    "win_rate_pct": 38.51,
+    "profit_factor": 0.8076,
+    "provenance": [
+     "mapped"
+    ],
+    "examples": [
+     "ml_bg_system_a",
+     "ml_bg_system_b",
+     "ml_bg_system_c",
+     "ml_bg_system_f"
+    ]
+   },
+   {
+    "family": "breakout",
+    "is_claim_family": true,
+    "systems": 2,
+    "resolved": 53,
+    "share_pct": 0.6052,
+    "win_rate_pct": 5.66,
+    "profit_factor": 0.1627,
+    "provenance": [
+     "mapped"
+    ],
+    "examples": [
+     "breakout_b_ml",
+     "breakout_c_spike"
+    ]
+   },
+   {
+    "family": "copy_trade",
+    "is_claim_family": false,
+    "systems": 3,
+    "resolved": 31,
+    "share_pct": 0.354,
+    "win_rate_pct": 58.06,
+    "profit_factor": 2.1679,
+    "provenance": [
+     "mapped"
+    ],
+    "examples": [
+     "copy_trader_clones",
+     "copy_trader_highscore",
+     "copy_trader_intel"
+    ]
+   },
+   {
+    "family": "momentum",
+    "is_claim_family": true,
+    "systems": 1,
+    "resolved": 7,
+    "share_pct": 0.0799,
+    "win_rate_pct": 100.0,
+    "profit_factor": null,
+    "provenance": [
+     "mapped"
+    ],
+    "examples": [
+     "macd_dna_mutations"
+    ]
+   },
+   {
+    "family": "ensemble",
+    "is_claim_family": false,
+    "systems": 1,
+    "resolved": 7,
+    "share_pct": 0.0799,
+    "win_rate_pct": 0.0,
+    "profit_factor": 0.0,
+    "provenance": [
+     "mapped"
+    ],
+    "examples": [
+     "ml_bg_ensemble"
+    ]
+   },
+   {
+    "family": "contrarian",
+    "is_claim_family": false,
+    "systems": 1,
+    "resolved": 5,
+    "share_pct": 0.0571,
+    "win_rate_pct": 100.0,
+    "profit_factor": null,
+    "provenance": [
+     "mapped"
+    ],
+    "examples": [
+     "contrarian_evolver"
+    ]
+   }
+  ]
+ },
+ "reproduce": "python3 tools/hub_signal_share.py --by-family"
+}
