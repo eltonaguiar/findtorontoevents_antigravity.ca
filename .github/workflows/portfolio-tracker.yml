@@ -21,7 +21,10 @@ concurrency:
 jobs:
   track:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 15, not 10: the commit step below is bounded at 6 minutes so a hung push
+    # fails the STEP (conclusion=failure, commit preserved in the log) instead of
+    # the JOB hitting its own timeout first (conclusion=cancelled, work vanished).
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,7 +46,16 @@ jobs:
           python3 tools/portfolio_tracker.py mark
           python3 tools/portfolio_tracker.py status
 
+      # Was an inline `git push || { git pull --rebase --autostash; sleep 5; }` loop.
+      # On 2026-11-25T23:13 run 45719700001 the push was rejected (fetch first) and the
+      # bare `git pull --rebase` then hung for 9.5 min with no timeout, so the JOB's
+      # 10-min timeout killed it: conclusion=cancelled, commit 39d9bfbc never pushed.
+      # safe_push.sh bounds every git call (timeout 90s), retries to 8, and auto-resolves
+      # data-file rebase conflicts, so contention produces a real failure we can see.
       - name: Commit the book
+        timeout-minutes: 6
+        env:
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config user.name "portfolio-bot"
           git config user.email "portfolio-bot@users.noreply.github.com"
@@ -52,7 +64,5 @@ jobs:
             echo "no change"
           else
             git commit -m "portfolio-tracker: mark to market [skip ci]"
-            for i in 1 2 3; do
-              git push && break || { git pull --rebase --autostash; sleep 5; }
-            done
+            bash .github/scripts/safe_push.sh
           fi
