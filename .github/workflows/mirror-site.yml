@@ -99,6 +99,11 @@ jobs:
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
             --exclude-glob=.htpasswd \
+            --exclude='^de/' \
+            --exclude='^de-de/' \
+            --exclude='^appeasy/' \
+            --exclude='^easyapp/' \
+            --exclude-glob=visit.txt \
             /findtorontoevents.ca/ /tmp/site_mirror/
           quit
           LFTPEOF
@@ -129,6 +134,81 @@ jobs:
             fi
           fi
           echo " Downloaded $(find /tmp/site_mirror -type f | wc -l) files"
+
+      - name: Strip phishing-kit artifacts from the mirror tree
+        # 2026-11-25 (incident): this workflow turns ONE infected source host into
+        # THREE infected hosts. The Nov 23 23:52 UTC run downloaded the live
+        # 50webs tree and reverse-uploaded it to GoDaddy, which is how
+        # /de/index.php (kit build A, md5 586b76b00d80965e71182fadf67c2d76),
+        # /de/visit.txt, /appeasy/index.php, /easyapp/index.php and the
+        # compromised 76,799-byte root .htaccess reached torontoevent.net.
+        # The per-file growth of de/visit.txt across five runs (1875 -> 6623 ->
+        # 26571 -> 28112 -> 28867 B) is that mirror re-copying a live log.
+        # actions/cache also restores /tmp/site_mirror every run, so a poisoned
+        # tree survives on the runner AFTER the hosts are cleaned. Strip the IOCs
+        # here -- before either reverse upload -- and fail loudly if any survive.
+        run: |
+          python3 - <<'PY'
+          import hashlib, pathlib, sys
+
+          root = pathlib.Path('/tmp/site_mirror')
+          KIT_MD5 = {'586b76b00d80965e71182fadf67c2d76', '4ec0bec91eeb47d31ad895c9e6334067'}
+          KIT_DIRS = ('de', 'de-de', 'appeasy', 'easyapp')
+          MARKERS = (b'oldyhub.com', b'firstonline/bk', b'Off to the Mouse they go')
+          removed = []
+
+          # 1. Whole kit directories (the payload shape seen on 50webs + GoDaddy).
+          for name in KIT_DIRS:
+              d = root / name
+              if d.is_dir():
+                  for f in sorted(p for p in d.rglob('*') if p.is_file()):
+                      f.unlink()
+                      removed.append(str(f.relative_to(root)))
+                  for sub in sorted((p for p in d.rglob('*') if p.is_dir()),
+                                    key=lambda p: len(p.parts), reverse=True):
+                      sub.rmdir()
+                  d.rmdir()
+                  removed.append(name + '/ (dir)')
+
+          # 2. Harvest logs and the root .htaccess must never be mirrored: the
+          #    source htaccess is attacker-controlled and 50webs-side only.
+          for rel in ('visit.txt', '.htaccess'):
+              f = root / rel
+              if f.is_file():
+                  f.unlink()
+                  removed.append(rel)
+          for f in sorted(root.rglob('visit.txt')):
+              if f.is_file():
+                  f.unlink()
+                  removed.append(str(f.relative_to(root)))
+
+          # 3. Content sweep for anything the name rules miss.
+          for f in sorted(p for p in root.rglob('*') if p.is_file()):
+              if f.stat().st_size > 2_000_000:
+                  continue
+              try:
+                  data = f.read_bytes()
+              except OSError:
+                  continue
+              if hashlib.md5(data).hexdigest() in KIT_MD5 or any(m in data for m in MARKERS):
+                  f.unlink()
+                  removed.append(str(f.relative_to(root)) + ' <content-match>')
+
+          if removed:
+              print(f'::warning::mirror tree carried {len(removed)} infected artifact(s) — removed before upload')
+              for r in removed:
+                  print(f'  removed: {r}')
+          else:
+              print('mirror tree clean: no kit artifacts found')
+
+          # Fail closed: if a kit file somehow reappears, do not deploy it.
+          survivors = [str(p.relative_to(root)) for p in root.rglob('*')
+                       if p.is_file() and (hashlib.md5(p.read_bytes()).hexdigest() in KIT_MD5
+                                           if p.stat().st_size <= 2_000_000 else False)]
+          if survivors:
+              print('::error::phishing-kit artifact still present after quarantine: ' + ', '.join(survivors))
+              sys.exit(1)
+          PY
 
       - name: Upload to torontoevent.net (GoDaddy FTP)
         # 2026-06-01: per-step cap so a stalled FTP upload fails fast instead of
@@ -182,6 +262,12 @@ jobs:
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
             --exclude-glob=.htpasswd \
+            --exclude='^de/' \
+            --exclude='^de-de/' \
+            --exclude='^appeasy/' \
+            --exclude='^easyapp/' \
+            --exclude='^\.htaccess$' \
+            --exclude-glob=visit.txt \
             /tmp/site_mirror/ /
           quit
           LFTPEOF
@@ -227,6 +313,12 @@ jobs:
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
             --exclude-glob=.htpasswd \
+            --exclude='^de/' \
+            --exclude='^de-de/' \
+            --exclude='^appeasy/' \
+            --exclude='^easyapp/' \
+            --exclude='^\.htaccess$' \
+            --exclude-glob=visit.txt \
             /tmp/site_mirror/ /tdotevent.ca/
           quit
           LFTPEOF
