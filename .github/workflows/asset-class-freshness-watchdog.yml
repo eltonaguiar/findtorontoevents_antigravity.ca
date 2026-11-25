@@ -32,21 +32,45 @@ jobs:
 
       - name: Fetch dashboard_data.json from production
         run: |
-          mkdir -p audit_dashboard/data
-          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_data.json" \
-            -o audit_dashboard/data/dashboard_data.json \
-            || {
-              echo "::warning::dashboard_data.json fetch from production failed; trying audit_trail mirror"
-              mkdir -p audit_trail/data
-              curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_payload.json" \
-                -o audit_trail/data/dashboard_payload.json \
-                || echo "::warning::both data sources unreachable"
-            }
+          mkdir -p audit_dashboard/data audit_trail/data
+          # The host rate-limits datacenter ranges; a bare curl gets an immediate
+          # 403 from GitHub runners. Retry on 403/429/5xx before falling back.
+          url="https://findtorontoevents.ca/audit/data/dashboard_data.json"
+          out=audit_dashboard/data/dashboard_data.json
+          ok=0
+          for i in 1 2 3 4; do
+            if curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
+                 --retry-on-http-error 403,429,500,502,503 "$url" -o "$out"; then
+              ok=1; break
+            fi
+            echo "::warning::dashboard_data.json attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s"
+            sleep $((i * 15))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::warning::primary unavailable; trying payload mirror"
+            curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
+              --retry-on-http-error 403,429,500,502,503 \
+              "https://findtorontoevents.ca/audit/data/dashboard_payload.json" \
+              -o audit_trail/data/dashboard_payload.json \
+              || echo "::warning::both data sources unreachable"
+          fi
           ls -la audit_dashboard/data/dashboard_data.json 2>&1 || true
 
       - name: Generate freshness report (warn-only)
         run: |
+          # Pick whichever source actually landed, and never raise on a missing
+          # one: this job is warn-only, so a skip is the correct outcome.
+          input=audit_dashboard/data/dashboard_data.json
+          if [ ! -s "$input" ] && [ -s audit_trail/data/dashboard_payload.json ]; then
+            input=audit_trail/data/dashboard_payload.json
+            echo "::warning::using payload mirror as report input"
+          fi
+          if [ ! -s "$input" ]; then
+            echo "::warning::no data source available; skipping freshness report"
+            exit 0
+          fi
           python tools/generate_asset_class_freshness_report.py \
+            --input "$input" \
             --stale-days 2 \
             --warn-only \
             --json-out /tmp/asset_class_freshness.json \
