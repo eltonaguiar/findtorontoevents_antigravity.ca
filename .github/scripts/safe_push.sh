@@ -17,14 +17,17 @@ set -uo pipefail
 #   2. Deepen fetch capped at 90s — exit early if it stalls (don't burn clock)
 #   3. Fail-fast if deepen times out — shallow repos can't rebase anyway
 #   4. Reduce MAX_RETRIES to 8 — the old 15 was burning too many runner minutes
-MAX_RETRIES=8
+MAX_RETRIES=5
 INITIAL_BACKOFF=3  # seconds
+TOTAL_BUDGET=600     # hard wall-clock cap for the whole push, so a hot main branch cannot
+                     # burn the caller's 30-min step timeout (alpha-engine-live hit exactly that)
 MAX_BACKOFF_SLEEP=60  # cap per sleep so one run does not wait many minutes idle
 GIT_NET_TIMEOUT=90   # seconds — kill hanging git pull/push so we retry instead of
                      # burning the job's timeout-minutes waiting on one stuck call.
 DEEPEN_TIMEOUT=90    # seconds — git fetch --deepen=N must not burn the whole run
 
 REMOTE_URL="${1:-}"
+SCRIPT_START=$(date +%s)
 
 # --- Early exit: nothing to push ---
 LOCAL_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
@@ -115,6 +118,10 @@ fi
 
 backoff=$INITIAL_BACKOFF
 for attempt in $(seq 1 $MAX_RETRIES); do
+if [ $(( $(date +%s) - SCRIPT_START )) -ge $TOTAL_BUDGET ]; then
+    echo "safe_push: time budget ${TOTAL_BUDGET}s exhausted after $((attempt-1)) attempt(s); exiting without push"
+    exit 0
+fi
     echo "=== Push attempt $attempt/$MAX_RETRIES ==="
 
     # Remember our commit before pull so we can detect if rebase dropped it
