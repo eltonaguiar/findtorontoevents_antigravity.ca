@@ -1,51 +1,73 @@
 {
-  "generated_at": "2026-11-24T05:18:15.939586+00:00",
+  "generated_at": "2026-11-25T05:18:22.857231+00:00",
   "candidates": [
     {
       "strategy": "futures_momentum",
-      "total_trades": 75,
+      "total_trades": 70,
       "win_rate": 0.0,
-      "avg_pnl_pct": -0.0132,
-      "total_pnl_pct": -0.9934
-    },
-    {
-      "strategy": "forex_zscore_200d_fade",
-      "total_trades": 62,
-      "win_rate": 0.0968,
-      "avg_pnl_pct": -0.1759,
-      "total_pnl_pct": -10.9063
+      "avg_pnl_pct": -0.0133,
+      "total_pnl_pct": -0.9334
     },
     {
       "strategy": "fx_cot_extremes",
-      "total_trades": 20,
-      "win_rate": 0.1,
-      "avg_pnl_pct": -0.0012,
-      "total_pnl_pct": -0.0239
+      "total_trades": 23,
+      "win_rate": 0.087,
+      "avg_pnl_pct": -0.0017,
+      "total_pnl_pct": -0.0388
+    },
+    {
+      "strategy": "forex_zscore_200d_fade",
+      "total_trades": 68,
+      "win_rate": 0.0882,
+      "avg_pnl_pct": -0.1608,
+      "total_pnl_pct": -10.9327
     },
     {
       "strategy": "forex_rsi2_mean_reversion",
-      "total_trades": 71,
-      "win_rate": 0.1972,
-      "avg_pnl_pct": 0.0021,
-      "total_pnl_pct": 0.1479
+      "total_trades": 67,
+      "win_rate": 0.194,
+      "avg_pnl_pct": 0.0022,
+      "total_pnl_pct": 0.1442
+    },
+    {
+      "strategy": "commodity_momentum",
+      "total_trades": 10,
+      "win_rate": 0.2,
+      "avg_pnl_pct": -0.0026,
+      "total_pnl_pct": -0.0258
+    },
+    {
+      "strategy": "combined_confidence",
+      "total_trades": 12,
+      "win_rate": 0.25,
+      "avg_pnl_pct": 0.0012,
+      "total_pnl_pct": 0.0149
     }
   ],
   "donors": [
     {
+      "strategy": "commodity_rsi_divergence",
+      "total_trades": 16,
+      "win_rate": 0.75,
+      "avg_pnl_pct": 0.0131,
+      "avg_tp_dist": 0.02,
+      "avg_sl_dist": 0.008416
+    },
+    {
       "strategy": "vwma_momentum_trend",
-      "total_trades": 18,
-      "win_rate": 0.6667,
-      "avg_pnl_pct": 0.0743,
+      "total_trades": 17,
+      "win_rate": 0.7059,
+      "avg_pnl_pct": 0.0795,
       "avg_tp_dist": 0.077216,
       "avg_sl_dist": 0.06
     },
     {
-      "strategy": "commodity_rsi_divergence",
-      "total_trades": 14,
-      "win_rate": 0.6429,
-      "avg_pnl_pct": 0.01,
-      "avg_tp_dist": 0.02,
-      "avg_sl_dist": 0.00819
+      "strategy": "clone_hl_copy_lb_None",
+      "total_trades": 10,
+      "win_rate": 0.7,
+      "avg_pnl_pct": 0.0049,
+      "avg_tp_dist": 0.01142,
+      "avg_sl_dist": 0.016
     },
     {
       "strategy": "luxalgo_confluence",
@@ -54,14 +76,6 @@
       "avg_pnl_pct": -0.044,
       "avg_tp_dist": 0.031825,
       "avg_sl_dist": 0.022758
-    },
-    {
-      "strategy": "clone_hl_copy_lb_None",
-      "total_trades": 12,
-      "win_rate": 0.5833,
-      "avg_pnl_pct": 0.0027,
-      "avg_tp_dist": 0.010342,
-      "avg_sl_dist": 0.014583
     }
   ],
   "mutations": [
@@ -54470,17 +54484,383 @@
         "donor_tp_dist": 0.077216,
         "donor_sl_dist": 0.06
       }
+    },
+    {
+      "parent": "futures_momentum",
+      "type": "inverse",
+      "generation": 177,
+      "status": "active",
+      "mutated_strategy_name": "futures_momentum_mut_inverse_g177",
+      "created_at": "2026-11-25T05:18:22.856395+00:00",
+      "parent_wr": 0.0,
+      "parent_trades": 70,
+      "params": {
+        "flip": true,
+        "tp_mult": 1.0,
+        "sl_mult": 1.0
+      }
+    },
+    {
+      "parent": "futures_momentum",
+      "type": "tighter_stops",
+      "generation": 177,
+      "status": "active",
+      "mutated_strategy_name": "futures_momentum_mut_tight_g177",
+      "created_at": "2026-11-25T05:18:22.856417+00:00",
+      "parent_wr": 0.0,
+      "parent_trades": 70,
+      "params": {
+        "flip": false,
+        "tp_mult": 0.6,
+        "sl_mult": 0.6
+      }
+    },
+    {
+      "parent": "futures_momentum",
+      "type": "regime_gate",
+      "generation": 177,
+      "status": "active",
+      "mutated_strategy_name": "futures_momentum_mut_regime_g177",
+      "created_at": "2026-11-25T05:18:22.856443+00:00",
+      "parent_wr": 0.0,
+      "parent_trades": 70,
+      "params": {
+        "required_regime": "any",
+        "best_regime_wr": 0.0
+      }
+    },
+    {
+      "parent": "futures_momentum",
+      "type": "crossover",
+      "generation": 177,
+      "status": "active",
+      "mutated_strategy_name": "futures_momentum_mut_cross_g177",
+      "created_at": "2026-11-25T05:18:22.856451+00:00",
+      "parent_wr": 0.0,
+      "parent_trades": 70,
+      "params": {
+        "flip": true,
+        "donor": "commodity_rsi_divergence",
+        "donor_wr": 0.75,
+        "donor_tp_dist": 0.02,
+        "donor_sl_dist": 0.008416
+      }
+    },
+    {
+      "parent": "fx_cot_extremes",
+      "type": "inverse",
+      "generation": 3,
+      "status": "active",
+      "mutated_strategy_name": "fx_cot_extremes_mut_inverse_g3",
+      "created_at": "2026-11-25T05:18:22.856567+00:00",
+      "parent_wr": 0.087,
+      "parent_trades": 23,
+      "params": {
+        "flip": true,
+        "tp_mult": 1.0,
+        "sl_mult": 1.0
+      }
+    },
+    {
+      "parent": "fx_cot_extremes",
+      "type": "tighter_stops",
+      "generation": 3,
+      "status": "active",
+      "mutated_strategy_name": "fx_cot_extremes_mut_tight_g3",
+      "created_at": "2026-11-25T05:18:22.856571+00:00",
+      "parent_wr": 0.087,
+      "parent_trades": 23,
+      "params": {
+        "flip": false,
+        "tp_mult": 0.6,
+        "sl_mult": 0.6
+      }
+    },
+    {
+      "parent": "fx_cot_extremes",
+      "type": "regime_gate",
+      "generation": 3,
+      "status": "active",
+      "mutated_strategy_name": "fx_cot_extremes_mut_regime_g3",
+      "created_at": "2026-11-25T05:18:22.856581+00:00",
+      "parent_wr": 0.087,
+      "parent_trades": 23,
+      "params": {
+        "required_regime": "unknown",
+        "best_regime_wr": 0.087
+      }
+    },
+    {
+      "parent": "fx_cot_extremes",
+      "type": "crossover",
+      "generation": 3,
+      "status": "active",
+      "mutated_strategy_name": "fx_cot_extremes_mut_cross_g3",
+      "created_at": "2026-11-25T05:18:22.856585+00:00",
+      "parent_wr": 0.087,
+      "parent_trades": 23,
+      "params": {
+        "flip": true,
+        "donor": "commodity_rsi_divergence",
+        "donor_wr": 0.75,
+        "donor_tp_dist": 0.02,
+        "donor_sl_dist": 0.008416
+      }
+    },
+    {
+      "parent": "forex_zscore_200d_fade",
+      "type": "inverse",
+      "generation": 26,
+      "status": "active",
+      "mutated_strategy_name": "forex_zscore_200d_fade_mut_inverse_g26",
+      "created_at": "2026-11-25T05:18:22.856721+00:00",
+      "parent_wr": 0.0882,
+      "parent_trades": 68,
+      "params": {
+        "flip": true,
+        "tp_mult": 1.0,
+        "sl_mult": 1.0
+      }
+    },
+    {
+      "parent": "forex_zscore_200d_fade",
+      "type": "tighter_stops",
+      "generation": 26,
+      "status": "active",
+      "mutated_strategy_name": "forex_zscore_200d_fade_mut_tight_g26",
+      "created_at": "2026-11-25T05:18:22.856724+00:00",
+      "parent_wr": 0.0882,
+      "parent_trades": 68,
+      "params": {
+        "flip": false,
+        "tp_mult": 0.6,
+        "sl_mult": 0.6
+      }
+    },
+    {
+      "parent": "forex_zscore_200d_fade",
+      "type": "regime_gate",
+      "generation": 26,
+      "status": "active",
+      "mutated_strategy_name": "forex_zscore_200d_fade_mut_regime_g26",
+      "created_at": "2026-11-25T05:18:22.856743+00:00",
+      "parent_wr": 0.0882,
+      "parent_trades": 68,
+      "params": {
+        "required_regime": "unknown",
+        "best_regime_wr": 0.0882
+      }
+    },
+    {
+      "parent": "forex_zscore_200d_fade",
+      "type": "crossover",
+      "generation": 26,
+      "status": "active",
+      "mutated_strategy_name": "forex_zscore_200d_fade_mut_cross_g26",
+      "created_at": "2026-11-25T05:18:22.856746+00:00",
+      "parent_wr": 0.0882,
+      "parent_trades": 68,
+      "params": {
+        "flip": true,
+        "donor": "commodity_rsi_divergence",
+        "donor_wr": 0.75,
+        "donor_tp_dist": 0.02,
+        "donor_sl_dist": 0.008416
+      }
+    },
+    {
+      "parent": "forex_rsi2_mean_reversion",
+      "type": "inverse",
+      "generation": 169,
+      "status": "active",
+      "mutated_strategy_name": "forex_rsi2_mean_reversion_mut_inverse_g169",
+      "created_at": "2026-11-25T05:18:22.856934+00:00",
+      "parent_wr": 0.194,
+      "parent_trades": 67,
+      "params": {
+        "flip": true,
+        "tp_mult": 1.0,
+        "sl_mult": 1.0
+      }
+    },
+    {
+      "parent": "forex_rsi2_mean_reversion",
+      "type": "tighter_stops",
+      "generation": 169,
+      "status": "active",
+      "mutated_strategy_name": "forex_rsi2_mean_reversion_mut_tight_g169",
+      "created_at": "2026-11-25T05:18:22.856937+00:00",
+      "parent_wr": 0.194,
+      "parent_trades": 67,
+      "params": {
+        "flip": false,
+        "tp_mult": 0.6,
+        "sl_mult": 0.6
+      }
+    },
+    {
+      "parent": "forex_rsi2_mean_reversion",
+      "type": "regime_gate",
+      "generation": 169,
+      "status": "active",
+      "mutated_strategy_name": "forex_rsi2_mean_reversion_mut_regime_g169",
+      "created_at": "2026-11-25T05:18:22.856959+00:00",
+      "parent_wr": 0.194,
+      "parent_trades": 67,
+      "params": {
+        "required_regime": "unknown",
+        "best_regime_wr": 0.194
+      }
+    },
+    {
+      "parent": "forex_rsi2_mean_reversion",
+      "type": "crossover",
+      "generation": 169,
+      "status": "active",
+      "mutated_strategy_name": "forex_rsi2_mean_reversion_mut_cross_g169",
+      "created_at": "2026-11-25T05:18:22.856967+00:00",
+      "parent_wr": 0.194,
+      "parent_trades": 67,
+      "params": {
+        "flip": true,
+        "donor": "commodity_rsi_divergence",
+        "donor_wr": 0.75,
+        "donor_tp_dist": 0.02,
+        "donor_sl_dist": 0.008416
+      }
+    },
+    {
+      "parent": "commodity_momentum",
+      "type": "inverse",
+      "generation": 1,
+      "status": "active",
+      "mutated_strategy_name": "commodity_momentum_mut_inverse_g1",
+      "created_at": "2026-11-25T05:18:22.857081+00:00",
+      "parent_wr": 0.2,
+      "parent_trades": 10,
+      "params": {
+        "flip": true,
+        "tp_mult": 1.0,
+        "sl_mult": 1.0
+      }
+    },
+    {
+      "parent": "commodity_momentum",
+      "type": "tighter_stops",
+      "generation": 1,
+      "status": "active",
+      "mutated_strategy_name": "commodity_momentum_mut_tight_g1",
+      "created_at": "2026-11-25T05:18:22.857084+00:00",
+      "parent_wr": 0.2,
+      "parent_trades": 10,
+      "params": {
+        "flip": false,
+        "tp_mult": 0.6,
+        "sl_mult": 0.6
+      }
+    },
+    {
+      "parent": "commodity_momentum",
+      "type": "regime_gate",
+      "generation": 1,
+      "status": "active",
+      "mutated_strategy_name": "commodity_momentum_mut_regime_g1",
+      "created_at": "2026-11-25T05:18:22.857090+00:00",
+      "parent_wr": 0.2,
+      "parent_trades": 10,
+      "params": {
+        "required_regime": "unknown",
+        "best_regime_wr": 0.2
+      }
+    },
+    {
+      "parent": "commodity_momentum",
+      "type": "crossover",
+      "generation": 1,
+      "status": "active",
+      "mutated_strategy_name": "commodity_momentum_mut_cross_g1",
+      "created_at": "2026-11-25T05:18:22.857092+00:00",
+      "parent_wr": 0.2,
+      "parent_trades": 10,
+      "params": {
+        "flip": true,
+        "donor": "commodity_rsi_divergence",
+        "donor_wr": 0.75,
+        "donor_tp_dist": 0.02,
+        "donor_sl_dist": 0.008416
+      }
+    },
+    {
+      "parent": "combined_confidence",
+      "type": "inverse",
+      "generation": 4,
+      "status": "active",
+      "mutated_strategy_name": "combined_confidence_mut_inverse_g4",
+      "created_at": "2026-11-25T05:18:22.857209+00:00",
+      "parent_wr": 0.25,
+      "parent_trades": 12,
+      "params": {
+        "flip": true,
+        "tp_mult": 1.0,
+        "sl_mult": 1.0
+      }
+    },
+    {
+      "parent": "combined_confidence",
+      "type": "tighter_stops",
+      "generation": 4,
+      "status": "active",
+      "mutated_strategy_name": "combined_confidence_mut_tight_g4",
+      "created_at": "2026-11-25T05:18:22.857214+00:00",
+      "parent_wr": 0.25,
+      "parent_trades": 12,
+      "params": {
+        "flip": false,
+        "tp_mult": 0.6,
+        "sl_mult": 0.6
+      }
+    },
+    {
+      "parent": "combined_confidence",
+      "type": "regime_gate",
+      "generation": 4,
+      "status": "active",
+      "mutated_strategy_name": "combined_confidence_mut_regime_g4",
+      "created_at": "2026-11-25T05:18:22.857222+00:00",
+      "parent_wr": 0.25,
+      "parent_trades": 12,
+      "params": {
+        "required_regime": "unknown",
+        "best_regime_wr": 0.25
+      }
+    },
+    {
+      "parent": "combined_confidence",
+      "type": "crossover",
+      "generation": 4,
+      "status": "active",
+      "mutated_strategy_name": "combined_confidence_mut_cross_g4",
+      "created_at": "2026-11-25T05:18:22.857224+00:00",
+      "parent_wr": 0.25,
+      "parent_trades": 12,
+      "params": {
+        "flip": true,
+        "donor": "commodity_rsi_divergence",
+        "donor_wr": 0.75,
+        "donor_tp_dist": 0.02,
+        "donor_sl_dist": 0.008416
+      }
     }
   ],
   "promoted": [],
   "killed": [],
   "summary": {
-    "total_candidates": 4,
+    "total_candidates": 6,
     "total_donors": 4,
-    "new_mutations_created": 16,
-    "total_active_mutations": 3573,
+    "new_mutations_created": 24,
+    "total_active_mutations": 3597,
     "total_promoted": 0,
     "total_killed": 0
   },
-  "evaluated_at": "2026-11-24T05:18:16.070295+00:00"
+  "evaluated_at": "2026-11-25T05:18:22.969235+00:00"
 }
