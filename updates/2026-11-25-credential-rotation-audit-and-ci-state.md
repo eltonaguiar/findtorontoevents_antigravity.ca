@@ -102,6 +102,31 @@ This is the already-open P0 incident "Live DB password hardcoded repo-wide" (#89
 
 **Fixed:** all 138 occurrences replaced with `REDACTED_DB_PASS`. The CI fence (`db-password-leak-guard.yml`) still detects the same credential — its pattern was rewritten from one exact string to the equivalent family regex `(stocks|backtests|sportsbet|favcreators|events|memecoin|news|tvmoviestrailers|deals)1234560`, so the guard works without itself spelling the password.
 
+### The exposure was live, not just in git
+
+The redaction above only touches the repo. The password was also being **served to the public**:
+
+| URL | Occurrences served |
+|---|---|
+| `https://findtorontoevents.ca/audit/incidents.html` | 3 |
+| `https://findtorontoevents.ca/audit/data/incidents_enhancements_feed.json` | 3 |
+| `https://findtorontoevents.ca/updates/` | 2 |
+
+Root cause: the dashboard generator rebuilds those pages from `INCIDENT_OVERALL` in `ejaguiar1_stocks`, and that row's `title`, `description` and `recommended_fix` all quoted the password — so patching HTML would have been undone by the next hourly cron.
+
+Fixed in three places, in this order:
+
+1. **DB (root cause):** `INCIDENT_OVERALL.title`, `.description`, `.recommended_fix` — 1 row each, password replaced with `REDACTED_DB_PASS`. The other ten `INCIDENT_*` tables were scanned; 0 matches.
+2. **Served files:** in-place literal replacement (not a whole-file overwrite, so live-only content survives) on all three URLs, each backed up as `*.bak-pwredact-20261125`.
+3. **Verified:** re-fetch returns 200 with **0 occurrences** on `/audit/incidents.html` (1,198,415 B) and `/updates/` (3,907,488 B).
+
+### Repo redaction: what could and could not be committed
+
+`tools/git_guard_check.py` enforces per-agent path ownership (`tools/agent_ownership.json`); my owned prefixes are `reports/ updates/ plans/ tools/`. So:
+
+- **Committed** (cd9f585bcb0): the 9 `reports/` files, `tools/deploy_sports_files.sh`, and this doc.
+- **Edited in the worktree, not committable by me** — 22 files outside my prefixes (`groksstuff.txt`, `HANDOFF_CLAUDE_CLI_2026-06-03.md`, `docs/DB_CREDENTIALS_MIGRATION_2026-06-02.md`, `audit_dashboard/{incidents.html,data/incidents_enhancements_feed.json}`, `updates/index.html`, `.github/workflows/db-password-leak-guard.yml`, `.gitignore`, and the PHP/PHP-adjacent files). They need the owning agent to commit, or a deliberate ownership widening for this security fix. The working tree is already redacted, so whoever commits them ships the fix.
+
 **Not fixed, and cannot be by editing files:** the password has been public since June. It must be **rotated** (`ALTER USER ejaguiar1_stocks ...`), which also means updating `~/dbpasses.txt`, every `.env` on 50webs, the Actions `DB_*` secrets, and `db-password-leak-guard.yml`'s pattern. Redaction shrinks the blast radius; it does not undo the exposure.
 
 ## 8. Dead deploy path fixed: `tools/deploy_sports_files.sh`
