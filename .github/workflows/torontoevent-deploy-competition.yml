@@ -29,6 +29,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          # workflow_run inherits default-branch privileges. Pin the ref so this
+          # job can never be edited into checking out the triggering run's head —
+          # executing that code is the actual workflow_run privilege hazard.
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Deploy competition files to torontoevent.net via FTP
         env:
