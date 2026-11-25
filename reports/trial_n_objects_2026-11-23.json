@@ -1,0 +1,54 @@
+{
+ "generated": "2026-11-23",
+ "sigma_sr": 0.6488,
+ "best_observed_sharpe": 1.05,
+ "formula": "SIG*((1-gamma)*Phi^-1(1-1/N)+gamma*Phi^-1(1-1/(N*e))))",
+ "validated_against": {
+  "25": 1.3,
+  "90": 1.6176,
+  "108": 1.6592,
+  "146": 1.7264,
+  "362": 1.9165,
+  "658": 2.0333
+ },
+ "objects": [
+  {
+   "object": "registry_hypotheses",
+   "N": 127,
+   "role": "primary",
+   "why": "fixed before the result (M-107)",
+   "sr_star": 1.6957,
+   "headroom_1_05": -0.646
+  },
+  {
+   "object": "all_list_distinct_ids",
+   "N": 154,
+   "role": "bound",
+   "sr_star": 1.7381,
+   "headroom_1_05": -0.688
+  },
+  {
+   "object": "scored_cells",
+   "N": 362,
+   "role": "upper",
+   "sr_star": 1.9166,
+   "headroom_1_05": -0.867
+  },
+  {
+   "object": "incubator_permutations",
+   "N": 4987,
+   "role": "bound",
+   "why": "kilo; true search cost, ~40x the registry",
+   "sr_star": 2.3922,
+   "headroom_1_05": -1.342
+  },
+  {
+   "object": "incubator_backtests",
+   "N": 24935,
+   "role": "unpriced_until_now",
+   "sr_star": 2.6462,
+   "headroom_1_05": -1.596
+  }
+ ],
+ "conclusion": "Every denominator kills every candidate; the best observed Sharpe 1.05 is below SR* at every N tested. Nothing turns on winning the N argument."
+}

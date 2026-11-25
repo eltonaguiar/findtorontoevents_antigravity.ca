@@ -118,15 +118,20 @@ JSON.stringify({ resourceErrors: errors.length, hasContent, consoleLogs });
 
 This rule exists because silent FTP failures and JS syntax errors have caused deployments to appear successful while serving broken pages. NEVER skip this step.
 
-## GoDaddy FTP (Alternative Deployment Path)
+## GoDaddy FTP path — REMOVED 2026-11-25
 
-Some files also need deployment to the GoDaddy-hosted `findtorontoevents.ca` server:
-- **Host:** `162.210.101.36` (resolved from findtorontoevents.ca)
-- **User:** `findtoro`
-- **Password:** `os.getenv('FTP_PASS')`
-- **Paths:** `/public_html/audit_dashboard/` and `/public_html/audit/`
+The `findtoro` / `162.210.101.36` stanza that used to live here has been deleted.
+That host was identified as the origin of the 2026-11-25 phishing kit, and the
+stanza told readers to authenticate to it with the SAME `FTP_PASS` used for
+50webs — one environment variable, two accounts, two hosts. Removing the stanza
+breaks that credential pairing, so a leaked `FTP_PASS` can no longer be replayed
+against the phishing-kit host.
 
-Both the 50webs and GoDaddy paths may serve the same content. Always check which one the user's browser is hitting.
+`deploy_instrumented_audit.py`, which encoded that same pairing in code, was
+deleted in the same change.
+
+If a GoDaddy deploy target is genuinely needed again, provision a SEPARATE
+credential scoped to that host only. Do not reuse `FTP_PASS`.
 
 ## Important Notes
 
