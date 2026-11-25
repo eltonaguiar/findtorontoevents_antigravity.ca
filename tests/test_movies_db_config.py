@@ -8,7 +8,14 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
 PHP = os.environ.get("PHP_BINARY") or shutil.which("php")
+# 2026-11-23: these tests exercise PHP behaviour and need the PHP CLI. Without it they
+# failed as ERRORS rather than skipping, which inflated the repo failure count with an
+# environment gap instead of a defect. skipif keeps them enforced wherever PHP exists.
+pytestmark = pytest.mark.skipif(not PHP, reason="PHP CLI not available (set PHP_BINARY)")
+
 VERSIONS = ("MOVIESHOWS2", "MOVIESHOWS3")
 
 

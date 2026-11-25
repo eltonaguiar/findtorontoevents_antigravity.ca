@@ -68,6 +68,13 @@ def _common_env(monkeypatch):
     monkeypatch.setenv("COMMODITY_CTF_WEEKLY_CAP", "off")
     monkeypatch.setenv("COMMODITY_CTF_CAP", "0")
     monkeypatch.setenv("COMMODITY_SOURCE_CAP", "0")
+    # 2026-11-23: test_multi_asset_cot_source_stamped deliberately uses
+    # source/strategy "multi_asset_cot" to prove the COT staleness path reads that
+    # source's own strategy name. COMMODITY/multi_asset_cot is a HARDCODED toxic
+    # pair (emitter_whitelist.py:49, evidence WR=17% n=223), so the emitter gate
+    # rejected the fixture before the COT check ran. That kill is correct and is
+    # not weakened here; this pair is only a vehicle for reaching M-001.
+    monkeypatch.setenv("EMITTER_REGISTRY_GATE", "0")
 
 
 class TestM001CotStaleGate:
