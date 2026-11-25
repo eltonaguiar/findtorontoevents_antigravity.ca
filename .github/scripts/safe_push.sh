@@ -17,7 +17,12 @@ set -uo pipefail
 #   2. Deepen fetch capped at 90s — exit early if it stalls (don't burn clock)
 #   3. Fail-fast if deepen times out — shallow repos can't rebase anyway
 #   4. Reduce MAX_RETRIES to 8 — the old 15 was burning too many runner minutes
-MAX_RETRIES=8
+MAX_RETRIES=3   # Measured cost per attempt is ~330s, not 240s: rebase pull (90s)
+                # + merge pull (90s) + push (90s) + backoff (60s). 8 attempts could
+                # never fit a 30-minute step cap, and even 5 was ~27min. 3 attempts
+                # ~= 16.5min leaves real margin. Evidence: run 45694970213 reached
+                # 'Push attempt 8/8' and the commit step hit the 30m cap; attempt 7's
+                # pull alone took 21:24:52 -> 21:27:52.
 INITIAL_BACKOFF=3  # seconds
 MAX_BACKOFF_SLEEP=60  # cap per sleep so one run does not wait many minutes idle
 GIT_NET_TIMEOUT=90   # seconds — kill hanging git pull/push so we retry instead of
