@@ -153,3 +153,54 @@ owner decision because (b) adds a build job that has never run in CI and could s
    run in the recent window; they need a dispatch to prove current state.
 4. The account's GitHub API quota is 5,000/h **shared by every agent and token on this machine**;
    it was exhausted for ~30 min today and blocks all fixes. Worth splitting into per-agent tokens.
+
+---
+
+## 8. Round 3 (21:20Z+) — the branch these notes live on must not be squashed
+
+State measured before any push, from `security/2026-11-25-phishing-cleanup`:
+
+```
+git rev-list --left-right --count origin/main...HEAD   ->  13361   208
+git merge-base --is-ancestor 256822a8379 origin/main   ->  NO
+git branch -r --contains 256822a8379                   ->  (empty)
+```
+
+So all three commits of this remediation
+(`1e1093535e3`, `f4f6a4e6c40`, `256822a8379`) are **local-only and on no remote**.
+`origin/main` moved on separately: `43e9202bd6e` at 21:21:14Z.
+
+**The divergence is not the branch falling behind — it is a fork.** 744 of the 13361
+main-side commits are *not* `[skip ci]` cron data; they are real work that landed on main
+while this branch was open, including `ci.yml`, `portfolio-tracker.yml`,
+`qa-market-validation.yml`, `anti-overfit-gate.yml`, `tribunal-runtime-gate.yml`,
+`verification-tests.yml`, `peer-claim-verification.yml`, `stock-picks-writer.yml`,
+`pod-emission-audit.yml`, `realtime-challenge.yml`, `deploy-riseoftheclaw.yml`,
+`ai-tournament-pipeline.yml` — **12 workflows that exist on main and not on this branch**.
+
+A squash or a plain fast-forward of this branch would therefore **delete those 12
+workflows** and revert every cron data file written since the branch point. Neither is
+acceptable. The only safe landing is a **merge commit** (`git merge origin/main` into the
+branch, or a GitHub "Create a merge commit"), with the workflow-level conflicts resolved by
+hand so both sides survive.
+
+Branch-unique content that needs to be preserved (names-adds, branch side):
+
+| Dir | Files added on branch |
+|---|---|
+| `data/` | 683 |
+| `reports/` | 437 |
+| `tools/` | 150 |
+| `updates/` | 132 |
+| `docs/` | 117 |
+| `tests/` | 59 |
+| `.github/workflows/` | 19 |
+| `plans/` | 33 |
+
+Total `origin/main...HEAD`: 1876 files, +897,204 / −21,717.
+
+**Also uncommitted in the worktree:** 77 modified tracked files and 64 untracked paths
+(mostly `reports/`, `plans/`, `tools/`, `updates/`, `state/`) authored by other sessions on
+this checkout. These are not part of this remediation and must not be swept into the
+remediation commit; they are left for their owners.
+
