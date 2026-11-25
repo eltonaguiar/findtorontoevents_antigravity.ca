@@ -272,6 +272,34 @@ def verify(remote: str, check_content: bool = False) -> tuple[bool, str]:
         return False, f"{type(e).__name__}: {e}"
 
 
+def _load_env_fallback(path=".env"):
+    """Fill missing FTP_* credentials from the repo-root .env (gitignored).
+
+    Existing environment variables always win, so an explicit export is never
+    silently overridden. This exists because a password rotation has to touch two
+    places (the .env file and the GitHub Actions secret) and it is easy to update
+    one and leave the other stale -- which surfaces as `530 Login authentication
+    failed` and looks like the script or the password is broken.
+    """
+    if not os.path.exists(path):
+        return
+    keys = ("FTP_USER", "FTP_PASS", "FTP_SERVER", "FTP_HOST")
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k = k.strip()
+                if k.startswith("export "):
+                    k = k[len("export "):].strip()
+                if k in keys and not os.environ.get(k):
+                    os.environ[k] = v.strip().strip('"').strip("'")
+    except OSError:
+        return
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
@@ -280,11 +308,16 @@ def main():
     ap.add_argument("--verify-content", action="store_true", help="Download and verify JSON content (e.g. model count)")
     args = ap.parse_args()
 
+    _load_env_fallback()
+
     user = os.environ.get("FTP_USER")
     pw = os.environ.get("FTP_PASS")
-    host = os.environ.get("FTP_SERVER", "ftps2.50webs.com")
+    host = os.environ.get("FTP_SERVER") or os.environ.get("FTP_HOST") or "ftps2.50webs.com"
     if not (user and pw):
-        print("ERROR: FTP_USER + FTP_PASS env vars required", file=sys.stderr)
+        print(
+            "ERROR: FTP_USER + FTP_PASS required (export them, or put them in .env)",
+            file=sys.stderr,
+        )
         sys.exit(2)
 
     targets = UPLOADS if not args.only else [t for t in UPLOADS if t[2] == args.only]
