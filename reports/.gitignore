@@ -1,0 +1,14 @@
+# Large regenerable data snapshots — provenance is preserved by sha256, not by the payload.
+#
+# reports/hl_clock/index.json records the sha256 and row count of every snapshot, so any
+# committed claim remains checkable: re-fetch and compare the hash. Committing the payloads
+# instead would add ~3.8 MB per day (the forward clock writes one snapshot daily by cron),
+# i.e. ~1.4 GB/year for data that is reproducible in one HTTP GET.
+reports/hl_clock/snapshot_*.json
+reports/hl_leaderboard_snapshot_*.json
+
+# Watcher state is machine-local and rewritten every 5 minutes.
+reports/.coms_watch_start
+reports/.coms_watch_seen
+reports/.coms_watch_done
+reports/coms_watch.log

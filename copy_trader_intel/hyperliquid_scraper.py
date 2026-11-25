@@ -586,8 +586,24 @@ def run_full_scan():
     # Step 1: Build address list from leaderboard + seeds
     addresses = {}  # addr -> label
 
-    # Add seed wallets first (highest priority)
-    for addr, label in SEED_WALLETS:
+    # Add seed wallets first (highest priority).
+    # QUARANTINE (2026-11-24): 23 of the 113 hardcoded seeds are FABRICATED — 7 are not valid
+    # Ethereum addresses and all 23 contain impossible sequential-hex cycles, while carrying
+    # provenance labels naming real vendors (nansen_smart_*, arkham_tracked_*, copin_top_*).
+    # Verified against the live API: three sampled fakes return accountValue 0.0 or HTTP 422,
+    # versus $20.35M for a real seed. Filtering here rather than deleting keeps the record of the
+    # defect and stops a fabricated wallet silently contributing to a scan. See seed_quarantine.py.
+    try:
+        from seed_quarantine import filter_seeds
+    except ImportError:  # running under a different sys.path
+        from copy_trader_intel.seed_quarantine import filter_seeds
+    _clean_seeds, _rejected = filter_seeds(SEED_WALLETS)
+    if _rejected:
+        print(f"  SEED QUARANTINE: {len(_rejected)} of {len(SEED_WALLETS)} seeds rejected as "
+              f"fabricated/invalid; {len(_clean_seeds)} kept")
+        for _a, _why in _rejected[:3]:
+            print(f"    dropped {_a}  <- {_why}")
+    for addr, label in _clean_seeds:
         addresses[addr.lower()] = label
 
     # Try leaderboard API for more
