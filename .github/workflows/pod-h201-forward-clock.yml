@@ -1,0 +1,73 @@
+name: H-201 Pod Forward Clock
+
+# Advances the POD-EQUITY-H201-XSMOM-6M forward observation clock.
+#
+# WHY: `tools/pod_forward.py` writes real forward rows, but nothing invoked it, so `n_days`
+# advanced only when a human remembered to run it by hand (it stood at 15/20 days, 3/10 trades).
+# A clock that only moves when someone looks is not a forward test; it is a diary.
+#
+# Push trigger: NONE — this job commits forward-row data, and a push trigger on committed data
+# is the infinite-loop pattern that was already removed from audit-dashboard.yml on 2026-05-19.
+# Cron + dispatch only, and the commit carries [skip ci].
+
+on:
+  schedule:
+    - cron: '20 22 * * *'   # daily 22:20 UTC, after the US close (21:00 UTC in winter)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Compute rows and print them without writing'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  forward-clock:
+    name: Accrue H-201 forward rows
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install pandas numpy yfinance
+
+      - name: Record forward rows
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python tools/pod_forward.py --dry-run
+          else
+            python tools/pod_forward.py
+          fi
+
+      - name: Report clock state
+        run: python tools/pod_status.py || echo "pod_status reported non-zero; rows are still recorded"
+
+      - name: Commit forward rows [skip ci]
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/pods/forward/*.jsonl reports/pods/forward/*_anchor.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no new forward rows (idempotent re-run or market closed) - nothing to commit"
+          else
+            git commit -m "chore(pod): H-201 forward rows [skip ci]"
+            git push
+          fi
