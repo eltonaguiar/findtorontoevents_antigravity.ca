@@ -1,40 +1,49 @@
 {
-  "_comment": [
-    "Who may commit which paths. The guard reads this so a shared clone can refuse a",
-    "commit that sweeps in another agent's files, and refuse an --amend that would",
-    "rewrite another agent's commit.",
-    "",
-    "IMPORTANT: every agent in this clone commits under the same identity",
-    "(github-actions[bot] <eaguiar2015@...>), so git author is NOT usable as identity.",
-    "Ownership has to be declared by path. That is why this file exists."
-  ],
-  "default_agent": "freebuff-deepseek-v4-flash",
-  "agents": {
-    "freebuff-deepseek-v4-flash": {
-      "owned_prefixes": [
-        "reports/",
-        "updates/",
-        "plans/",
-        "tools/",
-        "tests/test_git_guard.py",
-        ".githooks/"
-      ],
-      "note": "research + measurement surface; committed 8a7b6f57597, cbd34345d62, 3898c10eb02"
-    }
+ "_comment": [
+  "Who may commit which paths. The guard reads this so a shared clone can refuse a",
+  "commit that sweeps in another agent's files, and refuse an --amend that would",
+  "rewrite another agent's commit.",
+  "",
+  "IMPORTANT: every agent in this clone commits under the same identity",
+  "(github-actions[bot] <eaguiar2015@...>), so git author is NOT usable as identity.",
+  "Ownership has to be declared by path. That is why this file exists."
+ ],
+ "default_agent": "freebuff-deepseek-v4-flash",
+ "agents": {
+  "freebuff-deepseek-v4-flash": {
+   "owned_prefixes": [
+    "reports/",
+    "updates/",
+    "plans/",
+    "tools/",
+    "tests/test_git_guard.py",
+    ".githooks/"
+   ],
+   "note": "research + measurement surface; committed 8a7b6f57597, cbd34345d62, 3898c10eb02"
   },
-  "foreign_prefixes": [
-    "___HELL_HEALTH_OPENCODE.MD",
-    "docs/audit_review_2026-11-22/",
-    "data/fundamentals_pit/",
-    "data/realtime_challenge/",
-    "paper_trading/live_sim/",
-    "investments/goldmines/"
-  ],
-  "policy": {
-    "commit": "refuse when any staged path is outside the agent's owned_prefixes",
-    "amend": "refuse when ANY file in HEAD is outside the agent's owned_prefixes",
-    "head_moved": "refuse when HEAD changed between guard start and the actual commit",
-    "unknown_agent": "warn only - never block an agent that has not declared ownership",
-    "escape_hatch": "AGENT_GUARD_ALLOW=1 (logged loudly; use only for a reviewed exception)"
+  "ghcopilot": {
+   "owned_prefixes": [
+    "copy_trader_intel/",
+    "reports/",
+    "tools/",
+    "docs/superpowers/specs/"
+   ],
+   "note": "trader-skill measurement + audits; H-258/259/260/261, seed quarantine, forward clock"
   }
+ },
+ "foreign_prefixes": [
+  "___HELL_HEALTH_OPENCODE.MD",
+  "docs/audit_review_2026-11-22/",
+  "data/fundamentals_pit/",
+  "data/realtime_challenge/",
+  "paper_trading/live_sim/",
+  "investments/goldmines/"
+ ],
+ "policy": {
+  "commit": "refuse when any staged path is outside the agent's owned_prefixes",
+  "amend": "refuse when ANY file in HEAD is outside the agent's owned_prefixes",
+  "head_moved": "refuse when HEAD changed between guard start and the actual commit",
+  "unknown_agent": "warn only - never block an agent that has not declared ownership",
+  "escape_hatch": "AGENT_GUARD_ALLOW=1 (logged loudly; use only for a reviewed exception)"
+ }
 }
