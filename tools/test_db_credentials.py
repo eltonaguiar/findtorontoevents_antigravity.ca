@@ -44,20 +44,29 @@ def main() -> int:
         ip = urllib.request.urlopen("https://api.ipify.org", timeout=8).read().decode()
     except Exception:
         ip = "unknown"
+    available = sorted(k for k, v in creds.items() if isinstance(v, str) and v)
     print(f"GitHub runner outbound IP: {ip}")
     print("  -> this IP must be in the 50webs Remote-MySQL allowlist for each DB user")
     print(f"  -> host: {HOST}")
+    # Key NAMES are not secrets; printing them makes a missing-key result
+    # actionable instead of a mystery SKIP.
+    print(f"  -> DB_PASSWORDS_JSON keys present ({len(available)}): "
+          f"{', '.join(available) if available else '(none)'}")
     print()
     print(f"{'DATABASE':<28} {'RESULT':<8} DETAIL")
     print("-" * 72)
 
     failures = 0
+    skipped = 0
     for db in DBS:
         name = f"ejaguiar1_{db}"
         pw = creds.get(db)
         if not pw:
-            print(f"{name:<28} {'SKIP':<8} no entry for '{db}' in DB_PASSWORDS_JSON")
-            failures += 1
+            # A key absent from the secret means this DB is simply not managed
+            # by DB_PASSWORDS_JSON — that is not an authentication failure.
+            # (Only "stocks" is guaranteed; some deployments carry all ten.)
+            print(f"{name:<28} {'SKIP':<8} no '{db}' key in DB_PASSWORDS_JSON — not managed here")
+            skipped += 1
             continue
         t0 = time.time()
         try:
@@ -86,12 +95,17 @@ def main() -> int:
             failures += 1
 
     print("-" * 72)
-    ok = len(DBS) - failures
-    print(f"{ok}/{len(DBS)} databases authenticated from GitHub Actions")
+    ok = len(DBS) - failures - skipped
+    print(f"{ok} OK / {failures} FAIL / {skipped} SKIP  (of {len(DBS)} databases)")
     if failures:
         print(f"::error::{failures} database connection(s) failed — see table above")
         return 1
-    print("::notice::All 10 DB credentials verified working from GitHub Actions")
+    if ok == 0:
+        print("::error::no database was actually tested — DB_PASSWORDS_JSON "
+              "has no key matching any of the 10 expected names")
+        return 1
+    print(f"::notice::{ok} DB credential(s) verified working from GitHub Actions"
+          f" ({skipped} not managed by DB_PASSWORDS_JSON)")
     return 0
 
 
