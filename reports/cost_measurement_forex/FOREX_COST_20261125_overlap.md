@@ -1,9 +1,9 @@
 # FOREX cost - London/NY overlap measurement (20261125)
 
-**Status: `BLOCKED_NO_REPRESENTATIVE_SESSION`** - block reason `NO_TIINGO_API_KEY` - generated 2026-11-25T13:50:36.533610+00:00
+**Status: `BLOCKED_NO_REPRESENTATIVE_SESSION`** - block reason `NO_TIINGO_API_KEY` - generated 2026-11-25T14:00:44.540160+00:00
 
 - **Endpoint:** `https://api.tiingo.com/tiingo/fx/top` via [`tools/fx_cost_sampler.py`](../../tools/fx_cost_sampler.py)
-- **Session check:** weekday Wednesday 13:xx UTC inside 13:00-16:00 UTC -> `LONDON_NY_OVERLAP` (in-window: True)
+- **Session check:** weekday Wednesday 14:xx UTC inside 13:00-16:00 UTC -> `LONDON_NY_OVERLAP` (in-window: True)
 - **Sampling:** 0 polls, 20.0s apart, target n>=30 plausible quotes per pair
 - **Commission:** `COMMISSION_UNKNOWN` - Tiingo top-of-book exposes bid/ask only; a retail commission cannot be determined from this feed and is NOT assumed zero. Round-trip cost here is SPREAD ONLY.
 - **Strategy verdict:** `BLOCKED_NO_REPRESENTATIVE_SESSION` - no representative session -> no verdict move
