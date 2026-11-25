@@ -23,6 +23,7 @@ Uses existing verified fetchers (no new network code):
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -82,6 +83,43 @@ def compute_pnl(entry: float, current: float, direction: str) -> float:
 _EXT_CACHE = {}
 _MAX_EXT_CHECKS = 250   # bound live network calls; blank/zero checks still run for all
 
+# Directions that represent an actionable position. A row whose direction is WATCH
+# or SKIP_* is a DEMOTED pick: published so the demotion stays visible, not to be
+# traded, and it carries no TP/SL by design (2026-11-25: all 6 EQUITY blank_tp/sl
+# rows were WATCH/SKIP_VOL, which is why this gate was red every hour).
+ACTIONABLE = {"LONG", "SHORT", "BUY", "SELL", "STRONG_BUY", "STRONG_SELL"}
+
+# The external cross-check compares a published snapshot with a LIVE quote. Those are
+# only comparable while the snapshot is fresh: this job is hourly, so it routinely
+# validates a file up to ~60 min old, and 0.5pp of equity drift inside an hour is
+# ordinary market movement rather than bad data. Inside _FRESH_MIN the tight per-class
+# tolerance applies (which catches a miscomputed PnL); beyond it only a divergence too
+# large for drift to explain is flagged (which catches a wrong symbol or price scale —
+# the failure class the tight check was silently proxying for).
+_FRESH_MIN = float(os.environ.get("QA_FRESH_MIN", "15"))
+
+# Freshness is asserted, not assumed. A stale picks file silently degrades every
+# comparison into a no-op (or into a drift false-positive), and the gate kept
+# running while the committed artifact went 6 days stale. The tracker writes hourly,
+# so 90 minutes means it has missed at least one cycle.
+_MAX_SNAPSHOT_MIN = float(os.environ.get("QA_MAX_SNAPSHOT_MIN", "90"))
+SCALE_DIVERGENCE_PP = {"CRYPTO": 10.0}
+_DEFAULT_SCALE_DIVERGENCE_PP = 5.0
+
+
+def _snapshot_age_minutes(d: dict):
+    """Age of the published snapshot in minutes, or None when unknown."""
+    ts = d.get("generated_at")
+    if not ts:
+        return None
+    try:
+        gen = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if gen.tzinfo is None:
+        gen = gen.replace(tzinfo=timezone.utc)
+    return (datetime.now(timezone.utc) - gen).total_seconds() / 60.0
+
 
 def run() -> int:
     if not LIVE_JSON.exists():
@@ -93,9 +131,25 @@ def run() -> int:
         print("no picks to validate")
         return 0
 
+    age_min = _snapshot_age_minutes(d)
     flags = []
     by_class = {}
     ext_checks = 0
+
+    # 0) snapshot freshness. Without this the gate can be red for the wrong reason
+    # (drift against a stale file) or useless (nothing comparable at all).
+    if age_min is None:
+        flags.append({"symbol": "-", "asset_class": "SNAPSHOT",
+                      "verdict": "STALE_SNAPSHOT",
+                      "detail": ("picks snapshot has no parsable generated_at "
+                                 f"(got {d.get('generated_at')!r}); freshness cannot be established")})
+    elif age_min > _MAX_SNAPSHOT_MIN:
+        flags.append({"symbol": "-", "asset_class": "SNAPSHOT",
+                      "verdict": "STALE_SNAPSHOT",
+                      "detail": (f"picks snapshot is {age_min:.0f} min old "
+                                 f"(limit {_MAX_SNAPSHOT_MIN:.0f} min, generated_at="
+                                 f"{d.get('generated_at')}) — the tracker has missed a cycle")
+                      })
     for idx, p in enumerate(picks):
         sym = p.get("symbol", "")
         aclass = p.get("asset_class", "") or p.get("class", "")
@@ -107,7 +161,9 @@ def run() -> int:
         sl = p.get("sl_pct")
         aclass = aclass.upper()
         by_class.setdefault(aclass, {"n": 0, "unpriced": 0, "unverified_zero": 0,
-                                     "blank_tp_sl": 0, "mismatch": 0,
+                                     "blank_tp_sl": 0, "demoted_no_tpsl": 0,
+                                     "mismatch": 0, "stale_price": 0,
+                                     "price_divergence": 0,
                                      "out_of_bounds": 0, "self_inconsistent": 0,
                                      "quarantined": 0, "quarantine_leak": 0,
                                      "unverified_source": 0})
@@ -149,11 +205,17 @@ def run() -> int:
                           "detail": "pnl==0 but price != entry (stale-equal)"})
             continue
 
-        # 3) blank TP/SL on emitted picks
+        # 3) blank TP/SL on an ACTIONABLE pick only. A demoted row (WATCH / SKIP_*)
+        # has no target by design, so it is counted separately and never flagged --
+        # flagging it made the gate red on rows that were behaving correctly.
         if tp is None and sl is None:
-            c["blank_tp_sl"] += 1
-            flags.append({"symbol": sym, "asset_class": aclass,
-                          "verdict": "BLANK_TP_SL", "detail": "neither tp nor sl set"})
+            if str(direction).upper() in ACTIONABLE:
+                c["blank_tp_sl"] += 1
+                flags.append({"symbol": sym, "asset_class": aclass,
+                              "verdict": "BLANK_TP_SL",
+                              "detail": f"actionable {direction} with neither tp nor sl set"})
+            else:
+                c["demoted_no_tpsl"] += 1
 
         # 3b) published PnL must agree with the row's OWN entry/current prices.
         # Zero rows today, but this is the corruption class the gate was blind
@@ -206,30 +268,60 @@ def run() -> int:
         if recomputed is None:
             continue
         diff = abs(pnl_f - recomputed)
-        if diff > tol:
+        if diff <= tol:
+            continue
+        if age_min is not None and age_min <= _FRESH_MIN:
+            # Snapshot and quote are contemporaneous: a tight diff is a real defect.
             c["mismatch"] += 1
             flags.append({"symbol": sym, "asset_class": aclass,
                           "verdict": "MISMATCH",
                           "detail": (f"published {pnl_f:.2f}% vs external {recomputed:.2f}% "
-                                     f"(diff {diff:.2f}pp > tol {tol}pp), src={src}")})
+                                     f"(diff {diff:.2f}pp > tol {tol}pp), src={src}, "
+                                     f"snapshot {age_min:.0f} min old")})
+            continue
+        # Stale snapshot: the diff is expected market drift. Only a divergence that
+        # drift cannot explain (wrong symbol / wrong price scale) is a failure.
+        scale = SCALE_DIVERGENCE_PP.get(aclass, _DEFAULT_SCALE_DIVERGENCE_PP)
+        try:
+            px_pct = abs(ext_f - float(cur)) / float(cur) * 100.0
+        except (TypeError, ValueError, ZeroDivisionError):
+            px_pct = None
+        age_txt = f"{age_min:.0f} min" if age_min is not None else "unknown age"
+        if px_pct is not None and px_pct > scale:
+            c["price_divergence"] += 1
+            flags.append({"symbol": sym, "asset_class": aclass,
+                          "verdict": "PRICE_DIVERGENCE",
+                          "detail": (f"published price {cur} vs external {ext_f} "
+                                     f"({px_pct:.1f}% apart > {scale}pp, snapshot "
+                                     f"{age_txt}) — drift cannot explain this")})
+        else:
+            c["stale_price"] += 1
 
     critical = [f for f in flags if f["verdict"] in
                 ("UNPRICED", "UNVERIFIED_ZERO", "MISMATCH", "PNL_OUT_OF_BOUNDS",
-                 "SELF_INCONSISTENT", "QUARANTINE_LEAK")]
+                 "SELF_INCONSISTENT", "QUARANTINE_LEAK", "PRICE_DIVERGENCE",
+                 "STALE_SNAPSHOT")]
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "snapshot_generated_at": d.get("generated_at"),
+        "snapshot_age_minutes": round(age_min, 1) if age_min is not None else None,
         "n_picks": len(picks),
         "by_class": {k: v for k, v in sorted(by_class.items())},
         "flag_counts": {"total": len(flags), "critical": len(critical)},
         "flags": flags[:500],
     }
     OUT_JSON.write_text(json.dumps(report, indent=2))
-    print(f"QA ledger: {len(picks)} picks, {len(flags)} flags "
+    age_txt = f"{age_min:.0f} min old" if age_min is not None else "AGE UNKNOWN"
+    print(f"QA ledger: {len(picks)} picks from a snapshot {age_txt} "
+          f"(limit {_MAX_SNAPSHOT_MIN:.0f} min), {len(flags)} flags "
           f"({len(critical)} critical) -> {OUT_JSON}")
     for k, v in sorted(by_class.items()):
         print(f"  {k:16} n={v['n']:5} unpriced={v['unpriced']} "
               f"zero={v['unverified_zero']} blank_tp/sl={v['blank_tp_sl']} "
-              f"mismatch={v['mismatch']} bounds={v['out_of_bounds']} "
+              f"demoted={v['demoted_no_tpsl']} "
+              f"mismatch={v['mismatch']} stale={v['stale_price']} "
+              f"div={v['price_divergence']} "
+              f"bounds={v['out_of_bounds']} "
               f"self={v['self_inconsistent']} quar={v['quarantined']}"
               + (f" samefeed={v['unverified_source']}" if v["unverified_source"] else "")
               + (f" LEAK={v['quarantine_leak']}" if v["quarantine_leak"] else ""))
