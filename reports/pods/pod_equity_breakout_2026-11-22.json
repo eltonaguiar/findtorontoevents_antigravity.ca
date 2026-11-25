@@ -1,0 +1,45 @@
+{
+  "pod_id": "POD-EQUITY-BREAKOUT-LIMIT",
+  "registered": "2026-11-22",
+  "registered_by": "buffy",
+  "status": "observe",
+  "paper_only": true,
+  "capital_sanctioned": 0,
+  "status_reasoning": "Registered as OBSERVE, not pre_registered, because the prior evidence is NEGATIVE and this programme does not launder a failed backtest into a forward pod. The published claim (PF 1.479, WR 50.2%) is UNREPRODUCED: measured PF ~1.00, WR 40.6%, random-entry null 69.8th percentile, selection-alpha CI-LB -0.285%. A pod that could not fail would be theatre.",
+  "hypothesis": {
+    "id": "H-BABY-EQUITY-VT-PATTERN-SWEEP-001",
+    "name": "equity breakout with limit fills",
+    "statement": "Daily breakout continuation, entered with LIMIT orders that fill only if the next bar trades through the signal price, beats a T-bill hurdle after cost",
+    "null": "daily excess return mean <= 0",
+    "why_limit_fills_are_the_point": "the published break-even is 24.59 bp/side while measured next-bar-open entry at 5 bp/side still gives PF 1.22; a limit entry lowers the effective cost and is the only untested execution variant that could change the cell"
+  },
+  "prior_evidence": {
+    "n_trades": 1935,
+    "symbols": 13,
+    "window": "1993-01-29..2026-11-20",
+    "pf_at_0bp_per_side": 1.2865,
+    "pf_at_5bp_per_side": 1.2206,
+    "pf_at_25bp_per_side": 0.9917,
+    "break_even_bp_per_side": 24.5945,
+    "random_entry_null_percentile": 69.8,
+    "selection_alpha_ci_lb_pct": -0.285,
+    "killed_by": "random-entry null and negative selection alpha, NOT by cost",
+    "consequence": "improving fills cannot rescue a rule that is indistinguishable from random entry; this pod exists to test whether forward LIMIT fills nonetheless produce a positive excess, and it must report the null comparison beside every result"
+  },
+  "execution": {
+    "entry": "LIMIT at the signal bar's high (long) or low (short); filled ONLY if a later bar trades through it within 3 sessions, else the signal expires unfilled",
+    "unfilled_reporting": "the fill rate MUST be reported; a limit rule that fills 12% of the time is a different strategy from one that fills 80%, and a favourable result with a 12% fill rate is a selection effect",
+    "exit": "1x ATR stop / 2x ATR target / 24-bar time stop, first touch",
+    "tie_break": "conservative: stop before target when both are touched intraday",
+    "cost_bp_per_side": 5
+  },
+  "size_gate": {"no_verdict_before_n_trades": 50,
+                "reason": "the backtest had 1,935 trades; 50 forward fills is the minimum that can speak to a 0.49% per-trade edge"},
+  "kill_rule": {"trigger": "at n>=50 forward fills: PF < 1.0 OR random-entry null percentile < 95 OR fill rate < 30%",
+                "then": "record REFUTED and close the pod; do not re-register the same rule under a new id"},
+  "promotion_rule": {"trigger": "n>=50 AND PF >= 1.22 at 5 bp/side AND null >= 95 AND fill rate >= 30%",
+                     "then": "CANDIDATE only; capital requires a second universe"},
+  "known_limitations": ["equity cost is UNMEASURED (11 bp/side assumed in the pod, 5 bp/side in the backtest)",
+                        "the 13-symbol universe is today's-constituents, so survivorship flatters breakouts",
+                        "the published PF 1.479 must never be quoted as prior support: it is UNREPRODUCED"]
+}
