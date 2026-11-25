@@ -78,7 +78,16 @@ jobs:
         if: github.event_name != 'pull_request'
         continue-on-error: true
         run: |
+          # Non-blocking by design on push/cron. It emits an explicit ::warning when it
+          # cannot run, so the mask is named rather than silent -- scripts/lint_workflow_masking.py
+          # treats a bare continue-on-error with no ::warning as a NEW silent masker.
+          set +e
           python tools/run_anti_overfit_audit.py --json 2>&1 | head -50
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning title=anti-overfit-audit::audit exited ${rc}. It requires audit_dashboard/data/dashboard_data.json, a generated artifact that is absent from a clean checkout. Non-blocking here; the PR gates are the pytest and PBO/CSCV steps."
+          fi
+          exit 0
 
       - name: Run PBO/CSCV gate (blocking on PR)
         if: github.event_name == 'pull_request'
