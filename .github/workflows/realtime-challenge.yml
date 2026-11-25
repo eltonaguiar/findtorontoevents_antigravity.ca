@@ -51,8 +51,20 @@ jobs:
               echo "no change"
             else
               git commit -m "realtime-challenge: cycle [skip ci]"
+              # Every network op is bounded: main is contended by ~47 workflows
+              # that push, and an unbounded `git push` stalls until the job's
+              # 10-minute cap cancels the run (39 cancels today).
+              pushed=0
               for i in 1 2 3; do
-                git push && break || { git pull --rebase --autostash; sleep 5; }
+                if timeout 60 git push; then pushed=1; break; fi
+                echo "push attempt $i failed; rebasing"
+                timeout 60 git pull --rebase --autostash || {
+                  git rebase --abort 2>/dev/null || true
+                }
+                sleep $((i * 5))
               done
+              if [ "$pushed" != "1" ]; then
+                echo "::warning::ledger push failed after 3 bounded attempts; next cycle retries"
+              fi
             fi
           fi
