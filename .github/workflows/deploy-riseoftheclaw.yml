@@ -640,31 +640,49 @@ jobs:
           path: '_site'
           retention-days: 1
 
-      # WHY THIS STEP EXISTS (2026-11-25): the previous revision had
-      # `Retry Deploy to GitHub Pages` with `if: failure()`, calling
-      # actions/deploy-pages a SECOND time after the first call had already
-      # claimed the artifact. That retry can never succeed -- it re-deploys a
-      # consumed artifact and fails with "No artifacts named github-pages were
-      # found for this workflow run", which was 56 of the last 100 runs. A retry
-      # must re-upload first; it never did. Removed, replaced by this assertion,
-      # which names the real cause once instead of failing the deploy twice.
-      - name: Assert a pages artifact was produced
+      # ROOT CAUSE OF THE 56-of-100 FAILURES (measured 2026-11-25): an artifact
+      # visibility race, not a missing upload.
+      #
+      # Run 45708138189: step 14 "Upload artifact" succeeded, step 15
+      # "Deploy to GitHub Pages" ran ONE SECOND later and failed with
+      #   Fetching artifact metadata for "github-pages" in this workflow run
+      #   Found 0 artifact(s)
+      # ...while that run's `github-pages` artifact (46,515,216 bytes, created
+      # 21:55:45) is present and unexpired in the run's artifact list. deploy-pages
+      # looked before the ~46 MB artifact was indexed.
+      #
+      # The old `Retry Deploy to GitHub Pages` (if: failure()) could not help: it
+      # fired immediately, saw the same not-yet-indexed state, and on other failure
+      # modes re-deployed an artifact the first call had already claimed. It also
+      # turned one red step into two, which is why every failure looked identical.
+      #
+      # Waiting for the artifact to actually be addressable closes the race; the
+      # retry step is deleted.
+      - name: Wait for the pages artifact to be addressable
         id: artifact
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
         run: |
-          n=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
-                --jq '[.artifacts[] | select(.name=="github-pages")] | length')
-          echo "github-pages artifacts in this run: $n"
-          if [ "${n:-0}" -lt 1 ]; then
-            echo "::error::upload-pages-artifact left no 'github-pages' artifact; skipping deploy-pages instead of failing it with 'No artifacts named github-pages'."
-            exit 1
-          fi
+          for i in $(seq 1 15); do
+            n=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+                  --jq '[.artifacts[] | select(.name=="github-pages")] | length' 2>/dev/null || echo 0)
+            echo "attempt $i/15: $n 'github-pages' artifact(s) visible"
+            if [ "${n:-0}" -ge 1 ]; then
+              echo "artifact is addressable; deploying"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::no 'github-pages' artifact after 75s; not calling deploy-pages (its 'No artifacts named github-pages' error would only mask this)"
+          exit 1
 
       - name: Deploy to GitHub Pages
         id: deployment
         if: steps.artifact.outcome == 'success'
         uses: actions/deploy-pages@v4
+        # NOTE: deliberately no `retry` step. A second deploy-pages after a failed
+        # first one either sees the same stale artifact index or claims an artifact
+        # the first call consumed; neither can succeed.
 
       - name: Verify deployment
         run: |

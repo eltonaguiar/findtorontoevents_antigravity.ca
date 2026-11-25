@@ -28,17 +28,33 @@
         uses: actions/deploy-pages@v4
 ```
 
-`if: failure()` fires whenever *any* earlier step failed — including the first deploy — and the
-second call re-deploys an artifact the first call has already claimed. A second `deploy-pages`
-cannot succeed. That is precisely the error in 56 of the last 100 runs:
-
 ```
 Fetching artifact metadata for "github-pages" in this workflow run
 Found 0 artifact(s)
 ##[error]No artifacts named "github-pages" were found for this workflow run
 ```
 
-The "retry" was making the failure worse, not recovering from it.
+**Correction to the first version of this record.** I initially wrote that the retry step *caused*
+the `Found 0 artifact(s)` error. Step-level logs from failed run `45708138189` disprove that:
+
+```
+deploy | 14 success  Upload artifact
+deploy | 15 failure  Deploy to GitHub Pages        <- fails here, FIRST
+ deploy | 16 failure  Retry Deploy to GitHub Pages   <- repeats the same error
+deploy | 17 skipped  Verify deployment
+```
+
+The first deploy already fails, one second after a successful upload — and that run's
+`github-pages` artifact (**46,515,216 bytes**, created `21:55:45`, unexpired) is present in the
+run's artifact list **now**. So the artifact was never missing: `deploy-pages` looked for it before
+the ~46 MB artifact finished being indexed. It is an **artifact-visibility race**, and the retry
+only made every failure look identical (two red steps instead of one) while never being able to
+recover — it re-ran the same lookup immediately, and on other failure modes it re-deployed an
+already-claimed artifact.
+
+The fix is therefore to **wait until the artifact is addressable** before deploying (15 attempts ×
+5 s), not merely to assert it exists. The assertion as first written would have passed on run
+`45708138189` and deployed into the same race.
 
 ## 2. What changed, file by file
 
@@ -56,10 +72,10 @@ now reads.
   `_site/bestiejob/`. Written with `if [ -f … ]` blocks, not `[ -f … ] && cp …`, because steps run
   under `bash -e` where a false test as the last command fails the step.
 - `upload-pages-artifact` v3 → **v4**, given `id: upload`.
-- The retry step is **deleted**; a new `Assert a pages artifact was produced` step lists this run's
-  artifacts and fails with an explicit message if there is no `github-pages` artifact, and
-  `deploy-pages` is gated on `if: steps.artifact.outcome == 'success'`.
-- `permissions:` gains `actions: read` for that assertion.
+- The retry step is **deleted**, replaced by `Wait for the pages artifact to be addressable`:
+  it polls this run's artifact list for up to 75 s and only then allows the deploy, which is gated
+  on `if: steps.artifact.outcome == 'success'`. This closes the race instead of describing it.
+- `permissions:` gains `actions: read` for that polling step.
 
 ### `hub-sync.yml` — a green run must mean the data moved
 - A missing `signal_recorder/export_hub_combos.py` is now an error, and the exporter runs without
@@ -114,7 +130,48 @@ flags {'total': 0, 'critical': 0}
 Against the previous code the identical inputs produced `14 flags (8 critical)` and exit 1. The 6
 demoted EQUITY rows are counted (`demoted=6`) and no longer flagged; no row was hidden.
 
-**Still not confirmed:** the *scheduled workflow* going green. That needs the branch on `main`, and
-this environment cannot dispatch it safely — the workflow's final `Commit the QA artifact` step runs
-`git push origin HEAD:main`, which from a branch run would push the branch itself onto main. The
-confirmation step after merge is simply to watch the `:30` run.
+### The scheduled run did go green at 22:16 — for a reason that proves the diagnosis
+
+`QA Market Validation` run `45711796783` (22:16 UTC) **succeeded** on unpatched `main`, after seven
+consecutive failures. The ledger output, next to the 21:16 failure:
+
+| run | ledger line | EQUITY |
+|---|---|---|
+| 21:16 `45702858708` | `183 picks, 14 flags (8 critical)` | `blank_tp/sl=6 mismatch=8` |
+| 22:16 `45711796783` | `183 picks, 6 flags (0 critical)` | `blank_tp/sl=6 mismatch=0` |
+
+US equities closed at 21:00 UTC. Once quotes freeze, a 50-minute-old snapshot matches the feed
+exactly, so the 8 "mismatches" evaporate without any data changing. That is the whole argument for
+the `:30` cron and the freshness assertion: this gate is red during trading hours and green after
+the close **on identical data quality**, so its red says nothing about the data. Expect it red again
+at the 13:30 UTC market open unless the branch is merged.
+
+**Still not confirmed:** a *scheduled* run of the patched workflow. That needs the branch on `main`,
+and this environment cannot dispatch it safely — the workflow's final `Commit the QA artifact` step
+runs `git push origin HEAD:main`, which from a branch run would push the branch itself onto main.
+
+---
+
+## 5. Census after the 22:2x hourly cycle (800 runs, 18:21 → 22:32 UTC)
+
+Conclusion mix: **756 success / 24 cancelled / 10 failure / 10 in-flight**. Of 198 active
+workflows, only three had a latest failure with no later success:
+
+| workflow | last failure | later success | note |
+|---|---|---|---|
+| ALPHA ENGINE - Dynamic Runner (Cloud or Local) | 20:26 (run `45694970213`) | 18:28 — none after | 1 failure in 3 runs; schedule-triggered |
+| Forward-Test New Strategies Tracker | 18:45 (run `45678303449`) | none in window | 1 run in window |
+| Mirror: findtorontoevents.ca torontontoevent.net | 18:28 (run `45675564919`) | none in window | `mirror-site.yml`, deliberately left failing — it overwrites the GoDaddy site |
+
+`Deploy to GitHub Pages` is **not** in that list: it failed at 20:51, 21:22 and 21:51 and succeeded
+at 22:22, so its failures do reach a later success — intermittently, which matches a race rather
+than a broken input.
+
+Dormant: 198 active workflows, **39 with no run in >24 h** and 13 that have never run (templates and
+manual-only commands: `_dynamic-runner-template`, `gha-scan-job`, `clear-channel-command`,
+`closed-picks-command`, `deploy-fc-api-env-godaddy`, …). The longest real gaps:
+`ai-leaderboard-refresh` (2026-06-05, 173 days), `db-secret-scan` (2026-06-05, last conclusion
+**failure**), `battleground-mass-backtest-part2` (2026-06-06), `discord-token-selftest`
+(2026-10-04), `fetch-movies` / `kimi-fetch-movies` (2026-10-11).
+
+No workflow was "always skipped" (≥3 skipped runs, zero successes) in the window.
