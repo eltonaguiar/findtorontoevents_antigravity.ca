@@ -52,28 +52,86 @@ jobs:
           git commit -m "Sync hub data $(date +%H:%M) [skip ci]"
           bash .github/scripts/safe_push.sh
 
-      - name: Assert the hub manifest is fresh
+      - name: Assert hub data is fresh and well-formed
         run: |
           python3 - <<'PY'
           import json, sys
           from datetime import datetime, timezone
 
-          p = "hub/data/systems_manifest.json"
+          def parse_ts(value):
+              if not value:
+                  return None
+              try:
+                  ts = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+              except ValueError:
+                  return None
+              return ts if ts.tzinfo else ts.replace(tzinfo=timezone.utc)
+
+          now = datetime.now(timezone.utc)
+
+          # 1. The artifact this workflow actually regenerates, hourly.
+          #    This is the freshness gate that carries real signal: if the export
+          #    stops re-stamping, the hub is serving stale combos.
+          combos_path = "hub/data/winning_combos.json"
           try:
-              gen = json.load(open(p)).get("generated_at")
+              combos = json.load(open(combos_path))
           except FileNotFoundError:
-              print(f"::error::{p} is missing")
+              print(f"::error::{combos_path} is missing — the export produced nothing")
               sys.exit(1)
-          if not gen:
-              print(f"::error::{p} has no generated_at")
+          except json.JSONDecodeError as exc:
+              print(f"::error::{combos_path} is not valid JSON: {exc}")
               sys.exit(1)
-          ts = datetime.fromisoformat(str(gen).replace("Z", "+00:00"))
-          if ts.tzinfo is None:
-              ts = ts.replace(tzinfo=timezone.utc)
-          age_d = (datetime.now(timezone.utc) - ts).total_seconds() / 86400
-          print(f"hub manifest generated_at={gen} age={age_d:.1f}d (limit 7d)")
-          if age_d > 7:
-              print(f"::error::hub manifest is {age_d:.1f} days stale")
+
+          updated = parse_ts(combos.get("updated_at"))
+          if updated is None:
+              print(f"::error::{combos_path} has no parseable updated_at")
               sys.exit(1)
+          age_h = (now - updated).total_seconds() / 3600
+          found = combos.get("total_found")
+          print(f"{combos_path} updated_at={combos.get('updated_at')} age={age_h:.1f}h (limit 26h, hourly cron)")
+          print(f"{combos_path} total_found={found} entries={len(combos.get('winning_combos') or [])}")
+          if age_h > 26:
+              print(f"::error::{combos_path} is {age_h:.1f}h stale — this run did not re-stamp it")
+              sys.exit(1)
+          if not found:
+              print("::warning::the export matched 0 winning combos — the hub has nothing to display")
+
+          # 2. systems_manifest.json is a HAND-CURATED config, not a generated
+          #    snapshot: nothing in this repo writes it, so its `generated_at` is a
+          #    review stamp, not a build stamp. A 7-day recency rule on it was red
+          #    from the day it landed (268 days stale, unfixable) — which trains
+          #    everyone to ignore this job. Gate what can be verified instead:
+          #    presence, JSON validity, required keys, non-empty content.
+          manifest_path = "hub/data/systems_manifest.json"
+          try:
+              manifest = json.load(open(manifest_path))
+          except FileNotFoundError:
+              print(f"::error::{manifest_path} is missing")
+              sys.exit(1)
+          except json.JSONDecodeError as exc:
+              print(f"::error::{manifest_path} is not valid JSON: {exc}")
+              sys.exit(1)
+
+          missing = [k for k in ("version", "generated_at", "categories", "systems") if k not in manifest]
+          if missing:
+              print(f"::error::{manifest_path} missing required keys: {missing}")
+              sys.exit(1)
+          if not manifest.get("systems"):
+              print(f"::error::{manifest_path} has an empty `systems` map — the hub would render nothing")
+              sys.exit(1)
+          if not manifest.get("categories"):
+              print(f"::error::{manifest_path} has an empty `categories` map")
+              sys.exit(1)
+
+          gen = parse_ts(manifest.get("generated_at"))
+          if gen is None:
+              print(f"::error::{manifest_path} has no parseable generated_at")
+              sys.exit(1)
+          age_d = (now - gen).total_seconds() / 86400
+          print(f"{manifest_path} generated_at={manifest.get('generated_at')} age={age_d:.1f}d "
+                f"systems={len(manifest['systems'])} categories={len(manifest['categories'])}")
+          if age_d > 180:
+              print(f"::warning::{manifest_path} has not been reviewed in {age_d:.0f}d — "
+                    f"it is curated by hand; verify its systems list still matches reality")
           PY
 

@@ -89,15 +89,21 @@ jobs:
       env:
         ALPHA_LOG_LEVEL: INFO
         ALPHA_VERBOSE: '1'
+        # Dispatch inputs are shell-reachable, so they are bound as env vars and
+        # read as "${VAR:-default}" instead of being interpolated into `run:`
+        # (template-injection fix). Empty on scheduled runs, hence the defaults.
+        IN_UNIVERSE: ${{ github.event.inputs.universe }}
+        IN_TOP_K: ${{ github.event.inputs.top_k }}
+        IN_MODE: ${{ github.event.inputs.mode }}
       run: |
         echo "======================================================"
         echo "  Alpha Engine - Multi-Strategy Pick Generation"
         echo "======================================================"
         echo ""
 
-        UNIVERSE="${{ github.event.inputs.universe || 'default' }}"
-        TOP_K="${{ github.event.inputs.top_k || '20' }}"
-        MODE="${{ github.event.inputs.mode || 'picks' }}"
+        UNIVERSE="${IN_UNIVERSE:-default}"
+        TOP_K="${IN_TOP_K:-20}"
+        MODE="${IN_MODE:-picks}"
 
         # Sunday runs use extended universe
         DAY_OF_WEEK=$(date +%u)
@@ -253,15 +259,20 @@ jobs:
     #  Step 10: Summary 
     - name: Summary
       if: always()
+      env:
+        IN_UNIVERSE: ${{ github.event.inputs.universe }}
+        IN_TOP_K: ${{ github.event.inputs.top_k }}
+        PICKS_STATUS: ${{ steps.picks.outputs.picks_status }}
+        PICK_COUNT: ${{ steps.picks.outputs.pick_count }}
       run: |
         echo ""
         echo "======================================================"
         echo "       Alpha Engine Daily Run Summary"
         echo "======================================================"
-        echo " Status:    ${{ steps.picks.outputs.picks_status || 'unknown' }}"
-        echo " Picks:     ${{ steps.picks.outputs.pick_count || '0' }} generated"
-        echo " Universe:  ${{ github.event.inputs.universe || 'default' }}"
-        echo " Top-K:     ${{ github.event.inputs.top_k || '20' }}"
+        echo " Status:    ${PICKS_STATUS:-unknown}"
+        echo " Picks:     ${PICK_COUNT:-0} generated"
+        echo " Universe:  ${IN_UNIVERSE:-default}"
+        echo " Top-K:     ${IN_TOP_K:-20}"
         echo "------------------------------------------------------"
         echo " Live:      https://findtorontoevents.ca/findstocks/alpha/latest_picks.json"
         echo " Artifacts: Available in Actions tab"
