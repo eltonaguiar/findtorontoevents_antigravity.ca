@@ -230,6 +230,9 @@ def workflow_last_runs(repo: str, paths: list[str], workers: int = 3) -> dict:
     res = {}
     with ThreadPoolExecutor(max_workers=workers) as ex:
         for path, runs in ex.map(one, paths):
+            if runs is None:      # 429/timeout: keep None so callers can say "unreadable"
+                res[path] = None
+                continue
             runs.sort(key=lambda r: r["ts"], reverse=True)
             res[path] = runs
     return res
@@ -348,9 +351,12 @@ def main() -> int:
     if a.watch:
         print(f"\n== WATCHED WORKFLOWS ==")
         watched = {}
-        for slug in a.watch:
+        for slug in (s for raw in a.watch for s in str(raw).split(",") if s.strip()):
+            slug = slug.strip()
+            if slug.endswith((".yml", ".yaml")):
+                slug = slug.rsplit(".", 1)[0]
             path = f".github/workflows/{slug}.yml"
-            rs = workflow_last_runs(a.repo, [path]).get(path, [])
+            rs = workflow_last_runs(a.repo, [path]).get(path) or []
             watched[slug] = rs[:8]
             print(f"  {slug}")
             for r in rs[:6]:
