@@ -191,7 +191,12 @@ jobs:
           echo "=== Exporting tier-rating algorithms (DB -> tier_rating_algorithms.json; fixes the stuck panel) ==="
           python tools/ai_tournament/export_tier_rating_algorithms.py || echo "::warning title=tier_rating::tier-rating export failed"
           echo "=== Generating model diagnostics (API health snapshot) ==="
-          python tools/ai_tournament/generate_diagnostics.py || echo "::warning title=diagnostics::Diagnostics generation failed"
+          # Was generate_diagnostics.py, which has never existed in this repo. Because
+          # this step is continue-on-error: true, the wrong filename kept the run GREEN
+          # while audit_dashboard/data/ai_tournament_model_diagnostics.json froze (it
+          # sat unchanged for 6 days). Correct target is build_model_diagnostics.py.
+          # See reports/DEAD_DEPLOY_SCRIPTS_SCAN_2026_11_25.md Appendix A row 1.
+          python tools/ai_tournament/build_model_diagnostics.py || echo "::error title=diagnostics::build_model_diagnostics.py failed - ai_tournament_model_diagnostics.json is STALE"
           echo "=== Leaderboard output ==="
           if [ -f 'audit_dashboard/data/ai_tournament_leaderboard.json' ]; then
             python3 -c "
