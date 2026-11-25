@@ -265,18 +265,24 @@ def compute_sortino_ratio(closed):
 
 
 def compute_max_drawdown(closed):
-    """Max drawdown % on cumulative PnL curve."""
+    """Max drawdown as a percentage of peak equity, on a compounded curve.
+
+    pnl_pct is a fraction (0.03 == 3%), so the curve must compound rather than
+    accumulate: summing percentage points across hundreds of trades produces
+    numbers like 1357%, which cannot be a drawdown. Returns a percentage of the
+    running peak, so a normal result is bounded by 100.
+    """
     if not closed:
         return 0.0
-    cum = 0.0
-    peak = 0.0
+    equity = 1.0
+    peak = 1.0
     max_dd = 0.0
     for p in closed:
-        cum += (p.get("pnl_pct") or 0) * 100
-        peak = max(peak, cum)
-        dd = peak - cum
-        max_dd = max(max_dd, dd)
-    return round(max_dd, 4)
+        equity *= 1.0 + (p.get("pnl_pct") or 0.0)
+        peak = max(peak, equity)
+        if peak > 0:
+            max_dd = max(max_dd, (peak - equity) / peak)
+    return round(max_dd * 100.0, 4)
 
 
 def compute_max_consecutive_losses(closed):
