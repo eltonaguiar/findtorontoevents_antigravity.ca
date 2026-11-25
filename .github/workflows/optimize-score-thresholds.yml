@@ -69,6 +69,7 @@ jobs:
             --train-days 60 --test-days 14 --step-days 7
 
       - name: Run dynamic threshold optimizer
+        id: threshold-optimizer
         if: steps.check-data.outputs.has_data == 'true' && steps.check-data.outputs.pick_count > 100
         run: |
           HALF_LIFE="${{ github.event.inputs.half_life || '30' }}"
@@ -88,7 +89,7 @@ jobs:
             --payload audit_dashboard/data/dashboard_data.json
 
       - name: Commit updates
-        if: steps.check-data.outputs.has_data == 'true' && steps.check-data.outputs.pick_count > 100 && steps.validate-thresholds.outcome == 'success'
+        if: steps.check-data.outputs.has_data == 'true' && steps.check-data.outputs.pick_count > 100 && steps.threshold-optimizer.outcome == 'success'
         env:
           TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
