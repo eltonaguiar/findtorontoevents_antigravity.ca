@@ -18,6 +18,12 @@ Same kit family, already removed earlier today:
 `findtorontoevents.ca` 403s site-wide from the host's IP lockdown (unchanged since this morning);
 FTP inspection is the authority there and shows the directories deleted.
 
+A later probe at 18:14Z returned **403** (not 404) for `/de/`, `/appeasy/`, `/easyapp/` on
+`tdotevent.ca` and `ejaguiar1.50webs.com` as well, while unrelated missing paths still 404. The host
+now blocks those known-bad URL patterns at platform level; the directories are deleted on disk either
+way (FTP-verified during the cleanup). 403 and 404 are both "not served" here — the difference is only
+which layer answers.
+
 ## Exposure re-probe (same list used on GoDaddy)
 
 | Path | findtorontoevents.ca | tdotevent.ca | ejaguiar1.50webs.com |

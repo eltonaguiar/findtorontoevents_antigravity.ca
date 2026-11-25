@@ -91,6 +91,12 @@ logs) there were **0** requests to `/de/`, `/appeasy`, `/easyapp`, `visit.txt`, 
 `/_sync_tmp/ensure_sync_tables.php` returns 404 because the directory does not exist on the host
 (confirmed by FTP `NLST`), not because of the new rules.
 
+**Post-deletion second probe (18:12Z):** the three kit paths now answer **403** (bare 13-byte Apache
+`403 Forbidden`) rather than 404, while a control path (`/zzz-nonexistent-check-9871/`) still returns
+404. FTP `NLST` at the same moment reports `de`, `appeasy`, `easyapp` all **ABSENT**, so this is a
+host/WAF block on those known-bad URLs, not the directories returning. Treat 403 as "not served" —
+the payloads are gone from disk.
+
 ## Evidence kept
 
 - `/tmp/gd/evidence/` — kit `index.php` ×3, `visit.txt`, `error_log`, compromised `.htaccess` (76,678 B),
