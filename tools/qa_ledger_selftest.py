@@ -114,6 +114,20 @@ def main() -> int:
     rc, rep, _ = run_case([pick()], now.isoformat(), quote=101.2)
     check("fresh snapshot + 0.6pp drift IS critical", rc == 1)
     check("fresh drift flagged MISMATCH", "MISMATCH" in verdicts(rep))
+    check("fresh snapshot is not flagged stale", "STALE_SNAPSHOT" not in verdicts(rep))
+
+    # ── staleness assertion: a stale snapshot must fail loudly ──────────────
+    over = int(qa._MAX_SNAPSHOT_MIN) + 120
+    rc, rep, _ = run_case([pick()], (now - timedelta(minutes=over)).isoformat(), quote=100.6)
+    check(f"snapshot older than {int(qa._MAX_SNAPSHOT_MIN)} min IS critical", rc == 1)
+    check("staleness flagged STALE_SNAPSHOT", "STALE_SNAPSHOT" in verdicts(rep))
+
+    rc, rep, _ = run_case([pick()], "", quote=100.6)
+    check("unparsable snapshot age IS critical", rc == 1)
+    check("missing generated_at flagged STALE_SNAPSHOT", "STALE_SNAPSHOT" in verdicts(rep))
+
+    rc, rep, _ = run_case([pick()], "garbage-timestamp", quote=100.6)
+    check("garbage generated_at IS critical", rc == 1)
 
     # ── pre-existing guards must survive the edit ──────────────────────────
     rc, rep, _ = run_case([pick(pnl_pct=5.0)], now.isoformat(), quote=100.6)

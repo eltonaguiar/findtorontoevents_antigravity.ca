@@ -97,6 +97,12 @@ ACTIONABLE = {"LONG", "SHORT", "BUY", "SELL", "STRONG_BUY", "STRONG_SELL"}
 # large for drift to explain is flagged (which catches a wrong symbol or price scale —
 # the failure class the tight check was silently proxying for).
 _FRESH_MIN = float(os.environ.get("QA_FRESH_MIN", "15"))
+
+# Freshness is asserted, not assumed. A stale picks file silently degrades every
+# comparison into a no-op (or into a drift false-positive), and the gate kept
+# running while the committed artifact went 6 days stale. The tracker writes hourly,
+# so 90 minutes means it has missed at least one cycle.
+_MAX_SNAPSHOT_MIN = float(os.environ.get("QA_MAX_SNAPSHOT_MIN", "90"))
 SCALE_DIVERGENCE_PP = {"CRYPTO": 10.0}
 _DEFAULT_SCALE_DIVERGENCE_PP = 5.0
 
@@ -129,6 +135,21 @@ def run() -> int:
     flags = []
     by_class = {}
     ext_checks = 0
+
+    # 0) snapshot freshness. Without this the gate can be red for the wrong reason
+    # (drift against a stale file) or useless (nothing comparable at all).
+    if age_min is None:
+        flags.append({"symbol": "-", "asset_class": "SNAPSHOT",
+                      "verdict": "STALE_SNAPSHOT",
+                      "detail": ("picks snapshot has no parsable generated_at "
+                                 f"(got {d.get('generated_at')!r}); freshness cannot be established")})
+    elif age_min > _MAX_SNAPSHOT_MIN:
+        flags.append({"symbol": "-", "asset_class": "SNAPSHOT",
+                      "verdict": "STALE_SNAPSHOT",
+                      "detail": (f"picks snapshot is {age_min:.0f} min old "
+                                 f"(limit {_MAX_SNAPSHOT_MIN:.0f} min, generated_at="
+                                 f"{d.get('generated_at')}) — the tracker has missed a cycle")
+                      })
     for idx, p in enumerate(picks):
         sym = p.get("symbol", "")
         aclass = p.get("asset_class", "") or p.get("class", "")
@@ -278,7 +299,8 @@ def run() -> int:
 
     critical = [f for f in flags if f["verdict"] in
                 ("UNPRICED", "UNVERIFIED_ZERO", "MISMATCH", "PNL_OUT_OF_BOUNDS",
-                 "SELF_INCONSISTENT", "QUARANTINE_LEAK", "PRICE_DIVERGENCE")]
+                 "SELF_INCONSISTENT", "QUARANTINE_LEAK", "PRICE_DIVERGENCE",
+                 "STALE_SNAPSHOT")]
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "snapshot_generated_at": d.get("generated_at"),
@@ -289,7 +311,9 @@ def run() -> int:
         "flags": flags[:500],
     }
     OUT_JSON.write_text(json.dumps(report, indent=2))
-    print(f"QA ledger: {len(picks)} picks, {len(flags)} flags "
+    age_txt = f"{age_min:.0f} min old" if age_min is not None else "AGE UNKNOWN"
+    print(f"QA ledger: {len(picks)} picks from a snapshot {age_txt} "
+          f"(limit {_MAX_SNAPSHOT_MIN:.0f} min), {len(flags)} flags "
           f"({len(critical)} critical) -> {OUT_JSON}")
     for k, v in sorted(by_class.items()):
         print(f"  {k:16} n={v['n']:5} unpriced={v['unpriced']} "

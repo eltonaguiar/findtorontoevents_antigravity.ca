@@ -15,6 +15,8 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  # actions: read -- the artifact assertion below lists this run's artifacts.
+  actions: read
 
 # One concurrent deployment.
 #
@@ -393,6 +395,26 @@ jobs:
           cp hub/js/*.js _site/hub/js/ 2>/dev/null || true
           cp hub/data/*.json _site/hub/data/ 2>/dev/null || true
 
+          # Alpha Engine live dashboard + BESTIEJOB page. Both used to be published
+          # by live_tracker.yml (peaceiris -> gh-pages branch), which Pages does not
+          # serve, so they 404ed. Same deployer, one publisher (2026-11-25).
+          # `if` blocks, not `[ -f x ] && cp`: steps run under bash -e, where a
+          # false test as the last command fails the step.
+          mkdir -p _site/dashboard _site/bestiejob
+          if [ -f alpha_engine/live_dashboard.html ]; then
+            cp alpha_engine/live_dashboard.html _site/dashboard/index.html
+          fi
+          if [ -f dashboard/big_mover_widget.html ]; then
+            cp dashboard/big_mover_widget.html _site/
+          fi
+          if [ -f dashboard/live_picks.json ]; then
+            cp dashboard/live_picks.json _site/
+          fi
+          if [ -d docs/bestiejob ]; then
+            cp -r docs/bestiejob/. _site/bestiejob/
+            touch _site/bestiejob/.nojekyll
+          fi
+
           # Cross-aggregation data + consensus dashboard
           mkdir -p _site/cross_aggregation/data
           cp cross_aggregation/consensus_dashboard.html _site/cross_aggregation/index.html 2>/dev/null || true
@@ -612,17 +634,36 @@ jobs:
           echo " All HTML files passed JavaScript syntax validation"
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        id: upload
+        uses: actions/upload-pages-artifact@v4
         with:
           path: '_site'
           retention-days: 1
 
+      # WHY THIS STEP EXISTS (2026-11-25): the previous revision had
+      # `Retry Deploy to GitHub Pages` with `if: failure()`, calling
+      # actions/deploy-pages a SECOND time after the first call had already
+      # claimed the artifact. That retry can never succeed -- it re-deploys a
+      # consumed artifact and fails with "No artifacts named github-pages were
+      # found for this workflow run", which was 56 of the last 100 runs. A retry
+      # must re-upload first; it never did. Removed, replaced by this assertion,
+      # which names the real cause once instead of failing the deploy twice.
+      - name: Assert a pages artifact was produced
+        id: artifact
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+        run: |
+          n=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+                --jq '[.artifacts[] | select(.name=="github-pages")] | length')
+          echo "github-pages artifacts in this run: $n"
+          if [ "${n:-0}" -lt 1 ]; then
+            echo "::error::upload-pages-artifact left no 'github-pages' artifact; skipping deploy-pages instead of failing it with 'No artifacts named github-pages'."
+            exit 1
+          fi
+
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Retry Deploy to GitHub Pages
-        if: failure()
+        if: steps.artifact.outcome == 'success'
         uses: actions/deploy-pages@v4
 
       - name: Verify deployment

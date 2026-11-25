@@ -1,9 +1,13 @@
 # Patchset — one Pages publisher, gated deploy, honest hub-sync
 
-**Date:** 2026-11-25 · **Status:** NOT APPLIED
-**Why not applied:** `.github/workflows/**` is outside this agent's `owned_prefixes` in
-`tools/agent_ownership.json`, and the pre-commit guard refuses such commits. These are exact diffs
-for the owner (or an agent that owns that prefix) to apply.
+**Date:** 2026-11-25 · **Status:** APPLIED on branch `fix/gha-pages-hub-sync-and-qa-cron`
+
+Applied at the operator's explicit instruction, which overrides the ownership-prefix guard for
+this patchset (the commit carries the guard's logged `AGENT_GUARD_ALLOW` override). Pre-patch
+backups of all four workflows: `reports/backups/2026-11-25-workflows-pre-patch/`.
+Application record and verification: `updates/2026-11-25-gha-workflow-patches-applied.md`.
+
+Everything below is the diff as applied.
 
 Evidence behind each item: `updates/2026-11-25-actions-validation-antigravity-main-and-gh-pages.md`.
 
@@ -87,9 +91,23 @@ Found 0 artifact(s)
 ##[error]No artifacts named "github-pages" were found for this workflow run
 ```
 
-The job reaches `actions/deploy-pages@v4` in a run where `upload-pages-artifact` produced nothing.
-Note that gating on `steps.upload.outcome` is **not sufficient** — the observed failure mode is an
-upload step that does not leave a `github-pages` artifact. Assert the artifact itself.
+**The actual cause, found while applying this patch: the workflow deployed Pages twice.**
+
+```yaml
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Retry Deploy to GitHub Pages
+        if: failure()
+        uses: actions/deploy-pages@v4        # <- claims an artifact the first call consumed
+```
+
+The "retry" runs whenever *any* earlier step failed — including the first deploy — and calls
+`deploy-pages` again against an artifact that is already claimed. That is exactly
+`Found 0 artifact(s)`. A second `deploy-pages` can never succeed; a real retry has to re-upload
+first. Deleting the retry is the fix. Gating on `steps.upload.outcome` alone is also not
+sufficient, so the assertion below verifies the artifact itself.
 
 ```diff
  permissions:
@@ -102,9 +120,11 @@ upload step that does not leave a `github-pages` artifact. Assert the artifact i
 ```diff
        - name: Upload artifact
 +        id: upload
-         uses: actions/upload-pages-artifact@v4
+-        uses: actions/upload-pages-artifact@v3
++        uses: actions/upload-pages-artifact@v4
          with:
            path: '_site'
++          retention-days: 1
 
 +      - name: Assert a pages artifact was produced
 +        id: artifact
@@ -115,7 +135,7 @@ upload step that does not leave a `github-pages` artifact. Assert the artifact i
 +                --jq '[.artifacts[] | select(.name=="github-pages")] | length')
 +          echo "github-pages artifacts in this run: $n"
 +          if [ "${n:-0}" -lt 1 ]; then
-+            echo "::error::upload-pages-artifact left no 'github-pages' artifact; refusing to call deploy-pages (that call is what turns this run red)."
++            echo "::error::upload-pages-artifact left no 'github-pages' artifact; skipping deploy-pages instead of failing it with 'No artifacts named github-pages'."
 +            exit 1
 +          fi
 +
@@ -123,6 +143,10 @@ upload step that does not leave a `github-pages` artifact. Assert the artifact i
          id: deployment
 +        if: steps.artifact.outcome == 'success'
          uses: actions/deploy-pages@v4
+
+-      - name: Retry Deploy to GitHub Pages
+-        if: failure()
+-        uses: actions/deploy-pages@v4
 ```
 
 This does not remove the red runs — it replaces a confusing failure 40–50 times a day with one
