@@ -892,15 +892,21 @@ jobs:
               git rebase --abort 2>/dev/null || true
 
               # Try rebase first (clean history)
-              if git pull --rebase origin main 2>/dev/null; then
+              if timeout 240 git -c core.editor=true pull --rebase origin main; then
                 bash .github/scripts/safe_push.sh && break
               else
                 echo "Rebase failed (likely JSON conflict), falling back to merge..."
                 git rebase --abort 2>/dev/null || true
 
-                # Merge strategy: keep our version of data files (we just generated them)
-                git pull origin main --no-rebase -X ours 2>/dev/null || true
-                bash .github/scripts/safe_push.sh && break
+                # Merge strategy: keep our version of data files (we just generated them).
+                # GIT_MERGE_AUTOEDIT=no and --no-edit stop git opening an editor for the
+                # merge commit message: with no stdin that blocks until the step times out,
+                # which is what made this step die at 30 minutes without ever pushing.
+                if GIT_MERGE_AUTOEDIT=no GIT_EDITOR=true GIT_TERMINAL_PROMPT=0 \
+                   timeout 300 git -c core.editor=true pull origin main --no-rebase -X ours --no-edit; then
+                  bash .github/scripts/safe_push.sh && break
+                fi
+                echo "Merge fallback failed (see git output above)"
               fi
 
               echo "Push attempt $i failed, retrying..."
