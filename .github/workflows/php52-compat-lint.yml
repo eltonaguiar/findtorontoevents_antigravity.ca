@@ -1,0 +1,45 @@
+name: PHP 5.2 Compatibility Lint
+
+# 50webs (findtorontoevents.ca) still runs PHP 5.2.17 and MOVIESHOWS3 scripts turn
+# display_errors off, so a 5.4+ construct fails as an EMPTY HTTP 500. That is how
+# http_response_code() broke the movie refresh for hours. This gate catches it at PR
+# time instead of in production.
+on:
+  pull_request:
+    paths:
+      - "TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/**/*.php"
+      - "tools/php52_compat_lint.py"
+      - "tests/test_php52_compat_lint.py"
+      - ".github/workflows/php52-compat-lint.yml"
+  push:
+    branches: [main]
+    paths:
+      - "TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/**/*.php"
+      - "tools/php52_compat_lint.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: php52-compat-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Scan MOVIESHOWS3 for post-5.2 constructs
+        run: python3 tools/php52_compat_lint.py
+
+      - name: Unit tests for the lint
+        run: |
+          python3 -m pip install --quiet pytest
+          python3 -m pytest tests/test_php52_compat_lint.py -q
