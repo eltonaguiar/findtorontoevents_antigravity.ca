@@ -112,5 +112,22 @@ jobs:
             echo "no new artifact"
           else
             git commit -m "chore(fx-cost): overlap spread sample [skip ci]"
-            git push
+            # This repo takes a commit every 1-2 minutes, so a bare `git push` loses the
+            # race nearly every run and the measurement artifact is thrown away
+            # (run 45750022474: "! [rejected] main -> main (fetch first)").
+            # Rebase onto the new tip and retry. NOTE the flag inversion inside a rebase:
+            # `-X theirs` prefers the commits being replayed (OUR generated artifact),
+            # while `-X ours` would prefer upstream - the opposite of merge semantics.
+            for attempt in 1 2 3 4 5; do
+              if git pull --rebase -X theirs --no-edit origin main >/dev/null 2>&1 && git push; then
+                echo "artifact pushed on attempt $attempt"
+                break
+              fi
+              if [ "$attempt" = "5" ]; then
+                echo "::error title=artifact push::could not land the cost artifact after 5 attempts"
+                exit 1
+              fi
+              echo "push attempt $attempt rejected; retrying in $((attempt * 5))s"
+              sleep $((attempt * 5))
+            done
           fi
