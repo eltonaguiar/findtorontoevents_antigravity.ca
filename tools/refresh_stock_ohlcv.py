@@ -41,6 +41,33 @@ BATCH_SIZE = 10
 RATE_LIMIT_SLEEP = 1.0  # seconds between batch calls
 SOURCE = "yahoo"
 
+# Tickers that no longer exist on Yahoo. Requesting them cannot succeed, and each
+# miss costs a network call and produces an ERROR line, so they are dropped from
+# the universe instead of retried forever. Evidence for each:
+#   SQ      -> Block Inc. renamed its ticker to XYZ (2025-01-21)
+#   NKLA    -> Nikola delisted after bankruptcy (2025)
+#   MATIC-USD -> Polygon migrated to POL
+#   RNDR-USD  -> Render migrated to RENDER
+#   FB, TWTR  -> renamed META / taken private
+# Codes are matched after normalisation, so `$SQ` and `SQ` are both caught.
+KNOWN_DELISTED = {
+    "SQ": "renamed XYZ (Block Inc.)",
+    "NKLA": "delisted",
+    "MATIC-USD": "migrated to POL-USD",
+    "RNDR-USD": "migrated to RENDER-USD",
+    "FB": "renamed META",
+    "TWTR": "taken private",
+}
+
+# A bare crypto base (``$ADA`` from a social feed) is not a Yahoo equity ticker: it
+# resolves to nothing, and silently rewriting it to ``ADA-USD`` would push crypto
+# into a stock-only table. The crypto pipeline owns those symbols, so they are
+# dropped here instead of being requested and failing.
+CRYPTO_BASES = {
+    "BTC", "ETH", "ADA", "SOL", "XRP", "DOGE", "BNB", "LTC", "AVAX", "LINK",
+    "DOT", "MATIC", "POL", "RENDER", "SHIB", "TRX", "UNI", "ATOM", "XLM", "ETC",
+}
+
 CREATE_TABLE_SQL = """
 CREATE TABLE IF NOT EXISTS `stock_ohlcv` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -68,15 +95,35 @@ def get_db_conn():
 
 def normalize_yf_symbol(raw: str) -> Optional[str]:
     """
-    Light normalization for yfinance symbols.
+    Normalise a symbol for yfinance and drop the ones that cannot resolve.
+
+    Symbols arrive from social/aggregator sources as ``$SQ``, ``SQ``, `` sq ``, so a
+    leading ``$`` and all whitespace are stripped. Known-dead tickers return
+    ``None``: asking Yahoo for them can only fail, and the failure used to be
+    retried on every run (840 ERROR lines in run 45746318864).
+
     Preserves yfinance suffixes like =X, =F, -USD, etc.
     """
     if not raw:
         return None
-    s = raw.strip().upper()
-    # Remove internal spaces
-    s = s.replace(" ", "")
+    s = str(raw).strip().upper()
+    s = s.replace(" ", "").replace("$", "")
+    if not s or s in KNOWN_DELISTED or s in CRYPTO_BASES:
+        return None
     return s
+
+
+def _quiet_yfinance() -> None:
+    """Stop yfinance logging one ERROR per symbol it cannot resolve.
+
+    yfinance logs ``No data found, symbol may be delisted`` at ERROR level for
+    every empty symbol. In this pipeline that is an expected, already-handled
+    coverage fact, not an error: it produced 840 ERROR lines in a *successful*
+    picks-now-refresh run and drowned the real ones. The count is reported once,
+    in aggregate, by ``main()``.
+    """
+    logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+    logging.getLogger("yfinance").propagate = False
 
 
 def get_stock_symbols(conn) -> List[str]:
@@ -278,6 +325,8 @@ def main() -> int:
     if args.dry_run:
         dry_run = True
 
+    _quiet_yfinance()
+
     logger.info("Starting refresh_stock_ohlcv | dry_run=%s | period=%s | batch_size=%s", dry_run, args.period, args.batch_size)
 
     conn = get_db_conn()
@@ -298,6 +347,7 @@ def main() -> int:
     total_rows_upserted = 0
     success_symbols = 0
     fail_symbols = 0
+    no_data_symbols: List[str] = []
 
     # Process in batches
     for i in range(0, len(symbols), args.batch_size):
@@ -314,7 +364,10 @@ def main() -> int:
             if df is not None and not df.empty:
                 batch_results[sym] = df
             else:
-                logger.warning("No data for %s (delisted or bad ticker)", sym)
+                # Collected, not logged one line per symbol: a handful of dead
+                # tickers should not produce hundreds of ERROR lines (or hide a
+                # real one among them). Reported in aggregate below.
+                no_data_symbols.append(sym)
 
         for sym, df in batch_results.items():
             rows = df_to_rows(sym, df)
@@ -333,6 +386,14 @@ def main() -> int:
             fail_symbols += 1
 
         time.sleep(RATE_LIMIT_SLEEP)
+
+    if no_data_symbols:
+        shown = ", ".join(no_data_symbols[:25])
+        more = f" (+{len(no_data_symbols) - 25} more)" if len(no_data_symbols) > 25 else ""
+        logger.info(
+            "No data for %d symbol(s) — delisted/invalid or not covered by Yahoo: %s%s",
+            len(no_data_symbols), shown, more,
+        )
 
     logger.info(
         "Done | symbols: %d success, %d failed | total rows upserted: %d",

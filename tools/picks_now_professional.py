@@ -40,9 +40,20 @@ from collections import defaultdict
 # -> the engine stopped generating picks). Matches the guard already in save_picks_to_db.py.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import logging
+
 import numpy as np
 import pandas as pd
 import yfinance as yf
+
+# yfinance logs one ERROR per symbol it cannot resolve: "No data found, symbol may
+# be delisted" for dead tickers, and HTTP-404 quoteSummary JSON for ETFs/funds that
+# simply have no fundamentals (measured: SPY, QQQ, IVV, IWM, TLT). Both are expected
+# coverage facts that the scoring path already handles, but in run 45746318864 they
+# produced hundreds of ERROR lines inside a SUCCESSFUL run and buried the real ones.
+# Silenced here; the aggregate miss count is what gets reported.
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+logging.getLogger("yfinance").propagate = False
 
 # ── API failover imports (see obsidian-notes/reference/data-sources.md) ─────
 try:
