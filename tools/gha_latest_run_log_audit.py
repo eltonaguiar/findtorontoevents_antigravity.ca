@@ -80,9 +80,25 @@ def gh(args: list[str], timeout: int = 180) -> tuple[bool, str]:
     return True, r.stdout
 
 
+# GitHub prints the whole `run:` block into the log before executing it, so an
+# error-handling branch that says `echo 'ERROR: ...'` matches the ERROR regex
+# even though it never executed. Two consecutive self-hosted runs (45762289378
+# swarm-sync-v2, 45762068793 strategy-funnel) were scored ERRORS purely from
+# that echo text. Skip command-echo lines: they are source, not output.
+_ECHO_SOURCE = re.compile(r"(?<![\w.\-/])echo\s+['\"]", re.I)
+
+
+def _is_echoed_source(line: str) -> bool:
+    return bool(_ECHO_SOURCE.search(line))
+
+
 def bucket(text: str, patterns, counter: dict, samples: dict, limit=MAX_SAMPLES) -> int:
     hits = 0
     for line in text.splitlines():
+        # Command-echo lines are script source GitHub prints before running it;
+        # `echo 'ERROR: ...'` in an error branch is not an emitted error.
+        if _ECHO_SOURCE.search(line):
+            continue
         low = line
         for pat, label in patterns:
             if re.search(pat, low):

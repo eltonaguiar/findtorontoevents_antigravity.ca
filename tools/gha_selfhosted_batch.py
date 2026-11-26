@@ -147,13 +147,35 @@ def wait_for_run(run_id: int, timeout_min: int = 60) -> dict:
     return {"status": "timeout", "conclusion": None}
 
 
+
+# GitHub prints the whole `run:` block into the log before executing it, so an
+# error-handling branch that says `echo 'ERROR: ...'` matches the ERROR regex
+# even though it never executed. Two consecutive self-hosted runs (45762289378
+# swarm-sync-v2, 45762068793 strategy-funnel) were scored ERRORS purely from
+# that echo text. Skip command-echo lines: they are source, not output.
+_ECHO_SOURCE = re.compile(r"(?<![\w.\-/])echo\s+['\"]", re.I)
+
+
+def _is_echoed_source(line: str) -> bool:
+    return bool(_ECHO_SOURCE.search(line))
+
 def classify(log: str) -> tuple[str, list[str]]:
     for pat, why in ENV_PATTERNS:
         if re.search(pat, log, re.I):
             return "BLOCKED_ENV", [why]
+
+    lines = [ln for ln in log.splitlines() if not _is_echoed_source(ln)]
+    text = "\n".join(lines)
+    # A push that failed and then succeeded on the next attempt is the retry
+    # path working, not an error (strategy-funnel-hourly run 45762068793).
+    if re.search(r"Pushed successfully on attempt|Nothing to push|Already up to date", text, re.I):
+        lines = [ln for ln in lines
+                 if not re.search(r"failed to push|Updates were rejected|non-fast-forward", ln, re.I)]
+        text = "\n".join(lines)
+
     notes = []
     for pat, why in ERROR_PATTERNS:
-        n = len(re.findall(pat, log, re.M))
+        n = len(re.findall(pat, text, re.M))
         if n:
             notes.append(f"{n}x {why}")
     return ("ERRORS" if notes else "CLEAN"), notes

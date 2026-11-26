@@ -6,15 +6,15 @@ Cost-weighted join of the GitHub Actions usage export (minutes + run counts) aga
 
 | Metric | Value |
 |--------|------:|
-| Workflow files in repo | 381 |
+| Workflow files in repo | 382 |
 | Workflows present in usage export | 380 |
 | Billed minutes | 560,627 |
 | Billed runs | 104,981 |
-| **Workflows needing investigation** | **191** |
-| — with errors in latest log | 72 |
-| — suspicious log | 56 |
-| — never ran (no billed runs) | 4 |
-| — audit had no log to read | 58 |
+| **Workflows needing investigation** | **160** |
+| — with errors in latest log | 86 |
+| — suspicious log | 60 |
+| — never ran (no billed runs) | 5 |
+| — audit had no log to read | 8 |
 | — billed under a deleted file name | 1 |
 | — billed under a renamed file name | 3 |
 
@@ -22,47 +22,47 @@ Cost-weighted join of the GitHub Actions usage export (minutes + run counts) aga
 
 | Bucket | Workflows | Minutes | Runs |
 |--------|----------:|--------:|-----:|
-| ERRORS | 72 | 130,377 | 21,359 |
-| SUSPICIOUS | 56 | 51,850 | 15,140 |
-| NEVER_RAN | 4 | 0 | 0 |
-| AUDIT_INCOMPLETE | 58 | 219,558 | 13,936 |
+| ERRORS | 86 | 200,354 | 24,116 |
+| SUSPICIOUS | 60 | 74,449 | 16,723 |
+| NEVER_RAN | 5 | 0 | 0 |
+| AUDIT_INCOMPLETE | 8 | 110,317 | 3,601 |
 | DELETED | 1 | 5 | 5 |
 | RENAMED | 3 | 2,787 | 774 |
 | DISABLED | 1 | 1,613 | 364 |
-| WARN_ONLY | 44 | 53,438 | 10,883 |
-| UNAUDITED | 18 | 24,935 | 10,756 |
-| CLEAN | 131 | 74,192 | 31,157 |
+| WARN_ONLY | 49 | 75,883 | 11,197 |
+| UNAUDITED | 10 | 3,442 | 2,567 |
+| CLEAN | 166 | 89,905 | 45,027 |
 | MANAGED | 2 | 1,872 | 607 |
 
 ## Top 25 by priority
 
 | # | Workflow | Bucket | Minutes | Runs | Latest | Errors |
 |--:|----------|--------|--------:|-----:|--------|-------:|
-| 1 | `audit-dashboard.yml` | ERRORS | 28,689 | 334 | success | 40 |
-| 2 | `cross-aggregator.yml` | ERRORS | 15,009 | 1,204 | success | 20 |
-| 3 | `self_optimizing_trading.yml` | ERRORS | 11,839 | 614 | — | 1 |
-| 4 | `baby-strat-forward-paper.yml` | ERRORS | 11,452 | 606 | success | 4 |
-| 5 | `discord-bot.yml` | AUDIT_INCOMPLETE | 35,340 | 101 | cancelled | 0 |
-| 6 | `alpha-engine-fast.yml` | AUDIT_INCOMPLETE | 34,331 | 1,186 | cancelled | 0 |
-| 7 | `mirror-site.yml` | ERRORS | 8,329 | 325 | — | 1 |
-| 8 | `torontoevent-deploy-riseoftheclaw.yml` | ERRORS | 6,901 | 1,343 | — | 2 |
-| 9 | `deploy-riseoftheclaw.yml` | ERRORS | 6,575 | 1,216 | success | 26 |
-| 10 | `strategy-funnel-hourly.yml` | ERRORS | 5,788 | 606 | — | 1 |
-| 11 | `copy-trader-intelligence.yml` | AUDIT_INCOMPLETE | 30,651 | 1,200 | success | 0 |
-| 12 | `signal-engine.yml` | ERRORS | 4,518 | 1,234 | — | 4 |
-| 13 | `multi-asset-scanner.yml` | ERRORS | 3,371 | 1,208 | — | 1 |
-| 14 | `quan-engine-live.yml` | ERRORS | 3,266 | 1,208 | — | 3 |
-| 15 | `realtime-challenge.yml` | ERRORS | 2,174 | 414 | — | 3 |
-| 16 | `forward-tracking-v2.yml` | ERRORS | 1,739 | 604 | success | 70 |
-| 17 | `claude-gainer-ml-live.yml` | ERRORS | 1,612 | 1,210 | success | 3 |
-| 18 | `2hour_challenge.yml` | ERRORS | 1,563 | 21 | cancelled | 1 |
-| 19 | `picks-now-refresh.yml` | ERRORS | 1,261 | 83 | — | 1427 |
-| 20 | `swarm-sync-v2.yml` | ERRORS | 1,214 | 1,204 | — | 4 |
-| 21 | `mercury2-scan.yml` | ERRORS | 1,181 | 608 | — | 2 |
-| 22 | `ml-battleground-f.yml` | ERRORS | 1,143 | 603 | — | 14 |
-| 23 | `db-freshness-guardian.yml` | ERRORS | 1,111 | 613 | success | 1 |
-| 24 | `gha-queue-audit.yml` | ERRORS | 961 | 62 | success | 18 |
-| 25 | `dynamic-alpha-engine.yml` | AUDIT_INCOMPLETE | 25,870 | 641 | success | 0 |
+| 1 | `audit-dashboard.yml` | ERRORS | 28,689 | 334 | success | 38 |
+| 2 | `dynamic-alpha-engine.yml` | ERRORS | 25,870 | 641 | success | 47 |
+| 3 | `gainer-predictor.yml` | ERRORS | 17,059 | 1,206 | success | 205 |
+| 4 | `alpha-engine-live.yml` | ERRORS | 16,050 | 394 | cancelled | 27 |
+| 5 | `cross-aggregator.yml` | ERRORS | 15,009 | 1,204 | success | 19 |
+| 6 | `self_optimizing_trading.yml` | ERRORS | 11,839 | 614 | — | 1 |
+| 7 | `baby-strat-forward-paper.yml` | ERRORS | 11,452 | 606 | success | 4 |
+| 8 | `discord-bot.yml` | AUDIT_INCOMPLETE | 35,340 | 101 | cancelled | 0 |
+| 9 | `alpha-engine-fast.yml` | AUDIT_INCOMPLETE | 34,331 | 1,186 | cancelled | 0 |
+| 10 | `mirror-site.yml` | ERRORS | 8,329 | 325 | — | 1 |
+| 11 | `torontoevent-deploy-riseoftheclaw.yml` | ERRORS | 6,901 | 1,343 | — | 2 |
+| 12 | `deploy-riseoftheclaw.yml` | ERRORS | 6,575 | 1,216 | success | 25 |
+| 13 | `strategy-funnel-hourly.yml` | ERRORS | 5,788 | 606 | — | 1 |
+| 14 | `copy-trader-intelligence.yml` | AUDIT_INCOMPLETE | 30,651 | 1,200 | success | 0 |
+| 15 | `dna_strategy_pipeline.yml` | SUSPICIOUS | 15,380 | 489 | cancelled | 0 |
+| 16 | `live_spike_trading.yml` | ERRORS | 4,949 | 308 | success | 1 |
+| 17 | `signal-engine.yml` | ERRORS | 4,518 | 1,234 | — | 4 |
+| 18 | `multi-asset-scanner.yml` | ERRORS | 3,371 | 1,208 | — | 1 |
+| 19 | `quan-engine-live.yml` | ERRORS | 3,266 | 1,208 | — | 3 |
+| 20 | `social-prediction-tracker.yml` | ERRORS | 2,436 | 304 | — | 1 |
+| 21 | `realtime-challenge.yml` | ERRORS | 2,174 | 414 | — | 3 |
+| 22 | `deploy-vetted-picks.yml` | ERRORS | 1,875 | 151 | success | 1 |
+| 23 | `forward-tracking-v2.yml` | ERRORS | 1,739 | 604 | success | 70 |
+| 24 | `claude-gainer-ml-live.yml` | ERRORS | 1,612 | 1,210 | success | 3 |
+| 25 | `2hour_challenge.yml` | ERRORS | 1,563 | 21 | cancelled | 1 |
 
 ## Most expensive workflows
 
@@ -72,11 +72,11 @@ Cost-weighted join of the GitHub Actions usage export (minutes + run counts) aga
 | 2 | `alpha-engine-fast.yml` | 34,331 | 1,186 | AUDIT_INCOMPLETE | `alpha-fast` (34,331) |
 | 3 | `copy-trader-intelligence.yml` | 30,651 | 1,200 | AUDIT_INCOMPLETE | `copy-trader-scan` (30,651) |
 | 4 | `audit-dashboard.yml` | 28,689 | 334 | ERRORS | `generate-and-deploy` (28,756) |
-| 5 | `dynamic-alpha-engine.yml` | 25,870 | 641 | AUDIT_INCOMPLETE | `alpha-engine` (25,870) |
-| 6 | `gainer-predictor.yml` | 17,059 | 1,206 | AUDIT_INCOMPLETE | `scan` (17,059) |
-| 7 | `alpha-engine-live.yml` | 16,050 | 394 | AUDIT_INCOMPLETE | `alpha-engine` (16,050) |
-| 8 | `market_beating.yml` | 15,910 | 865 | CLEAN | `market-beating` (15,515) |
-| 9 | `dna_strategy_pipeline.yml` | 15,380 | 489 | AUDIT_INCOMPLETE | `Generate Active Picks` (14,357) |
+| 5 | `dynamic-alpha-engine.yml` | 25,870 | 641 | ERRORS | `alpha-engine` (25,870) |
+| 6 | `gainer-predictor.yml` | 17,059 | 1,206 | ERRORS | `scan` (17,059) |
+| 7 | `alpha-engine-live.yml` | 16,050 | 394 | ERRORS | `alpha-engine` (16,050) |
+| 8 | `market_beating.yml` | 15,910 | 865 | WARN_ONLY | `market-beating` (15,515) |
+| 9 | `dna_strategy_pipeline.yml` | 15,380 | 489 | SUSPICIOUS | `Generate Active Picks` (14,357) |
 | 10 | `cross-aggregator.yml` | 15,009 | 1,204 | ERRORS | `aggregate` (15,011) |
 | 11 | `signal_tracking.yml` | 13,661 | 751 | WARN_ONLY | `track-and-validate` (13,663) |
 | 12 | `self_optimizing_trading.yml` | 11,839 | 614 | ERRORS | `trade` (11,839) |
@@ -91,8 +91,8 @@ Cost-weighted join of the GitHub Actions usage export (minutes + run counts) aga
 | 21 | `deploy-riseoftheclaw.yml` | 6,575 | 1,216 | ERRORS | `deploy` (6,575) |
 | 22 | `branch-large-file-dup-guard.yml` | 6,560 | 131 | AUDIT_INCOMPLETE | `detect-duplicate-large-blobs` (6,560) |
 | 23 | `strategy-funnel-hourly.yml` | 5,788 | 606 | ERRORS | `refresh` (5,790) |
-| 24 | `darwin-evolution.yml` | 5,786 | 605 | AUDIT_INCOMPLETE | `evolve` (5,786) |
-| 25 | `genome-daily-pipeline.yml` | 5,503 | 211 | AUDIT_INCOMPLETE | `strategy-permutation` (3,413) |
+| 24 | `darwin-evolution.yml` | 5,786 | 605 | WARN_ONLY | `evolve` (5,786) |
+| 25 | `genome-daily-pipeline.yml` | 5,503 | 211 | CLEAN | `strategy-permutation` (3,413) |
 
 ## Billed under a name the repo no longer has
 
