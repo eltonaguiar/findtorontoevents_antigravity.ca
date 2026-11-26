@@ -143,6 +143,23 @@ def pick_runner(prefer: str | None = None, want_os: str | None = None) -> tuple[
     def labels_of(r: dict) -> list[str]:
         return [l["name"] for l in r.get("labels", [])]
 
+    def generic(labels: list[str]) -> str:
+        """Minimal runs-on expression for a runner's OS+arch.
+
+        Using the runner's FULL label set is a trap: it includes that box's own
+        name and site tags (wsl-desktop, gx10, laptop-zerou-wsl). GitHub then
+        requires that one specific runner, so if it drops offline the job stays
+        queued forever even when a compatible box is idle. Observed on
+        2026-11-26: desktop-081g9oh-wsl-1 took the dispatch, went offline, and
+        laptop-zerou-wsl sat idle unable to accept the job because it lacks the
+        wsl-desktop tag. Generic labels let ANY matching runner pick it up.
+        """
+        keep = ["self-hosted"]
+        for tok in ("Linux", "Windows", "macOS", "X64", "ARM64"):
+            if tok in labels:
+                keep.append(tok)
+        return "[" + ", ".join(keep) + "]"
+
     OS_TOKEN = {"linux": "Linux", "windows": "Windows", "macos": "macOS"}
 
     if prefer:
@@ -171,9 +188,9 @@ def pick_runner(prefer: str | None = None, want_os: str | None = None) -> tuple[
         match = [r for r in idle if all(w in labels_of(r) for w in wanted)]
         if match:
             r = match[0]
-            return "[" + ", ".join(labels_of(r)) + "]", r["name"]
+            return generic(labels_of(r)), r["name"]
     r = idle[0]
-    return "[" + ", ".join(labels_of(r)) + "]", r["name"]
+    return generic(labels_of(r)), r["name"]
 
 
 def wait_for_runner(prefer: str | None, want_os: str | None,
