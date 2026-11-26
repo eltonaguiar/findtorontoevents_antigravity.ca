@@ -1,6 +1,6 @@
 # Weekly scorecard
 
-_generated 2026-11-26 02:22 UTC by `tools/weekly_scorecard.py`_
+_generated 2026-11-26 02:41 UTC by `tools/weekly_scorecard.py`_
 
 T-bill hurdle used throughout: **3.50%/yr**
 
