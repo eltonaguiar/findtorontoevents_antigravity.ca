@@ -1,0 +1,67 @@
+name: Ops - FTP docroot test (write probe, delete probe)
+
+# Ownership: hermes-desktop. Dispatch-only, gx10 pool.
+# Question: db-sync-to-mirror runs `cd /findtorontoevents.ca; put ... -o _db_export_tmp.php`
+# and the step reports success, but https://findtorontoevents.ca/_db_export_tmp.php 404s
+# while https://findtorontoevents.ca/404.html is 200. So either the put does not land, or
+# /findtorontoevents.ca on FTP is not the served docroot.
+# This writes a unique probe file into each candidate directory, fetches each over HTTP,
+# then deletes both. No secrets printed; content is a fixed non-sensitive string.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docroot:
+    runs-on: [self-hosted, gx10]
+    timeout-minutes: 10
+    steps:
+      - name: Probe both candidate roots
+        env:
+          H: ${{ secrets.FTP_SERVER_50WEBS }}
+          U: ${{ secrets.FTP_USERNAME_50WEBS }}
+          P: ${{ secrets.FTP_PASSWORD_50WEBS }}
+        run: |
+          set +e
+          STAMP="probe-$(date +%s)"
+          echo "content: $STAMP" > /tmp/zz_docroot_probe.txt
+          echo "expected body: content: $STAMP"
+          for DIR in /findtorontoevents.ca /public_html; do
+            cat > /tmp/p.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 20
+          set net:max-retries 1
+          open -u "$U","$P" "$H"
+          cd $DIR
+          pwd
+          put /tmp/zz_docroot_probe.txt -o zz_docroot_probe.txt
+          ls zz_docroot_probe.txt
+          bye
+          LFTPEOF
+            echo "--- upload into $DIR ---"
+            lftp -f /tmp/p.script 2>&1 | sed -E 's/(open -u )[^"]*"[^"]*"/\1[redacted]/' | tail -5
+          done
+          echo "--- HTTP checks ---"
+          for u in https://findtorontoevents.ca/zz_docroot_probe.txt \
+                   https://findtorontoevents.ca/public_html/zz_docroot_probe.txt \
+                   https://findtorontoevents.ca/404.html; do
+            code=$(curl -s -o /tmp/body.txt -m 20 -w '%{http_code}' "$u")
+            echo "$code  $u  body=$(head -c 60 /tmp/body.txt | tr -d '\n')"
+          done
+          echo "--- cleanup ---"
+          cat > /tmp/c.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 20
+          open -u "$U","$P" "$H"
+          cd /findtorontoevents.ca
+          rm -f zz_docroot_probe.txt
+          cd /public_html
+          rm -f zz_docroot_probe.txt
+          bye
+          LFTPEOF
+          lftp -f /tmp/c.script 2>&1 | tail -3
+          echo "cleanup issued"
