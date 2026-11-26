@@ -39,6 +39,13 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 API = "https://api.binance.com/api/v3"
+# api.binance.com answers HTTP 451 to some cloud IP ranges (the GitHub-hosted
+# runners have been served 451s), which used to kill the scheduled cycle with
+# exit 2 "no market data". data-api.binance.vision publishes the SAME venue
+# klines for the same symbols and is not geo-restricted, so it is tried as a
+# fallback. This is plumbing only: no rule, constant or sizing above changes.
+API_MIRRORS = ("https://data-api.binance.vision/api/v3",)
+_API_BASE: str | None = None   # first host that answered in this process
 UNIVERSE = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT",
             "ADAUSDT", "DOGEUSDT", "LINKUSDT"]
 TIMEFRAME = "5m"
@@ -66,10 +73,24 @@ def http_json(url: str, tries: int = 3) -> object:
 
 
 def klines(symbol: str, interval: str = TIMEFRAME, limit: int = 200) -> list[dict]:
-    raw = http_json(f"{API}/klines?symbol={symbol}&interval={interval}&limit={limit}")
-    return [{"open_time": int(k[0]), "open": float(k[1]), "high": float(k[2]),
-             "low": float(k[3]), "close": float(k[4]), "volume": float(k[5])}
-            for k in raw]
+    global _API_BASE
+    path = f"/klines?symbol={symbol}&interval={interval}&limit={limit}"
+    hosts = ([_API_BASE] if _API_BASE else []) + [
+        h for h in (API, *API_MIRRORS) if h != _API_BASE]
+    errors: list[str] = []
+    for host in hosts:
+        try:
+            raw = http_json(f"{host}{path}", tries=2)
+        except RuntimeError as exc:
+            errors.append(str(exc))
+            continue
+        if host != API:
+            print(f"market data: {host} (primary {API} unreachable)", flush=True)
+        _API_BASE = host
+        return [{"open_time": int(k[0]), "open": float(k[1]), "high": float(k[2]),
+                 "low": float(k[3]), "close": float(k[4]), "volume": float(k[5])}
+                for k in raw]
+    raise RuntimeError("all market-data hosts failed: " + " | ".join(errors))
 
 
 def ema(values: list[float], n: int) -> float:
