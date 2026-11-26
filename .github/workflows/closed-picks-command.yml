@@ -39,7 +39,12 @@ jobs:
         env:
           DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
         run: |
-          python signal_aggregator/closed_picks_command.py ${{ github.event.inputs.days || '30' }}
+          # The script lives inside the signal_aggregator package and imports
+          # `from signal_aggregator.picks_router import ...`. Running it by path sets
+          # sys.path[0] to signal_aggregator/, so that import failed with
+          # "No module named 'signal_aggregator'" (run 45740823581). Pin the repo
+          # root on PYTHONPATH instead of changing the script.
+          PYTHONPATH="$PWD" python signal_aggregator/closed_picks_command.py ${{ github.event.inputs.days || '30' }}
       
       - name: Log result
         if: always()
