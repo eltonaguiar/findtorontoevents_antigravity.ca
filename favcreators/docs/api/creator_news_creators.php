@@ -87,7 +87,9 @@ try {
     ));
 
 } catch (Exception $e) {
-    http_response_code(500);
+    // PHP 5.4+ only; 50webs runs 5.2.17, so send the raw status line too.
+    if (function_exists('http_response_code')) { http_response_code(500); }
+    header('HTTP/1.1 500 Internal Server Error');
     echo json_encode(array(
         'error' => 'Database error',
         'message' => $e->getMessage()
