@@ -38,8 +38,8 @@ jobs:
       - name: Upload next/events.json to findtorontoevents.ca (50webs FTP)
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
         run: |
           python3 -c "
           import ftplib, os, sys, time
@@ -81,8 +81,8 @@ jobs:
       - name: Upload last_update.json (if present)
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
         run: |
           test -f last_update.json || { echo 'last_update.json missing — skipping'; exit 0; }
           python3 -c "
@@ -99,8 +99,8 @@ jobs:
       - name: Upload metadata.json (homepage Last updated header)
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
         run: |
           test -f metadata.json || { echo 'metadata.json missing — skipping'; exit 0; }
           test -f next/metadata.json || cp metadata.json next/metadata.json
