@@ -59,7 +59,7 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
           EQUITY_PEAD_ENABLED: "1"
         run: |
-          python tools/pead_shadow_runner.py || echo "::error::pead_shadow_runner exited non-zero (fail-open — this run produced NO shadow data)"
+          python tools/pead_shadow_runner.py || echo "::warning::pead_shadow_runner exited non-zero (fail-open — this run produced NO shadow data)"
 
       - name: Commit shadow log
         env:
