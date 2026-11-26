@@ -58,6 +58,18 @@ jobs:
         # Excluding that stray artifact lets the mirror exit 0 and actually upload.
         # Also dropping pure ballast that can never be served: .git objects
         # (4,796 paths in one run) and __pycache__/*.pyc (64).
+        # 2026-11-26: the download step then timed out at its 50-min cap
+        # (run 45740915469, 02:13Z-03:03Z) transferring _QUARANTINE_2026-11-25/,
+        # a quarantine backup tree with pathological nested duplicates, e.g.
+        #   _QUARANTINE_2026-11-25/backups/20260131-190426/TORONTOEVENTS_ANTIGRAVITY/
+        #     TORONTOEVENTS_ANTIGRAVITY/next/next/static/TORONTOEVENTS_ANTIGRAVITY/
+        #     next/static/chunks/4b09812c2128d8d8.js
+        # It is never served, and being quarantined content (see the
+        # security/2026-11-25-phishing-cleanup branch) mirroring it would
+        # REPUBLISH it on torontoevent.net / tdotevent.ca. Excluded from all
+        # three mirror invocations -- including the two --reverse uploads,
+        # because the restore-cache can carry quarantine files downloaded by
+        # earlier runs straight onto the mirrors.
         timeout-minutes: 50
         env:
           SRC_HOST: ${{ secrets.FTP_HOST }}
@@ -88,6 +100,7 @@ jobs:
             --exclude='^audit/research/' \
             --exclude='^updates/' \
             --exclude='(^|/)node_modules/' \
+            --exclude='(^|/)_QUARANTINE_[^/]*/' \
             --exclude='^favcreators_source/.git/' \
             --exclude='^cakephp/vendor/' \
             --exclude='^findevents/next/_next/static/chunks/' \
@@ -178,6 +191,7 @@ jobs:
             --exclude='^audit/research/' \
             --exclude='^updates/' \
             --exclude='(^|/)node_modules/' \
+            --exclude='(^|/)_QUARANTINE_[^/]*/' \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
@@ -223,6 +237,7 @@ jobs:
             --exclude='^audit/research/' \
             --exclude='^updates/' \
             --exclude='(^|/)node_modules/' \
+            --exclude='(^|/)_QUARANTINE_[^/]*/' \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
