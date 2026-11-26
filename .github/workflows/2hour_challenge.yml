@@ -18,7 +18,10 @@ concurrency:
 jobs:
   execute-challenge:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # real_2hour_challenge.py runs a genuine 120-minute loop (duration_minutes=120,
+    # polling every 60s), so a 30m cap guaranteed a kill at 30m - run #141 died exactly
+    # there. 150m covers the 2h challenge plus setup/commit.
+    timeout-minutes: 150
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
