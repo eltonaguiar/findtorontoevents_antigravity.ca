@@ -359,12 +359,33 @@ yaml.safe_load + bash -n on both new steps: OK
 actionlint on the workflow: no new findings
 ```
 
-### Still unverified (stated, not assumed)
+### Verified in production (dispatch run 45741022038, after merge 5d704972)
 
-- `--apply` (the MySQL upsert) could not be executed here: no production DB
-  credentials locally. The code path is the same `tools/db_env.get_stocks_creds()`
-  the job already uses, and `pymysql` is installed by the preceding step.
-- The watchdog cannot turn green in the run that first emits: rows must reach
-  `at_signal_outcomes` and be resolved before `forward_observations_ingest` can
-  write ledger rows. Expect `POD-EQUITY-BREAKOUT` to leave FAIL only once its
-  first picks resolve.
+Both new steps succeeded on a real runner, and the `--apply` path wrote rows:
+
+```
+Refresh equity bar cache for the breakout pod   success   cached 26/26 symbols
+Emit POD-EQUITY-BREAKOUT rows                   success
+  applied donchian-stock-breakout: 40 row(s) touched; trading_picks now has 54
+  applied rs-breakout-scout:       28 row(s) touched; trading_picks now has 63
+  applied vol-contraction-scout:   37 row(s) touched; trading_picks now has 55
+  applied adx-trend-scout:         32 row(s) touched; trading_picks now has 60
+Ingest honest cohort into the forward ledger    success
+```
+
+`--apply` therefore works against production; the local `pip` PEP-668 note was a
+local-environment artefact only.
+
+### What is still red, and why it is expected
+
+The watchdog **still** reports
+`FAIL POD-EQUITY-BREAKOUT has 0 forward rows ... — the emitter never landed`.
+That message is now stale by one stage: rows exist in `trading_picks`, but
+`forward_observations_ingest` only writes ledger rows for picks whose outcome
+has been resolved into `at_signal_outcomes`. A freshly emitted pick has no
+resolution yet, so the ledger stays at 453 rows. The pod leaves FAIL once the
+resolver closes its first picks and the next ingest (every 6 h) accrues them.
+
+The four WARN pods are unchanged and expected: they are `observe`/`post_hoc`,
+so the watchdog emits WARN for them by contract and they cannot confer
+confirmatory evidence until promoted.
