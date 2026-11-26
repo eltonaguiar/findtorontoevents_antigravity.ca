@@ -84,6 +84,11 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -uo pipefail
+          # A failure here is non-fatal by design (fork/mirror issue permissions
+          # may be restricted and the summary + artifact must still publish), but
+          # swallowing it silently is a masking violation: the masking linter
+          # rejects continue-on-error without a ::warning. Surface it instead.
+          trap 'rc=$?; if [ $rc -ne 0 ]; then echo "::warning::digest issue post/close failed (rc=$rc); summary and artifact were still published"; fi' EXIT
 
           TITLE="[CI] GitHub Actions failure digest"
           REPORT="reports/gha_raw_logs_latest.json"
