@@ -28,7 +28,7 @@ jobs:
       - name: Run scrutiny engine
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
-          DB_USER: ${{ secrets.DB_USER_STOCKS }}
+          DB_USER: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
         run: |
           python3 tools/per_class_scrutiny_engine.py --min-n 20
           # If auto_shutdown_monitor also available, run it for Sharpe monitor
@@ -44,7 +44,7 @@ jobs:
         continue-on-error: true
         env:
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
-          DB_USER: ${{ secrets.DB_USER_STOCKS }}
+          DB_USER: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
         run: |
           if ! python3 tools/check_one_sided_resolution.py --min-resolved 20; then
             echo "::warning::FINDING#12 one-sided WON-only/LOST-only resolution detected in at_raw_picks — see step log for the strategy list"
