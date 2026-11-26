@@ -55,14 +55,32 @@ jobs:
         shell: powershell
         run: |
           Write-Host "Checking WSL Runner Status..." -ForegroundColor Cyan
-          
-          # Try to check if runner is running
-          $process = wsl -d UbuntuRecovered -- bash -c "ps aux | grep -v grep | grep run.sh" 2>$null
+
+          # The distro name was hardcoded to UbuntuRecovered, which exists on the
+          # desktop but not on every runner that can pick this job up - there it
+          # failed with "There is no distribution with the supplied name" and turned
+          # a status report into a red run. Detect the distro instead, and treat
+          # "WSL not installed here" as a skip rather than a failure.
+          $distro = $env:WSL_DISTRO
+          if (-not $distro) {
+            $installed = @(wsl -l -q 2>$null | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+            $preferred = @('Ubuntu', 'UbuntuRecovered', 'Ubuntu-24.04', 'Ubuntu-22.04')
+            $distro = ($preferred | Where-Object { $installed -contains $_ } | Select-Object -First 1)
+            if (-not $distro) { $distro = $installed | Select-Object -First 1 }
+          }
+
+          if (-not $distro) {
+            Write-Host "::warning::No WSL distribution on this runner - skipping the WSL status check (not a failure)"
+            exit 0
+          }
+          Write-Host "Using WSL distro: $distro"
+
+          $process = wsl -d $distro -- bash -c "ps aux | grep -v grep | grep run.sh" 2>$null
           if ($process) {
             Write-Host " WSL Runner is RUNNING" -ForegroundColor Green
             Write-Host $process
           } else {
-            Write-Host " WSL Runner is NOT RUNNING" -ForegroundColor Red
+            Write-Host " WSL Runner is NOT RUNNING" -ForegroundColor Yellow
           }
           
           # Check GitHub API for runner status
