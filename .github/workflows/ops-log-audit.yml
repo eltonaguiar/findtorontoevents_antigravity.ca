@@ -6,9 +6,9 @@ name: Ops - sharded audit of all workflows (self-hosted)
 #
 # Purpose: keep the self-hosted pool busy with real monitoring work and produce a
 # complete latest-run audit of every workflow, sharded so the whole pool is used.
-# 10 shards, all on the gx10 ARM pool. gx10 only by owner instruction: the desktop
-# Windows runner is deregistered and the WSL keepalive is removed, so nothing here may
-# depend on either.
+# 3 shards, all on the gx10 ARM pool, matching the three runners kept for monitoring.
+# The owner trimmed the fleet to what the monitoring job needs, so the shard count must
+# stay <= the pool size or a shard would sit queued with no runner to take it.
 on:
   push:
     branches: [ops/log-audit]
@@ -23,14 +23,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        shard: [0, 1, 2]
     steps:
-      - name: Audit shard ${{ matrix.shard }} of 10 (arm)
+      - name: Audit shard ${{ matrix.shard }} of 3 (arm)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           SHARD: ${{ matrix.shard }}
-          SHARDS: "10"
+          SHARDS: "3"
         run: |
           echo "runner=$(hostname) shard=${SHARD}/${SHARDS} pool=arm"
           python3 - <<'PY'
