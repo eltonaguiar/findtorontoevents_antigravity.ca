@@ -863,10 +863,26 @@ Price-dependent verdicts are <b>BIASED</b>, not representative.
   </div>
   <div style="margin-top:5px;color:#94a3b8;font-size:0.88em">
     <strong style="color:#86efac">&#x2705; DATA QUALITY IMPROVEMENTS (2026-05-31):</strong>
-    Ghost rows are not cleared. The DB Health tile reads live <code>db_health.json</code> (2026-11-16: 22,947 rows, 10 MEMECOIN/meta_strategy cohorts). A non-zero count fails the check. Do not cite the 2026-05-31 cleared-ghost claim. Status-PnL sign contradictions: none in that file. Non-canonical statuses: 0. Backup tables: removed.
+    Ghost rows are not cleared. The DB Health tile reads live <code>db_health.json</code> (<span id="tl-ghost-live">2026-11-16: 22,947 rows, 10 MEMECOIN/meta_strategy cohorts</span>). A non-zero count fails the check. Do not cite the 2026-05-31 cleared-ghost claim. Status-PnL sign contradictions: none in that file. Non-canonical statuses: 0. Backup tables: removed.
     at_raw_picks UNKNOWN: 3 (was thousands). FOREX: PR #6 policy-gate shipped (all blocked except cta_cross_asset_tsmom SHORT).
     BOND: now emitting (78 raw picks). See <code>updates/2026-05-31-pr1-data-integrity-repair.md</code>.
   </div>
+  <script>
+  (function(){
+    // 2026-11-25: keep the ghost-row claim live — a hard-coded count went stale before
+    // (claimed '0 (was 22,947)' while db_health reported 22,947). Refresh from sidecar.
+    var span = document.getElementById('tl-ghost-live');
+    if (!span) return;
+    fetch('./data/db_health.json?' + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      var g = j && j.checks && j.checks.ghost_rows && j.checks.ghost_rows.data;
+      if (!g || typeof g.total_ghost_rows !== 'number') return;
+      var ts = String(j.generated_at || '').replace('T', ' ').replace(/\.\d+.*$/, '');
+      var live = (ts ? ts + ' UTC: ' : '') + g.total_ghost_rows.toLocaleString('en-US')
+        + ' rows, ' + (g.cohort_count == null ? '?' : g.cohort_count) + ' cohorts (live)';
+      span.textContent = live;
+    }).catch(function(){ /* keep static fallback */ });
+  })();
+  </script>
   <div style="margin-top:5px;color:#94a3b8;font-size:0.88em">
     <strong style="color:#fca5a5">&#x26A0; COMMODITY filter-survival gap (2026-05-17):</strong>
     dashboard shows WR=85.5% (n=228) vs raw WR=60.2% (n=354). The &minus;126 difference is picks excluded by
