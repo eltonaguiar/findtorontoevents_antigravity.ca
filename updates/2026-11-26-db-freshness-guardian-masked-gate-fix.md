@@ -278,3 +278,52 @@ the guard doing its job, not a regression.
 
 Note `last_trade_at` is a tail *sample* max, not a proven global max. For an
 append-only table the two agree unless rows were backfilled with high ids.
+
+## End-to-end proof on GitHub (run 45764211675)
+
+The unit tests and the local run only ever proved the *pieces*. Dispatching the
+workflow itself on the fix branch is what proves the composed gate, so that was
+done before opening the PR.
+
+Command: `gh workflow run db-freshness-guardian.yml --ref fix/db-freshness-visible-gate`
+Result: **completed / failure** — which is the fix working.
+
+Per-step:
+
+| Step | Result |
+|---|---|
+| Run DB freshness check | `success` (exit 2 still absorbed by `continue-on-error`) |
+| **Freshness verdict (RED fails, absent DB secrets do not)** | **`failure`** |
+| Upload freshness report | `success` (artifact preserved for post-mortem) |
+
+Job annotations, unedited:
+
+```
+[failure] DB freshness RED -- genuine staleness in: status_standardization,
+          backtests. status_standardization: minutes_stale=None (last=None);
+          backtests: minutes_stale=284027.6 (last=2026-05-13 00:03:45)
+[failure] Process completed with exit code 2.
+[failure] Process completed with exit code 1.
+```
+
+Three things this establishes that no local test could:
+
+1. **The job is now red.** Before, that same exit code 2 produced a green
+   checkmark. `conclusion=failure` is the whole point of the change.
+2. **The reason is named, not buried.** The annotation says which checks are stale
+   and by how long, so the failure is actionable from the PR/commit page without
+   opening a log.
+3. **The mask is still visible.** The `exit code 2` annotation survives alongside
+   the verdict, so the original signal is not lost by the conversion — it is now
+   corroborated rather than overridden.
+
+`minutes_stale` read 284027.6 here versus 284017.0 in the earlier local run. The
+~10.6-minute difference is the real clock advancing between the two runs, which
+confirms the value is being measured live rather than cached.
+
+### A second stale check surfaced by making the gate honest
+
+`status_standardization` is also RED, and with `minutes_stale=None (last=None)` —
+meaning the check found *no data at all*, not old data. It was failing invisibly
+inside the same masked `overall=RED` before this change. It is a separate repair
+from the backtests one and is not addressed here.
