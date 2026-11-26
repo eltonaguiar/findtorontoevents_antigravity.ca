@@ -1,9 +1,9 @@
-### Momentum Scalp Scanner (2026-11-26 12:45 UTC)
+### Momentum Scalp Scanner (2026-11-26 16:44 UTC)
 
-**New symbols scanned:** 4 gainers + 4 bounce candidates
+**New symbols scanned:** 3 gainers + 3 bounce candidates
 **Picks generated:** 2
 
 | # | Symbol | Dir | Entry | TP | SL | R:R | Conf | Strategy | 24h% | Reason |
 |---|--------|-----|-------|----|----|-----|------|----------|------|--------|
-| 1 | ADAUSDT | LONG | 0.14949 | 0.15207 | 0.147555 | 1.33 | 61% | `ema_momentum_volume` | +6.9% | EMA stack aligned (9>0.1485 > 21>0.1472 > 50) vol=1.3x RSI=7 |
-| 2 | ADAUSDT | LONG | 0.14949 | 0.15207 | 0.147555 | 1.33 | 61% | `ema_momentum_volume` | +6.9% | EMA stack aligned (9>0.1485 > 21>0.1472 > 50) vol=1.3x RSI=7 |
+| 1 | ZECUSDT | LONG | 701.85 | 725.2971 | 686.2186 | 1.5 | 68% | `bounce_play` | +2.5% | Oversold bounce: RSI=16, vol=2.1x avg, MACD turning up |
+| 2 | ZECUSDT | LONG | 701.94 | 725.3871 | 686.3086 | 1.5 | 68% | `bounce_play` | +2.5% | Oversold bounce: RSI=16, vol=2.1x avg, MACD turning up |
