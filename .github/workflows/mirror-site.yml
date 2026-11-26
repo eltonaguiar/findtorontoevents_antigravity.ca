@@ -288,6 +288,10 @@ jobs:
           cat > /tmp/lftp_env_upload.script << LFTPEOF
           set ftp:ssl-force true
           set ssl:verify-certificate no
+          # Every other lftp block in this file sets a timeout; this one did not, so a
+          # stalled control connection hung the step until the job was cancelled (run #765).
+          set net:timeout 30
+          set net:max-retries 2
           open -u "$DST_USER","$DST_PASS" "$DST_HOST"
           put /tmp/godaddy_fc_env -o fc/api/.env
           quit
