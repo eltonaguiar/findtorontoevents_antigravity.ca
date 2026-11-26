@@ -1,15 +1,21 @@
 name: RUNNER SMOKE TEST (temporary)
 
-# Validation harness for the self-hosted Windows runners.
+# Validation harness for self-hosted runners, Linux or Windows.
 # Delete this file once the runners are proven and the repo is back on cloud.
+#
+# History: this job hardcoded `Windows, X64` BEFORE the input label, so
+# dispatching it with a Linux runner name produced an unmatchable label set
+# [self-hosted, Windows, X64, <linux-runner>] and the job sat queued forever
+# (run 45765593098). The input now actually selects the runner, and every step
+# runs under bash so one harness works on both OSes (Windows runners ship git-bash).
 
 on:
   workflow_dispatch:
     inputs:
       runner_label:
-        description: 'Runner label to target'
+        description: 'Runner label to target (e.g. laptop-zerou-wsl-2, gx10-arm64-linux, laptop-zerou-win)'
         required: true
-        default: 'laptop-zerou-win'
+        default: 'laptop-zerou-wsl-2'
         type: string
       fail_on_purpose:
         description: 'Inject a failure to prove error capture works'
@@ -22,28 +28,32 @@ permissions:
 
 jobs:
   smoke:
-    runs-on: [self-hosted, Windows, X64, "${{ inputs.runner_label }}"]
+    # self-hosted AND the requested label must both match. No OS/arch label is
+    # hardcoded, so Linux and Windows runners are equally reachable.
+    runs-on: [self-hosted, "${{ inputs.runner_label }}"]
     timeout-minutes: 10
 
     steps:
       - name: Who am I
-        shell: pwsh
+        shell: bash
         run: |
-          Write-Host "runner.name       = ${{ runner.name }}"
-          Write-Host "runner.os         = ${{ runner.os }}"
-          Write-Host "runner.arch       = ${{ runner.arch }}"
-          Write-Host "runner.environment= ${{ runner.environment }}"
-          Write-Host "workdir           = $PWD"
-          Write-Host "user              = $env:USERNAME"
-          Write-Host "computer          = $env:COMPUTERNAME"
+          echo "runner.name        = ${{ runner.name }}"
+          echo "runner.os          = ${{ runner.os }}"
+          echo "runner.arch        = ${{ runner.arch }}"
+          echo "runner.environment = ${{ runner.environment }}"
+          echo "user               = $(whoami)"
+          echo "pwd                = $(pwd)"
+          echo "uname              = $(uname -a 2>/dev/null || echo 'uname unavailable')"
+          echo "cores              = $(nproc 2>/dev/null || echo '?')"
 
       - name: Toolchain
-        shell: pwsh
+        shell: bash
         run: |
-          Write-Host "--- git ---";  git --version
-          Write-Host "--- python ---"; python --version
-          Write-Host "--- bash ---";   bash --version | Select-Object -First 1
-          Write-Host "--- node ---";   node --version
+          echo "--- git ---";    git --version
+          echo "--- python ---"; (python3 --version || python --version) 2>&1
+          echo "--- bash ---";   bash --version | head -1
+          echo "--- node ---";   (node --version 2>/dev/null || echo 'node absent')
+          echo "--- disk ---";   df -h . | tail -1
 
       - name: Checkout
         uses: actions/checkout@v6
@@ -51,36 +61,36 @@ jobs:
           fetch-depth: 1
 
       - name: Did checkout land somewhere sane
-        shell: pwsh
+        shell: bash
         run: |
-          Write-Host "checkout path: $PWD"
-          if (-not (Test-Path '.github/workflows')) {
-            Write-Error "checkout missing .github/workflows"
+          echo "checkout path:  $(pwd)"
+          if [ ! -d .github/workflows ]; then
+            echo "::error::checkout missing .github/workflows"
             exit 1
-          }
-          Write-Host "workflow files: $((Get-ChildItem .github/workflows/*.yml).Count)"
-          Write-Host "repo size (MB): $([math]::Round((Get-ChildItem -Recurse -File -Force | Measure-Object Length -Sum).Sum / 1MB, 1))"
+          fi
+          echo "workflow files: $(ls .github/workflows/*.yml | wc -l)"
+          echo "tracked files:  $(git ls-files | wc -l)"
+          echo "repo size:      $(du -sh . 2>/dev/null | cut -f1)"
 
       - name: Prove concurrent slots are real
-        shell: pwsh
+        shell: bash
         run: |
-          Write-Host "sleeping 45s - if 2 runners are live, a parallel dispatch overlaps this"
-          Start-Sleep -Seconds 45
-          Write-Host "slept fine"
+          echo "sleeping 30s - if 2 runners are live, a parallel dispatch overlaps this"
+          sleep 30
+          echo "slept fine"
 
       - name: Warning capture
-        shell: pwsh
-        run: |
-          Write-Host "::warning::deliberate warning - proving warnings surface in the run log"
+        shell: bash
+        run: echo "::warning::deliberate warning - proving warnings surface in the run log"
 
       - name: Deliberate failure
         if: inputs.fail_on_purpose
-        shell: pwsh
+        shell: bash
         run: |
-          Write-Host "::error::deliberate failure - proving errors surface and fail the job"
+          echo "::error::deliberate failure - proving errors surface and fail the job"
           exit 1
 
       - name: Done
         if: always()
-        shell: pwsh
-        run: Write-Host "smoke test finished on ${{ runner.name }}"
+        shell: bash
+        run: echo "smoke test finished on ${{ runner.name }} (${{ runner.os }})"
