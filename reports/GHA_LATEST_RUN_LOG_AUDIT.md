@@ -3,15 +3,15 @@
 Every workflow's most recent run, log downloaded and scanned for errors, warnings and suspicious output. A green run is not a clean run.
 
 - workflows examined: **386**
-- logs audited: **303**
-- no run on record: **83**
+- logs audited: **304**
+- no run on record: **82**
 
 | Verdict | Count |
 |---|---|
-| ERRORS | 63 |
-| WARNINGS | 74 |
-| SUSPICIOUS | 23 |
-| CLEAN | 143 |
+| ERRORS | 72 |
+| WARNINGS | 76 |
+| SUSPICIOUS | 24 |
+| CLEAN | 132 |
 
 ## Workflows whose log contains errors
 
@@ -28,10 +28,31 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `mass-backtest	Run mass backtest	2026-11-26T03:29:15.5668507Z [2/869] claude_code_01/backtest_defensive_suite ... ERROR: No Strategy class found [0.1s]`
     - `mass-backtest	Run mass backtest	2026-11-26T03:29:15.5687888Z [3/869] claude_code_01/backtest_high_sharpe ... ERROR: No Strategy class found [0.0s]`
 
-### `mysql-stale-picks-resolver.yml` — 259 error line(s), conclusion ``
+### `mysql-stale-picks-resolver.yml` — 259 error line(s), conclusion `success`
 - 259× ERROR line
     - `resolve-stale-picks	Run stale picks resolver	2026-11-26T04:31:32.5025376Z 2026-11-26T04:31:32Z [ERROR] $USD-JPY: possibly delisted; no timezone found`
     - `resolve-stale-picks	Run stale picks resolver	2026-11-26T04:31:32.5030023Z 2026-11-26T04:31:32Z [ERROR]`
+
+### `forward-tracking-v2.yml` — 70 error line(s), conclusion `success`
+- 70× ERROR line
+    - `track-signals	Import latest signals	2026-11-26T04:32:16.7707598Z 2026-11-26 04:32:16,770 - yfinance - ERROR - $TLT-USD: No data found, symbol may be delisted`
+    - `track-signals	Import latest signals	2026-11-26T04:32:17.4863274Z 2026-11-26 04:32:17,485 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: NG=F-USD"}}}`
+
+### `audit-dashboard.yml` — 40 error line(s), conclusion `failure`
+- 28× ERROR line
+    - `generate-and-deploy	Generate dashboard payload and build HTML	2026-11-26T04:04:25.2495864Z [36;1m# produces. Running it before (pre-2026-06-06) caused ERROR:[0m`
+    - `generate-and-deploy	Generate dashboard payload and build HTML	2026-11-26T04:09:54.6871387Z 2026-11-26T04:09:54 [ERROR] HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: KXCPI-26NOV"}}}`
+- 5× http 4xx
+    - `generate-and-deploy	Resolve active picks (TP/SL/time exits) across all systems	2026-11-26T03:39:55.5502323Z 2026-11-26T03:39:55 [WARNING] Binance api.binance.com failed: HTTP Error 451:`
+    - `generate-and-deploy	Resolve active picks (TP/SL/time exits) across all systems	2026-11-26T03:39:56.0244179Z 2026-11-26T03:39:56 [WARNING] Binance api1.binance.com failed: HTTP Error 451:`
+- 4× ##[error] annotation
+    - `generate-and-deploy	Run Hyro enhanced scoring (technical indicators on picks)	2026-11-26T04:03:58.0349223Z ##[error]hyro_enhanced_scoring: missing dependency (C extension: None not built. If you want to import pandas from the source directory, you may need to run 'python -m pip install -ve . --no-bu`
+    - `generate-and-deploy	Run Hyro enhanced scoring (technical indicators on picks)	2026-11-26T04:03:58.0470754Z ##[error]Process completed with exit code 2.`
+- 2× python traceback
+    - `generate-and-deploy	Run Hyro QuanBridge (refresh regime + ensemble + risk gate)	2026-11-26T04:03:39.7564611Z Traceback (most recent call last):`
+    - `generate-and-deploy	Run Hyro ML pick optimizer (adaptive edge scoring + drift detection)	2026-11-26T04:03:57.8313553Z Traceback (most recent call last):`
+- 1× git fatal
+    - `generate-and-deploy	Deploy to all 3 FTP sites in parallel	2026-11-26T04:16:26.2877516Z [36;1m# Non-fatal: don't exit(1) even if some fail[0m`
 
 ### `backfill-features.yml` — 38 error line(s), conclusion `success`
 - 38× http 4xx
@@ -61,6 +82,11 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `Queue + duration audit	Commit audit report	2026-11-26T04:24:15.7563450Z ERROR: All 5 push attempts failed`
     - `Queue + duration audit	Commit audit report	2026-11-26T04:26:07.9292800Z ERROR: All 5 push attempts failed`
 
+### `ml-battleground-f.yml` — 14 error line(s), conclusion `success`
+- 14× ERROR line
+    - `sync	Push Battleground F picks to Audit Trail	2026-11-26T04:35:12.0947224Z 2026-11-26 04:35:12,094 [ERROR] MySQL write failed after 3 attempts: (1045, "Access denied for user 'ejaguiar1_stocks'@'52.190.182.226' (using password: YES)")`
+    - `sync	Push Battleground F picks to Audit Trail	2026-11-26T04:35:14.3216283Z 2026-11-26 04:35:14,321 [ERROR] MySQL write failed after 3 attempts: (1045, "Access denied for user 'ejaguiar1_stocks'@'52.190.182.226' (using password: YES)")`
+
 ### `asterdex-paper-trading.yml` — 10 error line(s), conclusion `success`
 - 10× ERROR line
     - `trade	Run strategy scanner	2026-11-26T03:19:46.4947610Z   [ERROR] Klines fetch failed for BTCUSDT: HTTP Error 451:`
@@ -85,7 +111,7 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `track	Sync, mark, report	2026-11-26T04:18:33.9586522Z   mark SOLUSDT: skipped (HTTPError: HTTP Error 451: )`
     - `track	Sync, mark, report	2026-11-26T04:18:33.9587152Z   mark LINKUSDT: skipped (HTTPError: HTTP Error 451: )`
 
-### `audit-impact-tracker.yml` — 6 error line(s), conclusion ``
+### `audit-impact-tracker.yml` — 6 error line(s), conclusion `failure`
 - 5× missing file
     - `audit-impact	Run audit impact tracker	2026-11-26T03:27:43.5299245Z   [WARN] Could not load strategy_performance.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/alpha_engine/data/strategy_performance.json'`
     - `audit-impact	Run audit impact tracker	2026-11-26T03:27:43.5301106Z   [WARN] Could not load active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/battleground/data/active_picks.json'`
@@ -136,6 +162,11 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `sync	Sync state files	2026-11-26T04:16:34.6259092Z [36;1m      echo 'ERROR: rebase conflict — aborting sync to avoid corrupting state files'[0m`
     - `sync	Sync state files	2026-11-26T04:16:34.6261295Z [36;1m      echo 'ERROR: conflict markers in staged files — aborting push'[0m`
 
+### `system-health-check.yml` — 4 error line(s), conclusion `success`
+- 4× ERROR line
+    - `health-check	Run comprehensive health check	2026-11-26T04:41:16.5234859Z [36;1m    check_db['status'] = 'ERROR'[0m`
+    - `health-check	Run comprehensive health check	2026-11-26T04:41:16.5242648Z [36;1m    check_ml['status'] = 'ERROR'[0m`
+
 ### `ai-model-portfolios-daily.yml` — 3 error line(s), conclusion `success`
 - 2× python traceback
     - `portfolios-daily	Run daily portfolio engine	2026-11-26T03:09:23.3753521Z Traceback (most recent call last):`
@@ -181,6 +212,11 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `cycle	Mark open positions and open new slots	2026-11-26T04:21:04.0471858Z mark: SOLUSDT skipped (market data unavailable: https://api.binance.com/api/v3/klines?symbol=SOLUSDT&interval=5m&limit=3 (HTTP Error 451: ))`
     - `cycle	Mark open positions and open new slots	2026-11-26T04:21:04.0473753Z mark: LINKUSDT skipped (market data unavailable: https://api.binance.com/api/v3/klines?symbol=LINKUSDT&interval=5m&limit=3 (HTTP Error 451: ))`
 
+### `sign-coherence-gate.yml` — 3 error line(s), conclusion `failure`
+- 3× ##[error] annotation
+    - `scan	Gate decision	2026-11-26T04:39:20.5094201Z ##[error]Sign-flip count regressed: 1 > 0 baseline. The resolver corruption is growing.`
+    - `scan	Gate decision	2026-11-26T04:39:20.5096662Z ##[error]Review the JSON report committed today and identify the new source_system producing wrong-sign pnl_pct.`
+
 ### `weekly-filter.yml` — 3 error line(s), conclusion `success`
 - 1× python traceback
     - `run-filter	Run weekly filter	2026-11-26T03:43:35.1412849Z Traceback (most recent call last):`
@@ -215,6 +251,11 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `retrain	Commit updated models	2026-11-26T04:31:43.7148882Z fatal: pathspec 'ml_battleground/system_a_filter/models/' did not match any files`
     - `retrain	Commit updated models	2026-11-26T04:31:43.7256708Z fatal: pathspec 'ml_battleground/system_b_regime/models/' did not match any files`
 
+### `momentum-scanner.yml` — 2 error line(s), conclusion `success`
+- 2× http 4xx
+    - `momentum-scan	Check Outcomes (24h TP/SL/Expiry tracker)	2026-11-26T04:44:47.9991559Z WARNING: Binance price fetch from https://api.binance.com failed: HTTP Error 451:`
+    - `momentum-scan	Check Outcomes (24h TP/SL/Expiry tracker)	2026-11-26T04:44:47.9996702Z WARNING: Binance price fetch from https://api.binance.com failed: HTTP Error 451:`
+
 ### `monthly-calibrator-refit.yml` — 2 error line(s), conclusion `success`
 - 1× python traceback
     - `refit-calibrators	Refit isotonic calibrators (M-060)	2026-11-26T03:39:50.4937812Z Traceback (most recent call last):`
@@ -227,7 +268,7 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× missing python module
     - `checkpoint	Resolve POC picks + write verdict	2026-11-26T03:40:06.9947753Z ModuleNotFoundError: No module named 'tools'`
 
-### `torontoevent-deploy-riseoftheclaw.yml` — 2 error line(s), conclusion `success`
+### `torontoevent-deploy-riseoftheclaw.yml` — 2 error line(s), conclusion ``
 - 2× http 4xx
     - `deploy	Run Live Trading Pipeline	2026-11-26T04:27:00.6073922Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: NKLA"}}}`
     - `deploy	Run Live Trading Pipeline	2026-11-26T04:27:16.0984326Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SQ"}}}`
@@ -265,13 +306,17 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× http 4xx
     - `ledger	Backfill price tables (bounded, best-effort)	2026-11-26T03:10:59.0356208Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: XPDUSD=F"}}}`
 
-### `backfill.yml` — 1 error line(s), conclusion `cancelled`
+### `backfill.yml` — 1 error line(s), conclusion `success`
 - 1× ##[error] annotation
     - `backfill	Commit any updated tracking files	2026-11-26T03:38:48.3032817Z ##[error]The operation was canceled.`
 
 ### `coinglass-scanner.yml` — 1 error line(s), conclusion `success`
 - 1× ERROR line
     - `scan	Run Coinglass DNA Scanner	2026-11-26T03:38:00.3864489Z 2026-11-26 03:38:00,386 ERROR All sources failed for MATICUSDT`
+
+### `dashboard-pick-trader.yml` — 1 error line(s), conclusion `success`
+- 1× missing file
+    - `trade-dashboard-picks	Run Dashboard Pick Trader	2026-11-26T04:42:03.6710665Z   [WARN] Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/alpha_engine/../audit_trail/data/dashboard_payload.json: [Errno 2] No such file or directory: '/home/runner/work/fi`
 
 ### `db-freshness-guardian.yml` — 1 error line(s), conclusion `success`
 - 1× ##[error] annotation
@@ -309,7 +354,7 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× ##[error] annotation
     - `mirror	Download from findtorontoevents.ca (50webs FTP)	2026-11-26T03:47:42.4139121Z ##[error]The operation was canceled.`
 
-### `multi-asset-scanner.yml` — 1 error line(s), conclusion `success`
+### `multi-asset-scanner.yml` — 1 error line(s), conclusion ``
 - 1× ERROR line
     - `multi-asset-scan	Step 1a: Run multi-asset copytrader scraper (forex/futures/stocks/commodities)	2026-11-26T04:21:29.0258095Z     [ERROR] futures_rsi2: cannot access local variable 'fut_info' where it is not associated with a value`
 
@@ -321,6 +366,10 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× ERROR line
     - `scan	Run pre-spike detector	2026-11-26T03:40:17.0294710Z 03:40:17 [ERROR] HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: MULN"}}}`
 
+### `prediction-quality-tracker.yml` — 1 error line(s), conclusion `success`
+- 1× missing file
+    - `track-quality	Run Prediction Quality Tracker	2026-11-26T04:39:30.9910723Z 2026-11-26 04:39:30 [PredictionQuality] WARNING Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/alpha_engine/data/strong_signals.json: [Errno 2] No such file or directory: '/h`
+
 ### `self_optimizing_trading.yml` — 1 error line(s), conclusion `success`
 - 1× git fatal
     - `trade	Commit results	2026-11-26T04:22:43.1105424Z fatal: pathspec 'performance_history.json' did not match any files`
@@ -328,6 +377,10 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 ### `smart-picks-tracker.yml` — 1 error line(s), conclusion `success`
 - 1× import error
     - `track	Run smart picks engine + tracker	2026-11-26T04:26:49.9557574Z [36;1m# added in recent refactor; `|| true` masked the ImportError for 30+ days,[0m`
+
+### `strategy-funnel-hourly.yml` — 1 error line(s), conclusion `success`
+- 1× ERROR line
+    - `refresh	Rebuild strategy funnel data from DB	2026-11-26T04:34:40.5401441Z [36;1m    print("ERROR: DB_PASS_STOCKS not set", file=sys.stderr)[0m`
 
 ### `value_screener_weekly.yml` — 1 error line(s), conclusion `cancelled`
 - 1× ##[error] annotation
@@ -366,6 +419,7 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - `claudes-test-portfolios.yml` — 6 warning(s): 5× workflow warning, 1× WARNING line
 - `money-ready-registry-gate.yml` — 6 warning(s): 6× WARNING line
 - `provenance-verify.yml` — 6 warning(s): 4× deprecation, 1× workflow warning, 1× ##[warning] annotation
+- `signal_tracking.yml` — 6 warning(s): 6× WARNING line
 - `asset-class-freshness-watchdog.yml` — 5 warning(s): 5× workflow warning
 - `hierarchical-bayes.yml` — 5 warning(s): 1× workflow warning, 4× ##[warning] annotation
 - `hub-sync.yml` — 5 warning(s): 3× workflow warning, 2× ##[warning] annotation
@@ -421,6 +475,7 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - `rapid-validation-CLAUDECODE_Feb152026.yml` — 1 warning(s): 1× WARNING line
 - `robust-edge-miner.yml` — 1 warning(s): 1× ##[warning] annotation
 - `schema-drift-audit.yml` — 1 warning(s): 1× WARNING line
+- `sidecar-status-update.yml` — 1 warning(s): 1× workflow warning
 - `signal-quality-monitor.yml` — 1 warning(s): 1× WARNING line
 - `skyrocket-detector.yml` — 1 warning(s): 1× ##[warning] annotation
 - `what-worked-insights.yml` — 1 warning(s): 1× workflow warning
@@ -436,6 +491,7 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - `winner-pattern-scanner.yml` — 5: 5× skipped work
 - `ai-leaderboard-freshness.yml` — 3: 3× skipped work
 - `simulation-picks-resolver.yml` — 3: 3× skipped work
+- `update-creator-news.yml` — 3: 3× skipped work
 - `deploy-battleground-ftp.yml` — 2: 2× skipped work
 - `deploy-findcryptopairs-ftp.yml` — 2: 2× skipped work
 - `growth-stock-screener-daily.yml` — 2: 2× skipped work
@@ -456,25 +512,23 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 
 - `_dynamic-runner-template.yml` — SCHEDULE_ONLY: no run on record
 - `ai-tournament-pipeline.yml` — DISABLED: log unavailable: failed to get run log: HTTP 410: Server Error (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca
-- `alpha-engine-fast.yml` — RED_REGRESSION: log unavailable: run 45754121338 is still in progress; logs will be available when it is complete
+- `alpha-engine-fast.yml` — RED_REGRESSION: log unavailable: run 45756484527 is still in progress; logs will be available when it is complete
 - `alpha-engine-live.yml` — RED_REGRESSION: log unavailable: run 45755533757 is still in progress; logs will be available when it is complete
 - `anti-overfit-gate.yml` — RED_REGRESSION: log unavailable: run 45750243307 is still in progress; logs will be available when it is complete
-- `audit-dashboard.yml` — GREEN_RECENT: log unavailable: run 45748152095 is still in progress; logs will be available when it is complete
 - `battle_test.yml` — DISABLED: log unavailable: failed to get run log: HTTP 410: Server Error (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca
 - `branch-large-file-dup-guard.yml` — RED_REGRESSION: log unavailable: run 45746946365 is still in progress; logs will be available when it is complete
-- `consensus-outcome-tracker.yml` — GREEN_RECENT: log unavailable: run 45753943489 is still in progress; logs will be available when it is complete
+- `consensus-outcome-tracker.yml` — GREEN_RECENT: log unavailable: run 45756329217 is still in progress; logs will be available when it is complete
 - `copilot` — SCHEDULE_ONLY: no run on record
-- `copy-trader-forward-test.yml` — GREEN_RECENT: log unavailable: run 45750035715 is still in progress; logs will be available when it is complete
-- `copy-trader-intelligence.yml` — GREEN_RECENT: log unavailable: run 45751834385 is still in progress; logs will be available when it is complete
-- `crypto-test-portfolios.yml` — GREEN_RECENT: log unavailable: run 45755719122 is still in progress; logs will be available when it is complete
+- `copy-trader-forward-test.yml` — GREEN_RECENT: log unavailable: run 45756331719 is still in progress; logs will be available when it is complete
+- `copy-trader-intelligence.yml` — GREEN_RECENT: log unavailable: run 45756567758 is still in progress; logs will be available when it is complete
 - `darwin-evolution.yml` — GREEN_RECENT: log unavailable: run 45751484284 is still in progress; logs will be available when it is complete
 - `data-pipeline-test.yml` — GREEN_RECENT: log unavailable: run 45749828538 is still in progress; logs will be available when it is complete
-- `db-backup-email.yml` — GREEN_RECENT: log unavailable: run 45749831537 is still in progress; logs will be available when it is complete
 - `db-secret-scan.yml` — DISABLED: no run on record
 - `db-sync-bidirectional.yml` — GREEN_RECENT: log unavailable: run 45749839689 is still in progress; logs will be available when it is complete
 - `db-sync-to-mirror.yml` — RED_REGRESSION: log unavailable: run 45749842137 is still in progress; logs will be available when it is complete
 - `deals-refresh.yml` — GREEN_RECENT: log unavailable: run 45749845189 is still in progress; logs will be available when it is complete
 - `deploy-alpha-dashboard.yml` — GREEN_RECENT: log unavailable: run 45749851939 is still in progress; logs will be available when it is complete
+- `deploy-competition-to-site.yml` — GREEN_RECENT: log unavailable: run 45757310217 is still in progress; logs will be available when it is complete
 - `deploy-fc-api-hotfix.yml` — GREEN_RECENT: log unavailable: run 45749868103 is still in progress; logs will be available when it is complete
 - `deploy-fc-frontend.yml` — GREEN_RECENT: log unavailable: run 45749871702 is still in progress; logs will be available when it is complete
 - `deploy-friendtracker.yml` — GREEN_RECENT: log unavailable: run 45749879082 is still in progress; logs will be available when it is complete
@@ -484,13 +538,12 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - `deploy-movieshows3-hotfix.yml` — GREEN_RECENT: log unavailable: run 45749892191 is still in progress; logs will be available when it is complete
 - `deploy-vetted-picks.yml` — GREEN_RECENT: log unavailable: run 45749898230 is still in progress; logs will be available when it is complete
 - `discord-bot.yml` — RED_REGRESSION: log unavailable: run 45749901931 is still in progress; logs will be available when it is complete
-- `discord_status.yml` — GREEN_RECENT: log unavailable: run 45750055497 is still in progress; logs will be available when it is complete
 - `dna-mutation-cycle.yml` — GREEN_RECENT: log unavailable: run 45749917618 is still in progress; logs will be available when it is complete
 - `dna_strategy_pipeline.yml` — RED_REGRESSION: log unavailable: run 45755721101 is still in progress; logs will be available when it is complete
 - `dynamic-alpha-engine.yml` — GREEN_RECENT: log unavailable: run 45755551101 is still in progress; logs will be available when it is complete
 - `dynamic-universe.yml` — GREEN_RECENT: log unavailable: run 45754454205 is still in progress; logs will be available when it is complete
 - `ema-retracement-scan.yml` — GREEN_RECENT: log unavailable: run 45751167999 is still in progress; logs will be available when it is complete
-- `enhanced-ml-crypto.yml` — GREEN_RECENT: log unavailable: run 45749944623 is still in progress; logs will be available when it is complete
+- `enhanced-ml-crypto.yml` — GREEN_RECENT: log unavailable: run 45756694571 is still in progress; logs will be available when it is complete
 - `equities-agent.yml` — GREEN_RECENT: log unavailable: run 45749947364 is still in progress; logs will be available when it is complete
 - `etf-agent.yml` — GREEN_RECENT: log unavailable: run 45749950161 is still in progress; logs will be available when it is complete
 - `fc-crypto-pro.yml` — GREEN_RECENT: log unavailable: run 45749959820 is still in progress; logs will be available when it is complete
@@ -501,10 +554,9 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - `forex-smart-picks.yml` — GREEN_RECENT: log unavailable: run 45749986397 is still in progress; logs will be available when it is complete
 - `forward-signal-scanner.yml` — GREEN_RECENT: log unavailable: run 45749995333 is still in progress; logs will be available when it is complete
 - `forward-test-new-strategies.yml` — GREEN_RECENT: log unavailable: run 45749998137 is still in progress; logs will be available when it is complete
-- `forward-tracking-v2.yml` — GREEN_RECENT: log unavailable: run 45755721349 is still in progress; logs will be available when it is complete
-- `forward_test.yml` — GREEN_RECENT: log unavailable: run 45750011316 is still in progress; logs will be available when it is complete
+- `forward_test.yml` — GREEN_RECENT: log unavailable: run 45757071192 is still in progress; logs will be available when it is complete
 - `funding-rate-collector.yml` — GREEN_RECENT: log unavailable: run 45750016905 is still in progress; logs will be available when it is complete
-- `gainer-predictor.yml` — GREEN_RECENT: log unavailable: run 45753326959 is still in progress; logs will be available when it is complete
+- `gainer-predictor.yml` — GREEN_RECENT: log unavailable: run 45756053082 is still in progress; logs will be available when it is complete
 - `genome-daily-pipeline.yml` — GREEN_RECENT: log unavailable: run 45750031354 is still in progress; logs will be available when it is complete
 - `genome-evolution.yml` — GREEN_RECENT: log unavailable: run 45750033965 is still in progress; logs will be available when it is complete
 - `gha-scan-job.yml` — SCHEDULE_ONLY: no run on record
@@ -518,22 +570,25 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - `insider-trades-refresh.yml` — GREEN_RECENT: log unavailable: run 45750109218 is still in progress; logs will be available when it is complete
 - `kimi-feb172026-live.yml` — GREEN_RECENT: log unavailable: run 45753186887 is still in progress; logs will be available when it is complete
 - `kimi-fetch-movies.yml` — GREEN_RECENT: log unavailable: run 45750118336 is still in progress; logs will be available when it is complete
-- `live_spike_trading.yml` — GREEN_RECENT: log unavailable: run 45750127430 is still in progress; logs will be available when it is complete
-- `mega-mutation-tracker.yml` — NEVER_RUN: log unavailable: run 45750177029 is still in progress; logs will be available when it is complete
-- `meme-scanner-v2.yml` — NEVER_RUN: log unavailable: run 45755436345 is still in progress; logs will be available when it is complete
+- `live_spike_trading.yml` — GREEN_RECENT: log unavailable: run 45757010869 is still in progress; logs will be available when it is complete
+- `luxalgo-signals.yml` — GREEN_RECENT: log unavailable: run 45756902657 is still in progress; logs will be available when it is complete
+- `mega-mutation-tracker.yml` — NEVER_RUN: log unavailable: run 45756390280 is still in progress; logs will be available when it is complete
+- `meme-scanner-v2.yml` — NEVER_RUN: log unavailable: run 45757106245 is still in progress; logs will be available when it is complete
+- `mercury2-retrain.yml` — NEVER_RUN: log unavailable: run 45757144794 is still in progress; logs will be available when it is complete
 - `mermaid-test-deploy.yml` — DISABLED: no run on record
 - `mutation-lab.yml` — NEVER_RUN: log unavailable: run 45750241817 is still in progress; logs will be available when it is complete
-- `now-scanner.yml` — NEVER_RUN: log unavailable: run 45753954021 is still in progress; logs will be available when it is complete
+- `now-scanner.yml` — NEVER_RUN: log unavailable: run 45756336524 is still in progress; logs will be available when it is complete
 - `quant-auditor-fast-pr.yml` — SCHEDULE_ONLY: no run on record
 - `real_2hour_challenge.yml` — NEVER_RUN: log unavailable: run 45750376573 is still in progress; logs will be available when it is complete
-- `regime-terminal.yml` — NEVER_RUN: log unavailable: run 45754148141 is still in progress; logs will be available when it is complete
+- `regime-terminal.yml` — NEVER_RUN: log unavailable: run 45756513315 is still in progress; logs will be available when it is complete
 - `resolver-step5-6-backfill.yml` — NEVER_RUN: no run on record
 - `resolver-step7-apply.yml` — NEVER_RUN: no run on record
-- `signal-recorder.yml` — NEVER_RUN: log unavailable: run 45750457468 is still in progress; logs will be available when it is complete
+- `signal-recorder.yml` — NEVER_RUN: log unavailable: run 45756311434 is still in progress; logs will be available when it is complete
 - `sports-betting-refresh.yml` — DISABLED: no run on record
 - `sports-data-snapshots.yml` — DISABLED: no run on record
 - `sports-forensics-weekly.yml` — DISABLED: no run on record
 - `sports-prediction-market-sync.yml` — DISABLED: no run on record
 - `sports-smoke-and-e2e.yml` — DISABLED: no run on record
 - `strategy-performance-no-regression.yml` — SCHEDULE_ONLY: no run on record
+- `ueps-pick-runner.yml` — NEVER_RUN: log unavailable: run 45757180252 is still in progress; logs will be available when it is complete
 - `update-graph` — SCHEDULE_ONLY: no run on record
