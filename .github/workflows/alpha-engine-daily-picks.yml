@@ -82,6 +82,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r alpha_engine/requirements.txt
+        # pandas needs a parquet engine for the price cache; without it every symbol logs
+        # 'Cache save failed ... pyarrow/fastparquet' and the cache is useless.
+        pip install pyarrow
 
     #  Step 4: Run Alpha Engine 
     - name: Generate daily picks
@@ -117,8 +120,13 @@ jobs:
         if [ $EXIT_CODE -eq 0 ]; then
           echo "picks_status=success" >> $GITHUB_OUTPUT
         else
-          echo "::warning::Alpha Engine exited with code $EXIT_CODE"
+          # This used to warn and carry on, so a crashed generator produced a GREEN run with
+          # pick_count=0, the deploy step was skipped, and nothing was published. It stayed
+          # hidden for weeks behind the ValueError in MacroLoader.load.
+          echo "::error::Alpha Engine exited with code $EXIT_CODE - no picks can be deployed"
           echo "picks_status=failed" >> $GITHUB_OUTPUT
+          tail -40 alpha_output.log || true
+          exit "$EXIT_CODE"
         fi
 
         # Check if picks were generated
