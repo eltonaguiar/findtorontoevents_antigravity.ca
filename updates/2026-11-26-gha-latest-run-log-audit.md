@@ -1,93 +1,117 @@
-# Latest-run log audit — green is not clean (2026-11-26)
+# Latest-run log audit — 303 workflows, 47 green-but-erroring (2026-11-26)
 
-## What was asked
+## Answer to "validate every workflow and its latest run"
 
-Validate every workflow *and its latest run*, checking logs for warnings, errors
-and anything odd — not just the pass/fail conclusion.
+Done for **303 of 386** registered workflows. The remaining 83 break down as:
 
-## Tooling added
-
-| Tool | Answers |
+| Why not audited | Count |
 |---|---|
-| `tools/gha_workflow_run_matrix.py` | has this workflow ever run, and did it work? (real run history, one checkbox per workflow) |
-| `tools/gha_act_batch.py` | run it locally in a container; separates `FAIL` (ours) from `BLOCKED_ENV` (secret/DB/FTP we cannot supply) |
-| `tools/gha_latest_run_log_audit.py` | **download the latest run's log and count errors / warnings / suspicious output** |
+| latest run still **in progress** when the audit ran (peer dispatch wave) | 68 |
+| no run on record (never executed) | 15 |
+| log expired / gone (`HTTP 410`) | 2 |
 
-`gha_latest_run_log_audit.py --resume` reuses logs already saved under
-`reports/latest_run_logs/`, so a rate-limited run can be continued without
-re-fetching what it already has.
+Re-run `python3 tools/gha_latest_run_log_audit.py --resume` to pick up the in-progress ones once they finish — `--resume` reuses `reports/latest_run_logs/` and never refetches what it already has.
 
-Two harness gotchas cost real time and are now documented in the code:
-
-- `catthehacker/ubuntu:act-latest` is **amd64-only**. On this aarch64 host every
-  container exits 255 the instant a step runs ("container … is not running"),
-  even for `echo hi`. A native `gha-runner:arm64` image is required.
-- that image must contain `nodejs`, or every `uses:` action dies with
-  `exec: node: executable file not found in $PATH` (exitcode 127), and
-  `PIP_BREAK_SYSTEM_PACKAGES=1`, or pip refuses to install (PEP 668).
-
-## Findings so far (73 of 369 runs with a log audited)
+## Results
 
 | Verdict | Workflows |
 |---|---|
-| ERRORS in log | **26** |
-| WARNINGS only | 20 |
-| SUSPICIOUS only | 6 |
-| CLEAN | 21 |
+| **ERRORS in log** | **63** |
+| WARNINGS only | 74 |
+| SUSPICIOUS only | 23 |
+| CLEAN | 143 |
 
-**The headline: 26 workflows whose run conclusion is `success` still contain
-error lines in their logs.** A green tick does not mean the work happened.
+**47 of those runs concluded `success` while their log contains error lines.**
+8 concluded `success` while emitting `##[error]` annotations. Only 6 concluded `failure`.
 
-### Error classes, by line count
+A green tick is not evidence the work happened.
 
-| Count | Class |
+### Error classes across all audited runs
+
+| Lines | Class |
 |---|---|
-| 56 | `HTTP Error 4xx` |
-| 28 | `ERROR` line |
-| 25 | missing file |
-| 11 | `##[error]` annotation |
-| 4 | python traceback |
-| 2 | git fatal |
-| 1 | missing python module |
-| 1 | missing binary |
+| 1,859 | `ERROR` line |
+| 284 | `HTTP Error 4xx` |
+| 30 | `git fatal` |
+| 27 | missing file |
+| 24 | `##[error]` annotation |
+| 8 | python traceback |
 
-### Worst offenders (all `success`)
+## Four distinct defects, not one
 
-| Errors | Workflow | First error |
-|---|---|---|
-| 38 | `backfill-features.yml` | `[WARN] All Binance mirrors failed for RENDERUSDT: HTTP Error 4xx` |
-| 20 | `cross-aggregator.yml` | `[WARN] Could not load /home/runner/work/...` (missing input file) |
-| 10 | `asterdex-paper-trading.yml` | `[ERROR] Klines fetch failed for BTCUSDT` |
-| 10 | `etf-bond-scanner.yml` | see masking bug below |
-| 8 | `alpha-engine-daily-picks.yml` | `[ERROR] yfinance:` |
-| 6 | `audit-impact-tracker.yml` | `[WARN] Could not load strategy_performanc…` |
-| 4 | `baby-strat-forward-paper.yml` | python traceback + missing module |
-| 3 | `ai-model-portfolios-daily.yml` | `Traceback (most recent call last)` |
+### 1. Symbols that do not exist are requested every run — and reported as success
+`picks-now-refresh.yml` logs **1,427 errors** in a single successful run:
 
-### Two distinct root causes, not one
+```
+[ERROR] HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found"...
+[ERROR] $ADA: No data found, symbol may be delisted
+```
 
-1. **Binance 451 geo-block** (matches HERMES' independent finding): the
-   `HTTP Error 4xx` mass is an egress-IP block on `api.binance.com`, not a data
-   or symbol defect. It inflates "failure" counts in every crypto workflow.
-2. **Missing input files carried as warnings**: `cross-aggregator` and
-   `audit-impact-tracker` cannot load the artefact they aggregate and continue
-   anyway, so the run is green and the output is silently incomplete. That is
-   the same class as the NaN payloads fixed earlier — a producer that fails
-   quietly.
+`$ADA` is not a Yahoo symbol (it needs `ADA-USD`). This is the literal
+"symbol not found" class: the equity/crypto universe contains invalid tickers and
+the workflow treats every miss as a warning, so the run stays green and the picks
+are silently thinner than reported. `battleground-mass-backtest.yml` is the same
+shape — **312 × `ERROR: No Strategy class found`** across 869 directories, run still
+green.
 
-### A masking bug worth its own ticket
+### 2. `git push` fails with 403 and the workflow still reports success
+**14 workflows** hit `fatal: unable to access '…': The requested URL returned
+error: 403`. Nine of them still conclude `success`, so the data they generated is
+**never committed** — silent data loss:
 
-`etf-bond-scanner.yml` logs `2026***11***26 03:40:24` — the timestamp has been
-mangled to `2026***11***26` by a masking rule that redacts digit runs. A masker
-is eating ordinary numbers inside log lines, which is exactly the kind of thing
-that makes a log worthless during an incident. It also explains the
-`masking-policy-lint` failure a peer reported on `ci/2026-11-25-gha-digest`.
+`alpha-engine-etf`, `alpha-equity-breakout`, `claude-gainer-ml-live`,
+`gha-queue-audit`, `macd-rsi-m048-shadow-daily`, `ml-battleground-retrain`,
+`peer-claim-verification`, `quan-engine-live`, `rsi5070-forward-snapshot`,
+`self_optimizing_trading`, `verified-pilot-daily`, `weekly-strategy-scorecard`,
+`cross-aggregator`, `baby-strat-forward-paper`.
 
-## Still open
+Not a missing-permission bug in most cases: `quan-engine-live.yml` declares
+`permissions: contents: write` and still gets 403. Only 7 of the 236 pushing
+workflows lack `contents: write`. The common factor is **236 workflows pushing to
+`main`** — GitHub's git-push abuse detection answers 403 under that concurrency,
+and `safe_push.sh` exhausts its retries ("ERROR: All 5 push attempts failed") and
+the step swallows it. This is the same contended-main problem behind the
+`weekly-scorecard` and `pod-h201` failures fixed earlier, but at fleet scale.
 
-- 296 workflows remain to be audited; the GitHub REST budget (5,000/h) ran out
-  at 96 workflows because the matrix sweep itself spends 386 calls. Re-run
-  `python3 tools/gha_latest_run_log_audit.py --resume` once the hourly budget
-  resets, or after the matrix has been cached.
-- 175 of 386 workflows have **never run at all**, so they have no log to audit;
-  they are tracked in `reports/GHA_PER_WORKFLOW_RUN_TODOS.md`.
+Fixing it properly means fewer pushes: batch writers, or one collector job that
+commits for everyone.
+
+### 3. Errors that are deliberately swallowed
+`continue-on-error: true` appears in **71 workflows**, `|| echo` / `|| true` in
+**245**. That is why a broken step produces a green run. Some are legitimate
+(best-effort side channels); the ones above are not.
+
+### 4. A masking rule is redacting digits in ordinary log lines
+`etf-bond-scanner.yml` logs `2026***11***26 03:40:24` — the date has been mangled
+by a masking rule that redacts digit runs. During an incident that log is
+unusable, and it is the same policy that a peer flagged via `masking-policy-lint`.
+
+## What is *not* a defect
+
+- **Binance 451**: `HTTP Error 451` on `api.binance.com` is a geo-block of the
+  runner's egress IP, confirmed independently by HERMES. It inflates error counts
+  in `portfolio-tracker`, `conviction-picks`, `asterdex-paper-trading` and the
+  `backfill-features` Binance mirrors. Do not "fix" the code for this.
+- **NKLA**: genuinely delisted from Yahoo; the universe should drop it, but it is
+  a data-curation issue, not a lookup bug.
+
+## Tooling
+
+| Tool | Purpose |
+|---|---|
+| `tools/gha_workflow_run_matrix.py` | has each workflow ever run? (real run history, one checkbox per workflow) |
+| `tools/gha_latest_run_log_audit.py` | download each latest log, count errors / warnings / suspicious output, keep samples, `--resume` across rate limits |
+| `tools/gha_act_batch.py` | execute workflows locally in a container, separating `FAIL` from `BLOCKED_ENV` |
+
+Harness notes that cost hours and are now encoded in the tools:
+
+- `catthehacker/ubuntu:act-latest` is amd64-only; on an aarch64 host every
+  container exits 255 the moment a step runs. Needs a native image
+  (`gha-runner:arm64`).
+- that image needs `nodejs` (else every `uses:` action dies with
+  `exec: node: not found`) and `PIP_BREAK_SYSTEM_PACKAGES=1` (PEP 668).
+- act's `actions/setup-python` ships an interpreter without `ssl`, so pip cannot
+  reach PyPI inside act. That is a harness limit, not a workflow defect — it is
+  why 18 of 26 local runs land in `BLOCKED_ENV` rather than `FAIL`.
+- `GITHUB_REPOSITORY` must be passed to act or `actions/checkout` fails with
+  "Invalid repository '/local/path'".
