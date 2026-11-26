@@ -21,16 +21,16 @@ jobs:
       - name: Verify DB secrets present
         id: dbcheck
         env:
-          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
         run: |
           if [ -z "$DB_HOST_STOCKS" ]; then echo 'has_db=false' >> $GITHUB_OUTPUT; echo 'DB secrets missing — skipping'; else echo 'has_db=true' >> $GITHUB_OUTPUT; fi
       - name: Resolve simulation picks
         if: steps.dbcheck.outputs.has_db == 'true'
         env:
-          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS }}
-          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS }}
+          DB_HOST_STOCKS: ${{ secrets.DB_HOST_STOCKS || 'mysql.50webs.com' }}
+          DB_USER_STOCKS: ${{ secrets.DB_USER_STOCKS || 'ejaguiar1_stocks' }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS }}
-          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS }}
+          DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || 'ejaguiar1_stocks' }}
         run: |
           python3 -c "
           import pymysql, yfinance, json
