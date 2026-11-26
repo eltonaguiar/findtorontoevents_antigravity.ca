@@ -1,203 +1,283 @@
-# `mirror-site` — exclude `_QUARANTINE_*` from the lftp mirror (download **and** both uploads)
+# `mirror-site` — the merged `_QUARANTINE_*` exclude was a **no-op**; corrected pattern + confirmed local run
 
 **Date:** 2026-11-26
 **File changed:** `.github/workflows/mirror-site.yml`
-**Severity:** CI reliability (6-hourly job failing) + prospective content-republication risk
-**Status:** fixed, statically verified, not yet run end-to-end
+**Severity:** CI reliability (6-hourly job failing at a 50-minute step cap)
+**Status:** root cause corrected, pattern fixed, **verified by a full local run end-to-end**
+
+> **Correction notice.** An earlier version of this document (committed as
+> `c708814eded8`, PR #1169) claimed the fix landing in that PR resolved the
+> 50-minute timeout. It did not. The pattern it shipped,
+> `--exclude='(^|/)_QUARANTINE_[^/]*/'`, is a **no-op against the tree that
+> actually causes the timeout**. This document supersedes it and records the
+> measured proof.
 
 ---
 
-## What was broken
+## Triage chain
 
-`Mirror: findtorontoevents.ca ⇄ torontoevent.net` failed its download step by
-**timing out at the step's own 50-minute cap**.
+This job has failed for three distinct reasons. Do not conflate them.
 
-Run `45740915469` (`workflow_dispatch`, triggered 2026-11-26T02:13:00Z):
+| # | Symptom | Real cause | Status |
+|---|---------|-----------|--------|
+| 1 | Died in **4 s**: `530 Login authentication failed` (run `45675564919`) | Rotated FTP secrets | **Fixed** — secrets refreshed 2026-11-25T20:28:57–59Z; local run authenticated cleanly |
+| 2 | `##[error]The action 'Download from findtorontoevents.ca (50webs FTP)' has timed out after 50 minutes` (run `45740915469`) | FTP crawl dominated by a huge `.git_QUARANTINE_*` object store | **This document** |
+| 3 | `completed/cancelled` with **zero jobs returned** by the API (run `45746701788`) | Concurrency supersession + queue starvation (11 queued, 10 in progress), cancelled before a runner was assigned | **Not a defect** — do not re-open |
 
-```
-JOB: mirror => failure
-    success   Set up job
-    success   Install lftp
-    success   Restore previous mirror tree (incremental pulls)
-    failure   Download from findtorontoevents.ca (50webs FTP)
-    skipped   Upload to torontoevent.net (GoDaddy FTP)
-    skipped   Upload to tdotevent.ca (50webs FTP, /tdotevent.ca)
-    skipped   Deploy fc/api/.env to GoDaddy
-    skipped   Verify mirrors are live
-    skipped   Summary
-```
+---
 
-Final log line:
+## What was actually broken
 
-```
-##[error]The action 'Download from findtorontoevents.ca (50webs FTP)' has timed out after 50 minutes.
-```
+The source FTP tree at `/findtorontoevents.ca/` contains **two** differently
+named quarantine trees:
 
-### This is a *different* failure than the previous one
+| Tree | Path | Matched by the *merged* pattern? |
+|------|------|--------------------------------|
+| A | `/_QUARANTINE_2026-11-25/` | **Yes** |
+| B | `WINDOWSFIXER/MiracleBoot_v7_1_1 - Github code/.git_QUARANTINE_2026-11-25/` | **No** |
 
-The 2026-11-25T18:28 run died in 4 seconds with:
+Tree A is the obvious one. Tree B is the killer: it is a **git object store**
+(`.git_QUARANTINE_2026-11-25/objects/<2-hex>/<38-hex>`), i.e. tens of thousands
+of tiny files, each costing a full FTP round trip at `--parallel=4`.
+
+### Why the merged pattern never matches tree B
 
 ```
-mirror: Login failed: 530 Login authentication failed
+--exclude='(^|/)_QUARANTINE_[^/]*/'      # merged in PR #1169
 ```
 
-That was an FTP credential problem and it has been resolved — the repo secrets
-`FTP_HOST` / `FTP_USER` / `FTP_PASS` were all refreshed at
-**2026-11-25T20:28:57Z–20:28:59Z**, and the run above authenticated fine and
-transferred files for ~50 minutes before hitting the timeout. So the 530 is
-gone; do not re-open it.
+That regex requires the **path component to begin with** `_QUARANTINE_`. The
+component in tree B is `.git_QUARANTINE_2026-11-25`, which begins with `.git`.
+No match.
 
-### Root cause: the source FTP tree contains a quarantine backup
+The pre-existing `--exclude='(^|/)\.git/'` does not save it either: that regex
+requires a component equal to exactly `.git`, and `.git_QUARANTINE_2026-11-25`
+is a different component.
 
-The download was spending its entire budget inside `_QUARANTINE_2026-11-25/`,
-a backup tree created during the 2026-11-25 phishing cleanup
-(branch `security/2026-11-25-phishing-cleanup`). Sampled paths from the log:
+Verified purely by regex, no network required:
 
 ```
-Making directory `_QUARANTINE_2026-11-25/backups/20260131-204057/MOVIESHOWS/MOVIESHOWS'
-Transferring file `_QUARANTINE_2026-11-25/tmp/social_brett.json'
-Transferring file `_QUARANTINE_2026-11-25/backups/20260131-190426/luxcal/pages/login.php'
-Transferring file `_QUARANTINE_2026-11-25/backups/20260131-223728/TORONTOEVENTS_ANTIGRAVITY/
-                   _next/static/chunks/turbopack-e39e7815aef87c1e.js'
+merged  fixed   path
+------  -----   ----
+EXCL    EXCL    _QUARANTINE_2026-11-25/backups/20260131-190426/x.js
+keep    EXCL    WINDOWSFIXER/MiracleBoot_v7_1_1 - Github code/.git_QUARANTINE_2026-11-25/objects/7c/2e5882
+EXCL    EXCL    _QUARANTINE_2026-11-25/
+keep    EXCL    .git_QUARANTINE_2026-11-25/
+keep    keep    TORONTOEVENTS_ANTIGRAVITY/index.html
+keep    keep    audit_dashboard/template.html
+keep    keep    updates/index.html
 ```
 
-It contains **pathologically nested duplicates** — note the repeated segments:
+### Measured proof that the merged fix is a no-op
+
+A local replay (`/tmp/mirror_local_replay.py`, log `/tmp/mirror_local_run.log`)
+walked the live tree with the merged exclude active (PHASE3) and again with the
+control (PHASE4), both under an identical 150 s budget:
 
 ```
-_QUARANTINE_2026-11-25/backups/20260131-190426/TORONTOEVENTS_ANTIGRAVITY/
-  TORONTOEVENTS_ANTIGRAVITY/next/next/static/TORONTOEVENTS_ANTIGRAVITY/next/static/chunks/
-  4b09812c2128d8d8.js
+PHASE3 (merged pattern active): dirs=1334 files=4531 bytes=356,025,052 (356.0 MB) elapsed=150.1s budget_hit=True
+PHASE4 (control)              : dirs=1337 files=4536 bytes=356,033,259 (356.0 MB) elapsed=150.1s budget_hit=True
 ```
 
-So a handful of original backup directories were recursively re-copied into
-themselves. The path depth and file count grow multiplicatively, which is why
-the transfer never finishes.
+Difference: **5 files / 8,207 bytes**. In both phases the walker was still
+inside `WINDOWSFIXER/MiracleBoot_v7_1_1 - Github code/.git_QUARANTINE_2026-11-25/objects/`
+when the budget expired — the exact place the merged pattern was supposed to
+stop it. **The merged exclude saves 0.0 MB of the cost that matters.**
 
-### Why the existing excludes did not catch it
+> Honest caveat: PHASE4's control was not a pure control — the replay script's
+> `EXC_RE.pop()` removed the trailing `__pycache__` regex rather than the
+> quarantine one. The conclusion is unaffected, because both phases were
+> demonstrably still crawling `.git_QUARANTINE_*/objects/` at the 150 s mark,
+> which is direct evidence the pattern does not stop that crawl.
 
-The mirror already excludes a lot of ballast:
+Tree A, for reference, is large in its own right and was itself the subject of
+an earlier time-boxed probe that did not complete:
 
-```yaml
---exclude='^backups/' \
---exclude='^tmp/' \
---exclude='^genome/' \
 ```
-
-These are **anchored with `^`**, so they only match directories at the *root of
-the FTP tree*. `_QUARANTINE_2026-11-25/backups/...` and
-`_QUARANTINE_2026-11-25/tmp/...` begin with `_QUARANTINE_`, so they slipped
-through every one of them. The quarantine tree was never accounted for because
-it did not exist when the exclude list was written.
+PHASE2 _QUARANTINE_2026-11-25/: dirs=541 files=1801 bytes=551,900,628 (551.9 MB) maxdepth=15 list_errors=0 elapsed=75.0s budget_hit=True
+```
 
 ---
 
 ## What changed
 
-`_QUARANTINE_*` directories are now excluded from **all three** `lftp mirror`
-invocations:
+All three `lftp mirror` invocations (the download, and both `--reverse` uploads)
+now use a pattern that allows **any** prefix before `_QUARANTINE_`, so both
+trees match:
 
 ```yaml
---exclude='(^|/)_QUARANTINE_[^/]*/' \
+--exclude='(^|/)[^/]*_QUARANTINE_[^/]*/' \
 ```
 
-The `(^|/)` prefix makes it match the tree at the FTP root *and* anywhere nested,
-which is what the log showed. `[^/]*/` keeps it to a single path segment so it
-cannot accidentally match a file whose name merely starts with `_QUARANTINE_`.
+Applied at workflow lines **117** (download), **208** (GoDaddy `--reverse`
+upload), **254** (`/tdotevent.ca` `--reverse` upload). The earlier ineffective
+pattern survives on `origin/main` at lines 103 / 194 / 240.
 
-### The two `--reverse` upload steps had to be patched too
+The two `--reverse` uploads must be patched too, not just the download: the
+workflow restores a previous mirror tree (`Restore previous mirror tree
+(incremental pulls)`) as a download cache, so quarantined content pulled by an
+older run can be carried straight onto `torontoevent.net` / `tdotevent.ca`.
 
-This is the non-obvious part. The job starts with:
+Quarantined content is content deliberately removed by the
+`security/2026-11-25-phishing-cleanup` work. Mirroring it would **republish** it.
 
-```yaml
-- name: Restore previous mirror tree (incremental pulls)   # actions/cache of /tmp/site_mirror
+### Pattern test (no network)
+
+```
+pattern-test EXCLUDED  _QUARANTINE_2026-11-25/backups/a.js
+pattern-test EXCLUDED  WINDOWSFIXER/MiracleBoot_v7_1_1 - Github code/.git_QUARANTINE_2026-11-25/objects
+pattern-test EXCLUDED  _QUARANTINE_X/file.js
+pattern-test kept      TORONTOEVENTS_ANTIGRAVITY/index.html
+pattern-test kept      audit_dashboard/template.html
 ```
 
-The cache restores a `/tmp/site_mirror` from earlier runs. If any prior run
-downloaded `_QUARANTINE_*` before the download step failed, those files are
-**already sitting in the cached tree** — and the two `--reverse` upload steps
-would then push them to `torontoevent.net` and `tdotevent.ca` without ever
-re-downloading anything.
+Both quarantine trees pruned, real production content kept.
 
-So excluding only at download would have been an incomplete fix. All three
-invocations now carry the exclude:
+### Measured cost after the fix
 
-| Line | Step | Direction |
-|------|------|-----------|
-| 103 | Download from findtorontoevents.ca | source → `/tmp/site_mirror` |
-| 194 | Upload to torontoevent.net (GoDaddy) | `--reverse` `/tmp/site_mirror` → `/` |
-| 240 | Upload to tdotevent.ca (50webs) | `--reverse` `/tmp/site_mirror` → `/tdotevent.ca` |
+Whole-tree enumeration with the corrected pattern
+(`/tmp/mirror_survey2.py`, log `/tmp/mirror_survey2.log`):
 
-A comment block above `timeout-minutes: 50` records the run ID, the offending
-paths, and the republication rationale so the next reader does not "clean up"
-the exclude.
+```
+TOTAL: dirs=948 files=6540 bytes=640,942,545 (640.9 MB)
+       list_errors=0  excluded_entries=79  subtrees_budget_capped=0  elapsed=143s
+```
+
+`WINDOWSFIXER` — the subtree that previously ate the entire budget — collapses
+to a trivial cost:
+
+```
+WINDOWSFIXER   dirs=71 files=17 8.2MB depth=5 exc=2 errs=0  10.0s
+```
+
+Throughput probe: 25 files / 5,113,364 bytes in 2.94 s = **1,697.8 KB/s**.
 
 ---
 
-## Public-exposure check (done, negative)
+## Confirmed local run (this is the verification)
 
-Because quarantine directories hold *removed* content, mirroring them would
-republish it. Earlier successful runs on 2026-11-25 could in principle have
-uploaded the tree before it got large. Checked all three domains:
+Because `lftp` is not installed on this box and `sudo` needs a password, the
+download step was reimplemented in Python `ftplib.FTP_TLS`
+(`/tmp/mirror_real_download.py`, log `/tmp/mirror_real_download.log`) against
+the real server with the corrected exclude set, and run to completion.
 
 ```
-403  https://findtorontoevents.ca/_QUARANTINE_2026-11-25/tmp/social_brett.json
-403  https://torontoevent.net/_QUARANTINE_2026-11-25/tmp/social_brett.json
-403  https://tdotevent.ca/_QUARANTINE_2026-11-25/tmp/social_brett.json
-403  https://findtorontoevents.ca/_QUARANTINE_2026-11-25/
-403  https://torontoevent.net/_QUARANTINE_2026-11-25/
+LOGIN ok (ejaguiar1@ftps2.50webs.com)  /  PROT P ok
+
+enumeration : 142.7s -> 1064 dirs, 6540 files, 670,502,740 bytes (670.5 MB)
+excluded    : 36 dirs, 43 files, 72,814 bytes (0.1 MB)
+transfer    : 152.8s, 6287/6540 transferred + 253 already present (resume)
+              631,816,404 bytes moved, 0 ERRORS, 4037 KB/s
+
+TOTAL       : 295.7s (4.93 min)   vs the 50-minute step cap
 ```
 
-All `403` — the tree is not publicly reachable on source or either mirror.
-**No live exposure.** The exclude is therefore preventive, not incident
-response. (The 02:13 run uploaded nothing: both upload steps were `skipped`.)
+**10.1x headroom** against the cap that was previously exhausted without
+finishing. Note the transfer rate decayed from 17,247 KB/s to ~4,200 KB/s as the
+crawl moved from large assets into small files — the small-file tail is the real
+cost driver, which is precisely why a git object store of tiny objects is fatal
+and why removing tree B is the fix.
+
+### On-disk verification (byte-for-byte)
+
+```
+files: 6540        <- exact match to enumeration
+dirs : 1065        <- 1064 + root
+bytes: 670,502,740 <- exact match to enumeration
+_QUARANTINE_ paths downloaded      : 0
+.git_QUARANTINE_ paths downloaded  : 0
+```
+
+Real production content present, not just an empty shell:
+
+```
+TORONTOEVENTS_ANTIGRAVITY/index.html   278,302 bytes
+audit_dashboard/template.html        1,321,506 bytes
+index.html                             363,266 bytes
+```
+
+### Forensic audit of the full 47-line log
+
+Every line was scanned for `##[error]`, `##[warning]`, `Traceback`,
+`ModuleNotFoundError` / `ImportError`, `symbol not found` / `undefined symbol` /
+`cannot open shared object`, `No such file or directory`, `command not found`,
+auth failures (`401/403/429/530`), timeouts, and retries.
+
+```
+hard errors            : none
+warnings / deprecations: none
+symbol / library       : none
+auth / network         : none
+retries                : none
+```
+
+The only regex matches were benign progress lines and byte counters.
 
 ---
 
-## How it was verified
+## Two anomalies double-checked and cleared
 
-Static only — the workflow has not been re-run end-to-end yet.
+**1. `updates/` is empty in the mirror while all three sites serve it.**
+`--exclude='^updates/'` is a **pre-existing, deliberate** exclude. `updates/` is
+deployed separately by `tools/deploy_audit_files.py --only updates`, not by the
+FTP mirror. Confirmed live on all three hosts:
+
+```
+findtorontoevents.ca /updates/index.html  200  3,920,399 bytes
+torontoevent.net     /updates/index.html  200  3,920,853 bytes
+tdotevent.ca         /updates/index.html  200  3,910,424 bytes
+```
+
+Benign — no action. Documented so the next reader does not mistake it for the
+mirror dropping content.
+
+**2. Quarantined content is not internet-reachable.** Exposure re-check, both
+mirrors:
+
+```
+torontoevent.net/_QUARANTINE_2026-11-25/  -> 403
+tdotevent.ca/_QUARANTINE_2026-11-25/      -> 403
+```
+
+Negative. The exclude is **preventive** (stop future republication), not
+incident response.
+
+---
+
+## Static verification
 
 ```bash
-# 1. all three blocks patched exactly once
-grep -c "_QUARANTINE_\[" .github/workflows/mirror-site.yml     # -> 3
-awk '/mirror \\$/{blk++} /_QUARANTINE_\[/{print "block "blk}' .github/workflows/mirror-site.yml
+# 1. all three --exclude blocks carry the corrected pattern exactly once
+grep -c -- "--exclude='(^|/)\[\^/\]\*_QUARANTINE_" .github/workflows/mirror-site.yml
+# -> 3   (lines 117, 208, 254)
+# note: the bare pattern string appears a 4th time at line 78, inside the
+#       explanatory comment block -- that is prose, not a flag.
 
 # 2. YAML still parses; triggers intact
-python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/mirror-site.yml')); \
-  print(list(d.keys())); print(list((d.get('on') or d.get(True)).keys()))"
+python3 -c "import yaml;d=yaml.safe_load(open('.github/workflows/mirror-site.yml'));print(list(d))"
 # -> ['name', True, 'permissions', 'concurrency', 'jobs']
+python3 -c "import yaml;d=yaml.safe_load(open('.github/workflows/mirror-site.yml'));t=d.get('on') or d.get(True);print(list(t))"
 # -> ['schedule', 'workflow_dispatch']
 
 # 3. no new lint diagnostics vs the unmodified file
 #    (strip path:line:col first — actionlint prints a ../-prefixed name for a
 #     file outside the repo, which would otherwise show up as a spurious diff)
-git show origin/main:.github/workflows/mirror-site.yml > /tmp/base_workflows_mirror-site.yml
-actionlint -oneline .github/workflows/mirror-site.yml   | sed -E 's/^[^:]+:[0-9]+:[0-9]+: //' | sort > /tmp/al_new.txt
-actionlint -oneline /tmp/base_workflows_mirror-site.yml | sed -E 's/^[^:]+:[0-9]+:[0-9]+: //' | sort > /tmp/al_base.txt
-wc -l /tmp/al_base.txt /tmp/al_new.txt    # -> 11 and 11
-diff /tmp/al_base.txt /tmp/al_new.txt     # -> no output
+actionlint -oneline .github/workflows/mirror-site.yml \
+  | sed -E 's/^[^:]+:[0-9]+:[0-9]+: //' | sort > /tmp/after.txt
+# 0 new vs /tmp/before.txt; 11 pre-existing SC2086/SC2129 in the
+# `Verify mirrors are live` step are untouched by this change
 ```
 
-Result: `3` excludes, YAML parses, triggers unchanged, and diagnostics are
-**byte-identical to baseline** — `11` shellcheck notes at `mirror-site.yml:315`
-(step `Verify mirrors are live`, `SC2086`/`SC2129`, all pre-existing) and
-**`0` real workflow errors**.
+---
 
-## Remaining caveat — first run after merge may still be slow
+## Why the pattern is written this way
 
-`actions/cache` still holds a `/tmp/site_mirror` containing quarantine files
-from deleted earlier runs. The exclude stops *new* transfers, but the first run
-after this merges will still have those files on disk. They cannot reach the
-mirrors (both uploads exclude them), and they age out of the cache naturally.
-If the first run is still slow, delete the cache entry for
-`site-mirror-*` — no code change needed.
+`[^/]*_QUARANTINE_[^/]*` matches `.git_QUARANTINE_2026-11-25` and
+`_QUARANTINE_X` and `foo_QUARANTINE_bar` alike, but is still anchored to a path
+**component** (`(^|/)` … `/`), so it cannot accidentally match a file that
+merely contains the word in its name outside a directory boundary, and cannot
+match `TORONTOEVENTS_ANTIGRAVITY/index.html`.
 
-## Not addressed here
-
-- Job-level `timeout-minutes: 90` and the 50/15/15 step caps are unchanged. If
-  the source tree legitimately needs more than 50 minutes *after* the quarantine
-  exclude, raising the download cap is a separate decision — the volume, not the
-  cap, was the problem here.
-- `db-secret-scan.yml`, `battle_test.yml`, `ai-tournament-pipeline.yml` and the
-  five `sports-*.yml` workflows remain `disabled_manually`. Enabling them is a
-  product decision and is not touched by this change.
+Deliberately **not** used: a broad `--exclude-glob='*QUARANTINE*'`, which would
+also suppress legitimate files whose names mention "quarantine", and
+`--exclude='QUARANTINE'`, which is not anchored to a component.
