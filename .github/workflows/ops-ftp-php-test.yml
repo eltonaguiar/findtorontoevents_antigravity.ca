@@ -1,0 +1,62 @@
+name: Ops - FTP php-serve test (write probe, delete probe)
+
+# Ownership: hermes-desktop. Dispatch-only, gx10 pool.
+# db-sync-to-mirror uploads _db_export_tmp.php and the put succeeds, but the URL 404s.
+# A plain .txt written to the same directory is served immediately (HTTP 200), so the
+# docroot and credentials are correct and the failure is specific to the PHP file.
+# This uploads a trivial .php next to it and fetches it, then removes both.
+# lftp echoes credentials in its own pwd output; every lftp line is masked here.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    runs-on: [self-hosted, gx10]
+    timeout-minutes: 10
+    steps:
+      - name: Is .php served?
+        env:
+          H: ${{ secrets.FTP_SERVER_50WEBS }}
+          U: ${{ secrets.FTP_USERNAME_50WEBS }}
+          P: ${{ secrets.FTP_PASSWORD_50WEBS }}
+        run: |
+          set +e
+          mask() { sed -E 's#://[^@/]*@#://[redacted]@#g'; }
+          printf '<?php echo "php-ok";' > /tmp/zz_probe.php
+          printf 'txt-ok' > /tmp/zz_probe.txt
+          cat > /tmp/u.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 20
+          set net:max-retries 1
+          open -u "$U","$P" "$H"
+          cd /findtorontoevents.ca
+          put /tmp/zz_probe.php -o zz_probe.php
+          put /tmp/zz_probe.txt -o zz_probe.txt
+          ls zz_probe.php
+          ls zz_probe.txt
+          bye
+          LFTPEOF
+          echo "--- upload ---"
+          lftp -f /tmp/u.script 2>&1 | mask | tail -6
+          echo "--- fetch ---"
+          for u in https://findtorontoevents.ca/zz_probe.txt https://findtorontoevents.ca/zz_probe.php; do
+            code=$(curl -s -o /tmp/b -m 20 -w '%{http_code}' "$u")
+            echo "$code  $u  body=$(head -c 40 /tmp/b | tr -d '\n')"
+          done
+          echo "--- cleanup ---"
+          cat > /tmp/c.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 20
+          open -u "$U","$P" "$H"
+          cd /findtorontoevents.ca
+          rm -f zz_probe.php
+          rm -f zz_probe.txt
+          bye
+          LFTPEOF
+          lftp -f /tmp/c.script 2>&1 | mask | tail -3
+          echo cleanup-done
