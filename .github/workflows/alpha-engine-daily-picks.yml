@@ -157,7 +157,11 @@ jobs:
             print(f"{'Rank':<5} {'Ticker':<8} {'Score':<8} {'Conviction':<14} {'Category':<18} {'Horizon'}")
             print("-" * 80)
             for p in picks[:30]:
-                print(f"{p.get('rank',''):<5} {p.get('ticker',''):<8} {p.get('score',0):<8.3f} {p.get('conviction',''):<14} {p.get('category',''):<18} {p.get('expected_horizon','')}")
+                score = float(p.get('score') or 0.0)
+                conv = str(p.get('conviction') or '')
+                cat = str(p.get('category') or '')
+                eh = str(p.get('expected_horizon') or '')
+                print(f"{p.get('rank') or 0:<5} {p.get('ticker') or '':<8} {score:<8.3f} {conv:<14} {cat:<18} {eh}")
             print(f"\nTotal picks: {len(picks)}")
             total_value = sum(p.get('position_value', 0) for p in picks)
             total_risk = sum(p.get('risk_amount', 0) for p in picks)
