@@ -1,0 +1,86 @@
+name: RUNNER SMOKE TEST (temporary)
+
+# Validation harness for the self-hosted Windows runners.
+# Delete this file once the runners are proven and the repo is back on cloud.
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_label:
+        description: 'Runner label to target'
+        required: true
+        default: 'laptop-zerou-win'
+        type: string
+      fail_on_purpose:
+        description: 'Inject a failure to prove error capture works'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: [self-hosted, Windows, X64, "${{ inputs.runner_label }}"]
+    timeout-minutes: 10
+
+    steps:
+      - name: Who am I
+        shell: pwsh
+        run: |
+          Write-Host "runner.name       = ${{ runner.name }}"
+          Write-Host "runner.os         = ${{ runner.os }}"
+          Write-Host "runner.arch       = ${{ runner.arch }}"
+          Write-Host "runner.environment= ${{ runner.environment }}"
+          Write-Host "workdir           = $PWD"
+          Write-Host "user              = $env:USERNAME"
+          Write-Host "computer          = $env:COMPUTERNAME"
+
+      - name: Toolchain
+        shell: pwsh
+        run: |
+          Write-Host "--- git ---";  git --version
+          Write-Host "--- python ---"; python --version
+          Write-Host "--- bash ---";   bash --version | Select-Object -First 1
+          Write-Host "--- node ---";   node --version
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Did checkout land somewhere sane
+        shell: pwsh
+        run: |
+          Write-Host "checkout path: $PWD"
+          if (-not (Test-Path '.github/workflows')) {
+            Write-Error "checkout missing .github/workflows"
+            exit 1
+          }
+          Write-Host "workflow files: $((Get-ChildItem .github/workflows/*.yml).Count)"
+          Write-Host "repo size (MB): $([math]::Round((Get-ChildItem -Recurse -File -Force | Measure-Object Length -Sum).Sum / 1MB, 1))"
+
+      - name: Prove concurrent slots are real
+        shell: pwsh
+        run: |
+          Write-Host "sleeping 45s - if 2 runners are live, a parallel dispatch overlaps this"
+          Start-Sleep -Seconds 45
+          Write-Host "slept fine"
+
+      - name: Warning capture
+        shell: pwsh
+        run: |
+          Write-Host "::warning::deliberate warning - proving warnings surface in the run log"
+
+      - name: Deliberate failure
+        if: inputs.fail_on_purpose
+        shell: pwsh
+        run: |
+          Write-Host "::error::deliberate failure - proving errors surface and fail the job"
+          exit 1
+
+      - name: Done
+        if: always()
+        shell: pwsh
+        run: Write-Host "smoke test finished on ${{ runner.name }}"
