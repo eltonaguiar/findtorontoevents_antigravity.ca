@@ -60,8 +60,8 @@ jobs:
 
       - name: Run Zero-PnL Detector
         env:
-          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
-          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
+          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST || 'mysql.50webs.com' }}
+          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER || 'ejaguiar1_stocks' }}
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
           DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
@@ -96,8 +96,8 @@ jobs:
 
       - name: Verify all Tier-2 winners DB vs dashboard PF/WR/n
         env:
-          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
-          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
+          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST || 'mysql.50webs.com' }}
+          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER || 'ejaguiar1_stocks' }}
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
           DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
@@ -108,8 +108,8 @@ jobs:
 
       - name: Run CT=F friction-adjusted ROR MC + DSR gate
         env:
-          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST }}
-          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER }}
+          DB_STOCKS_HOST: ${{ secrets.DB_STOCKS_HOST || 'mysql.50webs.com' }}
+          DB_STOCKS_USER: ${{ secrets.DB_STOCKS_USER || 'ejaguiar1_stocks' }}
           DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           DB_PASS_STOCKS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
           DB_NAME_STOCKS: ${{ secrets.DB_NAME_STOCKS || vars.DB_STOCKS_NAME || 'ejaguiar1_stocks' }}
