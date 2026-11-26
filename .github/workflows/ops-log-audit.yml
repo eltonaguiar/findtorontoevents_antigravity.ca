@@ -6,6 +6,11 @@ name: Ops - sharded audit of all workflows (self-hosted)
 on:
   push:
     branches: [ops/log-audit]
+  # Standing monitoring loop for the self-hosted pool: every 30 minutes, sharded
+  # across the ARM slots. Dispatch-only otherwise, and it touches no production
+  # runs-on, so it can never strand a production job.
+  schedule:
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
