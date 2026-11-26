@@ -86,7 +86,7 @@ jobs:
           git add incubator/backtest_results/*.json battleground/data/*.json incubator/config/*.json 2>/dev/null || true
           git add baby_strategies/*.meta.json 2>/dev/null || true
           TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
-          git commit -m "backtest: baby_strategies sweep results [$TIMESTAMP] [skip ci]" || echo "No changes to commit"
+          git diff --cached --quiet || git commit -m "backtest: baby_strategies sweep results [$TIMESTAMP] [skip ci]" || echo "No changes to commit"
 
       - name: Push with retry
         run: |
