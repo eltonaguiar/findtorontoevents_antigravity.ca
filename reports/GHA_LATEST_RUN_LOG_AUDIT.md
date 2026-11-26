@@ -3,22 +3,48 @@
 Every workflow's most recent run, log downloaded and scanned for errors, warnings and suspicious output. A green run is not a clean run.
 
 - workflows examined: **386**
-- logs audited: **73**
-- no run on record: **313**
+- logs audited: **303**
+- no run on record: **83**
 
 | Verdict | Count |
 |---|---|
-| ERRORS | 26 |
-| WARNINGS | 20 |
-| SUSPICIOUS | 6 |
-| CLEAN | 21 |
+| ERRORS | 63 |
+| WARNINGS | 74 |
+| SUSPICIOUS | 23 |
+| CLEAN | 143 |
 
 ## Workflows whose log contains errors
+
+### `picks-now-refresh.yml` — 1427 error line(s), conclusion `success`
+- 1216× ERROR line
+    - `refresh	Refresh OHLC coverage for tracker symbols	2026-11-26T03:45:52.1717832Z 2026***11***26 03:45:52 [ERROR] HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ADA"}}}`
+    - `refresh	Refresh OHLC coverage for tracker symbols	2026-11-26T03:45:52.7135979Z 2026***11***26 03:45:52 [ERROR] $ADA: No data found, symbol may be delisted`
+- 211× http 4xx
+    - `refresh	Generate picks	2026-11-26T03:41:37.6817232Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SPY"}}}`
+    - `refresh	Generate picks	2026-11-26T03:41:38.8755062Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IVV"}}}`
+
+### `battleground-mass-backtest.yml` — 312 error line(s), conclusion `success`
+- 312× ERROR line
+    - `mass-backtest	Run mass backtest	2026-11-26T03:29:15.5668507Z [2/869] claude_code_01/backtest_defensive_suite ... ERROR: No Strategy class found [0.1s]`
+    - `mass-backtest	Run mass backtest	2026-11-26T03:29:15.5687888Z [3/869] claude_code_01/backtest_high_sharpe ... ERROR: No Strategy class found [0.0s]`
+
+### `mysql-stale-picks-resolver.yml` — 259 error line(s), conclusion ``
+- 259× ERROR line
+    - `resolve-stale-picks	Run stale picks resolver	2026-11-26T04:31:32.5025376Z 2026-11-26T04:31:32Z [ERROR] $USD-JPY: possibly delisted; no timezone found`
+    - `resolve-stale-picks	Run stale picks resolver	2026-11-26T04:31:32.5030023Z 2026-11-26T04:31:32Z [ERROR]`
 
 ### `backfill-features.yml` — 38 error line(s), conclusion `success`
 - 38× http 4xx
     - `backfill	Run backfill	2026-11-26T03:10:40.3083555Z   [WARN] All Binance mirrors failed for RENDERUSDT: HTTP Error 451:`
     - `backfill	Run backfill	2026-11-26T03:10:40.3084747Z   [WARN] All Binance mirrors failed for RENDERUSDT: HTTP Error 451:`
+
+### `deploy-riseoftheclaw.yml` — 26 error line(s), conclusion `success`
+- 24× ERROR line
+    - `deploy	Push KIMI picks to Audit Trail	2026-11-26T04:28:02.5689386Z 2026-11-26 04:28:02,568 [ERROR] MySQL write failed after 3 attempts: (1045, "Access denied for user 'ejaguiar1_stocks'@'3.42.157.120' (using password: YES)")`
+    - `deploy	Push KIMI picks to Audit Trail	2026-11-26T04:28:04.4945567Z 2026-11-26 04:28:04,494 [ERROR] MySQL write failed after 3 attempts: (1045, "Access denied for user 'ejaguiar1_stocks'@'3.42.157.120' (using password: YES)")`
+- 2× http 4xx
+    - `deploy	Run Live Trading Pipeline	2026-11-26T04:26:40.8655931Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: NKLA"}}}`
+    - `deploy	Run Live Trading Pipeline	2026-11-26T04:26:54.9440744Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SQ"}}}`
 
 ### `cross-aggregator.yml` — 20 error line(s), conclusion `success`
 - 19× missing file
@@ -26,6 +52,14 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `aggregate	Run cross-system aggregator	2026-11-26T03:45:57.7407431Z   [WARN] Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/battleground/data/active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca`
 - 1× ERROR line
     - `aggregate	Commit and push if changed	2026-11-26T03:47:08.3262747Z [36;1m    echo "ERROR: all push attempts failed"[0m`
+
+### `gha-queue-audit.yml` — 18 error line(s), conclusion `success`
+- 15× git fatal
+    - `Queue + duration audit	Commit audit report	2026-11-26T04:22:30.0019899Z fatal: unable to access 'https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/': The requested URL returned error: 403`
+    - `Queue + duration audit	Commit audit report	2026-11-26T04:22:33.7486513Z fatal: unable to access 'https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/': The requested URL returned error: 403`
+- 3× ERROR line
+    - `Queue + duration audit	Commit audit report	2026-11-26T04:24:15.7563450Z ERROR: All 5 push attempts failed`
+    - `Queue + duration audit	Commit audit report	2026-11-26T04:26:07.9292800Z ERROR: All 5 push attempts failed`
 
 ### `asterdex-paper-trading.yml` — 10 error line(s), conclusion `success`
 - 10× ERROR line
@@ -46,14 +80,35 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× missing file
     - `generate-picks	Validate proof-protocol metadata	2026-11-26T03:08:21.8866291Z ##[warning]Cannot read latest_picks.json: [Errno 2] No such file or directory: 'alpha_engine/output/latest_picks.json'`
 
-### `audit-impact-tracker.yml` — 6 error line(s), conclusion `success`
+### `portfolio-tracker.yml` — 8 error line(s), conclusion `success`
+- 8× http 4xx
+    - `track	Sync, mark, report	2026-11-26T04:18:33.9586522Z   mark SOLUSDT: skipped (HTTPError: HTTP Error 451: )`
+    - `track	Sync, mark, report	2026-11-26T04:18:33.9587152Z   mark LINKUSDT: skipped (HTTPError: HTTP Error 451: )`
+
+### `audit-impact-tracker.yml` — 6 error line(s), conclusion ``
 - 5× missing file
     - `audit-impact	Run audit impact tracker	2026-11-26T03:27:43.5299245Z   [WARN] Could not load strategy_performance.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/alpha_engine/data/strategy_performance.json'`
     - `audit-impact	Run audit impact tracker	2026-11-26T03:27:43.5301106Z   [WARN] Could not load active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/battleground/data/active_picks.json'`
 - 1× ##[error] annotation
     - `audit-impact	Commit results	2026-11-26T03:32:57.1725742Z ##[error]The action 'Commit results' has timed out after 5 minutes.`
 
-### `baby-strat-forward-paper.yml` — 4 error line(s), conclusion `success`
+### `weekly-strategy-scorecard.yml` — 6 error line(s), conclusion `success`
+- 5× git fatal
+    - `scorecard	Commit scorecard	2026-11-26T03:43:26.3928206Z fatal: unable to access 'https://github.com/eltonaguiar/findtorontoevents_antigravity.ca.git/': The requested URL returned error: 403`
+    - `scorecard	Commit scorecard	2026-11-26T03:43:32.5119305Z fatal: unable to access 'https://github.com/eltonaguiar/findtorontoevents_antigravity.ca.git/': The requested URL returned error: 403`
+- 1× ERROR line
+    - `scorecard	Commit scorecard	2026-11-26T03:45:13.4383922Z ERROR: All 5 push attempts failed`
+
+### `worldclass-intelligence.yml` — 5 error line(s), conclusion `success`
+- 3× ERROR line
+    - `worldclass-intelligence	Options Flow / Gamma Exposure	2026-11-26T03:46:19.6557549Z 2026-11-26 03:46:19 [utils] ERROR: POST ingest_regime: Error — Missing market data`
+    - `worldclass-intelligence	Portfolio Optimizer (Black-Litterman + Risk Parity)	2026-11-26T03:46:24.7570817Z 2026-11-26 03:46:24 [portfolio_optimizer] ERROR: Cannot fetch historical returns`
+- 1× python traceback
+    - `worldclass-intelligence	On-Chain Crypto Analytics	2026-11-26T03:46:19.9813127Z Traceback (most recent call last):`
+- 1× missing python module
+    - `worldclass-intelligence	On-Chain Crypto Analytics	2026-11-26T03:46:19.9825042Z ModuleNotFoundError: No module named 'mysql'`
+
+### `baby-strat-forward-paper.yml` — 4 error line(s), conclusion ``
 - 1× python traceback
     - `forward-monitor	Run incubator strategies (Chronos-Bolt, FundingRate, OI-Divergence, SMC-FVG)	2026-11-26T03:46:36.8029498Z Traceback (most recent call last):`
 - 1× missing python module
@@ -62,6 +117,24 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `forward-monitor	Run incubator strategies (Chronos-Bolt, FundingRate, OI-Divergence, SMC-FVG)	2026-11-26T03:46:36.8221260Z ##[error]Process completed with exit code 1.`
 - 1× git fatal
     - `forward-monitor	Auto-commit changed forward artifacts	2026-11-26T03:46:39.6106385Z fatal: pathspec 'battleground/data/incubator_signals.json' did not match any files`
+
+### `rsi5070-forward-snapshot.yml` — 4 error line(s), conclusion `success`
+- 2× missing binary
+    - `snapshot	Run rsi5070 forward tracker (writes status JSON)	2026-11-26T03:42:30.0843201Z /home/runner/work/_temp/63a6ec69-0299-41c3-97a8-5923d51f26a7.sh: line 3: -: command not found`
+    - `snapshot	Run rsi5070 forward tracker (writes status JSON)	2026-11-26T03:42:30.0846614Z /home/runner/work/_temp/63a6ec69-0299-41c3-97a8-5923d51f26a7.sh: line 3: None: command not found`
+- 2× ERROR line
+    - `snapshot	Commit updated JSONs to main	2026-11-26T03:43:00.5569603Z [36;1m    echo "ERROR: Push permanently rejected — aborting"[0m`
+    - `snapshot	Commit updated JSONs to main	2026-11-26T03:43:00.5578866Z [36;1m  echo "ERROR: All push attempts failed"[0m`
+
+### `signal-engine.yml` — 4 error line(s), conclusion `success`
+- 4× ERROR line
+    - `signal-engine	Push Signal Engine picks to Audit Trail	2026-11-26T04:20:47.3570194Z 2026-11-26 04:20:47,356 [ERROR] MySQL write failed after 3 attempts: (1045, "Access denied for user 'ejaguiar1_stocks'@'172.182.225.88' (using password: YES)")`
+    - `signal-engine	Push Signal Engine picks to Audit Trail	2026-11-26T04:20:49.6502307Z 2026-11-26 04:20:49,649 [ERROR] MySQL write failed after 3 attempts: (1045, "Access denied for user 'ejaguiar1_stocks'@'172.182.225.88' (using password: YES)")`
+
+### `swarm-sync-v2.yml` — 4 error line(s), conclusion `success`
+- 4× ERROR line
+    - `sync	Sync state files	2026-11-26T04:16:34.6259092Z [36;1m      echo 'ERROR: rebase conflict — aborting sync to avoid corrupting state files'[0m`
+    - `sync	Sync state files	2026-11-26T04:16:34.6261295Z [36;1m      echo 'ERROR: conflict markers in staged files — aborting push'[0m`
 
 ### `ai-model-portfolios-daily.yml` — 3 error line(s), conclusion `success`
 - 2× python traceback
@@ -95,6 +168,27 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
     - `conviction-picks	Run Conviction Picks scanner	2026-11-26T02:54:26.4383988Z   [WARN] Binance klines failed (https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=60): HTTP Error 451:`
     - `conviction-picks	Run Conviction Picks scanner	2026-11-26T02:54:26.8442967Z   [WARN] Binance klines failed (https://api1.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=60): HTTP Error 451:`
 
+### `quan-engine-live.yml` — 3 error line(s), conclusion `success`
+- 1× http 4xx
+    - `quan-engine	Run QuanEngine scanner	2026-11-26T04:21:48.3120522Z 2026-11-26 04:21:48,311 [QuanEngine.MarketAnalysis] INFO: Fetched KASUSDT from Gate.io fallback (Binance said: HTTP Error 400: Bad Request)`
+- 1× ERROR line
+    - `quan-engine	Push picks to audit trail	2026-11-26T04:21:52.4771412Z 2026-11-26 04:21:52,477 [ERROR] quan_engine.audit_push: audit_trail package not available: No module named 'audit_trail'`
+- 1× git fatal
+    - `quan-engine	Commit results	2026-11-26T04:22:03.3144832Z fatal: pathspec 'data/audit_trail.db' did not match any files`
+
+### `realtime-challenge.yml` — 3 error line(s), conclusion `success`
+- 3× http 4xx
+    - `cycle	Mark open positions and open new slots	2026-11-26T04:21:04.0471858Z mark: SOLUSDT skipped (market data unavailable: https://api.binance.com/api/v3/klines?symbol=SOLUSDT&interval=5m&limit=3 (HTTP Error 451: ))`
+    - `cycle	Mark open positions and open new slots	2026-11-26T04:21:04.0473753Z mark: LINKUSDT skipped (market data unavailable: https://api.binance.com/api/v3/klines?symbol=LINKUSDT&interval=5m&limit=3 (HTTP Error 451: ))`
+
+### `weekly-filter.yml` — 3 error line(s), conclusion `success`
+- 1× python traceback
+    - `run-filter	Run weekly filter	2026-11-26T03:43:35.1412849Z Traceback (most recent call last):`
+- 1× missing file
+    - `run-filter	Run weekly filter	2026-11-26T03:43:35.1581315Z FileNotFoundError: [Errno 2] No such file or directory: 'audit_dashboard/data/dashboard_data.json'`
+- 1× ##[error] annotation
+    - `run-filter	Run weekly filter	2026-11-26T03:43:35.1674961Z ##[error]Process completed with exit code 1.`
+
 ### `academic-strategies-daily.yml` — 2 error line(s), conclusion `success`
 - 2× http 4xx
     - `emit-academic-picks	Run priority_picks_emitter (writes priority_picks.json)	2026-11-26T03:12:06.8413036Z 2026-11-26 03:12:06,840 [yfinance] HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: NKLA"}}}`
@@ -111,6 +205,42 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× ##[error] annotation
     - `clear-channel	Clear Channel	2026-11-26T02:57:31.2984495Z ##[error]Process completed with exit code 1.`
 
+### `mercury2-scan.yml` — 2 error line(s), conclusion `failure`
+- 2× ##[error] annotation
+    - `scan	Run Mercury 2 scanner	2026-11-26T04:26:47.3212727Z ##[error]ensemble_conservative.joblib not found — scanner did NOT run (scanner_ran=false). Mercury 2 Weekly Retrain must commit the model first.`
+    - `scan	Run Mercury 2 scanner	2026-11-26T04:26:47.3427580Z ##[error]Process completed with exit code 1.`
+
+### `ml-battleground-retrain.yml` — 2 error line(s), conclusion `success`
+- 2× git fatal
+    - `retrain	Commit updated models	2026-11-26T04:31:43.7148882Z fatal: pathspec 'ml_battleground/system_a_filter/models/' did not match any files`
+    - `retrain	Commit updated models	2026-11-26T04:31:43.7256708Z fatal: pathspec 'ml_battleground/system_b_regime/models/' did not match any files`
+
+### `monthly-calibrator-refit.yml` — 2 error line(s), conclusion `success`
+- 1× python traceback
+    - `refit-calibrators	Refit isotonic calibrators (M-060)	2026-11-26T03:39:50.4937812Z Traceback (most recent call last):`
+- 1× missing file
+    - `refit-calibrators	Refit isotonic calibrators (M-060)	2026-11-26T03:39:50.5049115Z FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json'`
+
+### `poc-picks-checkpoint.yml` — 2 error line(s), conclusion `success`
+- 1× python traceback
+    - `checkpoint	Resolve POC picks + write verdict	2026-11-26T03:40:06.9929476Z Traceback (most recent call last):`
+- 1× missing python module
+    - `checkpoint	Resolve POC picks + write verdict	2026-11-26T03:40:06.9947753Z ModuleNotFoundError: No module named 'tools'`
+
+### `torontoevent-deploy-riseoftheclaw.yml` — 2 error line(s), conclusion `success`
+- 2× http 4xx
+    - `deploy	Run Live Trading Pipeline	2026-11-26T04:27:00.6073922Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: NKLA"}}}`
+    - `deploy	Run Live Trading Pipeline	2026-11-26T04:27:16.0984326Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: SQ"}}}`
+
+### `verified-pilot-daily.yml` — 2 error line(s), conclusion `success`
+- 2× git fatal
+    - `pilot	Commit refreshed pilot proof to main	2026-11-26T03:44:33.4255743Z fatal: pathspec 'verified_strategies/paper_pilot/crypto_wf_hyro_state.json' did not match any files`
+    - `pilot	Commit refreshed pilot proof to main	2026-11-26T03:44:33.5181569Z fatal: pathspec 'reports/pilot_forward_summary.json' did not match any files`
+
+### `2hour_challenge.yml` — 1 error line(s), conclusion `cancelled`
+- 1× ##[error] annotation
+    - `execute-challenge	Run 2-hour trading challenge	2026-11-26T03:52:11.1554771Z ##[error]The operation was canceled.`
+
 ### `ab_analysis.yml` — 1 error line(s), conclusion `success`
 - 1× ERROR line
     - `ab-analysis	Verify all Tier-2 winners DB vs dashboard PF/WR/n	2026-11-26T03:08:09.6641308Z ERROR: /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json missing`
@@ -123,7 +253,7 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× ERROR line
     - `equity-breakout-scan	Commit new picks	2026-11-26T03:08:31.9414088Z [36;1m  echo "ERROR: All 10 push attempts failed — picks generated, next cycle self-heals."[0m`
 
-### `alpha-weekly-validation.yml` — 1 error line(s), conclusion `success`
+### `alpha-weekly-validation.yml` — 1 error line(s), conclusion `cancelled`
 - 1× ##[error] annotation
     - `weekly-validation	Commit updated reports	2026-11-26T03:22:28.4939801Z ##[error]The operation was canceled.`
 
@@ -135,7 +265,7 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× http 4xx
     - `ledger	Backfill price tables (bounded, best-effort)	2026-11-26T03:10:59.0356208Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: XPDUSD=F"}}}`
 
-### `backfill.yml` — 1 error line(s), conclusion `success`
+### `backfill.yml` — 1 error line(s), conclusion `cancelled`
 - 1× ##[error] annotation
     - `backfill	Commit any updated tracking files	2026-11-26T03:38:48.3032817Z ##[error]The operation was canceled.`
 
@@ -155,350 +285,255 @@ Every workflow's most recent run, log downloaded and scanned for errors, warning
 - 1× ERROR line
     - `emit	Emit feature signals	2026-11-26T03:37:57.7944841Z   [ERROR] All premiumIndex endpoints failed`
 
+### `forward-observations-ingest.yml` — 1 error line(s), conclusion `failure`
+- 1× ##[error] annotation
+    - `ingest	Forward-growth watchdog (B3)	2026-11-26T04:28:10.7706297Z ##[error]Process completed with exit code 1.`
+
+### `fx-cost-overlap.yml` — 1 error line(s), conclusion `failure`
+- 1× ##[error] annotation
+    - `measure	Commit artifact	2026-11-26T04:26:22.4368008Z ##[error]Process completed with exit code 1.`
+
+### `gha-quality-framework.yml` — 1 error line(s), conclusion `failure`
+- 1× ##[error] annotation
+    - `quality	Commit report (only when content changed)	2026-11-26T04:26:32.6735798Z ##[error]Process completed with exit code 1.`
+
+### `h004-backtest.yml` — 1 error line(s), conclusion `success`
+- 1× http 4xx
+    - `h004-backtest	Run H***004 backtest	2026-11-26T03:38:25.1973583Z HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: UHN"}}}`
+
+### `macd-rsi-m048-shadow-daily.yml` — 1 error line(s), conclusion `success`
+- 1× git fatal
+    - `shadow-emit	Commit shadow log + state	2026-11-26T03:40:00.4780851Z fatal: pathspec 'verified_strategies/paper_pilot/macd_rsi_m048_shadow_picks.jsonl' did not match any files`
+
+### `mirror-site.yml` — 1 error line(s), conclusion `cancelled`
+- 1× ##[error] annotation
+    - `mirror	Download from findtorontoevents.ca (50webs FTP)	2026-11-26T03:47:42.4139121Z ##[error]The operation was canceled.`
+
+### `multi-asset-scanner.yml` — 1 error line(s), conclusion `success`
+- 1× ERROR line
+    - `multi-asset-scan	Step 1a: Run multi-asset copytrader scraper (forex/futures/stocks/commodities)	2026-11-26T04:21:29.0258095Z     [ERROR] futures_rsi2: cannot access local variable 'fut_info' where it is not associated with a value`
+
+### `peer-claim-verification.yml` — 1 error line(s), conclusion `success`
+- 1× git fatal
+    - `verify	Run verification	2026-11-26T03:41:12.2625704Z     SKIP supports author_set (ref origin/main): git log origin/zoo/p0-recovery-2026-11-20..zoo/p0-recovery-2026-11-20 failed: fatal: ambiguous argument 'origin/zoo/p0-recovery-2026-11-20..zoo/p0-recovery-2026-11-20': unknown revision or path not i`
+
+### `pre-spike-scan.yml` — 1 error line(s), conclusion `success`
+- 1× ERROR line
+    - `scan	Run pre-spike detector	2026-11-26T03:40:17.0294710Z 03:40:17 [ERROR] HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: MULN"}}}`
+
+### `self_optimizing_trading.yml` — 1 error line(s), conclusion `success`
+- 1× git fatal
+    - `trade	Commit results	2026-11-26T04:22:43.1105424Z fatal: pathspec 'performance_history.json' did not match any files`
+
+### `smart-picks-tracker.yml` — 1 error line(s), conclusion `success`
+- 1× import error
+    - `track	Run smart picks engine + tracker	2026-11-26T04:26:49.9557574Z [36;1m# added in recent refactor; `|| true` masked the ImportError for 30+ days,[0m`
+
+### `value_screener_weekly.yml` — 1 error line(s), conclusion `cancelled`
+- 1× ##[error] annotation
+    - `run-value-screener	Run value screener	2026-11-26T03:47:48.6084063Z ##[error]The operation was canceled.`
+
+### `walk-forward-backtest.yml` — 1 error line(s), conclusion `cancelled`
+- 1× ##[error] annotation
+    - `walk-forward	Run walk***forward backtest	2026-11-26T03:47:47.5739685Z ##[error]The operation was canceled.`
+
+### `weekly-stock-simulation.yml` — 1 error line(s), conclusion `success`
+- 1× ##[error] annotation
+    - `run-exhaustive-simulation	Run exhaustive simulation batches	2026-11-26T03:42:49.4037734Z ##[error]Batch 0 failed after retry`
+
+### `worldclass-pipeline.yml` — 1 error line(s), conclusion `cancelled`
+- 1× ##[error] annotation
+    - `intelligence	Install dependencies	2026-11-26T03:47:46.5966009Z ##[error]The operation was canceled.`
+
+### `wsl-runner-manager.yml` — 1 error line(s), conclusion `failure`
+- 1× ##[error] annotation
+    - `check-status	Check Runner Status	2026-11-26T04:26:03.5438504Z ##[error]Process completed with exit code 1.`
+
 ## Warnings only
 
+- `mysql-trading-sync.yml` — 757 warning(s): 757× WARNING line
+- `prediction-market-agents.yml` — 34 warning(s): 33× WARNING line, 1× workflow warning
+- `live_trading.yml` — 32 warning(s): 31× WARNING line, 1× ##[warning] annotation
+- `schema-drift-watchdog.yml` — 17 warning(s): 1× workflow warning, 16× ##[warning] annotation
+- `research-orchestrator.yml` — 13 warning(s): 4× workflow warning, 9× ##[warning] annotation
 - `autonomous_trading.yml` — 12 warning(s): 12× WARNING line
+- `outcome-resolver.yml` — 9 warning(s): 6× workflow warning, 1× WARNING line, 2× ##[warning] annotation
 - `ci.yml` — 8 warning(s): 6× deprecation, 2× ##[warning] annotation
+- `hourly-master-picks.yml` — 8 warning(s): 8× WARNING line
+- `paper-pilot-daily.yml` — 8 warning(s): 4× workflow warning, 4× ##[warning] annotation
+- `pick-funnel-nightly.yml` — 8 warning(s): 8× workflow warning
 - `audit3-evidence.yml` — 6 warning(s): 2× deprecation, 3× WARNING line, 1× ##[warning] annotation
 - `claudes-test-portfolios.yml` — 6 warning(s): 5× workflow warning, 1× WARNING line
+- `money-ready-registry-gate.yml` — 6 warning(s): 6× WARNING line
+- `provenance-verify.yml` — 6 warning(s): 4× deprecation, 1× workflow warning, 1× ##[warning] annotation
 - `asset-class-freshness-watchdog.yml` — 5 warning(s): 5× workflow warning
+- `hierarchical-bayes.yml` — 5 warning(s): 1× workflow warning, 4× ##[warning] annotation
+- `hub-sync.yml` — 5 warning(s): 3× workflow warning, 2× ##[warning] annotation
+- `weekly-scorecard.yml` — 5 warning(s): 4× deprecation, 1× ##[warning] annotation
 - `ai-tournament-price-tracker.yml` — 4 warning(s): 1× workflow warning, 3× WARNING line
 - `breakout-arena.yml` — 4 warning(s): 4× deprecated
 - `crypto-intraday-sim.yml` — 4 warning(s): 2× deprecation, 2× ##[warning] annotation
+- `futures-agent.yml` — 4 warning(s): 3× workflow warning, 1× ##[warning] annotation
+- `gha-failure-digest.yml` — 4 warning(s): 2× deprecation, 1× workflow warning, 1× ##[warning] annotation
+- `pod-emission-audit.yml` — 4 warning(s): 2× deprecation, 2× ##[warning] annotation
+- `portfolio-trackers.yml` — 4 warning(s): 4× workflow warning
+- `quant-auditor-deep-nightly.yml` — 4 warning(s): 4× workflow warning
 - `algorithm-competition-refresh.yml` — 3 warning(s): 2× ##[warning] annotation, 1× workflow warning
 - `audit3-health.yml` — 3 warning(s): 2× deprecation, 1× ##[warning] annotation
 - `bestiejob-page-qa.yml` — 3 warning(s): 2× deprecation, 1× ##[warning] annotation
+- `hc-parity.yml` — 3 warning(s): 2× deprecation, 1× workflow warning
+- `hyro-bridge-regen.yml` — 3 warning(s): 3× workflow warning
+- `kalshi-snapshot.yml` — 3 warning(s): 2× deprecation, 1× ##[warning] annotation
+- `pead-shadow-collector.yml` — 3 warning(s): 3× workflow warning
+- `php52-gate.yml` — 3 warning(s): 2× deprecation, 1× ##[warning] annotation
+- `picks-now-live-pnl.yml` — 3 warning(s): 1× WARNING line, 2× workflow warning
+- `secret-scan.yml` — 3 warning(s): 2× workflow warning, 1× ##[warning] annotation
+- `send-accountability-reminders.yml` — 3 warning(s): 3× workflow warning
+- `sleeve-daily.yml` — 3 warning(s): 2× deprecation, 1× ##[warning] annotation
+- `stock-picks-writer.yml` — 3 warning(s): 2× deprecation, 1× ##[warning] annotation
+- `stocks-daily-stocksunify.yml` — 3 warning(s): 3× deprecation
+- `swing_screener_daily.yml` — 3 warning(s): 1× workflow warning, 2× ##[warning] annotation
+- `value_resolver_quarterly.yml` — 3 warning(s): 1× workflow warning, 2× ##[warning] annotation
 - `bond-agent.yml` — 2 warning(s): 1× workflow warning, 1× ##[warning] annotation
+- `daily-top-picks-filter.yml` — 2 warning(s): 2× workflow warning
+- `torontoevent-deploy-competition.yml` — 2 warning(s): 2× workflow warning
+- `weekly_score_quartile_spread.yml` — 2 warning(s): 1× workflow warning, 1× WARNING line
 - `audit-hourly-update.yml` — 1 warning(s): 1× WARNING line
 - `auto-shutdown-monitor.yml` — 1 warning(s): 1× workflow warning
 - `automated-reporting.yml` — 1 warning(s): 1× ##[warning] annotation
 - `blacklist-reconciler.yml` — 1 warning(s): 1× ##[warning] annotation
 - `buy-now-analysis.yml` — 1 warning(s): 1× ##[warning] annotation
+- `ci-tests.yml` — 1 warning(s): 1× WARNING line
 - `dxy-state-update.yml` — 1 warning(s): 1× workflow warning
 - `edge-stability-daily.yml` — 1 warning(s): 1× workflow warning
 - `edge-stability-refresh.yml` — 1 warning(s): 1× workflow warning
+- `feed-health.yml` — 1 warning(s): 1× workflow warning
+- `forward-benchmark-ledger.yml` — 1 warning(s): 1× workflow warning
+- `kimi-goldmine-collector.yml` — 1 warning(s): 1× ##[warning] annotation
+- `live_trading_canada.yml` — 1 warning(s): 1× WARNING line
+- `low-score-tracker.yml` — 1 warning(s): 1× workflow warning
+- `meme-scanner.yml` — 1 warning(s): 1× deprecation
+- `meta-strategy.yml` — 1 warning(s): 1× workflow warning
+- `model-picks-emission.yml` — 1 warning(s): 1× WARNING line
+- `operator-review-today.yml` — 1 warning(s): 1× workflow warning
+- `qa-market-validation.yml` — 1 warning(s): 1× workflow warning
+- `quick-guess-ml.yml` — 1 warning(s): 1× ##[warning] annotation
+- `rapid-validation-CLAUDECODE_Feb152026.yml` — 1 warning(s): 1× WARNING line
+- `robust-edge-miner.yml` — 1 warning(s): 1× ##[warning] annotation
+- `schema-drift-audit.yml` — 1 warning(s): 1× WARNING line
+- `signal-quality-monitor.yml` — 1 warning(s): 1× WARNING line
+- `skyrocket-detector.yml` — 1 warning(s): 1× ##[warning] annotation
+- `what-worked-insights.yml` — 1 warning(s): 1× workflow warning
+- `won-pnl-contradiction-backfill.yml` — 1 warning(s): 1× ##[warning] annotation
 
 ## Suspicious output only
 
+- `stale-branch-cleanup.yml` — 11: 11× skipped work
+- `validate-hf-asset-class.yml` — 9: 9× skipped work
 - `actions-failure-guardian.yml` — 7: 7× skipped work
+- `ml-staleness-watchdog.yml` — 7: 7× skipped work
+- `incidents-enhancements-nightly.yml` — 5: 5× skipped work
+- `winner-pattern-scanner.yml` — 5: 5× skipped work
 - `ai-leaderboard-freshness.yml` — 3: 3× skipped work
+- `simulation-picks-resolver.yml` — 3: 3× skipped work
+- `deploy-battleground-ftp.yml` — 2: 2× skipped work
 - `deploy-findcryptopairs-ftp.yml` — 2: 2× skipped work
+- `growth-stock-screener-daily.yml` — 2: 2× skipped work
+- `live-monitor-refresh.yml` — 2: 2× skipped work
+- `optimize-score-thresholds.yml` — 2: 2× skipped work
+- `pine-generator.yml` — 2: 1× no data, 1× skipped work
+- `secret-rotation-reminder.yml` — 2: 2× skipped work
 - `alpha-verify-predictions.yml` — 1: 1× skipped work
 - `crypto-ml-tracker.yml` — 1: 1× skipped work
 - `discord-token-selftest.yml` — 1: 1× skipped work
+- `hyro-daily.yml` — 1: 1× skipped work
+- `mysql_dedup_fix.yml` — 1: 1× skipped work
+- `polymarket-signals.yml` — 1: 1× skipped work
+- `tribunal-runtime-gate.yml` — 1: 1× skipped work
+- `ueps_smoke_tests.yml` — 1: 1× skipped work
 
 ## Not auditable
 
-- `2hour_challenge.yml` — ALWAYS_RED: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
 - `_dynamic-runner-template.yml` — SCHEDULE_ONLY: no run on record
-- `adaptive-trust-tuner.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `ai-tournament-pipeline.yml` — DISABLED: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `alpha-engine-fast.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `alpha-engine-live.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `anti-overfit-gate.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `audit-dashboard.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `battle_test.yml` — DISABLED: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `battleground-mass-backtest.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `branch-large-file-dup-guard.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `ci-tests.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `closed-picks-command.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `commodities-agent.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `consensus-outcome-tracker.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `continuous-improvement-monitor.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
+- `ai-tournament-pipeline.yml` — DISABLED: log unavailable: failed to get run log: HTTP 410: Server Error (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca
+- `alpha-engine-fast.yml` — RED_REGRESSION: log unavailable: run 45754121338 is still in progress; logs will be available when it is complete
+- `alpha-engine-live.yml` — RED_REGRESSION: log unavailable: run 45755533757 is still in progress; logs will be available when it is complete
+- `anti-overfit-gate.yml` — RED_REGRESSION: log unavailable: run 45750243307 is still in progress; logs will be available when it is complete
+- `audit-dashboard.yml` — GREEN_RECENT: log unavailable: run 45748152095 is still in progress; logs will be available when it is complete
+- `battle_test.yml` — DISABLED: log unavailable: failed to get run log: HTTP 410: Server Error (https://api.github.com/repos/eltonaguiar/findtorontoevents_antigravity.ca
+- `branch-large-file-dup-guard.yml` — RED_REGRESSION: log unavailable: run 45746946365 is still in progress; logs will be available when it is complete
+- `consensus-outcome-tracker.yml` — GREEN_RECENT: log unavailable: run 45753943489 is still in progress; logs will be available when it is complete
 - `copilot` — SCHEDULE_ONLY: no run on record
-- `copy-trader-forward-test.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `copy-trader-intelligence.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `correlation-monitor.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `cross-db-audit.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `crypto-ohlcv-refresh.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `crypto-smart-picks.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `crypto-test-portfolios.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `crypto-winner-scan.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `daily-feed-summary.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `daily-miracle-scan.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `daily-picks-snapshot.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `daily-prices-yf-refresh.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `daily-scrutiny-engine.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `daily-stock-refresh.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `daily-top-picks-filter.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `daily_runs.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `darwin-evolution.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `dashboard-pick-trader.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `data-pipeline-test.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `db-backup-email.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `db-password-leak-guard.yml` — SCHEDULE_ONLY: no run on record
+- `copy-trader-forward-test.yml` — GREEN_RECENT: log unavailable: run 45750035715 is still in progress; logs will be available when it is complete
+- `copy-trader-intelligence.yml` — GREEN_RECENT: log unavailable: run 45751834385 is still in progress; logs will be available when it is complete
+- `crypto-test-portfolios.yml` — GREEN_RECENT: log unavailable: run 45755719122 is still in progress; logs will be available when it is complete
+- `darwin-evolution.yml` — GREEN_RECENT: log unavailable: run 45751484284 is still in progress; logs will be available when it is complete
+- `data-pipeline-test.yml` — GREEN_RECENT: log unavailable: run 45749828538 is still in progress; logs will be available when it is complete
+- `db-backup-email.yml` — GREEN_RECENT: log unavailable: run 45749831537 is still in progress; logs will be available when it is complete
 - `db-secret-scan.yml` — DISABLED: no run on record
-- `db-sync-bidirectional.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `db-sync-to-mirror.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deals-refresh.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-alpha-dashboard.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-battleground-ftp.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-competition-to-site.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-fc-api-hotfix.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-fc-frontend.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-friendtracker.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-fte-events-json.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-fte-index.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-movieshows-all.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-movieshows3-hotfix.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-riseoftheclaw.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `deploy-vetted-picks.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `discord-bot.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `discord-heartbeat.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `discord_status.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `dna-mutation-cycle.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `dna_strategy_pipeline.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `dynamic-alpha-engine.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `dynamic-universe.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `ema-retracement-scan.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `enhanced-ml-crypto.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `equities-agent.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `etf-agent.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `fc-crypto-pro.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `feature-stability-check.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `feed-health.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `fetch-movies-v3.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `fetch-movies.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `fix-battleground.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `fix-ghost-cards.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `forex-agent.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `forex-smart-picks.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `forward-benchmark-ledger.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `forward-observations-ingest.yml` — RED_REGRESSION: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `forward-signal-scanner.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `forward-test-new-strategies.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `forward-tracking-v2.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `forward_test.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `fred-macro-refresh.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `funding-rate-collector.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `futures-agent.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `fx-cost-overlap.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `gainer-predictor.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `gate-config-emit.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `genome-daily-pipeline.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `genome-evolution.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `gha-failure-digest.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `gha-health-audit.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `gha-quality-framework.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `gha-queue-audit.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
+- `db-sync-bidirectional.yml` — GREEN_RECENT: log unavailable: run 45749839689 is still in progress; logs will be available when it is complete
+- `db-sync-to-mirror.yml` — RED_REGRESSION: log unavailable: run 45749842137 is still in progress; logs will be available when it is complete
+- `deals-refresh.yml` — GREEN_RECENT: log unavailable: run 45749845189 is still in progress; logs will be available when it is complete
+- `deploy-alpha-dashboard.yml` — GREEN_RECENT: log unavailable: run 45749851939 is still in progress; logs will be available when it is complete
+- `deploy-fc-api-hotfix.yml` — GREEN_RECENT: log unavailable: run 45749868103 is still in progress; logs will be available when it is complete
+- `deploy-fc-frontend.yml` — GREEN_RECENT: log unavailable: run 45749871702 is still in progress; logs will be available when it is complete
+- `deploy-friendtracker.yml` — GREEN_RECENT: log unavailable: run 45749879082 is still in progress; logs will be available when it is complete
+- `deploy-fte-events-json.yml` — GREEN_RECENT: log unavailable: run 45752360074 is still in progress; logs will be available when it is complete
+- `deploy-fte-index.yml` — GREEN_RECENT: log unavailable: run 45752360054 is still in progress; logs will be available when it is complete
+- `deploy-movieshows-all.yml` — GREEN_RECENT: log unavailable: run 45749889283 is still in progress; logs will be available when it is complete
+- `deploy-movieshows3-hotfix.yml` — GREEN_RECENT: log unavailable: run 45749892191 is still in progress; logs will be available when it is complete
+- `deploy-vetted-picks.yml` — GREEN_RECENT: log unavailable: run 45749898230 is still in progress; logs will be available when it is complete
+- `discord-bot.yml` — RED_REGRESSION: log unavailable: run 45749901931 is still in progress; logs will be available when it is complete
+- `discord_status.yml` — GREEN_RECENT: log unavailable: run 45750055497 is still in progress; logs will be available when it is complete
+- `dna-mutation-cycle.yml` — GREEN_RECENT: log unavailable: run 45749917618 is still in progress; logs will be available when it is complete
+- `dna_strategy_pipeline.yml` — RED_REGRESSION: log unavailable: run 45755721101 is still in progress; logs will be available when it is complete
+- `dynamic-alpha-engine.yml` — GREEN_RECENT: log unavailable: run 45755551101 is still in progress; logs will be available when it is complete
+- `dynamic-universe.yml` — GREEN_RECENT: log unavailable: run 45754454205 is still in progress; logs will be available when it is complete
+- `ema-retracement-scan.yml` — GREEN_RECENT: log unavailable: run 45751167999 is still in progress; logs will be available when it is complete
+- `enhanced-ml-crypto.yml` — GREEN_RECENT: log unavailable: run 45749944623 is still in progress; logs will be available when it is complete
+- `equities-agent.yml` — GREEN_RECENT: log unavailable: run 45749947364 is still in progress; logs will be available when it is complete
+- `etf-agent.yml` — GREEN_RECENT: log unavailable: run 45749950161 is still in progress; logs will be available when it is complete
+- `fc-crypto-pro.yml` — GREEN_RECENT: log unavailable: run 45749959820 is still in progress; logs will be available when it is complete
+- `feature-stability-check.yml` — GREEN_RECENT: log unavailable: run 45749966164 is still in progress; logs will be available when it is complete
+- `fix-battleground.yml` — GREEN_RECENT: log unavailable: run 45749977830 is still in progress; logs will be available when it is complete
+- `fix-ghost-cards.yml` — GREEN_RECENT: log unavailable: run 45749980507 is still in progress; logs will be available when it is complete
+- `forex-agent.yml` — GREEN_RECENT: log unavailable: run 45749983509 is still in progress; logs will be available when it is complete
+- `forex-smart-picks.yml` — GREEN_RECENT: log unavailable: run 45749986397 is still in progress; logs will be available when it is complete
+- `forward-signal-scanner.yml` — GREEN_RECENT: log unavailable: run 45749995333 is still in progress; logs will be available when it is complete
+- `forward-test-new-strategies.yml` — GREEN_RECENT: log unavailable: run 45749998137 is still in progress; logs will be available when it is complete
+- `forward-tracking-v2.yml` — GREEN_RECENT: log unavailable: run 45755721349 is still in progress; logs will be available when it is complete
+- `forward_test.yml` — GREEN_RECENT: log unavailable: run 45750011316 is still in progress; logs will be available when it is complete
+- `funding-rate-collector.yml` — GREEN_RECENT: log unavailable: run 45750016905 is still in progress; logs will be available when it is complete
+- `gainer-predictor.yml` — GREEN_RECENT: log unavailable: run 45753326959 is still in progress; logs will be available when it is complete
+- `genome-daily-pipeline.yml` — GREEN_RECENT: log unavailable: run 45750031354 is still in progress; logs will be available when it is complete
+- `genome-evolution.yml` — GREEN_RECENT: log unavailable: run 45750033965 is still in progress; logs will be available when it is complete
 - `gha-scan-job.yml` — SCHEDULE_ONLY: no run on record
-- `gha-stale-workflows-audit.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `gha-summary-report.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `ghcopilot-paper-monitor.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `goldmine-tracker.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `growth-stock-screener-daily.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `h004-backtest.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `h103-forward-logger.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `hc-parity.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `hierarchical-bayes.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `hindsight-learner.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `hoffman-tracker.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `honest-kill-switch.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `hourly-master-picks.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `hub-sync.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `hyro-bridge-regen.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `hyro-daily.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `incidents-enhancements-nightly.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `incubator-pipeline.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `incubator-strategies.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `index-creator-content.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `insider-trades-refresh.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `kalshi-snapshot.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `kimi-feb172026-live.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `kimi-fetch-movies.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `kimi-goldmine-collector.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `live-monitor-refresh.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `live_spike_trading.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `live_tracker.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `live_trading.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `live_trading_canada.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `low-score-tracker.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `luxalgo-signals.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `macd-rsi-m048-shadow-daily.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `market_beating.yml` — GREEN_RECENT: log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, 
-- `masking-policy-lint.yml` — SCHEDULE_ONLY: no run on record
-- `master-automation-scheduler.yml` — NEVER_RUN: no run on record
-- `master-picks-health.yml` — NEVER_RUN: no run on record
-- `mega-mutation-tracker.yml` — NEVER_RUN: no run on record
-- `meme-scanner-v2.yml` — NEVER_RUN: no run on record
-- `meme-scanner.yml` — NEVER_RUN: no run on record
-- `mercury2-retrain.yml` — NEVER_RUN: no run on record
-- `mercury2-scan.yml` — NEVER_RUN: no run on record
+- `goldmine-tracker.yml` — GREEN_RECENT: log unavailable: run 45750057172 is still in progress; logs will be available when it is complete
+- `h103-forward-logger.yml` — GREEN_RECENT: log unavailable: run 45750066952 is still in progress; logs will be available when it is complete
+- `hindsight-learner.yml` — GREEN_RECENT: log unavailable: run 45754542909 is still in progress; logs will be available when it is complete
+- `hoffman-tracker.yml` — GREEN_RECENT: log unavailable: run 45750079065 is still in progress; logs will be available when it is complete
+- `honest-kill-switch.yml` — GREEN_RECENT: log unavailable: run 45750082060 is still in progress; logs will be available when it is complete
+- `incubator-pipeline.yml` — GREEN_RECENT: log unavailable: run 45750100186 is still in progress; logs will be available when it is complete
+- `incubator-strategies.yml` — GREEN_RECENT: log unavailable: run 45750103397 is still in progress; logs will be available when it is complete
+- `insider-trades-refresh.yml` — GREEN_RECENT: log unavailable: run 45750109218 is still in progress; logs will be available when it is complete
+- `kimi-feb172026-live.yml` — GREEN_RECENT: log unavailable: run 45753186887 is still in progress; logs will be available when it is complete
+- `kimi-fetch-movies.yml` — GREEN_RECENT: log unavailable: run 45750118336 is still in progress; logs will be available when it is complete
+- `live_spike_trading.yml` — GREEN_RECENT: log unavailable: run 45750127430 is still in progress; logs will be available when it is complete
+- `mega-mutation-tracker.yml` — NEVER_RUN: log unavailable: run 45750177029 is still in progress; logs will be available when it is complete
+- `meme-scanner-v2.yml` — NEVER_RUN: log unavailable: run 45755436345 is still in progress; logs will be available when it is complete
 - `mermaid-test-deploy.yml` — DISABLED: no run on record
-- `meta-strategy.yml` — NEVER_RUN: no run on record
-- `mirror-site.yml` — NEVER_RUN: no run on record
-- `missed-opportunity-scan.yml` — NEVER_RUN: no run on record
-- `ml-battleground-f.yml` — NEVER_RUN: no run on record
-- `ml-battleground-retrain.yml` — NEVER_RUN: no run on record
-- `ml-feedback-loop.yml` — NEVER_RUN: no run on record
-- `ml-feedback-retrain.yml` — NEVER_RUN: no run on record
-- `ml-forward-test.yml` — NEVER_RUN: no run on record
-- `ml-gatekeeper-train-ab.yml` — NEVER_RUN: no run on record
-- `ml-health-monitor.yml` — NEVER_RUN: no run on record
-- `ml-model-autotraining.yml` — NEVER_RUN: no run on record
-- `ml-monthly-retrain.yml` — NEVER_RUN: no run on record
-- `ml-staleness-watchdog.yml` — NEVER_RUN: no run on record
-- `ml-strategy-reviver.yml` — NEVER_RUN: no run on record
-- `model-picks-emission.yml` — NEVER_RUN: no run on record
-- `momentum-catcher.yml` — NEVER_RUN: no run on record
-- `momentum-scanner.yml` — NEVER_RUN: no run on record
-- `momentum-tracker.yml` — NEVER_RUN: no run on record
-- `money-ready-registry-gate.yml` — NEVER_RUN: no run on record
-- `money-ready-snapshot.yml` — NEVER_RUN: no run on record
-- `monthly-calibrator-refit.yml` — NEVER_RUN: no run on record
-- `monthly-tournament.yml` — NEVER_RUN: no run on record
-- `multi-asset-scanner.yml` — NEVER_RUN: no run on record
-- `mutation-analysis-report.yml` — NEVER_RUN: no run on record
-- `mutation-lab.yml` — NEVER_RUN: no run on record
-- `mutation-lifecycle-runner.yml` — NEVER_RUN: no run on record
-- `mysql-stale-picks-resolver.yml` — NEVER_RUN: no run on record
-- `mysql-trading-sync.yml` — NEVER_RUN: no run on record
-- `mysql_dedup_fix.yml` — NEVER_RUN: no run on record
-- `news-video-healthcheck.yml` — NEVER_RUN: no run on record
-- `no-stale-db-passwords.yml` — NEVER_RUN: no run on record
-- `non-crypto-ab-test.yml` — NEVER_RUN: no run on record
-- `now-scanner.yml` — NEVER_RUN: no run on record
-- `obi-snapshot.yml` — NEVER_RUN: no run on record
-- `operator-review-today.yml` — NEVER_RUN: no run on record
-- `optimize-score-thresholds.yml` — NEVER_RUN: no run on record
-- `outcome-resolver.yml` — NEVER_RUN: no run on record
-- `overnight-mutations.yml` — NEVER_RUN: no run on record
-- `pages-build-deployment` — SCHEDULE_ONLY: no run on record
-- `paper-pilot-daily.yml` — NEVER_RUN: no run on record
-- `parquet-ingest.yml` — NEVER_RUN: no run on record
-- `pead-shadow-collector.yml` — NEVER_RUN: no run on record
-- `peer-claim-verification.yml` — NEVER_RUN: no run on record
-- `penny-skyrocket-runner.yml` — NEVER_RUN: no run on record
-- `penny-stock-picks.yml` — NEVER_RUN: no run on record
-- `php52-gate.yml` — NEVER_RUN: no run on record
-- `pick-data-quality-gate.yml` — NEVER_RUN: no run on record
-- `pick-funnel-nightly.yml` — NEVER_RUN: no run on record
-- `pick-monitor-30min.yml` — NEVER_RUN: no run on record
-- `picks-now-live-pnl.yml` — NEVER_RUN: no run on record
-- `picks-now-refresh.yml` — NEVER_RUN: no run on record
-- `picks_dispatch.yml` — NEVER_RUN: no run on record
-- `pine-generator.yml` — NEVER_RUN: no run on record
-- `poc-picks-checkpoint.yml` — NEVER_RUN: no run on record
-- `pod-emission-audit.yml` — NEVER_RUN: no run on record
-- `pod-h201-forward-clock.yml` — NEVER_RUN: no run on record
-- `polymarket-signals.yml` — NEVER_RUN: no run on record
-- `populate-alpha-macro-daily.yml` — NEVER_RUN: no run on record
-- `portfolio-tracker.yml` — NEVER_RUN: no run on record
-- `portfolio-trackers.yml` — NEVER_RUN: no run on record
-- `pre-spike-scan.yml` — NEVER_RUN: no run on record
-- `prediction-market-agents.yml` — NEVER_RUN: no run on record
-- `prediction-quality-tracker.yml` — NEVER_RUN: no run on record
-- `proven-strategies-scanner.yml` — NEVER_RUN: no run on record
-- `provenance-verify.yml` — NEVER_RUN: no run on record
-- `prune-strategy-performance.yml` — NEVER_RUN: no run on record
-- `qa-market-validation.yml` — NEVER_RUN: no run on record
-- `quan-engine-live.yml` — NEVER_RUN: no run on record
-- `quant-auditor-deep-nightly.yml` — NEVER_RUN: no run on record
+- `mutation-lab.yml` — NEVER_RUN: log unavailable: run 45750241817 is still in progress; logs will be available when it is complete
+- `now-scanner.yml` — NEVER_RUN: log unavailable: run 45753954021 is still in progress; logs will be available when it is complete
 - `quant-auditor-fast-pr.yml` — SCHEDULE_ONLY: no run on record
-- `quick-guess-ml.yml` — NEVER_RUN: no run on record
-- `rapid-validation-CLAUDECODE_Feb152026.yml` — NEVER_RUN: no run on record
-- `real_2hour_challenge.yml` — NEVER_RUN: no run on record
-- `realtime-challenge.yml` — NEVER_RUN: no run on record
-- `recommended-portfolio.yml` — NEVER_RUN: no run on record
-- `refresh-creator-updates.yml` — NEVER_RUN: no run on record
-- `refresh-top-movies.yml` — NEVER_RUN: no run on record
-- `regime-detector.yml` — NEVER_RUN: no run on record
-- `regime-terminal.yml` — NEVER_RUN: no run on record
-- `research-orchestrator.yml` — NEVER_RUN: no run on record
+- `real_2hour_challenge.yml` — NEVER_RUN: log unavailable: run 45750376573 is still in progress; logs will be available when it is complete
+- `regime-terminal.yml` — NEVER_RUN: log unavailable: run 45754148141 is still in progress; logs will be available when it is complete
 - `resolver-step5-6-backfill.yml` — NEVER_RUN: no run on record
 - `resolver-step7-apply.yml` — NEVER_RUN: no run on record
-- `riseoftheclaw-weekly-backtest.yml` — NEVER_RUN: no run on record
-- `rl-agent-ppo.yml` — NEVER_RUN: no run on record
-- `robust-edge-miner.yml` — NEVER_RUN: no run on record
-- `rsi5070-forward-snapshot.yml` — NEVER_RUN: no run on record
-- `schema-drift-audit.yml` — NEVER_RUN: no run on record
-- `schema-drift-watchdog.yml` — NEVER_RUN: no run on record
-- `scrape-events.yml` — NEVER_RUN: no run on record
-- `sec-edgar-fetch.yml` — NEVER_RUN: no run on record
-- `secret-rotation-reminder.yml` — NEVER_RUN: no run on record
-- `secret-scan.yml` — NEVER_RUN: no run on record
-- `self_optimizing_trading.yml` — NEVER_RUN: no run on record
-- `send-accountability-reminders.yml` — NEVER_RUN: no run on record
-- `sidecar-status-update.yml` — NEVER_RUN: no run on record
-- `sign-coherence-gate.yml` — NEVER_RUN: no run on record
-- `signal-engine.yml` — NEVER_RUN: no run on record
-- `signal-integrator.yml` — NEVER_RUN: no run on record
-- `signal-quality-monitor.yml` — NEVER_RUN: no run on record
-- `signal-recorder.yml` — NEVER_RUN: no run on record
-- `signal_tracking.yml` — NEVER_RUN: no run on record
-- `simulation-picks-resolver.yml` — NEVER_RUN: no run on record
-- `skyrocket-detector.yml` — NEVER_RUN: no run on record
-- `sleeve-daily.yml` — NEVER_RUN: no run on record
-- `smart-money-tracker.yml` — NEVER_RUN: no run on record
-- `smart-picks-tracker.yml` — NEVER_RUN: no run on record
-- `social-prediction-tracker.yml` — NEVER_RUN: no run on record
-- `social_investigation.yml` — NEVER_RUN: no run on record
-- `specialized-scanners.yml` — NEVER_RUN: no run on record
-- `spike-scanner.yml` — NEVER_RUN: no run on record
+- `signal-recorder.yml` — NEVER_RUN: log unavailable: run 45750457468 is still in progress; logs will be available when it is complete
 - `sports-betting-refresh.yml` — DISABLED: no run on record
 - `sports-data-snapshots.yml` — DISABLED: no run on record
 - `sports-forensics-weekly.yml` — DISABLED: no run on record
 - `sports-prediction-market-sync.yml` — DISABLED: no run on record
 - `sports-smoke-and-e2e.yml` — DISABLED: no run on record
-- `spy-data-refresh.yml` — NEVER_RUN: no run on record
-- `stale-branch-cleanup.yml` — NEVER_RUN: no run on record
-- `statistical_validation.yml` — NEVER_RUN: no run on record
-- `stock-picks-writer.yml` — NEVER_RUN: no run on record
-- `stocks-daily-stocksunify.yml` — NEVER_RUN: no run on record
-- `stocks-daily.yml` — NEVER_RUN: no run on record
-- `stocksunify2-pull.yml` — NEVER_RUN: no run on record
-- `strategy-forward-tester.yml` — NEVER_RUN: no run on record
-- `strategy-funnel-hourly.yml` — NEVER_RUN: no run on record
-- `strategy-health-monitor.yml` — NEVER_RUN: no run on record
-- `strategy-health-report.yml` — NEVER_RUN: no run on record
-- `strategy-perf-by-class-rebuild.yml` — NEVER_RUN: no run on record
 - `strategy-performance-no-regression.yml` — SCHEDULE_ONLY: no run on record
-- `strategy-tribunal.yml` — NEVER_RUN: no run on record
-- `sustained-gainer-scan.yml` — NEVER_RUN: no run on record
-- `swarm-janitor.yml` — NEVER_RUN: no run on record
-- `swarm-pick-review.yml` — NEVER_RUN: no run on record
-- `swarm-sync-v2.yml` — NEVER_RUN: no run on record
-- `swing_screener_daily.yml` — NEVER_RUN: no run on record
-- `system-health-check.yml` — NEVER_RUN: no run on record
-- `taste-profile-scan.yml` — NEVER_RUN: no run on record
-- `test-fast.yml` — NEVER_RUN: no run on record
-- `test-portfolios.yml` — NEVER_RUN: no run on record
-- `top-gainers-scan.yml` — NEVER_RUN: no run on record
-- `torontoevent-algorithm-refresh.yml` — NEVER_RUN: no run on record
-- `torontoevent-backtest-and-deploy.yml` — NEVER_RUN: no run on record
-- `torontoevent-deploy-competition.yml` — NEVER_RUN: no run on record
-- `torontoevent-deploy-live-monitor.yml` — NEVER_RUN: no run on record
-- `torontoevent-deploy-riseoftheclaw.yml` — NEVER_RUN: no run on record
-- `torontoevent-goldmine-tracker.yml` — NEVER_RUN: no run on record
-- `torontoevent-rapid-validation.yml` — NEVER_RUN: no run on record
-- `torontoevent-spike-scanner.yml` — NEVER_RUN: no run on record
-- `track-quick-picks.yml` — NEVER_RUN: no run on record
-- `traditional-test-portfolios.yml` — NEVER_RUN: no run on record
-- `tribunal-runtime-gate.yml` — NEVER_RUN: no run on record
-- `tv-paper-tpsl-watchdog.yml` — NEVER_RUN: no run on record
-- `tv-strategy-scanner.yml` — NEVER_RUN: no run on record
-- `ueps-pick-runner.yml` — NEVER_RUN: no run on record
-- `ueps_smoke_tests.yml` — NEVER_RUN: no run on record
-- `universe-expander.yml` — NEVER_RUN: no run on record
-- `update-creator-news.yml` — NEVER_RUN: no run on record
 - `update-graph` — SCHEDULE_ONLY: no run on record
-- `validate-hf-asset-class.yml` — NEVER_RUN: no run on record
-- `validation-gates.yml` — NEVER_RUN: no run on record
-- `value_resolver_quarterly.yml` — NEVER_RUN: no run on record
-- `value_screener_weekly.yml` — NEVER_RUN: no run on record
-- `verification-tests.yml` — NEVER_RUN: no run on record
-- `verified-pilot-daily.yml` — NEVER_RUN: no run on record
-- `volatile-alt-scanner.yml` — NEVER_RUN: no run on record
-- `walk-forward-backtest.yml` — NEVER_RUN: no run on record
-- `walkforward-gate.yml` — NEVER_RUN: no run on record
-- `weekly-filter.yml` — NEVER_RUN: no run on record
-- `weekly-scorecard.yml` — NEVER_RUN: no run on record
-- `weekly-stock-simulation.yml` — NEVER_RUN: no run on record
-- `weekly-strategy-scorecard.yml` — NEVER_RUN: no run on record
-- `weekly_score_quartile_spread.yml` — NEVER_RUN: no run on record
-- `what-worked-insights.yml` — NEVER_RUN: no run on record
-- `winner-pattern-scanner.yml` — NEVER_RUN: no run on record
-- `won-pnl-contradiction-backfill.yml` — NEVER_RUN: no run on record
-- `worldclass-intelligence.yml` — NEVER_RUN: no run on record
-- `worldclass-pipeline.yml` — NEVER_RUN: no run on record
-- `wsl-runner-manager.yml` — NEVER_RUN: no run on record
