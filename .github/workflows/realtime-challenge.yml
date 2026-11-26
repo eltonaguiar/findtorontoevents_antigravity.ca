@@ -25,7 +25,7 @@ concurrency:
 jobs:
   cycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,8 +51,12 @@ jobs:
               echo "no change"
             else
               git commit -m "realtime-challenge: cycle [skip ci]"
-              for i in 1 2 3; do
-                git push && break || { git pull --rebase --autostash; sleep 5; }
-              done
+              # Was a hand-rolled "git push || git pull --rebase --autostash" retry loop.
+              # This repo takes pushes every few seconds, so the bare push is rejected
+              # ("! [rejected] main -> main (fetch first)") and the rebase then hangs on
+              # the shallow checkout: every cycle burned the 10m timeout and was cancelled
+              # (runs #376-#383). safe_push.sh exists for exactly this - bounded retries
+              # with backoff, autostash, and no-merge-base recovery.
+              bash .github/scripts/safe_push.sh
             fi
           fi
