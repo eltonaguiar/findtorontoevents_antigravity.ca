@@ -33,7 +33,12 @@ if ($expected_token === '' || substr($expected_token, 0, 7) === 'IMPORT_' || $ex
 // remote at 2026-05-23). 'localhost' triggers Unix-socket auth which matches the
 // 'admin'@'localhost' grant row — that row either doesn't exist or has a different
 // password on this server, yielding 1045 for every DB import.
-$db_host = '127.0.0.1';
+//
+// 2026-11-26: Switched to 'localhost' because DB-level grants on torontoevent.net
+// (mysql.db table) are keyed to Host='localhost', not Host='127.0.0.1' or '%'.
+// The bidirectional sync (db-sync-bidirectional.yml) uses 'localhost' successfully.
+// This avoids ERROR 1044 (Access denied for user to database) on 5 of 8 databases.
+$db_host = 'localhost';
 $db_user = 'IMPORT_DB_USER_PLACEHOLDER';
 $db_pass = 'IMPORT_DB_PASS_PLACEHOLDER';
 
