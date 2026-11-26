@@ -44,7 +44,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/decile_test.json
-          git commit -m "Auto-update decile separation test $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+          git diff --cached --quiet || git commit -m "Auto-update decile separation test $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
           cd ..
           bash .github/scripts/safe_push.sh
 
