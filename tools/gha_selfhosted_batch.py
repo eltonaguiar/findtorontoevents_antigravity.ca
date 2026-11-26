@@ -53,6 +53,12 @@ LEDGER = REPORTS / "GHA_SELFHOSTED_BATCH.jsonl"
 WORKFLOW_DIR = REPO_ROOT / ".github" / "workflows"
 
 SELF_HOSTED_LABELS = "[self-hosted, Linux, ARM64]"
+
+# A workflow that pushes its own HEAD will push the throw-away branch's pinned
+# `runs-on:` back to main with it. That is exactly how strategy-funnel-hourly
+# ended up pinned to the self-hosted runner on 2026-11-26 (commit 4ca05240), and
+# an offline runner then wedges a production workflow. Refuse by default.
+PUSH_MARKERS = ("safe_push.sh", "safe_commit_push.sh", "git push", "git-push")
 REPO = "eltonaguiar/findtorontoevents_antigravity.ca"
 
 # Same buckets as tools/gha_latest_run_log_audit.py, kept small on purpose.
@@ -83,6 +89,22 @@ def gh(*args: str, timeout: int = 240) -> str:
     if rc != 0:
         raise RuntimeError(out.strip()[:400])
     return out
+
+
+def pushes_own_head(path: Path) -> bool:
+    """True when the workflow itself runs a git push (so a pin would ride along).
+
+    Comments are ignored: explaining in a comment why a workflow does NOT push
+    (gha-queue-audit does exactly that) must not block dispatch.
+    """
+    try:
+        text = path.read_text()
+    except OSError:
+        return False
+    body = "\n".join(
+        line for line in text.splitlines() if not line.lstrip().startswith("#")
+    )
+    return any(marker in body for marker in PUSH_MARKERS)
 
 
 def takes_runner_input(path: Path) -> bool:
@@ -187,12 +209,23 @@ def log_of(run_id: int) -> str:
 
 
 def run_batch(workflows: list[str], runner_input: bool, timeout_min: int,
-              max_parallel: int) -> int:
+              max_parallel: int, allow_push_workflows: bool = False) -> int:
     results = []
     for i, wf in enumerate(workflows):
         path = WORKFLOW_DIR / wf
         if not path.exists():
             print(f"[skip] {wf}: no such workflow")
+            continue
+        if pushes_own_head(path) and not allow_push_workflows:
+            print(
+                f"[refuse] {wf}: this workflow runs its own git push, so a "
+                "throw-away-branch pin would be pushed back to main by the job "
+                "itself. See updates/2026-11-26-accidental-selfhosted-pin.md. "
+                "If it pushes an explicit branch/path (not HEAD), re-run with "
+                "--allow-push-workflow.",
+                flush=True,
+            )
+            results.append({"workflow": wf, "verdict": "REFUSED_PUSHES_HEAD"})
             continue
         branch = None
         extra: list[str] = []
@@ -267,6 +300,9 @@ def main() -> int:
     ap.add_argument("--timeout-min", type=int, default=60)
     ap.add_argument("--max-parallel", type=int, default=1,
                     help="1 or 2; anything more violates the batch protocol")
+    ap.add_argument("--allow-push-workflow", action="store_true",
+                    help="run a workflow that git-pushes anyway (it must push an "
+                         "explicit branch/path, never HEAD, or the pin lands on main)")
     args = ap.parse_args()
 
     if args.list or not args.workflow:
@@ -276,7 +312,8 @@ def main() -> int:
         print("[warn] operator protocol is 1-2 workflows per batch; trimming to 2",
               file=sys.stderr)
         args.workflow = args.workflow[:2]
-    return run_batch(args.workflow, args.runner_input, args.timeout_min, args.max_parallel)
+    return run_batch(args.workflow, args.runner_input, args.timeout_min,
+                     args.max_parallel, args.allow_push_workflow)
 
 
 if __name__ == "__main__":
