@@ -1,0 +1,85 @@
+# guard-ops-workflows - fails when an automated commit deletes .github/workflows/ops-*.
+#
+# Context: commit 26dd4f9d ("Alpha Engine FAST ... [AUTO] [skip ci]", github-actions[bot])
+# committed a stale index with `git add -A` and silently reverted 573 files, including the
+# ops-* SSH/runner workflows. This gate makes that pattern red instead of invisible.
+#
+# Tool: tools/guard_ops_workflows.py   Tests: tools/test_guard_ops_workflows.py
+# Read-only: no commit, no push, no secrets beyond the checkout token.
+
+name: guard-ops-workflows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ops-*'
+      - 'tools/guard_ops_workflows.py'
+      - 'tools/test_guard_ops_workflows.py'
+  workflow_dispatch:
+    inputs:
+      before:
+        description: "Range start (exclusive), e.g. 26dd4f9df832^"
+        type: string
+        required: true
+      after:
+        description: "Range end (inclusive), e.g. 26dd4f9df832"
+        type: string
+        required: true
+      dry_run:
+        description: "Report a violation but exit 0 (replay mode)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guard-ops-workflows-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (only what the guard needs)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            .github/workflows
+            tools
+
+      - name: Unit tests for the guard
+        run: python3 tools/test_guard_ops_workflows.py
+
+      - name: Fetch the range start
+        if: ${{ github.event_name == 'push' }}
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "first push on this ref - nothing to compare"
+            exit 0
+          fi
+          # Shallow fetch of just the pre-push commit; the guard diffs the two trees.
+          git fetch --depth=1 origin "$BEFORE" || echo "::warning::could not fetch $BEFORE (force push?), guard will report inconclusive"
+
+      - name: Guard the push
+        if: ${{ github.event_name == 'push' }}
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: python3 tools/guard_ops_workflows.py --before "$BEFORE" --after "$AFTER"
+
+      - name: Guard a replayed range
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          BEFORE: ${{ inputs.before }}
+          AFTER: ${{ inputs.after }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          args=(--before "$BEFORE" --after "$AFTER")
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          python3 tools/guard_ops_workflows.py "${args[@]}"

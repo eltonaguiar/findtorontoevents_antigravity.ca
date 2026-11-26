@@ -24,13 +24,17 @@ require_once dirname(__FILE__) . '/sync_log.php';
 // Must be logged in
 $user_id = get_session_user_id();
 if ($user_id === null) {
-    http_response_code(401);
+    // PHP 5.4+ only; 50webs runs 5.2.17, so send the raw status line too.
+    if (function_exists('http_response_code')) { http_response_code(401); }
+    header('HTTP/1.1 401 Unauthorized');
     echo json_encode(array('ok' => false, 'error' => 'Must be logged in'));
     exit;
 }
 
 if (!isset($conn) || !$conn) {
-    http_response_code(500);
+    // PHP 5.4+ only; 50webs runs 5.2.17, so send the raw status line too.
+    if (function_exists('http_response_code')) { http_response_code(500); }
+    header('HTTP/1.1 500 Internal Server Error');
     echo json_encode(array('ok' => false, 'error' => 'Database not available'));
     exit;
 }
@@ -40,7 +44,9 @@ $sql = "UPDATE users SET discord_id = NULL, discord_username = NULL WHERE id = $
 $result = $conn->query($sql);
 
 if (!$result) {
-    http_response_code(500);
+    // PHP 5.4+ only; 50webs runs 5.2.17, so send the raw status line too.
+    if (function_exists('http_response_code')) { http_response_code(500); }
+    header('HTTP/1.1 500 Internal Server Error');
     echo json_encode(array('ok' => false, 'error' => 'Failed to unlink Discord'));
     exit;
 }
