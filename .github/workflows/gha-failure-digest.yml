@@ -1,0 +1,137 @@
+name: GHA Failure Digest
+
+# Automatic CI triage: every 2 hours, take the LATEST completed run of every
+# workflow, fetch the raw log of each failing job, extract the first diagnostic
+# line, and publish the result three ways —
+#   1. the run's job summary (readable from the Actions UI),
+#   2. an artifact (the full .md/.json plus the raw .log files),
+#   3. ONE GitHub issue that is edited in place, so failures have a durable
+#      address and do not pile up as a new issue every 2 hours.
+#
+# This is a REPORTER, not a gate. It exits 0 even when workflows are failing: a
+# red digest run would add a failure of its own and bury the signal it exists to
+# deliver. The signal is the issue + summary content, not the exit code.
+#
+# Cancelled runs are INCLUDED: in this repo a cancelled run is usually a job that
+# hung past its own timeout-minutes (normally an unbounded git push/pull in a
+# commit step), which loses real work. Excluding them hid that class entirely.
+
+on:
+  schedule:
+    # :37, every 2 hours — offset from hub-sync (:06), portfolio-tracker (:07),
+    # data-pipeline-test (:06/6h) and realtime-challenge (:00/:15/:30/:45).
+    - cron: '37 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'runs to scan to find the latest run per workflow'
+        required: false
+        default: '300'
+
+permissions:
+  actions: read # run list + raw job logs
+  contents: read
+  issues: write # the digest issue
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Sweep latest run per workflow and fetch failing raw logs
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+          SCAN_LIMIT: ${{ github.event.inputs.limit || '300' }}
+        run: |
+          python3 tools/gha_raw_logs.py \
+            --latest-failing \
+            --include-cancelled \
+            --limit "${SCAN_LIMIT:-300}" \
+            --out reports/gha_raw_logs_latest
+
+      - name: Publish digest to the job summary
+        run: cat reports/gha_raw_logs_latest.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload digest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gha-failure-digest
+          path: |
+            reports/gha_raw_logs_latest.md
+            reports/gha_raw_logs_latest.json
+            reports/gha_logs/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Publish or close the digest issue
+        # Issue permissions can be restricted on forks/mirrors; the summary and
+        # artifact above must still land, so a posting failure is not fatal here.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          # A failure here is non-fatal by design (fork/mirror issue permissions
+          # may be restricted and the summary + artifact must still publish), but
+          # swallowing it silently is a masking violation: the masking linter
+          # rejects continue-on-error without a ::warning. Surface it instead.
+          trap 'rc=$?; if [ $rc -ne 0 ]; then echo "::warning::digest issue post/close failed (rc=$rc); summary and artifact were still published"; fi' EXIT
+
+          TITLE="[CI] GitHub Actions failure digest"
+          REPORT="reports/gha_raw_logs_latest.json"
+
+          # Count and title-match in python (not jq): the title contains brackets, and
+          # the count is read from the report the sweep just wrote.
+          FAILING=$(python3 -c "import json,sys; print(len(json.load(open(sys.argv[1])).get('latest_failing') or []))" "$REPORT")
+          FAILING=${FAILING:-0}
+          echo "workflows whose latest completed run is failing or cancelled: $FAILING"
+
+          OPEN_NUM=$(gh issue list --repo "$REPO" --state open --limit 100 --json number,title \
+            | python3 -c "import json,sys; print(next((str(i['number']) for i in json.load(sys.stdin) if i.get('title')==sys.argv[1]), ''))" "$TITLE")
+          echo "open digest issue: ${OPEN_NUM:-<none>}"
+
+          if [ "$FAILING" -gt 0 ]; then
+            {
+              echo "<!-- gha-failure-digest: edited in place by .github/workflows/gha-failure-digest.yml -->"
+              echo
+              cat reports/gha_raw_logs_latest.md
+              echo
+              echo "---"
+              echo
+              echo "**Definition of done for each entry:** the workflow's latest completed run"
+              echo "is green *after* the fix. A cancelled run counts as a failure here unless it"
+              echo "was superseded by a newer run of the same workflow."
+              echo
+              echo "_Workflow: [\`.github/workflows/gha-failure-digest.yml\`](../blob/main/.github/workflows/gha-failure-digest.yml) ·"
+              echo "raw logs are in the run's \`gha-failure-digest\` artifact._"
+            } > /tmp/digest_body.md
+
+            if [ -n "$OPEN_NUM" ]; then
+              gh issue edit "$OPEN_NUM" --repo "$REPO" --body-file /tmp/digest_body.md
+              echo "updated digest issue #$OPEN_NUM in place"
+            else
+              gh issue create --repo "$REPO" --title "$TITLE" --body-file /tmp/digest_body.md
+              echo "opened a new digest issue"
+            fi
+          else
+            if [ -n "$OPEN_NUM" ]; then
+              gh issue close "$OPEN_NUM" --repo "$REPO" --comment \
+                "All green: the latest completed run of every workflow succeeded as of $(date -u +%FT%TZ). The next failure reopens a digest."
+              echo "closed digest issue #$OPEN_NUM — all green"
+            else
+              echo "no failures and no open digest issue — nothing to publish"
+            fi
+          fi
