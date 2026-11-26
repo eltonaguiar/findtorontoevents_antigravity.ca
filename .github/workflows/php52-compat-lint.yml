@@ -1,21 +1,34 @@
 name: PHP 5.2 Compatibility Lint
 
-# 50webs (findtorontoevents.ca) still runs PHP 5.2.17 and MOVIESHOWS3 scripts turn
-# display_errors off, so a 5.4+ construct fails as an EMPTY HTTP 500. That is how
-# http_response_code() broke the movie refresh for hours. This gate catches it at PR
-# time instead of in production.
+# 50webs (findtorontoevents.ca) runs PHP 5.2.17 for the whole host - verified on
+# both /MOVIESHOWS3/ and /fc/ - and those scripts turn display_errors off, so a 5.4+
+# construct fails as an EMPTY HTTP 500. That is how http_response_code() broke the
+# movie refresh for hours. This gate catches it at PR time instead of in production.
+#
+# Scope = every tree that deploys there:
+#   TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3 -> findtorontoevents.ca/MOVIESHOWS3
+#   TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2 -> findtorontoevents.ca/movieshows2
+#   favcreators/docs                      -> findtorontoevents.ca/fc
+# The /fc tree carries 27 pre-existing hits recorded in tools/php52_baseline.json;
+# only findings NOT in that baseline fail, so new drift is blocked today.
 on:
   pull_request:
     paths:
+      - "TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/**/*.php"
       - "TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/**/*.php"
+      - "favcreators/docs/**/*.php"
       - "tools/php52_compat_lint.py"
+      - "tools/php52_baseline.json"
       - "tests/test_php52_compat_lint.py"
       - ".github/workflows/php52-compat-lint.yml"
   push:
     branches: [main]
     paths:
+      - "TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/**/*.php"
       - "TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS3/**/*.php"
+      - "favcreators/docs/**/*.php"
       - "tools/php52_compat_lint.py"
+      - "tools/php52_baseline.json"
   workflow_dispatch:
 
 permissions:
@@ -36,7 +49,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Scan MOVIESHOWS3 for post-5.2 constructs
+      - name: Scan every 50webs PHP tree for post-5.2 constructs
         run: python3 tools/php52_compat_lint.py
 
       - name: Unit tests for the lint
