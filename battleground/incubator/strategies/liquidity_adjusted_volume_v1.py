@@ -66,8 +66,14 @@ SYMBOLS = [
     "JUPUSDT", "WIFUSDT", "STXUSDT", "RENDERUSDT",
 ]
 
-from api_helpers import fetch_klines as _fetch_klines_fallback
-from api_helpers import fetch_current_price as _fetch_price_fallback
+try:  # imported as part of the package
+    from .api_helpers import fetch_klines as _fetch_klines_fallback
+except ImportError:  # run as a plain script
+    from api_helpers import fetch_klines as _fetch_klines_fallback
+try:  # imported as part of the package
+    from .api_helpers import fetch_current_price as _fetch_price_fallback
+except ImportError:  # run as a plain script
+    from api_helpers import fetch_current_price as _fetch_price_fallback
 
 # Order book depth endpoints (fallback chain)
 DEPTH_ENDPOINTS = [
