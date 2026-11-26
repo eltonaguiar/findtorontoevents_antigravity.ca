@@ -1,0 +1,101 @@
+name: Ops - htaccess audit (read-only)
+
+# Ownership: hermes-desktop. Dispatch-only, gx10 pool.
+# Read-only audit of the .htaccess on both origins. Answers two questions:
+#   1. Is either file hijacked (cloaking RewriteRule, injected redirect, eval/base64 payload,
+#      SEO doorway, user-agent sniffing, ErrorDocument to an external host)?
+#   2. Does findtorontoevents.ca .htaccess itself deny _db_export_tmp.php? That would explain
+#      why that exact filename 404s while every neighbouring name serves 200.
+# Downloads only; prints a profile plus the directives that matter, never the whole deny wall.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: [self-hosted, gx10]
+    timeout-minutes: 15
+    steps:
+      - name: Profile both .htaccess files
+        env:
+          SRC_H: ${{ secrets.FTP_SERVER_50WEBS }}
+          SRC_U: ${{ secrets.FTP_USERNAME_50WEBS }}
+          SRC_P: ${{ secrets.FTP_PASSWORD_50WEBS }}
+          DST_H: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_U: ${{ secrets.FTPGODADDYUSER }}
+          DST_P: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          set +e
+          mask() { sed -E 's#://[^@/]*@#://[redacted]@#g'; }
+          grab() {   # name host user pass dir outfile
+            cat > /tmp/g.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 25
+          set net:max-retries 1
+          set xfer:clobber on
+          open -u "$3","$4" "$2"
+          cd $5
+          get .htaccess -o $6
+          bye
+          LFTPEOF
+            lftp -f /tmp/g.script >/dev/null 2>&1
+            echo "$1: $([ -s "$6" ] && echo "downloaded $(wc -c < "$6") bytes" || echo "NO .htaccess FOUND in $5")"
+          }
+          grab FIND_TORONTO "$SRC_H" "$SRC_U" "$SRC_P" "/findtorontoevents.ca" /tmp/ht_ca
+          grab TORONTOEVENT_DOTNET "$DST_H" "$DST_U" "$DST_P" "/public_html" /tmp/ht_net
+          grab TORONTOEVENT_DOTNET_ROOT "$DST_H" "$DST_U" "$DST_P" "/" /tmp/ht_net_root
+
+          python3 - <<'PY'
+          import re, os
+          SIG = [
+            ("REWRITE",      re.compile(r"^\s*RewriteRule", re.I)),
+            ("REDIRECT",     re.compile(r"^\s*(Redirect|RedirectMatch)", re.I)),
+            ("ERRORDOC",     re.compile(r"^\s*ErrorDocument", re.I)),
+            ("INCLUDE_PHP",  re.compile(r"^\s*(php_value|php_flag|AddHandler|AddType).*php", re.I)),
+            ("DENY",         re.compile(r"^\s*deny from", re.I)),
+            ("REQUIRE",      re.compile(r"^\s*Require\s", re.I)),
+            ("SUSPICIOUS",   re.compile(r"base64_decode|eval\(|gzinflate|str_rot13|document\.write|unescape\(|fromCharCode", re.I)),
+            ("UA_SNIFF",     re.compile(r"HTTP_USER_AGENT|googlebot|bingbot|ahrefs|semrush", re.I)),
+          ]
+          for path, label, where in [
+              ("/tmp/ht_ca", "findtorontoevents.ca", "FTP /findtorontoevents.ca"),
+              ("/tmp/ht_net", "torontoevent.net", "GoDaddy /public_html"),
+              ("/tmp/ht_net_root", "torontoevent.net", "GoDaddy / (root)"),
+          ]:
+              print("=" * 70)
+              print(f"{label}  [{where}]  file={path}")
+              if not (os.path.exists(path) and os.path.getsize(path)):
+                  print("  absent (or empty) - no .htaccess at this location")
+                  continue
+              raw = open(path, "rb").read()
+              txt = raw.decode("utf-8", "replace")
+              lines = txt.splitlines()
+              print(f"  size={len(raw)}B lines={len(lines)} crlf_double={b'\\r\\r\\n' in raw}")
+              counts = {}
+              for name, rx in SIG:
+                  hits = [l for l in lines if rx.search(l)]
+                  if hits: counts[name] = hits
+              for name, hits in counts.items():
+                  print(f"  {name}: {len(hits)}")
+              # the blocked filename question
+              for l in lines:
+                  if "_db_export" in l or "_db_import" in l:
+                      print("  BLOCKS-DEPLOY-ARTIFACT:", l.strip()[:160])
+              # show every non-deny directive; that is where hijack lives
+              for name, hits in counts.items():
+                  if name in ("DENY", "REQUIRE"): continue
+                  print(f"  --- {name} ---")
+                  for l in hits[:12]:
+                      print("     ", l.strip()[:170])
+              deny = counts.get("DENY", [])
+              if deny:
+                  nets = {}
+                  for l in deny:
+                      m = re.search(r"deny from\s+([0-9]+)\.([0-9]+)", l, re.I)
+                      if m: nets[f"{m.group(1)}.{m.group(2)}"] = nets.get(f"{m.group(1)}.{m.group(2)}", 0) + 1
+                  top = sorted(nets.items(), key=lambda x: -x[1])[:8]
+                  print("  deny composition top /16:", top)
+          PY
