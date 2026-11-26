@@ -6,7 +6,8 @@ name: Ops - sharded audit of all workflows (self-hosted)
 #
 # Purpose: keep the self-hosted pool busy with real monitoring work and produce a
 # complete latest-run audit of every workflow, sharded so the whole pool is used.
-# 16 shards: 10 on the ARM (gx10) pool, 6 on the WSL x64 pool.
+# 15 shards: 10 on the ARM (gx10) pool, 5 on the desktop WSL pool. Deliberately
+# does not depend on the laptop's runners, so that machine can be powered down.
 on:
   push:
     branches: [ops/log-audit]
@@ -23,12 +24,12 @@ jobs:
       matrix:
         shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     steps:
-      - name: Audit shard ${{ matrix.shard }} of 16 (arm)
+      - name: Audit shard ${{ matrix.shard }} of 15 (arm)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           SHARD: ${{ matrix.shard }}
-          SHARDS: "16"
+          SHARDS: "15"
         run: |
           echo "runner=$(hostname) shard=${SHARD}/${SHARDS} pool=arm"
           python3 - <<'PY'
@@ -79,14 +80,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [10, 11, 12, 13, 14, 15]
+        shard: [10, 11, 12, 13, 14]
     steps:
-      - name: Audit shard ${{ matrix.shard }} of 16 (wsl)
+      - name: Audit shard ${{ matrix.shard }} of 15 (wsl)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           SHARD: ${{ matrix.shard }}
-          SHARDS: "16"
+          SHARDS: "15"
         run: |
           echo "runner=$(hostname) shard=${SHARD}/${SHARDS} pool=wsl"
           python3 - <<'PY'
