@@ -48,8 +48,9 @@ jobs:
         run: |
           echo "=== Mercury 2 Scanner ==="
           if [ ! -f mercury2/models/ensemble_conservative.joblib ]; then
-            echo "::warning::ensemble_conservative.joblib not found — skipping scanner (models committed by Mercury 2 Weekly Retrain workflow; run it first via workflow_dispatch)"
-            exit 0
+            echo "::error::ensemble_conservative.joblib not found — scanner did NOT run (scanner_ran=false). Mercury 2 Weekly Retrain must commit the model first."
+            python3 -c 'import json,os,pathlib,datetime as dt; p=pathlib.Path(os.environ["GITHUB_WORKSPACE"])/"updates"/"data"/"mercury2_scan_status.json"; p.parent.mkdir(parents=True,exist_ok=True); d=json.loads(p.read_text()) if p.is_file() and p.stat().st_size else {}; now=dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00","Z"); d["scanner_ran_false_since"]=d.get("scanner_ran_false_since") if d.get("scanner_ran") is False and d.get("scanner_ran_false_since") else now; d.update({"scanner_ran": False, "scanner_reason": "no_models", "expected_model": "mercury2/models/ensemble_conservative.joblib", "scanner_checked_at": now}); p.write_text(json.dumps(d, indent=2) + "\n")'
+            exit 1
           fi
           if [ "$MERCURY2_FORCE_MODE" = "true" ]; then
             echo "  FORCE MODE ENABLED  Picks will be generated with validation_warning flag"
