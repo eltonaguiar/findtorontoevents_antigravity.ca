@@ -229,3 +229,87 @@ all three repaired payloads; a final scan of every JSON under
 it (loudly, naming the file), which is the desired safety net; the durable fix
 is to give all such producers the `_json_safe` guard. Two producers now have it,
 one already had it.
+
+---
+
+## Addendum 2 — per-workflow checklist, strict-JSON test, two retirements
+
+### A. One entry per workflow (main vs gh-pages)
+
+`tools/gha_local_run_check.py --write-checklist reports/GHA_WORKFLOW_TODO_CHECKLIST.md`
+now emits a checkbox per workflow (`[x]` clean, `[ ]` needs attention with the
+reason). Current state: **383 workflows, 422 jobs, 2,780 steps**, of which 368
+clean.
+
+`gh-pages` holds **zero** workflow files (verified:
+`git ls-tree -r --name-only origin/gh-pages | grep '^.github/workflows/'` returns
+nothing) — it is the published-site branch, so there is no second set of
+workflows to run there. Every GitHub-registered workflow lives on `main`
+(388 files across all branches, 383 on `main`).
+
+### B. Retired: `deploy_bundle.yml` and `fast-stocks-competition.yml`
+
+Both were the only two ERRORs, and both were unreachable-by-design dead weight.
+Moved to `.disabled` (the repo's existing convention — 8 other `.disabled`
+files) rather than deleted, so the YAML and its history stay auditable:
+
+| Workflow | Evidence | Decision |
+|---|---|---|
+| `deploy_bundle.yml` | run step calls `deploy_prod_bundle.py`; `git log --all -- deploy_prod_bundle.py` is **empty** (never existed). `workflow_dispatch`-only, **0 runs** | **Retire.** Nothing to restore. |
+| `fast-stocks-competition.yml` | schedule commented out 2026-03-16 — *"System blocked (12% WR, 50 trades, -98% PnL, PF 0.26). Proven loser."* Runner `STOCKS/competition/run_fast_competition.py` deleted in `269baeb5c3f3` (still recoverable from `269baeb5c3f3^`). `workflow_dispatch`-only, **0 runs** | **Retire.** Restoring the script would revive a documented losing scanner with no schedule. |
+
+Each `.disabled` file carries a header with the rationale and the revival path
+(`git revert <commit>`).
+
+After retirement the sweep reports **381 workflows / 419 jobs / 2,766 steps,
+0 errors**, 15 warnings (7 SC2046, 7 guarded-missing, 1 SC2154 false positive).
+
+### C. New regression test: `tests/test_dashboard_payload_strict_json.py`
+
+Scans every `*.json` under `audit_dashboard/data/` and `multi_asset/data/`
+(364 files) and fails if any contains a bare `NaN`/`Infinity` token, naming the
+offending files in one pass. Fast-path byte pre-filter, so the suite runs in
+**0.35 s**.
+
+Proven to fail: injecting one `NaN` into `ueps_picks.json` produced
+
+```
+AssertionError: non-strict JSON in dashboard payloads (...):
+  audit_dashboard/data/ueps_picks.json: non-strict JSON constant 'NaN' (use null)
+```
+
+and passes again once restored (364 passed).
+
+### D. POD-EQUITY-BREAKOUT emitter — blocked, not built
+
+The watchdog FAIL is real: `POD-EQUITY-BREAKOUT` is the only `pre_registered` pod
+(`registered_at` 2026-11-19, hypothesis `H-BABY-EQUITY-VT-PATTERN-SWEEP-001`,
+strategies `donchian-stock-breakout` / `rs-breakout-scout` /
+`vol-contraction-scout` / `adx-trend-scout`) and has 0 forward rows 7.1 d after
+registration.
+
+The chain is: emitter → MySQL `trading_picks` → `at_signal_outcomes` (outcome
+resolution) → `alpha_engine/forward_observations_ingest.py` → `reports/forward_observations.jsonl`.
+
+The ledger side is already wired: `CONDITIONS["H-BABY-EQUITY-VT-PATTERN-SWEEP-001"]`
+in `forward_observations_ingest.py` already maps all four strategy names to that
+hypothesis. The missing link is the **emitter**, and it cannot be built from
+what is on `main`:
+
+1. `tools/emit_equity_breakout_pod.py` is **not on `main`** (`git ls-tree -r
+   origin/main | grep emit_equity_breakout` → 0). It exists only as unmerged
+   work in another branch/agent's working tree.
+2. Its input, `data/cache/asset_class_review/*_5y.csv`, is gitignored — **0 CSV
+   files** are committed, so CI would have no bars to evaluate.
+3. Writing `trading_picks` needs MySQL credentials that a local run here does
+   not have.
+4. Even once wired, ledger rows only appear after outcomes resolve (the hold
+   period), so this FAIL cannot turn green in the same run it is fixed.
+
+Not attempted rather than faked. Unblocking it needs either that branch merged
+(with a data-refresh step in the workflow) or the emitter rewritten on `main`
+against a fetchable bar source. The four WARN pods
+(`POD-LUXALGO-SHORT`, `POD-FOREX-USDJPY-MOMENTUM`, `POD-COMMODITY-ROLL-YIELD`,
+`POD-CRYPTO-POSITION`) are `observe`/`post_hoc` by design — per the watchdog's own
+contract they emit WARN, not FAIL, and cannot confer confirmatory evidence until
+promoted, so no emitter was written for them.

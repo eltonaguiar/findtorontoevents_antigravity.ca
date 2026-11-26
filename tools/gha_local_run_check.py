@@ -406,6 +406,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", help="substring filter on workflow filename")
     ap.add_argument("--fail-on-error", action="store_true")
+    ap.add_argument("--write-checklist", metavar="PATH",
+                    help="also write a one-entry-per-workflow checklist (markdown)")
     ap.add_argument("--jobs", type=int, default=12)
     args = ap.parse_args()
 
@@ -489,6 +491,48 @@ def main() -> int:
     for k, v in summary["by_kind"].items():
         print(f"  {v:5d}  {k}")
     print(f"\nreport: {os.path.relpath(OUT_MD, REPO_ROOT)}")
+
+    if args.write_checklist:
+        cl = Path(args.write_checklist)
+        if not cl.is_absolute():
+            cl = REPO_ROOT / cl
+        lines = [
+            "# Workflow run checklist — one entry per workflow",
+            "",
+            f"Generated: `{summary['generated_at']}`",
+            f"Local run: `act` load + `bash -n`/`shellcheck`/`py_compile` per step — "
+            f"{summary['workflows']} workflows, {summary['jobs']} jobs, "
+            f"{summary['steps']} steps.",
+            "",
+            "`[x]` = ran clean, `[ ]` = needs attention (reason appended).",
+            "",
+            "## Clean",
+            "",
+        ]
+        for r in sorted(results, key=lambda x: x["file"]):
+            if r["status"] == "OK":
+                lines.append(f"- [x] `{r['file']}` — {r['jobs']} job(s), {r['steps']} step(s)")
+        lines += ["", "## Warnings", ""]
+        for r in sorted(results, key=lambda x: x["file"]):
+            if r["status"] != "WARNING":
+                continue
+            why = "; ".join(sorted({f["kind"] for f in r["findings"]
+                                     if f["level"] == "WARNING"}))
+            lines.append(f"- [ ] `{r['file']}` — {why}")
+            for f in r["findings"]:
+                if f["level"] == "WARNING":
+                    lines.append(f"      - {f['where']} — {f['msg'][:200]}")
+        lines += ["", "## Errors", ""]
+        for r in sorted(results, key=lambda x: x["file"]):
+            if r["status"] != "ERROR":
+                continue
+            lines.append(f"- [ ] `{r['file']}` — ERROR")
+            for f in r["findings"]:
+                if f["level"] == "ERROR":
+                    lines.append(f"      - {f['where']} — {f['msg'][:200]}")
+        cl.parent.mkdir(parents=True, exist_ok=True)
+        cl.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        print(f"checklist: {os.path.relpath(cl, REPO_ROOT)}")
 
     if args.fail_on_error and summary["error"]:
         return 1
