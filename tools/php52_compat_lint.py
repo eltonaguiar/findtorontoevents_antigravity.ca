@@ -77,6 +77,28 @@ RULES: list[tuple[str, str, str, str]] = [
 GUARD_PATTERN = re.compile(r"function_exists\s*\(\s*['\"]http_response_code['\"]")
 
 
+def php_regions(text: str) -> str:
+    """Blank everything outside <?php ... ?> so inline JS/HTML is never matched.
+
+    The /fc pages embed jQuery with .then(function() {...}); treating that as a PHP
+    closure was a false positive class.
+    """
+    out = list(text)
+    i, n = 0, len(text)
+    while i < n:
+        m = re.compile(r"<\?(php|=)?").search(text, i)
+        if not m:
+            for j in range(i, n):
+                if out[j] != "\n":
+                    out[j] = " "
+            break
+        for j in range(i, m.end()):
+            out[j] = " " if out[j] != "\n" else "\n"
+        end = text.find("?>", m.end())
+        i = n if end == -1 else end + 2
+    return "".join(out)
+
+
 def strip_comments(text: str) -> str:
     """Blank out // # and /* */ comments and the inside of string literals.
 
@@ -138,7 +160,7 @@ def strip_comments(text: str) -> str:
 
 def check_file(path: Path) -> list[dict]:
     raw = path.read_text(errors="replace")
-    code = strip_comments(raw)
+    code = strip_comments(php_regions(raw))
     # The guard pattern lives inside a string literal, which strip_comments blanks,
     # so it has to be matched against the raw source.
     guarded = bool(GUARD_PATTERN.search(raw))

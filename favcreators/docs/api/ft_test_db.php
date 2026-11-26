@@ -9,16 +9,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit(0); }
 require_once dirname(__FILE__) . '/db_connect.php';
 require_once dirname(__FILE__) . '/ensure_tables.php';
 
-$response = [
+$response = array(
     'database' => 'connected',
     'tables' => [],
     'test_user' => null,
     'test_friend' => null,
     'test_hangout' => null
-];
+);
 
 // Check if tables exist
-$tables_to_check = ['friendt_friends', 'friendt_hangouts', 'friendt_events', 'users'];
+$tables_to_check = array('friendt_friends', 'friendt_hangouts', 'friendt_events', 'users');
 foreach ($tables_to_check as $table) {
     $result = $conn->query("SHOW TABLES LIKE '$table'");
     $response['tables'][$table] = $result && $result->num_rows > 0;

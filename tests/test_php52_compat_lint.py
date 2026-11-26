@@ -61,8 +61,9 @@ def test_movieshows_trees_are_clean():
     assert findings == [], findings
 
 
-def test_full_repository_scan_passes_with_baseline():
-    """The whole 50webs surface must pass the gate as configured in CI."""
+def test_full_repository_scan_is_clean():
+    """The whole 50webs surface must pass the gate with no baseline in force."""
+    assert not lint.BASELINE.exists(), "baseline must not exist: the trees are clean"
     assert lint.main([]) == 0
 
 
