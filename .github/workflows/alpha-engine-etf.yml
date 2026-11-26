@@ -82,29 +82,14 @@ jobs:
           # tight window that frequently coincided with the same push-storm.
           # See updates/2026-04-27-workflow-health-investigation.md.
           push_ok=false
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            delay=$((i * i * 5 + RANDOM % 30))
-            [ $delay -gt 120 ] && delay=$((120 + RANDOM % 30))
-            git pull --rebase --no-recurse-submodules -X theirs origin main 2>/dev/null || {
-              echo "Rebase failed on attempt $i (next delay ${delay}s)"
-              git rebase --abort 2>/dev/null || true
-              sleep "$delay"
-              continue
-            }
-            # `set -e` (GHA default) exits the step on a failed `$(...)` assignment
-            # BEFORE `push_rc=$?` runs, making the retry loop dead code on push failure.
-            # Same shape fix as audit-dashboard.yml in PR #440.
-            push_rc=0
-            push_output=$(git push origin main 2>&1) || push_rc=$?
-            echo "$push_output" | sed "s|${TOKEN_FOR_PUSH}|***|g"
-            if [ $push_rc -eq 0 ]; then
-              echo "Pushed on attempt $i"
-              push_ok=true
-              break
-            fi
-            echo "Push attempt $i failed, retrying in ${delay}s..."
-            sleep "$delay"
-          done
+          # Bounded push via safe_push.sh: every git call is capped at 90s and retried
+          # with backoff, so a contended main fails this step instead of hanging past
+          # the job's timeout-minutes and silently losing the commit.
+          if bash .github/scripts/safe_push.sh; then
+            push_ok=1
+          else
+            push_ok=0
+          fi
           if [ "$push_ok" = false ]; then
             echo "ERROR: All 10 push attempts failed — data generated, next cycle will self-heal."
             exit 1

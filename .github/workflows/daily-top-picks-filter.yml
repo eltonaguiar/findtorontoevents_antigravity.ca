@@ -69,12 +69,9 @@ jobs:
           git add audit_dashboard/data/daily_top_picks_filter.json
           git diff --staged --quiet && echo "no changes" && exit 0
           git commit -m "data(filter): regen daily_top_picks_filter $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
-          for i in 1 2 3 4 5; do
-            if git fetch --quiet --depth=1 --filter=blob:none origin main && git rebase --quiet origin/main && git push origin main; then
-              exit 0
-            fi
-            git rebase --abort >/dev/null 2>&1 || true
-            sleep 15
-          done
-          echo "::warning::push lost race after 5 retries; data is on disk + FTP'd"
+          # Bounded push via safe_push.sh: every git call is capped at 90s and retried
+          # with backoff, so a contended main fails this step instead of hanging past
+          # the job's timeout-minutes and silently losing the commit.
+          bash .github/scripts/safe_push.sh \
+            || echo "::warning::push lost the race after bounded retries; data is on disk + FTP'd"
           exit 0
