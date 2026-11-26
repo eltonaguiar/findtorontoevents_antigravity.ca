@@ -51,7 +51,7 @@ jobs:
           import sys, json, os
           from pathlib import Path
 
-          sys.path.insert(0, str(Path("alpha_engine").resolve()))
+          sys.path.insert(0, str((Path(os.environ.get("GITHUB_WORKSPACE", ".")) / "alpha_engine").resolve()))  # anchored, not cwd-relative: a relative resolve() silently inserts nothing when cwd is not the repo root, and the next import then fails as "No module named config"
 
           import pandas as pd
           import yfinance as yf
