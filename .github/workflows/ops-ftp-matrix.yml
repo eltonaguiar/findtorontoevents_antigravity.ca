@@ -1,0 +1,71 @@
+name: Ops - FTP credential matrix probe (read-only)
+
+# Ownership: hermes-desktop. Dispatch-only, gx10 pool.
+# Answers: which (host, user, pass) pair actually authenticates? Prints ONLY ok/fail per
+# combination and the resolved IP - never a credential value.
+# Background: db-sync-to-mirror uses FTP_HOST/FTP_USER/FTP_PASS. FTP_HOST resolves to the
+# 50webs IP, so the GoDaddy pair written into FTP_USER/FTP_PASS cannot authenticate there
+# (530). The repo also carries FTP_*_50WEBS and FTP_*_TDOTEVENT triples; this finds which
+# pair belongs to which host so the workflow can reference the right names.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: [self-hosted, gx10]
+    timeout-minutes: 15
+    steps:
+      - name: Credential matrix
+        env:
+          H_MAIN: ${{ secrets.FTP_HOST }}
+          U_MAIN: ${{ secrets.FTP_USER }}
+          P_MAIN: ${{ secrets.FTP_PASS }}
+          H_50: ${{ secrets.FTP_SERVER_50WEBS }}
+          U_50: ${{ secrets.FTP_USERNAME_50WEBS }}
+          P_50: ${{ secrets.FTP_PASSWORD_50WEBS }}
+          H_TE: ${{ secrets.FTP_SERVER_TDOTEVENT }}
+          U_TE: ${{ secrets.FTP_USERNAME_TDOTEVENT }}
+          P_TE: ${{ secrets.FTP_PASSWORD_TDOTEVENT }}
+          H_GD: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          U_GD: ${{ secrets.FTPGODADDYUSER }}
+          P_GD: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          set +e
+          try() {  # name host user pass
+            local name="$1" h="$2" u="$3" p="$4"
+            if [ -z "$h" ] || [ -z "$u" ] || [ -z "$p" ]; then
+              printf '%-34s SKIP (missing secret)\n' "$name"; return
+            fi
+            local ip; ip=$(getent hosts "$h" | awk '{print $1}' | head -1)
+            cat > /tmp/t.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 15
+          set net:max-retries 1
+          open -u "$u","$p" "$h"
+          pwd
+          bye
+          LFTPEOF
+            local out; out=$(lftp -f /tmp/t.script 2>&1)
+            if echo "$out" | grep -qiE "Login failed|530|authentication"; then
+              printf '%-34s FAIL  530 auth      host=%s ip=%s\n' "$name" "$h" "$ip"
+            elif echo "$out" | grep -qiE "not known|resolve|Name or service"; then
+              printf '%-34s FAIL  dns           host=%s\n' "$name" "$h"
+            elif echo "$out" | grep -qiE "timed out|timeout|refused"; then
+              printf '%-34s FAIL  connect       host=%s ip=%s\n' "$name" "$h" "$ip"
+            else
+              printf '%-34s OK    login works   host=%s ip=%s\n' "$name" "$h" "$ip"
+            fi
+          }
+          try "MAIN   (FTP_HOST/USER/PASS)"    "$H_MAIN" "$U_MAIN" "$P_MAIN"
+          try "50WEBS (SERVER/USERNAME/PASS)"  "$H_50"   "$U_50"   "$P_50"
+          try "TDOTEVENT (SERVER/USER/PASS)"   "$H_TE"   "$U_TE"   "$P_TE"
+          try "GODADDY (HOST_TE/USER/PASS)"    "$H_GD"   "$U_GD"   "$P_GD"
+          echo
+          echo "--- cross: MAIN host with each user/pass ---"
+          try "MAIN host + 50WEBS creds"       "$H_MAIN" "$U_50"   "$P_50"
+          try "MAIN host + GODADDY creds"      "$H_MAIN" "$U_GD"   "$P_GD"
+          try "GD host + 50WEBS creds"         "$H_GD"   "$U_50"   "$P_50"

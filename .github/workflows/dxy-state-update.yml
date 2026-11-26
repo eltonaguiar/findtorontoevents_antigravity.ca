@@ -71,12 +71,10 @@ jobs:
             echo "No DXY state changes to commit"
           else
             git commit -m "chore: dxy-state-update [skip ci]"
-            for i in 1 2 3 4 5; do
-              git pull --rebase --autostash origin main \
-                && git push origin HEAD:main && break
-              echo "push retry $i failed — re-fetching"
-              sleep 7
-            done
+            # Was a hand-rolled bare-push / pull --rebase --autostash retry loop. The
+            # rebase needs history the shallow checkout does not have, so it blocks until
+            # the job timeout cancels the run. safe_push.sh exists for exactly this case.
+            bash .github/scripts/safe_push.sh
           fi
 
       - name: Upload state artifact

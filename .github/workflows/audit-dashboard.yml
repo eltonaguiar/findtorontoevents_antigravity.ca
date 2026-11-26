@@ -1012,13 +1012,23 @@ jobs:
           # to hide them from the FTP deploy step that runs after this).
           git stash push -m "audit-dashboard: park out-of-scope changes before merge" 2>&1 || true
           push_ok=false
-          for i in 1 2 3 4 5 6 7 8 9 10; do
+          merge_attempts=0
+          # Was 10 attempts. A merge that conflicts on attempt 1 conflicts identically on
+          # attempt 10 - run 45768151436 spent 1h14m proving that, and its own log shows
+          # "Automatic merge failed" on attempts 1-6 before the job died. Three attempts
+          # is enough for a transient git/network blip; beyond that the answer is no.
+          for i in 1 2 3; do
             # Merge: combine our local commit with latest origin/main
             # --no-rebase: use merge (not rebase) — avoids replaying our commit
             # -X ours: on conflict, prefer our local (generated) data files
             # --no-edit: auto-generate merge commit message
-            git pull --no-rebase --no-recurse-submodules -X ours --no-edit origin main || {
-              echo "Merge failed on attempt $i, aborting..."
+            # --allow-unrelated-histories: the checkout is shallow and the deepen fetch can
+            # fail ("upload-pack: not our ref", seen in 45768151436), which leaves git unable
+            # to prove shared ancestry. Without this flag that condition is fatal instead of
+            # mergeable, and it is indistinguishable from a real conflict in the log.
+            git pull --no-rebase --no-recurse-submodules --allow-unrelated-histories -X ours --no-edit origin main || {
+              merge_attempts=$((merge_attempts+1))
+            echo "::warning::Merge failed on attempt $i of 3, aborting..."
               # `git merge --abort` can legitimately fail with "no merge to abort"
               # when the pull failed at the working-tree check rather than during
               # an actual merge — that's not an error worth surfacing.

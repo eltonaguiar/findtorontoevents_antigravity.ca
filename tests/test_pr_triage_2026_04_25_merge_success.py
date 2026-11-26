@@ -52,11 +52,16 @@ class Test391_CIStashFix:
 
     def test_audit_dashboard_has_stash_before_retry_loop(self):
         yml = (REPO_ROOT / ".github/workflows/audit-dashboard.yml").read_text(encoding="utf-8")
-        # The stash MUST appear before the `for i in 1 2 3 4 5 6 7 8 9 10` retry loop
+        # The regression (#391 / run 24923115839) is ORDER: the stash must be parked
+        # before the merge-retry loop, otherwise the pull trips over the working tree.
+        # The attempt COUNT is a tuning value, not the contract — dfe299a66a70 cut it
+        # from 10 to 3 on purpose ("a merge that conflicts on attempt 1 conflicts
+        # identically on attempt 10"), so do not pin the count here.
         stash_idx = yml.find('git stash push')
-        loop_idx = yml.find('for i in 1 2 3 4 5 6 7 8 9 10')
         assert stash_idx > 0, "git stash push not found in audit-dashboard.yml"
-        assert loop_idx > 0, "expected 10-retry loop not found in audit-dashboard.yml"
+        loop_match = re.search(r'for i in \d+(?: \d+)*;?\s*do', yml[stash_idx:])
+        assert loop_match is not None, "no merge-retry loop after the stash in audit-dashboard.yml"
+        loop_idx = stash_idx + loop_match.start()
         assert stash_idx < loop_idx, "git stash push must precede the retry loop"
 
     def test_meta_strategy_has_stash_before_retry_loop(self):

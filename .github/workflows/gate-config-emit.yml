@@ -47,16 +47,10 @@ jobs:
             git commit -m "chore(gates): regenerate gate_config.json [skip ci]"
             # Pull-rebase + retry: storm-commit repo, ~30 workflows push to main.
             pushed=0
-            for i in 1 2 3 4 5; do
-              if git pull --rebase --autostash origin main \
-                 && git push origin HEAD:main; then
-                echo "Push succeeded on attempt $i"
-                pushed=1
-                break
-              fi
-              echo "push attempt $i/5 lost the race — re-fetching"
-              sleep $((i * 5))
-            done
+            # Was a hand-rolled bare-push / pull --rebase --autostash retry loop. The
+            # rebase needs history the shallow checkout does not have, so it blocks until
+            # the job timeout cancels the run. safe_push.sh exists for exactly this case.
+            bash .github/scripts/safe_push.sh
             [ "$pushed" = 1 ] || { echo "::error::push failed after 5 attempts"; exit 1; }
           fi
 

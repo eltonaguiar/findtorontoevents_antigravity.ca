@@ -174,10 +174,10 @@ jobs:
             # 2026-06-21: rebase-retry so a concurrent commit on main doesn't make this a
             # non-fast-forward skip (was a single naive `git push origin main`).
             _pushed=0
-            for i in 1 2 3 4 5; do
-              git pull --rebase --autostash origin main && git push origin HEAD:main && { _pushed=1; break; }
-              sleep $((i * 3))
-            done
+            # Was a hand-rolled bare-push / pull --rebase --autostash retry loop. The
+            # rebase needs history the shallow checkout does not have, so it blocks until
+            # the job timeout cancels the run. safe_push.sh exists for exactly this case.
+            bash .github/scripts/safe_push.sh
             [ "$_pushed" = "1" ] || echo "::warning::quant-auditor push failed after 5 rebase-retry attempts (concurrent main update) — will retry next run"
           fi
         env:

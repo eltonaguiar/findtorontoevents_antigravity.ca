@@ -1,0 +1,49 @@
+name: Ops - FTP docroot locate (read-only)
+
+# Ownership: hermes-desktop. Dispatch-only, gx10 pool.
+# db-sync-to-mirror uploads _db_export_tmp.php and then verifies it over HTTP; the verify
+# 404s, so either the file lands outside the served directory or it is not uploaded at all.
+# This prints the FTP root, then looks for MOVIESHOWS3 (known to be served at
+# https://findtorontoevents.ca/MOVIESHOWS3/...) to identify the real docroot.
+# Prints directory names only - no credentials.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  locate:
+    runs-on: [self-hosted, gx10]
+    timeout-minutes: 15
+    steps:
+      - name: Locate docroot
+        env:
+          H: ${{ secrets.FTP_SERVER_50WEBS }}
+          U: ${{ secrets.FTP_USERNAME_50WEBS }}
+          P: ${{ secrets.FTP_PASSWORD_50WEBS }}
+        run: |
+          set +e
+          cat > /tmp/l.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 20
+          set net:max-retries 1
+          open -u "$U","$P" "$H"
+          echo "=== pwd ==="
+          pwd
+          echo "=== root listing ==="
+          ls
+          echo "=== does /findtorontoevents.ca exist as a dir? ==="
+          cd /findtorontoevents.ca
+          pwd
+          ls | head -40
+          echo "=== where is MOVIESHOWS3? ==="
+          find -l 3 -name MOVIESHOWS3
+          echo "=== is the export script anywhere shallow? ==="
+          find -l 3 -name "_db_export_tmp.php"
+          echo "=== api_status.php locations ==="
+          find -l 3 -name "api_status.php"
+          bye
+          LFTPEOF
+          lftp -f /tmp/l.script 2>&1 | sed -E 's/(open -u ).*/\1[redacted]/' | head -70

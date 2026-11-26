@@ -1,14 +1,17 @@
 name: Ops - sharded audit of all workflows (self-hosted)
 
-# Ownership: hermes-desktop (desktop-081g9oh). This workflow is mine. It is
-# dispatch/schedule only and it modifies no production workflow's runs-on, so it
-# cannot strand a production job.
+# Ownership: hermes-desktop. Dispatch/schedule only, 3 shards on the gx10 pool.
+# Modifies no production workflow's runs-on, so it cannot strand a production job.
 #
-# Purpose: keep the self-hosted pool busy with real monitoring work and produce a
-# complete latest-run audit of every workflow, sharded so the whole pool is used.
-# 3 shards, all on the gx10 ARM pool, matching the three runners kept for monitoring.
-# The owner trimmed the fleet to what the monitoring job needs, so the shard count must
-# stay <= the pool size or a shard would sit queued with no runner to take it.
+# API BUDGET (this is why the design looks like this):
+#   GITHUB_TOKEN gets 1000 requests/hour per repo inside Actions. The first version asked
+#   "what is your latest run?" once per workflow - ~390 calls per audit, ~780/hour at a
+#   30-minute cadence, which would exhaust the budget and start returning 403s.
+#   This version reads the repo-level runs feed: 30 pages x 100 = the 3000 newest runs,
+#   which covers every actively-running workflow. That is 10 calls per shard, 30 per audit,
+#   ~60/hour at a 30-minute cadence - about 6% of the budget.
+#   Trade-off, stated plainly: a workflow whose last run is older than the newest 3000
+#   runs will not appear in a given pass. It is reported as outside the window, not guessed.
 on:
   push:
     branches: [ops/log-audit]
@@ -16,62 +19,78 @@ on:
     - cron: '*/30 * * * *'
   workflow_dispatch:
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   arm:
     runs-on: [self-hosted, gx10]
-    timeout-minutes: 30
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
         shard: [0, 1, 2]
     steps:
-      - name: Audit shard ${{ matrix.shard }} of 3 (arm)
+      - name: Audit shard ${{ matrix.shard }} of 3 (runs feed)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           SHARD: ${{ matrix.shard }}
           SHARDS: "3"
+          MAX_PAGES: "30"
         run: |
-          echo "runner=$(hostname) shard=${SHARD}/${SHARDS} pool=arm"
+          echo "runner=$(hostname) shard=${SHARD}/${SHARDS} mode=runs-feed"
           python3 - <<'PY'
-          import json, os, urllib.request
+          import json, os, urllib.error, urllib.request
+
           repo = os.environ["REPO"]; token = os.environ["GH_TOKEN"]
           shard = int(os.environ["SHARD"]); shards = int(os.environ["SHARDS"])
+          max_pages = int(os.environ["MAX_PAGES"])
           H = {"Authorization": f"Bearer {token}",
                "Accept": "application/vnd.github+json", "User-Agent": "hermes-audit"}
+          calls = 0
+
           def get(path):
+              global calls
               req = urllib.request.Request(f"https://api.github.com/repos/{repo}{path}", headers=H)
-              with urllib.request.urlopen(req, timeout=45) as r: return json.load(r)
-          wfs = []
-          for page in range(1, 6):
-              try: data = get(f"/actions/workflows?per_page=100&page={page}").get("workflows", [])
-              except Exception: break
-              if not data: break
-              wfs.extend(data)
-          mine = [w for i, w in enumerate(wfs) if i % shards == shard]
-          rows = []
-          for w in mine:
-              row = {"workflow": w["path"].split("/")[-1]}
+              calls += 1
+              with urllib.request.urlopen(req, timeout=45) as r:
+                  return json.load(r)
+
+          # 1-based pages, strided so the three shards partition the feed
+          pages = list(range(shard + 1, max_pages + 1, shards))
+          latest = {}
+          for p in pages:
               try:
-                  runs = get(f"/actions/workflows/{w['id']}/runs?per_page=1&branch=main")
-                  r = (runs.get("workflow_runs") or [None])[0]
-                  if not r:
-                      row["verdict"] = "NEVER RUN"; rows.append(row); continue
-                  row["run"] = r["run_number"]; row["verdict"] = r.get("conclusion") or r.get("status")
-                  if row["verdict"] == "failure":
-                      jobs = get(f"/actions/runs/{r['id']}/jobs").get("jobs") or []
-                      row["failed_steps"] = [s["name"] for j in jobs for s in j.get("steps", [])
-                                             if s.get("conclusion") == "failure"][:3]
-              except Exception as e:
-                  row["verdict"] = f"ERROR {type(e).__name__}"
-              rows.append(row)
-          fails = [r for r in rows if r["verdict"] == "failure"]
-          print(f"shard {shard}: {len(rows)} audited, {len(fails)} failing")
-          for r in fails: print("FAIL", json.dumps(r)[:180])
-          with open(f"audit_shard_{shard}.json", "w") as f: json.dump(rows, f, indent=1)
+                  runs = get(f"/actions/runs?per_page=100&page={p}").get("workflow_runs") or []
+              except urllib.error.HTTPError as e:
+                  print(f"page {p}: HTTP {e.code}")
+                  break
+              if not runs:
+                  break
+              for r in runs:
+                  if r.get("head_branch") != "main":
+                      continue
+                  wf = r["path"].split("/")[-1]
+                  # feed is newest-first, so the first sighting of a workflow is its latest
+                  if wf not in latest:
+                      latest[wf] = {"run": r["run_number"],
+                                    "verdict": r.get("conclusion") or r.get("status"),
+                                    "when": (r.get("created_at") or "")[:16],
+                                    "run_id": r["id"]}
+
+          fails = {k: v for k, v in latest.items() if v["verdict"] == "failure"}
+          print(f"shard {shard}: pages={len(pages)} calls={calls} "
+                f"workflows_seen={len(latest)} failing={len(fails)}")
+          for k, v in sorted(fails.items()):
+              print(f"FAIL {k} #{v['run']} {v['when']}")
+
+          with open(f"audit_shard_{shard}.json", "w") as f:
+              json.dump({"shard": shard, "calls": calls, "pages": pages,
+                         "workflows": latest}, f, indent=1)
           PY
       - uses: actions/upload-artifact@v4
         with:
           name: audit-shard-${{ matrix.shard }}
           path: audit_shard_${{ matrix.shard }}.json
-
