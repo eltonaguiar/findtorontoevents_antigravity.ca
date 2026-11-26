@@ -127,7 +127,31 @@ Also noisy but not "failed": `realtime-challenge` and several other schedules
 show long runs of `cancelled` (e.g. 12 in a row on 2026-11-26 morning); that is
 the cancel cascade, not a data failure, and is out of scope here.
 
-## 6. Files
+## 6. Stale test repaired while shepherding this PR
+
+`CI Tests` on this PR failed one test unrelated to the change:
+
+```
+FAILED tests/test_pr_triage_2026_04_25_merge_success.py::Test391_CIStashFix::test_audit_dashboard_has_stash_before_retry_loop
+AssertionError: expected 10-retry loop not found in audit-dashboard.yml
+```
+
+It fails on `main` too (reproduced locally on the branch base). Commit
+`dfe299a66a70` deliberately cut the `audit-dashboard.yml` merge-retry loop from 10
+to 3 attempts — "a merge that conflicts on attempt 1 conflicts identically on
+attempt 10" — and left the test pinning the literal string
+`for i in 1 2 3 4 5 6 7 8 9 10`.
+
+The regression PR #391 actually guards is **order**: `git stash push` must be
+parked before the merge-retry loop, or the pull trips over the working tree. The
+test now asserts that order and matches the loop by pattern (any attempt count)
+instead of a hard-coded 10, so a future retune cannot re-break it. No assertion
+was dropped or relaxed: both the stash's presence and its ordering are still
+checked.
+
+`pytest tests/test_pr_triage_2026_04_25_merge_success.py -q` → **29 passed**.
+
+## 7. Files
 
 * `tools/realtime_challenge.py` — mirror fallback in `klines()`.
 * `tests/test_realtime_challenge_market_data.py` — new regression tests.
