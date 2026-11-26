@@ -14,7 +14,11 @@ permissions:
   contents: read
 
 env:
-  EXPORT_SCRIPT_PATH: "_db_export_tmp.php"
+  # The host 404s this exact filename - probed 2026-11-26: zz_probe.php, _probe.php,
+  # _dbprobe.php, _export_tmp.php and db_export_tmp.php all serve 200, while
+  # _db_export_tmp.php returns 404 with an XML error body. The FTP put succeeds, so the
+  # old name was silently unservable and every run died at "Verify export script".
+  EXPORT_SCRIPT_PATH: "db_export_tmp.php"
   IMPORT_SCRIPT_PATH: "_db_import_tmp.php"
 
 concurrency:
@@ -132,7 +136,7 @@ jobs:
           RESP_FILE=$(mktemp)
           HTTP_CODE=$(curl -s -o "$RESP_FILE" -w "%{http_code}" \
             -H "User-Agent: GitHub-Actions-DB-Sync/1.0" \
-            "https://findtorontoevents.ca/_db_export_tmp.php?token=${DB_SCRIPT_TOKEN}&db=__ping__")
+            "https://findtorontoevents.ca/db_export_tmp.php?token=${DB_SCRIPT_TOKEN}&db=__ping__")
           echo "  HTTP status: $HTTP_CODE"
           echo "  Response body (first 500 chars):"
           head -c 500 "$RESP_FILE" || true
@@ -163,7 +167,7 @@ jobs:
           import urllib.request, json, os, time, sys
 
           token = os.environ.get('DB_SCRIPT_TOKEN', '')
-          base_url = "https://findtorontoevents.ca/_db_export_tmp.php"
+          base_url = "https://findtorontoevents.ca/db_export_tmp.php"
 
           databases = [
               'ejaguiar1_deals',
