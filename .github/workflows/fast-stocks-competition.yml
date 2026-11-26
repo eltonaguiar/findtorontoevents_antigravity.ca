@@ -46,7 +46,15 @@ jobs:
             rm -f STOCKS/competition/fast_forward_picks.json
           fi
           cd STOCKS/competition || exit
-          python run_fast_competition.py
+          # run_fast_competition.py is not present in the repo (never committed;
+          # the schedule is disabled as a proven loser, 2026-03-16). Running it
+          # unconditionally fails with Errno 2 on every dispatch, so skip it
+          # gracefully when absent instead of hard-failing the job.
+          if [ -f run_fast_competition.py ]; then
+            python run_fast_competition.py
+          else
+            echo "run_fast_competition.py not present in repo - nothing to run"
+          fi
 
       - name: Regenerate Dashboard
         # REMOVED 2026-03-26: publisher unification  only audit-dashboard.yml publishes
