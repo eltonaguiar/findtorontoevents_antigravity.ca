@@ -1,0 +1,54 @@
+name: Ops - Install gx10 SSH key on the laptop
+
+# Writes the gx10 access key onto the Windows laptop via its self-hosted runner, so the
+# laptop can `ssh gx10` with no manual copying. The key arrives as a base64 repository
+# secret (never in the repo, never in a log), and the job proves the connection works
+# before it reports success. Manual dispatch only.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-install-laptop-key
+  cancel-in-progress: false
+
+jobs:
+  install:
+    runs-on: [self-hosted, Windows, laptop-zerou-win]
+    timeout-minutes: 15
+    steps:
+      - name: Write key, config, and prove the connection
+        shell: powershell
+        env:
+          KEY_B64: ${{ secrets.GX10_LAPTOP_KEY_B64 }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not $env:KEY_B64) { throw 'secret GX10_LAPTOP_KEY_B64 is not set' }
+
+          $dir = Join-Path $env:USERPROFILE '.ssh'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+
+          $text = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:KEY_B64))
+          $text = ($text -replace "`r`n", "`n").TrimEnd() + "`n"
+          $keyPath = Join-Path $dir 'gx10_laptop'
+          [IO.File]::WriteAllText($keyPath, $text)
+          icacls $keyPath /inheritance:r /grant:r "$($env:USERNAME):R" | Out-Null
+          Write-Host "wrote $keyPath ($($text.Length) bytes)"
+
+          $cfg = Join-Path $dir 'config'
+          $entry = "Host gx10`n    HostName 192.168.2.52`n    User eaguiar2015`n    IdentityFile ~/.ssh/gx10_laptop`n"
+          $existing = if (Test-Path $cfg) { Get-Content $cfg -Raw } else { '' }
+          if ($existing -notmatch '(?m)^Host\s+gx10\s*$') {
+            [IO.File]::WriteAllText($cfg, ($existing.TrimEnd() + "`n`n" + $entry).TrimStart())
+            Write-Host "added Host gx10 to $cfg"
+          } else { Write-Host "Host gx10 already in $cfg" }
+
+          $ssh = (Get-Command ssh.exe -ErrorAction SilentlyContinue).Source
+          if (-not $ssh) { $ssh = "$env:SystemRoot\System32\OpenSSH\ssh.exe" }
+          if (-not (Test-Path $ssh)) { throw 'no ssh client on this machine' }
+          Write-Host "ssh client: $ssh"
+
+          & $ssh -i $keyPath -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=10 eaguiar2015@192.168.2.52 "echo LAPTOP_TO_GX10_OK on `$(hostname)"
+          if ($LASTEXITCODE -ne 0) { throw "ssh test failed with exit code $LASTEXITCODE" }
