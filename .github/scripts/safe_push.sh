@@ -18,6 +18,11 @@ set -uo pipefail
 #   3. Fail-fast if deepen times out — shallow repos can't rebase anyway
 #   4. Reduce MAX_RETRIES to 8 — the old 15 was burning too many runner minutes
 MAX_RETRIES=8
+# Wall-clock budget. 8 retries x 90s network timeout = up to ~12 minutes, but most
+# callers cap the step at 5. A step killed by timeout-minutes discards the whole job,
+# so bound ourselves below the common caps and fail with a clear message instead.
+BUDGET_SEC="${SAFE_PUSH_BUDGET_SEC:-270}"
+DEADLINE=$(( $(date +%s) + BUDGET_SEC ))
 INITIAL_BACKOFF=3  # seconds
 MAX_BACKOFF_SLEEP=60  # cap per sleep so one run does not wait many minutes idle
 GIT_NET_TIMEOUT=90   # seconds — kill hanging git pull/push so we retry instead of
@@ -115,7 +120,12 @@ fi
 
 backoff=$INITIAL_BACKOFF
 for attempt in $(seq 1 $MAX_RETRIES); do
-    echo "=== Push attempt $attempt/$MAX_RETRIES ==="
+    if [ "$(date +%s)" -ge "$DEADLINE" ]; then
+        echo "ERROR: push budget of ${BUDGET_SEC}s exhausted after $((attempt-1)) attempt(s);"
+        echo "       stopping before the step cap kills the job (set SAFE_PUSH_BUDGET_SEC to raise it)"
+        exit 1
+    fi
+    echo "=== Push attempt $attempt/$MAX_RETRIES (budget ${BUDGET_SEC}s) ==="
 
     # Remember our commit before pull so we can detect if rebase dropped it
     PRE_PULL_HEAD=$(git rev-parse HEAD 2>/dev/null)
