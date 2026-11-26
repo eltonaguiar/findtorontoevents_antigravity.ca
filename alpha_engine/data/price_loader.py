@@ -26,6 +26,24 @@ class PriceLoader:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._price_cache: Dict[str, pd.DataFrame] = {}
 
+    @staticmethod
+    def _collapse_multiindex_columns(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Flatten MultiIndex columns to plain field names (Open/High/Low/Close/Adj Close/Volume).
+        yfinance returns MultiIndex with level 0 = field, level 1 = ticker.
+        We detect the level containing the canonical OHLCV field names and promote it.
+        """
+        if isinstance(df.columns, pd.MultiIndex):
+            target_fields = {"Open", "High", "Low", "Close", "Adj Close", "Volume"}
+            for lvl in range(df.columns.nlevels):
+                lvl_vals = set(df.columns.get_level_values(lvl))
+                if target_fields.issubset(lvl_vals):
+                    df.columns = df.columns.get_level_values(lvl)
+                    break
+            else:
+                df.columns = df.columns.get_level_values(0)
+        return df
+
     def load(
         self,
         tickers: List[str],
@@ -76,6 +94,7 @@ class PriceLoader:
                     ticker = to_download[0]
                     if not data.empty:
                         df = data[fields].copy() if all(f in data.columns for f in fields) else data.copy()
+                        df = self._collapse_multiindex_columns(df)
                         df.index = pd.to_datetime(df.index)
                         df = df.dropna(how="all")
                         result[ticker] = df
@@ -87,6 +106,7 @@ class PriceLoader:
                                 df = data.xs(ticker, level=1, axis=1).copy()
                             else:
                                 df = data.copy()
+                            df = self._collapse_multiindex_columns(df)
                             df = df.dropna(how="all")
                             if not df.empty:
                                 df.index = pd.to_datetime(df.index)
@@ -101,6 +121,7 @@ class PriceLoader:
                 for ticker in to_download:
                     try:
                         df = yf.download(ticker, start=start, end=end, auto_adjust=False, progress=False)
+                        df = self._collapse_multiindex_columns(df)
                         if not df.empty:
                             df.index = pd.to_datetime(df.index)
                             result[ticker] = df
@@ -126,15 +147,30 @@ class PriceLoader:
         closes = {}
         for ticker, df in data.items():
             if "Adj Close" in df.columns:
-                closes[ticker] = df["Adj Close"]
+                val = df["Adj Close"]
             elif "Close" in df.columns:
-                closes[ticker] = df["Close"]
+                val = df["Close"]
+            else:
+                continue
+            if isinstance(val, pd.DataFrame):
+                val = val.iloc[:, 0]
+            elif hasattr(val, "values") and val.ndim == 2:
+                val = val.ravel()
+            closes[ticker] = val
         return pd.DataFrame(closes)
 
     def get_volume(self, tickers: List[str], start: str = "2015-01-01", end: Optional[str] = None) -> pd.DataFrame:
         """Get volume as a wide DataFrame."""
         data = self.load(tickers, start=start, end=end)
-        volumes = {t: df["Volume"] for t, df in data.items() if "Volume" in df.columns}
+        volumes = {}
+        for t, df in data.items():
+            if "Volume" in df.columns:
+                val = df["Volume"]
+                if isinstance(val, pd.DataFrame):
+                    val = val.iloc[:, 0]
+                elif hasattr(val, "values") and val.ndim == 2:
+                    val = val.ravel()
+                volumes[t] = val
         return pd.DataFrame(volumes)
 
     def get_ohlcv_panel(self, tickers: List[str], start: str = "2015-01-01", end: Optional[str] = None) -> Dict[str, pd.DataFrame]:
@@ -149,7 +185,12 @@ class PriceLoader:
             series = {}
             for t, df in data.items():
                 if field in df.columns:
-                    series[t] = df[field]
+                    val = df[field]
+                    if isinstance(val, pd.DataFrame):
+                        val = val.iloc[:, 0]
+                    elif hasattr(val, "values") and val.ndim == 2:
+                        val = val.ravel()
+                    series[t] = val
             panel[field] = pd.DataFrame(series)
         return panel
 
