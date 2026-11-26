@@ -1,8 +1,8 @@
 # GHA local run check
 
-Generated: `2026-11-26T01:49:00Z`  
-Workflows: **383** (422 jobs, 2780 steps)  
-Clean: **368** · Warnings: **13** · Errors: **2**
+Generated: `2026-11-26T02:07:09Z`  
+Workflows: **381** (419 jobs, 2766 steps)  
+Clean: **368** · Warnings: **13** · Errors: **0**
 
 ## Findings by kind
 
@@ -10,7 +10,6 @@ Clean: **368** · Warnings: **13** · Errors: **2**
 |------|------:|
 | `WARNING:shellcheck-SC2046` | 7 |
 | `WARNING:script-missing-guarded` | 7 |
-| `ERROR:script-missing` | 2 |
 | `WARNING:shellcheck-SC2154` | 1 |
 
 ## Non-clean workflows
@@ -26,12 +25,6 @@ Clean: **368** · Warnings: **13** · Errors: **2**
 
 ### `.github/workflows/claude-gainer-tracker.yml` — WARNING
 - **WARNING** `shellcheck-SC2046` @ .github/workflows/claude-gainer-tracker.yml:predict-and-track#4 (Step 0: Write dashboard status (scanning)) — Quote this to prevent word splitting. [SC2046]
-
-### `.github/workflows/deploy_bundle.yml` — ERROR
-- **ERROR** `script-missing` @ .github/workflows/deploy_bundle.yml:deploy#2 (Deploy bundle) — deploy_prod_bundle.py does not exist and the step does not guard the failure
-
-### `.github/workflows/fast-stocks-competition.yml` — ERROR
-- **ERROR** `script-missing` @ .github/workflows/fast-stocks-competition.yml:scan#4 (Run Fast Stocks Competition) — run_fast_competition.py does not exist and the step does not guard the failure
 
 ### `.github/workflows/forward_test.yml` — WARNING
 - **WARNING** `shellcheck-SC2046` @ .github/workflows/forward_test.yml:forward-test#4 (Run forward tests) — Quote this to prevent word splitting. [SC2046]
