@@ -1,0 +1,56 @@
+name: Runner Smoke Test (Linux)
+
+# On-demand capability probe for self-hosted runners. No secrets, no repo changes.
+on:
+  workflow_dispatch:
+    inputs:
+      label:
+        description: "Runner label to target (gx10 = Linux ARM64, wsl-ubuntu = Linux x64)"
+        required: false
+        default: "gx10"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runner-smoke-test-${{ github.event.inputs.label }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: [self-hosted, Linux, "${{ github.event.inputs.label }}"]
+    timeout-minutes: 10
+    steps:
+      - name: Environment probe
+        run: |
+          set +e
+          echo "=== identity ==="
+          uname -a; echo; uname -m
+          echo "runner: $RUNNER_NAME  os: $RUNNER_OS  arch: $RUNNER_ARCH  workspace: $GITHUB_WORKSPACE"
+          echo
+          echo "=== toolchain ==="
+          for c in python3 pip3 git docker node npm jq curl; do
+            printf '%-8s ' "$c"; command -v $c >/dev/null 2>&1 && $c --version 2>&1 | head -1 || echo "MISSING"
+          done
+          echo
+          echo "=== python packages ==="
+          python3 -c "import sys;print('python',sys.version.split()[0])"
+          python3 - <<'PY'
+          for m in ("numpy","pandas","scipy","sklearn","pymysql","yfinance","xgboost","lightgbm","requests"):
+              try:
+                  __import__(m); print(f"  {m:10s} OK")
+              except Exception as e:
+                  print(f"  {m:10s} MISSING ({type(e).__name__})")
+          PY
+          echo
+          echo "=== sudo ==="
+          sudo -n true 2>/dev/null && echo "passwordless sudo: YES" || echo "passwordless sudo: NO"
+          echo
+          echo "=== resources ==="
+          df -h "$GITHUB_WORKSPACE" | tail -1
+          (command -v nproc >/dev/null && echo "cpus: $(nproc)") || echo "cpus: unknown"
+          (free -h 2>/dev/null | head -2) || echo "free: unavailable"
+          echo
+          echo "=== network egress ==="
+          curl -s -o /dev/null -w "github.com: %{http_code}\n" --max-time 10 https://github.com || echo "github.com: unreachable"
+          curl -s -o /dev/null -w "pypi.org: %{http_code}\n" --max-time 10 https://pypi.org/simple/ || echo "pypi.org: unreachable"
