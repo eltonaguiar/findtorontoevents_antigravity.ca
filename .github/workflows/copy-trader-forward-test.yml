@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   forward-test:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: [self-hosted, wsl-desktop]
     # 2026-04-17 v2: bumped 25→35. First fix (15→25) got 2/3 runs green but
     # 20:31 run cancelled again, steps 1-8 passed, step 9 (Commit and push)
     # consumed the remaining ~11 min budget. safe_push.sh does up to 15
