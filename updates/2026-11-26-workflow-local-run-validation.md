@@ -389,3 +389,38 @@ resolver closes its first picks and the next ingest (every 6 h) accrues them.
 The four WARN pods are unchanged and expected: they are `observe`/`post_hoc`,
 so the watchdog emits WARN for them by contract and they cannot confer
 confirmatory evidence until promoted.
+
+---
+
+## Addendum 4 — four more push-triggered workflows fixed
+
+The 02:12 UTC wave of `push`-triggered runs on `cd92eb85` exposed four more
+defects. Each was reproduced from the failing run's log and fixed at the cause.
+
+| Workflow | Symptom | Cause | Fix |
+|---|---|---|---|
+| `closed-picks-command.yml` | `ERROR: No module named 'signal_aggregator'` (run `45740823581`) | step ran `python signal_aggregator/closed_picks_command.py`, which puts `signal_aggregator/` on `sys.path[0]`, so the script's own `from signal_aggregator.picks_router import PicksRouter` cannot resolve (the AGENTS.md relative-import gotcha) | `PYTHONPATH="$PWD" python ...` — script untouched |
+| `won-pnl-contradiction-backfill.yml` | `unrecognized arguments: false`, exit 2 | `APPLY="false"` was expanded unquoted into the command line, so the literal string `false` became a positional argument. The `DRY_RUN` variable was computed but never used, and the script has no `--dry-run-only` flag | `APPLY=""`, dead `DRY_RUN` block removed, report path quoted (also clears the SC2046 warning) |
+| `weekly-scorecard.yml` | `Updates were rejected because the remote contains work that you do not have locally` (run `45740861437`) | bare `git push` after checkout, on a main that several jobs push to concurrently | routed through `.github/scripts/safe_push.sh` (fetch + rebase + retry) |
+| `pod-h201-forward-clock.yml` | `ModuleNotFoundError: No module named 'scipy'` (run `45740844705`) | `tools/pod_forward.py` → `tools/per_class_edge_harness.py` imports `scipy.stats`, but the install step only listed `pandas numpy yfinance` | added `'scipy>=1.10'` to the install line |
+
+Verification:
+
+```
+closed-picks  PYTHONPATH="$PWD" python -c "import signal_aggregator.picks_router"  -> imports OK
+won-pnl       APPLY="" python tools/audit_won_picks_auto.py --report ...           -> exit 0
+              ("Database is clean - no corrections needed"; previously exit 2)
+scorecard     bash -n on every step, actionlint, yaml.safe_load                    -> clean
+pod-h201      scipy resolvable locally (1.17.1); install line now declares it
+```
+
+Not fixed, environment-bound rather than code defects:
+
+- **`clear-channel-command.yml`** — Discord bulk delete returns 0/100 and the
+  individual-delete fallback also deletes nothing; that is a Discord permission /
+  message-age constraint on the channel, not workflow logic.
+- **`wsl-runner-manager.yml`** — runs `wsl -d UbuntuRecovered` on
+  `runs-on: windows-latest`, where that WSL distro does not exist. It needs a
+  self-hosted Windows runner with the distro, or retirement.
+- **`forward observations ingest`** — still FAIL by design until the newly
+  emitted POD-EQUITY-BREAKOUT rows resolve into `at_signal_outcomes` (Addendum 3).

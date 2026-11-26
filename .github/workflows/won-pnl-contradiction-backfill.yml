@@ -58,20 +58,20 @@ jobs:
           DB_STOCKS_NAME: ejaguiar1_stocks
           DB_STOCKS_PORT: '3306'
         run: |
-          APPLY="false"
-          DRY_RUN="true"
+          # Empty, NOT "false": $APPLY is expanded unquoted into the command line,
+          # so "false" reached the script as an argument and argparse exited 2 with
+          # "unrecognized arguments: false" (run 45740823578). Dry run is the
+          # script's default, and it has no --dry-run-only flag, so the old
+          # DRY_RUN variable was dead code.
+          APPLY=""
 
           if [ "${{ inputs.apply }}" = "true" ]; then
             APPLY="--apply"
             echo "APPLY MODE: WON rows will be corrected to LOST"
           fi
 
-          if [ "${{ inputs.dry_run }}" = "false" ] && [ "${{ inputs.apply }}" = "false" ]; then
-            DRY_RUN="--dry-run-only"
-            echo "DRY RUN MODE: Report only, no changes"
-          fi
 
-          python tools/audit_won_picks_auto.py $APPLY --report reports/won_pnl_contradiction_dryrun_$(date -u +%Y%m%d_%H%M)Z.json
+          python tools/audit_won_picks_auto.py $APPLY --report "reports/won_pnl_contradiction_dryrun_$(date -u +%Y%m%d_%H%M)Z.json"
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v6

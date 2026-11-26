@@ -46,7 +46,11 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install pandas numpy yfinance
+        # tools/pod_forward.py -> tools/per_class_edge_harness.py imports
+        # `from scipy import stats`, which was never installed: the job died at
+        # import time with ModuleNotFoundError: No module named 'scipy'
+        # (run 45740844705).
+        run: pip install pandas numpy yfinance 'scipy>=1.10'
 
       - name: Record forward rows
         run: |
