@@ -30,7 +30,7 @@ concurrency:
 jobs:
   #  JOB 1: Regime Detection + Position Sizing 
   regime:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
@@ -68,7 +68,7 @@ jobs:
 
   #  JOB 2: WorldQuant Alphas + Cross-Asset 
   alphas:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: regime
     steps:
@@ -107,7 +107,7 @@ jobs:
 
   #  JOB 3: Signal Bundle Consolidation 
   bundles:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [regime, alphas]
     steps:
@@ -137,7 +137,7 @@ jobs:
 
   #  JOB 3b: Sprint 1+2 Intelligence Scripts 
   intelligence:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [regime, bundles]
     steps:
@@ -232,7 +232,7 @@ jobs:
 
   #  JOB 4: Validation + Meta-Labeler (Sunday only) 
   validate:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: bundles
     if: >
@@ -278,7 +278,7 @@ jobs:
 
   #  JOB 6: Summary 
   summary:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [regime, alphas, bundles, intelligence]
     if: always()
