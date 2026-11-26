@@ -68,9 +68,22 @@ the next symbol; a total outage still raises; frozen constants unchanged.
 | `python3 -c "py_compile ... tools/realtime_challenge.py"` | compiled |
 | Live call through the real code (`klines`/`snapshot` on BTCUSDT) | 5 bars, last close 60948.01, `snapshot` fields populated, host `api.binance.com`, 0.2 s |
 
-**Limit (stated, not hidden):** a 451 can only be reproduced from the blocked
-runner range, so the fallback path itself is proven by the unit test, not by a
-red-to-green replay on a hosted runner. The normal path is proven live above.
+**Fallback proven on the blocked runner (post-merge).** The commit that carries
+this fix is `a86b3f12c0de`. A `workflow_dispatch` of `realtime-challenge` at that
+SHA ([run 45799694075](https://github.com/eltonaguiar/findtorontoevents_antigravity.ca/actions/runs/45799694075),
+**success**) landed on a runner range that Binance still refuses, which is exactly
+the 451 condition — primary blocked, fallback served the bars, cycle opened a
+position:
+
+```
+market data: https://data-api.binance.vision/api/v3 (primary https://api.binance.com/api/v3 unreachable)
+…  (×8, one per symbol)
+open: took 1 — BTCUSDT@60905.508666
+```
+
+So the fallback is not only unit-tested; it is observed working in the
+environment that failed. Before the fix, that same log shape ended in
+`##[error]Process completed with exit code 2.`
 
 ## 4. Queue cleanup — superseded failed runs deleted
 
