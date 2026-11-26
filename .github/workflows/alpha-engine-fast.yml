@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   alpha-fast:
-    runs-on: [self-hosted, gx10]
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 60  # 25->40->60 (2026-11-16: 40m+ runtime drift vs 40m cap = chronic-kill risk)
 
     steps:

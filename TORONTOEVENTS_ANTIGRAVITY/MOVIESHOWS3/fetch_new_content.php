@@ -20,13 +20,7 @@ header('Access-Control-Allow-Origin: *');
 // ---- Auth check ----
 $key = isset($_GET['key']) ? $_GET['key'] : '';
 if ($key !== 'ms2_sync_2024_findto') {
-    // http_response_code() is PHP 5.4+; 50webs still runs 5.2.17, where calling it
-    // is a fatal error (empty HTTP 500). Fall back to the raw header.
-    if (function_exists('http_response_code')) {
-        http_response_code(403);
-    } else {
-        header('HTTP/1.1 403 Forbidden');
-    }
+    http_response_code(403);
     echo json_encode(array(
         'success' => false,
         'error' => 'Unauthorized. Provide ?key=...'

@@ -8,9 +8,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    // PHP 5.4+ only; 50webs runs 5.2.17, so send the raw status line too.
-    if (function_exists('http_response_code')) { http_response_code(204); }
-    header('HTTP/1.1 204 No Content');
+    http_response_code(204);
     exit;
 }
 
