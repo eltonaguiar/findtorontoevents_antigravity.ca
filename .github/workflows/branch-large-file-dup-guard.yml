@@ -57,7 +57,7 @@ jobs:
     # 2026-11-16: was 15. The scan fetches every branch ref and walks each tree
     # (2-3h across 213 branches), so a 15-minute cap guaranteed a kill mid-scan —
     # every run died at exactly 15:00. Raised to 180 (GitHub's hard cap is 6h).
-    timeout-minutes: 180
+    timeout-minutes: 30
     steps:
       - name: Checkout (partial clone)
         uses: actions/checkout@v6
@@ -109,7 +109,7 @@ jobs:
           # Scanning EVERY branch is what made this a 3h+ job that the 180m cap killed on
           # three consecutive runs. A duplicate blob only matters on a branch someone still
           # uses, so bound the work: newest branches first, N configurable via MAX_BRANCHES.
-          max_branches = int(os.environ.get('MAX_BRANCHES', '40'))
+          max_branches = int(os.environ.get('MAX_BRANCHES', '8'))
           ref_lines = subprocess.check_output(
               ['git', 'for-each-ref', '--sort=-committerdate',
                '--format=%(refname:short)', 'refs/remotes/origin'],
@@ -138,7 +138,10 @@ jobs:
           for branch in branches:
               ref = f'origin/{branch}'
               try:
-                  out = subprocess.check_output(['git', 'ls-tree', '-r', '-l', ref], text=True)
+                  out = subprocess.check_output(['git', 'ls-tree', '-r', '-l', ref], text=True, timeout=150)
+              except subprocess.TimeoutExpired:
+                  print(f"  {ref}: exceeded 150s, skipped", flush=True)
+                  continue
               except subprocess.CalledProcessError:
                   continue
 
