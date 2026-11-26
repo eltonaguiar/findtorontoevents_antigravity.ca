@@ -42,6 +42,11 @@ jobs:
   guard:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      # push -> the pushed range; workflow_dispatch -> the replay inputs.
+      BEFORE: ${{ github.event_name == 'push' && github.event.before || inputs.before }}
+      AFTER: ${{ github.event_name == 'push' && github.event.after || inputs.after }}
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
     steps:
       - name: Checkout (only what the guard needs)
         uses: actions/checkout@v6
@@ -54,32 +59,32 @@ jobs:
       - name: Unit tests for the guard
         run: python3 tools/test_guard_ops_workflows.py
 
-      - name: Fetch the range start
-        if: ${{ github.event_name == 'push' }}
-        env:
-          BEFORE: ${{ github.event.before }}
+      # A shallow checkout only has the pushed tip, so pull in the other endpoint(s).
+      # `26dd4f9df832^` is not a fetchable ref - fetch the bare sha and let git resolve `^`.
+      - name: Fetch the range endpoints
         run: |
+          set -euo pipefail
           if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             echo "first push on this ref - nothing to compare"
             exit 0
           fi
-          # Shallow fetch of just the pre-push commit; the guard diffs the two trees.
-          git fetch --depth=1 origin "$BEFORE" || echo "::warning::could not fetch $BEFORE (force push?), guard will report inconclusive"
+          for rev in "$BEFORE" "$AFTER"; do
+            [ -n "$rev" ] || continue
+            base="${rev%^}"
+            case "$base" in
+              *[!0-9a-f]*) echo "skip $rev (not a sha)"; continue ;;
+            esac
+            if git cat-file -e "${rev}^{commit}" 2>/dev/null; then
+              echo "have $rev"
+            else
+              git fetch --depth=1 origin "$base" \
+                || echo "::warning::could not fetch $base (force push?); the guard will report inconclusive"
+            fi
+          done
 
-      - name: Guard the push
-        if: ${{ github.event_name == 'push' }}
-        env:
-          BEFORE: ${{ github.event.before }}
-          AFTER: ${{ github.event.after }}
-        run: python3 tools/guard_ops_workflows.py --before "$BEFORE" --after "$AFTER"
-
-      - name: Guard a replayed range
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        env:
-          BEFORE: ${{ inputs.before }}
-          AFTER: ${{ inputs.after }}
-          DRY_RUN: ${{ inputs.dry_run }}
+      - name: Guard the range
         run: |
+          set -euo pipefail
           args=(--before "$BEFORE" --after "$AFTER")
           if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
           python3 tools/guard_ops_workflows.py "${args[@]}"
