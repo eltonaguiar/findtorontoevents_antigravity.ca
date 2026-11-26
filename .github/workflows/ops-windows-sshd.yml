@@ -1,24 +1,38 @@
 name: Ops - Windows OpenSSH Server
 
-# Enables Windows OpenSSH Server on a self-hosted Windows runner so other machines on
-# the LAN (gx10, 192.168.2.52) can connect back to it. Manual dispatch only.
+# Brings up a Windows-native sshd on a self-hosted Windows runner so other machines on the
+# LAN (gx10, 192.168.2.52) can reach a real Windows shell. Manual dispatch only.
 #
-#   mode=diagnose  read-only: elevation, capability state, service, firewall, port
-#   mode=enable    install + start sshd, open TCP 22 for the local subnet
+#   mode=diagnose  read-only: elevation, capability state, service, firewall, port, sshd.exe
+#   mode=enable    install + start the service on 22 and open it for the local subnet (needs an
+#                  elevated runner; Add-WindowsCapability on 10/11 refuses without admin)
+#   mode=userland  no elevation: run the sshd binary that is already on disk as this user on
+#                  `port` with its own host keys and authorized_keys. If no sshd.exe exists it
+#                  reports the single elevated command instead of failing.
 #
-# The enable step needs an elevated runner service; diagnose reports whether it is.
+# Note: the laptop's LAN port 22 currently belongs to the Ubuntu sshd inside WSL, so use
+# mode=userland with port=2222 there unless the Windows service is meant to take 22 over.
+
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "diagnose (read-only) or enable"
+        description: "diagnose (read-only), enable (needs elevation), or userland (no elevation)"
         type: choice
-        options: [diagnose, enable]
+        options: [diagnose, enable, userland]
         default: diagnose
       subnet:
-        description: "Subnet allowed to reach port 22"
+        description: "Subnet allowed to reach the port in enable mode"
         default: "192.168.2.0/24"
         type: string
+      port:
+        description: "Port for userland mode"
+        default: "2222"
+        type: string
+      pubkey:
+        description: "Public key authorized for userland mode (defaults to gx10's)"
+        type: string
+        default: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIItq2fgOOdjzzLf1ywjJsVbavp3iGOsxJocvnR/deAKX eaguiar2015@gx10->ELTON2026"
 
 permissions:
   contents: read
@@ -44,14 +58,20 @@ jobs:
           Write-Host "mode      : ${{ inputs.mode }}"
           Write-Host "--- capability ---"
           try { Get-WindowsCapability -Online -Name OpenSSH.Server* | Select-Object Name, State | Format-Table -AutoSize | Out-String | Write-Host }
-          catch { Write-Host "capability query failed: $_" }
+          catch { Write-Host "capability query failed: $($_.Exception.Message)" }
           Write-Host "--- service ---"
           Get-Service sshd -ErrorAction SilentlyContinue | Select-Object Name, Status, StartType | Format-Table -AutoSize | Out-String | Write-Host
+          Write-Host "--- sshd.exe on disk ---"
+          foreach ($p in @("$env:SystemRoot\System32\OpenSSH\sshd.exe", "$env:ProgramFiles\OpenSSH\sshd.exe")) {
+            Write-Host "  $p : $(Test-Path $p)"
+          }
           Write-Host "--- firewall ---"
           Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like "*SSH*" } | Select-Object DisplayName, Enabled, Direction, Action | Format-Table -AutoSize | Out-String | Write-Host
-          Write-Host "--- port 22 ---"
+          Write-Host "--- listening on 22 ---"
           $listen = Get-NetTCPConnection -LocalPort 22 -State Listen -ErrorAction SilentlyContinue
-          if ($listen) { Write-Host "listening: yes" } else { Write-Host "listening: no" }
+          if ($listen) { Write-Host "listening: yes (owner pid $($listen.OwningProcess -join ','))" } else { Write-Host "listening: no" }
+          Write-Host "--- LAN IPv4 ---"
+          Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -like '192.168.*' } | Select-Object IPAddress, InterfaceAlias | Format-Table -AutoSize | Out-String | Write-Host
 
       - name: Install and start OpenSSH Server
         if: ${{ inputs.mode == 'enable' }}
@@ -79,14 +99,75 @@ jobs:
             Write-Host "firewall rule created for ${{ inputs.subnet }}"
           } else { Write-Host "firewall rule already exists" }
 
+      - name: Userland sshd (no elevation)
+        if: ${{ inputs.mode == 'userland' }}
+        shell: powershell
+        env:
+          PUBKEY: ${{ inputs.pubkey }}
+          PORT: ${{ inputs.port }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sshd = @("$env:SystemRoot\System32\OpenSSH\sshd.exe", "$env:ProgramFiles\OpenSSH\sshd.exe") |
+            Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $sshd) {
+            Write-Host "USERLAND_SSHD: BLOCKED - no sshd.exe on this machine."
+            Write-Host "The Windows OpenSSH *Server* is a capability and installing it needs one elevated shell:"
+            Write-Host '  Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0; Set-Service sshd -StartupType Automatic; Start-Service sshd'
+            Write-Host "After that, re-run this workflow with mode=enable (or mode=diagnose to confirm)."
+            return
+          }
+
+          $root = Join-Path $env:USERPROFILE '.ssh\win-sshd'
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          $hostkeys = Join-Path $root 'hostkeys'
+          New-Item -ItemType Directory -Force -Path $hostkeys | Out-Null
+          if (-not (Test-Path (Join-Path $hostkeys 'ssh_host_ed25519_key'))) {
+            & (Join-Path $env:SystemRoot 'System32\OpenSSH\ssh-keygen.exe') -q -t ed25519 -N '""' -f (Join-Path $hostkeys 'ssh_host_ed25519_key') | Out-Null
+            Write-Host "generated host key in $hostkeys"
+          }
+
+          $dir = Join-Path $env:USERPROFILE '.ssh'
+          $ak = Join-Path $dir 'authorized_keys'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          $pub = $env:PUBKEY.Trim()
+          $existing = if (Test-Path $ak) { Get-Content $ak } else { @() }
+          if ($existing -notcontains $pub) { ($existing + $pub) | Set-Content -Path $ak -Encoding ascii }
+          icacls $ak /inheritance:r /grant:r "$($env:USERNAME):F" /grant:r "SYSTEM:F" | Out-Null
+          Write-Host "authorized_keys: $(@(Get-Content $ak).Count) line(s)"
+
+          $cfg = Join-Path $root 'sshd_config'
+          @(
+            "Port $($env:PORT)"
+            "HostKey __HOSTKEY__"
+            "AuthorizedKeysFile __AK__"
+            "PubkeyAuthentication yes"
+            "PasswordAuthentication no"
+            "PermitRootLogin no"
+            "StrictModes no"
+            "UseDNS no"
+            "LogLevel DEBUG1"
+            "Subsystem sftp sftp-server.exe"
+          ) -join "`n" -replace '__HOSTKEY__', ((Join-Path $hostkeys 'ssh_host_ed25519_key') -replace '\\','/') `
+                    -replace '__AK__', ($ak -replace '\\','/') | Set-Content -Path $cfg -Encoding ascii
+          Write-Host "config: $cfg"
+
+          $log = Join-Path $root 'sshd.log'
+          Get-Process sshd -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          Start-Process -FilePath $sshd -ArgumentList @('-f', "`"$cfg`"", '-E', "`"$log`"") -WindowStyle Hidden
+          Start-Sleep -Seconds 3
+          $listen = Get-NetTCPConnection -LocalPort ([int]$env:PORT) -State Listen -ErrorAction SilentlyContinue
+          if ($listen) { Write-Host "userland sshd listening on $($env:PORT)" } else { Write-Host "userland sshd NOT listening - see log below" }
+          if (Test-Path $log) { Write-Host "--- sshd.log tail ---"; Get-Content $log -Tail 25 | ForEach-Object { Write-Host $_ } }
+          Write-Host "test from gx10:  ssh -p $($env:PORT) -i ~/.ssh/id_ed25519_laptop $($env:USERNAME)@192.168.2.51 hostname"
+
       - name: Confirm
         shell: powershell
         run: |
-          Start-Sleep -Seconds 3
+          Start-Sleep -Seconds 2
           Get-Service sshd -ErrorAction SilentlyContinue | Select-Object Name, Status, StartType | Format-Table -AutoSize | Out-String | Write-Host
-          $listen = Get-NetTCPConnection -LocalPort 22 -State Listen -ErrorAction SilentlyContinue
-          if ($listen) { Write-Host "port 22 listening: yes" } else { Write-Host "port 22 listening: NO" }
+          foreach ($p in 22, 2222) {
+            $listen = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue
+            if ($listen) { Write-Host "port ${p} listening: yes" } else { Write-Host "port ${p} listening: no" }
+          }
           Get-ChildItem C:\ProgramData\ssh\ssh_host_*_key.pub -ErrorAction SilentlyContinue |
             ForEach-Object { Write-Host "$($_.Name): $(Get-Content $_.FullName)" }
-          Write-Host "LAN addresses:"
-          Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -like '192.168.*' } | Select-Object IPAddress, InterfaceAlias | Format-Table -AutoSize | Out-String | Write-Host
