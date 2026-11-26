@@ -1,0 +1,41 @@
+name: Ops - FTP docroot probe (read-only)
+
+# Ownership: hermes-desktop. Dispatch-only, gx10 pool only.
+# Read-only diagnostic for db-sync-to-mirror: connects with the same FTP credentials the
+# workflow uses and prints pwd + directory listings so we can see where the web root
+# actually is, instead of guessing. Prints NO credential values.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: [self-hosted, gx10]
+    timeout-minutes: 10
+    steps:
+      - name: Probe FTP layout
+        env:
+          FTP_HOST: ${{ secrets.FTPGODADDYHOST }}
+          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
+          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+        run: |
+          echo "host set: ${FTP_HOST:+yes}  user set: ${FTP_USER:+yes}  pass set: ${FTP_PASS:+yes}"
+          cat > /tmp/probe.script <<'LFTPEOF'
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 20
+          open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
+          pwd
+          ls -la
+          cd /findtorontoevents.ca
+          echo "--- inside /findtorontoevents.ca ---"
+          pwd
+          ls -la | head -40
+          cd /
+          echo "--- looking for MOVIESHOWS3 anywhere shallow ---"
+          find -l 3 -name MOVIESHOWS3 2>/dev/null | head -5
+          quit
+          LFTPEOF
+          lftp -f /tmp/probe.script 2>&1 | sed -E 's/(open -u ).*/\1[redacted]/' | head -80
