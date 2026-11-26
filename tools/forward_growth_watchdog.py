@@ -171,15 +171,31 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     n_by: dict = {}
+    duplicates = 0
     if args.n_admissible is not None:
         n = args.n_admissible
     elif args.ingest_report:
         rep = json.loads(Path(args.ingest_report).read_text())
         n = int(rep.get("n_admissible") or 0)
         n_by = rep.get("n_by_hypothesis") or {}
+        # Rows already in the ledger are not accrual opportunities. When the writer
+        # reports every admissible row as a duplicate it had nothing new to write, so a
+        # flat ledger is idempotence, not a silent stall. Without this, a backfilled
+        # hypothesis (430 rows inserted once on 2026-11-19) fails the growth check every
+        # day forever, because the same 430 rows stay "eligible".
+        write = rep.get("write")
+        if isinstance(write, dict):
+            duplicates = int(write.get("duplicates") or 0)
+        else:
+            skipped = rep.get("skipped")
+            if isinstance(skipped, dict):
+                duplicates = int(skipped.get("duplicates") or 0)
+        duplicates = max(0, min(duplicates, n))
     else:
         print("ERROR: need --ingest-report or --n-admissible", file=sys.stderr)
         return 2
+
+    n_new = max(0, n - duplicates)
 
     rows = load_ledger(args.ledger)
     manifest = {}
@@ -189,14 +205,23 @@ def main(argv: list[str] | None = None) -> int:
             manifest = json.loads(mp.read_text())
         except json.JSONDecodeError:
             manifest = {}
-    verdict = assess_all(n, rows, n_by, manifest, datetime.now(timezone.utc),
+    # When everything admissible was already ingested nothing could have grown the
+    # ledger, so the per-hypothesis staleness check has no basis either.
+    verdict = assess_all(n_new, rows, n_by if n_new else {}, manifest,
+                         datetime.now(timezone.utc),
                          args.max_age_days, args.grace_days)
+    verdict["n_admissible"] = n
+    verdict["duplicates_already_ingested"] = duplicates
+    verdict["n_new"] = n_new
     verdict["ledger_rows"] = len(rows)
     if args.json:
         print(json.dumps(verdict, indent=1))
     else:
         g = verdict["global"]
         print(f"{g['status']}: {g['detail']} (ledger rows={len(rows)})")
+        if duplicates:
+            print(f"  note: {duplicates} of {n} admissible rows were already in the ledger "
+                  f"- {n_new} new row(s) could have been written this run")
         for h in verdict["hypotheses"]:
             print(f"  {'OK ' if h['ok'] else 'FAIL'} {h['detail']}")
         for p in verdict["pods"]:

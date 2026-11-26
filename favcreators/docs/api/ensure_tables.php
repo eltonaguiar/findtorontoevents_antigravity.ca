@@ -132,7 +132,7 @@ if (isset($john_id) && $john_id) {
     // Check if Jane Doe friend already exists
     $jane_check = $conn->query("SELECT id FROM friendt_friends WHERE id = 'jd_20260302' AND user_id = $john_id");
     if (!$jane_check || $jane_check->num_rows === 0) {
-        $tags_json = $conn->real_escape_string(json_encode(array("best friend", "college", "coffee buddy")));
+        $tags_json = $conn->real_escape_string(json_encode(["best friend", "college", "coffee buddy"]));
         $sql_jane = "INSERT INTO friendt_friends (
             id, user_id, name, nickname, birthday, how_met, notes,
             phone, email, instagram, tags, cadence_days
