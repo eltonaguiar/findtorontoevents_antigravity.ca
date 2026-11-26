@@ -41,7 +41,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input || !isset($input['updates']) || !is_array($input['updates'])) {
     header('HTTP/1.1 400 Bad Request');
-    echo json_encode(['ok' => false, 'error' => 'Invalid JSON input. Expected { updates: [...] }']);
+    echo json_encode(array('ok' => false, 'error' => 'Invalid JSON input. Expected { updates: [...] }'));
     exit;
 }
 
@@ -49,19 +49,19 @@ $updates = $input['updates'];
 $checked_by = isset($input['checked_by']) ? $conn->real_escape_string($input['checked_by']) : 'anonymous';
 
 if (count($updates) === 0) {
-    echo json_encode(['ok' => true, 'processed' => 0, 'results' => []]);
+    echo json_encode(array('ok' => true, 'processed' => 0, 'results' => array()));
     exit;
 }
 
 // Limit batch size to prevent abuse
 if (count($updates) > 100) {
     header('HTTP/1.1 400 Bad Request');
-    echo json_encode(['ok' => false, 'error' => 'Batch size exceeds maximum of 100']);
+    echo json_encode(array('ok' => false, 'error' => 'Batch size exceeds maximum of 100'));
     exit;
 }
 
 $start_time = microtime(true);
-$results = [];
+$results = array();
 $processed = 0;
 $now = date('Y-m-d H:i:s');
 
@@ -84,7 +84,7 @@ try {
     foreach ($updates as $update) {
         // Validate required fields
         if (!isset($update['creator_id'], $update['creator_name'], $update['platform'], $update['username'])) {
-            $results[] = ['error' => 'Missing required fields', 'skipped' => true];
+            $results[] = array('error' => 'Missing required fields', 'skipped' => true);
             continue;
         }
         
@@ -92,10 +92,10 @@ try {
         $creator_name = $update['creator_name'];
         $platform = $update['platform'];
         $username = $update['username'];
-        $account_url = $update['account_url'] ?? '';
+        $account_url = isset($update['account_url']) ? $update['account_url'] : '';
         $is_live = !empty($update['is_live']) ? 1 : 0;
-        $stream_title = $update['stream_title'] ?? '';
-        $viewer_count = intval($update['viewer_count'] ?? 0);
+        $stream_title = isset($update['stream_title']) ? $update['stream_title'] : '';
+        $viewer_count = intval(isset($update['viewer_count']) ? $update['viewer_count'] : 0);
         
         // Check if exists
         $check_stmt->bind_param("ss", $creator_id, $platform);
@@ -129,12 +129,12 @@ try {
         $log_stmt->bind_param("sssis", $creator_id, $creator_name, $platform, $is_live, $checked_by, $now);
         $log_stmt->execute();
         
-        $results[] = [
+        $results[] = array(
             'creator_id' => $creator_id,
             'platform' => $platform,
             'action' => $action,
             'is_live' => $is_live == 1
-        ];
+        );
         $processed++;
     }
     
@@ -151,7 +151,7 @@ try {
 
     $response_time = intval((microtime(true) - $start_time) * 1000);
     
-    echo json_encode([
+    echo json_encode(array(
         'ok' => true,
         'processed' => $processed,
         'total_received' => count($updates),
@@ -159,12 +159,12 @@ try {
         'checked_by' => $checked_by,
         'results' => $results,
         'log_pruned' => $pruned
-    ]);
+    ));
     
 } catch (Exception $e) {
     $conn->rollback();
     header('HTTP/1.1 500 Internal Server Error');
-    echo json_encode(['ok' => false, 'error' => 'Batch update failed: ' . $e->getMessage()]);
+    echo json_encode(array('ok' => false, 'error' => 'Batch update failed: ' . $e->getMessage()));
 }
 
 $conn->close();
