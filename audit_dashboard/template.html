@@ -1092,6 +1092,68 @@ Price-dependent verdicts are <b>BIASED</b>, not representative.
     }).catch(function(){ var el = document.getElementById('theory-tracker-body'); if (el) el.textContent = 'Theory tracker JSON unavailable.'; });
   })();
   </script>
+  <details id="hypothesis-registry-panel" style="margin:8px 0;padding:10px 14px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.35);border-radius:8px;color:#a5f3fc;font-size:12px;line-height:1.5">
+    <summary style="cursor:pointer;font-weight:700;color:#22d3ee">&#x1F9EA; Hypothesis Registry (rule M-107 pre-registration ledger)</summary>
+    <div id="hypothesis-registry-body" style="margin-top:8px;color:#e5e7eb">Loading hypothesis registry&hellip;</div>
+  </details>
+  <script>
+  (function(){
+    // batch B / restored 2026-11-25: M-107 registry sidecar (reports/hypothesis_registry.json
+    // -> ./data/ via 3-site FTP lists + deploy script entry). Distinct from the sibling
+    // theory-tracker panel above (theory_portfolios + h0XX reports).
+    var box = document.getElementById('hypothesis-registry-panel');
+    function esc(x){ return String(x == null ? '' : x).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    }); }
+    function normStatus(v){ var s = String(v == null ? 'UNSPECIFIED' : v); var i = s.indexOf(' - '); if (i > 0) s = s.slice(0, i); return s.replace(/-/g, '_').toUpperCase(); }
+    function dateOf(rec){
+      var best = '';
+      for (var k in rec){
+        if (!Object.prototype.hasOwnProperty.call(rec, k)) continue;
+        if (typeof rec[k] !== 'string' && typeof rec[k] !== 'number') continue;
+        var m = String(rec[k]).match(/\b(20\d{2}-\d{2}-\d{2})\b/);
+        if (m && m[1] > best) best = m[1];
+      }
+      return best;
+    }
+    fetch('./data/hypothesis_registry.json?' + Date.now()).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      if (!j || typeof j !== 'object') throw new Error('bad payload');
+      var total = 0, buckets = 0;
+      var statuses = {}, recents = [];
+      for (var key in j){
+        if (!Object.prototype.hasOwnProperty.call(j, key)) continue;
+        var arr = j[key];
+        if (!Array.isArray(arr)) continue;
+        var entries = arr.filter(function(x){ return x && typeof x === 'object' && !Array.isArray(x); });
+        if (!entries.length) continue;
+        buckets += 1; total += entries.length;
+        entries.forEach(function(e){
+          var st = normStatus(e.status || 'UNSPECIFIED');
+          statuses[st] = (statuses[st] || 0) + 1;
+          var d = dateOf(e);
+          if (d) recents.push({ id: e.id || '?', st: st, d: d, txt: e.description || e.hypothesis || e.rule || '' });
+        });
+      }
+      if (!total) throw new Error('no entries');
+      recents.sort(function(a, b){ return a.d < b.d ? 1 : (a.d > b.d ? -1 : 0); });
+      recents = recents.slice(0, 3);
+      var top = Object.keys(statuses).sort(function(a, b){ return statuses[b] - statuses[a]; });
+      var head = top.slice(0, 8).map(function(k){ return esc(k) + ' ' + statuses[k]; }).join(' &middot; ');
+      if (top.length > 8) head += ' &middot; +' + (top.length - 8) + ' more';
+      var lines = '<div><strong>' + total + ' entries across ' + buckets + ' buckets</strong>'
+        + (Array.isArray(j.hypotheses) ? ' (main hypotheses list: ' + j.hypotheses.length + ')' : '')
+        + ' &middot; schema v' + esc(j.schema_version == null ? '?' : j.schema_version) + '</div>';
+      lines += '<div style="margin-top:6px"><strong>Status mix:</strong> ' + head + '</div>';
+      if (recents.length){
+        lines += '<div style="margin-top:6px;color:#a5f3fc"><strong>Most recent:</strong> ' + recents.map(function(r){
+          return esc(r.id) + ' &middot; ' + esc(r.st) + ' &middot; ' + esc(r.d) + ' &mdash; ' + esc(String(r.txt).slice(0, 110));
+        }).join(' &middot; ') + '</div>';
+      }
+      var body = document.getElementById('hypothesis-registry-body');
+      if (body) body.innerHTML = lines;
+    }).catch(function(){ if (box) box.style.display = 'none'; });
+  })();
+  </script>
   <script src="audit_surface_truth_banner.js"></script>
   <!-- DISPUTED BANNER (Tier-0 fix 2026-05-28) — propagated from pick_funnel.html so /audit
        headline cannot be cited without the disclosure. Conditioned on money_ready_verdict
@@ -4046,7 +4108,9 @@ const sysLinks = {
   'agreement_alpha': 'https://eltonaguiar.github.io/findtorontoevents_antigravity.ca/battleground/',
   // No dashboard yet
   'incubator_fwd': null,
-  'smart_money': 'smart_money/',
+  // 2026-11-25: was relative 'smart_money/' -> /audit/smart_money/ = 404 (no such page);
+  // dead-page convention -> closest living alternative.
+  'smart_money': '/findcryptopairs/audit-trail.html',
 };
 
 // ?? System Descriptions (for tooltips - what each system/strategy does) ??
