@@ -33,7 +33,9 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install requests
+          # closed_picks_command imports numpy (via the aggregator) but this step only
+          # installed requests, so run #6 failed with "No module named 'numpy'".
+          pip install requests numpy pandas
       
       - name: Send Closed Picks Summary
         env:
