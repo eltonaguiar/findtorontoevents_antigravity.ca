@@ -40,6 +40,7 @@ API failover: All Binance calls use 3+ endpoint failover chain.
 from __future__ import annotations
 
 import logging
+import re
 import time
 from datetime import datetime, timezone
 from typing import Optional
@@ -197,6 +198,31 @@ def _fetch_all_premium_index() -> dict[str, dict]:
     return result
 
 
+def _binance_pair(symbol: str) -> Optional[str]:
+    """Normalise a crypto ticker to a Binance futures pair (base + USDT).
+
+    Mirrors alpha_engine/binance_sentiment.py:_binance_pair() from PR #1172 so this
+    module does not depend on an unmerged branch; consolidate the two once that
+    lands. Callers may hand us Yahoo-style tickers ("SUI-USD"), already-correct
+    pairs ("SUIUSDT") or bare tickers. Binance futures accepts only base+USDT.
+    Returns None when the ticker cannot be a Binance USDT pair, so the caller can
+    skip instead of issuing a request that can only 400/451.
+    """
+    s = (symbol or "").strip().upper().replace("/", "-")
+    if not s:
+        return None
+    for suffix in ("-USDT", "-USD", "-BUSD"):
+        if s.endswith(suffix) and len(s) > len(suffix):
+            s = s[: -len(suffix)]
+            break
+    else:
+        if s.endswith("USDT") and len(s) > 4:
+            s = s[:-4]
+    if not re.fullmatch(r"[A-Z0-9]{2,12}", s or ""):
+        return None
+    return s + "USDT"
+
+
 def _fetch_all_open_interest(symbols: list[str]) -> dict[str, float]:
     """Fetch OI in USD for given Binance symbols.
 
@@ -204,12 +230,16 @@ def _fetch_all_open_interest(symbols: list[str]) -> dict[str, float]:
     """
     oi_data = {}
     for sym in symbols:
-        resp = _fetch_with_failover(FAPI_BASES, f"/fapi/v1/openInterest?symbol={sym}")
+        pair = _binance_pair(sym)
+        if not pair:
+            # Equity / unmapped ticker: /fapi/v1/openInterest can only fail
+            continue
+        resp = _fetch_with_failover(FAPI_BASES, f"/fapi/v1/openInterest?symbol={pair}")
         if resp and isinstance(resp, dict):
             try:
                 oi_contracts = float(resp["openInterest"])
                 # We'll multiply by mark price later
-                oi_data[sym] = oi_contracts
+                oi_data[pair] = oi_contracts
             except (KeyError, ValueError, TypeError):
                 continue
     return oi_data
@@ -325,6 +355,8 @@ def funding_rate_extreme_contrarian(data: dict[str, pd.DataFrame],
         mcaps = {}
 
     for symbol, info in CRYPTO_SYMBOLS.items():
+        # Already a Binance pair from CRYPTO_SYMBOLS and validated against the
+        # premiumIndex response below, so it never needs Yahoo-ticker normalisation.
         bsym = info.get("binance")
         if not bsym or bsym not in premium_data:
             continue
