@@ -2404,3 +2404,14 @@ def hybrid_score(ml_score, regime_factor=1.0, freshness=1.0, forward_wr_30=0.5):
         + HYBRID_W_FRESH  * float(freshness)
         + HYBRID_W_FWD_WR * float(forward_wr_30)
     )
+
+
+# ── Earnings / PEAD ────────────────────────────────────────────────────────────
+# earnings.py reads these at import time. They were referenced but never defined, so
+# EarningsLoader.__init__ raised AttributeError and aborted the whole pick run before any
+# pick was written (alpha-engine-daily-picks, runs #165-#167).
+# NOTE surprise_pct is a FRACTION, not a percentage: earnings.py divides the source
+# "Surprise(%)" column by 100, so 0.02 means a 2% beat.
+EARNINGS_BEAT_THRESHOLD: float = 0.02      # min EPS surprise to count as a beat (2%)
+CONSECUTIVE_BEATS_REQUIRED: int = 2        # quarters in a row to flag a PEAD candidate
+PEAD_DRIFT_WINDOW: int = 20                # trading days to measure post-earnings drift
