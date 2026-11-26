@@ -19,7 +19,7 @@ concurrency:
 jobs:
   probe:
     runs-on: [self-hosted, Linux, "${{ github.event.inputs.label }}"]
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Environment probe
         run: |
@@ -44,7 +44,7 @@ jobs:
           PY
           echo
           echo "=== sudo ==="
-          sudo -n true 2>/dev/null && echo "passwordless sudo: YES" || echo "passwordless sudo: NO"
+          timeout 5 sudo -n true 2>/dev/null && echo "passwordless sudo: YES" || echo "passwordless sudo: NO"
           echo
           echo "=== resources ==="
           df -h "$GITHUB_WORKSPACE" | tail -1
