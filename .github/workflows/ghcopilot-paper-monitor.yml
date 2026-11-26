@@ -47,8 +47,8 @@ jobs:
       - name: Deploy public monitor and preserve live footer
         if: always()
         env:
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
         run: |
           python -c "from tools.ghcopilot_paper_monitor import deploy, STATE; deploy(STATE, link_footer=True)"
       - uses: actions/upload-artifact@v6
