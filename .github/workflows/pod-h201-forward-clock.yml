@@ -73,5 +73,8 @@ jobs:
             echo "no new forward rows (idempotent re-run or market closed) - nothing to commit"
           else
             git commit -m "chore(pod): H-201 forward rows [skip ci]"
-            git push
+            # A bare push is rejected whenever another job pushed to main since
+            # checkout ("failed to push some refs", 2026-11-26T02:32Z); safe_push.sh
+            # fetches, rebases and retries.
+            bash .github/scripts/safe_push.sh
           fi

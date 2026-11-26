@@ -33,7 +33,9 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install requests
+          # picks_router imports numpy as well as requests; installing only
+          # requests killed the job at import time (run 45741959521).
+          pip install requests numpy
       
       - name: Send Closed Picks Summary
         env:

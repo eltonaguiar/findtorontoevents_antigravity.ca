@@ -135,7 +135,11 @@ jobs:
         # clone has no such remote ref, so fetch just the main tip (a few MB)
         # and map it. This is a ref for resolution, not history for ancestry.
         run: |
-          git fetch --no-tags --depth=1 origin main:refs/remotes/origin/main
+          # `+` forces the update: actions/checkout already creates a shallow
+          # refs/remotes/origin/main at the merge commit, so a plain refspec is
+          # rejected as non-fast-forward and the step failed on every run that
+          # followed any main commit (2026-11-26 run 45743577114).
+          git fetch --no-tags --depth=1 origin +main:refs/remotes/origin/main
           git rev-parse --verify origin/main
 
       - name: Set up Python 3.11

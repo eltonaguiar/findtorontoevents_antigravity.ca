@@ -1,3 +1,3 @@
-# POC Checkpoint verdict — 2026-07-18
+# POC Checkpoint verdict — 2026-11-26
 ```
 ```
