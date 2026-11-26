@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -12,27 +13,51 @@ import urllib.request
 
 HOSTS = ("https://findtorontoevents.ca", "https://torontoevent.net")
 
+# 5xx from these endpoints is a PHP-side error during the TMDB sync (long-running
+# request, remote API hiccup, DB write contention). It has been intermittent rather
+# than permanent, so retry before failing the whole job.
+SERVER_ERROR_ATTEMPTS = 3
+
 
 class RefreshError(Exception):
     pass
 
 
+def endpoint_label(url):
+    """Path only - never the query string, which carries MS2_SYNC_KEY."""
+    return urllib.parse.urlsplit(url).path or "/"
+
+
 def request_json(url, timeout):
-    request = urllib.request.Request(url, headers={
-        "User-Agent": "MovieShowsRefresh/1.0",
-        "Cache-Control": "no-cache",
-    })
-    try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            return json.load(response)
-    except urllib.error.HTTPError as error:
-        raise RefreshError(f"HTTP {error.code}") from None
-    except urllib.error.URLError:
-        raise RefreshError("Production endpoint transport failure") from None
-    except (TimeoutError, OSError):
-        raise RefreshError("Production endpoint connection failed or timed out") from None
-    except (ValueError, UnicodeError):
-        raise RefreshError("Production endpoint did not return valid JSON") from None
+    label = endpoint_label(url)
+    last_error = None
+    for attempt in range(1, SERVER_ERROR_ATTEMPTS + 1):
+        request = urllib.request.Request(url, headers={
+            "User-Agent": "MovieShowsRefresh/1.0",
+            "Cache-Control": "no-cache",
+        })
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as error:
+            # The response body is deliberately not reported: a PHP error page can
+            # echo the request URL, and that URL contains the sync key.
+            if error.code >= 500 and attempt < SERVER_ERROR_ATTEMPTS:
+                last_error = f"HTTP {error.code} from {label}"
+                wait = 10 * attempt
+                print(f"WARN: {last_error} (attempt {attempt}/{SERVER_ERROR_ATTEMPTS}), retrying in {wait}s",
+                      file=sys.stderr, flush=True)
+                time.sleep(wait)
+                continue
+            raise RefreshError(f"HTTP {error.code} from {label}") from None
+        except urllib.error.URLError:
+            raise RefreshError(f"transport failure contacting {label}") from None
+        except (TimeoutError, OSError):
+            raise RefreshError(f"connection failed or timed out on {label}") from None
+        except (ValueError, UnicodeError):
+            raise RefreshError(f"{label} did not return valid JSON") from None
+    raise RefreshError(last_error or f"{label} failed")
+
 
 
 def successful_object(value, label):
