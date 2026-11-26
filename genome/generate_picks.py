@@ -13,6 +13,7 @@ Usage:
 """
 
 import argparse
+import os
 import json
 import logging
 import sys
@@ -170,7 +171,22 @@ def generate_permutations(
     """Generate strategy permutations."""
     # Include original strategies
     all_candidates = strategies.copy()
-    
+
+    # Cap the input set before generating combinations.
+    # generate_all_permutations builds every size-2 and size-3 combination across three
+    # logic types, i.e. roughly 3*C(n,2) + 3*C(n,3) candidates, each logged individually.
+    # With a few hundred strategies that is millions of offspring: run #1143 sat inside this
+    # call for 50 minutes with no further output and was killed by the job timeout. 30
+    # strategies still yields ~13k candidates, which is ample for a 5-pick output.
+    MAX_PERMUTATION_INPUT = int(os.environ.get('DNA_MAX_PERMUTATION_INPUT', '30'))
+    if len(strategies) > MAX_PERMUTATION_INPUT:
+        logger.warning(
+            "generate_permutations: %d strategies exceeds the %d input cap; "
+            "truncating to avoid combinatorial blow-up (set DNA_MAX_PERMUTATION_INPUT to widen)",
+            len(strategies), MAX_PERMUTATION_INPUT,
+        )
+        strategies = strategies[:MAX_PERMUTATION_INPUT]
+
     # Generate combinations
     if len(strategies) >= 2:
         combos = engine.generate_all_permutations(
