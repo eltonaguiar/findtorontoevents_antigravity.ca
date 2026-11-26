@@ -94,7 +94,14 @@ Permissions are least-privilege (`actions: read`, `contents: read`, `issues: wri
   on the three files reports no findings.
 - The digest's issue-matching and count shell logic was exercised locally against the real
   `reports/gha_raw_logs_latest.json` (title match + count) before committing.
-- The `:06` Hub Data Sync confirmation is recorded in §5.
+- `gha-failure-digest.yml` dispatched for real after merge (run `45725255620`, on the
+  merge commit): **success** in ~53s. It swept 300 runs / 111 workflows and opened issue
+  **#1146** containing the Hub Data Sync entry — summary + artifact + issue path proven
+  end-to-end.
+- `realtime-challenge` run `45726342320` (`schedule`, 00:06:40Z, post-fix) **success** — the
+  first success after two consecutive cancelled runs. `portfolio-tracker` run `45727657271`
+  (`workflow_dispatch`, 00:17:20Z, post-fix) **success**.
+- The `:06` Hub Data Sync scheduled confirmation is recorded in §5.
 
 ## 5. Hub Data Sync gate — live confirmation
 
@@ -103,4 +110,19 @@ and failed the **old** gate (`##[error]hub manifest is 268.6 days stale`). The r
 gate from PR #1141 (`ffa177e07fa9`, confirmed an ancestor of `origin/main`) replaced that
 hard failure with a >180-day *warning*. The first firing after the repair is recorded below.
 
-_(Result appended after the run completed.)_
+**Observed outcome (2026-11-26T00:27Z): the `:06` scheduled firing never ran.**
+
+- `hub-sync` workflow id `281991676`, state `active`, cron still `6 * * * *`. No
+  `schedule`-event run was enqueued for the 00:06 slot (polled every 10s from 23:59Z to
+  00:27Z). `portfolio-tracker`'s 00:07 slot was skipped too.
+- This is not a repo-wide schedule outage: dozens of other `schedule` runs landed between
+  00:00Z and 00:17Z, including `realtime-challenge` at 00:06:40Z. Both skipped workflows are
+  `active`, so this reads as a per-workflow enqueue drop by GitHub's scheduler (delays and
+  drops are documented under load, and this repo carries hundreds of schedules).
+- The repaired gate was nonetheless executed on post-fix code: run `45725291106`
+  (`workflow_dispatch`, sha `58803925e`) **succeeded** at 2026-11-25T23:58:10Z, and the
+  00:17:21Z sweep no longer lists Hub Data Sync among failures. The old gate's
+  `##[error]hub manifest is 268.6 days stale` is gone — the 268-day manifest is now a
+  `::warning`, as designed.
+- **Still outstanding:** confirmation from an actual `schedule` firing. Next natural
+  observation point is the 01:06 slot, which normally enqueues 01:11–01:14Z.
