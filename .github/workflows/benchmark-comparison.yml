@@ -39,7 +39,7 @@ jobs:
           echo "No changes to benchmark report"
         else
           git add alpha_engine/data/benchmark_comparison.json
-          git commit -m "chore: update daily benchmark comparison report [skip ci]"
+          git diff --cached --quiet || git commit -m "chore: update daily benchmark comparison report [skip ci]"
           bash .github/scripts/safe_push.sh
         fi
 
