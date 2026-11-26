@@ -1,11 +1,18 @@
 name: Ops - FTP docroot probe (read-only)
 
 # Ownership: hermes-desktop. Dispatch-only, gx10 pool only.
-# Read-only diagnostic for db-sync-to-mirror: connects with the same FTP credentials the
-# workflow uses and prints pwd + directory listings so we can see where the web root
-# actually is, instead of guessing. Prints NO credential values.
+# Read-only diagnostic for db-sync-to-mirror. Connects with the SAME secret names the
+# workflow uses and prints pwd + listings so we can see where the web root actually is.
+# The heredoc is deliberately UNQUOTED so $FTP_HOST/$FTP_USER/$FTP_PASS expand; the first
+# version quoted it and lftp received the literal string "$FTP_HOST".
+# No credential VALUES are printed - only the verdict of the :+ test and directory listings.
 on:
   workflow_dispatch:
+    inputs:
+      host_kind:
+        description: "source | target"
+        required: false
+        default: "source"
 
 permissions:
   contents: read
@@ -17,25 +24,37 @@ jobs:
     steps:
       - name: Probe FTP layout
         env:
-          FTP_HOST: ${{ secrets.FTPGODADDYHOST }}
-          FTP_USER: ${{ secrets.FTPGODADDYUSER }}
-          FTP_PASS: ${{ secrets.FTPGODADDYPASS }}
+          SRC_HOST: ${{ secrets.FTP_HOST }}
+          SRC_USER: ${{ secrets.FTP_USER }}
+          SRC_PASS: ${{ secrets.FTP_PASS }}
+          DST_HOST: ${{ secrets.FTPGODADDYHOST_TE_DOTNET }}
+          DST_USER: ${{ secrets.FTPGODADDYUSER }}
+          DST_PASS: ${{ secrets.FTPGODADDYPASS }}
+          KIND: ${{ github.event.inputs.host_kind }}
         run: |
-          echo "host set: ${FTP_HOST:+yes}  user set: ${FTP_USER:+yes}  pass set: ${FTP_PASS:+yes}"
-          cat > /tmp/probe.script <<'LFTPEOF'
+          if [ "$KIND" = "target" ]; then
+            FTP_HOST="$DST_HOST"; FTP_USER="$DST_USER"; FTP_PASS="$DST_PASS"
+          else
+            FTP_HOST="$SRC_HOST"; FTP_USER="$SRC_USER"; FTP_PASS="$SRC_PASS"
+          fi
+          echo "kind=$KIND  host_set=${FTP_HOST:+yes}  user_set=${FTP_USER:+yes}  pass_set=${FTP_PASS:+yes}"
+          echo "host_resolves_to_ip=$(getent hosts "$FTP_HOST" | awk '{print $1}' | head -1)"
+          cat > /tmp/probe.script <<LFTPEOF
           set ftp:ssl-force true
           set ssl:verify-certificate no
           set net:timeout 20
+          set net:max-retries 1
           open -u "$FTP_USER","$FTP_PASS" "$FTP_HOST"
           pwd
           ls -la
           cd /findtorontoevents.ca
           echo "--- inside /findtorontoevents.ca ---"
           pwd
-          ls -la | head -40
-          cd /
-          echo "--- looking for MOVIESHOWS3 anywhere shallow ---"
-          find -l 3 -name MOVIESHOWS3 2>/dev/null | head -5
+          ls -la | head -25
           quit
           LFTPEOF
-          lftp -f /tmp/probe.script 2>&1 | sed -E 's/(open -u ).*/\1[redacted]/' | head -80
+          sed -E 's/(open -u ).*/\1[redacted]/' /tmp/probe.script > /tmp/probe_redacted.script
+          echo "--- script (credentials redacted) ---"
+          cat /tmp/probe_redacted.script
+          echo "--- lftp run ---"
+          lftp -f /tmp/probe.script 2>&1 | sed -E 's/(open -u ).*/\1[redacted]/' | head -60
