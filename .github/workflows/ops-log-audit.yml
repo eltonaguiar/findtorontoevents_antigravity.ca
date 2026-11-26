@@ -1,0 +1,94 @@
+name: Ops - audit workflow logs on a self-hosted runner
+
+# Puts idle self-hosted capacity to real use without touching production routing:
+# this is a dispatch-only ops job, so it cannot strand anything if a runner is down.
+# It reads the latest run of each named workflow and reports the conclusion plus the
+# first error lines from the failing job's log.
+on:
+  push:
+    branches: [ops/log-audit]
+  workflow_dispatch:
+    inputs:
+      workflows:
+        description: "comma-separated workflow file names"
+        required: true
+        default: "fx-cost-overlap.yml,clear-channel-command.yml"
+
+jobs:
+  audit:
+    runs-on: [self-hosted, gx10]
+    timeout-minutes: 25
+    steps:
+      - name: Audit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          WFS: ${{ github.event.inputs.workflows }}
+        run: |
+          set -u
+          echo "runner: $(hostname) $(uname -sr)"
+          python3 - <<'PY'
+          import json, os, re, urllib.request
+
+          repo = os.environ["REPO"]
+          token = os.environ["GH_TOKEN"]
+          wfs = [w.strip() for w in (os.environ.get("WFS") or "").split(",") if w.strip()]
+
+          def api(path):
+              req = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}{path}",
+                  headers={"Authorization": f"Bearer {token}",
+                           "Accept": "application/vnd.github+json",
+                           "User-Agent": "hermes-audit"})
+              with urllib.request.urlopen(req, timeout=45) as r:
+                  return json.load(r)
+
+          def text(path):
+              req = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}{path}",
+                  headers={"Authorization": f"Bearer {token}",
+                           "Accept": "application/vnd.github+json",
+                           "User-Agent": "hermes-audit"})
+              with urllib.request.urlopen(req, timeout=90) as r:
+                  return r.read().decode("utf-8", "replace")
+
+          rows = []
+          for wf in wfs:
+              try:
+                  runs = api(f"/actions/workflows/{wf}/runs?per_page=1&branch=main")
+                  r = (runs.get("workflow_runs") or [None])[0]
+                  if not r:
+                      rows.append({"workflow": wf, "verdict": "NO RUNS"})
+                      continue
+                  row = {"workflow": wf, "run": r["run_number"],
+                         "conclusion": r.get("conclusion") or r.get("status")}
+                  if r.get("conclusion") == "failure":
+                      jobs = api(f"/actions/runs/{r['id']}/jobs").get("jobs") or []
+                      if jobs:
+                          failed = [s["name"] for j in jobs for s in j.get("steps", [])
+                                    if s.get("conclusion") == "failure"]
+                          row["failed_steps"] = failed[:3]
+                          try:
+                              log = text(f"/actions/jobs/{jobs[0]['id']}/logs")
+                              errs = [l for l in log.splitlines()
+                                      if re.search(r"##\[error\]|Error:|error:|Traceback", l)][-3:]
+                              row["error_lines"] = [re.sub(r"^\S+Z\s*", "", e)[:160] for e in errs]
+                          except Exception as e:
+                              row["error_lines"] = [f"log fetch failed: {type(e).__name__}"]
+                  rows.append(row)
+              except Exception as e:
+                  rows.append({"workflow": wf, "verdict": f"ERROR {type(e).__name__}"})
+
+          print(f"\n=== AUDIT OF {len(rows)} WORKFLOWS ===")
+          for row in rows:
+              print(json.dumps(row))
+          fails = [r for r in rows if r.get("conclusion") == "failure"]
+          print(f"\nsummary: {len(fails)} failing of {len(rows)} audited")
+          with open("audit_result.json", "w") as f:
+              json.dump(rows, f, indent=1)
+          PY
+      - name: Upload audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-audit
+          path: audit_result.json
