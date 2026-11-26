@@ -98,6 +98,13 @@ exit=0
 Worker: `python3 tools/test_guard_ops_workflows.py` → 13 tests, including a replay of the
 incident range and the all-zeroes first-push case.
 
+In CI the push path is green and reports the real pushed range (runs `45786742077`,
+`45786832593` — `ok: no protected workflow deleted in …`). The dispatch replay needs the
+range endpoints fetched by hand, since `actions/checkout` is shallow: the workflow now fetches
+both endpoints and deepens `origin/main` if GitHub refuses a direct sha fetch. A manual
+replay is a convenience — the guard's job is the push path, which is what caught nothing yet
+only because no bot has deleted an `ops-*` file since it landed.
+
 ## Limits
 
 - The guard protects `ops-*` only. The same commit killed `php52-compat-lint.yml` and

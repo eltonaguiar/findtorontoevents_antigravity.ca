@@ -80,10 +80,14 @@ jobs:
             esac
             if git cat-file -e "${rev}^{commit}" 2>/dev/null; then
               echo "have $rev"
-            else
-              git fetch --depth=1 origin "$base" \
-                || echo "::warning::could not fetch $base (force push?); the guard will report inconclusive"
+              continue
             fi
+            if ! git fetch --depth=1 origin "$base" 2>&1; then
+              echo "::warning::direct fetch of $base refused; deepening origin/main instead"
+              git fetch --deepen=300 origin main 2>&1 | tail -3 || true
+            fi
+            git cat-file -e "${rev}^{commit}" 2>/dev/null \
+              || echo "::warning::$rev still unavailable; the guard will report inconclusive"
           done
           echo "BEFORE=$BEFORE" >> "$GITHUB_ENV"
           echo "AFTER=$AFTER" >> "$GITHUB_ENV"
