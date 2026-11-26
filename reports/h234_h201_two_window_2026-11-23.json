@@ -1,0 +1,83 @@
+{
+  "hypothesis": "H-234",
+  "prereg": "plans/2026-11-23-prereg-H-234-h201-two-window.md",
+  "construction": {
+    "lookback": 126,
+    "top_k": 3,
+    "cost_bps": 10,
+    "rebal_days": 21,
+    "universe": [
+      "AAPL",
+      "AMZN",
+      "GOOGL",
+      "JNJ",
+      "JPM",
+      "META",
+      "MSFT",
+      "NVDA",
+      "UNH",
+      "XOM"
+    ],
+    "bench": "SPY"
+  },
+  "sample": {
+    "start": "2012-01-03",
+    "end": "2026-11-20",
+    "bars": 3744
+  },
+  "windows": {
+    "A_2012_2019": {
+      "n_days": 1884,
+      "mean_bps": 10.173,
+      "ci_lb_bps": 5.014,
+      "ci_ub_bps": 15.624,
+      "excess_bps": 4.631,
+      "excess_ci_lb_bps": 0.899,
+      "halves_bps": [
+        5.912,
+        14.434
+      ],
+      "pos_mean": true,
+      "pos_ci": true,
+      "pos_excess": true
+    },
+    "B_2019_2026": {
+      "n_days": 1860,
+      "mean_bps": 12.887,
+      "ci_lb_bps": 5.884,
+      "ci_ub_bps": 19.992,
+      "excess_bps": 6.952,
+      "excess_ci_lb_bps": 1.477,
+      "halves_bps": [
+        14.898,
+        10.875
+      ],
+      "pos_mean": true,
+      "pos_ci": true,
+      "pos_excess": true
+    },
+    "FULL": {
+      "n_days": 3744,
+      "mean_bps": 11.521,
+      "ci_lb_bps": 7.246,
+      "ci_ub_bps": 16.071,
+      "excess_bps": 5.784,
+      "excess_ci_lb_bps": 2.534,
+      "halves_bps": [
+        9.991,
+        13.051
+      ],
+      "pos_mean": true,
+      "pos_ci": true,
+      "pos_excess": true
+    }
+  },
+  "verdict": {
+    "label": "ROBUST",
+    "windows_passing_all_three": [
+      "A_2012_2019",
+      "B_2019_2026"
+    ],
+    "full_sample_reproduces_ci_lb": 7.246
+  }
+}

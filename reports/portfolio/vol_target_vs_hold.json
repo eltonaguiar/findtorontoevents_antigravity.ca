@@ -1,0 +1,152 @@
+{
+  "generated_by": "tools/vol_target_vs_hold.py",
+  "question": "can risk management beat buy-and-hold after cost, given that selection did not?",
+  "window": {
+    "start": "2005-01-03",
+    "end": "2026-11-20"
+  },
+  "assumptions": {
+    "vol_target": 0.1,
+    "leverage_cap": 2.0,
+    "realised_vol_lookback_days": 60,
+    "cost_bp_per_unit_turnover": 5.0,
+    "signal_lag_days": 1,
+    "note": "leverage uses yesterday's realised vol only; no forecast, no look-ahead"
+  },
+  "sleeves": [
+    {
+      "label": "SPY hold",
+      "n_days": 5506,
+      "cagr_pct": 10.3,
+      "vol_pct": 18.9,
+      "sharpe": 0.614,
+      "max_drawdown_pct": -55.19,
+      "ce_pct": 9.81,
+      "total_return_pct": 751.9
+    },
+    {
+      "label": "SPY vol-target 10% cap 2x",
+      "n_days": 5506,
+      "cagr_pct": 7.31,
+      "vol_pct": 10.83,
+      "sharpe": 0.706,
+      "max_drawdown_pct": -23.89,
+      "ce_pct": 7.06,
+      "total_return_pct": 367.46
+    },
+    {
+      "label": "SPY vol-target diagnostics",
+      "mean_leverage": 0.758,
+      "max_leverage": 2.0,
+      "pct_time_levered_above_1": 18.1,
+      "pct_time_below_1": 81.9
+    },
+    {
+      "label": "60/40 monthly rebalanced",
+      "n_days": 5506,
+      "cagr_pct": 7.85,
+      "vol_pct": 10.87,
+      "sharpe": 0.75,
+      "max_drawdown_pct": -31.42,
+      "ce_pct": 7.55,
+      "total_return_pct": 420.84
+    },
+    {
+      "label": "60/40 vol-target 10%",
+      "n_days": 5506,
+      "cagr_pct": 9.28,
+      "vol_pct": 10.53,
+      "sharpe": 0.895,
+      "max_drawdown_pct": -22.37,
+      "ce_pct": 8.87,
+      "total_return_pct": 594.73
+    },
+    {
+      "label": "60/40 vol-target diagnostics",
+      "mean_leverage": 1.203
+    },
+    {
+      "label": "SPY 200d SMA long/flat",
+      "n_days": 5506,
+      "cagr_pct": 7.84,
+      "vol_pct": 11.49,
+      "sharpe": 0.715,
+      "max_drawdown_pct": -21.54,
+      "ce_pct": 7.55,
+      "total_return_pct": 420.22
+    },
+    {
+      "label": "SPY SMA diagnostics",
+      "pct_time_in_market": 77.1
+    }
+  ],
+  "sensitivity": [
+    {
+      "label": "SPY vol-target 8%",
+      "n_days": 5506,
+      "cagr_pct": 5.91,
+      "vol_pct": 8.67,
+      "sharpe": 0.706,
+      "max_drawdown_pct": -19.47,
+      "ce_pct": 5.74,
+      "total_return_pct": 250.58,
+      "target": 0.08
+    },
+    {
+      "label": "SPY vol-target 10%",
+      "n_days": 5506,
+      "cagr_pct": 7.31,
+      "vol_pct": 10.83,
+      "sharpe": 0.706,
+      "max_drawdown_pct": -23.89,
+      "ce_pct": 7.06,
+      "total_return_pct": 367.46,
+      "target": 0.1
+    },
+    {
+      "label": "SPY vol-target 12%",
+      "n_days": 5506,
+      "cagr_pct": 8.62,
+      "vol_pct": 12.99,
+      "sharpe": 0.702,
+      "max_drawdown_pct": -28.12,
+      "ce_pct": 8.27,
+      "total_return_pct": 508.4,
+      "target": 0.12
+    },
+    {
+      "label": "SPY vol-target 15%",
+      "n_days": 5506,
+      "cagr_pct": 10.42,
+      "vol_pct": 16.11,
+      "sharpe": 0.696,
+      "max_drawdown_pct": -34.15,
+      "ce_pct": 9.92,
+      "total_return_pct": 772.66,
+      "target": 0.15
+    },
+    {
+      "label": "SPY vol-target 20%",
+      "n_days": 5506,
+      "cagr_pct": 13.26,
+      "vol_pct": 20.85,
+      "sharpe": 0.702,
+      "max_drawdown_pct": -43.36,
+      "ce_pct": 12.46,
+      "total_return_pct": 1417.47,
+      "target": 0.2
+    }
+  ],
+  "verdict": {
+    "vol_target_vs_hold": {
+      "sharpe_better": true,
+      "cagr_better": false,
+      "drawdown_better": true,
+      "certainty_equivalent_better": false,
+      "sharpe_delta": 0.092,
+      "cagr_delta_pct": -2.99,
+      "mdd_delta_pct": 31.3,
+      "honest_reading": "vol targeting lowers both risk and return from the same asset; it is an improvement only if risk-adjusted return (Sharpe / CE) rises AND the reader wants that risk level. It is not alpha and must never be booked as such."
+    }
+  }
+}

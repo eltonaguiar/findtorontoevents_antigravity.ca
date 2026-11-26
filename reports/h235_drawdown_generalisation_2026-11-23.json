@@ -1,0 +1,176 @@
+{
+  "hypothesis": "H-235",
+  "prereg": "plans/2026-11-23-prereg-H-235-drawdown-generalisation.md",
+  "question": "does the vol-target drawdown reduction survive on a pre-2005 or non-US book?",
+  "assumptions": {
+    "target": 0.1,
+    "lookback": 60,
+    "cap": 2.0,
+    "cost_bp_per_unit": 5.0,
+    "books": {
+      "US_pre2005": {
+        "legs": {
+          "SPY": 0.6,
+          "TLT": 0.4
+        },
+        "start": "2002-07-30",
+        "end": "2004-12-31"
+      },
+      "US_2005_2026_control": {
+        "legs": {
+          "SPY": 0.6,
+          "TLT": 0.4
+        },
+        "start": "2005-01-03",
+        "end": "2026-11-20"
+      },
+      "INTL_exUS": {
+        "legs": {
+          "EFA": 0.6,
+          "BWX": 0.4
+        },
+        "start": "2007-05-01",
+        "end": "2026-11-20"
+      }
+    }
+  },
+  "books": {
+    "US_pre2005": {
+      "window": {
+        "start": "2002-07-30",
+        "end": "2004-12-30"
+      },
+      "legs": {
+        "SPY": 0.6,
+        "TLT": 0.4
+      },
+      "rows": 611,
+      "plain": {
+        "label": "plain",
+        "n_days": 610,
+        "cagr_pct": 12.86,
+        "vol_pct": 9.99,
+        "sharpe": 1.262,
+        "max_drawdown_pct": -9.21,
+        "ce_pct": 12.1,
+        "total_return_pct": 34.03
+      },
+      "vol_target": {
+        "label": "vol-target",
+        "n_days": 610,
+        "cagr_pct": 14.14,
+        "vol_pct": 9.3,
+        "sharpe": 1.47,
+        "max_drawdown_pct": -8.99,
+        "ce_pct": 13.23,
+        "total_return_pct": 37.74
+      },
+      "delta_ce": {
+        "n_days": 610,
+        "delta_ce_pct": 1.1302,
+        "ci95_low_pct": -5.5733,
+        "ci95_high_pct": 7.7994,
+        "p_boot_le_zero": 0.3655
+      },
+      "dd_improvement_pp": -0.22,
+      "drawdown_win": true,
+      "mean_leverage": 1.047
+    },
+    "US_2005_2026_control": {
+      "window": {
+        "start": "2005-01-03",
+        "end": "2026-11-19"
+      },
+      "legs": {
+        "SPY": 0.6,
+        "TLT": 0.4
+      },
+      "rows": 5506,
+      "plain": {
+        "label": "plain",
+        "n_days": 5505,
+        "cagr_pct": 8.24,
+        "vol_pct": 11.1,
+        "sharpe": 0.769,
+        "max_drawdown_pct": -30.04,
+        "ce_pct": 7.92,
+        "total_return_pct": 464.09
+      },
+      "vol_target": {
+        "label": "vol-target",
+        "n_days": 5505,
+        "cagr_pct": 9.47,
+        "vol_pct": 10.56,
+        "sharpe": 0.91,
+        "max_drawdown_pct": -22.03,
+        "ce_pct": 9.05,
+        "total_return_pct": 621.95
+      },
+      "delta_ce": {
+        "n_days": 5505,
+        "delta_ce_pct": 1.1311,
+        "ci95_low_pct": -0.8703,
+        "ci95_high_pct": 3.0563,
+        "p_boot_le_zero": 0.1372
+      },
+      "dd_improvement_pp": -8.01,
+      "drawdown_win": true,
+      "mean_leverage": 1.196
+    },
+    "INTL_exUS": {
+      "window": {
+        "start": "2007-10-11",
+        "end": "2026-11-19"
+      },
+      "legs": {
+        "EFA": 0.6,
+        "BWX": 0.4
+      },
+      "rows": 4808,
+      "plain": {
+        "label": "plain",
+        "n_days": 4807,
+        "cagr_pct": 2.95,
+        "vol_pct": 14.57,
+        "sharpe": 0.273,
+        "max_drawdown_pct": -42.61,
+        "ce_pct": 2.91,
+        "total_return_pct": 74.24
+      },
+      "vol_target": {
+        "label": "vol-target",
+        "n_days": 4807,
+        "cagr_pct": 1.35,
+        "vol_pct": 10.6,
+        "sharpe": 0.18,
+        "max_drawdown_pct": -28.22,
+        "ce_pct": 1.34,
+        "total_return_pct": 29.13
+      },
+      "delta_ce": {
+        "n_days": 4807,
+        "delta_ce_pct": -1.5703,
+        "ci95_low_pct": -4.2258,
+        "ci95_high_pct": 1.2367,
+        "p_boot_le_zero": 0.8698
+      },
+      "dd_improvement_pp": -14.39,
+      "drawdown_win": true,
+      "mean_leverage": 0.939
+    }
+  },
+  "verdict": {
+    "label": "SURVIVES",
+    "books_tested": [
+      "US_pre2005",
+      "US_2005_2026_control",
+      "INTL_exUS"
+    ],
+    "drawdown_better_in": [
+      "US_pre2005",
+      "US_2005_2026_control",
+      "INTL_exUS"
+    ],
+    "reading": "max drawdown improved in every tested book"
+  }
+}

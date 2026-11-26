@@ -1,0 +1,723 @@
+{
+ "generated_utc": "2026-11-23",
+ "tool": "tools/equity_commission_model.py",
+ "label": "MODEL_NOT_MEASURED",
+ "schedules": {
+  "IBKR_FIXED": {
+   "per_share": 0.005,
+   "min_ticket": 1.0,
+   "max_pct_of_trade": 0.01,
+   "note": "flat $0.005/share, $1.00 minimum, 1% maximum"
+  },
+  "IBKR_TIERED": {
+   "per_share": 0.0035,
+   "min_ticket": 0.35,
+   "max_pct_of_trade": 0.01,
+   "note": "$0.0035/share + exchange fees, $0.35 minimum"
+  },
+  "ZERO_COMMISSION_RETAIL": {
+   "per_share": 0.0,
+   "min_ticket": 0.0,
+   "max_pct_of_trade": 0.0,
+   "note": "advertised $0; payment-for-order-flow cost arrives as spread/price improvement, i.e. inside the measured spread, not as a line item"
+  }
+ },
+ "notionals_usd": [
+  1000,
+  2500,
+  5000,
+  10000,
+  25000
+ ],
+ "prices_usd": [
+  10.0,
+  25.0,
+  50.0,
+  100.0,
+  250.0,
+  500.0
+ ],
+ "summary_by_schedule": {
+  "IBKR_FIXED": {
+   "min_bp": 0.4,
+   "max_bp": 10.0,
+   "median_bp": 4.0,
+   "cells_at_or_below_1bp": 8,
+   "cells_above_1bp": 22,
+   "n_cells": 30
+  },
+  "IBKR_TIERED": {
+   "min_bp": 0.14,
+   "max_bp": 3.5,
+   "median_bp": 1.4,
+   "cells_at_or_below_1bp": 12,
+   "cells_above_1bp": 18,
+   "n_cells": 30
+  },
+  "ZERO_COMMISSION_RETAIL": {
+   "min_bp": 0.0,
+   "max_bp": 0.0,
+   "median_bp": 0.0,
+   "cells_at_or_below_1bp": 30,
+   "cells_above_1bp": 0,
+   "n_cells": 30
+  }
+ },
+ "minimum_ticket_floor_bp": {
+  "IBKR_FIXED": {
+   "1000": 10.0,
+   "2500": 4.0,
+   "5000": 2.0,
+   "10000": 1.0,
+   "25000": 0.4
+  },
+  "IBKR_TIERED": {
+   "1000": 3.5,
+   "2500": 1.4,
+   "5000": 0.7,
+   "10000": 0.35,
+   "25000": 0.14
+  }
+ },
+ "verdicts": {
+  "is_this_a_measurement": false,
+  "what_it_is": "MODEL built from published per-share schedules",
+  "assumption_under_test_bp_per_side": 1.0,
+  "finding": "1 bp/side is adequate only on larger tickets and only for per-share pricing above its floor: at $10,000 the IBKR_FIXED floor is 1.0 bp and at $25,000 it is 0.4 bp, but at $1,000 the floor alone is 10 bp and at $2,500 it is 4 bp. A single scalar cannot describe all of those, so the pod's cost basis is broker- and ticket-size-dependent rather than unknown.",
+  "consequence_for_the_pod": "On a $1,000-$2,500 ticket the 11 bp/side assumption (10 slip + 1 commission) may UNDERSTATE commission by 3-9 bp. On $10,000+ tickets it holds. Since the pod has no declared position size, its cost basis must state the ticket size assumption or the figure is not reproducible.",
+  "what_would_make_it_a_measurement": "Broker fills with a commission field, or a statement reconciliation. Neither exists in this repo; the paper-trading surfaces record prices, not fees.",
+  "do_not_report_as": "measured equity cost"
+ },
+ "cells": [
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 1000,
+   "price_usd": 10.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 10.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 1000,
+   "price_usd": 25.0,
+   "shares": 40.0,
+   "commission_bp_per_side": 10.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 1000,
+   "price_usd": 50.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 10.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 1000,
+   "price_usd": 100.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 10.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 1000,
+   "price_usd": 250.0,
+   "shares": 4.0,
+   "commission_bp_per_side": 10.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 1000,
+   "price_usd": 500.0,
+   "shares": 2.0,
+   "commission_bp_per_side": 10.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 2500,
+   "price_usd": 10.0,
+   "shares": 250.0,
+   "commission_bp_per_side": 5.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 2500,
+   "price_usd": 25.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 4.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 2500,
+   "price_usd": 50.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 4.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 2500,
+   "price_usd": 100.0,
+   "shares": 25.0,
+   "commission_bp_per_side": 4.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 2500,
+   "price_usd": 250.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 4.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 2500,
+   "price_usd": 500.0,
+   "shares": 5.0,
+   "commission_bp_per_side": 4.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 5000,
+   "price_usd": 10.0,
+   "shares": 500.0,
+   "commission_bp_per_side": 5.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 5000,
+   "price_usd": 25.0,
+   "shares": 200.0,
+   "commission_bp_per_side": 2.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 5000,
+   "price_usd": 50.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 2.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 5000,
+   "price_usd": 100.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 2.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 5000,
+   "price_usd": 250.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 2.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 5000,
+   "price_usd": 500.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 2.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 10000,
+   "price_usd": 10.0,
+   "shares": 1000.0,
+   "commission_bp_per_side": 5.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 10000,
+   "price_usd": 25.0,
+   "shares": 400.0,
+   "commission_bp_per_side": 2.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 10000,
+   "price_usd": 50.0,
+   "shares": 200.0,
+   "commission_bp_per_side": 1.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 10000,
+   "price_usd": 100.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 1.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 10000,
+   "price_usd": 250.0,
+   "shares": 40.0,
+   "commission_bp_per_side": 1.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 10000,
+   "price_usd": 500.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 1.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 25000,
+   "price_usd": 10.0,
+   "shares": 2500.0,
+   "commission_bp_per_side": 5.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 25000,
+   "price_usd": 25.0,
+   "shares": 1000.0,
+   "commission_bp_per_side": 2.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 25000,
+   "price_usd": 50.0,
+   "shares": 500.0,
+   "commission_bp_per_side": 1.0
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 25000,
+   "price_usd": 100.0,
+   "shares": 250.0,
+   "commission_bp_per_side": 0.5
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 25000,
+   "price_usd": 250.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.4
+  },
+  {
+   "schedule": "IBKR_FIXED",
+   "notional_usd": 25000,
+   "price_usd": 500.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 0.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 1000,
+   "price_usd": 10.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 1000,
+   "price_usd": 25.0,
+   "shares": 40.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 1000,
+   "price_usd": 50.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 1000,
+   "price_usd": 100.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 1000,
+   "price_usd": 250.0,
+   "shares": 4.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 1000,
+   "price_usd": 500.0,
+   "shares": 2.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 2500,
+   "price_usd": 10.0,
+   "shares": 250.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 2500,
+   "price_usd": 25.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 1.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 2500,
+   "price_usd": 50.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 1.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 2500,
+   "price_usd": 100.0,
+   "shares": 25.0,
+   "commission_bp_per_side": 1.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 2500,
+   "price_usd": 250.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 1.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 2500,
+   "price_usd": 500.0,
+   "shares": 5.0,
+   "commission_bp_per_side": 1.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 5000,
+   "price_usd": 10.0,
+   "shares": 500.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 5000,
+   "price_usd": 25.0,
+   "shares": 200.0,
+   "commission_bp_per_side": 1.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 5000,
+   "price_usd": 50.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.7
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 5000,
+   "price_usd": 100.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 0.7
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 5000,
+   "price_usd": 250.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 0.7
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 5000,
+   "price_usd": 500.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 0.7
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 10000,
+   "price_usd": 10.0,
+   "shares": 1000.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 10000,
+   "price_usd": 25.0,
+   "shares": 400.0,
+   "commission_bp_per_side": 1.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 10000,
+   "price_usd": 50.0,
+   "shares": 200.0,
+   "commission_bp_per_side": 0.7
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 10000,
+   "price_usd": 100.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.35
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 10000,
+   "price_usd": 250.0,
+   "shares": 40.0,
+   "commission_bp_per_side": 0.35
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 10000,
+   "price_usd": 500.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 0.35
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 25000,
+   "price_usd": 10.0,
+   "shares": 2500.0,
+   "commission_bp_per_side": 3.5
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 25000,
+   "price_usd": 25.0,
+   "shares": 1000.0,
+   "commission_bp_per_side": 1.4
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 25000,
+   "price_usd": 50.0,
+   "shares": 500.0,
+   "commission_bp_per_side": 0.7
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 25000,
+   "price_usd": 100.0,
+   "shares": 250.0,
+   "commission_bp_per_side": 0.35
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 25000,
+   "price_usd": 250.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.14
+  },
+  {
+   "schedule": "IBKR_TIERED",
+   "notional_usd": 25000,
+   "price_usd": 500.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 0.14
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 1000,
+   "price_usd": 10.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 1000,
+   "price_usd": 25.0,
+   "shares": 40.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 1000,
+   "price_usd": 50.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 1000,
+   "price_usd": 100.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 1000,
+   "price_usd": 250.0,
+   "shares": 4.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 1000,
+   "price_usd": 500.0,
+   "shares": 2.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 2500,
+   "price_usd": 10.0,
+   "shares": 250.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 2500,
+   "price_usd": 25.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 2500,
+   "price_usd": 50.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 2500,
+   "price_usd": 100.0,
+   "shares": 25.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 2500,
+   "price_usd": 250.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 2500,
+   "price_usd": 500.0,
+   "shares": 5.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 5000,
+   "price_usd": 10.0,
+   "shares": 500.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 5000,
+   "price_usd": 25.0,
+   "shares": 200.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 5000,
+   "price_usd": 50.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 5000,
+   "price_usd": 100.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 5000,
+   "price_usd": 250.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 5000,
+   "price_usd": 500.0,
+   "shares": 10.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 10000,
+   "price_usd": 10.0,
+   "shares": 1000.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 10000,
+   "price_usd": 25.0,
+   "shares": 400.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 10000,
+   "price_usd": 50.0,
+   "shares": 200.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 10000,
+   "price_usd": 100.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 10000,
+   "price_usd": 250.0,
+   "shares": 40.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 10000,
+   "price_usd": 500.0,
+   "shares": 20.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 25000,
+   "price_usd": 10.0,
+   "shares": 2500.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 25000,
+   "price_usd": 25.0,
+   "shares": 1000.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 25000,
+   "price_usd": 50.0,
+   "shares": 500.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 25000,
+   "price_usd": 100.0,
+   "shares": 250.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 25000,
+   "price_usd": 250.0,
+   "shares": 100.0,
+   "commission_bp_per_side": 0.0
+  },
+  {
+   "schedule": "ZERO_COMMISSION_RETAIL",
+   "notional_usd": 25000,
+   "price_usd": 500.0,
+   "shares": 50.0,
+   "commission_bp_per_side": 0.0
+  }
+ ]
+}
