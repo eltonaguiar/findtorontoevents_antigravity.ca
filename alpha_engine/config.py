@@ -2415,3 +2415,41 @@ def hybrid_score(ml_score, regime_factor=1.0, freshness=1.0, forward_wr_30=0.5):
 EARNINGS_BEAT_THRESHOLD: float = 0.02      # min EPS surprise to count as a beat (2%)
 CONSECUTIVE_BEATS_REQUIRED: int = 2        # quarters in a row to flag a PEAD candidate
 PEAD_DRIFT_WINDOW: int = 20                # trading days to measure post-earnings drift
+# ── Insider ────────────────────────────────────────────────────────────────
+# insider.py reads these at import time; were referenced but not defined.
+INSIDER_CLUSTER_THRESHOLD: int = 3        # min distinct insiders for a cluster buy
+INSIDER_LOOKBACK_DAYS: int = 90           # lookback window for cluster detection
+INSIDER_SCORE_MULTIPLIER: float = 1.5     # score boost for cluster buy
+
+# ── Output ──────────────────────────────────────────────────────────────────
+# main.py, api_bridge.py, report_generator.py reference OUTPUT_DIR for writing picks.
+OUTPUT_DIR: str = "alpha_engine/output"
+
+# ── Position Sizing / Risk ──────────────────────────────────────────────────
+# backtest/position_sizing.py reads these at import time.
+KELLY_FRACTION: float = 0.25              # quarter-Kelly (conservative)
+MAX_POSITION_PCT: float = 0.08            # max single position (% of capital)
+MIN_POSITION_PCT: float = 0.01            # min single position (% of capital)
+MAX_SECTOR_PCT: float = 0.20              # max sector concentration (% of capital)
+MOMENTUM_MAX_RISK: float = 0.01           # max risk per momentum trade (1%)
+SAFE_BET_MAX_RISK: float = 0.01           # max risk for safe bet trades (1%)
+
+# ── Feature Factory ─────────────────────────────────────────────────────────
+# features/factory.py reads FEATURE_FAMILIES at import time.
+FEATURE_FAMILIES: dict[str, bool] = {
+    "momentum": True,
+    "cross_sectional": True,
+    "volatility": True,
+    "volume": True,
+    "mean_reversion": True,
+    "regime": True,
+    "fundamental": True,
+    "growth": True,
+    "valuation": True,
+    "earnings": True,
+    "seasonality": True,
+    "options": True,
+    "sentiment": True,
+    "flow": True,
+}
+

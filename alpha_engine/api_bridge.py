@@ -26,7 +26,7 @@ class APIBridge:
 
     def __init__(self, output_dir: Optional[Path] = None):
         from . import config
-        self.output_dir = output_dir or config.OUTPUT_DIR
+        self.output_dir = Path(output_dir) if output_dir is not None else Path(config.OUTPUT_DIR)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def export_picks(self, picks: pd.DataFrame, filename: str = "alpha_picks.json") -> Path:

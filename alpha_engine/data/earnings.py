@@ -205,6 +205,11 @@ class EarningsLoader:
 
             for _, row in earnings.iterrows():
                 earn_date = pd.to_datetime(row["date"])
+                # yfinance earnings dates can be tz-aware (e.g. 2021-01-27 16:00:00-05:00)
+                # while the price index is tz-naive (daily dates). Mixing the two raises
+                # InvalidComparison on pandas 3.x, so strip tz to make both naive.
+                if getattr(earn_date, "tzinfo", None) is not None:
+                    earn_date = earn_date.tz_localize(None)
                 surprise = row.get("surprise_pct", 0)
 
                 if pd.isna(surprise) or pd.isna(earn_date):
