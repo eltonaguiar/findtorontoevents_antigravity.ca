@@ -331,6 +331,18 @@ alpha_engine/data/hindsight/**/*.json
 # 2026-06-13 (D): must persist or the PM overlay no-ops (risk-review found it gitignored).
 # NOTE inline "# comment" on a pattern line is NOT valid gitignore syntax — keep comments on their own line.
 !prediction_market_agents/data/pm_macro_overlay_signals.json
+# 2026-11-25 (audit priority #4 "persist intended signals"): the 3-site audit payload
+# keys pm_polymarket_re_signals / pm_kalshi_re_signals / pm_kalshi|momentum|whale
+# signals read files that ONLY existed inside a running CI job — line 328 above made
+# every `git add` a silent no-op, so a failed producer step meant 0 rows with only a
+# ::warning:: (same failure class the 2026-06-13 note fixed for pm_macro_overlay).
+# See reports/wired-pm-classification-2026-11-25.md gap G1-G3.
+!alpha_engine/data/polymarket_signals.json
+!alpha_engine/data/kalshi_signals.json
+!prediction_market_agents/data/kalshi_signals.json
+!prediction_market_agents/data/momentum_signals.json
+!prediction_market_agents/data/whale_signals.json
+!prediction_market_agents/data/consensus_signals.json
 # Re-track other deploy-source live JSONs (CI fresh-checkout needs them)
 !KIMI_RISEOFTHECLAW/data/live_competition.json
 !KIMI_RISEOFTHECLAW/data/live_signals_now.json
