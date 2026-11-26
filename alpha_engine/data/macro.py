@@ -164,20 +164,23 @@ class MacroLoader:
         """
         score = pd.Series(0.0, index=regimes.index)
 
+        # The regime columns come out of np.select/pd.cut as dtype 'category', and pandas
+        # refuses arithmetic on categoricals ("TypeError: Object with dtype category cannot
+        # perform the numpy op add"). Cast to object before mapping so the score can sum.
         # Vol contribution
         if "vol_regime" in regimes.columns:
             vol_map = {"low_vol": 2, "normal_vol": 1, "moderate_vol": 0, "high_vol": -1, "extreme_vol": -2}
-            score += regimes["vol_regime"].map(vol_map).fillna(0)
+            score += regimes["vol_regime"].astype(object).map(vol_map).fillna(0)
 
         # Trend contribution
         if "trend_regime" in regimes.columns:
             trend_map = {"strong_bull": 2, "bull": 1, "neutral": 0, "bear": -1, "strong_bear": -2}
-            score += regimes["trend_regime"].map(trend_map).fillna(0)
+            score += regimes["trend_regime"].astype(object).map(trend_map).fillna(0)
 
         # Rate contribution (rising rates = slight negative for growth)
         if "rate_regime" in regimes.columns:
             rate_map = {"rates_falling": 1, "rates_stable": 0, "rates_rising": -1}
-            score += regimes["rate_regime"].map(rate_map).fillna(0)
+            score += regimes["rate_regime"].astype(object).map(rate_map).fillna(0)
 
         # Classify composite
         conditions = [score >= 3, (score >= 0) & (score < 3), (score >= -2) & (score < 0), score < -2]
