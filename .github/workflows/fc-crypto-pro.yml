@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   fc-crypto-pro:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: [self-hosted, wsl-desktop]
     timeout-minutes: 10  # 2026-05-06: was 5 — commit step hits the ceiling at ~4-5 min; raising to 10 gives headroom for scanner + commit under load
     steps:
       - uses: actions/checkout@v6
