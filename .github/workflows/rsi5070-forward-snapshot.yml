@@ -64,6 +64,12 @@ jobs:
   snapshot:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     timeout-minutes: 25
+    # `runner` is a free-text input, so this job can land on a Windows runner.
+    # The steps are bash (`if [ ... ]`, `for ... do`); Windows would default to
+    # PowerShell and die with: ParserError: Missing '(' after 'if'.
+    defaults:
+      run:
+        shell: bash
     env:
       # 2026-06-19 P0 pattern (per audit-dashboard.yml:384) — explicit DB creds
       # so the script connects (it uses tools.db_env:get_stocks_creds() which
