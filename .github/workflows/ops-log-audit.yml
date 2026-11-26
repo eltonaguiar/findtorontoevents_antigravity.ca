@@ -1,94 +1,89 @@
-name: Ops - audit workflow logs on a self-hosted runner
+name: Ops - sharded audit of all workflows (self-hosted)
 
-# Puts idle self-hosted capacity to real use without touching production routing:
-# this is a dispatch-only ops job, so it cannot strand anything if a runner is down.
-# It reads the latest run of each named workflow and reports the conclusion plus the
-# first error lines from the failing job's log.
+# Puts the idle self-hosted slots to work on something real and safe: a complete audit
+# of every workflow's latest run, sharded across a matrix. Dispatch-only, and it touches
+# no production runs-on, so no production job can be stranded by it.
 on:
   push:
     branches: [ops/log-audit]
   workflow_dispatch:
-    inputs:
-      workflows:
-        description: "comma-separated workflow file names"
-        required: true
-        default: "fx-cost-overlap.yml,clear-channel-command.yml"
 
 jobs:
   audit:
     runs-on: [self-hosted, gx10]
-    timeout-minutes: 25
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     steps:
-      - name: Audit
+      - name: Audit shard ${{ matrix.shard }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          WFS: ${{ github.event.inputs.workflows || 'fx-cost-overlap.yml,clear-channel-command.yml,deploy-riseoftheclaw.yml,sign-coherence-gate.yml,qa-market-validation.yml' }}
+          SHARD: ${{ matrix.shard }}
+          SHARDS: "10"
         run: |
-          set -u
-          echo "runner: $(hostname) $(uname -sr)"
+          echo "runner=$(hostname) shard=${SHARD}/${SHARDS}"
           python3 - <<'PY'
-          import json, os, re, urllib.request
+          import json, os, urllib.request
 
-          repo = os.environ["REPO"]
-          token = os.environ["GH_TOKEN"]
-          wfs = [w.strip() for w in (os.environ.get("WFS") or "").split(",") if w.strip()]
+          repo = os.environ["REPO"]; token = os.environ["GH_TOKEN"]
+          shard = int(os.environ["SHARD"]); shards = int(os.environ["SHARDS"])
+          H = {"Authorization": f"Bearer {token}",
+               "Accept": "application/vnd.github+json",
+               "User-Agent": "hermes-audit"}
 
-          def api(path):
-              req = urllib.request.Request(
-                  f"https://api.github.com/repos/{repo}{path}",
-                  headers={"Authorization": f"Bearer {token}",
-                           "Accept": "application/vnd.github+json",
-                           "User-Agent": "hermes-audit"})
+          def get(path):
+              req = urllib.request.Request(f"https://api.github.com/repos/{repo}{path}", headers=H)
               with urllib.request.urlopen(req, timeout=45) as r:
                   return json.load(r)
 
-          def text(path):
-              req = urllib.request.Request(
-                  f"https://api.github.com/repos/{repo}{path}",
-                  headers={"Authorization": f"Bearer {token}",
-                           "Accept": "application/vnd.github+json",
-                           "User-Agent": "hermes-audit"})
-              with urllib.request.urlopen(req, timeout=90) as r:
-                  return r.read().decode("utf-8", "replace")
+          wfs = []
+          for page in range(1, 6):
+              try:
+                  data = get(f"/actions/workflows?per_page=100&page={page}").get("workflows", [])
+              except Exception:
+                  break
+              if not data:
+                  break
+              wfs.extend(data)
+
+          mine = [w for i, w in enumerate(wfs) if i % shards == shard]
+          print(f"shard {shard}: {len(mine)} of {len(wfs)} workflows")
 
           rows = []
-          for wf in wfs:
+          for w in mine:
+              name = w["path"].split("/")[-1]
+              row = {"workflow": name}
               try:
-                  runs = api(f"/actions/workflows/{wf}/runs?per_page=1&branch=main")
+                  runs = get(f"/actions/workflows/{w['id']}/runs?per_page=1&branch=main")
                   r = (runs.get("workflow_runs") or [None])[0]
                   if not r:
-                      rows.append({"workflow": wf, "verdict": "NO RUNS"})
+                      row["verdict"] = "NEVER RUN"
+                      rows.append(row)
                       continue
-                  row = {"workflow": wf, "run": r["run_number"],
-                         "conclusion": r.get("conclusion") or r.get("status")}
-                  if r.get("conclusion") == "failure":
-                      jobs = api(f"/actions/runs/{r['id']}/jobs").get("jobs") or []
-                      if jobs:
-                          failed = [s["name"] for j in jobs for s in j.get("steps", [])
-                                    if s.get("conclusion") == "failure"]
-                          row["failed_steps"] = failed[:3]
-                          try:
-                              log = text(f"/actions/jobs/{jobs[0]['id']}/logs")
-                              errs = [l for l in log.splitlines()
-                                      if re.search(r"##\[error\]|Error:|error:|Traceback", l)][-3:]
-                              row["error_lines"] = [re.sub(r"^\S+Z\s*", "", e)[:160] for e in errs]
-                          except Exception as e:
-                              row["error_lines"] = [f"log fetch failed: {type(e).__name__}"]
-                  rows.append(row)
+                  row["run"] = r["run_number"]
+                  row["verdict"] = r.get("conclusion") or r.get("status")
+                  if row["verdict"] == "failure":
+                      jobs = get(f"/actions/runs/{r['id']}/jobs").get("jobs") or []
+                      steps = [s["name"] for j in jobs for s in j.get("steps", [])
+                               if s.get("conclusion") == "failure"]
+                      row["failed_steps"] = steps[:3]
               except Exception as e:
-                  rows.append({"workflow": wf, "verdict": f"ERROR {type(e).__name__}"})
+                  row["verdict"] = f"ERROR {type(e).__name__}"
+              rows.append(row)
 
-          print(f"\n=== AUDIT OF {len(rows)} WORKFLOWS ===")
-          for row in rows:
-              print(json.dumps(row))
-          fails = [r for r in rows if r.get("conclusion") == "failure"]
-          print(f"\nsummary: {len(fails)} failing of {len(rows)} audited")
-          with open("audit_result.json", "w") as f:
+          fails = [r for r in rows if r["verdict"] == "failure"]
+          never = [r for r in rows if r["verdict"] == "NEVER RUN"]
+          print(f"shard {shard}: {len(fails)} failing, {len(never)} never-run, {len(rows)} audited")
+          for r in fails:
+              print("FAIL", json.dumps(r)[:180])
+          with open(f"audit_shard_{shard}.json", "w") as f:
               json.dump(rows, f, indent=1)
           PY
-      - name: Upload audit
+      - name: Upload shard result
         uses: actions/upload-artifact@v4
         with:
-          name: log-audit
-          path: audit_result.json
+          name: audit-shard-${{ matrix.shard }}
+          path: audit_shard_${{ matrix.shard }}.json
