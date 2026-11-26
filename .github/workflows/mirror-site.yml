@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   mirror:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 90
 
     steps:
@@ -89,9 +89,11 @@ jobs:
             --exclude='^updates/' \
             --exclude='(^|/)node_modules/' \
             --exclude='^favcreators_source/.git/' \
+            --exclude='(^|/)\.git/' \
+            --exclude='(^|/)\.git_QUARANTINE_[^/]*/' \
+            --exclude-glob=.git_QUARANTINE_* \
             --exclude='^cakephp/vendor/' \
             --exclude='^findevents/next/_next/static/chunks/' \
-            --exclude='(^|/)\.git/' \
             --exclude='(^|/)__pycache__/' \
             --exclude-glob=*.pyc \
             --exclude-glob=hot_trending_30m*%25* \
@@ -178,6 +180,10 @@ jobs:
             --exclude='^audit/research/' \
             --exclude='^updates/' \
             --exclude='(^|/)node_modules/' \
+            --exclude='(^|/)\.git/' \
+            --exclude='(^|/)\.git_QUARANTINE_[^/]*/' \
+            --exclude-glob=.git_QUARANTINE_* \
+            --exclude='(^|/)__pycache__/' \
             --exclude-glob=db_config.php \
             --exclude-glob=db-config.php \
             --exclude-glob=*.env \
@@ -212,6 +218,10 @@ jobs:
           open -u "$SRC_USER","$SRC_PASS" "$SRC_HOST"
           mirror \
             --reverse \
+            --exclude='(^|/)\.git/' \
+            --exclude='(^|/)\.git_QUARANTINE_[^/]*/' \
+            --exclude-glob=.git_QUARANTINE_* \
+            --exclude='(^|/)__pycache__/' \
             --verbose \
             --use-cache \
             --no-perms \

@@ -61,6 +61,12 @@ jobs:
     if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}  # Cloud default, pick self-hosted when local machine is on
     timeout-minutes: 115  # Long generator + commit/push + FTP; 90m still saw mid-step cancellations (stale /audit).
+    # `runner` is a free-text input, so this job can land on a Windows runner.
+    # The steps are bash (`if [ ... ]`, `for ... do`); Windows would default to
+    # PowerShell and die with: ParserError: Missing '(' after 'if'.
+    defaults:
+      run:
+        shell: bash
     #
     # 5 consecutive cron runs were cancelling at the 45-min mark in the "Commit updated data"
     # step, specifically during the `python -m audit_trail.dashboard_generator` re-run (needed
