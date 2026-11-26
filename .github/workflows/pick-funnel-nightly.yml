@@ -107,11 +107,11 @@ jobs:
             git commit -m "Pick funnel nightly refresh $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
             # 2026-06-12: bare `git push` lost the main race every time (peers commit
             # ~1/min) — commit cea28a15 was created then dropped. Rebase-retry x3.
-            for i in 1 2 3; do
-              git push && break
-              git pull --rebase --autostash origin main || git rebase --abort || true
-              [ "$i" = "3" ] && echo "::warning::push failed after 3 rebase retries"
-            done
+            # Bounded push via safe_push.sh: every git call is capped at 90s and retried
+            # with backoff, so a contended main fails this step instead of hanging past
+            # the job's timeout-minutes and silently losing the commit.
+            bash .github/scripts/safe_push.sh \
+              || echo "::warning::push failed after bounded retries; data is on disk + FTP'd"
           else
             echo "No changes to commit."
           fi

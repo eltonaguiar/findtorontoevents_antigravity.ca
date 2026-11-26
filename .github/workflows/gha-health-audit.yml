@@ -58,10 +58,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(gha): gha health report [skip ci]"
-          if ! git push origin HEAD:main; then
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
+          bash .github/scripts/safe_push.sh
 
       - name: Notify on audit failure
         if: failure()

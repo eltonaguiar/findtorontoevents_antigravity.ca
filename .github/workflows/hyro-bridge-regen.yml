@@ -150,11 +150,7 @@ jobs:
           git commit -m "chore(hyrotrader): regenerate hyro_quan_bridge.json $STAMP [skip ci]"
           # Pull-rebase to handle concurrent main updates from other workflows
           # before pushing.
-          git pull --rebase origin main || {
-            echo "::warning::pull-rebase failed; aborting push to avoid divergence"
-            exit 0
-          }
-          git push origin HEAD:main || {
+          bash .github/scripts/safe_push.sh || {
             echo "::warning::push failed — likely concurrent main update; will retry next run"
           }
 

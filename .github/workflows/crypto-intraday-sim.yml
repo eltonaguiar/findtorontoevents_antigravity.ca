@@ -83,10 +83,9 @@ jobs:
             exit 0
           fi
           git commit -m "chore(sim): crypto intraday paper tick + forward bridge [skip ci]"
-          for i in 1 2 3; do
-            git pull --rebase --no-recurse-submodules origin main || true
-            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
-            sleep $((i*5))
-          done
+          # Bounded push via safe_push.sh: every git call is capped at 90s and retried
+          # with backoff, so a contended main fails this step instead of hanging past
+          # the job's timeout-minutes and silently losing the commit.
+          bash .github/scripts/safe_push.sh
           echo "::error title=crypto-intraday-sim::tick could not be pushed"
           exit 1
