@@ -1,3 +1,25 @@
+# ============================================================================
+# KEEP DISABLED. Assessed 2026-11-26 (hermes-desktop) after an automated pass
+# wrongly re-enabled it and called a manual run a "success".
+#
+# Reason it is off: blocked 2026-03-16 as a proven loser (-98% PnL, 12% WR,
+# PF 0.26 over 50 trades).
+#
+# Reason not to port its logic to audit2/audit3: it is a 562-line scanner over
+# 20 S&P 500 names implementing four signals that already exist across this
+# repo - bollinger appears in 451 python files, mean_reversion in 328,
+# ml_ranker in 26, breakout_momentum in 10. Its one distinctive signal,
+# short_term_reversal (a 30-line down-days/RSI score), is already implemented
+# in alpha_engine/strategies/mean_reversion_strategies.py. Nothing to gain.
+#
+# Its only output was STOCKS/competition/fast_forward_picks.json, consumed by
+# audit_trail/dashboard_generator.py -> dashboard_payload.json, published by
+# audit-dashboard.yml. Neither the runner script nor that JSON exists on main
+# any more; both survive in findtorontoevents_antigravity.ca-archive-2026-05-23
+# at commit 6beb451. Nothing downstream depends on them.
+#
+# Do not re-enable, do not "fix the missing script", do not dispatch it.
+# ============================================================================
 name: Fast Stocks Competition  High Frequency Scanner
 
 on:
