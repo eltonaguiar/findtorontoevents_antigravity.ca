@@ -37,9 +37,24 @@ jobs:
       - name: Fetch dashboard_payload.json from production
         run: |
           mkdir -p audit_trail/data
-          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/dashboard_payload.json" \
-            -o audit_trail/data/dashboard_payload.json \
-            || echo "::warning::dashboard_payload.json fetch failed — portfolio_manager may degrade"
+          # The host rate-limits datacenter ranges: a bare curl gets a fast 403
+          # from GitHub runners while the same URL returns 200 (valid 37MB JSON)
+          # from a residential IP. Retry on 403/429/5xx with backoff and name the
+          # cause, instead of eating the first 403 as a generic failure.
+          url="https://findtorontoevents.ca/audit/data/dashboard_payload.json"
+          out=audit_trail/data/dashboard_payload.json
+          ok=0
+          for i in 1 2 3 4; do
+            if curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
+                 --retry-on-http-error 403,429,500,502,503 "$url" -o "$out"; then
+              ok=1; break
+            fi
+            echo "::warning::dashboard_payload.json attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s"
+            sleep $((i * 15))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::warning::dashboard_payload.json unavailable after 4 attempts — portfolio_manager may degrade"
+          fi
 
       - name: Fetch prior portfolio state from production
         # 2026-06-12 resurrection: claudes_test_state.json is gitignored and was
@@ -49,9 +64,20 @@ jobs:
         # replace real books — on a too-small fetch we fall back to bootstrap.
         run: |
           mkdir -p audit_dashboard/data
-          curl -fsS --max-time 180 "https://findtorontoevents.ca/audit/data/claudes_test_state.json" \
-            -o audit_dashboard/data/claudes_test_state.json \
-            || echo "::warning::state fetch failed — portfolios will re-bootstrap this run"
+          url="https://findtorontoevents.ca/audit/data/claudes_test_state.json"
+          out=audit_dashboard/data/claudes_test_state.json
+          ok=0
+          for i in 1 2 3 4; do
+            if curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
+                 --retry-on-http-error 403,429,500,502,503 "$url" -o "$out"; then
+              ok=1; break
+            fi
+            echo "::warning::state fetch attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s"
+            sleep $((i * 15))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "::warning::state fetch failed after 4 attempts — portfolios will re-bootstrap this run"
+          fi
           sz=$(stat -c%s audit_dashboard/data/claudes_test_state.json 2>/dev/null || echo 0)
           if [ "$sz" -lt 10240 ]; then
             echo "::warning::fetched state too small (${sz}B) — discarding to avoid corrupt books"
