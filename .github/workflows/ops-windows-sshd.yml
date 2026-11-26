@@ -1,0 +1,92 @@
+name: Ops - Windows OpenSSH Server
+
+# Enables Windows OpenSSH Server on a self-hosted Windows runner so other machines on
+# the LAN (gx10, 192.168.2.52) can connect back to it. Manual dispatch only.
+#
+#   mode=diagnose  read-only: elevation, capability state, service, firewall, port
+#   mode=enable    install + start sshd, open TCP 22 for the local subnet
+#
+# The enable step needs an elevated runner service; diagnose reports whether it is.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "diagnose (read-only) or enable"
+        type: choice
+        options: [diagnose, enable]
+        default: diagnose
+      subnet:
+        description: "Subnet allowed to reach port 22"
+        default: "192.168.2.0/24"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-windows-sshd
+  cancel-in-progress: false
+
+jobs:
+  sshd:
+    runs-on: [self-hosted, Windows, laptop-zerou-win]
+    timeout-minutes: 25
+    steps:
+      - name: Report current state
+        shell: powershell
+        run: |
+          $id = [Security.Principal.WindowsIdentity]::GetCurrent()
+          $principal = New-Object Security.Principal.WindowsPrincipal($id)
+          $admin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+          Write-Host "host      : $env:COMPUTERNAME"
+          Write-Host "runner as : $($id.Name)"
+          Write-Host "elevated  : $admin"
+          Write-Host "mode      : ${{ inputs.mode }}"
+          Write-Host "--- capability ---"
+          try { Get-WindowsCapability -Online -Name OpenSSH.Server* | Select-Object Name, State | Format-Table -AutoSize | Out-String | Write-Host }
+          catch { Write-Host "capability query failed: $_" }
+          Write-Host "--- service ---"
+          Get-Service sshd -ErrorAction SilentlyContinue | Select-Object Name, Status, StartType | Format-Table -AutoSize | Out-String | Write-Host
+          Write-Host "--- firewall ---"
+          Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like "*SSH*" } | Select-Object DisplayName, Enabled, Direction, Action | Format-Table -AutoSize | Out-String | Write-Host
+          Write-Host "--- port 22 ---"
+          $listen = Get-NetTCPConnection -LocalPort 22 -State Listen -ErrorAction SilentlyContinue
+          if ($listen) { Write-Host "listening: yes" } else { Write-Host "listening: no" }
+
+      - name: Install and start OpenSSH Server
+        if: ${{ inputs.mode == 'enable' }}
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $cap = Get-WindowsCapability -Online -Name OpenSSH.Server* | Where-Object { $_.State -ne 'Installed' }
+          if ($cap) {
+            Write-Host "installing OpenSSH.Server..."
+            Add-WindowsCapability -Online -Name $cap.Name | Out-Null
+          } else { Write-Host "OpenSSH.Server already installed" }
+          Set-Service -Name sshd -StartupType Automatic
+          if ((Get-Service sshd).Status -ne 'Running') { Start-Service sshd }
+          Write-Host "service: $((Get-Service sshd).Status)"
+
+      - name: Open firewall for the LAN
+        if: ${{ inputs.mode == 'enable' }}
+        shell: powershell
+        run: |
+          $name = 'OpenSSH-Server-In-TCP'
+          if (-not (Get-NetFirewallRule -Name $name -ErrorAction SilentlyContinue)) {
+            New-NetFirewallRule -Name $name -DisplayName 'OpenSSH Server (sshd)' `
+              -Enabled True -Direction Inbound -Protocol TCP -Action Allow `
+              -LocalPort 22 -RemoteAddress '${{ inputs.subnet }}' | Out-Null
+            Write-Host "firewall rule created for ${{ inputs.subnet }}"
+          } else { Write-Host "firewall rule already exists" }
+
+      - name: Confirm
+        shell: powershell
+        run: |
+          Start-Sleep -Seconds 3
+          Get-Service sshd -ErrorAction SilentlyContinue | Select-Object Name, Status, StartType | Format-Table -AutoSize | Out-String | Write-Host
+          $listen = Get-NetTCPConnection -LocalPort 22 -State Listen -ErrorAction SilentlyContinue
+          if ($listen) { Write-Host "port 22 listening: yes" } else { Write-Host "port 22 listening: NO" }
+          Get-ChildItem C:\ProgramData\ssh\ssh_host_*_key.pub -ErrorAction SilentlyContinue |
+            ForEach-Object { Write-Host "$($_.Name): $(Get-Content $_.FullName)" }
+          Write-Host "LAN addresses:"
+          Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -like '192.168.*' } | Select-Object IPAddress, InterfaceAlias | Format-Table -AutoSize | Out-String | Write-Host
