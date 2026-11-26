@@ -148,6 +148,25 @@ for attempt in $(seq 1 $MAX_RETRIES); do
         # In merge semantics (unlike rebase), "ours" = local HEAD = our commit.
         if ! timeout "${GIT_NET_TIMEOUT}" git pull --no-rebase --no-recurse-submodules -X ours origin main 2>&1 | _sanitize; then
             echo "WARNING: Merge pull also failed on attempt $attempt"
+            # Last resort. A shallow/partial clone can have NO common ancestor with
+            # origin/main, and then rebase, merge AND --allow-unrelated-histories all
+            # have nothing to work from - the push is simply rejected (fetch first)
+            # and the workflow's commit silently never lands (4 workflows were doing
+            # this: ab_analysis, actions-failure-guardian, dna-mutation-cycle,
+            # alpha-gainer-capture).
+            #
+            # A depth-1 fetch of the tip always works. Replay our tree on top of it:
+            # our generated files win, which is the same intent as -X ours.
+            _MSG=$(git log -1 --format=%s 2>/dev/null || echo "update")
+            if timeout "${GIT_NET_TIMEOUT}" git fetch --depth=1 --no-tags origin main 2>&1 | _sanitize; then
+                if ! git merge-base --is-ancestor FETCH_HEAD HEAD 2>/dev/null; then
+                    echo "no merge base with origin/main - replaying our tree on top of the remote tip"
+                    if git reset --soft FETCH_HEAD 2>/dev/null; then
+                        git commit --allow-empty -q -m "$_MSG" 2>/dev/null && echo "replayed commit on origin/main tip"
+                        pull_ok=true
+                    fi
+                fi
+            fi
         fi
     }
 
