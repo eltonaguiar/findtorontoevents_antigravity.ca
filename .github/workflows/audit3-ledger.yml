@@ -62,33 +62,32 @@ jobs:
             if [ "$ok" = "1" ]; then break; fi
           done
           if [ "$ok" != "1" ]; then
-            # Both domains 403 GitHub runner IPs while serving 200 from a normal
-            # host, and PR #1134's mirror is blocked too because it shares the
-            # same block. FTP to the same docroot is not blocked, so retrieve
-            # the identical path over TLS before declaring the data unreachable.
+            # Both domains 403 GitHub runner IPs while serving 200 from a normal host,
+            # and PR #1134's mirror shares that block. FTP to the same docroot is not
+            # blocked, so retrieve the identical path over TLS before giving up.
             echo "HTTP blocked on both bases; trying FTP to the same docroot..."
             if python3 - "$out" <<'PYFTP'
-import ftplib, os, sys
-host = (os.environ.get("FTP_HOST") or "").strip()
-user = (os.environ.get("FTP_USER") or "").strip()
-pw = os.environ.get("FTP_PASS") or ""
-out = sys.argv[1]
-if not (host and user and pw):
-    sys.exit("FTP secrets missing")
-remote = "/audit/data/dashboard_data.json"
-tmp = out + ".ftp"
-with open(tmp, "wb") as fh:
-    ft = ftplib.FTP_TLS(host, timeout=180)
-    ft.login(user, pw)
-    ft.prot_p()
-    ft.retrbinary("RETR " + remote, fh.write)
-    ft.quit()
-size = os.path.getsize(tmp)
-print(f"ftp downloaded {size} bytes")
-if size < 1000000:
-    sys.exit(f"ftp download too small: {size}")
-os.replace(tmp, out)
-PYFTP
+          import ftplib, os, sys
+          host = (os.environ.get("FTP_HOST") or "").strip()
+          user = (os.environ.get("FTP_USER") or "").strip()
+          pw = os.environ.get("FTP_PASS") or ""
+          out = sys.argv[1]
+          if not (host and user and pw):
+              sys.exit("FTP secrets missing")
+          remote = "/audit/data/dashboard_data.json"
+          tmp = out + ".ftp"
+          with open(tmp, "wb") as fh:
+              ft = ftplib.FTP_TLS(host, timeout=180)
+              ft.login(user, pw)
+              ft.prot_p()
+              ft.retrbinary("RETR " + remote, fh.write)
+              ft.quit()
+          size = os.path.getsize(tmp)
+          print(f"ftp downloaded {size} bytes")
+          if size < 1000000:
+              sys.exit(f"ftp download too small: {size}")
+          os.replace(tmp, out)
+          PYFTP
             then
               ok=1
             fi
