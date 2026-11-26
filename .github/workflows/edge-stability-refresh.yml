@@ -50,12 +50,13 @@ jobs:
             exit 0
           fi
           git commit -m "chore(edge-stability): daily refresh [skip ci]"
-          pushed=0
-          # Was a hand-rolled bare-push / pull --rebase --autostash retry loop. The
-          # rebase needs history the shallow checkout does not have, so it blocks until
-          # the job timeout cancels the run. safe_push.sh exists for exactly this case.
-          bash .github/scripts/safe_push.sh
-          [ "$pushed" = 1 ] || { echo "::error::push failed after 5 attempts"; exit 1; }
+          # Honor safe_push.sh's exit code instead of a `pushed` flag assigned in a
+          # child process: `bash .github/scripts/safe_push.sh` runs in a subshell, so a
+          # `pushed=1` assignment there never reaches this shell. The step was failing
+          # with "push failed after 5 attempts" even when safe_push.sh pushed fine.
+          if ! bash .github/scripts/safe_push.sh; then
+            echo "::error::push failed after safe_push.sh retries"; exit 1
+          fi
       - name: FTP-deploy refreshed JSONs to live /audit
         # Git push does NOT update the live site (50webs has no shell). Without
         # this the /audit "Edge Stability" freshness source stays stale (was 27d
