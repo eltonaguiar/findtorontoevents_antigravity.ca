@@ -35,11 +35,33 @@ _EQUITY_LIKE = {"EQUITY", "ETF", "FOREX", "FX", "COMMODITY", "BOND",
 _HISTORY_CACHE: dict[tuple, list[float]] = {}
 
 
+# Binance answers some runner egress IPs with HTTP 451 (geo-block). Every symbol
+# then fails on every mirror, and each failure used to print its own ::warning -
+# 70+ lines per run for one upstream policy decision, which buries real warnings.
+# Count those and emit ONE summary line per source instead of going silent.
+_WARN_451: dict[str, int] = {}
+_WARN_451_SAMPLE: dict[str, str] = {}
+
+
 def _warn(source: str, symbol: str, err: object) -> None:
     """Emit a GH-Actions ``::warning`` line for a failed source (never silent)."""
     msg = str(err).replace("\n", " ")[:200]
+    if "451" in msg:
+        _WARN_451[source] = _WARN_451.get(source, 0) + 1
+        _WARN_451_SAMPLE.setdefault(source, symbol)
+        return
     print(f"::warning title=prices::{source} failed for {symbol}: {msg}",
           file=sys.stderr, flush=True)
+
+
+def _flush_451_summary() -> None:
+    for source, n in _WARN_451.items():
+        print(f"::warning title=prices::{source} geo-blocked (HTTP 451) on {n} request(s) "
+              f"(first: {_WARN_451_SAMPLE.get(source)}); other price sources used instead",
+              file=sys.stderr, flush=True)
+
+
+atexit.register(_flush_451_summary)
 
 
 def _is_crypto(asset_class: str) -> bool:

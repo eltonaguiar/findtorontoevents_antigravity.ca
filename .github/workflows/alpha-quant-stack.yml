@@ -35,7 +35,11 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-          cache: 'pip'
+          # Cache disabled: this runs on the ARM64 self-hosted pool where a dozen
+          # jobs save the same setup-python key concurrently, which produced
+          # "Failed to save: Unable to reserve cache with key setup-python-Linux-arm64".
+          # Self-hosted runners keep a warm pip cache on disk anyway.
+          cache: ''
 
       - name: Install dependencies
         run: python -m pip install yfinance pandas numpy scikit-learn joblib requests

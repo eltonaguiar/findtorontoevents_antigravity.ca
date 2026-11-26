@@ -44,6 +44,12 @@ jobs:
   run-swing-screener:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     timeout-minutes: 25
+    # `runner` is a free-text input, so this job can land on a Windows runner.
+    # The steps are bash (`if [ ... ]`, `for ... do`); Windows would default to
+    # PowerShell and die with: ParserError: Missing '(' after 'if'.
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout

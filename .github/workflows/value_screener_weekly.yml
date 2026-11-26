@@ -49,6 +49,14 @@ jobs:
   run-value-screener:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     timeout-minutes: 45
+    # `runner` is a free-text input, so this job can land on a Windows runner.
+    # Every step is bash (`if [ -f ... ]`, `for ... do`), and without an explicit
+    # shell Windows defaults to PowerShell, which fails to parse `if [`:
+    #   ParserError: Missing '(' after 'if' in if statement.
+    # Pin bash for the whole job; Windows runners ship git-bash.
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout
