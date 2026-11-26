@@ -129,7 +129,7 @@ jobs:
 
         Run #${{ github.run_number }}"
         
-        git commit -m "$COMMIT_MSG [skip ci]" || echo "No changes to commit"
+        git diff --cached --quiet || git commit -m "$COMMIT_MSG [skip ci]" || echo "No changes to commit"
         bash .github/scripts/safe_push.sh
         
     - name:  Final Status
