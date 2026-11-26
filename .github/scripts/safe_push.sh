@@ -146,7 +146,7 @@ for attempt in $(seq 1 $MAX_RETRIES); do
         git rebase --abort 2>/dev/null || true
         # Merge fallback: -X ours prefers our local branch (our generated data).
         # In merge semantics (unlike rebase), "ours" = local HEAD = our commit.
-        if ! timeout "${GIT_NET_TIMEOUT}" git pull --no-rebase --no-recurse-submodules -X ours origin main 2>&1 | _sanitize; then
+        if ! timeout "${GIT_NET_TIMEOUT}" git pull --no-rebase --allow-unrelated-histories --no-recurse-submodules -X ours origin main 2>&1 | _sanitize; then
             echo "WARNING: Merge pull also failed on attempt $attempt"
         fi
     }
