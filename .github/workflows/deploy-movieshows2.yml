@@ -8,9 +8,12 @@ name: Deploy MOVIESHOWS2 API
 #   IN   api/movies.php       the PHP 5.2 rewrite; the live copy is legacy code with
 #                             60 post-5.2 constructs, i.e. it cannot even parse there
 #   IN   api/get-movies.php   never deployed; contains the OPTIONS preflight fix
-#   OUT  api/db-config.php    live copy holds the working credentials; the repo copy
-#                             reads getenv()/a private require, which 50webs has not
-#                             been given, so publishing it would break the DB
+#   IN   api/db-config.php    the live 683-byte copy hardcodes STALE credentials and
+#                             made both endpoints answer "Database connection failed".
+#                             The repo copy resolves the same private credentials file
+#                             MOVIESHOWS3 already uses successfully (both api/ dirs sit
+#                             at the same depth, verified live with a throwaway probe:
+#                             {"connected":true}), so publishing it FIXES the DB.
 #   OUT  api/sync-providers.php  unexplained 176-byte drift, needs a human diff
 #   OUT  api/test-db.php, api/freestyle-search.php  not currently served; adding new
 #                             public endpoints is a product decision, not a deploy
@@ -49,6 +52,7 @@ jobs:
           files = [
               ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/movies.php',     'movies.php'),
               ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/get-movies.php', 'get-movies.php'),
+              ('TORONTOEVENTS_ANTIGRAVITY/MOVIESHOWS2/api/db-config.php',  'db-config.php'),
           ]
 
           ftp = ftplib.FTP(host, timeout=60)
