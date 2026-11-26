@@ -62,7 +62,7 @@ jobs:
           git add -f alpha_engine/data/active_picks.json 2>/dev/null || true
           TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
           PICK_COUNT=$(python3 -c "import json; d=json.load(open('alpha_engine/data/precursor_picks.json')); print(len(d))" 2>/dev/null || echo "0")
-          git commit -m "Winner pattern scan ${TIMESTAMP} - ${PICK_COUNT} picks [skip ci]" || echo "No changes to commit"
+          git diff --cached --quiet || git commit -m "Winner pattern scan ${TIMESTAMP} - ${PICK_COUNT} picks [skip ci]" || echo "No changes to commit"
           git pull --rebase origin main
           bash .github/scripts/safe_push.sh
 
