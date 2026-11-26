@@ -38,15 +38,27 @@ jobs:
       - name: Fetch live closed-pick ledger
         run: |
           mkdir -p /tmp/audit3
-          url="https://findtorontoevents.ca/audit/data/dashboard_data.json"
+          out=/tmp/audit3/dashboard_data.json
           ok=0
-          for i in 1 2 3 4; do
-            if curl -fsS --max-time 180 -o /tmp/audit3/dashboard_data.json "$url"; then ok=1; break; fi
-            echo "fetch attempt $i failed; sleeping $((i*10))s"
-            sleep $((i*10))
+          # Retrying one blocked origin cannot beat a persistent block: on
+          # 2026-11-25 all four attempts returned 403 from the runner while the
+          # same URL served 200 locally. Fail over to the GoDaddy mirror, which
+          # serves the same bytes (verified 27,239,184 B, identical size).
+          for base in https://findtorontoevents.ca https://torontoevent.net; do
+            url="$base/audit/data/dashboard_data.json"
+            for i in 1 2 3; do
+              if curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
+                   --retry-on-http-error 403,429,500,502,503 -o "$out" "$url"; then
+                echo "fetched dashboard_data.json from $base on attempt $i"
+                ok=1; break
+              fi
+              echo "attempt $i failed for $base; sleeping $((i*10))s"
+              sleep $((i*10))
+            done
+            if [ "$ok" = "1" ]; then break; fi
           done
           if [ "$ok" != "1" ]; then
-            echo "::error title=audit3::live dashboard_data.json unreachable"
+            echo "::error title=audit3::live dashboard_data.json unreachable from origin and mirror"
             exit 1
           fi
           python3 - <<'PY'
