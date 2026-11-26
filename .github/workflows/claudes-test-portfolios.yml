@@ -41,12 +41,17 @@ jobs:
           # from GitHub runners while the same URL returns 200 (valid 37MB JSON)
           # from a residential IP. Retry on 403/429/5xx with backoff and name the
           # cause, instead of eating the first 403 as a generic failure.
+          # 2026-11-26: --retry-on-http-error is NOT a curl option (curl exits 2
+          # with "option --retry-on-http-error: is unknown" before connecting), so
+          # every fetch failed, the state fetch fell through to re-bootstrap, and
+          # all 36 portfolios restarted from $10k every 30 min. --retry-all-errors
+          # already covers 403/429/5xx.
           url="https://findtorontoevents.ca/audit/data/dashboard_payload.json"
           out=audit_trail/data/dashboard_payload.json
           ok=0
           for i in 1 2 3 4; do
             if curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
-                 --retry-on-http-error 403,429,500,502,503 "$url" -o "$out"; then
+                 "$url" -o "$out"; then
               ok=1; break
             fi
             echo "::warning::dashboard_payload.json attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s"
@@ -69,7 +74,7 @@ jobs:
           ok=0
           for i in 1 2 3 4; do
             if curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
-                 --retry-on-http-error 403,429,500,502,503 "$url" -o "$out"; then
+                 "$url" -o "$out"; then
               ok=1; break
             fi
             echo "::warning::state fetch attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s"
