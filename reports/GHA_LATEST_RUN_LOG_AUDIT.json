@@ -1,0 +1,4277 @@
+[
+  {
+    "file": "2hour_challenge.yml",
+    "class": "ALWAYS_RED",
+    "audited": false,
+    "run_id": 45740875661,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "_dynamic-runner-template.yml",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ab_analysis.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742160494,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 586,
+    "errors": 1,
+    "warnings": 3,
+    "suspicious": 0,
+    "error_kinds": {
+      "ERROR line": 1
+    },
+    "warning_kinds": {
+      "WARNING line": 3
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "ab-analysis\tVerify all Tier-2 winners DB vs dashboard PF/WR/n\t2026-11-26T03:08:09.6641308Z ERROR: /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/audit_dashboard/data/dashboard_data.json missing"
+        ]
+      },
+      "warnings": {
+        "WARNING line": [
+          "ab-analysis\tCommit results\t2026-11-26T03:12:40.8247304Z WARNING: Merge pull also failed on attempt 1",
+          "ab-analysis\tCommit results\t2026-11-26T03:15:47.5580260Z WARNING: Merge pull also failed on attempt 2",
+          "ab-analysis\tCommit results\t2026-11-26T03:18:55.2038038Z WARNING: Merge pull also failed on attempt 3"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "academic-strategies-daily.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742163451,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 962,
+    "errors": 2,
+    "warnings": 5,
+    "suspicious": 2,
+    "error_kinds": {
+      "http 4xx": 2
+    },
+    "warning_kinds": {
+      "workflow warning": 1,
+      "##[warning] annotation": 1,
+      "WARNING line": 3
+    },
+    "suspicious_kinds": {
+      "skipped work": 2
+    },
+    "samples": {
+      "errors": {
+        "http 4xx": [
+          "emit-academic-picks\tRun priority_picks_emitter (writes priority_picks.json)\t2026-11-26T03:12:06.8413036Z 2026-11-26 03:12:06,840 [yfinance] HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"description\":\"Quote not found for symbol: NKLA\"}}}",
+          "emit-academic-picks\tRun priority_picks_emitter (writes priority_picks.json)\t2026-11-26T03:12:07.3999368Z 2026-11-26 03:12:07,399 [yfinance] HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"description\":\"Quote not found for symbol: MULN\"}}}"
+        ]
+      },
+      "warnings": {
+        "workflow warning": [
+          "emit-academic-picks\tInstall dependencies\t2026-11-26T03:08:09.8272921Z \u001b[36;1mpip install yfinance ccxt || echo \"::warning::pip install failed \u2014 later steps may misbehave\"\u001b[0m"
+        ],
+        "##[warning] annotation": [
+          "emit-academic-picks\tCommit JSON updates\t2026-11-26T03:12:14.4823427Z ##[warning]Token preflight bypassed (HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, please include the request ID 480A:328850:1EEC5AB:60249C2:6B07A38E and timestamp 2026-11-26 0"
+        ],
+        "WARNING line": [
+          "emit-academic-picks\tCommit JSON updates\t2026-11-26T03:16:44.6742832Z WARNING: Merge pull also failed on attempt 1",
+          "emit-academic-picks\tCommit JSON updates\t2026-11-26T03:19:48.3473603Z WARNING: Merge pull also failed on attempt 2",
+          "emit-academic-picks\tCommit JSON updates\t2026-11-26T03:22:55.0416777Z WARNING: Merge pull also failed on attempt 3"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "emit-academic-picks\tRun priority_picks_emitter (writes priority_picks.json)\t2026-11-26T03:11:57.2962970Z 2026-11-26 03:11:57,295 [alpha_engine.equity_qmom_residual] Not month-end, skipping QMOM rebalance",
+          "emit-academic-picks\tRun priority_picks_emitter (writes priority_picks.json)\t2026-11-26T03:12:05.1833547Z 2026-11-26 03:12:05,183 [alpha_engine.etf_country_rotation] Top-1 EWW momentum=-4.95% <= 0 \u2014 skipping rest"
+        ]
+      }
+    }
+  },
+  {
+    "file": "actions-failure-guardian.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45745132739,
+    "run_conclusion": "success",
+    "verdict": "SUSPICIOUS",
+    "lines": 660,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 7,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {
+      "skipped work": 7
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {
+        "skipped work": [
+          "monitor-and-retry\tRun failure guardian script\t2026-11-26T03:26:18.7464210Z       \"rerun_message\": \"skipped (run_attempt 3 >= cap 3)\",",
+          "monitor-and-retry\tRun failure guardian script\t2026-11-26T03:26:18.7467853Z       \"rerun_message\": \"skipped (run_attempt 3 >= cap 3)\",",
+          "monitor-and-retry\tRun failure guardian script\t2026-11-26T03:26:18.7471543Z       \"rerun_message\": \"skipped (run_attempt 3 >= cap 3)\",",
+          "monitor-and-retry\tRun failure guardian script\t2026-11-26T03:26:18.7474968Z       \"rerun_message\": \"skipped (run_attempt 3 >= cap 3)\",",
+          "monitor-and-retry\tRun failure guardian script\t2026-11-26T03:26:18.7478286Z       \"rerun_message\": \"skipped (run_attempt 3 >= cap 3)\",",
+          "monitor-and-retry\tRun failure guardian script\t2026-11-26T03:26:18.7481898Z       \"rerun_message\": \"skipped (run_attempt 3 >= cap 3)\","
+        ]
+      }
+    }
+  },
+  {
+    "file": "adaptive-trust-tuner.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45746800270,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "ai-leaderboard-freshness.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742176592,
+    "run_conclusion": "success",
+    "verdict": "SUSPICIOUS",
+    "lines": 1030,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 3,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {
+      "skipped work": 3
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {
+        "skipped work": [
+          "refresh-and-deploy\tRun MA strategy forward-tracker\t2026-11-26T03:09:03.4409703Z [ma_v2] 33 symbols across 6 classes; skipped 0",
+          "refresh-and-deploy\tFTP deploy leaderboard + truth panel to findtorontoevents.ca\t2026-11-26T03:09:06.9295315Z 7 uploaded, 0 failed, 0 skipped (local missing)",
+          "refresh-and-deploy\tFTP deploy leaderboard + truth panel to findtorontoevents.ca\t2026-11-26T03:09:13.9143896Z 22 uploaded, 0 failed, 4 skipped (local missing)"
+        ]
+      }
+    }
+  },
+  {
+    "file": "ai-model-portfolios-daily.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742180384,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 737,
+    "errors": 3,
+    "warnings": 73,
+    "suspicious": 1,
+    "error_kinds": {
+      "python traceback": 2,
+      "##[error] annotation": 1
+    },
+    "warning_kinds": {
+      "##[warning] annotation": 70,
+      "WARNING line": 3
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {
+        "python traceback": [
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:09:23.3753521Z Traceback (most recent call last):",
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:09:23.3768005Z Traceback (most recent call last):"
+        ],
+        "##[error] annotation": [
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:09:23.4641283Z ##[error]Process completed with exit code 1."
+        ]
+      },
+      "warnings": {
+        "##[warning] annotation": [
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:07:41.2229956Z ##[warning]_binance_history failed for NEARUSDT: 451 Client Error:  for url: https://api3.binance.com/api/v3/klines?symbol=NEARUSDT&interval=1d&limit=65",
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:07:46.0914772Z ##[warning]_binance_history failed for NEARUSDT: 451 Client Error:  for url: https://api3.binance.com/api/v3/klines?symbol=NEARUSDT&interval=1d&limit=24",
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:07:50.0454324Z ##[warning]_binance_history failed for ADAUSDT: 451 Client Error:  for url: https://api3.binance.com/api/v3/klines?symbol=ADAUSDT&interval=1d&limit=65",
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:07:52.1791645Z ##[warning]_binance_history failed for ADAUSDT: 451 Client Error:  for url: https://api3.binance.com/api/v3/klines?symbol=ADAUSDT&interval=1d&limit=24",
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:07:54.4584021Z ##[warning]_binance_history failed for XRPUSDT: 451 Client Error:  for url: https://api3.binance.com/api/v3/klines?symbol=XRPUSDT&interval=1d&limit=65",
+          "portfolios-daily\tRun daily portfolio engine\t2026-11-26T03:07:56.7789245Z ##[warning]_binance_history failed for XRPUSDT: 451 Client Error:  for url: https://api3.binance.com/api/v3/klines?symbol=XRPUSDT&interval=1d&limit=24"
+        ],
+        "WARNING line": [
+          "portfolios-daily\tCommit PF JSON snapshots\t2026-11-26T03:15:46.7583777Z WARNING: Merge pull also failed on attempt 1",
+          "portfolios-daily\tCommit PF JSON snapshots\t2026-11-26T03:18:50.3637207Z WARNING: Merge pull also failed on attempt 2",
+          "portfolios-daily\tCommit PF JSON snapshots\t2026-11-26T03:22:00.0639753Z WARNING: Merge pull also failed on attempt 3"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "portfolios-daily\tFTP upload PF JSON to findtorontoevents.ca\t2026-11-26T03:10:44.3133183Z \u001b[36;1m  echo \"::warning title=ftp::FTP_USER/FTP_PASS not set \u2014 skipping live deploy. pf_*.json will serve stale until manual upload.\"\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "ai-tournament-pipeline.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "run_id": 26953936775,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "ai-tournament-price-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742184319,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 4829,
+    "errors": 0,
+    "warnings": 4,
+    "suspicious": 1,
+    "error_kinds": {},
+    "warning_kinds": {
+      "workflow warning": 1,
+      "WARNING line": 3
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "workflow warning": [
+          "track-prices\tCommit results\t2026-11-26T03:27:24.7915321Z \u001b[36;1m  || echo \"::warning::push failed after bounded retries \u2014 data still wrote to DB; will reconcile next run\"\u001b[0m"
+        ],
+        "WARNING line": [
+          "track-prices\tCommit results\t2026-11-26T03:31:55.4180680Z WARNING: Merge pull also failed on attempt 1",
+          "track-prices\tCommit results\t2026-11-26T03:34:59.3977459Z WARNING: Merge pull also failed on attempt 2",
+          "track-prices\tCommit results\t2026-11-26T03:38:08.1687674Z WARNING: Merge pull also failed on attempt 3"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "track-prices\tResolve DB picks (PR\t2026-11-26T03:27:19.1250288Z [resolve-db] would resolve: WIN=0 LOSS=0 | still_open=290 price_fail=280 skipped_not_expired=0"
+        ]
+      }
+    }
+  },
+  {
+    "file": "algorithm-competition-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45746813593,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 468,
+    "errors": 0,
+    "warnings": 3,
+    "suspicious": 2,
+    "error_kinds": {},
+    "warning_kinds": {
+      "##[warning] annotation": 2,
+      "workflow warning": 1
+    },
+    "suspicious_kinds": {
+      "skipped work": 2
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "##[warning] annotation": [
+          "refresh-competition\tRun competition backtester\t2026-11-26T03:07:40.3495037Z ##[warning]STOCKS/competition/run_competition.py was lost in the 2026-05-23 history strip (INCIDENT #126) \u2014 restore from a pre-strip clone. Skipping backtest so this scheduled workflow stops hard-failing daily.",
+          "refresh-competition\tCreate slim JSON for dashboard\t2026-11-26T03:07:40.3662117Z ##[warning]competition-results.json absent (backtester skipped) \u2014 keeping existing competition-slim.json"
+        ],
+        "workflow warning": [
+          "refresh-competition\tDeploy to live site via FTP\t2026-11-26T03:07:40.4009577Z \u001b[36;1m  echo \"::warning::FTP credentials not configured. Skipping FTP deploy.\"\u001b[0m"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "refresh-competition\tCreate slim JSON for dashboard\t2026-11-26T03:07:40.3586899Z \u001b[36;1m  echo \"::warning title=missing-results::competition-results.json absent (backtester skipped) \u2014 keeping existing competition-slim.json\"\u001b[0m",
+          "refresh-competition\tCreate slim JSON for dashboard\t2026-11-26T03:07:40.3662117Z ##[warning]competition-results.json absent (backtester skipped) \u2014 keeping existing competition-slim.json"
+        ]
+      }
+    }
+  },
+  {
+    "file": "alpha-engine-daily-picks.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742191066,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 1870,
+    "errors": 8,
+    "warnings": 194,
+    "suspicious": 0,
+    "error_kinds": {
+      "ERROR line": 6,
+      "python traceback": 1,
+      "missing file": 1
+    },
+    "warning_kinds": {
+      "workflow warning": 6,
+      "WARNING line": 185,
+      "##[warning] annotation": 3
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:15.2234594Z 03:08:15 [ERROR] yfinance:",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:15.2236376Z 03:08:15 [ERROR] yfinance: ['LLY']: OperationalError('database is locked')",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:21.3409582Z 03:08:21 [ERROR] yfinance: HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"description\":\"Quote not found for symbol: DX-Y.N\"}}}",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:21.4378995Z 03:08:21 [ERROR] yfinance: $DX-Y.N: possibly delisted; no timezone found",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:21.4383262Z 03:08:21 [ERROR] yfinance:",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:21.4384149Z 03:08:21 [ERROR] yfinance: ['DX-Y.N']: possibly delisted; no timezone found"
+        ],
+        "python traceback": [
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:21.7499439Z Traceback (most recent call last):"
+        ],
+        "missing file": [
+          "generate-picks\tValidate proof-protocol metadata\t2026-11-26T03:08:21.8866291Z ##[warning]Cannot read latest_picks.json: [Errno 2] No such file or directory: 'alpha_engine/output/latest_picks.json'"
+        ]
+      },
+      "warnings": {
+        "workflow warning": [
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:09.2633802Z \u001b[36;1m  echo \"::warning::Alpha Engine exited with code $EXIT_CODE\"\u001b[0m",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:09.2636846Z \u001b[36;1m  echo \"::warning::No picks JSON generated\"\u001b[0m",
+          "generate-picks\tValidate proof-protocol metadata\t2026-11-26T03:08:21.8628937Z \u001b[36;1m    print(f\"::warning::Cannot read latest_picks.json: {e}\")\u001b[0m",
+          "generate-picks\tValidate proof-protocol metadata\t2026-11-26T03:08:21.8642979Z \u001b[36;1m        print(f\"::warning::Pick {i} missing proof-protocol keys: {missing}\")\u001b[0m",
+          "generate-picks\tValidate proof-protocol metadata\t2026-11-26T03:08:21.8644259Z \u001b[36;1m    print(\"::warning::Proof-protocol metadata incomplete \u2014 candidates not money-ready\")\u001b[0m",
+          "generate-picks\tTrigger existing portfolio refresh\t2026-11-26T03:08:22.6876267Z \u001b[36;1m  > /dev/null 2>&1 || echo \"::warning::Trigger existing portfolio refresh (PHP daily refresh curl) failed (previously silenced)\"\u001b[0m"
+        ],
+        "WARNING line": [
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:12.7603875Z 03:08:12 [WARNING] alpha_engine.config: Binance Futures ping failed \u2014 BINANCE_FUTURES_DISABLED=True for this session",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:15.2320577Z 03:08:15 [WARNING] alpha_engine.data.price_loader: Cache save failed for AAPL: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:15.2326631Z 03:08:15 [WARNING] alpha_engine.data.price_loader: Cache save failed for ABBV: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:15.2332444Z 03:08:15 [WARNING] alpha_engine.data.price_loader: Cache save failed for AMZN: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:15.2338127Z 03:08:15 [WARNING] alpha_engine.data.price_loader: Cache save failed for BA: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:15.2343672Z 03:08:15 [WARNING] alpha_engine.data.price_loader: Cache save failed for BAC: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'."
+        ],
+        "##[warning] annotation": [
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:21.8323671Z ##[warning]Alpha Engine exited with code 1",
+          "generate-picks\tGenerate daily picks\t2026-11-26T03:08:21.8329935Z ##[warning]No picks JSON generated",
+          "generate-picks\tValidate proof-protocol metadata\t2026-11-26T03:08:21.8866291Z ##[warning]Cannot read latest_picks.json: [Errno 2] No such file or directory: 'alpha_engine/output/latest_picks.json'"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "alpha-engine-etf.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742195275,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 510,
+    "errors": 1,
+    "warnings": 4,
+    "suspicious": 1,
+    "error_kinds": {
+      "ERROR line": 1
+    },
+    "warning_kinds": {
+      "##[warning] annotation": 1,
+      "WARNING line": 3
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "emit-etf-picks\tCommit ETF picks\t2026-11-26T03:08:40.1598802Z \u001b[36;1m  echo \"ERROR: All 10 push attempts failed \u2014 data generated, next cycle will self-heal.\"\u001b[0m"
+        ]
+      },
+      "warnings": {
+        "##[warning] annotation": [
+          "emit-etf-picks\tCommit ETF picks\t2026-11-26T03:08:40.5946892Z ##[warning]Token preflight bypassed (HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, please include the request ID 9828:17CFE4:1F88B5C:61D1D2D:6B07A2B8 and timestamp 2026-11-26 03:08:40 "
+        ],
+        "WARNING line": [
+          "emit-etf-picks\tCommit ETF picks\t2026-11-26T03:13:11.2252004Z WARNING: Merge pull also failed on attempt 1",
+          "emit-etf-picks\tCommit ETF picks\t2026-11-26T03:16:17.4984822Z WARNING: Merge pull also failed on attempt 2",
+          "emit-etf-picks\tCommit ETF picks\t2026-11-26T03:19:24.7364791Z WARNING: Merge pull also failed on attempt 3"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "emit-etf-picks\tRun ETF sector rotation emitter (production \u2014 etf_sector_picks.json)\t2026-11-26T03:08:38.7313946Z [etf_sector_emitter] VIX=28.3 > 25.0 \u2014 high-vol regime gate engaged, skipping rotation picks"
+        ]
+      }
+    }
+  },
+  {
+    "file": "alpha-engine-fast.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45742198631,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "alpha-engine-live.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45742782564,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "alpha-equity-breakout.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742204201,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 431,
+    "errors": 1,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {
+      "ERROR line": 1
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "equity-breakout-scan\tCommit new picks\t2026-11-26T03:08:31.9414088Z \u001b[36;1m  echo \"ERROR: All 10 push attempts failed \u2014 picks generated, next cycle self-heals.\"\u001b[0m"
+        ]
+      },
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "alpha-gainer-capture.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45744283184,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 476,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "alpha-quant-stack.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45743694355,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 355,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "alpha-trend-catcher.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742216406,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 412,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "alpha-verify-predictions.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45746843484,
+    "run_conclusion": "success",
+    "verdict": "SUSPICIOUS",
+    "lines": 302,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 1,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {
+        "skipped work": [
+          "verify\tRun prediction verifier\t2026-11-26T03:07:32.3700571Z [VERIFY] Checked 3, updated 3, skipped 0"
+        ]
+      }
+    }
+  },
+  {
+    "file": "alpha-weekly-validation.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742223293,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 506,
+    "errors": 1,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {
+      "##[error] annotation": 1
+    },
+    "warning_kinds": {
+      "WARNING line": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "##[error] annotation": [
+          "weekly-validation\tCommit updated reports\t2026-11-26T03:22:28.4939801Z ##[error]The operation was canceled."
+        ]
+      },
+      "warnings": {
+        "WARNING line": [
+          "weekly-validation\tRun Risk Metrics (Sortino + Realistic Sharpe + IC)\t2026-11-26T03:08:34.7965651Z       WARNING: High concentration -- few picks drive most PnL"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "analyst-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45746610234,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 1808,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "anti-overfit-gate.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45742230235,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "asset-class-freshness-watchdog.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45746856679,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 345,
+    "errors": 0,
+    "warnings": 5,
+    "suspicious": 1,
+    "error_kinds": {},
+    "warning_kinds": {
+      "workflow warning": 5
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "workflow warning": [
+          "freshness\tFetch dashboard_data.json from production\t2026-11-26T03:07:34.1373708Z \u001b[36;1m  echo \"::warning::dashboard_data.json attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s\"\u001b[0m",
+          "freshness\tFetch dashboard_data.json from production\t2026-11-26T03:07:34.1374766Z \u001b[36;1m  echo \"::warning::primary unavailable; trying payload mirror\"\u001b[0m",
+          "freshness\tFetch dashboard_data.json from production\t2026-11-26T03:07:34.1376480Z \u001b[36;1m    || echo \"::warning::both data sources unreachable\"\u001b[0m",
+          "freshness\tGenerate freshness report (warn-only)\t2026-11-26T03:07:34.6456288Z \u001b[36;1m  echo \"::warning::using payload mirror as report input\"\u001b[0m",
+          "freshness\tGenerate freshness report (warn-only)\t2026-11-26T03:07:34.6457042Z \u001b[36;1m  echo \"::warning::no data source available; skipping freshness report\"\u001b[0m"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "freshness\tGenerate freshness report (warn-only)\t2026-11-26T03:07:34.6457042Z \u001b[36;1m  echo \"::warning::no data source available; skipping freshness report\"\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "asterdex-paper-trading.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742239029,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 476,
+    "errors": 10,
+    "warnings": 2,
+    "suspicious": 0,
+    "error_kinds": {
+      "ERROR line": 10
+    },
+    "warning_kinds": {
+      "workflow warning": 2
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "trade\tRun strategy scanner\t2026-11-26T03:19:46.4947610Z   [ERROR] Klines fetch failed for BTCUSDT: HTTP Error 451:",
+          "trade\tRun strategy scanner\t2026-11-26T03:19:46.4948057Z   [ERROR] Klines fetch failed for ETHUSDT: HTTP Error 451:",
+          "trade\tRun strategy scanner\t2026-11-26T03:19:46.4948382Z   [ERROR] Klines fetch failed for SOLUSDT: HTTP Error 451:",
+          "trade\tRun strategy scanner\t2026-11-26T03:19:46.4948751Z   [ERROR] Klines fetch failed for APTUSDT: HTTP Error 451:",
+          "trade\tRun strategy scanner\t2026-11-26T03:19:46.4949066Z   [ERROR] Klines fetch failed for TIAUSDT: HTTP Error 451:",
+          "trade\tRun strategy scanner\t2026-11-26T03:19:46.4949385Z   [ERROR] Klines fetch failed for DOTUSDT: HTTP Error 451:"
+        ]
+      },
+      "warnings": {
+        "workflow warning": [
+          "trade\tDeploy dashboard to FTP\t2026-11-26T03:19:46.7515219Z \u001b[36;1m  echo \"::warning::FTP credentials not configured. Skipping deploy.\"\u001b[0m",
+          "trade\tDeploy dashboard to FTP\t2026-11-26T03:19:46.7521030Z \u001b[36;1m  echo \"::warning::FTP upload failed\"\u001b[0m"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "audit-dashboard.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45729872416,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "audit-drift-telemetry.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45746866217,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 519,
+    "errors": 1,
+    "warnings": 3,
+    "suspicious": 1,
+    "error_kinds": {
+      "##[error] annotation": 1
+    },
+    "warning_kinds": {
+      "deprecation": 2,
+      "WARNING line": 1
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {
+        "##[error] annotation": [
+          "drift\tPending SPA governance check\t2026-11-26T03:08:02.5607909Z ##[error]Process completed with exit code 1."
+        ]
+      },
+      "warnings": {
+        "deprecation": [
+          "drift\tSetup Node\t2026-11-26T03:07:49.3251499Z (node:2375) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "drift\tPost Setup Node\t2026-11-26T03:08:04.7850931Z (node:2499) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead."
+        ],
+        "WARNING line": [
+          "drift\tData source health check (C-008)\t2026-11-26T03:08:02.5653110Z \u001b[36;1m    print(f'WARNING: {len(failures)} data source(s) unreachable: {failures}')\u001b[0m"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "drift\tBuild canonical backtest-forward drift report\t2026-11-26T03:07:52.3445774Z \u001b[36;1m  echo \"SKIP: no dashboard_data.json \u2014 downstream drift steps skipped until audit-dashboard pipeline runs.\"\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "audit-frontend-manifest.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45746869321,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 284,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "audit-hourly-update.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742558395,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 340,
+    "errors": 0,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "WARNING line": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "WARNING line": [
+          "update\tVerify staleness marker written\t2026-11-26T03:27:38.8231951Z \u001b[36;1m  echo \"WARNING: hourly_update_last_run.json not written \u2014 script may have failed silently\"\u001b[0m"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "audit-impact-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742259069,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 562,
+    "errors": 6,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {
+      "missing file": 5,
+      "##[error] annotation": 1
+    },
+    "warning_kinds": {
+      "WARNING line": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "missing file": [
+          "audit-impact\tRun audit impact tracker\t2026-11-26T03:27:43.5299245Z   [WARN] Could not load strategy_performance.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/alpha_engine/data/strategy_performance.json'",
+          "audit-impact\tRun audit impact tracker\t2026-11-26T03:27:43.5301106Z   [WARN] Could not load active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/battleground/data/active_picks.json'",
+          "audit-impact\tRun audit impact tracker\t2026-11-26T03:27:43.5302596Z   [WARN] Could not load strategy_performance.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/alpha_engine/data/strategy_performance.json'",
+          "audit-impact\tRun audit impact tracker\t2026-11-26T03:27:43.5304392Z   [WARN] Could not load strategy_performance.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/alpha_engine/data/strategy_performance.json'",
+          "audit-impact\tRun audit impact tracker\t2026-11-26T03:27:43.5305531Z   [WARN] Could not load active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/battleground/data/active_picks.json'"
+        ],
+        "##[error] annotation": [
+          "audit-impact\tCommit results\t2026-11-26T03:32:57.1725742Z ##[error]The action 'Commit results' has timed out after 5 minutes."
+        ]
+      },
+      "warnings": {
+        "WARNING line": [
+          "audit-impact\tCommit results\t2026-11-26T03:32:15.3473692Z WARNING: Merge pull also failed on attempt 1"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "audit3-denylist-watchdog.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45746878593,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 275,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "audit3-evidence.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742268057,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 363,
+    "errors": 0,
+    "warnings": 6,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "deprecation": 2,
+      "WARNING line": 3,
+      "##[warning] annotation": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "deprecation": [
+          "evidence\tSet up Python\t2026-11-26T03:08:47.2095380Z (node:2361) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "evidence\tPost Set up Python\t2026-11-26T03:19:49.2203874Z (node:2944) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead."
+        ],
+        "WARNING line": [
+          "evidence\tCommit registry (data only, [skip ci])\t2026-11-26T03:13:23.6202958Z WARNING: Merge pull also failed on attempt 1",
+          "evidence\tCommit registry (data only, [skip ci])\t2026-11-26T03:16:28.2676465Z WARNING: Merge pull also failed on attempt 2",
+          "evidence\tCommit registry (data only, [skip ci])\t2026-11-26T03:19:34.8466391Z WARNING: Merge pull also failed on attempt 3"
+        ],
+        "##[warning] annotation": [
+          "evidence\tComplete job\t2026-11-26T03:19:49.4172311Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-n"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "audit3-health.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742273080,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 426,
+    "errors": 0,
+    "warnings": 3,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "deprecation": 2,
+      "##[warning] annotation": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "deprecation": [
+          "health\tSet up Python\t2026-11-26T03:10:35.4108818Z (node:2214) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "health\tPost Set up Python\t2026-11-26T03:10:35.8336745Z (node:2235) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead."
+        ],
+        "##[warning] annotation": [
+          "health\tComplete job\t2026-11-26T03:10:36.2067337Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-action"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "audit3-ledger.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742278630,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 728,
+    "errors": 1,
+    "warnings": 11,
+    "suspicious": 3,
+    "error_kinds": {
+      "http 4xx": 1
+    },
+    "warning_kinds": {
+      "WARNING line": 9,
+      "##[warning] annotation": 2
+    },
+    "suspicious_kinds": {
+      "skipped work": 2,
+      "no data": 1
+    },
+    "samples": {
+      "errors": {
+        "http 4xx": [
+          "ledger\tBackfill price tables (bounded, best-effort)\t2026-11-26T03:10:59.0356208Z HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"description\":\"Quote not found for symbol: XPDUSD=F\"}}}"
+        ]
+      },
+      "warnings": {
+        "WARNING line": [
+          "ledger\tBuild audit3 ledger\t2026-11-26T03:11:21.1292623Z WARNING: sleeve not rankable: CRYPTO/Multi-Timeframe Trend Alignment pf=11.77 :: pf is 13.6x the class aggregate (11.77 vs 0.86), ceiling 5x",
+          "ledger\tBuild audit3 ledger\t2026-11-26T03:11:21.1293847Z WARNING: sleeve not rankable: CRYPTO/AuditEnsemble_LONG pf=10.07 :: pf is 11.7x the class aggregate (10.07 vs 0.86), ceiling 5x",
+          "ledger\tBuild audit3 ledger\t2026-11-26T03:11:21.1294764Z WARNING: sleeve not rankable: CRYPTO/Price Acceleration Detector pf=5.95 :: pf is 6.9x the class aggregate (5.95 vs 0.86), ceiling 5x",
+          "ledger\tBuild audit3 ledger\t2026-11-26T03:11:21.1295642Z WARNING: sleeve not rankable: CRYPTO/Funding Rate Reversal pf=4.96 :: pf is 5.7x the class aggregate (4.96 vs 0.86), ceiling 5x",
+          "ledger\tBuild audit3 ledger\t2026-11-26T03:11:21.1296523Z WARNING: sleeve not rankable: CRYPTO/mega_mut_macd_rsi_m084 pf=49.37 :: pf 49.37 exceeds absolute ceiling 25; pf is 57.2x the class aggregate (49.37 vs 0.86), ceiling 5x",
+          "ledger\tBuild audit3 ledger\t2026-11-26T03:11:21.1297513Z WARNING: sleeve not rankable: FOREX/non_crypto_consensus pf=9.68 :: pf is 14.7x the class aggregate (9.68 vs 0.66), ceiling 5x"
+        ],
+        "##[warning] annotation": [
+          "ledger\tBuild shared denominator sidecar\t2026-11-26T03:11:36.0386955Z ##[warning]denominator: exclusion reasons total 12,266 but total - canonical = 6,133: the publisher and the tribunal exclude different cohorts, so these are separate pipelines, not one subtraction",
+          "ledger\tComplete job\t2026-11-26T03:22:43.1339572Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-ru"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "ledger\tBackfill price tables (bounded, best-effort)\t2026-11-26T03:09:46.8996803Z \u001b[36;1m  echo \"no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret \u2014 skipping price backfill\"\u001b[0m",
+          "ledger\tSelection alpha (optional \u2014 needs the price tables)\t2026-11-26T03:11:10.2231970Z \u001b[36;1m  echo \"no DB_PASS_STOCKS/DB_PASSWORDS_JSON secret \u2014 skipping selection alpha; the page states it is unavailable\"\u001b[0m"
+        ],
+        "no data": [
+          "ledger\tDeploy /audit3 to findtorontoevents.ca\t2026-11-26T03:22:39.6671139Z \u001b[36;1m# so no data upload is needed here.\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "auto-retire-daily.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742283724,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 259,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "auto-shutdown-monitor.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742288360,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 355,
+    "errors": 0,
+    "warnings": 1,
+    "suspicious": 8,
+    "error_kinds": {},
+    "warning_kinds": {
+      "workflow warning": 1
+    },
+    "suspicious_kinds": {
+      "inf in output": 8
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "workflow warning": [
+          "monitor\tRun auto-shutdown monitor\t2026-11-26T03:08:37.8609309Z \u001b[36;1m  echo \"::warning::HARD_STOP sources detected \u2014 review monitor output above\"\u001b[0m"
+        ]
+      },
+      "suspicious": {
+        "inf in output": [
+          "monitor\tRun auto-shutdown monitor\t2026-11-26T03:09:13.8473437Z   \u2705 short_dominant_engine               n=   2 WR=100% last10_WR=100% Sharpe=inf [OK]",
+          "monitor\tRun auto-shutdown monitor\t2026-11-26T03:09:13.8476499Z   \u2705 coinglass_sentiment                 n=   6 WR=83% last10_WR=83% Sharpe=inf [OK]",
+          "monitor\tRun auto-shutdown monitor\t2026-11-26T03:09:13.8476932Z   \u2705 copy_trader_polymarket              n=   1 WR=100% last10_WR=100% Sharpe=inf [OK]",
+          "monitor\tRun auto-shutdown monitor\t2026-11-26T03:09:13.8477722Z   \u2705 multi_asset_cot                     n=  14 WR=29% last10_WR=20% Sharpe=inf [OK]",
+          "monitor\tRun auto-shutdown monitor\t2026-11-26T03:09:13.8478117Z   \u2705 etf_all_strategies                  n=  17 WR=0% last10_WR=0% Sharpe=inf [OK]",
+          "monitor\tRun auto-shutdown monitor\t2026-11-26T03:09:13.8479047Z   \u2705 genome_mutation_lab                 n=  19 WR=16% last10_WR=10% Sharpe=inf [OK]"
+        ]
+      }
+    }
+  },
+  {
+    "file": "automated-reporting.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742292546,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 1135,
+    "errors": 0,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "##[warning] annotation": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "##[warning] annotation": [
+          "generate-report\tCommit reports\t2026-11-26T03:09:21.6272679Z ##[warning]Token preflight bypassed (HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, please include the request ID DC80:12CEA2:1D98B0D:5BF237D:6B07A2E1 and timestamp 2026-11-26 03:09:21 U"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "autonomous_trading.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742296561,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 1091,
+    "errors": 0,
+    "warnings": 12,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "WARNING line": 12
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "WARNING line": [
+          "trade\tRun Autonomous Trading Bot\t2026-11-26T03:11:06.4742008Z 2026-11-26 03:11:06,473 - __main__ - WARNING - CoinGecko history failed for BTC-USD: You are trying to merge on datetime64[ns] and int64 columns for key 'timestamp'. If you wish to proceed you should use pd.concat",
+          "trade\tRun Autonomous Trading Bot\t2026-11-26T03:11:06.9932619Z 2026-11-26 03:11:06,993 - __main__ - WARNING - CoinGecko failed for SOL-USD: 0, trying CryptoCompare...",
+          "trade\tRun Autonomous Trading Bot\t2026-11-26T03:11:07.1219384Z 2026-11-26 03:11:07,121 - __main__ - WARNING - CoinGecko failed for SOL-USD: 0, trying CryptoCompare...",
+          "trade\tRun Autonomous Trading Bot\t2026-11-26T03:11:07.3813431Z 2026-11-26 03:11:07,381 - __main__ - WARNING - CoinGecko failed for ADA-USD: 0, trying CryptoCompare...",
+          "trade\tRun Autonomous Trading Bot\t2026-11-26T03:11:07.4707396Z 2026-11-26 03:11:07,470 - __main__ - WARNING - CoinGecko failed for ADA-USD: 0, trying CryptoCompare...",
+          "trade\tRun Autonomous Trading Bot\t2026-11-26T03:11:07.6860584Z 2026-11-26 03:11:07,685 - __main__ - WARNING - CoinGecko failed for DOT-USD: 0, trying CryptoCompare..."
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "baby-strat-forward-paper.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742994826,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 772,
+    "errors": 4,
+    "warnings": 0,
+    "suspicious": 3,
+    "error_kinds": {
+      "python traceback": 1,
+      "missing python module": 1,
+      "##[error] annotation": 1,
+      "git fatal": 1
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {
+      "skipped work": 3
+    },
+    "samples": {
+      "errors": {
+        "python traceback": [
+          "forward-monitor\tRun incubator strategies (Chronos-Bolt, FundingRate, OI-Divergence, SMC-FVG)\t2026-11-26T03:46:36.8029498Z Traceback (most recent call last):"
+        ],
+        "missing python module": [
+          "forward-monitor\tRun incubator strategies (Chronos-Bolt, FundingRate, OI-Divergence, SMC-FVG)\t2026-11-26T03:46:36.8040985Z ModuleNotFoundError: No module named 'api_helpers'"
+        ],
+        "##[error] annotation": [
+          "forward-monitor\tRun incubator strategies (Chronos-Bolt, FundingRate, OI-Divergence, SMC-FVG)\t2026-11-26T03:46:36.8221260Z ##[error]Process completed with exit code 1."
+        ],
+        "git fatal": [
+          "forward-monitor\tAuto-commit changed forward artifacts\t2026-11-26T03:46:39.6106385Z fatal: pathspec 'battleground/data/incubator_signals.json' did not match any files"
+        ]
+      },
+      "warnings": {},
+      "suspicious": {
+        "skipped work": [
+          "forward-monitor\tRegenerate baby dashboard\t2026-11-26T03:46:36.6982311Z   [WARN] Early hatch check skipped: No module named 'incubator'",
+          "forward-monitor\tExport qualifying baby picks for FC-PRO\t\ufeff2026-11-26T03:46:37.0844116Z ##[group]Run python battleground/export_top_picks.py || echo \"Baby picks export skipped (non-fatal)\"",
+          "forward-monitor\tExport qualifying baby picks for FC-PRO\t2026-11-26T03:46:37.0844921Z \u001b[36;1mpython battleground/export_top_picks.py || echo \"Baby picks export skipped (non-fatal)\"\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "backfill-features.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742305881,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 384,
+    "errors": 38,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {
+      "http 4xx": 38
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "http 4xx": [
+          "backfill\tRun backfill\t2026-11-26T03:10:40.3083555Z   [WARN] All Binance mirrors failed for RENDERUSDT: HTTP Error 451:",
+          "backfill\tRun backfill\t2026-11-26T03:10:40.3084747Z   [WARN] All Binance mirrors failed for RENDERUSDT: HTTP Error 451:",
+          "backfill\tRun backfill\t2026-11-26T03:10:40.3085869Z   [WARN] All Binance mirrors failed for ONDOUSDT: HTTP Error 451:",
+          "backfill\tRun backfill\t2026-11-26T03:10:40.3086841Z   [WARN] All Binance mirrors failed for BNBUSDT: HTTP Error 451:",
+          "backfill\tRun backfill\t2026-11-26T03:10:40.3087946Z   [WARN] All Binance mirrors failed for AVAXUSDT: HTTP Error 451:",
+          "backfill\tRun backfill\t2026-11-26T03:10:40.3088869Z   [WARN] All Binance mirrors failed for NEARUSDT: HTTP Error 451:"
+        ]
+      },
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "backfill.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45743864767,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 385,
+    "errors": 1,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {
+      "##[error] annotation": 1
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "##[error] annotation": [
+          "backfill\tCommit any updated tracking files\t2026-11-26T03:38:48.3032817Z ##[error]The operation was canceled."
+        ]
+      },
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "backtest-and-deploy.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742314267,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 1205,
+    "errors": 2,
+    "warnings": 5,
+    "suspicious": 9,
+    "error_kinds": {
+      "http 4xx": 2
+    },
+    "warning_kinds": {
+      "WARNING line": 4,
+      "##[warning] annotation": 1
+    },
+    "suspicious_kinds": {
+      "skipped work": 9
+    },
+    "samples": {
+      "errors": {
+        "http 4xx": [
+          "backtest\tRun live market scanner\t2026-11-26T03:11:47.7308637Z HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"description\":\"Quote not found for symbol: NKLA\"}}}",
+          "backtest\tRun live market scanner\t2026-11-26T03:12:01.3574087Z HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"description\":\"No fundamentals data found for symbol: SQ\"}}}"
+        ]
+      },
+      "warnings": {
+        "WARNING line": [
+          "backtest\tRun live market scanner\t2026-11-26T03:13:07.2563508Z   HEAT WARNING: stock, crypto > 40% of portfolio exposure",
+          "backtest\tCommit updated results\t2026-11-26T03:17:38.7042822Z WARNING: Merge pull also failed on attempt 1",
+          "backtest\tCommit updated results\t2026-11-26T03:20:42.3486450Z WARNING: Merge pull also failed on attempt 2",
+          "backtest\tCommit updated results\t2026-11-26T03:23:50.9697518Z WARNING: Merge pull also failed on attempt 3"
+        ],
+        "##[warning] annotation": [
+          "backtest\tCommit updated results\t2026-11-26T03:13:08.4622833Z ##[warning]Token preflight bypassed (HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, please include the request ID AC87:7AE4B:1932AB:285389:6B07A3C4 and timestamp 2026-11-26 03:13:08 UTC"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "backtest\tRun live market scanner\t2026-11-26T03:12:13.2746250Z   [circuit-breaker] kucoin tripped after 3 consecutive failures \u2014 skipping for rest of scan",
+          "backtest\tRun live market scanner\t2026-11-26T03:12:13.2747270Z   [circuit-breaker] okx tripped after 3 consecutive failures \u2014 skipping for rest of scan",
+          "backtest\tRun live market scanner\t2026-11-26T03:12:13.2748264Z   [circuit-breaker] coincap tripped after 3 consecutive failures \u2014 skipping for rest of scan",
+          "backtest\tRun live market scanner\t2026-11-26T03:12:19.7189638Z No algorithms in tournament stats, skipping ML weight save",
+          "backtest\tRun live market scanner\t2026-11-26T03:12:29.7092529Z No algorithms in tournament stats, skipping ML weight save",
+          "backtest\tRun live market scanner\t2026-11-26T03:13:07.2566777Z   [PERF] 0 computed, 14 skipped, 0 super bullish"
+        ]
+      }
+    }
+  },
+  {
+    "file": "backup-verify.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742318848,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 447,
+    "errors": 3,
+    "warnings": 2,
+    "suspicious": 1,
+    "error_kinds": {
+      "ERROR line": 3
+    },
+    "warning_kinds": {
+      "workflow warning": 2
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "Backup Restore Verification\tRun backup smoke queries\t2026-11-26T03:08:51.6597931Z \u001b[36;1m        results[\"trading_picks_count\"] = \"ERROR\"\u001b[0m",
+          "Backup Restore Verification\tRun backup smoke queries\t2026-11-26T03:08:51.6600111Z \u001b[36;1m    results[\"at_pick_outcomes_count\"] = \"ERROR\"\u001b[0m",
+          "Backup Restore Verification\tRun backup smoke queries\t2026-11-26T03:08:51.6606013Z \u001b[36;1m        results[\"at_pick_outcomes_count\"] = \"ERROR\"\u001b[0m"
+        ]
+      },
+      "warnings": {
+        "workflow warning": [
+          "Backup Restore Verification\tFetch dashboard_data.json from production\t2026-11-26T03:08:50.9374887Z \u001b[36;1m  || echo \"::warning::dashboard_data.json fetch failed \u2014 trading_picks proxy check degraded\"\u001b[0m",
+          "Backup Restore Verification\tRun backup smoke queries\t2026-11-26T03:08:51.6593502Z \u001b[36;1m    print(\"::warning::dashboard_data.json not present \u2014 skipping trading_picks proxy\")\u001b[0m"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "Backup Restore Verification\tRun backup smoke queries\t2026-11-26T03:08:51.6593502Z \u001b[36;1m    print(\"::warning::dashboard_data.json not present \u2014 skipping trading_picks proxy\")\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "battle_test.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "run_id": 27452766767,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "battleground-mass-backtest.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45740817848,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "benchmark-comparison.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742326748,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 305,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "bestiejob-page-qa.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742330597,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 328,
+    "errors": 0,
+    "warnings": 3,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "deprecation": 2,
+      "##[warning] annotation": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "deprecation": [
+          "playwright\tRun actions/setup-node@v4\t2026-11-26T03:11:37.0942713Z (node:2517) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "playwright\tPost Run actions/setup-node@v4\t2026-11-26T03:12:07.3997226Z (node:2978) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead."
+        ],
+        "##[warning] annotation": [
+          "playwright\tComplete job\t2026-11-26T03:12:07.7237180Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-acti"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "beta-portfolio-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742334438,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 387,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "blacklist-reconciler.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742338314,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 667,
+    "errors": 0,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "##[warning] annotation": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "##[warning] annotation": [
+          "reconcile\tCommit reconciliation snapshot if changed\t2026-11-26T03:09:54.0990331Z ##[warning]Token preflight bypassed (HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, please include the request ID 3C12:327E66:1C06F59:58005B3:6B07A301 and timestamp "
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "bond-agent.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742342118,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 636,
+    "errors": 0,
+    "warnings": 2,
+    "suspicious": 2,
+    "error_kinds": {},
+    "warning_kinds": {
+      "workflow warning": 1,
+      "##[warning] annotation": 1
+    },
+    "suspicious_kinds": {
+      "no data": 1,
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "workflow warning": [
+          "Bond Scanner\tRun Bond scanner\t2026-11-26T03:09:30.5289586Z \u001b[36;1m    print(f\"::warning::0 raw picks on healthy data ({_loaded}/{_requested} symbols loaded) \"\u001b[0m"
+        ],
+        "##[warning] annotation": [
+          "Bond Scanner\tCommit results\t2026-11-26T03:09:36.6171727Z ##[warning]Token preflight bypassed (HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, please include the request ID B808:3B1EDD:4083FE:4505F5:6B07A2F0 and timestamp 2026***11***26 03:09:36 UT"
+        ]
+      },
+      "suspicious": {
+        "no data": [
+          "Bond Scanner\tRun Bond scanner\t2026-11-26T03:09:30.5255970Z \u001b[36;1m        print(\"  FRED T10Y2Y: no data (SKIP_FRED or fetch failed) *** proxy fallback\")\u001b[0m"
+        ],
+        "skipped work": [
+          "Bond Scanner\tMerge bond picks into active_picks.json\t2026-11-26T03:09:35.6892774Z \u001b[36;1m    print(\"No bond_picks.json \u2014 skipping merge\")\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "branch-large-file-dup-guard.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45742346075,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "breakout-arena.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45745330662,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 528,
+    "errors": 0,
+    "warnings": 4,
+    "suspicious": 1,
+    "error_kinds": {},
+    "warning_kinds": {
+      "deprecated": 4
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "deprecated": [
+          "scan-all\tRun Approach C  Spike Reverse\t2026-11-26T03:09:52.4263047Z /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/breakout_arena/approach_c_spike_reverse/scanner.py:170: Pandas4Warning: The inplace keyword in DataFrame.set_index is deprecated and will be removed",
+          "scan-all\tRun Approach C  Spike Reverse\t2026-11-26T03:09:52.4265898Z /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/breakout_arena/approach_c_spike_reverse/scanner.py:171: Pandas4Warning: The inplace keyword in DataFrame.dropna is deprecated and will be removed in",
+          "scan-all\tRun Approach C  Spike Reverse\t2026-11-26T03:09:53.1619749Z /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/breakout_arena/approach_c_spike_reverse/scanner.py:170: Pandas4Warning: The inplace keyword in DataFrame.set_index is deprecated and will be removed",
+          "scan-all\tRun Approach C  Spike Reverse\t2026-11-26T03:09:53.1621546Z /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/breakout_arena/approach_c_spike_reverse/scanner.py:171: Pandas4Warning: The inplace keyword in DataFrame.dropna is deprecated and will be removed in"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "scan-all\tPush to Audit Trail (SQLite + MySQL)\t2026-11-26T03:09:53.5743437Z 2026-11-26 03:09:53,574 [INFO] breakout_arena.audit_push: Result: {'status': 'ok', 'recorded': 0, 'skipped': 0}"
+        ]
+      }
+    }
+  },
+  {
+    "file": "bt-backtest-trades-sync.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742353362,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 329,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "buy-now-analysis.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742357174,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 445,
+    "errors": 0,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "##[warning] annotation": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "##[warning] annotation": [
+          "analyze-and-track\tCommit results\t2026-11-26T03:09:28.3971525Z ##[warning]Token preflight bypassed (HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, please include the request ID 6C30:328850:1EB0426:5F6998F:6B07A2E8 and timestamp 2026-11-26 03:09:28"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "cftc-cot-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742361220,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 291,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "check-streamer-status.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45745423823,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 494,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "ci-tests.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742369630,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "ci.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45746681723,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 717,
+    "errors": 0,
+    "warnings": 8,
+    "suspicious": 4,
+    "error_kinds": {},
+    "warning_kinds": {
+      "deprecation": 6,
+      "##[warning] annotation": 2
+    },
+    "suspicious_kinds": {
+      "NaN in output": 2,
+      "skipped work": 2
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "deprecation": [
+          "build\tRun actions/setup-python@v5\t2026-11-26T03:44:42.8574002Z (node:2191) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "build\tPost Run actions/setup-python@v5\t2026-11-26T03:44:51.6021102Z (node:2233) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "lint\tRun actions/setup-node@v4\t2026-11-26T03:44:41.7801435Z (node:2421) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "lint\tRun actions/setup-python@v5\t2026-11-26T03:44:45.3430127Z (node:2456) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "lint\tPost Run actions/setup-python@v5\t2026-11-26T03:45:04.1365716Z (node:2541) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "lint\tPost Run actions/setup-node@v4\t2026-11-26T03:45:04.2844808Z (node:2549) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead."
+        ],
+        "##[warning] annotation": [
+          "build\tComplete job\t2026-11-26T03:44:52.0503490Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node",
+          "lint\tComplete job\t2026-11-26T03:45:04.5800218Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-"
+        ]
+      },
+      "suspicious": {
+        "NaN in output": [
+          "build\tBuild \u2014 deployable static tree is consistent\t2026-11-26T03:44:50.9508181Z \u001b[36;1m# Was {hyro_ml_pick_rankings.json}; its generator emitted NaN and is fixed, so\u001b[0m",
+          "build\tBuild \u2014 deployable static tree is consistent\t2026-11-26T03:44:50.9509081Z \u001b[36;1mNON_STRICT_BASELINE = set()  # emptied 2026-11-23: NaN fixed in the generator\u001b[0m"
+        ],
+        "skipped work": [
+          "lint\tLint \u2014 Python style, changed files only\t2026-11-26T03:45:03.6764145Z \u001b[36;1m  echo \"no Python files changed in this push - style gate skipped (base=$base)\"\u001b[0m",
+          "lint\tLint \u2014 Python style, changed files only\t2026-11-26T03:45:03.9987983Z no Python files changed in this push - style gate skipped (base=e62a02111aa1d0bfb99275ee192180b7d4e6a375)"
+        ]
+      }
+    }
+  },
+  {
+    "file": "claude-gainer-ml-live.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45745517825,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 486,
+    "errors": 3,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {
+      "##[error] annotation": 1,
+      "missing binary": 1,
+      "git fatal": 1
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "##[error] annotation": [
+          "scan\tRun live scanner\t2026-11-26T03:30:16.6970952Z ##[error]No model .joblib files in claude_gainer_ml/models/ \u2014 scanner SKIPPED (scanner_ran=false, reason=no_models). Fail-open by design: job stays green but this run is a NO-OP. Status recorded in updates/data/antigravity_ml_performance.json."
+        ],
+        "missing binary": [
+          "scan\tSync active picks + scorecard + history into dashboard JSON\t2026-11-26T03:30:16.7344893Z /home/runner/work/_temp/12e87d11-b853-4983-b409-44fc1cd91d22.sh: line 2: scanner: command not found"
+        ],
+        "git fatal": [
+          "scan\tCommit results\t2026-11-26T03:30:16.7792075Z fatal: pathspec 'claude_gainer_ml/tracker/' did not match any files"
+        ]
+      },
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "claude-gainer-short-term.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45744375596,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 378,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "claude-gainer-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742384818,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 933,
+    "errors": 3,
+    "warnings": 1,
+    "suspicious": 2,
+    "error_kinds": {
+      "##[error] annotation": 1,
+      "ERROR line": 2
+    },
+    "warning_kinds": {
+      "workflow warning": 1
+    },
+    "suspicious_kinds": {
+      "skipped work": 2
+    },
+    "samples": {
+      "errors": {
+        "##[error] annotation": [
+          "predict-and-track\tStep 2: Run live predictions (threshold=adaptive)\t2026-11-26T03:12:48.3333802Z ##[error]No model .joblib files in claude_gainer_ml/models/ \u2014 scanner SKIPPED (scanner_ran=false, reason=no_models). Fail-open by design: job stays green but predictions are a NO-OP. Status recorded in u"
+        ],
+        "ERROR line": [
+          "predict-and-track\tStep 3: Self-improvement + ML feedback loop\t2026-11-26T03:12:49.6435051Z [ERROR] No training data available at all",
+          "predict-and-track\tStep 3: Self-improvement + ML feedback loop\t2026-11-26T03:12:49.6435476Z [ERROR] Retraining failed"
+        ]
+      },
+      "warnings": {
+        "workflow warning": [
+          "predict-and-track\tStep 3: Self-improvement + ML feedback loop\t2026-11-26T03:12:48.3573984Z \u001b[36;1mpython self_improver.py 2>&1 || echo \"::warning::Self-improver failed with exit code $?\"\u001b[0m"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "predict-and-track\tStep 2: Run live predictions (threshold=adaptive)\t2026-11-26T03:12:48.3223706Z \u001b[36;1md['message'] = 'NO-OP scan: no model .joblib files - scanner skipped'\u001b[0m",
+          "predict-and-track\tStep 8: Send FreshPicks for new active picks\t2026-11-26T03:12:56.1272589Z \u001b[36;1m  echo \"No DISCORD_WEBHOOK_FRESHPICKS set, skipping\"\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "claudes-test-portfolios.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45745092212,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 723,
+    "errors": 0,
+    "warnings": 6,
+    "suspicious": 3,
+    "error_kinds": {},
+    "warning_kinds": {
+      "workflow warning": 5,
+      "WARNING line": 1
+    },
+    "suspicious_kinds": {
+      "skipped work": 3
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "workflow warning": [
+          "manage-portfolios\tFetch dashboard_payload.json from production\t2026-11-26T03:25:24.8977153Z \u001b[36;1m  echo \"::warning::dashboard_payload.json attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s\"\u001b[0m",
+          "manage-portfolios\tFetch dashboard_payload.json from production\t2026-11-26T03:25:24.8978566Z \u001b[36;1m  echo \"::warning::dashboard_payload.json unavailable after 4 attempts \u2014 portfolio_manager may degrade\"\u001b[0m",
+          "manage-portfolios\tFetch prior portfolio state from production\t2026-11-26T03:25:25.2782005Z \u001b[36;1m  echo \"::warning::state fetch attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s\"\u001b[0m",
+          "manage-portfolios\tFetch prior portfolio state from production\t2026-11-26T03:25:25.2783941Z \u001b[36;1m  echo \"::warning::state fetch failed after 4 attempts \u2014 portfolios will re-bootstrap this run\"\u001b[0m",
+          "manage-portfolios\tFetch prior portfolio state from production\t2026-11-26T03:25:25.2785745Z \u001b[36;1m  echo \"::warning::fetched state too small (${sz}B) \u2014 discarding to avoid corrupt books\"\u001b[0m"
+        ],
+        "WARNING line": [
+          "manage-portfolios\tRun portfolio manager\t2026-11-26T03:26:33.0844427Z WARNING: yfinance not installed, skipping Equity/ETF price fetch."
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "manage-portfolios\tRun portfolio manager\t2026-11-26T03:26:33.0844427Z WARNING: yfinance not installed, skipping Equity/ETF price fetch.",
+          "manage-portfolios\tRun portfolio manager\t2026-11-26T03:26:35.9158125Z   DB sync skipped: Missing required environment variables: AUDIT_DB_HOST, AUDIT_DB_USER, AUDIT_DB_PASS, AUDIT_DB_NAME",
+          "manage-portfolios\tDeploy to findtorontoevents.ca via FTP\t2026-11-26T03:27:00.3442175Z \u001b[36;1m    print(\"FTP credentials not set, skipping\")\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "clear-channel-command.yml",
+    "class": "ALWAYS_RED",
+    "audited": true,
+    "run_id": 45742392537,
+    "run_conclusion": "failure",
+    "verdict": "ERRORS",
+    "lines": 327,
+    "errors": 2,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {
+      "ERROR line": 1,
+      "##[error] annotation": 1
+    },
+    "warning_kinds": {
+      "WARNING line": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "clear-channel\tClear Channel\t2026-11-26T02:57:13.5448745Z ERROR:__main__:Bot lacks permission to delete messages in channel 1476311595977150779"
+        ],
+        "##[error] annotation": [
+          "clear-channel\tClear Channel\t2026-11-26T02:57:31.2984495Z ##[error]Process completed with exit code 1."
+        ]
+      },
+      "warnings": {
+        "WARNING line": [
+          "clear-channel\tClear Channel\t2026-11-26T02:57:13.5456482Z WARNING:__main__:Bulk delete failed, trying individual deletion"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "closed-picks-command.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742396116,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "coinglass-scanner.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45743515779,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 476,
+    "errors": 1,
+    "warnings": 24,
+    "suspicious": 2,
+    "error_kinds": {
+      "ERROR line": 1
+    },
+    "warning_kinds": {
+      "WARNING line": 24
+    },
+    "suspicious_kinds": {
+      "skipped work": 2
+    },
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:38:00.3864489Z 2026-11-26 03:38:00,386 ERROR All sources failed for MATICUSDT"
+        ]
+      },
+      "warnings": {
+        "WARNING line": [
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:37:55.7739816Z 2026-11-26 03:37:55,773 WARNING GET https://fapi1.binance.com/futures/data/globalLongShortAccountRatio failed: Expecting value: line 1 column 1 (char 0)",
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:37:57.8206181Z 2026-11-26 03:37:57,819 WARNING GET https://fapi2.binance.com/futures/data/globalLongShortAccountRatio failed: Expecting value: line 1 column 1 (char 0)",
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:38:00.2552767Z 2026-11-26 03:38:00,254 WARNING GET https://www.okx.com/api/v5/rubik/stat/taker-volume returned 400 (no retry) \u2014 Bad Request",
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:38:00.5583768Z 2026-11-26 03:38:00,557 WARNING No data for MATICUSDT, skipping",
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:39:19.2833875Z 2026-11-26 03:39:19,282 WARNING GET https://api.binance.com/api/v3/ticker/price returned 400 (no retry) \u2014 Bad Request",
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:39:19.3777340Z 2026-11-26 03:39:19,376 WARNING Price fetch failed for KASUSDT from all sources"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:37:57.8208335Z 2026-11-26 03:37:57,820 INFO Binance probe failed for MATICUSDT, skipping remaining endpoints",
+          "scan\tRun Coinglass DNA Scanner\t2026-11-26T03:38:00.5583768Z 2026-11-26 03:38:00,557 WARNING No data for MATICUSDT, skipping"
+        ]
+      }
+    }
+  },
+  {
+    "file": "commodities-agent.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742403067,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "conflict-marker-check.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45745803446,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 267,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "consensus-outcome-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45743687280,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "contested-pick-checker.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45743199387,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 289,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "continuous-improvement-monitor.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742416760,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "conviction-picks.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45745252083,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 377,
+    "errors": 3,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {
+      "http 4xx": 3
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "http 4xx": [
+          "conviction-picks\tRun Conviction Picks scanner\t2026-11-26T02:54:26.4383988Z   [WARN] Binance klines failed (https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=60): HTTP Error 451:",
+          "conviction-picks\tRun Conviction Picks scanner\t2026-11-26T02:54:26.8442967Z   [WARN] Binance klines failed (https://api1.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=60): HTTP Error 451:",
+          "conviction-picks\tRun Conviction Picks scanner\t2026-11-26T02:54:27.3959580Z   [WARN] Bybit batch fetch failed: HTTP Error 403: Forbidden"
+        ]
+      },
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "copilot",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "copy-trader-forward-test.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45743692085,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "copy-trader-intelligence.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742427131,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "copytrader-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45744171148,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 402,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "correlation-monitor.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742434664,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "cross-aggregator.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45744454706,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 936,
+    "errors": 20,
+    "warnings": 0,
+    "suspicious": 8,
+    "error_kinds": {
+      "missing file": 19,
+      "ERROR line": 1
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {
+      "skipped work": 8
+    },
+    "samples": {
+      "errors": {
+        "missing file": [
+          "aggregate\tRun cross-system aggregator\t2026-11-26T03:45:57.7402887Z   [WARN] Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/mercury2/data/active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca/fin",
+          "aggregate\tRun cross-system aggregator\t2026-11-26T03:45:57.7407431Z   [WARN] Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/battleground/data/active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoevents_antigravity.ca",
+          "aggregate\tRun cross-system aggregator\t2026-11-26T03:45:57.7410929Z   [WARN] Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/ml_battleground/system_a_filter/data/active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoev",
+          "aggregate\tRun cross-system aggregator\t2026-11-26T03:45:57.7414613Z   [WARN] Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/ml_battleground/system_b_regime/data/active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtorontoev",
+          "aggregate\tRun cross-system aggregator\t2026-11-26T03:45:57.7417566Z   [WARN] Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/ml_battleground/system_c_deeplearn/data/active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtoront",
+          "aggregate\tRun cross-system aggregator\t2026-11-26T03:45:57.7420800Z   [WARN] Could not load /home/runner/work/findtorontoevents_antigravity.ca/findtorontoevents_antigravity.ca/breakout_arena/approach_a_sr_breakout/data/active_picks.json: [Errno 2] No such file or directory: '/home/runner/work/findtor"
+        ],
+        "ERROR line": [
+          "aggregate\tCommit and push if changed\t2026-11-26T03:47:08.3262747Z \u001b[36;1m    echo \"ERROR: all push attempts failed\"\u001b[0m"
+        ]
+      },
+      "warnings": {},
+      "suspicious": {
+        "skipped work": [
+          "aggregate\tSend Discord consensus alert\t2026-11-26T03:46:19.6069727Z \u001b[36;1m  echo \"No DISCORD_WEBHOOK_URL set, skipping Discord notification\"\u001b[0m",
+          "aggregate\tSend Discord consensus alert\t2026-11-26T03:46:21.8984007Z [Discord] Sent consensus alert: 2 new picks (skipped 0 dupes), F&G=11",
+          "aggregate\tSend Discord consensus alert\t2026-11-26T03:46:21.8984944Z [Discord] No signal_log.db yet -- combo findings skipped",
+          "aggregate\tSend FreshPicks for consensus picks\t2026-11-26T03:46:21.9301791Z \u001b[36;1m    print(f'All {len(picks)} consensus picks already sent, skipping')\u001b[0m",
+          "aggregate\tSend FreshPicks for consensus picks\t2026-11-26T03:46:21.9329980Z \u001b[36;1m  echo \"No DISCORD_WEBHOOK_FRESHPICKS set, skipping\"\u001b[0m",
+          "aggregate\tSend FreshPicks for consensus picks\t2026-11-26T03:46:22.3992322Z All 2 consensus picks already sent, skipping"
+        ]
+      }
+    }
+  },
+  {
+    "file": "cross-db-audit.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742441562,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "crypto-intraday-sim.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45744101048,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 378,
+    "errors": 0,
+    "warnings": 4,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "deprecation": 2,
+      "##[warning] annotation": 2
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "deprecation": [
+          "tick\tSetup Python\t2026-11-26T03:41:39.8231394Z (node:2192) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.",
+          "tick\tPost Setup Python\t2026-11-26T03:42:25.4957290Z (node:2502) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead."
+        ],
+        "##[warning] annotation": [
+          "##[warning]vwap_reversion HALTED: trailing drawdown 11.5% > 10.0%",
+          "tick\tComplete job\t2026-11-26T03:42:25.7331918Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "crypto-ml-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45744896474,
+    "run_conclusion": "success",
+    "verdict": "SUSPICIOUS",
+    "lines": 505,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 1,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {
+        "skipped work": [
+          "predict-and-track\tRun live predictor\t2026-11-26T03:49:26.5095160Z   [PERF] 0 computed, 3 skipped, 0 super bullish"
+        ]
+      }
+    }
+  },
+  {
+    "file": "crypto-ohlcv-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742453248,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "crypto-smart-picks.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744252448,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "crypto-test-portfolios.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742461719,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "crypto-winner-scan.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742465251,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "daily-feed-summary.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744289209,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "daily-miracle-scan.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742473026,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "daily-picks-snapshot.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742476600,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "daily-prices-yf-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742479986,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "daily-scrutiny-engine.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742484021,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "daily-stock-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742487683,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "daily-top-picks-filter.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742491586,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "daily_runs.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742495616,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "darwin-evolution.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45745095880,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "dashboard-pick-trader.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744034797,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "data-pipeline-test.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742507731,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "db-backup-email.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742511513,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "db-credentials-test.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742515374,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 323,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "db-freshness-guardian.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742519575,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 379,
+    "errors": 1,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {
+      "##[error] annotation": 1
+    },
+    "warning_kinds": {
+      "WARNING line": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "##[error] annotation": [
+          "DB Freshness Check\tRun DB freshness check\t2026-11-26T03:37:20.3346425Z ##[error]Process completed with exit code 2."
+        ]
+      },
+      "warnings": {
+        "WARNING line": [
+          "DB Freshness Check\tRun DB freshness check\t2026-11-26T03:37:20.3239600Z WARNING backtests check error: (2013, 'Lost connection to MySQL server during query (timed out)')"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "db-password-leak-guard.yml",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "db-secret-scan.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "db-sync-bidirectional.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742526078,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "db-sync-to-mirror.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45742529450,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deals-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742533163,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "decile-separation-test.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742537022,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 221,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "deploy-alpha-dashboard.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742540767,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-battleground-ftp.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744080969,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-bestiejob-page.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742548541,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 275,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "deploy-competition-to-site.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45745505274,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-fc-api-env-godaddy.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742555730,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 21,
+    "errors": 1,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {
+      "##[error] annotation": 1
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "##[error] annotation": [
+          "deploy-env\tInstall lftp\t2026-11-26T03:41:22.4946179Z ##[error]Process completed with exit code 1."
+        ]
+      },
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "deploy-fc-api-hotfix.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742559898,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-fc-frontend.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742563402,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-findcryptopairs-ftp.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45745890724,
+    "run_conclusion": "success",
+    "verdict": "SUSPICIOUS",
+    "lines": 299,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 2,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {
+      "skipped work": 2
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {
+        "skipped work": [
+          "deploy\tDeploy findcryptopairs to findtorontoevents.ca (50webs) via FTP\t2026-11-26T03:35:25.0928413Z \u001b[36;1m    print(\"findtorontoevents.ca FTP credentials not set, skipping\")\u001b[0m",
+          "deploy\tDeploy findcryptopairs to torontoevent.net via FTP\t2026-11-26T03:35:26.0563827Z \u001b[36;1m    print(\"torontoevent.net FTP credentials not set, skipping\")\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "deploy-friendtracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742570638,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-fte-events-json.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45745833335,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-fte-index.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45745833349,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-movieshows-all.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744794115,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-movieshows3-hotfix.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742583717,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-riseoftheclaw.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45745167052,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "deploy-vetted-picks.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742591069,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "discord-bot.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45729607962,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "discord-heartbeat.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742597352,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "discord-token-selftest.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742600449,
+    "run_conclusion": "success",
+    "verdict": "SUSPICIOUS",
+    "lines": 77,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 1,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {
+        "skipped work": [
+          "selftest\tValidate token + optional test post\t2026-11-26T03:35:41.9158095Z \u001b[36;1m  echo \"TOKEN OK (send=false, skipped post)\"\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "discord_status.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45743692916,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "dna-mutation-cycle.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742606520,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "dna_strategy_pipeline.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45741740432,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "dxy-state-update.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742613334,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 455,
+    "errors": 0,
+    "warnings": 1,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {
+      "workflow warning": 1
+    },
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "workflow warning": [
+          "Fetch DXY and write state\tCommit DXY state file\t2026-11-26T03:37:10.3207252Z \u001b[36;1m    || echo \"::warning::dxy state push failed after bounded retries; state stays local this run\"\u001b[0m"
+        ]
+      },
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "dynamic-alpha-engine.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45730856890,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "dynamic-universe.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742619592,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "edge-decay-check.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742622706,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 325,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "edge-stability-daily.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742625967,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 728,
+    "errors": 0,
+    "warnings": 1,
+    "suspicious": 1,
+    "error_kinds": {},
+    "warning_kinds": {
+      "workflow warning": 1
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "workflow warning": [
+          "refresh\tFTP-deploy refreshed JSONs to live /audit\t2026-11-26T03:38:53.5879308Z \u001b[36;1m    print(\"::warning::FTP creds absent \u2014 skipping edge-stability deploy\"); raise SystemExit(0)\u001b[0m"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "refresh\tFTP-deploy refreshed JSONs to live /audit\t2026-11-26T03:38:53.5879308Z \u001b[36;1m    print(\"::warning::FTP creds absent \u2014 skipping edge-stability deploy\"); raise SystemExit(0)\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "edge-stability-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742629356,
+    "run_conclusion": "success",
+    "verdict": "WARNINGS",
+    "lines": 728,
+    "errors": 0,
+    "warnings": 1,
+    "suspicious": 1,
+    "error_kinds": {},
+    "warning_kinds": {
+      "workflow warning": 1
+    },
+    "suspicious_kinds": {
+      "skipped work": 1
+    },
+    "samples": {
+      "errors": {},
+      "warnings": {
+        "workflow warning": [
+          "refresh\tFTP-deploy refreshed JSONs to live /audit\t2026-11-26T03:38:53.5879308Z \u001b[36;1m    print(\"::warning::FTP creds absent \u2014 skipping edge-stability deploy\"); raise SystemExit(0)\u001b[0m"
+        ]
+      },
+      "suspicious": {
+        "skipped work": [
+          "refresh\tFTP-deploy refreshed JSONs to live /audit\t2026-11-26T03:38:53.5879308Z \u001b[36;1m    print(\"::warning::FTP creds absent \u2014 skipping edge-stability deploy\"); raise SystemExit(0)\u001b[0m"
+        ]
+      }
+    }
+  },
+  {
+    "file": "ema-retracement-scan.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744808146,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "enhanced-ml-crypto.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45743954488,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "equities-agent.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742639747,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "etf-agent.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742643120,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "etf-bond-scanner.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742646267,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 1226,
+    "errors": 10,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {
+      "http 4xx": 10
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "http 4xx": [
+          "Bond Scanner\tRun Bond Scanner\t2026-11-26T03:40:24.6425182Z 2026***11***26 03:40:24,642 [alpha_engine.bond_data_fred] INFO: fred_json failed for DGS2: HTTP Error 400: Bad Request",
+          "Bond Scanner\tRun Bond Scanner\t2026-11-26T03:40:25.4210412Z 2026***11***26 03:40:25,420 [alpha_engine.bond_data_fred] INFO: fred_json failed for DGS10: HTTP Error 400: Bad Request",
+          "Bond Scanner\tRun Bond Scanner\t2026-11-26T03:40:25.8977649Z 2026***11***26 03:40:25,897 [alpha_engine.bond_data_fred] INFO: fred_json failed for DGS30: HTTP Error 400: Bad Request",
+          "Bond Scanner\tRun Bond Scanner\t2026-11-26T03:40:28.0527555Z 2026***11***26 03:40:28,052 [alpha_engine.bond_data_fred] INFO: fred_json failed for T10Y2Y: HTTP Error 400: Bad Request",
+          "Bond Scanner\tRun Bond Scanner\t2026-11-26T03:40:28.6508394Z 2026***11***26 03:40:28,650 [alpha_engine.bond_data_fred] INFO: fred_json failed for T10Y3M: HTTP Error 400: Bad Request",
+          "Bond Scanner\tRun Bond Scanner\t2026-11-26T03:40:29.3585977Z 2026***11***26 03:40:29,358 [alpha_engine.bond_data_fred] INFO: fred_json failed for T10YIE: HTTP Error 400: Bad Request"
+        ]
+      },
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "etf-trend-forward-month-end.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742649857,
+    "run_conclusion": "success",
+    "verdict": "CLEAN",
+    "lines": 454,
+    "errors": 0,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {},
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {},
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "fc-crypto-pro.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45745767502,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "feature-signals-hourly.yml",
+    "class": "GREEN_RECENT",
+    "audited": true,
+    "run_id": 45742657868,
+    "run_conclusion": "success",
+    "verdict": "ERRORS",
+    "lines": 329,
+    "errors": 1,
+    "warnings": 0,
+    "suspicious": 0,
+    "error_kinds": {
+      "ERROR line": 1
+    },
+    "warning_kinds": {},
+    "suspicious_kinds": {},
+    "samples": {
+      "errors": {
+        "ERROR line": [
+          "emit\tEmit feature signals\t2026-11-26T03:37:57.7944841Z   [ERROR] All premiumIndex endpoints failed"
+        ]
+      },
+      "warnings": {},
+      "suspicious": {}
+    }
+  },
+  {
+    "file": "feature-stability-check.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742661831,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "feed-health.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45743907612,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "fetch-movies-v3.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45742669347,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "fetch-movies.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45742673054,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "fix-battleground.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742677381,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "fix-ghost-cards.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742681412,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "forex-agent.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742685171,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "forex-smart-picks.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742689282,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "forward-benchmark-ledger.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742693006,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "forward-observations-ingest.yml",
+    "class": "RED_REGRESSION",
+    "audited": false,
+    "run_id": 45741022038,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "forward-signal-scanner.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744686249,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "forward-test-new-strategies.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742704038,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "forward-tracking-v2.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45743005778,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "forward_test.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742711974,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "fred-macro-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742716207,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "funding-rate-collector.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742719996,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "futures-agent.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742724402,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "fx-cost-overlap.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45650586373,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "gainer-predictor.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45743423794,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "gate-config-emit.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742736334,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "genome-daily-pipeline.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742740297,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "genome-evolution.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742744052,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "gha-failure-digest.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744059591,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "gha-health-audit.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742751100,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "gha-quality-framework.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742754697,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "gha-queue-audit.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742758593,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "gha-scan-job.yml",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "gha-stale-workflows-audit.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742764503,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "gha-summary-report.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742768595,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "ghcopilot-paper-monitor.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742772611,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "goldmine-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742775999,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "growth-stock-screener-daily.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742779857,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "h004-backtest.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742783296,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "h103-forward-logger.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742786629,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "hc-parity.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742790155,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "hierarchical-bayes.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742793725,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "hindsight-learner.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742797141,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "hoffman-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742802205,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "honest-kill-switch.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742805973,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "hourly-master-picks.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744913347,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "hub-sync.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742813032,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "hyro-bridge-regen.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742816754,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "hyro-daily.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742820399,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "incidents-enhancements-nightly.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742825440,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "incubator-pipeline.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742829859,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "incubator-strategies.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45745452786,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "index-creator-content.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742842469,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "insider-trades-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742846955,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "kalshi-snapshot.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742851423,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "kimi-feb172026-live.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742856443,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "kimi-fetch-movies.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 38118283036,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "kimi-goldmine-collector.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742865893,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "live-monitor-refresh.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744564523,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "live_spike_trading.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744313326,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "live_tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742879388,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "live_trading.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742884340,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "live_trading_canada.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742889334,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "low-score-tracker.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742894654,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "luxalgo-signals.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744132142,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "macd-rsi-m048-shadow-daily.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45742904070,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "market_beating.yml",
+    "class": "GREEN_RECENT",
+    "audited": false,
+    "run_id": 45744993549,
+    "reason": "log unavailable: failed to get run: HTTP 403: API rate limit exceeded for user ID 38769710. If you reach out to GitHub Support for help, "
+  },
+  {
+    "file": "masking-policy-lint.yml",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "master-automation-scheduler.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "master-picks-health.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mega-mutation-tracker.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "meme-scanner-v2.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "meme-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mercury2-retrain.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mercury2-scan.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mermaid-test-deploy.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "meta-strategy.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mirror-site.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "missed-opportunity-scan.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-battleground-f.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-battleground-retrain.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-feedback-loop.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-feedback-retrain.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-forward-test.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-gatekeeper-train-ab.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-health-monitor.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-model-autotraining.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-monthly-retrain.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-staleness-watchdog.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ml-strategy-reviver.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "model-picks-emission.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "momentum-catcher.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "momentum-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "momentum-tracker.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "money-ready-registry-gate.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "money-ready-snapshot.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "monthly-calibrator-refit.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "monthly-tournament.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "multi-asset-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mutation-analysis-report.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mutation-lab.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mutation-lifecycle-runner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mysql-stale-picks-resolver.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mysql-trading-sync.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "mysql_dedup_fix.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "news-video-healthcheck.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "no-stale-db-passwords.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "non-crypto-ab-test.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "now-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "obi-snapshot.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "operator-review-today.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "optimize-score-thresholds.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "outcome-resolver.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "overnight-mutations.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pages-build-deployment",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "paper-pilot-daily.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "parquet-ingest.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pead-shadow-collector.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "peer-claim-verification.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "penny-skyrocket-runner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "penny-stock-picks.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "php52-gate.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pick-data-quality-gate.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pick-funnel-nightly.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pick-monitor-30min.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "picks-now-live-pnl.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "picks-now-refresh.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "picks_dispatch.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pine-generator.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "poc-picks-checkpoint.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pod-emission-audit.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pod-h201-forward-clock.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "polymarket-signals.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "populate-alpha-macro-daily.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "portfolio-tracker.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "portfolio-trackers.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "pre-spike-scan.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "prediction-market-agents.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "prediction-quality-tracker.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "proven-strategies-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "provenance-verify.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "prune-strategy-performance.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "qa-market-validation.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "quan-engine-live.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "quant-auditor-deep-nightly.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "quant-auditor-fast-pr.yml",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "quick-guess-ml.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "rapid-validation-CLAUDECODE_Feb152026.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "real_2hour_challenge.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "realtime-challenge.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "recommended-portfolio.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "refresh-creator-updates.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "refresh-top-movies.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "regime-detector.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "regime-terminal.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "research-orchestrator.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "resolver-step5-6-backfill.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "resolver-step7-apply.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "riseoftheclaw-weekly-backtest.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "rl-agent-ppo.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "robust-edge-miner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "rsi5070-forward-snapshot.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "schema-drift-audit.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "schema-drift-watchdog.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "scrape-events.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sec-edgar-fetch.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "secret-rotation-reminder.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "secret-scan.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "self_optimizing_trading.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "send-accountability-reminders.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sidecar-status-update.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sign-coherence-gate.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "signal-engine.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "signal-integrator.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "signal-quality-monitor.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "signal-recorder.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "signal_tracking.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "simulation-picks-resolver.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "skyrocket-detector.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sleeve-daily.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "smart-money-tracker.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "smart-picks-tracker.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "social-prediction-tracker.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "social_investigation.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "specialized-scanners.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "spike-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sports-betting-refresh.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sports-data-snapshots.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sports-forensics-weekly.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sports-prediction-market-sync.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sports-smoke-and-e2e.yml",
+    "class": "DISABLED",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "spy-data-refresh.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "stale-branch-cleanup.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "statistical_validation.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "stock-picks-writer.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "stocks-daily-stocksunify.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "stocks-daily.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "stocksunify2-pull.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "strategy-forward-tester.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "strategy-funnel-hourly.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "strategy-health-monitor.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "strategy-health-report.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "strategy-perf-by-class-rebuild.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "strategy-performance-no-regression.yml",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "strategy-tribunal.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "sustained-gainer-scan.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "swarm-janitor.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "swarm-pick-review.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "swarm-sync-v2.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "swing_screener_daily.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "system-health-check.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "taste-profile-scan.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "test-fast.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "test-portfolios.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "top-gainers-scan.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "torontoevent-algorithm-refresh.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "torontoevent-backtest-and-deploy.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "torontoevent-deploy-competition.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "torontoevent-deploy-live-monitor.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "torontoevent-deploy-riseoftheclaw.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "torontoevent-goldmine-tracker.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "torontoevent-rapid-validation.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "torontoevent-spike-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "track-quick-picks.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "traditional-test-portfolios.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "tribunal-runtime-gate.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "tv-paper-tpsl-watchdog.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "tv-strategy-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ueps-pick-runner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "ueps_smoke_tests.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "universe-expander.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "update-creator-news.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "update-graph",
+    "class": "SCHEDULE_ONLY",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "validate-hf-asset-class.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "validation-gates.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "value_resolver_quarterly.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "value_screener_weekly.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "verification-tests.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "verified-pilot-daily.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "volatile-alt-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "walk-forward-backtest.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "walkforward-gate.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "weekly-filter.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "weekly-scorecard.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "weekly-stock-simulation.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "weekly-strategy-scorecard.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "weekly_score_quartile_spread.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "what-worked-insights.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "winner-pattern-scanner.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "won-pnl-contradiction-backfill.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "worldclass-intelligence.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "worldclass-pipeline.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  },
+  {
+    "file": "wsl-runner-manager.yml",
+    "class": "NEVER_RUN",
+    "audited": false,
+    "reason": "no run on record"
+  }
+]

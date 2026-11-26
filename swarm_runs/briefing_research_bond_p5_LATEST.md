@@ -1,6 +1,6 @@
 # BOND research P5 — SYNTHESIS swarm briefing
 
-You are one of 3 AI engines voting on the BOND research run at run_2026-11-26T02-48-06Z.
+You are one of 3 AI engines voting on the BOND research run at run_2026-11-26T03-40-57Z.
 
 P3 backtest + P4 cross-test are complete. Numbers are real (yfinance prices, SMA-crossover proxy of spec.entry, 5y window, 5bp round-trip costs) but the signal is SIMPLIFIED — spec.entry text is not yet parsed faithfully. A faithful-signal translator is queued for v3.
 
@@ -164,7 +164,7 @@ If most candidates fail T2 floor (esp. n<100), the run-level verdict should be M
   "schema_version": "v1",
   "engine": "<your name>",
   "asset_class": "BOND",
-  "run_id": "run_2026-11-26T02-48-06Z",
+  "run_id": "run_2026-11-26T03-40-57Z",
   "synthesis": [
     {
       "spec_id": "<from list above>",
