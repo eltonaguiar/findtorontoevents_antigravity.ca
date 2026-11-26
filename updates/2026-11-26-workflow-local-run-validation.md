@@ -313,3 +313,58 @@ against a fetchable bar source. The four WARN pods
 `POD-CRYPTO-POSITION`) are `observe`/`post_hoc` by design — per the watchdog's own
 contract they emit WARN, not FAIL, and cannot confer confirmatory evidence until
 promoted, so no emitter was written for them.
+
+---
+
+## Addendum 3 — POD-EQUITY-BREAKOUT emitter landed and wired
+
+Addendum 2 §D listed this as blocked. The blocker was narrower than it looked:
+the emitter is **sound**, it was simply never on `main` and never scheduled.
+
+### What was done
+
+1. **Imported** `tools/emit_equity_breakout_pod.py` verbatim from local branch
+   `coverage-and-verdict-tooling-2026-11-24` (tracked there, on no remote branch,
+   never merged, never scheduled) with a PROVENANCE header naming its origin.
+2. **Wired** it into `forward-observations-ingest.yml` as two steps before the
+   ingest, because the ledger can only accrue rows that already exist in
+   `trading_picks`:
+   - *Refresh equity bar cache for the breakout pod* — `data/cache/asset_class_review/*_5y.csv`
+     is gitignored, so a clean runner had **no bars at all**; the step downloads
+     5y daily OHLCV for SPY/QQQ/IWM/DIA plus 22 liquid US names and asserts at
+     least 10 landed.
+   - *Emit POD-EQUITY-BREAKOUT rows* — one `--apply` run per declared strategy
+     (`donchian`, `rs-breakout`, `vol-contraction`, `adx-trend`), gated on the DB
+     secret exactly like the rest of the job.
+3. **Fixed a defect found while verifying it:** on real cached bars the emitter
+   produced `pnl_pct: NaN` / `exit_price: NaN` (yfinance emits NaN rows for
+   halted/suspended days and the trailing partial bar). `NaN` is not insertable
+   into MySQL and is invalid JSON, so:
+   - bars with a NaN `Close`/`High`/`Low`/`Date` are dropped before the signal
+     scan;
+   - `build_row` returns `None` when the entry or exit price is non-finite, so no
+     ACTIVE row with a NaN pnl is ever counted toward `n`;
+   - a non-finite ATR stop falls back to `entry * 0.92`.
+
+### Verification
+
+```
+cache step (executed for real on a clean origin/main tree):  cached 26/26 symbols
+emitter, per strategy:  donchian 26 rows | rs-breakout 26 | vol-contraction 26 | adx-trend 26
+NaN tokens in output:   0 for all four
+strict JSON parse (parse_constant raises): rows=26, all finite
+sample: {'symbol': 'AAPL', 'status': 'ACTIVE', 'entry_price': 349.51,
+         'stop_loss': 333.557, 'pnl_pct': 1.2247, 'exit_price': 354.07}
+yaml.safe_load + bash -n on both new steps: OK
+actionlint on the workflow: no new findings
+```
+
+### Still unverified (stated, not assumed)
+
+- `--apply` (the MySQL upsert) could not be executed here: no production DB
+  credentials locally. The code path is the same `tools/db_env.get_stocks_creds()`
+  the job already uses, and `pymysql` is installed by the preceding step.
+- The watchdog cannot turn green in the run that first emits: rows must reach
+  `at_signal_outcomes` and be resolved before `forward_observations_ingest` can
+  write ledger rows. Expect `POD-EQUITY-BREAKOUT` to leave FAIL only once its
+  first picks resolve.
