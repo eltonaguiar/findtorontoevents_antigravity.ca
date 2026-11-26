@@ -27,9 +27,11 @@ class EarningsLoader:
 
     def __init__(self):
         from .. import config
-        self.beat_threshold = config.EARNINGS_BEAT_THRESHOLD
-        self.consecutive_beats_required = config.CONSECUTIVE_BEATS_REQUIRED
-        self.pead_window = config.PEAD_DRIFT_WINDOW
+        # getattr with the documented defaults: a missing config constant must not abort
+        # the entire pick run (it did - AttributeError killed runs #165-#167).
+        self.beat_threshold = getattr(config, "EARNINGS_BEAT_THRESHOLD", 0.02)
+        self.consecutive_beats_required = getattr(config, "CONSECUTIVE_BEATS_REQUIRED", 2)
+        self.pead_window = getattr(config, "PEAD_DRIFT_WINDOW", 20)
         self._cache: Dict[str, pd.DataFrame] = {}
 
     def load_earnings_history(self, ticker: str) -> pd.DataFrame:
