@@ -183,6 +183,31 @@ def _get_category(symbol: str) -> str:
 # Data Fetchers
 # ---------------------------------------------------------------------------
 
+def _binance_pair(symbol: str) -> "str | None":
+    """Normalise a crypto ticker to a Binance futures pair (base + USDT).
+
+    Callers pass Yahoo-style tickers ("SUI-USD", "BTC-USD"), already-correct
+    pairs ("SUIUSDT") and occasionally bare tickers. Binance futures accepts
+    only base+USDT, so "SUI-USD" is rejected and the caller silently loses its
+    open-interest / long-short / taker inputs. Returns None when the ticker
+    cannot be a Binance USDT pair, so the caller can skip instead of issuing a
+    request that can only fail.
+    """
+    s = (symbol or "").strip().upper().replace("/", "-")
+    if not s:
+        return None
+    for suffix in ("-USDT", "-USD", "-BUSD"):
+        if s.endswith(suffix) and len(s) > len(suffix):
+            s = s[: -len(suffix)]
+            break
+    else:
+        if s.endswith("USDT") and len(s) > 4:
+            s = s[:-4]
+    if not re.fullmatch(r"[A-Z0-9]{2,12}", s or ""):
+        return None
+    return s + "USDT"
+
+
 def fetch_long_short_ratio(symbol: str, period: str = "4h", limit: int = 30) -> list:
     """
     Fetch top trader long/short account ratio from Binance Futures.
@@ -190,9 +215,14 @@ def fetch_long_short_ratio(symbol: str, period: str = "4h", limit: int = 30) -> 
     Returns list of dicts:
         {timestamp, longShortRatio, longAccount, shortAccount}
     """
+    pair = _binance_pair(symbol)
+    if not pair:
+        # Not a Binance futures pair (equity, unmapped ticker, empty): skip
+        # rather than issue a request that can only fail.
+        return []
     url = (
         f"{_BASE_URL}/topLongShortAccountRatio"
-        f"?symbol={symbol.upper()}&period={period}&limit={limit}"
+        f"?symbol={pair}&period={period}&limit={limit}"
     )
     raw = _fetch_json(url)
     results = []
@@ -216,9 +246,14 @@ def fetch_taker_ratio(symbol: str, period: str = "4h", limit: int = 30) -> list:
     Returns list of dicts:
         {timestamp, buySellRatio, buyVol, sellVol}
     """
+    pair = _binance_pair(symbol)
+    if not pair:
+        # Not a Binance futures pair (equity, unmapped ticker, empty): skip
+        # rather than issue a request that can only fail.
+        return []
     url = (
         f"{_BASE_URL}/takerlongshortRatio"
-        f"?symbol={symbol.upper()}&period={period}&limit={limit}"
+        f"?symbol={pair}&period={period}&limit={limit}"
     )
     raw = _fetch_json(url)
     results = []
@@ -242,9 +277,14 @@ def fetch_oi_history(symbol: str, period: str = "4h", limit: int = 30) -> list:
     Returns list of dicts:
         {timestamp, sumOpenInterest, sumOpenInterestValue}
     """
+    pair = _binance_pair(symbol)
+    if not pair:
+        # Not a Binance futures pair (equity, unmapped ticker, empty): skip
+        # rather than issue a request that can only fail.
+        return []
     url = (
         f"{_BASE_URL}/openInterestHist"
-        f"?symbol={symbol.upper()}&period={period}&limit={limit}"
+        f"?symbol={pair}&period={period}&limit={limit}"
     )
     raw = _fetch_json(url)
     results = []
