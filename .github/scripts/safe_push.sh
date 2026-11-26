@@ -150,7 +150,7 @@ for attempt in $(seq 1 $MAX_RETRIES); do
     # stopping the rebase. This is the key fix for the race condition — when
     # multiple workflows push to main concurrently, rebase conflicts on data files
     # are now auto-resolved instead of requiring manual resolution that often fails.
-    timeout "${GIT_NET_TIMEOUT}" git pull --rebase --no-recurse-submodules -X theirs origin main 2>&1 | _sanitize || {
+    timeout "${GIT_NET_TIMEOUT}" git pull --rebase --autostash --no-recurse-submodules -X theirs origin main 2>&1 | _sanitize || {
         pull_ok=false
         echo "Rebase failed or timed out, aborting rebase and trying merge strategy..."
         git rebase --abort 2>/dev/null || true
