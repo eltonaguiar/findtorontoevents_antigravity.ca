@@ -37,6 +37,14 @@ jobs:
       
       - name: Send Closed Picks Summary
         env:
+          # closed_picks_command.py does `from signal_aggregator.picks_router
+          # import PicksRouter`. Running it as
+          # `python signal_aggregator/closed_picks_command.py` puts
+          # ./signal_aggregator on sys.path instead of the repo root, so the
+          # package import failed with "No module named 'signal_aggregator'"
+          # (run 45740823581). Pinning PYTHONPATH to the workspace makes the
+          # repo root importable regardless of how the script is invoked.
+          PYTHONPATH: ${{ github.workspace }}
           DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
         run: |
           python signal_aggregator/closed_picks_command.py ${{ github.event.inputs.days || '30' }}

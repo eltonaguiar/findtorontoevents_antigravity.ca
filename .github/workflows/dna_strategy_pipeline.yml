@@ -113,7 +113,11 @@ jobs:
     name: Generate Active Picks
     needs: evolve-strategies
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
-    timeout-minutes: 30
+    # Was 30. Measured on run 45730970357: started 00:46:22Z, force-cancelled
+    # 01:16:38Z = 30m16s, i.e. it hit the cap mid-write. 4 of the 6 runs before
+    # 2026-11-26 were cancelled the same way, so this was a coin-flip per cycle,
+    # not a one-off. 45 matches the evolve-strategies budget above.
+    timeout-minutes: 45
     outputs:
       picks_generated: ${{ steps.gen.outputs.picks_count }}
       regime_detected: ${{ steps.gen.outputs.regime }}

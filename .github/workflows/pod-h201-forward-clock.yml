@@ -46,7 +46,10 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install pandas numpy yfinance
+        # tools/pod_forward.py imports per_class_edge_harness, which does
+        # `from scipy import stats as sps`. scipy was never installed, so every
+        # run died at import with ModuleNotFoundError (run 45740844705).
+        run: pip install pandas numpy yfinance scipy
 
       - name: Record forward rows
         run: |

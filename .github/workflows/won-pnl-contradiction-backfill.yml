@@ -58,17 +58,18 @@ jobs:
           DB_STOCKS_NAME: ejaguiar1_stocks
           DB_STOCKS_PORT: '3306'
         run: |
-          APPLY="false"
-          DRY_RUN="true"
+          # audit_won_picks_auto.py only defines --apply and --report. There is
+          # no --dry-run-only flag, so the old DRY_RUN variable was dead, and
+          # APPLY="false" was passed through unquoted as a literal argument:
+          #   error: unrecognized arguments: false   (run 45740864308)
+          # Corrections are already opt-in via --apply, so the default is no flag.
+          APPLY=""
 
           if [ "${{ inputs.apply }}" = "true" ]; then
             APPLY="--apply"
             echo "APPLY MODE: WON rows will be corrected to LOST"
-          fi
-
-          if [ "${{ inputs.dry_run }}" = "false" ] && [ "${{ inputs.apply }}" = "false" ]; then
-            DRY_RUN="--dry-run-only"
-            echo "DRY RUN MODE: Report only, no changes"
+          else
+            echo "DRY RUN (default): report only, no DB writes"
           fi
 
           python tools/audit_won_picks_auto.py $APPLY --report reports/won_pnl_contradiction_dryrun_$(date -u +%Y%m%d_%H%M)Z.json

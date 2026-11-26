@@ -73,5 +73,10 @@ jobs:
             echo "no scorecard change"
           else
             git commit -m "chore(scorecard): weekly verdicts [skip ci]"
-            git push
+            # A bare `git push` loses the race whenever another workflow commits
+            # to main in the same window -- it died with
+            # "! [rejected] main -> main (fetch first)" (run 45740861437).
+            # safe_push.sh rebases with retry/backoff and is the standard in
+            # 200+ other workflows in this repo.
+            bash .github/scripts/safe_push.sh
           fi
