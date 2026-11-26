@@ -38,12 +38,28 @@ class MacroLoader:
             try:
                 df = yf.download(ticker, start=start, end=end, progress=False)
                 if not df.empty:
+                    series = None
                     if "Adj Close" in df.columns:
-                        frames[name] = df["Adj Close"]
+                        series = df["Adj Close"]
                     elif "Close" in df.columns:
-                        frames[name] = df["Close"]
+                        series = df["Close"]
+                    # Newer yfinance builds return MultiIndex columns even for a single
+                    # ticker, so df["Close"] is a one-column DataFrame, not a Series. Passing
+                    # those into pd.DataFrame() raises "If using all scalar values, you must
+                    # pass an index", which killed every alpha-engine-daily-picks run and left
+                    # latest_picks.json unwritten -> "Deploy picks to live site" skipped.
+                    if isinstance(series, pd.DataFrame):
+                        series = series.iloc[:, 0]
+                    if series is not None:
+                        series = series.dropna()
+                        if not series.empty:
+                            frames[name] = series
             except Exception as e:
                 logger.warning(f"Failed to load macro ticker {name} ({ticker}): {e}")
+
+        if not frames:
+            logger.warning("No macro series loaded - returning an empty macro frame")
+            return pd.DataFrame()
 
         macro = pd.DataFrame(frames)
         macro.index = pd.to_datetime(macro.index)
