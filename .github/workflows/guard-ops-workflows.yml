@@ -42,11 +42,6 @@ jobs:
   guard:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      # push -> the pushed range; workflow_dispatch -> the replay inputs.
-      BEFORE: ${{ github.event_name == 'push' && github.event.before || inputs.before }}
-      AFTER: ${{ github.event_name == 'push' && github.event.after || inputs.after }}
-      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
     steps:
       - name: Checkout (only what the guard needs)
         uses: actions/checkout@v6
@@ -60,12 +55,21 @@ jobs:
         run: python3 tools/test_guard_ops_workflows.py
 
       # A shallow checkout only has the pushed tip, so pull in the other endpoint(s).
-      # `26dd4f9df832^` is not a fetchable ref - fetch the bare sha and let git resolve `^`.
+      # Explicit per-event variables: `github.event.before` is populated on dispatch too,
+      # so an `a && b || c` fallback silently compares the wrong range.
       - name: Fetch the range endpoints
+        env:
+          EVENT: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+          IN_BEFORE: ${{ inputs.before }}
+          IN_AFTER: ${{ inputs.after }}
         run: |
           set -euo pipefail
-          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            echo "first push on this ref - nothing to compare"
+          if [ "$EVENT" = "push" ]; then BEFORE="$PUSH_BEFORE"; AFTER="$PUSH_AFTER"; else BEFORE="$IN_BEFORE"; AFTER="$IN_AFTER"; fi
+          echo "range: $BEFORE..$AFTER"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE" ]; then
+            echo "first push on this ref (or no range given) - nothing to compare"
             exit 0
           fi
           for rev in "$BEFORE" "$AFTER"; do
@@ -81,10 +85,14 @@ jobs:
                 || echo "::warning::could not fetch $base (force push?); the guard will report inconclusive"
             fi
           done
+          echo "BEFORE=$BEFORE" >> "$GITHUB_ENV"
+          echo "AFTER=$AFTER" >> "$GITHUB_ENV"
 
       - name: Guard the range
+        env:
+          IN_DRY: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
           args=(--before "$BEFORE" --after "$AFTER")
-          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          if [ "$IN_DRY" = "true" ]; then args+=(--dry-run); fi
           python3 tools/guard_ops_workflows.py "${args[@]}"
