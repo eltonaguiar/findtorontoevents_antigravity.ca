@@ -17,6 +17,12 @@ jobs:
   aggregate:
     runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 35
+    env:
+      # The DB modules read AUDIT_DB_PASS (60 files reference it) and fall back
+      # to a hardcoded "stocks" when it is unset. This workflow only exported
+      # DB_PASS_STOCKS, so every query used the wrong default and MySQL answered
+      # 1045 Access denied ~1.8k times per run while the job stayed green.
+      AUDIT_DB_PASS: ${{ secrets.DB_PASS_STOCKS || secrets.MYSQL_PASSWORD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
