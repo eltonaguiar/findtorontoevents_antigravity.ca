@@ -37,8 +37,8 @@ jobs:
       - name: Deploy backup runner PHP to findtorontoevents.ca
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
           DB_CREDENTIALS_JSON: ${{ secrets.FINDTORONTOEVENTS_DB_CREDENTIALS }}
           DB_SCRIPT_TOKEN: ${{ secrets.DB_SCRIPT_TOKEN }}
         run: |
@@ -230,8 +230,8 @@ jobs:
         if: always()
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
         run: |
           echo " Removing temporary backup script from server..."
           # Overwrite with a harmless stub (FTP doesn't have delete easily via lftp on some hosts)
