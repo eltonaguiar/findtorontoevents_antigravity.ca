@@ -370,11 +370,13 @@ data/parquet/
 data_lake/**/*.parquet
 
 # --- Additional model dirs (each has production consumer reading from disk) ---
-claude_gainer_ml/models/*.joblib
-crypto_ml_edge/models/*.joblib
-ml_battleground/**/models/*.pt
-ml_battleground/**/models/*.joblib
-mercury2/models/*.joblib
+# RE-ENABLED 2026-11-25: claude_gainer_ml/models/*.joblib and mercury2/models/*.joblib were
+# ignored here (commit 94c208b8d43, "gitignore v6"). Their workflows generate and `git add`
+# these models, so ignoring them made every retrain a silent no-op and left both scanners
+# permanently GREEN-BUT-DEAD (Mercury 2 stopped scanning 2026-05-25). Do not re-add them
+# unless the training workflows stop committing models.
+# crypto_ml_edge and ml_battleground re-enabled 2026-11-25 too: identical silent-no-op failure
+# (deleted models + ignore rule = retrain's `git add` does nothing while the job stays green).
 
 # --- Universal Python/JS hygiene (safety net against future leaks) ---
 __pycache__/
@@ -517,6 +519,11 @@ data/ai_tournament/picks_2026*.json
 
 # --- ML model artifacts (each dir specifically; broad **/*.pt|.pth|.h5|.npz) ---
 **/*.pt
+
+# ml_battleground retrain commits .pt checkpoints via
+# `git add ml_battleground/system_*/models/`. This blanket rule made that
+# add a silent no-op exactly like the v6 sweep did for the .joblib models.
+!ml_battleground/**/models/*.pt
 **/*.pth
 **/*.h5
 **/*.npz
@@ -716,3 +723,6 @@ data/research_cache/
 
 # Raw Actions job logs fetched by tools/gha_raw_logs.py (large, regenerable)
 reports/gha_logs/
+# --- Tool worktree scratch dirs (must never be committed; a gitlink here breaks CI submodule traversal) ---
+.qwen/worktrees/
+.claude/worktrees/
