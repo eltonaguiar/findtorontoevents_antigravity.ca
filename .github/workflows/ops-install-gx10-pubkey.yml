@@ -85,11 +85,15 @@ jobs:
             'echo "--- fingerprints ---"',
             'ssh-keygen -lf "$ak" || true',
             'echo "--- localhost self-test through sshd ---"',
-            'if ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=10 "$user@127.0.0.1" "echo LAPTOP_SSHD_KEY_OK; hostname"; then',
+            'keyfile="$(mktemp)"',
+            'printf "%s\n" "$pub" > "$keyfile"',
+            'chmod 600 "$keyfile"',
+            'if ssh -i "$keyfile" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=10 "$user@127.0.0.1" "echo LAPTOP_SSHD_KEY_OK; hostname"; then',
             '  echo "self-test: OK"',
             'else',
-            '  echo "self-test: FAILED"',
+            '  echo "self-test: FAILED (key rejected by sshd for $user)"'
             '  tail -25 /var/log/auth.log 2>/dev/null || sudo -n tail -25 /var/log/auth.log 2>/dev/null || echo "(auth.log unreadable)"',
+            '  rm -f "$keyfile"',
             '  exit 1',
             'fi'
           )
