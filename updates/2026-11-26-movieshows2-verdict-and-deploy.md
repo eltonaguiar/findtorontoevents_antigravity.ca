@@ -38,7 +38,7 @@ Deliberately excluded, and why:
 
 | File | Reason |
 |---|---|
-| `api/db-config.php` | the live copy holds the **working** credentials; the repo copy reads `getenv()`/a private `require` that 50webs has not been given. Publishing it would take the DB down. |
+| ~~`api/db-config.php`~~ | **Reversed after live evidence.** The first deploy left both endpoints answering `{"success":false,"error":"Database connection failed"}`. A throwaway probe showed the *repo* config resolves the same shared private credentials file MOVIESHOWS3 already uses (`{"connected":true}`), so the live 683-byte copy with hardcoded values was the stale one. It is now **included** in the deploy. |
 | `api/sync-providers.php` | 176-byte divergence with no explanation yet — needs a human diff. |
 | `api/test-db.php`, `api/freestyle-search.php` | not currently served; exposing new public endpoints is a product decision. |
 
@@ -47,3 +47,19 @@ Deliberately excluded, and why:
 The live `movieshows2/api/db-config.php` (683 B) contains a **plaintext database
 password**. The repo version is the correct pattern. Treat that credential as exposed
 to anyone with FTP access or a backup of that directory and rotate it when convenient.
+
+## Correction: db-config.php is part of the fix
+
+The first dispatch uploaded `movies.php` and `get-movies.php` only, and both then
+returned `500 {"success":false,"error":"Database connection failed"}`. That message is
+`getDbConnection()` returning null, i.e. the **live** `db-config.php` (683 B, hardcoded
+values) holds credentials the database no longer accepts.
+
+Verified before changing anything: the repo `db-config.php` derives its private config
+path from `dirname(dirname(dirname(__FILE__)))`, which is identical for
+`MOVIESHOWS3/api/` and `movieshows2/api/` because both sit at the same depth. Uploading
+it under a throwaway name plus a one-line probe returned `{"connected":true}`, and both
+probe files were deleted immediately.
+
+So the deploy list is now three files, and `db-config.php` is the one that makes the
+other two work.
