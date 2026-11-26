@@ -9,9 +9,14 @@ helpful error: the request dies as an EMPTY HTTP 500. That is how a call to
 http_response_code() (PHP 5.4+) silently broke the movie refresh until it was
 traced by hand -- see updates/2026-11-26-movieshows3-refresh-green.md.
 
-Scope is deliberately limited to MOVIESHOWS3/, the only tree that ships to that
-host. Adding a rule is cheap; keeping false positives at zero matters more, so
-comments are stripped before matching and every rule is a real version gate.
+Scope is every tree that ships to that host: MOVIESHOWS3/, MOVIESHOWS2/ and
+favcreators/docs (which deploys as /fc/). Adding a rule is cheap; keeping false
+positives at zero matters more, so comments AND string literals are stripped
+before matching, and every rule is a real version gate.
+
+Trees that already contain legacy violations can be baselined: only findings that
+are NOT in the baseline fail the build, so the gate is useful today instead of
+after a large risky refactor.
 
 Usage:
     python3 tools/php52_compat_lint.py                 # scan the default tree
@@ -31,7 +36,12 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_ROOT = REPO_ROOT / "TORONTOEVENTS_ANTIGRAVITY" / "MOVIESHOWS3"
+DEFAULT_ROOTS = [
+    REPO_ROOT / "TORONTOEVENTS_ANTIGRAVITY" / "MOVIESHOWS3",
+    REPO_ROOT / "TORONTOEVENTS_ANTIGRAVITY" / "MOVIESHOWS2",
+    REPO_ROOT / "favcreators" / "docs",
+]
+BASELINE = REPO_ROOT / "tools" / "php52_baseline.json"
 
 # (rule id, regex, version that introduced it, what the reader should do)
 RULES: list[tuple[str, str, str, str]] = [
@@ -68,7 +78,11 @@ GUARD_PATTERN = re.compile(r"function_exists\s*\(\s*['\"]http_response_code['\"]
 
 
 def strip_comments(text: str) -> str:
-    """Blank out // # and /* */ comments while keeping line numbers intact."""
+    """Blank out // # and /* */ comments and the inside of string literals.
+
+    Strings matter as much as comments: markdown like "**Note:**" inside a PHP
+    string literal otherwise trips the power-operator rule.
+    """
     out: list[str] = []
     i, n = 0, len(text)
     in_block = False
@@ -100,6 +114,23 @@ def strip_comments(text: str) -> str:
             out.append(" " * (j - i))
             i = j
             continue
+        if ch in ("'", '"'):
+            quote = ch
+            out.append(ch)
+            i += 1
+            while i < n:
+                c = text[i]
+                if c == "\\" and i + 1 < n:
+                    out.append("  ")
+                    i += 2
+                    continue
+                if c == quote:
+                    out.append(c)
+                    i += 1
+                    break
+                out.append("\n" if c == "\n" else " ")
+                i += 1
+            continue
         out.append(ch)
         i += 1
     return "".join(out)
@@ -108,7 +139,9 @@ def strip_comments(text: str) -> str:
 def check_file(path: Path) -> list[dict]:
     raw = path.read_text(errors="replace")
     code = strip_comments(raw)
-    guarded = bool(GUARD_PATTERN.search(code))
+    # The guard pattern lives inside a string literal, which strip_comments blanks,
+    # so it has to be matched against the raw source.
+    guarded = bool(GUARD_PATTERN.search(raw))
     raw_lines = raw.splitlines()
     findings: list[dict] = []
     for rule, pattern, version, advice in RULES:
@@ -131,6 +164,15 @@ def check_file(path: Path) -> list[dict]:
     return findings
 
 
+def _rel(path: str) -> str:
+    """Repository-relative key that works for absolute and relative inputs."""
+    p = Path(path)
+    try:
+        return p.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return p.as_posix()
+
+
 def collect(targets: list[Path]) -> list[Path]:
     files: list[Path] = []
     for t in targets:
@@ -145,9 +187,11 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Reject syntax newer than PHP 5.2 in MOVIESHOWS3.")
     ap.add_argument("paths", nargs="*", type=Path, help="files or directories (default: MOVIESHOWS3/)")
     ap.add_argument("--json", action="store_true", help="emit JSON instead of text")
+    ap.add_argument("--write-baseline", action="store_true",
+                    help="record current findings as the accepted baseline")
     args = ap.parse_args(argv)
 
-    targets = args.paths or [DEFAULT_ROOT]
+    targets = args.paths or list(DEFAULT_ROOTS)
     files = collect(targets)
     if not files:
         print(f"php52 lint: no PHP files under {', '.join(map(str, targets))}", file=sys.stderr)
@@ -157,14 +201,35 @@ def main(argv: list[str] | None = None) -> int:
     for f in files:
         findings.extend(check_file(f))
 
+    known = json.loads(BASELINE.read_text()) if BASELINE.exists() else {}
+    counts: dict[str, int] = {}
+    for item in findings:
+        key = f"{_rel(item['file'])}|{item['rule']}"
+        counts[key] = counts.get(key, 0) + 1
+    new_findings = []
+    consumed: dict[str, int] = {}
+    for item in findings:
+        key = f"{_rel(item['file'])}|{item['rule']}"
+        allowed = known.get(key, 0)
+        consumed[key] = consumed.get(key, 0) + 1
+        if consumed[key] > allowed:
+            new_findings.append(item)
+
+    if args.write_baseline:
+        BASELINE.write_text(json.dumps(dict(sorted(counts.items())), indent=2) + "\n")
+        print(f"php52 lint: baseline written with {len(counts)} key(s) -> {BASELINE}", file=sys.stderr)
+        return 0
+
     if args.json:
-        print(json.dumps({"files": len(files), "findings": findings}, indent=2))
+        print(json.dumps({"files": len(files), "findings": new_findings,
+                          "baselined": len(findings) - len(new_findings)}, indent=2))
     else:
-        for item in findings:
+        for item in new_findings:
             print(f"{item['file']}:{item['line']}: {item['rule']} needs {item['needs']} "
                   f"({item['advice']})\n    {item['snippet']}")
-        print(f"\nphp52 lint: {len(files)} file(s) scanned, {len(findings)} finding(s)")
-    return 1 if findings else 0
+        print(f"\nphp52 lint: {len(files)} file(s) scanned, {len(new_findings)} new finding(s), "
+              f"{len(findings) - len(new_findings)} baselined")
+    return 1 if new_findings else 0
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Tests for tools/php52_compat_lint.py — the PHP 5.2 gate for MOVIESHOWS3."""
+"""Tests for tools/php52_compat_lint.py — the PHP 5.2 gate for the 50webs trees."""
 
 import pathlib
 import sys
@@ -52,9 +52,41 @@ def test_clean_file_passes(tmp_path):
     assert lint.check_file(f) == []
 
 
-def test_repository_tree_is_clean():
-    """The shipped MOVIESHOWS3 tree must stay 5.2-clean."""
+def test_movieshows_trees_are_clean():
+    """MOVIESHOWS2 and MOVIESHOWS3 ship to 50webs and must stay 5.2-clean."""
     findings = []
-    for php in lint.DEFAULT_ROOT.rglob("*.php"):
-        findings.extend(lint.check_file(php))
+    for root in lint.DEFAULT_ROOTS[:2]:
+        for php in root.rglob("*.php"):
+            findings.extend(lint.check_file(php))
     assert findings == [], findings
+
+
+def test_full_repository_scan_passes_with_baseline():
+    """The whole 50webs surface must pass the gate as configured in CI."""
+    assert lint.main([]) == 0
+
+
+def test_strings_are_not_code(tmp_path):
+    """Markdown bold inside a PHP string must not trip the power-operator rule."""
+    f = _write(tmp_path, "g.php", "<?php\necho '**Note:** this is bold';\n")
+    assert lint.check_file(f) == []
+
+
+def test_baseline_suppresses_known_findings(tmp_path, monkeypatch):
+    import json as _json
+    base = tmp_path / "baseline.json"
+    base.write_text(_json.dumps({"a.php|http-response-code": 1}))
+    monkeypatch.setattr(lint, "BASELINE", base)
+    monkeypatch.setattr(lint, "REPO_ROOT", tmp_path)
+    _write(tmp_path, "a.php", "<?php\nhttp_response_code(403);\n")
+    assert lint.main([str(tmp_path)]) == 0  # known -> allowed
+
+
+def test_baseline_still_fails_on_new_finding(tmp_path, monkeypatch):
+    import json as _json
+    base = tmp_path / "baseline.json"
+    base.write_text(_json.dumps({"a.php|http-response-code": 1}))
+    monkeypatch.setattr(lint, "BASELINE", base)
+    monkeypatch.setattr(lint, "REPO_ROOT", tmp_path)
+    _write(tmp_path, "a.php", "<?php\nhttp_response_code(403);\nhttp_response_code(500);\n")
+    assert lint.main([str(tmp_path)]) == 1  # second call is new -> fails
