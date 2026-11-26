@@ -185,3 +185,96 @@ verdict + upload steps.
   of a 577,847-minute footprint; `db-freshness-guardian.yml` is not a cost
   problem. It is a correctness problem — a health check that could not report ill
   health.
+
+---
+
+# Follow-up: the masked RED was a query timeout, and the data really is 197 days stale
+
+While validating the above fix on the self-hosted runner (run `45762821506`,
+`laptop-zerou-wsl`), the run reported **success** but carried a
+`[failure] Process completed with exit code 2` annotation. That is the masked
+gate reproducing live, so I pulled the log:
+
+```
+WARNING backtests check error: (2013, 'Lost connection to MySQL server during query (timed out)')
+INFO Freshness report written: ... (overall=RED)
+INFO Overall DB freshness: RED
+##[error]Process completed with exit code 2.
+```
+
+Same output on the three preceding cloud runs (`45760639241`, `45754479467`,
+`45749836883`) — all `conclusion=success`, all hiding `exit code 2`. So this is
+not a self-hosted network artifact; **every hourly run has been RED and reported
+green.**
+
+## Root cause
+
+`check_backtests()` ran:
+
+```sql
+SELECT MAX(imported_at), COUNT(*) FROM bt_backtest_trades
+```
+
+Measured on the live DB: **34,619,493 rows**, and the only indexes are
+`PRIMARY(id)`, `backtest_run_id`, `symbol`, `asset_class`, `strategy`, `status`.
+There is **no index on `created_at` or `imported_at`**. So `MAX()` over that
+column is a full table scan on top of a full `COUNT(*)` scan, against
+`read_timeout=30` on the remote `mysql.50webs.com` host. Reproduced directly:
+
+| Query | Result | Time |
+|---|---|---|
+| `SELECT MAX(imported_at), COUNT(*)` | `(2013, Lost connection … timed out)` | **30.0s** |
+| `SELECT imported_at … ORDER BY id DESC LIMIT 5000` | `max=2026-05-13 00:03:45` | **0.1s** |
+| `information_schema.TABLES.TABLE_ROWS` | `34619493` | 0.1s |
+
+It could never succeed. The exception set `result["error"]`, which classified as
+a connectivity RED — and `continue-on-error: true` turned that into a green job.
+
+## Fix
+
+`check_backtests()` now uses two index-friendly queries instead of one
+full-scanning one:
+
+- newest timestamps come from a **PRIMARY-key tail sample**
+  (`ORDER BY id DESC LIMIT TAIL_SAMPLE_ROWS`, default 5000). Walking the PK
+  backwards is O(n) regardless of table size; backtest rows are append-only so
+  the newest timestamps are in the tail. The result records `sampled_rows` and
+  `sample_truncated` so the approximation is visible in the report rather than
+  implied.
+- `n_total` comes from `information_schema.TABLES.TABLE_ROWS`, flagged
+  `n_total_is_estimate: true`. It is reported only — never used to grade
+  freshness.
+
+`TAIL_SAMPLE_ROWS` is a module constant with a comment explaining when to raise
+it (a table that backfills old rows with high ids would break the tail
+assumption).
+
+## End-to-end verification (live DB)
+
+`python3 tools/db_freshness_check.py` → exit 2, and the report now contains:
+
+```
+check               backtests
+table               bt_backtest_trades
+status              RED
+minutes_stale       284017.0
+last_trade_at       2026-05-13 00:03:45
+n_total             34619493
+n_total_is_estimate True
+sampled_rows        5000
+sample_truncated    True
+```
+
+No `error` key, so this is a **real staleness** RED, not connectivity. Combined
+with the verdict gate above, the job will now **fail** — which is correct.
+
+## What this means
+
+The backtests table is **197 days stale** (`bt_backtest_trades` last written
+2026-05-13). The guardian has never been able to report it: first because the
+query always timed out, then because the error was masked. After this branch,
+the guard goes red and stays red until the backtests import is repaired. That is
+the guard doing its job, not a regression.
+
+Note `last_trade_at` is a tail *sample* max, not a proven global max. For an
+append-only table the two agree unless rows were backfilled with high ids.
