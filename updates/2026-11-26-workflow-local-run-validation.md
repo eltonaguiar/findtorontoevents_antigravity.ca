@@ -184,3 +184,48 @@ updates/2026-11-26-workflow-local-run-validation.md
 
 Backups of every edited file were taken to `/tmp/bak_2026-11-26/` before
 editing.
+
+---
+
+## Addendum — a second `NaN` producer (same day, after the first fix)
+
+Merging the fix above exposed that `ueps_picks.json` was not the only poisoned
+payload: the `ci.yml` build on the merge commit (`67c2ecfa`, run `45738440769`)
+failed again, this time on
+
+```
+audit_dashboard/data/forex_futures_picks.json: not strict JSON (NaN)
+```
+
+A scheduled workflow regenerated that file minutes after the 352-payload scan
+had reported zero. The producer is
+`copy_trader_intel/multi_asset_bridge.py::save_json`, which used
+`json.dump(data, f, indent=2, ensure_ascii=False)` — `allow_nan` defaults to
+`True`, so `NaN` confidence / ML-score / cross-signal values (which yfinance and
+the backtest engines return for unpriced or untraded symbols) were written
+verbatim.
+
+Fixed the same way as the ueps writer:
+
+| File | Change |
+|---|---|
+| `copy_trader_intel/multi_asset_bridge.py` | `save_json` sanitises non-finite floats (incl. numpy scalars) to `null` and passes `allow_nan=False` |
+| `multi_asset/backtest_focused_noncrypto_strategies.py` | zero-trade strategies produce `NaN` sharpe/return; writer now sanitises and refuses `allow_nan` |
+| `audit_dashboard/data/forex_futures_picks.json` | repaired (8 → 0) |
+| `multi_asset/data/multi_asset_picks.json` | repaired (8 → 0) |
+| `multi_asset/data/focused_noncrypto_backtest_results.json` | repaired (8 → 0) |
+
+`tools/hyro_ml_pick_optimizer.py` already had the guard (`allow_nan=False`), so
+it was not touched.
+
+Verified: both writers `py_compile` clean; the sanitiser unit-checked on
+`NaN`/`+Inf`/nested lists; strict-JSON parse (`parse_constant` raises) passes for
+all three repaired payloads; a final scan of every JSON under
+`audit_dashboard/data/` and `multi_asset/data/` reports **0** bare
+`NaN`/`Infinity` tokens.
+
+**Still systemic:** any producer of a gate-checked payload that calls
+`json.dump` without `allow_nan=False` can reintroduce this. The CI gate catches
+it (loudly, naming the file), which is the desired safety net; the durable fix
+is to give all such producers the `_json_safe` guard. Two producers now have it,
+one already had it.
