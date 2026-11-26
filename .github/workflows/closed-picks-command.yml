@@ -39,7 +39,9 @@ jobs:
         env:
           DISCORD_MASTER_PICKS: ${{ secrets.DISCORD_MASTER_PICKS }}
         run: |
-          python signal_aggregator/closed_picks_command.py ${{ github.event.inputs.days || '30' }}
+          # Run as a module: the script imports its own package, and executing it as a
+          # file puts only signal_aggregator/ on sys.path -> "No module named 'signal_aggregator'".
+          PYTHONPATH=. python -m signal_aggregator.closed_picks_command ${{ github.event.inputs.days || '30' }}
       
       - name: Log result
         if: always()
