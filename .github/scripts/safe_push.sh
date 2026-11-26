@@ -2,7 +2,7 @@
 # safe_push.sh — Push-only exponential backoff (for workflows that already add+commit)
 # Usage: bash .github/scripts/safe_push.sh [remote_url]
 #
-# If remote_url is provided, pushes to that URL instead of "origin main".
+# If remote_url is provided, pushes to that URL instead of origin/<branch>.
 # Handles: pull --rebase before push, exponential backoff on failure
 # Designed for GitHub Actions where many workflows push to main concurrently.
 # For full add+commit+push, use safe_commit_push.sh instead.
@@ -31,11 +31,18 @@ DEEPEN_TIMEOUT=90    # seconds — git fetch --deepen=N must not burn the whole 
 
 REMOTE_URL="${1:-}"
 
+# Which branch to integrate with and push to. This used to be hardcoded "main",
+# so a run on any other branch rebased against main and then tried HEAD:main:
+#   ! [remote rejected] HEAD -> main (workflows scope may be required)
+# because the branch carried workflow-file edits main did not have. Push to the
+# branch we are actually on; on main this is a no-op change.
+TARGET_BRANCH="${SAFE_PUSH_BRANCH:-${GITHUB_REF_NAME:-main}}"
+
 # --- Early exit: nothing to push ---
 LOCAL_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
 REMOTE_HEAD=$(git rev-parse origin/main 2>/dev/null || echo "")
 if [ -n "$LOCAL_HEAD" ] && [ "$LOCAL_HEAD" = "$REMOTE_HEAD" ]; then
-    echo "Nothing to push — local HEAD matches origin/main"
+    echo "Nothing to push — local HEAD matches origin/$TARGET_BRANCH"
     exit 0
 fi
 
@@ -111,7 +118,7 @@ _sanitize() {
 _SHALLOW_FILE="$(git rev-parse --git-dir 2>/dev/null)/shallow"
 if [ -f "$_SHALLOW_FILE" ]; then
     echo "  (shallow repo — deepening history for pull/rebase)"
-    if ! timeout "${DEEPEN_TIMEOUT}" git fetch --no-recurse-submodules --filter=blob:none --deepen=150 origin main 2>&1 | _sanitize; then
+    if ! timeout "${DEEPEN_TIMEOUT}" git fetch --no-recurse-submodules --filter=blob:none --deepen=150 origin "$TARGET_BRANCH" 2>&1 | _sanitize; then
         echo "  FATAL: deepen fetch timed out after ${DEEPEN_TIMEOUT}s — shallow repo cannot rebase"
         echo "  Falling back to merge strategy (preserves commit, no rebase needed)"
         git config pull.rebase false 2>/dev/null || true
@@ -150,13 +157,13 @@ for attempt in $(seq 1 $MAX_RETRIES); do
     # stopping the rebase. This is the key fix for the race condition — when
     # multiple workflows push to main concurrently, rebase conflicts on data files
     # are now auto-resolved instead of requiring manual resolution that often fails.
-    timeout "${GIT_NET_TIMEOUT}" git pull --rebase --autostash --no-recurse-submodules -X theirs origin main 2>&1 | _sanitize || {
+    timeout "${GIT_NET_TIMEOUT}" git pull --rebase --autostash --no-recurse-submodules -X theirs origin "$TARGET_BRANCH" 2>&1 | _sanitize || {
         pull_ok=false
         echo "Rebase failed or timed out, aborting rebase and trying merge strategy..."
         git rebase --abort 2>/dev/null || true
         # Merge fallback: -X ours prefers our local branch (our generated data).
         # In merge semantics (unlike rebase), "ours" = local HEAD = our commit.
-        if ! timeout "${GIT_NET_TIMEOUT}" git pull --no-rebase --allow-unrelated-histories --no-recurse-submodules -X ours origin main 2>&1 | _sanitize; then
+        if ! timeout "${GIT_NET_TIMEOUT}" git pull --no-rebase --allow-unrelated-histories --no-recurse-submodules -X ours origin "$TARGET_BRANCH" 2>&1 | _sanitize; then
             echo "WARNING: Merge pull also failed on attempt $attempt"
             # Last resort. A shallow/partial clone can have NO common ancestor with
             # origin/main, and then rebase, merge AND --allow-unrelated-histories all
@@ -168,7 +175,7 @@ for attempt in $(seq 1 $MAX_RETRIES); do
             # A depth-1 fetch of the tip always works. Replay our tree on top of it:
             # our generated files win, which is the same intent as -X ours.
             _MSG=$(git log -1 --format=%s 2>/dev/null || echo "update")
-            if timeout "${GIT_NET_TIMEOUT}" git fetch --depth=1 --no-tags origin main 2>&1 | _sanitize; then
+            if timeout "${GIT_NET_TIMEOUT}" git fetch --depth=1 --no-tags origin "$TARGET_BRANCH" 2>&1 | _sanitize; then
                 if ! git merge-base --is-ancestor FETCH_HEAD HEAD 2>/dev/null; then
                     echo "no merge base with origin/main - replaying our tree on top of the remote tip"
                     if git reset --soft FETCH_HEAD 2>/dev/null; then
@@ -227,14 +234,14 @@ for attempt in $(seq 1 $MAX_RETRIES); do
     push_output=""
     push_rc=0
     if [ -n "$REMOTE_URL" ]; then
-        push_output=$(timeout "${GIT_NET_TIMEOUT}" git push "$REMOTE_URL" HEAD:main 2>&1) || push_rc=$?
+        push_output=$(timeout "${GIT_NET_TIMEOUT}" git push "$REMOTE_URL" HEAD:"$TARGET_BRANCH" 2>&1) || push_rc=$?
     else
-        # HEAD:main (not bare "main") so this also works when the runner checked
+        # HEAD:"$TARGET_BRANCH" (not bare "main") so this also works when the runner checked
         # out a feature branch via workflow_dispatch. A bare "main" refspec fails
         # with "src refspec main does not match any" when no local main ref exists
         # — that silently stranded the 2026-05-28 tournament branch run's commit
         # (data reached the DB + FTP but never main, so the page reverted to 3 models).
-        push_output=$(timeout "${GIT_NET_TIMEOUT}" git push origin HEAD:main 2>&1) || push_rc=$?
+        push_output=$(timeout "${GIT_NET_TIMEOUT}" git push origin HEAD:"$TARGET_BRANCH" 2>&1) || push_rc=$?
     fi
 
     echo "$push_output" | _sanitize
