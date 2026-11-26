@@ -53,6 +53,6 @@ jobs:
           git config user.name "poc-checkpoint-bot"
           git config user.email "actions@users.noreply.github.com"
           git add reports/POC_CHECKPOINT_VERDICT.md || true
-          git commit -m "chore(poc): 2-week checkpoint verdict $(date -u +%Y-%m-%d) [skip ci]" || echo "no change"
+          git diff --cached --quiet || git commit -m "chore(poc): 2-week checkpoint verdict $(date -u +%Y-%m-%d) [skip ci]" || echo "no change"
           # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
           bash .github/scripts/safe_push.sh
