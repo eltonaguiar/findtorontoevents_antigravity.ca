@@ -144,7 +144,7 @@ jobs:
         git add LIVE_TRADING_RESULTS.md || true
         git add data/spike_trader_active.json || true
 
-        git commit -m "Live spike trading update - $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" || echo "No changes"
+        git diff --cached --quiet || git commit -m "Live spike trading update - $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" || echo "No changes"
 
         bash .github/scripts/safe_push.sh
 
