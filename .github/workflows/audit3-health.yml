@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   health:
-    runs-on: [self-hosted, wsl-desktop]
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
