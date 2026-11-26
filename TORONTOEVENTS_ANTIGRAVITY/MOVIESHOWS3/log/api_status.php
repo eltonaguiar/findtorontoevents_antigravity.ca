@@ -84,9 +84,12 @@ try {
     ));
 
 } catch (Exception $e) {
+    // Keep the detail server-side: the raw PDO message includes the SQLSTATE and the
+    // database user name, neither of which should be exposed to public callers.
+    error_log('api_status.php: ' . $e->getMessage());
     echo json_encode(array(
         'success' => false,
-        'error' => $e->getMessage(),
+        'error' => 'Database query failed',
         'timestamp' => date('Y-m-d H:i:s')
     ));
 }
