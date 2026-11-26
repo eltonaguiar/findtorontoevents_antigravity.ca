@@ -51,8 +51,61 @@ def fetch_klines(symbol: str, interval: str = "1h", limit: int = 500) -> pd.Data
         except Exception as e:
             last_err = e
             continue
-    logger.warning(f"Failed to fetch {symbol} (all endpoints): {last_err}")
+
+    # Binance does not list every asset (KASUSDT answers -1121 "Invalid symbol"),
+    # so "all endpoints" failing can mean "not on this venue", not "network down".
+    # Try Gate.io spot before giving up.
+    gate = _fetch_klines_gateio(symbol, interval, limit)
+    if gate is not None and not gate.empty:
+        logger.info(f"Fetched {symbol} from Gate.io fallback (Binance said: {last_err})")
+        return gate
+
+    logger.warning(f"Failed to fetch {symbol} (Binance mirrors and Gate.io): {last_err}")
     return pd.DataFrame()
+
+
+def _split_quote(symbol: str):
+    for quote in ("USDT", "USDC", "BUSD", "BTC", "ETH", "BNB"):
+        if symbol.endswith(quote) and len(symbol) > len(quote):
+            return symbol[: -len(quote)], quote
+    return None, None
+
+
+def _fetch_klines_gateio(symbol: str, interval: str = "1h", limit: int = 500):
+    """Gate.io spot candlesticks, same column contract as the Binance path."""
+    base, quote = _split_quote(symbol)
+    if not base or not quote:
+        return None
+    pair = f"{base}_{quote}"
+    url = (
+        "https://api.gateio.ws/api/v4/spot/candlesticks"
+        f"?currency_pair={pair}&interval={interval}&limit={limit}"
+    )
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "QuanEngine/1.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            raw = json.loads(resp.read().decode())
+        if not isinstance(raw, list) or not raw:
+            return None
+        # [t, quote_volume, close, high, low, open, base_volume, window_closed]
+        rows = []
+        for r in raw:
+            rows.append(
+                {
+                    "timestamp": pd.to_datetime(int(r[0]), unit="s"),
+                    "open": float(r[5]),
+                    "high": float(r[3]),
+                    "low": float(r[4]),
+                    "close": float(r[2]),
+                    "volume": float(r[6]),
+                    "quote_volume": float(r[1]),
+                }
+            )
+        df = pd.DataFrame(rows).set_index("timestamp").sort_index()
+        return df[["open", "high", "low", "close", "volume", "quote_volume"]]
+    except Exception as exc:  # noqa: BLE001 - fallback must never break the scan
+        logger.debug(f"Gate.io fallback failed for {symbol}: {exc}")
+        return None
 
 
 def fetch_fear_greed() -> int:
