@@ -24,7 +24,7 @@ class ReportGenerator:
 
     def __init__(self, output_dir: Optional[Path] = None):
         from .. import config
-        self.output_dir = output_dir or config.OUTPUT_DIR
+        self.output_dir = Path(output_dir) if output_dir is not None else Path(config.OUTPUT_DIR)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_daily_report(
