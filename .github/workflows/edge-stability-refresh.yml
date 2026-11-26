@@ -51,17 +51,14 @@ jobs:
           fi
           git commit -m "chore(edge-stability): daily refresh [skip ci]"
           pushed=0
-          for i in 1 2 3 4 5; do
-            if git pull --rebase --autostash origin main \
-               && git push origin HEAD:main; then
-              echo "Push succeeded on attempt $i"
-              pushed=1
-              break
-            fi
-            echo "Push attempt $i/5 lost the race — retrying"
-            git rebase --abort 2>/dev/null || true
-            sleep $((i * 5))
-          done
+          # Bounded push via safe_push.sh: every git call is capped at 90s and retried
+          # with backoff, so a contended main fails this step instead of hanging past
+          # the job's timeout-minutes and silently losing the commit.
+          if bash .github/scripts/safe_push.sh; then
+            pushed=1
+          else
+            pushed=0
+          fi
           [ "$pushed" = 1 ] || { echo "::error::push failed after 5 attempts"; exit 1; }
       - name: FTP-deploy refreshed JSONs to live /audit
         # Git push does NOT update the live site (50webs has no shell). Without
