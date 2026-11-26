@@ -35,12 +35,15 @@ jobs:
           mkdir -p audit_dashboard/data audit_trail/data
           # The host rate-limits datacenter ranges; a bare curl gets an immediate
           # 403 from GitHub runners. Retry on 403/429/5xx before falling back.
+          # 2026-11-26: --retry-on-http-error is NOT a curl option (curl exits 2
+          # before connecting), so all four attempts aborted and the run reported
+          # "both data sources unreachable". --retry-all-errors covers 403/429/5xx.
           url="https://findtorontoevents.ca/audit/data/dashboard_data.json"
           out=audit_dashboard/data/dashboard_data.json
           ok=0
           for i in 1 2 3 4; do
             if curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
-                 --retry-on-http-error 403,429,500,502,503 "$url" -o "$out"; then
+                 "$url" -o "$out"; then
               ok=1; break
             fi
             echo "::warning::dashboard_data.json attempt $i failed (host may be blocking runner IPs); backing off $((i*15))s"
@@ -49,7 +52,6 @@ jobs:
           if [ "$ok" != "1" ]; then
             echo "::warning::primary unavailable; trying payload mirror"
             curl -fsS --max-time 180 --retry 2 --retry-delay 5 --retry-all-errors \
-              --retry-on-http-error 403,429,500,502,503 \
               "https://findtorontoevents.ca/audit/data/dashboard_payload.json" \
               -o audit_trail/data/dashboard_payload.json \
               || echo "::warning::both data sources unreachable"
