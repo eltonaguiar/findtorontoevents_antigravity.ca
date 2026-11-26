@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-26T06:56:55.360381+00:00",
+  "generated_at": "2026-11-24T06:56:43.453974+00:00",
   "methodology_doc": "docs/BACKTEST_ADMISSIBILITY_STANDARD.md",
   "quant_review": "reports/quant_strategy_root_cause_review_2026-06-02.md",
   "executive_answers": {
@@ -17,10 +17,20 @@
     "data_feeds": "Secondary; FRED carry fixed via curl cache; live pain is pick quality + methodology"
   },
   "live_money_ready": {
-    "generated_at": "2026-11-24T06:59:26.900673+00:00",
+    "generated_at": "2026-11-24T03:57:24.068234+00:00",
     "money_ready_classes": [],
     "n_classes": 11,
     "by_class": {
+      "CRYPTO": {
+        "n": 3733,
+        "wr": 0.4108,
+        "pf": 0.2633,
+        "mdd": 1.0009,
+        "verdict": "NOT_READY",
+        "top_source": "UNKNOWN",
+        "top_source_share": 0.9978,
+        "root_cause": "Policy-clean PF 0.89 (n~377): bulk scanner loss-skew; lab VWAP/Bollinger WF PASS but opt-in only. Proven pick_funnel cell (RR1.0-1.5 LONG) is subset \u2014 aggregate loses."
+      },
       "ETF": {
         "n": 56,
         "wr": 0.5946,
@@ -33,33 +43,23 @@
       },
       "FOREX": {
         "n": 650,
-        "wr": 0.2232,
-        "pf": 0.2909,
+        "wr": 0.3166,
+        "pf": 0.3273,
         "mdd": 1.0,
         "verdict": "NOT_READY",
-        "top_source": "multi_asset_copytrader",
-        "top_source_share": 0.3214,
+        "top_source": "UNKNOWN",
+        "top_source_share": 0.8437,
         "root_cause": "PF 0.48, small n: carry lab thin; 14d raw shows high WR / PF 0.10 (EXPIRED mislabel). Not a data-feed outage \u2014 resolver/label issue."
       },
       "EQUITY": {
         "n": 261,
-        "wr": 0.3955,
-        "pf": 0.6066,
+        "wr": 0.3659,
+        "pf": 1.0607,
         "mdd": 0.9999,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.3704,
+        "top_source_share": 0.8618,
         "root_cause": "PF 0.33: regime_terminal 40% concentration; no verified sleeve merged. Faber TAA lab OK \u2014 forward pilot accumulating."
-      },
-      "CRYPTO": {
-        "n": 3733,
-        "wr": 0.5266,
-        "pf": 1.0204,
-        "mdd": 1.0009,
-        "verdict": "NOT_READY",
-        "top_source": "UNKNOWN",
-        "top_source_share": 0.7394,
-        "root_cause": "Policy-clean PF 0.89 (n~377): bulk scanner loss-skew; lab VWAP/Bollinger WF PASS but opt-in only. Proven pick_funnel cell (RR1.0-1.5 LONG) is subset \u2014 aggregate loses."
       },
       "COMMODITY": {
         "n": 235,
@@ -68,7 +68,7 @@
         "mdd": 0.5332,
         "verdict": "NOT_READY",
         "top_source": "UNKNOWN",
-        "top_source_share": 0.4667,
+        "top_source_share": 0.5789,
         "root_cause": "n=4 policy-clean; COT strategies dead post-leakage. Vol-scaled cross-mom lab Sharpe ~0.88."
       },
       "FUTURES": {
@@ -78,7 +78,7 @@
         "mdd": 0.25,
         "verdict": "INSUFFICIENT_DATA",
         "top_source": "multi_asset_scanner",
-        "top_source_share": 0.6471,
+        "top_source_share": 0.5789,
         "root_cause": "n=13, PF 0.52; futures_connors_rsi2 TIME_EXIT zombie \u2014 resolver not alpha."
       },
       "CHEAP_STOCKS": {
@@ -105,10 +105,10 @@
         "n": 10,
         "wr": 0.1,
         "pf": 0.0234,
-        "mdd": null,
+        "mdd": 0.4936,
         "verdict": "INSUFFICIENT_DATA",
-        "top_source": "",
-        "top_source_share": 0.0,
+        "top_source": "UNKNOWN",
+        "top_source_share": 1.0,
         "root_cause": ""
       },
       "PENNY_STOCK": {
@@ -295,16 +295,16 @@
       ],
       "smart_picks_crypto_cell": {
         "asset_class": "CRYPTO",
-        "n": 49,
-        "wr_pct": 44.9,
-        "wr_shrunk_pct": 46.4,
-        "pf": 0.998,
-        "train_pf": 0.772,
-        "holdout_pf": 1.35,
-        "pass_holdout": true,
+        "n": 58,
+        "wr_pct": 37.9,
+        "wr_shrunk_pct": 41.0,
+        "pf": 0.674,
+        "train_pf": 0.402,
+        "holdout_pf": 1.146,
+        "pass_holdout": false,
         "pass_bonferroni": false,
         "is_edge": false,
-        "why_no_edge": "concentration=single_source_share=71% (luxalgo_filters) \u2014 cohort dominated by one source, not generalizable, concentration=top_symbol_share=73% (BTCUSDT)"
+        "why_no_edge": "concentration=single_source_share=75% (luxalgo_filters) \u2014 cohort dominated by one source, not generalizable, concentration=top_symbol_share=68% (BTCUSDT)"
       },
       "proven_cells_crypto": [
         {
@@ -359,7 +359,7 @@
           ]
         },
         "CRYPTO": {
-          "wr_pct": 44.8,
+          "wr_pct": 44.82,
           "pf": 1.074,
           "caveats": [
             "dup_groups=29",
@@ -374,6 +374,13 @@
             "single_source_concentration=100%_via_AlphaEngine"
           ]
         },
+        "UNKNOWN": {
+          "wr_pct": null,
+          "pf": null,
+          "caveats": [
+            "INSUFF-N (n=0<10)"
+          ]
+        },
         "EQUITY": {
           "wr_pct": 29.63,
           "pf": 0.524,
@@ -386,13 +393,6 @@
           "pf": 0.183,
           "caveats": [
             "single_source_concentration=100%_via_AlphaEngine"
-          ]
-        },
-        "UNKNOWN": {
-          "wr_pct": null,
-          "pf": null,
-          "caveats": [
-            "INSUFF-N (n=0<10)"
           ]
         }
       }
@@ -489,7 +489,7 @@
         }
       ],
       "dashboard": {
-        "timestamp": "2026-11-26T06:56:55.254402+00:00",
+        "timestamp": "2026-11-24T06:56:43.298428+00:00",
         "forward_n_target": 100,
         "any_promotion_ready": false,
         "sleeves": {
@@ -593,7 +593,7 @@
             }
           },
           "faber_taa": {
-            "timestamp": "2026-11-26T06:56:55.083066+00:00",
+            "timestamp": "2026-11-24T06:56:43.032645+00:00",
             "strategy": "faber_taa_paper_pilot",
             "n_closed": 2,
             "wr": 0.0,
@@ -685,11 +685,11 @@
                 "symbol": "BTCUSDT",
                 "direction": "SELL",
                 "status": "OPEN",
-                "entry_price": 60546.95,
-                "take_profit": 59880.93355,
-                "stop_loss": 61079.76316,
-                "entry_date": "2026-11-26",
-                "expires_at": "2026-11-26T08:56:50.251715+00:00"
+                "entry_price": 60543.29,
+                "take_profit": 59877.31381,
+                "stop_loss": 61076.070952,
+                "entry_date": "2026-11-24",
+                "expires_at": "2026-11-24T08:56:37.122139+00:00"
               }
             },
             "forward_state_json": {
@@ -714,11 +714,11 @@
                 "symbol": "BTCUSDT",
                 "direction": "SELL",
                 "status": "OPEN",
-                "entry_price": 60546.95,
-                "take_profit": 59880.93355,
-                "stop_loss": 61079.76316,
-                "entry_date": "2026-11-26",
-                "expires_at": "2026-11-26T08:56:50.251715+00:00"
+                "entry_price": 60543.29,
+                "take_profit": 59877.31381,
+                "stop_loss": 61076.070952,
+                "entry_date": "2026-11-24",
+                "expires_at": "2026-11-24T08:56:37.122139+00:00"
               }
             },
             "open_position": {
@@ -726,18 +726,18 @@
               "symbol": "BTCUSDT",
               "direction": "SELL",
               "status": "OPEN",
-              "entry_price": 60546.95,
-              "take_profit": 59880.93355,
-              "stop_loss": 61079.76316,
-              "entry_date": "2026-11-26",
-              "expires_at": "2026-11-26T08:56:50.251715+00:00"
+              "entry_price": 60543.29,
+              "take_profit": 59877.31381,
+              "stop_loss": 61076.070952,
+              "entry_date": "2026-11-24",
+              "expires_at": "2026-11-24T08:56:37.122139+00:00"
             },
             "recommend_enable": false,
             "flag": "INVERSE_ML_BTC_15M_ENABLED"
           }
         },
         "bootstrap_forward": {
-          "timestamp": "2026-11-26T06:56:55.247848+00:00",
+          "timestamp": "2026-11-24T06:56:43.289603+00:00",
           "forward_n_target": 100,
           "any_promotion_ready": false,
           "sleeves": {
@@ -817,11 +817,11 @@
                   "symbol": "BTCUSDT",
                   "direction": "SELL",
                   "status": "OPEN",
-                  "entry_price": 60546.95,
-                  "take_profit": 59880.93355,
-                  "stop_loss": 61079.76316,
-                  "entry_date": "2026-11-26",
-                  "expires_at": "2026-11-26T08:56:50.251715+00:00"
+                  "entry_price": 60543.29,
+                  "take_profit": 59877.31381,
+                  "stop_loss": 61076.070952,
+                  "entry_date": "2026-11-24",
+                  "expires_at": "2026-11-24T08:56:37.122139+00:00"
                 }
               },
               "forward_state_json": {
@@ -846,11 +846,11 @@
                   "symbol": "BTCUSDT",
                   "direction": "SELL",
                   "status": "OPEN",
-                  "entry_price": 60546.95,
-                  "take_profit": 59880.93355,
-                  "stop_loss": 61079.76316,
-                  "entry_date": "2026-11-26",
-                  "expires_at": "2026-11-26T08:56:50.251715+00:00"
+                  "entry_price": 60543.29,
+                  "take_profit": 59877.31381,
+                  "stop_loss": 61076.070952,
+                  "entry_date": "2026-11-24",
+                  "expires_at": "2026-11-24T08:56:37.122139+00:00"
                 }
               },
               "open_position": {
@@ -858,11 +858,11 @@
                 "symbol": "BTCUSDT",
                 "direction": "SELL",
                 "status": "OPEN",
-                "entry_price": 60546.95,
-                "take_profit": 59880.93355,
-                "stop_loss": 61079.76316,
-                "entry_date": "2026-11-26",
-                "expires_at": "2026-11-26T08:56:50.251715+00:00"
+                "entry_price": 60543.29,
+                "take_profit": 59877.31381,
+                "stop_loss": 61076.070952,
+                "entry_date": "2026-11-24",
+                "expires_at": "2026-11-24T08:56:37.122139+00:00"
               },
               "recommend_enable": false,
               "flag": "INVERSE_ML_BTC_15M_ENABLED"

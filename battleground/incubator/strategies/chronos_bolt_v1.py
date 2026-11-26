@@ -80,7 +80,10 @@ logger = logging.getLogger(__name__)
 # ── Configuration ────────────────────────────────────────────────────
 SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
 
-from api_helpers import fetch_klines as _fetch_klines_fallback
+try:  # imported as part of the package
+    from .api_helpers import fetch_klines as _fetch_klines_fallback
+except ImportError:  # run as a plain script
+    from api_helpers import fetch_klines as _fetch_klines_fallback
 
 # Analysis parameters
 KLINE_INTERVAL = "4h"           # 4-hour candles — good signal-to-noise for foundation model

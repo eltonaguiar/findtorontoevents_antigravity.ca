@@ -1,3 +1,4 @@
+import sys
 #!/usr/bin/env python3
 """
 Edge Filter Engine v3 — Kelly-Fraction Simulation + Strategy-Family Aware
@@ -23,10 +24,12 @@ except Exception:  # noqa: BLE001
     def is_blocked_pick(_pick) -> bool:  # type: ignore
         return False
 
-DASHBOARD_JSON = Path("audit_dashboard/data/dashboard_data.json")
-STRATEGY_JSON = Path("alpha_engine/data/strategy_performance.json")
-REPORT_DIR = Path("reports")
-UPDATE_DIR = Path("updates")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DASHBOARD_JSON = REPO_ROOT / "audit_dashboard/data/dashboard_data.json"
+STRATEGY_JSON = REPO_ROOT / "alpha_engine/data/strategy_performance.json"
+REPORT_DIR = REPO_ROOT / "reports"
+UPDATE_DIR = REPO_ROOT / "updates"
+MISSING_ARTIFACT_EXIT = 0  # a filter with no dashboard has nothing to filter
 
 MIN_N_FILTER = 30
 MIN_PF_TARGET = 1.3
@@ -578,9 +581,21 @@ def write_decision_log(results: dict):
     return log_path
 
 
+def _missing_artifact_message() -> str:
+    parts = [f"missing input {p} ({'present' if p.exists() else 'ABSENT'})"
+             for p in (DASHBOARD_JSON, STRATEGY_JSON)]
+    return "; ".join(parts)
+
+
 if __name__ == "__main__":
-    REPORT_DIR.mkdir(exist_ok=True)
-    UPDATE_DIR.mkdir(exist_ok=True)
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    UPDATE_DIR.mkdir(parents=True, exist_ok=True)
+    if not DASHBOARD_JSON.exists() or not STRATEGY_JSON.exists():
+        # The dashboard/perf json are generated artifacts, not tracked files. On a
+        # clean checkout the producer has not run yet, so this was a hard crash.
+        print(f"::warning::weekly filter skipped - {_missing_artifact_message()}; "
+              "run the dashboard producer first")
+        sys.exit(MISSING_ARTIFACT_EXIT)
     results = run_engine()
     report_path = write_weekly_report(results)
     log_path = write_decision_log(results)

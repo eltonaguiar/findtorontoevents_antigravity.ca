@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   analyze-and-track:
-    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    runs-on: [self-hosted, wsl-desktop]
     timeout-minutes: 25  # 2026-05-06: was 15 — checkout step consumed the entire 15-min budget on run 25454039887; 15 min checkout is abnormally long (usually <2 min); raising to 25 gives the full pipeline (checkout+install+analysis+commit+Discord) room to complete even under GC pressure
     
     steps:

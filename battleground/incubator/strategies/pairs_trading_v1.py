@@ -61,7 +61,10 @@ PAIR_NAMES = {
 }
 
 # Binance public API
-from api_helpers import BINANCE_KLINES_ENDPOINTS
+try:  # imported as part of the package
+    from .api_helpers import BINANCE_KLINES_ENDPOINTS
+except ImportError:  # run as a plain script
+    from api_helpers import BINANCE_KLINES_ENDPOINTS
 
 # Strategy parameters
 TIMEFRAME = "1h"
