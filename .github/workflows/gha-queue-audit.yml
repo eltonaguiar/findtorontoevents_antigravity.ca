@@ -41,18 +41,18 @@ jobs:
             --out reports/gha_queue_audit.json \
             || echo "::warning::queue audit failed (soft-fail)"
 
-      - name: Commit audit report
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f reports/gha_queue_audit.json 2>/dev/null || true
-          if git diff --staged --quiet; then
-            echo "No queue-audit changes to commit"
-          else
-            git commit -m "chore(gha): queue & duration audit [skip ci]"
-            for i in 1 2 3; do
-              bash .github/scripts/safe_push.sh && break
-              echo "Push attempt $i failed, retrying..."
-              sleep 5
-            done
-          fi
+      # The report is a monitoring artifact, not data anything reads from the
+      # repo. It used to be committed with safe_push.sh, but this workflow
+      # declares `contents: read`, so every push was a guaranteed 403: 15
+      # `fatal: unable to access` lines plus "All 5 push attempts failed" on
+      # every run (16 min of pointless retries in the 2026-11-26 log). An
+      # artifact keeps the report without needing contents: write and without
+      # adding another pusher to the contended `main` branch.
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: gha-queue-audit
+          path: reports/gha_queue_audit.json
+          retention-days: 30
+          if-no-files-found: warn
