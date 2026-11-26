@@ -25,8 +25,8 @@ jobs:
         run: |
           set +e
           mask() { sed -E 's#://[^@/]*@#://[redacted]@#g'; }
-          printf '<?php echo "php-ok";' > /tmp/zz_probe.php
-          printf 'txt-ok' > /tmp/zz_probe.txt
+          printf '<?php echo "php-ok";' > /tmp/_db_export_tmp.php
+          printf 'txt-ok' > /tmp/zz_probe2.txt
           cat > /tmp/u.script <<LFTPEOF
           set ftp:ssl-force true
           set ssl:verify-certificate no
@@ -34,16 +34,16 @@ jobs:
           set net:max-retries 1
           open -u "$U","$P" "$H"
           cd /findtorontoevents.ca
-          put /tmp/zz_probe.php -o zz_probe.php
-          put /tmp/zz_probe.txt -o zz_probe.txt
-          ls zz_probe.php
-          ls zz_probe.txt
+          put /tmp/_db_export_tmp.php -o _db_export_tmp.php
+          put /tmp/zz_probe2.txt -o zz_probe2.txt
+          ls _db_export_tmp.php
+          ls zz_probe2.txt
           bye
           LFTPEOF
           echo "--- upload ---"
           lftp -f /tmp/u.script 2>&1 | mask | tail -6
           echo "--- fetch ---"
-          for u in https://findtorontoevents.ca/zz_probe.txt https://findtorontoevents.ca/zz_probe.php; do
+          for u in https://findtorontoevents.ca/zz_probe2.txt https://findtorontoevents.ca/_db_export_tmp.php; do
             code=$(curl -s -o /tmp/b -m 20 -w '%{http_code}' "$u")
             echo "$code  $u  body=$(head -c 40 /tmp/b | tr -d '\n')"
           done
@@ -54,8 +54,8 @@ jobs:
           set net:timeout 20
           open -u "$U","$P" "$H"
           cd /findtorontoevents.ca
-          rm -f zz_probe.php
-          rm -f zz_probe.txt
+          rm -f _db_export_tmp.php
+          rm -f zz_probe2.txt
           bye
           LFTPEOF
           lftp -f /tmp/c.script 2>&1 | mask | tail -3
