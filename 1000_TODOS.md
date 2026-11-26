@@ -1,8 +1,8 @@
 # 1000-TODO evidence backlog
 
-Generated 2026-11-24T02:58:27.167337+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
+Generated 2026-11-24T09:04:30.256912+00:00 by `tools/gen_1000_todos.py`. Machine state: `1000_TODOS.json`. Do not hand-edit the counts - rerun the generator.
 
-**Worked 107 of 1000.** open 0 | claimed 0 | blocked_no_data 893
+**Worked 88 of 1000.** open 16 | claimed 3 | blocked_no_data 893
 
 ## Done condition (identical for every cell)
 
@@ -10,12 +10,12 @@ Report n (closed trades), net mean bp/trade after 26bp round-turn, 95% bootstrap
 
 A KILL is a completed cell. Null results are the expected majority; they are the product.
 
-## BTCUSDT - 35/50 worked
+## BTCUSDT - 32/50 worked
 
 | cell | status | artifact |
 |---|---|---|
 | [-] `BTCUSDT/trend_pullback/15m` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_15m.json` |
-| [x] `BTCUSDT/trend_pullback/1h` | killed | `results/cells/BTCUSDT_trend_pullback_1h.json` |
+| [~] `BTCUSDT/trend_pullback/1h` | claimed | `results/cells/BTCUSDT_trend_pullback_1h.json` |
 | [-] `BTCUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/BTCUSDT_trend_pullback_4h.json` |
 | [x] `BTCUSDT/trend_pullback/1d` | killed | `results/cells/BTCUSDT_trend_pullback_1d.json` |
 | [x] `BTCUSDT/trend_pullback/1w` | killed | `results/cells/BTCUSDT_trend_pullback_1w.json` |
@@ -28,7 +28,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `BTCUSDT/vol_compression/1h` | killed | `results/cells/BTCUSDT_vol_compression_1h.json` |
 | [x] `BTCUSDT/vol_compression/4h` | killed | `results/cells/BTCUSDT_vol_compression_4h.json` |
 | [x] `BTCUSDT/vol_compression/1d` | killed | `results/cells/BTCUSDT_vol_compression_1d.json` |
-| [x] `BTCUSDT/vol_compression/1w` | killed | `results/cells/BTCUSDT_vol_compression_1w.json` |
+| [~] `BTCUSDT/vol_compression/1w` | claimed | `results/cells/BTCUSDT_vol_compression_1w.json` |
 | [-] `BTCUSDT/breakout/15m` | blocked_no_data | `results/cells/BTCUSDT_breakout_15m.json` |
 | [x] `BTCUSDT/breakout/1h` | killed | `results/cells/BTCUSDT_breakout_1h.json` |
 | [x] `BTCUSDT/breakout/4h` | killed | `results/cells/BTCUSDT_breakout_4h.json` |
@@ -43,7 +43,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [x] `BTCUSDT/ma_cross/1h` | killed | `results/cells/BTCUSDT_ma_cross_1h.json` |
 | [x] `BTCUSDT/ma_cross/4h` | killed | `results/cells/BTCUSDT_ma_cross_4h.json` |
 | [x] `BTCUSDT/ma_cross/1d` | killed | `results/cells/BTCUSDT_ma_cross_1d.json` |
-| [x] `BTCUSDT/ma_cross/1w` | killed | `results/cells/BTCUSDT_ma_cross_1w.json` |
+| [ ] `BTCUSDT/ma_cross/1w` | open | `results/cells/BTCUSDT_ma_cross_1w.json` |
 | [-] `BTCUSDT/bb_meanrev/15m` | blocked_no_data | `results/cells/BTCUSDT_bb_meanrev_15m.json` |
 | [x] `BTCUSDT/bb_meanrev/1h` | killed | `results/cells/BTCUSDT_bb_meanrev_1h.json` |
 | [x] `BTCUSDT/bb_meanrev/4h` | killed | `results/cells/BTCUSDT_bb_meanrev_4h.json` |
@@ -65,7 +65,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `BTCUSDT/gap_fade/1d` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1d.json` |
 | [-] `BTCUSDT/gap_fade/1w` | blocked_no_data | `results/cells/BTCUSDT_gap_fade_1w.json` |
 
-## ETHUSDT - 18/50 worked
+## ETHUSDT - 15/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -83,7 +83,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ETHUSDT/vol_compression/1h` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_1h.json` |
 | [-] `ETHUSDT/vol_compression/4h` | blocked_no_data | `results/cells/ETHUSDT_vol_compression_4h.json` |
 | [x] `ETHUSDT/vol_compression/1d` | killed | `results/cells/ETHUSDT_vol_compression_1d.json` |
-| [x] `ETHUSDT/vol_compression/1w` | killed | `results/cells/ETHUSDT_vol_compression_1w.json` |
+| [ ] `ETHUSDT/vol_compression/1w` | open | `results/cells/ETHUSDT_vol_compression_1w.json` |
 | [-] `ETHUSDT/breakout/15m` | blocked_no_data | `results/cells/ETHUSDT_breakout_15m.json` |
 | [-] `ETHUSDT/breakout/1h` | blocked_no_data | `results/cells/ETHUSDT_breakout_1h.json` |
 | [-] `ETHUSDT/breakout/4h` | blocked_no_data | `results/cells/ETHUSDT_breakout_4h.json` |
@@ -98,12 +98,12 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ETHUSDT/ma_cross/1h` | blocked_no_data | `results/cells/ETHUSDT_ma_cross_1h.json` |
 | [-] `ETHUSDT/ma_cross/4h` | blocked_no_data | `results/cells/ETHUSDT_ma_cross_4h.json` |
 | [x] `ETHUSDT/ma_cross/1d` | killed | `results/cells/ETHUSDT_ma_cross_1d.json` |
-| [x] `ETHUSDT/ma_cross/1w` | killed | `results/cells/ETHUSDT_ma_cross_1w.json` |
+| [ ] `ETHUSDT/ma_cross/1w` | open | `results/cells/ETHUSDT_ma_cross_1w.json` |
 | [-] `ETHUSDT/bb_meanrev/15m` | blocked_no_data | `results/cells/ETHUSDT_bb_meanrev_15m.json` |
 | [-] `ETHUSDT/bb_meanrev/1h` | blocked_no_data | `results/cells/ETHUSDT_bb_meanrev_1h.json` |
 | [-] `ETHUSDT/bb_meanrev/4h` | blocked_no_data | `results/cells/ETHUSDT_bb_meanrev_4h.json` |
 | [x] `ETHUSDT/bb_meanrev/1d` | killed | `results/cells/ETHUSDT_bb_meanrev_1d.json` |
-| [x] `ETHUSDT/bb_meanrev/1w` | killed | `results/cells/ETHUSDT_bb_meanrev_1w.json` |
+| [ ] `ETHUSDT/bb_meanrev/1w` | open | `results/cells/ETHUSDT_bb_meanrev_1w.json` |
 | [-] `ETHUSDT/vwap_reversion/15m` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_15m.json` |
 | [-] `ETHUSDT/vwap_reversion/1h` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_1h.json` |
 | [-] `ETHUSDT/vwap_reversion/4h` | blocked_no_data | `results/cells/ETHUSDT_vwap_reversion_4h.json` |
@@ -120,7 +120,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `ETHUSDT/gap_fade/1d` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1d.json` |
 | [-] `ETHUSDT/gap_fade/1w` | blocked_no_data | `results/cells/ETHUSDT_gap_fade_1w.json` |
 
-## SOLUSDT - 18/50 worked
+## SOLUSDT - 14/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -138,22 +138,22 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `SOLUSDT/vol_compression/1h` | blocked_no_data | `results/cells/SOLUSDT_vol_compression_1h.json` |
 | [-] `SOLUSDT/vol_compression/4h` | blocked_no_data | `results/cells/SOLUSDT_vol_compression_4h.json` |
 | [x] `SOLUSDT/vol_compression/1d` | killed | `results/cells/SOLUSDT_vol_compression_1d.json` |
-| [x] `SOLUSDT/vol_compression/1w` | killed | `results/cells/SOLUSDT_vol_compression_1w.json` |
+| [ ] `SOLUSDT/vol_compression/1w` | open | `results/cells/SOLUSDT_vol_compression_1w.json` |
 | [-] `SOLUSDT/breakout/15m` | blocked_no_data | `results/cells/SOLUSDT_breakout_15m.json` |
 | [-] `SOLUSDT/breakout/1h` | blocked_no_data | `results/cells/SOLUSDT_breakout_1h.json` |
 | [-] `SOLUSDT/breakout/4h` | blocked_no_data | `results/cells/SOLUSDT_breakout_4h.json` |
 | [x] `SOLUSDT/breakout/1d` | killed | `results/cells/SOLUSDT_breakout_1d.json` |
-| [x] `SOLUSDT/breakout/1w` | killed | `results/cells/SOLUSDT_breakout_1w.json` |
+| [ ] `SOLUSDT/breakout/1w` | open | `results/cells/SOLUSDT_breakout_1w.json` |
 | [-] `SOLUSDT/donchian/15m` | blocked_no_data | `results/cells/SOLUSDT_donchian_15m.json` |
 | [-] `SOLUSDT/donchian/1h` | blocked_no_data | `results/cells/SOLUSDT_donchian_1h.json` |
 | [-] `SOLUSDT/donchian/4h` | blocked_no_data | `results/cells/SOLUSDT_donchian_4h.json` |
 | [x] `SOLUSDT/donchian/1d` | killed | `results/cells/SOLUSDT_donchian_1d.json` |
-| [x] `SOLUSDT/donchian/1w` | killed | `results/cells/SOLUSDT_donchian_1w.json` |
+| [ ] `SOLUSDT/donchian/1w` | open | `results/cells/SOLUSDT_donchian_1w.json` |
 | [-] `SOLUSDT/ma_cross/15m` | blocked_no_data | `results/cells/SOLUSDT_ma_cross_15m.json` |
 | [-] `SOLUSDT/ma_cross/1h` | blocked_no_data | `results/cells/SOLUSDT_ma_cross_1h.json` |
 | [-] `SOLUSDT/ma_cross/4h` | blocked_no_data | `results/cells/SOLUSDT_ma_cross_4h.json` |
 | [x] `SOLUSDT/ma_cross/1d` | killed | `results/cells/SOLUSDT_ma_cross_1d.json` |
-| [x] `SOLUSDT/ma_cross/1w` | killed | `results/cells/SOLUSDT_ma_cross_1w.json` |
+| [ ] `SOLUSDT/ma_cross/1w` | open | `results/cells/SOLUSDT_ma_cross_1w.json` |
 | [-] `SOLUSDT/bb_meanrev/15m` | blocked_no_data | `results/cells/SOLUSDT_bb_meanrev_15m.json` |
 | [-] `SOLUSDT/bb_meanrev/1h` | blocked_no_data | `results/cells/SOLUSDT_bb_meanrev_1h.json` |
 | [-] `SOLUSDT/bb_meanrev/4h` | blocked_no_data | `results/cells/SOLUSDT_bb_meanrev_4h.json` |
@@ -175,7 +175,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `SOLUSDT/gap_fade/1d` | blocked_no_data | `results/cells/SOLUSDT_gap_fade_1d.json` |
 | [-] `SOLUSDT/gap_fade/1w` | blocked_no_data | `results/cells/SOLUSDT_gap_fade_1w.json` |
 
-## XRPUSDT - 18/50 worked
+## XRPUSDT - 14/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -193,22 +193,22 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `XRPUSDT/vol_compression/1h` | blocked_no_data | `results/cells/XRPUSDT_vol_compression_1h.json` |
 | [-] `XRPUSDT/vol_compression/4h` | blocked_no_data | `results/cells/XRPUSDT_vol_compression_4h.json` |
 | [x] `XRPUSDT/vol_compression/1d` | killed | `results/cells/XRPUSDT_vol_compression_1d.json` |
-| [x] `XRPUSDT/vol_compression/1w` | killed | `results/cells/XRPUSDT_vol_compression_1w.json` |
+| [ ] `XRPUSDT/vol_compression/1w` | open | `results/cells/XRPUSDT_vol_compression_1w.json` |
 | [-] `XRPUSDT/breakout/15m` | blocked_no_data | `results/cells/XRPUSDT_breakout_15m.json` |
 | [-] `XRPUSDT/breakout/1h` | blocked_no_data | `results/cells/XRPUSDT_breakout_1h.json` |
 | [-] `XRPUSDT/breakout/4h` | blocked_no_data | `results/cells/XRPUSDT_breakout_4h.json` |
 | [x] `XRPUSDT/breakout/1d` | killed | `results/cells/XRPUSDT_breakout_1d.json` |
-| [x] `XRPUSDT/breakout/1w` | killed | `results/cells/XRPUSDT_breakout_1w.json` |
+| [ ] `XRPUSDT/breakout/1w` | open | `results/cells/XRPUSDT_breakout_1w.json` |
 | [-] `XRPUSDT/donchian/15m` | blocked_no_data | `results/cells/XRPUSDT_donchian_15m.json` |
 | [-] `XRPUSDT/donchian/1h` | blocked_no_data | `results/cells/XRPUSDT_donchian_1h.json` |
 | [-] `XRPUSDT/donchian/4h` | blocked_no_data | `results/cells/XRPUSDT_donchian_4h.json` |
 | [x] `XRPUSDT/donchian/1d` | killed | `results/cells/XRPUSDT_donchian_1d.json` |
-| [x] `XRPUSDT/donchian/1w` | killed | `results/cells/XRPUSDT_donchian_1w.json` |
+| [ ] `XRPUSDT/donchian/1w` | open | `results/cells/XRPUSDT_donchian_1w.json` |
 | [-] `XRPUSDT/ma_cross/15m` | blocked_no_data | `results/cells/XRPUSDT_ma_cross_15m.json` |
 | [-] `XRPUSDT/ma_cross/1h` | blocked_no_data | `results/cells/XRPUSDT_ma_cross_1h.json` |
 | [-] `XRPUSDT/ma_cross/4h` | blocked_no_data | `results/cells/XRPUSDT_ma_cross_4h.json` |
 | [x] `XRPUSDT/ma_cross/1d` | killed | `results/cells/XRPUSDT_ma_cross_1d.json` |
-| [x] `XRPUSDT/ma_cross/1w` | killed | `results/cells/XRPUSDT_ma_cross_1w.json` |
+| [ ] `XRPUSDT/ma_cross/1w` | open | `results/cells/XRPUSDT_ma_cross_1w.json` |
 | [-] `XRPUSDT/bb_meanrev/15m` | blocked_no_data | `results/cells/XRPUSDT_bb_meanrev_15m.json` |
 | [-] `XRPUSDT/bb_meanrev/1h` | blocked_no_data | `results/cells/XRPUSDT_bb_meanrev_1h.json` |
 | [-] `XRPUSDT/bb_meanrev/4h` | blocked_no_data | `results/cells/XRPUSDT_bb_meanrev_4h.json` |
@@ -230,7 +230,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `XRPUSDT/gap_fade/1d` | blocked_no_data | `results/cells/XRPUSDT_gap_fade_1d.json` |
 | [-] `XRPUSDT/gap_fade/1w` | blocked_no_data | `results/cells/XRPUSDT_gap_fade_1w.json` |
 
-## DOGEUSDT - 18/50 worked
+## DOGEUSDT - 13/50 worked
 
 | cell | status | artifact |
 |---|---|---|
@@ -238,7 +238,7 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `DOGEUSDT/trend_pullback/1h` | blocked_no_data | `results/cells/DOGEUSDT_trend_pullback_1h.json` |
 | [-] `DOGEUSDT/trend_pullback/4h` | blocked_no_data | `results/cells/DOGEUSDT_trend_pullback_4h.json` |
 | [x] `DOGEUSDT/trend_pullback/1d` | killed | `results/cells/DOGEUSDT_trend_pullback_1d.json` |
-| [x] `DOGEUSDT/trend_pullback/1w` | killed | `results/cells/DOGEUSDT_trend_pullback_1w.json` |
+| [~] `DOGEUSDT/trend_pullback/1w` | claimed | `results/cells/DOGEUSDT_trend_pullback_1w.json` |
 | [-] `DOGEUSDT/rsi2_pullback/15m` | blocked_no_data | `results/cells/DOGEUSDT_rsi2_pullback_15m.json` |
 | [-] `DOGEUSDT/rsi2_pullback/1h` | blocked_no_data | `results/cells/DOGEUSDT_rsi2_pullback_1h.json` |
 | [-] `DOGEUSDT/rsi2_pullback/4h` | blocked_no_data | `results/cells/DOGEUSDT_rsi2_pullback_4h.json` |
@@ -248,22 +248,22 @@ A KILL is a completed cell. Null results are the expected majority; they are the
 | [-] `DOGEUSDT/vol_compression/1h` | blocked_no_data | `results/cells/DOGEUSDT_vol_compression_1h.json` |
 | [-] `DOGEUSDT/vol_compression/4h` | blocked_no_data | `results/cells/DOGEUSDT_vol_compression_4h.json` |
 | [x] `DOGEUSDT/vol_compression/1d` | killed | `results/cells/DOGEUSDT_vol_compression_1d.json` |
-| [x] `DOGEUSDT/vol_compression/1w` | killed | `results/cells/DOGEUSDT_vol_compression_1w.json` |
+| [ ] `DOGEUSDT/vol_compression/1w` | open | `results/cells/DOGEUSDT_vol_compression_1w.json` |
 | [-] `DOGEUSDT/breakout/15m` | blocked_no_data | `results/cells/DOGEUSDT_breakout_15m.json` |
 | [-] `DOGEUSDT/breakout/1h` | blocked_no_data | `results/cells/DOGEUSDT_breakout_1h.json` |
 | [-] `DOGEUSDT/breakout/4h` | blocked_no_data | `results/cells/DOGEUSDT_breakout_4h.json` |
 | [x] `DOGEUSDT/breakout/1d` | killed | `results/cells/DOGEUSDT_breakout_1d.json` |
-| [x] `DOGEUSDT/breakout/1w` | killed | `results/cells/DOGEUSDT_breakout_1w.json` |
+| [ ] `DOGEUSDT/breakout/1w` | open | `results/cells/DOGEUSDT_breakout_1w.json` |
 | [-] `DOGEUSDT/donchian/15m` | blocked_no_data | `results/cells/DOGEUSDT_donchian_15m.json` |
 | [-] `DOGEUSDT/donchian/1h` | blocked_no_data | `results/cells/DOGEUSDT_donchian_1h.json` |
 | [-] `DOGEUSDT/donchian/4h` | blocked_no_data | `results/cells/DOGEUSDT_donchian_4h.json` |
 | [x] `DOGEUSDT/donchian/1d` | killed | `results/cells/DOGEUSDT_donchian_1d.json` |
-| [x] `DOGEUSDT/donchian/1w` | killed | `results/cells/DOGEUSDT_donchian_1w.json` |
+| [ ] `DOGEUSDT/donchian/1w` | open | `results/cells/DOGEUSDT_donchian_1w.json` |
 | [-] `DOGEUSDT/ma_cross/15m` | blocked_no_data | `results/cells/DOGEUSDT_ma_cross_15m.json` |
 | [-] `DOGEUSDT/ma_cross/1h` | blocked_no_data | `results/cells/DOGEUSDT_ma_cross_1h.json` |
 | [-] `DOGEUSDT/ma_cross/4h` | blocked_no_data | `results/cells/DOGEUSDT_ma_cross_4h.json` |
 | [x] `DOGEUSDT/ma_cross/1d` | killed | `results/cells/DOGEUSDT_ma_cross_1d.json` |
-| [x] `DOGEUSDT/ma_cross/1w` | killed | `results/cells/DOGEUSDT_ma_cross_1w.json` |
+| [ ] `DOGEUSDT/ma_cross/1w` | open | `results/cells/DOGEUSDT_ma_cross_1w.json` |
 | [-] `DOGEUSDT/bb_meanrev/15m` | blocked_no_data | `results/cells/DOGEUSDT_bb_meanrev_15m.json` |
 | [-] `DOGEUSDT/bb_meanrev/1h` | blocked_no_data | `results/cells/DOGEUSDT_bb_meanrev_1h.json` |
 | [-] `DOGEUSDT/bb_meanrev/4h` | blocked_no_data | `results/cells/DOGEUSDT_bb_meanrev_4h.json` |

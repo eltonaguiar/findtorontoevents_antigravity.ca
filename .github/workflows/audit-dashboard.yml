@@ -415,7 +415,19 @@ jobs:
       - name: Run Hyro ML pick optimizer (adaptive edge scoring + drift detection)
         id: hyro_ml_optimizer
         run: |
-          pip install 'scikit-learn==1.3.2' -q 2>/dev/null || true
+          # Pin a coherent WHEEL-ONLY set. Previously this line was
+          #   pip install 'scikit-learn==1.3.2' -q 2>/dev/null || true
+          # which hides the resolver's output: installing scikit-learn 1.3.2 (numpy<2 wheel) over an
+          # already-present pandas built for numpy>=2 downgrades numpy underneath pandas, so pandas._libs
+          # can no longer load. The NEXT step then dies with the misleading
+          #   "C extension: None not built ... build the C extensions first"
+          # which looks like a missing package but is really an ABI mismatch. --only-binary forbids
+          # building from source, and the probe fails LOUDLY here instead of mis-attributing the break.
+          python -m pip install --quiet --only-binary=:all: \
+            'numpy==1.26.2' 'pandas==2.1.4' 'scikit-learn==1.3.2' \
+            || { echo "::error title=hyro deps::pip could not install the pinned wheel set (numpy/pandas/sklearn)"; exit 1; }
+          python -c "import numpy, pandas, sklearn; print('hyro deps ok: numpy', numpy.__version__, 'pandas', pandas.__version__, 'sklearn', sklearn.__version__)" \
+            || { echo "::error title=hyro deps::pandas/numpy import broken (ABI mismatch between numpy and pandas wheels)"; exit 1; }
           python tools/hyro_ml_pick_optimizer.py --save || echo "Hyro ML optimizer failed (non-fatal)"
         continue-on-error: true
 
