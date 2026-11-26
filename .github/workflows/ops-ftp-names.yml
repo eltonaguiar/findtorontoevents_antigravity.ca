@@ -1,0 +1,59 @@
+name: Ops - filename block test (write probes, delete probes)
+
+# Ownership: hermes-desktop. Dispatch-only, gx10 pool.
+# Proven so far: in /findtorontoevents.ca a file named zz_probe.php is served (200), but a
+# file named _db_export_tmp.php returns 404 with an XML error body even though the FTP put
+# reports success. So the host rejects that specific name, not the docroot, the credentials
+# or PHP itself. This isolates which part of the name triggers it, then removes all probes.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  names:
+    runs-on: [self-hosted, gx10]
+    timeout-minutes: 10
+    steps:
+      - name: Which name is blocked?
+        env:
+          H: ${{ secrets.FTP_SERVER_50WEBS }}
+          U: ${{ secrets.FTP_USERNAME_50WEBS }}
+          P: ${{ secrets.FTP_PASSWORD_50WEBS }}
+        run: |
+          set +e
+          mask() { sed -E 's#://[^@/]*@#://[redacted]@#g'; }
+          for n in _probe.php _dbprobe.php db_export_tmp.php _db_export_tmp.php _export_tmp.php; do
+            printf '<?php echo "ok";' > /tmp/$n
+          done
+          cat > /tmp/u.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 20
+          set net:max-retries 1
+          open -u "$U","$P" "$H"
+          cd /findtorontoevents.ca
+          put /tmp/_probe.php -o _probe.php
+          put /tmp/_dbprobe.php -o _dbprobe.php
+          put /tmp/db_export_tmp.php -o db_export_tmp.php
+          put /tmp/_db_export_tmp.php -o _db_export_tmp.php
+          put /tmp/_export_tmp.php -o _export_tmp.php
+          bye
+          LFTPEOF
+          lftp -f /tmp/u.script 2>&1 | mask | tail -3
+          for n in _probe.php _dbprobe.php db_export_tmp.php _db_export_tmp.php _export_tmp.php; do
+            code=$(curl -s -o /tmp/b -m 20 -w '%{http_code}' "https://findtorontoevents.ca/$n")
+            printf '%-24s http=%s  %s\n' "$n" "$code" "$(head -c 45 /tmp/b | tr -d '\n')"
+          done
+          cat > /tmp/c.script <<LFTPEOF
+          set ftp:ssl-force true
+          set ssl:verify-certificate no
+          set net:timeout 20
+          open -u "$U","$P" "$H"
+          cd /findtorontoevents.ca
+          rm -f _probe.php _dbprobe.php db_export_tmp.php _db_export_tmp.php _export_tmp.php
+          bye
+          LFTPEOF
+          lftp -f /tmp/c.script 2>&1 | mask | tail -2
+          echo cleanup-done
