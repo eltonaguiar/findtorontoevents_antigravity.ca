@@ -2,15 +2,15 @@ name: Ops - Authorize gx10 key on the laptop
 
 # Completes the reverse direction (gx10 192.168.2.52 -> laptop 192.168.2.51).
 #
-# The laptop's sshd is NOT the Windows service: 192.168.2.51 answers
-# "SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.20", i.e. the Ubuntu sshd inside the
-# laptop's WSL distro, with Windows loopback forwarding TCP 22 into it. So the key
-# has to land in the WSL user's ~/.ssh/authorized_keys; writing the Windows profile
-# file (first attempt, run 45782875281) alone still gives "Permission denied".
+# The laptop's port 22 is the Ubuntu sshd inside its WSL distro (banner:
+# "SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.20"), reached from Windows through a
+# loopback forward. Writing C:\Users\zerou\.ssh\authorized_keys therefore does
+# nothing for it: the key must land in the WSL user's ~/.ssh/authorized_keys.
 #
-# Job 1 installs the key in WSL and proves it with a localhost login.
-# Job 2 records Windows-side state for the record and never fails the run.
-# Public keys are not secrets, so the key travels as a dispatch input (default set).
+# This runs on the laptop's Windows runner and drives `wsl.exe`, so it does not
+# have to wait for a WSL runner slot. It writes the key, fixes StrictModes
+# permissions and proves sshd accepts it with a localhost login inside WSL.
+# Public keys are not secrets, so the key travels as a dispatch input.
 
 on:
   workflow_dispatch:
@@ -19,8 +19,8 @@ on:
         description: "Public key to authorize on the laptop"
         type: string
         default: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIItq2fgOOdjzzLf1ywjJsVbavp3iGOsxJocvnR/deAKX eaguiar2015@gx10->ELTON2026"
-      user:
-        description: "WSL account whose authorized_keys is written (blank = the runner's own user)"
+      distro:
+        description: "WSL distro (blank = WSL default)"
         type: string
         default: ""
 
@@ -33,102 +33,79 @@ concurrency:
 
 jobs:
   wsl:
-    runs-on: [self-hosted, Linux, trusted-manual]
-    timeout-minutes: 15
-    steps:
-      - name: Report sshd state
-        shell: bash
-        run: |
-          set +e
-          echo "host    : $(hostname)"
-          echo "user    : $(whoami)"
-          echo "kernel  : $(uname -r)"
-          echo "--- sshd process ---"
-          (pgrep -a sshd || echo "no sshd process")
-          echo "--- listening sockets ---"
-          (ss -ltnp 2>/dev/null | grep -E ':22\b' || echo "nothing listening on :22")
-          echo "--- IPv4 ---"
-          (ip -4 -o addr show scope global 2>/dev/null | awk '{print $2, $4}')
-          echo "--- effective sshd_config keys ---"
-          for f in /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf; do
-            [ -f "$f" ] || continue
-            grep -nE '^\s*(AuthorizedKeysFile|PubkeyAuthentication|PasswordAuthentication|PermitRootLogin|AllowUsers|AllowGroups|Match)' "$f" | sed "s|^|$f: |"
-          done
-
-      - name: Write key and prove sshd accepts it
-        shell: bash
-        env:
-          PUBKEY: ${{ inputs.pubkey }}
-          TARGET_USER: ${{ inputs.user }}
-        run: |
-          set -euo pipefail
-          TARGET_USER="${TARGET_USER:-$(id -un)}"
-          pub="$(printf '%s' "$PUBKEY" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-          case "$pub" in
-            ssh-ed25519\ *|ssh-rsa\ *|ecdsa-sha2-*\ *) ;;
-            *) echo "input pubkey does not look like an SSH public key"; exit 1 ;;
-          esac
-
-          home_dir="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
-          if [ -z "$home_dir" ]; then echo "no such user: $TARGET_USER"; exit 1; fi
-          ak="$home_dir/.ssh/authorized_keys"
-          echo "target: $TARGET_USER home=$home_dir"
-
-          run_as() { if [ "$(id -un)" = "$TARGET_USER" ]; then bash -c "$1"; else sudo -n -u "$TARGET_USER" bash -c "$1"; fi; }
-
-          run_as "mkdir -p '$home_dir/.ssh' && chmod 700 '$home_dir/.ssh' && touch '$ak' && chmod 600 '$ak'"
-          if run_as "grep -Fqx '$pub' '$ak'"; then
-            echo "key already present in $ak"
-          else
-            run_as "printf '%s\n' '$pub' >> '$ak'"
-            echo "appended key to $ak"
-          fi
-          # sshd's StrictModes cares about ownership 700/600
-          run_as "chmod 700 '$home_dir/.ssh'; chmod 600 '$ak'"
-
-          echo "--- fingerprints in $ak ---"
-          run_as "ssh-keygen -lf '$ak'" || true
-
-          echo "--- localhost self-test through sshd ---"
-          self_test() {
-            ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=10 \
-              "$TARGET_USER@127.0.0.1" "echo LAPTOP_SSHD_KEY_OK on \$(hostname)" 2>&1
-          }
-          if self_test; then
-            echo "self-test: OK"
-          else
-            echo "self-test: FAILED (exit $?)"
-            echo "--- auth log tail ---"
-            (sudo -n tail -25 /var/log/auth.log 2>/dev/null || tail -25 /var/log/auth.log 2>/dev/null || echo "no readable auth.log")
-            exit 1
-          fi
-
-      - name: Confirm the LAN address gx10 will use
-        shell: bash
-        run: |
-          echo "gx10 should reach this machine at:"
-          ip -4 -o addr show scope global | awk '{print "  " $4 " on " $2}'
-          echo "sshd banner:"; (timeout 3 bash -c 'exec 3<>/dev/tcp/127.0.0.1/22; head -c 60 <&3' || true); echo
-
-  windows:
     runs-on: [self-hosted, Windows, laptop-zerou-win]
-    timeout-minutes: 15
-    continue-on-error: true
+    timeout-minutes: 20
     steps:
-      - name: Record Windows-side state (informational)
+      - name: Report WSL and sshd state
         shell: powershell
+        env:
+          DISTRO: ${{ inputs.distro }}
         run: |
-          $id = [Security.Principal.WindowsIdentity]::GetCurrent()
-          $principal = New-Object Security.Principal.WindowsPrincipal($id)
+          $wslArgs = @()
+          if ($env:DISTRO) { $wslArgs = @('-d', $env:DISTRO) }
           Write-Host "host     : $env:COMPUTERNAME"
-          Write-Host "runner as: $($id.Name)"
-          Write-Host "elevated : $($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))"
-          Write-Host "--- Windows OpenSSH Server service (expected absent; sshd lives in WSL) ---"
+          Write-Host "--- WSL distros ---"
+          (wsl.exe -l -v 2>&1 | Out-String) | Write-Host
+          Write-Host "--- inside WSL ---"
+          & wsl.exe @wslArgs -e bash -lc 'echo user: $(id -un); echo home: $HOME; echo kernel: $(uname -r); echo "--- listeners ---"; ss -ltnp 2>/dev/null | grep -E ":22\b" || echo "nothing on :22"; echo "--- ipv4 ---"; ip -4 -o addr show scope global | awk "{print \$2, \$4}"; echo "--- sshd_config keys ---"; grep -nE "^\s*(AuthorizedKeysFile|PubkeyAuthentication|PasswordAuthentication|AllowUsers|AllowGroups|Match)" /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null || echo "(none set)"' 2>&1 | ForEach-Object { Write-Host $_ }
+          Write-Host "--- Windows service ssd (expected absent) ---"
           Get-Service sshd -ErrorAction SilentlyContinue | Select-Object Name, Status, StartType | Format-Table -AutoSize | Out-String | Write-Host
           Write-Host "--- LAN IPv4 ---"
-          Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
-            Where-Object { $_.IPAddress -like '192.168.*' } |
-            Select-Object IPAddress, InterfaceAlias | Format-Table -AutoSize | Out-String | Write-Host
-          Write-Host "--- WSL distributions ---"
-          (wsl.exe -l -v 2>&1 | Out-String) | Write-Host
-          Write-Host "note: this step is informational only; the authoritative key write happens in the wsl job"
+          Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -like '192.168.*' } | Select-Object IPAddress, InterfaceAlias | Format-Table -AutoSize | Out-String | Write-Host
+
+      - name: Write the key inside WSL and prove sshd accepts it
+        shell: powershell
+        env:
+          PUBKEY: ${{ inputs.pubkey }}
+          DISTRO: ${{ inputs.distro }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $pub = $env:PUBKEY.Trim()
+          if ($pub -notmatch '^ssh-(ed25519|rsa|dss)\s+') { throw 'input pubkey does not look like an SSH public key' }
+
+          # A PowerShell here-string cannot terminate inside a YAML block scalar, so build
+          # the bash script line by line instead.
+          $lines = @(
+            'set -euo pipefail',
+            'pub="$PUBKEY"',
+            'user="$(id -un)"',
+            'home_dir="$HOME"',
+            'ak="$home_dir/.ssh/authorized_keys"',
+            'echo "target: $user home=$home_dir"',
+            'mkdir -p "$home_dir/.ssh"',
+            'chmod 700 "$home_dir/.ssh"',
+            'touch "$ak"',
+            'if grep -Fqx "$pub" "$ak"; then',
+            '  echo "key already present in $ak"',
+            'else',
+            '  printf "%s\n" "$pub" >> "$ak"',
+            '  echo "appended key to $ak"',
+            'fi',
+            'chmod 600 "$ak"',
+            'echo "--- fingerprints ---"',
+            'ssh-keygen -lf "$ak" || true',
+            'echo "--- localhost self-test through sshd ---"',
+            'if ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=10 "$user@127.0.0.1" "echo LAPTOP_SSHD_KEY_OK; hostname"; then',
+            '  echo "self-test: OK"',
+            'else',
+            '  echo "self-test: FAILED"',
+            '  tail -25 /var/log/auth.log 2>/dev/null || sudo -n tail -25 /var/log/auth.log 2>/dev/null || echo "(auth.log unreadable)"',
+            '  exit 1',
+            'fi'
+          )
+
+          $tmpWin = Join-Path $env:TEMP 'install_gx10_key.sh'
+          [IO.File]::WriteAllText($tmpWin, (($lines -join "`n") + "`n"))
+          Write-Host "wrote $tmpWin"
+
+          $wslArgs = @()
+          if ($env:DISTRO) { $wslArgs = @('-d', $env:DISTRO) }
+          $wslPath = (& wsl.exe @wslArgs -e wslpath -a ($tmpWin -replace '\\','/')).Trim()
+          Write-Host "wsl path: $wslPath"
+          if (-not $wslPath) { throw 'could not map the script path into WSL' }
+
+          & wsl.exe @wslArgs -e bash -lc "PUBKEY='$pub' bash '$wslPath'"
+          $code = $LASTEXITCODE
+          Remove-Item $tmpWin -Force -ErrorAction SilentlyContinue
+          if ($code -ne 0) { throw "WSL key install failed with exit code $code" }
+          Write-Host 'WSL key install finished'
