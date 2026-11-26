@@ -4,6 +4,11 @@ name: Ops - Install gx10 SSH key on the laptop
 # laptop can `ssh gx10` with no manual copying. The key arrives as a base64 repository
 # secret (never in the repo, never in a log), and the job proves the connection works
 # before it reports success. Manual dispatch only.
+#
+# ONE-SHOT: this already ran green on 2026-11-26 (the laptop wrote ~/.ssh/gx10_laptop and
+# printed LAPTOP_TO_GX10_OK). The GX10_LAPTOP_KEY_B64 secret was revoked afterwards as a
+# hygiene measure, so re-running this needs the secret set again from
+# ~/.ssh/id_ed25519_gx10_laptop.pub's matching private key on gx10.
 on:
   workflow_dispatch:
 

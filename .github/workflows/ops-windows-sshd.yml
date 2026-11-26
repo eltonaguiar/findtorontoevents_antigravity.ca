@@ -41,7 +41,7 @@ jobs:
           Write-Host "host      : $env:COMPUTERNAME"
           Write-Host "runner as : $($id.Name)"
           Write-Host "elevated  : $admin"
-          Write-Host "mode      : $('{{ inputs.mode }}')"
+          Write-Host "mode      : ${{ inputs.mode }}"
           Write-Host "--- capability ---"
           try { Get-WindowsCapability -Online -Name OpenSSH.Server* | Select-Object Name, State | Format-Table -AutoSize | Out-String | Write-Host }
           catch { Write-Host "capability query failed: $_" }
@@ -75,8 +75,8 @@ jobs:
           if (-not (Get-NetFirewallRule -Name $name -ErrorAction SilentlyContinue)) {
             New-NetFirewallRule -Name $name -DisplayName 'OpenSSH Server (sshd)' `
               -Enabled True -Direction Inbound -Protocol TCP -Action Allow `
-              -LocalPort 22 -RemoteAddress '{{ inputs.subnet }}' | Out-Null
-            Write-Host "firewall rule created for {{ inputs.subnet }}"
+              -LocalPort 22 -RemoteAddress '${{ inputs.subnet }}' | Out-Null
+            Write-Host "firewall rule created for ${{ inputs.subnet }}"
           } else { Write-Host "firewall rule already exists" }
 
       - name: Confirm
