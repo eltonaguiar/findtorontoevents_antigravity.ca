@@ -61,7 +61,7 @@ if (count($updates) > 100) {
 }
 
 $start_time = microtime(true);
-$results = [];
+$results = array();
 $processed = 0;
 $now = date('Y-m-d H:i:s');
 

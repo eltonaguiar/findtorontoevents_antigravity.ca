@@ -91,3 +91,10 @@ def test_baseline_still_fails_on_new_finding(tmp_path, monkeypatch):
     monkeypatch.setattr(lint, "REPO_ROOT", tmp_path)
     _write(tmp_path, "a.php", "<?php\nhttp_response_code(403);\nhttp_response_code(500);\n")
     assert lint.main([str(tmp_path)]) == 1  # second call is new -> fails
+
+
+def test_flags_empty_short_array(tmp_path):
+    """$x = [] has no element to anchor on - it reached production once (2026-11-26)."""
+    f = _write(tmp_path, "h.php", "<?php\n$results = [];\nforeach ($a as $b) { $results[] = $b; }\n")
+    rules = [x["rule"] for x in lint.check_file(f)]
+    assert "short-array" in rules, rules

@@ -11,7 +11,7 @@ require_once dirname(__FILE__) . '/ensure_tables.php';
 
 $response = array(
     'database' => 'connected',
-    'tables' => [],
+    'tables' => array(),
     'test_user' => null,
     'test_friend' => null,
     'test_hangout' => null
@@ -49,7 +49,8 @@ if ($john_result && $john_result->num_rows > 0) {
 // Count total friends (should be at least 1)
 $friend_count = $conn->query("SELECT COUNT(*) as count FROM friendt_friends WHERE user_id = {$john['id']}");
 if ($friend_count) {
-    $response['friend_count'] = $friend_count->fetch_assoc()['count'];
+    $friend_count_row = $friend_count->fetch_assoc(); // PHP 5.2: dereference a call result is 5.4+
+    $response['friend_count'] = $friend_count_row['count'];
 }
 
 echo json_encode($response, JSON_PRETTY_PRINT);

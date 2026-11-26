@@ -45,7 +45,12 @@ BASELINE = REPO_ROOT / "tools" / "php52_baseline.json"
 
 # (rule id, regex, version that introduced it, what the reader should do)
 RULES: list[tuple[str, str, str, str]] = [
-    ("short-array",        r"(?:=|return|\(|,|=>)\s*\[\s*(?:['\"$0-9]|$)", "5.4", "use array(...)"),
+    # the \\] alternative matters: an EMPTY short array ("$x = [];") has no element to
+    # anchor on, and it was a false negative that reached production on 2026-11-26
+    ("short-array",        r"(?:=|return|\(|,|=>)\s*\[\s*(?:['\"$0-9\]]|$)", "5.4", "use array(...)"),
+    # $obj->fetch_assoc()['count'] - dereferencing a call result is 5.4+, and on 5.2
+    # it is "unexpected '['". Found in production on 2026-11-26.
+    ("call-array-deref",   r"\)\s*\[", "5.4", "assign to a variable first"),
     ("array-destructure",  r"\[\s*\$[A-Za-z_]\w*\s*,\s*\$[A-Za-z_]\w*\s*\]\s*=", "7.1", "use list(...)"),
     ("null-coalesce",      r"\?\?", "7.0", "use isset($x) ? $x : $default"),
     ("spaceship",          r"<=>", "7.0", "compare explicitly"),
