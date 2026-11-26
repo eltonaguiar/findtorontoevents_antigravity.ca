@@ -113,7 +113,7 @@ jobs:
         git add statistical_validation.log || true
         git add STATISTICAL_VALIDATION_REPORT.md || true
         
-        git commit -m "Statistical validation run $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" || echo "No changes"
+        git diff --cached --quiet || git commit -m "Statistical validation run $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]" || echo "No changes"
         
         bash .github/scripts/safe_push.sh
 
