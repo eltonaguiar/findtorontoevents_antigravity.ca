@@ -449,10 +449,19 @@ def run_freshness_check(output_path: Optional[str] = None) -> Dict[str, Any]:
       all GREEN → 0, any YELLOW → 1, any RED → 2
     """
     if output_path is None:
+        # 2026-11-26: DB_FRESHNESS_OUTPUT was documented in the module docstring
+        # and explicitly set by .github/workflows/db-freshness-guardian.yml, but
+        # was never read here -- so overriding it silently did nothing. Honour it
+        # now, resolving relative values against the repo root so the workflow's
+        # declared value and the artifact upload path agree regardless of cwd.
         repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        output_path = os.path.join(
-            repo_root, "audit_dashboard", "data", "db_freshness.json"
-        )
+        env_path = os.environ.get("DB_FRESHNESS_OUTPUT", "").strip()
+        if env_path:
+            output_path = env_path if os.path.isabs(env_path) else os.path.join(repo_root, env_path)
+        else:
+            output_path = os.path.join(
+                repo_root, "audit_dashboard", "data", "db_freshness.json"
+            )
 
     checks: List[Dict[str, Any]] = []
     stocks_conn = None
