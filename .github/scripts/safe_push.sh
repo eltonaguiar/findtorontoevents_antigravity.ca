@@ -38,6 +38,26 @@ REMOTE_URL="${1:-}"
 # branch we are actually on; on main this is a no-op change.
 TARGET_BRANCH="${SAFE_PUSH_BRANCH:-${GITHUB_REF_NAME:-main}}"
 
+# --- Stale-checkout deletion guard ---
+# 2026-11-26: a bot job with a stale index committed a broad `git add` and staged every
+# file created after its checkout as a DELETION. Commit 808f812f removed 807 paths in one
+# second - workflows, alpha_engine, tools, tests, research - and nothing noticed because the
+# push itself succeeded.
+# The signature is a large number of deletions that the job never authored. Refuse it and
+# require an explicit override, so a genuine bulk cleanup can still be pushed deliberately.
+MASS_DELETE_LIMIT="${SAFE_PUSH_MAX_DELETIONS:-15}"
+_DELETED=$(git diff --cached --name-only --diff-filter=D 2>/dev/null | wc -l | tr -d ' ')
+if [ "${_DELETED:-0}" -gt "$MASS_DELETE_LIMIT" ] && [ "${SAFE_PUSH_ALLOW_MASS_DELETE:-0}" != "1" ]; then
+    echo "::error::refusing to push $_DELETED staged deletions (limit $MASS_DELETE_LIMIT)." >&2
+    echo "This is the stale-index signature that deleted 807 files on 2026-11-26." >&2
+    echo "If the deletions are intentional, re-run with SAFE_PUSH_ALLOW_MASS_DELETE=1." >&2
+    git diff --cached --name-only --diff-filter=D | head -20 >&2
+    exit 3
+fi
+if [ "${_DELETED:-0}" -gt 0 ]; then
+    echo "  deletion guard: $_DELETED staged deletion(s), under the $MASS_DELETE_LIMIT limit"
+fi
+
 # --- Early exit: nothing to push ---
 LOCAL_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
 REMOTE_HEAD=$(git rev-parse origin/main 2>/dev/null || echo "")
