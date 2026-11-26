@@ -92,6 +92,6 @@ jobs:
           git config user.name "beta-portfolio-bot"
           git config user.email "actions@users.noreply.github.com"
           git add audit_dashboard/data/beta_portfolio_status.json || true
-          git commit -m "chore(beta): monthly portfolio status $(date -u +%Y-%m-%d) [skip ci]" || echo "no change"
+          git diff --cached --quiet || git commit -m "chore(beta): monthly portfolio status $(date -u +%Y-%m-%d) [skip ci]" || echo "no change"
           # 2026-11-16: routed through safe_push — bare push dropped data on non-FF
           bash .github/scripts/safe_push.sh
