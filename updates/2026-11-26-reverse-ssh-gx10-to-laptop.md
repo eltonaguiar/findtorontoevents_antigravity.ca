@@ -28,9 +28,12 @@ Windows loopback forward, not the Windows OpenSSH service. Consequences:
 - Run `45782875281` wrote the key to `C:\Users\zerou\.ssh\authorized_keys` — the right file
   for Windows sshd, the wrong file for WSL sshd — and its `ssh zerou@127.0.0.1` self-test
   returned `Permission denied (publickey)`.
-- Run `45784767282` (a `wsl.exe`-driven job) did land the key in the WSL user's
-  `~/.ssh/authorized_keys`, but its self-test still failed: it let `ssh` pick an identity from
-  the environment instead of passing the key it had just written.
+- Run `45784767282` (a `wsl.exe`-driven job from the Windows runner) did land the key in the
+  WSL user's `~/.ssh/authorized_keys` — `key already present in /home/zerou/.ssh/authorized_keys`
+  — yet its self-test could never pass: the laptop only ever holds the *public* half, and handing
+  a public key to `ssh -i` cannot authenticate. The job now verifies what it actually can (key
+  line present, `700`/`600` permissions, effective `sshd -T` settings) and leaves the real login
+  check to gx10, which is the only holder of the private key.
 
 The laptop auth log made this unambiguous:
 
@@ -45,7 +48,7 @@ Elton2026 sshd[54231]: Connection closed by authenticating user zerou 127.0.0.1 
 
 | Change | Where |
 |--------|-------|
-| New manual workflow that writes gx10's ed25519 public key into the laptop's WSL `authorized_keys`, fixes `700`/`600` for `StrictModes`, prints fingerprints and the effective `sshd_config` keys, and self-tests **with the key it wrote** (`ssh -i`, `IdentitiesOnly=yes`) | `.github/workflows/ops-install-gx10-pubkey.yml` (PRs #1216, #1218, #1220) |
+| Manual workflow that writes gx10's ed25519 public key into the laptop's WSL `authorized_keys` (driven through `wsl.exe` from the Windows runner, because the WSL runner slots were busy), fixes `700`/`600` for `StrictModes`, prints fingerprints and the effective `sshd -T` settings, and asserts the key line is present | `.github/workflows/ops-install-gx10-pubkey.yml` (PRs #1216, #1218, #1220, #1222) |
 | `mode` / `subnet` inputs of the Windows-sshd workflow repaired — they printed the literal `$('{{ inputs.mode }}')` because the template was nested in single quotes | `.github/workflows/ops-windows-sshd.yml` (PR #1216) |
 | Header note that `ops-install-laptop-key.yml` is one-shot and its secret is gone | `.github/workflows/ops-install-laptop-key.yml` (PR #1216) |
 | Repo secret `GX10_LAPTOP_KEY_B64` (private key, base64) **deleted** now that the delivery is verified | repo settings |

@@ -84,18 +84,16 @@ jobs:
             'chmod 600 "$ak"',
             'echo "--- fingerprints ---"',
             'ssh-keygen -lf "$ak" || true',
-            'echo "--- localhost self-test through sshd ---"',
-            'keyfile="$(mktemp)"',
-            'printf "%s\n" "$pub" > "$keyfile"',
-            'chmod 600 "$keyfile"',
-            'if ssh -i "$keyfile" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=10 "$user@127.0.0.1" "echo LAPTOP_SSHD_KEY_OK; hostname"; then',
-            '  echo "self-test: OK"',
-            'else',
-            '  echo "self-test: FAILED (key rejected by sshd for $user)"'
-            '  tail -25 /var/log/auth.log 2>/dev/null || sudo -n tail -25 /var/log/auth.log 2>/dev/null || echo "(auth.log unreadable)"',
-            '  rm -f "$keyfile"',
-            '  exit 1',
-            'fi'
+            'echo "--- verification ---"',
+            'if grep -Fqx "$pub" "$ak"; then echo "key line present: yes"; else echo "key line present: NO"; exit 1; fi',
+            'echo "authorized_keys: mode=$(stat -c %a "$ak") owner=$(stat -c %U "$ak")"',
+            'dir_mode="$(stat -c %a "$home_dir/.ssh")"',
+            'if [ "$dir_mode" != "700" ]; then chmod 700 "$home_dir/.ssh"; echo ".ssh mode $dir_mode -> 700"; fi',
+            'echo "effective sshd settings:"',
+            '(sshd -T 2>/dev/null || sudo -n sshd -T 2>/dev/null) | grep -E "^(authorizedkeysfile|pubkeyauthentication|passwordauthentication|permitrootlogin) " || echo "(sshd -T unavailable here)"',
+            'echo "NOTE: the private half of this key lives on gx10, so this job cannot log in as itself."',
+            'echo "authoritative check runs from gx10: ssh <user>@<this-IP> echo OK"',
+            'echo "KEY_INSTALLED for $user on $(hostname) -- addresses: $(hostname -I)"'
           )
 
           $tmpWin = Join-Path $env:TEMP 'install_gx10_key.sh'
