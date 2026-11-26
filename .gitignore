@@ -519,6 +519,11 @@ data/ai_tournament/picks_2026*.json
 
 # --- ML model artifacts (each dir specifically; broad **/*.pt|.pth|.h5|.npz) ---
 **/*.pt
+
+# ml_battleground retrain commits .pt checkpoints via
+# `git add ml_battleground/system_*/models/`. This blanket rule made that
+# add a silent no-op exactly like the v6 sweep did for the .joblib models.
+!ml_battleground/**/models/*.pt
 **/*.pth
 **/*.h5
 **/*.npz

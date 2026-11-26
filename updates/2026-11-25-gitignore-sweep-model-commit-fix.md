@@ -171,3 +171,38 @@ Guard idempotency: ran the mercury2 status writer twice with a seeded 40h-old
 `scanner_checked_at` refreshed, so age keeps accruing instead of resetting to now.
 
 All five edited workflows parse with `yaml.safe_load`.
+
+---
+
+# Third pass — the blanket `**/*.pt` rule was still eating ml_battleground checkpoints
+
+The second pass removed `ml_battleground/**/models/*.pt` from `.gitignore`, but a **separate,
+broader rule was masking the fix**:
+
+```
+.gitignore:511:**/*.pt
+```
+
+`git check-ignore -q ml_battleground/system_a/models/x.pt` still exited 0 — the path was *still
+ignored*, so `ml-battleground-retrain.yml`'s `git add ml_battleground/system_*/models/` was still a
+no-op. Removing the specific rule had changed nothing on its own.
+
+Fix: an explicit negation after the blanket rule.
+
+```
+!ml_battleground/**/models/*.pt
+```
+
+Verified with `git check-ignore -q` (exit 0 = ignored, exit 1 = not ignored):
+
+| path | before | after |
+|---|---|---|
+| `ml_battleground/system_a/models/x.pt` | 0 (ignored) | **1 (tracked)** |
+| `ml_battleground/system_b/models/m.joblib` | 0 | **1** |
+| `mercury2/models/x.joblib` | 0 | **1** |
+| `crypto_ml_edge/models/x.joblib` | 0 | **1** |
+| `claude_gainer_ml/models/x.joblib` | 0 | **1** |
+| `build/x.pt` | 0 | **0** (still ignored, as intended) |
+
+**Lesson:** un-ignoring a path requires checking the *effective* rule, not just deleting the
+rule you found. `git check-ignore -v` on a real path is the only proof.
