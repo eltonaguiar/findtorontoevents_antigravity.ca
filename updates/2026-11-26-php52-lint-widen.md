@@ -47,3 +47,12 @@ uploads `favcreators/docs` as `/fc/`.)
   `test_movieshows_trees_are_clean`, `test_full_repository_scan_passes_with_baseline`,
   `test_strings_are_not_code`, and a pair of tests proving the baseline suppresses
   known findings but still fails on a new one in the same file.
+
+## Follow-up audit: deployed vs repo
+
+`tools/php52_drift_check.py` byte-compares every deployed `.php` on 50webs against
+the repo. Result: **94 identical, 3 drifted, 209 live-only orphans, 3 repo-only** —
+all of the drift is in `movieshows2/api` (`db-config.php`, `movies.php`,
+`sync-providers.php`) and `movieshows2/api/get-movies.php` is **not deployed at
+all**, so that PHP 5.2 fix lives only in git. Full report:
+`reports/50webs_php_drift_2026-11-26.md`.
