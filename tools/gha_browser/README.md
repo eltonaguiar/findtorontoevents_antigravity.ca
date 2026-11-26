@@ -10,6 +10,20 @@ quota. See `GHACTIONS_2026-11-16/…/AGENT_PROMPT_job_analysis.md` for the metho
       --no-default-browser-check https://github.com/login
 (log in once; the profile persists the session. Attach: Playwright `connect_over_cdp(9222)`.)
 
+### Windows
+    ./launch_debug_chrome.ps1 -Refresh    # first time: copy profile + launch
+    ./launch_debug_chrome.ps1             # after that: reuse profile + launch
+
+A dedicated `--user-data-dir` is **required**, not just tidy: Chrome 136+ ignores
+`--remote-debugging-port` on the default profile, and debugging the default profile while
+Chrome is already running only opens a tab in the existing process (the port never binds).
+
+The launcher also suppresses the popups that otherwise fire on every launch — see the
+header of `launch_debug_chrome.ps1` for the four causes. The copy-path trap is worth
+repeating: `Copy-Item -Path "...\User Data" -Destination "...\.chrome-debug-profile" -Recurse`
+puts the profile at `.chrome-debug-profile\User Data`, so `--user-data-dir` must point there;
+pointing at the parent silently yields a blank profile with none of your logins.
+
 ## Tools
 - `scrape.py` — `runs "<query>"`, `wf-history <file>`, `run-detail <id>`, `raw <url>`, login helpers.
 - `cleanup_branches.py` — safe remote-branch cleanup executor (4 safety rails, dry-run default).
