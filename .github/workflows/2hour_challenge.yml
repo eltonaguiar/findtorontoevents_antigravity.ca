@@ -62,7 +62,7 @@ jobs:
           # not fail the commit step.
           git add REAL_CHALLENGE_RESULTS.json || true
           git add REAL_CHALLENGE_FINAL.md || true
-          git commit -m "Update 2-hour challenge results [skip ci]" || echo "No changes to commit"
+          git diff --cached --quiet || git commit -m "Update 2-hour challenge results [skip ci]" || echo "No changes to commit"
           bash .github/scripts/safe_push.sh
 
       - name: Notify on completion
