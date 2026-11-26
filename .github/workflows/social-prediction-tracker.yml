@@ -38,9 +38,22 @@ jobs:
         run: pip install -r predictions/requirements.txt pymysql
 
       - name: Install Playwright browsers
+        timeout-minutes: 12
         run: |
+          # `playwright install-deps` escalates to root. GitHub-hosted runners have
+          # passwordless sudo; a self-hosted runner does NOT, so this step sat at
+          # "Switching to root user to install dependencies..." and held the runner
+          # until the job timeout. Observed on gx10-arm64-linux-2: 24m50s elapsed at
+          # 0.4% CPU, i.e. blocked on a prompt that can never be answered.
+          # `continue-on-error` does not help a HANG - only a non-zero exit.
+          # So: always fetch the browser, but only install OS deps when sudo is truly
+          # non-interactive. A self-hosted host is expected to have them preinstalled.
           python -m playwright install chromium
-          python -m playwright install-deps chromium
+          if sudo -n true 2>/dev/null; then
+            python -m playwright install-deps chromium
+          else
+            echo "::notice title=playwright deps skipped::no passwordless sudo on this host; assuming OS deps are preinstalled"
+          fi
         continue-on-error: true
 
       - name: Install crawl4ai browsers
