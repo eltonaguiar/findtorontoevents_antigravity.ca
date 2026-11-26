@@ -106,8 +106,13 @@ jobs:
           fail_on_findings = os.environ.get('FAIL_ON_FINDINGS', 'true').lower() == 'true'
           min_size_bytes = min_size_mb * 1024 * 1024
 
+          # Scanning EVERY branch is what made this a 3h+ job that the 180m cap killed on
+          # three consecutive runs. A duplicate blob only matters on a branch someone still
+          # uses, so bound the work: newest branches first, N configurable via MAX_BRANCHES.
+          max_branches = int(os.environ.get('MAX_BRANCHES', '40'))
           ref_lines = subprocess.check_output(
-              ['git', 'for-each-ref', '--format=%(refname:short)', 'refs/remotes/origin'],
+              ['git', 'for-each-ref', '--sort=-committerdate',
+               '--format=%(refname:short)', 'refs/remotes/origin'],
               text=True,
           ).splitlines()
 
@@ -118,6 +123,11 @@ jobs:
               if not ref.startswith('origin/'):
                   continue
               branches.append(ref[len('origin/'):])
+
+          if len(branches) > max_branches:
+              print(f"limiting scan to the {max_branches} most recently updated "
+                    f"of {len(branches)} branches (set MAX_BRANCHES to widen)")
+              branches = branches[:max_branches]
 
           blob_map = {}
           path_map = collections.defaultdict(set)
