@@ -20,7 +20,7 @@ permissions:
 jobs:
   emit:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +29,19 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install --quiet pymysql pandas numpy
+        run: pip install --quiet pymysql pandas numpy yfinance
+
+      - name: Build the price cache the emitter reads
+        # data/cache/asset_class_review/*_5y.csv is the emitter's only input and it is NOT in the
+        # repo any more (404 on main), so CI found 79 symbols -> 0 and emitted nothing without
+        # erroring. Refresh it here instead of trusting a committed cache.
+        run: python -m tools.etf_trend_price_refresh
+
+      - name: Show cache size
+        run: |
+          n=$(ls data/cache/asset_class_review/*_5y.csv 2>/dev/null | wc -l)
+          echo "cached symbols: $n"
+          test "$n" -gt 0 || { echo "::error::price cache empty after refresh"; exit 1; }
 
       - name: Dry run (proves the signal rules still produce rows)
         run: |
