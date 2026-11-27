@@ -28,7 +28,7 @@ cd "$(dirname "$0")/.."
 
 KEYS_FILE="${KEYS_FILE:-$HOME/dbpasses.txt}"
 CONFIG="${CONFIG:-litellm_config.yaml}"
-ALLOW_PAID_SPILLOVER="${ALLOW_PAID_SPILLOVER:-1}"
+ALLOW_PAID_SPILLOVER="${ALLOW_PAID_SPILLOVER:-0}"
 PORT="${PORT:-4000}"
 BG=0
 LOG="${PROXY_LOG:-/tmp/litellm_proxy.log}"
@@ -65,7 +65,7 @@ import sys
 import urllib.request
 
 port = sys.argv[1]
-url = f"http://127.0.0.1:{port}/health"
+url = f"http://127.0.0.1:{port}/health/liveliness"
 try:
     with urllib.request.urlopen(url, timeout=1.5) as resp:
         ok = (resp.getcode() == 200)
@@ -124,7 +124,10 @@ ensure_litellm_runtime
 # ---------------------------------------------------------------------------
 ACTIVE_CONFIG="$CONFIG"
 if [[ "$ALLOW_PAID_SPILLOVER" == "0" ]]; then
-  ACTIVE_CONFIG="/tmp/litellm_config.nospillover.${PORT}.$$.yaml"
+  # NOTE: must live beside CONFIG, not in /tmp — litellm resolves module-style
+  # callbacks (tools.litellm_smart_cooldown) relative to the config file, so a
+  # /tmp config makes that import fail and the whole proxy refuses to start.
+  ACTIVE_CONFIG="$(dirname "$CONFIG")/litellm_config.nospillover.generated.yaml"
   cp "$CONFIG" "$ACTIVE_CONFIG"
 
   python3 - "$ACTIVE_CONFIG" << 'PY'
@@ -187,6 +190,14 @@ parse_key() {
     }
   ' "$KEYS_FILE")"
   if [[ -n "$val" ]]; then
+    # dbpasses.txt lines usually carry a trailing annotation, e.g.
+    #   GOOGLE GEMINI API KEY:
+    #   AIza...                     # free tier (50 rpd)
+    # Exporting that verbatim puts spaces and prose inside the key, so every URL
+    # litellm builds from it is invalid: Gemini answers 401/InvalidURL and the
+    # whole deployment fails over. Strip the comment and trim.
+    val="${val%%[[:space:]]#*}"
+    val="$(printf '%s' "$val" | sed -E 's/[[:space:]]+$//; s/^[[:space:]]+//')"
     export "$env=$val"
   fi
 }
@@ -248,6 +259,7 @@ parse_key "CURSOR_API_KEY"                                                      
 parse_key "KILOCODE_API_KEY"                                                         KILOCODE_API_KEY
 parse_key "OPENCODE_API_KEY"                                                         OPENCODE_API_KEY
 parse_key "BLUESMIND API KEY"                                                        BLUESMIND_API_KEY
+parse_key "SUBQ Token (\$5  free credit+\$20 more added )"                          SUBQ_API_KEY
 
 # Assemble the full per-account Cloudflare Workers AI URL once so the litellm
 # config can reference $CF_API_BASE (litellm's per-provider `account_id` param
@@ -268,7 +280,7 @@ for v in NVIDIA_API_KEY NVIDIA_API_KEY_ALT GROQ_API_KEY GEMINI_API_KEY GEMINI_AP
          OLLAMA_CLOUD_KEY ANTHROPIC_API_KEY ANTHROPIC_API_KEY_ALT DEEPSEEK_API_KEY \
          MOONSHOT_API_KEY MOONSHOT_API_KEY_ALT OPENAI_API_KEY QWEN_API_KEY CHUTES_API_KEY LLM7_API_KEY \
          INCEPTION_API_KEY NOVITA_API_KEY CURSOR_API_KEY KILOCODE_API_KEY OPENCODE_API_KEY \
-         BLUESMIND_API_KEY XAI_API_KEY_ALT GROQ_API_KEY_ALT; do
+         BLUESMIND_API_KEY XAI_API_KEY_ALT GROQ_API_KEY_ALT SUBQ_API_KEY; do
   total=$((total+1))
   if [[ -n "${!v:-}" ]]; then loaded=$((loaded+1)); fi
 done
