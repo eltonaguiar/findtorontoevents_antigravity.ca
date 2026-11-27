@@ -40,7 +40,7 @@ jobs:
           set +e
           python3 tools/strategy_freeze_gate.py --json > freeze.json 2> freeze.err
           rc=$?
-          cat freeze.err >&2 || true
+          if [ -s freeze.err ]; then cat freeze.err >&2; fi
           if [ "$rc" -eq 1 ]; then
             echo "frozen=true" >> "$GITHUB_OUTPUT"
             echo "::warning::Strategy generation is FROZEN on a P0 item - skipping new-strategy work this run (P0 list above)"
