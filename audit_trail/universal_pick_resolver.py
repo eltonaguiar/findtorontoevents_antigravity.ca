@@ -990,6 +990,20 @@ def _extract_pick_fields(raw, system_name):
     # Populate asset_class so consumers reading universal_resolved_picks.json
     # directly (not via dashboard_generator._normalize_pick) see a labeled class.
     pick["asset_class"] = normalize_asset_class({**raw, **pick})
+
+    # Attribute every resolved pick to a strategy family. Additive on purpose:
+    # the key is added, nothing existing is renamed or dropped, so consumers that
+    # do not know about families are unaffected. family_of() reports provenance
+    # ("mapped" vs "declared"/"unknown") so a guess is never presented as a fact.
+    try:
+        from audit_trail.strategy_family import family_of
+
+        fam, prov = family_of(pick.get("strategy", ""), raw.get("strategy_family"))
+        pick["strategy_family"] = fam
+        pick["strategy_family_provenance"] = prov
+    except Exception:  # attribution must never break resolution
+        pick.setdefault("strategy_family", "unknown")
+        pick.setdefault("strategy_family_provenance", "unknown")
     
     # ── PRESERVE ALL SCORING METADATA ──
     # This is the critical fix - without this, quality metrics are lost on resolution

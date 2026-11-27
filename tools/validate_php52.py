@@ -12,6 +12,14 @@ CHECKS = (
     ("null coalescing ??", re.compile(r"\?\?")),
     ("short ternary ?:", re.compile(r"\?:")),
     ("short array syntax []", re.compile(r"(^|[=\(,\{]\s*)\[[^\]\r\n]*[,\=>][^\]\r\n]*\]")),
+    # 2026-11-23 incident: the single-line rule above passed two files that still
+    # contained 13 short-array literals, because it demanded the whole literal on
+    # one line. A literal that OPENS at end-of-line is invisible to it, and both
+    # files then returned "Parse error" from the live PHP 5.2 host. A gate that
+    # passes unparseable code is worse than no gate.
+    ("multi-line short array syntax []", re.compile(r"[=(,]\s*\[\s*$")),
+    # $res->fetch_assoc()['c'] needs PHP 5.4; 5.2 rejects it outright.
+    ("call-result dereference", re.compile(r"\)\s*\[")),
     ("anonymous function", re.compile(r"\bfunction\s*\(")),
     ("__DIR__", re.compile(r"\b__DIR__\b")),
     ("http_response_code()", re.compile(r"\bhttp_response_code\s*\(")),
