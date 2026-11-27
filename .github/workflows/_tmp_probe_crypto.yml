@@ -1,12 +1,13 @@
 name: _tmp probe CRYPTO
 on:
   workflow_dispatch:
+
 jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: probe
+      - name: crypto edge tests
         env:
           DB_HOST: mysql.50webs.com
           DB_PORT: '3306'
@@ -15,106 +16,68 @@ jobs:
         run: |
           python3 -m pip install --quiet pymysql
           python3 - <<'PY'
-          import os, json, statistics as st
-          from collections import defaultdict, Counter
+          import os, collections, statistics as st
           import pymysql
 
-          cn = pymysql.connect(host=os.environ['DB_HOST'], port=int(os.environ.get('DB_PORT','3306')), user=os.environ['DB_USER'], password=os.environ['DB_PASS'], database='ejaguiar1_stocks', connect_timeout=20)
-          cur = cn.cursor()
-          cur.execute("SELECT id, symbol, direction, strategy, source_system, pnl_pct, created_at, status, entry_price, exit_price FROM trading_picks WHERE LOWER(category)='crypto'")
-          rows = cur.fetchall()
-          cur.close(); cn.close()
+          cn=pymysql.connect(host=os.environ["DB_HOST"], port=int(os.environ.get("DB_PORT") or 3306),
+                             user=os.environ["DB_USER"], password=os.environ["DB_PASS"],
+                             database="ejaguiar1_stocks", connect_timeout=20)
+          cur=cn.cursor()
 
-          recs = []
-          for r in rows:
-              rid, symbol, direction, strategy, source_system, pnl_pct, created_at, status, entry_price, exit_price = r
-              recs.append({'id': rid, 'symbol': symbol, 'direction': direction, 'strategy': strategy or 'UNNAMED', 'source_system': source_system or 'UNKNOWN', 'pnl_pct': float(pnl_pct) if pnl_pct is not None else None, 'created_at': str(created_at) if created_at is not None else None})
+          def stats(v,label,pad=32):
+              if not v: print(f"  {label:<{pad}} n=0"); return
+              v=sorted(v); n=len(v); w=sum(1 for x in v if x>0); k=int(n*0.01)
+              tv=v[:n-k] if k else v
+              print(f"  {label:<{pad}}n={n:<5}win={100*w/n:5.1f}% mean={st.mean(v):+.3f}% med={st.median(v):+.3f}% trim1={st.mean(tv):+.3f}%")
 
-          by_strat = defaultdict(list)
-          for r in recs:
-              by_strat[r['strategy']].append(r)
+          CUR_WIN="category IN ('CRYPTO','crypto')"
 
-          def mean(xs):
-              xs = [x for x in xs if x is not None]
-              return sum(xs)/len(xs) if xs else None
+          print("=== 1. strategy x source_system in CRYPTO ===")
+          cur.execute(f"""SELECT COALESCE(strategy,'(none)') s, COALESCE(source_system,'(none)') ss, category,
+                                 COUNT(*) n, SUM(pnl_pct>0) w, AVG(pnl_pct) a,
+                                 SUM(created_at IS NULL) undated
+                          FROM trading_picks WHERE {CUR_WIN} AND pnl_pct IS NOT NULL
+                          GROUP BY s, ss, category HAVING COUNT(*)>=20 ORDER BY n DESC LIMIT 18""")
+          for s,ss,cat,n,w,a,und in cur.fetchall():
+              print(f"  {str(s)[:30]:<31}{str(ss)[:22]:<23}{str(cat)[:10]:<11}n={n:<5}win={100*w/n:5.1f}% mean={float(a):+.3f}% undated={und}")
 
-          def trimmed(xs):
-              xs = sorted(x for x in xs if x is not None)
-              if not xs: return None
-              n = len(xs)
-              k = max(1, round(n * 0.01))
-              if k >= n: k = n - 1
-              return sum(xs[:n-k]) / (n - k)
+          # pull the rows once
+          cur.execute(f"""SELECT COALESCE(strategy,'(none)') s, COALESCE(source_system,'(none)') ss,
+                                 symbol, direction, pnl_pct, created_at, exit_reason, closed_at
+                          FROM trading_picks WHERE {CUR_WIN} AND pnl_pct IS NOT NULL""")
+          rows=cur.fetchall()
+          print(f"\ntotal CRYPTO rows with pnl: {len(rows)}   undated: {sum(1 for r in rows if r[5] is None)}")
 
-          strategies = []
-          all_pnls = []
+          def cohort(rs,label):
+              if not rs: return
+              rs=sorted([r for r in rs if r[5] is not None], key=lambda r: str(r[5]))
+              seen=set(); ded=[]
+              for r in rs:
+                  k=(str(r[2]),str(r[3]),str(r[5])[:10])
+                  if k in seen: continue
+                  seen.add(k); ded.append(r)
+              half=len(ded)//2
+              print(f"\n  {label}: raw={len(rs)} deduped={len(ded)}")
+              stats([float(r[4]) for r in ded],"deduped")
+              stats([float(r[4]) for r in ded[:half]],"first half")
+              stats([float(r[4]) for r in ded[half:]],"second half")
+              syms=collections.Counter(str(r[2]) for r in ded)
+              if syms: print(f"    symbols={len(syms)} top={syms.most_common(1)[0][0]}={100*syms.most_common(1)[0][1]/max(len(ded),1):.1f}%")
+              er=collections.Counter(str(r[6] or '?') for r in ded)
+              print(f"    exits={dict(er.most_common(4))}")
 
-          for name in sorted(by_strat):
-              rows_list = by_strat[name]
-              pnls = [r['pnl_pct'] for r in rows_list if r['pnl_pct'] is not None]
-              raw_n = len(pnls)
-              all_pnls += pnls
-              dated = [r for r in rows_list if r['created_at'] is not None]
-              groups = {}
-              for r in dated:
-                  groups.setdefault((r['symbol'], r['direction'], r['created_at'][:10]), r)
-              deduped = list(groups.values())
-              deduped_n = len(deduped)
-              dpnls = [r['pnl_pct'] for r in deduped if r['pnl_pct'] is not None]
-              null_created = sum(1 for r in rows_list if r['created_at'] is None)
-              dsorted = sorted(deduped, key=lambda r: r['created_at'])
-              mid = len(dsorted) // 2
-              fh = [r['pnl_pct'] for r in dsorted[:mid] if r['pnl_pct'] is not None]
-              sh = [r['pnl_pct'] for r in dsorted[mid:] if r['pnl_pct'] is not None]
-              symc = Counter(r['symbol'] for r in deduped)
-              top_sym, top_cnt = symc.most_common(1)[0] if symc else (None, 0)
-              wr = sum(1 for v in dpnls if v > 0) / len(dpnls) * 100 if dpnls else None
-              mn = mean(dpnls)
-              med = st.median(dpnls) if dpnls else None
-              tri = trimmed(dpnls)
-              fhm = mean(fh)
-              shm = mean(sh)
-              share = top_cnt / len(deduped) * 100 if deduped else 0
-              if deduped_n < 30:
-                  verdict = 'UNINFORMATIVE'
-              elif top_sym and share > 30:
-                  verdict = 'CONCENTRATED'
-              elif mn is not None and mn > 0:
-                  verdict = 'EDGE'
-              else:
-                  verdict = 'NO_EDGE'
-              strategies.append({
-                  'name': name, 'raw_n': raw_n, 'deduped_n': deduped_n,
-                  'win_rate_pct': round(wr, 2) if wr is not None else None,
-                  'mean_pct': round(mn, 4) if mn is not None else None,
-                  'median_pct': round(med, 4) if med is not None else None,
-                  'trimmed_mean_pct': round(tri, 4) if tri is not None else None,
-                  'first_half_mean': round(fhm, 4) if fhm is not None else None,
-                  'second_half_mean': round(shm, 4) if shm is not None else None,
-                  'top_symbol_share_pct': round(share, 2),
-                  'verdict': verdict,
-              })
+          print("\n=== 2. per top source_system ===")
+          for ss in ("alpha_engine","mega_mutation","kimi_signal_tracking","ml_crypto_pred","alpha_engine_fast"):
+              cohort([r for r in rows if r[1]==ss], f"source_system={ss}")
 
-          class_mean = mean(all_pnls)
-          class_tri = trimmed(all_pnls)
-          dated_pnls = [r['pnl_pct'] for r in recs if r['created_at'] is not None and r['pnl_pct'] is not None]
-          class_mean_dated = mean(dated_pnls)
-          mega = by_strat.get('mega_mutation', [])
-          mega_null = sum(1 for r in mega if r['created_at'] is None)
-          mega_pnls = [r['pnl_pct'] for r in mega if r['pnl_pct'] is not None]
-          mega_dated_pnls = [r['pnl_pct'] for r in mega if r['created_at'] is not None and r['pnl_pct'] is not None]
-          ss = defaultdict(list)
-          for r in recs:
-              if r['pnl_pct'] is not None:
-                  ss[(r['strategy'], r['source_system'])].append(r['pnl_pct'])
-          ss_lines = []
-          for (sn, src) in sorted(ss):
-              ss_lines.append(sn + '/' + src + ': n=' + str(len(ss[(sn, src)])) + ' mean=' + str(round(mean(ss[(sn, src)]), 4)))
-          summary = 'CRYPTO class raw rows with pnl=' + str(len(all_pnls)) + ' class mean=' + str(round(class_mean, 4)) + '% trimmed=' + str(round(class_tri, 4)) + '% (gross). Cost assumption: 8bps round trip charged (0.08%); net class mean ~' + str(round(class_mean - 0.08, 4)) + '%. Rows with NULL created_at excluded from dedupe/split-half. Class mean excluding NULL-created rows=' + str(round(class_mean_dated, 4)) + '% vs ' + str(round(class_mean, 4)) + '% with them. mega_mutation: raw=' + str(len(mega)) + ' NULL_created_at=' + str(mega_null) + ' mean_all=' + str(round(mean(mega_pnls), 4)) + '% mean_excluding_null=' + str(round(mean(mega_dated_pnls), 4)) + '%. Source-system breakdown: ' + '; '.join(ss_lines) + '.'
-          result = {
-              'class_summary': summary,
-              'cleaned_up': False,
-              'strategies': strategies,
-          }
-          print(json.dumps(result))
+          print("\n=== 3. per named strategy (top 8 by n) ===")
+          cnt=collections.Counter(r[0] for r in rows)
+          for s,_ in cnt.most_common(9):
+              if s=="(none)": continue
+              cohort([r for r in rows if r[0]==s], f"strategy={s}")
+
+          print("\n=== 4. named vs unnamed aggregate ===")
+          cohort([r for r in rows if r[0]!="(none)"], "ALL named")
+          cohort([r for r in rows if r[0]=="(none)"], "ALL unnamed")
+          cn.close()
           PY
