@@ -29,6 +29,23 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+def _sanitize_json(obj):
+    """NaN/Infinity are not valid JSON - browsers reject the whole payload.
+
+    Replacing them with null keeps every other field available; raising (allow_nan=False) would
+    throw away the run that produced them.
+    """
+    import math
+    if isinstance(obj, float):
+        return None if (math.isnan(obj) or math.isinf(obj)) else obj
+    if isinstance(obj, dict):
+        return {k: _sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_json(v) for v in obj]
+    return obj
+
+
+
 # Add project root to path
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -531,7 +548,7 @@ def run_evolution(asset_classes: list[str] | None = None):
     # Save results
     output_file = SCRIPT_DIR / "data" / "evolved_strategies.json"
     with open(output_file, "w") as f:
-        json.dump(all_results, f, indent=2, default=str)
+        json.dump(_sanitize_json(all_results), f, indent=2, default=str)
 
     elapsed = time.time() - start
     total_strats = sum(len(v) for v in all_results.values())
