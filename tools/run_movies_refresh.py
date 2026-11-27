@@ -32,6 +32,17 @@ def redact_secrets(text):
     return SECRET_QUERY_RE.sub(r"\1=[REDACTED]", " ".join(text.split()))
 
 
+# GoDaddy fronts torontoevent.net with bot protection that answers 200 with an interim page
+# ("One moment, please...") plus a 5-second reload. It is transient and IP-based: the GitHub
+# runner gets challenged, the FTP upload still works, and the API answers normally moments later.
+WAF_MARKERS = ("one moment, please", "window.location.reload", "cf-challenge", "attention required")
+
+
+def is_waf_challenge(text):
+    lowered = text.lower()
+    return any(marker in lowered for marker in WAF_MARKERS)
+
+
 def endpoint_label(url):
     """Path only - never the query string, which carries MS2_SYNC_KEY."""
     return urllib.parse.urlsplit(url).path or "/"
@@ -51,9 +62,20 @@ def request_json(url, timeout):
             try:
                 return json.loads(payload.decode("utf-8", "replace"))
             except ValueError:
-                # A 2xx carrying HTML is a PHP fatal raised AFTER the key check, and its text is
-                # the only thing that identifies the cause. Redacted, because it can echo the URL.
-                snippet = redact_secrets(payload.decode("utf-8", "replace")[:400])
+                body = payload.decode("utf-8", "replace")
+                if is_waf_challenge(body) and attempt < SERVER_ERROR_ATTEMPTS:
+                    wait = 10 * attempt
+                    print(f"WARN: {label} answered with a host WAF challenge (attempt {attempt}/{SERVER_ERROR_ATTEMPTS}), retrying in {wait}s",
+                          file=sys.stderr, flush=True)
+                    time.sleep(wait)
+                    continue
+                snippet = redact_secrets(body[:400])
+                if is_waf_challenge(body):
+                    raise RefreshError(
+                        f"{label}: host WAF challenge blocked verification, files uploaded OK: {snippet}"
+                    ) from None
+                # A 2xx carrying HTML that is NOT a challenge is a PHP fatal raised after the key
+                # check; its text is the only thing that identifies the cause. Redacted for the key.
                 raise RefreshError(f"{label} returned 200 but not JSON: {snippet}") from None
         except urllib.error.HTTPError as error:
             # The response body is deliberately not reported: a PHP error page can
