@@ -55,10 +55,27 @@ jobs:
           DB_BACKTESTS_PASSWORD: ${{ secrets.DB_PASS_BACKTESTS || secrets.MYSQL_PASSWORD || secrets.DB_BACKTESTS_PASSWORD }}
           DB_FRESHNESS_OUTPUT: audit_dashboard/data/db_freshness.json
         run: python tools/db_freshness_check.py
-        # Exit 0=GREEN, 1=YELLOW (warning, not failure), 2=RED (failure)
-        # continue-on-error: DB secrets may be absent in CI environment;
-        # report is still written + uploaded regardless of exit code.
+        # Exit 0=GREEN, 1=YELLOW (warning, not failure), 2=RED.
+        #
+        # 2026-11-26: this step previously set continue-on-error: true, which
+        # discarded all three codes and made the hourly guard permanently green --
+        # a genuinely stale trading DB produced a passing checkmark. The
+        # continue-on-error is retained here ONLY so the report is always written
+        # and uploaded; the pass/fail decision is owned by the verdict step below,
+        # which distinguishes real staleness from a missing-credentials
+        # environment failure.
         continue-on-error: true
+
+      - name: Freshness verdict (RED fails, absent DB secrets do not)
+        if: always()
+        # Re-derives the verdict from the report the check always writes:
+        #   GREEN                                  -> pass
+        #   YELLOW                                 -> pass, annotated as degraded
+        #   RED where every RED is a connect error -> pass, annotated as unverified
+        #   RED with real staleness data           -> FAIL the job
+        # --strict makes a missing/corrupt report a failure, so a silently broken
+        # guard cannot pass. See tools/db_freshness_verdict.py.
+        run: python tools/db_freshness_verdict.py audit_dashboard/data/db_freshness.json --strict
 
       - name: Upload freshness report
         if: always()

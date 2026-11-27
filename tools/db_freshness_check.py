@@ -32,6 +32,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 log = logging.getLogger(__name__)
 
+# How many newest-by-PRIMARY-key rows to inspect when a table has no index on its
+# timestamp column. bt_backtest_trades is ~34.6M rows; MAX(imported_at) over an
+# unindexed column is a full scan that exceeds read_timeout=30 on the remote host
+# (measured 2026-11-26: 30.0s to fail vs 0.1s for this). Append-only tables keep
+# their newest timestamps in the tail, so a PK-ordered sample is both cheap and
+# accurate. Raise this if a table can backfill old rows with high ids.
+TAIL_SAMPLE_ROWS: int = 5000
+
 # ── Freshness thresholds (minutes) ────────────────────────────────────────────
 THRESHOLDS: Dict[str, Dict[str, int]] = {
     "live_picks": {
@@ -424,15 +432,53 @@ def check_backtests(conn: Any) -> Dict[str, Any]:
                 log.warning("backtests freshness: no created_at or imported_at in %s", table)
                 return result
 
-            cur.execute(f"SELECT MAX({ts_col}), COUNT(*) FROM {table}")
-            row = cur.fetchone()
-            if row:
-                last_at, total = row
-                result["last_trade_at"] = str(last_at) if last_at else None
-                result["n_total"] = int(total or 0)
-                minutes = _minutes_since(last_at)
-                result["minutes_stale"] = round(minutes, 1) if minutes is not None else None
-                result["status"] = _grade(minutes, THRESHOLDS["backtests"])
+            # DO NOT use `SELECT MAX(ts_col), COUNT(*) FROM {table}` here.
+            # bt_backtest_trades is ~34.6M rows with NO index on created_at or
+            # imported_at (only PRIMARY(id), backtest_run_id, symbol,
+            # asset_class, strategy, status). MAX() over an unindexed column is
+            # a full table scan and COUNT(*) is a further full index scan; on the
+            # remote mysql.50webs.com host against read_timeout=30 this ALWAYS
+            # dies with (2013, 'Lost connection to MySQL server during query
+            # (timed out)'). Measured 2026-11-26: 30.0s to fail, versus 0.1s for
+            # the two queries below. The failure set result["error"], which the
+            # workflow's continue-on-error then masked into a green job — so the
+            # guard reported success while never once reading this table.
+            #
+            # ORDER BY id DESC LIMIT n walks the PRIMARY key backwards, so it is
+            # O(n) regardless of table size. Backtest rows are append-only, so
+            # the newest timestamps live in the tail; this is a tail sample, not
+            # a guaranteed global max, and it is exact whenever the newest row
+            # also has the largest id.
+            cur.execute(
+                f"SELECT {ts_col} FROM {table} "
+                f"WHERE {ts_col} IS NOT NULL ORDER BY id DESC LIMIT %s",
+                (TAIL_SAMPLE_ROWS,),
+            )
+            tail = [r[0] for r in cur.fetchall() if r[0] is not None]
+            last_at = max(tail) if tail else None
+            result["sampled_rows"] = len(tail)
+            if TAIL_SAMPLE_ROWS and len(tail) == TAIL_SAMPLE_ROWS:
+                result["sample_truncated"] = True
+
+            # information_schema.TABLES.TABLE_ROWS is an estimate (InnoDB keeps
+            # it approximate) but it is instant, and n_total is only reported,
+            # never used to grade freshness.
+            try:
+                cur.execute(
+                    "SELECT TABLE_ROWS FROM information_schema.TABLES "
+                    "WHERE table_schema = DATABASE() AND table_name = %s",
+                    (table,),
+                )
+                nrow = cur.fetchone()
+                result["n_total"] = int(nrow[0] or 0) if nrow else 0
+                result["n_total_is_estimate"] = True
+            except Exception:
+                result["n_total"] = 0
+
+            result["last_trade_at"] = str(last_at) if last_at else None
+            minutes = _minutes_since(last_at)
+            result["minutes_stale"] = round(minutes, 1) if minutes is not None else None
+            result["status"] = _grade(minutes, THRESHOLDS["backtests"])
     except Exception as exc:
         log.warning("backtests check error: %s", exc)
         result["error"] = str(exc)
@@ -449,10 +495,19 @@ def run_freshness_check(output_path: Optional[str] = None) -> Dict[str, Any]:
       all GREEN → 0, any YELLOW → 1, any RED → 2
     """
     if output_path is None:
+        # 2026-11-26: DB_FRESHNESS_OUTPUT was documented in the module docstring
+        # and explicitly set by .github/workflows/db-freshness-guardian.yml, but
+        # was never read here -- so overriding it silently did nothing. Honour it
+        # now, resolving relative values against the repo root so the workflow's
+        # declared value and the artifact upload path agree regardless of cwd.
         repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        output_path = os.path.join(
-            repo_root, "audit_dashboard", "data", "db_freshness.json"
-        )
+        env_path = os.environ.get("DB_FRESHNESS_OUTPUT", "").strip()
+        if env_path:
+            output_path = env_path if os.path.isabs(env_path) else os.path.join(repo_root, env_path)
+        else:
+            output_path = os.path.join(
+                repo_root, "audit_dashboard", "data", "db_freshness.json"
+            )
 
     checks: List[Dict[str, Any]] = []
     stocks_conn = None

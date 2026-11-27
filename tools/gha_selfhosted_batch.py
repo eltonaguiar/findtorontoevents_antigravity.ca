@@ -52,8 +52,20 @@ WORKDIR = SCRATCH if (SCRATCH / ".git").exists() else REPO_ROOT
 LEDGER = REPORTS / "GHA_SELFHOSTED_BATCH.jsonl"
 WORKFLOW_DIR = REPO_ROOT / ".github" / "workflows"
 
+# Legacy default, kept because callers may import it. dispatch now goes through
+# pick_runner(), which chooses a runner that can actually ACCEPT the job.
 SELF_HOSTED_LABELS = "[self-hosted, Linux, ARM64]"
 REPO = "eltonaguiar/findtorontoevents_antigravity.ca"
+
+# Tried in order against the pool of online+idle runners. A fixed label is the bug
+# this replaces: on 2026-11-26 all three ARM64 runners were busy while the only
+# idle Linux box was X64, so an ARM64 pin would have queued until job timeout.
+RUNNER_PREFERENCE = [
+    ["self-hosted", "Linux", "X64"],
+    ["self-hosted", "Linux", "ARM64"],
+    ["self-hosted", "Windows", "X64"],
+    ["self-hosted"],
+]
 
 # Same buckets as tools/gha_latest_run_log_audit.py, kept small on purpose.
 ERROR_PATTERNS = [
@@ -102,6 +114,129 @@ def runners() -> list[dict]:
     except json.JSONDecodeError:
         # `gh api -q .runners` prints JSON-ish; fall back to the full call
         return json.loads(gh("api", f"repos/{REPO}/actions/runners", "--paginate"))
+
+
+def pick_runner(prefer: str | None = None, want_os: str | None = None) -> tuple[str, str]:
+    """Return (runs-on expression, runner name) for an online AND idle runner.
+
+    Dispatching at an offline or busy runner does not fail fast - the job sits
+    queued until the workflow times out, which reads like a hang. Only
+    status=online and busy=False are acceptable targets.
+
+    `prefer` may be a runner name (laptop-zerou-wsl) or one of its custom labels
+    (wsl-ubuntu-2404); it is matched against the idle pool only, so asking for a
+    busy box raises instead of silently waiting.
+
+    `want_os` is 'linux', 'windows' or 'macos' and is derived from the workflow's
+    own runs-on line. This matters: a bash workflow handed to a Windows runner
+    fails on the first shell step with an error that looks like a workflow bug,
+    so a cross-OS fallback is worse than refusing.
+    """
+    pool = runners()
+    idle = [r for r in pool if r.get("status") == "online" and not r.get("busy")]
+    if not idle:
+        raise RuntimeError(
+            "no self-hosted runner is both online and idle: "
+            + ", ".join(f"{r['name']}={r['status']}/busy={str(r['busy']).lower()}"
+                        for r in pool))
+
+    def labels_of(r: dict) -> list[str]:
+        return [l["name"] for l in r.get("labels", [])]
+
+    def generic(labels: list[str]) -> str:
+        """Minimal runs-on expression for a runner's OS+arch.
+
+        Using the runner's FULL label set is a trap: it includes that box's own
+        name and site tags (wsl-desktop, gx10, laptop-zerou-wsl). GitHub then
+        requires that one specific runner, so if it drops offline the job stays
+        queued forever even when a compatible box is idle. Observed on
+        2026-11-26: desktop-081g9oh-wsl-1 took the dispatch, went offline, and
+        laptop-zerou-wsl sat idle unable to accept the job because it lacks the
+        wsl-desktop tag. Generic labels let ANY matching runner pick it up.
+        """
+        keep = ["self-hosted"]
+        for tok in ("Linux", "Windows", "macOS", "X64", "ARM64"):
+            if tok in labels:
+                keep.append(tok)
+        return "[" + ", ".join(keep) + "]"
+
+    OS_TOKEN = {"linux": "Linux", "windows": "Windows", "macos": "macOS"}
+
+    if prefer:
+        chosen = [r for r in idle
+                  if r["name"] == prefer
+                  or prefer in labels_of(r)]
+        if not chosen:
+            raise RuntimeError(
+                f"runner {prefer!r} is not online+idle; idle right now: "
+                + ", ".join(r["name"] for r in idle))
+        idle = chosen
+
+    if want_os:
+        tok = OS_TOKEN.get(want_os.lower())
+        on_os = [r for r in idle if tok in labels_of(r)] if tok else idle
+        if not on_os:
+            raise RuntimeError(
+                f"this workflow wants {want_os} but no {want_os} runner is idle; "
+                "idle right now: "
+                + ", ".join(f"{r['name']}({[l for l in labels_of(r) if l in OS_TOKEN.values()]})"
+                            for r in idle)
+                + "\n  -> wait for one to free up, or rerun with --runner <name> to override")
+        idle = on_os
+
+    for wanted in RUNNER_PREFERENCE:
+        match = [r for r in idle if all(w in labels_of(r) for w in wanted)]
+        if match:
+            r = match[0]
+            return generic(labels_of(r)), r["name"]
+    r = idle[0]
+    return generic(labels_of(r)), r["name"]
+
+
+def wait_for_runner(prefer: str | None, want_os: str | None,
+                    wait_sec: int) -> tuple[str, str]:
+    """pick_runner, retried until a suitable idle runner appears or wait_sec expires.
+
+    The self-hosted pool flaps constantly (runners go busy for minutes at a time),
+    so a single probe produces false "nothing available" results. Polling is
+    cheaper than a failed dispatch.
+    """
+    deadline = time.time() + max(0, wait_sec)
+    last: Exception | None = None
+    while True:
+        try:
+            return pick_runner(prefer, want_os)
+        except RuntimeError as exc:
+            last = exc
+            if time.time() >= deadline:
+                raise
+            time.sleep(15)
+            print(f"[batch] waiting for an idle {want_os or 'any'} runner "
+                  f"({int(deadline - time.time())}s left)...", flush=True)
+            assert last is not None
+
+
+def os_of_workflow(path) -> str | None:
+    """'linux' / 'windows' / 'macos' from a workflow's first runs-on line.
+
+    PyYAML is not used here because it parses the `on:` key as the boolean True
+    and this needs to survive that; a line scan is enough for runs-on.
+    """
+    try:
+        text = path.read_text()
+    except OSError:
+        return None
+    m = re.search(r"^\s*runs-on:\s*(.+)$", text, re.M)
+    if not m:
+        return None
+    val = m.group(1).lower()
+    if "windows" in val:
+        return "windows"
+    if "macos" in val or "mac-os" in val:
+        return "macos"
+    if "ubuntu" in val or "linux" in val:
+        return "linux"
+    return None
 
 
 def list_capability() -> None:
@@ -165,13 +300,19 @@ def log_of(run_id: int) -> str:
 
 
 def run_batch(workflows: list[str], runner_input: bool, timeout_min: int,
-              max_parallel: int) -> int:
+              max_parallel: int, runner: str | None = None,
+              wait_runner_sec: int = 600) -> int:
     results = []
     for i, wf in enumerate(workflows):
         path = WORKFLOW_DIR / wf
         if not path.exists():
             print(f"[skip] {wf}: no such workflow")
             continue
+        # Chosen per workflow, not once up front: the fleet flaps, and a Linux
+        # workflow must never be handed a Windows box.
+        labels, runner_name = wait_for_runner(runner, os_of_workflow(path),
+                                              wait_runner_sec)
+        print(f"[batch] {wf}: runner={runner_name}  runs-on: {labels}", flush=True)
         branch = None
         extra: list[str] = []
         ref = "main"
@@ -187,7 +328,7 @@ def run_batch(workflows: list[str], runner_input: bool, timeout_min: int,
                           f"import re,pathlib\n"
                           f"p=pathlib.Path('.github/workflows/{wf}')\n"
                           f"s=p.read_text()\n"
-                          f"s2=re.sub(r'runs-on:.*', 'runs-on: {SELF_HOSTED_LABELS}', s, count=1)\n"
+                          f"s2=re.sub(r'runs-on:.*', 'runs-on: {labels}', s, count=1)\n"
                           f"p.write_text(s2)\n"
                           f"PY\n"
                           f"git commit -qam 'ci(temp): run {wf} on the self-hosted runner' && "
@@ -245,6 +386,10 @@ def main() -> int:
     ap.add_argument("--timeout-min", type=int, default=60)
     ap.add_argument("--max-parallel", type=int, default=1,
                     help="1 or 2; anything more violates the batch protocol")
+    ap.add_argument("--runner", default=None,
+                    help="force a runner by name or custom label (must be online+idle)")
+    ap.add_argument("--wait-runner", type=int, default=600, metavar="SEC",
+                    help="wait up to SEC for a suitable idle runner (default 600; 0 = fail fast)")
     args = ap.parse_args()
 
     if args.list or not args.workflow:
@@ -254,7 +399,8 @@ def main() -> int:
         print("[warn] operator protocol is 1-2 workflows per batch; trimming to 2",
               file=sys.stderr)
         args.workflow = args.workflow[:2]
-    return run_batch(args.workflow, args.runner_input, args.timeout_min, args.max_parallel)
+    return run_batch(args.workflow, args.runner_input, args.timeout_min,
+                     args.max_parallel, args.runner, args.wait_runner)
 
 
 if __name__ == "__main__":
