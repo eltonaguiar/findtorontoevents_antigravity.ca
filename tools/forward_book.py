@@ -35,8 +35,8 @@ from ohlc_bars import bars_for, daily_bars, equity_bars  # noqa: E402
 
 BOOK = Path("audit_dashboard/data/forward_book.json")
 PUBLISHED = Path("audit_dashboard/data/forward_book.json")
-COST_BPS = {"CRYPTO": 20, "EQUITY": 10, "ETF": 10}
-BENCHMARK = {"CRYPTO": "BTC-USD", "EQUITY": "SPY", "ETF": "SPY"}
+COST_BPS = {"CRYPTO": 20, "EQUITY": 10, "ETF": 10, "FUTURES": 8}
+BENCHMARK = {"CRYPTO": "BTC-USD", "EQUITY": "SPY", "ETF": "SPY", "FUTURES": "SPY"}
 
 # H-201 universe, frozen at registration. The forward pod must use the same names
 # the backtest was scored on, otherwise it is a different experiment.
@@ -55,6 +55,21 @@ RULES = {
                              "lookback_days": 126, "top_k": 3,
                              "universe": EQ_UNIVERSE,
                              "registered_hypothesis": "H-201"},
+    # futures_bb_mean_reversion, pre-registered 2026-11-27 off a measured cohort of 139 deduped
+    # trades: +0.838% mean (+0.758% after 8 bps), split halves +0.846% / +0.831%, median hold
+    # 35.4 days, 75% TIME_EXIT_MAX_HOLD and only 2.2% TP. Time exit only is deliberate - adding
+    # an SL/TP forward would test a different strategy than the one measured.
+    #
+    # Registered as TWO pods because the per-contract breakdown says the aggregate is commodities
+    # and index futures pulling in opposite directions (ZC +1.64%/83% win and CT +3.13%/95% win,
+    # against NQ -0.151% on the largest sample). Declaring the split at registration makes it a
+    # falsifiable claim; discovering it afterwards would just be a story.
+    "futures_bb_comdty": {"sl_pct": None, "tp_pct": None, "max_hold_days": 35,
+                           "registered_hypothesis": "H-FBB-CMDTY-2026-11-27",
+                           "kill_rule": "kill if net expectancy < +0.30% after 8 bps over 40 resolved entries"},
+    "futures_bb_index": {"sl_pct": None, "tp_pct": None, "max_hold_days": 35,
+                          "registered_hypothesis": "H-FBB-INDEX-2026-11-27",
+                          "kill_rule": "control pod: if net expectancy > +0.30% over 40 entries the commodity/index split was noise"},
 }
 
 SEED = [
