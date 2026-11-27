@@ -175,3 +175,34 @@ need their ids refreshed from `GET /v1/models` before they can answer.
 models listed), Routeway (402 insufficient balance, 278 models), SiliconFlow `.com` (402 balance,
 80 models). Scaleway auth works but every chat is `423 model_locked`; OVH stays 429 even after a
 70 s cooldown at its 2 RPM/IP.
+
+## 14. Cohere + Bluesminds re-check (both keys valid; why they still can't carry traffic)
+
+**Cohere** — `COHERE API KEY` (masked `coher…`, dbpasses): `GET /v2/models` **200, 20 models**, but
+every chat is
+`429 You are using a Trial key, which is limited to 1000 API calls / month`.
+So the key is alive and the allowance is real, it is just **spent for this month**. It is a monthly
+reset, so it can be re-added on the 1st — left out of the config until then.
+
+**Bluesminds** — `BLUESMIND API KEY` (masked `sk-EbS…`, dbpasses line 286, 51 chars): key is **valid**
+and a single request returns **200** with `nvidia/nemotron-3.5-lightning-30b-a3b`.
+`/v1/dashboard/billing/subscription` → `has_payment_method: true`, no spend cap; `/usage` →
+`total_usage: 107.1328`. Two things had made it look dead:
+
+1. **Every previously configured id is retired** — `gpt-5-chat`, `grok-4.20-fast`, `kimi-k2.6`,
+   `kimi-k2.5`, `grok-code-fast-1`, `MiniMax-M2`, `gpt-oss-120b`, `step-3.5-flash`, `glm-5.1` all
+   returned `503 No available channel`. Live ids from `GET /v1/models` (27) are `nvidia/*`,
+   `meta/*`, `moonshotai/kimi-k3` (410 EOL), `z-ai/glm-5.3-flash`, `google/diffusiongemma-26b-a4b-it`.
+   Many of those are EOL too (`410 The model … has reached its end of life`).
+2. **Burst rate limiting** — my 7-way parallel probe produced
+   `429 You have reached the total request limit: maximum …`; sequential calls succeed.
+
+All 14 Bluesminds deployments (paid-mode, paid-mode-fast, paid-mode-large) now point at
+`openai/nvidia/nemotron-3.5-lightning-30b-a3b`, the one id verified 200 end-to-end.
+
+**Caveat for callers:** that model is a reasoning model — it returns its text in
+`reasoning_content` and `content: null` unless `max_tokens` is large enough for it to finish
+thinking. Callers must send a generous `max_tokens` (or read `reasoning_content`).
+
+Verified after restart: liveliness 200; `free-mode`, `free-mode-fast`, `free-mode-tools`,
+`paid-mode`, `paid-mode-large` all 200; Bluesminds free-tier deployments remain removed.
