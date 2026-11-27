@@ -1,0 +1,80 @@
+name: _tmp probe alt2
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: alt classes
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_PORT: '3306'
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+        run: |
+          python3 -m pip install --quiet pymysql
+          python3 - <<'PY'
+          import os, collections, statistics as st
+          import pymysql
+
+          cn=pymysql.connect(host=os.environ["DB_HOST"], port=int(os.environ.get("DB_PORT") or 3306),
+                             user=os.environ["DB_USER"], password=os.environ["DB_PASS"],
+                             database="ejaguiar1_stocks", connect_timeout=25)
+          cur=cn.cursor()
+
+          def line(v,label,net_bps=0,pad=30):
+              v=[float(x) for x in v if x is not None]
+              if not v:
+                  print(f"  {label:<{pad}} n=0"); return
+              v=sorted(v); n=len(v); w=sum(1 for x in v if x>0); k=int(n*0.01)
+              tv=v[:n-k] if k else v
+              net=f" net{net_bps}bp={st.mean(v)-net_bps/100:+.3f}%" if net_bps else ""
+              print(f"  {label:<{pad}}n={n:<5}win={100*w/n:5.1f}% mean={st.mean(v):+.3f}% med={st.median(v):+.3f}% trim1={st.mean(tv):+.3f}%{net}")
+
+          def cohort(rows,label,net_bps=0):
+              dated=[r for r in rows if r[2] is not None and r[3] is not None]
+              dated.sort(key=lambda r: str(r[2]))
+              seen=set(); ded=[]
+              for r in dated:
+                  k=(str(r[0]),str(r[1]),str(r[2])[:10])
+                  if k in seen: continue
+                  seen.add(k); ded.append(r)
+              half=len(ded)//2
+              print(f"\n  {label}: raw={len(rows)} dated={len(dated)} deduped={len(ded)}")
+              line([r[3] for r in ded],"deduped",net_bps)
+              line([r[3] for r in ded[:half]],"first half",net_bps)
+              line([r[3] for r in ded[half:]],"second half",net_bps)
+              syms=collections.Counter(str(r[0]) for r in ded)
+              if syms:
+                  print(f"    symbols={len(syms)} top={syms.most_common(1)[0][0]}={100*syms.most_common(1)[0][1]/max(len(ded),1):.1f}%")
+
+          print("=== category census (all rows) ===")
+          cur.execute("""SELECT COALESCE(category,'(null)') c, COUNT(*) n, AVG(pnl_pct) a,
+                                SUM(pnl_pct IS NULL) nulls
+                         FROM trading_picks GROUP BY c ORDER BY n DESC LIMIT 16""")
+          for c,n,a,nl in cur.fetchall():
+              print(f"  {str(c):<18} n={n:<7} null_pnl={nl:<6} mean={(float(a) if a is not None else 0):+.3f}%")
+
+          print("\n=== ALT strategies (outside the five measured classes) ===")
+          cur.execute("""SELECT symbol,direction,created_at,pnl_pct,strategy,COALESCE(source_system,''),COALESCE(category,'')
+                         FROM trading_picks
+                         WHERE pnl_pct IS NOT NULL
+                           AND (category IS NULL OR category NOT IN
+                                ('forex','FOREX','CRYPTO','crypto','STOCKS','stocks','ETF','etf',
+                                 'EQUITY','equity','FUTURES','futures','COMMODITY','commodity','BONDS','bonds'))""")
+          alt=cur.fetchall()
+          print(f"rows: {len(alt)}")
+          cnt=collections.Counter(r[4] or '(none)' for r in alt)
+          for s,_ in cnt.most_common(10):
+              cohort([r for r in alt if (r[4] or '(none)')==s], f"strategy={s}", net_bps=3)
+
+          print("\n=== named priors wherever they live ===")
+          for s in ("non_crypto_consensus","prediction_market_consensus","copy_pm_comtruise","copy_pm_justdance"):
+              cur.execute("""SELECT symbol,direction,created_at,pnl_pct,strategy,COALESCE(source_system,''),COALESCE(category,'')
+                             FROM trading_picks WHERE strategy=%s AND pnl_pct IS NOT NULL""",(s,))
+              rr=cur.fetchall()
+              if rr: cohort(rr, f"PRIOR {s}", net_bps=3)
+          cn.close()
+          PY
