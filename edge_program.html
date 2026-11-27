@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EDGE Program — 200 rounds (honest ledger)</title>
+<style>
+:root{--bg:#0d1117;--fg:#e6edf3;--mute:#8b949e;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--line:#30363d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:28px 20px;border-bottom:1px solid var(--line)}h1{margin:0 0 6px;font-size:22px}
+.sub{color:var(--mute);font-size:13px}
+main{max-width:1100px;margin:0 auto;padding:20px}
+.banner{border:1px solid var(--warn);background:rgba(210,153,34,.08);padding:12px 14px;border-radius:8px;margin:16px 0;font-size:14px}
+h2{font-size:16px;margin:26px 0 8px}table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:600}td.id{font-weight:700;white-space:nowrap}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.mute{color:var(--mute)}
+code{background:#161b22;padding:1px 5px;border-radius:4px;font-size:12.5px}
+footer{color:var(--mute);font-size:12px;padding:24px 20px;border-top:1px solid var(--line);margin-top:30px}
+</style></head><body>
+<header><h1>EDGE Program — 200 rounds</h1>
+<div class="sub">Seat <code>kilo-glm52-free-auditreviews</code> · worktree <code>auditreviews-v4</code> · generated 2026-11-27 16:45Z · paper only, $0 capital sanctioned</div></header>
+<main>
+<div class="banner"><b>Nothing here is money-ready.</b> 0 proven asset classes. Two honest results:
+one <b>falsification</b> (EDGE-1 funding-carry is a noisy price factor, not carry) and one
+<b>execution-gated candidate</b> (EDGE-5 SPY overnight, real gross but dies at retail cost). Every
+number is reproduced by an artifact in this repo; see the markdown reports below.</div>
+
+<h2>EDGE registry</h2>
+<table><thead><tr><th>ID</th><th>Hypothesis</th><th>Deep-test result</th><th>Status</th></tr></thead>
+<tbody><tr><td class='id'>EDGE-1</td><td>Crypto funding-carry level, weekly</td><td>FALSIFIED as carry: carry +6.45bp vs price +66.53bp; t=+1.46, CI -10.777..137.329; OOS unstable.</td><td class='warn'>OBSERVE_ONLY</td></tr><tr><td class='id'>EDGE-2</td><td>Funding extreme reversal</td><td>Mechanism: pure price reversal +148bp t=1.47 vs momentum −166bp t=−1.64; gate-F (730d, n=41) CI [-306.015, 164.057], DSR 0.313 → INCONCLUSIVE.</td><td class='warn'>OBSERVE_ONLY</td></tr><tr><td class='id'>EDGE-3</td><td>Cross-venue funding dispersion</td><td>Not yet run (queued).</td><td class='mute'>QUEUED</td></tr><tr><td class='id'>EDGE-4</td><td>TSMOM on DBMF/KMLM</td><td>Not yet run (queued; nous template).</td><td class='mute'>QUEUED</td></tr><tr><td class='id'>EDGE-5</td><td>SPY overnight (close→open)</td><td>Gross +3.34bp/d t=+4.61 (REAL); net -0.66bp/d @4bp, +2.34bp/d @1bp.</td><td class='ok'>CANDIDATE (exec-dependent)</td></tr><tr><td class='id'>EDGE-6</td><td>Equities ORB (US hours)</td><td>Engine backtest S7_ORB_EQ t=0.89 (not sig).</td><td class='warn'>WATCH</td></tr></tbody></table>
+
+<h2>Forward ledger (net-of-cost observations accruing daily/weekly)</h2>
+<table><thead><tr><th>Rule</th><th>As of</th><th>Gross bp</th><th>Net bp</th><th>Hit</th></tr></thead>
+<tbody><tr><td>EDGE-1_FUNDING_WEEKLY_FACTOR</td><td>2026-11-27</td><td>-54.86</td><td>-63.86</td><td>❌</td></tr><tr><td>EDGE-5_SPY_OVERNIGHT</td><td>2026-11-25</td><td>-216.76</td><td>-220.76</td><td>❌</td></tr></tbody></table>
+
+<h2>Method laws (enforced every round)</h2>
+<ul>
+<li><b>L1</b> Decompose any "carry" claim into carry vs price before believing it.</li>
+<li><b>L2</b> Sweep ≥20 parameter cells and report how many clear by chance before calling one an edge.</li>
+<li><b>L3</b> A rule is not "net-positive" if its 95% CI at zero cost straddles zero — that is underpowered, not profitable.</li>
+</ul>
+
+<h2>Artifacts</h2>
+<ul>
+<li><code>updates/round-EDGE1-stress-funding-falsified-2026-11-27.md</code></li>
+<li><code>reports/realtime_challenge/kilo/edge1_stress.py</code> · <code>edge2_gate_f.py</code> · <code>edge5_overnight_spy.py</code> · <code>forward_ledger.py</code></li>
+<li><code>EDGE_PROGRAM_200_ROUNDS_CHARTER.md</code> · <code>.github/workflows/edge-forward-monitor.yml</code></li>
+</ul>
+</main>
+<footer>Paper only. Not investment advice. Reproduced from repo artifacts; no live orders are placed by this page.</footer>
+</body></html>
