@@ -1,7 +1,7 @@
 # GHA quality framework (Q1-Q10)
 
 - workflows scanned: 399 (parse errors: 1)
-- aggregate score: 94.7/100
+- aggregate score: 94.8/100
 - blocking violations: 100
 - runtime signals merged: True
 
@@ -122,8 +122,8 @@
 | AI Tournament Pipeline — Daily Picks + DB Ingest | 57 |
 | ALPHA ENGINE - Live Autonomous Scanner | 60 |
 | DB Freshness Guardian | 65 |
-| DB Sync: findtorontoevents.ca  torontoevent.net | 65 |
 | Verified pilot daily | 70 |
+| Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities | 72 |
 
 ## Advisory findings (P2)
 
