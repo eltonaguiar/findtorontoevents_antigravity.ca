@@ -63,7 +63,9 @@ def equity_bars(symbol: str, days: int = 600) -> list:
 
 def bars_for(symbol: str, asset_class: str = "CRYPTO", days: int = 600) -> list:
     """Route a symbol to the bar source its class actually trades on."""
-    if str(asset_class).upper() in ("EQUITY", "ETF"):
+    if str(asset_class).upper() in ("EQUITY", "ETF", "FUTURES", "COMMODITY"):
+        # yfinance serves continuous futures contracts (ZC=F, NQ=F) on the equity path,
+        # so futures pre-registration does not need a second bar source.
         return equity_bars(symbol, days=days)
     return daily_bars(symbol, days=days)
 
