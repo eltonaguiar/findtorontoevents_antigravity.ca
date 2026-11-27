@@ -21,19 +21,30 @@ jobs:
           import os,json,collections,statistics as st
           import pymysql
 
-          host=os.environ.get("DB_HOST") or "localhost"
+          host=os.environ.get("DB_HOST") or ""
           user=os.environ.get("DB_USER") or ""
           pw=os.environ.get("DB_PASS") or ""
-          if not pw:
-              raw=os.environ.get("DB_JSON") or ""
-              try:
-                  d=json.loads(raw)
-                  for k in ("stocks","ejaguiar1_stocks","default"):
-                      if isinstance(d.get(k),dict):
-                          host=d[k].get("host",host); user=d[k].get("user",user); pw=d[k].get("password","")
-                          break
-              except Exception:
-                  pass
+          raw=os.environ.get("DB_JSON") or ""
+          d={}
+          if raw.strip().startswith("{"):
+              d=json.loads(raw)
+          print("json top-level keys:", sorted(d.keys())[:24])
+          for k,v in d.items():
+              if isinstance(v,dict):
+                  print(f"  {k}: {sorted(v.keys())}")
+          # choose the entry for the stocks DB: name match first, else first dict with all three fields
+          pick=None
+          for k,v in d.items():
+              if isinstance(v,dict) and "stock" in k.lower() and v.get("user"):
+                  pick=v; print("using entry:", k); break
+          if pick is None:
+              for k,v in d.items():
+                  if isinstance(v,dict) and v.get("user") and v.get("password"):
+                      pick=v; print("using fallback entry:", k); break
+          if pick:
+              host=pick.get("host") or pick.get("server") or host
+              user=pick.get("user") or user
+              pw=pick.get("password") or pw
           print(f"creds resolved: host_set={bool(host)} user_set={bool(user)} pass_set={bool(pw)}")
 
           cn=pymysql.connect(host=host,user=user,password=pw,database="ejaguiar1_stocks",connect_timeout=15)
