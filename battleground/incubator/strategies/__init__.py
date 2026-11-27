@@ -1,3 +1,18 @@
+# Every strategy module imports its sibling ``api_helpers`` by BARE name
+# (``from api_helpers import fetch_klines``) because each one can also be executed
+# standalone as a script, where the script's own directory is sys.path[0].
+# Under a package import there is no such entry, so the bare import raised
+# ModuleNotFoundError: No module named 'api_helpers' and the registry died on the
+# very first strategy -- that is what killed baby-strat-forward-paper run 45749409243.
+# Registering this directory here fixes all thirteen importers at once and leaves
+# standalone execution working exactly as before.
+import os as _os
+import sys as _sys
+
+_STRATEGY_DIR = _os.path.dirname(_os.path.abspath(__file__))
+if _STRATEGY_DIR not in _sys.path:
+    _sys.path.insert(0, _STRATEGY_DIR)
+
 from .funding_rate_carry_v1 import FundingRateCarryStrategy
 from .chronos_bolt_v1 import ChronosBoltStrategy
 from .dlinear_baseline_v1 import DLinearBaselineStrategy
