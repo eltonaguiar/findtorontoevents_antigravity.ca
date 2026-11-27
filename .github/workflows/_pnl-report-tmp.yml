@@ -1,0 +1,79 @@
+name: pnl report (temporary)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Profitability of emitter picks and the wider book
+        env:
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+        run: |
+          pip install --quiet pymysql
+          python - <<'PY'
+          import os, pymysql
+          c = pymysql.connect(host="mysql.50webs.com", user="ejaguiar1_stocks",
+                              password=os.environ["MYSQL_PASSWORD"], database="ejaguiar1_stocks",
+                              port=3306, charset="utf8mb4")
+          cur = c.cursor()
+
+          def table(title, sql, args=None):
+              print("\n=== " + title + " ===")
+              cur.execute(sql, args or ())
+              cols = [d[0] for d in cur.description]
+              rows = cur.fetchall()
+              print(" | ".join(cols))
+              for r in rows:
+                  print(" | ".join("" if v is None else str(v) for v in r))
+              if not rows:
+                  print("(no rows)")
+
+          table("emitter rows by status (donchian-stock-breakout)",
+                """SELECT status, COUNT(*) n, ROUND(AVG(pnl_pct),3) avg_pnl,
+                          ROUND(SUM(pnl_pct),2) sum_pnl, ROUND(MIN(pnl_pct),3) worst,
+                          ROUND(MAX(pnl_pct),3) best
+                   FROM trading_picks WHERE strategy='donchian-stock-breakout' GROUP BY status""")
+
+          table("emitter rows by source_system",
+                """SELECT source_system, status, COUNT(*) n, ROUND(AVG(pnl_pct),3) avg_pnl
+                   FROM trading_picks WHERE strategy='donchian-stock-breakout'
+                   GROUP BY source_system, status""")
+
+          table("emitter closed performance",
+                """SELECT COUNT(*) closed_n,
+                          SUM(pnl_pct > 0) wins, SUM(pnl_pct <= 0) losses,
+                          ROUND(100.0*SUM(pnl_pct > 0)/COUNT(*),1) win_rate_pct,
+                          ROUND(AVG(pnl_pct),3) avg_pnl, ROUND(SUM(pnl_pct),2) total_pnl
+                   FROM trading_picks
+                   WHERE strategy='donchian-stock-breakout' AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','EXPIRED')
+                     AND pnl_pct IS NOT NULL""")
+
+          table("emitter rows detail (newest 20)",
+                """SELECT symbol, status, ROUND(entry_price,4) entry, ROUND(exit_price,4) exit,
+                          ROUND(pnl_pct,3) pnl, DATE(created_at) opened, DATE(closed_at) closed, exit_reason
+                   FROM trading_picks WHERE strategy='donchian-stock-breakout'
+                   ORDER BY created_at DESC LIMIT 20""")
+
+          table("whole book, last 30d by strategy (n>=10)",
+                """SELECT strategy, COUNT(*) n, ROUND(100.0*SUM(pnl_pct>0)/COUNT(*),1) win_rate,
+                          ROUND(AVG(pnl_pct),3) avg_pnl, ROUND(SUM(pnl_pct),1) total_pnl
+                   FROM trading_picks
+                   WHERE created_at >= NOW() - INTERVAL 30 DAY AND pnl_pct IS NOT NULL
+                     AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','EXPIRED')
+                   GROUP BY strategy HAVING n>=10 ORDER BY avg_pnl DESC LIMIT 12""")
+
+          table("whole book, last 30d totals",
+                """SELECT COUNT(*) closed_n, ROUND(100.0*SUM(pnl_pct>0)/COUNT(*),1) win_rate,
+                          ROUND(AVG(pnl_pct),3) avg_pnl, ROUND(SUM(pnl_pct),1) total_pnl
+                   FROM trading_picks
+                   WHERE created_at >= NOW() - INTERVAL 30 DAY AND pnl_pct IS NOT NULL
+                     AND status IN ('TP_HIT','SL_HIT','LOST','TIME_EXIT','EXPIRED')""")
+
+          table("open exposure",
+                """SELECT status, COUNT(*) n, ROUND(SUM(entry_price*1),0) notional_sum
+                   FROM trading_picks WHERE status IN ('ACTIVE','OPEN') GROUP BY status""")
+          c.close()
+          PY
