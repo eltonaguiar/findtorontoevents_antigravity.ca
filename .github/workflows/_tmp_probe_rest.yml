@@ -25,6 +25,7 @@ jobs:
           cur=cn.cursor()
 
           def line(v,label,net_bps=0,pad=30):
+              v=[x for x in v if x is not None]
               if not v: print(f"  {label:<{pad}} n=0"); return
               v=sorted(v); n=len(v); w=sum(1 for x in v if x>0); k=int(n*0.01)
               tv=v[:n-k] if k else v
@@ -54,7 +55,8 @@ jobs:
               return cur.fetchall()
 
           # ---------- FOREX ----------
-          print("=== FOREX (cost assumption 2 bp round trip) ===")
+          print("=== FOREX (skipped, already measured) ===")
+          if False:
           fx=fetch("category IN ('forex','FOREX')")
           print(f"rows: {len(fx)}")
           cnt=collections.Counter(r[4] or '(none)' for r in fx)
