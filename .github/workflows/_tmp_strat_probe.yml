@@ -10,10 +10,10 @@ jobs:
     steps:
       - name: Query strategy stats (read-only)
         env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASS: ${{ secrets.DB_PASS_STOCKS }}
-          DB_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+          DB_HOST: mysql.50webs.com
+          DB_PORT: '3306'
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
           DB_NAME: ejaguiar1_stocks
         run: |
           python3 -m pip install --quiet pymysql
@@ -21,33 +21,13 @@ jobs:
           import os,json,collections,statistics as st
           import pymysql
 
-          host=os.environ.get("DB_HOST") or ""
+          host=os.environ.get("DB_HOST") or "localhost"
+          port=int(os.environ.get("DB_PORT") or 3306)
           user=os.environ.get("DB_USER") or ""
           pw=os.environ.get("DB_PASS") or ""
-          raw=os.environ.get("DB_JSON") or ""
-          d={}
-          if raw.strip().startswith("{"):
-              d=json.loads(raw)
-          print("json top-level keys:", sorted(d.keys())[:24])
-          for k,v in d.items():
-              if isinstance(v,dict):
-                  print(f"  {k}: {sorted(v.keys())}")
-          # choose the entry for the stocks DB: name match first, else first dict with all three fields
-          pick=None
-          for k,v in d.items():
-              if isinstance(v,dict) and "stock" in k.lower() and v.get("user"):
-                  pick=v; print("using entry:", k); break
-          if pick is None:
-              for k,v in d.items():
-                  if isinstance(v,dict) and v.get("user") and v.get("password"):
-                      pick=v; print("using fallback entry:", k); break
-          if pick:
-              host=pick.get("host") or pick.get("server") or host
-              user=pick.get("user") or user
-              pw=pick.get("password") or pw
           print(f"creds resolved: host_set={bool(host)} user_set={bool(user)} pass_set={bool(pw)}")
 
-          cn=pymysql.connect(host=host,user=user,password=pw,database="ejaguiar1_stocks",connect_timeout=15)
+          cn=pymysql.connect(host=host,port=port,user=user,password=pw,database="ejaguiar1_stocks",connect_timeout=20)
           cur=cn.cursor()
 
           cur.execute("SHOW TABLES"); tbls=[r[0] for r in cur.fetchall()]
