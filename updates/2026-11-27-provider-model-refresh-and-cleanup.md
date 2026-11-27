@@ -125,3 +125,24 @@ The key itself lives only in `~/dbpasses.txt` (outside the repo); no credential 
 
 Remaining action is account-side: set an API budget at console.mistral.ai, and prefer
 `mistral-medium-latest`/`mistral-small-latest` over `mistral-large-latest` on this tier.
+
+## 11. LLM7 — confirmed no free tier, wallet at $0.00, fully removed
+
+`GET https://api.llm7.io/v1/balance` on both stored keys (they belong to the same account,
+`zerounderscore@gmail.com`):
+
+```json
+{"email":"zerounderscore@gmail.com","balance_usd":"0.00000000"}
+```
+
+Catalogue evidence across all 84 models: **zero** with a `0` input price (range $0.01–$7.00 per
+1M tokens), no `tier: free` entries (only `pro`/`turbo`), and 79/84 flagged `usage_based_only`.
+The 5 exceptions (`codestral-latest`, `gpt-oss:120b`, `gpt-oss:20b`, `kimi-k2.7-code`,
+`minimax-m3`) are cheaper, not free — `codestral-latest` at $0.01/1M is the only one that answers on
+a zero balance, and it throttles to `429` after one request. Anonymous access lists the same paid
+catalogue, so there is no keyless free pool either.
+
+Removed: the proxy deployment (earlier this pass), the Kilo provider, and now the leftover
+launcher plumbing (`parse_key "LLM7_API_KEY_FREE"` + the `LLM7_API_KEY` pre-flight entry).
+Verified: 0 `llm7` references in `litellm_config.yaml` deployments, the generated spillover config,
+the running proxy's `/v1/models`, and `kilo.jsonc`.
