@@ -103,3 +103,25 @@ Deleted the 13-deployment build (12/13 dead) and rebuilt from upstreams that ret
   (`GET /api/v1/keys` → 401), so its `limit_usd: 45` / `limit_remaining: 0` cap can only be
   changed in the console. `:free` models are separately `429 free-models-per-day-high-balance`.
   Both stored OpenRouter labels are the same key, so there is no spare key to switch to.
+
+## 10. Mistral — integrated, blocked on workspace billing (2026-11-27)
+
+All three `mstrl_…` keys authenticate (`GET /v1/models` → 200, 51 models) but **every chat call
+returns 402 `billing_no_api_budget_configured`** ("You need a subscription to access this API"),
+on `mistral-small-latest`, `open-mistral-nemo`, `ministral-3b-latest`, `mistral-medium-latest`,
+`open-mixtral-8x22b`. `mistral-large-latest` returns 403 `tier_not_allowed` instead — so the key's
+workspace has a subscription tier but **no API budget configured**.
+
+Confirmed by four independent paths, ruling out config/SDK problems:
+- raw `curl` to `https://api.mistral.ai/v1/chat/completions`
+- official `@mistralai/mistralai` 3.5.0 (`SDKError` status 403/402 with the same bodies)
+- OpenAI SDK with `base_url="https://api.mistral.ai/v1"`
+- LiteLLM `mistral/mistral-small-latest` (`MistralException` 402)
+
+Wiring done so it works the moment the budget is set: the launcher parses
+`MISTRAL_API_KEY_NEW_NOV27:` into `MISTRAL_API_KEY_NEW`, and the six key-duplicated deployments
+were cut to three (`free-mode`, `free-mode-tools`, `hybrid-model-large`) all using that key.
+The key itself lives only in `~/dbpasses.txt` (outside the repo); no credential is in this commit.
+
+Remaining action is account-side: set an API budget at console.mistral.ai, and prefer
+`mistral-medium-latest`/`mistral-small-latest` over `mistral-large-latest` on this tier.
