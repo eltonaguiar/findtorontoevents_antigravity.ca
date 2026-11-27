@@ -1,0 +1,46 @@
+name: edge-forward-monitor
+
+# Forward clock for pre-registered EDGE rules (audit's #1 missing piece).
+# Accrues one honest, net-of-cost observation per rule per day/week into
+# reports/realtime_challenge/kilo/forward_ledger.jsonl and commits it.
+# Read-only public data (yfinance, ccxt); no secrets.
+
+on:
+  schedule:
+    - cron: '25 13 * * 1-5'   # 13:25 UTC (~08:25 ET) weekdays, after prior close
+    - cron: '25 22 * * 1-5'   # 22:25 UTC (~18:25 ET) weekdays, after US close
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: edge-forward-monitor
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Install deps
+        run: pip install --quiet yfinance ccxt pandas numpy
+      - name: Tick forward ledger
+        working-directory: reports/realtime_challenge/kilo
+        run: |
+          python3 forward_ledger.py || echo "tick had warnings (non-fatal)"
+          python3 forward_ledger.py --show
+      - name: Commit ledger (idempotent upsert, [skip ci])
+        run: |
+          git config user.name  "edge-forward-bot"
+          git config user.email "edge-forward-bot@users.noreply.github.com"
+          git add reports/realtime_challenge/kilo/forward_ledger.jsonl
+          if git diff --cached --quiet; then
+            echo "no ledger change"; exit 0
+          fi
+          git commit -m "forward ledger tick $(date -u +%FT%TZ) [skip ci]"
+          git push
