@@ -29,6 +29,23 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+def _sanitize_json(obj):
+    """NaN/Infinity are not valid JSON - browsers reject the whole payload.
+
+    Replacing them with null keeps every other field available; raising (allow_nan=False) would
+    throw away the run that produced them.
+    """
+    import math
+    if isinstance(obj, float):
+        return None if (math.isnan(obj) or math.isinf(obj)) else obj
+    if isinstance(obj, dict):
+        return {k: _sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_json(v) for v in obj]
+    return obj
+
+
+
 warnings.filterwarnings("ignore")
 
 try:
@@ -713,7 +730,7 @@ def main():
     }
 
     with open(RESULTS_FILE, "w") as f:
-        json.dump(results, f, indent=2, default=str)
+        json.dump(_sanitize_json(results), f, indent=2, default=str)
     print(f"\n  Results saved to: {RESULTS_FILE}")
     print(f"  Total time: {elapsed_total:.1f}s")
     print("=" * 72)
