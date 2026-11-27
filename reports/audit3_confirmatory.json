@@ -250,7 +250,23 @@
    "expression": "4h RSI+MACD confluence long on BTC/ETH/SOL with TP/SL and time exit, run as a live paper slot (crypto_intraday_sim).",
    "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched BTC leg, split-half stable.",
    "evidence_at_registration": "audit3_ledger 2026-11-19 cell btc-4h-rsi-macd-scout LONG n=35 WR 57% PF 2.15 DSR 0.118 verdict WEAK.",
-   "observe_reason": "discovery-namespace WEAK; n=35 lab rows only."
+   "observe_reason": "discovery-namespace WEAK; n=35 lab rows only."  },
+  {
+   "id": "POD-CRYPTO-RSI5070-US",
+   "status": "declined",
+   "registered_at": "2026-11-27",
+   "hypothesis_id": "H-119",
+   "strategies": [
+    "crypto_rsi5070_us"
+   ],
+   "asset_classes": [
+    "CRYPTO"
+   ],
+   "directions": [
+    "LONG"
+   ],
+   "decline_reason": "Evaluated on 435 forward rows, all intrabar-true first touch: net-of-cost PF CI-LB 0.9325 <= 1.0, IR 0.0502 < 0.5 and benchmark-leg coverage 80% < 90%. Shadow-only, never sized. Declared here so H-119 stops rendering as an unexplained orphan while the rejection stays auditable.",
+   "revisit_if": "net PF CI-LB > 1.15 at n >= 150 with time-split holding and top-symbol concentration < 35%, per the H-119 acceptance criteria in reports/hypothesis_registry.json."
   }
  ]
 }
