@@ -32,7 +32,13 @@ jobs:
         run: pip install --quiet pymysql pandas numpy
 
       - name: Dry run (proves the signal rules still produce rows)
-        run: python -m tools.emit_equity_breakout_pod --json | python -c "import json,sys; r=json.load(sys.stdin); print(f'rows={len(r)}'); [print(' ', x.get('symbol'), x.get('strategy'), x.get('status')) for x in r[:10]]"
+        run: |
+          python -m tools.emit_equity_breakout_pod --json > emit.out 2> emit.err || { tail -30 emit.err; exit 1; }
+          tail -5 emit.err || true
+          n=$(grep -o '"symbol"' emit.out | wc -l)
+          echo "emitted rows in dry run: $n"
+          head -c 600 emit.out
+          test "$n" -gt 0 || { echo "::error::dry run produced 0 rows - refusing to write"; exit 1; }
 
       - name: Emit rows to trading_picks
         env:
