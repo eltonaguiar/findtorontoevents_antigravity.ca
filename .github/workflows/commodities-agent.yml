@@ -47,10 +47,10 @@ jobs:
           PYTHONUNBUFFERED: '1'
         run: |
           python - <<'EOF'
-          import sys, json
+          import os, sys, json
           from pathlib import Path
 
-          sys.path.insert(0, str(Path("alpha_engine").resolve()))
+          sys.path.insert(0, str((Path(os.environ.get("GITHUB_WORKSPACE", ".")) / "alpha_engine").resolve()))  # anchored, not cwd-relative (see fix notes)
 
           import pandas as pd
           import yfinance as yf
