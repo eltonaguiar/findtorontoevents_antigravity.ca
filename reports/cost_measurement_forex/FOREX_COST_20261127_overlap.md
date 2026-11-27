@@ -1,6 +1,6 @@
 # FOREX cost - London/NY overlap measurement (20261127)
 
-**Status: `BLOCKED_NO_REPRESENTATIVE_SESSION`** - block reason `NO_TIINGO_API_KEY` - generated 2026-11-27T15:00:44.246222+00:00
+**Status: `BLOCKED_NO_REPRESENTATIVE_SESSION`** - block reason `NO_TIINGO_API_KEY` - generated 2026-11-27T15:56:01.009833+00:00
 
 - **Endpoint:** `https://api.tiingo.com/tiingo/fx/top` via [`tools/fx_cost_sampler.py`](../../tools/fx_cost_sampler.py)
 - **Session check:** weekday Friday 15:xx UTC inside 13:00-16:00 UTC -> `LONDON_NY_OVERLAP` (in-window: True)
