@@ -1,0 +1,22 @@
+name: _tmp probe futures
+on:
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: probe
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_PORT: '3306'
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+        run: |
+          python3 -m pip install --quiet pymysql
+          python3 - <<'PY'
+          import os, statistics as st
+          import pymysql
+          cn=pymysql.connect(host=os.environ['DB_HOST'],port=3306,user=os.environ['DB_USER'],password=os.environ['DB_PASS'],database='ejaguiar1_stocks',connect_timeout=20)
+          cur=cn.cursor()
+          PY
