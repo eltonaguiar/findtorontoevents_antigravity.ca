@@ -1,26 +1,26 @@
 # GHA Health Summary (R1-R12)
 
-- **Generated:** 2026-11-27T08:40:27.790951+00:00 · repo `eltonaguiar/findtorontoevents_antigravity.ca`
-- **Window:** 2026-11-19T08:40:27.790951+00:00 → 2026-11-27T08:40:27.790951+00:00 (1000 runs scanned, truncated=False; 400 workflows)
-- **API budget:** 81/300 calls used
+- **Generated:** 2026-11-27T12:41:58.075243+00:00 · repo `eltonaguiar/findtorontoevents_antigravity.ca`
+- **Window:** 2026-11-19T12:41:58.075243+00:00 → 2026-11-27T12:41:58.075243+00:00 (1000 runs scanned, truncated=False; 400 workflows)
+- **API budget:** 77/300 calls used
 
 ## 1. BROKEN NOW (action required)
 
 | Workflow | Branch | Last failure (ended) | Age h | Conclusion | Ever passed? |
 |---|---|---|---|---|---|
-| DB Sync: findtorontoevents.ca  torontoevent.net | main | 2026-11-27T08:32:11Z | 0.14 | failure | NEVER (prune candidate if dormant) |
-| DB Freshness Guardian | main | 2026-11-27T08:28:18Z | 0.2 | failure | NEVER (prune candidate if dormant) |
-| Refresh Movies Databases (50webs + GoDaddy) | main | 2026-11-27T07:53:13Z | 0.79 | failure | NEVER (prune candidate if dormant) |
-| _tmp probe rest | main | 2026-11-27T07:52:17Z | 0.8 | failure | NEVER (prune candidate if dormant) |
-| _tmp probe equity | main | 2026-11-27T07:25:22Z | 1.25 | failure | NEVER (prune candidate if dormant) |
-| Gate Config Emit | main | 2026-11-27T05:53:19Z | 2.79 | failure | NEVER (prune candidate if dormant) |
-| Sign-Coherence Gate | main | 2026-11-27T05:26:11Z | 3.24 | failure | NEVER (prune candidate if dormant) |
+| Consensus Outcome Tracker | main | 2026-11-27T12:41:20Z | 0.01 | failure | yes |
+| Kalshi snapshot (sports markets cache) | main | 2026-11-27T12:32:05Z | 0.16 | failure | NEVER (prune candidate if dormant) |
+| DB Freshness Guardian | main | 2026-11-27T12:30:58Z | 0.18 | failure | NEVER (prune candidate if dormant) |
+| .github/workflows/ci.yml | main | 2026-11-27T10:59:58Z | 1.7 | failure | yes |
+| DB Sync: findtorontoevents.ca  torontoevent.net | main | 2026-11-27T08:55:10Z | 3.78 | failure | NEVER (prune candidate if dormant) |
+| Refresh Movies Databases (50webs + GoDaddy) | main | 2026-11-27T07:53:13Z | 4.81 | failure | NEVER (prune candidate if dormant) |
+| _tmp probe rest | main | 2026-11-27T07:52:17Z | 4.83 | failure | NEVER (prune candidate if dormant) |
 
 ## 2. FLAPPING (watch list + failing steps)
 
 _None — no workflow has ≥5 fails in its last 15 runs with a green latest._
 
-**R2 monitor-next-run (23 watching):** auto-watch next 2 occurrences; green ⇒ reclassify FLAPPING, missing ⇒ escalate (scheduler dead).
+**R2 monitor-next-run (25 watching):** auto-watch next 2 occurrences; green ⇒ reclassify FLAPPING, missing ⇒ escalate (scheduler dead).
 - Verification Tests @ fix/verification-origin-main-fetch — cadence 24.0h, expect resolution by 2026-11-28T09:40:45.658749+00:00
 - DB Sync: findtorontoevents.ca  torontoevent.net @ main — cadence 24.0h, expect resolution by 2026-11-28T09:40:45.658749+00:00
 - Branch Large File Duplicate Guard @ verify/self-hosted-routing — cadence 168.0h, expect resolution by 2026-12-10T09:40:45.658749+00:00
@@ -28,30 +28,27 @@ _None — no workflow has ≥5 fails in its last 15 runs with a green latest._
 - ALPHA  Verify Predictions @ verify/self-hosted-routing — cadence 24.0h, expect resolution by 2026-11-28T09:40:45.658749+00:00
 
 - resolved: DB Freshness Guardian → **escalated_still_broken**
-- resolved: forward observations ingest → **resolved_flapping**
 
 ## 3. QUEUE HOGS (phantom batches, runner hogs, churn %, volume/fan-in)
 
 - **Phantom queued runs (> 24h, 0 jobs):** 0
 - **Runner hogs (in_progress > 2h or > 2x p90):** 1
-  - Discord Bot  Persistent — 5.82h running (p90 n/a)
+  - Discord Bot  Persistent — 3.99h running (p90 n/a)
 - **Cancel churn (≥50% cancelled/15, own tick spacing, timeout-shaped excluded):** 0
 - **Timeout kills (R5/R6 `timeout-kill`, excluded from churn):** 0
-- **CANCEL BUCKETS (R7)** — 7 cancelled run(s) examined (7 jobs probes; created_at herds are cron stamps, not cancel evidence):
-  - timeout-shaped: 0 · eviction-shaped: 1 · stack-kill: 0 · pr-close: 0 · external: 6
-  - external residual (6) — the true R7 signal, investigate:
-    - run 45946357497 [torontoevent.net] Deploy Rise of the Claw — cancelled at 2026-11-27T05:33:28Z (branch main)
+- **CANCEL BUCKETS (R7)** — 5 cancelled run(s) examined (5 jobs probes; created_at herds are cron stamps, not cancel evidence):
+  - timeout-shaped: 0 · eviction-shaped: 1 · stack-kill: 0 · pr-close: 0 · external: 4
+  - external residual (4) — the true R7 signal, investigate:
     - run 45956189282 [torontoevent.net] Deploy Rise of the Claw — cancelled at 2026-11-27T07:08:47Z (branch main)
     - run 45957634811 No stale DB passwords — cancelled at 2026-11-27T07:19:18Z (branch main)
     - run 45957634615 [torontoevent.net] Deploy Rise of the Claw — cancelled at 2026-11-27T07:19:18Z (branch main)
     - run 45957643426 Audit Drift Telemetry — cancelled at 2026-11-27T07:19:58Z (branch main)
-    - run 45952983693 ALPHA ENGINE - Live Autonomous Scanner — cancelled at 2026-11-27T08:30:14Z (branch main)
 - **workflow_run fan-in chains:** 6
-  - Deploy Competition to Live Site ← 8 upstreams ≈ 3.9 runs/day
-  - [torontoevent.net] Deploy Competition to Live Site ← 4 upstreams ≈ 0.6 runs/day
-  - Deploy Battleground to FTP ← 3 upstreams ≈ 0.8 runs/day
-  - Deploy FindCryptoPairs to FTP ← 1 upstreams ≈ 1.4 runs/day
-  - Deploy findtorontoevents.ca next/events.json ← 1 upstreams ≈ 0.2 runs/day
+  - Deploy Competition to Live Site ← 8 upstreams ≈ 4.2 runs/day
+  - [torontoevent.net] Deploy Competition to Live Site ← 4 upstreams ≈ 0.8 runs/day
+  - Deploy Battleground to FTP ← 3 upstreams ≈ 0.9 runs/day
+  - Deploy FindCryptoPairs to FTP ← 1 upstreams ≈ 1.5 runs/day
+  - Deploy findtorontoevents.ca next/events.json ← 1 upstreams ≈ 0.0 runs/day
 
 ## 4. STALE / SKIPPED / PRUNE (trigger-aware verdicts)
 
@@ -59,20 +56,20 @@ _None — no workflow has ≥5 fails in its last 15 runs with a green latest._
   - dynamic-alpha-engine — skip ratio None — known always-skipped job: measured 2026-11-16 audit: job if: always false (static config)
 - **Stale-by-cadence (R9):** 40 (35 dispatch-only workflows EXEMPT by design)
   - Dynamic Runner Template [unknown] — NEVER RUN with live trigger (unknown) — dead trigger or broken filter
-  - GHA scan job (reusable) [unknown] — NEVER RUN with live trigger (unknown) — dead trigger or broken filter
-  - Growth Stock Screener Daily [weekly] — SKIPPED(budget): latest-run probe cap reached
-  - guard-ops-workflows [daily] — SKIPPED(budget): latest-run probe cap reached
-  - H-004 — Inventory Surprise + Roll Yield Backtest (real EIA data) [weekly] — SKIPPED(budget): latest-run probe cap reached
-  - H-103 Forward Logger [monthly] — SKIPPED(budget): latest-run probe cap reached
-  - HC Evaluator Parity Test [weekly] — SKIPPED(budget): latest-run probe cap reached
-  - Hierarchical Bayesian Edge Update [daily] — SKIPPED(budget): latest-run probe cap reached
+  - ETF Trend Forward Clock (month-end) [weekly] — SKIPPED(budget): latest-run probe cap reached
+  - Feature Stability Check (Weekly) [weekly] — SKIPPED(budget): latest-run probe cap reached
+  - Fix Battleground Deployment [daily] — SKIPPED(budget): latest-run probe cap reached
+  - Forward Ledger — daily sync [daily] — SKIPPED(budget): latest-run probe cap reached
+  - forward observations ingest [daily] — SKIPPED(budget): latest-run probe cap reached
+  - Forward-Test New Strategies Tracker [daily] — SKIPPED(budget): latest-run probe cap reached
+  - Funding-Rate Archive Collector [daily] — SKIPPED(budget): latest-run probe cap reached
 - **Branch-only push waste (R10):** 0
 - **Prune rows (R1: never passed + dormant):** 0
 
 ## 5. NOT AN ISSUE (recovered) — suppressed count
 
-**8** workflow/branch group(s) had a success complete AFTER their most recent failure — suppressed per triage principle (recovered failures are explicitly filtered so 'green' and 'filtered noise' stay distinguishable).
-- additionally **226** group(s) were plain green (no failure in window).
+**3** workflow/branch group(s) had a success complete AFTER their most recent failure — suppressed per triage principle (recovered failures are explicitly filtered so 'green' and 'filtered noise' stay distinguishable).
+- additionally **193** group(s) were plain green (no failure in window).
 - queue-hog / stale rows above are live issues, NOT included in this suppressed count.
 
 ---
