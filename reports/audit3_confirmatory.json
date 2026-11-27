@@ -10,7 +10,7 @@
  "pods": [
   {
    "id": "POD-EQUITY-BREAKOUT",
-   "status": "pre_registered",
+   "status": "declined",
    "registered_at": "2026-11-19",
    "hypothesis_id": "H-BABY-EQUITY-VT-PATTERN-SWEEP-001",
    "strategies": [
@@ -32,7 +32,20 @@
    "evidence_at_registration": "EQUITY is the only class with positive walk-forward OOS Sharpe; individual breakout cells straddle zero.",
    "emitter": "tools/emit_equity_breakout_pod.py",
    "emitter_scheduled_by": ".github/workflows/pod-equity-breakout-emit.yml",
-   "emitter_note": "The emitter existed from 2026-11-26 but no workflow ran it, which is why the pod had 0 forward rows. Scheduled rather than declined: retiring a pod whose implementation is complete and dry-run verified would abandon the only pod able to mint a PROVEN_T2 verdict."
+   "emitter_note": "The emitter existed from 2026-11-26 but no workflow ran it, which is why the pod had 0 forward rows. Scheduled rather than declined: retiring a pod whose implementation is complete and dry-run verified would abandon the only pod able to mint a PROVEN_T2 verdict.",
+   "decline_reason": "Declined on measured evidence, not on absence of an emitter. The emitter (tools/emit_equity_breakout_pod.py) was scheduled and produced 59 real rows; 56 closed at a 14.3% win rate, -2.70% expectancy and -151.4% cumulative. A 24-combo exit sweep (stop 2.0/2.5/3.0 ATR x take-profit none/2/3/4 ATR x hold 10/20, 71 closed trades, 20 symbols, ~5y) found NO configuration with positive expectancy - the best was -0.934%/trade (stop 2.0 ATR, TP 4.0 ATR, hold 20). The breakout family also went 0 wins in 63 trades over 30 days. So the loss is not an exit-rule defect that a take-profit would fix: the entry signal family carries no edge on this universe. Re-serving it every day would keep minting losing picks against a live board.",
+   "evidence": {
+    "emitter_rows": 59,
+    "closed": 56,
+    "win_rate_pct": 14.3,
+    "expectancy_pct": -2.704,
+    "total_pnl_pct": -151.42,
+    "exit_sweep_combos": 24,
+    "best_combo": "stop 2.0 ATR / TP 4.0 ATR / hold 20",
+    "best_expectancy_pct": -0.934,
+    "family_last_30d": "0 wins in 63 trades",
+    "swept_on": "2026-11-27"
+   }
   },
   {
    "id": "POD-LUXALGO-SHORT",
