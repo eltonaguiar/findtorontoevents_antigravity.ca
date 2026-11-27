@@ -1,12 +1,13 @@
-name: _tmp probe futures
+name: _tmp probe FUTURES
 on:
   workflow_dispatch:
+
 jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: probe
+      - name: futures stress-test and crypto beta check
         env:
           DB_HOST: mysql.50webs.com
           DB_PORT: '3306'
@@ -15,84 +16,88 @@ jobs:
         run: |
           python3 -m pip install --quiet pymysql
           python3 - <<'PY'
-          import os
-          from collections import defaultdict
+          import os, collections, statistics as st
           import pymysql
-          cn=pymysql.connect(host=os.environ['DB_HOST'],port=3306,user=os.environ['DB_USER'],password=os.environ['DB_PASS'],database='ejaguiar1_stocks',connect_timeout=20,autocommit=True)
-          cur=cn.cursor(pymysql.cursors.DictCursor)
-          STRATS=['futures_bb_mean_reversion','futures_momentum','futures_connors_rsi2','cta_commodity_momentum_term','cta_cross_asset_tsmom']
-          q="SELECT symbol,direction,strategy,pnl_pct,created_at,closed_at,exit_reason FROM trading_picks WHERE strategy IN (%s)" % ','.join(['%s']*len(STRATS))
-          cur.execute(q,STRATS)
-          rows=cur.fetchall()
-          print('total_fetched',len(rows))
-          by=defaultdict(list)
-          for r in rows:
-              by[r['strategy']].append(r)
-          def mean(xs): return (sum(xs)/len(xs)) if xs else None
-          def median(xs):
-              if not xs: return None
-              s=sorted(xs);n=len(s)
-              return s[n//2] if n%2 else (s[n//2-1]+s[n//2])/2.0
-          def tmean(xs,drop=0.01):
-              if not xs: return None
-              s=sorted(xs);n=len(s)
-              k=max(1,int(round(n*drop)))
-              s=s[:-k] if k<n else s
-              return sum(s)/len(s) if s else None
-          def win(xs): return (sum(1 for x in xs if x is not None and x>0)/len(xs)*100) if xs else None
-          for name in STRATS:
-              rs=by.get(name,[])
-              pnl=[r['pnl_pct'] for r in rs if r['pnl_pct'] is not None]
-              raw_n=len(pnl)
-              keys={}
-              for r in rs:
-                  if r['pnl_pct'] is None: continue
-                  d=r['created_at'].date() if r['created_at'] else None
-                  k=(r['symbol'],r['direction'],d)
-                  if k not in keys:
-                      keys[k]=r
-                  elif r['created_at'] and keys[k]['created_at'] and r['created_at']>keys[k]['created_at']:
-                      keys[k]=r
-              ded=list(keys.values())
-              dpnl=[r['pnl_pct'] for r in ded]
-              deduped_n=len(dpnl)
-              sym=defaultdict(int)
-              for r in ded: sym[r['symbol']]+=1
-              ndistinct=len(sym)
-              top=max(sym.values()) if sym else 0
-              top_share=(top/len(ded)*100) if ded else 0
-              with_dt=[r for r in ded if r['created_at'] is not None]
-              null_created=len(ded)-len(with_dt)
-              with_dt.sort(key=lambda r:r['created_at'])
-              h=len(with_dt)//2
-              first=with_dt[:h]; second=with_dt[h:]
-              fh=[r['pnl_pct'] for r in first if r['pnl_pct'] is not None]
-              sh=[r['pnl_pct'] for r in second if r['pnl_pct'] is not None]
-              fh_mean=mean(fh); sh_mean=mean(sh)
-              er=defaultdict(int)
-              for r in rs: er[r['exit_reason']]+=1
-              horizons=[]
-              for r in rs:
-                  if r['created_at'] and r['closed_at'] and r['pnl_pct'] is not None:
-                      horizons.append((r['closed_at']-r['created_at']).total_seconds())
-              print('=== '+name)
-              print('raw_n='+str(raw_n))
-              print('win_raw='+str(round(win(pnl),2)))
-              print('mean_raw='+str(round(mean(pnl),4)))
-              print('median_raw='+str(round(median(pnl),4)))
-              print('trim_raw='+str(round(tmean(pnl),4)))
-              print('deduped_n='+str(deduped_n))
-              print('win_dedup='+str(round(win(dpnl),2)))
-              print('mean_dedup='+str(round(mean(dpnl),4)))
-              print('median_dedup='+str(round(median(dpnl),4)))
-              print('trim_dedup='+str(round(tmean(dpnl),4)))
-              print('distinct_symbols='+str(ndistinct))
-              print('top_symbol_share='+str(round(top_share,2)))
-              print('top_symbol_count='+str(top))
-              print('null_created_at_dropped='+str(null_created))
-              print('first_half_n='+str(len(first))+' first_half_mean='+str(round(fh_mean,4)))
-              print('second_half_n='+str(len(second))+' second_half_mean='+str(round(sh_mean,4)))
-              print('exit_reasons='+str(dict(er)))
-              if horizons:
-                  print('horizon_seconds_min='+str(min(horizons))+' max='+str(max(horizons))+' mean='+str(round(mean(horizons),1))+' count='+str(len(horizons)))
+
+          cn=pymysql.connect(host=os.environ["DB_HOST"], port=int(os.environ.get("DB_PORT") or 3306),
+                             user=os.environ["DB_USER"], password=os.environ["DB_PASS"],
+                             database="ejaguiar1_stocks", connect_timeout=20)
+          cur=cn.cursor()
+
+          def stats(v,label,pad=30):
+              if not v: print(f"  {label:<{pad}} n=0"); return
+              v=sorted(v); n=len(v); w=sum(1 for x in v if x>0); k=int(n*0.01)
+              tv=v[:n-k] if k else v
+              print(f"  {label:<{pad}}n={n:<5}win={100*w/n:5.1f}% mean={st.mean(v):+.3f}% med={st.median(v):+.3f}% trim1={st.mean(tv):+.3f}%")
+
+          # ---------- A. futures_bb_mean_reversion ----------
+          print("=== A. futures_bb_mean_reversion STRESS TEST ===")
+          cur.execute("""SELECT symbol,direction,pnl_pct,created_at,closed_at,exit_reason,entry_price,exit_price,
+                                COALESCE(execution_slippage_pct,0)
+                         FROM trading_picks WHERE strategy='futures_bb_mean_reversion' AND pnl_pct IS NOT NULL""")
+          rs=cur.fetchall()
+          print(f"raw rows: {len(rs)}  undated: {sum(1 for r in rs if r[3] is None)}")
+          dated=[r for r in rs if r[3] is not None]
+          dated.sort(key=lambda r: str(r[3]))
+          seen=set(); ded=[]
+          for r in dated:
+              k=(str(r[0]),str(r[1]),str(r[3])[:10])
+              if k in seen: continue
+              seen.add(k); ded.append(r)
+          print(f"deduped: {len(ded)}")
+          stats([float(r[2]) for r in rs],"raw")
+          stats([float(r[2]) for r in ded],"deduped")
+          half=len(ded)//2
+          stats([float(r[2]) for r in ded[:half]],"first half")
+          stats([float(r[2]) for r in ded[half:]],"second half")
+
+          syms=collections.Counter(str(r[0]) for r in ded)
+          print(f"\n  symbols={len(syms)}  top5={syms.most_common(5)}")
+          er=collections.Counter(str(r[5] or '?')[:24] for r in ded)
+          print(f"  exits={dict(er.most_common(6))}")
+          tp=sum(1 for r in ded if 'TP' in str(r[5]).upper())
+          print(f"  TP_HIT share = {100*tp/max(len(ded),1):.1f}%")
+
+          # holding time
+          import datetime as dt
+          hold=[]
+          for r in ded:
+              try:
+                  a=dt.datetime.fromisoformat(str(r[3]).replace('Z','+00:00')); b=dt.datetime.fromisoformat(str(r[4]).replace('Z','+00:00'))
+                  hold.append((b-a).total_seconds()/86400)
+              except Exception: pass
+          if hold: print(f"  holding days: median={st.median(hold):.2f} mean={st.mean(hold):.2f} max={max(hold):.1f}")
+
+          # cost sensitivity: futures round trip assumption
+          for bps in (2,4,8,12):
+              net=[float(r[2])-bps/100 for r in ded]
+              print(f"  net after {bps:>2} bps: mean={st.mean(net):+.3f}%  median={st.median(net):+.3f}%")
+
+          # ---------- B. kimi beta check ----------
+          print("\n=== B. kimi_signal_tracking vs crypto market factor ===")
+          cur.execute("""SELECT symbol,direction,pnl_pct,created_at
+                         FROM trading_picks
+                         WHERE category IN ('CRYPTO','crypto') AND pnl_pct IS NOT NULL AND created_at IS NOT NULL""")
+          allc=cur.fetchall()
+          byday=collections.defaultdict(list)
+          for s,d,p,c in allc: byday[str(c)[:10]].append(float(p))
+          mkt={k:st.mean(v) for k,v in byday.items()}
+          kimi=[(str(c)[:10],float(p)) for s,d,p,c in allc if False]
+          cur.execute("""SELECT pnl_pct,created_at FROM trading_picks
+                         WHERE source_system='kimi_signal_tracking' AND pnl_pct IS NOT NULL AND created_at IS NOT NULL""")
+          kr=cur.fetchall()
+          # dedupe by day+symbol not needed for the factor test; use all
+          raw=[float(p) for p,c in kr]
+          stats(raw,"kimi raw")
+          excess=[]; 
+          for p,c in kr:
+              d=str(c)[:10]
+              if d in mkt: excess.append(float(p)-mkt[d])
+          stats(excess,"kimi minus same-day mkt")
+          # also: what was the market doing on those days?
+          days=sorted({str(c)[:10] for p,c in kr})
+          print(f"  kimi window: {days[0]} .. {days[-1]}  ({len(days)} distinct days)")
+          mk=[mkt[d] for d in days if d in mkt]
+          if mk: print(f"  crypto class mean on those days: {st.mean(mk):+.3f}%  (n_days={len(mk)})")
+          cn.close()
           PY
