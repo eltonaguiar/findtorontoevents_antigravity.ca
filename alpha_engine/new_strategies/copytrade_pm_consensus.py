@@ -12,6 +12,23 @@ import math
 from datetime import datetime
 from collections import defaultdict
 
+def _sanitize_json(obj):
+    """NaN/Infinity are not valid JSON - browsers reject the whole payload.
+
+    Replacing them with null keeps every other field available; raising (allow_nan=False) would
+    throw away the run that produced them.
+    """
+    import math
+    if isinstance(obj, float):
+        return None if (math.isnan(obj) or math.isinf(obj)) else obj
+    if isinstance(obj, dict):
+        return {k: _sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_json(v) for v in obj]
+    return obj
+
+
+
 # --- Config ---
 INPUT_DB = "copy_trader_intel/data/copytrader_database.json"
 PM_DATA = "alpha_engine/data/prediction_market_picks.json"
@@ -220,7 +237,7 @@ def main():
     }
     os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
     with open(OUT_FILE, "w") as f:
-        json.dump(out, f, indent=2)
+        json.dump(_sanitize_json(out), f, indent=2)
     print(f"Wrote {OUT_FILE}")
     hc_out = {
         "generated_at": datetime.utcnow().isoformat() + "Z",
@@ -231,7 +248,7 @@ def main():
         "min_sources": 2,
     }
     with open(HIGH_CERTAINTY_FILE, "w") as f:
-        json.dump(hc_out, f, indent=2)
+        json.dump(_sanitize_json(hc_out), f, indent=2)
     print(f"Wrote {HIGH_CERTAINTY_FILE}")
     print(f"\nHigh-certainty picks: {len(tiers['HIGH'])}")
     for p in tiers["HIGH"][:10]:
