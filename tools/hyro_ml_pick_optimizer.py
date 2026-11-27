@@ -390,6 +390,19 @@ def train_model(vectors: list[dict], labels: dict, force_retrain: bool = False) 
     y = np.array(y_rows, dtype=np.int32)
     np.nan_to_num(X, copy=False, nan=0.0, posinf=1.0, neginf=-1.0)
 
+    # A classifier needs at least 2 classes. When every labeled sample has the
+    # same outcome (e.g. all WIN or all LOSS), sklearn raises ValueError
+    # ("y contains 1 class ..."). Skip training this run and fall back to
+    # heuristic scoring instead of crashing the optimizer step.
+    classes = np.unique(y)
+    if classes.size < 2:
+        log.warning(
+            f"Training skipped: labels contain only one class "
+            f"({classes.tolist()}) across {len(y)} samples — need at least "
+            f"2 classes. Using heuristic scoring."
+        )
+        return None
+
     n_pos = int(y.sum())
     n_neg = len(y) - n_pos
     log.info(f"Training on {len(y)} samples ({n_pos} wins, {n_neg} losses)")
