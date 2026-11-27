@@ -57,21 +57,6 @@ from multi_asset.forex_strategies import (  # noqa: E402
 )
 from multi_asset.commodity_futures_strategies import (  # noqa: E402
 
-def _sanitize_json(obj):
-    """NaN/Infinity are not valid JSON - browsers reject the whole payload.
-
-    Replacing them with null keeps every other field available; raising (allow_nan=False) would
-    throw away the run that produced them.
-    """
-    import math
-    if isinstance(obj, float):
-        return None if (math.isnan(obj) or math.isinf(obj)) else obj
-    if isinstance(obj, dict):
-        return {k: _sanitize_json(v) for k, v in obj.items()}
-    if isinstance(obj, (list, tuple)):
-        return [_sanitize_json(v) for v in obj]
-    return obj
-
 
     COMMODITY_SYMBOLS,
     FUTURES_SYMBOLS,
@@ -401,3 +386,19 @@ def run_backtest() -> dict[str, Any]:
 
 if __name__ == "__main__":
     run_backtest()
+
+def _sanitize_json(obj):
+    """NaN/Infinity are not valid JSON - browsers reject the whole payload.
+
+    Replacing them with null keeps every other field available; raising (allow_nan=False) would
+    throw away the run that produced them.
+    """
+    import math
+    if isinstance(obj, float):
+        return None if (math.isnan(obj) or math.isinf(obj)) else obj
+    if isinstance(obj, dict):
+        return {k: _sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_json(v) for v in obj]
+    return obj
+
