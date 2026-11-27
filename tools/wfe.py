@@ -76,6 +76,7 @@ def walk_forward_efficiency(
 def walk_forward_split(
     returns: Sequence[float] | np.ndarray,
     is_ratio: float = 0.7,
+    embargo: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Split a return series into IS/OOS portions (contiguous, no shuffle).
@@ -83,10 +84,35 @@ def walk_forward_split(
     Args:
         returns: Full return series.
         is_ratio: Fraction to use as in-sample (default 0.70).
+        embargo: Observations purged from EACH side of the boundary (default 0).
+            A contiguous split leaks when labels overlap in time: the last IS
+            observation and the first OOS observation can describe the same
+            price move, which inflates walk-forward efficiency. With
+            ``embargo=n`` the boundary gap becomes ``2n + 1`` because n rows
+            are dropped from the tail of IS and n from the head of OOS.
 
     Returns:
         (is_returns, oos_returns)
+
+    Raises:
+        ValueError: if embargo is negative, or if it would leave fewer than
+            two observations on either side (never silently truncate).
     """
     r = np.asarray(returns, dtype=float)
+    if embargo < 0:
+        raise ValueError(f"embargo must be >= 0, got {embargo}")
+
     split_idx = int(len(r) * is_ratio)
-    return r[:split_idx], r[split_idx:]
+
+    if embargo == 0:
+        return r[:split_idx], r[split_idx:]
+
+    is_end = split_idx - embargo
+    oos_start = split_idx + embargo
+    if is_end < 2 or len(r) - oos_start < 2:
+        raise ValueError(
+            f"embargo={embargo} leaves too few observations for len={len(r)} "
+            f"and is_ratio={is_ratio} (IS={max(is_end, 0)}, OOS={max(len(r) - oos_start, 0)})"
+        )
+
+    return r[:is_end], r[oos_start:]

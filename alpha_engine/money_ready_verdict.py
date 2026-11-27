@@ -2093,3 +2093,32 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def _population_invariant(n: int, n_resolved: int,
+                          data_source: str, sizing_source: str) -> dict:
+    """Publish (never hide) a cohort mismatch between `n` and `n_resolved`.
+
+    `n` counts the class's own picks from the JSON source (closed_picks /
+    dashboard_fallback). `n_resolved` counts the SIZING cohort — by default the
+    `at_signal_outcomes` intrabar overlay. They are DIFFERENT POPULATIONS.
+
+    A "resolved" subset can never exceed its parent, so `n_resolved > n` is
+    arithmetically impossible and always means the two published numbers
+    describe different row sets. Measured 2026-11-20 on the shipped ledger,
+    5 of 11 classes violated it (EQUITY 257>213, FOREX 634>458, ETF 53>29,
+    COMMODITY 234>27, FUTURES 62>17) while both fields were published side by
+    side with no flag at all.
+
+    Returns the two fields to merge into the class row. The verdict itself is
+    unchanged — it already gates on `n_resolved`, which is the honest cohort.
+    """
+    mismatch = bool(n_resolved > n)
+    return {
+        "population_mismatch": mismatch,
+        "population_note": (
+            f"n={n} ({data_source}) vs n_resolved={n_resolved} "
+            f"({sizing_source}); DIFFERENT COHORTS — do not compare"
+            if mismatch else None
+        ),
+    }
