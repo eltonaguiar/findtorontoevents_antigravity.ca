@@ -1,6 +1,6 @@
 # GHA quality framework (Q1-Q10)
 
-- workflows scanned: 399 (parse errors: 0)
+- workflows scanned: 400 (parse errors: 0)
 - aggregate score: 94.9/100
 - blocking violations: 101
 - runtime signals merged: True
@@ -18,7 +18,7 @@
 | Q7 | silent-failure | P0 | 40 |
 | Q8 | missing-timeout | P1 | 4 |
 | Q9 | secret-sprawl | P2 | 16 |
-| Q10 | dead-schedule | P2 | 28 |
+| Q10 | dead-schedule | P2 | 29 |
 
 ## Blocking findings
 
@@ -121,9 +121,9 @@
 | AI Tournament Pipeline — Daily Picks + DB Ingest | 57 |
 | ALPHA ENGINE - Live Autonomous Scanner | 60 |
 | DB Freshness Guardian | 65 |
-| DB Sync: findtorontoevents.ca  torontoevent.net | 65 |
 | Verified pilot daily | 70 |
 | Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities | 72 |
+| [torontoevent.net] Deploy Rise of the Claw | 72 |
 
 ## Advisory findings (P2)
 
@@ -133,7 +133,7 @@
 - Q1 (repo): 6 workflows share cron minute :10
 - Q1 (repo): 6 workflows share cron minute :11
 - Q1 (repo): 5 workflows share cron minute :12
-- Q1 (repo): 6 workflows share cron minute :13
+- Q1 (repo): 7 workflows share cron minute :13
 - Q1 (repo): 12 workflows share cron minute :14
 - Q1 (repo): 10 workflows share cron minute :15
 - Q1 (repo): 3 workflows share cron minute :16
@@ -141,7 +141,7 @@
 - Q1 (repo): 5 workflows share cron minute :18
 - Q1 (repo): 6 workflows share cron minute :19
 - Q1 (repo): 4 workflows share cron minute :2
-- Q1 (repo): 10 workflows share cron minute :20
+- Q1 (repo): 9 workflows share cron minute :20
 - Q1 (repo): 6 workflows share cron minute :22
 - Q1 (repo): 6 workflows share cron minute :23
 - Q1 (repo): 7 workflows share cron minute :24
