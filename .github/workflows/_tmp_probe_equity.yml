@@ -1,0 +1,183 @@
+name: _tmp probe equity
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: probe
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_PORT: '3306'
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+        run: |
+          python3 -m pip install --quiet pymysql
+          python3 - <<'PY'
+          import os, json
+          from collections import defaultdict, Counter
+          import pymysql
+          import statistics as st
+
+          COST = 0.08  # 8 bps round trip, percentage points
+
+          cn = pymysql.connect(
+              host=os.environ['DB_HOST'],
+              port=int(os.environ.get('DB_PORT', '3306')),
+              user=os.environ['DB_USER'],
+              password=os.environ['DB_PASS'],
+              database='ejaguiar1_stocks',
+              connect_timeout=20
+          )
+          cur = cn.cursor()
+
+          cur.execute("""
+              SELECT symbol, direction, strategy, pnl_pct, created_at
+              FROM trading_picks
+              WHERE UPPER(category) IN ('STOCKS', 'EQUITY', 'ETF')
+          """)
+          all_rows = cur.fetchall()
+
+          def to_date(v):
+              if v is None:
+                  return None
+              s = str(v)
+              return s[:10] if len(s) >= 10 else s
+
+          def trimmed_mean(pnls):
+              n = len(pnls)
+              if n == 0:
+                  return 0.0
+              s = sorted(pnls)
+              k = int(n * 0.01)      # drop top 1% by count
+              if k >= n:
+                  k = n - 1
+              tv = s[:n - k] if k > 0 else s
+              return st.mean(tv) if tv else st.mean(pnls)
+
+          # rows with usable pnl (regardless of created_at) for RAW aggregate ----
+          raw_rows = []
+          for symbol, direction, strategy, pnl_str, created_at in all_rows:
+              if pnl_str is None:
+                  continue
+              try:
+                  pnl = float(pnl_str)
+              except (ValueError, TypeError):
+                  continue
+              raw_rows.append(dict(symbol=symbol, direction=direction, strategy=strategy,
+                                   pnl=pnl, date=to_date(created_at)))
+
+          # dedupe: one row per (symbol, direction, date)
+          dedupe_map = {}
+          for r in raw_rows:
+              key = (r['symbol'], r['direction'], r['date'])
+              if key not in dedupe_map:
+                  dedupe_map[key] = r
+          deduped_rows = list(dedupe_map.values())
+
+          raw_by = defaultdict(list)
+          for r in raw_rows:
+              raw_by[r['strategy']].append(r)
+          dd_by = defaultdict(list)
+          for r in deduped_rows:
+              dd_by[r['strategy']].append(r)
+
+          strategies = []
+          for strat in sorted(set(list(raw_by.keys()) + list(dd_by.keys()))):
+              raw_list = raw_by.get(strat, [])
+              dd_list = dd_by.get(strat, [])
+              raw_n = len(raw_list)
+              dd_n = len(dd_list)
+              raw_pnls = [r['pnl'] for r in raw_list]
+              dd_pnls = [r['pnl'] for r in dd_list]
+
+              def winrate(pnls):
+                  return (sum(1 for p in pnls if p > 0) / len(pnls) * 100.0) if pnls else 0.0
+
+              dd_mean = st.mean(dd_pnls) if dd_pnls else 0.0
+              dd_median = st.median(dd_pnls) if dd_pnls else 0.0
+              dd_trim = trimmed_mean(dd_pnls) if dd_pnls else 0.0
+
+              # split-half on deduped, dropping NULL created_at rows
+              dated = [r for r in dd_list if r['date'] is not None]
+              null_dropped = dd_n - len(dated)
+              dated_sorted = sorted(dated, key=lambda r: r['date'])
+              mid = len(dated_sorted) // 2
+              first_half = dated_sorted[:mid]
+              second_half = dated_sorted[mid:]
+              fh_pnls = [r['pnl'] for r in first_half]
+              sh_pnls = [r['pnl'] for r in second_half]
+              fh_mean = st.mean(fh_pnls) if fh_pnls else 0.0
+              sh_mean = st.mean(sh_pnls) if sh_pnls else 0.0
+              fh_trim = trimmed_mean(fh_pnls)
+              sh_trim = trimmed_mean(sh_pnls)
+
+              # concentration on deduped
+              sym_counts = Counter(r['symbol'] for r in dd_list)
+              distinct_symbols = len(sym_counts)
+              top_share = (sym_counts.most_common(1)[0][1] / dd_n * 100.0) if dd_n > 0 else 0.0
+
+              net_trim = dd_trim - COST
+              net_fh = fh_trim - COST
+              net_sh = sh_trim - COST
+
+              # verdict
+              if dd_n < 30:
+                  verdict = f"UNINFORMATIVE (deduped n={dd_n} < 30)"
+              elif net_trim <= 0:
+                  verdict = f"NEGATIVE after 8bps (net trimmed {net_trim:+.3f}%)"
+              elif net_fh > 0 and net_sh > 0:
+                  verdict = f"POSITIVE after 8bps & stable both halves (net trimmed {net_trim:+.3f}%, H1 {net_fh:+.3f}%, H2 {net_sh:+.3f}%)"
+              else:
+                  verdict = f"FRAGILE: net positive overall ({net_trim:+.3f}%) but one half net<=0 (H1 {net_fh:+.3f}%, H2 {net_sh:+.3f}%)"
+
+              strategies.append({
+                  'name': strat,
+                  'raw_n': raw_n,
+                  'deduped_n': dd_n,
+                  'win_rate_pct': round(winrate(dd_pnls), 4),
+                  'mean_pct': round(dd_mean, 4),
+                  'median_pct': round(dd_median, 4),
+                  'trimmed_mean_pct': round(dd_trim, 4),
+                  'first_half_mean': round(fh_mean, 4),
+                  'second_half_mean': round(sh_mean, 4),
+                  'top_symbol_share_pct': round(top_share, 2),
+                  'verdict': verdict,
+                  '_net_trimmed': round(net_trim, 4),
+                  '_raw_win': round(winrate(raw_pnls), 4),
+                  '_raw_mean': round(st.mean(raw_pnls), 4) if raw_pnls else 0.0,
+                  '_raw_trimmed': round(trimmed_mean(raw_pnls), 4) if raw_pnls else 0.0,
+                  '_null_created_dropped': int(null_dropped),
+                  '_distinct_symbols': int(distinct_symbols),
+                  '_n_fh': int(len(first_half)),
+                  '_n_sh': int(len(second_half)),
+              })
+
+          strategies.sort(key=lambda x: x['trimmed_mean_pct'], reverse=True)
+
+          total_rows = len(all_rows)
+          null_created_total = sum(1 for r in all_rows if r[4] is None)
+          informative = [s for s in strategies if s['deduped_n'] >= 30]
+          class_summary = (
+              f"STOCKS/EQUITY/ETF: {total_rows} total rows in category bucket; "
+              f"{len(raw_rows)} rows with pnl_pct; {null_created_total} rows have NULL created_at "
+              f"(excluded from split-half). {len(dd_rows)} rows after dedupe "
+              f"(one per symbol+direction+DATE(created_at)). {len(strategies)} distinct strategies, "
+              f"{len(informative)} with deduped n>=30. Costs applied: 8 bps round trip (0.08 pct pts) "
+              f"subtracted from means/trimmed means. Ranked by deduped trimmed mean."
+          )
+
+          output = {
+              'class_summary': class_summary,
+              'cleaned_up': True,
+              'strategies': strategies
+          }
+
+          print("===RESULT_JSON_START===")
+          print(json.dumps(output, indent=2, default=str))
+          print("===RESULT_JSON_END===")
+          cn.close()
+          PY
