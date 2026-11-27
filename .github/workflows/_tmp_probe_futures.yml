@@ -15,8 +15,84 @@ jobs:
         run: |
           python3 -m pip install --quiet pymysql
           python3 - <<'PY'
-          import os, statistics as st
+          import os
+          from collections import defaultdict
           import pymysql
-          cn=pymysql.connect(host=os.environ['DB_HOST'],port=3306,user=os.environ['DB_USER'],password=os.environ['DB_PASS'],database='ejaguiar1_stocks',connect_timeout=20)
-          cur=cn.cursor()
+          cn=pymysql.connect(host=os.environ['DB_HOST'],port=3306,user=os.environ['DB_USER'],password=os.environ['DB_PASS'],database='ejaguiar1_stocks',connect_timeout=20,autocommit=True)
+          cur=cn.cursor(pymysql.cursors.DictCursor)
+          STRATS=['futures_bb_mean_reversion','futures_momentum','futures_connors_rsi2','cta_commodity_momentum_term','cta_cross_asset_tsmom']
+          q="SELECT symbol,direction,strategy,pnl_pct,created_at,closed_at,exit_reason FROM trading_picks WHERE strategy IN (%s)" % ','.join(['%s']*len(STRATS))
+          cur.execute(q,STRATS)
+          rows=cur.fetchall()
+          print('total_fetched',len(rows))
+          by=defaultdict(list)
+          for r in rows:
+              by[r['strategy']].append(r)
+          def mean(xs): return (sum(xs)/len(xs)) if xs else None
+          def median(xs):
+              if not xs: return None
+              s=sorted(xs);n=len(s)
+              return s[n//2] if n%2 else (s[n//2-1]+s[n//2])/2.0
+          def tmean(xs,drop=0.01):
+              if not xs: return None
+              s=sorted(xs);n=len(s)
+              k=max(1,int(round(n*drop)))
+              s=s[:-k] if k<n else s
+              return sum(s)/len(s) if s else None
+          def win(xs): return (sum(1 for x in xs if x is not None and x>0)/len(xs)*100) if xs else None
+          for name in STRATS:
+              rs=by.get(name,[])
+              pnl=[r['pnl_pct'] for r in rs if r['pnl_pct'] is not None]
+              raw_n=len(pnl)
+              keys={}
+              for r in rs:
+                  if r['pnl_pct'] is None: continue
+                  d=r['created_at'].date() if r['created_at'] else None
+                  k=(r['symbol'],r['direction'],d)
+                  if k not in keys:
+                      keys[k]=r
+                  elif r['created_at'] and keys[k]['created_at'] and r['created_at']>keys[k]['created_at']:
+                      keys[k]=r
+              ded=list(keys.values())
+              dpnl=[r['pnl_pct'] for r in ded]
+              deduped_n=len(dpnl)
+              sym=defaultdict(int)
+              for r in ded: sym[r['symbol']]+=1
+              ndistinct=len(sym)
+              top=max(sym.values()) if sym else 0
+              top_share=(top/len(ded)*100) if ded else 0
+              with_dt=[r for r in ded if r['created_at'] is not None]
+              null_created=len(ded)-len(with_dt)
+              with_dt.sort(key=lambda r:r['created_at'])
+              h=len(with_dt)//2
+              first=with_dt[:h]; second=with_dt[h:]
+              fh=[r['pnl_pct'] for r in first if r['pnl_pct'] is not None]
+              sh=[r['pnl_pct'] for r in second if r['pnl_pct'] is not None]
+              fh_mean=mean(fh); sh_mean=mean(sh)
+              er=defaultdict(int)
+              for r in rs: er[r['exit_reason']]+=1
+              horizons=[]
+              for r in rs:
+                  if r['created_at'] and r['closed_at'] and r['pnl_pct'] is not None:
+                      horizons.append((r['closed_at']-r['created_at']).total_seconds())
+              print('=== '+name)
+              print('raw_n='+str(raw_n))
+              print('win_raw='+str(round(win(pnl),2)))
+              print('mean_raw='+str(round(mean(pnl),4)))
+              print('median_raw='+str(round(median(pnl),4)))
+              print('trim_raw='+str(round(tmean(pnl),4)))
+              print('deduped_n='+str(deduped_n))
+              print('win_dedup='+str(round(win(dpnl),2)))
+              print('mean_dedup='+str(round(mean(dpnl),4)))
+              print('median_dedup='+str(round(median(dpnl),4)))
+              print('trim_dedup='+str(round(tmean(dpnl),4)))
+              print('distinct_symbols='+str(ndistinct))
+              print('top_symbol_share='+str(round(top_share,2)))
+              print('top_symbol_count='+str(top))
+              print('null_created_at_dropped='+str(null_created))
+              print('first_half_n='+str(len(first))+' first_half_mean='+str(round(fh_mean,4)))
+              print('second_half_n='+str(len(second))+' second_half_mean='+str(round(sh_mean,4)))
+              print('exit_reasons='+str(dict(er)))
+              if horizons:
+                  print('horizon_seconds_min='+str(min(horizons))+' max='+str(max(horizons))+' mean='+str(round(mean(horizons),1))+' count='+str(len(horizons)))
           PY
