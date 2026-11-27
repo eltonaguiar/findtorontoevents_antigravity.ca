@@ -1,0 +1,126 @@
+name: _tmp strategy probe
+# TEMPORARY read-only probe. Deleted immediately after use.
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Query strategy stats (read-only)
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS_STOCKS }}
+          DB_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+          DB_NAME: ejaguiar1_stocks
+        run: |
+          python3 -m pip install --quiet pymysql
+          python3 - <<'PY'
+          import os,json,collections,statistics as st
+          import pymysql
+
+          host=os.environ.get("DB_HOST") or "localhost"
+          user=os.environ.get("DB_USER") or ""
+          pw=os.environ.get("DB_PASS") or ""
+          if not pw:
+              raw=os.environ.get("DB_JSON") or ""
+              try:
+                  d=json.loads(raw)
+                  for k in ("stocks","ejaguiar1_stocks","default"):
+                      if isinstance(d.get(k),dict):
+                          host=d[k].get("host",host); user=d[k].get("user",user); pw=d[k].get("password","")
+                          break
+              except Exception:
+                  pass
+          print(f"creds resolved: host_set={bool(host)} user_set={bool(user)} pass_set={bool(pw)}")
+
+          cn=pymysql.connect(host=host,user=user,password=pw,database="ejaguiar1_stocks",connect_timeout=15)
+          cur=cn.cursor()
+
+          cur.execute("SHOW TABLES"); tbls=[r[0] for r in cur.fetchall()]
+          print("tables in ejaguiar1_stocks:", len(tbls))
+          print("  ", ", ".join(tbls[:40]))
+
+          cur.execute("SHOW COLUMNS FROM trading_picks"); cols=[r[0] for r in cur.fetchall()]
+          print("\ntrading_picks columns:", cols)
+
+          cur.execute("SELECT COUNT(*) FROM trading_picks"); print("rows:", cur.fetchone()[0])
+
+          # find the columns we need without assuming names
+          def pick(*cands):
+              for c in cands:
+                  if c in cols: return c
+              return None
+          c_strat=pick("strategy","source_system","strategy_name","source")
+          c_pnl  =pick("pnl_pct","pnl_percent","return_pct","pnl","realized_pct")
+          c_stat =pick("status","outcome","result","state")
+          c_date =pick("created_at","opened_at","entry_time","signal_date","created")
+          c_sym  =pick("symbol","ticker","asset")
+          print(f"\nmapped: strategy={c_strat} pnl={c_pnl} status={c_stat} date={c_date} symbol={c_sym}")
+          if not (c_strat and c_pnl):
+              print("!! cannot map columns; stopping"); raise SystemExit(0)
+
+          cur.execute(f"SELECT {c_stat} FROM trading_picks GROUP BY {c_stat}")
+          print("status values:", [r[0] for r in cur.fetchall()][:15])
+
+          q=f"SELECT {c_strat},{c_pnl},{c_date},{c_sym} FROM trading_picks WHERE {c_pnl} IS NOT NULL"
+          cur.execute(q); rows=cur.fetchall()
+          print(f"rows with pnl: {len(rows)}")
+
+          agg=collections.defaultdict(lambda: {"pnl":[], "days":set(), "syms":set(), "signals":0})
+          for strat,pnl,d_,sym in rows:
+              k=str(strat); a=agg[k]
+              try: p=float(pnl)
+              except: continue
+              a["pnl"].append(p); a["signals"]+=1
+              if d_ is not None: a["days"].add(str(d_)[:10])
+              if sym: a["syms"].add(str(sym))
+
+          print(f"\n{'strategy':<46}{'n':>6}{'win%':>7}{'avg%':>9}{'med%':>8}{'trim1%':>9}{'days':>6}{'per-day':>9}")
+          out=[]
+          for k,a in agg.items():
+              v=sorted(a["pnl"]); n=len(v)
+              if n<15: continue
+              w=sum(1 for x in v if x>0)
+              k1=int(n*0.01); tv=v[:n-k1] if k1 else v
+              perday=n/max(len(a["days"]),1)
+              out.append((n,k,100*w/n,st.mean(v),st.median(v),st.mean(tv),len(a["days"]),perday))
+          for n,k,wr,avg,med,t1,days,pd in sorted(out,reverse=True)[:22]:
+              print(f"{k[:45]:<46}{n:>6}{wr:>6.1f}%{avg:>8.3f}%{med:>7.3f}%{t1:>8.3f}%{days:>6}{pd:>8.2f}x")
+
+          # the COT-style test: strategies emitting many picks per unique day
+          print("\nOVER-EMISSION WATCH (picks per unique day > 1.5, n>=20):")
+          for n,k,wr,avg,med,t1,days,pd in sorted(out,reverse=True):
+              if pd>1.5:
+                  print(f"  {k[:44]:<45} n={n:<5} days={days:<5} {pd:.2f}x")
+
+          # the strategies /audit named as DSR survivors
+          print("\nDSR-SURVIVOR CHECK (named on /audit):")
+          for k,a in agg.items():
+              if "ml_enhanced" in k.lower() or "cot_position" in k.lower():
+                  v=sorted(a["pnl"]); n=len(v)
+                  if n==0: continue
+                  w=sum(1 for x in v if x>0)
+                  print(f"  {k[:50]:<51} n={n:<4} win%={100*w/n:5.1f} avg={st.mean(v):+.3f}% days={len(a['days']):<4} per-day={n/max(len(a['days']),1):.2f}x")
+
+          # backtests db
+          try:
+              cur.execute("SHOW DATABASES LIKE 'ejaguiar1_backtests'")
+              if cur.fetchone():
+                  cur.execute("SHOW TABLES FROM ejaguiar1_backtests")
+                  bt=[r[0] for r in cur.fetchall()]
+                  print("\nejaguiar1_backtests tables:", len(bt), ", ".join(bt[:25]))
+                  for tname in bt[:6]:
+                      try:
+                          cur.execute(f"SELECT COUNT(*) FROM ejaguiar1_backtests.`{tname}`")
+                          print(f"  {tname}: {cur.fetchone()[0]} rows")
+                      except Exception as e:
+                          print(f"  {tname}: err {str(e)[:60]}")
+              else:
+                  print("\nejaguiar1_backtests not visible to this user")
+          except Exception as e:
+              print("backtests probe error:", str(e)[:120])
+          cn.close()
+          PY
