@@ -134,8 +134,7 @@ jobs:
             base="$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)"
           fi
           # --diff-filter excludes deleted files: passing a removed .py to ruff fails the gate with "E902 No such file directory".
-          files=$(git diff --name-only --diff-filter=ACMR "$base" HEAD -- '*.py' | tr '
-' ' ' || true)
+          files=$(git diff --name-only --diff-filter=ACMR "$base" HEAD -- '*.py' | tr '\n' ' ' || true)
           if [ -z "${files// /}" ]; then
             echo "no Python files changed in this push - style gate skipped (base=$base)"
             exit 0
