@@ -65,6 +65,10 @@ jobs:
         run: python3 tools/gha_quality_framework.py
 
       - name: Commit report (only when content changed)
+        env:
+          # safe_push.sh reads this; GH_PAT first so the report commit can trigger
+          # downstream workflows once the cron is enabled.
+          TOKEN_FOR_PUSH: ${{ secrets.GH_PAT || github.token }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -74,4 +78,8 @@ jobs:
             exit 0
           fi
           git commit -m "chore(gha-quality): refresh Q1-Q10 report [skip ci]"
-          git push
+          # 2026-11-27: was a bare `git push`, which is unbounded. This job has a 15-minute
+          # cap, so a stuck push killed the job as `cancelled` with the report commit made
+          # but never pushed - the exact failure mode `.github/scripts/safe_push.sh` exists
+          # to prevent (bounded retries, shallow-depth fix, rebase-conflict handling).
+          bash .github/scripts/safe_push.sh
