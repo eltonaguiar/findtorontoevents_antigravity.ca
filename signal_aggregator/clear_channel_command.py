@@ -79,8 +79,13 @@ def get_channel_id(channel_name: str) -> Optional[str]:
     return extract_channel_id_from_webhook(webhook_url)
 
 
-def get_messages(bot_token: str, channel_id: str, limit: int = 100) -> List[dict]:
-    """Fetch messages from a channel."""
+def get_messages(bot_token: str, channel_id: str, limit: int = 100) -> Optional[List[dict]]:
+    """Fetch messages from a channel.
+
+    Returns the message list, ``[]`` for a genuinely empty channel, or ``None``
+    when the fetch failed (403/transport). The two must not be conflated: a
+    permission failure is not "nothing to delete" — see clear_channel().
+    """
     headers = {
         'Authorization': f'Bot {bot_token}',
         'Content-Type': 'application/json'
@@ -97,13 +102,13 @@ def get_messages(bot_token: str, channel_id: str, limit: int = 100) -> List[dict
             return messages
         elif response.status_code == 403:
             logger.error(f"Bot lacks permission to read messages in channel {channel_id}")
-            return []
+            return None
         else:
             logger.error(f"Error fetching messages: {response.status_code} - {response.text}")
-            return []
+            return None
     except Exception as e:
         logger.error(f"Error fetching messages: {e}")
-        return []
+        return None
 
 
 def bulk_delete_messages(bot_token: str, channel_id: str, message_ids: List[str]) -> bool:
@@ -126,7 +131,14 @@ def bulk_delete_messages(bot_token: str, channel_id: str, message_ids: List[str]
             logger.info(f"Successfully deleted {len(payload['messages'])} messages")
             return True
         elif response.status_code == 403:
-            logger.error(f"Bot lacks permission to delete messages in channel {channel_id}")
+            # 2026-11-27: this is the failure the workflow kept hitting (run 45875893722).
+            # A webhook can post to a channel the bot cannot moderate, so "the bot posts
+            # here fine" does not imply it may delete here. Name the grant, not just the code.
+            logger.error(
+                f"Bot lacks permission to delete messages in channel {channel_id}: grant "
+                f"MANAGE_MESSAGES to the bot on that channel (channel -> Edit Channel -> "
+                f"Permissions -> bot role -> Manage Messages)"
+            )
             return False
         elif response.status_code == 429:
             logger.error("Rate limited by Discord API")
@@ -187,10 +199,18 @@ def clear_channel(channel_name: str, limit: int = 100) -> dict:
     
     logger.info(f"Clearing channel {channel_name} (ID: {channel_id})")
     
-    # Fetch messages
+    # Fetch messages. None means the read failed; [] means the channel is empty.
+    # Treating a 403 read as "nothing to delete" reported success on a permission
+    # failure and hid it from the workflow, so the two cases are now separate.
     messages = get_messages(bot_token, channel_id, limit)
+    if messages is None:
+        result['errors'].append(
+            f"Bot cannot read channel {channel_id}: grant VIEW_CHANNEL and READ_MESSAGE_HISTORY"
+        )
+        result['message'] = f"Permission denied reading #{channel_name} ({channel_id})"
+        return result
     if not messages:
-        result['message'] = "No messages found or unable to fetch messages"
+        result['message'] = f"#{channel_name} is already empty"
         result['success'] = True  # Nothing to delete is still success
         return result
     
@@ -238,6 +258,11 @@ def clear_channel(channel_name: str, limit: int = 100) -> dict:
     if old_messages:
         logger.warning(f"{len(old_messages)} messages are too old for bulk delete (14+ days)")
         result['errors'].append(f"{len(old_messages)} old messages skipped (14+ days)")
+
+    if deleted_count == 0 and bulk_deletable:
+        result['errors'].append(
+            "nothing was deleted - the bot most likely lacks MANAGE_MESSAGES in this channel"
+        )
     
     result['success'] = deleted_count > 0 or len(messages) == 0
     result['deleted'] = deleted_count
