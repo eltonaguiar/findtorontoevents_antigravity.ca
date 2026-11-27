@@ -240,3 +240,30 @@ prose: `paid-mode` → 218 chars, `paid-mode-large` → 246 chars, and directly 
 `nvidia/nemotron-3.5-lightning-30b-a3b` deployment returned 267 chars of content with 2034 chars of
 `reasoning_content` (497 completion tokens). `GET /model/info` shows all 14 Bluesminds deployments
 registered under `paid-mode` / `paid-mode-fast` / `paid-mode-large`.
+
+## 16. Why Bluesminds was 401 inside the proxy (launcher parse bug) + the proof call
+
+`paid-mode` had never actually been served by Bluesminds through the proxy: the launcher's
+`parse_key "BLUESMIND API KEY"` never matched, because the dbpasses line is
+`BLUESMIND API KEY, BLUEMINDS-BETA` — an annotated label — while `parse_key`'s awk required
+`line == lbl` exact equality. `BLUESMIND_API_KEY` was therefore unset in the LiteLLM process
+(`/proc/<pid>/environ` had no `BLUESMIND_API_KEY=sk-`) and every Bluesminds deployment answered
+**401 Invalid token**.
+
+Fix: `parse_key` now matches `index(line, lbl) == 1` (starts-with) instead of exact equality, which
+still skips the annotation on the label line and lands on the first real value line (URLs and
+colon-terminated sub-labels are skipped as before). `bash -n` passes and the variable is now exported.
+
+**Proof that traffic really lands on Bluesminds through the proxy** (temporary `bluesminds-proof`
+group, one deployment, removed afterwards):
+
+```
+POST http://127.0.0.1:4000/v1/chat/completions  {"model":"bluesminds-proof","max_tokens":1200}
+→ http 200, finish=stop, 458 completion tokens
+→ content (184 chars): "A trailing stop is a dynamic order that automatically adjusts a stop-loss
+   to follow an asset's price by a set percentage or amount, locking in gains while protecting
+   against reversals." (+1780 chars in reasoning_content)
+```
+
+Config restored to the committed state afterwards (`bluesminds-proof` count = 0), proxy restarted,
+`free-mode` / `paid-mode` / `paid-mode-large` all 200, liveliness 200.

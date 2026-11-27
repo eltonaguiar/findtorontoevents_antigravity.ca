@@ -180,7 +180,10 @@ parse_key() {
   #   - NOT a URL (skips https://hypereal.cloud/-style annotation lines)
   val="$(awk -v lbl="$label" '
     { line=$0; gsub(/^[ \t]+|[ \t]+$/, "", line) }
-    line == lbl { found=1; next }
+    # Labels carry trailing annotations in some sections, e.g.
+    #   BLUESMIND API KEY, BLUEMINDS-BETA   <- label + note, key is 2 lines below
+    # so match on "line starts with the label" rather than exact equality.
+    index(line, lbl) == 1 { found=1; next }
     found && NF > 0 {
       if (line ~ /^[A-Z][A-Z0-9_]*$/) next
       if (line ~ /:$/) next
@@ -231,6 +234,7 @@ parse_key "NOUS API KEY ALT USE ONLY FREE MODELS:"                              
 parse_key "MISTRAL API KEY ALT:"                                                     MISTRAL_API_KEY_ALT
 parse_key "MISTRAL API KEY ALT2:"                                                    MISTRAL_API_KEY_ALT2
 parse_key "SCALEWAY_SECRET_KEY:"                                                      SCALEWAY_API_KEY
+parse_key "LLM7_API_KEY_FREE"                                                       LLM7_API_KEY_FREE
 parse_key "ZAI_API_KEY3_NOV2026:"                                                     ZAI_API_KEY
 parse_key "MISTRAL_API_KEY_NEW_NOV27:"                                                MISTRAL_API_KEY_NEW
 parse_key "AIMLAPIKEY PAID (\$20 limit):"                                            AIMLAPI_PAID_KEY
