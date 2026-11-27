@@ -10,7 +10,7 @@
   "pods": [
     {
       "id": "POD-EQUITY-BREAKOUT",
-      "status": "pre_registered",
+      "status": "declined",
       "registered_at": "2026-11-19",
       "hypothesis_id": "H-BABY-EQUITY-VT-PATTERN-SWEEP-001",
       "strategies": [
@@ -29,7 +29,8 @@
       "thesis": "Breakout continuation on liquid US equities/ETFs is the one family where this system already shows positive out-of-sample statistics (EQUITY OOS Sharpe +0.61 on 33 folds, ETF +0.21 on 53).",
       "expression": "Monthly/weekly cadence only. Exit on time or a 2-3 ATR trail, vol-scaled size, no fixed take-profit. ETF daily cadence is ruled out: measured slippage is 234% of per-trade PnL.",
       "acceptance_criteria": "Forward rows dated after 2026-11-19: n>=100, net CI lower bound > 0 at 2x measured slippage, IR>=0.5 vs a matched SPY leg, split-half stable. CI-LB<=0 at day 30 or 60 ends the pod.",
-      "evidence_at_registration": "EQUITY is the only class with positive walk-forward OOS Sharpe; individual breakout cells straddle zero."
+      "evidence_at_registration": "EQUITY is the only class with positive walk-forward OOS Sharpe; individual breakout cells straddle zero.",
+      "decline_reason": "Emitter script (tools/emit_equity_breakout_pod.py) landed in commit 5d704972bba but never scheduled in any workflow; structural zero-forward-rows condition verified in quarantine commit 8570a86cd5f; pod abandoned, emitter wiring never restored"
     },
     {
       "id": "POD-LUXALGO-SHORT",
