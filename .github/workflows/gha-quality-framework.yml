@@ -5,8 +5,9 @@
 # Tool: tools/gha_quality_framework.py   Rules: docs/audit_review_2026-11-22/GHA_QA_RULE_CATALOG.md
 #
 # Enablement (deliberate, one step at a time - same policy as gha-health-audit):
-#   1. Land with workflow_dispatch ONLY (current state).
+#   1. Land with workflow_dispatch ONLY (done 2026-11-27).
 #   2. Dispatch once, verify GREEN and that it committed GHACTIONS_LIVE/gha_quality.{json,md} with [skip ci].
+#      (done: run 45926705290, commit 08bfe0d0)
 #   3. Only then uncomment the schedule block.
 # Cron minute :13 is staggered on purpose (repo policy: never :00; health audit owns :37).
 
@@ -14,9 +15,11 @@ name: gha-quality-framework
 
 on:
   workflow_dispatch:
-  # Enable after the first green dispatch:
-  # schedule:
-  #   - cron: '13 */6 * * *'
+  # Enabled 2026-11-27 after the first green dispatch (run 45926705290): 0 NEW
+  # blocking violations of 101 known, and the report commit pushed through
+  # safe_push.sh on attempt 1/8. Both enablement conditions are met.
+  schedule:
+    - cron: '13 */6 * * *'
 
 # Serialize: this workflow self-pushes a report commit; two runs racing on main would
 # produce a non-fast-forward push. Its own group so it never cancels the health audit.
