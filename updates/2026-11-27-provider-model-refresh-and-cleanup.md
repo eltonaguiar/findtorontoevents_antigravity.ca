@@ -308,3 +308,41 @@ Catalogue check: 13 free ids today —
 
 After restart: liveliness 200, 20 groups, `free-mode` / `free-mode-large` / `free-mode-tools` /
 `paid-mode` all 200 (they fall through to non-OpenRouter deployments while the daily cap is spent).
+
+## 18. MegaNova wired, AnyAPI wired, Routeway still unfunded
+
+**MegaNova** — `MEGANOVA_API_KEY` (dbpasses line 1 label `MEGANOVA_API_KEY(https://console.meganova.ai/apiKeys)`,
+key on line 2, masked `sk-oF0…`). Base URL `https://api.meganova.ai/v1` (the console URL is not the API;
+`meganova.ai/api/v1` 404s). `GET /v1/models` → 200 with **157 models, 12 tagged `free`**.
+
+Direct probes (all `200 OK`): `meganova-ai/manta-flash-1.0` (16k), `meganova-ai/manta-mini-1.0` (8k),
+`BruhzWater/Sapphira-L3.3-70b-0.1` (65k), `FallenMerick/MN-Violet-Lotus-12B`, and
+`mistralai/Mistral-Small-3.2-24B-Instruct-2506` — the last one **emits real `tool_calls`**.
+Rejected: `meganova-ai/manta-pro-1.0` (403), `zai-org/GLM-4.7-Flash` (403 "not available for your
+account"), `Sapphira-L3.3-70b` 400s on a tools payload.
+
+Wired (7 deployments, `openai/<id>` + `api_base https://api.meganova.ai/v1`):
+`free-mode` → manta-flash, manta-mini, Sapphira-70b; `free-mode-fast` → manta-flash;
+`free-mode-large` → Sapphira-70b, manta-flash; `free-mode-tools` → Mistral-Small-3.2-24B.
+
+**Proxy-level proof** (temporary `meganova-proof` group, removed after):
+`POST :4000/v1/chat/completions {"model":"meganova-proof","max_tokens":400}` → **http 200**,
+`finish=stop`, 276-char content ("Slippage in trading refers to the difference between the expected
+price of a trade and the actual price at which it is executed…"). `MEGANOVA_API_KEY` confirmed
+exported in the LiteLLM process env.
+
+**AnyAPI** — `ANYAPI(https://api.anyapi.ai/v1 / https://docs.anyapi.ai/)`, key on the next line
+(masked `sk-ePg…`). `GET /v1/models` → 200, **10 models, 6 `:free` ids** (OpenRouter-shaped).
+But every free chat returns
+`429 {"type":"free_tier_capacity","message":"Rate limit reached: free-tier daily cap is shared across users"}`
+with `x-should-retry: false` — it is a **shared global pool**, not a per-account daily allowance, so
+capacity comes and goes unpredictably. Wired anyway as opportunistic fallback (`free-mode` and
+`free-mode-large` → `nvidia/nemotron-3.5-lightning:free`, plus `google/gemma-4-26b-a4b-it:free` in
+free-mode); LiteLLM cooldown simply skips it while it 429s. Not counted as a reliable daily source.
+
+**Routeway** — `ROUTEWAY_API_KEY(ROUTEWAY.AI)` (masked `sk-pnn…`): `/v1/models` 200 (278 models) but
+chat `402 Insufficient balance … $0.000000 is available`. Balance must be topped up before it can
+carry traffic; not wired.
+
+After restart: liveliness 200, 20 groups, 119 deployments, `free-mode`, `free-mode-fast`,
+`free-mode-large`, `free-mode-tools`, `paid-mode` all 200; both new keys present in the process env.

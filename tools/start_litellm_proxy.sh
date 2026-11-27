@@ -269,6 +269,11 @@ parse_key "CURSOR_API_KEY"                                                      
 parse_key "KILOCODE_API_KEY"                                                         KILOCODE_API_KEY
 parse_key "OPENCODE_API_KEY"                                                         OPENCODE_API_KEY
 parse_key "BLUESMIND API KEY"                                                        BLUESMIND_API_KEY
+# MegaNova (console.meganova.ai) — free-tagged models only; label carries a console URL.
+parse_key "MEGANOVA_API_KEY"                                                          MEGANOVA_API_KEY
+# AnyAPI (api.anyapi.ai) — OpenRouter-style :free ids; free tier is a SHARED global pool
+# (type free_tier_capacity), so it is wired as opportunistic fallback only.
+parse_key "ANYAPI"                                                                    ANYAPI_API_KEY
 parse_key "SUBQ Token (\$5  free credit+\$20 more added )"                          SUBQ_API_KEY
 
 # Assemble the full per-account Cloudflare Workers AI URL once so the litellm
@@ -290,7 +295,7 @@ for v in NVIDIA_API_KEY NVIDIA_API_KEY_ALT GROQ_API_KEY GEMINI_API_KEY GEMINI_AP
          OLLAMA_CLOUD_KEY ANTHROPIC_API_KEY ANTHROPIC_API_KEY_ALT DEEPSEEK_API_KEY \
          MOONSHOT_API_KEY MOONSHOT_API_KEY_ALT OPENAI_API_KEY QWEN_API_KEY CHUTES_API_KEY \
          INCEPTION_API_KEY NOVITA_API_KEY CURSOR_API_KEY KILOCODE_API_KEY OPENCODE_API_KEY \
-         BLUESMIND_API_KEY XAI_API_KEY_ALT GROQ_API_KEY_ALT SUBQ_API_KEY SCALEWAY_API_KEY ZAI_API_KEY; do
+         BLUESMIND_API_KEY MEGANOVA_API_KEY ANYAPI_API_KEY XAI_API_KEY_ALT GROQ_API_KEY_ALT SUBQ_API_KEY SCALEWAY_API_KEY ZAI_API_KEY; do
   total=$((total+1))
   if [[ -n "${!v:-}" ]]; then loaded=$((loaded+1)); fi
 done
