@@ -1,8 +1,8 @@
 # GHA quality framework (Q1-Q10)
 
-- workflows scanned: 400 (parse errors: 0)
-- aggregate score: 94.9/100
-- blocking violations: 101
+- workflows scanned: 399 (parse errors: 1)
+- aggregate score: 94.7/100
+- blocking violations: 100
 - runtime signals merged: True
 
 ## Findings by rule
@@ -15,10 +15,10 @@
 | Q4 | self-push-without-skip-ci | P2 | 4 |
 | Q5 | duplicate-producer | P0 | 21 |
 | Q6 | orphan-artifact | P2 | 173 |
-| Q7 | silent-failure | P0 | 40 |
+| Q7 | silent-failure | P0 | 39 |
 | Q8 | missing-timeout | P1 | 4 |
 | Q9 | secret-sprawl | P2 | 16 |
-| Q10 | dead-schedule | P2 | 29 |
+| Q10 | dead-schedule | P2 | 28 |
 
 ## Blocking findings
 
@@ -92,7 +92,6 @@
 | Q7 | Unified Audit Dashboard | gate-shaped step swallows failure: Run pick-flow funnel snapshot (DB → per-class raw/gated/forward-test counts) |
 | Q7 | Audit Drift Telemetry | gate-shaped step swallows failure: Pending SPA governance check |
 | Q7 | Audit Drift Telemetry | gate-shaped step swallows failure: Data source health check (C-008) |
-| Q7 | CI | gate-shaped step swallows failure: Lint — Python style, changed files only |
 | Q7 | Cross-System Signal Aggregator | gate-shaped step swallows failure: Forward-test top picks |
 | Q7 | Daily Miracle DayTrades Scan | gate-shaped step swallows failure: Verify miracle dashboard |
 | Q7 | Daily Picks Snapshot  Crypto, Forex & Stocks | gate-shaped step swallows failure: Verify crypto picks |
@@ -104,12 +103,14 @@
 | Q7 | DB Sync: findtorontoevents.ca  torontoevent.net | gate-shaped step swallows failure: Verify export script deployed |
 | Q7 | Deals & Freebies  Verify & Refresh | gate-shaped step swallows failure: Verify deals API health |
 | Q7 | Deals & Freebies  Verify & Refresh | gate-shaped step swallows failure: Verify birthday freebies |
+| Q7 | Deals & Freebies  Verify & Refresh | gate-shaped step swallows failure: Verify free today |
 
 ## Lowest-scoring workflows
 
 | Workflow | Score |
 |---|---|
 | Unified Audit Dashboard | 0 |
+|  | 0 |
 | Deals & Freebies  Verify & Refresh | 0 |
 | Daily Picks Snapshot  Crypto, Forex & Stocks | 25 |
 | Meta-Strategy Permutation Engine | 40 |
@@ -121,9 +122,8 @@
 | AI Tournament Pipeline — Daily Picks + DB Ingest | 57 |
 | ALPHA ENGINE - Live Autonomous Scanner | 60 |
 | DB Freshness Guardian | 65 |
+| DB Sync: findtorontoevents.ca  torontoevent.net | 65 |
 | Verified pilot daily | 70 |
-| Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities | 72 |
-| [torontoevent.net] Deploy Rise of the Claw | 72 |
 
 ## Advisory findings (P2)
 
