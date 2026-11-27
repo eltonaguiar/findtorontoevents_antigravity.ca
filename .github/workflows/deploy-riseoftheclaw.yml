@@ -15,6 +15,11 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  # deploy-pages lists this run's artifacts via the Actions API before it deploys. Declaring a
+  # permissions block zeroes every unlisted scope, so without actions: read the lookup returns an
+  # empty list and the step dies with 'No artifacts named "github-pages" were found' - even though
+  # upload-pages-artifact had just uploaded 47 MB successfully.
+  actions: read
 
 # One concurrent deployment.
 #
