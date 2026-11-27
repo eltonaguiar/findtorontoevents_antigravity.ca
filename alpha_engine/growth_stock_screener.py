@@ -25,6 +25,23 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+def _sanitize_json(obj):
+    """NaN/Infinity are not valid JSON - browsers reject the whole payload.
+
+    Replacing them with null keeps every other field available; raising (allow_nan=False) would
+    throw away the run that produced them.
+    """
+    import math
+    if isinstance(obj, float):
+        return None if (math.isnan(obj) or math.isinf(obj)) else obj
+    if isinstance(obj, dict):
+        return {k: _sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_json(v) for v in obj]
+    return obj
+
+
+
 STRATEGY_NAME = "growth_stock_screener"
 ASSET_CLASS = "EQUITY"
 SOURCE_SYSTEM = "growth_stock_screener"
@@ -253,7 +270,7 @@ def _fetch_history(symbol: str, period: str = "13mo") -> Any | None:
         # Cache closes for reproducibility
         try:
             closes = [float(x) for x in hist["Close"].tolist()]
-            cache_path.write_text(json.dumps({"closes": closes,
+            cache_path.write_text(json.dumps(_sanitize_json({"closes": closes,
                                               "fetched_at": datetime.now(timezone.utc).isoformat()}))
         except Exception:
             pass
@@ -391,7 +408,7 @@ def _emit_picks_file(picks: list[dict], out_path: Path) -> None:
         "total_picks": len(picks),
         "picks": picks,
     }
-    out_path.write_text(json.dumps(payload, indent=2))
+    out_path.write_text(json.dumps(_sanitize_json(payload), indent=2))
 
 
 def main() -> int:
