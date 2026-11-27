@@ -206,3 +206,37 @@ thinking. Callers must send a generous `max_tokens` (or read `reasoning_content`
 
 Verified after restart: liveliness 200; `free-mode`, `free-mode-fast`, `free-mode-tools`,
 `paid-mode`, `paid-mode-large` all 200; Bluesminds free-tier deployments remain removed.
+
+## 15. Cohere monthly re-check and the COMS roster crash fix
+
+**Cohere re-check (scheduled).** `tools/cohere_monthly_recheck.py` probes the trial key once and,
+because the allowance is a *monthly* 1000 calls, puts it back automatically when it starts answering:
+
+- probe: `POST https://api.cohere.com/v2/chat` (`command-r-plus-08-2024`, `max_tokens: 8`);
+- `200` → insert the `cohere/command-r-plus-08-2024` deployments into `free-mode` and
+  `free-mode-large` (key from `os.environ/COHERE_API_KEY`, which the launcher already parses from
+  `COHERE_TRIAL_API_KEY`), restart the proxy, verify `free-mode`, write `reports/cohere_recheck_state.json`;
+- `429` → change nothing, record `quota_exhausted`;
+- `401/403` → record `key_rejected`, change nothing (a new key is a human decision);
+- `--dry-run` probes without touching config; `--no-restart` wires but leaves the process alone.
+
+Installed cron (user crontab): `15 9 1 * * … python3 tools/cohere_monthly_recheck.py >> logs/cohere_recheck.log 2>&1`
+— 09:15 on the 1st, i.e. after the quota resets at month boundary.
+Verified: `--dry-run` on 2026-11-27 returned 429 → `status: quota_exhausted`, no config change, exit 0.
+
+**COMS roster crash.** `COMS roster` died with
+`AttributeError: 'str' object has no attribute 'get'` from `take(obj)` in
+`AGENT_FOLDERFRAMEWORK/COMMUNICATION/coms`: a retained `registry/#` payload can be a bare JSON
+string, and `take()` assumed every payload parses to an object. Fixed with a
+`if not isinstance(obj, dict): return` guard at the top of `take()`, so one malformed row cannot
+blank the whole roster. `bash -n` passes and `COMS roster` now prints the table.
+Pushed for review: `eltonaguiar/AGENT_FOLDERFRAMEWORK` branch `fix/coms-roster-nonobject-guard`,
+PR https://github.com/eltonaguiar/AGENT_FOLDERFRAMEWORK/pull/12 (only `COMMUNICATION/coms` changed).
+`coms.ps1` does not share the bug — its `ConvertFrom-Json` result is accessed as a property, which
+yields `$null` rather than throwing.
+
+**Bluesminds end-to-end.** With `max_tokens: 1200` a real prompt through the proxy returned useful
+prose: `paid-mode` → 218 chars, `paid-mode-large` → 246 chars, and directly against Bluesminds the
+`nvidia/nemotron-3.5-lightning-30b-a3b` deployment returned 267 chars of content with 2034 chars of
+`reasoning_content` (497 completion tokens). `GET /model/info` shows all 14 Bluesminds deployments
+registered under `paid-mode` / `paid-mode-fast` / `paid-mode-large`.
