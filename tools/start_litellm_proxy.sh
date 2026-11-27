@@ -243,7 +243,11 @@ parse_key "HUGGING_FACE_TOKEN ALT(TRIED FINE GRAIN AND SETTING BUNCH OF CHECKBOX
 parse_key "HUGGINF_FACE TOKEN ALT2(READ):"                                           HF_API_TOKEN_READ
 
 # --- New providers (file uses no-colon header style here) ---
-parse_key "OPEN ROUTER API KEY"                                                      OPENROUTER_API_KEY
+# OpenRouter has two keys with the same brand label: the paid one has a $45/$50 cap and is
+# exhausted, the FREE one carries a $0 limit and may only reach :free models. Prefix matching
+# would bind both to the first label, so the free key is named explicitly.
+parse_key "OPEN ROUTER API KEY (OPENROUTER)-->FREE KEY"                                OPENROUTER_API_KEY
+parse_key "OPEN ROUTER API KEY (OPENROUTER)-->PAID KEY"                                OPENROUTER_PAID_API_KEY
 parse_key "OFOX_API_KEY"                                                             OFOX_AI_KEY
 parse_key "GROK:"                                                                    XAI_API_KEY      # = GROK NEW (first under GROK:)
 parse_key "GROK NEW2:"                                                               XAI_API_KEY_ALT  # second xAI key
@@ -282,7 +286,7 @@ for v in NVIDIA_API_KEY NVIDIA_API_KEY_ALT GROQ_API_KEY GEMINI_API_KEY GEMINI_AP
          FIREWORKS_API_KEY FIREWORKS_API_KEY_ALT DEEPINFRA_API_KEY DEEPINFRA_API_KEY_ALT \
          NOUS_API_KEY NOUS_API_KEY_ALT MISTRAL_API_KEY MISTRAL_API_KEY_ALT MISTRAL_API_KEY_ALT2 MISTRAL_API_KEY_NEW \
          AIMLAPI_FREE_KEY AIMLAPI_PAID_KEY HYPEREAL_API_KEY HYPEREAL_API_KEY_ALT \
-         CF_ACCOUNT_ID CF_API_TOKEN OPENROUTER_API_KEY OFOX_AI_KEY XAI_API_KEY \
+         CF_ACCOUNT_ID CF_API_TOKEN OPENROUTER_API_KEY OPENROUTER_PAID_API_KEY OFOX_AI_KEY XAI_API_KEY \
          OLLAMA_CLOUD_KEY ANTHROPIC_API_KEY ANTHROPIC_API_KEY_ALT DEEPSEEK_API_KEY \
          MOONSHOT_API_KEY MOONSHOT_API_KEY_ALT OPENAI_API_KEY QWEN_API_KEY CHUTES_API_KEY \
          INCEPTION_API_KEY NOVITA_API_KEY CURSOR_API_KEY KILOCODE_API_KEY OPENCODE_API_KEY \

@@ -267,3 +267,44 @@ POST http://127.0.0.1:4000/v1/chat/completions  {"model":"bluesminds-proof","max
 
 Config restored to the committed state afterwards (`bluesminds-proof` count = 0), proxy restarted,
 `free-mode` / `paid-mode` / `paid-mode-large` all 200, liveliness 200.
+
+## 17. OpenRouter free key vs paid key (and why the $0 key still 429s)
+
+The operator added a second OpenRouter key: `OPEN ROUTER API KEY (OPENROUTER)-->FREE KEY`, capped at
+**$0 credit limit**, meant for `:free` models only, next to the paid key with a $50 limit.
+The launcher previously bound `OPENROUTER_API_KEY` to the label `OPEN ROUTER API KEY`, which (once
+parse_key started prefix-matching) resolved to whichever of the two appeared first — the **paid** one.
+Now it is explicit:
+
+```sh
+parse_key "OPEN ROUTER API KEY (OPENROUTER)-->FREE KEY"   OPENROUTER_API_KEY
+parse_key "OPEN ROUTER API KEY (OPENROUTER)-->PAID KEY"   OPENROUTER_PAID_API_KEY
+```
+
+`config` uses only `:free` ids, so they now go out on the $0 key. Confirmed in the running process:
+both `OPENROUTER_API_KEY=sk-or-v1-eeb…` and `OPENROUTER_PAID_API_KEY=sk-or-v1-5a2…` are exported.
+
+**Measured state of both keys (2026-11-27T17:4x Z):**
+
+| key | `GET /api/v1/key` | chat |
+|---|---|---|
+| FREE (`…526`) | `limit: 0, limit_remaining: 0, usage: 0` | `429 free-models-per-day-high-balance` |
+| PAID (`…0ae`) | `limit: 45, limit_remaining: 0` | `403 Key limit exceeded (total limit) $45.25 of $45.00` |
+
+The 429 is **not** about the free key: OpenRouter's daily free-model allowance is
+**account-wide** (`limit_source: openrouter_free_tier_daily`, `X-RateLimit-Limit: 1000`,
+`X-RateLimit-Remaining: 0`, `X-RateLimit-Reset: 1795824000000` → **2026-11-28 00:00:00Z**).
+A second key with a $0 cap does not add quota; the 1000/day is shared by the account and is spent for
+today. Free models therefore return 200 again after that reset, on the same keys.
+
+Catalogue check: 13 free ids today —
+`baidu/ernie-5.5-flash-preview:free`, `liquid/lfm-3-1.7b:free`, `particle-ai/particle-1:free`,
+`recursive/flint-v1.0:free`, `nvidia/nemotron-3.5-super-vl:free`, `nvidia/nemotron-3.5-lightning:free`,
+`nvidia/nemotron-3-ultra-550b-a55b:free`, `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`,
+`google/gemma-4-26b-a4b-it:free`, `google/gemma-4-31b-it:free`, `google/lyria-3-pro-preview`,
+`google/lyria-3-clip-preview`, `openrouter/free`. The dead non-free
+`openrouter/inclusionai/ring-2.6-1t` entry in `free-mode-large` was pointed at
+`nvidia/nemotron-3.5-lightning:free`.
+
+After restart: liveliness 200, 20 groups, `free-mode` / `free-mode-large` / `free-mode-tools` /
+`paid-mode` all 200 (they fall through to non-OpenRouter deployments while the daily cap is spent).
