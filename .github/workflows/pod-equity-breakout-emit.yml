@@ -6,8 +6,10 @@ name: POD-EQUITY-BREAKOUT emitter
 # daily cadence is what lets the forward clock accrue honestly instead of declining the pod.
 
 on:
-  schedule:
-    - cron: '20 21 * * 1-5'   # after US close, weekdays
+  # Cron removed 2026-11-27: the pod is declined. It emitted 59 real rows at a 14.3% win rate and a
+  # -2.70% expectancy, and a 24-combo exit sweep found no positive-expectancy configuration, so
+  # emitting daily only publishes losing picks. Manual dispatch stays so the signal can be re-tested
+  # if the universe or the entry rule changes.
   workflow_dispatch:
 
 concurrency:
