@@ -271,7 +271,7 @@ def _fetch_history(symbol: str, period: str = "13mo") -> Any | None:
         try:
             closes = [float(x) for x in hist["Close"].tolist()]
             cache_path.write_text(json.dumps(_sanitize_json({"closes": closes,
-                                              "fetched_at": datetime.now(timezone.utc).isoformat()}))
+                                              "fetched_at": datetime.now(timezone.utc).isoformat()})))
         except Exception:
             pass
         return hist
