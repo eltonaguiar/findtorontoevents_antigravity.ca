@@ -74,15 +74,15 @@ model_list:
   - {model_name: ULTRA_FREE_CLOUD_FAST, litellm_params: {model: groq/openai/gpt-oss-20b, api_key: os.environ/GROQ_API_KEY}}
   - {model_name: ULTRA_FREE_CLOUD_FAST, litellm_params: {model: groq/openai/gpt-oss-20b, api_key: os.environ/GROQ_API_KEY_ALT}}
   - {model_name: ULTRA_FREE_CLOUD_FAST, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY, api_base: https://integrate.api.nvidia.com/v1}}
-  - {model_name: ULTRA_FREE_CLOUD_FAST, litellm_params: {model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10, timeout: 120}}
+  - {model_name: ULTRA_FREE_CLOUD_FAST, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10, timeout: 120}}
   - {model_name: ULTRA_FREE_CLOUD, litellm_params: {model: groq/openai/gpt-oss-20b, api_key: os.environ/GROQ_API_KEY}}
-  - {model_name: ULTRA_FREE_CLOUD, litellm_params: {model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10, timeout: 120}}
+  - {model_name: ULTRA_FREE_CLOUD, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10, timeout: 120}}
   - {model_name: ULTRA_FREE_NVIDIA, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY, api_base: https://integrate.api.nvidia.com/v1}}
   - {model_name: ULTRA_FREE_NVIDIA, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY_ALT, api_base: https://integrate.api.nvidia.com/v1}}
   - {model_name: ULTRA_FREE_TOOLS, litellm_params: {model: groq/openai/gpt-oss-20b, api_key: os.environ/GROQ_API_KEY}}
-  - {model_name: ULTRA_FREE_TOOLS, litellm_params: {model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10, timeout: 120}}
+  - {model_name: ULTRA_FREE_TOOLS, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10, timeout: 120}}
   - {model_name: ULTRA_FREE_CLOUD_TOOLS, litellm_params: {model: groq/openai/gpt-oss-20b, api_key: os.environ/GROQ_API_KEY}}
-  - {model_name: ULTRA_FREE_CLOUD_TOOLS, litellm_params: {model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10, timeout: 120}}
+  - {model_name: ULTRA_FREE_CLOUD_TOOLS, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10, timeout: 120}}
   # ====================================================================
   # Xiaomi Mimo — paid token plan (token-plan-sgp). Uses current live model IDs
   # (mimo-v2.5-pro etc). The old "xiaomi-mimo-v1" alias was removed by provider.
@@ -98,25 +98,23 @@ model_list:
 
   # Google model limits (from dashboard) are enforced per deployment via rpm.
   # Router pre-call checks + cooldown rotate first, then wait for next window.
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
+  - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
+  - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
+  - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
+  - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
   - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-3-flash-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
+  - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
   - {model_name: free-mode, litellm_params: {model: gemini/gemma-4-26b-a4b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: free-mode, litellm_params: {model: gemini/gemma-4-31b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   # Requested additions: currently quota-gated in direct checks; keep low rpm
   # so router can try them opportunistically without causing noisy churn.
   - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.1-pro-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
   - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.5-pro, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.0-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode, litellm_params: {model: gemini/gemini-2.0-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  - {model_name: free-mode, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
   # Cohere — REMOVED 2026-11-27: trial key is a 1000-calls/month cap with no daily
   # refresh, so it silently dies mid-month. Removed from both proxy and Kilo.
 
-  - {model_name: free-mode, litellm_params: {model: openai/gpt-4o-mini, api_key: os.environ/GITHUB_MODELS_KEY,  api_base: https://models.inference.ai.azure.com}}
-  - {model_name: free-mode, litellm_params: {model: openai/gpt-4o-mini, api_key: os.environ/GITHUB_MODELS_KEY2, api_base: https://models.inference.ai.azure.com}}
 
   - {model_name: free-mode, litellm_params: {model: fireworks_ai/accounts/fireworks/models/kimi-k2p5, api_key: os.environ/FIREWORKS_API_KEY}}
   - {model_name: free-mode, litellm_params: {model: fireworks_ai/accounts/fireworks/models/kimi-k2p5, api_key: os.environ/FIREWORKS_API_KEY_ALT}}
@@ -136,7 +134,6 @@ model_list:
   # Bluesmind — Chinese AI aggregator (OpenAI-compat). Free tier verified
   # 2026-05-25 with meta/llama-3.1-8b-instruct; deepseek-v4-flash returns
   # "Tier Restriction" so don't list it here. Larger models are paid.
-  - {model_name: free-mode, litellm_params: {model: openai/meta/llama-3.1-8b-instruct, api_key: os.environ/BLUESMIND_API_KEY, api_base: https://api.bluesminds.com/v1}}
 
   # Kilocode — OpenRouter-compatible gateway with free-tier models.
   # x-ai/grok-code-fast-1:optimized:free is excluded — uses /responses API
@@ -147,6 +144,12 @@ model_list:
   # Opencode Zen — REMOVED 2026-11-27: every model returned 403 Forbidden
   # (auth/entitlement gone), so it only wasted a rotation slot.
 
+  # ---- daily-refresh free sources (added 2026-11-27) ----
+  # Z.ai: free GLM-flash tier. Scaleway: 1M token grant. OVH: 2 RPM/IP keyless.
+  # Pollinations: keyless. None of these bill a card; first three refresh over time.
+  - {model_name: free-mode, litellm_params: {model: 'openai/openai-fast', api_base: https://text.pollinations.ai, api_key: no-key-required}}
+
+  - {model_name: free-mode, litellm_params: {model: 'openai/glm-4.7-flash', api_base: https://api.z.ai/api/paas/v4, api_key: os.environ/ZAI_API_KEY}}
   # Cerebras: works for non-tool-call requests — fine for plain chat. Roo's tool
   # schemas with minItems/maxItems will still 400, but those auto-fall-through.
   - {model_name: free-mode, litellm_params: {model: cerebras/llama3.1-8b, api_key: os.environ/CEREBRAS_API_KEY}}
@@ -168,7 +171,6 @@ model_list:
   - {model_name: free-mode-fast, litellm_params: {model: cerebras/llama3.1-8b,              api_key: os.environ/CEREBRAS_API_KEY}}                                              # 287 tok/s
   - {model_name: free-mode-fast, litellm_params: {model: groq/openai/gpt-oss-20b,         api_key: os.environ/GROQ_API_KEY}}                                                  # 224 tok/s
   - {model_name: free-mode-fast, litellm_params: {model: groq/openai/gpt-oss-20b,         api_key: os.environ/GROQ_API_KEY_ALT}}                                              # 240 tok/s
-  - {model_name: free-mode-fast, litellm_params: {model: openai/meta/llama-3.1-8b-instruct, api_key: os.environ/BLUESMIND_API_KEY, api_base: https://api.bluesminds.com/v1}}   # 103 tok/s
 
   # ====================================================================
   # PAID MODE FAST — top paid providers by TPS (all entries ≥50 tok/s).
@@ -200,31 +202,28 @@ model_list:
   # ====================================================================
   - {model_name: free-mode-tools, litellm_params: {model: groq/openai/gpt-oss-20b,                   api_key: os.environ/GROQ_API_KEY}}
   - {model_name: free-mode-tools, litellm_params: {model: groq/openai/gpt-oss-20b,                   api_key: os.environ/GROQ_API_KEY_ALT}}
-  - {model_name: free-mode-tools, litellm_params: {model: openai/gpt-4o-mini,                          api_key: os.environ/GITHUB_MODELS_KEY,  api_base: https://models.inference.ai.azure.com}}
-  - {model_name: free-mode-tools, litellm_params: {model: openai/gpt-4o-mini,                          api_key: os.environ/GITHUB_MODELS_KEY2, api_base: https://models.inference.ai.azure.com}}
   - {model_name: free-mode-tools, litellm_params: {model: mistral/mistral-small-latest,                api_key: os.environ/MISTRAL_API_KEY_NEW}}
   - {model_name: free-mode-tools, litellm_params: {model: openai/meta-llama/Meta-Llama-3.1-8B-Instruct,api_key: os.environ/DEEPINFRA_API_KEY_ALT, api_base: https://api.deepinfra.com/v1/openai}}
   # AIMLAPI free key is intentionally disabled here because the cb876... key
   # currently returns ALL_TIME_LIMIT_EXCEEDED on chat calls.
   - {model_name: free-mode-tools, litellm_params: {model: openai/gpt-5.5-instant,                      api_key: os.environ/HYPEREAL_API_KEY,   api_base: https://api.hypereal.cloud/v1}}
-  - {model_name: free-mode-tools, litellm_params: {model: openai/meta/llama-3.1-8b-instruct,           api_key: os.environ/BLUESMIND_API_KEY,  api_base: https://api.bluesminds.com/v1}}
   - {model_name: free-mode-tools, litellm_params: {model: openrouter/google/gemma-4-31b-it:free,        api_key: os.environ/OPENROUTER_API_KEY}}
 
   # ====================================================================
   # FREE MODE LARGE — long-context fallback (>=128k input)
   # ====================================================================
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
+  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
+  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
+  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
+  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
   - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3-flash-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
+  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
   - {model_name: free-mode-large, litellm_params: {model: gemini/gemma-4-26b-a4b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: free-mode-large, litellm_params: {model: gemini/gemma-4-31b-it, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.1-pro-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
   - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.5-pro, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.0-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-2.0-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  - {model_name: free-mode-large, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
   - {model_name: free-mode-large, litellm_params: {model: openrouter/inclusionai/ring-2.6-1t, api_key: os.environ/OPENROUTER_API_KEY}}
   - {model_name: free-mode-large, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY, api_base: https://integrate.api.nvidia.com/v1}}
   - {model_name: free-mode-large, litellm_params: {model: fireworks_ai/accounts/fireworks/models/kimi-k2p5, api_key: os.environ/FIREWORKS_API_KEY}}
@@ -286,8 +285,7 @@ model_list:
   # ====================================================================
   - {model_name: hybrid-model, litellm_params: {model: groq/openai/gpt-oss-20b, api_key: os.environ/GROQ_API_KEY}}
   - {model_name: hybrid-model, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY, api_base: https://integrate.api.nvidia.com/v1}}
-  - {model_name: hybrid-model, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
-  - {model_name: hybrid-model, litellm_params: {model: openai/gpt-4o-mini, api_key: os.environ/GITHUB_MODELS_KEY, api_base: https://models.inference.ai.azure.com}}
+  - {model_name: hybrid-model, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
   - {model_name: hybrid-model, litellm_params: {model: openai/gpt-5.5-instant, api_key: os.environ/HYPEREAL_API_KEY, api_base: https://api.hypereal.cloud/v1}}
   # ====================================================================
   # HYBRID MODEL LARGE — rebuilt 2026-11-27 (old build was 92% dead).
@@ -295,7 +293,7 @@ model_list:
   # ====================================================================
   - {model_name: hybrid-model-large, litellm_params: {model: groq/openai/gpt-oss-120b,          api_key: os.environ/GROQ_API_KEY}}
   - {model_name: hybrid-model-large, litellm_params: {model: groq/qwen/qwen3.8-27b,             api_key: os.environ/GROQ_API_KEY}}
-  - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.5-flash,           api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5, timeout: 120}}
+  - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.5-flash-lite,           api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5, timeout: 120}}
   - {model_name: hybrid-model-large, litellm_params: {model: mistral/mistral-small-latest,      api_key: os.environ/MISTRAL_API_KEY_NEW}}
   - {model_name: hybrid-model-large, litellm_params: {model: deepseek/deepseek-chat,            api_key: os.environ/DEEPSEEK_API_KEY}}
 
@@ -307,15 +305,15 @@ model_list:
   - {model_name: subq-savant-direct, litellm_params: {model: 'openai/subq-savant-1.4',   api_base: https://api.subq.ai/v1, api_key: os.environ/SUBQ_API_KEY}}
   - {model_name: paid-mode,          litellm_params: {model: 'openai/subq-savant-1.4',   api_base: https://api.subq.ai/v1, api_key: os.environ/SUBQ_API_KEY}}
 
-  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
-  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
-  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.5-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
-  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
+  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY, rpm: 5}}
+  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT, rpm: 5}}
+  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 5}}
+  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 10}}
   # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 15}}
   # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.1-pro-preview, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
   # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.5-pro, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.0-flash, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
-  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-2.0-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.5-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
+  # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: gemini/gemini-3.1-flash-lite, api_key: os.environ/GEMINI_API_KEY_ALT2, rpm: 1}}
   # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: openrouter/inclusionai/ring-2.6-1t, api_key: os.environ/OPENROUTER_API_KEY}}
   # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: nvidia_nim/meta/llama-3.1-8b-instruct, api_key: os.environ/NVIDIA_API_KEY, api_base: https://integrate.api.nvidia.com/v1}}
   # [dead 2026-11-27] - {model_name: hybrid-model-large, litellm_params: {model: fireworks_ai/accounts/fireworks/models/kimi-k2p5, api_key: os.environ/FIREWORKS_API_KEY}}
@@ -333,6 +331,7 @@ model_list:
 
 # BEGIN ollama-cloud-autosync (managed by tools/sync_ollama_cloud_models.py)
 # auto-generated — do not edit by hand; re-run the sync script instead
+  - {model_name: ULTRA_PAID_OLLAMA_LOKER_V2_1_CLD_CDR_480B, litellm_params: {model: 'ollama_chat/artiku348/loker.v2.1-cld-cdr-480b:latest', api_base: http://localhost:11434, api_key: ollama}}
   - {model_name: ULTRA_PAID_OLLAMA_GEMMA4_31B_CLOUD, litellm_params: {model: 'ollama_chat/gemma4:31b-cloud', api_base: http://localhost:11434, api_key: ollama}}
   - {model_name: ULTRA_PAID_OLLAMA_MINIMAX_M3_CLOUD, litellm_params: {model: 'ollama_chat/minimax-m3:cloud', api_base: http://localhost:11434, api_key: ollama}}
 # END ollama-cloud-autosync

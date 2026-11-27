@@ -146,3 +146,32 @@ Removed: the proxy deployment (earlier this pass), the Kilo provider, and now th
 launcher plumbing (`parse_key "LLM7_API_KEY_FREE"` + the `LLM7_API_KEY` pre-flight entry).
 Verified: 0 `llm7` references in `litellm_config.yaml` deployments, the generated spillover config,
 the running proxy's `/v1/models`, and `kilo.jsonc`.
+
+## 13. Gemini 2.x retirement + Bluesminds moved to paid-only
+
+**What "migrate Gemini" meant:** not a cosmetic version bump. Per the sourced listing, the Gemini
+2.5 Pro/Flash **free tier shuts down 2026-12-01**, and `gemini-2.5-flash` already returns
+`429 You exceeded your current quota` on our key. "Migrate" = change only the model string on the
+same endpoint/key, to ids that are live and free today.
+
+| Old id | Deployments | New id | Live check |
+|---|---|---|---|
+| `gemini-2.5-flash` | 12 | `gemini-3.5-flash-lite` | direct 200 with content |
+| `gemini-2.5-flash-lite` / `2.0-flash*` | 10 | `gemini-3.1-flash-lite` | direct 200 with content |
+| `gemini-3-flash-preview` | 2 | `gemini-3.5-flash-lite` | old id 429 on free tier |
+| `gemini-2.5-pro` | 2 | unchanged | `gemini-3.1-pro-preview` 429s on this tier |
+
+`gemini-3.6-flash`/`3.8-flash` returned 503 (overloaded) and `gemini-3.5-flash` timed out, so they
+were not used.
+
+**Bluesminds** has $98.93 allocated, so it now backs **paid pools only** — the three `llama-3.1-8b`
+deployments were removed from `free-mode`, `free-mode-fast` and `free-mode-tools`; remaining
+Bluesminds deployments are in `paid-mode`, `paid-mode-fast`, `paid-mode-large`.
+Caveat: with the real key every configured Bluesminds id returns
+`503 No available channel for model …` — the account's model ids have changed, so the paid entries
+need their ids refreshed from `GET /v1/models` before they can answer.
+
+**Newly tested and rejected** (valid key, no budget — not wired): Requesty (402 org balance, 760
+models listed), Routeway (402 insufficient balance, 278 models), SiliconFlow `.com` (402 balance,
+80 models). Scaleway auth works but every chat is `423 model_locked`; OVH stays 429 even after a
+70 s cooldown at its 2 RPM/IP.

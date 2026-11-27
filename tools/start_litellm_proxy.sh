@@ -230,6 +230,8 @@ parse_key "FIREWORKS FREE API KEY ALT:"                                         
 parse_key "NOUS API KEY ALT USE ONLY FREE MODELS:"                                   NOUS_API_KEY_ALT
 parse_key "MISTRAL API KEY ALT:"                                                     MISTRAL_API_KEY_ALT
 parse_key "MISTRAL API KEY ALT2:"                                                    MISTRAL_API_KEY_ALT2
+parse_key "SCALEWAY_SECRET_KEY:"                                                      SCALEWAY_API_KEY
+parse_key "ZAI_API_KEY3_NOV2026:"                                                     ZAI_API_KEY
 parse_key "MISTRAL_API_KEY_NEW_NOV27:"                                                MISTRAL_API_KEY_NEW
 parse_key "AIMLAPIKEY PAID (\$20 limit):"                                            AIMLAPI_PAID_KEY
 parse_key "HYPEREAL CLOUD API KEY 2:"                                                HYPEREAL_API_KEY_ALT
@@ -280,7 +282,7 @@ for v in NVIDIA_API_KEY NVIDIA_API_KEY_ALT GROQ_API_KEY GEMINI_API_KEY GEMINI_AP
          OLLAMA_CLOUD_KEY ANTHROPIC_API_KEY ANTHROPIC_API_KEY_ALT DEEPSEEK_API_KEY \
          MOONSHOT_API_KEY MOONSHOT_API_KEY_ALT OPENAI_API_KEY QWEN_API_KEY CHUTES_API_KEY \
          INCEPTION_API_KEY NOVITA_API_KEY CURSOR_API_KEY KILOCODE_API_KEY OPENCODE_API_KEY \
-         BLUESMIND_API_KEY XAI_API_KEY_ALT GROQ_API_KEY_ALT SUBQ_API_KEY; do
+         BLUESMIND_API_KEY XAI_API_KEY_ALT GROQ_API_KEY_ALT SUBQ_API_KEY SCALEWAY_API_KEY ZAI_API_KEY; do
   total=$((total+1))
   if [[ -n "${!v:-}" ]]; then loaded=$((loaded+1)); fi
 done
