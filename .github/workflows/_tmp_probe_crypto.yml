@@ -1,0 +1,120 @@
+name: _tmp probe CRYPTO
+on:
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: probe
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_PORT: '3306'
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+        run: |
+          python3 -m pip install --quiet pymysql
+          python3 - <<'PY'
+          import os, json, statistics as st
+          from collections import defaultdict, Counter
+          import pymysql
+
+          cn = pymysql.connect(host=os.environ['DB_HOST'], port=int(os.environ.get('DB_PORT','3306')), user=os.environ['DB_USER'], password=os.environ['DB_PASS'], database='ejaguiar1_stocks', connect_timeout=20)
+          cur = cn.cursor()
+          cur.execute("SELECT id, symbol, direction, strategy, source_system, pnl_pct, created_at, status, entry_price, exit_price FROM trading_picks WHERE LOWER(category)='crypto'")
+          rows = cur.fetchall()
+          cur.close(); cn.close()
+
+          recs = []
+          for r in rows:
+              rid, symbol, direction, strategy, source_system, pnl_pct, created_at, status, entry_price, exit_price = r
+              recs.append({'id': rid, 'symbol': symbol, 'direction': direction, 'strategy': strategy or 'UNNAMED', 'source_system': source_system or 'UNKNOWN', 'pnl_pct': float(pnl_pct) if pnl_pct is not None else None, 'created_at': str(created_at) if created_at is not None else None})
+
+          by_strat = defaultdict(list)
+          for r in recs:
+              by_strat[r['strategy']].append(r)
+
+          def mean(xs):
+              xs = [x for x in xs if x is not None]
+              return sum(xs)/len(xs) if xs else None
+
+          def trimmed(xs):
+              xs = sorted(x for x in xs if x is not None)
+              if not xs: return None
+              n = len(xs)
+              k = max(1, round(n * 0.01))
+              if k >= n: k = n - 1
+              return sum(xs[:n-k]) / (n - k)
+
+          strategies = []
+          all_pnls = []
+
+          for name in sorted(by_strat):
+              rows_list = by_strat[name]
+              pnls = [r['pnl_pct'] for r in rows_list if r['pnl_pct'] is not None]
+              raw_n = len(pnls)
+              all_pnls += pnls
+              dated = [r for r in rows_list if r['created_at'] is not None]
+              groups = {}
+              for r in dated:
+                  groups.setdefault((r['symbol'], r['direction'], r['created_at'][:10]), r)
+              deduped = list(groups.values())
+              deduped_n = len(deduped)
+              dpnls = [r['pnl_pct'] for r in deduped if r['pnl_pct'] is not None]
+              null_created = sum(1 for r in rows_list if r['created_at'] is None)
+              dsorted = sorted(deduped, key=lambda r: r['created_at'])
+              mid = len(dsorted) // 2
+              fh = [r['pnl_pct'] for r in dsorted[:mid] if r['pnl_pct'] is not None]
+              sh = [r['pnl_pct'] for r in dsorted[mid:] if r['pnl_pct'] is not None]
+              symc = Counter(r['symbol'] for r in deduped)
+              top_sym, top_cnt = symc.most_common(1)[0] if symc else (None, 0)
+              wr = sum(1 for v in dpnls if v > 0) / len(dpnls) * 100 if dpnls else None
+              mn = mean(dpnls)
+              med = st.median(dpnls) if dpnls else None
+              tri = trimmed(dpnls)
+              fhm = mean(fh)
+              shm = mean(sh)
+              share = top_cnt / len(deduped) * 100 if deduped else 0
+              if deduped_n < 30:
+                  verdict = 'UNINFORMATIVE'
+              elif top_sym and share > 30:
+                  verdict = 'CONCENTRATED'
+              elif mn is not None and mn > 0:
+                  verdict = 'EDGE'
+              else:
+                  verdict = 'NO_EDGE'
+              strategies.append({
+                  'name': name, 'raw_n': raw_n, 'deduped_n': deduped_n,
+                  'win_rate_pct': round(wr, 2) if wr is not None else None,
+                  'mean_pct': round(mn, 4) if mn is not None else None,
+                  'median_pct': round(med, 4) if med is not None else None,
+                  'trimmed_mean_pct': round(tri, 4) if tri is not None else None,
+                  'first_half_mean': round(fhm, 4) if fhm is not None else None,
+                  'second_half_mean': round(shm, 4) if shm is not None else None,
+                  'top_symbol_share_pct': round(share, 2),
+                  'verdict': verdict,
+              })
+
+          class_mean = mean(all_pnls)
+          class_tri = trimmed(all_pnls)
+          dated_pnls = [r['pnl_pct'] for r in recs if r['created_at'] is not None and r['pnl_pct'] is not None]
+          class_mean_dated = mean(dated_pnls)
+          mega = by_strat.get('mega_mutation', [])
+          mega_null = sum(1 for r in mega if r['created_at'] is None)
+          mega_pnls = [r['pnl_pct'] for r in mega if r['pnl_pct'] is not None]
+          mega_dated_pnls = [r['pnl_pct'] for r in mega if r['created_at'] is not None and r['pnl_pct'] is not None]
+          ss = defaultdict(list)
+          for r in recs:
+              if r['pnl_pct'] is not None:
+                  ss[(r['strategy'], r['source_system'])].append(r['pnl_pct'])
+          ss_lines = []
+          for (sn, src) in sorted(ss):
+              ss_lines.append(sn + '/' + src + ': n=' + str(len(ss[(sn, src)])) + ' mean=' + str(round(mean(ss[(sn, src)]), 4)))
+          summary = 'CRYPTO class raw rows with pnl=' + str(len(all_pnls)) + ' class mean=' + str(round(class_mean, 4)) + '% trimmed=' + str(round(class_tri, 4)) + '% (gross). Cost assumption: 8bps round trip charged (0.08%); net class mean ~' + str(round(class_mean - 0.08, 4)) + '%. Rows with NULL created_at excluded from dedupe/split-half. Class mean excluding NULL-created rows=' + str(round(class_mean_dated, 4)) + '% vs ' + str(round(class_mean, 4)) + '% with them. mega_mutation: raw=' + str(len(mega)) + ' NULL_created_at=' + str(mega_null) + ' mean_all=' + str(round(mean(mega_pnls), 4)) + '% mean_excluding_null=' + str(round(mean(mega_dated_pnls), 4)) + '%. Source-system breakdown: ' + '; '.join(ss_lines) + '.'
+          result = {
+              'class_summary': summary,
+              'cleaned_up': False,
+              'strategies': strategies,
+          }
+          print(json.dumps(result))
+          PY
