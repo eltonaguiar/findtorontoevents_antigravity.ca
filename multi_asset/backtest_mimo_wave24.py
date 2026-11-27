@@ -36,6 +36,23 @@ if str(SCRIPT_DIR.parent) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR.parent))
 
 from multi_asset.mimo_wave24_strategies import (  # noqa: E402
+
+def _sanitize_json(obj):
+    """NaN/Infinity are not valid JSON - browsers reject the whole payload.
+
+    Replacing them with null keeps every other field available; raising (allow_nan=False) would
+    throw away the run that produced them.
+    """
+    import math
+    if isinstance(obj, float):
+        return None if (math.isnan(obj) or math.isinf(obj)) else obj
+    if isinstance(obj, dict):
+        return {k: _sanitize_json(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_json(v) for v in obj]
+    return obj
+
+
     BENCHMARKS,
     STRATEGY_SPECS,
     all_symbols,
@@ -372,7 +389,7 @@ def run_backtest() -> dict[str, Any]:
         "per_strategy": per_strategy,
         "best_strategies": best_strategies[:15],
     }
-    OUT_FILE.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    OUT_FILE.write_text(json.dumps(_sanitize_json(result), indent=2), encoding="utf-8")
     print(f"Wrote {OUT_FILE}")
     print(json.dumps(result["per_asset_class"], indent=2))
     return result
