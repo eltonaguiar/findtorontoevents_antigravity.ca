@@ -59,3 +59,18 @@ jobs:
             echo "DB sync failed after 3 attempts" >&2
             exit 1
           fi
+
+      - name: Standardize legacy statuses in trading_picks
+        # tools/standardize_statuses.py has existed for a long time but NO workflow ever invoked
+        # it, so legacy statuses (WIN/WON/LOST/LOSS/CLOSED_*/SIGNAL/FLAT/STALE) accumulated while
+        # the hourly sync kept writing canonical ones. That is why the db-freshness gate reported
+        # `status_standardization` RED on every run even though the sync itself logs
+        # "3797 upserted, 0 errors": the writer was fixed, the stored rows were never cleaned.
+        # The script is dry-run unless --apply, and the mapping is idempotent.
+        # Runs even if the sync failed, because cleanup does not depend on new rows landing.
+        if: always()
+        env:
+          # The script reads DB_PASS_STOCKS specifically (not DB_PASS, which the sync step uses).
+          DB_PASS_STOCKS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+        run: |
+          python tools/standardize_statuses.py --apply
