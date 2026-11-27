@@ -24,9 +24,12 @@ if ($expected_token === '' || substr($expected_token, 0, 7) === 'EXPORT_' || !_s
     exit;
 }
 
-// -- Extend execution time --
+// -- Extend execution time and memory --
 @set_time_limit(300);
 @ini_set('max_execution_time', '300');
+// The export holds several copies of the dump at peak (raw string, gzencode, base64, json_encode).
+// A 128M ceiling dies on any real database, so raise it and free each copy as soon as it is consumed.
+@ini_set('memory_limit', '512M');
 
 // -- Config --
 $db_host = 'localhost';
@@ -193,7 +196,9 @@ foreach ($databases_to_export as $dbname) {
 
     // Gzip + base64 for safe JSON transport
     $compressed = gzencode($dump_sql, 9);
+    unset($dump_sql);              // free the raw dump before the base64 copy is made
     $results[$dbname] = base64_encode($compressed);
+    unset($compressed);            // and free the gzip copy before the next database
 }
 
 header('Content-Type: application/json');
