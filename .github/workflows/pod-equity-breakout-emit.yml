@@ -1,0 +1,41 @@
+name: POD-EQUITY-BREAKOUT emitter
+
+# Runs the only implementation of the POD-EQUITY-BREAKOUT signal rules.
+# It existed from 2026-11-26 but nothing ever scheduled it, which is exactly why the pod showed
+# "0 forward rows past grace" and the forward-observations watchdog failed on it. Emitting on a
+# daily cadence is what lets the forward clock accrue honestly instead of declining the pod.
+
+on:
+  schedule:
+    - cron: '20 21 * * 1-5'   # after US close, weekdays
+  workflow_dispatch:
+
+concurrency:
+  group: pod-equity-breakout-emit
+  cancel-in-progress: false    # data writer: never cancel mid-write
+
+permissions:
+  contents: read
+
+jobs:
+  emit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet pymysql pandas numpy
+
+      - name: Dry run (proves the signal rules still produce rows)
+        run: python -m tools.emit_equity_breakout_pod --json | python -c "import json,sys; r=json.load(sys.stdin); print(f'rows={len(r)}'); [print(' ', x.get('symbol'), x.get('strategy'), x.get('status')) for x in r[:10]]"
+
+      - name: Emit rows to trading_picks
+        env:
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+          DB_PASSWORDS_JSON: ${{ secrets.DB_PASSWORDS_JSON }}
+        run: python -m tools.emit_equity_breakout_pod --apply
