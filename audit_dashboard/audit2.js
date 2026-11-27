@@ -223,9 +223,19 @@ function loadPopulation(){
   function show(text){
     for(var i=0;i<nodes.length;i++){ nodes[i].textContent = text; }
   }
-  fetch("denominator.json", {cache:"no-store"}).then(function(r){
-    if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
-  }).then(function(d){
+  // The sidecar is published ONE time, by audit3-ledger.yml, to /audit/data/denominator.json.
+  // This page is served from /audit2/, so a bare relative fetch asks the server for
+  // /audit2/denominator.json and gets a 404 — the strip then prints "population
+  // unavailable" even though the canonical file is live. Resolve against the canonical
+  // path first, and keep the relative forms as fallbacks for local/preview serving.
+  var candidates = ["../audit/data/denominator.json", "data/denominator.json", "denominator.json"];
+  function fetchDenominator(i){
+    if (i >= candidates.length) return Promise.reject(new Error("no denominator.json reachable"));
+    return fetch(candidates[i], {cache:"no-store"}).then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status); return r.json();
+    }).catch(function(){ return fetchDenominator(i+1); });
+  }
+  fetchDenominator(0).then(function(d){
     var t = "population: "+(d.population_label||"unknown");
     if(!d.complete && d.notes && d.notes.length) t += " — incomplete: "+d.notes.join("; ");
     show(t);
