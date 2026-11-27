@@ -52,8 +52,8 @@ jobs:
                      AND pnl_pct IS NOT NULL""")
 
           table("emitter rows detail (newest 20)",
-                """SELECT symbol, status, ROUND(entry_price,4) entry, ROUND(exit_price,4) exit,
-                          ROUND(pnl_pct,3) pnl, DATE(created_at) opened, DATE(closed_at) closed, exit_reason
+                """SELECT symbol, status, ROUND(entry_price,4) entry, ROUND(exit_price,4) exit_px,
+                          ROUND(pnl_pct,3) pnl, DATE(created_at) opened, DATE(closed_at) closed_on, exit_reason
                    FROM trading_picks WHERE strategy='donchian-stock-breakout'
                    ORDER BY created_at DESC LIMIT 20""")
 
