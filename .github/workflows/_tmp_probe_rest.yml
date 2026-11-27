@@ -1,0 +1,93 @@
+name: _tmp probe rest
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: forex equity alt
+        env:
+          DB_HOST: mysql.50webs.com
+          DB_PORT: '3306'
+          DB_USER: ejaguiar1_stocks
+          DB_PASS: ${{ secrets.MYSQL_PASSWORD || secrets.AUDIT_DB_PASS }}
+        run: |
+          python3 -m pip install --quiet pymysql
+          python3 - <<'PY'
+          import os, collections, statistics as st
+          import pymysql
+
+          cn=pymysql.connect(host=os.environ["DB_HOST"], port=int(os.environ.get("DB_PORT") or 3306),
+                             user=os.environ["DB_USER"], password=os.environ["DB_PASS"],
+                             database="ejaguiar1_stocks", connect_timeout=25)
+          cur=cn.cursor()
+
+          def line(v,label,net_bps=0,pad=30):
+              if not v: print(f"  {label:<{pad}} n=0"); return
+              v=sorted(v); n=len(v); w=sum(1 for x in v if x>0); k=int(n*0.01)
+              tv=v[:n-k] if k else v
+              net=""
+              if net_bps: net=f" net{net_bps}bp={st.mean(v)-net_bps/100:+.3f}%"
+              print(f"  {label:<{pad}}n={n:<5}win={100*w/n:5.1f}% mean={st.mean(v):+.3f}% med={st.median(v):+.3f}% trim1={st.mean(tv):+.3f}%{net}")
+
+          def cohort(rows,label,net_bps=0):
+              dated=[r for r in rows if r[2] is not None]
+              dated.sort(key=lambda r: str(r[2]))
+              seen=set(); ded=[]
+              for r in dated:
+                  k=(str(r[0]),str(r[1]),str(r[2])[:10])
+                  if k in seen: continue
+                  seen.add(k); ded.append(r)
+              half=len(ded)//2
+              print(f"\n  {label}: raw={len(rows)} dated={len(dated)} deduped={len(ded)}")
+              line([float(r[3]) for r in ded],"deduped",net_bps)
+              line([float(r[3]) for r in ded[:half]],"first half",net_bps)
+              line([float(r[3]) for r in ded[half:]],"second half",net_bps)
+              syms=collections.Counter(str(r[0]) for r in ded)
+              if syms: print(f"    symbols={len(syms)} top={syms.most_common(1)[0][0]}={100*syms.most_common(1)[0][1]/max(len(ded),1):.1f}%")
+
+          def fetch(cond):
+              cur.execute(f"""SELECT symbol,direction,created_at,pnl_pct,strategy,COALESCE(source_system,'')
+                              FROM trading_picks WHERE {cond} AND pnl_pct IS NOT NULL""")
+              return cur.fetchall()
+
+          # ---------- FOREX ----------
+          print("=== FOREX (cost assumption 2 bp round trip) ===")
+          fx=fetch("category IN ('forex','FOREX')")
+          print(f"rows: {len(fx)}")
+          cnt=collections.Counter(r[4] or '(none)' for r in fx)
+          for s,_ in cnt.most_common(8):
+              cohort([r for r in fx if (r[4] or '(none)')==s], f"strategy={s}", net_bps=2)
+
+          # ---------- EQUITY / ETF / STOCKS ----------
+          print("\n\n=== EQUITY / ETF / STOCKS (8 bp round trip) ===")
+          eq=fetch("category IN ('STOCKS','stocks','ETF','etf','EQUITY','equity')")
+          print(f"rows: {len(eq)}")
+          cnt=collections.Counter(r[4] or '(none)' for r in eq)
+          for s,_ in cnt.most_common(12):
+              if s=="(none)": continue
+              cohort([r for r in eq if (r[4] or '(none)')==s], f"strategy={s}", net_bps=8)
+          # named priors specifically
+          for s in ("vol-contraction-scout","vt_equity_two_day_rsi_reversal","donchian-stock-breakout"):
+              rr=[r for r in eq if r[4]==s]
+              if rr: cohort(rr, f"PRIOR {s}", net_bps=8)
+
+          # ---------- ALT ----------
+          print("\n\n=== MEME / PREDICTION / OTHER ===")
+          alt=fetch("category NOT IN ('forex','FOREX','CRYPTO','crypto','STOCKS','stocks','ETF','etf','EQUITY','equity','FUTURES','futures','COMMODITY','commodity','BONDS','bonds') OR category IS NULL")
+          print(f"rows: {len(alt)}")
+          cnt=collections.Counter(r[4] or '(none)' for r in alt)
+          for s,_ in cnt.most_common(10):
+              if s=="(none)": continue
+              cohort([r for r in alt if (r[4] or '(none)')==s], f"strategy={s}", net_bps=3)
+
+          # ---------- category census ----------
+          print("\n=== category census (all rows with pnl) ===")
+          cur.execute("""SELECT COALESCE(category,'(null)') c, COUNT(*) n, AVG(pnl_pct) a
+                         FROM trading_picks WHERE pnl_pct IS NOT NULL GROUP BY c ORDER BY n DESC LIMIT 14""")
+          for c,n,a in cur.fetchall():
+              print(f"  {str(c):<16} n={n:<7} mean={float(a):+.3f}%")
+          cn.close()
+          PY
