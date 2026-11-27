@@ -4454,6 +4454,16 @@ _FRESHNESS_REQUIRED_HOURS = {
     "copy_trader_variations": 72,
     "crypto_gainer_ml": 72,
     "crypto_signal_engine": 72,
+    # funding_rate_arb (2026-11-23): the emitter only runs when Binance Futures is
+    # reachable — audit-dashboard.yml pings /fapi/v1/ping before invoking it — so
+    # its file legitimately goes days without a rewrite. 36h admits a same-day run
+    # and rejects the 9-day-old artifact that would otherwise surface 25 dead picks
+    # as live votes.
+    "funding_rate_arb": 36,
+    # btc_breakout (2026-11-23): runs on every audit-dashboard tick (workflow :223),
+    # so 24h is generous. It legitimately emits zero signals often (latest artifact:
+    # signals_found 0), which is why staleness and "no signals" are separate states.
+    "btc_breakout": 24,
     "failure_evolver": 72,
     "hyperparam_dna": 72,
     "incubator_battleground": 72,
@@ -4495,13 +4505,22 @@ _GHOST_SYSTEMS = {
     "abc_forward_a",
     "abc_forward_b",
     "abc_forward_c",
-    "funding_rate_arb",
+    # funding_rate_arb REMOVED 2026-11-23. The "never produced data files" reason
+    # above was factually false: alpha_engine/data/funding_rate_picks.json exists
+    # (35,895 bytes, 25 picks, scanned 2026-11-14T01:37Z). Sitting in this set made
+    # the H-254 forward arm un-tickable — 0 rows reached the payload, so
+    # tools/forward_tracker.py sync could never accrue a closed pick. It is now
+    # freshness-gated in _FRESHNESS_REQUIRED_HOURS instead, which is the guard it
+    # actually needed.
     "momentum_scalp",
     "pumpwatch_mutations",
     "strategy_health",
     "live_spike_trader",
     "buy_now_analysis",
-    "btc_breakout",
+    # btc_breakout REMOVED 2026-11-23, same false premise as funding_rate_arb above:
+    # alpha_engine/data/btc_breakout_picks.json exists (377 bytes, 2026-11-20T01:00Z)
+    # and is listed in audit-dashboard.yml's commit set. Ghost-status is why the H-256
+    # forward arm had 0 rows, not a lack of edge. Freshness-gated at 24h instead.
     "bbkc_squeeze",
 }
 
@@ -5035,6 +5054,27 @@ def _is_valid_resolved_pick(pick: dict) -> bool:
 def _filter_valid_resolved_picks(picks):
     """Filter a pick list down to realized, metric-safe resolved trades."""
     return [pick for pick in picks if _is_valid_resolved_pick(pick)]
+
+
+def _as_flat_expired_row(pick: dict) -> dict:
+    """Publish an auto-expired (zero-PnL) row as an explicit FLAT row.
+
+    Auto-expired rows are real ledger events: the resolver closed them on a timeout
+    with no outcome. Dropping them from the published list made the visible book
+    look cleaner than the resolver's own output (9,420 excluded vs 3,701 reported
+    as expired-zero-PnL on 2026-11-27 — see
+    updates/2026-11-27-crypto-quant-audit-todos.md).
+
+    The row keeps ``_auto_expired=True``, so ``_is_valid_resolved_pick`` still refuses
+    it for win/loss/PF: this changes visibility, not the metric.
+    """
+    row = dict(pick)
+    row["pnl_pct"] = 0.0
+    row["status"] = "FLAT"
+    row["exit_reason"] = "EXPIRED"
+    row["_flat"] = True
+    row["_auto_expired"] = True
+    return row
 
 
 def _compound_equal_weight_capped_sequence(
@@ -16005,8 +16045,20 @@ def generate():
     # Cap closed picks for payload size, but reserve a slice for PM / copy-trader
     # track-record sources so the closed tab and CSV export do not erase their
     # realized history behind bulk HFT / baby-strategy ledgers.
+    # Publish auto-expired (zero-PnL) rows as FLAT instead of dropping them, capped so
+    # they cannot crowd out real outcomes. They stay out of WR/PF via _auto_expired.
+    _flat_slots = max(1, int(MAX_CLOSED_PICKS * 0.15))
+    _flat_expired_rows = [
+        _as_flat_expired_row(p)
+        for p in sorted(
+            all_closed_including_expired,
+            key=lambda x: x.get("timestamp", ""),
+            reverse=True,
+        )
+        if _is_auto_expired_pick(p)
+    ][:_flat_slots]
     recent_closed = _build_recent_closed_picks(
-        resolved_closed,
+        resolved_closed + _flat_expired_rows,
         max_picks=MAX_CLOSED_PICKS,
         reserved_slots=RESERVED_TRACK_RECORD_CLOSED_PICKS,
     )
@@ -17137,6 +17189,10 @@ def generate():
                 "examples": _PROVEN_DEMOTIONS[:10],
             },
             "auto_expired_excluded": len(all_closed_including_expired) - total_closed,
+            # 2026-11-27: auto-expired zero-PnL rows are published in recent_closed as
+            # status=FLAT / exit_reason=EXPIRED (capped) instead of being dropped. This
+            # counts how many reached the payload; they remain out of WR/PF.
+            "flat_published_rows": len(_flat_expired_rows),
             "overall_win_rate": overall_wr,
             # total_pnl_pct is now compounded equal-weight (replaces raw additive sum).
             # Kimi audit §1.1 (2026-04-05): raw sum produced misleading -17,657% / -18,126%

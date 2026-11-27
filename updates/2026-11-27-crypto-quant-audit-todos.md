@@ -43,6 +43,9 @@ Legend: `[x]` checked and passing · `[!]` checked and **failing** · `[ ]` not 
       41,853 null PnL of 64,650 and 46,781 null `closed_at`. The dashboard slice is the clean 4% of the table — every
       headline computed off it is a selection, not the book.
 - [!] 27 rows are resolved (`WON`/`LOST`) with `pnl_pct = 0`, and 93 rows carry a closed status with `closed_at` NULL.
+- [x] **FIXED 2026-11-27** (`updates/2026-11-27-flat-rows-published.md`): auto-expired rows are now published
+      as `status=FLAT` / `exit_reason=EXPIRED` (capped at 15% of the closed list) and counted in
+      `summary.flat_published_rows`; they stay out of WR/PF by design.
 - [!] `pnl_pct == 0` in the crypto slice: **0**, which is not good news — the summary says `zero_pnl_count` **138**
       (`zero_pnl_share_pct` 1.52) and `resolver_anomalies.expired_zero_pnl_rows` **3,701**. The zeros exist and are being
       filtered *out of the view*, so a reader sees a cleaner book than the resolver produced. **Publish FLAT rows** with
