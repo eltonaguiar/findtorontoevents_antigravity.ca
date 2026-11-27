@@ -1,23 +1,23 @@
 # GHA quality framework (Q1-Q10)
 
-- workflows scanned: 375 (parse errors: 1)
-- aggregate score: 94.4/100
-- blocking violations: 103
+- workflows scanned: 399 (parse errors: 0)
+- aggregate score: 94.9/100
+- blocking violations: 101
 - runtime signals merged: True
 
 ## Findings by rule
 
 | Rule | Name | Severity | Count |
 |---|---|---|---|
-| Q1 | cron-stampede | P2 | 60 |
-| Q2 | unpinned-action | P1 | 10 |
-| Q3 | write-all-default | P1 | 28 |
+| Q1 | cron-stampede | P2 | 61 |
+| Q2 | unpinned-action | P1 | 9 |
+| Q3 | write-all-default | P1 | 27 |
 | Q4 | self-push-without-skip-ci | P2 | 4 |
 | Q5 | duplicate-producer | P0 | 21 |
-| Q6 | orphan-artifact | P2 | 166 |
+| Q6 | orphan-artifact | P2 | 173 |
 | Q7 | silent-failure | P0 | 40 |
 | Q8 | missing-timeout | P1 | 4 |
-| Q9 | secret-sprawl | P2 | 15 |
+| Q9 | secret-sprawl | P2 | 16 |
 | Q10 | dead-schedule | P2 | 28 |
 
 ## Blocking findings
@@ -25,13 +25,12 @@
 | Rule | Workflow | Detail |
 |---|---|---|
 | Q2 | FINDTORONTOEVENTS.CA Database Backups | third-party action not SHA-pinned: dawidd6/action-send-mail@v24 |
-| Q2 | Deploy Strategy Bundle | third-party action not SHA-pinned: slackapi/slack-github-action@v1 |
+| Q2 | ETF Trend Forward Clock (month-end) | third-party action not SHA-pinned: stefanzweifel/git-auto-commit-action@v7 |
 | Q2 | DNA Genome Daily Pipeline | third-party action not SHA-pinned: SamKirkland/FTP-Deploy-Action@4.3.0 |
 | Q2 | DNA Genome Daily Pipeline | third-party action not SHA-pinned: SamKirkland/FTP-Deploy-Action@4.3.0 |
 | Q2 | KIMI Goldmine Data Collection | third-party action not SHA-pinned: shivammathur/setup-php@v2 |
 | Q2 | Live Picks Tracker | third-party action not SHA-pinned: peaceiris/actions-gh-pages@v4 |
 | Q2 | ML Feedback Loop | third-party action not SHA-pinned: peter-evans/repository-dispatch@v4 |
-| Q2 | Secret Scan (M-043) | third-party action not SHA-pinned: gitleaks/gitleaks-action@v2 |
 | Q2 | Sports Betting  Odds Refresh & Auto-Settle | third-party action not SHA-pinned: stefanzweifel/git-auto-commit-action@v7 |
 | Q2 | Weekly Real-Money Filter | third-party action not SHA-pinned: stefanzweifel/git-auto-commit-action@v7 |
 | Q3 | Backfill OHLCV Features | pushes to the repo but declares no `permissions:` |
@@ -55,7 +54,6 @@
 | Q3 | ML Forward Test 1745 Models | pushes to the repo but declares no `permissions:` |
 | Q3 | Optimize Score Thresholds | pushes to the repo but declares no `permissions:` |
 | Q3 | Overnight Mutations | pushes to the repo but declares no `permissions:` |
-| Q3 | RL Agent (PPO) Train & Predict | pushes to the repo but declares no `permissions:` |
 | Q3 | Skyrocket Detector  Live Scanner | pushes to the repo but declares no `permissions:` |
 | Q3 | SPY 20d Return Refresh | pushes to the repo but declares no `permissions:` |
 | Q3 | swarm-janitor | pushes to the repo but declares no `permissions:` |
@@ -94,6 +92,7 @@
 | Q7 | Unified Audit Dashboard | gate-shaped step swallows failure: Run pick-flow funnel snapshot (DB → per-class raw/gated/forward-test counts) |
 | Q7 | Audit Drift Telemetry | gate-shaped step swallows failure: Pending SPA governance check |
 | Q7 | Audit Drift Telemetry | gate-shaped step swallows failure: Data source health check (C-008) |
+| Q7 | CI | gate-shaped step swallows failure: Lint — Python style, changed files only |
 | Q7 | Cross-System Signal Aggregator | gate-shaped step swallows failure: Forward-test top picks |
 | Q7 | Daily Miracle DayTrades Scan | gate-shaped step swallows failure: Verify miracle dashboard |
 | Q7 | Daily Picks Snapshot  Crypto, Forex & Stocks | gate-shaped step swallows failure: Verify crypto picks |
@@ -104,6 +103,7 @@
 | Q7 | DB Freshness Guardian | gate-shaped step swallows failure: Run DB freshness check |
 | Q7 | DB Sync: findtorontoevents.ca  torontoevent.net | gate-shaped step swallows failure: Verify export script deployed |
 | Q7 | Deals & Freebies  Verify & Refresh | gate-shaped step swallows failure: Verify deals API health |
+| Q7 | Deals & Freebies  Verify & Refresh | gate-shaped step swallows failure: Verify birthday freebies |
 
 ## Lowest-scoring workflows
 
@@ -111,7 +111,6 @@
 |---|---|
 | Unified Audit Dashboard | 0 |
 | Deals & Freebies  Verify & Refresh | 0 |
-|  | 0 |
 | Daily Picks Snapshot  Crypto, Forex & Stocks | 25 |
 | Meta-Strategy Permutation Engine | 40 |
 | Sports Betting  Odds Refresh & Auto-Settle | 45 |
@@ -121,13 +120,15 @@
 | Daily Stock Data Refresh | 50 |
 | AI Tournament Pipeline — Daily Picks + DB Ingest | 57 |
 | ALPHA ENGINE - Live Autonomous Scanner | 60 |
+| DB Freshness Guardian | 65 |
+| DB Sync: findtorontoevents.ca  torontoevent.net | 65 |
 | Verified pilot daily | 70 |
 | Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities | 72 |
-| [torontoevent.net] Deploy Rise of the Claw | 72 |
 
 ## Advisory findings (P2)
 
-- Q1 (repo): 36 workflows share cron minute :0
+- Q1 (repo): 2 workflows share cron minute :*/15
+- Q1 (repo): 35 workflows share cron minute :0
 - Q1 (repo): 4 workflows share cron minute :1
 - Q1 (repo): 6 workflows share cron minute :10
 - Q1 (repo): 6 workflows share cron minute :11
@@ -136,11 +137,11 @@
 - Q1 (repo): 12 workflows share cron minute :14
 - Q1 (repo): 10 workflows share cron minute :15
 - Q1 (repo): 3 workflows share cron minute :16
-- Q1 (repo): 2 workflows share cron minute :17
-- Q1 (repo): 4 workflows share cron minute :18
+- Q1 (repo): 3 workflows share cron minute :17
+- Q1 (repo): 5 workflows share cron minute :18
 - Q1 (repo): 6 workflows share cron minute :19
 - Q1 (repo): 4 workflows share cron minute :2
-- Q1 (repo): 8 workflows share cron minute :20
+- Q1 (repo): 10 workflows share cron minute :20
 - Q1 (repo): 6 workflows share cron minute :22
 - Q1 (repo): 6 workflows share cron minute :23
 - Q1 (repo): 7 workflows share cron minute :24
@@ -150,20 +151,19 @@
 - Q1 (repo): 3 workflows share cron minute :28
 - Q1 (repo): 7 workflows share cron minute :29
 - Q1 (repo): 4 workflows share cron minute :3
-- Q1 (repo): 5 workflows share cron minute :30
+- Q1 (repo): 4 workflows share cron minute :30
 - Q1 (repo): 4 workflows share cron minute :31
 - Q1 (repo): 7 workflows share cron minute :32
 - Q1 (repo): 9 workflows share cron minute :33
 - Q1 (repo): 6 workflows share cron minute :34
 - Q1 (repo): 2 workflows share cron minute :34,4
-- Q1 (repo): 13 workflows share cron minute :35
+- Q1 (repo): 12 workflows share cron minute :35
 - Q1 (repo): 2 workflows share cron minute :36
-- Q1 (repo): 4 workflows share cron minute :37
+- Q1 (repo): 6 workflows share cron minute :37
 - Q1 (repo): 4 workflows share cron minute :38
 - Q1 (repo): 4 workflows share cron minute :39
 - Q1 (repo): 2 workflows share cron minute :4
-- Q1 (repo): 7 workflows share cron minute :40
+- Q1 (repo): 8 workflows share cron minute :40
 - Q1 (repo): 3 workflows share cron minute :40,10
-- Q1 (repo): 15 workflows share cron minute :41
+- Q1 (repo): 16 workflows share cron minute :41
 - Q1 (repo): 6 workflows share cron minute :42
-- Q1 (repo): 9 workflows share cron minute :43
