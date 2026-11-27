@@ -23,6 +23,15 @@ class RefreshError(Exception):
     pass
 
 
+# PHP error pages and framework 500 pages echo the request URL, and that URL carries
+# MS2_SYNC_KEY. Redact before a snippet ever reaches a log.
+SECRET_QUERY_RE = __import__("re").compile(r"(key|token|api_key|apikey)=[^&\s\"'<>]+", __import__("re").I)
+
+
+def redact_secrets(text):
+    return SECRET_QUERY_RE.sub(r"\1=[REDACTED]", " ".join(text.split()))
+
+
 def endpoint_label(url):
     """Path only - never the query string, which carries MS2_SYNC_KEY."""
     return urllib.parse.urlsplit(url).path or "/"
@@ -38,7 +47,14 @@ def request_json(url, timeout):
         })
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:
-                return json.load(response)
+                payload = response.read()
+            try:
+                return json.loads(payload.decode("utf-8", "replace"))
+            except ValueError:
+                # A 2xx carrying HTML is a PHP fatal raised AFTER the key check, and its text is
+                # the only thing that identifies the cause. Redacted, because it can echo the URL.
+                snippet = redact_secrets(payload.decode("utf-8", "replace")[:400])
+                raise RefreshError(f"{label} returned 200 but not JSON: {snippet}") from None
         except urllib.error.HTTPError as error:
             # The response body is deliberately not reported: a PHP error page can
             # echo the request URL, and that URL contains the sync key.
