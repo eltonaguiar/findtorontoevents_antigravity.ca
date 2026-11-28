@@ -28,6 +28,11 @@ DEFAULT_MANIFEST = REPO / "reports" / "audit3_confirmatory.json"
 DEFAULT_OUT = REPO / "reports" / "pod_emission_audit.json"
 
 
+# A pod in one of these states is not a live research hypothesis: it was never
+# meant to emit, so it must not be emission-audited (see the docstring on audit()).
+NOT_LIVE_POD_STATUS = {"declined", "retired", "rejected", "withdrawn"}
+
+
 def audit(manifest: dict, counts: dict[str, dict]) -> dict:
     """Pure: manifest + {strategy: {picks, intrabar, classes}} -> verdicts.
 
@@ -37,10 +42,22 @@ def audit(manifest: dict, counts: dict[str, dict]) -> dict:
         declare. This is the 2026-11-20 trap: three "breakout" names that look
         like the equity thesis emit CRYPTO/FUTURES/COMMODITY only, so amending the
         pod to them would accrue wrong forward evidence.
+
+    Pods that are not live research hypotheses are skipped entirely: a declined
+    or retired pod was never meant to emit, so auditing it for emission produces a
+    phantom that can only be silenced by whitelisting it forever. H-119
+    (POD-CRYPTO-RSI5070-US) is exactly this case - declared `declined` in
+    audit3_confirmatory.json, yet it failed the gate because only the per-strategy
+    `unemitted_approved` opt-out was honoured.
     """
-    rows, phantom, mismatch = [], [], []
+    rows, phantom, mismatch, skipped = [], [], [], []
     for pod in (manifest or {}).get("pods") or []:
-        approved = str(pod.get("status") or "").lower() == "unemitted_approved"
+        pod_status = str(pod.get("status") or "").strip().lower()
+        if pod_status in NOT_LIVE_POD_STATUS:
+            skipped.append({"pod": pod.get("id"), "status": pod_status,
+                            "strategies": pod.get("strategies") or []})
+            continue
+        approved = pod_status == "unemitted_approved"
         for strat in pod.get("strategies") or []:
             c = counts.get(strat) or {}
             picks = int(c.get("picks") or 0)
@@ -64,6 +81,7 @@ def audit(manifest: dict, counts: dict[str, dict]) -> dict:
                 mismatch.append(row)
     return {"ok": not phantom and not mismatch, "n_strategies": len(rows),
             "n_phantom": len(phantom), "n_class_mismatch": len(mismatch),
+            "n_skipped": len(skipped), "skipped": skipped,
             "strategies": rows, "phantom": phantom, "class_mismatch": mismatch}
 
 
