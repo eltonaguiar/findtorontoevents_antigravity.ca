@@ -15,6 +15,13 @@ unambiguous, otherwise `alpha_engine.config.detect_asset_class(symbol)`. Rows
 the detector cannot classify are REPORTED and left untouched; nothing is
 guessed.
 
+2026-11-28: the detector returns 'unknown' for dash-separated ISO pairs such as
+`USD-JPY` / `USD-CHF` (a bare X-Y shape is genuinely ambiguous), so this tool
+now applies the SAME rule the sync uses at ingest
+(`alpha_engine/mysql_trading_sync.py::_FX_ISO`): both halves must be real ISO
+currency codes, in which case the row is FOREX. Repeating the sync's rule here
+is what stops those rows being reported as unclassifiable on every run.
+
 Column compatibility: `at_raw_picks.asset_class` and
 `at_signal_outcomes.asset_class` are ENUMs that do not contain INDEX or
 PREDICTION_MARKET, so a detected class outside the column's enum is clamped to
@@ -81,6 +88,16 @@ SOURCE_FORCE = {
 }
 
 _CRYPTO_PAIR_RE = r"(USDT|USDC|BUSD|TUSD|FDUSD)$"
+
+# Mirror of alpha_engine/mysql_trading_sync.py::_FX_ISO. Kept as a literal copy
+# on purpose: the sync set is private to a module-level function scope and
+# importing the sync module from a backfill tool would pull its DB writers in.
+# tests/test_backfill_unknown_category.py asserts the two stay identical.
+_FX_ISO = frozenset({
+    "USD", "EUR", "JPY", "GBP", "CHF", "CAD", "AUD", "NZD", "CNY",
+    "HKD", "SGD", "SEK", "NOK", "DKK", "MXN", "ZAR", "TRY", "INR",
+    "BRL", "KRW", "PLN", "CZK", "HUF", "ILS", "THB", "PHP", "MYR",
+})
 _DETECTED_TO_CANON = {
     "crypto": "CRYPTO",
     "equity": "EQUITY",
@@ -147,11 +164,26 @@ def candidates(cur, table: str) -> list[dict]:
     return rows
 
 
+def iso_fx_pair(symbol: str) -> bool:
+    """True for a dash-separated pair whose halves are BOTH ISO currency codes.
+
+    `USD-JPY` / `USD-CHF` yes; `BTC-USD` no (BTC is not an ISO code). This is
+    the sync's rule verbatim, so a row the sync would label FOREX at ingest is
+    never reported as unclassifiable by the backfill.
+    """
+    sym = str(symbol or "").strip().upper()
+    if sym.count("-") != 1:
+        return False
+    return all(part in _FX_ISO for part in sym.split("-"))
+
+
 def resolve(row: dict, allowed: set[str]) -> tuple[str | None, str]:
     """Return (target, why). target=None means 'cannot classify, leave it'."""
     src = str(row.get("source_system") or "").strip().lower()
     if src in SOURCE_FORCE:
         target, why = SOURCE_FORCE[src], f"source:{src}"
+    elif iso_fx_pair(str(row.get("symbol") or "")):
+        target, why = "FOREX", "iso_pair"
     else:
         detected = detect_asset_class(str(row.get("symbol") or ""))
         target = _DETECTED_TO_CANON.get(str(detected).strip().lower())
