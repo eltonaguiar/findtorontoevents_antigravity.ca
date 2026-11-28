@@ -110,7 +110,23 @@ TABLES: dict[str, dict] = {
             "intrabar_ambiguous", "intrabar_resolved_at",
         ),
     },
+    # Raw staging table. Registered for bracket repair only: it has no
+    # `created_at` (it uses `recorded_at`), which every row rule and the R7
+    # OHLCV cross-check select, so `row_rules: False` keeps those code paths
+    # from being reached for it. 2,849 wrong-side stops lived here on
+    # 2026-11-28, 2,481 of them from `incubator_gainer` writing LONG-shaped
+    # brackets on SHORT rows.
+    "at_raw_picks": {
+        "label": "status",
+        "neutralize": ("exit_price", "pnl_pct"),
+        "row_rules": False,
+    },
 }
+
+
+def supports_row_rules(table: str) -> bool:
+    """Whether R1-R7 apply to `table` (they need `created_at` and pnl columns)."""
+    return TABLES[table].get("row_rules", True)
 
 ROW_RULES = {
     "R1_pnl_sentinel": "ABS(pnl_pct) >= 999999 (clamp value from a blown-up PnL calc)",
@@ -479,8 +495,8 @@ def main() -> int:
     for k, v in BRACKET_RULES.items():
         print(f"  {k:<22} {v}")
 
-    row_hits = ({} if bracket_only
-                else {t: detect_rows(cur, t) for t in tables})
+    row_hits = ({} if bracket_only else
+                {t: detect_rows(cur, t) for t in tables if supports_row_rules(t)})
     bracket_hits = {t: detect_brackets(cur, t) for t in tables}
 
     total_rows = sum(len(v) for v in row_hits.values())
@@ -489,7 +505,7 @@ def main() -> int:
         print(f"\n=== {t} ({int(cur.fetchone()['n']):,} rows) ===")
         print("  quarantine candidates: "
               + ("skipped (--brackets-only)" if bracket_only
-                 else f"{len(row_hits[t]):,}"))
+                 else f"{len(row_hits.get(t) or []):,}"))
         by_rule: dict[str, int] = {}
         for r in (row_hits.get(t) or []):
             for rule in r["rules"]:
@@ -609,7 +625,7 @@ def main() -> int:
     print("\n=== POST-STATE ===")
     left_rows = left_brackets = 0
     for t in tables:
-        lr = detect_rows(cur, t)
+        lr = detect_rows(cur, t) if supports_row_rules(t) else []
         lb = detect_brackets(cur, t)
         left_rows += len(lr)
         left_brackets += sum(lb.values())

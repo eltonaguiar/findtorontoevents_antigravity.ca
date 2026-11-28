@@ -122,11 +122,25 @@ numbers.
 
 ## Cross-cutting (not per class)
 
-- [!] **`label_drift` regrew**: `meme=1` appeared after the 2026-11-28
-      normalisation, i.e. a producer emitted `MEME` again. Until the emitter is
-      fixed the enum will keep drifting; the chokepoint warning log in
-      `alpha_engine/mysql_trading_sync.py` names the alias, so grep the sync log
-      for `meme` and patch that emitter.
+- [x] **`label_drift` cleared** (2026-11-28T05:20Z). The `meme=1` was not a
+      live emitter: it was one stale row, `hoffman_keltner_expansion::PEPE-USD::2026-09-26`
+      from `alpha_engine_fast`, written before the sync chokepoint learned
+      `meme → MEMECOIN` (2026-11-28). Relabelled to `MEMECOIN` with backup
+      `ejaguiar1_backups.trading_picks_label_fix_meme_20261128T052055Z` and a
+      `relabel_category` ledger row. The gate is PASS with no drift.
+- [x] **`bad_side_stops` PASS in all seven classes** (CRYPTO/EQUITY/FOREX/ETF/
+      BOND/COMMODITY/FUTURES). The `at_raw_picks` half of the sweep NULLed
+      6,968 bracket fields, 2,481 of them from `incubator_gainer` writing a
+      LONG-shaped bracket on SHORT rows. See
+      `updates/2026-11-28-at-tables-bracket-sweep-and-regrowth.md`.
+- [!] **Every bracket repair regrows until PR #1240 merges.** The
+      `ON DUPLICATE KEY UPDATE … stop_loss = VALUES(stop_loss)` in
+      `alpha_engine/mysql_trading_sync.py` rewrites the bad brackets from source
+      JSON on every sync, and `_validate_bracket_geometry` exists only on the PR
+      branch (0 occurrences on `origin/main`, 2 on the branch). 48 cleaned rows
+      were restored within the hour at 04:59Z. Merging the PR is the only
+      durable fix; until then, re-run the sweep after each sync rather than
+      treating a new failure as a new defect.
 - [x] **`empty_category` 67 → 2** after teaching
       `tools/backfill_unknown_category.py` the sync's ISO-pair rule and applying
       it (65 rows: FOREX 29, ETF 26, EQUITY 7, BOND 3; backup
