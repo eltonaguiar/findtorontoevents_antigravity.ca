@@ -1,0 +1,92 @@
+name: Clean Ledger v2 Rebuild
+
+# at_pick_outcomes_v2 is a filtered copy of at_pick_outcomes. Nothing rebuilt it:
+# the builder had no workflow, and it had been crashing on two bugs anyway
+# (duplicate connect_timeout kwarg, then INSERT ... SELECT * against a source
+# table that had gained columns). Result: the copy froze at 2026-06-05 while the
+# resolver kept resolving ~5,900 picks a month, so every audit surface reading v2
+# understated resolution by six months. This workflow keeps them in step.
+
+on:
+  schedule:
+    # every 6 hours, offset from outcome-resolver (:47) and the hourly audits
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview only (no writes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+concurrency:
+  group: clean-ledger-v2
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          filter: blob:none
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        env:
+          PIP_BREAK_SYSTEM_PACKAGES: "1"
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet pymysql
+
+      - name: Rebuild at_pick_outcomes_v2
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_STOCKS_PORT: '3306'
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python tools/build_clean_ledger_v2.py
+          else
+            python tools/build_clean_ledger_v2.py --execute
+          fi
+
+      - name: Verify the copy advanced
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DB_STOCKS_HOST: mysql.50webs.com
+          DB_STOCKS_USER: ejaguiar1_stocks
+          DB_STOCKS_PASSWORD: ${{ secrets.MYSQL_PASSWORD || secrets.DB_PASS_STOCKS || 'stocks' }}
+          DB_STOCKS_NAME: ejaguiar1_stocks
+          DB_STOCKS_PORT: '3306'
+        run: |
+          python - <<'PY'
+          from tools.db_env import get_stocks_creds
+          import pymysql, sys
+          c = pymysql.connect(**get_stocks_creds())
+          cur = c.cursor()
+          cur.execute("SELECT COUNT(*), MAX(resolved_at) FROM at_pick_outcomes_v2")
+          n, mx = cur.fetchone()
+          cur.execute("SELECT MAX(resolved_at) FROM at_pick_outcomes")
+          src = cur.fetchone()[0]
+          print(f"v2 rows={n} max={mx} | source max={src}")
+          if mx is None or (src is not None and mx < src):
+              print("::error::at_pick_outcomes_v2 did not advance to the source's newest resolution")
+              sys.exit(1)
+          PY
