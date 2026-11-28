@@ -32,6 +32,14 @@ QUARANTINE rules — each is an internal contradiction, provable from the row:
                        entry price was recorded at the wrong decimal scale.
   R6 stop_out_no_stop  labelled SL_HIT but the stop was on the wrong side of
                        entry, so the stop-out it claims could not have happened.
+  R7 scale_vs_ohlcv    an |pnl| > 50% row whose entry or exit is more than 2x
+                       away from the real OHLCV close on its own date, so the
+                       row was recorded at the wrong decimal scale. Uses the
+                       close nearest `created_at` (within 3 days); rows with no
+                       OHLCV coverage are reported as unverifiable, never
+                       quarantined. This is what separates a genuine +60%
+                       equity move (exit == the real close) from a corrupted
+                       one (entry 3.6x the real close).
 
 BRACKET repair rules (NULL the field, keep entry/exit/pnl/label):
   B1 bad_stop      LONG/BUY with stop >= entry, SHORT/SELL with stop <= entry
@@ -102,10 +110,25 @@ ROW_RULES = {
     "R4_nonpositive_exit": "terminal row with exit_price <= 0",
     "R5_magnitude": "ABS(pnl_pct) > 1000 (>10x move in one trade = scale corruption)",
     "R6_stop_out_no_stop": "labelled SL_HIT while the stop sat on the wrong side of entry",
+    "R7_scale_vs_ohlcv": "|pnl|>50% row whose entry/exit is >2x off the real close on its own date",
 }
 BRACKET_RULES = {
     "B1_bad_stop": "stop on the wrong side of entry -> stop_loss NULLed",
     "B2_bad_take_profit": "take_profit on the wrong side of entry -> take_profit NULLed",
+    "B3_bracket_scale": "bracket more than 100x from entry -> that field NULLed",
+}
+
+# ── R7 scale-vs-OHLCV parameters ─────────────────────────────────────────
+# Only rows this extreme are candidates, so the price lookup stays bounded and
+# a legitimate 1.5x entry drift on a normal row can never trigger a mutation.
+R7_MIN_ABS_PNL = 50.0     # percent
+R7_MAX_RATIO = 2.0        # entry/exit vs same-date close, either direction
+R7_MAX_GAP_DAYS = 3       # require a close this close to created_at
+# Bracket sanity: no legitimate take-profit/stop is 100x from its entry.
+BRACKET_MAX_RATIO = 100.0
+# A row whose prices are off-scale has ALL its prices unusable, not just pnl.
+EXTRA_NEUTRALIZE = {
+    "R7_scale_vs_ohlcv": ("entry_price", "take_profit", "stop_loss"),
 }
 
 
@@ -137,6 +160,78 @@ def _side_sql(column: str, long_op: str, short_op: str) -> tuple[str, tuple]:
     return sql, tuple(LONG_SIDE) + tuple(SHORT_SIDE)
 
 
+def _nearest_close(cur, symbol: str, when, max_gap_days: int) -> float | None:
+    """Real close nearest `when`, or None when no bar is close enough.
+
+    Both OHLCV tables store the bar time as epoch MILLISECONDS.
+    """
+    if when is None or not symbol:
+        return None
+    import datetime as _dt
+    if isinstance(when, str):
+        try:
+            when = _dt.datetime.fromisoformat(when)
+        except ValueError:
+            return None
+    ms = int(when.replace(tzinfo=_dt.timezone.utc).timestamp() * 1000)
+    best: float | None = None
+    best_gap = None
+    for table in ("stock_ohlcv", "crypto_ohlcv"):
+        try:
+            cur.execute(
+                f"SELECT timestamp, close FROM {table} WHERE symbol = %s"
+                " ORDER BY ABS(timestamp - %s) LIMIT 1",
+                (symbol, ms),
+            )
+        except Exception:
+            continue
+        row = cur.fetchone()
+        if not row:
+            continue
+        gap_days = abs(row["timestamp"] - ms) / 86_400_000
+        if gap_days <= max_gap_days and (best_gap is None or gap_days < best_gap):
+            best, best_gap = float(row["close"]), gap_days
+    return best
+
+
+def detect_scale_outliers(cur, table: str, hits: dict) -> dict:
+    """R7: flag |pnl|>50 rows whose recorded prices are off the real scale.
+
+    `hits` is the id-keyed dict built by detect_rows; flagged rows are merged in
+    so a row caught by another rule keeps its existing rule list.
+    """
+    cur.execute(
+        f"SELECT id, symbol, {meta_label(table)} AS label, direction,"
+        " entry_price, exit_price, stop_loss, take_profit, pnl_pct, created_at"
+        " FROM " + table +
+        " WHERE pnl_pct IS NOT NULL AND ABS(pnl_pct) > %s",
+        (R7_MIN_ABS_PNL,),
+    )
+    unverifiable = 0
+    for r in cur.fetchall():
+        close = _nearest_close(cur, str(r.get("symbol") or ""), r.get("created_at"),
+                               R7_MAX_GAP_DAYS)
+        if not close or close <= 0:
+            unverifiable += 1
+            continue
+        ratios = []
+        for field in ("entry_price", "exit_price"):
+            val = r.get(field)
+            if val:
+                v = float(val)
+                ratios.append(max(v / close, close / v))
+        if ratios and max(ratios) > R7_MAX_RATIO:
+            entry = hits.setdefault(r["id"], {**r, "rules": []})
+            if "R7_scale_vs_ohlcv" not in entry["rules"]:
+                entry["rules"].append("R7_scale_vs_ohlcv")
+            entry["ohlcv_close"] = close
+            entry["max_ratio"] = round(max(ratios), 2)
+    if unverifiable:
+        print(f"    unverifiable vs OHLCV (no bar within {R7_MAX_GAP_DAYS}d): "
+              f"{unverifiable}")
+    return hits
+
+
 def detect_rows(cur, table: str) -> list[dict]:
     meta = TABLES[table]
     label = meta["label"]
@@ -162,7 +257,7 @@ def detect_rows(cur, table: str) -> list[dict]:
     for rule, (pred, params) in predicates.items():
         cur.execute(
             f"SELECT id, symbol, {label} AS label, direction, entry_price,"
-            f" exit_price, stop_loss, take_profit, pnl_pct"
+            f" exit_price, stop_loss, take_profit, pnl_pct, created_at"
             f" FROM {table} WHERE {pred}",
             params or None,
         )
@@ -170,19 +265,39 @@ def detect_rows(cur, table: str) -> list[dict]:
             entry = hits.setdefault(r["id"], {**r, "rules": []})
             if rule not in entry["rules"]:
                 entry["rules"].append(rule)
+    detect_scale_outliers(cur, table, hits)
     return sorted(hits.values(), key=lambda h: str(h["id"]))
 
 
-def detect_brackets(cur, table: str) -> dict[str, int]:
-    """Count rows with an invalid bracket field per column."""
-    out: dict[str, int] = {}
-    for rule, (column, long_op, short_op) in {
-        "B1_bad_stop": ("stop_loss", ">=", "<="),
-        "B2_bad_take_profit": ("take_profit", "<=", ">="),
-    }.items():
+def bracket_repairs(cur, table: str) -> list[tuple[str, str, str, tuple]]:
+    """(rule, column, where_sql, params) for every bracket-field defect."""
+    out: list[tuple[str, str, str, tuple]] = []
+    for rule, column, long_op, short_op in (
+        ("B1_bad_stop", "stop_loss", ">=", "<="),
+        ("B2_bad_take_profit", "take_profit", "<=", ">="),
+    ):
         sql, params = _side_sql(column, long_op, short_op)
+        out.append((rule, column, sql, params))
+    # B3: a bracket more than 100x from entry is not a bracket at all (e.g. a
+    # take_profit of 4433 on a token priced 0.00000475). Runs after B1/B2, which
+    # may already have NULLed the field.
+    for column in ("take_profit", "stop_loss"):
+        out.append((
+            "B3_bracket_scale",
+            column,
+            f"(entry_price > 0 AND {column} > 0"
+            f" AND {column} > entry_price * {BRACKET_MAX_RATIO})",
+            (),
+        ))
+    return out
+
+
+def detect_brackets(cur, table: str) -> dict[str, int]:
+    """Count rows with an invalid bracket field, per rule."""
+    out: dict[str, int] = {}
+    for rule, _column, sql, params in bracket_repairs(cur, table):
         cur.execute(f"SELECT COUNT(*) AS n FROM {table} WHERE {sql}", params)
-        out[rule] = int(cur.fetchone()["n"])
+        out[rule] = out.get(rule, 0) + int(cur.fetchone()["n"])
     return out
 
 
@@ -376,28 +491,35 @@ def main() -> int:
             ids = [r["id"] for r in rows]
             bname = snapshot(cur, t, ids, "quarantine", stamp)
             _log(conn, t, rows, "quarantine", ROW_RULES, bname)
-            sets = ", ".join(f"{c} = NULL" for c in meta["neutralize"])
+            base_cols = tuple(meta["neutralize"])
+            off_scale = tuple(EXTRA_NEUTRALIZE["R7_scale_vs_ohlcv"])
+            groups = [
+                ([r["id"] for r in rows if "R7_scale_vs_ohlcv" not in r["rules"]],
+                 base_cols),
+                ([r["id"] for r in rows if "R7_scale_vs_ohlcv" in r["rules"]],
+                 base_cols + off_scale),
+            ]
             touched = 0
-            for i in range(0, len(ids), 200):
-                chunk = ids[i:i + 200]
-                cur.execute(f"UPDATE {t} SET {sets} WHERE id IN ({_in(chunk)})", chunk)
-                conn.commit()
-                touched += cur.rowcount or 0
+            for group_ids, cols in groups:
+                if not group_ids:
+                    continue
+                sets = ", ".join(f"{c} = NULL" for c in cols)
+                for i in range(0, len(group_ids), 200):
+                    chunk = group_ids[i:i + 200]
+                    cur.execute(f"UPDATE {t} SET {sets} WHERE id IN ({_in(chunk)})",
+                                chunk)
+                    conn.commit()
+                    touched += cur.rowcount or 0
             print(f"  quarantined {touched:,} rows (ledger: data_quarantine)")
 
         # Bracket repair: NULL each invalid field, set-based, logged.
-        for column, long_op, short_op in (
-            ("stop_loss", ">=", "<="),
-            ("take_profit", "<=", ">="),
-        ):
-            sql, params = _side_sql(column, long_op, short_op)
+        for rule, column, sql, params in bracket_repairs(cur, t):
             cur.execute(f"SELECT id, symbol, {meta['label']} AS label, direction,"
                         f" entry_price, exit_price, stop_loss, take_profit, pnl_pct"
-                        f" FROM {t} WHERE {sql}", params)
+                        f" FROM {t} WHERE {sql}", params or None)
             bad = cur.fetchall()
             if not bad:
                 continue
-            rule = "B1_bad_stop" if column == "stop_loss" else "B2_bad_take_profit"
             ids = [r["id"] for r in bad]
             logged = [{**r, "rules": [rule]} for r in bad]
             # Distinct purpose per column: reusing one name makes the second

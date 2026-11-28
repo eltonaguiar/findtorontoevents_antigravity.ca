@@ -132,8 +132,8 @@ Post-state label sets (exact, `CAST(... AS BINARY)`):
 - `at_raw_picks`: `UNKNOWN` 793 → **8**
 - `at_signal_outcomes`: `''` 216 → **0**, `UNKNOWN` 29 → **0**
 
-**Quarantine — 112 rows** (`at_signal_outcomes` 86, `trading_picks` 26). Ledger
-(`ejaguiar1_stocks.data_quarantine`):
+**Quarantine — 113 rows** (`at_signal_outcomes` 87, `trading_picks` 26; the 87th is
+described in §8). Ledger (`ejaguiar1_stocks.data_quarantine`):
 
 | table | rules | rows |
 |---|---|---:|
@@ -219,3 +219,51 @@ abort happened before its UPDATE):
 - `data_quarantine.source_id` uses the server default collation
   (`utf8mb4_0900_ai_ci`) while `trading_picks.id` is `utf8mb4_unicode_ci`, so joins
   between them need an explicit `COLLATE`. Not harmful, but it will bite the next agent.
+
+## 8. Follow-up (same day): the remaining outliers and the SHIBUSDT residual
+
+Asked to "quarantine the `at_signal_outcomes` outlier rows and the SHIBUSDT-as-COMMODITY
+mislabel". Two of those were already done by the pass above, and the rest needed
+per-row evidence rather than a threshold:
+
+- **The mislabel was fixed** by the label pass (`SHIBUSDT` is now `CRYPTO`; 0 USDT-symbol
+  rows remain misfiled in `at_signal_outcomes`), and the row was quarantined. But its
+  `take_profit` of **4433.71 on a token priced 0.00000475** survived — 9.3 × 10⁸ × entry.
+  A bracket 100,000,000x wide is not a bracket, so that field is now NULLed.
+- **Four rows still had `|pnl| > 50%`.** Rather than quarantine "outliers" on magnitude —
+  which would have deleted real trades — each was priced against the real OHLCV close
+  **on its own `created_at`**:
+
+| row | entry | exit | real close on that date | verdict |
+|---|---:|---:|---:|---|
+| `ZS=F` 724652 | 4078.90 | 1142.00 | **1143.25** (2026-06-24) | exit is right, **entry is 3.57x the real price** → **quarantined** |
+| `RIOT` 168359 | 16.92 | 27.12 | **27.12** (2026-05-29) | exit matches exactly → genuine +60.3% → **kept** |
+| `MARA` 168414 | 9.50 | 14.395 | **14.395** | exit matches exactly → genuine +51.5% → **kept** |
+| `IONQ` 168329 | 48.00 | 72.06 | **72.06** | exit matches exactly → genuine −50.1% short → **kept** |
+
+Three of the four "outliers" were real trades that happened to be large. Only `ZS=F` was
+corrupt, and the proof is internal to the data: its exit equals the real market while its
+entry and bracket are ~3.6x too high, so the row was opened at the wrong decimal scale.
+
+**Two rules added to `tools/quarantine_bad_rows.py`:**
+
+| rule | definition | action |
+|---|---|---|
+| `R7_scale_vs_ohlcv` | an `\|pnl\| > 50%` row whose entry **or** exit is >2x away from the close nearest `created_at` (within 3 days) | quarantine; **all** price columns NULLed, since every price in such a row is off-scale |
+| `B3_bracket_scale` | `take_profit` or `stop_loss` >100x from entry | field repair only — row and PnL kept |
+
+Rows with no OHLCV bar within 3 days are printed as *unverifiable* and never mutated, so
+the rule can only act on evidence.
+
+**Applied:** 1 row quarantined (`ZS=F`), 5 bracket fields NULLed across 5 rows
+(`687611`, `699345`, `1296035`, `1567343`, `1225728`). Post-state: `0 row(s) matching,
+0 bracket(s) invalid`.
+
+**Effect:** `at_signal_outcomes` COMMODITY mean `−0.0579% → +0.0763%` (n 537 → 536) — the
+`ZS=F` −72% row was dragging the class down on a corrupted entry. CRYPTO, EQUITY, ETF,
+FUTURES, MEMECOIN and BOND are unchanged, which is the point: the three real 50–60% equity
+trades are still in the book.
+
+**Backups:** `at_signal_outcomes_quarantine_20261128T030025Z` (1),
+`at_signal_outcomes_bracket_repair_take_profit_20261128T030025Z` (4),
+`at_signal_outcomes_bracket_repair_stop_loss_20261128T030025Z` (1).

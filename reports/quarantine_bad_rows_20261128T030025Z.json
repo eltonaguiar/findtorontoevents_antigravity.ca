@@ -1,0 +1,47 @@
+{
+  "generated_at": "20261128T030025Z",
+  "row_rules": {
+    "R1_pnl_sentinel": "ABS(pnl_pct) >= 999999 (clamp value from a blown-up PnL calc)",
+    "R3_sign_conflict": "WIN label (TP_HIT/WON) with pnl < 0",
+    "R4_nonpositive_exit": "terminal row with exit_price <= 0",
+    "R5_magnitude": "ABS(pnl_pct) > 1000 (>10x move in one trade = scale corruption)",
+    "R6_stop_out_no_stop": "labelled SL_HIT while the stop sat on the wrong side of entry",
+    "R7_scale_vs_ohlcv": "|pnl|>50% row whose entry/exit is >2x off the real close on its own date"
+  },
+  "bracket_rules": {
+    "B1_bad_stop": "stop on the wrong side of entry -> stop_loss NULLed",
+    "B2_bad_take_profit": "take_profit on the wrong side of entry -> take_profit NULLed",
+    "B3_bracket_scale": "bracket more than 100x from entry -> that field NULLed"
+  },
+  "tables": {
+    "at_signal_outcomes": {
+      "quarantined": 1,
+      "bracket_repairs": {
+        "B1_bad_stop": 0,
+        "B2_bad_take_profit": 0,
+        "B3_bracket_scale": 5
+      }
+    }
+  },
+  "quarantined_rows": {
+    "at_signal_outcomes": [
+      {
+        "id": 724652,
+        "symbol": "ZS=F",
+        "label": "SL_HIT",
+        "direction": "LONG",
+        "entry_price": "4078.89990000",
+        "exit_price": "1142.00000000",
+        "stop_loss": "3752.58790800",
+        "take_profit": "4160.47789800",
+        "pnl_pct": "-72.0023",
+        "created_at": "2026-06-24 14:05:35",
+        "rules": [
+          "R7_scale_vs_ohlcv"
+        ],
+        "ohlcv_close": 1142.5,
+        "max_ratio": 3.57
+      }
+    ]
+  }
+}
