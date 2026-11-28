@@ -27,8 +27,17 @@ import pymysql
 # ---------------------------------------------------------------------------
 def get_conn(autocommit=False):
     from tools.db_env import get_stocks_creds
+
+    # db_env returns connect_timeout/read_timeout (and now write_timeout) itself.
+    # Passing them again here raised "got multiple values for keyword argument
+    # 'connect_timeout'" on every call, which is why this builder silently stopped
+    # rebuilding at_pick_outcomes_v2 while at_pick_outcomes kept resolving.
+    creds = dict(get_stocks_creds())
+    for _k in ("connect_timeout", "read_timeout", "write_timeout",
+               "charset", "cursorclass", "autocommit"):
+        creds.pop(_k, None)
     conn = pymysql.connect(
-        **get_stocks_creds(),
+        **creds,
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor,
         connect_timeout=30,
@@ -276,6 +285,10 @@ def create_pick_outcomes_v2(cursor, dry_run):
       `forward_test_only` tinyint(1) DEFAULT '0',
       `forward_validated` tinyint(1) DEFAULT '0',
       `_gated_forward_test_isolated` tinyint(1) DEFAULT '0',
+      `market_regime_id` enum('BULL','BEAR','SIDEWAYS','HIGH_VOL','RISK_OFF','UNKNOWN') NOT NULL DEFAULT 'UNKNOWN',
+      `sector` varchar(64) DEFAULT NULL,
+      `volatility_atr` decimal(10,4) DEFAULT NULL,
+      `execution_slippage_pct` decimal(8,4) DEFAULT NULL,
       PRIMARY KEY (`pick_id`),
       KEY `strategy` (`strategy`),
       KEY `asset_class` (`asset_class`),
@@ -297,9 +310,16 @@ def populate_pick_outcomes_v2(cursor, dry_run):
       3. Rows whose corresponding at_raw_picks row is not CLEAN.
     """
     # Basic exclusions
-    sql = """
-    INSERT INTO at_pick_outcomes_v2
-    SELECT * FROM at_pick_outcomes
+    # Explicit column list: `SELECT *` broke the moment the source table gained
+    # columns (MySQL 1136: column count doesn't match value count). Naming the
+    # columns keeps the copy working through schema drift.
+    _COLS = ("pick_id, symbol, strategy, asset_class, status, resolution_method, "
+             "pnl_pct, resolved_at, resolver_version, forward_test_only, "
+             "forward_validated, _gated_forward_test_isolated, market_regime_id, "
+             "sector, volatility_atr, execution_slippage_pct")
+    sql = f"""
+    INSERT INTO at_pick_outcomes_v2 ({_COLS})
+    SELECT {_COLS} FROM at_pick_outcomes
     WHERE NOT (pnl_pct = 0 AND status = 'FLAT')
       AND resolver_version != 'signflip_purge_20260'
     """
