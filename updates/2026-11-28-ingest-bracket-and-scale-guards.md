@@ -123,8 +123,17 @@ exits on those rows match to 1.004.
 - Scale guards compare against the **latest** bar, so a genuinely long-dormant
   pick can drift past the class threshold and be suppressed. Crypto's 20x
   threshold is set wide for that reason.
-- The 67 empty `etf_all_strategies` rows already in the table are not backfilled
-  here; the next sync upserts them with `ETF` and resolves them.
+- The 67 rows that were already in the table with an empty category are **not**
+  fixed by the next sync: the upsert only touches rows it prepares, and none of
+  those 67 are in a current batch (the prepared-row audit is 0 empty). 36 of them
+  (26 ETF, 7 EQUITY, 3 BOND) were relabelled by
+  `tools/backfill_unknown_category.py --table trading_picks --apply`
+  (`reports/label_fill_20261128T035540Z.json`, with a 36-row backup in
+  `ejaguiar1_backups.trading_picks_label_fill_20261128T035540Z`). The remaining
+  **31** have no deterministic class (`JTO-USD2`, `BRK-B`, `USD-JPY`, `USD-CHF`, …)
+  and keep the `empty_category` gate red. `USD-JPY`/`USD-CHF` *would* be labelled
+  `FOREX` by the sync's ISO-pair rule, but the backfill tool's classifier returns
+  `unknown` for them; that asymmetry is reported here rather than guessed around.
 
 ## 6. Rebase onto `origin/main` and push
 
@@ -139,6 +148,7 @@ commits by other authors and bots and `AGENTS.md` forbids pushing such a branch.
 | `pytest` after the rebase | **36 passed** |
 | `--dry-run` after the rebase | 10,736 prepared · **132** brackets suppressed · 10,604 remain |
 | Prepared-row categories after the rebase | **0 non-canonical, 0 empty** — CRYPTO 9,517 · EQUITY 696 · FOREX 259 · COMMODITY 154 · ETF 61 · FUTURES 33 · BOND 11 · PREDICTION_MARKET 4 · MEMECOIN 1 |
+| Live label gates after the push | `label_drift` **PASS** — non-canonical labels: none · `empty_category` **67 → 31** after the 36-row backfill |
 
 Branch `fix/ingest-guards-and-labels-20261128` pushed to `origin` at
 `31bc898ec232`; `git ls-remote` confirms the remote ref equals the local HEAD.
