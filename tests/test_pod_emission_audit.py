@@ -78,3 +78,37 @@ def test_empty_baseline_means_every_phantom_is_new():
     man = {"pods": [{"id": "POD-A", "strategies": ["ghost"]}]}
     rep = audit(man, {"ghost": {"picks": 0, "intrabar": 0}})
     assert len(new_phantoms(rep, None)) == 1
+
+
+def test_declined_pod_is_skipped_not_flagged_as_phantom():
+    """H-119 regression: a declined pod was never meant to emit.
+
+    It was declared `declined` in audit3_confirmatory.json (PR #1237) but the
+    audit only honoured the per-strategy `unemitted_approved` opt-out, so the pod
+    kept failing the gate on a phantom that could never be fixed by emitting.
+    """
+    m = _man(
+        {"id": "POD-CRYPTO-RSI5070-US", "status": "declined",
+         "strategies": ["crypto_rsi5070_us"], "asset_classes": ["CRYPTO"]},
+        {"id": "POD-LIVE", "status": "active", "strategies": ["real_one"]},
+    )
+    r = audit(m, {"crypto_rsi5070_us": {"picks": 0, "intrabar": 0},
+                  "real_one": {"picks": 4, "intrabar": 0, "classes": ["CRYPTO"]}})
+    assert r["ok"] is True
+    assert r["n_phantom"] == 0
+    assert r["n_skipped"] == 1
+    assert r["skipped"][0]["pod"] == "POD-CRYPTO-RSI5070-US"
+
+
+def test_retired_and_rejected_pods_are_skipped_too():
+    m = _man({"id": "A", "status": "retired", "strategies": ["g1"]},
+             {"id": "B", "status": "rejected", "strategies": ["g2"]})
+    r = audit(m, {"g1": {"picks": 0, "intrabar": 0}, "g2": {"picks": 0, "intrabar": 0}})
+    assert r["ok"] is True and r["n_skipped"] == 2
+
+
+def test_live_pod_with_no_emission_still_fails():
+    """The skip must not weaken the guard for pods that are meant to be live."""
+    m = _man({"id": "P", "status": "active", "strategies": ["ghost"]})
+    r = audit(m, {"ghost": {"picks": 0, "intrabar": 0}})
+    assert r["ok"] is False and r["n_phantom"] == 1
