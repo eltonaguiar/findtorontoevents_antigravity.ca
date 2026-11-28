@@ -18,7 +18,7 @@
 | Q7 | silent-failure | P0 | 40 |
 | Q8 | missing-timeout | P1 | 4 |
 | Q9 | secret-sprawl | P2 | 16 |
-| Q10 | dead-schedule | P2 | 28 |
+| Q10 | dead-schedule | P2 | 29 |
 
 ## Blocking findings
 
