@@ -168,7 +168,9 @@ def _build_contract_pick(
         "strategy": STRATEGY,
         "source_system": SOURCE_SYSTEM,
         "symbol": symbol,
-        "category": "prediction_market",
+        # 2026-11-28: was "prediction_market" (lowercase), which reintroduced
+        # drift after the canonical-enum normalisation. The enum is UPPERCASE.
+        "category": "PREDICTION_MARKET",
         "asset_class": "PREDICTION_MARKET",
         "asset_tag": asset_tag,
         "signal_type": "BUY",

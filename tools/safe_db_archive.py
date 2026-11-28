@@ -22,11 +22,20 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pymysql
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from tools.db_env import (  # noqa: E402
+    get_backtests_creds,
+    get_backups_creds,
+    get_stocks_creds,
+)
 
 if sys.platform == "win32":
     for s in (sys.stdout, sys.stderr):
@@ -40,6 +49,10 @@ REPO = Path(__file__).resolve().parent.parent
 LOG_PATH = REPO / "reports" / "db_archives_log.md"
 
 
+_KEEP = ("host", "user", "password", "database", "port",
+         "connect_timeout", "read_timeout")
+
+
 def conn(db_name, user, password):
     return pymysql.connect(
         host="mysql.50webs.com", user=user, password=password,
@@ -48,14 +61,33 @@ def conn(db_name, user, password):
     )
 
 
+def resolved_conn(db_name: str):
+    """Connect using tools/db_env resolution (the passwords live there or in
+    env / ~/dbpasses.txt — the hardcoded `stocks`/`backups` defaults this
+    script shipped with are stale and made every archive fail auth on a
+    host whose passwords have rotated)."""
+    if db_name == "ejaguiar1_backtests":
+        creds = get_backtests_creds()
+    elif db_name == "ejaguiar1_backups":
+        creds = get_backups_creds()
+    else:
+        creds = get_stocks_creds()
+    return pymysql.connect(
+        **{k: v for k, v in creds.items() if k in _KEEP},
+        charset="utf8mb4", autocommit=False,
+    )
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--source-db", default="ejaguiar1_stocks")
-    ap.add_argument("--source-user", default="ejaguiar1_stocks")
-    ap.add_argument("--source-pass", default="stocks")
+    ap.add_argument("--source-user", default=None,
+                    help="override user (default: tools/db_env resolution)")
+    ap.add_argument("--source-pass", default=None,
+                    help="override password (default: tools/db_env resolution)")
     ap.add_argument("--backup-db", default="ejaguiar1_backups")
-    ap.add_argument("--backup-user", default="ejaguiar1_backups")
-    ap.add_argument("--backup-pass", default="backups")
+    ap.add_argument("--backup-user", default=None)
+    ap.add_argument("--backup-pass", default=None)
     ap.add_argument("--source-table", required=True)
     ap.add_argument("--where", required=True, help="WHERE clause body (no leading WHERE)")
     ap.add_argument("--purpose", required=True, help="Slug like 'orphan_resolver'")
@@ -72,7 +104,9 @@ def main():
     print(f"  archive: {args.backup_db}.{archive_name}")
     print(f"  mode:   {'APPLY' if args.apply else 'DRY-RUN'}")
 
-    src = conn(args.source_db, args.source_user, args.source_pass)
+    src = (conn(args.source_db, args.source_user, args.source_pass)
+           if (args.source_user or args.source_pass)
+           else resolved_conn(args.source_db))
     cur = src.cursor()
     cur.execute(f"SELECT COUNT(*) FROM {args.source_table} WHERE {args.where}")
     n = cur.fetchone()[0]
@@ -88,6 +122,15 @@ def main():
     create_sql = cur.fetchone()[1].replace(
         f"CREATE TABLE `{args.source_table}`",
         f"CREATE TABLE `{archive_name}`",
+        1,
+    )
+    # Named constraints (CHECK/FK) must be unique PER SCHEMA in MySQL 8, so a
+    # verbatim DDL collides with the previous snapshot's constraint names.
+    # Suffix them; a snapshot doesn't need enforced constraints anyway.
+    create_sql = re.sub(
+        r"CONSTRAINT `([^`]+)`",
+        lambda m: "CONSTRAINT `" + (m.group(1) + "_" + ts_utc)[:60] + "`",
+        create_sql,
     )
 
     if not args.apply:
@@ -100,7 +143,9 @@ def main():
         print("\n  No writes performed. Re-run with --apply to execute.")
         src.close(); return
 
-    bak = conn(args.backup_db, args.backup_user, args.backup_pass)
+    bak = (conn(args.backup_db, args.backup_user, args.backup_pass)
+           if (args.backup_user or args.backup_pass)
+           else resolved_conn(args.backup_db))
     bcur = bak.cursor()
     print("\n  [APPLY] creating archive table...")
     bcur.execute(create_sql)

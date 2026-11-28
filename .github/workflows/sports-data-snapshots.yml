@@ -22,11 +22,15 @@
 
 name: Sports data snapshots
 
+# 2026-11-28 — disabled with the sports scrapping (see
+# updates/2026-11-28-empty-category-cleared-and-sports-db-scrapped.md).
+# This was the highest-frequency sports consumer (every 15 min). Manual
+# dispatch kept as the revival path.
 on:
-  schedule:
-    # Every 15 minutes for Pinnacle (matches the refresh cadence the analyzer
-    # snapshot-staleness guard expects). NHL goalie step gates itself on hour.
-    - cron: '59,14,29,44 * * * *'
+  # schedule:
+  #   # Every 15 minutes for Pinnacle (matches the refresh cadence the analyzer
+  #   # snapshot-staleness guard expects). NHL goalie step gates itself on hour.
+  #   - cron: '59,14,29,44 * * * *'
   workflow_dispatch:
     inputs:
       force_nhl_goalie:
@@ -45,7 +49,7 @@ concurrency:
 
 jobs:
   snapshot:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 8
     steps:
       - name: Checkout
@@ -101,8 +105,8 @@ jobs:
       - name: FTP-upload snapshots to live site
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
-          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
         run: |
           if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
             echo "::warning::FTP_* secrets missing — skipping upload (snapshot files generated but not deployed)"
@@ -163,8 +167,8 @@ jobs:
         # 15-min staleness guard. Avoids the host accumulating thousands.
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USER: ${{ secrets.FTP_USERNAME_50WEBS }}
-          FTP_PASS: ${{ secrets.FTP_PASSWORD_50WEBS }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
         run: |
           if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USER" ] || [ -z "$FTP_PASS" ]; then
             exit 0

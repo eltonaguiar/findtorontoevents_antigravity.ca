@@ -3,10 +3,15 @@
 # Query params min_ev / max_bets must match product intent (default min_ev=3, max_bets=5).
 name: Sports Betting  Odds Refresh & Auto-Settle
 
+# 2026-11-28 — sports betting is scrapped for now and its 17 tables were
+# dropped from ejaguiar1_stocks (updates/2026-11-28-empty-category-cleared-
+# and-sports-db-scrapped.md). The cron is disabled so nothing writes those
+# tables back. workflow_dispatch stays as the revival path: re-enable the
+# schedule only after the tables and the PHP endpoints exist again.
 on:
-  schedule:
-    # 5x daily: 10am, 1pm, 4pm, 7pm, 10pm EST (15,18,21,0,3 UTC)
-    - cron: '59 15,18,21,0,3 * * *'
+  # schedule:
+  #   # 5x daily: 10am, 1pm, 4pm, 7pm, 10pm EST (15,18,21,0,3 UTC)
+  #   - cron: '59 15,18,21,0,3 * * *'
   workflow_dispatch:
     inputs:
       run_extra_sources:
@@ -34,7 +39,7 @@ jobs:
   odds-refresh:
     # Playwright Betway step -> chromium is unsupported on ubuntu 26.04; pin the
     # last supported image until playwright catches up.
-    runs-on: ubuntu-24.04
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-24.04' }}
     timeout-minutes: 20  # 2026-05-06: was 10 — Playwright Betway step runs ~2-3 min and pushes total runtime to 10+ min; raised to 20 so post-scraper steps (auto-place/settle) also complete instead of timing out at step boundary
 
     steps:
@@ -666,7 +671,7 @@ jobs:
             print(f"> ::warning:: Picks have been stale for {age_d} days.")
         PY
   custom-sports-update:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.ACTIONS_RUNNER_LABEL || 'ubuntu-latest' }}
     timeout-minutes: 15
 
     steps:
