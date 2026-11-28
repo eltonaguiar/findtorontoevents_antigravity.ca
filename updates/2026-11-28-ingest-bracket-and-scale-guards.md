@@ -137,8 +137,9 @@ exits on those rows match to 1.004.
 
 ## 6. Rebase onto `origin/main` and push
 
-The four commits were rebased onto `origin/main` (`7347c52cedf0`) in a separate
-worktree and pushed from there, because the working branch itself carries 9,141
+The four original commits, plus three follow-ups written during verification,
+were rebased onto `origin/main` (`7347c52cedf0`) in a separate worktree and
+pushed from there, because the working branch itself carries 9,141
 commits by other authors and bots and `AGENTS.md` forbids pushing such a branch.
 
 | Step | Result |
@@ -152,7 +153,7 @@ commits by other authors and bots and `AGENTS.md` forbids pushing such a branch.
 
 Branch `fix/ingest-guards-and-labels-20261128` pushed to `origin` at
 `31bc898ec232`; `git ls-remote` confirms the remote ref equals the local HEAD.
-Twenty files, every one of them mine.
+Twenty-one files across seven commits, every one of them mine.
 
 The 132-vs-150 difference is data, not code: the two runs prepared different
 source mixes (10,736 rows after the rebase vs 10,376 before it).
