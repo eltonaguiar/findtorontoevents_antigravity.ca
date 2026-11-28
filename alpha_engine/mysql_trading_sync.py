@@ -549,7 +549,24 @@ def pick_to_row(pick):
     #   has-equals-F (e.g., CL=F) → futures
     #   has-equals-X (e.g., EURUSD=X) → forex
     # Only applied when the source pick gives empty/None — never overrides.
+    # 2026-11-28: ISO currency codes, for dash-separated pairs like `USD-JPY`
+    # that no suffix rule catches (31 signal_validation rows per sync).
+    _FX_ISO = frozenset({
+        "USD", "EUR", "JPY", "GBP", "CHF", "CAD", "AUD", "NZD", "CNY",
+        "HKD", "SGD", "SEK", "NOK", "DKK", "MXN", "ZAR", "TRY", "INR",
+        "BRL", "KRW", "PLN", "CZK", "HUF", "ILS", "THB", "PHP", "MYR",
+    })
     raw_cat = str(pick.get("category") or "").strip().lower()
+    if not raw_cat:
+        # 2026-11-28: emitters that set only `asset_class` used to fall through
+        # to the symbol guess, which cannot classify an ETF — that is how 67
+        # `etf_all_strategies::*` rows landed with an EMPTY category. asset_class
+        # is already the canonical name, so prefer it over guessing.
+        for _alias_key in ("asset_class", "assetClass", "class"):
+            _alias_val = str(pick.get(_alias_key) or "").strip().lower()
+            if _alias_val:
+                raw_cat = _alias_val
+                break
     if not raw_cat:
         sym = str(pick.get("symbol") or "").upper()
         if sym.endswith(("USDT", "USDC", "BUSD", "DAI", "PERP")):
@@ -560,6 +577,31 @@ def pick_to_row(pick):
             raw_cat = "futures"
         elif sym.endswith("=X"):
             raw_cat = "forex"
+        elif sym.count("-") == 1 and all(
+            part in _FX_ISO for part in sym.split("-")
+        ):
+            # e.g. USD-JPY, USD-CHF (signal_validation). Both halves must be
+            # real ISO codes, so BTC-USD-style crypto symbols never reach here
+            # (they are caught by the -USD branch above).
+            raw_cat = "forex"
+        # 2026-11-28: last resort — the symbol classifier. 593 picks per sync
+        # (e.g. iso_regime_terminal SPY/AMD/GOOGL, which carry no category and no
+        # asset_class) were reaching the table with an EMPTY label. `mutual_fund`
+        # is deliberately not accepted: it is not a member of the canonical enum,
+        # so those rows stay empty for tools/backfill_unknown_category.py.
+        if not raw_cat and _detect_asset_class is not None:
+            try:
+                _det = str(
+                    _detect_asset_class(str(pick.get("symbol") or "")) or ""
+                ).strip().lower()
+            except Exception:
+                _det = ""
+            if _det in {
+                "crypto", "equity", "etf", "forex", "bond", "commodity",
+                "futures", "index", "prediction_market", "memecoin",
+                "penny_stock",
+            }:
+                raw_cat = _det
         # else: leave empty — caller knows their pick is unclassifiable
 
     # STOCKS #7 defense-in-depth (2026-05-31): if the upstream raw_cat is
@@ -790,6 +832,16 @@ _ENTRY_SCALE_THRESHOLD_BY_CLASS: dict[str, float] = {
     "BOND": 10.0,
     "STOCK": 10.0,
     "INDEX": 10.0,
+    # 2026-11-28 — CRYPTO/MEMECOIN are no longer bypassed. The check compares a
+    # pick against the close of the SAME symbol, so the crypto price range
+    # (0.00000475 to 60k) is irrelevant to it. What matters is the scale of the
+    # gap: a decimal-scale bug is a 10x/100x/1000x error, while entry-vs-close
+    # drift for the symbol being synced is normally <2x. 20x separates them.
+    # Real case this catches: ARBUSDT entry 0.000629 vs a real 0.1148 (182x),
+    # which inflated the CRYPTO class mean 9x until it was quarantined.
+    "CRYPTO": 20.0,
+    "MEMECOIN": 20.0,
+    "PENNY_STOCK": 10.0,
 }
 _ENTRY_SCALE_THRESHOLD_DEFAULT = 10.0
 
@@ -807,9 +859,10 @@ def _validate_entry_price_scale(
     if close_price is None or close_price <= 0 or entry_price <= 0:
         return True, ""
     cat = (category or "").upper()
-    # Crypto spans extreme ranges (micro-cap → BTC); skip scale validation.
-    if cat == "CRYPTO":
-        return True, ""
+    # 2026-11-28: crypto used to short-circuit here because its price range is
+    # extreme. That missed the point — this compares the pick to the close of
+    # the SAME symbol, so only the relative gap matters. CRYPTO/MEMECOIN now
+    # carry a 20x threshold in the map above.
     # Absolute-value floor: mirror of exit_price check. Catches near-zero
     # corrupt entries for high-priced instruments (e.g. NQ=F entry=0.004
     # vs real ~22,000).
@@ -852,9 +905,8 @@ def _validate_exit_price_scale(
     if close_price is None or close_price <= 0 or exit_price <= 0:
         return True, ""
     cat = (category or "").upper()
-    # Crypto spans extreme ranges (micro-cap → BTC); skip scale validation.
-    if cat == "CRYPTO":
-        return True, ""
+    # 2026-11-28: same change as the entry guard — crypto is compared to its own
+    # close, so it uses the 20x CRYPTO threshold instead of being bypassed.
     # Absolute-value floor: if the instrument trades above 100 and the exit
     # price is below 1.0, it's implausible — no instrument that trades at
     # $100+ can exit at sub-$1 (even a 99% crash would be >$1). Catches
@@ -871,6 +923,64 @@ def _validate_exit_price_scale(
             f"exit_price={exit_price} vs latest OHLCV close={close_price} "
             f"(ratio {ratio:.1f}x > {threshold:.0f}x threshold for class={cat})"
         )
+    return True, ""
+
+
+# ── Bracket geometry validation ─────────────────────────────────────────────
+# 2026-11-28 — a pick whose take_profit/stop_loss sits on the WRONG SIDE of its
+# own entry was already violated the moment it was written, so the outcome it
+# later produces cannot be trusted: a LONG stop above entry triggers instantly,
+# and a SHORT take-profit above entry is a loss disguised as a target. The audit
+# that motivated this found 1,554 such stops and 1,492 such take-profits in
+# trading_picks (plus 539/320 in at_signal_outcomes) — all written by this
+# funnel. A data-only repair regrows; rejecting at INSERT does not.
+BRACKET_MAX_MULTIPLE = 100.0  # a bracket 100x from entry is not a bracket
+_LONG_SIDES = {"LONG", "BUY", "BUY_LONG"}
+_SHORT_SIDES = {"SHORT", "SELL", "SELL_SHORT"}
+
+
+def _validate_bracket_geometry(
+    entry_price,
+    take_profit,
+    stop_loss,
+    direction,
+) -> tuple[bool, str]:
+    """Return (pass, reason). Pass=False means the bracket cannot be real.
+
+    Only geometry is checked here — whether the level is reachable, on the right
+    side, and within a plausible multiple of entry. Price SCALE is the entry/
+    exit guards' job; this must not duplicate it.
+    """
+    try:
+        entry = float(entry_price) if entry_price is not None else 0.0
+    except (TypeError, ValueError):
+        return True, ""
+    if entry <= 0:
+        return True, ""  # no entry to reason about; the scale guard owns that
+    side = str(direction or "").strip().upper()
+    for label, value in (("take_profit", take_profit), ("stop_loss", stop_loss)):
+        if value is None:
+            continue
+        try:
+            val = float(value)
+        except (TypeError, ValueError):
+            return False, f"{label}={value!r} is not numeric"
+        if val <= 0:
+            return False, f"{label}={val} <= 0 (not a price level)"
+        if side in _LONG_SIDES:
+            wrong_side = val <= entry if label == "take_profit" else val >= entry
+            if wrong_side:
+                return False, (f"LONG {label}={val} is on the wrong side of "
+                               f"entry={entry}")
+        elif side in _SHORT_SIDES:
+            wrong_side = val >= entry if label == "take_profit" else val <= entry
+            if wrong_side:
+                return False, (f"SHORT {label}={val} is on the wrong side of "
+                               f"entry={entry}")
+        ratio = max(val / entry, entry / val)
+        if ratio > BRACKET_MAX_MULTIPLE:
+            return False, (f"{label}={val} is {ratio:.0f}x from entry={entry} "
+                           f"(> {BRACKET_MAX_MULTIPLE:.0f}x — not a bracket)")
     return True, ""
 
 
@@ -1020,6 +1130,36 @@ def sync(dry_run=False):
         log_info(f"[CLEAN_INGEST_V2] suppressed {_clean_skipped} picks (set CLEAN_INGEST_V2_ENFORCE=0 to disable)")
     log_ok(f"Prepared {len(rows)} unique rows for upsert")
 
+    # ── Bracket geometry validation (2026-11-28) ────────────────────────────
+    # Rejects a take_profit/stop_loss on the wrong side of its own entry, or one
+    # more than 100x away. Those rows are what the 2026-11-28 audit found 2,283
+    # times in the tables; refusing them here is the only way they stop arriving.
+    # Placed before the dry-run return on purpose: it needs no DB, so --dry-run
+    # reports exactly how many picks this guard would drop.
+    _bracket_skipped = 0
+    bracket_validated_rows: list[dict] = []
+    for r in rows:
+        ok, reason = _validate_bracket_geometry(
+            r.get("entry_price"),
+            r.get("take_profit"),
+            r.get("stop_loss"),
+            r.get("direction"),
+        )
+        if ok:
+            bracket_validated_rows.append(r)
+        else:
+            _bracket_skipped += 1
+            log_warn(
+                f"[BRACKET] Suppressing {str(r.get('id', '?'))[:50]} "
+                f"symbol={r.get('symbol')}: {reason}"
+            )
+    if _bracket_skipped:
+        rows = bracket_validated_rows
+        log_info(
+            f"[BRACKET] Suppressed {_bracket_skipped} pick(s) with an "
+            f"impossible take_profit/stop_loss. {len(rows)} rows remain for upsert."
+        )
+
     if dry_run:
         log_info("[DRY RUN] Would upsert the following picks:")
         for r in rows[:5]:
@@ -1062,6 +1202,26 @@ def sync(dry_run=False):
                 sym = row["symbol"]
                 if sym not in price_cache:
                     price_cache[sym] = float(row["close"])
+            # 2026-11-28: crypto symbols live in crypto_ohlcv, not stock_ohlcv,
+            # so this cache was blind to exactly the class the entry guard used
+            # to skip — which is why crypto scale corruption reached the table.
+            try:
+                cursor.execute(
+                    f"SELECT o.symbol, o.close FROM crypto_ohlcv o "
+                    f"JOIN (SELECT symbol, MAX(timestamp) mt FROM crypto_ohlcv "
+                    f"      WHERE symbol IN ({placeholders}) GROUP BY symbol) m "
+                    f"ON o.symbol=m.symbol AND o.timestamp=m.mt "
+                    f"WHERE o.close IS NOT NULL",
+                    tuple(symbols_in_batch),
+                )
+                for row in cursor.fetchall():
+                    sym = row["symbol"]
+                    if sym not in price_cache:
+                        price_cache[sym] = float(row["close"])
+            except Exception as e:
+                log_warn(
+                    f"Could not load crypto_ohlcv price cache (non-fatal): {e}"
+                )
             log_info(
                 f"Entry-scale price cache: {len(price_cache)} of "
                 f"{len(symbols_in_batch)} symbols have OHLCV data"
@@ -1125,6 +1285,8 @@ def sync(dry_run=False):
             f"[EXIT_SCALE] Suppressed {_exit_scale_skipped} pick(s) with "
             f"implausible exit_price. {len(rows)} rows remain for upsert."
         )
+
+    # Bracket geometry is validated above, before the dry-run return.
 
     # Create table if not exists
     try:
