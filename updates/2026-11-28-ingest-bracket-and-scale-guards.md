@@ -81,9 +81,9 @@ member of the canonical enum, so those rows stay empty for
 
 | Check | Result |
 |---|---|
-| `pytest tests/test_sync_bracket_and_scale_guards.py tests/test_mysql_sync_category_inference.py` | **35 passed** |
+| `pytest tests/test_sync_bracket_and_scale_guards.py tests/test_mysql_sync_category_inference.py` | **36 passed** |
 | `py_compile alpha_engine/mysql_trading_sync.py` | OK |
-| Bracket guard, live batch dry run | **150 suppressed**, 10,226 remain |
+| Bracket guard, live batch dry run | **150 suppressed**, 10,226 remain (10,376 prepared) |
 | Category of every prepared row (monkeypatched `pick_to_row`) | **0 non-canonical** — before the fixes: 593 empty |
 | `tools/backfill_category_aliases.py` after `--apply` | plan: 0 labels, 0 rows to rewrite |
 | Previously-known impossible brackets in `trading_picks` | 1,554 stops + 1,492 take-profits (the population this guard now blocks) |
@@ -117,7 +117,7 @@ exits on those rows match to 1.004.
 ## 5. Limitations
 
 - The bracket guard sees only the `direction` string the emitter supplies. If an
-  emitter mislabels direction, a correct bracket is rejected. The 150 observed
+  emitter mislabels direction, a correct bracket is rejected. The observed
   rejections are dominated by `inverse_*` strategies whose stops equal their
   entries, which is not a direction-labelling artefact.
 - Scale guards compare against the **latest** bar, so a genuinely long-dormant
@@ -126,9 +126,30 @@ exits on those rows match to 1.004.
 - The 67 empty `etf_all_strategies` rows already in the table are not backfilled
   here; the next sync upserts them with `ETF` and resolves them.
 
-## 6. Provenance
+## 6. Rebase onto `origin/main` and push
 
-- Batch size and bracket rejections: `python3 -m alpha_engine.mysql_trading_sync --dry-run`, 2026-11-28T03:1xZ.
-- Category distribution: `pick_to_row` monkeypatched over the same dry run.
+The four commits were rebased onto `origin/main` (`7347c52cedf0`) in a separate
+worktree and pushed from there, because the working branch itself carries 9,141
+commits by other authors and bots and `AGENTS.md` forbids pushing such a branch.
+
+| Step | Result |
+|---|---|
+| Cherry-pick of the four commits | one conflict only: `tools/agent_ownership.json` (absent upstream, modified by me). Resolved by **keeping** it — `tools/git_guard_check.py` reads it. |
+| Merge side effect | `test_unclassifiable_stays_empty` **failed**: AAPL now infers `EQUITY`. The test encoded the pre-fallback contract, so the earlier "35 passed" only ever held before the classifier fallback was added. Fixed in `31bc898ec232` — equities must be `EQUITY` (never crypto/futures), and a genuinely unknown symbol (`NOTREAL`) still stays empty. |
+| `pytest` after the rebase | **36 passed** |
+| `--dry-run` after the rebase | 10,736 prepared · **132** brackets suppressed · 10,604 remain |
+| Prepared-row categories after the rebase | **0 non-canonical, 0 empty** — CRYPTO 9,517 · EQUITY 696 · FOREX 259 · COMMODITY 154 · ETF 61 · FUTURES 33 · BOND 11 · PREDICTION_MARKET 4 · MEMECOIN 1 |
+
+Branch `fix/ingest-guards-and-labels-20261128` pushed to `origin` at
+`31bc898ec232`; `git ls-remote` confirms the remote ref equals the local HEAD.
+Twenty files, every one of them mine.
+
+The 132-vs-150 difference is data, not code: the two runs prepared different
+source mixes (10,736 rows after the rebase vs 10,376 before it).
+
+## 7. Provenance
+
+- Batch size and bracket rejections: `python3 -m alpha_engine.mysql_trading_sync --dry-run`, 2026-11-28T03:1xZ (pre-rebase) and the same command in `.push-wt` (post-rebase).
+- Category distribution: `pick_to_row` monkeypatched over the same dry run, in both trees.
 - Band audit: `reports/ohlcv_alignment_20_50_20261128T030306Z.json`.
 - Bracket population counts: `updates/2026-11-28-label-drift-and-bad-row-quarantine.md` §4.
