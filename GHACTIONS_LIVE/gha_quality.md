@@ -1,7 +1,7 @@
 # GHA quality framework (Q1-Q10)
 
-- workflows scanned: 399 (parse errors: 0)
-- aggregate score: 94.9/100
+- workflows scanned: 400 (parse errors: 0)
+- aggregate score: 94.8/100
 - blocking violations: 101
 - runtime signals merged: True
 
@@ -18,7 +18,7 @@
 | Q7 | silent-failure | P0 | 40 |
 | Q8 | missing-timeout | P1 | 4 |
 | Q9 | secret-sprawl | P2 | 16 |
-| Q10 | dead-schedule | P2 | 29 |
+| Q10 | dead-schedule | P2 | 28 |
 
 ## Blocking findings
 
@@ -122,8 +122,8 @@
 | ALPHA ENGINE - Live Autonomous Scanner | 60 |
 | CI | 65 |
 | DB Freshness Guardian | 65 |
+| DB Sync: findtorontoevents.ca  torontoevent.net | 65 |
 | Verified pilot daily | 70 |
-| Multi-Asset Copytrader Scanner v2  Forex/Futures/Stocks/Commodities | 72 |
 
 ## Advisory findings (P2)
 
@@ -143,7 +143,7 @@
 - Q1 (repo): 4 workflows share cron minute :2
 - Q1 (repo): 9 workflows share cron minute :20
 - Q1 (repo): 6 workflows share cron minute :22
-- Q1 (repo): 6 workflows share cron minute :23
+- Q1 (repo): 7 workflows share cron minute :23
 - Q1 (repo): 7 workflows share cron minute :24
 - Q1 (repo): 7 workflows share cron minute :25
 - Q1 (repo): 6 workflows share cron minute :26
