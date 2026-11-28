@@ -47,6 +47,24 @@ TOL_PP = {
 }
 CRYPTO_MAJORS = {"BTC", "ETH", "BNB", "SOL", "XRP", "ADA", "DOGE", "AVAX", "LINK", "MATIC"}
 
+# Yahoo's continuous front-month futures (SYM=F) are not the instrument a pick
+# holds: the quoted contract rolls, can sit a delivery month away from the traded
+# one, and settles at a different time. Comparing a pick's published pnl against
+# the front-month quote at a 1pp tolerance therefore produces false mismatches -
+# 2026-11-28 flagged ZM=F (1.32pp) and LE=F (1.53pp) as critical while both were
+# correct for their own contracts. Widen for these symbols instead of exempting
+# them, so a genuinely wrong price still trips the check.
+CONTINUOUS_FUTURES_TOL_PP = 3.0
+
+
+def tolerance_for(sym: str, aclass: str) -> float:
+    tol = TOL_PP.get(aclass, 1.0)
+    if aclass == "CRYPTO" and sym.split("USDT")[0] in CRYPTO_MAJORS:
+        tol = 0.5
+    if str(sym).upper().endswith("=F"):
+        tol = max(tol, CONTINUOUS_FUTURES_TOL_PP)
+    return tol
+
 
 def fetch_external(symbol: str, aclass: str):
     """Return (price, source) using the right existing fetcher."""
@@ -199,9 +217,7 @@ def run() -> int:
         except (TypeError, ValueError):
             continue
         ext_checks += 1
-        tol = TOL_PP.get(aclass, 1.0)
-        if aclass == "CRYPTO" and sym.split("USDT")[0] in CRYPTO_MAJORS:
-            tol = 0.5
+        tol = tolerance_for(sym, aclass)
         recomputed = compute_pnl(entry_f, ext_f, direction)
         if recomputed is None:
             continue
