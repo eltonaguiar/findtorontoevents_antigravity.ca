@@ -105,3 +105,26 @@ def test_forex_priced_by_the_validation_feed_is_counted_not_flagged(monkeypatch,
     assert rep["by_class"]["FOREX"]["unverified_source"] == 1
     assert rep["by_class"]["FOREX"]["mismatch"] == 0
     assert rep["flag_counts"]["total"] == 0
+
+
+def test_continuous_futures_get_a_wider_mismatch_tolerance():
+    """2026-11-28: ZM=F (1.32pp) and LE=F (1.53pp) were flagged CRITICAL mismatch.
+
+    Yahoo's front-month continuous contract is not the contract the pick holds --
+    it rolls, can sit a delivery month away, and settles separately. At the 1pp
+    futures tolerance that produced two false criticals and a red gate on correct
+    data. Continuous symbols get a wider tolerance but stay checked.
+    """
+    spec = importlib.util.spec_from_file_location("qa_ledger", ROOT / "tools" / "qa_ledger.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    assert mod.tolerance_for("ZM=F", "COMMODITY") >= 1.32
+    assert mod.tolerance_for("LE=F", "COMMODITY") >= 1.53
+    # ordinary futures keep the tight tolerance - only the continuous quote is noisy
+    assert mod.tolerance_for("CLZ26", "FUTURES") == mod.TOL_PP["FUTURES"]
+    # equity and crypto-major tolerances must not move
+    assert mod.tolerance_for("AAPL", "EQUITY") == 0.5
+    assert mod.tolerance_for("BTCUSDT", "CRYPTO") == 0.5
+    # and the widening must be bounded: a 10pp error still trips
+    assert 10.0 > mod.tolerance_for("ZM=F", "COMMODITY")
