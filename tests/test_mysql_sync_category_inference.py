@@ -15,7 +15,12 @@ Inference rules (writer-side, only when pick.get('category') is empty):
   *-USD                                  → crypto
   *=F                                    → futures
   *=X                                    → forex
-  else                                   → empty (unclassifiable)
+  USD-JPY                                → forex (both halves real ISO codes)
+  else: detect_asset_class(symbol), accepted only when it returns one of the
+        11 canonical members (crypto/equity/etf/forex/bond/commodity/futures/
+        index/prediction_market/memecoin/penny_stock). 'mutual_fund' and
+        'unknown' are refused → category stays empty (unclassifiable), so no
+        12th label is ever invented at ingest.
 """
 from __future__ import annotations
 
@@ -80,11 +85,27 @@ def test_explicit_category_NEVER_overridden():
     assert r2["category"] == "COMMODITY"  # not "futures"
 
 
-def test_unclassifiable_stays_empty():
-    """Equity tickers like AAPL, NVDA shouldn't auto-infer crypto/futures."""
+def test_equity_tickers_get_EQUITY_never_crypto_or_futures():
+    """Plain equity tickers used to reach the table with an EMPTY label.
+
+    2026-11-28: the classifier fallback now labels them EQUITY (593 such picks
+    per sync, e.g. iso_regime_terminal SPY/AMD/GOOGL). The original intent of
+    this test still holds — they must never be inferred as crypto or futures.
+    """
     for sym in ("AAPL", "NVDA", "TSLA", "JNJ"):
         r = pick_to_row(_base(sym))
-        assert r["category"] == "", f"{sym} should be empty, got {r['category']}"
+        assert r["category"] == "EQUITY", f"{sym} got {r['category']}"
+
+
+def test_unclassifiable_stays_empty():
+    """A symbol the classifier cannot place keeps an empty category.
+
+    detect_asset_class('NOTREAL') is 'unknown', which is not a canonical member,
+    so nothing is invented. Rows like this are left for
+    tools/backfill_unknown_category.py rather than getting a 12th label.
+    """
+    r = pick_to_row(_base("NOTREAL"))
+    assert r["category"] == "", f"NOTREAL should be empty, got {r['category']}"
 
 
 def test_lowercase_input_normalized():
