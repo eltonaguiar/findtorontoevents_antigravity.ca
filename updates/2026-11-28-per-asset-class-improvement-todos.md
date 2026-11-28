@@ -141,15 +141,33 @@ numbers.
       were restored within the hour at 04:59Z. Merging the PR is the only
       durable fix; until then, re-run the sweep after each sync rather than
       treating a new failure as a new defect.
-- [x] **`empty_category` 67 → 2** after teaching
-      `tools/backfill_unknown_category.py` the sync's ISO-pair rule and applying
-      it (65 rows: FOREX 29, ETF 26, EQUITY 7, BOND 3; backup
-      `ejaguiar1_backups.trading_picks_label_fill_20261128T040638Z`). The two
-      survivors need a decision, not a guess: `JTO-USD2` (crypto pair, stray
-      `2`) and `BRK-B` (Berkshire class B — the `-B` looks like a currency).
-- [ ] Give `detect_asset_class` a ticker-suffix rule (`BRK-B`/`BF-B` → equity)
-      or a symbol-format rule (`<BASE>-<QUOTE>` with a trailing digit → crypto),
-      so the last two empty rows stop being re-reported every run.
+- [x] **`empty_category` 67 → 0 and `label_drift` PASS** (2026-11-28T08:07Z).
+      Two evidence rules cleared the pair the classifier cannot read — peer
+      label (`JTO-USD2`, four CRYPTO siblings) and equity price universe
+      (`BRK-B`, 1,367 rows in `equity_daily_ohlcv`) — and alias repair cleared
+      14 lowercase forks (13 `prediction_market`, 1 `meme`). Backups
+      `…trading_picks_label_fill_20261128T080640Z` (67 rows) and `…080758Z`
+      (14 rows).
+- [!] **Both labels regrow until PR #1240 merges.** 65 of the 67 were already
+      repaired at 04:06Z and rewritten as `''` at 04:59/05:59/06:59Z, an hour
+      apart, by `category = VALUES(category)`. `origin/main` also still has
+      `_CATEGORY_KNOWN_PASSTHROUGH = {"meme", "index", "unknown"}`, which is
+      why the `meme` row returned at 07:59Z. The branch guards the column and
+      normalizes the aliases. Re-run
+      `python3 tools/backfill_unknown_category.py --table trading_picks --apply`
+      (idempotent) until then.
+- [x] **`detect_asset_class` left alone.** A ticker-suffix rule was the first
+      idea for `BRK-B`/`JTO-USD2`; two database-proof rules in the backfill tool
+      solve the same rows without teaching the classifier a new guess. Revisit
+      only if such symbols start arriving in volume.
+- [x] **Sports betting removed from `ejaguiar1_stocks`** (2026-11-28T08:06Z).
+      Scrapped for now: 17 tables / 22,061 rows dropped after a verified
+      snapshot, and five workflow crons (the refresh writer plus four readers)
+      disabled. Table count 469 → 453. No gate ever read those tables. See
+      `updates/2026-11-28-empty-category-cleared-and-sports-db-scrapped.md`.
+- [ ] The PHP live-monitor sports endpoints (`live-monitor/api/sports_*.php`)
+      are still deployed on FTP and will error against the dropped tables — a
+      deploy-side removal, not a repo change.
 - [ ] Wire `tools/asset_class_audit_checks.py` into a nightly job so a gate that
       passes today cannot silently fail tomorrow without a card being raised.
 
