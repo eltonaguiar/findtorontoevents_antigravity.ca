@@ -87,10 +87,39 @@ def load_json(path):
 
 
 def save_json(path, data):
-    """Save JSON with UTF-8 encoding."""
+    """Save JSON with UTF-8 encoding.
+
+    Strict: bare NaN/Infinity are replaced with null before serialising, because
+    browsers reject those tokens and ci.yml fails the build on them. Never revert
+    this to a plain json.dump - it silently reintroduces the defect.
+    """
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    try:
+        from tools.strict_json import save_strict_json
+        save_strict_json(path, data)
+        return
+    except ImportError:  # run from inside copy_trader_intel/
+        pass
+    import math
+    import numbers
+
+    def _clean(o):
+        if isinstance(o, bool):
+            return o
+        if isinstance(o, numbers.Real):
+            try:
+                f = float(o)
+            except (TypeError, ValueError):
+                return None
+            return f if math.isfinite(f) else None
+        if isinstance(o, dict):
+            return {k: _clean(v) for k, v in o.items()}
+        if isinstance(o, (list, tuple, set)):
+            return [_clean(v) for v in o]
+        return o
+
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+        json.dump(_clean(data), f, indent=2, ensure_ascii=False, allow_nan=False)
 
 
 def normalize_pick(raw, source_system):

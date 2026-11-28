@@ -157,11 +157,37 @@ def run_screeners(
 
 
 def write_payload(payload: dict[str, Any], path: Path = UEPS_PICKS_PATH) -> None:
-    """Persist the payload as JSON at the dashboard-fetched path."""
+    """Persist the payload as JSON at the dashboard-fetched path.
+
+    Strict JSON: non-finite numbers become null. `default=str` alone does not help
+    because NaN is a float, so json.dumps would emit a bare NaN token that the
+    browser (and ci.yml's gate) rejects.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, indent=2, default=str), encoding="utf-8"
-    )
+    try:
+        from tools.strict_json import dumps_strict
+        text = dumps_strict(payload, default=str)
+    except ImportError:  # run from inside tools/
+        import math
+        import numbers
+
+        def _clean(o):
+            if isinstance(o, bool):
+                return o
+            if isinstance(o, numbers.Real):
+                try:
+                    f = float(o)
+                except (TypeError, ValueError):
+                    return None
+                return f if math.isfinite(f) else None
+            if isinstance(o, dict):
+                return {k: _clean(v) for k, v in o.items()}
+            if isinstance(o, (list, tuple, set)):
+                return [_clean(v) for v in o]
+            return o
+
+        text = json.dumps(_clean(payload), indent=2, default=str, allow_nan=False)
+    path.write_text(text, encoding="utf-8")
     logger.info("Wrote %s (long=%d short=%d swing=%d)", path,
                 payload["summary"]["n_long"],
                 payload["summary"]["n_short"],
