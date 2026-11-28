@@ -153,7 +153,8 @@ commits by other authors and bots and `AGENTS.md` forbids pushing such a branch.
 
 Branch `fix/ingest-guards-and-labels-20261128` pushed to `origin` at
 `31bc898ec232`; `git ls-remote` confirms the remote ref equals the local HEAD.
-Twenty-one files across seven commits, every one of them mine.
+Twenty-one files, every one of them mine (the branch also carries the
+follow-up commits that correct this record).
 
 The 132-vs-150 difference is data, not code: the two runs prepared different
 source mixes (10,736 rows after the rebase vs 10,376 before it).
