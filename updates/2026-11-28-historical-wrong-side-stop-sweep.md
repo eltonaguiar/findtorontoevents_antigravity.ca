@@ -143,3 +143,23 @@ historical half of the same contract.
   `ejaguiar1_stocks.data_quarantine`, and the backup tables named in §3.
 - Run reports: `reports/quarantine_bad_rows_20261128T040355Z.json`,
   `reports/quarantine_bad_rows_20261128T040424Z.json`.
+
+## 8. Same-day follow-up — ISO pairs are no longer "unclassifiable"
+
+`tools/backfill_unknown_category.py` was taught the sync's ISO-pair rule, so a
+`USD-JPY` / `USD-CHF` row resolves to FOREX instead of being reported as
+unclassifiable on every run (the sync already labelled it FOREX at ingest; the
+backfill tool disagreed because `detect_asset_class` cannot tell a bare X-Y
+shape from anything else).
+
+Applied to `trading_picks` at 2026-11-28T04:06:38Z — backup
+`ejaguiar1_backups.trading_picks_label_fill_20261128T040638Z` (65 rows) —
+**65** empty labels filled: FOREX **29** (the ISO pairs), ETF 26, EQUITY 7,
+BOND 3. Global gate `empty_category` went **67 → 2**.
+
+The remaining two are genuinely ambiguous and were deliberately left alone:
+`JTO-USD2` (a crypto pair with a stray `2` suffix) and `BRK-B` (Berkshire class
+B, whose `-B` looks like a currency pair). Neither is guessed at.
+Tests: `tests/test_backfill_unknown_category.py` asserts the pair rule, that
+`BTC-USD` is **not** treated as FX, that an unambiguous emitter still outranks
+the symbol, and that the tool's `_FX_ISO` set is byte-for-byte the sync's.

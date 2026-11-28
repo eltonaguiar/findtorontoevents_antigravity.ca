@@ -127,10 +127,15 @@ numbers.
       fixed the enum will keep drifting; the chokepoint warning log in
       `alpha_engine/mysql_trading_sync.py` names the alias, so grep the sync log
       for `meme` and patch that emitter.
-- [!] **`empty_category` regrew to 67 rows** (31 were left after the backfill,
-      the rest are rows written since). Re-run
-      `python3 tools/backfill_unknown_category.py --table trading_picks --apply`
-      — it now classifies ISO pairs too — and compare against 31.
+- [x] **`empty_category` 67 → 2** after teaching
+      `tools/backfill_unknown_category.py` the sync's ISO-pair rule and applying
+      it (65 rows: FOREX 29, ETF 26, EQUITY 7, BOND 3; backup
+      `ejaguiar1_backups.trading_picks_label_fill_20261128T040638Z`). The two
+      survivors need a decision, not a guess: `JTO-USD2` (crypto pair, stray
+      `2`) and `BRK-B` (Berkshire class B — the `-B` looks like a currency).
+- [ ] Give `detect_asset_class` a ticker-suffix rule (`BRK-B`/`BF-B` → equity)
+      or a symbol-format rule (`<BASE>-<QUOTE>` with a trailing digit → crypto),
+      so the last two empty rows stop being re-reported every run.
 - [ ] Wire `tools/asset_class_audit_checks.py` into a nightly job so a gate that
       passes today cannot silently fail tomorrow without a card being raised.
 
