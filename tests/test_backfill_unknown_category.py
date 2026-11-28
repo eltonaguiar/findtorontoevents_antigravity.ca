@@ -72,6 +72,66 @@ def test_source_rule_outranks_the_symbol() -> None:
     assert (target, why) == ("ETF", "source:etf_all_strategies")
 
 
+def test_peer_label_resolves_a_shape_the_classifier_cannot_read() -> None:
+    """JTO-USD2: the stray digit defeats the pair rule, the table knows better."""
+    peers = {"JTO-USD2": "CRYPTO"}
+    target, why = resolve({"symbol": "JTO-USD2"}, TRADING_PICKS_ALLOWED,
+                          peers, set())
+    assert (target, why) == ("CRYPTO", "peer_label")
+
+
+def test_equity_universe_is_only_a_last_resort() -> None:
+    """BRK-B has price history in equity_daily_ohlcv; nothing else can read it."""
+    target, why = resolve({"symbol": "BRK-B"}, TRADING_PICKS_ALLOWED,
+                          {}, {"BRK-B", "AAPL"})
+    assert (target, why) == ("EQUITY", "equity_universe")
+
+
+def test_classifier_outranks_peer_and_universe() -> None:
+    """Proof rules never second-guess a symbol the classifier reads cleanly."""
+    target, why = resolve({"symbol": "SPY"}, TRADING_PICKS_ALLOWED,
+                          {"SPY": "EQUITY"}, {"SPY"})
+    assert (target, why) == ("ETF", "detect:etf")
+
+
+def test_no_evidence_means_no_label() -> None:
+    """An unknown symbol with no peers and no price history stays untouched."""
+    assert resolve({"symbol": "NOTREAL2"}, TRADING_PICKS_ALLOWED,
+                   {}, set()) == (None, "detect:unknown")
+
+
+def test_alias_rule_repairs_a_lowercase_fork() -> None:
+    """A `meme` row is the same class as MEMECOIN, so it resolves by alias."""
+    target, why = resolve({"symbol": "PEPE-USD", "reason": "alias",
+                           "current_label": "meme"}, TRADING_PICKS_ALLOWED)
+    assert (target, why) == ("MEMECOIN", "alias:meme")
+
+
+def test_alias_map_matches_the_sync() -> None:
+    """The sync re-creates these forks each run; both sides must agree.
+
+    origin/main still carries `_CATEGORY_KNOWN_PASSTHROUGH = {"meme", "index",
+    "unknown"}`, which is why the repaired row came back at 07:59Z. The branch
+    normalizes them instead — this test pins that mapping in both places.
+    """
+    src = (REPO_ROOT / "alpha_engine" / "mysql_trading_sync.py").read_text(
+        encoding="utf-8")
+    for key, value in (("meme", "MEMECOIN"), ("index", "INDEX"),
+                       ("managed_futures", "FUTURES"),
+                       ("prediction_market", "PREDICTION_MARKET")):
+        assert f'"{key}": "{value}"' in src, f"sync lost the {key} alias"
+
+
+def test_upsert_protects_an_existing_category() -> None:
+    """The sync must not blank a repaired label when the source sends ''. 65
+    rows relabelled at 04:06Z were restored to '' by the 04:59Z sync."""
+    src = (REPO_ROOT / "alpha_engine" / "mysql_trading_sync.py").read_text(
+        encoding="utf-8")
+    assert ("category     = COALESCE(NULLIF(VALUES(category), ''), category)")
+    assert "COALESCE(NULLIF(VALUES(category), ''), category)" in src
+    assert "category     = VALUES(category)," not in src
+
+
 def test_fx_set_matches_the_sync() -> None:
     """The copy in the tool must equal the sync's set, or the two drift apart."""
     src = (REPO_ROOT / "alpha_engine" / "mysql_trading_sync.py").read_text(

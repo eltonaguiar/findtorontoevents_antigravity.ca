@@ -22,6 +22,19 @@ now applies the SAME rule the sync uses at ingest
 currency codes, in which case the row is FOREX. Repeating the sync's rule here
 is what stops those rows being reported as unclassifiable on every run.
 
+Two more evidence rules (2026-11-28) clear the shapes neither the pair rule nor
+the classifier can read — both require PROOF from the database, never a
+hardcoded symbol list:
+
+  * PEER LABEL — the same symbol already appears in the same table under a
+    single, unanimous non-empty class (`JTO-USD2` has four CRYPTO rows).
+  * EQUITY UNIVERSE — the symbol has price history in `equity_daily_ohlcv` or
+    `stock_ohlcv`, i.e. it is a listed ticker (`BRK-B`, whose `-B` suffix
+    defeats both the pair detector and the classifier).
+
+Resolution order is source-system > ISO pair > classifier > peer label >
+price universe. Each later rule only runs when every earlier one declined.
+
 Column compatibility: `at_raw_picks.asset_class` and
 `at_signal_outcomes.asset_class` are ENUMs that do not contain INDEX or
 PREDICTION_MARKET, so a detected class outside the column's enum is clamped to
@@ -93,6 +106,35 @@ _CRYPTO_PAIR_RE = r"(USDT|USDC|BUSD|TUSD|FDUSD)$"
 # on purpose: the sync set is private to a module-level function scope and
 # importing the sync module from a backfill tool would pull its DB writers in.
 # tests/test_backfill_unknown_category.py asserts the two stay identical.
+# Alias -> canonical label. This is the sync's `_CATEGORY_ALIASES` map: a
+# lowercase fork ('meme', 'index', 'managed_futures') is re-created by the
+# writer on every sync, so the repair has to know the same mapping.
+# tests/test_backfill_unknown_category.py asserts the two stay in step.
+_ALIASES = {
+    "meme": "MEMECOIN",
+    "meme_coin": "MEMECOIN",
+    "memecoin": "MEMECOIN",
+    "index": "INDEX",
+    "managed_futures": "FUTURES",
+    "prediction_market": "PREDICTION_MARKET",
+    "prediction_markets": "PREDICTION_MARKET",
+    "cryptocurrency": "CRYPTO",
+    "fx": "FOREX",
+    "currency": "FOREX",
+    "currencies": "FOREX",
+    "bonds": "BOND",
+    "future": "FUTURES",
+    "commodities": "COMMODITY",
+    "stock": "EQUITY",
+    "stocks": "EQUITY",
+    "share": "EQUITY",
+    "shares": "EQUITY",
+    "pennystock": "EQUITY",
+    "pennystocks": "EQUITY",
+}
+
+_EQUITY_UNIVERSE: set[str] | None = None
+
 _FX_ISO = frozenset({
     "USD", "EUR", "JPY", "GBP", "CHF", "CAD", "AUD", "NZD", "CNY",
     "HKD", "SGD", "SEK", "NOK", "DKK", "MXN", "ZAR", "TRY", "INR",
@@ -161,6 +203,19 @@ def candidates(cur, table: str) -> list[dict]:
         (_CRYPTO_PAIR_RE,),
     )
     rows.extend(cur.fetchall())
+    # Alias drift: a canonical class stored in a non-canonical spelling
+    # ('meme', 'index', 'managed_futures'). Only values in the alias map are
+    # candidates — anything else stays untouched and is reported by the gate.
+    cur.execute(
+        f"""
+        SELECT {pk} AS pk, symbol, source_system, {col} AS current_label,
+               'alias' AS reason
+        FROM {table}
+        WHERE BINARY {col} <> BINARY UPPER({col}) AND LOWER({col}) IN %s
+        """,
+        (tuple(_ALIASES),),
+    )
+    rows.extend(cur.fetchall())
     return rows
 
 
@@ -177,17 +232,71 @@ def iso_fx_pair(symbol: str) -> bool:
     return all(part in _FX_ISO for part in sym.split("-"))
 
 
-def resolve(row: dict, allowed: set[str]) -> tuple[str | None, str]:
+def peer_labels(cur, table: str) -> dict[str, str]:
+    """Symbols already labelled in this table, one class only.
+
+    A symbol that carries two different non-empty classes is genuinely
+    ambiguous and is omitted, so this rule can never manufacture a label by
+    majority vote.
+    """
+    col = TABLES[table]["col"]
+    cur.execute(
+        f"""
+        SELECT UPPER(TRIM(symbol)) AS sym, {col} AS label
+        FROM {table}
+        WHERE symbol IS NOT NULL AND TRIM(symbol) <> ''
+          AND {col} IS NOT NULL AND {col} <> '' AND UPPER({col}) <> 'UNKNOWN'
+        GROUP BY sym, label
+        """
+    )
+    seen: dict[str, set] = {}
+    for row in cur.fetchall():
+        seen.setdefault(row["sym"], set()).add(row["label"])
+    return {sym: next(iter(labels))
+            for sym, labels in seen.items() if len(labels) == 1}
+
+
+def equity_universe(cur) -> set[str]:
+    """Listed equity tickers, read once per run.
+
+    Proof that a symbol is an equity: it has price history in the equity
+    tables. Used only for rows the classifier cannot read (BRK-B, BF-B).
+    """
+    global _EQUITY_UNIVERSE
+    if _EQUITY_UNIVERSE is not None:
+        return _EQUITY_UNIVERSE
+    symbols: set[str] = set()
+    for table in ("equity_daily_ohlcv", "stock_ohlcv"):
+        try:
+            cur.execute(f"SELECT DISTINCT UPPER(symbol) AS s FROM {table}")
+        except pymysql.Error:
+            continue
+        symbols.update(r["s"] for r in cur.fetchall() if r["s"])
+    _EQUITY_UNIVERSE = symbols
+    return symbols
+
+
+def resolve(row: dict, allowed: set[str],
+            peers: dict[str, str] | None = None,
+            universe: set[str] | None = None) -> tuple[str | None, str]:
     """Return (target, why). target=None means 'cannot classify, leave it'."""
+    sym = str(row.get("symbol") or "").strip().upper()
     src = str(row.get("source_system") or "").strip().lower()
     if src in SOURCE_FORCE:
         target, why = SOURCE_FORCE[src], f"source:{src}"
-    elif iso_fx_pair(str(row.get("symbol") or "")):
+    elif iso_fx_pair(sym):
         target, why = "FOREX", "iso_pair"
+    elif row.get("reason") == "alias":
+        raw = str(row.get("current_label") or "").strip().lower()
+        target, why = _ALIASES.get(raw), f"alias:{raw}"
     else:
-        detected = detect_asset_class(str(row.get("symbol") or ""))
+        detected = detect_asset_class(sym)
         target = _DETECTED_TO_CANON.get(str(detected).strip().lower())
         why = f"detect:{detected}"
+        if not target and peers and sym in peers:
+            target, why = peers[sym], "peer_label"
+        if not target and universe and sym in universe:
+            target, why = "EQUITY", "equity_universe"
     if not target:
         return None, why
     if target not in allowed:
@@ -198,10 +307,12 @@ def resolve(row: dict, allowed: set[str]) -> tuple[str | None, str]:
 
 def plan(cur, table: str) -> tuple[list[dict], list[dict]]:
     meta = TABLES[table]
+    peers = peer_labels(cur, table)
+    universe = equity_universe(cur)
     updates: list[dict] = []
     skipped: list[dict] = []
     for row in candidates(cur, table):
-        target, why = resolve(row, meta["allowed"])
+        target, why = resolve(row, meta["allowed"], peers, universe)
         current = str(row.get("current_label") or "")
         if not target or target == current:
             skipped.append({**row, "why": why})

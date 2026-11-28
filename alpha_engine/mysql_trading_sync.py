@@ -207,6 +207,12 @@ CREATE TABLE IF NOT EXISTS trading_picks (
 """
 
 # ── Upsert SQL ───────────────────────────────────────────────────────────────
+# 2026-11-28 — `category` is guarded against empty overwrites. The backfill
+# tool relabelled 65 rows at 04:06Z; the 04:59/05:59/06:59 syncs put every one
+# of them back to '' because the source JSON still carries an empty category
+# and the upsert blindly copied VALUES(category) over the repaired value. A
+# good label now survives an empty incoming one; a non-empty incoming value
+# (including a corrected label) still wins, so relabels are never blocked.
 UPSERT_SQL = """
 INSERT INTO trading_picks
     (id, symbol, direction, strategy, entry_price, take_profit, stop_loss,
@@ -227,7 +233,7 @@ ON DUPLICATE KEY UPDATE
     confidence   = VALUES(confidence),
     elite_score  = VALUES(elite_score),
     trust_score  = VALUES(trust_score),
-    category     = VALUES(category),
+    category     = COALESCE(NULLIF(VALUES(category), ''), category),
     source_system= VALUES(source_system),
     status       = VALUES(status),
     pnl_pct      = VALUES(pnl_pct),
