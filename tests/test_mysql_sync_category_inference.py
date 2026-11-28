@@ -68,9 +68,14 @@ def test_forex_equals_X_becomes_forex():
 
 
 def test_explicit_category_NEVER_overridden():
-    """If pick has explicit category, inference must NOT touch it."""
+    """If pick has explicit category, inference must NOT touch it.
+
+    2026-11-28: the expected value is now the canonical form 'MEMECOIN' —
+    the explicit label is still not overridden by inference (it is not
+    'CRYPTO'), it is only case/synonym normalized to the one canonical enum.
+    """
     r = pick_to_row(_base("BTCUSDT", category="meme"))
-    assert r["category"] == "meme"  # not "crypto"
+    assert r["category"] == "MEMECOIN"  # not "crypto"
     r2 = pick_to_row(_base("CL=F", category="commodity"))
     assert r2["category"] == "COMMODITY"  # not "futures"
 

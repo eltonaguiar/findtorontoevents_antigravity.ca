@@ -3384,7 +3384,11 @@ _ASSET_CLASS_HINTS = {
     "cryptocurrency": "CRYPTO",
     "coin": "CRYPTO",
     "token": "CRYPTO",
-    **({"meme": "CRYPTO"} if _MEME_TO_CRYPTO else {}),
+    # 2026-11-28: trading_picks.category now stores the canonical 'MEMECOIN'
+    # (was 'meme'), so both keys must follow the same env flag. Without this
+    # the flag could no longer unmap memes.
+    **({"meme": "CRYPTO", "memecoin": "CRYPTO", "meme_coin": "CRYPTO"}
+       if _MEME_TO_CRYPTO else {}),
     "forex": "FOREX",
     "fx": "FOREX",
     "currency": "FOREX",
@@ -3431,6 +3435,12 @@ def _normalize_asset_class_hint(value) -> str | None:
     compact = text.replace("-", "_").replace(" ", "_")
     if compact in _ASSET_CLASS_HINTS:
         return _ASSET_CLASS_HINTS[compact]
+    # When ASSET_CLASS_MAP_MEME_TO_CRYPTO=0 the meme hint is dropped so memes
+    # fall through to the symbol heuristics. The substring loop below would
+    # otherwise re-catch them via the generic "coin" needle, silently
+    # defeating the flag for the canonical MEMECOIN label.
+    if not _MEME_TO_CRYPTO and compact in {"meme", "memecoin", "meme_coin"}:
+        return None
     for needle, asset_class in _ASSET_CLASS_HINTS.items():
         if needle in compact:
             return asset_class
@@ -7815,7 +7825,8 @@ except ImportError:
             return "tradingagents"
         if category == "penny":
             return "penny_stock"
-        if "meme" in strategy.lower() or "meme" in source_lc or category == "meme":
+        # 2026-11-28: `"meme" in category` — the label is now 'MEMECOIN'.
+        if "meme" in strategy.lower() or "meme" in source_lc or "meme" in category:
             return "meme_coin"
         if source_system in _MERCURY2_SOURCES:
             return "mercury2"

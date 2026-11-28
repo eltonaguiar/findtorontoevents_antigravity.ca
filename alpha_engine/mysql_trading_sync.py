@@ -114,16 +114,32 @@ _CATEGORY_CANONICAL_MAP = {
     "future": "FUTURES",
     "commodity": "COMMODITY",
     "commodities": "COMMODITY",
+    # 2026-11-28 — the residual lowercase-only buckets found by a live survey
+    # (index 3,744 / meme 119 / managed_futures 2 / prediction_market 469).
+    # These were previously in _CATEGORY_KNOWN_PASSTHROUGH, which meant the
+    # chokepoint re-created them on every sync and immediately re-drifted the
+    # table that tools/backfill_category_aliases.py had just normalized.
+    "index": "INDEX",
+    "meme": "MEMECOIN",
+    "meme_coin": "MEMECOIN",
+    "memecoin": "MEMECOIN",
+    "managed_futures": "FUTURES",
+    "prediction_market": "PREDICTION_MARKET",
+    "prediction_markets": "PREDICTION_MARKET",
 }
 
 # Recognized tags that intentionally pass through UNCHANGED and WITHOUT a
-# warning. 'meme' (87 rows) and 'index' (536 rows) are mapped downstream by
-# dashboard_generator._ASSET_CLASS_HINTS with env-configurable policy
-# (ASSET_CLASS_MAP_MEME_TO_CRYPTO gates meme→CRYPTO; index→FUTURES) —
-# rewriting them at INSERT-time would destroy the original tag the flag
-# exists to preserve. 'unknown' is the documented backfill token handled by
+# warning. 'unknown' is the documented backfill token handled by
 # tools/backfill_unknown_category.py.
-_CATEGORY_KNOWN_PASSTHROUGH = {"meme", "index", "unknown"}
+#
+# 2026-11-28: 'meme' and 'index' were REMOVED from this set. They are now
+# normalized to MEMECOIN / INDEX above, because leaving them here meant every
+# sync re-created the lowercase fork that tools/backfill_category_aliases.py
+# had just cleaned (a one-shot fix that regrows by morning). The
+# env-configurable read-side policy is unaffected: dashboard_generator
+# ._ASSET_CLASS_HINTS lowercases the label, so INDEX→FUTURES and
+# MEMECOIN→CRYPTO resolve exactly as 'index'/'meme' did.
+_CATEGORY_KNOWN_PASSTHROUGH = {"unknown"}
 
 # ── Ensure pymysql is available ──────────────────────────────────────────────
 try:

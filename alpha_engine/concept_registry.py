@@ -198,7 +198,10 @@ def get_concept_family(pick: dict) -> str:
         return "tradingagents"
     if category == "penny":
         return "penny_stock"
-    if "meme" in strategy_lc or "meme" in source_lc or category == "meme":
+    # 2026-11-28: `"meme" in category` instead of `category == "meme"` —
+    # trading_picks.category was normalized to the canonical 'MEMECOIN',
+    # which an equality check against 'meme' would silently drop.
+    if "meme" in strategy_lc or "meme" in source_lc or "meme" in category:
         return "meme_coin"
     if source_system in MERCURY2_SOURCES:
         return "mercury2"

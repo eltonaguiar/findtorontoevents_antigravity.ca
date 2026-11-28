@@ -67,7 +67,12 @@ COST_MODELS: dict[str, dict[str, float]] = {
 _CATEGORY_TO_COST_MODEL: dict[str, str] = {
     "crypto": "crypto_spot",
     "meme":   "meme_coins",
+    # 2026-11-28: 'meme' was normalized to the canonical 'MEMECOIN' in
+    # trading_picks — keep both keys so a raw-category caller still gets the
+    # meme cost model instead of silently falling back to stocks_etf.
+    "memecoin": "meme_coins",
     "penny":  "penny_stocks",
+    "penny_stock": "penny_stocks",
     "forex":  "forex",
     "stock":  "stocks_etf",
 }
@@ -104,9 +109,10 @@ def get_cost_model(symbol: str, category: str = "") -> dict[str, float]:
         return COST_MODELS["crypto_altcoin"]
 
     # Symbol heuristics
+    category_lc = str(category or "").strip().lower()
     if symbol.endswith("-USD"):
         # Generic crypto -- check category for meme
-        if category == "meme":
+        if category_lc in ("meme", "memecoin", "meme_coin"):
             return COST_MODELS["meme_coins"]
         return COST_MODELS["crypto_altcoin"]  # conservative default for unknowns
 
@@ -114,7 +120,7 @@ def get_cost_model(symbol: str, category: str = "") -> dict[str, float]:
         return COST_MODELS["forex"]
 
     # Category-based fallback
-    model_key = _CATEGORY_TO_COST_MODEL.get(category, "stocks_etf")
+    model_key = _CATEGORY_TO_COST_MODEL.get(category_lc, "stocks_etf")
     return COST_MODELS.get(model_key, COST_MODELS["stocks_etf"])
 
 
